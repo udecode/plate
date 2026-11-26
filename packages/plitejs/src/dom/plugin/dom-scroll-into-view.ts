@@ -2,6 +2,7 @@ import {
   type DOMRange,
   getFlatTreeParentElement,
   isDOMElement,
+  isDOMHTMLElement,
 } from '../utils/dom';
 
 export type ScrollRect = {
@@ -192,6 +193,46 @@ const scrollAncestors = (
   return cur;
 };
 
+const outsideBox = (rect: ScrollRect, box: ScrollRect, tolerance = 0) =>
+  rect.top < box.top - tolerance ||
+  rect.bottom > box.bottom + tolerance ||
+  rect.left < box.left - tolerance ||
+  rect.right > box.right + tolerance;
+
+// Blink's window.scrollBy only moves the layout viewport, so when the soft
+// keyboard shrinks the visual viewport (resizes-visual) and scrollY clamps at
+// scrollHeight - clientHeight, only scrollIntoView pans visualViewport.offsetTop.
+const panVisualViewport = (
+  win: Window,
+  scrollingElement: Element,
+  el: Element,
+  caret: ScrollRect
+) => {
+  const vv = win.visualViewport;
+
+  if (
+    !vv ||
+    !isDOMHTMLElement(el) ||
+    (vv.height >= scrollingElement.clientHeight &&
+      vv.width >= scrollingElement.clientWidth)
+  ) {
+    return;
+  }
+
+  const elRect = el.getBoundingClientRect();
+  const prev = el.style.getPropertyValue('scroll-margin');
+  const priority = el.style.getPropertyPriority('scroll-margin');
+
+  el.style.setProperty(
+    'scroll-margin',
+    `${MARGIN - (caret.top - elRect.top)}px ${MARGIN - (elRect.right - caret.right)}px ${MARGIN - (elRect.bottom - caret.bottom)}px ${MARGIN - (caret.left - elRect.left)}px`
+  );
+  el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+
+  if (prev) el.style.setProperty('scroll-margin', prev, priority);
+  else el.style.removeProperty('scroll-margin');
+};
+
 export const scrollRectIntoViewIfNeeded = ({
   rect,
   startElement,
@@ -226,17 +267,16 @@ export const scrollRectIntoViewIfNeeded = ({
     visible = getVisibleViewportBox(win, scrollingElement);
   }
 
-  if (
-    cur.top < visible.top ||
-    cur.bottom > visible.bottom ||
-    cur.left < visible.left ||
-    cur.right > visible.right
-  ) {
-    scrollAncestors(startElement, scrollingElement, cur, visible);
+  if (outsideBox(cur, visible)) {
+    cur = scrollAncestors(startElement, scrollingElement, cur, visible);
+  }
+
+  if (outsideBox(cur, visible, 1)) {
+    panVisualViewport(win, scrollingElement, startElement, cur);
   }
 };
 
-export const scrollDOMRangeIntoViewIfNeeded = (
+export const scrollDOMRangeFocusIntoViewIfNeeded = (
   domRange: DOMRange,
   isBackward = false
 ) => {
@@ -247,6 +287,9 @@ export const scrollDOMRangeIntoViewIfNeeded = (
   const leafEl = isDOMElement(container) ? container : container.parentElement;
 
   if (!leafEl) return;
+
+  // jsdom's Range has no getBoundingClientRect.
+  if (typeof focusRange.getBoundingClientRect !== 'function') return;
 
   // COMPAT: In Chrome, collapsed range getBoundingClientRect() can return all zeros on empty lines.
   const domRect = focusRange.getBoundingClientRect();

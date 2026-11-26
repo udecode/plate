@@ -14,13 +14,11 @@ import {
   createDOMGeometryKernel,
   findDOMRootRuntime,
   getPliteStringPlacementDOMPoint,
+  scrollDOMRangeFocusIntoViewIfNeeded,
 } from '../../dom/internal';
 import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
 import { focusedElementOnPage } from '../../dom/plugin/dom-root-runtime';
-import {
-  getFlatTreeParentElement,
-  isDOMInputOrTextArea,
-} from '../../dom/utils/dom';
+import { isDOMInputOrTextArea } from '../../dom/utils/dom';
 import {
   cancelDragRest,
   clearDragScrollRepaint,
@@ -688,243 +686,14 @@ export const DefaultPlaceholder = ({
   );
 };
 
-type ScrollRect = {
-  bottom: number;
-  left: number;
-  right: number;
-  top: number;
-};
-
-const SCROLL_VISIBILITY_MARGIN = 4;
-const SCROLLABLE_OVERFLOW_PATTERN = /(auto|scroll|overlay)/;
-
-const isUsableScrollRect = (rect: DOMRect | DOMRectReadOnly) =>
-  rect.width > 0 ||
-  rect.height > 0 ||
-  rect.x !== 0 ||
-  rect.y !== 0 ||
-  rect.top !== 0 ||
-  rect.left !== 0 ||
-  rect.bottom !== 0 ||
-  rect.right !== 0;
-
-const toScrollRect = (rect: DOMRect | DOMRectReadOnly): ScrollRect => ({
-  bottom: rect.bottom,
-  left: rect.left,
-  right: rect.right,
-  top: rect.top,
-});
-
-const offsetScrollRect = (
-  rect: ScrollRect,
-  delta: { left: number; top: number }
-): ScrollRect => ({
-  bottom: rect.bottom - delta.top,
-  left: rect.left - delta.left,
-  right: rect.right - delta.left,
-  top: rect.top - delta.top,
-});
-
-const canScrollAxis = (
-  element: Element,
-  style: CSSStyleDeclaration | undefined,
-  axis: 'x' | 'y'
-) => {
-  const overflow =
-    axis === 'y'
-      ? `${style?.overflowY ?? ''} ${style?.overflow ?? ''}`
-      : `${style?.overflowX ?? ''} ${style?.overflow ?? ''}`;
-
-  if (!SCROLLABLE_OVERFLOW_PATTERN.test(overflow)) {
-    return false;
-  }
-
-  return axis === 'y'
-    ? element.scrollHeight > element.clientHeight
-    : element.scrollWidth > element.clientWidth;
-};
-
-const resolveScrollPadding = (value: string | undefined, size: number) => {
-  const amount = Number.parseFloat(value ?? '');
-
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return 0;
-  }
-
-  return value?.trim().endsWith('%') ? (amount / 100) * size : amount;
-};
-
-const scrollRectIntoViewIfNeeded = ({
-  rect,
-  startElement,
-}: {
-  rect: ScrollRect;
-  startElement: HTMLElement;
-}) => {
-  let currentRect = rect;
-
-  for (
-    let parent = getFlatTreeParentElement(startElement);
-    parent;
-    parent = getFlatTreeParentElement(parent)
-  ) {
-    const style = parent.ownerDocument.defaultView?.getComputedStyle(parent);
-    const canScrollY = canScrollAxis(parent, style, 'y');
-    const canScrollX = canScrollAxis(parent, style, 'x');
-
-    if (!canScrollY && !canScrollX) {
-      continue;
-    }
-
-    const parentRect = parent.getBoundingClientRect();
-    const topEdge =
-      parentRect.top +
-      resolveScrollPadding(style?.scrollPaddingTop, parentRect.height) +
-      SCROLL_VISIBILITY_MARGIN;
-    const bottomEdge =
-      parentRect.bottom -
-      resolveScrollPadding(style?.scrollPaddingBottom, parentRect.height) -
-      SCROLL_VISIBILITY_MARGIN;
-    const leftEdge =
-      parentRect.left +
-      resolveScrollPadding(style?.scrollPaddingLeft, parentRect.width) +
-      SCROLL_VISIBILITY_MARGIN;
-    const rightEdge =
-      parentRect.right -
-      resolveScrollPadding(style?.scrollPaddingRight, parentRect.width) -
-      SCROLL_VISIBILITY_MARGIN;
-    const nextTop =
-      canScrollY && currentRect.top < topEdge
-        ? currentRect.top - topEdge
-        : canScrollY && currentRect.bottom > bottomEdge
-          ? currentRect.bottom - bottomEdge
-          : 0;
-    const nextLeft =
-      canScrollX && currentRect.left < leftEdge
-        ? currentRect.left - leftEdge
-        : canScrollX && currentRect.right > rightEdge
-          ? currentRect.right - rightEdge
-          : 0;
-
-    if (nextTop === 0 && nextLeft === 0) {
-      continue;
-    }
-
-    const previousTop = parent.scrollTop;
-    const previousLeft = parent.scrollLeft;
-
-    parent.scrollTop += nextTop;
-    parent.scrollLeft += nextLeft;
-
-    currentRect = offsetScrollRect(currentRect, {
-      left: parent.scrollLeft - previousLeft,
-      top: parent.scrollTop - previousTop,
-    });
-  }
-
-  const window = startElement.ownerDocument.defaultView;
-
-  if (!window) {
-    return;
-  }
-
-  const { scrollingElement } = window.document;
-  const scrollingStyle =
-    scrollingElement instanceof window.HTMLElement
-      ? window.getComputedStyle(scrollingElement)
-      : undefined;
-  const topEdge =
-    resolveScrollPadding(scrollingStyle?.scrollPaddingTop, window.innerHeight) +
-    SCROLL_VISIBILITY_MARGIN;
-  const bottomEdge =
-    window.innerHeight -
-    resolveScrollPadding(
-      scrollingStyle?.scrollPaddingBottom,
-      window.innerHeight
-    ) -
-    SCROLL_VISIBILITY_MARGIN;
-  const leftEdge =
-    resolveScrollPadding(scrollingStyle?.scrollPaddingLeft, window.innerWidth) +
-    SCROLL_VISIBILITY_MARGIN;
-  const rightEdge =
-    window.innerWidth -
-    resolveScrollPadding(
-      scrollingStyle?.scrollPaddingRight,
-      window.innerWidth
-    ) -
-    SCROLL_VISIBILITY_MARGIN;
-  const canScrollWindowY = scrollingElement
-    ? scrollingElement.scrollHeight > scrollingElement.clientHeight
-    : window.document.documentElement.scrollHeight > window.innerHeight;
-  const canScrollWindowX = scrollingElement
-    ? scrollingElement.scrollWidth > scrollingElement.clientWidth
-    : window.document.documentElement.scrollWidth > window.innerWidth;
-  const nextTop =
-    canScrollWindowY && currentRect.top < topEdge
-      ? currentRect.top - topEdge
-      : canScrollWindowY && currentRect.bottom > bottomEdge
-        ? currentRect.bottom - bottomEdge
-        : 0;
-  const nextLeft =
-    canScrollWindowX && currentRect.left < leftEdge
-      ? currentRect.left - leftEdge
-      : canScrollWindowX && currentRect.right > rightEdge
-        ? currentRect.right - rightEdge
-        : 0;
-
-  if (nextTop !== 0 || nextLeft !== 0) {
-    try {
-      window.scrollBy(nextLeft, nextTop);
-    } catch {
-      // Environments like jsdom expose scrollBy but do not implement it.
-    }
-  }
-};
-
-/**
- * A default implement to scroll dom range into view.
- */
-
 export const defaultScrollSelectionIntoView = (
   editor: ReactRuntimeEditor,
   domRange: DOMRange
 ) => {
-  // Scroll to the focus point of the selection, in case the selection is expanded
   const selection = getSelectionDOMRange(editor, readRuntimeSelection(editor));
   const isBackward = Boolean(selection && RangeApi.isBackward(selection));
-  const domFocusPoint = domRange.cloneRange();
-  domFocusPoint.collapse(isBackward);
 
-  if (domFocusPoint.getBoundingClientRect) {
-    const leafEl = domFocusPoint.startContainer.parentElement;
-
-    if (!leafEl || typeof leafEl.getBoundingClientRect !== 'function') {
-      return;
-    }
-
-    // COMPAT: In Chrome, domFocusPoint.getBoundingClientRect() can return zero dimensions for valid ranges (e.g. line breaks).
-    // Fall back to the leaf rect so typing through empty lines still keeps the caret visible.
-    const domRect = domFocusPoint.getBoundingClientRect();
-    const isZeroDimensionRect =
-      domRect.width === 0 &&
-      domRect.height === 0 &&
-      domRect.x === 0 &&
-      domRect.y === 0;
-
-    const targetRect =
-      !isZeroDimensionRect && isUsableScrollRect(domRect)
-        ? domRect
-        : leafEl.getBoundingClientRect();
-
-    if (!isUsableScrollRect(targetRect)) {
-      return;
-    }
-
-    scrollRectIntoViewIfNeeded({
-      rect: toScrollRect(targetRect),
-      startElement: leafEl,
-    });
-  }
+  scrollDOMRangeFocusIntoViewIfNeeded(domRange, isBackward);
 };
 
 /**

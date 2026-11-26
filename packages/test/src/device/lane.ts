@@ -110,6 +110,15 @@ export type DeviceFocusSnapshot = {
   region: DeviceFocusRegion;
 };
 
+export type DeviceRectSnapshot = {
+  bottom: number;
+  height: number;
+  left: number;
+  right: number;
+  top: number;
+  width: number;
+};
+
 export type DeviceViewportSnapshot = {
   height: number;
   innerHeight: number;
@@ -117,7 +126,9 @@ export type DeviceViewportSnapshot = {
   keyboardShown: boolean;
   offsetLeft: number;
   offsetTop: number;
+  pageTop: number;
   scale: number;
+  scrollY: number;
   width: number;
 };
 
@@ -263,8 +274,10 @@ export type DeviceLane = {
   knownFailure: <T>(failure: DeviceKnownFailure<T>) => Promise<void>;
   platform: DeviceRunState['platform'];
   read: {
+    caret: () => Promise<DeviceRectSnapshot | null>;
     editable: () => Promise<DeviceEditableDomSnapshot>;
     focus: () => Promise<DeviceFocusSnapshot>;
+    toolbar: (toolbar: DeviceToolbar) => Promise<DeviceRectSnapshot | null>;
     viewport: () => Promise<DeviceViewportSnapshot>;
   };
   /** Steps on the current page. */
@@ -943,6 +956,49 @@ export const createDeviceLane = ({
     },
     platform: state.platform,
     read: {
+      caret: () =>
+        driver.page.find({ css: 'body' }).evaluate(() => {
+          const selection = document.getSelection();
+
+          if (
+            !selection ||
+            selection.rangeCount === 0 ||
+            !selection.focusNode
+          ) {
+            return null;
+          }
+
+          const focusRange = document.createRange();
+          focusRange.setStart(selection.focusNode, selection.focusOffset);
+          focusRange.collapse(true);
+
+          const usable = (rect: DOMRect) =>
+            rect.width > 0 ||
+            rect.height > 0 ||
+            rect.top !== 0 ||
+            rect.left !== 0 ||
+            rect.bottom !== 0 ||
+            rect.right !== 0;
+          const rangeRect = focusRange.getBoundingClientRect();
+          const focusEl =
+            selection.focusNode instanceof Element
+              ? selection.focusNode
+              : selection.focusNode.parentElement;
+          const rect = usable(rangeRect)
+            ? rangeRect
+            : focusEl?.getBoundingClientRect();
+
+          if (!rect || !usable(rect)) return null;
+
+          return {
+            bottom: rect.bottom,
+            height: rect.height,
+            left: rect.left,
+            right: rect.right,
+            top: rect.top,
+            width: rect.width,
+          };
+        }, undefined),
       editable: () =>
         driver.page.find({ css: 'body' }).evaluate(() => {
           const clean = (value: string | null | undefined) =>
@@ -1051,6 +1107,23 @@ export const createDeviceLane = ({
 
           return { editorFocused, menuOpen, region };
         }, undefined),
+      toolbar: (toolbar) =>
+        driver.page.find({ css: 'body' }).evaluate((_element, selector) => {
+          const element = document.querySelector(selector);
+
+          if (!element) return null;
+
+          const rect = element.getBoundingClientRect();
+
+          return {
+            bottom: rect.bottom,
+            height: rect.height,
+            left: rect.left,
+            right: rect.right,
+            top: rect.top,
+            width: rect.width,
+          };
+        }, TOOLBAR_SELECTORS[toolbar]),
       viewport: async () => {
         const view = await driver.page.find({ css: 'body' }).evaluate(() => {
           const visual = window.visualViewport;
@@ -1061,7 +1134,9 @@ export const createDeviceLane = ({
             innerWidth,
             offsetLeft: visual?.offsetLeft ?? 0,
             offsetTop: visual?.offsetTop ?? 0,
+            pageTop: visual?.pageTop ?? scrollY,
             scale: visual?.scale ?? 1,
+            scrollY,
             width: visual?.width ?? innerWidth,
           };
         }, undefined);

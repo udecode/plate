@@ -165,7 +165,7 @@ import {
 } from './dom-root-runtime';
 import {
   isUsableScrollRect,
-  scrollDOMRangeIntoViewIfNeeded,
+  scrollDOMRangeFocusIntoViewIfNeeded,
   scrollRectIntoViewIfNeeded,
   toScrollRect,
 } from './dom-scroll-into-view';
@@ -2376,7 +2376,7 @@ const DOMEditorImpl: DOMEditorInterface = {
             ? null
             : editor.read((state) => state.selection());
 
-        scrollDOMRangeIntoViewIfNeeded(
+        scrollDOMRangeFocusIntoViewIfNeeded(
           domRange,
           Boolean(range && RangeApi.isBackward(range))
         );

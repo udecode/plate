@@ -9,6 +9,7 @@ export {
   type DeviceKnownFailure,
   type DeviceLane,
   type DeviceQuery,
+  type DeviceRectSnapshot,
   type DeviceRunState,
   type DeviceToolbar,
   type DeviceViewportSnapshot,

@@ -83,7 +83,7 @@ export {
 } from '../plugin/dom-root-runtime';
 export {
   isUsableScrollRect,
-  scrollDOMRangeIntoViewIfNeeded,
+  scrollDOMRangeFocusIntoViewIfNeeded,
   scrollRectIntoViewIfNeeded,
   toScrollRect,
 } from '../plugin/dom-scroll-into-view';
