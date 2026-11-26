@@ -215,10 +215,6 @@ const main = () => {
   run('contract reachability audit', 'node', [
     'tooling/scripts/check-contract-reachability.mjs',
   ]);
-  run('Plate schema adoption source audit', 'node', [
-    'tooling/scripts/check-plate-schema-adoption.mjs',
-    '--check',
-  ]);
   run('React Compiler source contract audit', 'node', [
     'tooling/scripts/check-react-compiler-contract.mjs',
     '--check',

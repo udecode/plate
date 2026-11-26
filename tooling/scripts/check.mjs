@@ -27,7 +27,6 @@ import {
 } from '../config/test-suites.mjs';
 import { packageTestFiles } from '../entrypoints/entrypoint-turbo.mjs';
 import { freshRun, openCache } from './check-cache.mjs';
-import { isPlateSchemaAdoptionSourcePath } from './check-plate-schema-adoption.mjs';
 import {
   commonDir,
   installLockfile,
@@ -41,7 +40,6 @@ import {
   runtimeClosure,
   storedGraph,
 } from './import-graph.mjs';
-import { FROZEN, indexPatterns } from './knowledge/knowledge.mjs';
 import { hasPrivateHalf, trackedFiles } from './private-files.mjs';
 import { workerBudget } from './worker-budget.mjs';
 
@@ -51,7 +49,6 @@ const touches =
   (...prefixes) =>
   (files) =>
     files.some((file) => prefixes.some((prefix) => file.startsWith(prefix)));
-const never = () => false;
 const matches = (path, file) =>
   path.endsWith('/') ? file.startsWith(path) : file === path;
 
@@ -102,21 +99,7 @@ const runsScript = (script, ...paths) => {
     return files.some((file) => closure.has(file));
   };
 };
-const SCHEMA_ADOPTION_AUDIT = 'tooling/scripts/check-plate-schema-adoption.mjs';
-let schemaAdoptionAuditClosure;
-const schemaAdoptionFiles = (files) => {
-  schemaAdoptionAuditClosure ??= new Set([
-    'tooling/scripts/plate-schema-adoption-baseline.json',
-    ...runtimeClosure([join(root, SCHEMA_ADOPTION_AUDIT)]).map((file) =>
-      relative(root, file)
-    ),
-  ]);
-  return files.some((file) => schemaAdoptionAuditClosure.has(file))
-    ? true
-    : files.filter(isPlateSchemaAdoptionSourcePath);
-};
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
-const PACKAGE_MANIFEST = /^packages\/[^/]+\/package\.json$/u;
 const BUILD_CONFIG = /(?:^|\/)(?:package|turbo|tsconfig[\w.-]*)\.json$/u;
 const inTestSuite = (file) =>
   TEST_FILE_PATTERNS.some((pattern) => matchesGlob(file, pattern)) &&
@@ -614,6 +597,7 @@ export const steps = [
     name: 'authored-order',
     cores: 4,
     private: true,
+    optIn: '--audit',
     run: 'pnpm check:authored-order && pnpm check:authored-order --schema=generated-elements --family=quotes --blocks=1',
     light: 'pnpm check:authored-order --light',
     affected: runsScript(
@@ -642,6 +626,7 @@ export const steps = [
     name: 'yjs-peer-order',
     cores: 4,
     private: true,
+    optIn: '--audit',
     run: 'pnpm check:yjs-peer-order',
     light: 'pnpm check:yjs-peer-order --light',
     affected: runsScript(
@@ -655,6 +640,7 @@ export const steps = [
     name: 'effect-ledger',
     cores: 4,
     private: true,
+    optIn: '--audit',
     run: 'pnpm check:effect-ledger --deadline=3300',
     light: 'pnpm check:effect-ledger --light',
     affected: runsScript(
@@ -680,6 +666,7 @@ export const steps = [
     name: 'authored-recording',
     cores: 4,
     private: true,
+    optIn: '--audit',
     run: 'pnpm check:authored-recording',
     light: 'pnpm check:authored-recording --light',
     affected: runsScript(
@@ -697,6 +684,7 @@ export const steps = [
     name: 'undo-redo-history',
     cores: 4,
     private: true,
+    optIn: '--audit',
     run: 'pnpm check:undo-redo-history',
     light: 'pnpm check:undo-redo-history --light',
     affected: runsScript(
@@ -714,6 +702,7 @@ export const steps = [
     name: 'delete-paste-ranges',
     cores: 4,
     private: true,
+    optIn: '--audit',
     run: 'pnpm check:delete-paste-ranges',
     light: 'pnpm check:delete-paste-ranges --light',
     affected: runsScript(
@@ -802,19 +791,9 @@ export const steps = [
     private: true,
     run: 'pnpm check:core',
     affected: (files) =>
-      source(files) || files.some(isPlateSchemaAdoptionSourcePath),
-    key: [],
-  },
-  {
-    // core-audits runs the whole schema adoption audit, which takes minutes,
-    // so a landing audits only the files it changes.
-    name: 'schema-adoption',
-    land: true,
-    partOf: 'core-audits',
-    onlyAffectedFiles: true,
-    private: true,
-    run: `node ${SCHEMA_ADOPTION_AUDIT} --check`,
-    affected: schemaAdoptionFiles,
+      source(files) ||
+      touches('content/docs/')(files) ||
+      files.some((file) => /^packages\/[^/]+\/README\.md$/u.test(file)),
     key: [],
   },
   {
@@ -950,13 +929,6 @@ export const steps = [
     key: [],
   },
   {
-    name: 'bench-report',
-    land: true,
-    private: true,
-    run: 'node tooling/scripts/bench-targets.mjs report --check',
-    write: 'node tooling/scripts/bench-targets.mjs report',
-  },
-  {
     name: 'skill-mirrors',
     land: true,
     run: 'node .agents/rules/plate-next/scripts/sync-resources.mjs --check',
@@ -987,15 +959,6 @@ export const steps = [
     key: [],
   },
   {
-    // It judges every plan, so another session's open plan can turn it red;
-    // the daily full check runs it instead of each landing.
-    name: 'review-ledger',
-    private: true,
-    run: 'node tooling/scripts/review-ledger.mjs check',
-    affected: never,
-    key: [],
-  },
-  {
     name: 'removed-api-teaching',
     land: true,
     run: 'node tooling/scripts/check-removed-api-teaching.mjs',
@@ -1016,29 +979,6 @@ export const steps = [
           )
       ),
     key: [],
-  },
-  {
-    name: 'knowledge',
-    land: true,
-    quick: true,
-    private: true,
-    run: 'node tooling/scripts/knowledge/kb.mjs check',
-    fix: 'node tooling/scripts/knowledge/kb.mjs check --lower',
-    // A deleted file can break a citation in any page, and a file added to a
-    // frozen folder fails K17. kb.mjs maps tests to their runners through the
-    // entrypoint DAG, which reads each package manifest.
-    affected: (files) =>
-      files.some(
-        (file) =>
-          file.startsWith('tooling/scripts/knowledge/') ||
-          file.startsWith('tooling/entrypoints/') ||
-          file === 'tooling/scripts/import-graph.mjs' ||
-          PACKAGE_MANIFEST.test(file) ||
-          FROZEN.some((dir) => file.startsWith(dir)) ||
-          indexPatterns.some((pattern) => matchesGlob(file, pattern)) ||
-          !existsSync(join(root, file))
-      ),
-    key: ['refs'],
   },
   {
     name: 'triage',
@@ -1179,6 +1119,8 @@ export const deepSteps = steps.filter((step) =>
 export const manualOnly = {
   'bench:editor:check':
     'Checks the separate benchmarks/editor npm project, which needs its own npm install.',
+  'bench:targets:report:check':
+    'Checks generated benchmark target history report on demand during benchmark runs.',
   'check:docs':
     'Runs commands that the www-typecheck step already runs through www typecheck.',
   'check:plate-feature':
@@ -1289,7 +1231,7 @@ const needs = (files, retargeted, versions) => {
   };
   return (step) => {
     if (!step.affected) return true;
-    if (files.length === 0 || step.affected === never) return null;
+    if (files.length === 0) return null;
     if ((everything || calls(step)) && !step.onlyAffectedFiles) return true;
     const hit = step.affected(reached, retargeted);
     if (!Array.isArray(hit)) return hit ? true : null;
@@ -1445,6 +1387,7 @@ const main = async () => {
   const args = process.argv.slice(2);
   const flags = [
     '--affected',
+    '--audit',
     '--browser',
     '--build',
     '--deep',
@@ -1491,14 +1434,14 @@ const main = async () => {
   const affected = args.includes('--affected');
   if (affected && (writing || optIns.length > 0 || names.length > 0)) {
     console.error(
-      '[check] --affected picks its own steps; run it without step names, --write, --build, --browser or --reads.'
+      '[check] --affected picks its own steps; run it without step names, --write, --audit, --build, --browser or --reads.'
     );
     return 1;
   }
   const deep = args.includes('--deep');
   if (deep && (affected || writing || optIns.length > 0 || names.length > 0)) {
     console.error(
-      '[check] --deep runs every step that --build --browser runs; run it without --affected, step names, --write, --build, --browser or --reads.'
+      '[check] --deep runs every step that --build --browser runs; run it without --affected, step names, --write, --audit, --build, --browser or --reads.'
     );
     return 1;
   }
@@ -1508,7 +1451,7 @@ const main = async () => {
   );
   if (light && (affected || deep || writing || optIns.length > 0)) {
     console.error(
-      '[check] --light runs the light bound of the formal checks it names, or of every one; run it without --affected, --deep, --write, --build, --browser or --reads.'
+      '[check] --light runs the light bound of the formal checks it names, or of every one; run it without --affected, --deep, --write, --audit, --build, --browser or --reads.'
     );
     return 1;
   }

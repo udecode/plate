@@ -134,7 +134,6 @@ vitest.config.*
 /tooling/scripts/test-times.*
 /tooling/scripts/type-probe.*
 /tooling/scripts/knowledge/baseline.json
-/tooling/scripts/plate-schema-adoption-baseline.json
 /tooling/oxlint/plate-baseline.private.json
 
 # Public whatever the rules above say.
