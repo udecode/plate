@@ -19,7 +19,12 @@ const ContentCompletion = defineEditorSchema(
   'schema:content-completion-proof',
   {
     elements: {
-      'block-quote': { content: c.any([c.text(), c.type('paragraph')]) },
+      'block-quote': {
+        content: c.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
       paragraph: { content: c.text() },
       title: { content: c.text() },
     },
@@ -46,7 +51,7 @@ const initialValue: CustomElement[] = [
   { children: [{ text: 'Title' }], type: 'title' },
   paragraph('Remove my text node'),
   {
-    children: [{ text: 'Lead' }, paragraph('Block'), { text: 'Tail' }],
+    children: [paragraph('Lead'), paragraph('Block'), paragraph('Tail')],
     type: 'block-quote',
   },
   paragraph('bold', true),
