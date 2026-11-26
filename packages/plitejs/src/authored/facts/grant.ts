@@ -13,6 +13,7 @@ import type {
   ChangeClaim,
   SyncAtHead,
   SyncGrant,
+  SyncHead,
   SyncTakeBack,
 } from '../../sync/server/grant';
 import {
@@ -43,6 +44,7 @@ import {
 import {
   decideAtHead,
   decidesStructure,
+  keepingGapSpares,
   replayAt,
   replaysWithdrawal,
   type VerdictBatch,
@@ -601,20 +603,25 @@ const decisionCover = (
   batch: VerdictBatch,
   grant: SyncGrant,
   schema: CompiledEditorSchema,
-  head: JsonEditorValue | undefined
+  head: SyncHead | undefined
 ): Cover => {
   const replay = decisionReplayOf(step, batch, grant, schema);
 
   if (!replay) return { kind: 'refused', why: { kind: 'unreplayed' } };
 
   const decided =
-    head === undefined ? replay.decided : decideAtHead(replay, head, schema);
+    head === undefined
+      ? replay.decided
+      : decideAtHead(replay, head.value, schema);
 
   if (!decided) return { kind: 'stale' };
 
   return {
     claims: [],
-    change: decided.change,
+    change:
+      head === undefined
+        ? decided.change
+        : keepingGapSpares(decided.change, step.before, head.gap, head.value),
     kind: 'covered',
     ...(decidesStructure(replay) ? { structure: true as const } : {}),
   };
@@ -803,13 +810,13 @@ export function grantCovers(
   step: AuthoredStep,
   grant: SyncGrant,
   schema: CompiledEditorSchema,
-  head: JsonEditorValue | undefined
+  head: SyncHead | undefined
 ): Cover | SyncAtHead;
 export function grantCovers(
   step: AuthoredStep,
   grant: SyncGrant,
   schema: CompiledEditorSchema,
-  head?: JsonEditorValue
+  head?: SyncHead
 ): Cover | SyncAtHead {
   const batch = verdictBatchOf(step.change);
 

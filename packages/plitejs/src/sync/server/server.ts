@@ -729,7 +729,12 @@ export const createSyncServer = <
     const head = gap.length > 0 ? room.value : undefined;
     const schema = getCompiledEditorSchema(room.editor);
     const cover = attempt(() =>
-      authored.covers(own, member.grant, schema, head)
+      authored.covers(
+        own,
+        member.grant,
+        schema,
+        head && { gap: accepted, value: head }
+      )
     );
     const judged =
       cover?.kind === 'at-head' || (cover?.kind === 'takes-back' && head)

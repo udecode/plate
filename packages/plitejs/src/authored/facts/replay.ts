@@ -1,12 +1,26 @@
 import {
   type DocumentChange,
   getInternalDocumentChangeRecords,
+  mapInternalDocumentChangePosition,
+  withDocumentChangeRecords,
 } from '../../core/change/document-change';
+import { DocumentIndex } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
 import type { RootChangeJson } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
-import { getValueRecords, recordStoreToJson } from '../../core/record-store';
+import { canonicalJsonKey } from '../../core/change/transform';
+import {
+  getRecordIds,
+  getValueRecords,
+  NO_RECORD_OPS,
+  recordStoreToJson,
+} from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import {
+  documentRootsOf,
+  rootChildrenOf,
+  visitElements,
+} from '../../core/unique-values';
 import type { EditorDocumentValue } from '../../interfaces/editor';
 import { decisionReadOf, isStructureMark, type Occurrence } from '../changes';
 import {
@@ -16,7 +30,13 @@ import {
   decide,
   storedDecisionSiteOf,
 } from '../decision';
-import { AUTHORED_MARKS_KEY, readMembers } from '../tree/marks';
+import {
+  AUTHORED_MARKS_KEY,
+  type ReserveMember,
+  readMembers,
+} from '../tree/marks';
+import { type SpareWrites, spareWritesChange } from '../tree/reserves';
+import { sparesIn } from '../tree/spares';
 import { settleAuthoredValue } from './admission';
 import { isEditingChange } from './editing';
 import {
@@ -215,4 +235,109 @@ export const replaysWithdrawal = (
   );
 
   return replay && replay.decided.verdicts.length === 0 ? replay.decided : null;
+};
+
+const spareKeyOf = ({ built: _built, ...spare }: ReserveMember) =>
+  canonicalJsonKey(spare);
+
+const childrenAt = (value: JsonEditorValue, root: string) =>
+  rootChildrenOf(value as EditorDocumentValue, root);
+
+export const keepingGapSpares = (
+  change: DocumentChange,
+  base: JsonEditorValue,
+  gap: readonly DocumentChange[],
+  head: JsonEditorValue
+) => {
+  const storedAtBase = new Set(getRecordIds(getValueRecords(base), RESERVES));
+  const records = getInternalDocumentChangeRecords(change);
+  const drops = records.get(RESERVES);
+  const keptDrop = ([id, json]: readonly [string, string | null]) =>
+    json !== null || storedAtBase.has(id);
+  const kept =
+    drops && ![...drops].every(keptDrop)
+      ? withDocumentChangeRecords(
+          change,
+          new Map([
+            ...records,
+            [RESERVES, new Map([...drops].filter(keptDrop))],
+          ])
+        )
+      : change;
+  const decided = kept.apply(head);
+  const containers: Array<SpareWrites['containers'][number]> = [];
+  const indexes = new Map<string, DocumentIndex>();
+
+  for (const root of documentRootsOf(head as EditorDocumentValue)) {
+    const holders: Array<
+      Readonly<{ path: readonly number[]; spares: readonly ReserveMember[] }>
+    > = [];
+
+    visitElements(childrenAt(head, root), (node, path) => {
+      const spares = sparesIn(node);
+
+      if (spares.length > 0) holders.push({ path, spares });
+    });
+    if (holders.length === 0) continue;
+
+    const baseIndex = DocumentIndex.fromValue(childrenAt(base, root));
+    const seenAt = new Map<number, ReadonlySet<string>>();
+
+    visitElements(childrenAt(base, root), (node, path) => {
+      const spares = sparesIn(node);
+
+      if (spares.length === 0) return;
+
+      let at: number | null = baseIndex.nodeRange(path).from;
+
+      for (const entry of gap) {
+        at = mapInternalDocumentChangePosition(entry, root, at, 1, 'after');
+        if (at === null) return;
+      }
+      seenAt.set(at, new Set(spares.map(spareKeyOf)));
+    });
+
+    const headIndex = DocumentIndex.fromValue(childrenAt(head, root));
+    const index = DocumentIndex.fromValue(childrenAt(decided, root));
+
+    for (const { path, spares } of holders) {
+      const { from } = headIndex.nodeRange(path);
+      const seen = seenAt.get(from);
+      const added = spares.filter((spare) => !seen?.has(spareKeyOf(spare)));
+
+      if (added.length === 0) continue;
+
+      const to = mapInternalDocumentChangePosition(
+        kept,
+        root,
+        from,
+        1,
+        'after'
+      );
+      const holder = to === null ? null : index.nodeStartingAt(to);
+
+      if (!holder || holder.from !== to || holder.kind !== 'element') continue;
+
+      const has = new Set(sparesIn(index.node(holder.path)).map(spareKeyOf));
+      const missing = added.filter((spare) => !has.has(spareKeyOf(spare)));
+
+      if (missing.length > 0) {
+        containers.push({
+          added: missing,
+          path: holder.path,
+          replaced: [],
+          root,
+        });
+      }
+    }
+    indexes.set(root, index);
+  }
+
+  return containers.length === 0
+    ? kept
+    : kept.compose(
+        spareWritesChange({ containers, records: NO_RECORD_OPS }, indexes)
+          .change,
+        head
+      );
 };

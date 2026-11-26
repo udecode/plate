@@ -86,6 +86,27 @@ const UNSET_MARKS = Object.freeze([
   Object.freeze({ key: AUTHORED_MARKS_KEY, type: 'unset' as const }),
 ]);
 
+const memberWrites = (
+  stored: readonly unknown[],
+  next: readonly unknown[]
+): readonly PropertyModification[] => {
+  const added = next.filter(
+    (member) => !stored.some((was) => jsonEqual(was, member))
+  );
+  const removed = stored.filter(
+    (member) => !next.some((kept) => jsonEqual(member, kept))
+  );
+
+  return [
+    ...(removed.length > 0
+      ? [{ key: AUTHORED_MARKS_KEY, type: 'remove' as const, values: removed }]
+      : []),
+    ...(added.length > 0
+      ? [{ key: AUTHORED_MARKS_KEY, type: 'add' as const, values: added }]
+      : []),
+  ];
+};
+
 const leafProps = (node: JsonNode) => {
   const { [AUTHORED_MARKS_KEY]: _marks, text: _text, ...props } = node;
 
@@ -382,11 +403,7 @@ const structuralChange = (
 
       if (ops[at] === 0 && jsonEqual(modeled, stored)) continue;
       ops[at] = 2;
-      if (modeled.length > 0) {
-        members.set(at, [
-          { key: AUTHORED_MARKS_KEY, type: 'set', value: modeled },
-        ]);
-      }
+      members.set(at, memberWrites(stored, modeled));
     }
   }
 

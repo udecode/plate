@@ -16,6 +16,11 @@ export type SyncStep = Readonly<{
 
 export type ChangeClaim = Readonly<{ author: string; change: string }>;
 
+export type SyncHead = Readonly<{
+  gap: readonly DocumentChange[];
+  value: JsonEditorValue;
+}>;
+
 /** The batch writes no verdict record, so the room asks again at its head. */
 export type SyncAtHead = Readonly<{ kind: 'at-head' }>;
 
@@ -74,7 +79,7 @@ export type SyncWriteCheck = {
     step: SyncStep,
     grant: SyncGrant,
     schema: CompiledEditorSchema,
-    head: JsonEditorValue | undefined
+    head: SyncHead | undefined
   ): SyncAtHead | SyncCover;
 };
 
