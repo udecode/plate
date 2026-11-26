@@ -10,6 +10,7 @@ import {
 import { isDOMElement, isDOMText } from '../../dom';
 import { ELEMENT_TO_NODE } from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import type { PliteViewBoundaryPoint } from '../view-boundary-graph';
@@ -128,7 +129,7 @@ const getDOMEditorElementForNode = (
   const element = getDOMElementForNode(node);
   const editorElement = element?.closest('[data-editor="true"]');
 
-  return editorElement instanceof HTMLElement ? editorElement : null;
+  return isDOMHTMLElement(editorElement) ? editorElement : null;
 };
 
 const getEditorFromDOMEditorElement = (

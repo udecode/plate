@@ -14,7 +14,7 @@ import {
   getPlacementGeneration,
   setShownSelectionAsView,
 } from '../../core/view-carets';
-import { getSelection } from '../../dom';
+import { getSelection, isDOMElement, isDOMText } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
 import { BROWSER_HANDLE_KEY } from '../../internal/browser-protocol';
@@ -492,12 +492,11 @@ export const attachPliteBrowserHandle = ({
       }
 
       const { anchorNode } = selection;
-      const anchorElement =
-        anchorNode && anchorNode.nodeType === Node.TEXT_NODE
-          ? anchorNode.parentElement
-          : anchorNode instanceof Element
-            ? anchorNode
-            : null;
+      const anchorElement = isDOMText(anchorNode)
+        ? anchorNode.parentElement
+        : isDOMElement(anchorNode)
+          ? anchorNode
+          : null;
       const textHost = anchorElement?.closest('[data-editor-node="text"]');
       const editorText = readRuntimeText(editor, domRange.anchor.path)?.text;
       const domText = textHost?.textContent?.replace(/\uFEFF/g, '') ?? null;

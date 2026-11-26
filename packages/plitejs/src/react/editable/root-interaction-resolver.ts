@@ -1,5 +1,6 @@
 import type { Range } from '../..';
 import { resolveDOMTargetView } from '../../dom/internal';
+import { isDOMElement, isDOMHTMLElement, isDOMNode } from '../../dom/utils/dom';
 import { MAIN_ROOT_KEY } from '../root-key';
 
 const INTERACTIVE_CHROME_TARGET =
@@ -39,10 +40,14 @@ export type RootInteractionMouseUpAction =
 export type RootInteractionSelectionMode = 'end' | 'restore';
 
 const eventTargetToElement = (target: EventTarget | null): Element | null => {
-  if (target instanceof Element) {
+  if (isDOMElement(target)) {
     return target;
   }
-  if (typeof Text !== 'undefined' && target instanceof Text) {
+  if (
+    isDOMNode(target) &&
+    (target.nodeType === target.TEXT_NODE ||
+      target.nodeType === target.CDATA_SECTION_NODE)
+  ) {
     return target.parentElement;
   }
 
@@ -56,7 +61,7 @@ const hasClosestWithin = (
 ) => {
   const match = target.closest(selector);
 
-  return match instanceof Element && currentTarget.contains(match);
+  return isDOMElement(match) && currentTarget.contains(match);
 };
 
 const findEditableRootTarget = (
@@ -65,7 +70,7 @@ const findEditableRootTarget = (
 ): HTMLElement | null => {
   const match = target.closest(EDITABLE_ROOT_TARGET);
 
-  if (match instanceof HTMLElement && currentTarget.contains(match)) {
+  if (isDOMHTMLElement(match) && currentTarget.contains(match)) {
     return match;
   }
 
@@ -96,9 +101,6 @@ const isSameRootChromeEditableSurface = ({
     (!control || !!resolveDOMTargetView(control, editableRoot))
   );
 };
-
-export const isRootInteractionEditableFocused = (target: HTMLElement) =>
-  target.ownerDocument.activeElement === target;
 
 export const resolveRootInteractionTarget = ({
   control,
@@ -160,7 +162,7 @@ export const resolveRootInteractionTarget = ({
     };
   }
 
-  if (element instanceof HTMLElement && element.matches(EDITABLE_ROOT_TARGET)) {
+  if (isDOMHTMLElement(element) && element.matches(EDITABLE_ROOT_TARGET)) {
     return {
       editableRoot: element,
       kind: 'editable-root',

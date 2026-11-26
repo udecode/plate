@@ -1,5 +1,5 @@
 import { failInvariant } from '../../internal/fail-invariant';
-import { isDOMText } from '../utils/dom';
+import { isDOMHTMLElement, isDOMText } from '../utils/dom';
 import { resolveDOMTextFlowStringOffset } from './dom-text-flow-index';
 
 const CSS_BREAK_WHITESPACE_PATTERN = /^[\t\n\f\r ]+$/;
@@ -147,10 +147,7 @@ export const PLITE_STRING_SELECTOR =
   '[data-editor-string], [data-editor-zero-width]';
 
 export const getPliteTextHostStrings = (textHost: Element): HTMLElement[] => {
-  if (
-    textHost instanceof HTMLElement &&
-    textHost.matches(PLITE_STRING_SELECTOR)
-  ) {
+  if (isDOMHTMLElement(textHost) && textHost.matches(PLITE_STRING_SELECTOR)) {
     return [textHost];
   }
   const owner = textHost.closest('[data-editor-node="text"]');

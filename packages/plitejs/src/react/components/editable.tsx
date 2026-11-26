@@ -15,7 +15,10 @@ import {
   getPliteStringPlacementDOMPoint,
 } from '../../dom/internal';
 import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
-import { getFlatTreeParentElement } from '../../dom/utils/dom';
+import {
+  getFlatTreeParentElement,
+  isDOMInputOrTextArea,
+} from '../../dom/utils/dom';
 import {
   cancelDragRest,
   clearDragScrollRepaint,
@@ -929,10 +932,7 @@ export const isEventHandled = <
  */
 export const isDOMEventTargetInput = (
   event: React.SyntheticEvent<unknown, unknown>
-) =>
-  isDOMNode(event.target) &&
-  (event.target instanceof HTMLInputElement ||
-    event.target instanceof HTMLTextAreaElement);
+) => isDOMInputOrTextArea(event.target);
 
 /**
  * Check if a DOM event is overrided by a handler.

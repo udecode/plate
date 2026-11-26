@@ -40,6 +40,8 @@ import {
   resolveDOMPointInRoot,
   watchFocusSuperseded,
 } from '../../dom/plugin/dom-editor';
+import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import {
   isGeckoDOMHost,
   usesAppleDOMHotkeys,
@@ -125,7 +127,6 @@ import {
   shouldReplayMouseUpDOMSelection,
 } from './root-interaction-dom-selection-replay';
 import {
-  isRootInteractionEditableFocused,
   type RootInteractionFocusSelection,
   type RootInteractionMouseDownAction,
   type RootInteractionMouseUpAction,
@@ -757,7 +758,10 @@ const resolveExistingSelectionProjectedDragEndpoint = ({
   getMountedViewEditor: (root: RootKey) => RootInteractionEditor | null;
 }): RootInteractionDragEndpoint | null => {
   const element = mouseEventTargetToElement(event.target);
-  const editableRoot = element?.closest<HTMLElement>('[data-editor="true"]');
+  const rawEditableRoot = element?.closest('[data-editor="true"]');
+  const editableRoot = isDOMHTMLElement(rawEditableRoot)
+    ? rawEditableRoot
+    : null;
 
   if (
     !editableRoot ||
@@ -938,9 +942,10 @@ const getEditableRootChromeCoordinatePlacement = ({
   const element = mouseEventTargetToElement(event.target);
   const isControlView = (candidate: HTMLElement) =>
     !!resolveDOMTargetView(editor, candidate);
-  const targetEditableRoot = element?.closest<HTMLElement>(
-    '[data-editor="true"]'
-  );
+  const rawTargetEditableRoot = element?.closest('[data-editor="true"]');
+  const targetEditableRoot = isDOMHTMLElement(rawTargetEditableRoot)
+    ? rawTargetEditableRoot
+    : null;
   const findCurrentTargetEditableRoot = () =>
     event.currentTarget.matches('[data-editor="true"]')
       ? event.currentTarget
@@ -948,14 +953,17 @@ const getEditableRootChromeCoordinatePlacement = ({
           ...event.currentTarget.querySelectorAll<HTMLElement>(
             '[data-editor="true"]'
           ),
-        ].find(isControlView) ?? null);
+        ].find(
+          (candidate) => isDOMHTMLElement(candidate) && isControlView(candidate)
+        ) ?? null);
   let mountedEditableRoot: HTMLElement | null = null;
 
   try {
     const mountedElement = editor.api.dom.resolveDOMNode(editor);
 
-    mountedEditableRoot =
-      mountedElement instanceof HTMLElement ? mountedElement : null;
+    mountedEditableRoot = isDOMHTMLElement(mountedElement)
+      ? mountedElement
+      : null;
   } catch {
     mountedEditableRoot = null;
   }
@@ -2148,11 +2156,11 @@ export const useRootInteractionController = ({
             : null;
         let action = resolveRootInteractionMouseDown({
           editableRootFocused: editableRoot
-            ? isRootInteractionEditableFocused(editableRoot)
+            ? isElementFocused(editableRoot)
             : undefined,
           target,
         });
-        const textFlowPressHost =
+        const rawTextFlowPressHost =
           !viewLines &&
           target.kind === 'native-editable' &&
           event.button === 0 &&
@@ -2160,10 +2168,11 @@ export const useRootInteractionController = ({
           !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) &&
           !target.target.closest('[data-editor-zero-width]') &&
           !isTapOnTextBlock(event, target.target)
-            ? target.target.closest<HTMLElement>(
-                '[data-editor-text-flow-host="true"]'
-              )
+            ? target.target.closest('[data-editor-text-flow-host="true"]')
             : null;
+        const textFlowPressHost = isDOMHTMLElement(rawTextFlowPressHost)
+          ? rawTextFlowPressHost
+          : null;
         const textFlowPressPoint =
           textFlowPressHost &&
           !isInlineElementTextFlowHost(textFlowPressHost) &&
@@ -2671,9 +2680,7 @@ export const useRootInteractionController = ({
                 writePliteViewSelection(focusEditor, null);
               }
               focusPressedView(nativeShiftWrite.editable);
-              if (
-                !isRootInteractionEditableFocused(nativeShiftWrite.editable)
-              ) {
+              if (!isElementFocused(nativeShiftWrite.editable)) {
                 nativeShiftWrite.editable.focus({ preventScroll: true });
               }
               if (!domMatches) {

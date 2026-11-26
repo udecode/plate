@@ -9,6 +9,7 @@ import {
   findDOMRootRuntime,
 } from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import { isPasteWithoutFormatting } from '../../dom/utils/hotkeys';
 import type { EditableKeyDownHandler } from '../components/editable';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
@@ -594,7 +595,7 @@ export const useRuntimeKeyboardEvents = ({
       const findNested = () => {
         const editorElement = editor.api.dom.resolveDOMNode(editor);
 
-        return editorElement instanceof HTMLElement
+        return isDOMHTMLElement(editorElement)
           ? findNestedEditable(editorElement, event.target)
           : null;
       };
@@ -602,7 +603,12 @@ export const useRuntimeKeyboardEvents = ({
         decision.targetOwner === 'internal-control' &&
         isProjectedSelectionCaptureKey(event) &&
         (() => {
-          if (findNested()) {
+          const nested = findNested();
+
+          if (nested?.kind === 'foreign') {
+            return false;
+          }
+          if (nested) {
             const shared = readRuntimeSelection(getEditorRuntimeOwner(editor));
 
             return !(

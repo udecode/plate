@@ -70,8 +70,10 @@ import {
   isAfter,
   isBefore,
   isDOMElement,
+  isDOMHTMLElement,
   isDOMNode,
   isDOMSelection,
+  isDOMTableRowElement,
   isDOMText,
   isPointBefore,
   normalizeDOMPoint,
@@ -2847,9 +2849,9 @@ const DOMEditorImpl: DOMEditorInterface = {
           );
 
           if (
-            focusNode instanceof HTMLTableRowElement &&
-            firstRange.startContainer instanceof HTMLTableRowElement &&
-            lastRange.startContainer instanceof HTMLTableRowElement
+            isDOMTableRowElement(focusNode) &&
+            isDOMTableRowElement(firstRange.startContainer) &&
+            isDOMTableRowElement(lastRange.startContainer)
           ) {
             const firstNodeRow = firstRange.startContainer;
             const lastNodeRow = lastRange.startContainer;
@@ -2877,7 +2879,7 @@ const DOMEditorImpl: DOMEditorInterface = {
               focusNode = firstNode;
             }
 
-            if (lastNode instanceof HTMLElement) {
+            if (isDOMHTMLElement(lastNode)) {
               anchorOffset = lastNode.innerHTML.length;
             } else {
               // Fallback option

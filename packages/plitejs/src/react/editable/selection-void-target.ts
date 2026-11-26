@@ -38,10 +38,9 @@ export const resolveEditableClickTarget = (
       ? target
       : null;
   const pliteHost = targetElement?.closest('[data-editor-node]');
-  const path =
-    pliteHost instanceof Element
-      ? getPliteNodePathFromDOMElement(pliteHost)
-      : null;
+  const path = isDOMElement(pliteHost)
+    ? getPliteNodePathFromDOMElement(pliteHost)
+    : null;
 
   if (path != null) {
     const liveNode = readRuntimeNode(editor, path);

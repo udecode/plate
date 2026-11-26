@@ -3,6 +3,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { RootKey } from '../..';
 import { getSelection, isDOMElement, isDOMNode, isDOMText } from '../../dom';
 import { findDOMRootRuntime } from '../../dom/internal';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import type {
   EditableHandlerContext,
   EditableKeyDownHandler,
@@ -76,7 +77,7 @@ export const findNestedEditable = (
   const nested = element?.closest('[data-editor="true"]');
 
   if (
-    !(nested instanceof HTMLElement) ||
+    !isDOMHTMLElement(nested) ||
     nested === editorElement ||
     !editorElement.contains(nested)
   ) {

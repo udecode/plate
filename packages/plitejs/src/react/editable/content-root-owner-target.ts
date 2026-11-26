@@ -1,5 +1,6 @@
 import { type Path, PathApi, type RootKey } from '../..';
 import { isDOMElement, isDOMText } from '../../dom';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { MAIN_ROOT_KEY } from '../root-key';
 import type { ContentRootOwner } from './content-root-navigation';
@@ -50,23 +51,22 @@ export const getContentRootOwnerFromTarget = ({
 
   const element = mouseEventTargetToElement(target);
   const slotElement = element?.closest('[data-editor-content-root-slot]');
-  const slotOwnerPath =
-    slotElement instanceof HTMLElement
-      ? parseContentRootOwnerPath(
-          slotElement.getAttribute('data-editor-content-root-owner-path')
-        )
-      : null;
-  const slotOwnerRoot =
-    slotElement instanceof HTMLElement
-      ? slotElement.getAttribute('data-editor-content-root-owner-root')
-      : null;
+  const htmlSlotElement = isDOMHTMLElement(slotElement) ? slotElement : null;
+  const slotOwnerPath = htmlSlotElement
+    ? parseContentRootOwnerPath(
+        htmlSlotElement.getAttribute('data-editor-content-root-owner-path')
+      )
+    : null;
+  const slotOwnerRoot = htmlSlotElement
+    ? htmlSlotElement.getAttribute('data-editor-content-root-owner-root')
+    : null;
   const ownerElement = slotElement?.parentElement?.closest(
     '[data-editor-node="element"][data-editor-path]'
   );
   const ownerEditorElement = ownerElement?.closest('[data-editor="true"]');
   const ownerPath =
     slotOwnerPath ??
-    (ownerElement instanceof HTMLElement
+    (isDOMHTMLElement(ownerElement)
       ? getPliteNodePathFromDOMElement(ownerElement)
       : null);
   const ownerRoot =

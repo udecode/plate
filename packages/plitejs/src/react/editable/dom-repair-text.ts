@@ -4,6 +4,7 @@ import {
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowOffset,
 } from '../../dom/internal';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import { getNativeTextInsertDelta } from './native-text-input-delta';
 
 export const applyTextInsert = (
@@ -77,10 +78,9 @@ export const getTextHostSelectionOffset = ({
 
   if (flowEntry) return flowEntry.offset;
 
-  const textFlowOffset =
-    textHost instanceof HTMLElement
-      ? resolveDOMTextFlowOffset(textHost, anchorNode, anchorOffset)
-      : null;
+  const textFlowOffset = isDOMHTMLElement(textHost)
+    ? resolveDOMTextFlowOffset(textHost, anchorNode, anchorOffset)
+    : null;
 
   if (textFlowOffset != null) return textFlowOffset;
 

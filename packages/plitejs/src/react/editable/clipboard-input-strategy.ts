@@ -20,7 +20,6 @@ import {
 } from '../../core/moved-anchors';
 import { toInternalRoot } from '../../core/public-root';
 import {
-  getDefaultView,
   isDOMElement,
   isDOMNode,
   isDOMText,
@@ -51,7 +50,7 @@ import {
   eventCarriesBlockFragment,
   resolveBlockFragmentDropRange,
 } from '../../dom/plugin/dom-event-range-targets';
-import { writeClipboardCut } from '../../dom/utils/dom';
+import { isDOMInputOrTextArea, writeClipboardCut } from '../../dom/utils/dom';
 import {
   beginDragSession,
   clearDragSession,
@@ -212,10 +211,9 @@ const resolveDragTarget = (editor: ReactRuntimeEditor, target: EventTarget) => {
       ? target
       : null;
   const pliteHost = targetElement?.closest('[data-editor-node]');
-  const path =
-    pliteHost instanceof Element
-      ? getPliteNodePathFromDOMElement(pliteHost)
-      : null;
+  const path = isDOMElement(pliteHost)
+    ? getPliteNodePathFromDOMElement(pliteHost)
+    : null;
 
   if (path != null) {
     const node = readRuntimeNode(editor, path);
@@ -303,16 +301,7 @@ const isClipboardEventTargetInput = ({
   event,
 }: {
   event: ClipboardEvent<HTMLDivElement>;
-}) => {
-  const { target } = event;
-  const view = getDefaultView(target) as (Window & typeof globalThis) | null;
-
-  return (
-    !!view &&
-    (target instanceof view.HTMLInputElement ||
-      target instanceof view.HTMLTextAreaElement)
-  );
-};
+}) => isDOMInputOrTextArea(event.target);
 
 const preventReadOnlyClipboardDefault = ({
   editor,

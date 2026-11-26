@@ -68,16 +68,58 @@ export const isDOMComment = (value: unknown): value is DOMComment =>
 export const isDOMElement = (value: unknown): value is DOMElement =>
   isDOMNode(value) && value.nodeType === 1;
 
+type DOMWindowConstructorKey =
+  | 'HTMLElement'
+  | 'HTMLInputElement'
+  | 'HTMLTableRowElement'
+  | 'HTMLTextAreaElement'
+  | 'Node';
+
+const isDOMInstance = (
+  value: unknown,
+  key: DOMWindowConstructorKey
+): boolean => {
+  const GlobalConstructor = globalThis[key];
+
+  if (
+    typeof GlobalConstructor === 'function' &&
+    value instanceof GlobalConstructor
+  ) {
+    return true;
+  }
+
+  const view = getDefaultView(value) as (Window & typeof globalThis) | null;
+
+  if (!view || view === globalThis) {
+    return false;
+  }
+
+  const ViewConstructor = view[key];
+
+  return (
+    typeof ViewConstructor === 'function' && value instanceof ViewConstructor
+  );
+};
+
 /**
  * Check if a value is a DOM node.
  */
 
-export const isDOMNode = (value: unknown): value is DOMNode => {
-  const window = getDefaultView(value);
-  const Node = window?.Node;
+export const isDOMNode = (value: unknown): value is DOMNode =>
+  isDOMInstance(value, 'Node');
 
-  return typeof Node === 'function' && value instanceof Node;
-};
+export const isDOMHTMLElement = (value: unknown): value is HTMLElement =>
+  isDOMInstance(value, 'HTMLElement');
+
+export const isDOMInputOrTextArea = (
+  value: unknown
+): value is HTMLInputElement | HTMLTextAreaElement =>
+  isDOMInstance(value, 'HTMLInputElement') ||
+  isDOMInstance(value, 'HTMLTextAreaElement');
+
+export const isDOMTableRowElement = (
+  value: unknown
+): value is HTMLTableRowElement => isDOMInstance(value, 'HTMLTableRowElement');
 
 /**
  * Check if a value is a DOM selection.

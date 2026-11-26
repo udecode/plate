@@ -12,7 +12,6 @@ import { withCompositionStamp } from '../../core/composition-stamp';
 import {
   getSelection,
   isDOMElement,
-  isDOMNode,
   isDOMText,
   writeDOMSelection,
 } from '../../dom';
@@ -24,6 +23,7 @@ import {
   isAndroidDOMHost,
   isWebKitDOMHost,
 } from '../../dom/internal';
+import { isDOMInputOrTextArea } from '../../dom/utils/dom';
 import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { samePliteRootPoint } from '../view-boundary-graph';
@@ -223,10 +223,7 @@ const isCompositionEventTargetInput = ({
   event,
 }: {
   event: CompositionEvent<HTMLDivElement>;
-}) =>
-  isDOMNode(event.target) &&
-  (event.target instanceof HTMLInputElement ||
-    event.target instanceof HTMLTextAreaElement);
+}) => isDOMInputOrTextArea(event.target);
 
 const isCompositionEventHandled = ({
   event,

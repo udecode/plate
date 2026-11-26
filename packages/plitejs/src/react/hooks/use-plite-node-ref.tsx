@@ -23,6 +23,7 @@ import {
   markDOMSyncMutationTarget,
   NODE_TO_ELEMENT,
 } from '../../dom/internal';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import {
   EDITOR_TO_RUNTIME_ID_TO_KEY,
   EDITOR_TO_RUNTIME_ID_TO_ELEMENTS,
@@ -415,7 +416,7 @@ const parseDOMPath = (value: string | null): Path | null => {
 export const getPliteNodePathFromDOMElement = (
   element: Element
 ): Path | null =>
-  element instanceof HTMLElement
+  isDOMHTMLElement(element)
     ? (ELEMENT_TO_PATH.get(element) ??
       parseDOMPath(element.getAttribute('data-editor-path')))
     : null;
@@ -945,7 +946,7 @@ const usePliteNodeRefBinding = (
   useIsomorphicLayoutEffect(() => {
     const element = nodeRef.current;
 
-    if (!editor || !nodeKey || !(element instanceof HTMLElement)) {
+    if (!editor || !nodeKey || !isDOMHTMLElement(element)) {
       return;
     }
     editableRuntime?.externalText.assertNativeProjection(nodeKey);

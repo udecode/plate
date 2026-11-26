@@ -29,6 +29,7 @@ import {
   setEditorDOMRootElement,
   supportsDOMBeforeInput,
 } from '../../dom/internal';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import { clearDragSession } from '../../dom/utils/drag-session';
 import { publishDropIndicator } from '../../dom/utils/drop-indicator';
 import {
@@ -439,17 +440,15 @@ const getReadOnlyDOMStringLengths = ({
   }
 
   const selection = rootElement.ownerDocument.getSelection();
-  const selectionElement =
-    selection?.anchorNode instanceof Element
-      ? selection.anchorNode
-      : selection?.anchorNode?.parentElement;
+  const selectionElement = isDOMElement(selection?.anchorNode)
+    ? selection.anchorNode
+    : selection?.anchorNode?.parentElement;
   const selectedString = selectionElement?.closest(
     '[data-editor-string="true"]'
   );
-  const selectedIndex =
-    selectedString instanceof HTMLElement
-      ? strings.indexOf(selectedString)
-      : -1;
+  const selectedIndex = isDOMHTMLElement(selectedString)
+    ? strings.indexOf(selectedString)
+    : -1;
   const fallbackIndex = strings.findIndex((string) =>
     string.textContent?.includes(
       nativeInput.data ?? failInvariant('Expected value to be defined')
@@ -477,10 +476,9 @@ const getTextHostSelectionOffset = ({
     return null;
   }
 
-  const textFlowOffset =
-    textHost instanceof HTMLElement
-      ? resolveDOMTextFlowOffset(textHost, anchorNode, anchorOffset)
-      : null;
+  const textFlowOffset = isDOMHTMLElement(textHost)
+    ? resolveDOMTextFlowOffset(textHost, anchorNode, anchorOffset)
+    : null;
 
   if (textFlowOffset != null) return textFlowOffset;
 
@@ -725,7 +723,7 @@ export const getDOMInputRepairTarget = (
       : null;
   const flowInsertTarget =
     nativeText &&
-    textHost instanceof HTMLElement &&
+    isDOMHTMLElement(textHost) &&
     anchorNode &&
     anchorOffset != null
       ? resolveDOMTextFlowInsertTarget(

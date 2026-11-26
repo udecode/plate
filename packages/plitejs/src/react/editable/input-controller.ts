@@ -19,6 +19,7 @@ import {
   getLineBoundaryKeyboardMove,
   IS_COMPOSING,
 } from '../../dom/internal';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { isSelectAllHotkey } from '../viewport-commands';
 import {
@@ -113,7 +114,7 @@ export const getDocumentBoundaryKeyboardMove = (
 const getEditorDOMElement = (editor: ReactRuntimeEditor) => {
   const node = ReactEditor.editable(editor);
 
-  return node instanceof HTMLElement ? node : null;
+  return isDOMHTMLElement(node) ? node : null;
 };
 
 export const isInteractiveInternalTarget = (
@@ -152,7 +153,7 @@ export const isInteractiveInternalTarget = (
   );
 
   return (
-    control instanceof HTMLElement &&
+    isDOMHTMLElement(control) &&
     control !== editorElement &&
     ReactEditor.hasDOMNode(editor, control)
   );
@@ -218,7 +219,7 @@ export const isNativeInternalControlTarget = (
   );
 
   return (
-    control instanceof HTMLElement &&
+    isDOMHTMLElement(control) &&
     control !== editorElement &&
     ReactEditor.hasDOMNode(editor, control) &&
     !ReactEditor.hasEditableTarget(editor, control)

@@ -16,7 +16,7 @@ import {
   getEditorCommitValue,
 } from '../../core/commit';
 import { mapSelectionThroughChange } from '../../core/selection-protocol';
-import { getSelection } from '../../dom';
+import { getSelection, isDOMElement, isDOMNode } from '../../dom';
 import type { OpenedInput } from '../../dom/utils/weak-maps';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { getParkedRange } from './dom-coverage-selection';
@@ -269,12 +269,7 @@ const captureBase = (
     const element = key && ReactEditor.resolveDOMNode(editor, key);
     const read = key && readLineSegments(editor, key);
 
-    if (
-      !key ||
-      !(element instanceof Element) ||
-      !root.contains(element) ||
-      !read
-    ) {
+    if (!key || !isDOMElement(element) || !root.contains(element) || !read) {
       return null;
     }
     const placements: AndroidCompositionDOMPlacement[] = [];
@@ -461,7 +456,7 @@ const listenForLeave = (
     if (document.visibilityState === 'hidden') end('visibility');
   };
   const onPointerDown = (event: PointerEvent) => {
-    if (!(event.target instanceof Node && root.contains(event.target))) {
+    if (!(isDOMNode(event.target) && root.contains(event.target))) {
       end('pointer');
     }
   };
@@ -911,7 +906,7 @@ export const settleAndroidCompositionBeforeInput = ({
   const [range] =
     typeof event.getTargetRanges === 'function' ? event.getTargetRanges() : [];
   const offsets =
-    line instanceof Element && range
+    isDOMElement(line) && range
       ? [
           readLineOffset(line, range.startContainer, range.startOffset),
           readLineOffset(line, range.endContainer, range.endOffset),

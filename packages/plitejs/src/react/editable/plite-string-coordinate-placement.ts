@@ -6,6 +6,7 @@ import {
   getPliteStringPlacementDOMPoint as resolvePliteStringPlacementDOMPoint,
   type PliteStringCoordinatePlacement,
 } from '../../dom/internal';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 
@@ -53,25 +54,23 @@ export const resolvePliteStringPlacementRange = ({
   editor: ReactRuntimeEditor;
   placement: NonNullable<PliteStringCoordinatePlacement>;
 }): Range | null => {
-  const textHost = placement.string.closest<HTMLElement>(
-    '[data-editor-node="text"]'
-  );
-  const path =
-    textHost instanceof HTMLElement
-      ? getPliteNodePathFromDOMElement(textHost)
-      : null;
-  const offset = textHost
+  const textHost = placement.string.closest('[data-editor-node="text"]');
+  const htmlTextHost = isDOMHTMLElement(textHost) ? textHost : null;
+  const path = htmlTextHost
+    ? getPliteNodePathFromDOMElement(htmlTextHost)
+    : null;
+  const offset = htmlTextHost
     ? placement.offset == null
       ? getPliteStringEdgeOffset({
           edge: placement.edge,
           rect: placement.rect,
           string: placement.string,
-          textHost,
+          textHost: htmlTextHost,
         })
       : getPliteStringDocumentOffset({
           offset: placement.offset,
           string: placement.string,
-          textHost,
+          textHost: htmlTextHost,
         })
     : null;
 

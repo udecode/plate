@@ -9,6 +9,7 @@ import {
   RangeApi,
 } from '../..';
 import { isDOMElement, isDOMText, usesAppleDOMHotkeys } from '../../dom';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import { getTextRunBetweenAtomics } from '../../editor/positions';
 import { getWordSegments } from '../../utils/string';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -44,7 +45,7 @@ export const isTapOnTextBlock = (
       sourceCapabilities?: { firesTouchEvents: boolean } | null;
     }
   ).sourceCapabilities?.firesTouchEvents === true &&
-  target instanceof HTMLElement &&
+  isDOMHTMLElement(target) &&
   target.isContentEditable &&
   !target.matches('[data-editor-void="true"]') &&
   target
