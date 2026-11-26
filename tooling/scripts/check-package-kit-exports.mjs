@@ -65,7 +65,7 @@ const exportedKitNames = (source) => {
   return names;
 };
 
-export const findPackageKitExports = (repoRoot) => {
+const findPackageKitExports = (repoRoot) => {
   const findings = [];
   const packagesDirectory = join(repoRoot, 'packages');
 

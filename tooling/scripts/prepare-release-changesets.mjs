@@ -79,7 +79,7 @@ function isMainModule() {
   );
 }
 
-export function getAutoReleasePackages(releases, workspacePackages) {
+function getAutoReleasePackages(releases, workspacePackages) {
   const releasedPackageNames = new Set(
     releases
       .filter((release) => release.type !== 'none')
@@ -123,10 +123,7 @@ export function getAutoReleasePackages(releases, workspacePackages) {
     }));
 }
 
-export function createAutoChangesetContent(
-  packageName,
-  updatedDependencyNames
-) {
+function createAutoChangesetContent(packageName, updatedDependencyNames) {
   return `---\n"${packageName}": patch\n---\n\nUpdated ${updatedDependencyNames
     .map((dependencyName) => `\`${dependencyName}\``)
     .join(', ')}.\n`;
@@ -209,7 +206,7 @@ function getChangesetStatus() {
   return JSON.parse(result.stdout || readFileSyncUtf8(statusOutputPath));
 }
 
-export function getChangesetStatusArgs({
+function getChangesetStatusArgs({
   env = process.env,
   outputPath = statusOutputPath,
 } = {}) {
@@ -303,8 +300,6 @@ async function readOptionalFile(filePath) {
 function sanitizePackageName(packageName) {
   return packageName.replace(scopePrefixPattern, '').replaceAll('/', '-');
 }
-
-export { autoChangesetFilenamePrefix };
 
 function readFileSyncUtf8(filePath) {
   return readFileSync(filePath, 'utf-8');

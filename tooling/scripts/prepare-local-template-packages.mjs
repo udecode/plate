@@ -512,11 +512,3 @@ function rewriteTemplatePackageJson(templateConfig, tarballsByPackageName) {
 function toPosixPath(filePath) {
   return filePath.split(path.sep).join('/');
 }
-
-export {
-  getAffectedRelevantPackageNames,
-  getContentAddressedTarballPath,
-  getPackagesToPrepare,
-  getReachableWorkspacePackageNames,
-  rewriteTemplatePackageJson,
-};

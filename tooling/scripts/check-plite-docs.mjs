@@ -733,7 +733,7 @@ function auditSlateV2Docs() {
   return failures;
 }
 
-export const unlistedFacadeNames = (source, diffs = PLATE_FACADE_DIFFS) => {
+const unlistedFacadeNames = (source, diffs = PLATE_FACADE_DIFFS) => {
   const listed = new Set(
     (source.match(inlineCodePattern) ?? []).flatMap(
       (span) => span.match(identifierPattern) ?? []
@@ -776,30 +776,3 @@ if (
 ) {
   runAudit();
 }
-
-export {
-  auditSlateV2Docs,
-  closureColumnIndexes,
-  isActionableLedgerValue,
-  isClosedLedgerValue,
-  isCurrentSchemaAdoptionDoc,
-  removedPlateNodeBagPattern,
-  basePluginExtendComponentPattern,
-  terminalComponentConversionPattern,
-  staticBaseKitReactAdapterPattern,
-  staticEditorBaseReactAdapterPattern,
-  removedPlateSchemaFlagsPattern,
-  removedRootMutationFacadePattern,
-  removedCaptionTargetOptionsPattern,
-  removedExplicitPluginGenericPattern,
-  removedPluginApiPortalPattern,
-  removedPluginValidationPattern,
-  removedLoosePluginPortalSignaturePattern,
-  removedPlatePluginShapePattern,
-  removedDefinitionAliasNamePattern,
-  removedGenericDependencyReferencePattern,
-  removedInternalDependencyTypePattern,
-  removedZeroArgumentReactPattern,
-  removedStaticCapabilityPattern,
-  removedSchemaTargetOptionsPattern,
-};

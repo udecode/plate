@@ -119,7 +119,7 @@ function exampleRoutes(root, items) {
   return [...routes].map(([route, name]) => ({ name, route }));
 }
 
-export async function sessionPages(
+async function sessionPages(
   root,
   {
     betaOnly = BETA_ONLY,
@@ -192,7 +192,7 @@ export async function sessionPages(
   );
 }
 
-export async function healthRoutes(root) {
+async function healthRoutes(root) {
   const registry = await pliteRegistry(root);
   const { items, pages, previews } = readSources(root);
   const editorPages = new Set(

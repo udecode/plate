@@ -373,15 +373,3 @@ function removeRetiredDependencies(packageJson) {
 
   return removedDependencyNames;
 }
-
-export {
-  containsRetiredPackageReference,
-  finalizeTemplateRefresh,
-  isRetiredPackageName,
-  normalizeCssImports,
-  prepareTemplateRefresh,
-  removeGeneratedSources,
-  removeTemporaryBiomeOverrides,
-  removeRetiredDependencies,
-  syncTooltipProvider,
-};

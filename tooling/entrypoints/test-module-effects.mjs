@@ -160,20 +160,9 @@ export const testModuleEffects = {
   },
   'packages/test/test/node/web-inspector.test.ts':
     'runs plutil on the messages it builds and listens on a socket in a temporary folder it removes',
-  'packages/test/test/proof/mobile-device-proof-command.test.ts': {
-    reads: ['package.json'],
-    runs: ['tooling/plite/donor/proof/mobile-device-proof.mjs'],
-  },
-  'packages/test/test/proof/package-scripts.test.ts': {
-    reads: ['packages/test/package.json'],
-  },
   'tooling/config/bunTestSetup.ts':
     'reads only the www modules Bun is loading, which the trace records, and reads the module registry without changing it',
   'tooling/config/load-trace-preload.ts':
     'reads the module registry and writes the load trace',
   'tooling/config/vitest-load-trace.mjs': 'writes the load trace',
-  'tooling/plite/donor/proof/mobile-device-proof.mjs': {
-    reads: ['test-results/release-proof/**'],
-    runs: ['packages/test/src/proof/index.ts'],
-  },
 };

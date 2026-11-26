@@ -21,7 +21,7 @@ function isMainModule() {
   );
 }
 
-export function getPublishedPackageTags(value) {
+function getPublishedPackageTags(value) {
   let packages;
 
   try {

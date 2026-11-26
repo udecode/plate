@@ -418,18 +418,13 @@
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/config/plite-test-jsx.js",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/package.json",
         "$TURBO_ROOT$/packages/*/package.json",
         "$TURBO_ROOT$/packages/platejs/tsconfig.json",
         "$TURBO_ROOT$/packages/plitejs/tsconfig.json",
-        "$TURBO_ROOT$/packages/test/package.json",
-        "$TURBO_ROOT$/packages/test/src/proof/index.ts",
         "$TURBO_ROOT$/packages/test/tsconfig.json",
-        "$TURBO_ROOT$/test-results/release-proof/**",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
         "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
         "$TURBO_ROOT$/tooling/config/withoutUnaskedIds.ts",
-        "$TURBO_ROOT$/tooling/plite/donor/proof/mobile-device-proof.mjs",
         "$TURBO_ROOT$/tsconfig.json",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/config/test-suites.mjs",
@@ -455,7 +450,6 @@
         "platejs#source-hash:partition:react",
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
-        "source-hash:partition:playwright",
         "source-hash:partition:react"
       ],
       "inputs": [
@@ -501,7 +495,6 @@
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
         "source-hash:partition:device",
-        "source-hash:partition:playwright",
         "source-hash:partition:root"
       ],
       "inputs": [

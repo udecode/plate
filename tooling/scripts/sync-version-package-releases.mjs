@@ -110,7 +110,7 @@ function parseArgs(args) {
   return options;
 }
 
-export function filterReleasesFromVersion(releases, fromVersion) {
+function filterReleasesFromVersion(releases, fromVersion) {
   if (!fromVersion) return releases;
 
   return releases.filter(
@@ -180,14 +180,14 @@ async function readGitHubReleaseUrls(tags) {
   }
 }
 
-export function filterMergedVersionPackagePullRequests(pullRequests) {
+function filterMergedVersionPackagePullRequests(pullRequests) {
   return pullRequests.filter(
     (pullRequest) =>
       isVersionPackagesPullRequest(pullRequest) && pullRequest.mergedAt
   );
 }
 
-export function parseVersionPackagesPullRequest(pullRequest) {
+function parseVersionPackagesPullRequest(pullRequest) {
   if (!isVersionPackagesPullRequest(pullRequest)) return [];
 
   const releasesBody = extractReleasesBody(pullRequest.body ?? '');
@@ -249,7 +249,7 @@ function groupPackageChangesByVersion(packageChanges) {
   return packageChangesByVersion;
 }
 
-export function mergeReleases(
+function mergeReleases(
   existingReleases,
   nextReleases,
   { releaseUrlsByTag = new Map() } = {}

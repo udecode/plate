@@ -75,7 +75,7 @@ export const getRenderedBlockDOMShapes = async (
       });
   });
 
-export const getRenderedBlockDOMShape = async (
+const getRenderedBlockDOMShape = async (
   root: EditorRoot,
   blockIndex: number
 ): Promise<RenderedBlockDOMShapeSnapshot> => {

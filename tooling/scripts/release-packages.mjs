@@ -18,7 +18,7 @@ const hiddenPrePath = path.join(
   '.changeset/pre.json.beta-publish-backup'
 );
 
-export function resolveReleaseChannel({
+function resolveReleaseChannel({
   argv = process.argv.slice(2),
   env = process.env,
 } = {}) {
@@ -45,7 +45,7 @@ export function resolveReleaseChannel({
   return 'latest';
 }
 
-export function getReleasePlan(channel) {
+function getReleasePlan(channel) {
   if (channel === 'beta') {
     return {
       build: ['pnpm', ['build']],
@@ -64,7 +64,7 @@ export function getReleasePlan(channel) {
   throw new Error(`Unsupported release channel: ${channel}`);
 }
 
-export function isPublishDisabled({ env = process.env } = {}) {
+function isPublishDisabled({ env = process.env } = {}) {
   return env.PLATE_DISABLE_PUBLISH === 'true';
 }
 

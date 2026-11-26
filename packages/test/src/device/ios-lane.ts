@@ -65,7 +65,7 @@ const IOS_DELETE_LABELS: Record<string, DeviceLanguage> = {
   删除: 'zh',
 };
 
-export const iosKeyboardLanguage = (
+const iosKeyboardLanguage = (
   deleteLabel: string | undefined
 ): DeviceLanguage | null =>
   deleteLabel && Object.hasOwn(IOS_DELETE_LABELS, deleteLabel)

@@ -44,7 +44,7 @@ const collectSourceDeclarations = (repoRoot, directory, declarations) => {
   }
 };
 
-export const findSourceDeclarationLeaks = (repoRoot) => {
+const findSourceDeclarationLeaks = (repoRoot) => {
   const declarations = [];
   const packagesDirectory = join(repoRoot, 'packages');
 
@@ -61,7 +61,7 @@ export const findSourceDeclarationLeaks = (repoRoot) => {
     .sort(compareStrings);
 };
 
-export const assertNoSourceDeclarationLeaks = (repoRoot) => {
+const assertNoSourceDeclarationLeaks = (repoRoot) => {
   const leaks = findSourceDeclarationLeaks(repoRoot);
 
   if (leaks.length > 0) {
@@ -73,7 +73,7 @@ export const assertNoSourceDeclarationLeaks = (repoRoot) => {
   }
 };
 
-export const resolveSourceDeclarationRepoRoot = () =>
+const resolveSourceDeclarationRepoRoot = () =>
   resolve(fileURLToPath(new URL('../..', import.meta.url)));
 
 const main = () => {

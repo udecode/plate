@@ -21,7 +21,7 @@ export const releaseNotePrefixes = [
 const upToOneWordBetween = '([^a-z0-9]+[a-z0-9]+)?[^a-z0-9]*';
 const wholeRepository = ':/';
 
-export const termPattern = (term) => {
+const termPattern = (term) => {
   if (/\P{ASCII}/u.test(term) || !/[A-Za-z0-9]/.test(term)) {
     throw new Error(`"${term}" is not an ASCII API name`);
   }
@@ -41,7 +41,7 @@ const twinOf = (path) =>
     ? path.replace(/\.mdx$/, '.cn.mdx')
     : null;
 
-export const sweep = ({ cwd = process.cwd(), rev, terms }) => {
+const sweep = ({ cwd = process.cwd(), rev, terms }) => {
   const patterns = terms.flatMap((term) => ['-e', termPattern(term)]);
   const git = (args) =>
     spawnSync('git', args, {
