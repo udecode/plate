@@ -1,7 +1,7 @@
 import type { NodeKey } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import { profileCoreDuration } from '../profiling';
-import { alike, storedElementIdOf } from '../stored-element-id';
+import { alike, misreadsIds, storedElementIdOf } from '../stored-element-id';
 import { assertEditorJsonValue } from '../value-codec';
 import { countCoreWork } from '../work';
 import {
@@ -3093,9 +3093,12 @@ const mergeStructuralChangeAtStableSiblingRange = (
         );
   }
 
+  const paired = afterConcurrent.value.slice(match, match + source.length);
   const merged = [...afterConcurrent.value];
 
   merged.splice(match, source.length, ...replacement);
+
+  if (tail === alike && misreadsIds(merged, paired, left)) return null;
 
   const document = DocumentIndex.fromValue(merged);
 
@@ -3172,14 +3175,9 @@ const mergeNestedChangeThroughStructuralRelocation = (
       continue;
     }
 
-    const exactTargets = afterNodes.filter(({ node }) =>
+    const targets = afterNodes.filter(({ node }) =>
       jsonEqual(node, candidate.node)
     );
-    const equal = exactTargets.length > 0 ? jsonEqual : alike;
-    const targets =
-      exactTargets.length > 0
-        ? exactTargets
-        : afterNodes.filter(({ node }) => alike(node, candidate.node));
 
     if (targets.length !== 1) continue;
 
@@ -3214,7 +3212,7 @@ const mergeNestedChangeThroughStructuralRelocation = (
     if (
       edited.length === 0 ||
       (at !== end && index < siblings.length) ||
-      edited.some((node) => equal(node, candidate.node))
+      edited.some((node) => jsonEqual(node, candidate.node))
     ) {
       continue;
     }

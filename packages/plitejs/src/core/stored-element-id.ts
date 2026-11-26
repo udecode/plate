@@ -11,6 +11,31 @@ export const storedElementIdOf = (node: JsonNode): string | undefined => {
   return typeof id === 'string' ? id : undefined;
 };
 
+const storedIds = (nodes: readonly JsonNode[], ids: string[] = []) => {
+  for (const node of nodes) {
+    const id = storedElementIdOf(node);
+
+    if (id !== undefined) ids.push(id);
+    if (isElementNode(node)) storedIds(node.children, ids);
+  }
+
+  return ids;
+};
+
+export const misreadsIds = (
+  merged: readonly JsonNode[],
+  paired: readonly JsonNode[],
+  known: readonly JsonNode[]
+) => {
+  const ids = storedIds(merged);
+  const knownIds = new Set(storedIds(known));
+
+  return (
+    new Set(ids).size < ids.length ||
+    storedIds(paired).some((id) => !knownIds.has(id))
+  );
+};
+
 export const withoutStoredElementId = (
   props: Readonly<JsonRecord>
 ): Readonly<JsonRecord> => {
