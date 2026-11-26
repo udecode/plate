@@ -13164,6 +13164,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/field:FieldAnswer": {
+          "aliases": [],
+          "documentation": "One named question's answer as `readFieldAnswers` reads it from a saved\ndocument. Check `'problem' in answer` first, then narrow on `kind` to read\n`value`. A name whose fields agree on no answer, or on a stored value that\ndoes not fit its kind, omits `value`.",
+          "entrypoint": "platejs/field",
+          "kind": "type",
+          "name": "FieldAnswer",
+          "runtime": false,
+          "signature": "type FieldAnswer = Readonly<{\n  kind: 'checkbox';\n  value?: boolean;\n}> | Readonly<{\n  kind: 'choice' | 'date' | 'signature' | 'text';\n  value?: string;\n}> | Readonly<{\n  kind: 'number';\n  value?: number;\n}> | Readonly<{\n  kind: FieldKind;\n  problem: 'answer-conflict';\n}> | Readonly<{\n  problem: 'name-conflict';\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/field:FieldApplyResult": {
           "aliases": [],
           "documentation": "The filled document, or the refusals. `pending` lists each role that has not\nsubmitted and holds a required field that applies or waits, and the role\nwhose answer each such waiting field needs next.",
@@ -13276,6 +13287,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/field:fieldSubmission": {
+          "aliases": [],
+          "documentation": "Map a record of answers keyed by field `name` into one role's\n`FieldSubmission`, keyed by `fieldId`. Each field of `role` whose `name` is\nan own key of `values` receives that key's value, except `null` and\n`undefined`, which leave the field out. Other keys are ignored. Malformed\nnodes are skipped, and a duplicated `fieldId` maps from its first holder.\n`type` names the field element's type when the app renamed it with\n`schema.override`.",
+          "entrypoint": "platejs/field",
+          "kind": "function",
+          "name": "fieldSubmission",
+          "runtime": true,
+          "signature": "declare function fieldSubmission(template: EditorDocumentValue | Value, role: string, values: Readonly<Record<string, FieldValue | null | undefined>>, options?: Readonly<{\n  type?: string;\n}>): FieldSubmission;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/field:FieldSubmission": {
           "aliases": [],
           "documentation": "One role's field values, keyed by `fieldId`.",
@@ -13328,6 +13350,17 @@
           "name": "fitsField",
           "runtime": true,
           "signature": "fitsField: ({ kind, options }: FieldShape, value: unknown) => value is FieldValue",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/field:readFieldAnswers": {
+          "aliases": [],
+          "documentation": "Read each role's named field answers from a saved document, grouped by role\nand field `name` in records with no prototype. A name whose fields' settings\ndiffer reads as `{ problem: 'name-conflict' }`, and otherwise one whose\nstored values differ reads as `{ kind, problem: 'answer-conflict' }`. Fields\nthat agree read as `{ kind, value }` when the value fits `kind`, and as\n`{ kind }` when they hold no value or an unfit one. Unnamed fields and\nmalformed nodes are skipped, and a duplicated `fieldId` reads from its first\nholder. `type` names the field element's type when the app renamed it with\n`schema.override`.",
+          "entrypoint": "platejs/field",
+          "kind": "function",
+          "name": "readFieldAnswers",
+          "runtime": true,
+          "signature": "declare function readFieldAnswers(document: EditorDocumentValue | Value, options?: Readonly<{\n  type?: string;\n}>): Readonly<Record<string, Readonly<Record<string, FieldAnswer>>>>;",
           "source": null,
           "typeParameters": []
         },

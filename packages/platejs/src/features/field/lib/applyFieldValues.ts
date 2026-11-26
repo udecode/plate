@@ -1,8 +1,10 @@
 import type { EditorDocumentValue, Path, Value } from '../../../facade';
 import type {
   FieldElement,
+  FieldKind,
   FieldProblem,
   FieldSubmission,
+  FieldValue,
 } from './BaseFieldPlugin';
 import {
   fieldProblems,
@@ -84,6 +86,22 @@ export type FieldApplyResult<D extends EditorDocumentValue | Value> =
       ok: false;
       refusals: readonly [FieldRefusal, ...FieldRefusal[]];
     }>;
+
+/**
+ * One named question's answer as `readFieldAnswers` reads it from a saved
+ * document. Check `'problem' in answer` first, then narrow on `kind` to read
+ * `value`. A name whose fields agree on no answer, or on a stored value that
+ * does not fit its kind, omits `value`.
+ */
+export type FieldAnswer =
+  | Readonly<{ kind: 'checkbox'; value?: boolean }>
+  | Readonly<{
+      kind: 'choice' | 'date' | 'signature' | 'text';
+      value?: string;
+    }>
+  | Readonly<{ kind: 'number'; value?: number }>
+  | Readonly<{ kind: FieldKind; problem: 'answer-conflict' }>
+  | Readonly<{ problem: 'name-conflict' }>;
 
 type Place = Readonly<{
   node: Readonly<Record<string, unknown>>;
@@ -178,6 +196,54 @@ const fillNode = (
   return children === node.children ? node : { ...node, children };
 };
 
+const readDocumentFields = (
+  input: EditorDocumentValue | Value,
+  type: string
+) => {
+  const document: EditorDocumentValue = isChildren(input)
+    ? { children: input }
+    : input;
+  const roots = Object.entries(document.roots ?? {});
+  const places = [
+    ...placesIn(document.children, type, undefined),
+    ...roots.flatMap(([root, nodes]) => placesIn(nodes, type, root)),
+  ];
+  const first = new Map<string, Place>();
+
+  for (const place of places) {
+    const { fieldId } = place.node;
+
+    if (typeof fieldId === 'string' && !first.has(fieldId)) {
+      first.set(fieldId, place);
+    }
+  }
+
+  const held = new Map<string, FieldElement>();
+
+  for (const [fieldId, { node }] of first) {
+    if (isWellFormed(node)) held.set(fieldId, node);
+  }
+
+  return { document, first, held, places, roots };
+};
+
+const answerOf = (field: FieldElement): FieldAnswer => {
+  const { kind, value } = field;
+  const valid = fitsField(field, value);
+
+  switch (kind) {
+    case 'checkbox': {
+      return valid && typeof value === 'boolean' ? { kind, value } : { kind };
+    }
+    case 'number': {
+      return valid && typeof value === 'number' ? { kind, value } : { kind };
+    }
+    default: {
+      return valid && typeof value === 'string' ? { kind, value } : { kind };
+    }
+  }
+};
+
 /**
  * Check each role's answers against a frozen template and build the filled
  * document from the answers alone. `type` names the field element's type when
@@ -202,29 +268,10 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
   options?: Readonly<{ type?: string }>
 ): FieldApplyResult<D extends Value ? Value : EditorDocumentValue> {
   const type = options?.type ?? 'field';
-  const document: EditorDocumentValue = isChildren(template)
-    ? { children: template }
-    : template;
-  const roots = Object.entries(document.roots ?? {});
-  const places = [
-    ...placesIn(document.children, type, undefined),
-    ...roots.flatMap(([root, nodes]) => placesIn(nodes, type, root)),
-  ];
-  const first = new Map<string, Place>();
-
-  for (const place of places) {
-    const { fieldId } = place.node;
-
-    if (typeof fieldId === 'string' && !first.has(fieldId)) {
-      first.set(fieldId, place);
-    }
-  }
-
-  const held = new Map<string, FieldElement>();
-
-  for (const [fieldId, { node }] of first) {
-    if (isWellFormed(node)) held.set(fieldId, node);
-  }
+  const { document, first, held, places, roots } = readDocumentFields(
+    template,
+    type
+  );
 
   const lookup = (fieldId: string) => held.get(fieldId);
   const fields = [...held.values()];
@@ -411,4 +458,88 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
     ok: true,
     pending: roles.filter((role) => pending.has(role)),
   };
+}
+
+/**
+ * Map a record of answers keyed by field `name` into one role's
+ * `FieldSubmission`, keyed by `fieldId`. Each field of `role` whose `name` is
+ * an own key of `values` receives that key's value, except `null` and
+ * `undefined`, which leave the field out. Other keys are ignored. Malformed
+ * nodes are skipped, and a duplicated `fieldId` maps from its first holder.
+ * `type` names the field element's type when the app renamed it with
+ * `schema.override`.
+ */
+export function fieldSubmission(
+  template: EditorDocumentValue | Value,
+  role: string,
+  values: Readonly<Record<string, FieldValue | null | undefined>>,
+  options?: Readonly<{ type?: string }>
+): FieldSubmission {
+  const { held } = readDocumentFields(template, options?.type ?? 'field');
+  const mapped: Record<string, FieldValue> = Object.create(null);
+
+  for (const field of held.values()) {
+    if (
+      field.role !== role ||
+      field.name === undefined ||
+      !Object.hasOwn(values, field.name)
+    ) {
+      continue;
+    }
+
+    const value = values[field.name];
+
+    if (value !== null && value !== undefined) {
+      mapped[field.fieldId] = value;
+    }
+  }
+
+  return { role, values: mapped };
+}
+
+/**
+ * Read each role's named field answers from a saved document, grouped by role
+ * and field `name` in records with no prototype. A name whose fields' settings
+ * differ reads as `{ problem: 'name-conflict' }`, and otherwise one whose
+ * stored values differ reads as `{ kind, problem: 'answer-conflict' }`. Fields
+ * that agree read as `{ kind, value }` when the value fits `kind`, and as
+ * `{ kind }` when they hold no value or an unfit one. Unnamed fields and
+ * malformed nodes are skipped, and a duplicated `fieldId` reads from its first
+ * holder. `type` names the field element's type when the app renamed it with
+ * `schema.override`.
+ */
+export function readFieldAnswers(
+  document: EditorDocumentValue | Value,
+  options?: Readonly<{ type?: string }>
+): Readonly<Record<string, Readonly<Record<string, FieldAnswer>>>> {
+  const { held } = readDocumentFields(document, options?.type ?? 'field');
+  const lookup = (fieldId: string) => held.get(fieldId);
+  const names = indexFieldNames([...held.values()]);
+  const byRole: Record<string, Record<string, FieldAnswer>> = Object.create(
+    null
+  );
+
+  for (const [role, roleNames] of names.byRole) {
+    const answers: Record<string, FieldAnswer> = Object.create(null);
+
+    for (const [name, fieldIds] of roleNames) {
+      const member = held.get(fieldIds[0]);
+
+      if (!member) continue;
+
+      const problems = nameProblems(member, names, lookup);
+
+      if (problems.includes('name-conflict')) {
+        answers[name] = { problem: 'name-conflict' };
+      } else if (problems.includes('answer-conflict')) {
+        answers[name] = { kind: member.kind, problem: 'answer-conflict' };
+      } else {
+        answers[name] = answerOf(member);
+      }
+    }
+
+    byRole[role] = answers;
+  }
+
+  return byRole;
 }
