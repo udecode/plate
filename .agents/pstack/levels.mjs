@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Lists each stretch of a decision log that ran below this session's level or
 // the configured seats: a lead stretch on a lower effort, another model or a
-// Codex lead, and a panel or arena round with a seat missing or on
-// a lower effort. The configured seats come from the runtime's models sheet;
+// Codex lead, a panel or arena round with a seat missing or on a lower
+// effort, and a co-lead on another model or a lower effort than the Claude
+// Code sheet's co-lead line. The configured seats come from the runtime's models sheet;
 // a `<seat> @<effort>` that a project rule outside the pstack block names
 // replaces that seat's effort, the highest one when it names several. The
 // `maxEffort` in `.agents/pstack.json` caps every target, and is the target of
@@ -10,7 +11,7 @@
 // Installed by sync-pstack.
 // Usage: node .agents/pstack/levels.mjs [--lead '<model> @<effort>'] [--seats '<seat list>'] <decision log>...
 //        (--lead judges against that level instead of this session's;
-//        --seats replaces the configured seats of every round)
+//        --seats replaces the configured seats of every panel and arena round)
 
 import { existsSync, readFileSync } from 'node:fs';
 import { capEffort, EFFORTS, findLead, maxEffort, effectiveModelsSheet } from './lead.mjs';
@@ -23,8 +24,9 @@ const REFUSING = new Set(['codex', 'gemini']);
 // A sheet names `opus` where a row may name `claude-opus-5-5`; both are the Opus seat.
 const seatKey = (model) => model.replace(/^(?:codex|agy):/u, '').replace(/^claude-([a-z]+)-.*$/u, '$1');
 const ROUNDS = {
-  panel: { opens: /^seats\b/u, role: 'interrogate reviewers' },
-  arena: { opens: /^runners\b/u, role: 'arena runners' },
+  panel: { opens: /^seats\b/u, role: 'interrogate reviewers', sheet: 'runtime' },
+  arena: { opens: /^runners\b/u, role: 'arena runners', sheet: 'runtime' },
+  colead: { opens: /./u, role: 'co-lead', sheet: 'claude' },
 };
 const BLOCK = /<!-- pstack:begin[\s\S]*?<!-- pstack:end -->/gu;
 
@@ -123,8 +125,8 @@ function levelUnits(text, lead, seatsFor) {
     stretch.to = at;
     const round = ROUNDS[phase];
     if (!round?.opens.test(decision)) return;
-    const wanted = seatsFor(round.role);
-    if (!wanted) throw new Error(`the models sheet has no "${round.role}:" line, so line ${at} cannot be judged; pass --seats`);
+    const wanted = seatsFor[round.sheet](round.role);
+    if (!wanted) throw new Error(`the ${round.sheet === 'claude' ? 'Claude Code ' : ''}models sheet has no "${round.role}:" line, so line ${at} cannot be judged${round.sheet === 'claude' ? '' : '; pass --seats'}`);
     const seats = roundSeats(decision);
     rounds.push({ kind: phase, label: seats.map(seatLabel).join(', '), from: at, to: at, gap: roundGap(seats, wanted) });
   });
@@ -165,8 +167,11 @@ function main(argv) {
   const sheetEffort = sheet?.match(/^default effort:\s*(\w+)/mu)?.[1];
   const defaultEffort = !sheetEffort || sheetEffort === 'session' ? run.effort : sheetEffort;
   const agents = existsSync('AGENTS.md') ? readFileSync('AGENTS.md', 'utf8') : null;
-  const seatsFor = targets(sheet, agents, defaultEffort, flags.seats, max);
-  const panel = seatsFor(ROUNDS.panel.role);
+  const seatsFor = {
+    runtime: targets(sheet, agents, defaultEffort, flags.seats, max),
+    claude: targets(effectiveModelsSheet('claude').text, agents, defaultEffort, null, max),
+  };
+  const panel = seatsFor.runtime(ROUNDS.panel.role);
   const out = [`target: lead ${run.model} @${run.effort}${panel ? `; seats ${panel.map(seatLabel).join(', ')}` : ''}${max ? `; maxEffort ${max}` : ''}`];
   let below = 0;
   let total = 0;

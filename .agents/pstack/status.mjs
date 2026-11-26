@@ -122,6 +122,13 @@ export function stepRecords(top, config, gitAt, files) {
   return records;
 }
 
+export function budgetedStep(top, config, gitAt) {
+  const step = stepLines(top, config, gitAt);
+  if (!step) return null;
+  const records = stepRecords(top, config, gitAt, step.files);
+  return records?.planned && !records.logs.some((log) => liftsStep(readFileSync(log, 'utf8'))) ? step : null;
+}
+
 const LANDED = ['done', 'complete', 'completed', 'shipped', 'executed', 'implemented', 'fixed', 'released', 'merged', 'verified', 'landed'];
 
 export const STATES = {

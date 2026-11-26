@@ -565,10 +565,8 @@ function budgetDenial(status, mainConfig, file, cwd, input) {
   const budget = status.stepBudget(config);
   const name = relative(top, path).split(sep).join('/');
   if (budget.excluded(name) || GIT_RULE_FILES.has(basename(name)) || git(top, 'check-ignore', '-q', '--', name) !== null) return null;
-  const step = status.stepLines(top, config, git);
+  const step = status.budgetedStep(top, config, git);
   if (!step) return null;
-  const records = status.stepRecords(top, config, git, step.files);
-  if (!records?.planned || records.logs.some((log) => status.liftsStep(readFileSync(log, 'utf8')))) return null;
   const text = editedText(input.tool_name, input.tool_input, path);
   const edited = text === null ? null : stepWithEdit(status, top, config, step, name, text);
   if (text !== null && edited === null) return null;

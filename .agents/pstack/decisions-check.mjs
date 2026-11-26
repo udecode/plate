@@ -145,7 +145,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
-import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
+import { EFFORTS, findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { parsePlan } from './plan-page.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, LEDGER_REF, ledgerPath, lockLedger, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, REFUSED, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, syncLedger, withoutPlannedWrites } from './tasks.mjs';
 import { acceptedWord, bigStepId, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isBigStep, isHandOffReview, liftsStep, NAMED_STEP_END, NAMED_STEP_ID, NOT_PASSED, overBudget, plansOf, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STATUSES, statusOf, STEP_CLOSED, STEP_ID as LOGGED_STEP_ID, stepBudget, stepLines, stepRecords, tidy } from './status.mjs';
@@ -153,6 +153,7 @@ import { acceptedWord, bigStepId, bracketSeats, committedLines, decisionLogs, de
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
 const CELLS = ['phase', 'decision', 'why', 'evidence', 'result'];
+const COLEAD = new RegExp(`^(?:(?:agy|codex):)?[a-z][\\w.-]* @(?:${EFFORTS.join('|')})$`, 'u');
 
 const opens = (line) => {
   const [, phase, decision = ''] = line.split('\t');
@@ -507,6 +508,7 @@ function rowProblems(line, where, roster, chips) {
     }
   }
   if (rest[0] === 'panel' && SEATS.test(rest[1])) found.push(...skippedClaudeSeats(rest[1], where));
+  if (rest[0] === 'colead' && !COLEAD.test(rest[1])) found.push(`${where}: a colead row's decision is only the co-lead's model and effort, such as agy:gemini-4-neon @xhigh, or opus @high after a fallback`);
   if (rest[0] !== 'panel' && isRecorded(rest)) found.push(...recordedProblems('critical', rest, where));
   if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) {
     found.push(`${where}: ${/^[aeiou]/u.test(status) ? 'an' : 'a'} ${status} result belongs only in a chip row; a run's log records the same step as applied, decided, fixed or verified`);

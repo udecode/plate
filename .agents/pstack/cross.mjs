@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { browserLaunch } from './codex-browser.mjs';
 import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
 import { capEffort, claudeSessionRun, claudeTranscript, maxEffort } from './lead.mjs';
+import { budgetedStep, overBudget, stepBudget } from './status.mjs';
 
 export const MODELS = { claude: 'opus', codex: 'gpt-6.2-sol', agy: 'gemini-4-neon' };
 
@@ -45,6 +46,7 @@ export const GIVE_UP_MS = 3000;
 // process that inherited the seat's mark also counts as the seat's. macOS
 // hides the environment of its own signed binaries, such as sleep.
 const SEAT_MARK = 'PSTACK_SEAT';
+export const envOutlivingSeat = ({ [SEAT_MARK]: _, ...env }) => env;
 
 function markedProcesses(seat) {
   const mark = `${SEAT_MARK}=${seat}`;
@@ -184,8 +186,19 @@ const agyConversation = (stdout) => {
 };
 
 const COLEAD_TIMEOUT_SECONDS = 3300;
-const coleadBrief = (worktree, prompt) =>
-  `${prompt}\n\nYou are the co-lead of this run. Your working directory ${worktree} is the lead's worktree: write only there, in the run directory the brief names and in a detached worktree you add for a base control the brief asks for. Never commit, push, open a PR, post anywhere or change another checkout's tracked files, because the lead reviews and lands your work. The project's rules on code, tests and proof bind you. Its rules on plans, reviews, writing passes, landing, messages and missing pstack skills are the lead's duties, not yours. Put your whole answer in your final message, and name each file you changed.`;
+const coleadBrief = (worktree, prompt, step) =>
+  `${prompt}\n\n${step ? `This worktree's change since ${step.base} builds a plan step and counts ${step.product} of the step budget's ${step.budget} product lines. Tests, fixtures, docs and plans do not count. Stop before the budget, and say where the step would split. ` : ''}You are the co-lead of this run. Your working directory ${worktree} is the lead's worktree: write only there, in the run directory the brief names and in a detached worktree you add for a base control the brief asks for. Never commit, push, open a PR, post anywhere or change another checkout's tracked files, because the lead reviews and lands your work. The project's rules on code, tests and proof bind you. Its rules on plans, reviews, writing passes, landing, messages and missing pstack skills are the lead's duties, not yours. This call returns only once every background task you started has ended. So start a dev server or any other process that never exits on its own with its output in a file, poll it until it is ready, and never wait for its task to end. Before your final message, kill every task you started and remove each file you added only for a probe or a control. Leave a booted emulator or simulator running, because other runs share it. Put your whole answer in your final message, and name each file you changed.`;
+const gitOut = (dir, ...args) => {
+  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', maxBuffer: 1 << 28 });
+  return run.status === 0 ? run.stdout.replace(/\n$/u, '') : null;
+};
+const coleadBudget = (worktree) => {
+  const own = join(worktree, '.agents/pstack.json');
+  if (!existsSync(own)) return null;
+  const config = JSON.parse(readFileSync(own, 'utf8'));
+  const step = budgetedStep(worktree, config, gitOut);
+  return step && { ...step, budget: stepBudget(config).lines };
+};
 const gitLines = (dir, args) => {
   const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8' });
   return run.status === 0 ? run.stdout.trim().split('\n') : null;
@@ -234,7 +247,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : (colead ?? cwd);
   // A Firefox or WebKit crash in the sandbox puts a crash dialog on the owner's screen.
   if (reach) prompt = scratchBrief(cwd, 'Your sandbox cannot run a browser, because Chromium, Firefox and WebKit die there as they start, so never start or drive one, through Playwright or any other tool.', prompt);
-  if (runtime === 'agy') prompt = colead ? coleadBrief(colead, prompt) : scratchBrief(cwd, "Every shell command you run stays in agy's sandbox. Never ask to run one outside it, even when the sandbox blocks the network, and never write outside the scratch folder, because either request ends your run with no answer. Never start or drive a browser, through Playwright, your browser tools or any other tool.", prompt);
+  if (runtime === 'agy') prompt = colead ? coleadBrief(colead, prompt, coleadBudget(colead)) : scratchBrief(cwd, "Every shell command you run stays in agy's sandbox. Never ask to run one outside it, even when the sandbox blocks the network, and never write outside the scratch folder, because either request ends your run with no answer. Never start or drive a browser, through Playwright, your browser tools or any other tool.", prompt);
   let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
@@ -344,11 +357,12 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       }
     };
     if (timeout) timers.push(setTimeout(() => stop(`no answer within ${timeout} seconds`), timeout * 1000));
-    timers.push(
-      setInterval(() => {
-        if (Date.now() - lastWork() > idle * 1000) stop(`no sign of work for ${idle} seconds`);
-      }, Math.min(30_000, idle * 250)),
-    );
+    if (!colead)
+      timers.push(
+        setInterval(() => {
+          if (Date.now() - lastWork() > idle * 1000) stop(`no sign of work for ${idle} seconds`);
+        }, Math.min(30_000, idle * 250)),
+      );
     child.on('error', (error) => done({ runtime, ok: false, text: error.message }));
     child.on('close', async (code, signal) => {
       if (signalSeat('SIGTERM')) {
@@ -360,11 +374,13 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
         const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : runtime === 'agy' ? agyAnswer(stdout) : stdout).trim();
         const filtered = runtime === 'agy' && (GEMINI_FILTERED.test(text) || GEMINI_FILTERED.test(stdout.trim()));
         const touched = mainCheckout && checkoutState(mainCheckout) !== mainBefore;
-        const ok = code === 0 && text && !late && !filtered && !touched;
+        const step = colead && coleadBudget(colead);
+        const warnings = [touched && `the co-lead run changed the main checkout ${mainCheckout}; check it before using this answer.`, step?.product > step?.budget && `this worktree's change since ${step.base} ${overBudget(step.product, step.budget)}`].filter(Boolean);
+        const ok = code === 0 && text && !late && !filtered && !warnings.length;
         const codex = runtime === 'codex' && !ok ? codexFailure(stdout, stderr, codexHome, startedAt) : null;
         // The Claude CLI prints a usage-limit refusal on stdout and nothing on stderr.
         const detail = codex?.message ?? (stderr.trim() || stdout.trim()).split('\n').slice(-5).join('\n');
-        const failure = touched ? `the co-lead run changed the main checkout ${mainCheckout}; check it before using this answer:\n\n${text}` : `${late || (code === 0 ? 'no answer' : `exit ${code ?? signal}`)}: ${detail}`;
+        const failure = warnings.length ? `${warnings.join('\n\n')}\n\n${text}` : `${late || (code === 0 ? 'no answer' : `exit ${code ?? signal}`)}: ${detail}`;
         // A Claude seat without --effort runs at the machine's default, which only its transcript records.
         const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
         const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;

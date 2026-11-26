@@ -1170,16 +1170,16 @@ function seatsHtml(seats) {
     .join('')}</span>`;
 }
 
-// Each panel round counts toward the lead whose row precedes it in the log, so a rerun shows which session reviewed what.
-function leadSeats(entries) {
+function rosterByLead(entries) {
   const byLead = new Map();
   for (const entry of entries) {
     let lead = '';
     for (const row of logRowsOf(entry.path)) {
       if (row.phase === 'lead') lead = row.decision;
-      if (!byLead.has(lead)) byLead.set(lead, new Map());
+      if (!byLead.has(lead)) byLead.set(lead, { coleads: new Map(), seats: new Map() });
+      const { coleads, seats } = byLead.get(lead);
+      for (const seat of row.phase === 'colead' ? seatList(row.decision) : []) coleads.set(`${seat.name}@${seat.effort}`, seat);
       if (row.phase !== 'panel' || !SEATS.test(row.decision)) continue;
-      const seats = byLead.get(lead);
       for (const seat of seatList(row.decision.replace(SEATS, ''))) {
         const key = `${seat.name}@${seat.effort}${seat.mark ? ` ${seat.mark}` : ''}`;
         seats.set(key, { seat, count: (seats.get(key)?.count ?? 0) + 1 });
@@ -1187,15 +1187,15 @@ function leadSeats(entries) {
     }
   }
   return [...byLead]
-    .filter(([lead, seats]) => lead || seats.size)
-    .map(([lead, seats]) => ({ lead: lead && lead !== 'unknown' ? seatList(lead)[0] : null, seats: [...seats.values()] }));
+    .filter(([lead, { coleads, seats }]) => lead || coleads.size || seats.size)
+    .map(([lead, { coleads, seats }]) => ({ lead: lead && lead !== 'unknown' ? seatList(lead)[0] : null, coleads: [...coleads.values()], seats: [...seats.values()] }));
 }
 
-const leadSeatsHtml = (entries) =>
-  leadSeats(entries)
+const rosterByLeadHtml = (entries) =>
+  rosterByLead(entries)
     .map(
-      ({ lead, seats }) =>
-        `<span class="round-tag"><span class="badge hue-grey">Lead</span>${lead ? `<span class="seats">${seatChip(lead)}</span>` : ' unknown'}</span>${seats.length ? `<span class="round-tag"><span class="badge hue-indigo">Reviews</span><span class="seats">${seats.map(({ seat, count }) => seatChip(seat, count)).join('')}</span></span>` : ''}`
+      ({ lead, coleads, seats }) =>
+        `<span class="round-tag"><span class="badge hue-grey">Lead</span>${lead ? `<span class="seats">${seatChip(lead)}</span>` : ' unknown'}</span>${coleads.length ? `<span class="round-tag"><span class="badge hue-teal">Co-lead</span><span class="seats">${coleads.map((seat) => seatChip(seat)).join('')}</span></span>` : ''}${seats.length ? `<span class="round-tag"><span class="badge hue-indigo">Reviews</span><span class="seats">${seats.map(({ seat, count }) => seatChip(seat, count)).join('')}</span></span>` : ''}`
     )
     .join('');
 
@@ -1738,7 +1738,7 @@ function page(planPath, { folded = false, run = null } = {}) {
     <h1>${title}</h1>
     ${headerFlow}
     ${statusLine}
-    <div class="meta">${planTag}${carriedTag}${leadSeatsHtml(entries)}<span>Updated ${updated} UTC</span></div>
+    <div class="meta">${planTag}${carriedTag}${rosterByLeadHtml(entries)}<span>Updated ${updated} UTC</span></div>
   </header>
   <section class="brief card">${answers}</section>
   ${[...PART_ORDER, 'history'].flatMap((key) => parts[key]?.() ?? [])
@@ -1752,7 +1752,7 @@ function page(planPath, { folded = false, run = null } = {}) {
     <h1>${title}</h1>
     ${headerFlow}
     ${statusLine}
-    <div class="meta"><code>${escapeHtml(where)}</code>${planTag}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}${reviewTag}<span>Updated ${updated} UTC</span></div>
+    <div class="meta"><code>${escapeHtml(where)}</code>${planTag}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${carriedTag}${rosterByLeadHtml(entries)}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
   ${byRole('demo', plan).map((section) => demoHtml(section, shot)).join('')}
   ${needs.length ? needsSection(needs, repoPath) : ''}${close ? sectionHtml(close, 'panel') : ''}
@@ -2354,8 +2354,9 @@ function prProcess(entries, playbooks) {
 }
 
 const prModels = (entries) =>
-  leadSeats(entries).flatMap(({ lead, seats }) => [
+  rosterByLead(entries).flatMap(({ lead, coleads, seats }) => [
     lead ? `- \`${[lead.name, lead.effort].filter(Boolean).join(' ')}\`` : '- Lead not logged',
+    ...coleads.map((seat) => `  - co-lead ${seatMd(seat)}`),
     ...seats.map(({ seat, count }) => `  - ${seatMd(seat)}${count > 1 ? ` ×${count}` : ''}`),
   ]);
 
