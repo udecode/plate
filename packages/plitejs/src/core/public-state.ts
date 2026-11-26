@@ -15170,7 +15170,7 @@ const deserializeSnapshotMeta = (
 const keepSnapshotIds = (
   editor: Editor,
   input: DirectSnapshotInput
-): DirectSnapshotInput => {
+): Pick<DirectSnapshotInput, 'children' | 'roots'> => {
   const inputRoots = isRecord(input.roots) ? Object.entries(input.roots) : [];
 
   if (
@@ -15193,7 +15193,6 @@ const keepSnapshotIds = (
     roots.every((nodes, at) => nodes === inputRoots[at][1])
     ? input
     : {
-        ...input,
         children,
         ...(input.roots === undefined
           ? {}
@@ -15211,10 +15210,8 @@ export const replaceTransformedSnapshot = (
   replacedRoot?: RootKey
 ) => {
   const apply = () => {
-    const snapshotInput = keepSnapshotIds(
-      editor,
-      readDirectSnapshotInput(editor, transformedInput)
-    );
+    const snapshotInput = readDirectSnapshotInput(editor, transformedInput);
+    const { children, roots } = keepSnapshotIds(editor, snapshotInput);
     const transaction = getTransactionSnapshot(editor);
     const explicitSelection =
       snapshotInput.selection &&
@@ -15228,11 +15225,11 @@ export const replaceTransformedSnapshot = (
         ? (SelectionApi.root(explicitSelection) ?? MAIN_ROOT_KEY)
         : MAIN_ROOT_KEY);
     const fitted = getEditorSchema(editor).fitDocument({
-      children: snapshotInput.children as Value,
+      children: children as Value,
       ...(snapshotInput.meta === undefined ? {} : { meta: snapshotInput.meta }),
-      ...(snapshotInput.roots === undefined
+      ...(roots === undefined
         ? {}
-        : { roots: snapshotInput.roots as Record<RootKey, Value> }),
+        : { roots: roots as Record<RootKey, Value> }),
     });
     const representationSelection =
       snapshotInput.selection &&
@@ -15251,9 +15248,7 @@ export const replaceTransformedSnapshot = (
             }
         : null;
     const selectedInputChildren =
-      selectedRoot === MAIN_ROOT_KEY
-        ? snapshotInput.children
-        : snapshotInput.roots?.[selectedRoot];
+      selectedRoot === MAIN_ROOT_KEY ? children : roots?.[selectedRoot];
     const protectedInlineSpacerPaths =
       representationSelection && RangeApi.isRange(representationSelection)
         ? getProtectedInlineSpacerEntries(editor, selectedInputChildren ?? [], [
