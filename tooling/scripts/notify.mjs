@@ -423,7 +423,8 @@ const shotsProblem = (path, id) => {
   const session =
     process.env.CLAUDE_CODE_HOST_SESSION_ID ||
     process.env.CLAUDE_CODE_SESSION_ID ||
-    process.env.CODEX_SESSION_ID;
+    process.env.CODEX_SESSION_ID ||
+    process.env.T3CODE_THREAD_ID;
   const demo = `step ${id} of ${path} is the plan's Demo step`;
   if (!session) {
     return `${demo}, but no session id is set, so its demo cannot be found. Land it from the agent session that recorded the clip.`;
