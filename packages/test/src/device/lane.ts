@@ -63,12 +63,46 @@ export const DEVICE_STATE_PATH = 'test-results/device/state.json';
 
 type Point = { x: number; y: number };
 
+export type DeviceToolbar = 'fixed' | 'keyboard';
+
+export const TOOLBAR_SELECTORS: Record<DeviceToolbar, string> = {
+  fixed: '[data-slot="fixed-toolbar"]',
+  keyboard: '[data-slot="keyboard-toolbar"]',
+};
+
 /** An element on the current page, found again on every read. */
 export type DeviceQuery =
-  | { button: RegExp | string }
+  | { button: RegExp | string; within?: DeviceQuery }
   | { css: string; within?: DeviceQuery }
+  | { menuItem: RegExp | string }
   | { testId: string }
-  | { text: string };
+  | { text: string }
+  | { toolbar: DeviceToolbar };
+
+export type DeviceFocusRegion =
+  | 'body'
+  | 'editor'
+  | 'fixed-toolbar'
+  | 'keyboard-toolbar'
+  | 'menu'
+  | 'other';
+
+export type DeviceFocusSnapshot = {
+  editorFocused: boolean;
+  menuOpen: boolean;
+  region: DeviceFocusRegion;
+};
+
+export type DeviceViewportSnapshot = {
+  height: number;
+  innerHeight: number;
+  innerWidth: number;
+  keyboardShown: boolean;
+  offsetLeft: number;
+  offsetTop: number;
+  scale: number;
+  width: number;
+};
 
 export type DevicePage = {
   find: (query: DeviceQuery) => EditorRoot;
@@ -104,6 +138,9 @@ export type DeviceDriver = {
   }) => DeviceKeyboard;
   page: DevicePage;
   screen: DeviceScreen;
+  system: {
+    back: () => Promise<void>;
+  };
 };
 
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
@@ -195,13 +232,25 @@ export type DeviceLane = {
   openExample: (example: string) => Promise<DeviceEditor>;
   openWww: (path: string) => Promise<DeviceEditor>;
   knownFailure: <T>(failure: DeviceKnownFailure<T>) => Promise<void>;
+  read: {
+    focus: () => Promise<DeviceFocusSnapshot>;
+    viewport: () => Promise<DeviceViewportSnapshot>;
+  };
   /** Steps on the current page. */
   steps: () => readonly DeviceWitnessStep[];
+  system: {
+    back: () => Promise<void>;
+  };
   tapStrip: (candidate: RegExp | string) => Promise<string>;
   touch: {
     tapButton: (name: RegExp | string) => Promise<void>;
+    tapMenuItem: (name: RegExp | string) => Promise<void>;
     tapTestId: (testId: string) => Promise<void>;
     tapText: (text: string) => Promise<void>;
+    tapToolbarButton: (
+      toolbar: DeviceToolbar,
+      name: RegExp | string
+    ) => Promise<void>;
   };
   /** The current page's trace. */
   trace: () => Promise<BrowserNativeEventTraceEntry[]>;
@@ -400,13 +449,45 @@ export const createDeviceLane = ({
   // the layout viewport can still sit under the browser toolbar.
   const tapQuery = async (label: string, query: DeviceQuery) => {
     const center = await driver.page.find(query).evaluate(async (element) => {
+      const container = element.closest(
+        '[data-slot="keyboard-toolbar"],[data-slot="fixed-toolbar"],[role="menu"]'
+      );
+      const holders: HTMLElement[] = [];
+
+      for (
+        let current = element.parentElement;
+        current && container?.contains(current);
+        current = current.parentElement
+      ) {
+        holders.push(current);
+      }
+
+      const clipBounds = () => {
+        const view = window.visualViewport;
+        let top = view?.offsetTop ?? 0;
+        let left = view?.offsetLeft ?? 0;
+        let bottom = top + (view?.height ?? innerHeight);
+        let right = left + (view?.width ?? innerWidth);
+
+        for (const holder of holders) {
+          const style = getComputedStyle(holder);
+          const box = holder.getBoundingClientRect();
+
+          if (/(?:auto|scroll|clip|hidden)/.test(style.overflowX)) {
+            left = Math.max(left, box.left);
+            right = Math.min(right, box.right);
+          }
+          if (/(?:auto|scroll|clip|hidden)/.test(style.overflowY)) {
+            top = Math.max(top, box.top);
+            bottom = Math.min(bottom, box.bottom);
+          }
+        }
+        return { bottom, left, right, top };
+      };
+
       const measure = () => {
         const rect = element.getBoundingClientRect();
-        const view = window.visualViewport;
-        const top = view?.offsetTop ?? 0;
-        const height = view?.height ?? innerHeight;
-        const left = view?.offsetLeft ?? 0;
-        const width = view?.width ?? innerWidth;
+        const bounds = clipBounds();
         const widestLine =
           Array.from(element.getClientRects()).toSorted(
             (a, b) => b.width - a.width
@@ -416,10 +497,12 @@ export const createDeviceLane = ({
 
         return {
           reachable:
-            rect.top >= top &&
-            rect.bottom <= top + height &&
-            rect.left >= left &&
-            rect.right <= left + width &&
+            rect.width > 0 &&
+            rect.height > 0 &&
+            rect.top >= bounds.top - 1 &&
+            rect.bottom <= bounds.bottom + 1 &&
+            rect.left >= bounds.left - 1 &&
+            rect.right <= bounds.right + 1 &&
             element.contains(document.elementFromPoint(x, y)),
           x,
           y,
@@ -427,10 +510,38 @@ export const createDeviceLane = ({
       };
 
       if (!measure().reachable) {
-        element.scrollIntoView({ block: 'center', inline: 'nearest' });
-        await new Promise((resolveScroll) => {
-          setTimeout(resolveScroll, 400);
-        });
+        if (container) {
+          for (const holder of holders) {
+            const style = getComputedStyle(holder);
+            const box = holder.getBoundingClientRect();
+            const target = element.getBoundingClientRect();
+
+            if (
+              /(?:auto|scroll)/.test(style.overflowX) &&
+              holder.scrollWidth > holder.clientWidth + 1
+            ) {
+              holder.scrollLeft +=
+                target.left + target.width / 2 - (box.left + box.width / 2);
+            }
+            if (
+              /(?:auto|scroll)/.test(style.overflowY) &&
+              holder.scrollHeight > holder.clientHeight + 1
+            ) {
+              holder.scrollTop +=
+                target.top + target.height / 2 - (box.top + box.height / 2);
+            }
+          }
+          await new Promise((resolveScroll) => {
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => resolveScroll(undefined))
+            );
+          });
+        } else {
+          element.scrollIntoView({ block: 'center', inline: 'nearest' });
+          await new Promise((resolveScroll) => {
+            setTimeout(resolveScroll, 400);
+          });
+        }
       }
 
       return measure();
@@ -640,12 +751,80 @@ export const createDeviceLane = ({
         type: 'known-product-failure',
       });
     },
+    read: {
+      focus: () =>
+        driver.page.find({ css: 'body' }).evaluate(() => {
+          let active: Element | null = document.activeElement;
+
+          while (active?.shadowRoot?.activeElement) {
+            active = active.shadowRoot.activeElement;
+          }
+
+          const menuOpen = [...document.querySelectorAll('[role="menu"]')].some(
+            (menu) =>
+              !menu.hasAttribute('hidden') &&
+              menu.getAttribute('data-state') !== 'closed' &&
+              !menu.hasAttribute('data-closed') &&
+              menu.getClientRects().length > 0
+          );
+          const editorFocused = Boolean(
+            active?.closest('[data-editor="true"][contenteditable="true"]')
+          );
+          const regions = [
+            ['keyboard-toolbar', '[data-slot="keyboard-toolbar"]'],
+            ['fixed-toolbar', '[data-slot="fixed-toolbar"]'],
+            ['menu', '[role="menu"]'],
+          ] as const;
+          const region: DeviceFocusRegion =
+            !active ||
+            active === document.body ||
+            active === document.documentElement
+              ? 'body'
+              : editorFocused
+                ? 'editor'
+                : (regions.find(([, selector]) =>
+                    active.closest(selector)
+                  )?.[0] ?? 'other');
+
+          return { editorFocused, menuOpen, region };
+        }, undefined),
+      viewport: async () => {
+        const view = await driver.page.find({ css: 'body' }).evaluate(() => {
+          const visual = window.visualViewport;
+
+          return {
+            height: visual?.height ?? innerHeight,
+            innerHeight,
+            innerWidth,
+            offsetLeft: visual?.offsetLeft ?? 0,
+            offsetTop: visual?.offsetTop ?? 0,
+            scale: visual?.scale ?? 1,
+            width: visual?.width ?? innerWidth,
+          };
+        }, undefined);
+
+        return {
+          ...view,
+          keyboardShown: await keyboard.shown(),
+        };
+      },
+    },
     steps: () => steps,
+    system: {
+      back: () => gesture({ kind: 'back', label: 'back' }, driver.system.back),
+    },
     tapStrip: keyboard.strip,
     touch: {
       tapButton: (name) => tapQuery(`tap button ${name}`, { button: name }),
+      tapMenuItem: (name) =>
+        tapQuery(`tap menu item ${name}`, { menuItem: name }),
       tapTestId: (testId) => tapQuery(`tap ${testId}`, { testId }),
       tapText: (text) => tapQuery(`tap "${text}"`, { text }),
+      tapToolbarButton: (toolbar, name) =>
+        tapQuery(`tap ${toolbar} toolbar button ${name}`, {
+          button: name,
+          within: { toolbar },
+        }),
     },
     trace,
     www: state.wwwURL,

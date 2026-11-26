@@ -8,7 +8,12 @@ import {
   isIgnoredRuntimeError,
 } from '../playwright/runtime-errors';
 import { type IosRunner, type RunnerReply, startIosRunner } from './ios';
-import type { DeviceDriver, DeviceQuery, IosRunState } from './lane';
+import type {
+  DeviceDriver,
+  DeviceQuery,
+  DeviceToolbar,
+  IosRunState,
+} from './lane';
 import {
   connectWebInspector,
   type InspectorPage,
@@ -31,11 +36,15 @@ type WebInspector = Awaited<ReturnType<typeof connectWebInspector>>;
 
 type Point = { x: number; y: number };
 
+type SerialPattern = string | { flags: string; source: string };
+
 type SerialQuery =
-  | { button: string | { flags: string; source: string } }
+  | { button: SerialPattern; within?: SerialQuery }
   | { css: string; within?: SerialQuery }
+  | { menuItem: SerialPattern }
   | { testId: string }
-  | { text: string };
+  | { text: string }
+  | { toolbar: DeviceToolbar };
 
 const NAMED_KEYS: Record<string, { key: DeviceWitnessKey; label: string }> = {
   ' ': { key: ' ', label: 'space' },
@@ -57,62 +66,89 @@ const checked = (reply: RunnerReply) => {
   return reply;
 };
 
-const serialQuery = (query: DeviceQuery): SerialQuery => {
-  if ('button' in query) {
-    const { button } = query;
+const serialPattern = (pattern: RegExp | string): SerialPattern =>
+  typeof pattern === 'string'
+    ? pattern
+    : { flags: pattern.flags, source: pattern.source };
 
-    return {
-      button:
-        typeof button === 'string'
-          ? button
-          : { flags: button.flags, source: button.source },
-    };
+const serialQuery = (query: DeviceQuery): SerialQuery => {
+  if ('toolbar' in query || 'testId' in query || 'text' in query) return query;
+  if ('menuItem' in query) return { menuItem: serialPattern(query.menuItem) };
+
+  const within = query.within && { within: serialQuery(query.within) };
+
+  if ('button' in query) {
+    return { button: serialPattern(query.button), ...within };
   }
-  if ('css' in query && query.within) {
-    return { css: query.css, within: serialQuery(query.within) };
-  }
-  return query;
+  return { css: query.css, ...within };
 };
 
 // Runs in the page.
 const findElement = async (query: SerialQuery): Promise<Element> => {
   const normalize = (text: string | null) =>
     (text ?? '').replaceAll(/\s+/g, ' ').trim();
+  const matchesPattern = (name: string, pattern: SerialPattern) =>
+    typeof pattern === 'string'
+      ? name.toLowerCase().includes(pattern.toLowerCase())
+      : new RegExp(pattern.source, pattern.flags).test(name);
+  const accessibleName = (element: Element) =>
+    normalize(element.getAttribute('aria-label') ?? element.textContent);
+  const openMenu = (element: Element) =>
+    !element.hasAttribute('hidden') &&
+    element.getAttribute('data-state') !== 'closed' &&
+    !element.hasAttribute('data-closed') &&
+    element.getClientRects().length > 0;
   const match = (current: SerialQuery, scope: ParentNode): Element | null => {
-    if ('css' in current) {
-      const inner = current.within ? match(current.within, scope) : scope;
-
-      return inner?.querySelector(current.css) ?? null;
+    if ('toolbar' in current) {
+      return scope.querySelector(
+        current.toolbar === 'keyboard'
+          ? '[data-slot="keyboard-toolbar"]'
+          : '[data-slot="fixed-toolbar"]'
+      );
     }
+    if ('menuItem' in current) {
+      const menus = [...scope.querySelectorAll('[role="menu"]')].filter(
+        openMenu
+      );
+
+      for (const menu of menus) {
+        const found = [
+          ...menu.querySelectorAll(
+            '[role="menuitem"],[role="menuitemradio"],[role="menuitemcheckbox"],button,[role="button"]'
+          ),
+        ].find((element) =>
+          matchesPattern(accessibleName(element), current.menuItem)
+        );
+
+        if (found) return found;
+      }
+      return null;
+    }
+
     if ('testId' in current) {
       return scope.querySelector(
         `[data-test-id="${CSS.escape(current.testId)}"]`
       );
     }
-    if ('button' in current) {
-      const { button } = current;
-      const named = (element: Element) => {
-        const name = normalize(
-          element.getAttribute('aria-label') ?? element.textContent
-        );
-
-        return typeof button === 'string'
-          ? name.toLowerCase().includes(button.toLowerCase())
-          : new RegExp(button.source, button.flags).test(name);
-      };
+    if ('text' in current) {
+      const exact = (element: Element) =>
+        normalize(element.textContent) === current.text;
 
       return (
-        [...scope.querySelectorAll('button,[role="button"]')].find(named) ??
-        null
+        [...scope.querySelectorAll('body *')].find(
+          (element) => exact(element) && ![...element.children].some(exact)
+        ) ?? null
       );
     }
 
-    const exact = (element: Element) =>
-      normalize(element.textContent) === current.text;
+    const inner = current.within ? match(current.within, scope) : scope;
+
+    if (!inner) return null;
+    if ('css' in current) return inner.querySelector(current.css);
 
     return (
-      [...scope.querySelectorAll('body *')].find(
-        (element) => exact(element) && ![...element.children].some(exact)
+      [...inner.querySelectorAll('button,[role="button"]')].find((element) =>
+        matchesPattern(accessibleName(element), current.button)
       ) ?? null
     );
   };
@@ -419,6 +455,11 @@ export const createIosDriver = ({
       afterLoad: async () => {},
       tap: async (css) => {
         await send({ action: 'tap', ...(await webPoint(css)) });
+      },
+    },
+    system: {
+      back: async () => {
+        throw new Error('The iPhone simulator has no system Back button.');
       },
     },
   };

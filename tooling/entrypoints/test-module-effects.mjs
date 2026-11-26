@@ -182,6 +182,10 @@ export const testModuleEffects = {
     'writes the trace file that its caller names',
   'packages/test/src/playwright/test.ts':
     "writes editor-state.json in the failed test's output folder",
+  'packages/test/src/device/android.ts': 'runs adb and writes outside the repo',
+  'packages/test/src/device/ios-lane.ts': 'runs xcrun simctl on the simulator',
+  'packages/test/src/device/ios.ts': 'runs xcodebuild on a prebuilt runner',
+  'packages/test/src/device/lane.ts': 'reads and writes ignored test output',
   'packages/test/src/device/webkit.ts':
     "runs xcrun simctl to find a simulator's Web Inspector socket, which is outside the repository",
   'packages/test/test/node/device-witness.test.ts': {

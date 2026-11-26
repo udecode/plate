@@ -16,14 +16,16 @@ import {
   type DevicePanel,
   keyboardIdentity,
   keyboardShown,
+  pressBack,
   readKeyboard,
   switchKeyboardLanguage,
 } from './android';
-import type {
-  AndroidRunState,
-  DeviceDriver,
-  DeviceKeyboard,
-  DeviceQuery,
+import {
+  type AndroidRunState,
+  type DeviceDriver,
+  type DeviceKeyboard,
+  type DeviceQuery,
+  TOOLBAR_SELECTORS,
 } from './lane';
 import type { DeviceWitnessKey } from './witness';
 
@@ -150,15 +152,34 @@ declare global {
   }
 }
 
+const OPEN_MENU =
+  '[role="menu"]:not([hidden]):not([data-state="closed"]):not([data-closed]):visible';
+
 const locate = (page: Page, query: DeviceQuery): Locator => {
+  const scope = (within?: DeviceQuery): Locator | Page =>
+    within ? locate(page, within) : page;
+
+  if ('toolbar' in query) {
+    return page.locator(TOOLBAR_SELECTORS[query.toolbar]).first();
+  }
   if ('css' in query) {
-    return query.within
-      ? locate(page, query.within).locator(query.css).first()
-      : page.locator(query.css).first();
+    return scope(query.within).locator(query.css).first();
   }
   if ('testId' in query) return page.getByTestId(query.testId);
   if ('button' in query) {
-    return page.getByRole('button', { name: query.button }).first();
+    return scope(query.within)
+      .getByRole('button', { name: query.button })
+      .first();
+  }
+  if ('menuItem' in query) {
+    const menu = page.locator(OPEN_MENU);
+
+    return menu
+      .getByRole('menuitem', { name: query.menuItem })
+      .or(menu.getByRole('menuitemradio', { name: query.menuItem }))
+      .or(menu.getByRole('menuitemcheckbox', { name: query.menuItem }))
+      .or(menu.getByRole('button', { name: query.menuItem }))
+      .first();
   }
   return page.getByText(query.text, { exact: true }).first();
 };
@@ -602,6 +623,11 @@ export const createAndroidDriver = ({
         const point = await toScreen(css);
 
         touch.tap(point.x, point.y);
+      },
+    },
+    system: {
+      back: async () => {
+        pressBack(state.serial);
       },
     },
   };

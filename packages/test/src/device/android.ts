@@ -362,6 +362,10 @@ export const createDeviceTouch = (serial: string) => ({
   },
 });
 
+export const pressBack = (serial: string) => {
+  shell(serial, 'input', 'keyevent', 'KEYCODE_BACK');
+};
+
 /** Forward a free host port to Chrome's DevTools socket and return it. */
 export const forwardDevTools = (serial: string) => {
   const port = Number(

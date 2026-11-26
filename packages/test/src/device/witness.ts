@@ -5,6 +5,7 @@ export type DeviceWitnessKey = string | null;
 
 /** One lane gesture, before the lane measures its trace range. */
 export type DeviceWitnessGesture =
+  | { kind: 'back'; label: string }
   | {
       kind: 'content';
       label: string;
@@ -130,6 +131,7 @@ export const judgeDeviceWitness = ({
   // A canceled beforeinput sends no input, so unmatched ones stay pending.
   let pendingBeforeInputs: Array<string | null> = [];
   let currentStep: DeviceWitnessStep | null = null;
+  const backEscapes = new Set<DeviceWitnessStep>();
   const pointerSteps = new Set<DeviceWitnessStep>();
   const keyedSteps = new Set<DeviceWitnessStep>();
 
@@ -168,6 +170,23 @@ export const judgeDeviceWitness = ({
     }
 
     if (event.type === 'keydown') {
+      if (step.kind === 'back') {
+        if (
+          event.isTrusted &&
+          event.key === 'Escape' &&
+          !backEscapes.has(step)
+        ) {
+          backEscapes.add(step);
+        } else {
+          violations.push({
+            ...at,
+            detail: `keydown key ${event.key}, expected at most one Escape`,
+            rule: 'wrong-key',
+          });
+        }
+        continue;
+      }
+
       const key = expectedKey(step);
       const [update, before, input, end] = traced.slice(index + 1, index + 5);
       const compositionCommit =
