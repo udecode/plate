@@ -160,7 +160,11 @@ const selectMovedTarget = (
     )
   ) {
     tx.selection.set(target);
+
+    return true;
   }
+
+  return false;
 };
 
 const withPointRoot = (
@@ -1046,7 +1050,9 @@ export const editorCommands: EditorCommands = Object.freeze({
     locate: (input, place) => {
       const located = locateTextOptionsAt(input, place);
 
-      if (located) recordLocatedDestination(place, located.options?.at);
+      if (located) {
+        recordLocatedDestination(place, located.options?.at, input.options?.at);
+      }
 
       return located;
     },
@@ -1163,12 +1169,13 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       return state.transaction((tx) => {
-        selectMovedTarget(tx, state, input.options?.at, target);
+        const moved = selectMovedTarget(tx, state, input.options?.at, target);
         writeComposedText(
           getActiveCommandEditor(),
           input.options?.at,
           input.text,
-          () => tx.text.insert(input.text, input.options)
+          () => tx.text.insert(input.text, input.options),
+          moved
         );
       });
     },

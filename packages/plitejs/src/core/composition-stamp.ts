@@ -19,12 +19,15 @@ import {
 export type CompositionStamp = Readonly<{ place: Point }>;
 
 type StampedFrame = {
+  readonly explicit: boolean;
   /**
    * Where the stamped invocation's input located to, by identity, once its
    * entry has located it.
    */
   located: Readonly<{ at: unknown }> | null;
-  readonly stamp: CompositionStamp;
+  readonly resolvePlace?: (at: unknown) => CompositionStamp | null;
+  stamp: CompositionStamp | null;
+  used: boolean;
 };
 
 const PENDING = new WeakMap<Editor, CompositionStamp>();
@@ -71,14 +74,32 @@ export const takeCompositionStamp = (editor: Editor) => {
 
 /** @internal */
 export const stampFrame = (
-  stamp: CompositionStamp,
-  place: EditorCommandPlace
+  stamp: CompositionStamp | null,
+  place: EditorCommandPlace,
+  options?: Readonly<{
+    explicit?: boolean;
+    resolvePlace?: (at: unknown) => CompositionStamp | null;
+  }>
 ) => {
-  const frame: StampedFrame = { located: null, stamp };
+  const frame: StampedFrame = {
+    explicit: options?.explicit ?? stamp !== null,
+    located: null,
+    resolvePlace: options?.resolvePlace,
+    stamp,
+    used: false,
+  };
 
   PLACES.set(place, frame);
 
   return frame;
+};
+
+/** @internal */
+export const setFrameStamp = (
+  frame: StampedFrame | null,
+  stamp: CompositionStamp | null
+) => {
+  if (frame && !frame.explicit) frame.stamp = stamp;
 };
 
 /** @internal */
@@ -101,38 +122,40 @@ export const runStampedFrame = <T>(
 /** @internal */
 export const recordLocatedDestination = (
   place: EditorCommandPlace,
-  at: unknown
+  at: unknown,
+  storedAt?: unknown
 ) => {
   const frame = PLACES.get(place);
 
-  if (frame && !frame.located) frame.located = { at };
+  if (!frame || frame.located) return;
+  frame.located = { at };
+  if (!frame.explicit && storedAt !== undefined && frame.resolvePlace) {
+    frame.stamp = frame.resolvePlace(storedAt);
+  }
 };
 
-/**
- * Runs insert-text's own text write, tagged as the composition's when the
- * write is the stamped invocation's: to the destination its entry located,
- * with no caret placed since its frame began. The command registry refuses an
- * insert-text command nested in another, so only the stamped invocation's
- * build runs here. The tags live on the draft the write appends to, so a
- * draft discarded later takes them with it.
- *
- * @internal
- */
+/** @internal */
 export const writeComposedText = (
   editor: Editor,
   at: unknown,
   text: string,
-  write: () => void
+  write: () => void,
+  movedCaret = false
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const frame = FRAMES.get(owner);
   const claims =
-    !!frame?.located &&
+    !!frame?.stamp &&
+    !!frame.located &&
     text.length > 0 &&
     frame.located.at === at &&
-    getPlacementCount(owner) === 0;
+    getPlacementCount(owner) === (movedCaret ? 1 : 0);
   const builder = claims ? getTransactionSnapshot(owner)?.builder : undefined;
 
-  if (frame && builder) builder.withComposition(frame.stamp, write);
-  else write();
+  if (frame?.stamp && builder) {
+    frame.used = true;
+    builder.withComposition(frame.stamp, write);
+  } else {
+    write();
+  }
 };

@@ -45,9 +45,11 @@ import {
 import {
   type CompositionStamp,
   runStampedFrame,
+  setFrameStamp,
   stampFrame,
   takeCompositionStamp,
 } from './composition-stamp';
+import { hasEditorContent, isEditorContent } from './content';
 import {
   isInRemovedContent,
   landTextWrite,
@@ -678,29 +680,34 @@ const createFramePlace = (
 
     return position === null ? null : pointIn(point, root, position, assoc);
   };
-  // Beside an inline, a point goes to the side that holds the composition's
-  // element, so a caret hidden in struck text right before a link stays
-  // outside the link.
-  const pointOnCompositionSide = (
+  const pointOnStoredSide = (
     after: DocumentIndex,
     root: string,
     position: number,
-    side: -1 | 1
+    side: -1 | 1,
+    point: Point
   ) => {
     const placed = after.pointAt(position, side);
 
-    if (!compositionElement || root !== compositionRoot || !placed) {
-      return placed;
-    }
+    if (!placed) return placed;
 
-    const inCompositionElement = (at: JsonPoint) =>
-      PathApi.equals(at.path.slice(0, -1), compositionElement);
+    const element =
+      compositionElement && root === compositionRoot
+        ? compositionElement
+        : hiddenCaretStamp(editor, stored, projected, point, root)
+          ? projected.map.nodePath(root, point.path.slice(0, -1))
+          : null;
 
-    if (inCompositionElement(placed)) return placed;
+    if (!element) return placed;
+
+    const inElement = (at: JsonPoint) =>
+      PathApi.equals(at.path.slice(0, -1), element);
+
+    if (inElement(placed)) return placed;
 
     const other = after.pointAt(position, side < 0 ? 1 : -1);
 
-    return other && inCompositionElement(other) ? other : placed;
+    return other && inElement(other) ? other : placed;
   };
   const pointIn = (
     point: Point,
@@ -725,7 +732,7 @@ const createFramePlace = (
             !isElement(next, 'open')
           ? 1
           : assoc;
-    const placed = pointOnCompositionSide(after, root, position, side);
+    const placed = pointOnStoredSide(after, root, position, side, point);
 
     return (
       placed && { ...point, offset: placed.offset, path: [...placed.path] }
@@ -1304,6 +1311,40 @@ const effectChange = (
   });
 };
 
+const hiddenCaretStamp = (
+  editor: Editor,
+  stored: EditorDocumentValue,
+  projected: CommandProjection,
+  target: unknown,
+  fallbackRoot: string
+): CompositionStamp | null => {
+  if (!hasEditorContent(editor)) return null;
+
+  const point =
+    !NodeApi.isDescendant(target) && PointApi.isPoint(target)
+      ? target
+      : !NodeApi.isDescendant(target) &&
+          RangeApi.isRange(target) &&
+          PointApi.equals(target.anchor, target.focus)
+        ? target.anchor
+        : null;
+
+  if (!point) return null;
+
+  const root = point.root ?? fallbackRoot;
+
+  if (!projected.map.roots.includes(root)) return null;
+
+  const leaf = nodeAt(
+    valueRootNodes(stored, root) as NodeList<Descendant>,
+    point.path
+  );
+
+  return leaf !== undefined && !isEditorContent(editor, leaf)
+    ? { place: point }
+    : null;
+};
+
 /** @internal */
 export const runInEditorCommandFrame = (
   editor: Editor,
@@ -1342,7 +1383,7 @@ export const runInEditorCommandFrame = (
   }
   runEditorDocumentRecorder(editor);
 
-  const stamp = takeCompositionStamp(editor);
+  const explicitStamp = takeCompositionStamp(editor);
   const stored = outer.snapshot.builder.value as EditorDocumentValue;
 
   if (
@@ -1356,6 +1397,17 @@ export const runInEditorCommandFrame = (
 
   if (!projected) return null;
 
+  const stamp =
+    explicitStamp ??
+    hiddenCaretStamp(
+      editor,
+      stored,
+      projected,
+      outer.snapshot.implicitTargetResolved
+        ? outer.snapshot.implicitTarget
+        : outer.caret.selection,
+      outer.caret.root
+    );
   const storedIndex = (root: string) =>
     retainTransactionSnapshotIndex(editor, outer.snapshot, root);
   const placed = createFramePlace(
@@ -1370,7 +1422,17 @@ export const runInEditorCommandFrame = (
     stamp,
     refusesStruckTargets
   );
-  const stamped = stamp && stampFrame(stamp, placed.place);
+  const stamped = stampFrame(stamp, placed.place, {
+    explicit: explicitStamp !== null,
+    resolvePlace: (at) =>
+      hiddenCaretStamp(
+        editor,
+        stored,
+        projected,
+        at,
+        getEditorUpdateRoot(editor)
+      ),
+  });
   const selection = placed.held(outer.caret.selection);
   const target = outer.snapshot.implicitTarget
     ? placed.held(outer.snapshot.implicitTarget)
@@ -1418,7 +1480,20 @@ export const runInEditorCommandFrame = (
         snapshot.implicitTargetFrame = {
           context: frame,
           storedSelection: outer.caret.selection,
-          toFrame: placed.selection,
+          toFrame: (moved) => {
+            setFrameStamp(
+              stamped,
+              hiddenCaretStamp(
+                editor,
+                stored,
+                projected,
+                moved,
+                outer.caret.root
+              )
+            );
+
+            return placed.selection(moved);
+          },
         };
       }
 
@@ -1483,7 +1558,7 @@ export const runInEditorCommandFrame = (
           selectionBefore: outer.caret.selection,
           selectionBeforeRoot: outer.caret.root,
           selectionRoot: frame.caret.root,
-          composition: stamp,
+          composition: stamped.used ? stamped.stamp : explicitStamp,
           steps: snapshot.builder.draftSteps,
           tags: getActiveEditorUpdateTags(editor),
           update: outer.id,
