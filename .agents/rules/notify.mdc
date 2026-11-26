@@ -1,5 +1,5 @@
 ---
-description: Send a Discord message as plate-bot to the team channel, in the team's house style, pinging a teammate or the dev role only when they must act. Use for /notify, for telling or pinging a teammate, for answering a teammate's pasted Discord message, and for every team message a playbook or rule has a session send, such as a retest notice or a demo.
+description: Send Discord messages as plate-bot to
 argument-hint: <github-login | dev | channel> <what to say> | <pasted Discord message>
 ---
 

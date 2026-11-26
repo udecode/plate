@@ -1163,10 +1163,23 @@ function main(argv) {
     return results.every((result) => result.removed) ? 0 : 1;
   }
   if (argv.includes('--brief')) {
+    let isAgy = false;
+    if (argv.includes('--hook') && !process.stdin.isTTY) {
+      try {
+        const raw = JSON.parse(readFileSync(0, 'utf8') || '{}');
+        isAgy = Boolean(raw.hookEventName || raw.conversationId);
+      } catch {}
+    }
+    const notes = [];
     const line = brief({ repo });
-    if (line) console.log(line);
+    if (line) notes.push(line);
     const stamp = argv.includes('--auto') ? autoCleanup({ repo }) : null;
-    if (stamp) console.log(`cleanup: removing in the background what nothing used for a day, as /cleanup does; its report goes to ${stamp}, and the line "auto cleanup: off" in ~/.claude/pstack-models.md turns this off.`);
+    if (stamp) notes.push(`cleanup: removing in the background what nothing used for a day, as /cleanup does; its report goes to ${stamp}, and the line "auto cleanup: off" in ~/.claude/pstack-models.md turns this off.`);
+    if (isAgy) {
+      console.log(JSON.stringify(notes.length ? { injectSteps: [{ systemMessage: { systemMessage: notes.join('\n') } }] } : {}));
+    } else if (notes.length) {
+      console.log(notes.join('\n'));
+    }
     return 0;
   }
   const sessionsFile = value('--sessions');

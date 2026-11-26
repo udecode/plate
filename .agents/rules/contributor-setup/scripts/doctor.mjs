@@ -7,11 +7,16 @@ import { join, resolve } from 'node:path';
 import { hookPayload, sessionCheckout } from '../../../pstack/checkout.mjs';
 
 const hook = process.argv.includes('--hook');
+const payload = hook ? hookPayload() : {};
+const isAgy = Boolean(payload.isAgy);
 const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null);
 
-const checkout = sessionCheckout(hook ? hookPayload().cwd : undefined);
+const checkout = sessionCheckout(hook ? payload.cwd : undefined);
 if (!checkout) {
-  if (hook) process.exit(0);
+  if (hook) {
+    if (isAgy) console.log('{}');
+    process.exit(0);
+  }
   console.error('Run the doctor from a checkout of the repository.');
   process.exit(2);
 }
@@ -100,14 +105,15 @@ const gemini = join(home, '.gemini');
 const t3Antigravity = join(home, '.t3/userdata/providers/antigravity');
 if (existsSync(gemini) || existsSync(t3Antigravity)) {
   const AGY_RULE_MAX_BYTES = 24_000;
+  const AGY_RULE_SAFE_BYTES = 22_500;
   const AGY_SKILL_DESC_BUDGET = 16_000;
   const agentsMdSize = existsSync(join(root, 'AGENTS.md')) ? statSync(join(root, 'AGENTS.md')).size : 0;
   const rulesDir = join(root, '.agents/rules');
   const agyRuleFiles = existsSync(rulesDir) ? readdirSync(rulesDir).filter((name) => name.endsWith('.md')) : [];
-  if (agentsMdSize > AGY_RULE_MAX_BYTES && agyRuleFiles.length === 0)
+  if (agentsMdSize > AGY_RULE_SAFE_BYTES && agyRuleFiles.length === 0)
     stale(
-      `Antigravity truncates rule files past ${AGY_RULE_MAX_BYTES} bytes, and AGENTS.md has ${agentsMdSize} with no .agents/rules/*.md continuation.`,
-      'add a concise always_on continuation rule (< 24 KB) under .agents/rules/*.md'
+      `Antigravity truncates rule files past ${AGY_RULE_MAX_BYTES} bytes, and AGENTS.md is ${agentsMdSize} bytes (safe cap ${AGY_RULE_SAFE_BYTES}).`,
+      'trim AGENTS.md or move extended rules to docs/development/plate-workflow.md (keeping AGENTS.md <= 22.5 KB)'
     );
   for (const name of agyRuleFiles) {
     const ruleSize = statSync(join(rulesDir, name)).size;
@@ -226,9 +232,16 @@ if (process.platform === 'darwin') {
 }
 
 if (findings.length > 0) {
-  console.log(
-    'Your setup needs the fixes below. Run each in order; give a fix that names a human to the human as one line. A `claude plugin` command may rewrite .claude/settings.json, so restore it with git when it changes. After a plugin fix, ask the human to start a new session, which loads the updated plugins.'
-  );
-  for (const { fix, what } of findings) console.log(`${what}\n  fix: ${fix}`);
+  const lines = [
+    'Your setup needs the fixes below. Run each in order; give a fix that names a human to the human as one line. A `claude plugin` command may rewrite .claude/settings.json, so restore it with git when it changes. After a plugin fix, ask the human to start a new session, which loads the updated plugins.',
+    ...findings.map(({ fix, what }) => `${what}\n  fix: ${fix}`),
+  ];
+  if (hook && isAgy) {
+    console.log(JSON.stringify({ injectSteps: [{ systemMessage: { systemMessage: lines.join('\n') } }] }));
+  } else {
+    console.log(lines.join('\n'));
+  }
+} else if (hook && isAgy) {
+  console.log('{}');
 } else if (!hook) console.log('ok: this agent setup matches the plugins this repository pins.');
 process.exit(hook || findings.length === 0 ? 0 : 1);

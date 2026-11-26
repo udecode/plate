@@ -333,7 +333,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "cf030e151b91b3599a18005b57f64da56d52b8ec37cd62ebae923e3d3bd7eecd",
+    "block": "3e620ae7a930dfe073d9cef8fb41a9616c0b539602f2e2211999cbf10a1e723a",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
@@ -372,16 +372,16 @@
       ".agents/pstack/rules/long-runs.md": "c08d2feb0fa61f32fb0ed8c32136f17ceefcabbb6a93a2f407f66209dad78517",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
       ".agents/pstack/rules/pages.md": "b0380d89909af4a10e271ed54ea38201dcd37a1dbce00985bc2175be93d50417",
-      ".agents/pstack/rules/panel.md": "d6d4579ba2b311bf64b01c6e1f6db17decbc657ffa47a8500878f4a8c1410272",
+      ".agents/pstack/rules/panel.md": "0ee3dc76910355487ae886e278f733ca370524c8859613269a4e5254c7630a5e",
       ".agents/pstack/rules/reflect.md": "3c6396725d81b688e0e03ebba66c34cf549b93ac9a57d57fe7d4f389bfc2df51",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "c083944ff161c08480f33eb592f3789296a05d331155fa331fa815683793718a",
       ".agents/pstack/rules/title.md": "0f0eee66b0faa583ea84ede3b8768efe0f56e35c9d3b1c784af3d4894ba81c04",
       ".agents/pstack/rules/trails.md": "f0b3faaae3dc815fb805d1d477bb2332848b247f8cc2678ba408e6612e71450d",
       ".agents/pstack/rules/writing.md": "e8dc33f65631b30871af12f03c4ea2a9fa82c92f5a5944caaa2b9c5c5464189b",
-      ".claude/pstack-models.md": "77c474c1880466e805d8ab85ae1e3add432349b9936cb259a88f8a0b580ddfad"
+      ".claude/pstack-models.md": "c66be0623a47761be48e7038db9ab3cc86de9e791ddec7a315e6df30553321ac"
     },
-    "source": "fa2fe1efc11995b67e15f2f388fd9833a194b58c"
+    "source": "530d48a5a0bc5570ad7ae55f23fe5d5ee0022891"
   },
   "pageTopic": {
     "field": "review_scopes",

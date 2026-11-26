@@ -1,5 +1,5 @@
 ---
-description: Run Local CI, the slow check steps that run on next after landing instead of before it. Use for /local-ci, "is next green", "Local CI status", "rerun Local CI", the old name "deep check", installing or removing its launchd job on a Mac, and when a local-ci task names a red step. The `operator` skill starts and runs the session that fixes each red step.
+description: Run Local CI (post-landing slow/formal checks on next), check status, rerun, or manage its Mac launchd job. Use for /local-ci, "is next green", or a red local-ci task.
 argument-hint: '[status | rerun | install | uninstall | watch]'
 name: local-ci
 metadata:

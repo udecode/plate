@@ -1,5 +1,5 @@
 ---
-description: Research prior art and external editor evidence for any Plate or Plite feature, picking the gap most likely to change a decision; compare external editor architectures through a strict source inventory; harvest portable tests from external editors; and maintain the compiled research layer. Use it before writing, moving or compiling any page under docs/research, including lessons compiled from retired internal docs.
+description: Research external editors/prior art, compare architectures, harvest portable tests, and maintain docs/research. Use before writing, moving or compiling pages under docs/research.
 argument-hint: '[audit [sync] | harvest [plan] | maintain | full] <topic, area or repo>'
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: chips
-description: "Run the project's suggested-task ledger, the chips. /chips alone brings this session's open tasks up to date: it applies what the ledger helper says, settles stale and split tasks, cards what can start and reports the board, and /chips all also takes the ship-list tasks and the ones no live session owns, and merges duplicate tasks across the board. /chips sync runs the same sweep but offers no card, and it moves the waits on plans idle for a week to a fresh verdict. Use for /chips, /chips sync, /chips offer, start or drop, \"update the chips without new cards\", \"what chips are open\", \"suggest a task for X\", \"update the chips\", \"clean up the chips\", \"which chips are stale\", \"is this chip still worth doing\", \"merge duplicate chips\", at the last hand-back of a run that offered a task, and whenever pstack would file a tracked issue, a follow-up, a reflect Backlog item or an out-of-band PR."
+description: "Run the project's suggested-task ledger: /chips, /chips all, /chips sync, offer, start, drop, merge duplicates, or settle stale tasks. Use for suggested tasks, open chips, and whenever pstack would file a follow-up or out-of-band PR."
 argument-hint: '[offer <finding> | start <id> | drop <id>]'
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Review a Slate PR or a Plate PR based on `main` with Plate v2's research, code and tests from `next`, prove each finding on the PR's head, and draft the GitHub review comment. Use for /review-comment <PR>, a request to draft a review comment on such a PR, or a request for insights from Plate v2's past work on one.
+description: Review a Slate PR or Plate `main` PR using Plate v2 research, code and tests from `next`, prove each finding on the PR head, and draft the GitHub review comment. Use for /review-comment <PR>.
 argument-hint: <PR URL | owner/repo#number> [fast]
 ---
 

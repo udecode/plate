@@ -1,6 +1,6 @@
 ---
 name: redo
-description: "Redo a prior pstack run at the current session's higher effort or stronger model, treating its plan as a draft: rerun only the plan, design, subagent and seat lanes, code and review judgments that ran below the current level, and reuse the rest. Use for \"redo <plan, page or PR>\", \"run poteto again on it at this effort\", \"treat this plan as a draft\", a teammate's run made at a lower effort, or a Babysit whose levels check finds a unit below target."
+description: "Redo a prior pstack run at a higher effort or stronger model, treating its plan as a draft and rerunning only units below target. Use for \"redo <plan, page or PR>\" or a Babysit levels failure."
 argument-hint: '<plan path, page link or PR>'
 ---
 

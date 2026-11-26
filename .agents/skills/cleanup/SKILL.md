@@ -1,6 +1,6 @@
 ---
 name: cleanup
-description: "Find where a disk's space goes, and free disk in a project by removing the git worktrees, Next.js cache folders, local Docker Postgres test databases, idle Bun, npx and uv cache entries and unused anonymous Docker volumes nothing uses, keeping every worktree a session or process works in and every cache a running server holds. Use for /cleanup, /cleanup disk, \"clean up worktrees\", \"free disk space\", \"what's using my disk\", \"where did my disk space go\", \"what is idle\", \"delete unused worktrees or builds\", or when a session-start hint counts old cleanup candidates."
+description: "Audit disk usage and remove idle git worktrees, Next.js caches, test Postgres DBs, and unused Bun/npx/uv/Docker caches while preserving active checkouts. Use for /cleanup, /cleanup disk, or freeing worktree/build disk space."
 argument-hint: '[scan|all|disk]'
 ---
 

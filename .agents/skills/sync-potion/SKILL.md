@@ -1,5 +1,5 @@
 ---
-description: Sync Potion (../potion) to Plate's newest packages (platejs, plitejs) and every Plate UI component (src/registry) from a Plate session. Use for "sync Potion", "sync Plate into Potion", "update Potion's Plate packages or UI", or 同步 Potion. Potion syncs here, not through sync-plate-ui.
+description: Sync Potion (../potion) to Plate's newest packages (platejs, plitejs) and UI components (src/registry) from a Plate session. Use for "sync Potion" or 同步 Potion.
 argument-hint: '[plate-path] [--no-pull] [--packages-only | --ui-only] [--style <name>] [--no-add]'
 name: sync-potion
 metadata:

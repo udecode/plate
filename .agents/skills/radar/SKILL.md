@@ -1,5 +1,5 @@
 ---
-description: Scan outside editors and apps for board-sized Plate product ideas, rank them with a free, Plus or Pro lean and an AI layer, and redraw the product radar map. Use for /radar, a fresh pass over one domain, a redraw of the map after picks change, or "what should Plate build next" across every feature rather than one scope.
+description: Scan external editors/apps for Plate product ideas, rank with free/Plus/Pro and AI layers, and redraw the product radar map. Use for /radar or "what should Plate build next".
 argument-hint: '[<lane: structure | visual | review | inline | io | ai> | map]'
 name: radar
 metadata:

@@ -1,5 +1,5 @@
 ---
-description: The rules that tie Potion (../potion), Plate's largest real app, to Plate. Use before planning, changing, reviewing or syncing anything in Potion from a Plate session, before editing Potion's src/registry or creating a *-app file, and when a Potion task hits a Plate problem. Nobody runs a session inside Potion, so these rules live here.
+description: Rules tying Potion (../potion) to Plate. Load before planning, editing, reviewing or syncing Potion, touching its src/registry or *-app files, or hitting a Plate bug from Potion.
 name: potion
 metadata:
   skiller:

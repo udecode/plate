@@ -18,6 +18,16 @@
       },
       {
         "type": "command",
+        "command": "cd .. && { [ ! -f .agents/skills/cleanup/scripts/scan.mjs ] || node .agents/skills/cleanup/scripts/scan.mjs --brief --auto --hook --repo .; }",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f .agents/skills/contributor-setup/scripts/doctor.mjs ] || node .agents/skills/contributor-setup/scripts/doctor.mjs --hook; }",
+        "timeout": 30
+      },
+      {
+        "type": "command",
         "command": "cd .. && { [ ! -f tooling/scripts/dev-servers.mjs ] || node tooling/scripts/dev-servers.mjs --hook; }",
         "timeout": 30
       }
@@ -90,6 +100,11 @@
       {
         "type": "command",
         "command": "cd .. && { [ ! -f tooling/scripts/relapse-due.mjs ] || node tooling/scripts/relapse-due.mjs; }",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "D=\"$HOME/.agents/skills/pstack-doctor/scripts/doctor.mjs\"; if [ -f \"$D\" ]; then node \"$D\" due --hook; else printf '{}'; fi",
         "timeout": 30
       },
       {

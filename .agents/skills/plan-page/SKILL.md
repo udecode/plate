@@ -1,6 +1,6 @@
 ---
 name: plan-page
-description: "Write, check, repair and publish a plan page: a project's plans and subject files under its plans directory, rendered by .agents/pstack/plan-page.mjs and rendered as one local HTML page per subject with a local index of every subject, and published to claude.ai at each hand-back of page work, such as an architecture or API adoption plan, for comments and feedback. Use before writing or changing a plan, a subject file in <plans>/topics or its page; at every stop that hands back page work, such as a plan written or a playbook's close; before writing or updating a PR body, which renders from the PR's plan, or a comment about your commits on someone else's PR; when a plan page or its claude.ai artifact looks wrong or refuses to render; to republish a page; or to change the page shape or a playbook's page sections."
+description: "Write, check, repair and publish plan pages and topic files rendered by .agents/pstack/plan-page.mjs (local HTML + PR bodies/comments). Use before editing plans/topics, at page-work hand-backs, or when a plan page fails to render."
 argument-hint: '[refresh | check | repair | change | pr] [plan]'
 metadata:
   source: udecode/dotai
