@@ -25,6 +25,7 @@ docs:
 - `insert` 和 `update` 命令拒绝不符合的设置或条件，读取会报告每个字段的问题以及它是否适用。
 - 一个角色的只填写视图，只接受该角色的答案，拒绝其他所有本地修改，撤销时只撤回该角色的答案。
 - `applyFieldValues` 在服务器上按模板检查每个角色的答案，并生成填写后的文档。
+- `fieldSubmission`、`startFieldValues` 和 `readFieldAnswers`，分别按名称从应用数据构建提交、用应用的值开始一个角色，以及按名称读取保存的文档中的答案。
 - 粘贴、拖动复制、创建副本和表格填充复制的字段会获得新 id 并保留名称，复制的条件指向复制出的字段。
 - HTML 和 Markdown 保留每个属性，Word 导出保留每个答案并报告它丢弃的设置。
 - 注册表 UI 提供带设置弹出框、会把被跳过的字段显示为淡色的字段标签、插入菜单，以及在原处显示每个答案或一条空白线的静态渲染组件。
@@ -454,6 +455,97 @@ const { data } = await renderStaticHtml(filled);
 
 [静态渲染](/cn/docs/static)介绍 `EditorStatic` 和 `renderStaticHtml`。
 
+### 应用数据 [#app-data]
+
+给你的应用自己填写的字段一个单独的角色，例如 `app`，并在任何人签署之前提交这个角色的答案。其他每个角色的[只填写视图](#fill-as-one-role)都会拒绝写入这些字段，`applyFieldValues` 也会把其他角色为这些字段给出的答案拒绝为 `wrong-role`，因此应用的值保持锁定。你的服务器保存应用的提交，并在每个列表中把它放在第一位发送。
+
+在一个 `app` 角色拥有名为 `address` 和 `rent` 的字段、租客的两个姓名字段共用 `tenant_name` 的租赁合同中，应用填写它自己的字段，并用同一条记录为租客姓名提供起始值：
+
+```ts
+import {
+  applyFieldValues,
+  BaseFieldPlugin,
+  fieldSubmission,
+  readFieldAnswers,
+  startFieldValues,
+} from 'platejs/field';
+
+const record = {
+  address: '1 Main St',
+  rent: 1200,
+  tenant_name: 'Ada Lovelace',
+};
+
+// 应用自己的角色在任何人签署之前填写锁定的值。
+const app = fieldSubmission(template, 'app', record);
+
+// 租客的只填写视图打开时带有应用的答案，并以记录中的值作为起始值。
+const start = startFieldValues(
+  template,
+  [app],
+  fieldSubmission(template, 'tenant', record)
+);
+if (!start.ok) throw new Error(start.refusals[0].code);
+
+// 租客在 fillRole 为 'tenant' 的编辑器中填写 start.document。
+const tenant = editor.plugin(BaseFieldPlugin).read.submission('tenant');
+
+// 服务器应用每个角色的答案。
+const result = applyFieldValues(template, [app, tenant]);
+if (!result.ok) throw new Error(result.refusals[0].code);
+
+// 保存的文档按名称读回。
+readFieldAnswers(result.document).tenant?.tenant_name;
+// 租客保留起始姓名时为 { kind: 'text', value: 'Ada Lovelace' }
+```
+
+#### 按名称构建提交 [#build-a-submission-by-name]
+
+`fieldSubmission(template, role, values, options?)` 把一个以字段 `name` 为键的记录转换为一个角色的 `FieldSubmission`，以 `fieldId` 为键。`role` 中名称是 `values` 自有键的每个字段都得到该键的值，因此该角色询问两次的名称会写到两个字段上。
+
+- `null` 和 `undefined` 不包含该字段。
+- 该角色没有的名称、不指向任何字段的键和没有名称的字段都会被忽略，因此一条宽记录可以用于每个角色。记录继承的键，例如 `constructor`，从不计入。
+- 它不检查任何值。`applyFieldValues` 判断每一个值，并把漏填必填字段的应用提交拒绝为 `missing-required`，同时给出该字段的 `name`。
+- `options.type` 指定重命名后的字段类型，与 `applyFieldValues` 中相同。
+
+#### 用应用的值开始一个角色 [#start-a-role-from-app-values]
+
+`startFieldValues(template, submissions, start, options?)` 像 `applyFieldValues` 一样检查 `submissions`，然后把 `start` 的值写入该角色的字段。`start` 是一个尚未提交的角色的 `FieldSubmission`。它返回与 `applyFieldValues` 相同的结果结构。成功时，`document` 是该角色开始填写时的已填写文档，用于在该角色的只填写视图中打开。
+
+- 一个值写入它的字段，以及该角色中同名的每个其他字段，与 `update` 的写入方式相同。
+- `start` 没有给值的字段从空白开始，即使它有 `defaultValue`。
+- 条件读取之前角色的答案和 `start` 自己的值，就像该角色已经提交一样。被跳过的字段，或者在等待一个尚未提交的角色的字段，它的值会被略去且不产生拒绝，该字段从空白开始。因此应用可以在每个角色都回答之前，从一条宽记录开始。
+- `pending` 只来自 `submissions`，因此 `start` 从不会把它的角色从中移除。
+
+填写的人保留、修改或清空每个起始值。他们的提交就是他们自己的答案，`applyFieldValues` 像判断其他提交一样判断它。它会把清空的必填值拒绝为 `missing-required`，把保留在随后因另一个答案而被跳过的字段上的值拒绝为 `skipped`，直到清空它。
+
+`startFieldValues` 首先拒绝 `applyFieldValues` 对 `submissions` 拒绝的内容。然后，`start` 结构不对时，它单独把 `start` 拒绝为 `invalid-submission`，`index` 等于 `submissions.length`；它的角色已经提交时拒绝为 `duplicate-role`；该角色不拥有任何字段时拒绝为 `unknown-role`。否则，它一起列出每个不指向任何字段、属于另一个角色的字段或不符合其字段的值的 `unknown-field`、`wrong-role` 或 `invalid-value`，以及 `start` 为同一个名称给出两个不同值时该名称的 `answer-conflict`。它从不把 `start` 拒绝为 `missing-required`、`skipped` 或 `waiting`，因为起始值可以让任何字段保持空白。
+
+#### 按名称读取保存的答案 [#read-saved-answers-by-name]
+
+`readFieldAnswers(document, options?)` 读取一个保存的文档，返回每个角色以名称为键的答案，即 `answers[role][name]`。每个拥有命名字段的角色得到一个记录，没有名称的字段不包含在内。两层都是没有原型的记录，因此 `constructor` 这样的角色或名称会作为它自己的键读取。它像 `applyFieldValues` 一样读取字段，因此不是有效字段的节点会被跳过，重复的 `fieldId` 从它的第一个持有者读取。`options.type` 指定重命名后的字段类型。
+
+每个答案是一个 `FieldAnswer`：
+
+| 答案 | 何时出现 |
+|------|----------|
+| `{ kind, value }` | 该名称的字段持有一个符合 `kind` 的值。复选框的 `value` 是 `boolean`，数字是 `number`，其他每种类型是 `string`。 |
+| `{ kind }` | 这些字段没有值，或持有一个不符合 `kind` 的值。 |
+| `{ kind, problem: 'answer-conflict' }` | 这些字段持有不同的值。 |
+| `{ problem: 'name-conflict' }` | 这些字段的类型、选项值或条件不同，因此该名称没有唯一的类型。 |
+
+先检查 `'problem' in answer`，再按 `kind` 收窄以读取 `value`：
+
+```ts
+const rent = readFieldAnswers(result.document).app?.rent;
+
+if (rent && !('problem' in rent) && rent.kind === 'number') {
+  rent.value; // number | undefined
+}
+```
+
+这个读取不保存任何提交记录，因此它不说明哪些字段适用。没有提交任何内容的角色和让每个字段都保持空白的角色读起来相同。需要知道哪些字段适用的应用从 `applyFieldValues` 的结果中获取这一信息。
+
 ## 复制与粘贴
 
 字段在移动（包括拖动移动）、被撤销恢复以及加载已保存的文档时保留它的 `fieldId`。复制会获得新 id：
@@ -521,7 +613,10 @@ const dropped = result.diagnostics.filter(
 | `fillRole` | `BaseFieldPlugin` 状态 | 该编辑器填写时使用的角色，编辑模板时为 `null`。通过 `initialState` 或 `editor.plugin(FieldPlugin).store.set` 设置。 |
 | `useFieldRead(fieldId)` | `platejs/field/react` | 读取一个字段、它的问题以及它是否适用，任一变化时重新渲染。 |
 | `applyFieldValues(template, submissions, options?)` | `platejs/field` | 按模板检查每个角色的答案，返回填写后的文档和 `pending`，或者返回拒绝。 |
+| `fieldSubmission(template, role, values, options?)` | `platejs/field` | 从以字段名称为键的记录构建一个角色的提交，以 `fieldId` 为键。 |
+| `startFieldValues(template, submissions, start, options?)` | `platejs/field` | 检查这些提交，返回一个角色开始填写时的文档和 `pending`，或者返回拒绝。 |
+| `readFieldAnswers(document, options?)` | `platejs/field` | 按角色和名称读取保存的文档中的答案，每个答案是一个 `FieldAnswer`。 |
 | `fitsField(field, value)` | `platejs/field` | 判断一个值是否符合字段的类型和选项。 |
 | `fillsField(field, value)` | `platejs/field` | 判断一个值是否是字段的已填答案。 |
 | `FIELD_TESTS` | `platejs/field` | 每种类型的条件可以使用的测试。 |
-| `FieldElement`、`FieldSettings`、`FieldPatch`、`FieldRead`、`FieldCondition`、`FieldProblem`、`FieldKind`、`FieldTest`、`FieldValue`、`FieldOption`、`FieldSubmission`、`FieldRefusal`、`FieldApplyResult` | `platejs/field` | 字段类型。 |
+| `FieldElement`、`FieldSettings`、`FieldPatch`、`FieldRead`、`FieldCondition`、`FieldProblem`、`FieldKind`、`FieldTest`、`FieldValue`、`FieldOption`、`FieldSubmission`、`FieldRefusal`、`FieldApplyResult`、`FieldAnswer` | `platejs/field` | 字段类型。 |

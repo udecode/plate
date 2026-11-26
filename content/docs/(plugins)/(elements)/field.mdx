@@ -25,6 +25,7 @@ The demo is a lease template for a landlord and a tenant. Insert a field from th
 - `insert` and `update` commands that refuse a setting or condition that does not fit, and reads that report what is wrong with each field and whether it applies.
 - A fill-only view of one role, which takes that role's answers, refuses every other local change and undoes only that role's answers.
 - `applyFieldValues`, which checks each role's answers against the template on a server and builds the filled document.
+- `fieldSubmission`, `startFieldValues` and `readFieldAnswers`, which build a submission from app data by name, start a role from app values and read a saved document's answers by name.
 - New ids for the fields a paste, a drag copy, a duplicate or a table fill copies, which keep their names, with copied conditions that name the copies.
 - HTML and Markdown that keep every property, and Word export that keeps each answer and reports the settings it drops.
 - A field chip with a settings popover that mutes a skipped field, an insert menu, and a static renderer that shows each answer in place or a blank line, in the registry UI.
@@ -454,6 +455,97 @@ const { data } = await renderStaticHtml(filled);
 
 [Static Rendering](/docs/static) covers `EditorStatic` and `renderStaticHtml`.
 
+### App data
+
+Give the fields your app fills itself a role of their own, such as `app`, and submit that role's answers before anyone signs. Every other role's [fill view](#fill-as-one-role) refuses a write to those fields, and `applyFieldValues` refuses another role's answer for one as `wrong-role`, so the app's values stay locked. Your server keeps the app's submission and sends it first in every list.
+
+In a lease whose `app` role holds fields named `address` and `rent`, and whose tenant's two name fields share `tenant_name`, the app fills its own fields and starts the tenant's name from the same record:
+
+```ts
+import {
+  applyFieldValues,
+  BaseFieldPlugin,
+  fieldSubmission,
+  readFieldAnswers,
+  startFieldValues,
+} from 'platejs/field';
+
+const record = {
+  address: '1 Main St',
+  rent: 1200,
+  tenant_name: 'Ada Lovelace',
+};
+
+// The app's own role fills locked values before anyone signs.
+const app = fieldSubmission(template, 'app', record);
+
+// The tenant's fill view opens on the app's answers, with the record's values as a start.
+const start = startFieldValues(
+  template,
+  [app],
+  fieldSubmission(template, 'tenant', record)
+);
+if (!start.ok) throw new Error(start.refusals[0].code);
+
+// The tenant fills start.document in an editor whose fillRole is 'tenant'.
+const tenant = editor.plugin(BaseFieldPlugin).read.submission('tenant');
+
+// The server applies every role.
+const result = applyFieldValues(template, [app, tenant]);
+if (!result.ok) throw new Error(result.refusals[0].code);
+
+// The saved document reads back by name.
+readFieldAnswers(result.document).tenant?.tenant_name;
+// { kind: 'text', value: 'Ada Lovelace' } when the tenant kept the starting name
+```
+
+#### Build a submission by name
+
+`fieldSubmission(template, role, values, options?)` turns a record keyed by field `name` into one role's `FieldSubmission`, keyed by `fieldId`. Each field of `role` whose name is an own key of `values` gets that key's value, so a name the role asks twice gets it on both fields.
+
+- `null` and `undefined` leave the field out.
+- A name the role lacks, a key that names no field and an unnamed field are ignored, so one wide record serves every role. A key the record inherits, such as `constructor`, never counts.
+- It checks no value. `applyFieldValues` judges each one, and refuses an app submission that misses a required field as `missing-required` with the field's `name`.
+- `options.type` names a renamed field type, as it does for `applyFieldValues`.
+
+#### Start a role from app values
+
+`startFieldValues(template, submissions, start, options?)` checks `submissions` as `applyFieldValues` does, then writes the values of `start`, a `FieldSubmission` of a role that has not submitted, on that role's fields. It returns `applyFieldValues`'s result shape. On success, `document` is the filled document the role starts from, to open in that role's fill view.
+
+- A value goes on its field and on every other field of its role and name, as `update` writes it.
+- A field `start` gives no value starts blank, even one with a `defaultValue`.
+- Conditions read the earlier roles' answers and `start`'s own values, as if the role had submitted. A value on a field that skips, or that waits on a role that has not submitted, is left out with no refusal, and the field starts blank. So an app can start from a wide record before every role has answered.
+- `pending` comes from `submissions` alone, so `start` never takes its role off it.
+
+The person who fills keeps, changes or clears each starting value. Their submission is their own answer, and `applyFieldValues` judges it like any other. It refuses a cleared required value as `missing-required`, and a kept value on a field that another answer then skips as `skipped` until it is cleared.
+
+`startFieldValues` first refuses what `applyFieldValues` refuses for `submissions`. Then it refuses `start` alone as `invalid-submission` when it is malformed, with `index` equal to `submissions.length`, as `duplicate-role` when its role already submitted, and as `unknown-role` when the role owns no field. Otherwise it lists together `unknown-field`, `wrong-role` or `invalid-value` for each value that names no field, another role's field or a value that does not fit, and `answer-conflict` for each name that `start` gives two different values. It never refuses `start` as `missing-required`, `skipped` or `waiting`, because a start may leave any field blank.
+
+#### Read saved answers by name
+
+`readFieldAnswers(document, options?)` reads a saved document and returns each role's answers keyed by name, as `answers[role][name]`. Each role that has a named field gets a record, and unnamed fields are left out. Both levels are records with no prototype, so a role or name such as `constructor` reads as its own key. It reads fields as `applyFieldValues` reads them, so a node that is not a valid field is skipped, and a duplicated `fieldId` reads from its first holder. `options.type` names a renamed field type.
+
+Each answer is a `FieldAnswer`:
+
+| Answer | When |
+|--------|------|
+| `{ kind, value }` | The fields of the name hold one value that fits `kind`. `value` is a `boolean` for a checkbox, a `number` for a number and a `string` for every other kind. |
+| `{ kind }` | The fields hold no value, or one value that does not fit `kind`. |
+| `{ kind, problem: 'answer-conflict' }` | The fields hold different values. |
+| `{ problem: 'name-conflict' }` | The fields differ in kind, option values or condition, so the name has no one kind. |
+
+Check `'problem' in answer` first, then narrow on `kind` to read `value`:
+
+```ts
+const rent = readFieldAnswers(result.document).app?.rent;
+
+if (rent && !('problem' in rent) && rent.kind === 'number') {
+  rent.value; // number | undefined
+}
+```
+
+The read keeps no record of submissions, so it says nothing of which fields apply. A role that submitted nothing and one that left every field blank read the same. An app that needs to know which fields apply takes that from the result of `applyFieldValues`.
+
 ## Copy and paste
 
 A field keeps its `fieldId` through a move, a drag move included, through an undo that brings it back and when a saved document loads. A copy gets new ids:
@@ -521,7 +613,10 @@ Plain text, through `serializePlainText` from `platejs`, writes the same text as
 | `fillRole` | `BaseFieldPlugin` state | The role this editor fills as, or `null` while authoring. Set it through `initialState` or `editor.plugin(FieldPlugin).store.set`. |
 | `useFieldRead(fieldId)` | `platejs/field/react` | Reads one field, its problems and whether it applies, and renders again when any of them changes. |
 | `applyFieldValues(template, submissions, options?)` | `platejs/field` | Checks each role's answers against the template, and returns the filled document with `pending` or the refusals. |
+| `fieldSubmission(template, role, values, options?)` | `platejs/field` | Builds one role's submission, keyed by `fieldId`, from a record keyed by field name. |
+| `startFieldValues(template, submissions, start, options?)` | `platejs/field` | Checks the submissions, and returns the document a role starts filling from with `pending`, or the refusals. |
+| `readFieldAnswers(document, options?)` | `platejs/field` | Reads a saved document's answers by role and name, each as a `FieldAnswer`. |
 | `fitsField(field, value)` | `platejs/field` | Whether a value fits a field's kind and options. |
 | `fillsField(field, value)` | `platejs/field` | Whether a value is a filled answer for a field. |
 | `FIELD_TESTS` | `platejs/field` | The tests a condition may use on each kind. |
-| `FieldElement`, `FieldSettings`, `FieldPatch`, `FieldRead`, `FieldCondition`, `FieldProblem`, `FieldKind`, `FieldTest`, `FieldValue`, `FieldOption`, `FieldSubmission`, `FieldRefusal`, `FieldApplyResult` | `platejs/field` | Field types. |
+| `FieldElement`, `FieldSettings`, `FieldPatch`, `FieldRead`, `FieldCondition`, `FieldProblem`, `FieldKind`, `FieldTest`, `FieldValue`, `FieldOption`, `FieldSubmission`, `FieldRefusal`, `FieldApplyResult`, `FieldAnswer` | `platejs/field` | Field types. |
