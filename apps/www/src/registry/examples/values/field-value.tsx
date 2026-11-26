@@ -34,13 +34,22 @@ export const fieldValue: Value = (
       <hdate value="2026-11-20">
         <htext />
       </hdate>{' '}
-      for {field('tenant', 'text', 'Tenant name', 'tenant', { required: true })}
+      for{' '}
+      {field('tenant', 'text', 'Tenant name', 'tenant', {
+        name: 'tenant_name',
+        required: true,
+      })}
       .
     </hp>
     <hp>
       The landlord,{' '}
-      {field('landlord', 'text', 'Landlord', 'landlord', { required: true })},
-      lets the home from {field('start', 'date', 'Start date', 'landlord')}.
+      {field('landlord', 'text', 'Landlord', 'landlord', {
+        name: 'landlord_name',
+        required: true,
+      })}
+      , lets the home from{' '}
+      {field('start', 'date', 'Start date', 'landlord', { name: 'start_date' })}
+      .
     </hp>
     <htable>
       <htr>
@@ -57,7 +66,10 @@ export const fieldValue: Value = (
         </htd>
         <htd>
           <hp>
-            {field('rent', 'number', 'Rent', 'landlord', { required: true })}
+            {field('rent', 'number', 'Rent', 'landlord', {
+              name: 'rent',
+              required: true,
+            })}
           </hp>
         </htd>
       </htr>
@@ -66,13 +78,18 @@ export const fieldValue: Value = (
           <hp>Deposit</hp>
         </htd>
         <htd>
-          <hp>{field('deposit', 'number', 'Deposit', 'landlord')}</hp>
+          <hp>
+            {field('deposit', 'number', 'Deposit', 'landlord', {
+              name: 'deposit',
+            })}
+          </hp>
         </htd>
       </htr>
     </htable>
     <hp>
       Pets allowed?{' '}
       {field('pets', 'choice', 'Pets allowed', 'landlord', {
+        name: 'pets_allowed',
         options: [
           { label: 'Yes', value: 'yes' },
           { label: 'No', value: 'no' },
@@ -82,17 +99,30 @@ export const fieldValue: Value = (
       Pet name:{' '}
       {field('pet-name', 'text', 'Pet name', 'tenant', {
         condition: { ref: 'pets', test: 'equals', value: 'yes' },
+        name: 'pet_name',
         required: true,
       })}
     </hp>
     <hp>
-      {field('rules', 'checkbox', 'House rules', 'tenant', { required: true })}{' '}
+      {field('rules', 'checkbox', 'House rules', 'tenant', {
+        name: 'house_rules',
+        required: true,
+      })}{' '}
       I accept the house rules.
     </hp>
     <hp>
       Signed by the landlord{' '}
-      {field('landlord-signature', 'signature', 'Signature', 'landlord')} and
-      the tenant {field('tenant-signature', 'signature', 'Signature', 'tenant')}
+      {field('landlord-signature', 'signature', 'Signature', 'landlord', {
+        name: 'landlord_signature',
+      })}{' '}
+      and the tenant{' '}
+      {field('tenant-again', 'text', 'Tenant name', 'tenant', {
+        name: 'tenant_name',
+        required: true,
+      })}{' '}
+      {field('tenant-signature', 'signature', 'Signature', 'tenant', {
+        name: 'tenant_signature',
+      })}
     </hp>
   </fragment>
 );

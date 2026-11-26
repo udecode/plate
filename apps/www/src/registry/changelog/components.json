@@ -3,12 +3,14 @@
   "components": {
     "field-demo": [
       "2026-11-25-field-demo-answer-conflict",
+      "2026-11-25-field-name-input",
       "2026-11-24-field-static-answers",
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
     "field": [
       "2026-11-25-field-name-conflicts",
+      "2026-11-25-field-name-input",
       "2026-11-24-field-static-answers",
       "2026-11-23-field-condition-loop",
       "2026-11-23-field-fill-view",

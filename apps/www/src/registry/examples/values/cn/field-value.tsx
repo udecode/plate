@@ -19,12 +19,21 @@ export const fieldValue: Value = (
       <hdate value="2026-11-20">
         <htext />
       </hdate>{' '}
-      为 {field('tenant', 'text', '租客姓名', '租客', { required: true })}{' '}
+      为{' '}
+      {field('tenant', 'text', '租客姓名', '租客', {
+        name: 'tenant_name',
+        required: true,
+      })}{' '}
       拟定。
     </hp>
     <hp>
-      房东 {field('landlord', 'text', '房东姓名', '房东', { required: true })}{' '}
-      自 {field('start', 'date', '起租日期', '房东')} 起出租该房屋。
+      房东{' '}
+      {field('landlord', 'text', '房东姓名', '房东', {
+        name: 'landlord_name',
+        required: true,
+      })}{' '}
+      自 {field('start', 'date', '起租日期', '房东', { name: 'start_date' })}{' '}
+      起出租该房屋。
     </hp>
     <htable>
       <htr>
@@ -40,7 +49,12 @@ export const fieldValue: Value = (
           <hp>月租</hp>
         </htd>
         <htd>
-          <hp>{field('rent', 'number', '月租', '房东', { required: true })}</hp>
+          <hp>
+            {field('rent', 'number', '月租', '房东', {
+              name: 'rent',
+              required: true,
+            })}
+          </hp>
         </htd>
       </htr>
       <htr>
@@ -48,13 +62,16 @@ export const fieldValue: Value = (
           <hp>押金</hp>
         </htd>
         <htd>
-          <hp>{field('deposit', 'number', '押金', '房东')}</hp>
+          <hp>
+            {field('deposit', 'number', '押金', '房东', { name: 'deposit' })}
+          </hp>
         </htd>
       </htr>
     </htable>
     <hp>
       是否允许养宠物？
       {field('pets', 'choice', '允许养宠物', '房东', {
+        name: 'pets_allowed',
         options: [
           { label: '是', value: 'yes' },
           { label: '否', value: 'no' },
@@ -64,16 +81,31 @@ export const fieldValue: Value = (
       宠物名字：
       {field('pet-name', 'text', '宠物名字', '租客', {
         condition: { ref: 'pets', test: 'equals', value: 'yes' },
+        name: 'pet_name',
         required: true,
       })}
     </hp>
     <hp>
-      {field('rules', 'checkbox', '房屋守则', '租客', { required: true })}{' '}
+      {field('rules', 'checkbox', '房屋守则', '租客', {
+        name: 'house_rules',
+        required: true,
+      })}{' '}
       我已阅读并接受房屋守则。
     </hp>
     <hp>
-      房东签名 {field('landlord-signature', 'signature', '签名', '房东')}{' '}
-      租客签名 {field('tenant-signature', 'signature', '签名', '租客')}
+      房东签名{' '}
+      {field('landlord-signature', 'signature', '签名', '房东', {
+        name: 'landlord_signature',
+      })}{' '}
+      租客{' '}
+      {field('tenant-again', 'text', '租客姓名', '租客', {
+        name: 'tenant_name',
+        required: true,
+      })}{' '}
+      签名{' '}
+      {field('tenant-signature', 'signature', '签名', '租客', {
+        name: 'tenant_signature',
+      })}
     </hp>
   </fragment>
 );

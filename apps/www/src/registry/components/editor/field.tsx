@@ -2,6 +2,7 @@
 
 import { cn } from 'cn';
 import { CheckIcon, PlusIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
+import { EditorSchemaValidationError } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import {
   FIELD_TESTS,
@@ -99,14 +100,13 @@ const saveAnswer = (
   editor: ReturnType<typeof useEditor>,
   fieldId: string,
   value?: FieldValue
-) => {
-  editor.update((tx) => tx.plugin(FieldPlugin).update(fieldId, { value }));
+) =>
+  editor.update((tx) => {
+    tx.plugin(FieldPlugin).update(fieldId, { value });
 
-  return Object.is(
-    editor.plugin(FieldPlugin).read.field(fieldId)?.node.value,
-    value
-  );
-};
+    return true;
+  }) === true &&
+  Object.is(editor.plugin(FieldPlugin).read.field(fieldId)?.node.value, value);
 
 const useWaitsForReview = (element: FieldNode, watches: boolean) => {
   const editor = useEditor();
@@ -160,9 +160,12 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
       element.value ??
       ''
   );
+  const writeName = React.useRef<() => 'refused' | 'written'>(null);
   let form: React.ReactNode = null;
 
-  if (!filling && !readOnly) form = <FieldSettingsForm element={element} />;
+  if (!filling && !readOnly) {
+    form = <FieldSettingsForm element={element} writeName={writeName} />;
+  }
   if (fills && !toggles) form = <FieldAnswerForm element={element} />;
 
   const openAtPointerDownRef = React.useRef(false);
@@ -251,9 +254,11 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
       {form ? (
         <Popover
           open={open}
-          onOpenChange={(nextOpen) =>
-            setOpenAs(nextOpen ? { role: fillRole } : null)
-          }
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen && writeName.current?.() === 'refused') return;
+
+            setOpenAs(nextOpen ? { role: fillRole } : null);
+          }}
         >
           <PopoverTrigger asChild>
             <button {...chip} type="button">
@@ -312,7 +317,13 @@ function FieldAnswerForm({ element }: { element: FieldNode }) {
   );
 }
 
-function FieldSettingsForm({ element }: { element: FieldNode }) {
+function FieldSettingsForm({
+  element,
+  writeName,
+}: {
+  element: FieldNode;
+  writeName: React.Ref<() => 'refused' | 'written'>;
+}) {
   const editor = useEditor();
   const { condition, fieldId, kind, options = [] } = element;
   const update = (patch: FieldPatch) =>
@@ -359,6 +370,7 @@ function FieldSettingsForm({ element }: { element: FieldNode }) {
         value={element.label}
         onChange={(event) => update({ label: event.target.value })}
       />
+      <FieldNameInput element={element} writeName={writeName} />
       <Label htmlFor={`${fieldId}-kind`}>Kind</Label>
       <NativeSelect
         id={`${fieldId}-kind`}
@@ -488,7 +500,9 @@ function FieldSettingsForm({ element }: { element: FieldNode }) {
         )}
         {choices.map((entry) => (
           <NativeSelectOption key={entry.fieldId} value={`#${entry.fieldId}`}>
-            {entry.node.label}
+            {entry.node.name === undefined
+              ? entry.node.label
+              : `${entry.node.label} (${entry.node.name})`}
           </NativeSelectOption>
         ))}
       </NativeSelect>
@@ -541,6 +555,79 @@ function FieldSettingsForm({ element }: { element: FieldNode }) {
         </div>
       )}
     </div>
+  );
+}
+
+function FieldNameInput({
+  element,
+  writeName,
+}: {
+  element: FieldNode;
+  writeName: React.Ref<() => 'refused' | 'written'>;
+}) {
+  const editor = useEditor();
+  const { fieldId, name } = element;
+  const [draft, setDraft] = React.useState<{
+    refused: boolean;
+    text: string;
+  } | null>(null);
+  const write = () => {
+    if (!draft) return 'written';
+
+    const next = draft.text === '' ? undefined : draft.text;
+
+    if (next === name) {
+      setDraft(null);
+
+      return 'written';
+    }
+
+    try {
+      editor.update((tx) =>
+        tx.plugin(FieldPlugin).update(fieldId, { name: next })
+      );
+      setDraft(null);
+
+      return 'written';
+    } catch (error) {
+      if (!(error instanceof EditorSchemaValidationError)) throw error;
+
+      setDraft({ ...draft, refused: true });
+
+      return 'refused';
+    }
+  };
+
+  React.useImperativeHandle(writeName, () => write);
+
+  return (
+    <>
+      <Label htmlFor={`${fieldId}-name`}>Name</Label>
+      <Input
+        id={`${fieldId}-name`}
+        className="h-8"
+        aria-describedby={draft?.refused ? `${fieldId}-name-error` : undefined}
+        aria-invalid={draft?.refused || undefined}
+        value={draft?.text ?? name ?? ''}
+        onBlur={write}
+        onChange={(event) =>
+          setDraft({ refused: false, text: event.target.value })
+        }
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.nativeEvent.isComposing) write();
+        }}
+      />
+      {draft?.refused && (
+        <p
+          id={`${fieldId}-name-error`}
+          className="col-start-2 text-xs text-destructive"
+          role="alert"
+        >
+          A name cannot start or end with a space or hold a tab, a line break or
+          another control character.
+        </p>
+      )}
+    </>
   );
 }
 

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-25-field-name-input",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-25-field-name-input.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Name a field in its settings and name the lease's fields",
+  "targets": [
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-demo",
+      "files": [
+        "apps/www/src/registry/examples/field-demo.tsx",
+        "apps/www/src/registry/examples/values/cn/field-value.tsx",
+        "apps/www/src/registry/examples/values/field-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-25-field-name-input",
+      "kind": "new",
+      "summary": "Add a Name input to the field settings. It keeps what you type and writes the name on blur, on Enter or when the settings close, and removes the name when emptied. A name the rule refuses, such as one with a space at either end or a tab, stays in the input with an error, and the settings stay open until it changes. The Show when list shows each named field's name beside its label, and an answer the editor refuses shows Not saved.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with the copied `field` component, because its Name input writes the field's `name`, which older versions refuse."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-field-name-input",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-25-field-demo-lease-names",
+      "kind": "behavior",
+      "summary": "Name every field of the lease, and ask for the tenant's name again beside the tenant's signature, so typing it in one place fills the other.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with the copied lease value, because every field in it now has a `name`, which older versions refuse on load."
+      ],
+      "targets": ["field-demo"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-field-name-input",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

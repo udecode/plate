@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-25-field-name-input",
+      "href": "/registry/changelog/2026-11-25-field-name-input.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Name a field in its settings and name the lease's fields",
+      "change": {
+        "type": "source",
+        "date": "2026-11-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field", "field-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-25-ink-tools",
       "href": "/registry/changelog/2026-11-25-ink-tools.json",
       "status": "draft",
