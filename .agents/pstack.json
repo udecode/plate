@@ -231,7 +231,8 @@
     "floor": [
       "claude-opus-5 @xhigh",
       "gpt-6.1-sol @xhigh",
-      "gpt-6.2-sol @xhigh"
+      "gpt-6.2-sol @xhigh",
+      "gemini-4-neon @high"
     ],
     "gated": [
       "zbeyens-bot[bot]"

@@ -27,6 +27,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -147,7 +148,7 @@ const BOTS = new Set([
   'claude',
   'zbeyens-bot',
 ]);
-const RUNTIMES = new Set(['claude', 'codex']);
+const RUNTIMES = new Set(['claude', 'codex', 'antigravity', 'agy']);
 const STATE_ORDER = [
   'conflict',
   'stale',
@@ -336,19 +337,40 @@ const localConfig = () =>
     ? readJson(readFileSync(join(root, CONFIG), 'utf-8'))
     : null;
 
+const AGY_MODEL_EFFORT = new RegExp(`^(.+)-(${EFFORTS.join('|')})$`, 'u');
+const stripProvider = (model) => String(model ?? '').replace(/^agy:/u, '');
+const parseAgyModel = (raw, fallbackEffort = 'unknown') => {
+  const cleaned = stripProvider(raw);
+  const match = AGY_MODEL_EFFORT.exec(cleaned);
+  return match
+    ? { model: match[1], effort: match[2] }
+    : { model: cleaned || 'unknown', effort: fallbackEffort };
+};
+const formatLead = (lead) => {
+  const parsed = parseAgyModel(lead.model, lead.effort);
+  return leadLabel({
+    ...lead,
+    model: parsed.model,
+    effort: lead.effort || parsed.effort,
+  });
+};
 const rank = (effort) => EFFORTS.indexOf(effort);
 const parseLabel = (label) => {
   const match = /^(\S+) @(\S+)$/u.exec(label ?? '');
   return match ? { model: match[1], effort: match[2] } : null;
 };
-const meets = (model, effort, floor, max = null) =>
-  rank(effort) !== -1 &&
-  floor.some(
-    (entry) =>
-      model.startsWith(entry.model) &&
-      rank(effort) >= rank(entry.effort) &&
-      (max === null || rank(effort) <= rank(max))
+const meets = (model, effort, floor, max = null) => {
+  const normalized = stripProvider(model);
+  return (
+    rank(effort) !== -1 &&
+    floor.some(
+      (entry) =>
+        normalized.startsWith(stripProvider(entry.model)) &&
+        rank(effort) >= rank(entry.effort) &&
+        (max === null || rank(effort) <= rank(max))
+    )
   );
+};
 
 const betaMilestones = (policy) => [
   ...[policy.milestones?.slate, policy.milestones?.plate].flatMap((layer) => [
@@ -1428,9 +1450,13 @@ function runtimeAncestors() {
   const seen = new Set();
   for (let pid = process.ppid; pid > 1 && !seen.has(pid);) {
     seen.add(pid);
-    const match = execFileSync('ps', ['-o', 'ppid=,comm=', '-p', String(pid)], {
-      encoding: 'utf-8',
-    })
+    const match = execFileSync(
+      'ps',
+      ['-ww', '-o', 'ppid=,comm=', '-p', String(pid)],
+      {
+        encoding: 'utf-8',
+      }
+    )
       .trim()
       .match(/^(\d+)\s+(.+)$/u);
     if (!match) break;
@@ -1440,6 +1466,114 @@ function runtimeAncestors() {
     pid = Number(match[1]);
   }
   return found;
+}
+
+const SAFE_ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/u;
+const AGY_TRANSCRIPT_ID =
+  /[/\\]brain[/\\]([^/\\]+)[/\\]\.system_generated[/\\]logs[/\\]transcript(?:_full)?\.jsonl$/u;
+const transcriptId = (file) =>
+  AGY_TRANSCRIPT_ID.exec(file)?.[1] ?? basename(file, '.jsonl');
+
+function agyBrainRoots(env = process.env) {
+  const roots = [];
+  const add = (dir) => {
+    if (dir && existsSync(dir) && !roots.includes(dir)) roots.push(dir);
+  };
+  if (env.ANTIGRAVITY_APP_DATA_DIR) {
+    add(join(env.ANTIGRAVITY_APP_DATA_DIR, 'brain'));
+  }
+  if (env.GEMINI_HOME) {
+    add(join(env.GEMINI_HOME, 'antigravity-acp', 'brain'));
+    add(join(env.GEMINI_HOME, 'antigravity', 'brain'));
+  }
+  const home = env.HOME ?? homedir();
+  const t3Providers = join(
+    env.T3_USERDATA_DIR ?? join(home, '.t3', 'userdata'),
+    'providers',
+    'antigravity'
+  );
+  if (existsSync(t3Providers)) {
+    for (const entry of readdirSync(t3Providers, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        add(join(t3Providers, entry.name, 'antigravity-acp', 'brain'));
+      }
+    }
+  }
+  add(join(home, '.gemini', 'antigravity', 'brain'));
+  return roots;
+}
+
+function resolveAgyTranscript(transcript, env = process.env) {
+  if (transcript && existsSync(transcript)) return transcript;
+  const id = env.ANTIGRAVITY_CONVERSATION_ID;
+  if (!SAFE_ID.test(id ?? '')) return null;
+  for (const brain of agyBrainRoots(env)) {
+    const logs = join(brain, id, '.system_generated', 'logs');
+    for (const name of ['transcript.jsonl', 'transcript_full.jsonl']) {
+      const candidate = join(logs, name);
+      if (existsSync(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+// Antigravity writes a compact transcript.jsonl whose large fields list their names in
+// truncated_fields, alongside a sibling transcript_full.jsonl with the untruncated payloads.
+function readAgyRecords(path) {
+  const records = readLines(path);
+  const truncated = records.some(
+    (record) =>
+      Array.isArray(record.truncated_fields) &&
+      record.truncated_fields.length > 0
+  );
+  if (!truncated) return records;
+  const fullPath = join(dirname(path), 'transcript_full.jsonl');
+  if (fullPath === path || !existsSync(fullPath)) return records;
+  const full = readLines(fullPath);
+  const byStep = new Map(
+    full
+      .filter((record) => record.step_index !== undefined)
+      .map((record) => [record.step_index, record])
+  );
+  return records.map((record, index) => {
+    if (
+      !Array.isArray(record.truncated_fields) ||
+      record.truncated_fields.length === 0
+    ) {
+      return record;
+    }
+    const hydrated =
+      (record.step_index !== undefined
+        ? byStep.get(record.step_index)
+        : null) ?? full[index];
+    if (!hydrated) return record;
+    const merged = { ...record };
+    for (const field of record.truncated_fields) {
+      if (field in hydrated) merged[field] = hydrated[field];
+    }
+    return merged;
+  });
+}
+
+function isAgySubagent(records) {
+  let sawUserExplicit = false;
+  let sawParentMessage = false;
+  for (const record of records) {
+    if (record.source === 'USER_EXPLICIT' && record.type === 'USER_INPUT') {
+      sawUserExplicit = true;
+    }
+    if (
+      typeof record.content === 'string' &&
+      (record.content.includes('You are running as a subagent') ||
+        (record.type === 'SYSTEM_MESSAGE' &&
+          record.source === 'SYSTEM' &&
+          /\[Message\]\s+timestamp=\S+\s+sender=/u.test(record.content)))
+    ) {
+      sawParentMessage = true;
+    }
+    if (record.type === 'PLANNER_RESPONSE') break;
+  }
+  return !sawUserExplicit && sawParentMessage;
 }
 
 const jsonlIn = (dir) =>
@@ -1503,6 +1637,19 @@ function claudeChain(path) {
   }
 }
 
+const agyTurnOf = (record) => {
+  if (record.type !== 'PLANNER_RESPONSE' || !record.model) return null;
+  const parsed = parseAgyModel(
+    record.model,
+    record.effort ?? record.thought_level ?? 'unknown'
+  );
+  return {
+    model: parsed.model,
+    effort: parsed.effort,
+    at: record.created_at ?? record.timestamp,
+  };
+};
+
 const turnOf = (lead, record) => {
   if (lead.runtime === 'claude') {
     return record.type === 'assistant' &&
@@ -1516,6 +1663,7 @@ const turnOf = (lead, record) => {
         }
       : null;
   }
+  if (lead.runtime === 'agy') return agyTurnOf(record);
   return record.type === 'turn_context'
     ? {
         model: record.payload?.model ?? 'unknown',
@@ -1574,6 +1722,16 @@ function toolOutputs(lead, chain) {
             .filter((block) => block.type === 'tool_result')
             .map((block) => textOf(block.content))
         )
+    );
+  }
+  if (lead.runtime === 'agy') {
+    return chain.flatMap(({ records }) =>
+      records
+        .filter(
+          (record) =>
+            record.type === 'GENERIC' && typeof record.content === 'string'
+        )
+        .map((record) => record.content)
     );
   }
   // Only what a call returned to the model counts, never the command's own output event. Codex's exec tool returns a
@@ -1637,8 +1795,62 @@ const ghLogin = () => {
 const othersOf = (assignees, self) =>
   assignees.filter((login) => login !== self);
 
+function resolveLead(env = process.env) {
+  const found = findLead();
+  if (found.run) {
+    if (found.run.runtime === 'agy') {
+      const transcript = resolveAgyTranscript(found.run.transcript, env);
+      return {
+        run: {
+          ...found.run,
+          transcript: transcript ?? found.run.transcript,
+        },
+        transcriptExists: Boolean(transcript),
+      };
+    }
+    return {
+      run: found.run,
+      transcriptExists: Boolean(
+        found.run.transcript && existsSync(found.run.transcript)
+      ),
+    };
+  }
+  // Standalone Antigravity CLI sessions outside T3 Code lack T3_ACP_MCP_NODE;
+  // verify both an antigravity ancestor process and the live brain transcript.
+  const hasAgyAncestor = runtimeAncestors().some(
+    (ancestor) => ancestor.name === 'antigravity' || ancestor.name === 'agy'
+  );
+  if (hasAgyAncestor && SAFE_ID.test(env.ANTIGRAVITY_CONVERSATION_ID ?? '')) {
+    const transcript = resolveAgyTranscript(null, env);
+    if (transcript) {
+      const records = readAgyRecords(transcript);
+      let lastTurn = null;
+      for (let index = records.length - 1; index >= 0; index -= 1) {
+        const turn = agyTurnOf(records[index]);
+        if (turn) {
+          lastTurn = turn;
+          break;
+        }
+      }
+      if (lastTurn && rank(lastTurn.effort) !== -1) {
+        return {
+          run: {
+            runtime: 'agy',
+            model: lastTurn.model,
+            effort: lastTurn.effort,
+            at: lastTurn.at,
+            transcript,
+          },
+          transcriptExists: true,
+        };
+      }
+    }
+  }
+  return { miss: found.miss };
+}
+
 function recorder(policy) {
-  const { run: lead, miss } = findLead();
+  const { run: lead, miss, transcriptExists } = resolveLead();
   if (!lead) {
     return {
       refusal: `this session's model and effort could not be read (${miss}); run record in the foreground of the session that read the issue`,
@@ -1666,27 +1878,60 @@ function recorder(policy) {
       refusal: `this ${ancestors[0].name} session runs under another ${ancestors[1].name} process (pid ${ancestors[1].pid}), so another agent session started it; record from a session you started yourself`,
     };
   }
+  if (!transcriptExists) {
+    return {
+      refusal: `this session's transcript (${lead.transcript ?? 'none'}) could not be found on disk; run record in the foreground of the session that read the issue`,
+    };
+  }
   let chain;
   try {
     chain =
       lead.runtime === 'claude'
         ? claudeChain(lead.transcript)
-        : [{ file: lead.transcript, records: readLines(lead.transcript) }];
+        : lead.runtime === 'agy'
+          ? [
+              {
+                file: lead.transcript,
+                records: readAgyRecords(lead.transcript),
+              },
+            ]
+          : [{ file: lead.transcript, records: readLines(lead.transcript) }];
   } catch (error) {
     if (error instanceof RefusalError) return { refusal: error.message };
     throw error;
   }
+  if (lead.runtime === 'agy' && isAgySubagent(chain[0].records)) {
+    return {
+      refusal: `${lead.transcript} is a subagent's transcript; a subagent reports and its lead records`,
+    };
+  }
+  const turns = turnsOf(lead, chain);
+  const read = chain.map((link) => transcriptId(link.file)).join(', ');
+  const level = `${policy.floorText} on every turn since the session first read the issue${policy.max ? `, at most ${policy.max}` : ''}`;
+  if (turns.length === 0) {
+    const by = formatLead(lead);
+    const parsed = parseLabel(by);
+    if (
+      !parsed ||
+      !meets(parsed.model, parsed.effort, policy.floor, policy.max)
+    ) {
+      return {
+        refusal: `this session (${by}) is outside the triage floor; a triage record needs ${level}`,
+      };
+    }
+    return {
+      refusal: `this session's transcripts (${read}) record no model turns; run record in the foreground of the session that read the issue`,
+    };
+  }
   const off = [
     ...new Set(
-      turnsOf(lead, chain)
+      turns
         .filter(
           (turn) => !meets(turn.model, turn.effort, policy.floor, policy.max)
         )
         .map((turn) => `${turn.model} @${turn.effort}`)
     ),
   ];
-  const read = chain.map((link) => basename(link.file, '.jsonl')).join(', ');
-  const level = `${policy.floorText} on every turn since the session first read the issue${policy.max ? `, at most ${policy.max}` : ''}`;
   const split = splitAtLastTurnOff(lead, chain, policy);
   if (split && turnsOf(lead, split.after).length === 0) {
     return {
@@ -1701,7 +1946,7 @@ function recorder(policy) {
     };
   }
   return {
-    by: leadLabel(lead),
+    by: formatLead(lead),
     who,
     lead,
     chain: split ? split.after : chain,
@@ -1722,7 +1967,7 @@ function shownLines(outputs) {
   const shown = new Set();
   for (const line of unixText(outputs.join('\n')).split('\n')) {
     shown.add(line.trimEnd());
-    shown.add(line.replace(/^ *\d+(?:\t|→)/u, '').trimEnd());
+    shown.add(line.replace(/^ *\d+(?:\t|→|: )/u, '').trimEnd());
   }
   return shown;
 }
@@ -2805,8 +3050,8 @@ function actorOf(options) {
       'gh could not say which GitHub account runs this session; run gh auth login'
     );
   }
-  const { run: lead } = findLead();
-  const transcript = lead ? basename(lead.transcript, '.jsonl') : null;
+  const { run: lead } = resolveLead();
+  const transcript = lead?.transcript ? transcriptId(lead.transcript) : null;
   return {
     who,
     session:
@@ -2814,6 +3059,8 @@ function actorOf(options) {
       (process.env.CLAUDE_CODE_HOST_SESSION_ID ||
         process.env.CLAUDE_CODE_SESSION_ID ||
         process.env.CODEX_SESSION_ID ||
+        process.env.T3CODE_THREAD_ID ||
+        process.env.ANTIGRAVITY_CONVERSATION_ID ||
         transcript ||
         EVERY_TERMINAL),
     transcript,
