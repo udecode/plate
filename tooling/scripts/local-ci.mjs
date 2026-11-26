@@ -243,6 +243,13 @@ const checkout = (sha) => {
   }
 };
 
+const privateHead = () =>
+  must(worktree, [
+    `--git-dir=${join(worktree, PRIVATE_DIR)}`,
+    'rev-parse',
+    'HEAD',
+  ]);
+
 const runId = (sha, suffix) =>
   `${new Date().toISOString().slice(0, 16).replace(':', '')}-${sha.slice(0, 10)}${suffix ? `-${suffix}` : ''}`;
 
@@ -471,16 +478,16 @@ const syncTasks = () => {
     lock.release();
   }
 };
-const openTask = (step) => {
+const isOpen = (task) => ['offered', 'started'].includes(task.status);
+const stepTasks = (step) => {
   syncTasks();
   return existsSync(ledger)
-    ? [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].find(
-        (task) =>
-          task.title?.includes(fixTitle(step)) &&
-          ['offered', 'started'].includes(task.status)
+    ? [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].filter(
+        (task) => task.title?.includes(fixTitle(step))
       )
-    : undefined;
+    : [];
 };
+const openTask = (step) => stepTasks(step).find(isOpen);
 
 // A fix that dies with its session, such as in an app restart, leaves its
 // task open with nobody on it.
@@ -546,9 +553,23 @@ const cutDue = (step, open, tip) => {
   };
 };
 
+const missesLandedFix = (task, event) => {
+  const halves = [
+    [[], event.tip],
+    [['--git-dir', join(main, PRIVATE_DIR)], event.privateTip],
+  ];
+  const holds = (via, sha, ref) =>
+    git(main, [...via, 'merge-base', '--is-ancestor', sha, ref]).status === 0;
+  return task.commits.some((sha) => {
+    const half = halves.find(([via]) => holds(via, sha, 'origin/next'));
+    return half !== undefined && !holds(half[0], sha, half[1]);
+  });
+};
+
 const report = (event) => {
   const title = fixTitle(event.step);
-  const open = openTask(event.step);
+  const tasks = stepTasks(event.step);
+  const open = tasks.find(isOpen);
   const due = cutDue(event.step, open, event.tip);
   if (open) {
     const firstCutWake =
@@ -559,6 +580,10 @@ const report = (event) => {
     return Date.now() - lastActivity(open) < CLAIM_MS && !firstCutWake
       ? { ...due, wake: false }
       : { ...due, task: open.id, wake: true };
+  }
+  const closed = tasks.at(-1);
+  if (event.kind === 'red' && closed && missesLandedFix(closed, event)) {
+    return { ...due, heldFor: closed.id, wake: false };
   }
   const cut =
     " When the step is still red 24 hours after it first failed, or two fix runs have not cleared it, stop fixing. Cut the failing test or case only when the test is wrong, revert the first bad commit when the code is wrong, and otherwise offer the owner a P0 decide task, as AGENTS.md's Proof and tooling rule says.";
@@ -723,8 +748,10 @@ const run = async (args) => {
         .filter((event) => event.kind === 'red' && event.tip === state.tip)
         .map((event) => [event.step, event])
     );
+    let privateTip;
     try {
       checkout(tip);
+      privateTip = privateHead();
     } catch (error) {
       return brokenAt(tip, error);
     }
@@ -785,6 +812,7 @@ const run = async (args) => {
           kind: 'red',
           known: true,
           log: result.log,
+          privateTip,
           range: before.range,
           session: before.session,
           step: failed,
@@ -857,6 +885,7 @@ const run = async (args) => {
         load,
         loaded: load > FLAKE_LOAD,
         log: alone.log,
+        privateTip,
         results: keepFailedResults(logs, aloneName, aloneStarted) ?? results,
         step: failed,
         tip,
@@ -984,7 +1013,7 @@ const status = () => {
         .slice(-5)
         .map(
           (event) =>
-            `  ${[event.at, event.kind, event.step, event.culprit ?? event.range ?? event.tip ?? event.id ?? event.item ?? event.reason].filter(Boolean).join(' ')}`
+            `  ${[event.at, event.kind, event.step, event.culprit ?? event.range ?? event.tip ?? event.id ?? event.item ?? event.reason, event.heldFor && `held for ${event.heldFor}`].filter(Boolean).join(' ')}`
         ),
     ].join('\n')
   );
