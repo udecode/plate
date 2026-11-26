@@ -110,7 +110,7 @@ let projectionSlotCount = 0;
 const isTransactionState = (state: object) =>
   'anchor' in state && 'changes' in state && 'refs' in state;
 
-export const getTableSelectionBounds = (
+const getTableSelectionBounds = (
   anchors: readonly TableGridAnchor[]
 ): TableSelectionBounds | null => {
   if (anchors.length === 0) return null;

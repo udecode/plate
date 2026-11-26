@@ -2588,7 +2588,7 @@ const resolveAndSortPluginsCandidate = (
   return ordered;
 };
 
-export const resolveAndSortPlugins = (
+const resolveAndSortPlugins = (
   editor: Editor,
   sources: PlatePluginSourceInput
 ): BasePlugins =>

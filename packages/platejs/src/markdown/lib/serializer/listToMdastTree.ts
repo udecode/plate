@@ -223,7 +223,7 @@ const toListItemContent = (node: MdRootContent): MdListItem['children'] =>
       ? [{ children: [node], type: 'paragraph' }]
       : [];
 
-export const getSerializableListStyle = (
+const getSerializableListStyle = (
   node: Pick<SerializableListElement, 'listStyle' | 'listType'>
 ) =>
   (node.listType === 'numbered' && node.listStyle === 'decimal') ||

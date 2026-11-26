@@ -139,7 +139,7 @@ type NamedBlocks = {
 
 const namedBlocks = new WeakMap<object, NamedBlocks>();
 
-export const namedInkBlocks = (editor: RuntimeAnyEditor) => {
+const namedInkBlocks = (editor: RuntimeAnyEditor) => {
   const owner = getEditorRuntimeOwner(editor);
   const store = readShownRecords(editor);
   let named = namedBlocks.get(owner);

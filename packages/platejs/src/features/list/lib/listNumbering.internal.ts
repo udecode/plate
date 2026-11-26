@@ -384,7 +384,7 @@ export const createLanes = <TKey>(
   return lanes;
 };
 
-export const placeEntry = <TKey>(
+const placeEntry = <TKey>(
   lanes: ListLanes<TKey>,
   entry: ListEntry<TKey>,
   order: EntryOrder<TKey>
@@ -473,7 +473,7 @@ export const sitsBetweenAnchors = <TKey>(
   return true;
 };
 
-export const removeEntry = <TKey>(
+const removeEntry = <TKey>(
   lanes: ListLanes<TKey>,
   entry: ListEntry<TKey>,
   placedWith: ListFacts,
@@ -578,7 +578,7 @@ const walkLane = <TKey>(
   return walked;
 };
 
-export const recountLanes = <TKey>(
+const recountLanes = <TKey>(
   lanes: ListLanes<TKey>,
   seeds: Iterable<ListEntry<TKey>>,
   order: EntryOrder<TKey>,

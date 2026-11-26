@@ -23,7 +23,7 @@ export type InkLayoutChange = 'boxes' | 'scroll' | 'styles' | 'words';
 export const keepsLayouts = (change: InkLayoutChange) =>
   change === 'boxes' || change === 'scroll';
 
-export const INK_LAYOUT_ATTRIBUTES = ['class', 'dir', 'lang', 'style'];
+const INK_LAYOUT_ATTRIBUTES = ['class', 'dir', 'lang', 'style'];
 
 type Place = Readonly<{ box: InkBox; height: number; width: number }>;
 

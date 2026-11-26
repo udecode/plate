@@ -230,7 +230,6 @@ export const createPluginStateSnapshot = () => {
 
 type PluginStoreEntry = {
   plugins: Map<string, unknown>;
-  viewStoreCount: number;
   views: WeakMap<ViewPresentation, Map<string, InternalPluginStore>>;
 };
 
@@ -240,7 +239,7 @@ const getPluginStoreEntry = (owner: object) => {
   let entry = PLUGIN_STORES.get(owner);
 
   if (!entry) {
-    entry = { plugins: new Map(), viewStoreCount: 0, views: new WeakMap() };
+    entry = { plugins: new Map(), views: new WeakMap() };
     PLUGIN_STORES.set(owner, entry);
   }
 
@@ -263,7 +262,6 @@ export const getViewStore = (
   if (!entry.views.has(presentation)) {
     entry.views.set(presentation, stores);
     onPresentationRelease(presentation, () => {
-      entry.viewStoreCount -= stores.size;
       entry.views.delete(presentation);
     });
   }
@@ -281,7 +279,6 @@ export const getViewStore = (
       {}
     );
     stores.set(plugin.name, store);
-    entry.viewStoreCount += 1;
   }
 
   return store;
@@ -289,9 +286,6 @@ export const getViewStore = (
 
 export const getEditorViewStore = (editor: Editor, plugin: AnyBasePlugin) =>
   getViewStore(editor, plugin, getViewPresentation(editor));
-
-export const getViewStoreCount = (editor: object) =>
-  PLUGIN_STORES.get(getPlateRuntimeOwner(editor))?.viewStoreCount ?? 0;
 
 export function getPluginStore<P extends AnyBasePlugin & PluginReference>(
   editor: object,

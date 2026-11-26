@@ -214,7 +214,7 @@ export const stackingKeysBetween = (
 };
 
 /** The highest stacking key among the `members` that paint in `layer`. */
-export const topKeyInLayer = (members: readonly Descendant[], layer: 0 | 1) => {
+const topKeyInLayer = (members: readonly Descendant[], layer: 0 | 1) => {
   let top: string | null = null;
 
   for (const member of members) {

@@ -128,7 +128,7 @@ export const getHeadingType = (editor: Editor) => {
   return heading.installed ? heading.schema.type : undefined;
 };
 
-export const readListFacts = (element: Element): ListFacts | undefined => {
+const readListFacts = (element: Element): ListFacts | undefined => {
   if (!isListItem(element)) return undefined;
 
   return {

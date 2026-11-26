@@ -126,7 +126,7 @@ const decideRawHtmlAttribute = (
     : `safety:${name}`;
 };
 
-export const decideRawHtml = (value: string): RawHtmlDecision => {
+const decideRawHtml = (value: string): RawHtmlDecision => {
   let refusal: RawHtmlRefusal | undefined;
   const ignore = () => {};
 

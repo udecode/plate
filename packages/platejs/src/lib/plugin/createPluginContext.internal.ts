@@ -22,7 +22,6 @@ import {
   getCompiledPlatePlugin,
   getCompiledPlatePluginApi,
   hasCompiledPlateModelCandidate,
-  hasCompiledPlatePluginApiCandidate,
   hasCompiledPlatePluginCandidate,
   isResolvingPlatePlugin,
   resolvePluginElementType,
@@ -481,15 +480,8 @@ const createPluginAccess = (
         ? plugin.api
         : api;
     }
-    if (
-      !hasCompiledPlatePluginApiCandidate(editor) &&
-      getCompiledPlatePluginApi(editor, plugin) === undefined
-    ) {
+    if (getCompiledPlatePluginApi(editor, plugin) === undefined) {
       return api;
-    }
-
-    if (hasCompiledPlatePluginApiCandidate(editor)) {
-      return getCompiledPlatePluginApi(editor, plugin) ?? {};
     }
 
     return Reflect.get(Reflect.get(editor, 'api'), plugin.name) ?? {};

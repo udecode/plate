@@ -140,7 +140,7 @@ export const encodeMdastNode = (
   return undefined;
 };
 
-export const buildMdastNodes = (
+const buildMdastNodes = (
   node: Element,
   options: SerializeMdContext
 ): readonly MdRootContent[] => {

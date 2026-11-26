@@ -94,131 +94,128 @@ type PlateRenderedAttributeSource = Readonly<{
   order: number;
 }>;
 
-export const createPlateRenderedAttributeStore =
-  (): PlateRenderedAttributeStore => {
-    const listenersByNodeKey = new Map<NodeKey, Set<() => void>>();
-    const mergedByNodeKey = new Map<NodeKey, ViewElementAttributes>();
-    const sources = new Map<string, PlateRenderedAttributeSource>();
-    const metrics = {
-      changedNodeCount: 0,
-      nodeSubscriptionCount: 0,
-      publicationCount: 0,
-      wakeCount: 0,
-    };
+const createPlateRenderedAttributeStore = (): PlateRenderedAttributeStore => {
+  const listenersByNodeKey = new Map<NodeKey, Set<() => void>>();
+  const mergedByNodeKey = new Map<NodeKey, ViewElementAttributes>();
+  const sources = new Map<string, PlateRenderedAttributeSource>();
+  const metrics = {
+    changedNodeCount: 0,
+    nodeSubscriptionCount: 0,
+    publicationCount: 0,
+    wakeCount: 0,
+  };
 
-    const replaceSource = (
-      sourceId: string,
-      sourceOrder: number,
-      entries: readonly ViewElementAttributeEntry[]
-    ) => {
-      if (sourceId.length === 0) {
-        throw new Error('Rendered attribute source ids must be non-empty.');
-      }
-      if (!Number.isSafeInteger(sourceOrder) || sourceOrder < 0) {
+  const replaceSource = (
+    sourceId: string,
+    sourceOrder: number,
+    entries: readonly ViewElementAttributeEntry[]
+  ) => {
+    if (sourceId.length === 0) {
+      throw new Error('Rendered attribute source ids must be non-empty.');
+    }
+    if (!Number.isSafeInteger(sourceOrder) || sourceOrder < 0) {
+      throw new Error('Rendered attribute source order must be non-negative.');
+    }
+
+    const previous = sources.get(sourceId);
+    const previousAttributes = previous?.attributes ?? new Map();
+    const nextAttributes = new Map<NodeKey, ViewElementAttributes>();
+
+    entries.forEach(({ attributes, key }) => {
+      if (nextAttributes.has(key)) {
         throw new Error(
-          'Rendered attribute source order must be non-negative.'
+          `Rendered attribute source "${sourceId}" returned duplicate node key "${key}".`
         );
       }
+      nextAttributes.set(key, clonePlateRenderedAttributes(attributes));
+    });
 
-      const previous = sources.get(sourceId);
-      const previousAttributes = previous?.attributes ?? new Map();
-      const nextAttributes = new Map<NodeKey, ViewElementAttributes>();
+    const unchanged =
+      previous?.order === sourceOrder &&
+      previousAttributes.size === nextAttributes.size &&
+      [...previousAttributes].every(([nodeKey, attributes]) => {
+        const next = nextAttributes.get(nodeKey);
 
-      entries.forEach(({ attributes, key }) => {
-        if (nextAttributes.has(key)) {
-          throw new Error(
-            `Rendered attribute source "${sourceId}" returned duplicate node key "${key}".`
-          );
-        }
-        nextAttributes.set(key, clonePlateRenderedAttributes(attributes));
+        return !!next && areAttributesEqual(attributes, next);
       });
 
-      const unchanged =
-        previous?.order === sourceOrder &&
-        previousAttributes.size === nextAttributes.size &&
-        [...previousAttributes].every(([nodeKey, attributes]) => {
-          const next = nextAttributes.get(nodeKey);
+    if (unchanged) return;
 
-          return !!next && areAttributesEqual(attributes, next);
-        });
+    sources.set(sourceId, {
+      attributes: nextAttributes,
+      order: sourceOrder,
+    });
+    metrics.publicationCount += 1;
+    const affected = new Set<NodeKey>([
+      ...previousAttributes.keys(),
+      ...nextAttributes.keys(),
+    ]);
+    const orderedSourceMaps = [...sources]
+      .sort(
+        ([leftId, left], [rightId, right]) =>
+          left.order - right.order || leftId.localeCompare(rightId)
+      )
+      .map(([, source]) => source.attributes);
+    const changed: NodeKey[] = [];
 
-      if (unchanged) return;
+    affected.forEach((nodeKey) => {
+      const previousMerged =
+        mergedByNodeKey.get(nodeKey) ?? EMPTY_RENDERED_ATTRIBUTES;
+      const candidate = mergeSourceAttributes(orderedSourceMaps, nodeKey);
+      const nextMerged = areAttributesEqual(previousMerged, candidate)
+        ? previousMerged
+        : candidate;
 
-      sources.set(sourceId, {
-        attributes: nextAttributes,
-        order: sourceOrder,
-      });
-      metrics.publicationCount += 1;
-      const affected = new Set<NodeKey>([
-        ...previousAttributes.keys(),
-        ...nextAttributes.keys(),
-      ]);
-      const orderedSourceMaps = [...sources]
-        .sort(
-          ([leftId, left], [rightId, right]) =>
-            left.order - right.order || leftId.localeCompare(rightId)
-        )
-        .map(([, source]) => source.attributes);
-      const changed: NodeKey[] = [];
+      if (nextMerged === previousMerged) return;
+      if (nextMerged === EMPTY_RENDERED_ATTRIBUTES) {
+        mergedByNodeKey.delete(nodeKey);
+      } else {
+        mergedByNodeKey.set(nodeKey, nextMerged);
+      }
+      changed.push(nodeKey);
+    });
 
-      affected.forEach((nodeKey) => {
-        const previousMerged =
-          mergedByNodeKey.get(nodeKey) ?? EMPTY_RENDERED_ATTRIBUTES;
-        const candidate = mergeSourceAttributes(orderedSourceMaps, nodeKey);
-        const nextMerged = areAttributesEqual(previousMerged, candidate)
-          ? previousMerged
-          : candidate;
+    metrics.changedNodeCount += changed.length;
+    const listeners = new Set<() => void>();
 
-        if (nextMerged === previousMerged) return;
-        if (nextMerged === EMPTY_RENDERED_ATTRIBUTES) {
-          mergedByNodeKey.delete(nodeKey);
-        } else {
-          mergedByNodeKey.set(nodeKey, nextMerged);
-        }
-        changed.push(nodeKey);
-      });
-
-      metrics.changedNodeCount += changed.length;
-      const listeners = new Set<() => void>();
-
-      changed.forEach((nodeKey) => {
-        listenersByNodeKey.get(nodeKey)?.forEach((listener) => {
-          listeners.add(listener);
-        });
-      });
-      metrics.wakeCount += listeners.size;
-      listeners.forEach((listener) => listener());
-    };
-
-    return {
-      clearSource(sourceId) {
-        const source = sources.get(sourceId);
-
-        if (source) replaceSource(sourceId, source.order, []);
-      },
-      getMetrics: () => Object.freeze({ ...metrics }),
-      getNodeSnapshot: (nodeKey) =>
-        mergedByNodeKey.get(nodeKey) ?? EMPTY_RENDERED_ATTRIBUTES,
-      replaceSource,
-      subscribeNodeKey(nodeKey, listener) {
-        const listeners = listenersByNodeKey.get(nodeKey) ?? new Set();
-
+    changed.forEach((nodeKey) => {
+      listenersByNodeKey.get(nodeKey)?.forEach((listener) => {
         listeners.add(listener);
-        listenersByNodeKey.set(nodeKey, listeners);
-        metrics.nodeSubscriptionCount += 1;
-        let active = true;
-
-        return () => {
-          if (!active) return;
-
-          active = false;
-          listeners.delete(listener);
-          metrics.nodeSubscriptionCount -= 1;
-          if (listeners.size === 0) listenersByNodeKey.delete(nodeKey);
-        };
-      },
-    };
+      });
+    });
+    metrics.wakeCount += listeners.size;
+    listeners.forEach((listener) => listener());
   };
+
+  return {
+    clearSource(sourceId) {
+      const source = sources.get(sourceId);
+
+      if (source) replaceSource(sourceId, source.order, []);
+    },
+    getMetrics: () => Object.freeze({ ...metrics }),
+    getNodeSnapshot: (nodeKey) =>
+      mergedByNodeKey.get(nodeKey) ?? EMPTY_RENDERED_ATTRIBUTES,
+    replaceSource,
+    subscribeNodeKey(nodeKey, listener) {
+      const listeners = listenersByNodeKey.get(nodeKey) ?? new Set();
+
+      listeners.add(listener);
+      listenersByNodeKey.set(nodeKey, listeners);
+      metrics.nodeSubscriptionCount += 1;
+      let active = true;
+
+      return () => {
+        if (!active) return;
+
+        active = false;
+        listeners.delete(listener);
+        metrics.nodeSubscriptionCount -= 1;
+        if (listeners.size === 0) listenersByNodeKey.delete(nodeKey);
+      };
+    },
+  };
+};
 
 const PlateRenderedAttributeContext = React.createContext<
   PlateRenderedAttributeStore | undefined

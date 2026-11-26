@@ -189,10 +189,6 @@ const candidateApplicationElementTypes = new WeakMap<
   object,
   Readonly<Record<string, string | undefined>>
 >();
-const candidatePluginApis = new WeakMap<
-  object,
-  Readonly<Record<string, Readonly<Record<string, unknown>> | undefined>>
->();
 const resolvingPlugins = new WeakMap<object, AnyBasePlugin>();
 const resolvedTargetBindings = new WeakMap<
   object,
@@ -1690,15 +1686,6 @@ export const getPlateRuntime = (editor: object): PlateRuntime => {
   throw new Error('Plate runtime is not installed.');
 };
 
-/**
- * Whether the editor owns an installed or compiling Plate runtime.
- *
- * @internal
- */
-export const hasPlateRuntime = (editor: object) =>
-  getPlateRuntimeCandidate(editor) !== undefined ||
-  getPlateModelPublication(editor) !== undefined;
-
 export const getCompiledPlateModel = (editor: object) =>
   candidateModels.get(getPlateRuntimeOwner(editor)) ??
   getPlateModelPublication(editor)?.model ??
@@ -1778,18 +1765,10 @@ export const getCompiledPlateContainerTypes = (editor: object) =>
 export const getCompiledPlatePluginApi = (
   editor: object,
   plugin: AnyBasePlugin | PluginReference | string
-) => {
-  const owner = getPlateRuntimeOwner(editor);
-  const name = typeof plugin === 'string' ? plugin : plugin.name;
-
-  return candidatePluginApis.has(owner)
-    ? (candidatePluginApis.get(owner) ??
-        failInvariant('Expected value to be defined'))[name]
-    : getPlateModelPublication(editor)?.apiByPlugin[name];
-};
-
-export const hasCompiledPlatePluginApiCandidate = (editor: object) =>
-  candidatePluginApis.has(getPlateRuntimeOwner(editor));
+) =>
+  getPlateModelPublication(editor)?.apiByPlugin[
+    typeof plugin === 'string' ? plugin : plugin.name
+  ];
 
 export const isResolvingPlatePlugin = (editor: object, plugin: AnyBasePlugin) =>
   resolvingPlugins.get(getPlateRuntimeOwner(editor)) === plugin;
@@ -1850,25 +1829,6 @@ export const withCompiledPlateModelCandidate = <T>(
   } finally {
     if (previous) candidateModels.set(owner, previous);
     else candidateModels.delete(owner);
-  }
-};
-
-export const withCompiledPlatePluginApiCandidate = <T>(
-  editor: object,
-  apiByPlugin: Readonly<
-    Record<string, Readonly<Record<string, unknown>> | undefined>
-  >,
-  run: () => T
-): T => {
-  const owner = getPlateRuntimeOwner(editor);
-  const previous = candidatePluginApis.get(owner);
-
-  candidatePluginApis.set(owner, apiByPlugin);
-  try {
-    return run();
-  } finally {
-    if (previous) candidatePluginApis.set(owner, previous);
-    else candidatePluginApis.delete(owner);
   }
 };
 

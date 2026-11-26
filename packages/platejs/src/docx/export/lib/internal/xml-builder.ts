@@ -51,10 +51,10 @@ import {
 
 type XMLBuilderType = XMLBuilder;
 
-export const rgbRegex = /rgb\((\d+),\s*([\d.]+),\s*([\d.]+)\)/i;
-export const hslRegex = /hsl\((\d+),\s*([\d.]+)%,\s*([\d.]+)%\)/i;
-export const hexRegex = /#([0-9A-F]{6})/i;
-export const hex3Regex = /#([0-9A-F])([0-9A-F])([0-9A-F])/i;
+const rgbRegex = /rgb\((\d+),\s*([\d.]+),\s*([\d.]+)\)/i;
+const hslRegex = /hsl\((\d+),\s*([\d.]+)%,\s*([\d.]+)%\)/i;
+const hexRegex = /#([0-9A-F]{6})/i;
+const hex3Regex = /#([0-9A-F])([0-9A-F])([0-9A-F])/i;
 
 /** Marks a run whose review revisions DOCX export writes after generation. */
 export const REVIEW_RUN_NAMESPACE = 'urn:platejs:docx:review-run';
@@ -77,7 +77,7 @@ const nestedRunTagSet = new Set([
   'pre',
 ]);
 
-export const rgbToHex = (
+const rgbToHex = (
   red: number | string,
   green: number | string,
   blue: number | string
@@ -90,7 +90,7 @@ export const rgbToHex = (
     })
     .join('');
 
-export const hslToHex = (
+const hslToHex = (
   hue: number,
   saturation: number,
   luminosity: number
@@ -137,10 +137,10 @@ export const hslToHex = (
     .join('');
 };
 
-export const hex3ToHex = (red: string, green: string, blue: string): string =>
+const hex3ToHex = (red: string, green: string, blue: string): string =>
   [red, green, blue].map((value) => `${value}${value}`).join('');
 
-export const getImageDimensions = (
+const getImageDimensions = (
   buffer: ArrayBuffer | Uint8Array
 ): { height: number; type: string; width: number } => {
   const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
@@ -266,7 +266,7 @@ export async function imageToBase64(imageUrl: string): Promise<string> {
   return btoa(binary);
 }
 
-export const isValidUrl = (value: string | null | undefined): boolean => {
+const isValidUrl = (value: string | null | undefined): boolean => {
   if (!value || typeof value !== 'string') return false;
 
   try {
