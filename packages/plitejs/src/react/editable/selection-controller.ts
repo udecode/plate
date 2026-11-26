@@ -1697,17 +1697,11 @@ export const syncEditableDOMSelectionToEditor = ({
   if (runtime.shouldDeferCompositionSelectionExport()) return;
   if (runtime.androidInputManagerRef.current?.hasPendingAction()) return;
   if (
-    options?.forceModelExport
-      ? isSelectionHeldForNativeMove(
-          runtime.inputController,
-          editor,
-          explicitEditorElement ?? runtime.rootElement
-        )
-      : isSelectionHeldForPendingImport(
-          runtime.inputController,
-          editor,
-          explicitEditorElement ?? runtime.rootElement
-        )
+    isSelectionHeldForNativeMove(
+      runtime.inputController,
+      editor,
+      explicitEditorElement ?? runtime.rootElement
+    )
   ) {
     return;
   }

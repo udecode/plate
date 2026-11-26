@@ -24,7 +24,10 @@ import {
   useEditableFocusHandler,
   useEditableMouseHandler,
 } from './input-router';
-import type { EditableInputController } from './input-state';
+import {
+  type EditableInputController,
+  isSelectionHeldForPendingImport,
+} from './input-state';
 import { findSelectionNestedEditable } from './interaction-owner';
 import type { EditableEventRuntime } from './runtime-event-engine';
 import { readRuntimeSelection } from './runtime-selection-state';
@@ -277,6 +280,15 @@ export const useRuntimeFocusMouseEvents = ({
         // not editable, such as a block's drag handle, and drops the typing.
         const fillStartCaretOnceFocusSettles = () => {
           if (!ReactEditor.isFocused(editor)) return;
+          if (
+            isSelectionHeldForPendingImport(
+              inputController,
+              editor,
+              editorElement
+            )
+          ) {
+            return;
+          }
           if (!readOnly && !placedStartCaret && lacksAnyCaret()) {
             editor.update({ tags: 'skip-scroll-into-view' }, () => {
               placedStartCaret = !ensureFocusCaret(editor, editorElement);

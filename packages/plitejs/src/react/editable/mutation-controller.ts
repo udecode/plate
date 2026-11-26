@@ -52,6 +52,7 @@ import {
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
 import type { DOMRepairQueue } from './dom-repair-queue';
+import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
 import {
   type EditableCommand,
   type EditableRepairPolicy,
@@ -62,6 +63,7 @@ import {
   type EditableInputController,
   type EditableSelectionSourceTransition,
   getEditableNativeGroupingInput,
+  isSelectionHeldForPendingImport,
 } from './input-state';
 import {
   getLineBoundarySelection,
@@ -1321,6 +1323,19 @@ export const applyEditableRepairRequest = ({
           // Chromium focuses an editable that gets a DOM selection, so a rerun
           // after the editor blurred would pull focus back into it.
           if (focusedAtCommand && !ReactEditor.isFocused(editor)) return;
+          const editorElement = getMountedEditableDOMRuntimes(editor).find(
+            (candidate) => candidate.inputController === inputController
+          )?.rootElement;
+
+          if (
+            isSelectionHeldForPendingImport(
+              inputController,
+              editor,
+              editorElement
+            )
+          ) {
+            return;
+          }
 
           syncProgrammaticDOMSelection();
         };
