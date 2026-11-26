@@ -1,5 +1,5 @@
 ---
-description: Run Local CI (post-landing slow and formal checks on next), check status, rerun, manage its Mac launchd job, and run the persistent operator session that dispatches fix, beta release, and zbot friction agents. Use for /operator, /local-ci, "is next green", "Local CI status", "rerun Local CI", "keep watching", "release a beta now", or a red local-ci task.
+description: Run Local CI (post-landing slow and formal checks on next), check status, rerun, manage its Mac launchd job, and run the persistent operator session that dispatches fix, beta release, and zbot or agent friction workers. Use for /operator, /local-ci, "is next green", "Local CI status", "rerun Local CI", "keep watching", "release a beta now", or a red local-ci task.
 argument-hint: '[watch | release | status | rerun | install | uninstall]'
 name: operator
 metadata:
@@ -59,6 +59,7 @@ Never edit or land directly. Caps: 3 fix agents (max 1 heavy: `plite-browser` or
    - `broken`: check `output` and `plate-local-ci/launchd.log`; if install broke, run `pnpm install --frozen-lockfile` in `.claude/worktrees/local-ci`, else report without Discord.
    - `release`: main CI only (drop if `config.json` exists or release runs); spawn **Release brief**.
    - `friction`: continue to step 3.
+   - **Agent friction (`FRICTION [tooling|skill|pstack|t3]`):** handle incoming worker reports alongside the `local-ci` friction loop. Deduplicate by failure signature (file/command/error): if a fix for that signature is already running, append any new `blocking: yes` reporter `threadId` to its wakeup list instead of spawning a duplicate worker. For fixable `plate` or `ustack` friction, dispatch an **Agent friction fix brief** subagent (never edit directly in `operator`), land on `origin/next` (or push `ustack` `main`), and wake every paused `blocking: yes` reporter via `t3_thread_send` (`"Fixed in <sha>, pull origin/next and resume"`). For external T3 app bugs that `operator` cannot fix in `plate` or `ustack`, record once in `<main>/docs/plans/artifacts/local-ci/<day>/t3-friction.md` for the owner instead of looping, and immediately reply via `t3_thread_send` to any `blocking: yes` reporter with a fallback or clean stop.
 3. Dispatch:
    - Fill up to 3 fix agents from the red queue (1 per step, max 1 heavy) using **Fix brief**.
    - If 0 fixes run and red queue is empty, run `<friction> next`; if `item`, run `<friction> start --item <id>` and spawn **Friction fix brief**.
@@ -106,3 +107,10 @@ Save reports to `<main>/docs/plans/artifacts/local-ci/<day>/` (`fix-<task-or-ste
 > 2. If `after` is set and persists, run `/pstack:correct` on its class; else fix the skill/rule/script/helper.
 > 3. Land via `land.mjs` (or owning repo rules), then run `friction done --item <id> --commit <sha>` (if unlandable, offer chip `via: hook`, `session: none` and run `friction done --item <id> --task <task-id>`).
 > 4. Send no team message. End with 1 line: commit or task, and why.
+
+### Agent friction fix brief
+
+> Fix agent-reported friction `<FRICTION message>` (signature `<sig>`). Work from `<main>`; read `AGENTS.md` and `operator` first.
+> 1. If the failure is an external T3 app bug outside `plate` and `ustack`, edit nothing and reply `external-t3: <summary and fallback>`.
+> 2. Otherwise cut a fresh worktree from `origin/next` (or edit `ustack` in place on `main` per `ustack/AGENTS.md` and sync `plate` via `sync-pstack.mjs apply`). Fix the root cause with a focused test and verify all affected checks.
+> 3. Land via `land.mjs` (or push `ustack` `main`). Send no team message. End with 1 line: `fixed: <sha>` (plus synced `plate` SHA if applicable) or `blocked: <why>`.

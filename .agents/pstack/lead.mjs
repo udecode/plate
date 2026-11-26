@@ -40,21 +40,13 @@ function tailLines(path) {
   }
 }
 
-const parse = (line) => {
-  try {
-    return JSON.parse(line);
-  } catch {
-    return null;
-  }
-};
+const parse = (line) => { try { return JSON.parse(line); } catch { return null; } };
 
 // Claude Code stamps every assistant record with the effort it ran at.
 function claudeRun(lines, upTo = lines.length - 1) {
   for (let index = upTo; index >= 0; index -= 1) {
     const record = parse(lines[index]);
-    if (record?.type === 'assistant' && record.effort && record.message?.model) {
-      return { runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp };
-    }
+    if (record?.type === 'assistant' && record.effort && record.message?.model) return { runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp };
   }
   return null;
 }
@@ -82,11 +74,11 @@ function nearestRuntime() {
   const seen = new Set();
   while (pid > 1 && !seen.has(pid)) {
     seen.add(pid);
-    const result = execFileSync('ps', ['-o', 'ppid=,comm=', '-p', String(pid)], { encoding: 'utf8' }).trim();
-    const match = result.match(/^(\d+)\s+(.+)$/u);
+    const match = execFileSync('ps', ['-ww', '-o', 'ppid=,comm=', '-p', String(pid)], { encoding: 'utf8' }).trim().match(/^(\d+)\s+(.+)$/u);
     if (!match) return null;
-    const name = basename(match[2]);
-    if (name === 'claude' || name === 'codex') return { name, pid, shell };
+    const bin = basename(match[2]);
+    const name = bin === 'antigravity' || bin === 'agy' ? 'agy' : bin === 'claude' || bin === 'codex' ? bin : null;
+    if (name) return { name, pid, shell };
     shell = pid;
     pid = Number(match[1]);
   }
@@ -100,15 +92,9 @@ export function bashCommandOf(shellArgv) {
   if (start === -1) return null;
   let command = '';
   for (let index = start + EVAL.length; index < shellArgv.length; ) {
-    if (shellArgv.startsWith(`'"'"'`, index)) {
-      command += "'";
-      index += 5;
-    } else if (shellArgv[index] === "'") {
-      return command;
-    } else {
-      command += shellArgv[index];
-      index += 1;
-    }
+    if (shellArgv.startsWith(`'"'"'`, index)) { command += "'"; index += 5; }
+    else if (shellArgv[index] === "'") return command;
+    else { command += shellArgv[index]; index += 1; }
   }
   return null;
 }
@@ -277,6 +263,43 @@ function claudeLead(sessionId, command) {
 
 const commandOf = (pid) => bashCommandOf(execFileSync('ps', ['-ww', '-o', 'command=', '-p', String(pid)], { encoding: 'utf8' }));
 
+function agyTranscript(env = process.env) {
+  const id = env.ANTIGRAVITY_CONVERSATION_ID;
+  if (!ID.test(id ?? '')) return null;
+  const home = env.HOME ?? homedir();
+  const t3 = join(env.T3_USERDATA_DIR ?? join(home, '.t3', 'userdata'), 'providers', 'antigravity');
+  const roots = [
+    env.ANTIGRAVITY_APP_DATA_DIR && join(env.ANTIGRAVITY_APP_DATA_DIR, 'brain'),
+    env.GEMINI_HOME && join(env.GEMINI_HOME, 'antigravity-acp', 'brain'),
+    env.GEMINI_HOME && join(env.GEMINI_HOME, 'antigravity', 'brain'),
+    ...(existsSync(t3) ? readdirSync(t3, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => join(t3, e.name, 'antigravity-acp', 'brain')) : []),
+    join(home, '.gemini', 'antigravity', 'brain'),
+  ].filter(Boolean);
+  for (const brain of new Set(roots)) {
+    for (const name of ['transcript.jsonl', 'transcript_full.jsonl']) {
+      const candidate = join(brain, id, '.system_generated', 'logs', name);
+      if (existsSync(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+function agyLead(env = process.env) {
+  const id = env.ANTIGRAVITY_CONVERSATION_ID;
+  if (!ID.test(id ?? '')) return { miss: 'ANTIGRAVITY_CONVERSATION_ID holds no conversation id' };
+  const transcript = agyTranscript(env);
+  if (!transcript) return { miss: `no Antigravity transcript found for ${id}` };
+  for (const line of tailLines(transcript).reverse()) {
+    const record = parse(line);
+    if (record?.type !== 'PLANNER_RESPONSE' || !record.model) continue;
+    const cleaned = String(record.model).replace(/^agy:/u, '');
+    const match = cleaned.match(new RegExp(`^(.+)-(${EFFORTS.join('|')})$`, 'u'));
+    const [model, effort] = match ? [match[1], match[2]] : [cleaned, record.effort ?? record.thought_level];
+    if (model && EFFORTS.includes(effort)) return { run: { runtime: 'agy', model, effort, at: record.created_at ?? record.timestamp, transcript } };
+  }
+  return { miss: `${transcript} names no model or effort` };
+}
+
 function t3Lead(env = process.env) {
   const nodeBin = env.T3_ACP_MCP_NODE;
   if (!nodeBin) return null;
@@ -290,8 +313,8 @@ function t3Lead(env = process.env) {
   if (!model || !effort) return { miss: 'T3 orchestrator_capabilities returned no model or effort' };
   const provider = payload?.inheritedProviderInstanceId;
   const runtime = provider === 'claudeAgent' ? 'claude' : provider === 'codex' ? 'codex' : 'agy';
-  const sessionId = (env.T3CODE_THREAD_ID || env.ANTIGRAVITY_CONVERSATION_ID || 't3-thread').replace(/[^\w.-]+/gu, '_');
-  return { run: { runtime, model, effort, transcript: `${sessionId}.jsonl` } };
+  const transcript = runtime === 'agy' ? agyTranscript(env) : runtime === 'claude' && ID.test(env.CLAUDE_CODE_SESSION_ID ?? '') ? claudeTranscript(env.CLAUDE_CODE_SESSION_ID) : null;
+  return { run: { runtime, model, effort, transcript } };
 }
 
 export function findLead() {
@@ -306,9 +329,8 @@ export function findLead() {
       const files = ID.test(identity.thread ?? '') ? filesUnder(join(codexHome(), 'sessions'), 3).filter((file) => file.endsWith(`-${identity.thread}.jsonl`)) : [];
       return invocationRun(identity, files.map((transcript) => ({ transcript, text: readFileSync(transcript, 'utf8') })));
     }
-    if (process.env.T3_ACP_MCP_NODE && (process.env.T3CODE_THREAD_ID || process.env.ANTIGRAVITY_CONVERSATION_ID)) {
-      return t3Lead(process.env);
-    }
+    if (process.env.T3_ACP_MCP_NODE && (process.env.T3CODE_THREAD_ID || process.env.ANTIGRAVITY_CONVERSATION_ID)) return t3Lead(process.env);
+    if (runtime === 'agy') return agyLead(process.env);
     return { miss: 'no claude, codex or T3/agy runtime is an ancestor of this command' };
   } catch (error) {
     return { miss: error.message };
@@ -325,20 +347,9 @@ const versionOrder = (a, b) => {
   return x.reduce((order, part, index) => order || part - (y[index] ?? 0), 0);
 };
 const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null);
-const mainCheckout = (root) => {
-  try {
-    return execFileSync('git', ['-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).trim().replace(/\/\.git$/u, '');
-  } catch {
-    return root;
-  }
-};
+const mainCheckout = (root) => { try { return execFileSync('git', ['-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).trim().replace(/\/\.git$/u, ''); } catch { return root; } };
 
-/**
- * How this runtime's installed pstack falls behind the tag the project's .claude/settings.json pins, with the
- * command that updates it and the folder it runs from, or null. Claude Code loads the main checkout's project-scope
- * install in every worktree, whatever stale record a worktree's own path keeps, else the user-scope one; Codex loads
- * its cache folder for the tag.
- */
+/** How this runtime's installed pstack falls behind .claude/settings.json's pin, with update command and cwd, or null. */
 export function pluginLag(runtime, root = process.cwd(), env = process.env) {
   const ref = readJson(join(root, '.claude/settings.json'))?.extraKnownMarketplaces?.[MARKETPLACE]?.source?.ref;
   const pin = ref?.replace(/^v/u, '');
@@ -394,9 +405,7 @@ export const modelsSheet = (runtime, env = process.env, root = process.cwd()) =>
   const home = env.HOME ?? homedir();
   if (runtime === 'claude' || runtime === 'agy') {
     if (existsSync(join(root, '.claude/pstack-models.md'))) return join(root, '.claude/pstack-models.md');
-    return runtime === 'agy'
-      ? join(env.GEMINI_HOME ?? join(home, '.gemini'), 'config/pstack-models.md')
-      : join(home, '.claude/pstack-models.md');
+    return runtime === 'agy' ? join(env.GEMINI_HOME ?? join(home, '.gemini'), 'config/pstack-models.md') : join(home, '.claude/pstack-models.md');
   }
   return join(env.CODEX_HOME ?? join(home, '.codex'), 'pstack-models.md');
 };
@@ -423,20 +432,11 @@ export function effectiveModelsSheet(runtime, env = process.env, root = process.
 
 /** Each way a models sheet seats the wrong models, written as the edit that fixes it. */
 export function sheetMisses(text, max) {
-  const roles = new Map(
-    (text ?? '')
-      .split('\n')
-      .map((line) => line.match(ROLE_LINE))
-      .filter(Boolean)
-      .map(([, role, value]) => [role, value])
-  );
+  const roles = new Map((text ?? '').split('\n').map((line) => line.match(ROLE_LINE)).filter(Boolean).map(([, role, value]) => [role, value]));
   const misses = [...roles].flatMap(([role, value]) => [...new Set(value.match(NEVER))].map((model) => `\`${role}:\` names ${model}, which no pstack project dispatches`));
   for (const role of SEAT_ROLES) {
     const value = roles.get(role);
-    if (value === undefined) {
-      misses.push(`add the line \`${role}: opus, codex:gpt-6.2-sol\`, or \`${role}: codex:gpt-6.2-sol\` without Claude Code`);
-      continue;
-    }
+    if (value === undefined) { misses.push(`add the line \`${role}: opus, codex:gpt-6.2-sol\`, or \`${role}: codex:gpt-6.2-sol\` without Claude Code`); continue; }
     for (const [model, at] of value.split(/,|\s+or\s+/u).map((entry) => entry.trim().split(/\s+/u))) {
       const effort = at?.match(/^@(\w+)$/u)?.[1];
       const floor = capEffort(SEAT_FLOOR, max);
@@ -448,9 +448,6 @@ export function sheetMisses(text, max) {
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { run, miss } = findLead();
-  if (!run) {
-    console.error(`Runtime identity could not be verified because ${miss}, so the effort is unknown.`);
-    process.exit(1);
-  }
+  if (!run) { console.error(`Runtime identity could not be verified because ${miss}, so the effort is unknown.`); process.exit(1); }
   console.info(leadLabel(run));
 }
