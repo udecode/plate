@@ -59,6 +59,10 @@ editor.update.selection.setNodes([imagePath], { mode: 'object' });
 editor.read.selection.nodeMode(); // 'object'
 ```
 
+按 `Escape` 退出节点选择。编辑器把它折叠为光标，放在焦点区块末尾；焦点是对象时，
+光标放在对象后面。菜单、工具栏或插件的 keydown 处理器先处理了 `Escape` 时，选择
+保持不变；只读编辑器也保持选择。
+
 React 中如何取得编辑器参见[编辑器方法](/docs/editor-methods)，完整查询和校验
 契约参见 [Selection API](/docs/api/selection)。
 
