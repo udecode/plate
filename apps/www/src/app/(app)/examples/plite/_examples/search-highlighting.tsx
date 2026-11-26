@@ -10,7 +10,7 @@ import {
   type DecorationSource,
   useEditor,
 } from 'plitejs/react';
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import {
   InputGroup,
@@ -45,10 +45,13 @@ const initialValue: CustomValue = [
 ];
 
 const SearchHighlightingExample = () => {
-  const [search, setSearch] = useQueryState(
+  const [query, setQuery] = useQueryState(
     'q',
     parseAsString.withDefault('').withOptions(replaceQueryOptions)
   );
+  // nuqs echoes each throttled URL write back into its state after a later
+  // render, which resets the box to an older value when typing outruns it.
+  const [search, setSearch] = useState(query);
   const editor = useEditor({
     plugins: [history()],
     initialValue,
@@ -89,7 +92,8 @@ const SearchHighlightingExample = () => {
         <InputGroup className="!flex max-w-sm">
           <InputGroupInput
             onChange={(event) => {
-              void setSearch(event.target.value);
+              setSearch(event.target.value);
+              void setQuery(event.target.value);
             }}
             placeholder="Search the text..."
             type="search"

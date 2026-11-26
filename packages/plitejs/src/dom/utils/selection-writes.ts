@@ -58,6 +58,17 @@ export const sameDOMSelectionPoints = (
 export const readDOMSelectionRecord = (tree: Document | ShadowRoot) =>
   RECORDS.get(tree) ?? null;
 
+export const isDOMSelectionWriteEcho = (
+  tree: Document | ShadowRoot,
+  points: DOMSelectionPoints
+) => {
+  const record = RECORDS.get(tree);
+
+  return (
+    record?.source === 'write' && sameDOMSelectionPoints(points, record.points)
+  );
+};
+
 export const recordDOMSelection = (
   tree: Document | ShadowRoot,
   points: DOMSelectionPoints,

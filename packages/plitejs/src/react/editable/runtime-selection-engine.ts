@@ -41,6 +41,8 @@ import {
 } from './selection-controller';
 import type { UnreadPress } from './unread-press';
 
+export const SELECTION_IMPORT_THROTTLE = 100;
+
 export type RuntimeSelectionChangeHandler = (() => void) & {
   cancel: () => void;
   flush: () => void;
@@ -350,7 +352,7 @@ export const createRuntimeSelectionChangeHandler = ({
     } finally {
       endSelectionImport(inputController);
     }
-  }, 100);
+  }, SELECTION_IMPORT_THROTTLE);
 
   return onDOMSelectionChange;
 };

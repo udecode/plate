@@ -13,6 +13,8 @@ import {
 import {
   changeDOMSelection,
   type DOMSelectionPoints,
+  isDOMSelectionWriteEcho,
+  readDOMSelectionPoints,
 } from '../../dom/utils/selection-writes';
 import type { OpenedInput } from '../../dom/utils/weak-maps';
 import { createNativeGroupingId } from './input-history';
@@ -617,6 +619,35 @@ export const isSelectionHeldForNativeMove = (
     containsShadowAware(editorElement, domSelection.anchorNode) &&
     containsShadowAware(editorElement, domSelection.focusNode)
   );
+};
+
+export const isSelectionHeldForFocus = (
+  inputController: EditableInputController,
+  editor: AnyEditor,
+  editorElement: HTMLElement | null | undefined
+) => {
+  if (isSelectionHeldForNativeMove(inputController, editor, editorElement)) {
+    return true;
+  }
+
+  if (!editorElement || !inputController.state.pendingDOMSelectionImport) {
+    return false;
+  }
+
+  const tree = editorElement.getRootNode() as Document | ShadowRoot;
+  const domSelection = getSelection(tree);
+
+  if (
+    !domSelection ||
+    !containsShadowAware(editorElement, domSelection.anchorNode) ||
+    !containsShadowAware(editorElement, domSelection.focusNode)
+  ) {
+    return false;
+  }
+
+  const livePoints = readDOMSelectionPoints(domSelection);
+
+  return !!livePoints && !isDOMSelectionWriteEcho(tree, livePoints);
 };
 
 /** Ends the native-move hold and leaves any pending selection import. */
