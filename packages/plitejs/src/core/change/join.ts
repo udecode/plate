@@ -1,4 +1,5 @@
 import { getDefined } from '../../internal/get-defined';
+import { tokensAlike } from '../stored-element-id';
 import { textPropertiesEqual } from '../value-codec';
 import { countCoreWork } from '../work';
 import type { DocumentIndex } from './document-index';
@@ -562,42 +563,34 @@ const liftRebase = (
   options: TransformOptions
 ) => {
   const bLift = liftOf(b, document);
-  const aLift = bLift ? null : liftOf(a, document);
+  const lift = bLift ?? liftOf(a, document);
+  const [step, edit] = bLift ? [b, a] : [a, b];
 
-  if (bLift) {
-    if (editsInsideWrap(b, bLift, a, document)) return null;
+  if (!lift || editsInsideWrap(step, lift, edit, document)) return null;
 
-    const first = overMove(a, bLift, document, options);
-    const second = RootChange.transformInDocument(
-      first.edit,
-      bLift.rest,
-      bLift.lifted,
-      options
-    );
+  const first = overMove(edit, lift, document, options);
+  const second = bLift
+    ? RootChange.transformInDocument(
+        first.edit,
+        lift.rest,
+        lift.lifted,
+        options
+      )
+    : RootChange.transformInDocument(
+        lift.rest,
+        first.edit,
+        lift.lifted,
+        options
+      );
 
-    return convergedResult(document, a, b, {
-      a: second.a,
-      b: first.move.compose(second.b),
-    });
-  }
-  if (aLift) {
-    if (editsInsideWrap(a, aLift, b, document)) return null;
-
-    const first = overMove(b, aLift, document, options);
-    const second = RootChange.transformInDocument(
-      aLift.rest,
-      first.edit,
-      aLift.lifted,
-      options
-    );
-
-    return convergedResult(document, a, b, {
-      a: first.move.compose(second.a),
-      b: second.b,
-    });
-  }
-
-  return null;
+  return convergedResult(
+    document,
+    a,
+    b,
+    bLift
+      ? { a: second.a, b: first.move.compose(second.b) }
+      : { a: first.move.compose(second.a), b: second.b }
+  );
 };
 
 /**
@@ -612,14 +605,25 @@ const removedJoinedLines = (change: RootChange, document: DocumentIndex) => {
     );
   const inserts = (line: Range) => {
     const json = document.slice(line.from, line.to).toJSON();
+    const pad = json.length - 1;
 
-    return runs.some(({ inserted }) => {
-      const tokens = inserted.toJSON();
+    return runs.some(({ from, inserted, to }, index) => {
+      if (inserted.length === 0) return false;
+
+      const prev = Math.max(runs[index - 1]?.to ?? 0, from - pad);
+      const next = Math.min(runs[index + 1]?.from ?? document.length, to + pad);
+      const lead = from - prev;
+      const tokens = [
+        ...document.slice(prev, from).toJSON(),
+        ...inserted.toJSON(),
+        ...document.slice(to, next).toJSON(),
+      ];
 
       return tokens.some(
         (_, at) =>
-          at + json.length <= tokens.length &&
-          jsonEqual(tokens.slice(at, at + json.length), json)
+          at + json.length > lead &&
+          at < lead + inserted.length &&
+          tokensAlike(tokens.slice(at, at + json.length), json)
       );
     });
   };

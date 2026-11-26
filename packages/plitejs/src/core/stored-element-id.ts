@@ -1,5 +1,9 @@
-import { isRecord, type JsonRecord } from './change/json';
-import { isElementNode, type JsonNode } from './change/tokens';
+import { isRecord, jsonEqual, type JsonRecord } from './change/json';
+import {
+  isElementNode,
+  type JsonNode,
+  type JsonTokenData,
+} from './change/tokens';
 
 export const storedElementIdOf = (node: JsonNode): string | undefined => {
   const id = isElementNode(node) ? node.id : undefined;
@@ -48,3 +52,19 @@ const withoutPropertiesId = (value: unknown) =>
 
 export const alike = (left: unknown, right: unknown) =>
   same(withoutPropertiesId(left), withoutPropertiesId(right));
+
+export const tokensAlike = (
+  left: readonly JsonTokenData[],
+  right: readonly JsonTokenData[]
+) =>
+  left.length === right.length &&
+  left.every((token, index) => {
+    const other = right[index];
+
+    return token.kind === 'open' &&
+      token.nodeKind === 'element' &&
+      other?.kind === 'open' &&
+      other.nodeKind === 'element'
+      ? alike(token.props, other.props)
+      : jsonEqual(token, other);
+  });

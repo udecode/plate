@@ -1,7 +1,7 @@
 import type { NodeKey } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import { profileCoreDuration } from '../profiling';
-import { alike } from '../stored-element-id';
+import { alike, storedElementIdOf } from '../stored-element-id';
 import { assertEditorJsonValue } from '../value-codec';
 import { countCoreWork } from '../work';
 import {
@@ -1892,6 +1892,21 @@ export const createStructurallyAlignedChanges = (
 
     return result;
   };
+  const boundaryOverlap = (
+    sourceText: ReturnType<typeof getBoundary>,
+    targetText: ReturnType<typeof getBoundary>
+  ) => {
+    const prefix = commonTextPrefixLength(sourceText.prefix, targetText.prefix);
+
+    return (
+      prefix +
+      commonTextSuffixLength(
+        sourceText.suffix,
+        targetText.suffix,
+        Math.max(0, Math.min(sourceText.length, targetText.length) - prefix)
+      )
+    );
+  };
   const continuityScore = (source: JsonNode, target: JsonNode) => {
     if (isTextNode(source) !== isTextNode(target)) return 0;
     if (Object.is(source, target)) return 2_000_000_000;
@@ -1910,39 +1925,22 @@ export const createStructurallyAlignedChanges = (
       return 0;
     }
 
-    const sourceText = getBoundary(source);
-    const targetText = getBoundary(target);
-    const prefix = commonTextPrefixLength(sourceText.prefix, targetText.prefix);
-    const suffix = commonTextSuffixLength(
-      sourceText.suffix,
-      targetText.suffix,
-      Math.max(0, Math.min(sourceText.length, targetText.length) - prefix)
-    );
-    const overlap = prefix + suffix;
+    const overlap = boundaryOverlap(getBoundary(source), getBoundary(target));
 
-    if (overlap === 0) return 0;
+    if (overlap === 0) {
+      return propertiesEqual && storedElementIdOf(source) !== undefined ? 1 : 0;
+    }
 
     return (propertiesEqual ? 1024 : 512) + overlap * 16;
   };
   const isCompleteTextContinuation = (source: JsonNode, target: JsonNode) => {
     const sourceText = getBoundary(source);
 
-    if (
-      sourceText.length === 0 ||
-      sourceText.length > TREE_DIFF_TEXT_BOUNDARY
-    ) {
-      return false;
-    }
-
-    const targetText = getBoundary(target);
-    const prefix = commonTextPrefixLength(sourceText.prefix, targetText.prefix);
-    const suffix = commonTextSuffixLength(
-      sourceText.suffix,
-      targetText.suffix,
-      Math.max(0, Math.min(sourceText.length, targetText.length) - prefix)
+    return (
+      sourceText.length > 0 &&
+      sourceText.length <= TREE_DIFF_TEXT_BOUNDARY &&
+      boundaryOverlap(sourceText, getBoundary(target)) === sourceText.length
     );
-
-    return prefix + suffix === sourceText.length;
   };
   const addPropertyChanges = (
     source: JsonNode,
@@ -2007,15 +2005,11 @@ export const createStructurallyAlignedChanges = (
     }
     if (!isElementNode(source) || !isElementNode(target)) return false;
 
-    // A flat diff replaces an element whose properties and children both
-    // change, though it keeps its type.
-    if (
+    const flatDiffRekeysElement =
       getProperties(source).type === getProperties(target).type &&
-      !jsonEqual(getProperties(source), getProperties(target)) &&
-      !jsonEqual(source.children, target.children)
-    ) {
-      flatDiffRekeys = true;
-    }
+      !jsonEqual(getProperties(source), getProperties(target));
+
+    if (flatDiffRekeysElement) flatDiffRekeys = true;
 
     return diffChildren(source.children, target.children, path);
   };
@@ -2024,25 +2018,9 @@ export const createStructurallyAlignedChanges = (
     target: readonly JsonNode[],
     parentPath: readonly number[]
   ): boolean => {
-    let prefix = 0;
-
-    while (
-      prefix < source.length &&
-      prefix < target.length &&
-      jsonEqual(source[prefix], target[prefix])
-    ) {
-      prefix += 1;
-    }
-
-    let suffix = 0;
-
-    while (
-      suffix < source.length - prefix &&
-      suffix < target.length - prefix &&
-      jsonEqual(source.at(-suffix - 1), target.at(-suffix - 1))
-    ) {
-      suffix += 1;
-    }
+    const shorter = Math.min(source.length, target.length);
+    const prefix = equalRunLength(source, target, shorter);
+    const suffix = equalRunLength(source, target, shorter - prefix, true);
 
     const sourceEnd = source.length - suffix;
     const targetEnd = target.length - suffix;
@@ -2055,6 +2033,16 @@ export const createStructurallyAlignedChanges = (
       (sourceCount === 0 || targetCount === 0)
     ) {
       flatDiffRekeys = true;
+    }
+
+    if (
+      sourceCount === 1 &&
+      targetCount === 1 &&
+      isTextNode(source[prefix]) &&
+      isTextNode(target[prefix]) &&
+      jsonEqual(getProperties(source[prefix]), getProperties(target[prefix]))
+    ) {
+      return diffNode(source[prefix], target[prefix], [...parentPath, prefix]);
     }
 
     if (sourceCount > 0 && targetCount > 0 && sourceCount !== targetCount) {
@@ -3051,18 +3039,24 @@ const mergeStructuralRunByPosition = (
   return { merged: document, other, rebased: rebasedChange };
 };
 
+const SIBLING_RANGE_READS = [
+  { head: jsonEqual, tail: jsonEqual },
+  { head: jsonEqual, tail: alike },
+  { head: alike, tail: alike },
+] as const;
+
 const mergeStructuralChangeAtStableSiblingRange = (
   before: DocumentIndex,
   afterStructural: DocumentIndex,
   afterConcurrent: DocumentIndex,
-  idBlindTail = false
+  read = 0
 ): { merged: DocumentIndex; other: RootChange; rebased: RootChange } | null => {
   const left = before.value;
   const right = afterStructural.value;
   const shorter = Math.min(left.length, right.length);
-  const from = equalRunLength(left, right, shorter);
-  const tailEqual = idBlindTail ? alike : jsonEqual;
-  const suffix = equalRunLength(left, right, shorter - from, true, tailEqual);
+  const { head, tail } = SIBLING_RANGE_READS[read];
+  const from = equalRunLength(left, right, shorter, false, head);
+  const suffix = equalRunLength(left, right, shorter - from, true, tail);
   const source = left.slice(from, left.length - suffix);
   const replacement = right.slice(from, right.length - suffix);
 
@@ -3079,7 +3073,7 @@ const mergeStructuralChangeAtStableSiblingRange = (
   ) {
     if (
       source.every((node, offset) =>
-        jsonEqual(node, afterConcurrent.value[index + offset])
+        head(node, afterConcurrent.value[index + offset])
       )
     ) {
       if (match !== -1) return null;
@@ -3088,18 +3082,14 @@ const mergeStructuralChangeAtStableSiblingRange = (
     }
   }
 
-  // Undoing a split joins the halves under the id the first half kept, while
-  // the other side still holds the second half under the id the split minted,
-  // so no exact run matches. Only the trailing run leaves ids out, so a change
-  // to an id alone elsewhere stays a change.
   if (match === -1) {
-    return idBlindTail
+    return read + 1 === SIBLING_RANGE_READS.length
       ? null
       : mergeStructuralChangeAtStableSiblingRange(
           before,
           afterStructural,
           afterConcurrent,
-          true
+          read + 1
         );
   }
 
@@ -3182,9 +3172,14 @@ const mergeNestedChangeThroughStructuralRelocation = (
       continue;
     }
 
-    const targets = afterNodes.filter(({ node }) =>
+    const exactTargets = afterNodes.filter(({ node }) =>
       jsonEqual(node, candidate.node)
     );
+    const equal = exactTargets.length > 0 ? jsonEqual : alike;
+    const targets =
+      exactTargets.length > 0
+        ? exactTargets
+        : afterNodes.filter(({ node }) => alike(node, candidate.node));
 
     if (targets.length !== 1) continue;
 
@@ -3216,10 +3211,13 @@ const mergeNestedChangeThroughStructuralRelocation = (
     } catch {
       continue;
     }
-    if (edited.length === 0 || (at !== end && index < siblings.length)) {
+    if (
+      edited.length === 0 ||
+      (at !== end && index < siblings.length) ||
+      edited.some((node) => equal(node, candidate.node))
+    ) {
       continue;
     }
-    if (edited.some((node) => jsonEqual(node, candidate.node))) continue;
 
     const targetPath = targets[0].path;
     const targetIndex = targetPath.at(-1);
@@ -4428,34 +4426,25 @@ export class RootChange {
     if (changedRangesAreSeparated(a, b)) return null;
 
     const [aMove, bMove] = runMoves();
+    const move = bMove ?? aMove;
 
-    if (aMove && bMove) return null;
-    if (bMove) {
-      const carried = RootChange.carryEditAcrossMove(
-        a,
-        b,
-        bMove,
-        document,
-        options,
-        true
-      );
+    if ((aMove && bMove) || !move) return null;
 
-      return carried && { a: carried.edit, b: carried.move };
-    }
-    if (aMove) {
-      const carried = RootChange.carryEditAcrossMove(
-        b,
-        a,
-        aMove,
-        document,
-        options,
-        false
-      );
+    const carried = RootChange.carryEditAcrossMove(
+      bMove ? a : b,
+      bMove ? b : a,
+      move,
+      document,
+      options,
+      Boolean(bMove)
+    );
 
-      return carried && { a: carried.move, b: carried.edit };
-    }
-
-    return null;
+    return (
+      carried &&
+      (bMove
+        ? { a: carried.edit, b: carried.move }
+        : { a: carried.move, b: carried.edit })
+    );
   }
 
   private static carryEditAcrossMove(
@@ -4944,24 +4933,20 @@ export class RootChange {
       };
     };
 
-    if (readBack && bMove && !aMove) {
-      const wrapped = wrapGoesWithMove(a, b, bMove);
+    if (readBack && Boolean(bMove) !== Boolean(aMove)) {
+      const wrapped = bMove
+        ? wrapGoesWithMove(a, b, bMove)
+        : aMove && wrapGoesWithMove(b, a, aMove);
       const kept =
         wrapped &&
-        convergedResult(document, a, b, { a: wrapped.edit, b: wrapped.move });
-
-      if (kept) {
-        markReadBack(readBack);
-
-        return kept;
-      }
-    }
-
-    if (readBack && aMove && !bMove) {
-      const wrapped = wrapGoesWithMove(b, a, aMove);
-      const kept =
-        wrapped &&
-        convergedResult(document, a, b, { a: wrapped.move, b: wrapped.edit });
+        convergedResult(
+          document,
+          a,
+          b,
+          bMove
+            ? { a: wrapped.edit, b: wrapped.move }
+            : { a: wrapped.move, b: wrapped.edit }
+        );
 
       if (kept) {
         markReadBack(readBack);
@@ -5077,37 +5062,30 @@ export class RootChange {
       };
     }
 
-    const aThroughB = bChangesStructure
-      ? mergeNestedChangeThroughStructuralRelocation(
-          a,
-          b,
-          document,
-          afterA,
-          afterB
-        )
-      : null;
+    const relocated =
+      (bChangesStructure
+        ? mergeNestedChangeThroughStructuralRelocation(
+            a,
+            b,
+            document,
+            afterA,
+            afterB
+          )
+        : null) ??
+      (aChangesStructure
+        ? mergeNestedChangeThroughStructuralRelocation(
+            b,
+            a,
+            document,
+            afterB,
+            afterA
+          )
+        : null);
 
-    if (aThroughB !== null) {
+    if (relocated !== null) {
       return {
-        a: RootChange.betweenWhole(afterB, aThroughB),
-        b: RootChange.betweenWhole(afterA, aThroughB),
-      };
-    }
-
-    const bThroughA = aChangesStructure
-      ? mergeNestedChangeThroughStructuralRelocation(
-          b,
-          a,
-          document,
-          afterB,
-          afterA
-        )
-      : null;
-
-    if (bThroughA !== null) {
-      return {
-        a: RootChange.betweenWhole(afterB, bThroughA),
-        b: RootChange.betweenWhole(afterA, bThroughA),
+        a: RootChange.betweenWhole(afterB, relocated),
+        b: RootChange.betweenWhole(afterA, relocated),
       };
     }
 
