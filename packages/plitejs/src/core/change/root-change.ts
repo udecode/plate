@@ -2005,11 +2005,9 @@ export const createStructurallyAlignedChanges = (
     }
     if (!isElementNode(source) || !isElementNode(target)) return false;
 
-    const flatDiffRekeysElement =
+    flatDiffRekeys ||=
       getProperties(source).type === getProperties(target).type &&
       !jsonEqual(getProperties(source), getProperties(target));
-
-    if (flatDiffRekeysElement) flatDiffRekeys = true;
 
     return diffChildren(source.children, target.children, path);
   };
@@ -2033,16 +2031,6 @@ export const createStructurallyAlignedChanges = (
       (sourceCount === 0 || targetCount === 0)
     ) {
       flatDiffRekeys = true;
-    }
-
-    if (
-      sourceCount === 1 &&
-      targetCount === 1 &&
-      isTextNode(source[prefix]) &&
-      isTextNode(target[prefix]) &&
-      jsonEqual(getProperties(source[prefix]), getProperties(target[prefix]))
-    ) {
-      return diffNode(source[prefix], target[prefix], [...parentPath, prefix]);
     }
 
     if (sourceCount > 0 && targetCount > 0 && sourceCount !== targetCount) {
@@ -2182,7 +2170,18 @@ export const createStructurallyAlignedChanges = (
     let sourceCursor = prefix;
     let targetCursor = prefix;
     const addGap = (sourceTo: number, targetTo: number) => {
-      if (sourceCursor === sourceTo && targetCursor === targetTo) return;
+      if (sourceCursor === sourceTo && targetCursor === targetTo) return true;
+      if (sourceTo === sourceCursor + 1 && targetTo === targetCursor + 1) {
+        const left = source[sourceCursor];
+        const right = target[targetCursor];
+
+        if (
+          isTextNode(left) === isTextNode(right) &&
+          jsonEqual(getProperties(left), getProperties(right))
+        ) {
+          return diffNode(left, right, [...parentPath, sourceCursor]);
+        }
+      }
 
       changes.push({
         from: before.childPosition(parentPath, sourceCursor),
@@ -2191,10 +2190,12 @@ export const createStructurallyAlignedChanges = (
         ),
         to: before.childPosition(parentPath, sourceTo),
       });
+
+      return true;
     };
 
     for (const [matchedSource, matchedTarget] of matches) {
-      addGap(matchedSource, matchedTarget);
+      if (!addGap(matchedSource, matchedTarget)) return false;
 
       const row = scores[matchedSource - prefix];
       const score = row[matchedTarget - prefix];
@@ -2231,9 +2232,7 @@ export const createStructurallyAlignedChanges = (
       targetCursor = matchedTarget + 1;
     }
 
-    addGap(sourceEnd, targetEnd);
-
-    return true;
+    return addGap(sourceEnd, targetEnd);
   };
 
   return diffChildren(before.value, after.value, []) && flatDiffRekeys
