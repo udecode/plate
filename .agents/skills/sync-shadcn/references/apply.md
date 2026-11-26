@@ -1,41 +1,8 @@
-### `apply`
+# Accepted Slice Application (`apply`)
 
-Use `sync-shadcn apply` when the user pastes a dashboard review payload.
+Applies a pasted dashboard review payload. Permissions and `deltas.json` state meanings live in [policy](./policy.md).
 
-Purpose:
-
-- apply rows listed directly under `$sync-shadcn apply` or under an optional
-  `Rows` heading
-- answer rows listed under `Questions` in chat without mutating
-  `deltas.json`
-- keep the copied dashboard prompt short by storing the mutation contract in
-  this command
-
-Apply mode may:
-
-- read and update `docs/sync/shadcn/deltas.json`
-- patch `apps/www`, `content/docs`, and related source files when a listed row
-  targets `synced` or `fork`
-- remove screenshot refs for rows applied to `synced` or `rejected`
-- delete unreferenced local screenshot files under `docs/sync/shadcn/runs/**`
-- move `status.json`'s `uiSyncedCommit` when a row applied as `synced` takes a
-  file in `apps/www/src/components/ui` from a newer upstream commit, then add a
-  `pending` item for each site ui file that differs at the new commit and no
-  item lists, as the [review board](./dashboard.md) says
-- run `pnpm sync-shadcn dashboard` after any JSON mutation
-
-Apply mode must not:
-
-- write `docs/sync/shadcn/runs/**` except deleting unreferenced screenshots
-- change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
-  `partialSyncs`
-- infer decisions for rows not listed in the pasted payload
-- mutate `deltas.json` for question-only rows
-- mark a row `synced` or `fork` before implementation is present and verified
-- ask for review when the row has clear files, suggestion, and acceptance
-  criteria; ask one focused question only when the target behavior is unclear
-
-Payload shape:
+## Payload Shape
 
 ```md
 $sync-shadcn apply
@@ -46,27 +13,15 @@ Questions:
 - registry/registry-review (Registry / Full registry review): Which registry rows should include copy shortcuts?
 ```
 
-Apply rules:
+## Rules
 
-- A direct bullet row under `$sync-shadcn apply`, or under an optional `Rows`
-  heading, is the only mutation unit.
-- Set each listed item state to the requested target state.
+- Direct bullet rows under `$sync-shadcn apply` (or optional `Rows` heading) are the only mutation units. Never infer decisions for unlisted rows.
+- Rows under `Questions` (or question-only notes) are answered in chat without mutating `deltas.json`.
 - Target states `pending`, `defer`, and `rejected` are metadata decisions.
-- Target state `synced` is implementation mode: inspect the row files and
-  suggestion, implement the requested change, run focused verification, then
-  update `deltas.json` to `synced`.
-- Target state `fork` is also implementation mode when the row's note,
-  suggestion, or files imply work in Plate. Inspect the row files and
-  suggestion, implement or verify the intentional Plate-owned fork, run focused
-  verification, then update `deltas.json` to `fork`.
-- A `fork` update may be metadata-only only when the Plate fork already exists,
-  the row note does not ask for code/content work, and the source evidence is
-  checked before updating `deltas.json`.
-- Use notes to update `decision`, `suggestion`, or summary text when
-  appropriate.
-- If a note is only a question, keep it under `Questions`, answer it in chat,
-  and do not mutate JSON.
-- When applying `synced` or `rejected`, remove that row's `screenshots` object
-  and delete unreferenced local screenshot files.
-- Keep screenshots for `fork` rows.
-- If any row is applied, run `pnpm sync-shadcn dashboard`.
+- Target state `synced` is implementation mode: inspect row files and suggestion, implement the change, run focused verification, then update `deltas.json` to `synced`.
+- Target state `fork` is implementation mode when the note, suggestion, or files imply work in Plate; verify/implement before marking `fork`. Metadata-only `fork` is allowed only when the Plate fork already exists, the note asks for no code/content work, and source evidence is verified first.
+- Never mark `synced` or `fork` before implementation is present and verified. Ask one focused question only when target behavior is unclear; do not ask for review when files, suggestion, and acceptance criteria are clear.
+- Use row notes to update `decision`, `suggestion`, or summary text when appropriate.
+- On `synced` or `rejected`, remove the row's `screenshots` object and delete unreferenced local screenshot files under `docs/sync/shadcn/runs/**`. Keep screenshots for `fork` rows.
+- When a `synced` row takes a file in `apps/www/src/components/ui` from a newer upstream commit, advance `status.json`'s `uiSyncedCommit` and add a `pending` item for each site UI file that differs at the new commit and has no item ([dashboard](./dashboard.md)).
+- After any JSON mutation, run `pnpm sync-shadcn dashboard`.

@@ -1,115 +1,39 @@
-### `status`
+# Incremental Status and Discovery (`status`)
 
-Use `sync-shadcn status` when the user wants a quick checkpoint before choosing
-the next sync step.
+Read-only checkpoint before choosing the next sync step. Permissions live in [policy](./policy.md).
 
-Purpose:
+## Scope and Behavior
 
-- show the current baseline, latest planned target, current upstream target, and
-  whether the tracked plan looks fresh enough for decision-making
-- list accepted partial syncs already landed
-- list deferred decisions so the user can choose what to do next
-- list reviewable Plate-vs-shadcn differences that are still intentionally
-  undecided or deferred, especially visual parity gaps from scoped sync plans
-- report create compatibility: each `shadcn create` option, install marker
-  and install transformer at `origin/main` that has no verdict, and each
-  verdict that is still `pending` or `defer`
-- recommend the next command or decision
+- Show baseline (`lastSyncedCommit`), latest planned target (`lastPlannedCommit`), current upstream target, freshness, landed `partialSyncs`, deferred decisions, reviewable Plate-vs-shadcn differences (especially visual parity gaps from scoped plans), create compatibility gaps (options at `origin/main` with no verdict, or `pending`/`defer`), and recommended next action.
+- Fetch `origin main --tags` in `../shadcn` when checking current freshness (if fetch fails, report `unverified`), count commits/file-status rows in `lastPlannedCommit..origin/main`, and run `pnpm sync-shadcn compat` (writes no file).
+- Treat words after `status` as a scope filter (e.g., `status our /editors vs shadcn /blocks`), preferring the matching `partialSyncs[*].plan`, `lastPlan`, or run dir before falling back to global status. Summarize remaining reviewable differences from the matched plan's `Recommended Merge Slices`, `Visual Evidence`, `Implementation Result`, and `partialSyncs[*].deferred`.
 
-Status mode may:
-
-- read `docs/sync/shadcn/status.json`
-- read `lastPlan`, the linked `inventory.md`, and the latest run directory when
-  present
-- resolve `../shadcn` refs and fetch `origin main --tags` when the user asks for
-  current upstream freshness; if fetch fails, report freshness as unverified
-- count upstream commits and file-status rows for
-  `lastPlannedCommit..origin/main`
-- summarize `partialSyncs[*].slices`, `partialSyncs[*].deferred`,
-  and plan `Questions`
-- when the user supplies words after `status`, treat the remaining argument as
-  a status scope filter, for example `status our /editors vs shadcn /blocks`;
-  prefer the matching `partialSyncs[*].plan`, `lastPlan`, or run directory
-  before falling back to global status
-- summarize remaining reviewable differences from the matched plan's
-  `Recommended Merge Slices`, `Visual Evidence`, `Implementation Result`, and
-  `partialSyncs[*].deferred`
-- run `pnpm sync-shadcn compat` after the fetch, which reads the create
-  options at `origin/main` and writes no file
-
-Status mode must not:
-
-- patch `apps/www`
-- write `docs/sync/shadcn/runs/**`
-- write review artifacts
-- change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
-  `partialSyncs`
-- treat listed deferred items as accepted decisions
-- list settled exclusions or preserved Plate forks as if they still need
-  action; those belong in `review` evidence or the plan, not routine status
-  output
-
-Status must distinguish three things:
+Distinguish three buckets (never list settled exclusions/forks by default unless asked to reopen them):
 
 - `Landed`: accepted partial sync slices already applied.
-- `Reviewable differences`: Plate still differs from upstream and the
-  difference is not settled policy. These are the items the user can re-decide.
-  Include the upstream behavior, current Plate behavior, likely owner files,
-  and the smallest next command or decision.
-- `Settled differences`: explicit exclusions and preserved Plate forks. Do not
-  list these by default unless the user asks to re-open them.
+- `Reviewable differences`: Plate still differs from upstream without settled policy (include upstream behavior, Plate behavior, likely owner files, and smallest next command/decision). For visual scoped status, never stop at "fresh" while visible deltas remain (e.g., BlockViewer toolbar density/controls on `/editors` vs upstream `/blocks`).
+- `Settled differences`: explicit exclusions and preserved Plate forks (collapse rejected upstream product/theme noise into its owning decision; keep Plate's accepted eight registry code styles and `/create` preset pickers separate from rejected v0 features and hand-copied theme/font/color/project designers).
 
-Deferred item sources, in order:
+Check deferred sources in order:
 
-1. `docs/sync/shadcn/status.json` `partialSyncs[*].deferred`
-2. the selected plan's `Questions` section
-3. recommended merge slices marked `defer`, `needs-question`, or not yet
-   implemented
-4. visual evidence rows where the plan says a Plate-vs-upstream difference
-   still needs work
-5. implementation-result notes that explicitly leave a follow-up slice open
-6. status update notes that say `lastSyncedCommit` cannot advance
+1. `status.json` `partialSyncs[*].deferred`
+2. Selected plan's `Questions` section
+3. Recommended merge slices marked `defer`, `needs-question`, or not yet implemented
+4. Visual evidence rows noting unresolved Plate-vs-upstream deltas
+5. Implementation-result notes leaving a follow-up slice open
+6. Status notes stating `lastSyncedCommit` cannot advance
 
-For visual scoped status, do not stop at "fresh" when visible deltas remain.
-Report them as reviewable differences even when the scoped implementation was
-verified. Example:
+## Checks and Output Shape
 
-```md
-Reviewable differences:
-- BlockViewer toolbar: upstream `/blocks` has compact device controls,
-  refresh, separated command pill, and v0 action; Plate `/editors` still keeps
-  its current toolbar density and excludes v0. Decision: sync toolbar spacing
-  only, keep Plate install/source behavior and no v0; or leave as Plate fork.
-```
-
-Collapse rejected upstream product/theme noise into its owning decision. Keep
-Plate's accepted eight registry code styles and its `/create` preset pickers
-separate from the rejected v0 features and from any hand copy of shadcn's
-theme, font, color or project designer.
-
-Status checks:
+Read `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, and `partialSyncs` from `docs/sync/shadcn/status.json`, then run:
 
 ```bash
-node -e '
-const fs = require("fs");
-const status = JSON.parse(fs.readFileSync("docs/sync/shadcn/status.json", "utf8"));
-console.log(JSON.stringify({
-  lastSyncedCommit: status.lastSyncedCommit,
-  lastPlannedCommit: status.lastPlannedCommit,
-  lastPlan: status.lastPlan,
-  partialSyncs: status.partialSyncs ?? []
-}, null, 2));
-'
-
 git -C ../shadcn fetch origin main --tags
 TARGET=$(git -C ../shadcn rev-parse origin/main)
-PLANNED=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("docs/sync/shadcn/status.json", "utf8")).lastPlannedCommit || "")')
 git -C ../shadcn log --oneline --decorate "$PLANNED..$TARGET" -- apps/v4
 git -C ../shadcn diff --name-status --find-renames "$PLANNED..$TARGET" -- apps/v4
 pnpm sync-shadcn compat
 ```
-
-Status output shape:
 
 ```md
 Status: <fresh | upstream-ahead | no-plan | blocked-ref | unverified>
@@ -122,8 +46,7 @@ Partial syncs:
 - <date/range>: <landed slices>
 
 Reviewable differences:
-- <surface>: upstream <behavior>; Plate <behavior>; decision needed <adopt |
-  smart-merge | keep fork>; files <paths>
+- <surface>: upstream <behavior>; Plate <behavior>; decision needed <adopt | smart-merge | keep fork>; files <paths>
 
 Deferred decisions:
 - <item>
@@ -134,6 +57,4 @@ Create compatibility at <origin/main-short>:
 Next: <run review | rerun planning | decide deferred item | implement accepted slice | advance baseline>
 ```
 
-Keep status concise, but do not hide reviewable differences behind a generic
-"deferred" label. If the user wants full evidence, tell them to run
-`sync-shadcn review`.
+Keep status concise without hiding reviewable differences behind a generic "deferred" label; point to `sync-shadcn review` for full evidence.

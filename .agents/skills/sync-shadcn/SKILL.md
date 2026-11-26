@@ -9,42 +9,21 @@ metadata:
 
 # Sync Shadcn
 
-Handle $ARGUMENTS. Read the complete [sync policy](./references/policy.md), then
-the selected mode below. pstack's poteto-mode owns lifecycle and existing
-authority, the lead writes every change, and a plan follows `.agents/pstack/rules/pages.md`;
-this skill owns upstream range accounting, Plate forks, slice decisions and sync
-state.
+Handle $ARGUMENTS. Read [sync policy](./references/policy.md) in full, then read the selected mode reference in full. pstack's poteto-mode owns lifecycle and existing authority, the lead writes every change, and plans follow `.agents/pstack/rules/pages.md`; this skill owns upstream range accounting, Plate forks, slice decisions, and sync state.
 
-Plate's docs app is a forked product. Upstream owns the Fumadocs/shadcn docs
-architecture; Plate owns editor content, demos, registry, API MDX, CN docs,
-MCP, Plate Plus hooks, GA and intentional forks. Keep that ownership explicit.
+Plate's docs app is a forked product: upstream owns Fumadocs/shadcn docs architecture; Plate owns editor content, demos, registry, API MDX, CN docs, MCP, Plate Plus hooks, GA, and intentional forks.
 
 ## Modes
 
 | Request | Complete method |
 | --- | --- |
-| No command, a range or a named surface | [Planning and implementation handoff](./references/planning.md) |
+| No command, a range, or a named surface | [Planning and implementation handoff](./references/planning.md) |
 | `status` | [Incremental status and discovery](./references/status.md) |
 | `apply` | [Accepted slice application](./references/apply.md) |
 | `dashboard` | [Review board](./references/dashboard.md) |
-| `drift [component]` | Site ui drift against upstream, in the [review board](./references/dashboard.md) |
-| `compat [--ref <ref>]` | Plate's verdict on each `shadcn create` option, install marker and install transformer, in the [review board](./references/dashboard.md) |
+| `drift [component]` | Site UI drift against upstream in [review board](./references/dashboard.md) |
+| `compat [--ref <ref>]` | Plate's verdict on each `shadcn create` option, install marker, and transformer in [review board](./references/dashboard.md) |
 | `review` | [Re-audit the current plan](./references/review.md) |
 | `parity <surface>`, or a request to mirror shadcn | [Registry and install protocol parity](./references/parity.md) |
 
-Named scope constrains the inventory. An unscoped sync inventories the whole
-tracked range. Read `docs/sync/shadcn/status.json` and `decisions.md` before
-classifying current source. Record exact upstream SHAs and every relevant row.
-
-Planning is the default. Explicit planning-only work stops at the reviewable
-plan. Already-authorized implementation continues when readiness is resolved;
-do not ask for a second invocation. The full policy defines the narrow
-micro-overlap rule; it never overrides an explicit read-only request.
-
-Apply and revalidate only accepted rows. Preserve source-owned forks and real
-route proof. Advance `lastSyncedCommit` only after complete range accounting
-and applicable verification. A partial slice cannot claim the whole range.
-
-All procedures, examples, inventory shapes, commands and prompts live in the
-linked mode references. Read them in full when selected. Do not replace them
-with the entrypoint summary or create a parallel sync ledger.
+Named scope constrains inventory; unscoped sync inventories the full tracked range. Read `docs/sync/shadcn/status.json` and `decisions.md` before classifying source, and record exact upstream SHAs. Planning is the default; explicit planning-only stops at the reviewable plan, while already-authorized implementation continues once readiness resolves. Apply and revalidate only accepted rows, preserve source-owned forks and real route proof, and advance `lastSyncedCommit` only after complete range accounting and verification. Never create a parallel sync ledger.
