@@ -10,7 +10,14 @@ import {
   rmSync,
 } from 'node:fs';
 import { constants as osConstants, tmpdir } from 'node:os';
-import { basename, extname, join, matchesGlob, relative } from 'node:path';
+import {
+  basename,
+  dirname,
+  extname,
+  join,
+  matchesGlob,
+  relative,
+} from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -134,6 +141,7 @@ const latin1Text = (source) =>
   (source.text ??= source.bytes.toString('latin1'));
 const mayName = (source, extensions) =>
   extensions.some((extension) => source.bytes.includes(extension));
+const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 const toolingReaches = new Map();
 const toolingReach = (file) => {
   if (!isToolingScript(file) && !isAgentFile(file)) return null;
@@ -146,7 +154,7 @@ const toolingReach = (file) => {
   let level = [file];
   while (level.length > 0) {
     const names = `(?<![\\w.-])(?:${level
-      .map((path) => basename(path).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
+      .map((path) => literal(basename(path)))
       .join('|')})`;
     const pattern = new RegExp(names, 'u');
     const extensions = [...new Set(level.map((path) => extname(path)))].map(
@@ -181,10 +189,17 @@ const toolingReach = (file) => {
   return reach;
 };
 const reachesProduct = (file) => toolingReach(file)?.product ?? true;
+// tsc, oxlint and the audits this rule gates read only scripts and JSON, so
+// another file reaches them only once deleted, when code may still import it.
+// A step that reads more, such as plite-docs, names those paths itself.
+const TYPED = /\.(?:[cm]?[jt]sx?|json)$/u;
 const source = (files) =>
   files.some(
     (file) =>
-      !isProse(file) && !FORMATTER_ONLY.has(file) && reachesProduct(file)
+      !isProse(file) &&
+      !FORMATTER_ONLY.has(file) &&
+      (TYPED.test(file) || !existsSync(join(root, file))) &&
+      reachesProduct(file)
   );
 
 // A change to one of these can reach every step, so --affected runs them all.
@@ -352,12 +367,47 @@ const fastTestImporters = () => {
   save();
   return testImporters;
 };
-// A landing runs the fast test files that load a changed file. A change the
-// import graph cannot place, such as a deleted file or a fixture a test reads
-// at run time, runs every fast test file. A test that loads a file through a
-// computed path is missed here, and Local CI's full run catches it on
-// next after landing. Bun ignores the www Playwright specs, so editing one
-// cannot change the tests.
+const namingTests = (file) => {
+  const folder = dirname(file);
+  const names = (dir) => {
+    if (dir === '.') return [file, ...(folder.includes('/') ? [folder] : [])];
+    const near = folder === dir || folder.startsWith(`${dir}/`);
+    return [
+      file,
+      ...(folder.includes('/') ? [folder] : []),
+      relative(dir, file),
+      ...(near ? [basename(file)] : []),
+      ...(near && folder !== dir ? [folder.slice(dir.length + 1)] : []),
+    ];
+  };
+  const patterns = new Map();
+  const patternFor = (dir) => {
+    if (!patterns.has(dir)) {
+      patterns.set(
+        dir,
+        new RegExp(
+          `(?<![\\w.-])(?:${names(dir).map(literal).join('|')})(?![\\w.-])`,
+          'u'
+        )
+      );
+    }
+    return patterns.get(dir);
+  };
+  return [
+    ...new Set(
+      sources().flatMap((script) => {
+        const pattern = patternFor(dirname(script.file));
+        return pattern.test(latin1Text(script)) &&
+          mentionsOutsideComments(join(root, script.file), pattern)
+          ? [...(fastTestImporters().get(script.file) ?? [])]
+          : [];
+      })
+    ),
+  ];
+};
+// A test that loads a file through a computed path is missed here, and Local
+// CI's full run catches it on next after landing. Bun ignores the www
+// Playwright specs, so editing one cannot change the tests.
 const reachesTests = (files) => {
   const product = files.filter(
     (file) =>
@@ -376,7 +426,8 @@ const reachesTests = (files) => {
   const placed = (file) => {
     const tests = fastTestImporters().get(file);
     if (tests) return [...tests];
-    return CODE.test(file) && existsSync(join(root, file)) ? [] : null;
+    if (!existsSync(join(root, file)) || BUILD_CONFIG.test(file)) return null;
+    return CODE.test(file) ? [] : namingTests(file);
   };
   const loading = product.map(placed);
   if (loading.some((tests) => !tests)) return true;
@@ -729,7 +780,8 @@ export const steps = [
     name: 'core-audits',
     private: true,
     run: 'pnpm check:core',
-    affected: source,
+    affected: (files) =>
+      source(files) || files.some(isPlateSchemaAdoptionSourcePath),
     key: [],
   },
   {
@@ -754,7 +806,10 @@ export const steps = [
       touches(
         '.agents/rules/',
         '.agents/skills/',
+        '.changeset/',
         'AGENTS.md',
+        'apps/www/public/',
+        'content/docs/',
         'docs/plite/'
       )(files),
     key: [],
