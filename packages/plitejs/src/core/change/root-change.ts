@@ -1895,11 +1895,11 @@ export const createStructurallyAlignedChanges = (
   const continuityScore = (source: JsonNode, target: JsonNode) => {
     if (isTextNode(source) !== isTextNode(target)) return 0;
     if (Object.is(source, target)) return 2_000_000_000;
-    if (alike(source, target)) return 1_000_000_000;
+    if (jsonEqual(source, target)) return 1_000_000_000;
 
     const sourceProperties = getProperties(source);
     const targetProperties = getProperties(target);
-    const propertiesEqual = alike(sourceProperties, targetProperties);
+    const propertiesEqual = jsonEqual(sourceProperties, targetProperties);
     const sourceType = sourceProperties.type;
     const targetType = targetProperties.type;
 
@@ -2011,7 +2011,7 @@ export const createStructurallyAlignedChanges = (
     // change, though it keeps its type.
     if (
       getProperties(source).type === getProperties(target).type &&
-      !alike(getProperties(source), getProperties(target)) &&
+      !jsonEqual(getProperties(source), getProperties(target)) &&
       !jsonEqual(source.children, target.children)
     ) {
       flatDiffRekeys = true;
@@ -2772,6 +2772,23 @@ const sameChangedChildren = (
     return true;
   });
 
+const equalRunLength = (
+  left: readonly JsonNode[],
+  right: readonly JsonNode[],
+  limit: number,
+  fromEnd = false,
+  equal: (left: unknown, right: unknown) => boolean = jsonEqual
+) => {
+  const at = (offset: number) => (fromEnd ? -1 - offset : offset);
+  let length = 0;
+
+  while (length < limit && equal(left.at(at(length)), right.at(at(length)))) {
+    length += 1;
+  }
+
+  return length;
+};
+
 const mergeStructuralRunByPosition = (
   structural: RootChange,
   concurrent: RootChange,
@@ -2847,30 +2864,10 @@ const mergeStructuralRunByPosition = (
     const structuralNodes = childrenAt(afterStructural, path);
     const concurrentNodes = childrenAt(afterConcurrent, concurrentPath);
     const shorter = Math.min(beforeNodes.length, structuralNodes.length);
-    const prefixOf = (limit: number) => {
-      let length = 0;
-
-      while (
-        length < limit &&
-        alike(beforeNodes[length], structuralNodes[length])
-      ) {
-        length += 1;
-      }
-
-      return length;
-    };
-    const suffixOf = (limit: number) => {
-      let length = 0;
-
-      while (
-        length < limit &&
-        alike(beforeNodes.at(-1 - length), structuralNodes.at(-1 - length))
-      ) {
-        length += 1;
-      }
-
-      return length;
-    };
+    const prefixOf = (limit: number) =>
+      equalRunLength(beforeNodes, structuralNodes, limit);
+    const suffixOf = (limit: number) =>
+      equalRunLength(beforeNodes, structuralNodes, limit, true);
     const from = prefixOf(shorter);
     const suffix = suffixOf(shorter - from);
     const lowest = prefixOf(shorter - suffixOf(shorter));
@@ -2939,7 +2936,7 @@ const mergeStructuralRunByPosition = (
     for (let at = structuralNodes.length - 1; at >= lowest; at--) {
       tailMatches[at] =
         tailMatches[at + 1] &&
-        alike(beforeNodes[at + shift], structuralNodes[at]);
+        jsonEqual(beforeNodes[at + shift], structuralNodes[at]);
     }
 
     const candidates: number[] = [];
@@ -3057,33 +3054,17 @@ const mergeStructuralRunByPosition = (
 const mergeStructuralChangeAtStableSiblingRange = (
   before: DocumentIndex,
   afterStructural: DocumentIndex,
-  afterConcurrent: DocumentIndex
+  afterConcurrent: DocumentIndex,
+  idBlindTail = false
 ): { merged: DocumentIndex; other: RootChange; rebased: RootChange } | null => {
-  let from = 0;
-
-  while (
-    from < before.value.length &&
-    from < afterStructural.value.length &&
-    alike(before.value[from], afterStructural.value[from])
-  ) {
-    from += 1;
-  }
-
-  let suffix = 0;
-
-  while (
-    suffix < before.value.length - from &&
-    suffix < afterStructural.value.length - from &&
-    alike(before.value.at(-1 - suffix), afterStructural.value.at(-1 - suffix))
-  ) {
-    suffix += 1;
-  }
-
-  const source = before.value.slice(from, before.value.length - suffix);
-  const replacement = afterStructural.value.slice(
-    from,
-    afterStructural.value.length - suffix
-  );
+  const left = before.value;
+  const right = afterStructural.value;
+  const shorter = Math.min(left.length, right.length);
+  const from = equalRunLength(left, right, shorter);
+  const tailEqual = idBlindTail ? alike : jsonEqual;
+  const suffix = equalRunLength(left, right, shorter - from, true, tailEqual);
+  const source = left.slice(from, left.length - suffix);
+  const replacement = right.slice(from, right.length - suffix);
 
   if (source.length === 0 || sameDocumentStructure(source, replacement)) {
     return null;
@@ -3098,7 +3079,7 @@ const mergeStructuralChangeAtStableSiblingRange = (
   ) {
     if (
       source.every((node, offset) =>
-        alike(node, afterConcurrent.value[index + offset])
+        jsonEqual(node, afterConcurrent.value[index + offset])
       )
     ) {
       if (match !== -1) return null;
@@ -3107,7 +3088,20 @@ const mergeStructuralChangeAtStableSiblingRange = (
     }
   }
 
-  if (match === -1) return null;
+  // Undoing a split joins the halves under the id the first half kept, while
+  // the other side still holds the second half under the id the split minted,
+  // so no exact run matches. Only the trailing run leaves ids out, so a change
+  // to an id alone elsewhere stays a change.
+  if (match === -1) {
+    return idBlindTail
+      ? null
+      : mergeStructuralChangeAtStableSiblingRange(
+          before,
+          afterStructural,
+          afterConcurrent,
+          true
+        );
+  }
 
   const merged = [...afterConcurrent.value];
 
@@ -3189,7 +3183,7 @@ const mergeNestedChangeThroughStructuralRelocation = (
     }
 
     const targets = afterNodes.filter(({ node }) =>
-      alike(node, candidate.node)
+      jsonEqual(node, candidate.node)
     );
 
     if (targets.length !== 1) continue;
@@ -3225,7 +3219,7 @@ const mergeNestedChangeThroughStructuralRelocation = (
     if (edited.length === 0 || (at !== end && index < siblings.length)) {
       continue;
     }
-    if (edited.some((node) => alike(node, candidate.node))) continue;
+    if (edited.some((node) => jsonEqual(node, candidate.node))) continue;
 
     const targetPath = targets[0].path;
     const targetIndex = targetPath.at(-1);
