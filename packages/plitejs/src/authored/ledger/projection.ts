@@ -126,9 +126,10 @@ type ChangedSpan = Readonly<{
 const keepUnchanged = (
   from: DocumentIndex,
   after: DocumentIndex,
-  change: RootChange
+  change: RootChange,
+  passthroughs: ReadonlySet<JsonNode>
 ): DocumentIndex => {
-  if (change.empty) return from;
+  if (change.empty && passthroughs.size === 0) return from;
 
   const ranges: ChangedSpan[] = [];
 
@@ -136,7 +137,7 @@ const keepUnchanged = (
     ranges.push({ fromA, fromB, toA, toB });
   });
 
-  if (ranges.length === 0) return from;
+  if (ranges.length === 0 && passthroughs.size === 0) return from;
 
   const firstRangeAt = (nodeFrom: number) => {
     let low = 0;
@@ -162,6 +163,8 @@ const keepUnchanged = (
     nodeFrom: number,
     nodeTo: number
   ): JsonNode => {
+    if (passthroughs.has(node)) return node;
+
     const start = firstRangeAt(nodeFrom);
     let touched = false;
 
@@ -330,7 +333,15 @@ export class RootProjection extends Level {
     });
 
     if (this.changed) {
-      this.projected = keepUnchanged(from, this.projected, change);
+      const passthroughs = new Set<JsonNode>();
+
+      this.collectPassthroughNodes(passthroughs);
+      this.projected = keepUnchanged(
+        from,
+        this.projected,
+        change,
+        passthroughs
+      );
       this.bindLevels();
     }
 

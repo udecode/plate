@@ -747,6 +747,20 @@ export class Level {
     this.shownNode = null;
   }
 
+  protected collectPassthroughNodes(out: Set<JsonNode>) {
+    this.slots.forEach(0, this.slots.size, (slot) => {
+      if (slot.run === null) {
+        out.add(slot.node);
+      } else if (isLevelRun(slot.run)) {
+        if (!slot.run.changed) {
+          out.add(slot.node);
+        } else {
+          slot.run.level.collectPassthroughNodes(out);
+        }
+      }
+    });
+  }
+
   protected bindLevels() {
     let at = 0;
 

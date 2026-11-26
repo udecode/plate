@@ -698,6 +698,23 @@ const packageTaskInputs = (definition, partitionName) => [
   ...partitionExternalTestOwnerGlobs(definition, partitionName),
 ];
 
+// Turbo applies `!` negations across the whole `inputs` list, so `!test/yjs/**`
+// would drop an explicit helper like `test/yjs/support/collaboration.ts` from
+// the task hash. Relax any shadowed directory negation to exclude only test
+// files under it so shared test helpers stay in the hash.
+const narrowShadowedTestNegations = (baseInputs, explicitInputs) =>
+  baseInputs.flatMap((glob) => {
+    if (!glob.startsWith('!test/') || !glob.endsWith('/**')) return [glob];
+
+    const prefix = glob.slice(1, -2);
+    const shadowed = explicitInputs.filter((input) => input.startsWith(prefix));
+
+    if (shadowed.length === 0) return [glob];
+    if (shadowed.some((input) => runtimeTestPattern.test(input))) return [];
+
+    return [`!${prefix}**/*.spec.*`, `!${prefix}**/*.test.*`];
+  });
+
 const runtimeTestClosure = (packageName, partitionName, roots) => {
   const files = taskImportClosure(packageName, roots, partitionName);
   const children = files
@@ -833,7 +850,10 @@ export const createPackageTurboConfig = (packageName) => {
         cache: true,
         dependsOn: testGraph.dependsOn,
         inputs: [
-          ...packageTaskInputs(definition, partitionName),
+          ...narrowShadowedTestNegations(
+            packageTaskInputs(definition, partitionName),
+            testGraph.inputs
+          ),
           ...testGraph.inputs,
           ...runtimeTestHarnessInputs(),
         ],
