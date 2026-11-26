@@ -78,6 +78,7 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getActiveEditorUpdateTags,
+  getTransactionSnapshot,
   isPresentationComposing,
   notifyPresentationViewState,
   subscribePresentationComposition,
@@ -215,7 +216,7 @@ import {
   readAuthoredMarks,
   readMembers,
 } from './tree/marks';
-import { recordAuthoredSteps } from './tree/record';
+import { emptiedStruckLine, recordAuthoredSteps } from './tree/record';
 import { completeProposed, framedChild } from './tree/record-completion';
 import {
   changedSitesOf,
@@ -415,6 +416,66 @@ const isStruck = (editor: Editor, node: unknown) => {
     isSettledDeletion(node, facts) ||
     marksOf(node, facts).some((mark) => mark.kind === 'delete')
   );
+};
+
+const emptiedInUpdate = (editor: Editor, point: Point, document: unknown) => {
+  const builder = (
+    getTransactionSnapshot(editor) ??
+    getTransactionSnapshot(getEditorRuntimeOwner(editor))
+  )?.builder;
+
+  if (!builder) return false;
+
+  const root = point.root ?? 'main';
+  const index = builder.getIndex(root);
+
+  if (index.nodes !== document) return false;
+
+  const at = index.positionAt(point);
+  const facts = factsOf(storedValue(editor));
+  const marks = (props: unknown) => marksOf(props, facts);
+  const steps = builder.draftSteps;
+
+  return steps.some((step, first) => {
+    const before = step.indexedBefore.get(root);
+    const change = getInternalDocumentRootChange(step.change, root);
+
+    if (!before || !change) return false;
+
+    const later = steps.slice(first);
+    const after = (position: number, assoc: -1 | 1) =>
+      later.reduce<number | null>(
+        (mapped, each) =>
+          mapped === null
+            ? null
+            : (getInternalDocumentRootChange(each.change, root)?.mapPos(
+                mapped,
+                assoc
+              ) ?? mapped),
+        position
+      );
+    let position = 0;
+
+    for (let pair = 0; pair < change.sections.length; pair += 2) {
+      const length = change.sections[pair];
+      const line =
+        change.sections[pair + 1] === 0 && length > 0
+          ? emptiedStruckLine(before, marks, position, position + length)
+          : null;
+
+      position += length;
+      if (!line) continue;
+
+      const start = after(line.from, 1);
+      const end = after(line.to, -1);
+
+      if (start !== null && end !== null && start <= at && at <= end) {
+        return true;
+      }
+    }
+
+    return false;
+  });
 };
 
 const positionOf = (value: JsonEditorValue, root: string, point: Point) =>
@@ -2047,7 +2108,11 @@ export const createAuthoredPlugin = (
       );
       // A node's own marks decide, so live text inside a struck block reads.
       onCleanup(
-        registerEditorContent(editor, (reader, node) => !isStruck(reader, node))
+        registerEditorContent(
+          editor,
+          (reader, node) => !isStruck(reader, node),
+          emptiedInUpdate
+        )
       );
       // Commands decide on the document with every pending change accepted.
       onCleanup(

@@ -2542,6 +2542,78 @@ type StrikeMode = 'delete' | 'move';
 
 type Span = Readonly<{ from: number; to: number }>;
 
+type MarksOf = (props: unknown) => readonly AuthoredMark[];
+
+const holdsLiveText = (
+  index: DocumentIndex,
+  marks: MarksOf,
+  line: Pick<Context, 'contentFrom' | 'contentTo'>,
+  removed: readonly Span[]
+) => {
+  const gone = (from: number, to: number) =>
+    removed.some((span) => span.from <= from && to <= span.to);
+  const { offsets, tokens } = index.slice(line.contentFrom, line.contentTo);
+  let liveLeaf = false;
+
+  return tokens.some((token, at) => {
+    const position = line.contentFrom + offsets[at];
+
+    if (token.kind === 'text') {
+      return liveLeaf && !gone(position, position + token.text.length);
+    }
+    if (token.kind !== 'open') return false;
+
+    const live = !marks(token.props).some((mark) => mark.kind === 'delete');
+
+    if (token.nodeKind === 'text') {
+      liveLeaf = live;
+      return false;
+    }
+
+    return live && !gone(position, position + 1);
+  });
+};
+
+const emptiesStruckLine = (
+  index: DocumentIndex,
+  marks: MarksOf,
+  line: Pick<Context, 'contentFrom' | 'contentTo' | 'path' | 'props'>,
+  from: number,
+  to: number
+) =>
+  to <= line.contentTo &&
+  marks(line.props).some((mark) => mark.kind === 'delete') &&
+  isTextBlock(index.node(line.path)) &&
+  holdsLiveText(index, marks, line, [{ from, to: from }]) &&
+  !holdsLiveText(index, marks, line, [{ from, to }]);
+
+export const emptiedStruckLine = (
+  index: DocumentIndex,
+  marks: MarksOf,
+  from: number,
+  to: number
+): Span | null => {
+  const entry = index
+    .openContextAt(from)
+    .findLast(
+      (each) =>
+        each.kind === 'element' &&
+        each.contentFrom <= from &&
+        from <= each.contentTo
+    );
+
+  return entry &&
+    emptiesStruckLine(
+      index,
+      marks,
+      { ...entry, props: propsOf(index.node(entry.path)) },
+      from,
+      to
+    )
+    ? { from: entry.contentFrom, to: entry.contentTo }
+    : null;
+};
+
 class RootRecorder {
   private readonly copies: Array<
     Readonly<{ at: number; from: number; offset: number; to: number }>
@@ -2557,6 +2629,9 @@ class RootRecorder {
   }> | null = null;
   private readonly framedStrikes: Array<
     Span & Readonly<{ contexts: readonly Context[] }>
+  > = [];
+  private readonly keptLines: Array<
+    Readonly<{ at: number; from: number; inside: number }>
   > = [];
   private readonly index: DocumentIndex;
   private readonly options: RecorderOptions;
@@ -3874,7 +3949,7 @@ class RootRecorder {
     );
     this.activeTextStrike = null;
 
-    if (this.options.framed && inserted.length === 0) {
+    if (inserted.length === 0) {
       const opsBeforeKeep = this.ops.length;
 
       this.keepEmptiedLine(from, to, startContext);
@@ -3897,8 +3972,9 @@ class RootRecorder {
   /**
    * A line another author's pending deletion strikes stands in the frame only
    * through its live content. When a removal inside it takes the last of that
-   * content, the frame still holds the emptied line, so an empty line with its
-   * properties follows it. A suggested one stood only while the line's
+   * content, the edit still holds the emptied line, so an empty line with its
+   * properties follows it and takes the positions in and after the line. A
+   * suggested one stood only while the line's
    * deletions and the removed content's insertions did, so it rests on both.
    */
   private keepEmptiedLine(
@@ -3910,11 +3986,13 @@ class RootRecorder {
 
     if (
       !line ||
-      to > line.contentTo ||
-      !isTextBlock(this.index.node(line.path)) ||
-      !this.hasMarkKind(line.props, 'delete') ||
-      !this.holdsLiveContent(line, [{ from, to: from }]) ||
-      this.holdsLiveContent(line, [{ from, to }])
+      !emptiesStruckLine(
+        this.index,
+        (props) => this.marks(props),
+        line,
+        from,
+        to
+      )
     ) {
       return;
     }
@@ -3946,11 +4024,17 @@ class RootRecorder {
       },
       [...resting, markOf('insert')]
     );
+    const at = line.contentTo + 1;
+    const { tokens } = encodeNodes([node]).slice;
 
-    this.ops.push({
-      at: line.contentTo + 1,
-      kind: 'insert',
-      tokens: encodeNodes([node]).slice.tokens,
+    this.ops.push({ at, kind: 'insert', tokens });
+    this.keptLines.push({
+      at,
+      from,
+      inside:
+        tokens.findIndex(
+          (token) => token.kind === 'open' && token.nodeKind === 'text'
+        ) + 1,
     });
   }
 
@@ -4046,29 +4130,12 @@ class RootRecorder {
       return false;
     }
 
-    const { offsets, tokens } = this.index.slice(
-      element.contentFrom,
-      element.contentTo
+    return holdsLiveText(
+      this.index,
+      (props) => this.marks(props),
+      element,
+      removed
     );
-    let liveLeaf = false;
-
-    return tokens.some((token, index) => {
-      const at = element.contentFrom + offsets[index];
-
-      if (token.kind === 'text') {
-        return liveLeaf && !gone(at, at + token.text.length);
-      }
-      if (token.kind !== 'open') return false;
-
-      const live = !this.hasMarkKind(token.props, 'delete');
-
-      if (token.nodeKind === 'text') {
-        liveLeaf = live;
-        return false;
-      }
-
-      return live && !gone(at, at + 1);
-    });
   }
 
   private removedLiveContent(line: Context, from: number, to: number) {
@@ -5814,9 +5881,16 @@ class RootRecorder {
         (replacing.offsets[0] ?? 0)
       );
     }
-    const throughKept = (piece: Extract<Piece, { kind: 'kept' }>) =>
-      recorded.mapPos(piece.beforeFrom + position - piece.afterFrom, assoc) ??
-      position;
+    const throughKept = (piece: Extract<Piece, { kind: 'kept' }>) => {
+      const at = piece.beforeFrom + position - piece.afterFrom;
+
+      return (
+        recorded.mapPos(
+          at,
+          this.keptLines.some((line) => line.at === at) ? 1 : assoc
+        ) ?? position
+      );
+    };
 
     for (const piece of this.pieces) {
       if (piece.kind === 'removed') continue;
@@ -5854,6 +5928,13 @@ class RootRecorder {
     }
 
     if (removed) {
+      const { beforeFrom } = removed;
+      const kept = this.keptLines.find((line) => line.from === beforeFrom);
+
+      if (kept) {
+        return (recorded.mapPos(kept.at, -1) ?? position) + kept.inside;
+      }
+
       const right = caret ? !removed.leftward : assoc === 1;
       const edge = right ? removed.beforeTo : removed.beforeFrom;
 

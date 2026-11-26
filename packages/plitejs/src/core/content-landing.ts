@@ -16,7 +16,7 @@ import {
   childAtPathIndex,
 } from './change/document-index';
 import { refusedIn } from './command-document';
-import { hasEditorContent, isEditorContent } from './content';
+import { hasEditorContent, holdsEditorWrite, isEditorContent } from './content';
 import { getEditorSchema } from './editor-runtime';
 import { holdsOneText } from './editor-schema';
 import { getCompiledEditorSchema } from './plugin-registry';
@@ -137,8 +137,11 @@ const writeLanding = (editor: Editor, document: RootChildren) => {
     survives(element) && !schema.isVoid(element) && !schema.isReadOnly(element);
 
   return (point: Point): Point | null =>
-    nearestFrom(document, point, 'backward', survives, writable) ??
-    nearestFrom(document, point, 'forward', survives, writable);
+    highestGone(document, point, survives) === null ||
+    holdsEditorWrite(editor, point, document)
+      ? point
+      : (nearestFrom(document, point, 'backward', survives, writable) ??
+        nearestFrom(document, point, 'forward', survives, writable));
 };
 
 /**
