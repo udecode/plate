@@ -62,11 +62,6 @@
     "PreInvocation": [
       {
         "type": "command",
-        "command": "cd .. && { [ ! -f .agents/pstack/title.mjs ] || node .agents/pstack/title.mjs --hook; }",
-        "timeout": 10
-      },
-      {
-        "type": "command",
         "command": "cd .. && { [ ! -f tooling/scripts/read-budget.mjs ] || node tooling/scripts/read-budget.mjs --reset; }",
         "timeout": 10
       }

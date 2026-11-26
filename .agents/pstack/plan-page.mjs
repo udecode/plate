@@ -11,8 +11,6 @@ import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SEATS, STAGE_PHASES, isFence, isHandOffReview, landed, outsideFences, readFence, splitRow, stageOfRow, stateOf, strayFence, TABLE_RULE, tablesOf } from './status.mjs';
 
-export const slugOf = (path) => path.split('/').at(-1).replace(/\.md$/u, '').replace(/[^A-Za-z0-9._-]+/gu, '-');
-
 const ROLES = [
   [/^brief$/i, 'brief'],
   [/^demo$/i, 'demo'],
@@ -98,7 +96,7 @@ function pageConfig(root) {
           };
         })
     : [];
-  return { playbooks, plans: config.plans ?? 'docs/plans', topic: config.pageTopic ?? {}, branch: config.branch ?? 'main' };
+  return { playbooks };
 }
 
 function pageSections(playbooks, name, where) {
@@ -434,8 +432,8 @@ function contextOf(planPath) {
   const plan = parsePlan(readFileSync(planPath, 'utf-8'));
   const root = execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: dirname(planPath), encoding: 'utf-8' }).trim();
   const repoPath = relative(root, planPath);
-  const { playbooks, topic, branch } = pageConfig(root);
-  return { plan, root, repoPath, playbooks, topic, branch };
+  const { playbooks } = pageConfig(root);
+  return { plan, root, repoPath, playbooks };
 }
 
 function validatePlan(planPath) {
@@ -446,12 +444,6 @@ function validatePlan(planPath) {
   const self = { path: planPath, plan: ctx.plan };
   const carried = carriedPlans(self, ctx.root);
   return { ...ctx, self, carried };
-}
-
-function stagesOf(planPath) {
-  const { plan, root, playbooks } = contextOf(planPath);
-  const self = { path: planPath, plan };
-  return mergedFlow([self, ...carriedPlans(self, root)], plan.meta.status ?? 'unknown', playbooks);
 }
 
 function rail(planPath) {
@@ -705,7 +697,7 @@ function prBody(planPath, existing = '', { since = null, against = '', forPublic
   return { body, attach: [...attach], name: `${basename(planPath, '.md')}${since ? '.comment' : '.pr'}` };
 }
 
-export { contextOf, parsePlan, rail, stagesOf };
+export { parsePlan, rail };
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);

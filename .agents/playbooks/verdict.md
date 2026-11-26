@@ -61,7 +61,7 @@ Runs on `verdict|review <scope>`, plain scope next-step asks, `/loop verdict <sc
 
 ## Explore
 
-Run dir: main checkout `docs/plans/artifacts/<date>-<slug>-explore/` (`goal.md` verbatim, `round-<n>.md`). Title: `🚧 <scope> (round N)` working, `🟠 <scope> (round N)` waiting (round 0 = goal; normal title after `lock`).
+Run dir: main checkout `docs/plans/artifacts/<date>-<slug>-explore/` (`goal.md` verbatim, `round-<n>.md`). Title: `🥔 <scope> (round N)` working, `🟠 <scope> (round N)` waiting (round 0 = goal; normal title after `lock`).
 
 - **Round 0 (Goal):** no search/lanes (may read `lookup`, `pnpm kb`, topic file); save ask in `goal.md`, restate goal, lead use case and out-of-scope, stop.
 - **Rounds 1+:** append answer, fan out parallel evidence lanes (Extraction), re-rank per Next step, promote research via `research` + `land.mjs`, send ~300-word reply (harsh pushback first, then **Learned**, **Ranking**, **Unsure**, **Your calls**, ending with `lock`/`drop`/continue), save `round-<n>.md`, stop. No-change round asks for `lock` (plain yes = `lock`).

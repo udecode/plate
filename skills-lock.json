@@ -3,10 +3,10 @@
   "skills": {
     "chips": {
       "source": "udecode/dotai",
-      "commit": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce",
+      "commit": "0c06e79839f2890f08679ae33c9c64cbaedf1070",
       "sourceType": "github",
       "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "967493e7881e27ca7aca5839097c8b047177bfb9dd4e0001d81cf6e856866def"
+      "computedHash": "ab6850ac5ac2425b513336c5eec329e78c9269d406a2839c570c8481572a2502"
     },
     "cleanup": {
       "source": "udecode/dotai",
@@ -60,10 +60,10 @@
     },
     "walkthrough": {
       "source": "udecode/dotai",
-      "commit": "ab401de78179dadea708fb3c3af5cc0d7349d66c",
+      "commit": "0c06e79839f2890f08679ae33c9c64cbaedf1070",
       "sourceType": "github",
       "skillPath": "skills/walkthrough/SKILL.md",
-      "computedHash": "9db82eaf8d7cb6ded3914d9059b6c7e2de7f4c339e1fdbc59ef1bb17f1ee3ee5"
+      "computedHash": "2fc36ce4179168348e46b854223cfcbf07996028c5550ac533e77f5449410d2c"
     }
   }
 }

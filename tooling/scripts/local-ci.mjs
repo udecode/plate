@@ -723,7 +723,12 @@ const run = async (args) => {
     const next = { ...state, tip, lastRun: name, lastRunAt: now.toISOString() };
     if (full) Object.assign(next, { fullDay: today, fullTip: tip });
     if (result.ok) {
-      emit({ kind: 'green', log: result.log, tip });
+      emit({
+        kind: 'green',
+        log: result.log,
+        tip,
+        ...(isMain && !dry && !option('--ref') ? { wake: true } : {}),
+      });
       if (!option('--ref')) next.green = tip;
       // The shared ref claims every step passed, which only main checks.
       if (!dry && !option('--ref') && isMain) pushGreen(tip);

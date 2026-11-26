@@ -60,7 +60,7 @@ Run at the final hand-back of any session that offered tasks (after landing, clo
 
 ## Start
 
-Run before editing in any card session or `start <id>` run:
+Run before editing in any card session or `start <id>` run. In T3 Code, launching a standalone chip the user picked uses `t3_thread_launch` in its own worktree (`workspaceStrategy`), replacing Claude Desktop's `start_session` and `detach_session`, because the thread outlives the parent and talks directly to the user. Starting a quick chip inside the current topic stays in the current thread or runs via `invoke_subagent` (`Model: "inherit"`).
 
 1. Run `chips brief <id>` and follow its brief (not the card prompt).
 2. If `State:` is neither Ready nor Started, report it and stop.
