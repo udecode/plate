@@ -1,5 +1,97 @@
 # platejs
 
+## 54.0.0-beta.6
+
+### Patch Changes
+
+- [`33eb625`](https://github.com/udecode/plate/commit/33eb62505f0512f99da91ed324bf3a92a018db5c) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Replace `useArrowPath` and its `BoardArrowPath` type in `platejs/board/react` with three components that draw an arrow inside its `BoardShape`. `BoardArrowPath` is an SVG `path` between the arrow's ends, `BoardArrowhead` is an SVG `g` that draws its children at the arrow's end, and `BoardArrowLabel` is a `div` centered on the arrow's middle. An arrow follows a moved, dragged or resized shape without a render. The components draw the straight arrow the board stores.
+
+  **Migration:** Copy the `board` registry item again with all its files, because the static arrow draws the head that `board-styles` exports as `ARROW_HEAD`. In your own arrow renderer, remove the `useArrowPath(element)` call and its early return, then draw the path and head in an SVG and the label beside it. A press picks an arrow only when it lands on one of the arrow's elements, so keep a wide transparent path with `pointerEvents="stroke"`:
+
+  ```tsx
+  <BoardShape {...props}>
+    <div className="absolute top-0 [left:0]" contentEditable={false}>
+      <svg
+        className="pointer-events-none overflow-visible"
+        height={1}
+        width={1}
+      >
+        <BoardArrowPath
+          pointerEvents="stroke"
+          stroke="transparent"
+          strokeWidth={14}
+        />
+        <BoardArrowPath fill="none" stroke="currentColor" />
+        <BoardArrowhead>
+          <polygon fill="currentColor" points={ARROW_HEAD} />
+        </BoardArrowhead>
+      </svg>
+    </div>
+    <BoardArrowLabel>{props.children}</BoardArrowLabel>
+  </BoardShape>
+  ```
+
+- [`9e5dcae`](https://github.com/udecode/plate/commit/9e5dcae01c83cf9396ec9c43a8a0c86133d62dbc) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Keep a comment thread unavailable when a letter in a new style is typed where its deleted text crossed a style change, instead of letting that letter join the thread.
+
+- [`13f3456`](https://github.com/udecode/plate/commit/13f3456fc30e683a2e7fa400f537219900a39075) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `fieldSubmission` and `readFieldAnswers` to `platejs/field`. `fieldSubmission(template, role, values, options?)` builds one role's submission from a record keyed by field name, so an app sends its own data without mapping names to ids. `readFieldAnswers(document, options?)` reads a saved document's answers back by role and name. Each answer is a `FieldAnswer` whose `kind` narrows its `value`, or one that names the problem `answer-conflict` or `name-conflict`.
+  - Add `startFieldValues(template, submissions, start, options?)` to `platejs/field`. It replays the roles that already submitted, as `applyFieldValues` does, and returns the filled document a role starts from, with each value `start` gives written on its field and on every other field of its name. A field `start` leaves out starts blank, even one with a default, and so does a field that skips or waits on a role that has not submitted. The person who fills keeps, changes or clears each starting value and submits it as their own answer. A `start` that gives one name two values is refused as `answer-conflict`.
+
+- [`3fa7e45`](https://github.com/udecode/plate/commit/3fa7e458bcb68446ee4421114b8e4ed031149c72) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add an optional `name` to fields. A name is a text that is not empty, has no space at either end, and holds no control character, line or paragraph separator or lone surrogate. Loading, `insert`, `update` and a raw write refuse any other name, and `applyFieldValues` refuses a template that holds one as `invalid-template` with problem `malformed`. HTML writes it as `data-field-name`, Markdown as a `name` attribute, and both drop a name the rule refuses while keeping the field. A paste, a duplicate and a table fill keep the name and give the copy a new `fieldId`. Word export drops it with the other settings, and its warning now reads "Word keeps each field answer and drops its name and settings."
+  - Add `name-conflict` and `answer-conflict` to `FieldProblem`, which `read.field` and `read.fields` report. Fields of one role that share a name must share their kind, their options' values and their condition. Each field of a name whose fields differ reads `name-conflict`, and the same name in two roles never conflicts. Each field of a name whose fields hold different stored values reads `answer-conflict`, so an empty text and no value differ. A copied `field` component that maps every `FieldProblem` needs both keys.
+  - `applyFieldValues` refuses a template whose fields of one role and name differ in settings as `invalid-template` with problem `name-conflict`. Once a role's submission applies, it refuses each name of that role whose fields hold different answers as `{ code: 'answer-conflict', fieldIds, name, role }`, with every field of the name in document order, unless the submission already refused a field of the name as `invalid-value`, `wrong-role`, `skipped` or `waiting`. A name whose required field the submission left out still gets `answer-conflict` beside `missing-required`.
+  - Every `applyFieldValues` refusal that names a field also carries that field's `name` when it has one: `invalid-template`, `invalid-value`, `missing-required`, `skipped`, `waiting` and `wrong-role`. Code that switches over `FieldRefusal` and reads `fieldId` in a default branch needs an `answer-conflict` case, which has `fieldIds` instead.
+  - `update` writes a `value`, a cleared one included, to every field of the role that shares the field's name, in the same commit and the same undo step, unless the name reads `name-conflict`. No other setting reaches the other fields.
+  - Adding `name` changes the schema fingerprint of every editor with the field plugin.
+
+  **Migration:** A saved document holds no names, so it fills by `fieldId` as before. What to change depends on how the app saves:
+
+  - With a named schema, bump `schema.version`, record the old fingerprint under `sourceFingerprints`, and add a migration step that returns the document unchanged.
+  - If the app's own schema declared a `name` property on fields, remove that declaration. Its migration step moves each stored value to a key of the app's own, or keeps it only where the app means one answer per name and the value passes the name rule.
+  - With the default derived identity and saved `{ document, schema }` envelopes, the editor refuses the old envelope because its fingerprint no longer matches. Check that the stored fingerprint is the one the editor produced before this change, then open the document with its selection and save it again:
+
+    ```ts
+    const editor = createEditor({
+      initialSelection: envelope.selection,
+      initialValue: envelope.document,
+      plugins,
+    });
+    ```
+
+    Name the schema from then on, as the editor guide's Schema identity section advises.
+
+  - An app that saves the bare document changes nothing.
+  - A populated Yjs room keeps the schema identity it was created with, so an editor with this version cannot join it. Convert the room's document, seed a new room with it, and move every writer to the new room.
+
+- [`d4459c6`](https://github.com/udecode/plate/commit/d4459c65e9556a9c082cfb4997da760b9a9409a5) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add the eraser to `platejs/ink/react`. `setTool({ size, type: 'erase' })` removes each mark whose painted ink the eraser's path touches. One contact's removals undo as one step unless another edit, local or remote, lands between them. `InkTool` is now a union, so code that reads `tool.brush` checks `tool.type === 'draw'` first.
+
+- [`386eb10`](https://github.com/udecode/plate/commit/386eb106088a769eb68486aa241748c844114ffe) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add the lasso to `platejs/ink/react`. `setTool({ type: 'lasso' })` draws a loop that picks the marks with more than half their samples inside it, and its press focuses the Editable so the keys reach the pick. While the lasso is on, Backspace or Delete removes the picked marks in one undo step and Escape clears the pick. Keys with Alt, Control or Meta, input method keys and the repeats of a held key leave the pick alone. Any other tool and hiding ink clear the pick. An eraser or lasso contact now ends when its primary button lifts while another button stays down.
+
+- [`e7e7ac4`](https://github.com/udecode/plate/commit/e7e7ac4f72e10b64991d863374d0a83475b29d8d) by [@zbeyens](https://github.com/zbeyens) –
+
+  - In `platejs/ink/react`, changing the Draw tool, hiding ink or turning the view read-only now ends the current pen or eraser contact at once, and a pen stroke that ends this way saves nothing more. Turning the view read-only turns the tool off, even when it turns back in the same batch. While ink is hidden, every press reaches the content. The pen and the eraser read the layer's position at each sample, so a removal that moves the layer leaves the next sample on the ink under the pointer. `setTool` returns false and keeps the current tool for a `size` that is not a finite number above 0, a brush `opacity` that is not a number above 0 and at most 1, or a brush `color` that is not a non-empty string.
+
+- [`0274644`](https://github.com/udecode/plate/commit/0274644f3fbfcef7555711eb693fd055ed698f34) by [@zbeyens](https://github.com/zbeyens) –
+
+  - In `platejs/ink`, a mark drawn on a mention, or on another inline void, now shows its changed sign once that void is swapped for a different one or its properties change, instead of staying on the new one. A void's id and review marks don't count, so a mark on a suggested mention stays live when the suggestion is accepted. A mark saved before this change on a block that holds an inline void shows that sign too, because its saved copy has no record of the voids.
+
+- [`257320a`](https://github.com/udecode/plate/commit/257320aaba502b009feb4250b19dad6b0cc062d1) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Type the node a `match` callback receives in a plugin's `tx.nodes.set` as `Element` instead of `any`.
+
+- [`ca52412`](https://github.com/udecode/plate/commit/ca52412f9df5b99ad82996fb3a0ab7dc5971fdd4) by [@felixfeng33](https://github.com/felixfeng33) – Paint each suggestion author in one color: `data-editor-authored-color` now holds the palette slot of the author whose change an element paints, and `suggestionColorOf` takes an author id
+
 ## 54.0.0-beta.5
 
 ### Patch Changes

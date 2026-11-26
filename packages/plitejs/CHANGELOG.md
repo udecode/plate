@@ -1,5 +1,108 @@
 # plite
 
+## 54.0.0-beta.6
+
+### Patch Changes
+
+- [`9e5dcae`](https://github.com/udecode/plate/commit/9e5dcae01c83cf9396ec9c43a8a0c86133d62dbc) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Make a `nearest` range anchor one point, and drop a `drop` range anchor, when one update deletes all of its text across a mark change, such as from plain into bold text, so a letter typed there later stays outside the range.
+
+- [`2ba256d`](https://github.com/udecode/plate/commit/2ba256de28af7e3686b127b56311cf5a30eaf807) by [@felixfeng33](https://github.com/felixfeng33) – Fix ArrowLeft and ArrowRight, with or without Shift, which spent one press on the edge between two text runs of a block, such as plain text beside bold or suggested text. One press now moves one character.
+
+- [`b4b84ec`](https://github.com/udecode/plate/commit/b4b84ecbe1902bd8587b96062ef05a29def6a000) by [@zbeyens](https://github.com/zbeyens) – Keep pending DOM selection changes when late programmatic selection syncs or caret repairs run.
+
+- [`3b41f03`](https://github.com/udecode/plate/commit/3b41f03bef9f0b15a0e722c8736000be584136ba) by [@felixfeng33](https://github.com/felixfeng33) – Fix accepting one of an author's two suggested line joins blocking: each join, and each line break with text between it and the next, is its own card and decides alone
+
+- [`c58baad`](https://github.com/udecode/plate/commit/c58baadeeaa08598fb961e9b6452526e789b5972) by [@zbeyens](https://github.com/zbeyens) – Speed up accepting and rejecting a suggestion in an editor whose elements store generated ids, such as one with Plate's `ElementIdPlugin`. A decision resolves only the blocks its change touches instead of the whole document.
+
+- [`b1c85dd`](https://github.com/udecode/plate/commit/b1c85dd3fe8c2444239868c1a58f965b4cc2a13c) by [@felixfeng33](https://github.com/felixfeng33) – Fix a decision that returned `blocked` until another author's change was decided when it emptied a line or a quote, unwrapped a quote, or landed a join on a line it removed. The decision now applies, and the other author's change stays pending on what is left. For example, accepting the deletion of a line's text while another author struck the whole line leaves an empty line that the strike still decides, and a line built to keep a quote from being empty joins any insertion or deletion pending on that quote. A change also no longer waits on a change of the same author that the review shows as another card, such as a heading and the deletion of that line's text. Removing a piece of a link that another author split no longer waits on that split. One author's decisions still give the same result in every order.
+
+- [`c49aae2`](https://github.com/udecode/plate/commit/c49aae2334fa1fa096a71fad4ea2f9a1b51aa4e0) by [@felixfeng33](https://github.com/felixfeng33) – Accept another author's whole pending deletion when an Editing write replaces a selection that holds it, in an editor with no shared room or Yjs binding, so Reject all no longer restores text the write removed and one Undo restores both
+
+- [`83dc0fe`](https://github.com/udecode/plate/commit/83dc0fe71961c8b5f33e17b1e4f31717d3fc876c) by [@zbeyens](https://github.com/zbeyens) – Keep a block that a move in Editing carries, such as a paragraph dragged below the next one with the authored plugin, as the same block instead of a deleted copy and a new one. A range anchor inside it, such as a comment thread's text, stays on its text, and other authors' pending suggestions in the block keep their ids. A move in the same command as another edit records as before.
+
+- [`5c03c44`](https://github.com/udecode/plate/commit/5c03c44802f2fbe421e638c1515f9d9a67dc71d7) by [@felixfeng33](https://github.com/felixfeng33) – Fix typing in a line whose last live text was just deleted while another author's deletion of that line is pending. The letter now lands on that line instead of the end of the line before it, in Editing and Suggesting, and also when one update deletes and retypes the text.
+
+- [`5ce5f9f`](https://github.com/udecode/plate/commit/5ce5f9fdade94eb730704d974623596bc0504d78) by [@felixfeng33](https://github.com/felixfeng33) –
+
+  - Fix `Escape` leaving a block selection in place. When no earlier handler takes the key, `Escape` leaves a caret at the end of the block the selection ends on, or right after a selected image or other object. A read-only editor keeps the selection.
+
+- [`89ff464`](https://github.com/udecode/plate/commit/89ff464a7e6a2789d2539dbafc765db79984cdf5) by [@zbeyens](https://github.com/zbeyens) – Undo history no longer reads a document's whole top-level list when it merges an update into the undo step before it. In a document of 10,000 paragraphs, each merged keystroke read all 10,000 before this change and reads none now.
+
+- [`9d8f6eb`](https://github.com/udecode/plate/commit/9d8f6eb69c1559db6e469176932459b42d5a1639) by [@zbeyens](https://github.com/zbeyens) – Undo history now merges an update that writes only properties of several nodes into the step before it inside the merge window. Both updates must write the same properties on the same nodes, in one root or across several. An update on one node keeps merging whatever properties it writes. Two updates in one composition that write properties across several roots merge only when they touch the same roots. A `new-batch` update still starts its own step.
+
+- [`5745de8`](https://github.com/udecode/plate/commit/5745de862d185d1409b4ff2b7e4515d473f1ad47) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix character transpose, the `insertTranspose` input, leaving the text unchanged in a mounted editor.
+
+- [`4132cf0`](https://github.com/udecode/plate/commit/4132cf0cf5eb218f6ce21870056ac78f416eda6c) by [@felixfeng33](https://github.com/felixfeng33) – Fix a node inserted into a line that a suggested deletion emptied landing beside that line, which left an extra empty line and kept the inserted node after Reject all
+
+- [`e362966`](https://github.com/udecode/plate/commit/e3629669d926514f2e55d0928e9816bcd0e9416f) by [@zbeyens](https://github.com/zbeyens) –
+
+  - In an editor whose elements store ids, give each element a load finds without an id a `fill.<n>` id, so every editor that loads one document holds the same ids. A repeated id stays on its first element. `createEditor` with an `initialValue` no longer throws on an element without an id, and a loaded element under Plate's `ElementIdPlugin` gets a `fill.` id instead of an `element-` id.
+
+- [`5f89a38`](https://github.com/udecode/plate/commit/5f89a38508701888ff6e9cb2797e1aac00e1849c) by [@zbeyens](https://github.com/zbeyens) – Fix a suggested paste that adds a block after the paragraph it pastes over, in a document that already holds a suggestion. The added block now shows as inserted, and rejecting the suggestion removes it. Before, a streamed AI answer that opened a code block left an empty code block behind.
+
+- [`e12ef78`](https://github.com/udecode/plate/commit/e12ef78d733cdbc5a5ae8663fc8f4afbab22b050) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix a paste of whole blocks into an empty block of the same type replacing that block, so a paste rule that remembered the line lost it. A YouTube or other provider link copied with a space before or after it, or as HTML in a paragraph, and pasted on an empty line now becomes a media embed under `MediaEmbedRules.autoEmbed({ variant: 'paste' })`. A heading or other block of another type still replaces the empty block.
+
+- [`a47c979`](https://github.com/udecode/plate/commit/a47c979a66f3d80b970717cb58c59b9b298853ed) by [@zbeyens](https://github.com/zbeyens) – In an editor whose elements store ids, such as with Plate's `ElementIdPlugin`, insert pasted lines as an editor without ids does. The paste replaced a piece of the line, so undoing it after a collaborator's concurrent move could drop the letters they typed.
+
+- [`8578908`](https://github.com/udecode/plate/commit/857890880f84ac8e3c542a6e02ff420308038b26) by [@felixfeng33](https://github.com/felixfeng33) – Fix a crash when a view switches to the accepted preview after an undo that rebuilds the whole preview, such as undoing Accept all after a struck word was dragged. The preview now shows the accepted text.
+
+- [`5ac5638`](https://github.com/udecode/plate/commit/5ac5638e3af22d4ee90578f0eeeb7634747b5bd9) by [@zbeyens](https://github.com/zbeyens) – Preserve replaced stored nodes when rebuilding an authored preview root so root owners keep their new keys and placement metadata.
+
+- [`45a1db3`](https://github.com/udecode/plate/commit/45a1db35eeb97c64ca259f74e8d8e47beae3f6c3) by [@zbeyens](https://github.com/zbeyens) – Keep text typed beside a concurrently removed inline element on its own line when rebasing document changes
+
+- [`5ac62f7`](https://github.com/udecode/plate/commit/5ac62f7dbde559baa5fac4da8cadb148f0b5b14d) by [@zbeyens](https://github.com/zbeyens) – In an editor whose elements store ids, such as with Plate's `ElementIdPlugin`, refuse to load a document whose element id is an empty string, a number or an object. The load throws an `EditorSchemaValidationError` instead of keeping or replacing the id.
+
+- [`f234c5b`](https://github.com/udecode/plate/commit/f234c5b179e08d3b08a711830b1c5eb0621013f9) by [@felixfeng33](https://github.com/felixfeng33) – Fix rejecting a suggested line break that dropped another author's pending format on the emptied line, such as an alignment or a heading. The format now stays pending on the line that remains, and accepting or rejecting it works as before.
+
+- [`6ff3575`](https://github.com/udecode/plate/commit/6ff35759331cd592ebd98041661867452cd38ecf) by [@zbeyens](https://github.com/zbeyens) – Keep element ids when content is replaced
+
+  - In an editor whose elements store ids, `tx.value.replace`, `tx.nodes.replace` and `tx.nodes.replaceChildren` give each incoming element without an id the id of the old element it replaces. Elements pair by equal content, in order, then by order between those pairs. Replacing a document with equal content keeps every id and records no change.
+  - An id an incoming element already holds stays on that element. An element with no counterpart gets a new id.
+
+- [`d8c1a41`](https://github.com/udecode/plate/commit/d8c1a41975443dbdbc40ba22ecd976beff7086a0) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Keep a heading that became the required title when a schema migration runs in the same update, instead of adding an empty title above it
+  - Keep the id of a required title that an update rebuilds, in an editor whose elements all hold ids
+
+- [`9eea162`](https://github.com/udecode/plate/commit/9eea162632049240dae787e8853f35c36357446c) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Keep the target of `editor.api.dom.scrollIntoView` inside the part of the page a reader sees when the call passes no options. On a phone with the keyboard open, the target stops above the keyboard instead of behind it, on iOS Safari and on Android Chrome. The page's `scroll-padding` keeps the target clear of a fixed bar, and when the page cannot scroll far enough, the editor's scroll container scrolls the rest. An expanded selection scrolls to its focus end.
+  - Scroll to the caret's line when the caret sits on an empty line, where the browser reports an empty caret box. This also applies when the call passes options.
+
+- [`612328a`](https://github.com/udecode/plate/commit/612328a1935c069a5d2f563ad10fe4fc6837f07e) by [@felixfeng33](https://github.com/felixfeng33) – Fix undo after a run of Backspace or Delete in Suggesting mode, which took back one struck character per step. The run now undoes in one step, as it does in Editing.
+
+- [`90d380b`](https://github.com/udecode/plate/commit/90d380b76ce972b8d86579434934c57cff3682b2) by [@felixfeng33](https://github.com/felixfeng33) – Land struck text dragged in Suggesting as the mover's insertion, with its old place still struck, so accepting everything keeps the moved text at the drop
+
+- [`a7b6c57`](https://github.com/udecode/plate/commit/a7b6c5723a163cc74c1dd13a9db33d380b6fc6be) by [@felixfeng33](https://github.com/felixfeng33) – Fix the sync room refusing a suggester's undo of their own withdrawal when the undo puts back another author's pending change. The room now takes back the writer's own entry at suggest access too, as long as the access the writer holds now still covers that entry, so a writer whose access was lowered cannot undo what only the old access let them write.
+
+- [`cb58319`](https://github.com/udecode/plate/commit/cb58319cfe4594f476d5df0a4b19cc508e0557af) by [@zbeyens](https://github.com/zbeyens) – Accept a collaborator's honest edits beside a suggestion in a sync room whose editors store element ids, such as with Plate's `ElementIdPlugin`. The room refused an edit, its undo or redo, an accept and a withdrawal that stored a spare line, and held back for review a decision that crossed a collaborator's concurrent change, such as a suggested wrap or unwrap. Such a decision also dropped the spare line the collaborator's change stored, and lost the collaborator's suggested unwrap of the quote that held the decided line. Accepting a suggested delete across lines that empties the first line now keeps the id that the same delete keeps in a plain editor.
+
+- [`3699047`](https://github.com/udecode/plate/commit/36990472acf4298e2b69cc8bb617efa3b1267dc8) by [@zbeyens](https://github.com/zbeyens) – Drop the spare blocks an author's suggestion stored once that author takes the suggestion back, such as with a Backspace over a suggested Enter, so the document's review marks and `records` keep no spare for a change that is no longer pending.
+
+- [`0f10367`](https://github.com/udecode/plate/commit/0f10367e6b1e44adb49c55d8c5c354019499ef3c) by [@felixfeng33](https://github.com/felixfeng33) – Fix typing inside struck text landing after the pending deletion: the letter now lands at the caret and splits the deletion around it, as an input method already did
+
+- [`5a07fe3`](https://github.com/udecode/plate/commit/5a07fe364ea8d5c2d89ba109c2e298967ac67abe) by [@felixfeng33](https://github.com/felixfeng33) – Fix a letter typed inside a struck line that another author's deletion joined into the line before landing at the end of that line: it now lands at the caret
+
+- [`88fa2bb`](https://github.com/udecode/plate/commit/88fa2bb55661aa8a09ebffee2775a77529b5c9d6) by [@zbeyens](https://github.com/zbeyens) – In an editor whose elements store ids, such as with Plate's `ElementIdPlugin`, undo after a collaborator moves or deletes a line as an editor without ids does. After an Enter at a line's start, the undo could skip a step, drop the letters the collaborator typed or give back the wrong lines.
+
+- [`d1acacc`](https://github.com/udecode/plate/commit/d1acacce0887f53677d36ec655e4333ab204b847) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Move focus to the view that made a step when an undo or redo key in another view of the same `Editable` replays it, such as Mod+Z in the page after typing in a synced block's second copy. The caret goes back to where it was before that typing. Focus stays where the key was pressed when that view is gone, hidden or read-only, or when the step's selection ran from one view into another. It also stays when either view renders in a slot that passes `nodeSelectionFocus`. A step whose plugin history effect settles after the replay, such as creating a comment thread, also leaves focus where the key was pressed.
+  - Keep focus in a focused external control when its undo or redo changes a root that another view shows, such as a synced block's copy. When the undo takes back typing in a second external control, focus still moves into that control.
+  - Keep the caret in a view where an undo or redo key was pressed when the step was made in another root. After undoing a Delete that the page made across into one synced copy, a Delete in another copy now edits that copy instead of the first one.
+  - Keep the caret in the editable that a focus handler moves focus into, instead of moving it back to the editable that received focus first.
+
+- [`ee98035`](https://github.com/udecode/plate/commit/ee98035b92c89077b7b9940bcb8e3f8131ad0195) by [@zbeyens](https://github.com/zbeyens) – Keep the letters a collaborator typed when you undo a change of yours that crossed theirs, in an editor whose elements store ids, such as one with Plate's `ElementIdPlugin`.
+
+- [`533646d`](https://github.com/udecode/plate/commit/533646d922a0c69eb15e6e1501e0db7f5d0221b9) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix undo focusing another copy of a shared content root instead of the copy the caret left, when the undo gives that root back to a block, as undoing Unsync of a synced block does.
+
 ## 54.0.0-beta.5
 
 ### Patch Changes
