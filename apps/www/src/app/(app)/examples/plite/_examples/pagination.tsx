@@ -37,7 +37,6 @@ import {
   useSetStateField,
 } from 'plitejs/react';
 import {
-  type ChangeEvent,
   type CSSProperties,
   type KeyboardEvent,
   type RefObject,
@@ -48,7 +47,6 @@ import {
   useState,
 } from 'react';
 
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   NativeSelect,
@@ -58,6 +56,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/utils/cn';
 
+import { BoundedNumberInput } from './bounded-number-input';
 import type {
   CustomEditor,
   CustomElementType,
@@ -66,11 +65,7 @@ import type {
   ImageElement,
 } from './custom-types.d';
 import { toggleMark } from './mark-utils';
-import {
-  clampNumber,
-  parseAsBoundedInteger,
-  replaceQueryOptions,
-} from './query-controls';
+import { parseAsBoundedInteger, replaceQueryOptions } from './query-controls';
 
 const pageSettings = defineStateField<PageSettings>({
   collab: 'shared',
@@ -302,18 +297,15 @@ const PaginationControlsToolbar = ({
       </span>
       <span className="editor-pagination-label">
         <Label htmlFor="pagination-margins">Margins</Label>
-        <Input
+        <BoundedNumberInput
           className="w-20"
           id="pagination-margins"
+          max={240}
           min={48}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const value = Number.parseInt(event.currentTarget.value, 10);
-            if (Number.isFinite(value)) {
-              setControls({ margins: clampNumber(value, 48, 240) });
-            }
+          onValueChange={(margins) => {
+            setControls({ margins });
           }}
           step={12}
-          type="number"
           value={controls.margins}
         />
       </span>
@@ -337,85 +329,57 @@ const PaginationControlsToolbar = ({
       </span>
       <span className="editor-pagination-label">
         <Label htmlFor="pagination-rows">Rows</Label>
-        <Input
+        <BoundedNumberInput
           className="w-24"
           id="pagination-rows"
           max={MAX_TABLE_ROWS}
           min={8}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const value = Number.parseInt(event.currentTarget.value, 10);
-            if (Number.isFinite(value)) {
-              setControls({
-                tableRows: clampNumber(value, 8, MAX_TABLE_ROWS),
-              });
-            }
+          onValueChange={(tableRows) => {
+            setControls({ tableRows });
           }}
-          type="number"
           value={controls.tableRows}
         />
       </span>
       <span className="editor-pagination-label">
         <Label htmlFor="pagination-row-height">Row px</Label>
-        <Input
+        <BoundedNumberInput
           className="w-20"
           id="pagination-row-height"
           max={MAX_TABLE_ROW_HEIGHT}
           min={28}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const value = Number.parseInt(event.currentTarget.value, 10);
-            if (Number.isFinite(value)) {
-              setControls({
-                tableRowHeight: clampNumber(value, 28, MAX_TABLE_ROW_HEIGHT),
-              });
-            }
+          onValueChange={(tableRowHeight) => {
+            setControls({ tableRowHeight });
           }}
           step={4}
-          type="number"
           value={controls.tableRowHeight}
         />
       </span>
       <span className="editor-pagination-label">
         <Label htmlFor="pagination-media-height">Media px</Label>
-        <Input
+        <BoundedNumberInput
           className="w-24"
           id="pagination-media-height"
           max={MAX_MEDIA_HEIGHT}
           min={120}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const value = Number.parseInt(event.currentTarget.value, 10);
-            if (Number.isFinite(value)) {
-              setControls({
-                mediaHeight: clampNumber(value, 120, MAX_MEDIA_HEIGHT),
-              });
-            }
+          onValueChange={(mediaHeight) => {
+            setControls({ mediaHeight });
           }}
           step={40}
-          type="number"
           value={controls.mediaHeight}
         />
       </span>
       {controls.renderingMode === 'virtualized' && (
         <span className="editor-pagination-label">
           <Label htmlFor="pagination-rich-stress">Stress pages</Label>
-          <Input
+          <BoundedNumberInput
             className="w-24"
             id="pagination-rich-stress"
             max={MAX_VIRTUALIZED_STRESS_PAGES}
             min={0}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              const value = Number.parseInt(event.currentTarget.value, 10);
-              if (Number.isFinite(value)) {
-                setControls({
-                  virtualizedStressPages: clampNumber(
-                    value,
-                    0,
-                    MAX_VIRTUALIZED_STRESS_PAGES
-                  ),
-                });
-              }
+            onValueChange={(virtualizedStressPages) => {
+              setControls({ virtualizedStressPages });
             }}
             step={10}
-            type="number"
             value={controls.virtualizedStressPages}
           />
         </span>

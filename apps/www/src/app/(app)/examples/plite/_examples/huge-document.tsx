@@ -32,7 +32,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   NativeSelect,
@@ -40,11 +39,8 @@ import {
 } from '@/components/ui/native-select';
 import { Switch } from '@/components/ui/switch';
 
-import {
-  clampNumber,
-  parseAsBoundedInteger,
-  replaceQueryOptions,
-} from './query-controls';
+import { BoundedNumberInput } from './bounded-number-input';
+import { parseAsBoundedInteger, replaceQueryOptions } from './query-controls';
 
 const SUPPORTS_EVENT_TIMING =
   typeof window !== 'undefined' && 'PerformanceEventTiming' in window;
@@ -622,19 +618,13 @@ const PerformanceControls = ({
           {config.renderingMode === 'virtualized' && (
             <div className="flex flex-wrap items-center gap-2">
               <Label htmlFor="huge-document-overscan">Overscan:</Label>
-              <Input
+              <BoundedNumberInput
                 id="huge-document-overscan"
+                max={1000}
                 min={0}
-                onChange={(event) => {
-                  const value = Number.parseInt(event.target.value, 10);
-
-                  if (Number.isFinite(value)) {
-                    setConfig({
-                      virtualizedOverscan: clampNumber(value, 0, 1000),
-                    });
-                  }
+                onValueChange={(virtualizedOverscan) => {
+                  setConfig({ virtualizedOverscan });
                 }}
-                type="number"
                 value={config.virtualizedOverscan}
               />
             </div>
@@ -645,23 +635,13 @@ const PerformanceControls = ({
               <Label htmlFor="huge-document-estimated-block-size">
                 Estimated block size:
               </Label>
-              <Input
+              <BoundedNumberInput
                 id="huge-document-estimated-block-size"
+                max={1000}
                 min={1}
-                onChange={(event) => {
-                  const value = Number.parseInt(event.target.value, 10);
-
-                  if (Number.isFinite(value)) {
-                    setConfig({
-                      virtualizedEstimatedBlockSize: clampNumber(
-                        value,
-                        1,
-                        1000
-                      ),
-                    });
-                  }
+                onValueChange={(virtualizedEstimatedBlockSize) => {
+                  setConfig({ virtualizedEstimatedBlockSize });
                 }}
-                type="number"
                 value={config.virtualizedEstimatedBlockSize}
               />
             </div>
@@ -669,19 +649,13 @@ const PerformanceControls = ({
 
           <div className="flex flex-wrap items-center gap-2">
             <Label htmlFor="huge-document-editor-height">Editor height:</Label>
-            <Input
+            <BoundedNumberInput
               id="huge-document-editor-height"
+              max={2000}
               min={120}
-              onChange={(event) => {
-                const value = Number.parseInt(event.target.value, 10);
-
-                if (Number.isFinite(value)) {
-                  setConfig({
-                    editorHeight: clampNumber(value, 120, 2000),
-                  });
-                }
+              onValueChange={(editorHeight) => {
+                setConfig({ editorHeight });
               }}
-              type="number"
               value={config.editorHeight}
             />
           </div>
