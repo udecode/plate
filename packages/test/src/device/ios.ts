@@ -83,7 +83,7 @@ export const startIosRunner = async ({
   });
 
   const { port } = server.address() as AddressInfo;
-  const output = openSync(log, 'a');
+  const output = openSync(log, 'w');
   const runner = spawn(
     'xcodebuild',
     [

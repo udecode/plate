@@ -685,9 +685,7 @@ export const createDeviceLane = ({
       await startTrace(driver.page.find({ css: 'body' }));
     },
     openControl: async () => {
-      await lane.open(
-        `data:text/html,${encodeURIComponent('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><div contenteditable="true" data-test-id="ime-control" style="margin:24px;min-height:30vh;border:1px solid;font:24px sans-serif"><br></div>')}`
-      );
+      await lane.open(`${state.appURL}/ime-control.html`);
       await lane.touch.tapTestId('ime-control');
 
       return {

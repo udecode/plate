@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 import { expect } from '@playwright/test';
 
@@ -133,8 +133,9 @@ const findElement = async (query: SerialQuery): Promise<Element> => {
       );
     }
     if ('text' in current) {
+      const expected = normalize(current.text);
       const exact = (element: Element) =>
-        normalize(element.textContent) === current.text;
+        normalize(element.textContent) === expected;
 
       return (
         [...scope.querySelectorAll('body *')].find(
@@ -256,11 +257,50 @@ const measureInset = async (page: InspectorPage, runner: IosRunner) => {
   );
 };
 
+// Runs in the page.
+const settleViewport = () =>
+  new Promise<void>((resolve, reject) => {
+    const read = () =>
+      [
+        window.scrollX,
+        window.scrollY,
+        window.visualViewport?.offsetTop,
+        window.visualViewport?.height,
+        window.visualViewport?.scale,
+      ].join();
+    let last = read();
+    let stable = 0;
+    let frame = 0;
+    const timer = window.setTimeout(() => {
+      window.cancelAnimationFrame(frame);
+      reject(new Error('The viewport did not settle.'));
+    }, 2000);
+    const sample = () => {
+      const next = read();
+
+      stable = next === last ? stable + 1 : 0;
+      last = next;
+      if (stable < 3) {
+        frame = window.requestAnimationFrame(sample);
+        return;
+      }
+      window.clearTimeout(timer);
+      resolve();
+    };
+
+    frame = window.requestAnimationFrame(sample);
+  });
+
 export const openSafariTab = async (
   inspector: WebInspector,
   udid: string,
   url: string
 ): Promise<InspectorPageInfo> => {
+  // A Safari left from an earlier run can keep XCUITest waiting 60 s for it to
+  // go idle before each action, so each run starts a fresh one.
+  spawnSync('xcrun', ['simctl', 'terminate', udid, 'com.apple.mobilesafari'], {
+    stdio: 'ignore',
+  });
   // `simctl openurl` can go unanswered on a fresh boot, so it is sent again
   // every 10 s until Safari lists the page.
   for (const deadline = Date.now() + 60_000; Date.now() < deadline;) {
@@ -454,7 +494,9 @@ export const createIosDriver = ({
       press: async (css, ms) => {
         await send({ action: 'press', ms, ...(await webPoint(css)) });
       },
-      afterLoad: async () => {},
+      afterLoad: async () => {
+        await inspector.evaluate(`(${settleViewport.toString()})()`);
+      },
       tap: async (css) => {
         await send({ action: 'tap', ...(await webPoint(css)) });
       },
