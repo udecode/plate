@@ -20,7 +20,7 @@ Writes issue/discussion calls to `docs/triage/{issues,plate-private,discussions}
 
 ## Who records
 
-Run `pnpm triage show <N>...` first (only `claim`, `queue` or `kinds` precedes it) and read every line including `seen:`. Only a root Claude/Codex session on Opus/Sol at `xhigh` on every turn since reading the issue (or plate-bot) can record (`show`'s `session:` states eligibility; Codex runs outside sandbox and chunks saved files). Accounts outside `team` maintainers and `triage.gated` (`zbeyens-bot[bot]`) record `unconfirmed` until a maintainer confirms. Non-recording sessions still triage/draft and list `triage #<N>` (never spawn another session to record). Subagents may search; lead reads `show` and decides.
+Run `pnpm triage show <N>...` first (only `claim`, `queue` or `kinds` precedes it) and read every line including `seen:`. Only a root session meeting `triage.floor` (prefer Gemini 4 Neon `@high`; Opus/Sol `@high` also allowed) on every turn since reading the issue (or plate-bot) can record (`show`'s `session:` states eligibility; Codex runs outside sandbox and chunks saved files). Accounts outside `team` maintainers and `triage.gated` (`zbeyens-bot[bot]`) record `unconfirmed` until a maintainer confirms. Non-recording sessions still triage/draft and list `triage #<N>` (never spawn another session to record). Subagents may search; lead reads `show` and decides.
 
 ## Method
 
@@ -74,11 +74,11 @@ Save `pnpm triage queue` for both repos (`--label` if given), work scope by scop
 
 ## Offer fix runs
 
-After landing records, offer one `chips` task per `(domain, repo)` with an unheld, untasked non-device regression or P0/P1 `kind` (skip main reports). Priority = worst kind (regression >= P1), `effort: xhigh` (`updated`), `review-scope:` = domain, `regression:`, `repro:`, `writes:`, finding starting with `pnpm triage claim --domain <scope> --task <id> --repo <name>` + `triage fix <domain>`. P2/P3-only domains -> Open work.
+After landing records, offer one `chips` task per `(domain, repo)` with an unheld, untasked non-device regression or P0/P1 `kind` (skip main reports). Priority = worst kind (regression >= P1), `review-scope:` = domain, `regression:`, `repro:`, `writes:`, finding starting with `pnpm triage claim --domain <scope> --task <id> --repo <name>` + `triage fix <domain>`. P2/P3-only domains -> Open work.
 
 ## Triage chips
 
-`pnpm triage kinds` -> triage `triage first` + rerun -> offer `free` regression/P0/P1 domains + rerun -> check Ready tasks (`chips brief <id>`) -> adopt archived/gone-session tasks (`uncarded` + `updated session:`), fold missing claim steps (`folded` `effort: xhigh` + `updated review-scope:`) -> card via `pnpm triage kinds --titles` (`[P1] #22 #23 Short problem (xhigh)`) in one batch -> reply with outcome counts, remaining `triage first`, cards, uncarded Ready (`start <id>`), live-session tasks, device/main counts.
+`pnpm triage kinds` -> triage `triage first` + rerun -> offer `free` regression/P0/P1 domains + rerun -> check Ready tasks (`chips brief <id>`) -> adopt archived/gone-session tasks (`uncarded` + `updated session:`), fold missing claim steps (`folded` + `updated review-scope:`) -> card via `pnpm triage kinds --titles` (`[P1] #22 #23 Short problem`) in one batch -> reply with outcome counts, remaining `triage first`, cards, uncarded Ready (`start <id>`), live-session tasks, device/main counts.
 
 ## Device lane
 
