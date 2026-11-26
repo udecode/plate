@@ -58,7 +58,7 @@ Draft for `dup`, `needs-repro`, `not-bug`, `spec`, `fixed`/`works-on-beta`, or `
 
 ### Discussions
 
-`docs/triage/discussions.tsv`; call release `platejs@beta` (never v2 or beta number): `answered` (`answer:`), `outdated` (`law:`, template: `@<author>, this asks about <v53 API>, which \`platejs@beta\` replaced. <replacement>. [<Doc section>](<beta.platejs.org link>) shows how it works now.`), `moved` (open `udecode/plate` issue, `issue:`, check per Main reports), `dup` (`of:`), `feature` (`priority:` P1 Vision/plan, P2 common elsewhere, P3 else; `lean:` `pro`/`planned`/`not-planned`; no task; rank via `pnpm triage features`). Post marked draft via `gh api graphql` (`addDiscussionComment`), then `labels --repo discussions`.
+`docs/triage/discussions.tsv`; write replies in `.agents/pstack/rules/writing.md` Messages mode (no rigid templates) and call the release `platejs@beta` (never v2 or beta number): `answered` (`answer:`), `outdated` (`law:`, state what replaced it in `platejs@beta` and link the matching `beta.platejs.org` doc section), `moved` (open `udecode/plate` issue, `issue:`, check per Main reports), `dup` (`of:`), `feature` (`priority:` P1 Vision/plan, P2 common elsewhere, P3 else; `lean:` `pro`/`planned`/`not-planned`; no task; rank via `pnpm triage features`). Post marked draft via `gh api graphql` (`addDiscussionComment`), then `labels --repo discussions`.
 
 ### GitHub state
 
