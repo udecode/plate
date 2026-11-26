@@ -17,8 +17,9 @@
 //        pnpm triage record --from <batch.tsv> [--dry-run]
 //        pnpm triage mark <draft.md>
 //        pnpm triage labels   (every repository unless --repo names one)
-//        pnpm triage retest <N> --pass|--fail --on "<browser or device and version>" [--device ios|android|ime] [--found <M>[,<M>...]] [--note "<text>"] [--dry-run]
+//        pnpm triage retest <N> --pass|--fail --on "<browser or device and version>" [--device ios|android|ime] [--found <M>[,<M>...]] [--note "<text>" | --note-file <path>] [--dry-run]
 //        pnpm triage check [<register>]
+// Each value option also takes --<option>-file <path>; pnpm 9 lets sh expand a backtick or $ in an argument.
 // --repo discussions, or discussions#<N>, reads the Discussions of the first repository instead, in
 // docs/triage/discussions.tsv, with show, queue [--category <name>] [--limit <N>] [--json], record, mark, labels and check;
 // pnpm triage features lists their open feature records.
@@ -1737,12 +1738,21 @@ function parseArgs(argv, flags) {
   const options = { positional: [] };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
+    const name = arg.slice(2);
+    const fromFile = name.endsWith('-file') ? name.slice(0, -5) : null;
     if (!arg.startsWith('--')) options.positional.push(arg);
-    else if (flags.boolean?.includes(arg.slice(2))) {
-      options[arg.slice(2)] = true;
-    } else if (flags.value?.includes(arg.slice(2)) && index + 1 < argv.length) {
+    else if (flags.boolean?.includes(name)) {
+      options[name] = true;
+    } else if (flags.value?.includes(name) && index + 1 < argv.length) {
       index += 1;
-      options[arg.slice(2)] = argv[index];
+      options[name] = argv[index];
+    } else if (flags.value?.includes(fromFile) && index + 1 < argv.length) {
+      index += 1;
+      try {
+        options[fromFile] = readFileSync(argv[index], 'utf-8').trimEnd();
+      } catch {
+        usage(`${arg} cannot read ${argv[index]}`);
+      }
     } else usage(`unknown or incomplete option ${arg}`);
   }
   return options;
@@ -4410,8 +4420,12 @@ Commands (issues; default repo udecode/plate, or --repo plate-private):
   mark <draft.md>
   labels [--repo <name>]
   shipped
-  retest <N> --pass|--fail --on "<browser/device>" [--device ios|android|ime] [--found <M>[,...]] [--note "<text>"] [--dry-run]
+  retest <N> --pass|--fail --on "<browser/device>" [--device ios|android|ime] [--found <M>[,...]] [--note "<text>" | --note-file <path>] [--dry-run]
   check [<register>]
+
+Each option that takes a value also takes --<option>-file <path>, which reads the value from that file.
+Pass text with a backtick or $ that way: pnpm 9 wraps each script argument in double quotes for sh,
+which runs the backticks and expands the $ before triage reads the text.
 
 Commands (discussions; pass --repo discussions or discussions#<N>):
   show, queue [--category <name>] [--limit <N>] [--json], record, mark, labels, features, check`;
