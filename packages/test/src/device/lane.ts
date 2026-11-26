@@ -134,6 +134,7 @@ export type DeviceScreen = {
   afterLoad: () => Promise<void>;
   settle: () => Promise<void>;
   tap: (point: Point) => Promise<void>;
+  toScreen: (point: Point) => Promise<Point>;
 };
 
 export type DeviceGesture = (

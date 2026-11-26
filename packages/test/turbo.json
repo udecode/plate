@@ -360,6 +360,7 @@
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
         "source-hash:partition:browser",
+        "source-hash:partition:device",
         "source-hash:partition:playwright"
       ],
       "inputs": [

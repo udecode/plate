@@ -620,6 +620,7 @@ export const createAndroidDriver = ({
       },
       afterLoad: calibrateContent,
       settle: async () => {},
+      toScreen,
       tap: async (css) => {
         const point = await toScreen(css);
 

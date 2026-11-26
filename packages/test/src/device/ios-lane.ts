@@ -566,6 +566,14 @@ export const createIosDriver = ({
       settle: async () => {
         await send({ action: 'idle' });
       },
+      toScreen: async (css) => {
+        const [point, pixelRatio] = await Promise.all([
+          webPoint(css),
+          inspector.evaluate<number>('devicePixelRatio'),
+        ]);
+
+        return { x: point.x * pixelRatio, y: point.y * pixelRatio };
+      },
       tap: async (css) => {
         await send({ action: 'tap', ...(await webPoint(css)) });
       },
