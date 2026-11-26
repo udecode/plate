@@ -489,21 +489,19 @@ const stepTasks = (step) => {
 };
 const openTask = (step) => stepTasks(step).find(isOpen);
 
-// A fix that dies with its session, such as in an app restart, leaves its
-// task open with nobody on it.
-const CLAIM_MS = 6 * 60 * 60_000;
-
 const taskRowTimes = (task) =>
   readFileSync(ledger, 'utf-8')
     .split('\n')
     .filter((line) => line.split('\t')[2]?.startsWith(`${task.id} `))
     .map((line) => Date.parse(line.split('\t')[0]));
-const lastActivity = (task) => {
-  const wakes = readEvents()
-    .filter((event) => event.wake && event.task === task.id)
-    .map((event) => Date.parse(event.at));
-  return Math.max(...taskRowTimes(task), ...wakes);
-};
+const fixRunsSince = (step, since) =>
+  existsSync(ledger)
+    ? [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].filter(
+        (task) =>
+          task.title?.includes(fixTitle(step)) &&
+          Date.parse(task.startedAt) >= since
+      ).length
+    : 0;
 
 const isRed = (step, event) =>
   event.step === step && ['flake', 'red'].includes(event.kind);
@@ -531,23 +529,16 @@ const redStart = (step, tipStillReporting) =>
   );
 
 const CUT_MS = 24 * 60 * 60_000;
-const CUT_WAKES = 2;
+const CUT_RUNS = 2;
 const cutDue = (step, open, tip) => {
   const since = Math.min(
     Date.now(),
     redStart(step, tip),
     ...(open ? taskRowTimes(open) : [])
   );
-  const fixRuns = readEvents().filter(
-    (event) =>
-      reportsRun(event) &&
-      isRed(step, event) &&
-      event.wake &&
-      Date.parse(event.at) >= since
-  ).length;
   return {
     redSince: new Date(since).toISOString(),
-    ...(Date.now() - since >= CUT_MS || fixRuns >= CUT_WAKES
+    ...(Date.now() - since >= CUT_MS || fixRunsSince(step, since) >= CUT_RUNS
       ? { cut: true }
       : {}),
   };
@@ -572,14 +563,11 @@ const report = (event) => {
   const open = tasks.find(isOpen);
   const due = cutDue(event.step, open, event.tip);
   if (open) {
-    const firstCutWake =
-      due.cut &&
-      !readEvents().some(
-        (heard) => heard.cut && heard.wake && heard.task === open.id
-      );
-    return Date.now() - lastActivity(open) < CLAIM_MS && !firstCutWake
-      ? { ...due, wake: false }
-      : { ...due, task: open.id, wake: true };
+    return {
+      ...due,
+      startedIn: open.status === 'started' ? (open.startedIn ?? null) : null,
+      task: open.id,
+    };
   }
   const closed = tasks.at(-1);
   if (event.kind === 'red' && closed && missesLandedFix(closed, event)) {
@@ -608,7 +596,7 @@ const report = (event) => {
     ]);
     if (added.status !== 0) id = null;
   }
-  return { ...due, task: id, wake: true };
+  return { ...due, task: id };
 };
 
 // Dismisses a step's offered task once a run on next passes the step, so a
@@ -705,7 +693,7 @@ const run = async (args) => {
     if (leftToMain(event)) {
       return { ...(dry ? { dry } : {}), leftToMain: true, wake: false };
     }
-    return dry ? { dry, wake: true } : report(event);
+    return { wake: true, ...(dry ? { dry } : report(event)) };
   };
   mkdirSync(home, { recursive: true });
   const holder = takeLock();
@@ -853,7 +841,7 @@ const run = async (args) => {
           step: failed,
           tip,
         };
-        emit({ ...event, ...(dry ? {} : report(event)) });
+        emit({ ...event, ...(dry ? {} : { wake: true, ...report(event) }) });
         continue;
       }
       // The search starts from the last commit this step passed on, so a
