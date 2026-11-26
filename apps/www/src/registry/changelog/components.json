@@ -13,6 +13,20 @@
       "2026-11-17-cn-package",
       "2026-11-12-add-board"
     ],
+    "column": [
+      "2026-11-26-column-drop-selection-tint",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-18-layout-style-values",
+      "2026-10-01-block-move-actions",
+      "2026-10-01-native-block-drag",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
     "field-demo": [
       "2026-11-26-field-demo-app-data",
       "2026-11-25-field-demo-answer-conflict",
@@ -792,19 +806,6 @@
     "callout-static": [
       "2026-11-19-rtl-editor-ui",
       "2026-11-17-cn-package",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "column": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-18-layout-style-values",
-      "2026-10-01-block-move-actions",
-      "2026-10-01-native-block-drag",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
     "column-static": [

@@ -49,6 +49,7 @@ export function ColumnElement({
   const { width } = element;
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected();
+  const nodeSelected = useElementSelected({ mode: 'node' });
 
   return (
     <div
@@ -72,6 +73,10 @@ export function ColumnElement({
       <EditorElement
         {...props}
         ref={ref}
+        attributes={{
+          ...props.attributes,
+          'data-node-selection-highlight': 'self',
+        }}
         element={element}
         className="h-full px-2 pt-2 group-first/column:ps-0 group-last/column:pe-0"
       >
@@ -79,7 +84,9 @@ export function ColumnElement({
           className={cn(
             'relative h-full border border-transparent p-1.5',
             !readOnly && 'rounded-lg border-border border-dashed',
-            '[[data-editor-dragging]>&]:opacity-50'
+            '[[data-editor-dragging]>&]:opacity-50',
+            nodeSelected &&
+              'before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:bg-(--node-selection-tint)'
           )}
         >
           {children}

@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-26-column-drop-selection-tint",
+      "href": "/registry/changelog/2026-11-26-column-drop-selection-tint.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show the selection tint on a column dropped by its handle",
+      "change": {
+        "type": "source",
+        "date": "2026-11-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["column"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-26-field-demo-app-data",
       "href": "/registry/changelog/2026-11-26-field-demo-app-data.json",
       "status": "draft",
