@@ -106,3 +106,29 @@ export const listPageItems = ({ ios }: { ios: boolean }): PageItem[] => {
   }
   return items;
 };
+
+export const scrollPage = ({
+  at,
+  dy,
+}: {
+  at: { x: number; y: number } | null;
+  dy: number;
+}) => {
+  let box = at ? document.elementFromPoint(at.x, at.y) : null;
+
+  while (
+    box &&
+    !(
+      /(?:auto|scroll)/.test(getComputedStyle(box).overflowY) &&
+      box.scrollHeight > box.clientHeight + 1
+    )
+  ) {
+    box = box.parentElement;
+  }
+  if (box) {
+    box.scrollBy({ behavior: 'instant', top: dy });
+    return { page: false, top: box.scrollTop };
+  }
+  window.scrollBy({ behavior: 'instant', top: dy });
+  return { page: true, top: window.scrollY };
+};
