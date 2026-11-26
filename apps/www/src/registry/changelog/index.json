@@ -96,6 +96,28 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-25-toolbar-menus-keep-keyboard-up",
+      "href": "/registry/changelog/2026-11-25-toolbar-menus-keep-keyboard-up.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the on-screen keyboard up when a finger opens a toolbar menu",
+      "change": {
+        "type": "source",
+        "date": "2026-11-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editor-dropdown-menu",
+        "table-toolbar-button",
+        "toolbar-overlay"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-24-editor-primary-color",
       "href": "/registry/changelog/2026-11-24-editor-primary-color.json",
       "status": "draft",

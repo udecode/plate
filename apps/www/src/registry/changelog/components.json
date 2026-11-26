@@ -31,6 +31,38 @@
     "draw-toolbar-button": ["2026-11-25-ink-tools"],
     "ink-switch-toolbar-button": ["2026-11-25-ink-tools"],
     "ink-demo": ["2026-11-25-ink-tools"],
+    "editor-dropdown-menu": [
+      "2026-11-25-toolbar-menus-keep-keyboard-up",
+      "2026-11-24-fix-base-menu-trigger",
+      "2026-11-17-cn-package",
+      "2026-11-07-toolbar-overlays-close-on-scroll",
+      "2026-10-28-fix-editor-dropdown-menu-width",
+      "2026-10-28-touch-menus",
+      "2026-10-21-floating-toolbar-menu-press",
+      "2026-10-20-preserve-more-formatting-toolbar",
+      "2026-09-24-export-menu-projection",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-25-base-first-registry"
+    ],
+    "table-toolbar-button": [
+      "2026-11-25-toolbar-menus-keep-keyboard-up",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-12-toolbar-button-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-12-table-toolbar-focus",
+      "2025-11-20-biome-ultracite"
+    ],
+    "toolbar-overlay": [
+      "2026-11-25-toolbar-menus-keep-keyboard-up",
+      "2026-11-07-toolbar-overlays-close-on-scroll",
+      "2026-10-28-touch-menus",
+      "2026-10-21-floating-toolbar-menu-press"
+    ],
     "plate-ui": [
       "2026-11-24-editor-primary-color",
       "2026-09-18-ui-commands-and-installation",
@@ -200,18 +232,6 @@
       "2026-07-26-plugin-store-state"
     ],
     "field-static": ["2026-11-24-field-static-answers", "2026-11-21-add-field"],
-    "editor-dropdown-menu": [
-      "2026-11-24-fix-base-menu-trigger",
-      "2026-11-17-cn-package",
-      "2026-11-07-toolbar-overlays-close-on-scroll",
-      "2026-10-28-fix-editor-dropdown-menu-width",
-      "2026-10-28-touch-menus",
-      "2026-10-21-floating-toolbar-menu-press",
-      "2026-10-20-preserve-more-formatting-toolbar",
-      "2026-09-24-export-menu-projection",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-25-base-first-registry"
-    ],
     "floating-toolbar": [
       "2026-11-24-floating-toolbar-touch-dock",
       "2026-11-23-fix-toolbar-menu-checks",
@@ -916,18 +936,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
     ],
-    "table-toolbar-button": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-12-toolbar-button-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-12-table-toolbar-focus",
-      "2025-11-20-biome-ultracite"
-    ],
     "toolbar": [
       "2026-11-19-rtl-editor-ui",
       "2026-11-18-radix-ui-package",
@@ -1412,11 +1420,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "docx-source": ["2026-11-07-docx-fewer-install-dependencies"],
-    "toolbar-overlay": [
-      "2026-11-07-toolbar-overlays-close-on-scroll",
-      "2026-10-28-touch-menus",
-      "2026-10-21-floating-toolbar-menu-press"
-    ],
     "autoformat": [
       "2026-11-01-fix-highlight-after-equality-substitution",
       "2026-11-01-fix-negated-comparison-shortcuts",

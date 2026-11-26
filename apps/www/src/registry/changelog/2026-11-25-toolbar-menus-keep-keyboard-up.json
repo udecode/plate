@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-25-toolbar-menus-keep-keyboard-up",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-25-toolbar-menus-keep-keyboard-up.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the on-screen keyboard up when a finger opens a toolbar menu",
+  "targets": [
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx",
+        "apps/www/src/registry/components/editor/menu-close-focus.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/table-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar-overlay",
+      "files": ["apps/www/src/registry/components/editor/toolbar-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-25-editor-dropdown-menu-keep-screen-keyboard-up-35977d19",
+      "kind": "fix",
+      "summary": "On a phone, a toolbar menu that you open with a finger while you type in the editor now leaves focus in the editor, so the on-screen keyboard stays up. Before, the menu took focus and the keyboard closed. Taps on the menu's items and submenus do not take focus either, the menu opens non-modal, and the table menu's size grid does not focus its first cell. A mouse, a pen or a key press opens the menu as before and moves focus into it, and so does a tap while the keyboard is down or the editor does not have focus.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-dropdown-menu", "table-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-toolbar-menus-keep-keyboard-up",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-25-toolbar-overlay-soft-keyboard-up",
+      "kind": "new",
+      "summary": "The new `softKeyboardUp()` returns `true` while the on-screen keyboard is up. It reads the browser's virtual keyboard when the browser reports it, and otherwise compares the visual viewport with the tallest one seen at the current width while a `ToolbarOverlayProvider` is mounted.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar-overlay"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-toolbar-menus-keep-keyboard-up",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

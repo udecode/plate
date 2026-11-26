@@ -452,7 +452,8 @@ export const createDeviceLane = ({
   // The soft keyboard shrinks and scrolls the visual viewport, so a target in
   // the layout viewport can still sit under the browser toolbar.
   const tapQuery = async (label: string, query: DeviceQuery) => {
-    const center = await driver.page.find(query).evaluate(async (element) => {
+    const found = driver.page.find(query);
+    const center = await found.evaluate(async (element, ios) => {
       const container = element.closest(
         '[data-slot="keyboard-toolbar"],[data-slot="fixed-toolbar"],[role="menu"]'
       );
@@ -468,8 +469,9 @@ export const createDeviceLane = ({
 
       const clipBounds = () => {
         const view = window.visualViewport;
-        let top = view?.offsetTop ?? 0;
-        let left = view?.offsetLeft ?? 0;
+        // Safari's client rects already follow the keyboard's scroll.
+        let top = ios ? 0 : (view?.offsetTop ?? 0);
+        let left = ios ? 0 : (view?.offsetLeft ?? 0);
         let bottom = top + (view?.height ?? innerHeight);
         let right = left + (view?.width ?? innerWidth);
 
@@ -540,6 +542,28 @@ export const createDeviceLane = ({
               requestAnimationFrame(() => resolveScroll(undefined))
             );
           });
+          if (
+            !measure().reachable &&
+            container.matches('[data-slot="fixed-toolbar"]')
+          ) {
+            const view = window.visualViewport;
+            const viewTop = ios ? 0 : (view?.offsetTop ?? 0);
+            const box = container.getBoundingClientRect();
+            const delta =
+              box.top < viewTop
+                ? box.top - viewTop - 8
+                : Math.max(
+                    0,
+                    box.bottom - (viewTop + (view?.height ?? innerHeight)) + 8
+                  );
+
+            if (delta) {
+              window.scrollBy(0, delta);
+              await new Promise((resolveScroll) => {
+                setTimeout(resolveScroll, 400);
+              });
+            }
+          }
         } else {
           element.scrollIntoView({ block: 'center', inline: 'nearest' });
           await new Promise((resolveScroll) => {
@@ -549,7 +573,7 @@ export const createDeviceLane = ({
       }
 
       return measure();
-    }, undefined);
+    }, state.platform === 'ios');
 
     if (!center.reachable) throw new Error(`No touch reaches ${label}.`);
     await contentTouch(label, center, driver.screen.tap);

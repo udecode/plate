@@ -18,6 +18,7 @@ import {
   MenuPopupHold,
   type FinalFocusRef,
   focusClaimed,
+  handBackFocus,
   MenuRootContext,
   outsideFinalFocus,
   takeFinalFocus,
@@ -35,6 +36,14 @@ export {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
+
+// Radix's menu content runs onOpenAutoFocus before it focuses itself, though its types keep the prop private.
+const RadixDropdownMenuContent =
+  ShadcnDropdownMenuContent as React.ComponentType<
+    React.ComponentProps<typeof ShadcnDropdownMenuContent> & {
+      onOpenAutoFocus?: (event: Event) => void;
+    }
+  >;
 
 const SetOpenContext = React.createContext<((open: boolean) => void) | null>(
   null
@@ -68,7 +77,7 @@ export function DropdownMenu({
       <SetOpenContext.Provider value={setOpen}>
         <ShadcnDropdownMenu
           {...props}
-          modal={modal}
+          modal={root.modal}
           open={open}
           onOpenChange={setOpen}
         />
@@ -151,6 +160,8 @@ export function DropdownMenuContent({
   children,
   className,
   onFinalFocus,
+  onFocusCapture,
+  onMouseDown,
   ref,
   ...props
 }: Omit<React.ComponentProps<'div'>, 'onAbort'> & {
@@ -166,7 +177,7 @@ export function DropdownMenuContent({
 
   return (
     <FinalFocusContext.Provider value={finalFocusRef}>
-      <ShadcnDropdownMenuContent
+      <RadixDropdownMenuContent
         {...props}
         ref={ref}
         // shadcn styles size the menu to its trigger and clip the rest; editor menus size to their items.
@@ -174,7 +185,30 @@ export function DropdownMenuContent({
         onEscapeKeyDown={() => {
           finalFocusRef.current = undefined;
         }}
+        onFocusCapture={(event) => {
+          // Radix focuses a submenu trigger on its click.
+          if (root?.keepEditorFocus && handBackFocus(event)) return;
+
+          onFocusCapture?.(event);
+        }}
+        onMouseDown={(event) => {
+          if (root?.keepEditorFocus) event.preventDefault();
+
+          onMouseDown?.(event);
+        }}
+        onOpenAutoFocus={(event) => {
+          if (root?.keepEditorFocus) event.preventDefault();
+        }}
         onInteractOutside={(event) => {
+          // Radix closes on any focus outside the menu.
+          if (
+            root?.keepEditorFocus &&
+            event.detail.originalEvent instanceof FocusEvent
+          ) {
+            event.preventDefault();
+
+            return;
+          }
           if (root && !event.defaultPrevented) {
             finalFocusRef.current = outsideFinalFocus(
               event.detail.originalEvent,
@@ -205,7 +239,7 @@ export function DropdownMenuContent({
       >
         {root && <MenuPopupHold root={root} />}
         {children}
-      </ShadcnDropdownMenuContent>
+      </RadixDropdownMenuContent>
     </FinalFocusContext.Provider>
   );
 }
@@ -238,6 +272,7 @@ export function DropdownMenuTrigger({
         onClick?.(event);
 
         if (pendingTapOpen !== null && !event.defaultPrevented) {
+          if (pendingTapOpen) root?.decideKeepEditorFocus();
           setOpen?.(pendingTapOpen);
         }
       }}
@@ -251,6 +286,7 @@ export function DropdownMenuTrigger({
       }}
       onPointerDown={(event) => {
         pendingTapOpenRef.current = null;
+        root?.pressed(event.pointerType === 'touch');
         onPointerDown?.(event);
 
         if (!root || !setOpen || event.pointerType === 'mouse') return;

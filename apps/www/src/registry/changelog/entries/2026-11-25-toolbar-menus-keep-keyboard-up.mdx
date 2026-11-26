@@ -1,0 +1,18 @@
+---
+id: 2026-11-25-toolbar-menus-keep-keyboard-up
+date: 2026-11-25
+status: draft
+kind: fix
+summary: 'Keep the on-screen keyboard up when a finger opens a toolbar menu'
+change: { 'type': 'source', 'date': '2026-11-25', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-25-editor-dropdown-menu-keep-screen-keyboard-up-35977d19","kind":"fix","migrationNotes":[]} -->
+
+- **`editor-dropdown-menu`**, **`table-toolbar-button`**: On a phone, a toolbar menu that you open with a finger while you type in the editor now leaves focus in the editor, so the on-screen keyboard stays up. Before, the menu took focus and the keyboard closed. Taps on the menu's items and submenus do not take focus either, the menu opens non-modal, and the table menu's size grid does not focus its first cell. A mouse, a pen or a key press opens the menu as before and moves focus into it, and so does a tap while the keyboard is down or the editor does not have focus.
+
+<!-- entry: {"id":"2026-11-25-toolbar-overlay-soft-keyboard-up","kind":"new","migrationNotes":[]} -->
+
+- **`toolbar-overlay`**: The new `softKeyboardUp()` returns `true` while the on-screen keyboard is up. It reads the browser's virtual keyboard when the browser reports it, and otherwise compares the visual viewport with the tallest one seen at the current width while a `ToolbarOverlayProvider` is mounted.

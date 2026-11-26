@@ -27,6 +27,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
+import { MenuRootContext } from '@/registry/components/editor/menu-close-focus';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 export function TableToolbarButton() {
@@ -235,6 +236,7 @@ const TABLE_PICKER_DIMENSION = 8;
 
 function TablePicker({ onInsert }: { onInsert: () => void }) {
   const editor = useEditor();
+  const keepEditorFocus = React.useContext(MenuRootContext)?.keepEditorFocus;
   const [activeCell, setActiveCell] = React.useState({
     colIndex: 0,
     rowIndex: 0,
@@ -345,7 +347,7 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
                     } table`}
                     aria-rowindex={rowIndex + 1}
                     aria-selected={isSelected}
-                    autoFocus={isActive}
+                    autoFocus={isActive && !keepEditorFocus}
                     className={cn(
                       'col-span-1 size-3 border border-solid bg-secondary',
                       isSelected && 'border-current'

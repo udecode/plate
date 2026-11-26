@@ -210,8 +210,6 @@ export const createAndroidDriver = ({
     };
   };
 
-  // A noninteractive point avoids activating page controls while the native
-  // pointerdown measures the screen offset with the current browser toolbar.
   const calibrateContent = async () => {
     offset = null;
 
@@ -269,7 +267,6 @@ export const createAndroidDriver = ({
         cancelAnimationFrame(frame);
       }
 
-      const { offsetLeft: left, offsetTop: top } = view;
       const nativeScale = view.dpr * view.scale;
       const height = Math.min(
         view.height,
@@ -279,47 +276,26 @@ export const createAndroidDriver = ({
         view.width,
         (bounds.right - bounds.left) / nativeScale
       );
-      const interactive =
-        'a,button,input,select,textarea,label,summary,iframe,[role="button"],[role="menuitem"],[tabindex],[contenteditable="true"]';
-      const controls = Array.from(document.querySelectorAll(interactive))
-        .flatMap((element) => Array.from(element.getClientRects()))
-        .filter((rect) => rect.width > 0 && rect.height > 0);
-      const controlMargin = 24;
-      const quiet = ({ x, y }: { x: number; y: number }) => {
-        const target = document.elementFromPoint(x, y);
-
-        return (
-          !!target &&
-          !target.closest(interactive) &&
-          !controls.some(
-            (rect) =>
-              x >= rect.left - controlMargin &&
-              x <= rect.right + controlMargin &&
-              y >= rect.top - controlMargin &&
-              y <= rect.bottom + controlMargin
-          )
-        );
+      const overlay = document.createElement('div');
+      const cancelTap = (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
       };
-      const gridLines = (size: number) =>
-        Array.from(
-          { length: Math.floor(size / controlMargin) },
-          (_, index) => (index + 0.5) * controlMargin
-        );
-      const preferredPoints = [height / 2, 6, height - 6].flatMap((y) =>
-        [6, width / 2, width - 6].map((x) => ({ x, y }))
-      );
-      const gridPoints = gridLines(height).flatMap((y) =>
-        gridLines(width).map((x) => ({ x, y }))
-      );
-      const point = [...preferredPoints, ...gridPoints]
-        .map(({ x, y }) => ({ x: left + x, y: top + y }))
-        .find(quiet);
 
-      if (!point) return null;
+      overlay.dataset.deviceCalibrationOverlay = 'true';
+      Object.assign(overlay.style, {
+        inset: '0',
+        position: 'fixed',
+        touchAction: 'none',
+        zIndex: '2147483647',
+      });
+      overlay.addEventListener('touchstart', cancelTap, { passive: false });
+      overlay.addEventListener('click', cancelTap);
       window.__deviceCalibration = null;
-      window.addEventListener(
+      overlay.addEventListener(
         'pointerdown',
         (event) => {
+          cancelTap(event);
           const currentViewport = window.visualViewport;
 
           window.__deviceCalibration = {
@@ -331,14 +307,17 @@ export const createAndroidDriver = ({
             y: event.clientY,
           };
         },
-        { capture: true, once: true }
+        { once: true }
       );
-      return { point, view };
+      document.body.append(overlay);
+      return {
+        point: {
+          x: view.offsetLeft + width / 2,
+          y: view.offsetTop + height / 2,
+        },
+        view,
+      };
     }, content);
-
-    if (!calibration) {
-      throw new Error('No noninteractive calibration point is visible.');
-    }
 
     const { point, view } = calibration;
     const guess = {
@@ -346,22 +325,36 @@ export const createAndroidDriver = ({
       y: content.top + (point.y - view.offsetTop) * view.dpr * view.scale,
     };
 
-    touch.tap(guess.x, guess.y);
+    try {
+      touch.tap(guess.x, guess.y);
 
-    const receipt = await page.waitForFunction(
-      () => window.__deviceCalibration,
-      undefined,
-      { timeout: 2000 }
-    );
-    const seen = await receipt.jsonValue();
+      const receipt = await page.waitForFunction(
+        () => window.__deviceCalibration,
+        undefined,
+        { timeout: 2000 }
+      );
+      const seen = await receipt.jsonValue();
 
-    await receipt.dispose();
+      await receipt.dispose();
 
-    if (!seen) throw new Error('The calibration touch never reached the page.');
-    offset = {
-      x: guess.x - (seen.x - seen.offsetLeft) * seen.dpr * seen.scale,
-      y: guess.y - (seen.y - seen.offsetTop) * seen.dpr * seen.scale,
-    };
+      if (!seen) {
+        throw new Error('The calibration touch never reached the page.');
+      }
+      offset = {
+        x: guess.x - (seen.x - seen.offsetLeft) * seen.dpr * seen.scale,
+        y: guess.y - (seen.y - seen.offsetTop) * seen.dpr * seen.scale,
+      };
+    } finally {
+      await page
+        .evaluate(() => {
+          for (const node of document.querySelectorAll(
+            '[data-device-calibration-overlay]'
+          )) {
+            node.remove();
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   const keyboard: DeviceDriver['keyboard'] = ({ gesture, steps, trace }) => {

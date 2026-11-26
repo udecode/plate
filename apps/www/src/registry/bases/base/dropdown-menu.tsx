@@ -19,6 +19,7 @@ import {
   MenuPopupHold,
   type FinalFocusRef,
   focusClaimed,
+  handBackFocus,
   MenuRootContext,
   outsideFinalFocus,
   secondaryPress,
@@ -98,7 +99,7 @@ export function DropdownMenu({
       <BaseDropdownMenu
         {...props}
         actionsRef={menuActionsRef}
-        modal={modal}
+        modal={root.modal}
         onOpenChange={(open, details) => {
           if (isToolbarSwipe(root.toolbar, details.event)) {
             details.cancel();
@@ -118,7 +119,9 @@ export function DropdownMenu({
             finalFocusRef.current = undefined;
           }
           onOpenChange?.(open, details);
-          if (!details.isCanceled) setUncontrolledOpen(open);
+          if (details.isCanceled) return;
+          if (open) root.decideKeepEditorFocus();
+          setUncontrolledOpen(open);
         }}
       />
     </MenuRootContext.Provider>
@@ -280,6 +283,7 @@ export function DropdownMenuContent({
   onBlurCapture,
   onFinalFocus,
   onFocusCapture,
+  onMouseDown,
   ref,
   ...props
 }: Omit<React.ComponentProps<'div'>, 'onAbort'> & {
@@ -307,8 +311,16 @@ export function DropdownMenuContent({
           onBlurCapture?.(event);
         }}
         onFocusCapture={(event) => {
+          // Base UI always focuses its popup as it opens.
+          if (root?.keepEditorFocus && handBackFocus(event)) return;
+
           focusInside.current = true;
           onFocusCapture?.(event);
+        }}
+        onMouseDown={(event) => {
+          if (root?.keepEditorFocus) event.preventDefault();
+
+          onMouseDown?.(event);
         }}
         finalFocus={() => {
           const finalFocus = takeFinalFocus(finalFocusRef);
@@ -345,6 +357,8 @@ export function DropdownMenuContent({
 
 export function DropdownMenuTrigger({
   children,
+  onKeyDown,
+  onPointerDown,
   ref,
   ...props
 }: Omit<React.ComponentProps<'button'>, 'children'> & {
@@ -357,6 +371,14 @@ export function DropdownMenuTrigger({
     <BaseDropdownMenuTrigger
       {...props}
       ref={triggerRef}
+      onKeyDown={(event) => {
+        root?.pressed(false);
+        onKeyDown?.(event);
+      }}
+      onPointerDown={(event) => {
+        root?.pressed(event.pointerType === 'touch');
+        onPointerDown?.(event);
+      }}
       nativeButton={
         typeof children.type !== 'string' || children.type === 'button'
       }

@@ -8,6 +8,79 @@ const ToolbarOverlayContext = React.createContext<
 >(() => {});
 const ToolbarElementContext = React.createContext<HTMLElement | null>(null);
 
+let heightWithoutKeyboard = 0;
+let viewportWidth = 0;
+let viewportWatchers = 0;
+
+const unzoomedHeight = (viewport: VisualViewport) =>
+  viewport.height * viewport.scale;
+
+// A 6:5 foldable's rotation moves the width by 20%.
+const rotated = (width: number) =>
+  Math.abs(width - viewportWidth) > viewportWidth * 0.1;
+
+function measureViewport() {
+  const viewport = window.visualViewport;
+
+  if (!viewport) return;
+
+  const width = document.documentElement.clientWidth;
+
+  if (rotated(width)) {
+    viewportWidth = width;
+    heightWithoutKeyboard = 0;
+  }
+
+  heightWithoutKeyboard = Math.max(
+    heightWithoutKeyboard,
+    unzoomedHeight(viewport)
+  );
+}
+
+function watchViewport() {
+  viewportWatchers += 1;
+
+  if (viewportWatchers === 1) {
+    measureViewport();
+    window.visualViewport?.addEventListener('resize', measureViewport);
+  }
+
+  return () => {
+    viewportWatchers -= 1;
+
+    if (viewportWatchers > 0) return;
+
+    window.visualViewport?.removeEventListener('resize', measureViewport);
+    heightWithoutKeyboard = 0;
+    viewportWidth = 0;
+  };
+}
+
+/**
+ * While no `ToolbarOverlayProvider` is mounted, this misses a keyboard that
+ * shrinks the layout viewport too.
+ */
+export function softKeyboardUp() {
+  const { virtualKeyboard } = navigator as Navigator & {
+    virtualKeyboard?: { boundingRect: DOMRectReadOnly };
+  };
+
+  if (virtualKeyboard && virtualKeyboard.boundingRect.height > 0) return true;
+
+  const viewport = window.visualViewport;
+
+  if (!viewport) return false;
+
+  measureViewport();
+
+  // 150 px is more than a URL bar hides and less than any keyboard covers.
+  return (
+    Math.max(heightWithoutKeyboard, window.innerHeight) -
+      unzoomedHeight(viewport) >
+    150
+  );
+}
+
 function clippingBoxes(toolbar: HTMLElement) {
   const boxes: Element[] = [toolbar];
   let { position } = getComputedStyle(toolbar);
@@ -199,6 +272,8 @@ export function ToolbarOverlayProvider({
   }, [editor, onOpenChange]);
   const openOverlayIdsRef = React.useRef(new Set<symbol>());
   const overlayOpenRef = React.useRef(false);
+
+  React.useEffect(watchViewport, []);
   const reportOverlayOpen = React.useCallback((id: symbol, open: boolean) => {
     if (open) {
       openOverlayIdsRef.current.add(id);
