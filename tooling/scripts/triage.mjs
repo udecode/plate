@@ -4393,7 +4393,33 @@ const FLAGS = {
     features: {},
   },
 };
+const HELP = `usage: pnpm triage <command> [--repo <name>] [options]
+
+Commands (issues; default repo udecode/plate, or --repo plate-private):
+  claim <N>... [--take <hold>,... --why "<words>"] [--drives <device>] [--session <id>]
+  claim --domain <scope> [--task <id>] --repo <name> [same flags]
+  claim --task <id> --repo <name> [same flags]
+  claim --next --repo <name> [--drives <device>] [--session <id>]
+  release <N>... --why "<reason>" [--session <id>]
+  lane [<device>]
+  kinds [--json | --titles] [--repo <name>]
+  show <N>... [--brief] [--json]
+  queue [--label <label>] [--json]
+  record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]
+  record --from <batch.tsv> [--dry-run]
+  mark <draft.md>
+  labels [--repo <name>]
+  shipped
+  retest <N> --pass|--fail --on "<browser/device>" [--device ios|android|ime] [--found <M>[,...]] [--note "<text>"] [--dry-run]
+  check [<register>]
+
+Commands (discussions; pass --repo discussions or discussions#<N>):
+  show, queue [--category <name>] [--limit <N>] [--json], record, mark, labels, features, check`;
 const [command, ...rest] = process.argv.slice(2);
+if (command === '--help' || command === '-h') {
+  console.log(HELP);
+  process.exit(0);
+}
 const sourceNames = Object.keys(COMMANDS);
 if (!sourceNames.some((name) => COMMANDS[name][command])) {
   console.error(

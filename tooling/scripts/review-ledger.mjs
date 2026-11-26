@@ -2729,6 +2729,7 @@ const usage =
 
 export function main(root, args) {
   const [command, argument] = args;
+  if (command === '--help' || command === '-h') return `${usage}\n`;
   if (command === 'status') return status(root);
   if (command === 'ship') return ship(root);
   if (command === 'due') return due(root, { activeAt: boardActivity(root) });
