@@ -13267,12 +13267,12 @@
         },
         "platejs/field:FieldRefusal": {
           "aliases": [],
-          "documentation": "Why `applyFieldValues` refused a template or a submission. A refusal that\nnames a field also carries that field's `name` when it has one.",
+          "documentation": "Why `applyFieldValues` or `startFieldValues` refused a template, a\nsubmission or a start. A refusal that names a field also carries that\nfield's `name` when it has one.",
           "entrypoint": "platejs/field",
           "kind": "type",
           "name": "FieldRefusal",
           "runtime": false,
-          "signature": "type FieldRefusal =\n/**\n * The fields of one role and name hold different answers once the role's\n * submission applies. `fieldIds` lists every field of the name, in document\n * order.\n */\nReadonly<{\n  code: 'answer-conflict';\n  fieldIds: readonly string[];\n  name: string;\n  role: string;\n}> | Readonly<{\n  code: 'duplicate-role';\n  role: string;\n}> | Readonly<{\n  code: 'invalid-template';\n  fieldId?: string;\n  name?: string;\n  path: Path;\n  problem: FieldProblem | 'answered' | 'duplicate-id' | 'malformed';\n  root?: string;\n}> | Readonly<{\n  code: 'invalid-submission';\n  index: number;\n}> | Readonly<{\n  code: 'invalid-value';\n  fieldId: string;\n  name?: string;\n  role: string;\n}> | Readonly<{\n  code: 'missing-required';\n  fieldId: string;\n  name?: string;\n  role: string;\n}> | Readonly<{\n  code: 'skipped';\n  fieldId: string;\n  name?: string;\n  role: string;\n}> | Readonly<{\n  code: 'unknown-field';\n  fieldId: string;\n  role: string;\n}> | Readonly<{\n  code: 'unknown-role';\n  role: string;\n}> | Readonly<{\n  code: 'waiting';\n  fieldId: string;\n  name?: string;\n  role: string;\n  waitsOn: string;\n}> | Readonly<{\n  code: 'wrong-role';\n  fieldId: string;\n  name?: string;\n  role: string;\n}>;",
+          "signature": "type FieldRefusal =\n/**\n * The fields of one role and name hold different answers once the role's\n * submission applies, or a start gives one name two different values.\n * `fieldIds` lists every field of the name, in document order.\n */\nReadonly<{\n  code: 'answer-conflict';\n  fieldIds: readonly string[];\n  name: string;\n  role: string;\n}> | Readonly<{\n  code: 'duplicate-role';\n  role: string;\n}> | Readonly<{\n  code: 'invalid-template';\n  fieldId?: string;\n  name?: string;\n  path: Path;\n  problem: FieldProblem | 'answered' | 'duplicate-id' | 'malformed';\n  root?: string;\n}> | Readonly<{\n  code: 'invalid-submission';\n  index: number;\n}> | Readonly<{\n  code: 'invalid-value';\n  fieldId: string;\n  name?: string;\n  role: string;\n}> | Readonly<{\n  code: 'missing-required';\n  fieldId: string;\n  name?: string;\n  role: string;\n}> | Readonly<{\n  code: 'skipped';\n  fieldId: string;\n  name?: string;\n  role: string;\n}> | Readonly<{\n  code: 'unknown-field';\n  fieldId: string;\n  role: string;\n}> | Readonly<{\n  code: 'unknown-role';\n  role: string;\n}> | Readonly<{\n  code: 'waiting';\n  fieldId: string;\n  name?: string;\n  role: string;\n  waitsOn: string;\n}> | Readonly<{\n  code: 'wrong-role';\n  fieldId: string;\n  name?: string;\n  role: string;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -13363,6 +13363,19 @@
           "signature": "declare function readFieldAnswers(document: EditorDocumentValue | Value, options?: Readonly<{\n  type?: string;\n}>): Readonly<Record<string, Readonly<Record<string, FieldAnswer>>>>;",
           "source": null,
           "typeParameters": []
+        },
+        "platejs/field:startFieldValues": {
+          "aliases": [],
+          "documentation": "Check `submissions` against a frozen template as `applyFieldValues` does,\nthen fill each field of `start.role` that applies with the value `start`\ngives it, mirrored to every other field of that role and name. Conditions\nread the submitted answers and `start`'s values as if `start.role` had\nsubmitted. A value on a field that skips or waits on another role is dropped\nwithout a refusal, and a field `start` gives no value gets none, even with a\n`defaultValue`. `pending` comes from `submissions` alone, so `start` never\ntakes its role off it. `type` names the field element's type when the app\nrenamed it with `schema.override`.\n\nRefuses first what `applyFieldValues` refuses. Then refuses `start` alone\nwhen it is malformed, with `index` equal to `submissions.length`, or when its\nrole already submitted or owns no field. Otherwise refuses together each\nentry for a missing field, another role's field or a value that does not fit\nit, and each name of `start.role` that `start` gives two different values.",
+          "entrypoint": "platejs/field",
+          "kind": "function",
+          "name": "startFieldValues",
+          "runtime": true,
+          "signature": "declare function startFieldValues<D extends EditorDocumentValue | Value>(template: D, submissions: readonly FieldSubmission[], start: FieldSubmission, options?: Readonly<{\n  type?: string;\n}>): FieldApplyResult<D extends Value ? Value : EditorDocumentValue>;",
+          "source": null,
+          "typeParameters": [
+            "D extends EditorDocumentValue | Value"
+          ]
         },
         "platejs/field/react:FieldPlugin": {
           "aliases": [],
