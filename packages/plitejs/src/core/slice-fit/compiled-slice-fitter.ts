@@ -89,6 +89,7 @@ import {
 } from '../schema-compiler';
 import { EditorSchemaValidationError } from '../schema-validation';
 import { mapSelectionWithContext } from '../selection-protocol';
+import { withoutStoredElementId } from '../stored-element-id';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from '../value-codec';
 import {
   type EditorSchemaFitReport,
@@ -3003,8 +3004,13 @@ export const compileSliceFitter = <V extends Value>(
           return null;
         }
         const sourceBlocks = variant.content as readonly Element[];
+        const hasElementIds =
+          getDeclarativeSchema()?.everyElementHasId === true;
+        const targetProps = hasElementIds
+          ? withoutStoredElementId(targetBlock)
+          : targetBlock;
         const targetType = getElementType(targetBlock);
-        const targetElementKeys = Object.keys(targetBlock).filter(
+        const targetElementKeys = Object.keys(targetProps).filter(
           (key) => key !== 'children'
         );
         const targetTextKeys = Object.keys(targetText).filter(
@@ -3022,8 +3028,8 @@ export const compileSliceFitter = <V extends Value>(
               getElementType(block) !== targetType ||
               block.children.length !== 1 ||
               !nodePropertiesEqual(
-                block,
-                targetBlock,
+                hasElementIds ? withoutStoredElementId(block) : block,
+                targetProps,
                 'children',
                 targetElementKeys
               ) ||
@@ -3034,14 +3040,18 @@ export const compileSliceFitter = <V extends Value>(
           return null;
         }
         const tailProperties = getTailSplitProperties(targetBlock, targetPath);
+        const tailProps =
+          tailProperties && hasElementIds
+            ? withoutStoredElementId(tailProperties)
+            : tailProperties;
 
         if (
-          tailProperties &&
+          tailProps &&
           !nodePropertiesEqual(
-            targetBlock,
-            tailProperties,
+            targetProps,
+            tailProps,
             'children',
-            Object.keys(tailProperties)
+            Object.keys(tailProps)
           )
         ) {
           return null;
@@ -3051,10 +3061,36 @@ export const compileSliceFitter = <V extends Value>(
         const suffix = targetText.text.slice(end.offset);
 
         if (!isDetachedContentSlice(variant)) return null;
-        const fullInsert = encodeContentSliceContent(variant);
+        const lastSourceBlock = sourceBlocks.at(-1);
+        const tailWithoutId =
+          hasElementIds &&
+          suffix.length > 0 &&
+          tailProperties !== null &&
+          sourceBlocks.length > 1 &&
+          lastSourceBlock
+            ? withoutStoredElementId(lastSourceBlock)
+            : null;
+        const fittedBlocks: readonly Element[] =
+          lastSourceBlock && tailWithoutId && tailWithoutId !== lastSourceBlock
+            ? [
+                ...sourceBlocks.slice(0, -1),
+                Object.freeze({
+                  ...tailWithoutId,
+                  children: lastSourceBlock.children,
+                  type: lastSourceBlock.type,
+                }),
+              ]
+            : sourceBlocks;
+        const fittedVariant =
+          fittedBlocks === sourceBlocks
+            ? variant
+            : ContentSliceValue.withContent(variant, fittedBlocks, {
+                open: 'preserve',
+              });
+        const fullInsert = encodeContentSliceContent(fittedVariant);
 
         if (!getPreparedDocumentSlice(fullInsert)) return null;
-        const openInsert = encodeContentSlice(variant);
+        const openInsert = encodeContentSlice(fittedVariant);
         const semanticInsert = openInsert.slice(1, openInsert.length - 1);
         const targetRange = document.nodeRange(targetPath);
 
@@ -3065,7 +3101,7 @@ export const compileSliceFitter = <V extends Value>(
             fullInsert,
             prefix,
             semanticInsert,
-            sourceBlocks: Object.freeze(sourceBlocks),
+            sourceBlocks: Object.freeze(fittedBlocks),
             suffix,
             targetPath: Object.freeze(targetPath),
           }),
@@ -3919,6 +3955,8 @@ export const compileSliceFitter = <V extends Value>(
       origins.add(content.to - content.from, 'slice');
       origins.add(insert.length - content.to, 'document', exactTo);
 
+      const hasElementIds = getDeclarativeSchema()?.everyElementHasId === true;
+
       return Object.freeze({
         ...base,
         content,
@@ -3931,7 +3969,7 @@ export const compileSliceFitter = <V extends Value>(
           to: exactTo,
         }),
         selectionOffset,
-        trustedCanonical: true,
+        ...(hasElementIds ? {} : { trustedCanonical: true }),
       });
     };
     const getStructuralContext = (position: number) =>
