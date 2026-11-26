@@ -7,144 +7,79 @@ argument-hint: '[audit [sync] | harvest [plan] | maintain | full] <topic, area o
 
 Handle $ARGUMENTS.
 
-Research is a resumable evidence system, not chat browsing:
-
-```txt
-pick -> question -> registry -> queries -> leads -> read log -> score -> promote
-```
-
-It discovers and synthesizes. It does not run measured packets (`benchmark`), close an issue corpus row by row (`issue-harvester`, which also owns issue-by-issue closure after `harvest --issues`) or patch product code. `best-api` decides call shapes and the Plan playbook plans adoption. Discovery never escalates into `audit` or `harvest` on its own.
+Resumable evidence workflow (`pick -> question -> registry -> queries -> leads -> read log -> score -> promote`). Never runs benchmarks (`benchmark`), closes issue corpora row by row (`issue-harvester`, owner after `harvest --issues`), or patches code. `best-api` owns call shapes; Plan owns adoption. Discovery never auto-escalates into `audit` or `harvest`.
 
 ## Modes
 
 | Arguments | Does |
 | --- | --- |
-| `<feature or question>` | Picks the most valuable open research question for it, then runs a discovery run. |
-| none | Picks the first item of `node tooling/scripts/review-ledger.mjs due`, the scopes the audit pass has not reached, that has no research yet. |
-| `full <area>` | Ingests and compiles every relevant corpus into `docs/research` (see Compiled layer below). |
-| `maintain <area>` | Cleans an existing research lane: contradictions, freshness, backlinks, synthesis (see Compiled layer below). |
-| `audit [--target <surface\|full>] <repo>...` | Compares external editor architectures with Plite and Plate through a complete source inventory and explicit extraction decisions ([editor audit](./references/editor-audit.md); full, all, exhaustive or multi-repository audits also read its Strict source-to-contract matrix section). |
-| `audit sync [all\|<audit-id>\|<artifact-path>]...` | Refreshes existing audits against new commits ([editor audit](./references/editor-audit.md)). |
-| `harvest <repo> [--since <commit>] [--issues ...] [--apply] [<filter>]` | Harvests portable behavior evidence from an external editor ([test harvest](./references/test-harvest.md)). |
-| `harvest plan <slate-v2\|plate> <report-or-repo-key>`, or `harvest <report> --lane <lane>` | Prepares a lane-specific adoption plan from a harvest ([test harvest](./references/test-harvest.md)). |
+| `<feature or question>` | Picks top open question and runs discovery. |
+| none | First unresearched scope from `node tooling/scripts/review-ledger.mjs due`. |
+| `full <area>` | Ingests/compiles every relevant corpus into `docs/research`. |
+| `maintain <area>` | Audits/repairs a lane (freshness, contradictions, backlinks, synthesis). |
+| `audit [--target <surface\|full>] <repo>...` | Architecture comparison ([editor audit](./references/editor-audit.md); full/exhaustive/multi-repo audits also read its Strict source-to-contract matrix). |
+| `audit sync [all\|<audit-id>\|<artifact-path>]...` | Refreshes audits against newer commits ([editor audit](./references/editor-audit.md)). |
+| `harvest <repo> [--since <commit>] [--issues ...] [--apply] [<filter>]` | Harvests portable behavior evidence ([test harvest](./references/test-harvest.md)). |
+| `harvest plan <slate-v2\|plate> <report-or-repo-key>` or `harvest <report> --lane <lane>` | Builds a lane adoption plan ([test harvest](./references/test-harvest.md)). |
 
-`audit` and `harvest` run only when typed or explicitly requested; read the named reference in full before starting. When the token after `audit` or `harvest` does not resolve to a repository, owner/repo, audit id or report, treat the arguments as a question.
+Run `audit`/`harvest` only when requested after reading the linked reference in full. If the token after `audit`/`harvest` is not a repo, `owner/repo`, audit id, or report, treat `$ARGUMENTS` as a question.
 
 ## Pick what to research
 
-1. **Layer.** Pick it from the architecture reference's Pick the layer (`.agents/playbooks/references/architecture.md`).
-2. **What is known.** Run `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` for the decision, its current review, limits and open questions, and `node tooling/scripts/review-ledger.mjs research <key-or-term>` for the reads, leads and rejections of the frozen runs under `docs/plite/research`. Read the scope's subject file, `docs/plans/topics/<scope>.md`, which holds its current decisions, the matching compiled pages under `docs/research/sources/`, which hold later runs' findings and rejected leads, the candidates in `docs/research/sources/editor-architecture/candidates.md`, and the matching pages in `docs/research/sources/plate-notes/`, every part its README's index lists, which hold lessons compiled from retired solution notes.
-3. **The gap.** Choose the one question most likely to change a decision, in this order: an open question or `defer` limit in the subject file; a candidate editor or library not yet compared for this feature; a rejected lead whose reopen condition is now met; evidence whose source changed since it was read.
-4. State the pick, its layer and why it beats the next candidate, then start the run.
+1. **Layer:** pick from `.agents/playbooks/references/architecture.md` (Pick the layer).
+2. **Known state:** run `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` and `research <key-or-term>`. Read `docs/plans/topics/<scope>.md`, `docs/research/sources/`, `docs/research/sources/editor-architecture/candidates.md`, and `docs/research/sources/plate-notes/README.md`.
+3. **Gap priority:** subject-file open question or `defer` limit; uncompared editor/library; rejected lead with met reopen condition; source changed since last read.
+4. State the pick, layer, and why it beats the runner-up.
 
-Reuse a matching read or lead instead of repeating it. Compare the question, source revision, dependencies and reopening condition first; a new source can support an existing lead without creating another. Unknown historical provenance needs inspection before reuse. A lookup never advances Editor Audit's architecture, test-harvest or issue-refresh cursors.
+Reuse matching reads/leads after verifying question, revision, dependencies, and reopen condition (inspect unknown provenance first); add support instead of duplicating. Lookups never advance Editor Audit cursors.
 
 ## Discovery run
 
-Record the question and scope, stop rule, artifact path, expected promotion owner, current local evidence gap and explicit exclusions before the first search.
+Record question, scope, stop rule, artifact path, promotion owner, current gap, and exclusions first. Once per new researching task/verdict, run `pnpm kb discover <area>` (`docs/research/areas.tsv`, 10-min cap; lists repos missing from `docs/research/repos.tsv`; `--record` marks them `skipped`).
 
-Once per new task or verdict that researches, run `pnpm kb discover <area>` before the open search, with an area id or alias from `docs/research/areas.tsv`. It searches GitHub by the area's seeds for at most 10 minutes and prints the repos `docs/research/repos.tsv` lacks; `--record` adds every printed repo as `skipped`.
+Search web and GitHub (code, issues, PRs, benchmarks, browser fixtures, commits) across ProseMirror, Lexical, Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, ProseKit (extensions, adapters, autocomplete, UI), Meowdown (hybrid Markdown, hidden-syntax caret/selection, touch/IME/WebKit; desktop WebKit/touch emulation is not iOS proof; separate ProseMirror code), virtualization/pagination libraries, and TypeScript runtimes.
 
-Search the web and GitHub (code search, issues, PRs, discussions, examples, benchmark harnesses, browser test fixtures, commit history). Go beyond the usual three editors when relevant: ProseMirror, Lexical, Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, document editors, browser editor test suites, pagination and virtualization libraries, and TypeScript-heavy runtimes. Use ProseKit for headless extension composition, framework adapters, autocomplete and editor UI prior art, and Meowdown for hybrid Markdown, hidden-syntax caret and selection behavior, touch input, IME and WebKit proof ideas. Separate what those projects own from what they inherit through ProseMirror; Meowdown's desktop WebKit and touch-emulation tests are scoped browser evidence, not iOS proof.
+Web/GitHub hits are leads only: inspect local source before code claims, never patch from snippets/READMEs or copy code, and translate lessons into Plite/Plate model, change, selection, DOM, browser, and owner proof terms.
 
-Web and GitHub hits are leads only. Inspect the real source locally before any code-level claim, and never patch from snippets, titles, READMEs or discussions. Extract invariants, test cases, API shape, benchmark technique, architecture pressure and browser proof strategy; write Plate- or Plite-native code, never copied code. External editors are pressure sources, not architecture to clone: translate each lesson into Plite or Plate model, change, selection, DOM, browser and package-owner proof vocabulary before it can change a decision.
+### Artifacts and shards
 
-### Artifacts
+Store runs in the main checkout's ignored `docs/plans/artifacts/<slug>/` by absolute path: `README.md`, `shards/NNN-<theme>.md`, `sources/` (tiny excerpts/metadata), and TSV ledgers:
 
-Each run, for either layer, lives in the main checkout's ignored `docs/plans/artifacts/<slug>/`, written by absolute path because removing a worktree deletes its copy. What a later run needs goes to the committed homes that Promotion names:
+- `repo-registry.tsv`: `repo_key, url, host, license, stars_or_signal, last_activity, topic_tags, local_path, status, score, notes`
+- `query-ledger.tsv`: `query_key, surface, query, filters, result_count, sampled_count, new_repo_keys, new_lead_keys, next_query`
+- `lead-ledger.tsv`: `lead_key, repo_key, source_ref, topic, claim, evidence_grade, novelty, applicability, proof_owner, next_action, status`
+- `read-log.tsv`: `source_ref, repo_key, kind, path_or_url, lines_or_id, read_reason, takeaway, lead_key`
+- `rejected-ledger.tsv`: `dedupe_key, repo_key, lead_key, reason, reopen_condition`
+- `promoted-ledger.tsv`: `lead_key, packet_id, owner, test_or_benchmark, verification_command, decision`
 
-```txt
-README.md              # question, scope, stop rule, current verdict
-repo-registry.tsv      # repo_key, url, host, license, stars_or_signal, last_activity, topic_tags, local_path, status, score, notes
-query-ledger.tsv       # query_key, surface, query, filters, result_count, sampled_count, new_repo_keys, new_lead_keys, next_query
-lead-ledger.tsv        # lead_key, repo_key, source_ref, topic, claim, evidence_grade, novelty, applicability, proof_owner, next_action, status
-read-log.tsv           # source_ref, repo_key, kind, path_or_url, lines_or_id, read_reason, takeaway, lead_key
-rejected-ledger.tsv    # dedupe_key, repo_key, lead_key, reason, reopen_condition
-promoted-ledger.tsv    # lead_key, packet_id, owner, test_or_benchmark, verification_command, decision
-shards/NNN-<theme>.md  # one bounded batch summary each
-sources/               # tiny excerpts and metadata, not dumps
-```
+New lead/read/promotion rows add `scope_id`, `review_id`, `source_revision`, `source_fingerprint`, `checked_at` (`unknown` if unavailable). Clone missing repos to `../<repo>` from main checkout; reuse clones (`../raw` holds bulk corpora). `docs/research/raw`, `docs/research/probes`, and `docs/plite/research` are frozen (`kb check` rejects additions). Keep external dumps out of repo/chat; resume from `query-ledger.tsv` and `lead-ledger.tsv`.
 
-New lead, read and promotion rows also record `scope_id`, `review_id`, `source_revision`, `source_fingerprint` and `checked_at`, with `unknown` for unavailable provenance. Historical headers and rows stay as they are. Clone a missing repository to `../<repo>`, as `AGENTS.md`'s Source authority section says, and reuse an existing clone wherever it sits, `../raw` included. Every `..` path in this rule and in `repos.tsv` starts from the main checkout, as `kb` resolves them, never from a worktree. Bulk corpora live in `../raw`. Small raw notes a run cites go in that run directory; `docs/research/raw`, `docs/research/probes` and `docs/plite/research` are frozen, and `kb check` refuses a file added under them. A search's output over another project's code stays outside the repository; the run records its pattern, hit counts and revision in `query-ledger.tsv`. Never stream bulk results into chat: the ledgers are the state, and a run resumes from `query-ledger.tsv` and `lead-ledger.tsv`.
+Keys: `repo_key` = lowercase `host/owner/repo` (`repos.tsv`: `owner/name`); `query_key` = surface + query slug; `lead_key` = `<topic>:<normalized invariant>:<proof family>`; `dedupe_key` = normalized problem signature. Check `repos.tsv`, area pages, frozen runs, and run ledgers first. Work in shards of 10-20 repos, 20-40 issues/PRs, or one theme; update ledgers per shard and stop early once a proof packet emerges.
 
-Keys: `repo_key` is the normalized lowercase `host/owner/repo` without `.git`; `query_key` is a slug of surface plus normalized query; `lead_key` is `<topic>:<normalized invariant>:<proof family>`, independent of repo; `dedupe_key` is the normalized problem signature, such as `selection:projected-native-double-highlight:visual-oracle`. `docs/research/repos.tsv` keys a repo by the `owner/name` part of its `repo_key`. Before reading a repo deeply, check `repos.tsv` and this run's registry for it, and the area page, the frozen runs and this run's lead ledger for the same `lead_key` or `dedupe_key`; add support to an existing lead, read a rejected lead's `reopen_condition` first, and reuse an existing clone.
+### Grades, scores, and promotion
 
-### Shards
+Grades: `A` (local source + runnable test/benchmark or exact behavior), `B` (detailed upstream issue/PR/discussion), `C` (docs/blog/example needing validation), `D` (search hit/README; next source only).
 
-Work in batches of about 10-20 repos, 20-40 issues or PRs, or one theme, whichever is smaller. Each shard gets a summary with its scope, sources sampled, top, rejected and duplicate leads, score changes and next query. Update the ledgers after every shard, and stop a shard early when it yields a concrete proof packet.
+Score leads `0-3` on impact, novelty, applicability, proofability, and risk; promote if `impact + novelty + applicability + proofability - risk >= 7` or it matches an active user bug. Prefer test, oracle, and benchmark leads over runtime rewrites unless the owner is proven.
 
-### Grades and scores
+Each lead promotes to one packet: `test-packet` (unit/Playwright/Browser oracle + command), `benchmark-packet` (metric/runner repair + target + before/after command), `plan-packet` (`best-api` verdict + `.agents/playbooks/references/architecture.md` ledger row), `docs-packet` (`docs/research/sources/` citing `<owner>/<repo>@<commit>:<path>` or URL + date, or `docs/plans/topics/<scope>.md`), or `no-code-decision` (rejected/quarantined on area page with reason, reopen condition, and next angle).
 
-- `A`: local source inspected, plus a runnable test or benchmark idea or exact source behavior.
-- `B`: an upstream issue, PR or test discussion detailed enough to map an invariant.
-- `C`: docs, a blog or an example that suggests a pattern needing local validation.
-- `D`: a search result, README claim or vague discussion; it only chooses the next source.
-
-Score leads, not repos, on impact, novelty, applicability, proofability and risk, each `0-3`. Promote when `impact + novelty + applicability + proofability - risk >= 7`, or when a lower-scoring lead matches a current user-reported bug. The score ranks investigation only; it never justifies machinery or scores a target architecture. Prefer test, oracle and benchmark-method leads over runtime rewrites unless the runtime owner is already proven.
-
-### Promotion
-
-A lead becomes exactly one of:
-
-- `test-packet`: a native unit, Playwright or Browser oracle with its verification command;
-- `benchmark-packet`: a metric or harness repair with a target and before/after command;
-- `plan-packet`: a `best-api` verdict on the call shape, plus a decision-ledger row (`.agents/playbooks/references/architecture.md`) when runtime or adoption ownership is unclear;
-- `docs-packet`: a finding on the area page of its home under `docs/research/sources/`, which cites `<owner>/<repo>@<commit>:<path>` or, for a closed product, its URL and the date it was checked; or a current-state decision in the scope's subject file;
-- `no-code-decision`: rejected or quarantined with its reason and reopen condition.
-
-A likely fix becomes a Bug fix, Benchmark, oracle or plan packet with its baseline, proof gate and keep, revert or quarantine decision. Each rejected lead, a clean negative result included, goes on the area page with its reason, reopen condition and next search angle. Before the run ends, add each repo it read to `docs/research/repos.tsv` as `saved`, and each repo the search printed that it skipped as `skipped` with the reason in `note`. A material Stop, Pursue or Defer assessment is written as a review page's verdict through `verdict`; the scope's subject file links that page instead of copying rows.
-
-The handoff counts repos searched and read, issues and PRs read, leads kept, merged and rejected, and packets promoted; lists the top promoted leads with `lead_key`, grade, owner and proof command, and the rejections that prevent repeated work; and names the next shard or `none` with a reason.
+Update `docs/research/repos.tsv` (`saved` or `skipped` + `note`). Write Stop/Pursue/Defer verdicts via `verdict` and link from the subject file. Handoff reports counts (repos, issues/PRs, leads kept/merged/rejected, packets), top promoted leads (`lead_key`, grade, owner, proof command), key rejections, and next shard or `none`.
 
 ## Compiled layer (`full` and `maintain`)
 
-Read `docs/research/schema.md`, the scope's subject file and the matching pages under `docs/research/sources/` first; drop to the clones in `..` and `../raw`, broader repository search or external sources only to verify, resolve a conflict or deepen evidence. `docs/research` is the compiled layer and the clones and `../raw` the evidence layer; keep raw evidence, source summaries, decisions and open questions distinct, never treat a compiled summary as stronger than its primary source, and update the layer itself, not only the chat answer.
+Read `docs/research/schema.md`, subject file, and `docs/research/sources/` first; drop to `..`, `../raw`, or external sources only to verify or resolve conflicts. Primary sources outrank summaries. Acquire raw evidence from official git clones, then exports/caches, then captures; record URL/repo, raw path, date, and revision. Refresh only when active or drifted, appending `../raw/log.md` and updating compiled pages; never edit `../raw` while compiling.
 
-Acquire raw evidence from the strongest stable source: an official git clone, then an official export or local cache, and a page capture only when neither exists. Each raw source family records its canonical URL or repository, local raw path, snapshot date and revision (a commit hash, or a fetch timestamp for a cache or export). Refresh a raw source only when its area is active, its drift matters to the decision or it has likely changed since the last ingest; creating or refreshing a raw source family appends `../raw/log.md`, and a refresh also updates that metadata and refreshes the compiled pages it changes. Never edit `../raw` while compiling conclusions unless the task curates raw evidence.
+Keep compiled pages derived (paraphrased synthesis, one concept per file, no silos like `editor-behavior/`/`plate-v2/`/`slate-v2/`), pointing claims outward. Route findings to `docs/research/sources/`, lessons to `docs/research/sources/plate-notes/`, conclusions to `docs/plans/topics/<scope>.md`, unresolved gaps to open questions on the blocked page, design questions to chips `decide` tasks per `chips.md`/`schema.md`, and scratch notes to `docs/analysis` or `docs/plans`.
 
-Compiled pages stay derived: paraphrased summaries and cross-source synthesis, never raw third-party pages, vendor screenshots, one-to-one source cards or quote-heavy mirrors. Promote an editor's findings to an area page of its home under `sources/`, a lesson to `sources/plate-notes/`, an explicit conclusion to the scope's subject file, `docs/plans/topics/<scope>.md`, unresolved evidence to an open question in the subject file or area page it blocks, and an open design question to a chips `decide` task when chips.md's Offer lets the run offer one, and otherwise where that Offer lists a finding the run cannot offer, as `docs/research/schema.md`'s Open questions says. Keep one research layer with stable paths and one page-type system; do not split it into goal-specific silos such as `editor-behavior/`, `plate-v2/` or `slate-v2/`. Keep one concept per file, never a giant mixed essay; point every durable claim outward to its evidence in `../raw`, repository files, source-of-truth docs or plans; and promote only knowledge that is reusable, likely to matter again and stable enough to keep, such as durable architecture conclusions and vocabulary, leaving temporary exploration in `docs/analysis` or `docs/plans`.
+`full` scopes every relevant corpus, checks official entrypoints, reads strongest local raw hits before calling anything missing, and closes each corpus with paths, read files, entrypoints, strongest evidence, next action, and disposition (`evidenced`, `raw gap`, `compile gap`, `synthesis gap`, `freshness gap`, `evidence gap`, `contradiction gap`, `structure gap`). Grep is routing, not evidence; explain skipped hits; never spot-check one corpus and call it `full`.
 
-A `full` pass scopes every relevant corpus, runs an official-source discovery step per corpus (its official docs, repository and release-note entrypoints), reads the strongest local raw hits before calling anything missing, and closes each corpus in a per-corpus ledger: pages and raw paths inspected, files read, official entrypoints checked, strongest evidence, a disposition (`evidenced`, `raw gap`, `compile gap`, `synthesis gap`, `freshness gap`, `evidence gap`, `contradiction gap` or `structure gap`) and the next action. A raw gap means `../raw` holds no relevant evidence after the discovery step; a compile gap, raw evidence with no source summary; a synthesis gap, source summaries whose conclusion no subject file states; a freshness gap, a compiled page that newer evidence likely changed; an evidence gap, a question the strongest local raw hits leave open after they were read; a contradiction gap, compiled pages that disagree; a structure gap, duplicated, orphaned or mis-split pages. No corpus ends silent; thin or contradictory evidence becomes an open question in the subject file or area page it blocks, naming its owner and the evidence that would close it, never fake law. A `full` pass that spot-checked one corpus of several is not `full`.
-
-Broad grep is routing, not evidence: read every hit that obviously matches the question before classifying a corpus, keep raw paths searched separate from raw files actually read, and say why a promising hit was skipped.
-
-`maintain` with no area runs a broad upkeep pass across the layer. `maintain` checks the area for stale pages and claims, contradictions, orphan, duplicated and overgrown pages, dead terminology, weakly sourced claims, raw evidence with no compiled summary, source summaries that imply a missing decision, and open questions that now have answers. It is aggressive about structure and conservative about claims: it fixes what existing evidence supports, never invents a decision, claims coverage from one weak source or silently resolves a contradiction, leaves an open question on the page the gap blocks, naming its owner and the evidence that would close it, for each evidence or contradiction gap it cannot fill, and reports what it fixed, what is still missing, whether the area needs `full` and, for editor-behavior evidence, whether the spec or `current-evidence.md` needs reconciling under AGENTS.md's editor-behavior rule. A lesson that tells agents to work around a defect in this repository's own setup, one nobody chose to keep, also gets that defect fixed, or a suggested task that owns it when chips.md's Offer allows one and an Open work item when it does not.
-
-Retiring internal docs compiles their still-true lessons into a home a workflow reads before anything is deleted; the owner prefers compressing to deleting (2026-10-06).
-
-When a task depends on a domain bigger than the visible compiled pages, run `maintain` on it, or `full` when raw coverage is missing, before relying on those pages; run one before and after major research or migration work.
-
-After changing a ledger scope, group or document file, or recording a review, run the helper's `check` command. For backlog or closure status, follow [Reading research ledgers](#reading-research-ledgers).
+`maintain` (no area runs repo-wide upkeep) fixes stale claims, contradictions, orphan/duplicate/overgrown pages, dead terms, uncompiled raw evidence, implied decisions, and answered questions; leaves named open questions for unresolved gaps; reports fixes, gaps, `full`, or editor-behavior reconciliation needs; and fixes or tracks repo-setup workarounds. Compile still-true lessons before retiring internal docs. Run `maintain` (or `full` if raw coverage is missing) before/after major research or migrations. After ledger/doc/review edits, run `node tooling/scripts/review-ledger.mjs check` and `pnpm kb check`. For backlog status, follow [Reading research ledgers](#reading-research-ledgers).
 
 ## Reading research ledgers
 
-Read the existing corpus ledger before interpreting backlog or closure.
-
-- when closing a `docs/plite/research/**` lead, read that artifact's
-  `lead-ledger.tsv`, `promoted-ledger.tsv`, and `read-log.tsv` first. Use exact
-  source refs and owner files from those ledgers before any repo-wide `rg`.
-  Broad current-tree or OSS scans are allowed only after the recorded anchors
-  are missing, stale, or insufficient for the proof command;
-- when parsing ledgers, match exact column names before fuzzy fallbacks. Prefer
-  a literal `status` column over `decision`, `action`, or regex matches. Never
-  infer backlog/open state from a `decision` column when a `status` column
-  exists in the same TSV;
-- when scanning research backlog/open status, parse work ledgers only:
-  `lead-ledger.tsv`, `promoted-ledger.tsv`, issue closure ledgers, or an
-  explicitly named action matrix. Do not count `repo-registry.tsv`,
-  `read-log.tsv`, source registries, or other provenance metadata as open work
-  just because they contain a `status`-like column;
-- when classifying research status values, separate actionable backlog from
-  accepted deferral. `promote-*`, `promoted-pending`, `queued-*`, `open`,
-  `todo`, `candidate`, `needs-*`, and untriaged rows can be actionable. Statuses
-  like `promoted-kept`, `promoted-existing`, `kept-*`, `covered`,
-  `covered-existing`, `supporting`, `supporting-only`, `invalid-skip`,
-  `rejected`, and `closed` are closed. Statuses starting with `deferred-*` or
-  legacy `defer` are queued stopping checkpoints, not work to "fix" during a
-  timed run unless the active packet deliberately takes that owner;
-
-- before writing one-off reducers over generated benchmark, ledger, or proof
-  artifacts, inspect the artifact schema first: print the TSV header or JSON
-  top-level keys, then parse the real field names. Do not guess columns such as
-  `checked` when the ledger uses `check`, and do not guess benchmark summary
-  keys before reading the artifact shape;
+- Closing a `docs/plite/research/**` lead: read `lead-ledger.tsv`, `promoted-ledger.tsv`, and `read-log.tsv` first; use recorded refs/owners before repo-wide `rg`.
+- Match exact column names: prefer literal `status` over `decision`/`action`/regex; never infer backlog from `decision` when `status` exists.
+- Parse work ledgers only (`lead-ledger.tsv`, `promoted-ledger.tsv`, issue closure ledgers, action matrices), never metadata (`repo-registry.tsv`, `read-log.tsv`).
+- Separate actionable (`promote-*`, `promoted-pending`, `queued-*`, `open`, `todo`, `candidate`, `needs-*`, untriaged), closed (`promoted-kept`, `promoted-existing`, `kept-*`, `covered`, `covered-existing`, `supporting`, `supporting-only`, `invalid-skip`, `rejected`, `closed`), and deferrals (`deferred-*`, legacy `defer`).
+- Print TSV headers or JSON keys before writing a reducer (`check`, not `checked`).

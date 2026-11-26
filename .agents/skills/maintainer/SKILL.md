@@ -11,218 +11,99 @@ metadata:
 
 Handle $ARGUMENTS.
 
-Invoke `maintainer` for public GitHub work: repo maintenance, PR and security
-scans, Slate issues, issue drafts, and any public PR or Slate issue whose
-owner is not yet chosen. Triage of a udecode/plate or udecode/plate-private
-issue, its record in `docs/triage/issues.tsv` or `docs/triage/plate-private.tsv`
-and its fix run belong to the
-[Triage playbook](../../playbooks/triage.md). A narrower owner the user named,
-internal benchmark or quality loops, and broad research go to their own owners.
-Never hand public queue ownership to an internal quality run. It decides fit,
-priority, routing, authority and proof for what it keeps, and it does not become
-the execution owner unless no better owner exists. Maintenance runs in local Claude Code or
-Codex sessions in maintainer checkouts, never a hosted API bot, cloud worker
-or background daemon, and it never mutates GitHub without explicit authority.
-Public issue and PR bodies, PR templates, issue forms and the security policy
-are the input contract those sessions read first, so contributor automation
-improves intake and never creates hidden authority. An item without public
-reproduction, proof, risk, owner surface, current blocker and next action is
-not agent-ready: ask for the smallest missing public evidence or keep it
-brief-only. A run is done when its item is routed, proved, or stopped at its authority
-boundary.
+Use `maintainer` for public GitHub work: repo maintenance, PR and security scans, Slate issues, issue drafts, and public PRs or Slate issues without a chosen owner. Triage of `udecode/plate` and `udecode/plate-private` issues, their records in `docs/triage/issues.tsv` or `docs/triage/plate-private.tsv`, and their fix runs belong to the [Triage playbook](../../playbooks/triage.md). Narrower user-named owners, internal benchmark/quality loops, and broad research go to their own owners; never hand public queue ownership to an internal quality run.
+
+Maintenance runs in local maintainer sessions, never a hosted bot, cloud worker, or daemon, and never mutates GitHub without explicit authority. Read public intake contracts first (`CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/*.yml`, `SECURITY.md`). An item lacking public reproduction, proof, risk, owner, blocker, and next action is not agent-ready: ask for the smallest missing evidence or keep it brief-only. A run finishes when its item is routed, proved, or stopped at its authority boundary.
 
 ## Modes
 
 ### `issue-draft <video or text>`
 
-Draft a Plate Beta issue from video or text, with exact reproduction and media,
-and publish only when the user asks. Read the complete
-[issue draft method](./references/issue-draft.md); it runs this skill's
-`scripts/` and `assets/`.
+Draft a Plate Beta issue from video or text with exact reproduction and media, and publish only when asked. Read [issue draft method](./references/issue-draft.md) in full; it drives this skill's `scripts/` and `assets/`.
 
 ### `slate-issue <issue>`
 
-Read the complete [Slate issue recipe](./references/slate-issue.md). It owns
-intake and public claim accounting; pstack's Bug fix playbook owns local
-repair and poteto-mode owns lifecycle. Execute public steps only with the active request's authority.
+Read [Slate issue recipe](./references/slate-issue.md) in full. It owns intake and public claim accounting; pstack's Bug fix playbook owns local repair. Execute public steps only under active authority.
 
 ### `queue`
 
-A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
+Broad scan for "queue", "all issues", "all PRs", or repo maintenance:
 
-1. Read the live queues:
+1. Read live queues (stop and record blocker if `gh` auth or network fails; keep advisory details out of replies and versioned files):
 
    ```bash
    gh api repos/udecode/plate/security-advisories --jq '.[] | select(.state == "triage" or .state == "draft") | {ghsa_id, state, severity}'
    gh pr list --repo udecode/plate --state open --json number,title,author,baseRefName,isDraft,reviewDecision,mergeStateStatus,updatedAt
    ```
 
-   If `gh` auth or network is blocked, record the blocker and stop. Advisory
-   details stay out of the reply and every versioned file.
-2. Scan the smallest useful slice: advisories, PRs with review, CI or merge
-   attention, issues needing triage, stale user-visible bugs, then docs or
-   setup breakage.
-3. Take issue picks from `pnpm triage queue` for udecode/plate and
-   `pnpm triage queue --repo plate-private` for udecode/plate-private, each of
-   which lists every open issue in the triage focus that still needs a triage call from you
-   and counts the main reports outside it; a Slate scan lists its
-   issues with `gh issue list --repo ianstormtaylor/slate`. Build the candidate
-   matrix for PRs, advisories and Slate items, pick at most one safe item,
-   verify its live state and authority, then route it, run its safe local
-   slice, or stop with a decision-ready brief.
-4. Write a compact `docs/maintainer/runs/*` note only when the run creates
-   state a later session should not rediscover.
+2. Scan the smallest useful slice: advisories, PRs needing review/CI/merge attention, issues needing triage, stale user-visible bugs, then docs or setup breakage.
+3. Pull issue picks from `pnpm triage queue` (`udecode/plate`) and `pnpm triage queue --repo plate-private` (`udecode/plate-private`), and Slate issues from `gh issue list --repo ianstormtaylor/slate`. Build the candidate matrix for PRs, advisories, and Slate items, pick at most one safe item, verify live state and authority, then route it, run its safe local slice, or stop with a decision-ready brief.
+4. Write a compact `docs/maintainer/runs/*` note only when it saves durable state for later sessions.
 
 ### `issues`
 
-Run the [Triage playbook](../../playbooks/triage.md) over every open
-udecode/plate and udecode/plate-private issue, as `triage` does, or over one issue when the request names
-it. Its duplicate rule, `gitcrawl` neighbor search and Fit Gate also govern a
-Slate issue, which [slate-issue](./references/slate-issue.md) triages without a
-register row.
+Run the [Triage playbook](../../playbooks/triage.md) over open `udecode/plate` and `udecode/plate-private` issues (or one named issue). Its duplicate rule, `gitcrawl` neighbor search, and Fit Gate also govern Slate issues via [slate-issue](./references/slate-issue.md) without a register row.
 
 ### `prs`
 
-Scan PR queue. Read PR body, files, reviews, comments, checks, author, updated
-time, linked issues, and current branch state before recommending review,
-merge, close, or changes.
+Scan the PR queue. Read body, files, reviews, comments, checks, author, updated time, linked issues, and branch state before recommending review, merge, close, or changes.
 
 ### `security`
 
-Read [security hotfix mechanics](./references/security-hotfix.md) when the
-requested work includes an advisory fix or disclosure/read-back. The active
-request's publication authority governs those operations.
+Read [security hotfix mechanics](./references/security-hotfix.md) when work includes an advisory fix or disclosure/read-back. Active publication authority governs those operations. Never store private advisory details in versioned files (`docs/maintainer/security.md`, `docs/maintainer/runs/*`); read GHSA content from live GitHub or local ignored artifacts.
 
-Versioned maintainer docs, such as `docs/maintainer/security.md` and
-`docs/maintainer/runs/*`, never hold private
-advisory details. Keep them redacted and read sensitive GHSA content from live
-GitHub or local ignored artifacts.
-
-Keep security-shaped reports in the `maintainer security` lane until the trust
-boundary is classified. They do not belong in normal issue harvest or
-duplicate-close flow before that. Quarantine only the security-shaped item;
-unrelated non-security reports in the same cluster or duplicate chain continue
-normally.
+Keep security-shaped reports in `maintainer security` until the trust boundary is classified; never put unpatched vulnerability reports through normal issue harvest or duplicate-close flow. Quarantine only the security-shaped item so unrelated reports in the same cluster continue normally.
 
 ### `<issue-url|pr-url>`
 
-Read the exact item first. Then classify route:
-
-For a PR, check `baseRefName` before routing. A PR based on `main` is worked in `../plate`, the main-line checkout, through the Babysit playbook's main-line PR rule. This repository's skills and rules still govern it, because `../plate` carries older copies of them.
+Read the exact item first. For PRs, check `baseRefName`: a `main`-based PR runs in `../plate` under the Babysit playbook's main-line PR rule, governed by this repo's newer rules and skills.
 
 | Item | Default owner |
 | --- | --- |
-| One public Slate substrate issue | `maintainer slate-issue` |
-| One udecode/plate or udecode/plate-private issue | the Triage playbook; `triage fix #<N>` or `triage fix plate-private#<N>` continues into the Bug fix playbook, and a udecode/plate issue on none of the five Beta milestones that playbook lists reports `main`, which takes no fixes, so its record comes from that playbook's beta check |
-| One public Plate/Plite performance regression | the Triage playbook, then the Perf issue playbook with `benchmark` |
-| One local Plate or Plite behavior bug or regression with no public mutation | pstack's Bug fix playbook |
-| Plite public call-shape fork | `best-api`, then the Plan playbook if adoption or runtime planning is needed |
-| Already-applied PR/branch/current-tree closure | the Babysit playbook |
-| Plate/Plite internal performance/benchmark gap | the Perf issue playbook with `benchmark` |
-| Plate/Plite internal quality/browser/API gap | pstack poteto-mode, as an Autonomous run when unattended |
-| Cross-package architecture/testability/refactor/deslop candidate | the Refactoring playbook, then the Plan playbook |
-| Plate framework/plugin/component/docs | the Plan playbook, `plate-plugins`, `plate-ui`, or Plate Docs |
+| Public Slate issue | `maintainer slate-issue` |
+| `udecode/plate` or `udecode/plate-private` issue | Triage playbook (`triage fix #<N>` / `triage fix plate-private#<N>` enters Bug fix; non-Beta `udecode/plate` issues report `main` and take no fixes) |
+| Public Plate/Plite perf regression | Triage playbook, then Perf issue playbook with `benchmark` |
+| Local Plate/Plite bug (no public mutation) | pstack Bug fix playbook |
+| Plite public call-shape fork | `best-api`, then Plan playbook if adoption planning is needed |
+| Already-applied PR/branch/current-tree closure | Babysit playbook |
+| Internal perf/benchmark gap | Perf issue playbook with `benchmark` |
+| Internal quality/browser/API gap | pstack poteto-mode |
+| Cross-package architecture/refactor/deslop | Refactoring playbook, then Plan playbook |
+| Plate framework/plugin/component/docs | Plan playbook, `plate-plugins`, `plate-ui`, or `plate-docs` |
 | Security/advisory | `maintainer security` |
-| Someone else's PR to review | the Babysit playbook's review-only panel ("review PR <number>") |
-| PR review feedback | the Babysit playbook |
+| Someone else's PR to review | Babysit playbook review-only panel ("review PR `<number>`") |
+| PR review feedback | Babysit playbook |
 | External corpus/issue ledger | `issue-harvester` |
 | Unclear prior art | `research` |
 
-A public issue's fix run closes with the evidence packet the
-[Bug fix playbook](../../playbooks/bug-fix.md) names. A complete local packet
-proves only `candidate-local`. It may justify a comment
-that a candidate fix exists locally, but not `fixed` or `completed` wording
-or a close as completed. After the work is pushed, replay the same case on that exact
-pushed ref from a fresh process in a clean matching checkout or immutable CI
-artifact; prove zero tracked or untracked issue-owned runtime-input differences,
-record matching fingerprints, and carry the retry-free warm ledger (5 of 5 for
-native selection, focus, drag and drop, paint and React DOM lifecycle) in the
-exact reported browser or device. Any commit, rebase, generation, combination,
-or push after a replay invalidates it. Only that clean final-pushed-ref replay
-may justify fixed/completed wording or a close as completed. Explicit authority
-to close never waives this truth gate. Do not duplicate the worker's repair methodology in
-this coordinator.
+## Public truth gate
 
-A PR or issue body names an issue only when its proof addresses that issue's exact report; never add an issue number because it sounds related.
+A public issue fix closes with the evidence packet in [Bug fix playbook](../../playbooks/bug-fix.md). A complete local packet proves only `candidate-local`: it may support a comment noting a local candidate fix, never `fixed`/`completed` wording or closing as completed.
 
-## Reporter Retest Invalidation
+After pushing, replay the exact case on that pushed ref from a fresh process in a clean matching checkout or immutable CI artifact: prove zero tracked or untracked runtime-input diffs, record matching fingerprints, and hold the retry-free warm ledger (5 of 5 for native selection, focus, drag and drop, paint, and React DOM lifecycle) in the exact reported browser or device. Any later commit, rebase, generation, combination, or push invalidates the replay. Only a clean final-pushed-ref replay justifies `fixed`/`completed` wording or a completed close; explicit close authority never waives this gate.
 
-A reporter's fresh exact-step retest outranks earlier agent proof. When the
-reporter says the failure remains:
+Cite an issue number in a PR or issue body only when proof covers that exact report. Every routed fix ends its test title with the issue tag. Before any comment, label, close, reopen, merge, review, branch, PR, or commit, re-read live GitHub and local source proof; similarity is not permission to mutate.
 
-1. classify the prior fixed/completed claim as disproven;
-2. move the item to `needs-repro` and keep it out of completed queue slices;
-3. compare the reporter action and end state with the case's recorded setup, input, expected result and environment to find the missing topology, requirement, environment, or final-ref replay;
-4. reopen an issue closed as completed on that claim, under the current
-   mutation authority;
-5. route a new bounded bug-fix packet under the Bug fix playbook's failed-fix
-   recovery. Do not defend the old proof with unit
-   tests, a review, or a green proxy route.
+## Reporter retest invalidation
 
-When the reporter confirms the headline fix but identifies a related residual
-symptom, record a separate observable case or explicitly split it to a new
-issue. Do not leave an issue closed as completed on an unresolved workflow.
+A reporter's fresh exact-step retest outranks prior agent proof. When the reporter says the bug remains:
 
-## Intake
+1. Mark the prior fixed/completed claim disproven.
+2. Move the item to `needs-repro` and out of completed slices.
+3. Compare the reporter's steps and end state against the recorded setup, input, expected result, and environment to find the missing topology, environment, or final-ref replay.
+4. Reopen an issue closed as completed on that claim under current mutation authority.
+5. Route a bounded bug-fix packet under Bug fix failed-fix recovery. Never defend the old proof with unit tests, a review, or a proxy route.
 
-Read the public intake docs when they apply: `CONTRIBUTING.md`,
-`.github/PULL_REQUEST_TEMPLATE.md` for PR work, `.github/ISSUE_TEMPLATE/*.yml`
-for issue work and `SECURITY.md` for security-shaped work. Public security
-reports route privately first. Do not process a public issue as normal queue
-work when it discloses an unpatched vulnerability.
+If the reporter confirms the main fix but reports a residual symptom, record a separate observable case or split a new issue instead of leaving it closed as completed.
 
-Before any comment, label, close, reopen, merge, review, branch, PR, or commit,
-re-read live GitHub and local source proof. Similarity is not permission to
-mutate.
+## Candidate matrix and Fit Gate
 
-A fix the run routes ends with the issue tag on its test title.
+For each PR, advisory, or Slate item considered (`udecode/plate` and `plate-private` rows live in `pnpm triage queue`), record: number/URL, title, source (`PR`, `advisory`, `Slate issue`, `queue scan`, `gitcrawl cluster`, `user prompt`), live state and updated date, snapshot source/freshness, category (`Slate`, `docs`, `security`, `PR review`, `external corpus`, `internal quality`, `support/noise`), VISION fit (`yes`, `no`, `unclear`), duplicate/claim guard, recommended owner, smallest proof command or blocker, authority needed, and decision (`route`, `brief-only`, `skip`, `defer`, `blocked`). Do not pad the queue; if no item is safe, say so and stop.
 
-## Candidate Matrix
+Before autonomous routing, an item must pass the [Triage playbook's Fit Gate](../../playbooks/triage.md#fit-gate) and have no active owner, PR, branch, assignee, or claim conflict unless takeover was requested. When fit is unclear, return a decision-ready brief.
 
-For every PR, advisory or Slate item considered, record compact rows. A
-udecode/plate or udecode/plate-private issue's row is its triage record, and
-`pnpm triage queue`, with `--repo plate-private` for the second, lists them.
+## Authority and final handoff
 
-- number / URL;
-- title;
-- source: PR, advisory, Slate issue, queue scan, gitcrawl cluster, user prompt;
-- current live state and updated date;
-- queue snapshot source and freshness when applicable;
-- category: Slate, docs, security, PR review, external corpus, internal
-  quality, support/noise;
-- VISION fit: yes, no, unclear;
-- duplicate/claim guard;
-- recommended owner;
-- smallest proof command or proof blocker;
-- authority needed;
-- decision: route, brief-only, skip, defer, or blocked.
+Default authority is read, classify, route, patch local files when the owner allows, and hand off. Public writes need explicit active authority and otherwise wait as drafts per `AGENTS.md` Messages; loading this skill grants none. Standing authorities live in the Triage playbook's Drafts: triage comments (owner's word 2026-10-26) and field/label/close commands printed by `pnpm triage labels` (owner's word 2026-10-27), excluding duplicate closes and reopens. Stop for credentials, payments, 2FA, captcha, signups, and maintainer approval of security disclosures.
 
-Do not pad the queue with weak candidates. If no item is safe, say so and stop.
-
-## Fit Gate
-
-Before routing a PR, advisory or Slate item as autonomous, it passes the
-[Triage playbook's Fit Gate](../../playbooks/triage.md#fit-gate), and it has no
-active owner, PR, branch, assignee or recent claim conflict unless the user
-explicitly asks to take over. When fit is unclear, produce a decision-ready
-brief instead of guessing.
-
-## Authority
-
-Default is read, classify, route, patch local files when the execution owner
-allows, and hand off. A comment, label, close, reopen, review, release or other
-public write needs the active request's explicit authority and otherwise waits
-as a draft, as `AGENTS.md`'s Messages rule says; loading this skill creates no
-authority. The standing authorities are in the Triage playbook's Drafts. It
-posts a triage comment on the owner's word of 2026-10-26, and it runs the field,
-label and close commands that `pnpm triage labels` prints on the owner's word of
-2026-10-27. Neither word covers a duplicate close or a reopen. Credentials, payment, 2FA, captcha and account signup stop for the
-owner, as its Git and publication rules say, and security disclosure wording
-waits for maintainer approval.
-
-## Final Handoff
-
-The run's page Close, or its reply when it keeps no plan, names the repo and
-mode, the queue snapshot and its freshness, the slice inspected, the item picked
-and its owner, the live GitHub proof or the auth blocker, the claim guard, the
-proof commands, each public write made or drafted, and what needs the owner.
+Handoff (plan Close or reply) names: repo and mode, queue snapshot and freshness, inspected slice, picked item and owner, live GitHub proof or auth blocker, claim guard, proof commands, each public write made or drafted, and what needs the owner.

@@ -11,38 +11,17 @@ metadata:
 
 Handle $ARGUMENTS.
 
-Use this skill when the user wants exhaustive issue-history coverage, including
-closed issues that predate AI-written tests. The prompt should be small:
-
-```txt
-issue-harvester prosemirror
-issue-harvester facebook/lexical --state all
-```
-
-The skill expands that into the full issue-by-issue loop. Do not make the user
-paste the long closure-ledger prompt again.
+Use this skill for exhaustive issue-history coverage, including closed issues predating AI tests, from a short prompt such as `issue-harvester prosemirror` or `issue-harvester facebook/lexical --state all`. Expand into the full issue-by-issue closure loop automatically.
 
 ## Scope
 
-This skill works for:
+Covers Slate/Plate and external editor issue histories (Lexical, ProseMirror, CodeMirror, Tiptap, Monaco, Quill), open and closed (`--state all` default), resuming existing closure ledgers, and adding only missing local tests for unchecked relevant issues.
 
-- Slate/Plate issue history;
-- external editor issue history such as Lexical, ProseMirror, CodeMirror,
-  Tiptap, Monaco, and Quill;
-- open and closed issues, defaulting to `--state all`;
-- resuming an existing closure ledger;
-- adding only missing local tests for unchecked relevant issues.
+## Ledger autodiscovery
 
-## Ledger Autodiscovery
+Derive `repo_key`: `owner/repo` -> `repo`; `../repo` or `/path/to/repo` -> basename; direct ledger path -> parent folder under `docs/editor-issue-harvester/<repo_key>/`.
 
-Derive `repo_key` like this:
-
-- `owner/repo` -> `repo`
-- `../repo` or `/path/to/repo` -> basename
-- direct ledger path -> parse the parent repo folder under
-  `docs/editor-issue-harvester/<repo_key>/`
-
-Default artifacts:
+Canonical paths:
 
 ```txt
 docs/editor-issue-harvester/<repo_key>/full/issues.md
@@ -50,44 +29,19 @@ docs/editor-issue-harvester/<repo_key>/full/issue-closure-ledger.tsv
 docs/editor-issue-harvester/<repo_key>/full/issue-closure-ledger.md
 docs/editor-issue-harvester/<repo_key>/full/issue-closure-overrides.json
 docs/editor-issue-harvester/<repo_key>/full/issue-closure-run.md
-.tmp/editor-issue-harvester/<repo_key>/raw/issues.json
-.tmp/editor-issue-harvester/<repo_key>/raw/issues-all-with-bodies.json
-.tmp/editor-issue-harvester/<repo_key>/raw/issue-bodies/*.json
+.tmp/editor-issue-harvester/<repo_key>/raw/{issues.json,issues-all-with-bodies.json,issue-bodies/*.json}
 ```
 
-The `docs/editor-issue-harvester/<repo_key>/full/` directory is the canonical
-resume/checkmark workspace. It may contain compact generated TSV/Markdown/JSON
-state, but it must not contain raw issue bodies/comments. The `.tmp` path is raw
-cache only.
+Keep `docs/editor-issue-harvester/<repo_key>/full/` compact (TSV/Markdown/JSON state only, never raw issue bodies or comments); `.tmp/` holds raw caches. Do not broad-search raw JSON for ledger status; parse `issue-closure-ledger.tsv` or `.md` directly for `check`, `unchecked relevant`, total rows, and next unchecked issue.
 
-Do not broad-search `docs/editor-issue-harvester/**` or raw issue JSON just to
-learn ledger status. Parse `issue-closure-ledger.md` / `.tsv` directly for the
-`check` column, `unchecked relevant`, total rows, and next unchecked issue.
+Generated files stay generated: record manual decisions in `issue-closure-overrides.json`, never extra columns in generated TSVs. Label frozen corpora as historical seeds, not live state. Any ledger family mixing generated input, overrides, and summaries needs a local drift check.
 
-A file that declares itself generated stays generated: manual decisions go in `issue-closure-overrides.json`, never as new columns in the generated ledger. A frozen corpus is named a historical seed, not current state. A ledger family that mixes generated input, manual classification and a summary gets a local check that fails when they drift.
+- **Existing ledger:** read TSV/MD and overrides, preserve checked/manual decisions, refresh inventory, append new issues as unchecked, never delete historical rows unless asked, and resume from the lowest unchecked issue matching the objective.
+- **New ledger:** run the repo/license gate from `research harvest`, inventory issues (`--state all` unless narrowed), cluster first, build the coverage matrix, generate the initial closure ledger, and start from the first unchecked relevant row.
 
-If a ledger exists:
+## Refresh commands
 
-1. read the TSV/MD and overrides;
-2. preserve all checked/manual decisions;
-3. refresh issue inventory to the latest available state;
-4. add new issue numbers as unchecked rows;
-5. remove no historical rows unless the user explicitly asks;
-6. resume from the lowest unchecked issue number that matches the objective.
-
-If no ledger exists:
-
-1. run the target repo/license gate from `research harvest`;
-2. inventory issues with `state=all` unless explicitly narrowed;
-3. cluster first;
-4. build the coverage matrix;
-5. generate the first closure ledger;
-6. start issue-by-issue processing from the first unchecked relevant row.
-
-## Refresh Commands
-
-Prefer `gitcrawl` for archive input; [gitcrawl](./references/gitcrawl.md) holds
-its install and archive commands:
+Prefer `gitcrawl` ([gitcrawl](./references/gitcrawl.md)):
 
 ```bash
 gitcrawl doctor --json
@@ -96,14 +50,9 @@ gitcrawl sync <owner/repo> --state all --json
 gitcrawl search issues "" -R <owner/repo> --state all --json number,title,state,url,labels,updatedAt --limit 10000
 ```
 
-If `gitcrawl` cannot provide the corpus, use `gh search issues`, the best local
-archive, or existing scratch issues. Record the fallback, state coverage, limit,
-and freshness. Do not call a sampled or capped corpus comprehensive.
-Write raw refresh output to `.tmp/editor-issue-harvester/<repo_key>/raw/`.
-Write only compact issue indexes, coverage rows, and checkmark ledgers to
-`docs/editor-issue-harvester/<repo_key>/`.
+If `gitcrawl` is unavailable, fall back to `gh search issues`, local archives, or scratch issues, and record fallback, state coverage, limit, and freshness (never call a sampled or capped corpus comprehensive). Write raw output to `.tmp/editor-issue-harvester/<repo_key>/raw/` and compact ledgers to `docs/editor-issue-harvester/<repo_key>/`.
 
-Use exact hydration before issue decisions:
+Hydrate before deciding an issue (live GitHub wins when local archive is stale):
 
 ```bash
 gitcrawl sync <owner/repo> --numbers <issue-or-pr-ref> --with pr-details --json
@@ -111,45 +60,13 @@ gitcrawl threads <owner/repo> --numbers <issue-or-pr-ref> --include-closed --jso
 gh issue view <issue-number> --repo <owner/repo> --comments --json number,title,state,body,comments,labels,url,closedAt
 ```
 
-Live GitHub is final truth for current state, comments, linked PRs, and closure
-links when the local archive is stale or incomplete.
-
 ### `--refresh-only`
 
-Use `--refresh-only` when another workflow needs current issue inventory without
-starting the unchecked issue loop.
+Refreshes inventory without starting the issue loop: discover or create ledger, refresh all-state metadata, preserve checked/manual decisions, append new issues as `unchecked`, flag materially changed metadata without erasing existing decisions, regenerate compact docs artifacts, log refresh time/provider/coverage/limits/counts, and stop before hydration, provenance, tests, or runtime edits.
 
-1. Discover or create the canonical ledger.
-2. Refresh all-state issue metadata through the normal provider/fallback.
-3. Preserve checked/manual decisions.
-4. Add new issue numbers as `unchecked`.
-5. Mark materially changed issue metadata for later re-read without erasing the
-   existing decision.
-6. Regenerate compact issue indexes and closure ledgers.
-7. Record refresh time, provider, state coverage, limits, added count, changed
-   count, and remaining unchecked count.
-8. Stop before issue hydration, PR/test provenance, local test creation, or
-   runtime changes.
+## Closed-issue PR and test provenance
 
-Raw issue bodies and comments remain under `.tmp`. The refresh is complete only
-when compact docs artifacts are current or the exact provider blocker is
-recorded.
-
-## Closed-Issue PR/Test Provenance
-
-For every relevant closed issue, inspect whether a linked PR added a test before
-deciding local coverage.
-
-Look for:
-
-- issue body links, timeline/crossrefs, and comments mentioning PRs;
-- `Fixes #`, `Closes #`, `Resolves #`, issue URLs, and maintainer references;
-- PR files touched;
-- PR test files changed;
-- upstream test names or behavior labels;
-- current Slate v2 / Plate tests that already cover the same behavior.
-
-Useful probes:
+Before deciding local coverage for a relevant closed issue, check linked PRs and upstream tests via body links, timeline crossrefs, comments, `Fixes/Closes/Resolves #`, touched files, upstream test names, and existing local tests:
 
 ```bash
 gh search prs "<owner/repo>#<issue-number>" --repo <owner/repo> --state all --json number,title,state,url,mergedAt
@@ -159,131 +76,42 @@ gh pr diff <pr-number> --repo <owner/repo> --name-only
 rg -n "#<issue-number>|issues/<issue-number>|Fixes .*<issue-number>|Closes .*<issue-number>|Resolves .*<issue-number>" <target-repo>
 ```
 
-For external repos, PR diffs and upstream tests are provenance only. Copy the
-behavior, not the code.
+For external repos, PR diffs and upstream tests are provenance only: copy the behavior invariant, never the code.
 
-## Row Schema
+## Row schema
 
-Each ledger row should carry enough information to resume without chat history:
+New ledgers use these 14 columns: `issue_number`, `state`, `title`, `classification`, `owner`, `status`, `reason`, `linked_prs`, `upstream_test_provenance`, `local_coverage`, `local_test`, `verification_command`, `last_checked_at`, `next_action`.
 
-```txt
-issue_number
-state
-title
-classification
-owner
-status
-reason
-linked_prs
-upstream_test_provenance
-local_coverage
-local_test
-verification_command
-last_checked_at
-next_action
-```
+Existing ledgers keep their headers, so parse by header name, never column position. Three existing header families exist: lexical/prosemirror (`check`, `issue`, `state`, `relevant`, `closureKind`, `disposition`, ...), prosekit/wordgard (`check`, `issue`, `state`, `relevant`, `classification`, `owner`, `status`, ...), and slate (`issue_number`, `number`, `kind`, `state`, ..., no `check` column).
 
-Existing ledgers keep their own headers, so parse by header name, never by column position. Three header families exist: lexical and prosemirror (`check`, `issue`, `state`, `relevant`, `closureKind`, `disposition`, …), prosekit and wordgard (`check`, `issue`, `state`, `relevant`, `classification`, `owner`, `status`, …), and slate (`issue_number`, `number`, `kind`, `state`, …, with no `check` column). New ledgers use the schema above.
+- `owner`: `slate-v2`, `plate`, `external-framework`, `docs-support-release`, `needs-plan`, `unknown`.
+- `status`: `unchecked`, `invalid-skip`, `covered-by-existing-test`, `test-written`, `plate-owned-covered`, `deferred-with-owner`, `needs-repro`, `blocked`.
 
-`owner` values:
+## Issue loop
 
-- `slate-v2`
-- `plate`
-- `external-framework`
-- `docs-support-release`
-- `needs-plan`
-- `unknown`
+Process unchecked rows in ascending issue-number order unless narrowed:
 
-`status` values:
+1. Read title, body, comments, labels, state, existing classification, and ledger row.
+2. Decide skip versus relevant. Mark irrelevant rows `invalid-skip` with a concrete reason; mark uncertain current behavior `needs-repro` rather than guessing a fix.
+3. For closed relevant issues, inspect PR/test provenance before searching local coverage.
+4. Assign `owner`.
+5. Search exact Slate v2 and/or Plate coverage (`--slate-v2-only` marks Plate rows `deferred-with-owner` with owner and reason instead of patching Plate).
+6. If exact coverage exists, link `file:line`, test name, and focused command, and run that command before marking covered.
+7. If coverage is absent, name the defect and write the smallest regression, contract, or browser test in the owning package per `AGENTS.md` Tests (if a type, lint rule, or existing test already catches it, record that owner instead). Express external-repo tests fresh from the invariant without upstream fixture shapes.
+8. Run focused verification.
+9. Update `issue-closure-overrides.json` and regenerate `issue-closure-ledger.tsv` and `.md` after each issue (or every batch of 10 trivial skip/covered rows); log checked issues, commands, new tests, and next issue number in the active plan or `issue-closure-run.md`. If no generator exists, update TSV/MD reliably and note the missing generator as a workflow gap.
 
-- `unchecked`
-- `invalid-skip`
-- `covered-by-existing-test`
-- `test-written`
-- `plate-owned-covered`
-- `deferred-with-owner`
-- `needs-repro`
-- `blocked`
+Never patch runtime merely because an external issue exists; require a local failing proof or contract gap first. Return issue-bearing runtime candidates to `maintainer slate-issue` (Slate) or the Triage playbook (`udecode/plate`) so the coordinator routes the packet to Bug fix.
 
-## Issue Loop
-
-Process issues in ascending issue number order unless the user gives a different
-objective. For each unchecked row:
-
-1. Read title, body, comments, labels, state, existing classification, and
-   current ledger row.
-2. Decide skip vs relevant. If irrelevant, write `invalid-skip` with a concrete
-   reason and continue. When current behavior is uncertain, mark `needs-repro`
-   instead of designing a fix.
-3. For closed relevant issues, scan linked PR/test provenance before coverage
-   search.
-4. Classify owner: raw Slate v2, Plate, external-framework noise, docs/support,
-   or needs-plan.
-5. Search exact current Slate v2 and/or Plate coverage. Use `--slate-v2-only`
-   to defer Plate rows instead of patching Plate.
-6. If exact coverage exists, link file:line, test name, and focused command;
-   run that command before marking covered.
-7. If coverage is absent, name the defect the issue describes and write the
-   smallest local regression, contract, or browser test in the owner surface
-   that fails for that defect, per the Tests rule in `AGENTS.md`. When a type,
-   lint rule or existing test already catches it, record that owner instead.
-8. For external sources, express the test fresh from the invariant. Do not
-   preserve upstream fixture/helper shape.
-9. Run focused verification.
-10. Update `docs/editor-issue-harvester/<repo_key>/full/issue-closure-overrides.json`.
-11. Regenerate `issue-closure-ledger.tsv` and `.md` in the same docs directory.
-12. Move to the next unchecked issue.
-
-Do not patch runtime just because an external issue exists. Patch runtime only
-after a local failing proof exists or the missing test proves a current behavior
-contract gap. Return that issue-bearing candidate to `maintainer slate-issue` for
-one public Slate issue or the Triage playbook for a udecode/plate issue; only the
-coordinator hands the normalized local repair packet to pstack's Bug fix playbook.
-
-## Coverage Search
-
-Search for exact local coverage before writing a test:
+## Coverage search
 
 ```bash
 rg -n "<distinct behavior phrase>|<issue number>|<upstream test label>" packages apps docs content benchmarks
 rg --files packages apps docs content benchmarks | rg '(test|spec|playwright|integration|fixtures)'
 ```
 
-Coverage is exact only when it proves the same behavior class, not merely the
-same feature area. Link:
-
-- file path and line;
-- test name;
-- verification command;
-- result of the focused command.
-
-If coverage is partial, either strengthen the existing test or write a narrow
-new row. Avoid duplicate tests.
-
-For Plate-owned rows, use the relevant Plate package/example command. If the
-run is scoped to Slate v2 only, do not write Plate tests; mark
-`deferred-with-owner` with the concrete Plate owner and reason.
-
-## Regeneration
-
-After each issue, or each batch of ten trivial skip/covered issues:
-
-1. update `docs/editor-issue-harvester/<repo_key>/full/issue-closure-overrides.json`;
-2. regenerate TSV and Markdown ledgers in that same docs directory;
-3. record issues checked, commands run, tests written, and next issue number in
-   the active plan or `issue-closure-run.md`;
-4. keep going unless a stop rule fires.
-
-If no generator script exists, update the TSV/MD by the smallest reliable local
-method and record that the generator is missing as a workflow gap.
+Coverage is exact only when it proves the same behavior class, not merely the same feature area. Record `file:line`, test name, focused command, and command result. Strengthen partial tests or add one narrow row; avoid duplicate tests.
 
 ## Stop and hand off
 
-Every relevant issue ends with a checkmark: an existing local test linked and
-verified, a new test written and verified, Plate-owned proof linked, or
-`deferred-with-owner` naming its owner and the condition that ends the deferral.
-Stop only when every relevant row for the objective is checked, a real blocker
-prevents all progress, a broad API or runtime decision belongs to `best-api` or
-the Plan playbook, or the timebox expires with the active packet decided. Never
-stop after a cluster summary, a first matrix or the first ten rows unless a
-sample was asked for.
+Every relevant issue ends checked: verified existing test, verified new test, Plate-owned proof, or `deferred-with-owner` with owner and end condition. Stop only when every scoped relevant row is checked, a hard blocker halts all progress, a broad API/runtime call belongs to `best-api` or the Plan playbook, or the timebox expires with the active packet decided. Never stop after a cluster summary, first matrix, or first ten rows unless a sample was requested.

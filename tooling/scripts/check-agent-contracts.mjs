@@ -2,9 +2,11 @@
 // Fast landing gate enforcing Antigravity / pstack repository contracts:
 // 1. AGENTS.md stays under AGY_RULE_SAFE_BYTES (before agy's 24 KB silent truncation).
 // 2. .agents/pstack/rules/*.md files stay under READ_FILE_MAX_BYTES (single-call read_file).
-// 3. .agents/skills/*/SKILL.md descriptions stay within AGY_SKILL_DESC_BUDGET.
-// 4. .claude/pstack-models.md passes lead.mjs sheetMisses (no pro/flash/flash_lite/sonnet/haiku).
-// 5. .agents/hooks.json is valid JSON and every PreToolUse hook returns {"decision":"allow"}
+// 3. .agents/playbooks/*.md and references stay under per-file and total byte ceilings.
+// 4. .agents/rules/*.mdc and .agents/skills/*/SKILL.md stay under per-file byte ceilings
+//    and skill descriptions stay within AGY_SKILL_DESC_BUDGET.
+// 5. .claude/pstack-models.md passes lead.mjs sheetMisses (no pro/flash/flash_lite/sonnet/haiku).
+// 6. .agents/hooks.json is valid JSON and every PreToolUse hook returns {"decision":"allow"}
 //    for benign calls and guard.mjs returns {"decision":"deny"} for force-pushing next.
 
 import { spawnSync } from 'node:child_process';
@@ -17,6 +19,10 @@ import { maxEffort, sheetMisses } from '../../.agents/pstack/lead.mjs';
 export const AGY_RULE_SAFE_BYTES = 22_500;
 export const READ_FILE_MAX_BYTES = 46_080;
 export const AGY_SKILL_DESC_BUDGET = 16_000;
+export const PLAYBOOK_MAX_BYTES = 14_000;
+export const PLAYBOOK_TOTAL_MAX_BYTES = 70_000;
+export const RULE_MDC_MAX_BYTES = 14_000;
+export const SKILL_MAX_BYTES = 20_000;
 
 const DEFAULT_ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 
@@ -62,12 +68,59 @@ export function checkAgentContracts(root = DEFAULT_ROOT) {
     }
   }
 
+  const playbooksDir = join(root, '.agents/playbooks');
+  if (existsSync(playbooksDir)) {
+    let totalPlaybookBytes = 0;
+    for (const name of readdirSync(playbooksDir).sort()) {
+      if (!name.endsWith('.md')) continue;
+      const { size } = statSync(join(playbooksDir, name));
+      totalPlaybookBytes += size;
+      if (size > PLAYBOOK_MAX_BYTES) {
+        errors.push(
+          `.agents/playbooks/${name} is ${size} bytes (max ${PLAYBOOK_MAX_BYTES}); compress or subtract redundant prose.`
+        );
+      }
+    }
+    const playbookRefsDir = join(playbooksDir, 'references');
+    if (existsSync(playbookRefsDir)) {
+      for (const name of readdirSync(playbookRefsDir).sort()) {
+        if (!name.endsWith('.md')) continue;
+        totalPlaybookBytes += statSync(join(playbookRefsDir, name)).size;
+      }
+    }
+    if (totalPlaybookBytes > PLAYBOOK_TOTAL_MAX_BYTES) {
+      errors.push(
+        `.agents/playbooks/*.md and references total ${totalPlaybookBytes} bytes (max ${PLAYBOOK_TOTAL_MAX_BYTES}); subtract before adding.`
+      );
+    }
+  }
+
+  const rulesDir = join(root, '.agents/rules');
+  if (existsSync(rulesDir)) {
+    for (const name of readdirSync(rulesDir).sort()) {
+      if (!name.endsWith('.mdc')) continue;
+      const { size } = statSync(join(rulesDir, name));
+      if (size > RULE_MDC_MAX_BYTES) {
+        errors.push(
+          `.agents/rules/${name} is ${size} bytes (max ${RULE_MDC_MAX_BYTES}); compress or move detail to references/.`
+        );
+      }
+    }
+  }
+
   const skillsDir = join(root, '.agents/skills');
   if (existsSync(skillsDir)) {
     const rows = readdirSync(skillsDir)
+      .sort()
       .map((name) => {
         const file = join(skillsDir, name, 'SKILL.md');
         if (!existsSync(file)) return null;
+        const { size } = statSync(file);
+        if (size > SKILL_MAX_BYTES) {
+          errors.push(
+            `.agents/skills/${name}/SKILL.md is ${size} bytes (max ${SKILL_MAX_BYTES}); keep well below agy's 24 KB truncation cap.`
+          );
+        }
         const fm =
           readFileSync(file, 'utf-8').match(/^---\n([\s\S]*?)\n---/u)?.[1] ??
           '';

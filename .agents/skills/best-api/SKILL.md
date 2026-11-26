@@ -11,91 +11,89 @@ metadata:
 
 Handle $ARGUMENTS.
 
-Own the public call-site decision. This is a taste and decision skill, not an implementation engine. It picks or judges a public call shape and leaves adoption to the Plan playbook. `VISION.md` and `docs/vision/**` hold every API law this lens applies, so read them and cite them instead of restating them. Whether a direction earns any work at all is `verdict`'s question, answered through the Verdict playbook.
+Own the public call-site decision. This is a taste and decision skill, not an implementation engine: it picks or judges a public call shape and leaves adoption to the Plan playbook. Read and cite `VISION.md` and `docs/vision/**` instead of restating them. Whether a direction earns any work at all belongs to `verdict` via the Verdict playbook.
 
 ## Modes
 
-Infer the mode when it is omitted. Do not invent more modes for workflow stages that another skill already owns.
+Infer the mode when omitted; do not invent modes owned by another skill.
 
-- `design`: choose the smallest materially justified API for a new or redesigned surface, and return one call-shape decision. When the work continues into an API plan, the Plan playbook runs `pstack:architect` under the `api-plan` reviews row.
-- `review`: judge one current or proposed API, diff or plan, recommend the better target and rank its findings on the architecture reference's P0 to P3 scale (`.agents/playbooks/references/architecture.md#priority`), which the Babysit playbook's P0 and P1 gate reads.
-- `repair`: edit the rule's one owner, then fix every example, recipe, check and doc that still teaches the rejected shape. See [Repair](#repair).
+- `design`: pick the smallest materially justified API for a new or redesigned surface and return one call-shape decision. When continuing into an API plan, the Plan playbook runs `pstack:architect` under the `api-plan` reviews row.
+- `review`: judge a current or proposed API, diff, or plan, recommend the stronger target, and rank findings on `.agents/playbooks/references/architecture.md#priority` (P0 to P3), which Babysit's P0/P1 gate consumes.
+- `repair`: update the rule's single owner, then fix every example, recipe, check, and doc teaching the rejected shape. See [Repair](#repair).
 
-A `design` or `review` verdict goes in the active plan when one exists and hands back in the reply, as `.agents/pstack/rules/pages.md` says.
+Record `design` or `review` verdicts in the active plan when one exists and return them in the reply per `.agents/pstack/rules/pages.md`.
 
 ## Inputs
 
 Read only what can change the decision:
 
-1. Root `VISION.md`, `docs/vision/common.md` and the relevant Plate or Plite detail file.
-2. Prior art first, as `docs/vision/common.md`'s Redesign from First Principles says: existing Plite primitives, Plate components and the reference editors. A source-level editor comparison consumes `research audit` evidence.
-3. The public types, exports, docs, representative call sites, and owning implementation for the named surface.
+1. `VISION.md`, `docs/vision/common.md`, and the matching Plate or Plite vision file.
+2. Prior art first (per `docs/vision/common.md` Redesign from First Principles): existing Plite components, Plate APIs, and reference editors; source-level editor comparisons consume `research audit` evidence.
+3. Public types, exports, docs, representative call sites, and owning implementation for the target API.
 4. Existing plans and compatibility constraints, only after the ideal target is clear on its own.
 
 ## Decide in two passes
 
 ### 1. The ideal target
 
-Apply the Redesign from First Principles method in `docs/vision/common.md` in full, and the API taste order in its Taste section.
+Apply Redesign from First Principles and the Taste order in `docs/vision/common.md`.
 
-Show concrete call sites with their real public imports before naming abstractions: the normal path, one realistic customization path, and an advanced path only when a real job needs it. If the normal path needs explanation before it reads naturally, the API is not done. Resolve where every public noun is owned and imported from: root, feature entrypoint, registry or app. A short call site with the wrong owner is still a bad API.
+Show concrete call sites with real public imports before naming abstractions: the normal path, one customization path, and an advanced path only when a real job needs it. If the normal path needs explanation before it reads naturally, the API is not done. Resolve each public noun's real import owner (root, feature entrypoint, registry, or app); a short call site with the wrong owner is still wrong.
 
-**Hard-cut gate.** Treat every touched noun, namespace, plugin, abstraction, owner, layer and package as a candidate for deletion:
+**Hard-cut gate.** Treat every touched noun, namespace, plugin, abstraction, owner, layer, and package as a deletion candidate:
 
-1. Test deleting it and routing its current jobs through an existing canonical owner.
-2. Test merging or inlining it when deletion would leave only private mechanics.
-3. Look one owner above the named surface. Ask whether the capability is merely an input adapter, view, query, policy or payload of an authority that already exists.
-4. Keep it only when a hard correctness, security, serialized-data, native-behavior or runtime law requires the boundary, the user explicitly requires it, or source proves an independent current user job.
-5. Select the largest deletion cone that preserves those laws and jobs. Name the single surviving authority and any private adapter that still earns its keep.
+1. Test deleting it and routing its jobs through an existing canonical owner.
+2. Test merging or inlining it if deletion leaves only private mechanics.
+3. Look one owner above: check whether it is only an input adapter, view, query, policy, or payload of an existing authority.
+4. Keep it only when a hard correctness, security, serialized-data, native-behavior, or runtime law requires the boundary, the user requires it, or source proves an independent current user job.
+5. Select the largest deletion cone that keeps those laws and jobs. Name the surviving authority and any private adapter that earns its keep.
 
-Call count, implementation size, tests, docs, compatibility, migration cost and an accepted plan do not prove independent ownership; they change the adoption order only. A review is incomplete if it recommends renaming, moving, or wrapping a surface that can disappear. For harsh honest feedback, lead with the strongest materially justified cut, even when it invalidates the current plan.
+Call count, code size, tests, docs, compatibility, migration cost, and accepted plans never prove independent ownership; they only affect adoption order. A review that renames, moves, or wraps something that can disappear is incomplete. For harsh honest feedback, lead with the strongest materially justified cut even if it invalidates the current plan.
 
 ### 2. Reality check
 
-Then inspect current ownership, runtime truth, adoption, inference and breaking cost, with the ideal target still visible. Prefer a staged hard cut over a permanent hybrid. Never silently downgrade the target because the code already holds a registry, profile, lifecycle, builder, alias or accepted plan.
+Inspect current ownership, runtime truth, adoption, inference, and breaking cost while keeping the ideal target visible. Prefer a staged hard cut over a permanent hybrid. Never downgrade the target because existing code holds a registry, profile, lifecycle, builder, alias, or accepted plan.
 
-Implementation difficulty never gets a vote in the API verdict. When a compiler limit, declaration emit, compatibility or a deadline blocks the ideal call site, keep it as the recommendation, trace the blocker to its owning generic, layer or package contract, and name the durable repair there. Reject casts, annotations, aliases, wrappers, markers, carriers or parallel APIs whose only job is to avoid that repair. If an existing containment must remain while another owner is repaired, label it temporary debt with a deletion proof; it is never the selected API or completion evidence.
+Implementation difficulty gets no vote. If a compiler limit, declaration emit, compatibility constraint, or deadline blocks the ideal call site, keep the ideal recommendation, trace the blocker to its owning generic, layer, or package contract, and name the durable repair there. Reject casts, annotations, aliases, wrappers, markers, carriers, or parallel APIs built only to dodge that repair. Mark any temporary containment as debt with a deletion proof, never as the chosen API.
 
-A target that adds, retains or changes hot runtime work stays provisional until Benchmark's pre-acceptance probe passes. Call syntax may settle without the probe only when live source proves the competing shapes share one runtime law and the verdict retains no runtime machinery. Type-only and zero-runtime work may record N/A with that source evidence.
+A target that adds, retains, or alters hot runtime work stays provisional until Benchmark's pre-acceptance probe passes. Call syntax settles without the probe only when live source proves competing shapes share one runtime law and retain no extra runtime machinery (or type-only/zero-runtime work records source-backed N/A).
 
 ### Bounded exhaustiveness
 
-When a design or review question touches colocation, inlining, helper survival, file topology or "the full list", build the architecture reference's Audit manifest for the complete bounded owner (`.agents/playbooks/references/architecture.md#audit`) before recommending a cleanup.
+When a design or review touches colocation, inlining, helper survival, file topology, or "the full list", build the Audit manifest in `.agents/playbooks/references/architecture.md#audit` for the full bounded owner before recommending cleanup.
 
 ## Review questions
 
-- What is the user trying to say, and does the call site say exactly that?
-- What is the real import path for every noun, and is that layer its honest owner?
-- Can an owner noun leave a scoped API, can nesting become a flat domain verb, and can inference remove a type, cast, helper or duplicated contract?
-- Is a customization path paying for an advanced case on every basic call? Search examples and docs for a placeholder value of a required option, such as the same ID in every demo; each one is a basic call paying for that case.
-- Were invariant, parameter, substitutable capability and app policy classified before a plugin was proposed?
-- Does the API remain coherent after three plausible future additions?
-- Can an agent find the canonical path from types, JSDoc and one example?
-- What is the maximum justified deletion cone, and which survivor has hard-law or independent-current-job evidence?
-- Am I selecting a workaround because the durable owner repair is harder?
-- When a guard's input widens for a new case, do existing guards, third-party ones included, still decide that case correctly unchanged? An optional field they ignore fails open; prefer a shape they already read, such as the actual landing parent, or an opt-in.
-- Do the exported types promise exactly what the runtime accepts: no option the runtime honors hidden behind a narrower type, and no parameter typed required that the runtime treats as optional?
+- Does the call site say directly what the user means, with honest import paths?
+- Can an owner noun drop from a scoped API, nesting flatten into a domain verb, and inference remove a type, cast, helper, or duplicated contract?
+- Is a basic call paying for an advanced option? Search examples and docs for repeated placeholder required options (such as identical IDs in every demo).
+- Were invariant, parameter, substitutable capability, and app policy separated before proposing a plugin?
+- Does the API stay coherent after three plausible future additions, and can an agent find the canonical path from types, JSDoc, and one example?
+- What is the largest justified deletion cone, and which survivor has hard-law or independent-job proof?
+- Am I picking a workaround because the durable owner repair is harder?
+- When a guard's input widens, do unchanged existing and third-party guards still decide safely (fail closed rather than ignoring a new optional field)? Prefer a shape they already read or an opt-in.
+- Do exported types match runtime acceptance exactly (no hidden runtime options behind narrower types, no required types the runtime treats as optional)?
 
-Do not preserve a weaker proposal because it is more elaborate, more generic, more observable, or already documented.
+Never preserve a weaker proposal because it is more elaborate, generic, observable, or already documented.
 
 ## Output
 
-Lead with one recommendation, not a menu. For harsh honest feedback, the first sentence states the maximum materially justified cut.
+Lead with one recommendation, not a menu (for harsh honest feedback, open with the largest materially justified cut).
 
-`design` and `review` return the verdict and deletion cone; ideal call sites with exact public import paths; current source and caller evidence; why the target is the simplest truthful model; the alternatives rejected, with retention evidence for every surviving public concept; ownership by layer and the runtime and safety laws kept; the pre-acceptance scale receipt or source-backed zero-runtime N/A; breaking and adoption impact; the verification run; and the exact next owner. A `review` gives each finding its P0 to P3 priority.
+`design` and `review` return: verdict and deletion cone; ideal call sites with exact public imports; current source and caller evidence; why this model is simplest and truthful; rejected alternatives with retention proof per surviving concept; ownership by layer and preserved laws; pre-acceptance scale receipt or zero-runtime N/A; breaking/adoption impact; verification run; and next owner. `review` assigns P0 to P3 priority to each finding.
 
 ## Repair
 
-Run `repair` when the user corrects an API recommendation in a reusable way, when an accepted design sets or rejects a reusable public API principle, or when a change removes, renames or reinterprets a reusable public API or its canonical pattern. This is an automatic closeout subtask of the API change. In a read-only request, report the exact repair instead of writing it. When the same API mistake comes back a second time, run `/pstack:correct` on its class first, so a type, lint or check stops it before doctrine text changes.
+Run `repair` whenever the user makes a reusable API correction, an accepted design sets or rejects a public API principle, or a change removes, renames, or reinterprets a reusable public API (report instead of editing in read-only requests). On a second occurrence of the same API mistake, run `/pstack:correct` first so a type, lint, or check blocks it before doctrine prose changes.
 
-1. Check the correction against live source and the rule's current owner. When it names an API the source lacks or contradicts settled law, stop the repair and run `verdict` on the correction, because changing settled law is a review question, not a repair.
-2. Edit the rule's one owner: the scope's subject file, `docs/plans/topics/<scope>.md`, for a call shape or decision that binds one scope, or `VISION.md` or `docs/vision/**` for a principle that binds several.
-3. Search every artifact that teaches the contract, its skills, examples, recipes, checks, docs, generated mirrors and generated reference output, such as the API reference manifest, for the rejected names, examples, and call shapes. Run `node tooling/scripts/teaching-sweep.mjs <API name> [...]` for that search instead of a hand-written grep. It splits each ASCII name into words at case changes and acronyms, matches those words in any case with at most one word between them, and lists every Chinese twin of an English docs hit. It groups hits as live, generated, release notes and history. History needs no change. It holds decision logs, review records, package changelogs and plans whose every status label marks them finished, superseded or cancelled. Fix live hits, regenerate generated ones, and fix release notes that have not shipped. Read each twin around its English hit, and the prose of every page it hits, because a paraphrase without the name's words, or a translated one, matches nothing. When a generator fails at the base, regenerate its output as `verify`'s command recipes say, or list the stale output as open work in the plan's Close. Update only skills that teach or enforce the changed contract, remove contradictions, and link the Vision owner instead of copying the doctrine.
-4. Regenerate skills and their resources per the pstack block's Agent files rule.
-5. Forward-test the affected action on a real API without seeding the expected answer.
+1. Verify the correction against live source and the rule's current owner. If it names a missing API or contradicts settled law, stop and run `verdict` on it.
+2. Edit the rule's single owner: `docs/plans/topics/<scope>.md` for one scope, or `VISION.md` / `docs/vision/**` for multi-scope principles.
+3. Sweep every teaching artifact with `node tooling/scripts/teaching-sweep.mjs <API name> [...]` (never a hand-written grep). It splits ASCII names into words, lists Chinese twins of English docs hits, and groups hits into live, generated, release notes, and history. Skip history (decision logs, review records, package changelogs, finished/superseded/cancelled plans). Fix live hits, regenerate generated outputs (or record failing base generators in plan Close), fix unshipped release notes, and read surrounding English and Chinese prose for paraphrases. Update only skills teaching or enforcing the changed contract, and link the Vision owner instead of duplicating doctrine.
+4. Run `pnpm run prepare` and verify mirrors per `AGENTS.md`.
+5. Forward-test the changed contract on a real API without seeding the answer.
 
-Do not call the API migration complete while an owning or dependent skill still teaches the rejected shape. Do not turn product-specific decisions into universal rules. A rule that every long-running workflow needs goes to `AGENTS.md` or the block's shared source, never here.
+Never call an API migration done while a skill still teaches the rejected shape. Never turn product-specific calls into universal rules, and put generic workflow rules in `AGENTS.md` or dotai, not here.
 
 ## Stop
 
-Stop API design when one target clearly wins and its unresolved questions are implementation/proof questions. Route them to the Plan playbook or the owning package. Do not implement product API changes unless the user explicitly asks and the owning execution skill is loaded.
+Stop once one target wins and remaining questions are implementation or proof work; route those to the Plan playbook or owning package. Do not implement product API changes unless explicitly asked with the execution owner loaded.
