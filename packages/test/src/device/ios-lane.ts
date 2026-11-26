@@ -378,7 +378,7 @@ export const createIosDriver = ({
     }),
     errors,
     keyboard: ({ gesture }) => {
-      const press = (label: string, key: DeviceWitnessKey) =>
+      const tapKey = (label: string, key: DeviceWitnessKey) =>
         gesture({ key, kind: 'key', label }, async () => {
           const { label: tapped = label } = await send({
             action: 'key',
@@ -389,6 +389,18 @@ export const createIosDriver = ({
             ? undefined
             : { key: tapped, kind: 'key', label: tapped };
         });
+      // A key on another panel is two switches away at most. Each switch is a
+      // step of its own, because the one to the symbols panel sits where Shift
+      // does and sends Shift's keydown.
+      const press = async (label: string, key: DeviceWitnessKey) => {
+        for (let switches = 0; switches < 2; switches++) {
+          const { panelSwitch } = await send({ action: 'find', label });
+
+          if (!panelSwitch) break;
+          await tapKey(panelSwitch, panelSwitch === 'symbols' ? 'Shift' : null);
+        }
+        await tapKey(label, key);
+      };
 
       return {
         languages: ['en'],
@@ -412,15 +424,7 @@ export const createIosDriver = ({
           for (const character of text) {
             const named = NAMED_KEYS[character];
 
-            if (named) {
-              await press(named.label, named.key);
-            } else if (/^\p{L}$/u.test(character)) {
-              await press(character, character);
-            } else {
-              throw new Error(
-                `The iPhone lane types letters, space, Backspace and Enter; "${character}" needs another keyboard panel.`
-              );
-            }
+            await press(named?.label ?? character, named?.key ?? character);
           }
         },
         use: async (language) => {
@@ -444,6 +448,9 @@ export const createIosDriver = ({
       },
     },
     screen: {
+      doubleTap: async (css) => {
+        await send({ action: 'doubleTap', ...(await webPoint(css)) });
+      },
       press: async (css, ms) => {
         await send({ action: 'press', ms, ...(await webPoint(css)) });
       },

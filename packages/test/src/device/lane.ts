@@ -113,6 +113,7 @@ export type DevicePage = {
 
 /** Touches at CSS points of the current page's layout viewport. */
 export type DeviceScreen = {
+  doubleTap: (point: Point) => Promise<void>;
   press: (point: Point, ms: number) => Promise<void>;
   afterLoad: () => Promise<void>;
   tap: (point: Point) => Promise<void>;
@@ -205,6 +206,7 @@ export type DeviceEditor = Pick<
   childRoot: (key: string) => DeviceEditor;
   selection: Pick<BrowserEditorHarness['selection'], 'get'>;
   touch: {
+    doubleTap: (point: SelectionPoint) => Promise<void>;
     press: (point: SelectionPoint, ms?: number) => Promise<void>;
     pressPastEnd: (path: number[], ms?: number) => Promise<void>;
     tap: (point: SelectionPoint) => Promise<void>;
@@ -233,6 +235,7 @@ export type DeviceLane = {
   openExample: (example: string) => Promise<DeviceEditor>;
   openWww: (path: string) => Promise<DeviceEditor>;
   knownFailure: <T>(failure: DeviceKnownFailure<T>) => Promise<void>;
+  platform: DeviceRunState['platform'];
   read: {
     focus: () => Promise<DeviceFocusSnapshot>;
     viewport: () => Promise<DeviceViewportSnapshot>;
@@ -613,6 +616,13 @@ export const createDeviceLane = ({
       selection: { get: () => takeSelectionSnapshotForRoot(editorRoot) },
       snapshot: () => snapshotEditor(get),
       touch: {
+        doubleTap: (point) =>
+          touchText(
+            'double-tap',
+            point.path,
+            point.offset,
+            driver.screen.doubleTap
+          ),
         press: (point, ms = 600) =>
           touchText('press', point.path, point.offset, (css) =>
             driver.screen.press(css, ms)
@@ -752,6 +762,7 @@ export const createDeviceLane = ({
         type: 'known-product-failure',
       });
     },
+    platform: state.platform,
     read: {
       focus: () =>
         driver.page.find({ css: 'body' }).evaluate(() => {

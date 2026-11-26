@@ -613,6 +613,11 @@ export const createAndroidDriver = ({
       },
     },
     screen: {
+      doubleTap: async (css) => {
+        const point = await toScreen(css);
+
+        touch.doubleTap(point.x, point.y);
+      },
       press: async (css, ms) => {
         const point = await toScreen(css);
 

@@ -5,6 +5,7 @@ import type { AddressInfo } from 'node:net';
 
 export type RunnerCommand =
   | { action: 'activate' }
+  | { action: 'doubleTap'; x: number; y: number }
   | {
       action: 'drag';
       holdMs: number;
@@ -13,6 +14,7 @@ export type RunnerCommand =
       y1: number;
       y2: number;
     }
+  | { action: 'find'; label: string }
   | { action: 'key'; label: string }
   | { action: 'frame'; label: string }
   | { action: 'keyboard' }
@@ -25,6 +27,7 @@ export type RunnerReply = {
   /** The key label the runner tapped, which Shift can capitalize. */
   label?: string;
   ok: boolean;
+  panelSwitch?: string;
   shown?: boolean;
   /** Where the labeled element starts, in web view points. */
   x?: number;

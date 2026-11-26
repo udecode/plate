@@ -343,6 +343,13 @@ export const createDeviceTouch = (serial: string) => ({
     }
     event('UP', to);
   },
+  // Chrome takes two taps as a double tap only when the second lands 40 to
+  // 300 ms after the first, so one shell runs both with a fixed gap.
+  doubleTap: (x: number, y: number) => {
+    const tap = ['input', 'tap', String(Math.round(x)), String(Math.round(y))];
+
+    shell(serial, ...tap, '&&', 'sleep', '0.1', '&&', ...tap);
+  },
   move: (from: [number, number], to: [number, number], ms = 300) => {
     shell(
       serial,
