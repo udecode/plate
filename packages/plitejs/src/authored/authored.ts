@@ -1355,13 +1355,14 @@ export const createAuthoredPlugin = (
     options.createTagId ??
     (() => crypto.randomUUID().replaceAll('-', '').slice(0, 12));
   const now = options.now ?? Date.now;
-  const incarnationToken = crypto.randomUUID().slice(0, 8);
+  let incarnationToken: string | undefined;
   let incarnations = 0;
   // Two peers can propose one decided id again in the same millisecond, so a
   // new incarnation names the runtime that minted it.
   const createIncarnationId =
     options.createIncarnationId ??
     (() => {
+      incarnationToken ??= crypto.randomUUID().slice(0, 8);
       incarnations += 1;
 
       return `${incarnationToken}:${incarnations}`;
