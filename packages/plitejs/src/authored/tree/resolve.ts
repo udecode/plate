@@ -2506,6 +2506,36 @@ const resolveIn = (
     return [node, ...(line ? movedWith(line) : [])];
   };
 
+  const ownJoinWaits = (previous: Node, previousIndex: number) => {
+    const target = finalOf(previous);
+
+    if (emptiedTargets.has(target) || placedAfter.has(standingOf(target))) {
+      return true;
+    }
+
+    for (let at = previousIndex - 1; at >= 0; at -= 1) {
+      const middle = getDefined(blocks[at]);
+
+      if (middle.node === target) return false;
+
+      const emptiedDepth = emptiedDepthOf(middle.ancestors);
+      const emptiedHost =
+        emptiedDepth >= 0 ? middle.ancestors[emptiedDepth] : undefined;
+
+      if (
+        (survives(middle.node) &&
+          !mergedInto.has(middle.node) &&
+          !placed.has(middle.node) &&
+          !standsIn.has(middle.node)) ||
+        (emptiedHost !== undefined && !structureOf(emptiedHost).unwrap)
+      ) {
+        return true;
+      }
+    }
+
+    return true;
+  };
+
   // A pending join waits on a decision that removes the block it would join.
   blocks.forEach(({ ancestors, node }, index) => {
     const joins = pending(node).filter(
@@ -2531,7 +2561,9 @@ const resolveIn = (
 
     if (!previous) return;
     if (mergedInto.has(previous)) {
-      waitOnOwn(joins, onAnotherCard);
+      if (ownJoinWaits(previous, before)) {
+        waitOnOwn(joins, onAnotherAuthorsCard);
+      }
     } else if (!survives(previous) || emptiedTargets.has(previous)) {
       waitOnOwn(joins, onAnotherAuthorsCard);
     }

@@ -106,6 +106,10 @@ const isLineBreak = (mark: AuthoredMark) =>
   mark.kind === 'joined' ||
   (mark.kind === 'split' && !isCut(mark));
 
+const isEmptyBlock = (node: Node) =>
+  !isText(node) &&
+  (node.children ?? []).every((child) => isText(child) && !child.text);
+
 // Content also touches across an inline edge, such as text that runs out of a
 // link, when one end's text sits in the other's parent.
 /** @internal */
@@ -113,7 +117,8 @@ export const touches = (left: Occurrence, right: Occurrence) => {
   if (left.root !== right.root) return false;
   if (
     left.path.join(',') === right.path.join(',') ||
-    isNextSibling(left.path, right.path)
+    ((!isLineBreak(left.mark) || isEmptyBlock(left.node)) &&
+      isNextSibling(left.path, right.path))
   ) {
     return true;
   }
