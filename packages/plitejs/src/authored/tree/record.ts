@@ -4948,8 +4948,13 @@ class RootRecorder {
     const withInserted = (props: Props, added: readonly AuthoredMark[]) =>
       this.withMarks(withoutSpares(props), [...this.marks(props), ...added]);
     const insertedLeaves = new Set<Context>();
+    // A suggested drag lands as the mover's insertion, as Google Docs lands a
+    // dragged struck word, while its source keeps every deletion. An Editing
+    // drag strikes no source, so struck content keeps its deletions as it goes.
     const landed = (props: Props) => {
-      const marks = this.withoutCuts(props);
+      const marks = this.withoutCuts(props).filter(
+        (mark) => this.isEditing || mark.kind !== 'delete'
+      );
 
       return this.withMarks(withoutSpares(props), [
         ...marks,
