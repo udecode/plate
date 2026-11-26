@@ -1,11 +1,7 @@
-import { createStore } from 'jotai/vanilla';
 import React from 'react';
 
 import type { Element, ElementEntry, Path } from '../../../facade';
 import type { Nullable } from '../../../lib/types/Nullable';
-import { createAtomStore } from '../../libs/jotai';
-
-export const SCOPE_ELEMENT = 'element';
 
 export type ElementStoreState = {
   element: Element;
@@ -25,13 +21,11 @@ type ElementStoreContextValue = {
   parent: ElementStoreContextValue | null;
   runtime: ElementRuntimeStore;
   scope?: string;
-  store: ReturnType<typeof createStore>;
 };
 
 type ElementRuntimeState = Nullable<ElementStoreState>;
 
 type ElementRuntimeStore = {
-  getJotaiStore: () => ReturnType<typeof createStore>;
   getState: () => ElementRuntimeState;
   setState: (nextState: ElementRuntimeState) => void;
   subscribe: (listener: () => void) => () => void;
@@ -43,13 +37,6 @@ const initialState: Nullable<ElementStoreState> = {
   path: null,
 };
 
-const { elementStore, useElementStore: useElementStoreAtom } = createAtomStore(
-  initialState as ElementStoreState,
-  { name: 'element', suppressWarnings: true } as const
-);
-
-export { elementStore };
-
 const ElementStoreContext =
   React.createContext<ElementStoreContextValue | null>(null);
 let currentElementContext: RenderElementContextValue | null = null;
@@ -57,45 +44,13 @@ let currentElementContext: RenderElementContextValue | null = null;
 const subscribeToEmptyElementRuntime = () => () => {};
 const getEmptyElementRuntimeState = () => initialState;
 
-const syncElementStore = (
-  store: ReturnType<typeof createStore>,
-  nextState: ElementRuntimeState,
-  prevState?: ElementRuntimeState
-) => {
-  if (!prevState || !Object.is(prevState.element, nextState.element)) {
-    store.set(elementStore.atom.element, nextState.element as any);
-  }
-  if (!prevState || !Object.is(prevState.entry, nextState.entry)) {
-    store.set(elementStore.atom.entry, nextState.entry as any);
-  }
-  if (!prevState || !Object.is(prevState.path, nextState.path)) {
-    store.set(elementStore.atom.path, nextState.path as any);
-  }
-};
-
-const createElementJotaiStore = (state: ElementRuntimeState) => {
-  const store = createStore();
-
-  syncElementStore(store, state);
-
-  return store;
-};
-
 const createElementRuntimeStore = (
   innerInitialState: ElementRuntimeState
 ): ElementRuntimeStore => {
-  let jotaiStore: ReturnType<typeof createStore> | null = null;
   const listeners = new Set<() => void>();
   let state = innerInitialState;
 
   return {
-    getJotaiStore: () => {
-      if (!jotaiStore) {
-        jotaiStore = createElementJotaiStore(state);
-      }
-
-      return jotaiStore;
-    },
     getState: () => state,
     setState: (nextState) => {
       if (
@@ -106,12 +61,7 @@ const createElementRuntimeStore = (
         return;
       }
 
-      const prevState = state;
       state = nextState;
-
-      if (jotaiStore) {
-        syncElementStore(jotaiStore, nextState, prevState);
-      }
 
       listeners.forEach((listener) => {
         listener();
@@ -220,18 +170,6 @@ export const useElementStoreContext = (scope?: string) => {
   return context;
 };
 
-export const useElementStore = (scope?: string) => {
-  const context = useElementStoreContext(scope);
-  const storeOptions = context
-    ? ({
-        scope,
-        store: context.store,
-      } as const)
-    : scope;
-
-  return useElementStoreAtom(storeOptions);
-};
-
 export function ElementProvider({
   children,
   path,
@@ -258,9 +196,6 @@ export function ElementProvider({
       parent: parentStore,
       runtime,
       scope,
-      get store() {
-        return runtime.getJotaiStore();
-      },
     }),
     [parentStore, runtime, scope]
   );

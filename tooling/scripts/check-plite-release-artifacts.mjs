@@ -614,11 +614,14 @@ export function auditPackedPackage({
     ...Object.keys(packageJson.peerDependencies ?? {}),
   ]);
   const allowedPlatePackages = new Set(allowedPlateRuntime);
+  const usedDependencies = new Set();
 
   for (const specifier of collectPackedExternalImports(files, packageJson)) {
     const dependencyName = getDependencyName(specifier);
 
     if (builtins.has(specifier) || builtins.has(dependencyName)) continue;
+
+    usedDependencies.add(dependencyName);
 
     if (!runtimeDeclarations.has(dependencyName)) {
       errors.push(
@@ -635,6 +638,29 @@ export function auditPackedPackage({
     ) {
       errors.push(
         `${specifier}: violates the ${packageJson.name} package direction`
+      );
+    }
+  }
+
+  for (const specifier of collectPackedDeclarationExternalImports(files)) {
+    const dependencyName = getDependencyName(specifier);
+
+    if (builtins.has(specifier) || builtins.has(dependencyName)) continue;
+
+    usedDependencies.add(dependencyName);
+  }
+
+  for (const dependencyName of Object.keys(packageJson.dependencies ?? {}).sort(
+    compareStrings
+  )) {
+    const typesTarget = getTypesTargetPackage(dependencyName);
+    const isUsed =
+      usedDependencies.has(dependencyName) ||
+      (typesTarget !== null && usedDependencies.has(typesTarget));
+
+    if (!isUsed) {
+      errors.push(
+        `${dependencyName}: declared in dependencies but unused by packed runtime and declaration imports`
       );
     }
   }
@@ -1892,6 +1918,26 @@ function collectPackedExternalImports(files) {
   return [...imports].sort(compareStrings);
 }
 
+function collectPackedDeclarationExternalImports(files) {
+  const imports = new Set();
+
+  for (const file of files) {
+    if (!file.path.endsWith('.d.ts')) continue;
+
+    for (const specifier of collectDeclarationImportSpecifiers(file.source)) {
+      if (
+        !specifier.startsWith('.') &&
+        !specifier.startsWith('/') &&
+        !specifier.includes(':')
+      ) {
+        imports.add(specifier);
+      }
+    }
+  }
+
+  return [...imports].sort(compareStrings);
+}
+
 function auditDeclarationImports(files) {
   const packedFiles = new Set(files.map(normalizePackedPath));
   const errors = [];
@@ -2051,6 +2097,14 @@ function getDependencyName(specifier) {
   const parts = specifier.split('/');
 
   return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+}
+
+function getTypesTargetPackage(dependencyName) {
+  if (!dependencyName.startsWith('@types/')) return null;
+
+  const target = dependencyName.slice('@types/'.length);
+
+  return target.includes('__') ? `@${target.replace('__', '/')}` : target;
 }
 
 function normalizePackedPath(value) {

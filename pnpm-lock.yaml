@@ -754,15 +754,6 @@ importers:
       is-hotkey:
         specifier: ^0.2.0
         version: 0.2.0
-      jotai:
-        specifier: ~2.8.4
-        version: 2.8.4(@types/react@19.2.7)(react@19.2.8)
-      jotai-optics:
-        specifier: 0.4.0
-        version: 0.4.0(jotai@2.8.4(@types/react@19.2.7)(react@19.2.8))(optics-ts@2.4.1)
-      jotai-x:
-        specifier: 2.3.4
-        version: 2.3.4(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.8))(react@19.2.8)
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -781,9 +772,6 @@ importers:
       nanoid:
         specifier: ^5.1.5
         version: 5.1.6
-      optics-ts:
-        specifier: 2.4.1
-        version: 2.4.1
       parse5:
         specifier: ^8.0.1
         version: 8.0.1
@@ -944,9 +932,6 @@ importers:
 
   packages/plitejs:
     dependencies:
-      '@noble/hashes':
-        specifier: ^1.8.0
-        version: 1.8.0
       csstype:
         specifier: 3.2.3
         version: 3.2.3
@@ -5878,7 +5863,6 @@ packages:
 
   bun@1.4.4:
     resolution: {integrity: sha512-hj0ASdG6PNjLZGFAXktWb3Uaj/dcv/1wCsIttoEXADNIQBsGjTr+5uLKYbrDkuc7NT0Tkj4yPIqJI2jDxXdvVg==}
-    cpu: [arm64, x64]
     os: [darwin, linux, android, freebsd, win32]
     hasBin: true
 
@@ -8058,12 +8042,6 @@ packages:
   jose@6.2.18:
     resolution: {integrity: sha512-doV4thUwgkrycJH4yLeqwTGIIZphHl+pk7CPReuMIhYhncmgzdko85MaCG4YQFTxqMFr1/oEH32tZuKKovcDEg==}
 
-  jotai-optics@0.4.0:
-    resolution: {integrity: sha512-osbEt9AgS55hC4YTZDew2urXKZkaiLmLqkTS/wfW5/l0ib8bmmQ7kBXSFaosV6jDDWSp00IipITcJARFHdp42g==}
-    peerDependencies:
-      jotai: '>=2.0.0'
-      optics-ts: '>=2.0.0'
-
   jotai-scope@0.7.2:
     resolution: {integrity: sha512-Gwed97f3dDObrO43++2lRcgOqw4O2sdr4JCjP/7eHK1oPACDJ7xKHGScpJX9XaflU+KBHXF+VhwECnzcaQiShg==}
     peerDependencies:
@@ -9172,9 +9150,6 @@ packages:
         optional: true
       zod:
         optional: true
-
-  optics-ts@2.4.1:
-    resolution: {integrity: sha512-HaYzMHvC80r7U/LqAd4hQyopDezC60PO2qF5GuIwALut2cl5rK1VWHsqTp0oqoJJWjiv6uXKqsO+Q2OO0C3MmQ==}
 
   option@0.2.4:
     resolution: {integrity: sha512-pkEqbDyl8ou5cpq+VsnQbe/WlEy5qS7xPzMS1U55OCG9KPvwFD46zDbxQIj3egJSFc3D+XhYOPUzz49zQAVy7A==}
@@ -18503,11 +18478,6 @@ snapshots:
 
   jose@6.2.18: {}
 
-  jotai-optics@0.4.0(jotai@2.8.4(@types/react@19.2.7)(react@19.2.8))(optics-ts@2.4.1):
-    dependencies:
-      jotai: 2.8.4(@types/react@19.2.7)(react@19.2.8)
-      optics-ts: 2.4.1
-
   jotai-scope@0.7.2(jotai@2.11.0(@types/react@19.2.7)(react@19.2.8))(react@19.2.8):
     dependencies:
       jotai: 2.11.0(@types/react@19.2.7)(react@19.2.8)
@@ -19961,8 +19931,6 @@ snapshots:
     optionalDependencies:
       ws: 8.21.0
       zod: 4.6.6
-
-  optics-ts@2.4.1: {}
 
   option@0.2.4: {}
 
