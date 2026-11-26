@@ -397,22 +397,104 @@ const withoutUnchangedTail = (
       });
 };
 
+const keptCloseOffsets = (
+  slice: PreparedTokenSlice,
+  kept: number
+): ReadonlyArray<number | undefined> => {
+  const closes = new Array<number | undefined>(kept);
+  const { offsets, tokens } = slice;
+  let depth = kept;
+
+  for (let index = kept; index < tokens.length && depth > 0; index += 1) {
+    const { kind } = tokens[index];
+
+    if (kind === 'open') {
+      depth += 1;
+    } else if (kind === 'close') {
+      depth -= 1;
+      if (depth < kept) closes[depth] ??= offsets[index];
+    }
+  }
+
+  return closes;
+};
+
+const closesWhatItOpens = ({ tokens }: PreparedTokenSlice) => {
+  let depth = 0;
+
+  for (const { kind } of tokens) {
+    if (kind === 'open') {
+      depth += 1;
+    } else if (kind === 'close') {
+      depth -= 1;
+      if (depth < 0) return false;
+    }
+  }
+
+  return depth === 0;
+};
+
+const splitAtKeptCloses = (
+  { from, insert, to }: FitSection,
+  replaced: PreparedTokenSlice,
+  kept: number
+) => {
+  const replacedCloses = keptCloseOffsets(replaced, kept);
+  const insertCloses = keptCloseOffsets(insert, kept);
+  const changes: FitSection[] = [];
+  let replacedFrom = kept;
+  let insertFrom = kept;
+  const replace = (replacedTo: number, insertTo: number) => {
+    if (replacedFrom === replacedTo && insertFrom === insertTo) return;
+    changes.push(
+      Object.freeze({
+        from: from + replacedFrom,
+        insert: insert.slice(insertFrom, insertTo),
+        to: from + replacedTo,
+      })
+    );
+  };
+
+  for (let level = kept - 1; level >= 0; level -= 1) {
+    const replacedClose = replacedCloses[level];
+    const insertClose = insertCloses[level];
+
+    if (replacedClose === undefined || insertClose === undefined) break;
+    replace(replacedClose, insertClose);
+    replacedFrom = replacedClose + 1;
+    insertFrom = insertClose + 1;
+  }
+
+  if (
+    !closesWhatItOpens(replaced.slice(replacedFrom, to - from)) ||
+    !closesWhatItOpens(insert.slice(insertFrom))
+  ) {
+    return [
+      Object.freeze({ from: from + kept, insert: insert.slice(kept), to }),
+    ];
+  }
+  replace(to - from, insert.length);
+
+  return changes;
+};
+
 const keepRewrittenHead = (
   document: DocumentIndex,
   change: FitSection
 ): Readonly<{
-  change: FitSection;
+  changes: readonly FitSection[];
   properties: readonly RootChangeSection[];
 }> => {
   const { from, insert, to } = change;
-  const unchanged = { change, properties: [] };
+  const unchanged = { changes: [change], properties: [] };
 
   if (to === from || insert.length === 0) return unchanged;
+  const replaced = document.slice(from, to);
   const ownKeys = getDocumentSliceNodeKeys(insert);
   const properties: RootChangeSection[] = [];
   let head = 0;
 
-  for (const token of document.slice(from, to).tokens) {
+  for (const token of replaced.tokens) {
     const landed = insert.tokens[head];
 
     if (
@@ -440,16 +522,10 @@ const keepRewrittenHead = (
     head += 1;
   }
 
-  return head === 0 || trimsEverything(head, change)
-    ? unchanged
-    : {
-        change: Object.freeze({
-          from: from + head,
-          insert: insert.slice(head),
-          to,
-        }),
-        properties,
-      };
+  if (head === 0) return unchanged;
+  const changes = splitAtKeptCloses(change, replaced, head);
+
+  return changes.length === 0 ? unchanged : { changes, properties };
 };
 
 const lookAlikeChange = (
@@ -4502,9 +4578,12 @@ export const compileSliceFitter = <V extends Value>(
       !exactBounds &&
       options.target.byLook !== 'commit'
         ? fitSections(fittedCandidate).flatMap((section) => {
-            const { change, properties } = keepRewrittenHead(document, section);
+            const { changes, properties } = keepRewrittenHead(
+              document,
+              section
+            );
 
-            return [...properties, change];
+            return [...properties, ...changes];
           })
         : null;
     const materializedCandidate =
@@ -4517,7 +4596,7 @@ export const compileSliceFitter = <V extends Value>(
       !sections &&
       !materializedCandidate.semanticChange
         ? keepRewrittenHead(document, materializedCandidate)
-        : { change: materializedCandidate, properties: [] };
+        : { changes: [materializedCandidate], properties: [] };
     const candidate = materializedCandidate.preparation
       ? Object.freeze({
           ...materializedCandidate,
@@ -4525,7 +4604,7 @@ export const compileSliceFitter = <V extends Value>(
             materializedCandidate.preparation,
             sections?.flatMap(({ insert }) =>
               insert && insert.length > 0 ? [insert] : []
-            ) ?? [plain.change.insert]
+            ) ?? plain.changes.map(({ insert }) => insert)
           ),
         })
       : materializedCandidate;
@@ -4545,11 +4624,11 @@ export const compileSliceFitter = <V extends Value>(
             ).change
           : RootChange.create(document, [
               ...plain.properties,
-              {
-                from: plain.change.from,
-                insert: plain.change.insert,
-                to: plain.change.to,
-              },
+              ...plain.changes.map(({ from, insert, to }) => ({
+                from,
+                insert,
+                to,
+              })),
             ])
     );
     const rootChange = sections
