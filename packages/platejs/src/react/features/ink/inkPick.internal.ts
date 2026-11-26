@@ -3,18 +3,27 @@ import {
   type InkMark,
   type InkTool,
 } from '../../../features/ink/lib';
+import { segmentGap, windsAround } from '../../../internal/penStroke.internal';
 import { type Editor, HistoryPlugin } from '../../core';
 import { inkDraws, inkSamplesOf } from './inkInput.internal';
 import { inkOutlinePoints } from './inkPaint.internal';
 import type { InkPlaced } from './inkPlacement.internal';
+import { InkPlugin } from './InkPlugin';
 
-type Point = readonly [x: number, y: number];
+type Point = Readonly<{ x: number; y: number }>;
 
 type Erasing = {
   last: Point;
   readonly pointerId: number;
   readonly radius: number;
   step: unknown;
+  readonly tool: InkTool;
+};
+
+type Lassoing = {
+  readonly loop: Point[];
+  path: string;
+  readonly pointerId: number;
   readonly tool: InkTool;
 };
 
@@ -27,58 +36,41 @@ type Box = Readonly<{
 
 type Outline = Readonly<{ box: Box; points: readonly Point[] }>;
 
-const metrics = { boxChecks: 0, segmentTests: 0 };
+const metrics = { boxChecks: 0, sampleTests: 0, segmentTests: 0 };
 
 export const getInkPickMetrics = () => Object.freeze({ ...metrics });
 
-const toSegment = ([x, y]: Point, [ax, ay]: Point, [bx, by]: Point) => {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const length = dx * dx + dy * dy;
-  const along =
-    length === 0
-      ? 0
-      : Math.min(1, Math.max(0, ((x - ax) * dx + (y - ay) * dy) / length));
-
-  return Math.hypot(x - ax - along * dx, y - ay - along * dy);
+const LOOP = {
+  fill: 'none',
+  opacity: '1',
+  stroke: 'currentColor',
+  'stroke-dasharray': '4 4',
+  'stroke-width': '1',
 };
 
-const turn = ([ox, oy]: Point, [ax, ay]: Point, [bx, by]: Point) =>
-  Math.sign((ax - ox) * (by - oy) - (ay - oy) * (bx - ox));
+const boxOf = (points: readonly Point[]): Box => {
+  let left = Infinity;
+  let top = Infinity;
+  let right = -Infinity;
+  let bottom = -Infinity;
 
-const apart = (a: Point, b: Point, c: Point, d: Point) =>
-  turn(a, b, c) * turn(a, b, d) < 0 && turn(c, d, a) * turn(c, d, b) < 0
-    ? 0
-    : Math.min(
-        toSegment(a, c, d),
-        toSegment(b, c, d),
-        toSegment(c, a, b),
-        toSegment(d, a, b)
-      );
-
-// SVG fills a path by the nonzero winding rule.
-const fills = ([x, y]: Point, points: readonly Point[]) => {
-  let winding = 0;
-
-  for (let at = 0; at < points.length; at++) {
-    const [ax, ay] = points[at];
-    const [bx, by] = points[(at + 1) % points.length];
-    const side = (bx - ax) * (y - ay) - (x - ax) * (by - ay);
-
-    if (ay <= y && by > y && side > 0) winding += 1;
-    if (ay > y && by <= y && side < 0) winding -= 1;
+  for (const { x, y } of points) {
+    left = Math.min(left, x);
+    right = Math.max(right, x);
+    top = Math.min(top, y);
+    bottom = Math.max(bottom, y);
   }
 
-  return winding !== 0;
+  return { bottom, left, right, top };
 };
 
 const touches = ({ points }: Outline, a: Point, b: Point, radius: number) => {
   metrics.segmentTests += 1;
-  if (fills(a, points)) return true;
+  if (windsAround(points, a)) return true;
 
   return points.some(
     (corner, at) =>
-      apart(a, b, corner, points[(at + 1) % points.length]) <= radius
+      segmentGap(a, b, corner, points[(at + 1) % points.length]) <= radius
   );
 };
 
@@ -87,17 +79,21 @@ export const attachInkPick = ({
   holds,
   layer,
   painted,
+  preview,
   tool,
+  view,
 }: Readonly<{
   editor: Editor;
   holds: (mark: InkMark) => boolean;
   layer: HTMLElement;
   painted: () => InkPlaced['ink'];
+  preview: SVGPathElement;
   tool: () => InkTool | null;
+  view: Editor;
 }>) => {
   const outlines = new Map<InkMark, Outline>();
   let commits = 0;
-  let contact: Erasing | null = null;
+  let contact: Erasing | Lassoing | null = null;
   const unsubscribe = editor.subscribeCommit(() => {
     commits += 1;
   });
@@ -106,19 +102,9 @@ export const attachInkPick = ({
     let outline = outlines.get(mark);
 
     if (!outline) {
-      const points = inkOutlinePoints(mark);
-      let left = Infinity;
-      let top = Infinity;
-      let right = -Infinity;
-      let bottom = -Infinity;
+      const points = inkOutlinePoints(mark).map(([x, y]) => ({ x, y }));
 
-      for (const [x, y] of points) {
-        left = Math.min(left, x);
-        right = Math.max(right, x);
-        top = Math.min(top, y);
-        bottom = Math.max(bottom, y);
-      }
-      outline = { box: { bottom, left, right, top }, points };
+      outline = { box: boxOf(points), points };
       outlines.set(mark, outline);
     }
 
@@ -128,7 +114,7 @@ export const attachInkPick = ({
   const pointOf = ({ clientX, clientY }: PointerEvent): Point => {
     const { left, top } = layer.getBoundingClientRect();
 
-    return [clientX - left, clientY - top];
+    return { x: clientX - left, y: clientY - top };
   };
 
   const erase = (erasing: Erasing, to: Point) => {
@@ -142,14 +128,14 @@ export const attachInkPick = ({
 
         const outline = outlineOf(mark);
         const { box } = outline;
-        const a: Point = [from[0] - dx, from[1] - dy];
-        const b: Point = [to[0] - dx, to[1] - dy];
+        const a = { x: from.x - dx, y: from.y - dy };
+        const b = { x: to.x - dx, y: to.y - dy };
 
         return (
-          Math.min(a[0], b[0]) <= box.right + radius &&
-          Math.max(a[0], b[0]) >= box.left - radius &&
-          Math.min(a[1], b[1]) <= box.bottom + radius &&
-          Math.max(a[1], b[1]) >= box.top - radius &&
+          Math.min(a.x, b.x) <= box.right + radius &&
+          Math.max(a.x, b.x) >= box.left - radius &&
+          Math.min(a.y, b.y) <= box.bottom + radius &&
+          Math.max(a.y, b.y) >= box.top - radius &&
           touches(outline, a, b, radius)
         );
       })
@@ -178,10 +164,58 @@ export const attachInkPick = ({
       commits - before === 1 ? editor.read.history().undos.at(-1) : undefined;
   };
 
+  const lasso = (lassoing: Lassoing, to: Point) => {
+    const last = lassoing.loop.at(-1);
+
+    if (last?.x === to.x && last.y === to.y) return;
+    lassoing.loop.push(to);
+    lassoing.path += `${last ? 'L' : 'M'}${to.x} ${to.y}`;
+    preview.setAttribute('d', `${lassoing.path}Z`);
+  };
+
+  const pick = (loop: readonly Point[]) => {
+    const { bottom, left, right, top } = boxOf(loop);
+    const picks = painted().filter(({ dx, dy, mark }) => {
+      metrics.boxChecks += 1;
+      if (!(mark.brush.size > 0 && mark.brush.opacity > 0)) return false;
+
+      const { box } = outlineOf(mark);
+
+      if (
+        box.left + dx > right ||
+        box.right + dx < left ||
+        box.top + dy > bottom ||
+        box.bottom + dy < top
+      ) {
+        return false;
+      }
+
+      const inside = mark.samples.filter(([x, y]) => {
+        metrics.sampleTests += 1;
+
+        return windsAround(loop, { x: x + dx, y: y + dy });
+      });
+
+      return inside.length > mark.samples.length / 2 && holds(mark);
+    });
+
+    view.plugin(InkPlugin).api.setPicked(picks.map(({ mark }) => mark.id));
+  };
+
+  const end = () => {
+    if (contact && 'loop' in contact) {
+      preview.setAttribute('d', '');
+      for (const name of ['stroke', 'stroke-dasharray', 'stroke-width']) {
+        preview.removeAttribute(name);
+      }
+    }
+    contact = null;
+  };
+
   const holdOrEnd = (event: PointerEvent) => {
     if (event.pointerId !== contact?.pointerId) return null;
     if (tool() === contact.tool) return contact;
-    contact = null;
+    end();
 
     return null;
   };
@@ -190,7 +224,8 @@ export const attachInkPick = ({
     const current = tool();
 
     if (
-      current?.type !== 'erase' ||
+      !current ||
+      current.type === 'draw' ||
       !inkDraws(event, contact !== null) ||
       (event.target instanceof Element &&
         event.target.closest('[data-ink-sign]'))
@@ -201,10 +236,27 @@ export const attachInkPick = ({
     layer.setPointerCapture(event.pointerId);
 
     const point = pointOf(event);
+    const { pointerId } = event;
 
+    if (current.type === 'lasso') {
+      // The prevented press moves no focus, and the keys on the pick act only
+      // in the Editable.
+      if (
+        !view.api.dom.editable()?.contains(layer.ownerDocument.activeElement)
+      ) {
+        view.api.dom.focus();
+      }
+      contact = { loop: [], path: '', pointerId, tool: current };
+      for (const [name, value] of Object.entries(LOOP)) {
+        preview.setAttribute(name, value);
+      }
+      lasso(contact, point);
+
+      return;
+    }
     contact = {
       last: point,
-      pointerId: event.pointerId,
+      pointerId,
       radius: current.size / 2,
       step: undefined,
       tool: current,
@@ -212,22 +264,36 @@ export const attachInkPick = ({
     erase(contact, point);
   };
   const onPointerMove = (event: PointerEvent) => {
-    for (const sample of inkSamplesOf(event)) {
-      const erasing = holdOrEnd(event);
+    // A chord reports the primary button's lift as a move.
+    if (!(event.buttons & 1)) {
+      onPointerCancel(event);
 
-      if (!erasing) return;
-      erase(erasing, pointOf(sample));
+      return;
+    }
+    for (const sample of inkSamplesOf(event)) {
+      const current = holdOrEnd(event);
+
+      if (!current) return;
+      if ('loop' in current) lasso(current, pointOf(sample));
+      else erase(current, pointOf(sample));
     }
   };
   const onPointerUp = (event: PointerEvent) => {
-    const erasing = holdOrEnd(event);
+    const current = holdOrEnd(event);
 
-    if (!erasing) return;
+    if (!current) return;
+    if ('loop' in current) {
+      lasso(current, pointOf(event));
+      end();
+      pick(current.loop);
+
+      return;
+    }
     contact = null;
-    erase(erasing, pointOf(event));
+    erase(current, pointOf(event));
   };
   const onPointerCancel = (event: PointerEvent) => {
-    if (event.pointerId === contact?.pointerId) contact = null;
+    if (event.pointerId === contact?.pointerId) end();
   };
   const listeners = [
     ['pointerdown', onPointerDown],
@@ -242,11 +308,9 @@ export const attachInkPick = ({
   }
 
   return {
-    cancel: () => {
-      contact = null;
-    },
+    cancel: end,
     detach: () => {
-      contact = null;
+      end();
       unsubscribe();
       for (const [type, listener] of listeners) {
         layer.removeEventListener(type, listener);

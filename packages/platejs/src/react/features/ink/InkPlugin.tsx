@@ -1,9 +1,20 @@
 import { BaseInkPlugin, type InkTool } from '../../../features/ink/lib';
+import { readInkSign } from '../../../features/ink/lib/inkPlaces.internal';
 import { toReactPlugin } from '../../core';
+import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
+
+// The key whose press acted on each view's pick, until its next fresh press,
+// so the repeats of a held Backspace never reach the text.
+const heldKeys = new WeakMap<object, string>();
 
 /**
  * Pen markup on a document's text, with each view's Draw tool. A view keeps
  * its own tool, whether it hides ink and signs, and which marks are picked.
+ * While the lasso is on, Backspace or Delete removes the picked marks that
+ * still exist and show no sign in one undo step, and Escape clears the pick,
+ * before the editor handles the key. A key with Alt, Control or Meta, an input
+ * method's key, a key another handler took and the repeats of a key held after
+ * the press that acted stay out of the pick.
  */
 export const InkPlugin = toReactPlugin(BaseInkPlugin, {
   api: ({ editor, viewStore }) => ({
@@ -13,10 +24,11 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
         draft.picked = [...ids];
       });
     },
-    /** Hide or show this view's ink and signs. */
+    /** Hide or show this view's ink and signs. Hiding clears the pick. */
     setHidden: (hidden: boolean) => {
       viewStore.set((draft) => {
         draft.hidden = hidden;
+        if (hidden && draft.picked.length > 0) draft.picked = [];
       });
     },
     /**
@@ -25,10 +37,16 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
      * with an eraser or brush `size` that is not a finite number above 0, a
      * brush `opacity` that is not a number above 0 and at most 1, or a brush
      * `color` that is not a non-empty string.
+     * Any tool but the lasso clears the pick.
      */
     setTool: (tool: InkTool | null) => {
       if (tool !== null) {
-        const size = tool.type === 'erase' ? tool.size : tool.brush.size;
+        const size =
+          tool.type === 'draw'
+            ? tool.brush.size
+            : tool.type === 'erase'
+              ? tool.size
+              : 1;
         const within = (value: number, max: number) =>
           Number.isFinite(value) && value > 0 && value <= max;
 
@@ -45,9 +63,60 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
       }
       viewStore.set((draft) => {
         draft.tool = tool;
+        if (tool?.type !== 'lasso' && draft.picked.length) draft.picked = [];
       });
 
       return true;
     },
   }),
-});
+}).extend(({ viewStoreOf }) => ({
+  on: {
+    keyDown: ({ api, editor, event, read }) => {
+      if (!event.repeat) heldKeys.delete(editor);
+      if (
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        isImeConfirmKeyEvent(event.nativeEvent)
+      ) {
+        return undefined;
+      }
+      if (heldKeys.get(editor) === event.key) return true;
+
+      const removes = event.key === 'Backspace' || event.key === 'Delete';
+
+      if (!removes && event.key !== 'Escape') return undefined;
+
+      const picks = editor.read((state) => {
+        const { picked, tool } = viewStoreOf(state).get();
+
+        return tool?.type === 'lasso'
+          ? picked.filter((id) => {
+              const mark = read.mark(id);
+
+              return (
+                mark && !readInkSign({ copy: read.copy, editor, state }, mark)
+              );
+            })
+          : [];
+      });
+
+      if (picks.length === 0) return undefined;
+      heldKeys.set(editor, event.key);
+      if (!removes) {
+        api.setPicked([]);
+
+        return true;
+      }
+      editor.update((tx) => {
+        tx.plugin(BaseInkPlugin).remove(picks);
+        viewStoreOf(tx).set((draft) => {
+          draft.picked = [];
+        });
+      });
+
+      return true;
+    },
+  },
+}));

@@ -171,11 +171,13 @@ export type InkMarkInput = Readonly<{
 
 /**
  * A Draw tool. `draw` draws marks with its brush. `erase` removes each mark
- * whose ink its path, `size` pixels wide, touches.
+ * whose ink its path, `size` pixels wide, touches. `lasso` picks the marks
+ * with more than half their samples inside its loop.
  */
 export type InkTool =
   | Readonly<{ brush: InkBrush; type: 'draw' }>
-  | Readonly<{ size: number; type: 'erase' }>;
+  | Readonly<{ size: number; type: 'erase' }>
+  | Readonly<{ type: 'lasso' }>;
 
 /**
  * What one view shows and does with ink: the tool a pen uses, or `null` when

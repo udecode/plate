@@ -95,7 +95,10 @@ const firstElementAfter = (element: Element) => {
  * and every mark once the page is about to print. With the Draw tool on, a pen
  * or the primary mouse button draws a mark, which saves when the contact ends
  * and keeps the Editable's focus and caret. With the eraser on, it removes
- * each mark whose painted ink its path touches. A finger still scrolls, and
+ * each mark whose painted ink its path touches, and with the lasso on, it
+ * draws a loop that picks the marks it holds and focuses the Editable, so the
+ * keys on the pick reach it. An eraser or lasso contact ends when its primary
+ * button lifts while another stays down. A finger still scrolls, and
  * other mouse buttons keep their own behavior. The view's `hidden` hides ink and
  * signs and leaves every press to the content, and picked marks paint with a
  * halo. Changing the tool, hiding ink or turning the view read-only ends the
@@ -213,7 +216,9 @@ function InkLayer({
       holds: (mark) => view.plugin(InkPlugin).read.mark(mark.id) === mark,
       layer,
       painted: surface.painted,
+      preview: path,
       tool: live,
+      view,
     });
     const placer = createInkPlacer({ editable, layer, view });
     const page = layer.ownerDocument;

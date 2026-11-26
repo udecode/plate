@@ -3,52 +3,10 @@ import {
   type BoardInkPoint,
   boardStrokeRadius,
 } from '../../../features/board/lib/boardStroke.internal';
+import { segmentGap } from '../../../internal/penStroke.internal';
 
 /** How many screen pixels past its line a press still reaches a stroke. */
 export const INK_SLOP_PX = 6;
-
-const distanceToSegment = (
-  at: BoardPlace,
-  from: BoardPlace,
-  to: BoardPlace
-) => {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const length = dx * dx + dy * dy;
-  const along =
-    length === 0
-      ? 0
-      : Math.min(
-          1,
-          Math.max(0, ((at.x - from.x) * dx + (at.y - from.y) * dy) / length)
-        );
-
-  return Math.hypot(at.x - from.x - along * dx, at.y - from.y - along * dy);
-};
-
-/** Which side of the line from `from` to `to` the point `at` lies on, by sign. */
-export const lineSide = (from: BoardPlace, to: BoardPlace, at: BoardPlace) =>
-  (to.x - from.x) * (at.y - from.y) - (to.y - from.y) * (at.x - from.x);
-
-const crosses = (a: BoardPlace, b: BoardPlace, c: BoardPlace, d: BoardPlace) =>
-  lineSide(c, d, a) * lineSide(c, d, b) < 0 &&
-  lineSide(a, b, c) * lineSide(a, b, d) < 0;
-
-/** The shortest distance between the segments `from`-`to` and `start`-`end`. */
-export const segmentGap = (
-  from: BoardPlace,
-  to: BoardPlace,
-  start: BoardPlace,
-  end: BoardPlace
-) =>
-  crosses(from, to, start, end)
-    ? 0
-    : Math.min(
-        distanceToSegment(from, start, end),
-        distanceToSegment(to, start, end),
-        distanceToSegment(start, from, to),
-        distanceToSegment(end, from, to)
-      );
 
 /**
  * Whether the segment from board point `from` to `to` passes over the line

@@ -36,7 +36,8 @@ import {
   type BoardStrokePoints,
 } from '../../../features/board/lib/boardStroke.internal';
 import type { BoardTypes } from '../../../features/board/lib/boardTypes.internal';
-import { INK_SLOP_PX, onInk, lineSide, segmentGap } from './boardInk.internal';
+import { lineSide, segmentGap } from '../../../internal/penStroke.internal';
+import { INK_SLOP_PX, onInk } from './boardInk.internal';
 
 export type BoardBox = BoardPlace & BoardSize;
 

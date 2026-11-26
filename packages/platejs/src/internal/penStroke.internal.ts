@@ -138,3 +138,54 @@ export const simulatedPressure = (
       (Math.min(1, 1 - speed) - previous) * speed * RATE_OF_PRESSURE_CHANGE
   );
 };
+
+type Place = Readonly<{ x: number; y: number }>;
+
+const distanceToSegment = (at: Place, from: Place, to: Place) => {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = dx * dx + dy * dy;
+  const along =
+    length === 0
+      ? 0
+      : Math.min(
+          1,
+          Math.max(0, ((at.x - from.x) * dx + (at.y - from.y) * dy) / length)
+        );
+
+  return Math.hypot(at.x - from.x - along * dx, at.y - from.y - along * dy);
+};
+
+/** Which side of the line from `from` to `to` the point `at` lies on, by sign. */
+export const lineSide = (from: Place, to: Place, at: Place) =>
+  (to.x - from.x) * (at.y - from.y) - (to.y - from.y) * (at.x - from.x);
+
+const crosses = (a: Place, b: Place, c: Place, d: Place) =>
+  lineSide(c, d, a) * lineSide(c, d, b) < 0 &&
+  lineSide(a, b, c) * lineSide(a, b, d) < 0;
+
+/** The shortest distance between the segments `from`-`to` and `start`-`end`. */
+export const segmentGap = (from: Place, to: Place, start: Place, end: Place) =>
+  crosses(from, to, start, end)
+    ? 0
+    : Math.min(
+        distanceToSegment(from, start, end),
+        distanceToSegment(to, start, end),
+        distanceToSegment(start, from, to),
+        distanceToSegment(end, from, to)
+      );
+
+/** Whether `polygon` winds around `at`, by the nonzero rule SVG fills with. */
+export const windsAround = (polygon: readonly Place[], at: Place) => {
+  let winding = 0;
+
+  for (const [index, from] of polygon.entries()) {
+    const to = polygon[(index + 1) % polygon.length];
+    const side = lineSide(from, to, at);
+
+    if (from.y <= at.y && to.y > at.y && side > 0) winding += 1;
+    if (from.y > at.y && to.y <= at.y && side < 0) winding -= 1;
+  }
+
+  return winding !== 0;
+};
