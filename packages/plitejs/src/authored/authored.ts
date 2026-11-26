@@ -2558,6 +2558,13 @@ export const createAuthoredPlugin = (
                     sourceAncestors: place.sourceAncestors.map(elementOf),
                   }
                 ),
+              holds: (parent, child, root) => {
+                const schema = getEditorSchema(editor);
+
+                return parent
+                  ? schema.canContain(elementOf(parent), child as Descendant)
+                  : schema.canContainAtRoot(child as Descendant, root);
+              },
               joinCompares: (key) =>
                 joinCompares(getCompiledEditorSchema(editor), key),
               maxChildren: (type, root) =>

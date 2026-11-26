@@ -148,6 +148,7 @@ export type AuthoredRecordInput = Readonly<{
     root: string
   ) => (key: string, value: unknown) => boolean;
   joinCompares: (key: string) => boolean;
+  holds: (parent: Props | null, child: JsonNode, root: string) => boolean;
   /**
    * The most children the content of the element `type` names, or of the
    * root when it is null, admits, or null when it admits any number.
@@ -352,6 +353,38 @@ const closeIndexOf = (tokens: readonly JsonToken[], at: number) => {
   }
 
   return tokens.length;
+};
+
+const outermostNodesOf = (tokens: readonly JsonToken[]) => {
+  const opens: number[] = [];
+  const nodes: Array<[number, number]> = [];
+
+  tokens.forEach((token, index) => {
+    if (token.kind === 'open') {
+      opens.push(index);
+    } else if (token.kind === 'close') {
+      const open = opens.pop();
+
+      if (open !== undefined && opens.length === 0) {
+        nodes.push([open, index + 1]);
+      }
+    }
+  });
+
+  return nodes;
+};
+
+const spansAround = (from: number, to: number, gaps: readonly Span[]) => {
+  const spans: Span[] = [];
+  let start = from;
+
+  for (const gap of gaps) {
+    if (gap.from > start) spans.push({ from: start, to: gap.from });
+    start = gap.to;
+  }
+  if (to > start) spans.push({ from: start, to });
+
+  return spans;
 };
 
 const isKeyedJoin = (mark: AuthoredMark): mark is KeyedJoin =>
@@ -2229,6 +2262,7 @@ const recordSteps = (
             framed: input.projection !== undefined,
             fill: (site) => input.fill(site, root),
             frameIndex: fold.frameIndex,
+            holds: (parent, child) => input.holds(parent, child, root),
             holdsGridParts: input.gridRoles.holdsParts,
             holdsWithdrawal,
             isInline: input.isInline,
@@ -2611,6 +2645,7 @@ type RecorderOptions = Readonly<{
   fill: (site: readonly Props[]) => readonly JsonNode[];
   frameIndex: DocumentIndex | null;
   framed: boolean;
+  holds: (parent: Props | null, child: JsonNode) => boolean;
   holdsGridParts: (node: JsonNode) => boolean;
   holdsUnique: (type: string, key: string) => boolean;
   holdsWithdrawal: (props: Props) => boolean;
@@ -3604,6 +3639,14 @@ class RootRecorder {
       ? this.index.slice(copyFrom, copyTo).tokens
       : null;
     const stores = movedTokens !== null && this.storesMovedElement(movedTokens);
+    const left = stores
+      ? []
+      : this.struckBlocksTheLandingRefuses(copyFrom, copyTo, landing.before);
+    const inCopy = (position: number) =>
+      left.reduce(
+        (at, span) => (span.to <= position ? at - (span.to - span.from) : at),
+        position - copyFrom
+      );
 
     for (const group of groups) {
       if (group.kind === 'kept') {
@@ -3618,7 +3661,9 @@ class RootRecorder {
           this.ops.push({ from: copyFrom, kind: 'remove', to: copyTo });
           this.noteFramedRemoval(copyFrom, copyTo, this.contextAt(copyFrom));
         } else {
-          this.strike(copyFrom, copyTo, this.contextAt(copyFrom), 'move');
+          for (const part of spansAround(copyFrom, copyTo, left)) {
+            this.strike(part.from, part.to, this.contextAt(part.from), 'move');
+          }
         }
         this.pushRemoved(source.after, copyFrom, copyTo);
       } else {
@@ -3628,7 +3673,7 @@ class RootRecorder {
           moved: true,
           tokens: stores
             ? this.storedMove(copyFrom, copyTo, landing.before, movedTokens)
-            : this.recordCopy(copyFrom, copyTo, landing.before),
+            : this.recordCopy(copyFrom, copyTo, landing.before, 0, left),
         });
         this.followJoin(landing, this.ops.length - 1);
         this.pieces.push({
@@ -3641,7 +3686,7 @@ class RootRecorder {
             (_, offset) =>
               offset === 0
                 ? 0
-                : plainToReview(source.plainFrom + offset, -1, false) - copyFrom
+                : inCopy(plainToReview(source.plainFrom + offset, -1, false))
           ),
         });
       }
@@ -3797,55 +3842,49 @@ class RootRecorder {
     }
   }
 
-  private withoutStruckEdges(from: number, to: number): [number, number] {
-    const { offsets, tokens } = this.index.slice(from, to);
-    const hidden = ([open, end]: readonly [number, number]) => {
-      const first = tokens[open];
-      let live = false;
+  private struckThroughout(
+    tokens: readonly JsonToken[],
+    [open, end]: readonly [number, number]
+  ) {
+    const first = tokens[open];
+    let live = false;
 
-      if (first.kind !== 'open' || !this.hasMarkKind(first.props, 'delete')) {
+    if (first.kind !== 'open' || !this.hasMarkKind(first.props, 'delete')) {
+      return false;
+    }
+    for (let index = open; index < end; index += 1) {
+      const token = tokens[index];
+
+      if (token.kind === 'open' && token.nodeKind === 'text') {
+        live = !this.hasMarkKind(token.props, 'delete');
+      } else if (token.kind === 'text' && live) {
         return false;
       }
-      for (let index = open; index < end; index += 1) {
-        const token = tokens[index];
+    }
 
-        if (token.kind === 'open' && token.nodeKind === 'text') {
-          live = !this.hasMarkKind(token.props, 'delete');
-        } else if (token.kind === 'text' && live) {
-          return false;
-        }
-      }
+    return true;
+  }
 
-      return true;
-    };
-    const opens: number[] = [];
-    const nodes: Array<[number, number]> = [];
-
-    tokens.forEach((token, index) => {
-      if (token.kind === 'open') {
-        opens.push(index);
-      } else if (token.kind === 'close') {
-        const open = opens.pop();
-
-        if (open !== undefined && opens.length === 0) {
-          nodes.push([open, index + 1]);
-        }
-      }
-    });
-
+  private withoutStruckEdges(from: number, to: number): [number, number] {
+    const { offsets, tokens } = this.index.slice(from, to);
+    const nodes = outermostNodesOf(tokens);
     let start = 0;
     let end = tokens.length;
     let first = 0;
     let last = nodes.length;
 
-    while (first < last && nodes[first][0] === start && hidden(nodes[first])) {
+    while (
+      first < last &&
+      nodes[first][0] === start &&
+      this.struckThroughout(tokens, nodes[first])
+    ) {
       start = nodes[first][1];
       first += 1;
     }
     while (
       last > first &&
       nodes[last - 1][1] === end &&
-      hidden(nodes[last - 1])
+      this.struckThroughout(tokens, nodes[last - 1])
     ) {
       end = nodes[last - 1][0];
       last -= 1;
@@ -3857,13 +3896,41 @@ class RootRecorder {
     return start < end ? [at(start), at(end)] : [from, to];
   }
 
-  /**
-   * The content at `[from, to)` under the writer's insertion, recorded as a
-   * moved copy that an insert at `at` lands `offset` tokens into.
-   */
-  private recordCopy(from: number, to: number, at: number, offset = 0) {
+  private struckBlocksTheLandingRefuses(
+    from: number,
+    to: number,
+    at: number
+  ): Span[] {
+    const { offsets, tokens } = this.index.slice(from, to);
+    const parent =
+      this.contextAt(at).findLast((entry) => entry.kind === 'element')?.props ??
+      null;
+    const position = (index: number) =>
+      index < tokens.length ? from + offsets[index] : to;
+
+    return outermostNodesOf(tokens).flatMap((node) => {
+      const entry = this.index.nodeStartingAt(position(node[0]));
+
+      return entry &&
+        this.struckThroughout(tokens, node) &&
+        !this.options.holds(parent, this.index.node(entry.path))
+        ? [{ from: position(node[0]), to: position(node[1]) }]
+        : [];
+    });
+  }
+
+  private recordCopy(
+    from: number,
+    to: number,
+    at: number,
+    offset = 0,
+    left: readonly Span[] = []
+  ) {
     const mark = this.options.markOf('insert');
-    const { tokens } = this.index.slice(from, to);
+    const parts = spansAround(from, to, left);
+    const tokens = parts.flatMap(
+      (part) => this.index.slice(part.from, part.to).tokens
+    );
     const copied = new Set(
       tokens.flatMap((token) =>
         token.kind === 'open'
@@ -3875,8 +3942,12 @@ class RootRecorder {
           : []
       )
     );
+    let into = offset;
 
-    this.copies.push({ at, from, offset, to });
+    for (const part of parts) {
+      this.copies.push({ at, from: part.from, offset: into, to: part.to });
+      into += part.to - part.from;
+    }
 
     const editingCopyKeepsLinks = isEditingChange(mark.change);
 
