@@ -261,7 +261,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   effort = capEffort(effort ?? max, max);
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
-  if (colead) timeout ??= COLEAD_TIMEOUT_SECONDS;
+  if (colead) timeout = Math.min(timeout ?? COLEAD_TIMEOUT_SECONDS, COLEAD_TIMEOUT_SECONDS);
   const scratch = reach || (runtime === 'agy' && !colead);
   const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : (colead ?? cwd);
   // A Firefox or WebKit crash in the sandbox puts a crash dialog on the owner's screen.
