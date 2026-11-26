@@ -356,6 +356,11 @@ through `adb reverse`, because the emulator's network stays off. `--dir` takes
 the main checkout's run folder by absolute path, because a worktree's copy goes
 away with the worktree.
 
+To try a public page, such as the slatejs.org or platejs.org page a triage run
+checks for a regression, pass its full URL to `open`. A session that opens only
+URLs needs no www server, so start it without `--www`. On the emulator, `open`
+turns Wi-Fi on for a public URL, and `stop` turns it off again.
+
 ```bash
 node tooling/device/device.mjs drive android start --www 3297 --dir <main checkout>/docs/plans/artifacts/<slug>/drive
 node tooling/device/device.mjs drive android open /docs/basic-blocks
@@ -378,14 +383,17 @@ there go through adb and skip Gboard, so they never count as proof.
 
 Each `drive` action prints its result as JSON and exits 1 when it fails:
 
-- `open <path>` opens a www page; `tap <text>` taps visible text.
+- `open <path>` opens a www page, and `open <url>` opens an `http` or `https`
+  URL as given. `tap <text>` taps visible text, and `tap <text> --end` taps
+  just past its last letter, which puts the caret at the end of that line.
 - `tap-button <name>` taps a button by its accessible name. With
   `--bar keyboard` or `--bar fixed` it looks only in the docked keyboard bar
   or the fixed toolbar and scrolls that bar to the button. `tap-menu <name>`
   taps an item of the open menu.
 - `tap-at <path> <offset>` taps a text position, such as `0,0 9` for offset 9
   of the first block's first text; `press-at <path> <offset> [ms]`
-  long-presses one.
+  long-presses one. Both need a www page, because a page opened by URL has no
+  Plite editor.
 - `drag <x1> <y1> <x2> <y2> [holdMs]` drags in device pixels. While Gboard is
   up it covers the screen below about y=1500, and a drag there glide-types.
 - `use <en|ja|ko|zh>` switches Gboard's language; `type <text>` types through
@@ -394,6 +402,8 @@ Each `drive` action prints its result as JSON and exits 1 when it fails:
   keyboard shows.
 - `read` returns the editor's DOM text, model text and selection, where focus
   sits, the visual viewport, the page's URL and whether the keyboard shows.
+  On a page opened by URL it returns the editable's DOM text and selection and
+  the recorded input events in place of the model.
   `focus` and `viewport` return one of those alone. `shot` saves a screenshot
   only.
 - `record start` and `record stop` save an MP4 of the screen.
@@ -465,8 +475,10 @@ differs. To test both phones in one command, put both serials in one
 the phones still run one after the other.
 
 `drive ios` takes the same actions as `drive android` and needs no `--serial`.
-Boot the simulator and start a www server first, and request the page once with
-`curl`, as for `drive android`:
+Boot the simulator and, for a www page, start a www server first and request
+the page once with `curl`, as for `drive android`. The session measures the
+screen on a blank page it serves itself, so a session that opens only URLs
+needs no www server either:
 
 ```bash
 node tooling/device/device.mjs drive ios start --www 3297 --dir <main checkout>/docs/plans/artifacts/<slug>/drive

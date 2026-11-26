@@ -1,6 +1,8 @@
 /** @platejs-curated-entrypoint */
 
 export {
+  type DeviceEditableDomSelection,
+  type DeviceEditableDomSnapshot,
   type DeviceEditor,
   type DeviceFocusRegion,
   type DeviceFocusSnapshot,

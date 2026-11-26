@@ -88,6 +88,22 @@ export type DeviceFocusRegion =
   | 'menu'
   | 'other';
 
+export type DeviceEditableDomSelection = {
+  anchorOffset: number;
+  anchorText: string;
+  collapsed: boolean;
+  focusOffset: number;
+  focusText: string;
+  selectedText: string;
+};
+
+export type DeviceEditableDomSnapshot = {
+  blocks: string[];
+  focused: boolean;
+  selection: DeviceEditableDomSelection | null;
+  text: string | null;
+};
+
 export type DeviceFocusSnapshot = {
   editorFocused: boolean;
   menuOpen: boolean;
@@ -242,6 +258,7 @@ export type DeviceLane = {
   knownFailure: <T>(failure: DeviceKnownFailure<T>) => Promise<void>;
   platform: DeviceRunState['platform'];
   read: {
+    editable: () => Promise<DeviceEditableDomSnapshot>;
     focus: () => Promise<DeviceFocusSnapshot>;
     viewport: () => Promise<DeviceViewportSnapshot>;
   };
@@ -256,6 +273,7 @@ export type DeviceLane = {
     tapMenuItem: (name: RegExp | string) => Promise<void>;
     tapTestId: (testId: string) => Promise<void>;
     tapText: (text: string) => Promise<void>;
+    tapTextEnd: (text: string) => Promise<void>;
     tapToolbarButton: (
       toolbar: DeviceToolbar,
       name: RegExp | string
@@ -460,131 +478,204 @@ export const createDeviceLane = ({
 
   // The soft keyboard shrinks and scrolls the visual viewport, so a target in
   // the layout viewport can still sit under the browser toolbar.
-  const tapQuery = async (label: string, query: DeviceQuery) => {
+  const tapQuery = async (
+    label: string,
+    query: DeviceQuery,
+    edge: 'center' | 'end' = 'center'
+  ) => {
     await driver.screen.settle();
 
     const found = driver.page.find(query);
-    const center = await found.evaluate(async (element, ios) => {
-      const container = element.closest(
-        '[data-slot="keyboard-toolbar"],[data-slot="fixed-toolbar"],[role="menu"]'
-      );
-      const holders: HTMLElement[] = [];
+    const center = await found.evaluate(
+      async (element, { edge: targetEdge, ios }) => {
+        const container = element.closest(
+          '[data-slot="keyboard-toolbar"],[data-slot="fixed-toolbar"],[role="menu"]'
+        );
+        const holders: HTMLElement[] = [];
 
-      for (
-        let current = element.parentElement;
-        current && container?.contains(current);
-        current = current.parentElement
-      ) {
-        holders.push(current);
-      }
-
-      const clipBounds = () => {
-        const view = window.visualViewport;
-        // Safari's client rects already follow the keyboard's scroll.
-        let top = ios ? 0 : (view?.offsetTop ?? 0);
-        let left = ios ? 0 : (view?.offsetLeft ?? 0);
-        let bottom = top + (view?.height ?? innerHeight);
-        let right = left + (view?.width ?? innerWidth);
-
-        for (const holder of holders) {
-          const style = getComputedStyle(holder);
-          const box = holder.getBoundingClientRect();
-
-          if (/(?:auto|scroll|clip|hidden)/.test(style.overflowX)) {
-            left = Math.max(left, box.left);
-            right = Math.min(right, box.right);
-          }
-          if (/(?:auto|scroll|clip|hidden)/.test(style.overflowY)) {
-            top = Math.max(top, box.top);
-            bottom = Math.min(bottom, box.bottom);
-          }
+        for (
+          let current = element.parentElement;
+          current && container?.contains(current);
+          current = current.parentElement
+        ) {
+          holders.push(current);
         }
-        return { bottom, left, right, top };
-      };
 
-      const measure = () => {
-        const rect = element.getBoundingClientRect();
-        const bounds = clipBounds();
-        const widestLine =
-          Array.from(element.getClientRects()).toSorted(
-            (a, b) => b.width - a.width
-          )[0] ?? rect;
-        const x = widestLine.left + widestLine.width / 2;
-        const y = widestLine.top + widestLine.height / 2;
+        const clipBounds = () => {
+          const view = window.visualViewport;
+          // Safari's client rects already follow the keyboard's scroll.
+          let top = ios ? 0 : (view?.offsetTop ?? 0);
+          let left = ios ? 0 : (view?.offsetLeft ?? 0);
+          let bottom = top + (view?.height ?? innerHeight);
+          let right = left + (view?.width ?? innerWidth);
 
-        return {
-          reachable:
-            rect.width > 0 &&
-            rect.height > 0 &&
-            rect.top >= bounds.top - 1 &&
-            rect.bottom <= bounds.bottom + 1 &&
-            rect.left >= bounds.left - 1 &&
-            rect.right <= bounds.right + 1 &&
-            element.contains(document.elementFromPoint(x, y)),
-          x,
-          y,
-        };
-      };
-
-      if (!measure().reachable) {
-        if (container) {
           for (const holder of holders) {
             const style = getComputedStyle(holder);
             const box = holder.getBoundingClientRect();
-            const target = element.getBoundingClientRect();
 
-            if (
-              /(?:auto|scroll)/.test(style.overflowX) &&
-              holder.scrollWidth > holder.clientWidth + 1
-            ) {
-              holder.scrollLeft +=
-                target.left + target.width / 2 - (box.left + box.width / 2);
+            if (/(?:auto|scroll|clip|hidden)/.test(style.overflowX)) {
+              left = Math.max(left, box.left);
+              right = Math.min(right, box.right);
             }
-            if (
-              /(?:auto|scroll)/.test(style.overflowY) &&
-              holder.scrollHeight > holder.clientHeight + 1
-            ) {
-              holder.scrollTop +=
-                target.top + target.height / 2 - (box.top + box.height / 2);
+            if (/(?:auto|scroll|clip|hidden)/.test(style.overflowY)) {
+              top = Math.max(top, box.top);
+              bottom = Math.min(bottom, box.bottom);
             }
           }
-          await new Promise((resolveScroll) => {
-            requestAnimationFrame(() =>
-              requestAnimationFrame(() => resolveScroll(undefined))
+          return { bottom, left, right, top };
+        };
+
+        const measure = () => {
+          const rect = element.getBoundingClientRect();
+          const bounds = clipBounds();
+
+          if (targetEdge === 'end') {
+            const walker = document.createTreeWalker(
+              element,
+              NodeFilter.SHOW_TEXT
             );
-          });
-          if (
-            !measure().reachable &&
-            container.matches('[data-slot="fixed-toolbar"]')
-          ) {
-            const view = window.visualViewport;
-            const viewTop = ios ? 0 : (view?.offsetTop ?? 0);
-            const box = container.getBoundingClientRect();
-            const delta =
-              box.top < viewTop
-                ? box.top - viewTop - 8
-                : Math.max(
-                    0,
-                    box.bottom - (viewTop + (view?.height ?? innerHeight)) + 8
-                  );
+            let lastText: Text | null = null;
+            let lastEnd = 0;
 
-            if (delta) {
-              window.scrollBy(0, delta);
-              await new Promise((resolveScroll) => {
-                setTimeout(resolveScroll, 400);
-              });
+            for (
+              let node = walker.nextNode() as Text | null;
+              node;
+              node = walker.nextNode() as Text | null
+            ) {
+              const trimmed = node.data.replace(/\uFEFF+$/, '');
+
+              if (trimmed.length > 0) {
+                lastText = node;
+                lastEnd = trimmed.length;
+              }
             }
-          }
-        } else {
-          element.scrollIntoView({ block: 'center', inline: 'nearest' });
-          await new Promise((resolveScroll) => {
-            setTimeout(resolveScroll, 400);
-          });
-        }
-      }
 
-      return measure();
-    }, state.platform === 'ios');
+            let targetRect =
+              Array.from(element.getClientRects()).at(-1) ?? rect;
+
+            if (lastText && lastEnd > 0) {
+              const range = document.createRange();
+
+              range.setStart(lastText, lastEnd - 1);
+              range.setEnd(lastText, lastEnd);
+
+              const charRect = range.getBoundingClientRect();
+
+              if (charRect.width > 0 && charRect.height > 0) {
+                targetRect = charRect;
+              }
+            }
+
+            const y = targetRect.top + targetRect.height / 2;
+            const owner =
+              element.closest('[contenteditable="true"]') ??
+              element.parentElement ??
+              element;
+            const pastRight = Math.min(targetRect.right + 1, bounds.right - 1);
+            const insideRight = Math.max(
+              targetRect.left + 1,
+              targetRect.right - 1
+            );
+            const x = owner.contains(document.elementFromPoint(pastRight, y))
+              ? pastRight
+              : insideRight;
+
+            return {
+              reachable:
+                targetRect.width > 0 &&
+                targetRect.height > 0 &&
+                targetRect.top >= bounds.top - 1 &&
+                targetRect.bottom <= bounds.bottom + 1 &&
+                x >= bounds.left - 1 &&
+                x <= bounds.right + 1 &&
+                owner.contains(document.elementFromPoint(x, y)),
+              x,
+              y,
+            };
+          }
+
+          const widestLine =
+            Array.from(element.getClientRects()).toSorted(
+              (a, b) => b.width - a.width
+            )[0] ?? rect;
+          const x = widestLine.left + widestLine.width / 2;
+          const y = widestLine.top + widestLine.height / 2;
+
+          return {
+            reachable:
+              rect.width > 0 &&
+              rect.height > 0 &&
+              rect.top >= bounds.top - 1 &&
+              rect.bottom <= bounds.bottom + 1 &&
+              rect.left >= bounds.left - 1 &&
+              rect.right <= bounds.right + 1 &&
+              element.contains(document.elementFromPoint(x, y)),
+            x,
+            y,
+          };
+        };
+
+        if (!measure().reachable) {
+          if (container) {
+            for (const holder of holders) {
+              const style = getComputedStyle(holder);
+              const box = holder.getBoundingClientRect();
+              const target = element.getBoundingClientRect();
+
+              if (
+                /(?:auto|scroll)/.test(style.overflowX) &&
+                holder.scrollWidth > holder.clientWidth + 1
+              ) {
+                holder.scrollLeft +=
+                  target.left + target.width / 2 - (box.left + box.width / 2);
+              }
+              if (
+                /(?:auto|scroll)/.test(style.overflowY) &&
+                holder.scrollHeight > holder.clientHeight + 1
+              ) {
+                holder.scrollTop +=
+                  target.top + target.height / 2 - (box.top + box.height / 2);
+              }
+            }
+            await new Promise((resolveScroll) => {
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => resolveScroll(undefined))
+              );
+            });
+            if (
+              !measure().reachable &&
+              container.matches('[data-slot="fixed-toolbar"]')
+            ) {
+              const view = window.visualViewport;
+              const viewTop = ios ? 0 : (view?.offsetTop ?? 0);
+              const box = container.getBoundingClientRect();
+              const delta =
+                box.top < viewTop
+                  ? box.top - viewTop - 8
+                  : Math.max(
+                      0,
+                      box.bottom - (viewTop + (view?.height ?? innerHeight)) + 8
+                    );
+
+              if (delta) {
+                window.scrollBy(0, delta);
+                await new Promise((resolveScroll) => {
+                  setTimeout(resolveScroll, 400);
+                });
+              }
+            }
+          } else {
+            element.scrollIntoView({ block: 'center', inline: 'nearest' });
+            await new Promise((resolveScroll) => {
+              setTimeout(resolveScroll, 400);
+            });
+          }
+        }
+
+        return measure();
+      },
+      { edge, ios: state.platform === 'ios' }
+    );
 
     if (!center.reachable) throw new Error(`No touch reaches ${label}.`);
     await contentTouch(label, center, driver.screen.tap);
@@ -838,6 +929,76 @@ export const createDeviceLane = ({
     },
     platform: state.platform,
     read: {
+      editable: () =>
+        driver.page.find({ css: 'body' }).evaluate(() => {
+          const clean = (value: string | null | undefined) =>
+            (value ?? '').replaceAll('\uFEFF', '');
+          let active: Element | null = document.activeElement;
+
+          while (active?.shadowRoot?.activeElement) {
+            active = active.shadowRoot.activeElement;
+          }
+
+          const activeEditable =
+            active?.closest('[contenteditable="true"]') ?? null;
+          const editable =
+            activeEditable ??
+            [...document.querySelectorAll('[contenteditable="true"]')].find(
+              (element) => element.getClientRects().length > 0
+            ) ??
+            document.querySelector('[contenteditable="true"]');
+          const readSelection = () => {
+            const selection = window.getSelection();
+
+            if (!selection || selection.rangeCount === 0) return null;
+
+            return {
+              anchorOffset: selection.anchorOffset,
+              anchorText: clean(selection.anchorNode?.textContent),
+              collapsed: selection.isCollapsed,
+              focusOffset: selection.focusOffset,
+              focusText: clean(selection.focusNode?.textContent),
+              selectedText: clean(selection.toString()),
+            };
+          };
+
+          if (!editable) {
+            return {
+              blocks: [],
+              focused: false,
+              selection: readSelection(),
+              text: null,
+            };
+          }
+
+          let blockEls = [
+            ...editable.querySelectorAll(
+              '[data-slate-node="element"], [data-editor-node="element"]'
+            ),
+          ].filter((element) => {
+            const parent = element.parentElement?.closest(
+              '[data-slate-node="element"], [data-editor-node="element"]'
+            );
+
+            return !parent || !editable.contains(parent);
+          });
+
+          if (blockEls.length === 0) {
+            blockEls =
+              editable.children.length > 0
+                ? [...editable.children]
+                : [editable];
+          }
+
+          const blocks = blockEls.map((element) => clean(element.textContent));
+
+          return {
+            blocks,
+            focused: Boolean(activeEditable),
+            selection: readSelection(),
+            text: blocks.join('\n'),
+          };
+        }, undefined),
       focus: () =>
         driver.page.find({ css: 'body' }).evaluate(() => {
           let active: Element | null = document.activeElement;
@@ -906,6 +1067,7 @@ export const createDeviceLane = ({
         tapQuery(`tap menu item ${name}`, { menuItem: name }),
       tapTestId: (testId) => tapQuery(`tap ${testId}`, { testId }),
       tapText: (text) => tapQuery(`tap "${text}"`, { text }),
+      tapTextEnd: (text) => tapQuery(`tap end of "${text}"`, { text }, 'end'),
       tapToolbarButton: (toolbar, name) =>
         tapQuery(`tap ${toolbar} toolbar button ${name}`, {
           button: name,

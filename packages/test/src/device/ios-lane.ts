@@ -113,7 +113,7 @@ const serialQuery = (query: DeviceQuery): SerialQuery => {
 // Runs in the page.
 const findElement = async (query: SerialQuery): Promise<Element> => {
   const normalize = (text: string | null) =>
-    (text ?? '').replaceAll(/\s+/g, ' ').trim();
+    (text ?? '').replaceAll('\uFEFF', '').replaceAll(/\s+/g, ' ').trim();
   const matchesPattern = (name: string, pattern: SerialPattern) =>
     typeof pattern === 'string'
       ? name.toLowerCase().includes(pattern.toLowerCase())
@@ -227,30 +227,32 @@ const placeMarker = (label: string) => {
 
 const argument = (value: unknown) => JSON.stringify(value) ?? 'undefined';
 
-// A same-URL load would find the old document complete, so the old document
-// carries a mark the new one lacks.
+// A load would find the old document complete, so the old document carries a
+// mark the new one lacks.
+const loadedHttpPageHref = `!window.__plateDeviceLeft && document.readyState === 'complete' && /^https?:$/.test(location.protocol) ? location.href : ''`;
+
 const loadPage = async (page: InspectorPage, url: string) => {
   const target = new URL(url).href;
+  let landedHref = '';
 
+  await page.evaluate('window.__plateDeviceLeft = true', 5000).catch(() => {});
   await page
-    .evaluate(
-      `(window.__plateDeviceLeft = true, location.assign(${argument(target)}))`,
-      5000
-    )
+    .evaluate(`location.assign(${argument(target)})`, 5000)
     .catch(() => {});
   await expect
     .poll(
-      () =>
-        page
-          .evaluate<boolean>(
-            `!window.__plateDeviceLeft && document.readyState === 'complete' && location.href === ${argument(target)}`,
-            5000
-          )
-          .catch(() => false),
+      async () => {
+        const href = await page
+          .evaluate<string>(loadedHttpPageHref, 5000)
+          .catch(() => '');
+
+        landedHref = href;
+        return Boolean(href);
+      },
       { message: `Safari never loaded ${target}.`, timeout: 60_000 }
     )
     .toBe(true);
-  return target;
+  return landedHref;
 };
 
 // The runner's frame of an element lags while the keyboard scrolls the page,
