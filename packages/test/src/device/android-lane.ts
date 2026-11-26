@@ -163,7 +163,9 @@ const locate = (page: Page, query: DeviceQuery): Locator => {
     return page.locator(TOOLBAR_SELECTORS[query.toolbar]).first();
   }
   if ('css' in query) {
-    return scope(query.within).locator(query.css).first();
+    return scope(query.within)
+      .locator(query.css)
+      .nth(query.index ?? 0);
   }
   if ('testId' in query) return page.getByTestId(query.testId);
   if ('button' in query) {

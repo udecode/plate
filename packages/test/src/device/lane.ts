@@ -74,7 +74,7 @@ export const TOOLBAR_SELECTORS: Record<DeviceToolbar, string> = {
 /** An element on the current page, found again on every read. */
 export type DeviceQuery =
   | { button: RegExp | string; within?: DeviceQuery }
-  | { css: string; within?: DeviceQuery }
+  | { css: string; index?: number; within?: DeviceQuery }
   | { menuItem: RegExp | string }
   | { testId: string }
   | { text: string }
@@ -253,6 +253,9 @@ export type DeviceLane = {
       text: string;
     }>;
   }>;
+  /** The page's editor root at `index`, in document order. */
+  editorAt: (index: number) => DeviceEditor;
+  editorCount: () => Promise<number>;
   openExample: (example: string) => Promise<DeviceEditor>;
   openWww: (path: string) => Promise<DeviceEditor>;
   knownFailure: <T>(failure: DeviceKnownFailure<T>) => Promise<void>;
@@ -870,6 +873,15 @@ export const createDeviceLane = ({
           }, undefined),
       };
     },
+    editorAt: (index) =>
+      editorFor({ css: EDITOR_ROOT, index }, `editor ${index + 1} `),
+    editorCount: () =>
+      driver.page
+        .find({ css: 'body' })
+        .evaluate(
+          (element, selector) => element.querySelectorAll(selector).length,
+          EDITOR_ROOT
+        ),
     openExample: (example) =>
       openEditor(`${state.appURL}/examples/plite/${example}`),
     openWww: (path) => {

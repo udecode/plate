@@ -43,7 +43,7 @@ type SerialPattern = string | { flags: string; source: string };
 
 type SerialQuery =
   | { button: SerialPattern; within?: SerialQuery }
-  | { css: string; within?: SerialQuery }
+  | { css: string; index?: number; within?: SerialQuery }
   | { menuItem: SerialPattern }
   | { testId: string }
   | { text: string }
@@ -107,7 +107,7 @@ const serialQuery = (query: DeviceQuery): SerialQuery => {
   if ('button' in query) {
     return { button: serialPattern(query.button), ...within };
   }
-  return { css: query.css, ...within };
+  return { css: query.css, index: query.index, ...within };
 };
 
 // Runs in the page.
@@ -172,7 +172,9 @@ const findElement = async (query: SerialQuery): Promise<Element> => {
     const inner = current.within ? match(current.within, scope) : scope;
 
     if (!inner) return null;
-    if ('css' in current) return inner.querySelector(current.css);
+    if ('css' in current) {
+      return inner.querySelectorAll(current.css)[current.index ?? 0] ?? null;
+    }
 
     return (
       [...inner.querySelectorAll('button,[role="button"]')].find((element) =>
