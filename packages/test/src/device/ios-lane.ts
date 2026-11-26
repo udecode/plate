@@ -7,6 +7,7 @@ import {
   DEFAULT_RUNTIME_ERROR_PATTERNS,
   isIgnoredRuntimeError,
 } from '../playwright/runtime-errors';
+import type { DeviceLanguage } from './android';
 import { type IosRunner, type RunnerReply, startIosRunner } from './ios';
 import type {
   DeviceDriver,
@@ -53,6 +54,29 @@ const NAMED_KEYS: Record<string, { key: DeviceWitnessKey; label: string }> = {
   '&': { key: '&', label: 'ampersand' },
   '\b': { key: 'Backspace', label: 'delete' },
   '\n': { key: 'Enter', label: 'Return' },
+};
+
+const IOS_LANGUAGES: readonly DeviceLanguage[] = ['en', 'ja', 'ko', 'zh'];
+
+const IOS_DELETE_LABELS: Record<string, DeviceLanguage> = {
+  delete: 'en',
+  削除: 'ja',
+  삭제: 'ko',
+  删除: 'zh',
+};
+
+export const iosKeyboardLanguage = (
+  deleteLabel: string | undefined
+): DeviceLanguage | null =>
+  deleteLabel && Object.hasOwn(IOS_DELETE_LABELS, deleteLabel)
+    ? IOS_DELETE_LABELS[deleteLabel]
+    : null;
+
+const describeIosKeyboard = (deleteLabel: string | undefined) => {
+  const known = iosKeyboardLanguage(deleteLabel);
+
+  if (known) return known;
+  return deleteLabel ? `unknown (${deleteLabel})` : 'unknown (no delete key)';
 };
 
 const sleep = (ms: number) =>
@@ -451,7 +475,7 @@ export const createIosDriver = ({
       };
 
       return {
-        languages: ['en'],
+        languages: IOS_LANGUAGES,
         forgetPage: () => {},
         shown: async () => {
           const { shown } = await send({ action: 'keyboard' });
@@ -476,11 +500,24 @@ export const createIosDriver = ({
           }
         },
         use: async (language) => {
-          if (language !== 'en') {
-            throw new Error(
-              `The iPhone simulator has only the English keyboard, not ${language}.`
-            );
+          const seen: string[] = [];
+
+          for (let taps = 0; taps <= IOS_LANGUAGES.length; taps++) {
+            const { deleteLabel, shown } = await send({ action: 'keyboard' });
+
+            if (!shown) {
+              throw new Error(
+                'Show the keyboard before switching its language.'
+              );
+            }
+            if (iosKeyboardLanguage(deleteLabel) === language) return;
+            seen.push(describeIosKeyboard(deleteLabel));
+            if (taps === IOS_LANGUAGES.length) break;
+            await send({ action: 'nextKeyboard' });
           }
+          throw new Error(
+            `The iPhone keyboard never switched to ${language}; passed ${seen.join(', ')}.`
+          );
         },
       };
     },

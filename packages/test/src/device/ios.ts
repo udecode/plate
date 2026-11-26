@@ -29,10 +29,12 @@ export type RunnerCommand =
   | { action: 'idle' }
   | { action: 'key'; label: string }
   | { action: 'keyboard' }
+  | { action: 'nextKeyboard' }
   | { action: 'press'; ms: number; x: number; y: number }
   | { action: 'tap'; x: number; y: number };
 
 export type RunnerReply = {
+  deleteLabel?: string;
   error?: string;
   keys?: string[];
   /** The key label the runner tapped, which Shift can capitalize. */
