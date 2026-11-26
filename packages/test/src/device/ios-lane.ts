@@ -50,6 +50,7 @@ type SerialQuery =
 
 const NAMED_KEYS: Record<string, { key: DeviceWitnessKey; label: string }> = {
   ' ': { key: ' ', label: 'space' },
+  '&': { key: '&', label: 'ampersand' },
   '\b': { key: 'Backspace', label: 'delete' },
   '\n': { key: 'Enter', label: 'Return' },
 };
