@@ -11,7 +11,7 @@ The radar finds ideas for the owner to shape. Each gives an existing Plate featu
 
 - The subject file `docs/plans/topics/product-radar.md` is the record: the ranked ideas, each idea's state, and the link to the map page. Its plans keep each pass's evidence and scores.
 - The map data `docs/plans/topics/product-radar.map.json`, committed beside it, holds what the map draws, such as each pin's place and each scene's prompt. Where the two disagree, the subject file wins.
-- The map page is a claude.ai artifact that shows the map data as a painted island map. Only its painted art lives nowhere else. The map is not a plan page, so the Artifact tool reads and publishes it directly, never through `page-stop.mjs`.
+- The map page is a claude.ai artifact that shows the map data as a painted island map. Only its painted art lives nowhere else, and the Artifact tool reads and publishes it directly.
 
 | Argument | Runs |
 | --- | --- |
@@ -19,7 +19,7 @@ The radar finds ideas for the owner to shape. Each gives an existing Plate featu
 | a lane id | every step, with that lane only, merged into the current ranking |
 | `map` | steps 5 and 7 only, with the map data landed between them, after the subject file changed, such as the owner picking or dropping ideas |
 
-Load `pstack:poteto-mode` first. A pass is a read-only investigation whose answer is a plan page: its plan names `Playbook: investigation`, the steps below are its method in place of that playbook's `how`-shaped output, and the `plan-page` skill says how to write and publish it.
+Load `pstack:poteto-mode` first. A pass is a read-only investigation whose answer is a committed Markdown plan: its plan names `Playbook: investigation`, the steps below are its method in place of that playbook's `how`-shaped output, and `.agents/pstack/rules/pages.md` says how to structure the plan, topic file and hand-back reply.
 
 ## Steps
 
@@ -40,7 +40,7 @@ Load `pstack:poteto-mode` first. A pass is a read-only investigation whose answe
    3. `radar.mjs render <data> <page.html>`. It refuses an idea whose pin has no island or place.
    4. `radar.mjs shoot <page.html> <art dir> <shots dir>`, then read each screenshot. Fix any pin or label that covers another, and render again.
 
-6. **Land.** Write the plan's Close and fold the new ranking into the subject file's Ideas table, then land and publish the pass as the `plan-page` skill and `.agents/pstack/rules/land.md` say. The map comes first, so the landing commit holds its data and the log rows that cite its screenshots.
+6. **Land.** Write the plan's Close and fold the new ranking into the subject file's Ideas table, then land the pass as `.agents/pstack/rules/pages.md` and `.agents/pstack/rules/land.md` say. The map comes first, so the landing commit holds its data and the log rows that cite its screenshots.
 7. **Publish the map.** Once land.mjs exits 0, publish the page to the map link, with each new or repainted file in `art/` in its `files`, so the map never shows a ranking `next` lacks. Leave each art file that did not change out of `files`, because an update keeps the files it leaves out and the Artifact tool refuses an `{artifact, path}` copy from the page it publishes to. When the map link no longer opens, publish a new artifact with every file in the art directory, then replace the link in the subject file in a commit of its own. Codex has no Artifact tool. So a Codex session paints into an empty art directory in step 5, then copies the page and its `art/` folder into the run directory and names that folder in its reply in place of the map link.
 
 The pass ends at the ranking. The owner starts each exploration from its Open work line.

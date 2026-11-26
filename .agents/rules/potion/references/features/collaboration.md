@@ -9,5 +9,4 @@ The navbar `Collaborate` control still publishes a page; its recipe is
 the second tab's stale save returns a conflict, which
 [documents.md](documents.md) covers.
 
-A Yjs bug needs Plate's own collaboration tests, or the live v52 Potion that
-[the potion-yjs recipe](../../potion-yjs.md) uses as an oracle.
+A Yjs bug needs Plate's own collaboration tests or live v52 Potion as an oracle.

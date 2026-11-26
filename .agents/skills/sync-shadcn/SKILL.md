@@ -11,7 +11,7 @@ metadata:
 
 Handle $ARGUMENTS. Read the complete [sync policy](./references/policy.md), then
 the selected mode below. pstack's poteto-mode owns lifecycle and existing
-authority, the lead writes every change, and a plan takes the plan-page shape;
+authority, the lead writes every change, and a plan follows `.agents/pstack/rules/pages.md`;
 this skill owns upstream range accounting, Plate forks, slice decisions and sync
 state.
 

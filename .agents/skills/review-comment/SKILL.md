@@ -35,7 +35,7 @@ It covers a PR in `ianstormtaylor/slate` or a `udecode/plate` PR whose `baseRefN
 
 4. **Run the panel.** Unless the owner said fast, run the Babysit playbook's review-only panel (reviews: `external-pr`) after reading `.agents/pstack/rules/panel.md` in full. Brief it with the PR body, the linked issues, the step 2 evidence and the step 3 probes. A seat's finding joins the comment once a probe or a source line confirms it.
 
-5. **Draft the comment** in `<run>/comment.md`. It follows the plan-page PR body order (`.agents/skills/plan-page/references/shape.md`, PR body) with review sections:
+5. **Draft the comment** in `<run>/comment.md`. It follows the `.agents/pstack/rules/pages.md` PR body order with review sections:
 
    ```md
    `<model> @<effort>` reviewed `<head SHA, 9 characters>`. Panel: <the seats, or skipped (fast)>.

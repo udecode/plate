@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,11 +16,15 @@ Object.assign(process.env, { CODEX_HOME: mkdtempSync(join(tmpdir(), 'cleanup-cod
 // start a process call realLsof to reach the real one.
 const LSOF = execFileSync('sh', ['-c', 'command -v lsof'], { encoding: 'utf8' }).trim();
 const BIN = mkdtempSync(join(tmpdir(), 'cleanup-bin-'));
-writeFileSync(join(BIN, 'lsof'), `#!/bin/sh\n[ -n "$CLEANUP_REAL_LSOF" ] && exec '${LSOF}' "$@"\ncase " $* " in *" cwd "*) exit 0 ;; esac\nexit 1\n`, { mode: 0o755 });
+writeFileSync(join(BIN, 'lsof'), `#!/bin/sh\nif [ -n "$CLEANUP_REAL_LSOF_PID" ]; then\n  case " $* " in *" cwd "*) '${LSOF}' -a -p "$CLEANUP_REAL_LSOF_PID" "$@"; exit 0 ;; esac\n  exec '${LSOF}' -a -p "$CLEANUP_REAL_LSOF_PID" "$@"\nfi\n[ -n "$CLEANUP_REAL_LSOF" ] && exec '${LSOF}' "$@"\ncase " $* " in *" cwd "*) exit 0 ;; esac\nexit 1\n`, { mode: 0o755 });
 process.env.PATH = `${BIN}:${process.env.PATH}`;
-const realLsof = (t) => {
-  process.env.CLEANUP_REAL_LSOF = '1';
-  t.after(() => delete process.env.CLEANUP_REAL_LSOF);
+const realLsof = (t, pid) => {
+  if (pid) process.env.CLEANUP_REAL_LSOF_PID = String(pid);
+  else process.env.CLEANUP_REAL_LSOF = '1';
+  t.after(() => {
+    delete process.env.CLEANUP_REAL_LSOF;
+    delete process.env.CLEANUP_REAL_LSOF_PID;
+  });
 };
 
 const DAY = 86_400_000;
@@ -36,8 +40,11 @@ function age(path, days) {
   utimesSync(path, old, old);
 }
 
-function fixture() {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), 'cleanup-scan-')));
+const FIXTURE_WORKTREES = ['open', 'archived', 'landed', 'unlanded', 'orphan'];
+let fixtureTemplate;
+function baseFixture() {
+  if (fixtureTemplate) return fixtureTemplate;
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'cleanup-scan-tpl-')));
   const main = join(root, 'main');
   mkdirSync(main);
   git(main, 'init', '-q', '-b', 'next');
@@ -56,7 +63,7 @@ function fixture() {
     return path;
   };
   const open = worktree('open');
-  const archived = worktree('archived');
+  worktree('archived');
   const landed = worktree('landed');
   writeFileSync(join(landed, 'a.txt'), 'two\n');
   writeFileSync(join(landed, 'new.txt'), 'new\n');
@@ -64,7 +71,7 @@ function fixture() {
   writeFileSync(join(main, 'new.txt'), 'new\n');
   const unlanded = worktree('unlanded');
   writeFileSync(join(unlanded, 'a.txt'), 'three\n');
-  const orphan = worktree('orphan');
+  worktree('orphan');
   const caches = join(main, 'apps', 'www');
   const ages = { '.next': 5, '.next-plite': 5, '.next-3000': 5, '.next-3001': 5, '.next-chip-a1': 5, '.next-s5': 3 };
   const lock = join(caches, '.next-3001', 'dev', 'lock');
@@ -88,6 +95,40 @@ function fixture() {
   const keptPort = join(open, 'apps', 'www', '.next-3002');
   mkdirSync(keptPort);
   age(keptPort, 5);
+  fixtureTemplate = { root };
+  return fixtureTemplate;
+}
+
+function fixture() {
+  const tpl = baseFixture();
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'cleanup-scan-')));
+  cpSync(tpl.root, root, { recursive: true, preserveTimestamps: true });
+  const main = join(root, 'main');
+  for (const name of FIXTURE_WORKTREES) {
+    const wtGit = join(root, name, '.git');
+    writeFileSync(wtGit, readFileSync(wtGit, 'utf8').replaceAll(tpl.root, root));
+    const gitdir = join(main, '.git', 'worktrees', name, 'gitdir');
+    writeFileSync(gitdir, readFileSync(gitdir, 'utf8').replaceAll(tpl.root, root));
+  }
+  const open = join(root, 'open');
+  const archived = join(root, 'archived');
+  const landed = join(root, 'landed');
+  const unlanded = join(root, 'unlanded');
+  const orphan = join(root, 'orphan');
+  const caches = join(main, 'apps', 'www');
+  const ages = { '.next': 5, '.next-plite': 5, '.next-3000': 5, '.next-3001': 5, '.next-chip-a1': 5, '.next-s5': 3 };
+  const lock = join(caches, '.next-3001', 'dev', 'lock');
+  for (const [name, days] of Object.entries(ages)) {
+    const dev = join(caches, name, 'dev');
+    for (const path of [lock, join(caches, name, 'BUILD_ID'), dev, join(caches, name)]) if (existsSync(path)) age(path, days);
+  }
+  const buildLock = join(caches, '.next', 'dev', 'lock');
+  const manifestDir = join(caches, '.next-plite', 'dev', 'server');
+  for (const path of [buildLock, join(caches, '.next', 'dev'), join(caches, '.next', 'cache'), manifestDir, join(caches, '.next-plite', 'dev'), join(caches, '.next-plite', 'cache')]) age(path, 5);
+  const keptCache = join(open, 'apps', 'www', '.next-chip-z');
+  age(keptCache, 5);
+  const keptPort = join(open, 'apps', 'www', '.next-3002');
+  age(keptPort, 5);
   const sessions = [
     { cwd: open, isArchived: false, isRunning: true, title: 'still running' },
     { cwd: orphan, isArchived: false, isRunning: false, title: 'open but idle' },
@@ -103,9 +144,9 @@ const verdictOf = (f, path) => scan({ repo: f.main, sessions: f.sessions, sizes:
 const landedOf = (path) => landed({ worktree: path })[0];
 
 test('only folders no open session, process or server uses are marked safe', async (t) => {
-  realLsof(t);
   const f = fixture();
   const server = spawn('tail', ['-f', f.lock, f.buildLock], { stdio: 'ignore' });
+  realLsof(t, server.pid);
   await new Promise((done) => setTimeout(done, 300));
   try {
     const now = Date.now();
@@ -404,12 +445,12 @@ test('a registered worktree named like a cache is never listed as a cache', () =
 });
 
 test('a server holding a cache deep inside a worktree keeps it', async (t) => {
-  realLsof(t);
   const f = fixture();
   const deep = join(f.archived, 'l1', 'l2', 'l3', 'l4', '.next-deep', 'dev');
   mkdirSync(deep, { recursive: true });
   writeFileSync(join(deep, 'lock'), '');
   const server = spawn('tail', ['-f', join(deep, 'lock')], { cwd: f.root, stdio: 'ignore' });
+  realLsof(t, server.pid);
   await new Promise((done) => setTimeout(done, 300));
   try {
     assert.equal(verdictOf(f, f.archived), 'keep');
@@ -570,9 +611,9 @@ test('--delete deletes each save a week after it was written and keeps the run r
 });
 
 test('a worktree a running process works in is neither marked safe nor deleted', async (t) => {
-  realLsof(t);
   const f = fixture();
   const shell = spawn('tail', ['-f', '/dev/null'], { cwd: f.archived, stdio: 'ignore' });
+  realLsof(t, shell.pid);
   await new Promise((done) => setTimeout(done, 300));
   try {
     assert.equal(verdictOf(f, f.archived), 'keep');
@@ -749,9 +790,9 @@ test('the session-start hint counts only folders with no writes for three days t
 });
 
 test('--remove stops the processes in a landed worktree, saves its uncommitted change and removes it without judging it', async (t) => {
-  realLsof(t);
   const f = fixture();
   const server = spawn('tail', ['-f', '/dev/null'], { cwd: f.open, stdio: 'ignore' });
+  realLsof(t, server.pid);
   await new Promise((done) => setTimeout(done, 300));
   const exited = new Promise((done) => server.on('exit', done));
   writeFileSync(join(f.open, 'a.txt'), 'four\n');

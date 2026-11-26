@@ -3,36 +3,31 @@
   "skills": {
     "chips": {
       "source": "udecode/dotai",
+      "commit": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce",
       "sourceType": "github",
       "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "9dceaaae1c831a00e3424271e8c0f43624c691eb8dee78fb61f96f2ab643d580"
+      "computedHash": "967493e7881e27ca7aca5839097c8b047177bfb9dd4e0001d81cf6e856866def"
     },
     "cleanup": {
       "source": "udecode/dotai",
-      "commit": "c84b734456d139fdce38d4b4adb3962fad941dcd",
+      "commit": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce",
       "sourceType": "github",
       "skillPath": "skills/cleanup/SKILL.md",
-      "computedHash": "8861aa2d12e5019f4c2520cadd6e738c9b5c11e46a44e3a958c03ac7450cd962"
+      "computedHash": "6932706a29a6d499fdc04de150dd65ac7f0b15562c79cc1bd1e450d498682263"
     },
     "clip": {
       "source": "udecode/dotai",
-      "commit": "7e289eb97157a7ceb82b99e2349e9145d253459c",
+      "commit": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce",
       "sourceType": "github",
       "skillPath": "skills/clip/SKILL.md",
-      "computedHash": "3f76242895ed76a33687dd9a880988216ab2b319e7ea615e854c11cddf6a92f4"
-    },
-    "plan-page": {
-      "source": "udecode/dotai",
-      "commit": "bee2ac87131de8bd69205851b1d8cb5212e696b7",
-      "sourceType": "github",
-      "skillPath": "skills/plan-page/SKILL.md",
-      "computedHash": "9ee00dab52b875cc9972f552a55daa77114b77b8f10e5d422dd1cb8e85a64afd"
+      "computedHash": "1147e0c9cd237f966840f443d7442420120266f0eee795f2f0f71656816e9657"
     },
     "redo": {
       "source": "udecode/dotai",
+      "commit": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce",
       "sourceType": "github",
       "skillPath": "skills/redo/SKILL.md",
-      "computedHash": "fa21b464ac3c628daab831b0c9ca9fc2154e32428bc1067883bc06c3b63fb3ca"
+      "computedHash": "887bf138a64bf5750011b04066c741159e0108d4923b3fd1088c5f7d131960b9"
     },
     "shadcn": {
       "source": "shadcn/ui",

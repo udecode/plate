@@ -11,7 +11,6 @@ import {
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { mainCheckout } from '../../.agents/pstack/plan-page.mjs';
 import { landed, stateOf, waitsOnOwner } from '../../.agents/pstack/status.mjs';
 import {
   gitMerges,
@@ -1624,6 +1623,12 @@ const boardActivity = (root) =>
   realpathSync(root) === realpathSync(process.cwd())
     ? gitMerges().activeAt
     : () => null;
+
+const mainCheckout = (root) => {
+  const out = git(root, ['worktree', 'list', '--porcelain']);
+  const first = out?.split('\n').find((line) => line.startsWith('worktree '));
+  return first ? first.slice('worktree '.length) : root;
+};
 
 const openDecides = (root, config) => {
   const path = join(

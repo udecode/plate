@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]
-//    or: node .agents/pstack/land.mjs --friction
 // Lands this worktree's task on <branch>, the branch .agents/pstack.json
 // names, as one commit. It commits every change in the worktree, squashes the
 // task's commits into one with the message file's text, rebases it onto the
@@ -73,28 +72,21 @@
 // land.mjs rebases both halves and checks them again. When a rebase changes the folder
 // land.mjs runs from or .agents/pstack.json, the run goes on in a new process
 // that loads the rebased copy, once per landing, and the 55 minutes count the
-// time both processes took. Each run past the squash appends a line to
-// pstack-land-runs.jsonl in the git common directory when it starts and another
-// when it exits, so a run that a signal stopped still counts, and --friction
-// prints the runs of the last day. A run that exits 75, other than for a GH006
-// or a connection or server error, or is stopped loses all its minutes, and
-// any other run loses its wait for cores. When no land-friction task is open
-// and the runs of the last day since the last one closed lost an hour, the run
-// offers one in the suggested-task ledger as it exits.
+// time both processes took.
 
 import { spawn, spawnSync } from 'node:child_process';
-import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { devNull, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { effectiveModelsSheet, findLead, leadLabel, maxEffort, pluginLag, runtimeFromEnv, sheetMisses } from './lead.mjs';
 import { defaultsRefusal } from './plan-page.mjs';
-import { alive, LAND_CHECK, reserve } from './proof.mjs';
+import { LAND_CHECK, reserve } from './proof.mjs';
 import { ledgerPath, readTasks, TASK_ID } from './tasks.mjs';
 import { remoteWorkingBranch } from './working-branch.mjs';
 import { findings } from './writing-check.mjs';
 
-const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry], or node .agents/pstack/land.mjs --friction';
+const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
 const REQUIRED = [
   ['Beyond the ask', 'name every change the request did not ask for'],
@@ -127,20 +119,10 @@ const EX_TEMPFAIL = 75;
 const MOVED = /\[rejected\]|fetch first|non-fast-forward|cannot lock ref/u;
 // A 5xx or a lost connection can pass on a later try; a 4xx refuses the request.
 const TRANSIENT = /^fatal: unable to access '[^']*': (?!The requested URL returned error: 4)|^ssh: (?:connect to host|Could not resolve hostname) |^error: RPC failed; (?!HTTP 4)/mu;
-// An empty GH006 or a failed connection ends a run that no change to land.mjs could have saved.
-const OUTAGES = ['declined', 'transient'];
 const RECHECK_LOCAL = 'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.';
-const FRICTION_TOPIC = 'land-friction';
-const FRICTION_BOUND_MINUTES = 60;
-const FRICTION_WINDOW = 24 * 60 * 60_000;
-const RUNS_KEPT = 7 * 24 * 60 * 60_000;
 const session = process.env.CLAUDE_CODE_HOST_SESSION_ID || process.env.CLAUDE_CODE_SESSION_ID || process.env.CODEX_SESSION_ID || process.env.T3CODE_THREAD_ID || '';
-const startedAt = Date.now();
-const runId = `${process.pid}-${startedAt}`;
 
-let why = '';
 const fail = (message, code = 1) => {
-  why = message.split('\n')[0];
   console.error(`land.mjs: ${message}`);
   process.exit(code);
 };
@@ -179,13 +161,11 @@ function declinedWithoutReason(stderr) {
 const args = process.argv.slice(2);
 let messageFile = null;
 let dry = false;
-let report = false;
 const checks = [];
 const rerunArgs = [];
 for (let i = 0; i < args.length; i += 1) {
   if (args[i] === '--message' && args[i + 1]) messageFile = args[++i];
   else if (args[i] === '--dry') dry = true;
-  else if (args[i] === '--friction' && args.length === 1) report = true;
   else if (args[i] === '--check' && args[i + 1]) {
     checks.push(args[++i]);
     rerunArgs.push('--check', args[i]);
@@ -197,11 +177,6 @@ const messageText = messageFile === null ? null : readFileSync(messageFile, 'utf
 process.chdir(must('rev-parse', '--show-toplevel'));
 const helpersDir = relative(realpathSync(process.cwd()), realpathSync(dirname(fileURLToPath(import.meta.url))));
 const common = must('rev-parse', '--path-format=absolute', '--git-common-dir');
-const RUNS = join(common, 'pstack-land-runs.jsonl');
-if (report) {
-  printFriction();
-  process.exit(0);
-}
 const config = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
 const { branch, protected: guarded, lintFix, plans = 'docs/plans', companion, generated = [], freshEnv = [], landChecks = [] } = config;
 checks.splice(0, checks.length, ...new Set([...landChecks, ...checks]));
@@ -270,17 +245,13 @@ const gitAsync = (args) =>
 
 let fetched;
 let share = null;
-let waitedMs = 0;
-let checkedMs = 0;
 let moves = 0;
 let declines = 0;
 let outages = 0;
-let cause = null;
 
 function takeCores() {
   if (share) return;
   share = reserve(LAND_WORKERS, 'land.mjs', { first: true });
-  waitedMs += share.waited;
 }
 
 function dropCores() {
@@ -323,9 +294,6 @@ async function restartOnRebasedHelpers(before) {
   if (git('diff', '--quiet', before, 'HEAD', '--', helpersDir, '.agents/pstack.json').status === 0) return;
   console.log(`the rebase changed ${helpersDir} or .agents/pstack.json, so land.mjs goes on in a new process that loads the rebased copy`);
   dropCores();
-  process.off('exit', recordRun);
-  why = 'went on in a new process that loads the rebased helpers';
-  recordRun('restarted');
   const child = spawn(process.execPath, [join(helpersDir, 'land.mjs'), ...rerunArgs], {
     stdio: 'inherit',
     env: { ...process.env, PSTACK_LAND_RESTARTED: '1', PSTACK_LAND_SPENT_MS: String(Math.round(elapsed())) },
@@ -366,7 +334,6 @@ async function fetchCompanionFirst(rerun) {
 function failFetch(run, command, rerun) {
   if (run.status === 0) return;
   if (!TRANSIENT.test(run.stderr)) fail(`${command} failed: ${run.stderr.trim()}`);
-  cause = 'transient';
   fail(`${command} still failed on the connection or with a server error. ${rerun}\n${run.stderr.trim()}`, EX_TEMPFAIL);
 }
 
@@ -752,163 +719,6 @@ function squash({ subject, body }) {
   return { plan, lead, own: own.length > 0, theirs: theirs.length > 0 };
 }
 
-function minutesOf(ms) {
-  return Math.round(ms / 6_000) / 10;
-}
-
-function loggedRows() {
-  return (existsSync(RUNS) ? readFileSync(RUNS, 'utf8') : '').split('\n').flatMap((line) => {
-    try {
-      return line ? [JSON.parse(line)] : [];
-    } catch {
-      return [];
-    }
-  });
-}
-
-// A run writes a row without `exit` when it starts and its full row when it exits. A signal, such as a timeout's, skips Node's exit
-// handlers, so a started run whose process is gone counts as stopped from its start until now, capped at the hour limit.
-function readRuns() {
-  const now = Date.now();
-  const rows = loggedRows();
-  const ended = rows.filter((row) => 'exit' in row);
-  const exited = new Set(ended.map((row) => row.id));
-  const stopped = rows
-    .filter((row) => !('exit' in row) && !exited.has(row.id) && !alive(row.pid))
-    .map((row) => {
-      const end = Math.min(now, Date.parse(row.start) + COMMAND_LIMIT);
-      return { ...row, end: new Date(end).toISOString(), minutes: minutesOf(end - Date.parse(row.start)), exit: null, waited: 0, checked: 0, moves: 0, declines: 0, why: 'stopped by a signal, such as a timeout' };
-    });
-  return [...ended, ...stopped].sort((one, other) => Date.parse(one.end) - Date.parse(other.end));
-}
-
-function thrownAway(run) {
-  return run.exit === null || (run.exit === EX_TEMPFAIL && !OUTAGES.includes(run.cause));
-}
-
-function lostMinutes(run) {
-  return thrownAway(run) ? run.minutes : run.waited;
-}
-
-function total(runs, minutes) {
-  return Math.round(runs.reduce((sum, run) => sum + minutes(run), 0) * 10) / 10;
-}
-
-function logRun(row) {
-  appendFileSync(RUNS, `${JSON.stringify({ id: runId, pid: process.pid, start: new Date(startedAt).toISOString(), session: session || null, subject: message.subject, ...row })}\n`);
-}
-
-function startRun() {
-  try {
-    logRun({});
-  } catch (error) {
-    console.error(`land.mjs: recording this run in ${RUNS} failed: ${error.message}`);
-  }
-  process.on('exit', recordRun);
-}
-
-function recordRun(code) {
-  try {
-    const end = Date.now();
-    logRun({
-      end: new Date(end).toISOString(),
-      minutes: minutesOf(end - startedAt),
-      exit: code,
-      waited: minutesOf(waitedMs),
-      checked: minutesOf(checkedMs),
-      moves,
-      declines,
-      cause,
-      why: code === 0 ? 'landed' : (why || 'land.mjs threw').slice(0, 200),
-    });
-    if (statSync(RUNS).size > 1_000_000) writeFileSync(RUNS, loggedRows().filter((kept) => Date.parse(kept.end ?? kept.start) > end - RUNS_KEPT).map((kept) => `${JSON.stringify(kept)}\n`).join(''));
-    offerFrictionFix(end);
-  } catch (error) {
-    console.error(`land.mjs: recording this run in ${RUNS} failed: ${error.message}`);
-  }
-}
-
-const lockFresh = (lock) => Date.now() - (statSync(lock, { throwIfNoEntry: false })?.mtimeMs ?? 0) < 60_000;
-
-// A landing that dies inside its offer leaves the lock behind. Only the holder of `<lock>.break` removes a stale lock, and it checks
-// the lock again first, so a landing that saw it stale never removes the lock another landing just took.
-function takeLock(lock) {
-  try {
-    mkdirSync(lock);
-    return true;
-  } catch {
-    if (lockFresh(lock)) return false;
-  }
-  const breaker = `${lock}.break`;
-  try {
-    mkdirSync(breaker);
-  } catch {
-    return false;
-  }
-  try {
-    if (!lockFresh(lock)) rmSync(lock, { recursive: true, force: true });
-    mkdirSync(lock);
-    return true;
-  } catch {
-    return false;
-  } finally {
-    rmSync(breaker, { recursive: true, force: true });
-  }
-}
-
-function offerFrictionFix(now) {
-  if (process.env.PSTACK_READ_ONLY) return;
-  const ledger = ledgerFile();
-  if (!existsSync(ledger)) return;
-  // The window starts a day ago at the earliest, so the day's sum bounds it, and a quiet day skips reading the ledger.
-  if (total(readRuns().filter((run) => Date.parse(run.end) > now - FRICTION_WINDOW), lostMinutes) < FRICTION_BOUND_MINUTES) return;
-  const lock = join(common, 'pstack-land-friction.lock');
-  if (!takeLock(lock)) return;
-  try {
-    const rows = readFileSync(ledger, 'utf8').split('\n').filter(Boolean);
-    const ours = [...readTasks(rows).values()].filter((task) => task.topic === FRICTION_TOPIC);
-    if (ours.some((task) => task.status === 'offered' || task.status === 'started')) return;
-    const ids = new Set(ours.map((task) => task.id));
-    const closed = rows.map((row) => row.split('\t')).filter((cells) => ids.has(cells[2]?.split(' ')[0])).map((cells) => Date.parse(cells[0]));
-    const since = Math.max(now - FRICTION_WINDOW, ...closed.filter(Number.isFinite));
-    const runs = readRuns().filter((run) => Date.parse(run.end) > since);
-    const lost = total(runs, lostMinutes);
-    if (lost < FRICTION_BOUND_MINUTES) return;
-    const thrown = runs.filter(thrownAway);
-    const waited = total(runs.filter((run) => !thrownAway(run)), (run) => run.waited);
-    const helper = join(dirname(fileURLToPath(import.meta.url)), 'decisions-check.mjs');
-    const call = (...words) => {
-      const run = spawnSync(process.execPath, [helper, ...words], { encoding: 'utf8' });
-      if (run.status !== 0) throw new Error(`decisions-check.mjs ${words[0]} failed: ${`${run.stderr}${run.stdout}`.trim()}`);
-      return run.stdout.trim();
-    };
-    const id = call('chips', 'id');
-    call(
-      'append',
-      ledger,
-      'chip',
-      `${id} Fix the landing friction land.mjs measured`,
-      `${runs.length} land.mjs runs since ${new Date(since).toISOString().slice(0, 16)} lost ${lost} minutes: ${thrown.length} exited 75 or stopped, after ${total(thrown, (run) => run.minutes)} minutes in all, and the rest waited ${waited} minutes for cores. ` +
-        '`node .agents/pstack/land.mjs --friction` lists the runs. Find what made them slow and fix it in the shared land.mjs or proof.mjs through sync-pstack Lesson mode.',
-      `writes: .agents/pstack/land.mjs, .agents/pstack/proof.mjs; topic: ${FRICTION_TOPIC}; kind: fix; priority: P3; via: hook; session: none`,
-      'offered'
-    );
-    console.log(`land.mjs offered ${id} in ${ledger}, because landings lost ${lost} minutes since ${new Date(since).toISOString().slice(0, 16)}; /chips all cards it. Say so in one line.`);
-  } finally {
-    rmSync(lock, { recursive: true, force: true });
-  }
-}
-
-function printFriction() {
-  const since = Date.now() - FRICTION_WINDOW;
-  const runs = readRuns().filter((run) => Date.parse(run.end) > since);
-  for (const run of runs) {
-    console.log([run.end.slice(5, 16), `${run.minutes}m`, `exit ${run.exit ?? 'signal'}`, `waited ${run.waited}m`, `checked ${run.checked}m`, `moves ${run.moves}`, `declines ${run.declines}`, run.session ?? '-', run.why].join('\t'));
-  }
-  const lost = total(runs, lostMinutes);
-  console.log(`${runs.length} land.mjs runs in the last day lost ${lost} minutes to exit 75, to a stop or to waiting for cores; past ${FRICTION_BOUND_MINUTES} since the last ${FRICTION_TOPIC} task closed, a landing offers one.`);
-}
-
 await fetchCompanionFirst('This run committed nothing, so run land.mjs again with the same options.');
 // <branch>'s config, because a task could loosen its own copy, and a branch cut before the split still carries the config from before it.
 const settled = JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}');
@@ -949,7 +759,6 @@ if (dry) {
 }
 const landing = squash(message);
 const { plan, lead } = landing;
-startRun();
 await rebaseFetched();
 
 const record = must('rev-parse', '--git-path', 'pstack-land-checked');
@@ -1006,7 +815,6 @@ function runCheck(command, { asLanding = true } = {}) {
 }
 
 async function check(rebased = false) {
-  const started = performance.now();
   rmSync(record, { force: true });
   const changed = [
     ...nul(must('diff', '-z', '--name-only', '--diff-filter=d', fetched.own, 'HEAD')),
@@ -1037,7 +845,6 @@ async function check(rebased = false) {
     const late = await lateCompanionHalf();
     if (late) {
       console.log(`check failed: ${command}; it ran on ${late} without that commit's ${pair.dir} half, which reached origin/${branch} after land.mjs read it, so land.mjs checks both halves again.`);
-      checkedMs += performance.now() - started;
       return retry(`${pair.dir}'s origin/${branch}`);
     }
     fail(`check failed: ${command}; the squashed commit stays local${rebased ? `, rebased onto the commits origin/${branch} gained while its checks ran, which may cause the failure` : ''}`);
@@ -1047,7 +854,6 @@ async function check(rebased = false) {
     fail(`the checks changed files; review them and run land.mjs again, which folds them into the commit:\n${status}`);
   }
   writeFileSync(record, stamp());
-  checkedMs += performance.now() - started;
 }
 
 async function retry(where) {
@@ -1091,14 +897,12 @@ if (mode === 'push') {
     } else if (declined && waitOut(declines, `GitHub declined the push to ${branch} with an empty GH006; pushing again`)) {
       declines += 1;
     } else if (declined) {
-      cause = 'declined';
       fail(
         `GitHub declined the push to ${branch} with an empty GH006 ${declines === 0 ? 'once' : `${declines + 1} times`}, over the ${Math.round(elapsed() / 60_000)} minutes land.mjs has run. ${keptLocal}\n${run.stderr.trim()}`,
         EX_TEMPFAIL
       );
     } else if (TRANSIENT.test(run.stderr)) {
       if (waitOutOutage(`git push origin HEAD:${branch}`)) continue;
-      cause = 'transient';
       fail(`git push origin HEAD:${branch} still failed on the connection or with a server error. ${keptLocal}\n${run.stderr.trim()}`, EX_TEMPFAIL);
     } else {
       fail(`git push origin HEAD:${branch} failed: ${run.stderr.trim()}`);

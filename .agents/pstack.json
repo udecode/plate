@@ -243,7 +243,6 @@
     "role": "1026229447751376996"
   },
   "plans": "docs/plans",
-  "pageWork": "the verdict an `explore` run converges on, and a `radar` pass",
   "companion": {
     "dir": ".git-private",
     "list": ".gitprivate",
@@ -333,7 +332,7 @@
     "verify-plate"
   ],
   "synced": {
-    "source": "b84801910de534477623be4fc93037668e1f27a4"
+    "source": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce"
   },
   "pageTopic": {
     "field": "review_scopes",

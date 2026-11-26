@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { mkdtempSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -14,13 +14,17 @@ import {
   checkTitle,
   checkTrail,
   CLIP,
+  CLIP_CONFIG,
+  projectShape,
   renderClip,
   alignBeats,
   renderPair,
   contentBox,
   padBox,
   pageColor,
-  replayLayout,
+  pairLayout,
+  cardLayout,
+  reproLayout,
   fitCrop,
   openClip,
   fixCaption,
@@ -146,6 +150,7 @@ describe('a take', () => {
     expect(checkBar(one)).toEqual([expect.stringContaining('needs a title bar')])
     expect(checkBar(one, { tag: 'board', title: 'notes in your doc' })).toEqual([])
     expect(checkBar({ ...one, view: CLIP.wide })).toEqual([])
+    expect(checkBar({ ...one, view: CLIP.pair })).toEqual([expect.stringContaining('a before-and-after clip needs a title bar')])
   })
 
   test('counts typing as motion and a blinking caret as still', () => {
@@ -174,22 +179,33 @@ describe('a take', () => {
 })
 
 describe('a before-and-after pair', () => {
-  const at = (crop?: Take['crop'], view = CLIP.wide): Take => ({ ...take([{ t: 0, text: 'Open the menu' }]), view, crop })
+  const at = (view = CLIP.pair, crop?: Take['crop']): Take => ({ ...take([{ t: 0, text: 'Open the menu' }]), view, crop })
 
-  test('plays as one clip when both takes film the same shape and crop size', () => {
-    expect(checkPair(at({ x: 0, y: 0, w: 600, h: 400 }), at({ x: 40, y: 20, w: 600, h: 400 }))).toEqual([])
+  test('plays as one clip when both takes film the 16:9 pair shape', () => {
+    expect(checkPair(at(), at())).toEqual([])
+  })
+
+  test('refuses a take in any other shape or with a crop, so both copies fit the clip side by side', () => {
+    expect(checkPair(at(CLIP.x), at(CLIP.x))).toEqual([
+      "the before take films 540x654@2; film a before-and-after take with openClip's { shape: 'pair' } and no crop, so both copies fit the clip side by side",
+      "the after take films 540x654@2; film a before-and-after take with openClip's { shape: 'pair' } and no crop, so both copies fit the clip side by side",
+    ])
+    expect(checkPair(at(CLIP.wide), at(CLIP.wide))).toHaveLength(2)
+    expect(checkPair(at(CLIP.pair, { x: 0, y: 0, w: 600, h: 400 }), at(CLIP.pair, { x: 0, y: 0, w: 600, h: 400 }))).toHaveLength(2)
   })
 
   test('refuses takes whose frames differ, naming both sizes', () => {
-    expect(checkPair(at({ x: 0, y: 0, w: 600, h: 400 }), at({ x: 0, y: 0, w: 640, h: 400 }))).toEqual([
-      'the before take films 1100x720@1 crop 600x400 and the after take 1100x720@1 crop 640x400; film both with the same shape and crop size',
-    ])
-    expect(checkPair(at(undefined, CLIP.wide), at(undefined, CLIP.x))).toHaveLength(1)
+    expect(checkPair(at(), at(CLIP.x))[0]).toBe('the before take films 612x530@3 and the after take 540x654@2; film both with the same shape and crop size')
+  })
+
+  test("lets a bug clip's reference and beta takes keep their repro window", () => {
+    const repro = { ...at(CLIP.repro), repro: true }
+    expect(checkPair(repro, repro)).toEqual([])
   })
 
   test('refuses takes with different beats, which leave nothing to line them up by', () => {
-    const one = take([{ t: 0, text: 'Bold it' }])
-    const two = take([{ t: 0, text: 'Bold it' }, { t: 2, text: 'Undo it' }])
+    const one = at()
+    const two = { ...at(), captions: [...at().captions, { t: 2, text: 'Undo it' }] }
     expect(checkPair(one, two)).toEqual(['the before take has 1 captions and the after take 2; caption the same beats in both, so they play in step'])
   })
 
@@ -220,39 +236,74 @@ describe('a before-and-after pair', () => {
     expect(padBox(undefined, [2, 2], 128, 128)).toEqual({ x: 0, y: 0, w: 128, h: 128 })
   })
 
-  test('replays two copies in rows, or in columns when that shows a tall crop larger, each as large as the page allows but never past its own size', () => {
+  test('puts a whole pair take beside its pair at full size and zooms a small one up to its own pixels, on a canvas as tall as its cards and never past 16:9', () => {
+    const { width } = CLIP.pairCanvas
+    const zoom = CLIP.pair.scale / CLIP.pairCanvas.scale
+    const at = pairLayout({ x: 0, y: 0, w: CLIP.pair.width, h: CLIP.pair.height }, zoom)
+    expect(at.k).toBe(1)
+    // Each card's border sits 2 px outside its copy, its band 28 px above, and the cards keep 16 px from the canvas edges and between them.
+    expect(at.x[0] - 2).toBe(16)
+    expect(at.x[1] - at.x[0] - at.panel.w - 4).toBe(16)
+    expect(at.y[0] - 28).toBe(16)
+    expect(at.y[0] + at.panel.h + 2).toBe(at.height - 16)
+    const wide = pairLayout({ x: 0, y: 0, w: 380, h: 100 }, zoom)
+    expect(wide.k).toBeGreaterThan(1.5)
+    expect(wide.height).toBe(16 + 28 + 100 * wide.k + 2 + 16)
+    expect(pairLayout({ x: 0, y: 0, w: 100, h: 50 }, zoom).k).toBe(zoom)
+    expect(pairLayout({ x: 0, y: 0, w: 300, h: 900 }, zoom).height + CLIP.pairHead.height).toBeCloseTo((width * 9) / 16)
+  })
+
+  test('replays two cards in columns, or in rows when that shows a wide crop larger, each copy as large as the page allows but never past its own size', () => {
     const { width, height } = CLIP.x
-    const tab = 17
-    const whole = replayLayout({ x: 0, y: 0, w: width, h: height }, width, height, tab)
-    expect(whole.k).toBeCloseTo((height - 12 - 8 - tab) / 2 / height)
-    expect(whole.y[0]).toBeCloseTo(0)
-    expect(whole.y[1] - whole.y[0]).toBeCloseTo(whole.panel.h + 8 + tab)
-    expect(whole.y[1] + whole.panel.h).toBeCloseTo(height - 12)
+    // Each card adds a 28 px band above its copy and a 2 px border around it, and the cards keep 16 px from the page's edges and between them.
+    const card = { b: 28, e: 2, m: 16, g: 16 }
+    const whole = cardLayout({ x: 0, y: 0, w: width, h: 330 }, width, height, 1, true)
     expect(whole.across).toBe(false)
+    expect(whole.k).toBeCloseTo((height - 2 * card.m - card.g - 2 * (card.b + card.e)) / 2 / 330)
+    expect(whole.y[0]).toBeCloseTo(card.m + card.b)
+    expect(whole.y[1] - whole.y[0]).toBeCloseTo(whole.panel.h + card.e + card.g + card.b)
+    expect(whole.y[1] + whole.panel.h + card.e).toBeCloseTo(height - card.m)
     expect(whole.x[0]).toBeCloseTo((width - whole.panel.w) / 2)
-    const narrow = replayLayout({ x: 100, y: 0, w: 200, h: 300 }, width, height, tab)
+    const narrow = cardLayout({ x: 100, y: 0, w: 200, h: 200 }, width, height, 1, true)
     expect(narrow.k).toBe(1)
-    expect(narrow.panel).toEqual({ w: 200, h: 300 })
-    expect(narrow.across).toBe(false)
-    expect(narrow.y[0]).toBeCloseTo((height - 12 - 600 - 8 - tab) / 2)
-    const wide = replayLayout({ x: 0, y: 0, w: width, h: 100 }, width, height, tab)
-    expect(wide.panel.w).toBeCloseTo(width - 24)
-    expect(wide.x[0]).toBeCloseTo(12)
-    const tall = replayLayout({ x: 0, y: 0, w: 200, h: 640 }, width, height, tab)
+    expect(narrow.panel).toEqual({ w: 200, h: 200 })
+    expect(narrow.across).toBe(true)
+    const tall = cardLayout({ x: 0, y: 0, w: 200, h: 540 }, width, height, 1, true)
     expect(tall.across).toBe(true)
-    expect(tall.k).toBeCloseTo(Math.min(1, (width - 24 - 8) / 2 / 200, (height - 12 - tab) / 640))
-    expect(tall.k).toBeGreaterThan((height - 12 - 8 - tab) / 2 / 640)
     expect(tall.y).toEqual([tall.y[0], tall.y[0]])
-    expect(tall.y[0]).toBeGreaterThanOrEqual(tab)
-    expect(tall.x[1] - tall.x[0]).toBeCloseTo(tall.panel.w + 8)
+    expect(tall.y[0]).toBeGreaterThanOrEqual(card.m + card.b)
+    expect(tall.x[1] - tall.x[0]).toBeCloseTo(tall.panel.w + 2 * card.e + card.g)
     expect(tall.x[0] + tall.x[1] + tall.panel.w).toBeCloseTo(width)
+    expect(cardLayout({ x: 0, y: 0, w: 200, h: 540 }, width, height, 1, false).across).toBe(true)
+  })
+
+  test("fits a bug clip's page to its two cards, never past its bound", () => {
+    const card = { b: 28, e: 2, m: 16, g: 16 }
+    const bound = CLIP.reproStage
+    // A small crop plays in columns at 1×, so the page is two cards wide and one card tall.
+    const small = reproLayout({ x: 0, y: 0, w: 300, h: 200 })
+    expect(small.k).toBe(1)
+    expect(small.across).toBe(true)
+    expect(small.panel).toEqual({ w: 300, h: 200 })
+    expect(small.width).toBe(2 * (300 + 2 * card.e) + card.g + 2 * card.m)
+    expect(small.height).toBe(card.b + 200 + card.e + 2 * card.m)
+    expect(small.x[0] + small.x[1] + small.panel.w).toBeCloseTo(small.width)
+    // The whole repro window plays stacked, shrunk to fit the bound but larger than side by side.
+    const window = reproLayout({ x: 0, y: 0, w: CLIP.repro.width, h: CLIP.repro.height })
+    expect(window.across).toBe(false)
+    expect(window.k).toBeLessThan(1)
+    expect(window.k).toBeGreaterThan(0.8)
+    expect(window.width).toBeLessThanOrEqual(bound.width)
+    expect(window.height).toBeLessThanOrEqual(bound.height)
+    // A narrow crop still gets a page wide enough for the head.
+    expect(reproLayout({ x: 0, y: 0, w: 120, h: 80 }).width).toBe(bound.minWidth)
   })
 
   test('an X clip with its bars is 2:3', () => {
     expect((CLIP.x.height + 80 + 76) / CLIP.x.width).toBe(3 / 2)
   })
 
-  test('stacks a before still above an after still, cropped to where they differ', async () => {
+  test('puts a before still beside an after still in cards, cropped to where they differ', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'clip-pair-'))
     const still = (name: string, boxes: string) => {
       const file = join(dir, `${name}.png`)
@@ -264,11 +315,20 @@ describe('a before-and-after pair', () => {
     const out = join(dir, 'pair.png')
     expect((await renderPair([before, after], out)).fails).toEqual([])
     const [w, h] = Bun.spawnSync(['ffprobe', '-v', 'error', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', out]).stdout.toString().trim().split(',').map(Number)
-    expect(w).toBe(400)
-    // Each panel is 150 px of page under a strip that holds its badge.
-    expect(h).toBeGreaterThan(2 * 150 + 8 + 2 * 20)
-    expect(h).toBeLessThan(2 * 150 + 8 + 2 * 60)
+    // Two 400 px crops fit the 800 px page side by side, each in a card with a 2 px border and a 16 px gap, inside 16 px of margin.
+    expect(w).toBe(2 * (400 + 4) + 16 + 32)
+    // Each card is 150 px of page under its 28 px band, over its 2 px border.
+    expect(h).toBe(28 + 150 + 2 + 32)
     expect((await renderPair([before, before], out)).fails[0]).toContain('show the same thing')
+    // Two phone screens that differ across their whole width still go side by side, because stacked they make a strip four times as tall as wide.
+    const tall = (name: string, color: string) => {
+      const file = join(dir, `${name}.png`)
+      Bun.spawnSync(['ffmpeg', '-v', 'error', '-f', 'lavfi', '-i', `color=c=white:s=400x860,drawbox=x=0:y=100:w=400:h=700:color=${color}:t=fill`, '-frames:v', '1', file])
+      return file
+    }
+    expect((await renderPair([tall('phone-before', 'gray'), tall('phone-after', 'black')], out)).fails).toEqual([])
+    const [pw, ph] = Bun.spawnSync(['ffprobe', '-v', 'error', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', out]).stdout.toString().trim().split(',').map(Number)
+    expect([pw, ph]).toEqual([2 * (400 + 4) + 16 + 32, 28 + 860 + 2 + 32])
     const other = join(dir, 'other.png')
     Bun.spawnSync(['ffmpeg', '-v', 'error', '-y', '-f', 'lavfi', '-i', 'color=c=white:s=640x480', '-frames:v', '1', other])
     expect((await renderPair([before, other], out)).fails[0]).toContain('take both at one size')
@@ -369,5 +429,88 @@ describe('the title bar', () => {
     paint(10, 20, 60, 6)
     paint(90, 90, 2, 2)
     expect(changedBox(before, after, w, h)).toEqual({ x: 6, y: 16, w: 68, h: 14 })
+  })
+})
+
+describe('drag and drop', () => {
+  const editor = async () => {
+    // A page set with setContent drops the drawn cursor's listeners, so the fixture loads as the page itself.
+    const clip = await openClip(`data:text/html,${encodeURIComponent('<div contenteditable style="font:20px sans-serif"><p>alpha beta gamma</p><p>delta epsilon</p></div>')}`)
+    // The middle of "beta" in the first paragraph, and the gap before "epsilon" in the second.
+    const [from, to] = await clip.page.evaluate(() => {
+      const [a, b] = [...document.querySelectorAll('p')].map(p => p.firstChild!)
+      const at = (node: Node, start: number, end: number) => {
+        const r = document.createRange()
+        r.setStart(node, start)
+        r.setEnd(node, end)
+        return r
+      }
+      const word = at(a, 6, 10).getBoundingClientRect()
+      const gap = at(b, 6, 6).getBoundingClientRect()
+      return [[word.x + word.width / 2, word.y + word.height / 2], [gap.x + 1, gap.y + gap.height / 2]] as [number, number][]
+    })
+    return { clip, from, to, text: () => clip.page.evaluate(() => [...document.querySelectorAll('p')].map(p => p.textContent)) }
+  }
+
+  test('drops a dragged text selection where the pointer lets go, with the drawn cursor following', async () => {
+    const { clip, from, to, text } = await editor()
+    try {
+      await clip.place(from[0] - 40, from[1] + 60)
+      await clip.glide(from[0], from[1])
+      await clip.wait(300)
+      await clip.dblclick()
+      expect(await clip.page.evaluate(() => getSelection()!.toString())).toBe('beta')
+      await clip.dragDrop(from, to)
+      const [source, target] = await text()
+      expect(source).not.toContain('beta')
+      expect(target).toMatch(/^delta beta ?epsilon$/)
+      await clip.wait(100)
+      const rows: TrailRow[] = await clip.page.evaluate(() => (window as any).__trail)
+      const held = rows.filter(r => r[1] === 1)
+      expect(Math.hypot(held.at(-1)![4] - held[0][4], held.at(-1)![5] - held[0][5])).toBeGreaterThan(20)
+      const last = rows.at(-1)!
+      expect([last[1], Math.round(last[2]), Math.round(last[3])]).toEqual([0, Math.round(to[0]), Math.round(to[1])])
+    } finally {
+      await clip.browser.close()
+    }
+  }, 30_000)
+
+  test('refuses a drag that starts nothing, instead of faking one', async () => {
+    const { clip, from, to, text } = await editor()
+    try {
+      await expect(clip.dragDrop(from, to)).rejects.toThrow('started a drag')
+      expect((await text())[1]).toBe('delta epsilon')
+    } finally {
+      await clip.browser.close()
+    }
+  }, 30_000)
+})
+
+describe('the project shape', () => {
+  const project = (config?: string) => {
+    const root = mkdtempSync(join(tmpdir(), 'clip-project-'))
+    if (config !== undefined) {
+      mkdirSync(join(root, '.agents'))
+      writeFileSync(join(root, CLIP_CONFIG), config)
+    }
+    const scene = join(root, 'docs/plans/artifacts/run')
+    mkdirSync(scene, { recursive: true })
+    return scene
+  }
+
+  test('a project whose config names wide films every clip wide, from a scene deep inside it', () => {
+    expect(projectShape([project('{"shape":"wide"}')])).toBe('wide')
+  })
+
+  test('a project with no config films X\'s shape', () => {
+    expect(projectShape([project()])).toBe('x')
+  })
+
+  test('the scene\'s project decides before the working folder\'s', () => {
+    expect(projectShape([project('{"shape":"x"}'), project('{"shape":"wide"}')])).toBe('x')
+  })
+
+  test('a config naming an unknown shape fails with the file and the shapes it takes', () => {
+    expect(() => projectShape([project('{"shape":"mobile"}')])).toThrow('use "wide" or "x"')
   })
 })
