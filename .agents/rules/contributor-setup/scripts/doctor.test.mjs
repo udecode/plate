@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
 
 const macOnly = process.platform !== 'darwin' && 'the fseventsd check runs only on macOS';
@@ -54,10 +54,27 @@ test('Antigravity doctor flags missing skills.json and isolated T3 profile mcp_c
 });
 
 test('Antigravity doctor passes when skills.json, plugins, and T3 profile mcp_config.json are configured', () => {
+  const root = resolve(import.meta.dirname, '../../../..');
+  const parseRef = (raw) => JSON.parse(raw)?.extraKnownMarketplaces?.['pstack-claude']?.source?.ref?.replace(/^v/u, '') ?? null;
+  const localVersion = parseRef(readFileSync(join(root, '.claude/settings.json'), 'utf8'));
+  const trunk = spawnSync('git', ['-C', root, 'show', 'origin/HEAD:.claude/settings.json'], { encoding: 'utf8' });
+  const remoteVersion = trunk.status === 0 ? parseRef(trunk.stdout) : null;
+  const pstackVersion = (() => {
+    if (!remoteVersion) return localVersion;
+    if (!localVersion) return remoteVersion;
+    const [l, r] = [localVersion, remoteVersion].map((v) => v.split('.').map(Number));
+    const at = r.findIndex((part, index) => part !== (l[index] ?? 0));
+    return at >= 0 && r[at] > (l[at] ?? 0) ? remoteVersion : localVersion;
+  })();
+  assert.ok(pstackVersion);
+
   const fakeHome = mkdtempSync(join(tmpdir(), 'doctor-agy-ok-'));
   mkdirSync(join(fakeHome, '.agents/skills'), { recursive: true });
   mkdirSync(join(fakeHome, '.gemini/config/plugins/pstack/.antigravity-plugin'), { recursive: true });
-  writeFileSync(join(fakeHome, '.gemini/config/plugins/pstack/.antigravity-plugin/plugin.json'), '{"name":"pstack","version":"0.9.145"}\n');
+  writeFileSync(
+    join(fakeHome, '.gemini/config/plugins/pstack/.antigravity-plugin/plugin.json'),
+    `${JSON.stringify({ name: 'pstack', version: pstackVersion })}\n`
+  );
   writeFileSync(join(fakeHome, '.gemini/config/skills.json'), '{"entries":[{"path":"~/.agents/skills"}]}\n');
   writeFileSync(join(fakeHome, '.gemini/config/mcp_config.json'), '{"mcpServers":{"playwright":{"command":"npx"}}}\n');
   mkdirSync(join(fakeHome, '.t3/userdata/providers/antigravity/abc123profile/config/plugins/pstack'), { recursive: true });
