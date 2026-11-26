@@ -40,20 +40,20 @@ Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs install` (or `
 
 ## Keep watching
 
-Keep one pinned `operator` session (Sonnet @medium, own worktree, commands prefixed `cd <main> && `). Prompt: `"Read <main>/.claude/worktrees/local-ci/.agents/skills/operator/SKILL.md in full and run watch mode. Prefix every <main> Bash call with cd <main> && ."`
+Keep one pinned `operator` T3 Code thread (own worktree, commands prefixed `cd <main> && `). Prompt: `"Read <main>/.claude/worktrees/local-ci/.agents/skills/operator/SKILL.md in full and run watch mode. Prefix every <main> shell call with cd <main> && ."`
 
-1. `get_session("self")`: if titled `operator`, run `watch` here.
-2. `list_sessions`: find unarchived `operator` (or legacy `Local CI`, retitle to `operator`). If mid-turn, stop; if idle, send the prompt via `SendMessage` and stop.
-3. Else `start_session` (`initiation: "user_asked"`, `context: "fresh"`, `title: "operator"`, `model: "claude-sonnet-5-5"`, `effort: "medium"`, `use_worktree: true`), `detach_session`, `set_pinned`.
+1. If this thread is already titled `operator`, run `watch` here.
+2. Search for an unarchived `operator` thread (or legacy `Local CI`, renaming it to `operator` via `t3_thread_update`). If it is mid-turn, stop; if idle, send the prompt via `t3_thread_send` and stop.
+3. Otherwise launch a fresh worktree thread titled `operator` with `t3_thread_launch`, send the prompt, and pin it via `t3_thread_organize(action: "pin")`.
 
 ## watch
 
-Never edit or land directly. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `check.mjs` step with `light`), 1 release, 1 friction judge. Spawn via `Agent` (`subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`). Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
+Never edit or land directly. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `check.mjs` step with `light`), 1 release, 1 friction judge. Spawn workers via `invoke_subagent` (or `delegate_task` for an isolated thread) in the background, inheriting the lead's model and effort (escalate a failed 1st fix attempt once to Neon `@xhigh`). Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
 
 1. First loop: note ISO time, run step 3, then start `<ci> wait --after <last-at>` in background.
 2. Handle each waking JSON event, then run step 3:
-   - `green` (main CI, tip `T` = `event.tip`): inspect unarchived, non-pinned, non-running T3 threads titled `⏳ ...` or `🔴 ...`. For each thread whose landed commit (from its `Session:` trailer in `git log` or last landed SHA) is an ancestor of `T` (`git merge-base --is-ancestor <sha> <T>`) with no newer unverified commit after `T`, strip the `⏳`/`🔴` prefix via `t3_thread_update` (`action: "rename"`) and call `t3_thread_organize(action: "archive")`. Never touch pinned threads (`pinned: true` or `📌`) or `status: "running"` threads.
-   - `red`/`flake` (`wake: true`): keep 1 queued event per step; drop if `startedIn` is active (`lastActivityAt` < 2h); prioritize big reds (`failures.length >= 3` with bisected `culprit`). On `red` with bisected `culprit` and `event.session`, rename `event.session` to `🔴 <name>` via `t3_thread_update` (skipping pinned threads), call `t3_thread_organize(action: "unarchive")` and `t3_thread_organize(action: "mark_unread")` if needed, and wake it via `t3_thread_send` per the 3-step green-convergence loop. Track attempts per streak: 1st runs normal fix; if still red with no clean revert, escalate 2nd once to Neon `@xhigh`. Never freeze on `decide`.
+   - `green` (main CI, tip `T` = `event.tip`): scan unarchived, non-pinned, non-running T3 threads titled `⏳ ...` or `🔴 ...` (including settled ones). For each thread whose landed commit (from its `Session:` trailer in `git log` or last landed SHA) is an ancestor of `T` (`git merge-base --is-ancestor <sha> <T>`) with no newer unverified commit after `T`, strip the `⏳`/`🔴` prefix via `t3_thread_update` (`action: "rename"`) and call `t3_thread_organize(action: "archive")`. Never touch pinned threads (`pinned: true` or `📌`) or running threads.
+   - `red`/`flake` (`wake: true`): keep 1 queued event per step; drop if `startedIn` is active (`lastActivityAt` < 2h); prioritize big reds (`failures.length >= 3` with bisected `culprit`). On `red` with bisected `culprit` and `event.session`, call `t3_thread_organize(action: "unsettle")` (in case the landed `⏳` thread self-settled), `t3_thread_organize(action: "unarchive")` and `t3_thread_organize(action: "mark_unread")` if needed, rename `event.session` to `🔴 <name>` via `t3_thread_update` (skipping pinned threads), and wake it via `t3_thread_send` per the 3-step green-convergence loop. Track attempts per streak: 1st runs normal fix; if still red with no clean revert, escalate 2nd once to Neon `@xhigh`. Never freeze on `decide`.
    - `passed`: drop from queue and message any running fix on that step to recheck and close.
    - `dry: true`: spawn **Dry brief**.
    - `broken`: check `output` and `plate-local-ci/launchd.log`; if install broke, run `pnpm install --frozen-lockfile` in `.claude/worktrees/local-ci`, else report without Discord.

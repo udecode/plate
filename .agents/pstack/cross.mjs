@@ -218,11 +218,6 @@ const withoutPushOrGitHub = (env) => {
   return guard;
 };
 
-export const onStop = (cleanup) => {
-  cleanups.add(cleanup);
-  stopOnSignals();
-};
-
 // Codex writes its final message only to the -o file, and reads a piped stdin
 // as more prompt, so stdin is closed and the answer comes only from that file.
 // A child that ignores SIGTERM, or leaves a descendant holding its pipes, is

@@ -1,6 +1,6 @@
 # Suggested tasks
 
-This file says how to offer, track, card, and close suggested tasks in the project's ledger. A card session works from `chips brief <id>` and reads this file only to offer or drop another task. Edit its shared source in `udecode/dotai`.
+This file says how to offer, track, card, and close suggested tasks in the project's ledger. A card session works from `chips brief <id>` and reads this file only to offer or drop another task. Edit its shared source in `udecode/ustack`.
 
 - **Suggested tasks.** A suggested task tracks side work outside the current run's target (or a measurement that cannot fit the one-hour time budget). A finding that pivots the run never becomes a suggested task. Every session works in its own worktree, while the live ledger lives in the main checkout's `docs/plans/artifacts/suggested-tasks.decisions.tsv` (git-ignored). `decisions-check.mjs` runs ledger commands from the main checkout automatically, and `setup.mjs` + `append` keep the ledger synced with `refs/pstack/ledger` on origin (or the companion repo's origin). Conflicting rows move to `suggested-tasks.refused.tsv`; check it before landing work from a pending local row.
   - **Commands.** Use `node .agents/pstack/decisions-check.mjs`:

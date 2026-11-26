@@ -1,6 +1,6 @@
 # Autopilot
 
-This file says which calls the lead makes on its own, which stops wait on the owner, and when a finding pivots a run. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/dotai`.
+This file says which calls the lead makes on its own, which stops wait on the owner, and when a finding pivots a run. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/ustack`.
 
 - **Autopilot.** Work runs to completion without pausing for the owner. Classify noticeable calls by attention level (`safe`, `look`, `answer`), take the recommended pick (or most reversible pick if unclear), record it in `## Defaults` (or the reply if planless) with the word that reverses it, and keep going. Minor calls need at most a log row.
   - **Hard stops.** Stop under `## Open questions` only for: a production deploy or release, pushing `main`, force-pushing a shared branch, deleting non-run data (excluding safe items `cleanup` handles), a missing product sign-in needed during exploration, or a configured models-sheet model that cannot run (except seats `panel.md` skips).

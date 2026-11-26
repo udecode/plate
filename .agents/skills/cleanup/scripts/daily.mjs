@@ -19,7 +19,7 @@ import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-const LABEL = 'dev.dotai.cleanup-daily';
+const LABEL = 'dev.ustack.cleanup-daily';
 const SCAN = join(dirname(fileURLToPath(import.meta.url)), 'scan.mjs');
 const MACHINE = join(dirname(fileURLToPath(import.meta.url)), 'machine.mjs');
 const LOGS = join(homedir(), 'Library', 'Logs', 'cleanup-daily');
@@ -122,6 +122,8 @@ function install(folder) {
 `
   );
   const domain = `gui/${process.getuid()}`;
+  spawnSync('launchctl', ['bootout', `${domain}/dev.dotai.cleanup-daily`]);
+  rmSync(join(homedir(), 'Library', 'LaunchAgents', 'dev.dotai.cleanup-daily.plist'), { force: true });
   spawnSync('launchctl', ['bootout', `${domain}/${LABEL}`]);
   const loaded = spawnSync('launchctl', ['bootstrap', domain, plist], { encoding: 'utf8' });
   console.log(loaded.status === 0 ? `installed ${plist}, running daily at 05:30 over ${folder}` : `wrote ${plist}, but launchctl refused it: ${loaded.stderr.trim()}`);

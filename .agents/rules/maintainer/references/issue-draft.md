@@ -164,8 +164,8 @@ Use an installed recording skill only when its source and recorder capability
 are actually available.
 
 For supplied videos, use `video-transcripts`, which also cuts each video into frames.
-For a static state, capture through the current project Browser/Chrome tools;
-`walkthrough` may annotate existing final frames with originals retained. These
+For a static state, capture raw screenshots through the current project
+Browser/Chrome tools, or use `clip` for a before-and-after frame. These
 paths do not prove motion or timing. When a fresh motion recording is necessary
 and no permitted recorder is available, complete the source/repro/draft work,
 then name the missing recording capability. Do not claim a recording was made,

@@ -92,7 +92,7 @@ Run `repair` whenever the user makes a reusable API correction, an accepted desi
 4. Run `pnpm run prepare` and verify mirrors per `AGENTS.md`.
 5. Forward-test the changed contract on a real API without seeding the answer.
 
-Never call an API migration done while a skill still teaches the rejected shape. Never turn product-specific calls into universal rules, and put generic workflow rules in `AGENTS.md` or dotai, not here.
+Never call an API migration done while a skill still teaches the rejected shape. Never turn product-specific calls into universal rules, and put generic workflow rules in `AGENTS.md` or ustack, not here.
 
 ## Stop
 

@@ -246,8 +246,6 @@ function claudeVerdict(found, command) {
   return { run: { runtime, model, effort, at, transcript } };
 }
 
-export const claudeInvocationRun = (transcripts, command = null) => claudeVerdict(runningCalls(openClaudeCalls(transcripts), command), command);
-
 // Stays under the Bash tool's default two-minute timeout, so a command whose
 // record never lands still runs.
 const OWN_CALL_WAIT_MS = 60_000;

@@ -109,6 +109,7 @@ export const retiredGeneratedPaths = [
     'sync-vision', 'plate-architecture',
     'authored-decision-order', 'authored-recording-order', 'effect-ledger',
     'undo-redo-history', 'delete-paste-ranges', 'local-ci', 'plan-page',
+    'sync-plate-ui', 'walkthrough',
   ].map((name) => `${agentRoot}/${name}`)),
   ...agentRoots.flatMap((agentRoot) => [
     `${agentRoot}/auto/references/quality-loop.md`,

@@ -1,6 +1,6 @@
 # Panel review and Review
 
-This file says how a panel or arena runs and how a panel reviews a diff. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/dotai`.
+This file says how a panel or arena runs and how a panel reviews a diff. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/ustack`.
 
 - **Panel review.** A plan with a panel runs it before the first behavior edit; a diff gets its panel after writing passes and before landing. Write the prompt once to a file in the run directory (using absolute paths for ignored run-directory files) and share it across seats. Until every seat answers or fails, do not edit files the seats read.
   - **Prompt and severities.** Quote the user's asks verbatim and name the invariants to attack, tagging each as `[ask]`, law, or lead premise. Ask seats to tag findings `critical` (bugs, data loss, security, broken behavior), `warning` (maintainability or latent risk), or `nit` (minor improvement). A review-only panel (such as another person's PR) returns findings directly in the reply with no plan or decision log.

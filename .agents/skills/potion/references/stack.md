@@ -13,10 +13,6 @@ runs the Worker in workerd, and its D1 binding `DB` (database `potion`) keeps
 its data under `.wrangler/state/` in the Potion checkout. Collaboration is off
 until Plate's native sync runs on Durable Objects.
 
-The [feature map](./features/README.md) lists every user path this recipe
-knows. A proof that drives one convenient entry point is incomplete when the
-map lists others for the same behavior.
-
 ## The script
 
 `potion-stack.sh` lives in Plate at `.agents/skills/potion/scripts/`. It runs
@@ -76,7 +72,7 @@ app renders signed out.
 
 Read-only. Checks that `.dev.vars` sets `BETTER_AUTH_SECRET`, the migrations
 are applied, the dev server's process group is alive and owns the port, and
-`/login` renders. Run it first whenever anything looks off. It exits 1 and
+`/login` renders. It exits 1 and
 prints a `FAIL` line for each failed check.
 
 ## Sign in
@@ -113,8 +109,7 @@ The session cookie is httpOnly, so the browser signs in through the dialog:
 
 ## Drive
 
-Use the built-in browser (`mcp__Claude_Browser__*`). Read the page with
-`get_page_text` or `read_page`, and take a screenshot when layout is the point.
+Drive the browser per `.agents/pstack/rules/browser.md`, and take a screenshot when layout is the point.
 
 - Most sidebar and navbar buttons have no accessible name. Their names live in
   tooltips (`Create a new page`, `Search page`, `More actions`, `Comment`,

@@ -324,15 +324,18 @@
     "research-wiki",
     "shadcn-parity",
     "slate-ar",
+    "sync-plate-ui",
     "task",
     "testing",
     "typescript-advanced-types",
     "vercel-composition-patterns",
     "verify corpus",
-    "verify-plate"
+    "verify-plate",
+    "walkthrough"
   ],
   "synced": {
-    "source": "caa41dc60dffe1cf45468eb8f6c2ec535ae3ab84"
+    "source": "d149b4098f3c44369bf940d36e828ffdf69a6753",
+    "config": "725ee0e0087f04ce"
   },
   "pageTopic": {
     "field": "review_scopes",

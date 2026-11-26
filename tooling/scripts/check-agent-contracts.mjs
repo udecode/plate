@@ -49,7 +49,7 @@ export function checkAgentContracts(root = DEFAULT_ROOT) {
     const { size } = statSync(agentsMd);
     if (size > AGY_RULE_SAFE_BYTES) {
       errors.push(
-        `AGENTS.md is ${size} bytes (safe cap ${AGY_RULE_SAFE_BYTES}; Antigravity truncates at 24,000 bytes). Move extended prose to docs/development/plate-workflow.md or dotai rule files.`
+        `AGENTS.md is ${size} bytes (safe cap ${AGY_RULE_SAFE_BYTES}; Antigravity truncates at 24,000 bytes). Move extended prose to docs/development/plate-workflow.md or ustack rule files.`
       );
     }
   }
@@ -139,7 +139,7 @@ export function checkAgentContracts(root = DEFAULT_ROOT) {
         .map((item) => `${item.name} (${item.len})`)
         .join(', ');
       errors.push(
-        `.agents/skills descriptions total ${total} chars (budget ${AGY_SKILL_DESC_BUDGET}; largest: ${top}). Trim .agents/rules/*.mdc or dotai SKILL.md descriptions.`
+        `.agents/skills descriptions total ${total} chars (budget ${AGY_SKILL_DESC_BUDGET}; largest: ${top}). Trim .agents/rules/*.mdc or ustack SKILL.md descriptions.`
       );
     }
   }

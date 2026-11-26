@@ -1,6 +1,6 @@
 # Writing
 
-This file owns how every agent writes across all lanes: short messages, public comments, long-form docs, and automated checks. The pstack block in `AGENTS.md` points here. The `sync-pstack` skill renders this file from its shared source in `udecode/dotai`, so change it there.
+This file owns how every agent writes across all lanes: short messages, public comments, long-form docs, and automated checks. The pstack block in `AGENTS.md` points here. The `sync-pstack` skill renders this file from its shared source in `udecode/ustack`, so change it there.
 
 - **Writing.** Plain, direct, no AI tells (`pstack:unslop` patterns) across every lane.
   - Lead with the answer, result or decision, then the reason. A final reply opens that way too, without the goal restatement poteto-mode asks of a final report.

@@ -1,6 +1,6 @@
 # Time budget
 
-This file says how long a command, proof, seat, or wait may run, and where measurements that cannot fit go. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/dotai`.
+This file says how long a command, proof, seat, or wait may run, and where measurements that cannot fit go. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/ustack`.
 
 - **Time budget.** No command or proof a run starts takes more than an hour (except an explicit `--stress` run). Panel seats, arena runners, and Codex workers have no fixed time limit; `cross.mjs` stops one only after 1,200 seconds with no sign of work (output or Claude transcript writes), while still honoring an explicit `--timeout`.
   - **Core pool (`proof.mjs`).** Never sleep waiting for host load average to drop. `proof.mjs` coordinates CPU share across concurrent runs via the machine's core pool (half a core per worker by default, or one full core per worker up to half the machine's cores under `--stress`; use `--cores <n>` for large suites). `land.mjs` reserves a core without queuing so landings never wait behind proofs. `proof.mjs` enforces the 3,600-second ceiling unless `--stress` is passed.

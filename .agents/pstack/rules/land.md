@@ -1,6 +1,6 @@
 # Worktrees and landing
 
-This file says how a task works in its own worktree and lands on `next` in `trunk` delivery. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/dotai`.
+This file says how a task works in its own worktree and lands on `next` in `trunk` delivery. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/ustack`.
 
 - **Worktrees.** Each task works in its own worktree cut from `origin/next` when it first needs to run or edit project files, not at intake. Never edit or commit in the main checkout while it is on `next` or `main`, except under `docs/plans/artifacts/` (git-ignored, holding the suggested-task ledger and run directories). Keep temporary build/benchmark checkouts in a temp folder and remove them when done. After landing, finish any owed reflect, ask reread, and `chips` Close, merge run directories into the main checkout, and run `scan.mjs --landed <worktree>` (leaving the worktree for cleanup after a quiet day, or locking it if the scan fails). `setup.mjs --hook` on SessionStart copies untracked `.env`/`.env.local` files, runs `--install` in new worktrees, syncs `refs/pstack/ledger`, and fast-forwards the main checkout when safe.
 - **Landing.** After writing passes and proof, land with `node .agents/pstack/land.mjs --message <file> [--check <command>]...`. Run with `--dry` in the foreground first to validate the message and `landChecks`, then run the real land in the background with a 60-minute timeout (ending with `land.mjs` itself so the exit code is preserved).

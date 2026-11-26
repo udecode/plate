@@ -15,9 +15,7 @@ Potion's Plate packages and UI components follow Plate's published betas. Potion
 
 ## Paths
 
-- Potion's main checkout is `potion` beside Plate's main checkout, which is the parent of `git rev-parse --path-format=absolute --git-common-dir`. Read every Potion file named below by its absolute path there. When that folder does not exist, say so and stop.
 - Before any change, read the `potion` skill and its registry reference (`.agents/rules/potion/references/registry.md`) in full.
-- Deliver as Plate `AGENTS.md`'s **Potion delivery** rule says: sync and commit in a Potion worktree of its own cut from `origin/next`, fast-forward Potion's `next` and push it.
 
 ## Before you run it
 

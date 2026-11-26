@@ -2,29 +2,29 @@
   "version": 2,
   "skills": {
     "chips": {
-      "source": "udecode/dotai",
-      "commit": "0c06e79839f2890f08679ae33c9c64cbaedf1070",
+      "source": "udecode/ustack",
+      "commit": "d149b4098f3c44369bf940d36e828ffdf69a6753",
       "sourceType": "github",
       "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "ab6850ac5ac2425b513336c5eec329e78c9269d406a2839c570c8481572a2502"
+      "computedHash": "194c8d459c564ac6f48eedf3c4a8b4cf7f8b35203cdf84773de9372c0b5a234c"
     },
     "cleanup": {
-      "source": "udecode/dotai",
-      "commit": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce",
+      "source": "udecode/ustack",
+      "commit": "d149b4098f3c44369bf940d36e828ffdf69a6753",
       "sourceType": "github",
       "skillPath": "skills/cleanup/SKILL.md",
-      "computedHash": "6932706a29a6d499fdc04de150dd65ac7f0b15562c79cc1bd1e450d498682263"
+      "computedHash": "0140b8b896d293c562fd36ad351d39f610d4a0f05eaffd8bd7bf21e676e16606"
     },
     "clip": {
-      "source": "udecode/dotai",
-      "commit": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce",
+      "source": "udecode/ustack",
+      "commit": "d149b4098f3c44369bf940d36e828ffdf69a6753",
       "sourceType": "github",
       "skillPath": "skills/clip/SKILL.md",
-      "computedHash": "1147e0c9cd237f966840f443d7442420120266f0eee795f2f0f71656816e9657"
+      "computedHash": "9f0da5e1908765210ebe725fab23b5e3df88d089b8faab9aa1d6c6a674f4602e"
     },
     "redo": {
-      "source": "udecode/dotai",
-      "commit": "f9716f4fcfeebdc2a0e646c5c25f542a1096c4ce",
+      "source": "udecode/ustack",
+      "commit": "d149b4098f3c44369bf940d36e828ffdf69a6753",
       "sourceType": "github",
       "skillPath": "skills/redo/SKILL.md",
       "computedHash": "887bf138a64bf5750011b04066c741159e0108d4923b3fd1088c5f7d131960b9"
@@ -40,8 +40,8 @@
       "computedHash": "e322b98ce04e6e5d206ef041b0b16078d26506c98f38ba565e553925c3da9bc5"
     },
     "test-audit": {
-      "source": "udecode/dotai",
-      "commit": "b84801910de534477623be4fc93037668e1f27a4",
+      "source": "udecode/ustack",
+      "commit": "d149b4098f3c44369bf940d36e828ffdf69a6753",
       "sourceType": "github",
       "skillPath": "skills/test-audit/SKILL.md",
       "computedHash": "e5094c511db1d3bb8e87910b594f6374c3eb65ce57c919fe7d339791c4586f52"
@@ -52,18 +52,11 @@
       "computedHash": ""
     },
     "video-transcripts": {
-      "source": "udecode/dotai",
+      "source": "udecode/ustack",
+      "commit": "d149b4098f3c44369bf940d36e828ffdf69a6753",
       "sourceType": "github",
       "skillPath": "skills/video-transcripts/SKILL.md",
-      "computedHash": "aa665fe015a941a4928cf2c5a89ec3e00fb943913541895e66978c30f49c3227",
-      "commit": "a596e3ebef74341073ec701f8e8d09131c20ec0c"
-    },
-    "walkthrough": {
-      "source": "udecode/dotai",
-      "commit": "0c06e79839f2890f08679ae33c9c64cbaedf1070",
-      "sourceType": "github",
-      "skillPath": "skills/walkthrough/SKILL.md",
-      "computedHash": "2fc36ce4179168348e46b854223cfcbf07996028c5550ac533e77f5449410d2c"
+      "computedHash": "aa665fe015a941a4928cf2c5a89ec3e00fb943913541895e66978c30f49c3227"
     }
   }
 }

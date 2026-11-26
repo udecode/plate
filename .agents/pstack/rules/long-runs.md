@@ -1,6 +1,6 @@
 # Long runs
 
-This file says how multi-slice runs keep going, coordinate parallel worktrees, and avoid endless replanning. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/dotai`.
+This file says how multi-slice runs keep going, coordinate parallel worktrees, and avoid endless replanning. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/ustack`.
 
 - **Long runs.** Use pstack's Autonomous run playbook with a checkable exit condition. If the run narrows that condition itself (other than handing off an over-hour measurement per `time.md` or a timing miss), keep `Status: partial` and put dropped items in `## Open work` with `owner:` and `stop:`; only the owner's words make a narrower condition done. Use `redo` to rerun a prior plan at a higher effort or stronger model.
   - **Continuation and pause.** Claude Code uses `/loop`, Codex uses `/goal`, and T3 Code (Antigravity) uses `schedule` / `schedule_task` or `/goal`. On "pause", keep the checkpoint local without a `wip:` commit; never auto-resume paused work. A plan idle for seven days (no commits or log rows) does not resume unless the owner explicitly asks; its next step is a fresh verdict on its review scope (unless its `Status:` waits on the owner). "go" runs all remaining slices without pausing between them.

@@ -237,8 +237,6 @@ function landedVerdict(facts) {
   return ['safe', facts.dirty > 0 ? 'the checkout holds its changes' : 'nothing uncommitted'];
 }
 
-export const classifyWorktree = (facts) => usageVerdict(facts) ?? cleanupVerdict(facts);
-
 export function classifyCache(facts) {
   if (facts.held === null) return ['keep', 'lsof could not tell whether a server holds it'];
   if (facts.held) return ['keep', 'a running server holds its lock'];

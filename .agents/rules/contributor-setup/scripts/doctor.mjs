@@ -224,9 +224,9 @@ if (existsSync(gemini) || existsSync(t3Antigravity)) {
 
 if (process.platform === 'darwin') {
   const rssKb = Number(spawnSync('ps', ['-axo', 'rss=,comm='], { encoding: 'utf8' }).stdout?.match(/^\s*(\d+)\s.*\/fseventsd$/mu)?.[1] ?? 0);
-  if (rssKb > 1024 ** 2 && !['dev.dotai.mac-watchdog.fseventsd', 'dev.dotai.fseventsd-watchdog'].some((label) => spawnSync('launchctl', ['print', `system/${label}`], { stdio: 'ignore' }).status === 0))
+  if (rssKb > 1024 ** 2 && !['dev.ustack.mac-watchdog.fseventsd'].some((label) => spawnSync('launchctl', ['print', `system/${label}`], { stdio: 'ignore' }).status === 0))
     findings.push({
-      fix: 'a human runs npx -y skills add udecode/dotai --skill mac-watchdog --agent claude-code --global -y && sudo zsh ~/.claude/skills/mac-watchdog/scripts/install-fseventsd.sh, which installs a root job that restarts fseventsd past 1 GB',
+      fix: 'a human runs npx -y skills add udecode/ustack --skill mac-watchdog --agent claude-code --global -y && sudo zsh ~/.claude/skills/mac-watchdog/scripts/install-fseventsd.sh, which installs a root job that restarts fseventsd past 1 GB',
       what: `leak: fseventsd holds ${(rssKb / 1024 ** 2).toFixed(1)} GB. macOS 15.6 to 27.x leaks fseventsd memory on every changed path, and each worktree install changes about 170,000 paths, so the Mac swaps and freezes.`,
     });
 }

@@ -1,5 +1,5 @@
 ---
-description: Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. Use before deciding whether a package edit needs a changeset, including skipping one.
+description: Write and verify package release changesets, registry changelog entries, and the PR's managed auto-release choice. Use before deciding whether a package edit needs a changeset, including skipping one.
 ---
 
 # Changeset
@@ -105,8 +105,6 @@ If changes are only under `apps/www/src/registry/`, do **not** write a package
 changeset; add a registry changelog entry per the
 [registry reference](./references/registry.md). Mixed package and registry work
 may need both.
-
-`sync-plate-ui` is for downstream user apps consuming the generated JSON. Do not use it to produce upstream Plate changelog entries.
 
 ### 5. Style
 

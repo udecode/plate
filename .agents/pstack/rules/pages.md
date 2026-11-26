@@ -1,6 +1,6 @@
 # Plans and hand-backs
 
-This file says how plans and topic files stay structured in git, how hand-back replies read, and how PR bodies render from plans. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/dotai`.
+This file says how plans and topic files stay structured in git, how hand-back replies read, and how PR bodies render from plans. The pstack block in `AGENTS.md` points here. Edit its shared source in `udecode/ustack`.
 
 - **Plans and topics.** Committed Markdown plan files (`docs/plans/<YYYY-MM-DD>-<slug>.md`) and topic files (`docs/plans/topics/<slug>.md`) are the record. Every revisited scope keeps one topic file holding current state; each subsequent plan carries only its delta (`Topic: <slug>` and `Playbook: <name>` under `Status:`).
   - **PR bodies.** `node .agents/pstack/plan-page.mjs <plan> --pr [--public] [--into <body.md>]` renders GitHub PR Markdown from a plan (requiring `## Brief` with `### What will change?` and `### What could go wrong?`), and `--comment <author sha> [--against <description.md>]` renders a follow-up comment on someone else's PR. `--check` validates fences, `## Defaults` tables, and playbook headers; `--rail` prints stage JSON.
