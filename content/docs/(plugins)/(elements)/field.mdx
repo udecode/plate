@@ -21,10 +21,11 @@ The demo is a lease template for a landlord and a tenant. Insert a field from th
 - Inline void `field` element of six kinds: text, number, date, checkbox, choice and signature.
 - A role per field, a label, and an optional required flag, default, choice options and value, each checked against the field's kind.
 - A condition that names another field by its `fieldId` and tests that field's value. A field whose condition fails is skipped, so it needs no answer.
+- An optional `name` that gives the fields of one role one answer, so a question the document asks twice is answered once.
 - `insert` and `update` commands that refuse a setting or condition that does not fit, and reads that report what is wrong with each field and whether it applies.
 - A fill-only view of one role, which takes that role's answers, refuses every other local change and undoes only that role's answers.
 - `applyFieldValues`, which checks each role's answers against the template on a server and builds the filled document.
-- New ids for the fields a paste, a drag copy, a duplicate or a table fill copies, with copied conditions that name the copies.
+- New ids for the fields a paste, a drag copy, a duplicate or a table fill copies, which keep their names, with copied conditions that name the copies.
 - HTML and Markdown that keep every property, and Word export that keeps each answer and reports the settings it drops.
 - A field chip with a settings popover that mutes a skipped field, an insert menu, and a static renderer that shows each answer in place or a blank line, in the registry UI.
 
@@ -136,6 +137,7 @@ A field sits inside a paragraph, like a date or a mention.
       "kind": "text",
       "role": "tenant",
       "label": "Tenant name",
+      "name": "tenant_name",
       "required": true,
       "children": [{ "text": "" }]
     },
@@ -151,6 +153,7 @@ A field sits inside a paragraph, like a date or a mention.
 | `kind` | `FieldKind` | `'text'`, `'number'`, `'date'`, `'checkbox'`, `'choice'` or `'signature'`. Required. |
 | `role` | `string` | The role that fills the field, such as `'tenant'`. Required. |
 | `label` | `string` | Required. The chip shows it, and HTML, Word and plain text show it in brackets when the field has no answer. |
+| `name` | `string` | Fields of one role that share a name hold one answer, see [Names](#names). |
 | `required` | `boolean` | Marks a field that needs a filled answer while it applies. `applyFieldValues` refuses a submission that leaves it unfilled. |
 | `defaultValue` | `FieldValue` | A value of the field's kind. |
 | `options` | `FieldOption[]` | Choice fields only. Each option is `{ value, label }`, and no two share a `value`. |
@@ -191,6 +194,18 @@ A [fill-only view](#fill-as-one-role) stops one role from changing another role'
 
 The settings popover offers the roles the document's fields already use, and takes a new one.
 
+## Names
+
+A `name` says that fields of one role ask for the same answer, such as a lease that asks for the tenant's name at the top and again by the signature. Fields of one role that share a name hold one answer. The same name in two roles is two answers. A field with no name works by its `fieldId` alone.
+
+A name is a text that is not empty, has no whitespace at either end, and holds no control character, line or paragraph separator or lone surrogate. Loading, `insert`, `update` and a plain `tx.nodes.set` refuse any other name. In the registry UI, the settings popover's Name input sets a field's name and shows an error for a name the rule refuses.
+
+`update` writes a `value`, a cleared one included, to every field of the role that shares the field's name, in the same commit and the same undo step. No other setting reaches the other fields. In the demo, the lease asks for the tenant's name twice under one name, so typing it in one place fills the other, and undo takes it back in both.
+
+Fields of one role that share a name must share their kind, the values of their options and their condition. A default takes no part. Two conditions match when they name the same field, or fields of one role and name, with the same test and value. Each field of a name whose fields differ reads `name-conflict`, and `update` then writes a value to its own field alone. `insert` and `update` never refuse a name conflict, so an author can change the fields of a name one at a time.
+
+Each field of a name whose fields hold different values reads `answer-conflict`. An empty text and no value differ, and so do `false` and no value. `insert` and a paste write no other field. So a field that joins a name with another value, or with none, reads `answer-conflict` until an `update` writes a value to a field of that name, which writes every field of it.
+
 ## Insert and update
 
 `insert` takes a field's settings and returns its new `fieldId`. Its second argument takes node insert options, such as `at` and `select`.
@@ -198,17 +213,18 @@ The settings popover offers the roles the document's fields already use, and tak
 ```tsx
 import { BaseFieldPlugin } from 'platejs/field';
 
-editor.update((tx) => {
-  const fieldId = tx.plugin(BaseFieldPlugin).insert(
-    { kind: 'text', label: 'Full name', required: true, role: 'tenant' },
-    { select: true }
-  );
+const fieldId = editor.plugin(BaseFieldPlugin).update.insert({
+  kind: 'text',
+  label: 'Tenant name',
+  name: 'tenant_name',
+  required: true,
+  role: 'tenant',
 });
 ```
 
-`insert` throws when a value, default or options do not fit the kind, when the settings name a `fieldId`, or when the condition names no field, or a test or value that the named field's kind does not take.
+`insert` throws when a value, default or options do not fit the kind, when the settings name a `fieldId` or a name the [name rule](#names) refuses, or when the condition names no field, or a test or value that the named field's kind does not take.
 
-`update` changes the settings or value of the field that holds a `fieldId`. A setting given as `undefined` is removed.
+`update` changes the settings or value of the field that holds a `fieldId`. A setting given as `undefined` is removed. A `value` also goes to every other field of the role and name.
 
 ```tsx
 editor.update((tx) => {
@@ -220,6 +236,7 @@ editor.update((tx) => {
 
 - no field holds `fieldId`;
 - a setting the patch names does not fit the field's kind;
+- the patch names a `name` the name rule refuses;
 - the patch removes `kind`, `role` or `label`, or names `fieldId`;
 - the condition names no field, a test or value that the named field's kind does not take, or a field it did not name before whose chain of conditions leads back to this one.
 
@@ -268,8 +285,10 @@ const skipped = fields.fields().filter((field) => field.applies === false);
 | `unsupported-test` | The kind of the field its condition names does not take the condition's test. |
 | `invalid-value` | Its value, default or options do not fit its kind, or its condition's value does not fit the test or the named field's kind. |
 | `condition-loop` | Its condition names a field whose chain of conditions leads back to it, such as A naming B while B names A. |
+| `name-conflict` | A field of its role and name has another kind, other option values or another condition. |
+| `answer-conflict` | A field of its role and name holds another value, or none. |
 
-`insert` and `update` refuse a write that would cause a problem. A problem comes from a later edit, such as deleting or changing the field a condition names, or from a write that skipped the commands, such as a plain `tx.nodes.set` or a loaded document.
+`insert` and `update` refuse a write that would cause one of the first four problems. They never refuse a name or answer conflict, which the read reports. A problem comes from a later edit, such as deleting or changing the field a condition names, or from a write that skipped the commands, such as a plain `tx.nodes.set` or a loaded document.
 
 `applies` says whether the field applies under its condition. It reads the answers the document holds now, along the whole chain of conditions, as the field's own role reads them:
 
@@ -350,7 +369,7 @@ const submission = editor.plugin(FieldPlugin).read.submission('tenant');
 // { role: 'tenant', values: { tenant: 'Grace Hopper', 'pet-name': 'Milo', rules: true } }
 ```
 
-The submission keeps `false`, `0`, an empty text, a text of spaces and a value that no longer fits its field's kind, so the server judges each of them. It leaves out a field with no `value`, so a checkbox never touched and one ticked and then unticked stay apart.
+Fields of one name keep their own keys, so the submission holds the answer once for each of them. The submission keeps `false`, `0`, an empty text, a text of spaces and a value that no longer fits its field's kind, so the server judges each of them. It leaves out a field with no `value`, so a checkbox never touched and one ticked and then unticked stay apart.
 
 ### Apply answers on the server
 
@@ -382,7 +401,7 @@ On a refusal, `result` is `{ ok: false, refusals }` with at least one refusal. W
 
 | Code | When |
 |------|------|
-| `invalid-template` | A template field holds an answer (`answered`), lacks a `fieldId`, holds anything but one text or has a kind, role, label, setting or condition of the wrong shape (`malformed`), repeats a `fieldId` (`duplicate-id`), or has a problem a read reports, `condition-loop` included. The refusal names the `problem`, the field's `path`, its `root` in a named root and its `fieldId` when it has one. |
+| `invalid-template` | A template field holds an answer (`answered`), lacks a `fieldId`, holds anything but one text or has a kind, role, label, setting or condition of the wrong shape (`malformed`), repeats a `fieldId` (`duplicate-id`), or has a problem a read reports, `condition-loop` and `name-conflict` included. The refusal names the `problem`, the field's `path`, its `root` in a named root, and its `fieldId` and `name` when it has them. |
 | `invalid-submission` | A submission is not an object with a `role` string and a `values` object. The refusal names its `index`. |
 | `duplicate-role` | A role already in the list submits again. |
 | `unknown-role` | The role owns no field. |
@@ -392,8 +411,21 @@ On a refusal, `result` is `{ ok: false, refusals }` with at least one refusal. W
 | `waiting` | A field of the role waits on a role that has not submitted, which `waitsOn` names. It is reported even when the field's answer is refused too. |
 | `skipped` | A field of the role is skipped and holds a filled answer. An unfilled answer stays as written, so clearing the answer or unticking the box ends the refusal. |
 | `missing-required` | A required field of the role applies and has no filled answer. |
+| `answer-conflict` | Once the role's answers apply, the fields of one of its names hold different values. The refusal names the `name` and lists every field of the name in document order as `fieldIds`. A name gets none when the submission already refused one of its fields as `invalid-value`, `waiting` or `skipped`. A required field left out does not stop it, so it can come beside `missing-required`. |
 
-`invalid-submission`, `duplicate-role` and `unknown-role` come alone. The other submission refusals name the `role` and the `fieldId`, and the result lists every one of them for that submission.
+`invalid-submission`, `duplicate-role` and `unknown-role` come alone. The other submission refusals name the `role`, and the `fieldId` of their field and its `name` when it has one. An `answer-conflict` names `fieldIds` instead of a `fieldId`. The result lists every refusal of that submission.
+
+In a template whose landlord's Rent field is named `rent`, and whose tenant's two name fields share `tenant_name`:
+
+```ts
+applyFieldValues(template, [{ role: 'landlord', values: {} }]);
+// { ok: false, refusals: [{ code: 'missing-required', fieldId: 'rent', name: 'rent', role: 'landlord' }] }
+
+applyFieldValues(template, [
+  { role: 'tenant', values: { tenant: 'Ada Lovelace', 'tenant-again': 'Ada' } },
+]);
+// { ok: false, refusals: [{ code: 'answer-conflict', fieldIds: ['tenant', 'tenant-again'], name: 'tenant_name', role: 'tenant' }] }
+```
 
 In the demo, the tenant's Submit before the landlord's gets a `waiting` refusal, because Pet name waits on the landlord's Pets allowed. When the landlord submits No, a pet name the tenant types anyway is refused as `skipped` until it is cleared.
 
@@ -426,7 +458,8 @@ const { data } = await renderStaticHtml(filled);
 
 A field keeps its `fieldId` through a move, a drag move included, through an undo that brings it back and when a saved document loads. A copy gets new ids:
 
-- A paste, a drag copy, `tx.blocks.duplicate` and a table fill give each field they copy a new id. A copied condition that names a field in the same copy names that field's copy.
+- A paste, a drag copy, `tx.blocks.duplicate` and a table fill give each field they copy a new id and keep its name. A copied condition that names a field in the same copy names that field's copy.
+- A copied clause can hold a named field together with the unnamed field its condition names. The copy's condition then names the copied field, so the two fields of the name test different fields and both read `name-conflict`. Give the condition's field and its copy one name, and the conflict ends.
 - A copied condition whose field was not copied, or did not land, keeps naming the original.
 - A paste into a table cell selection copies once per cell, so a condition in each cell names the copy in its own cell.
 - A paste into another document gets new ids too.
@@ -437,10 +470,10 @@ In Suggesting mode, a change from a field to a mention shows the field as delete
 
 ## HTML
 
-`editor.api.html.serialize()` writes each field as a `span` with one `data-field-*` attribute per property. The span's text is the answer, a choice as its option's label, or the label in brackets when the field has no answer. The id, kind, label and role attributes hold plain text, and the others hold JSON:
+`editor.api.html.serialize()` writes each field as a `span` with one `data-field-*` attribute per property. The span's text is the answer, a choice as its option's label, or the label in brackets when the field has no answer. The id, kind, label, name and role attributes hold plain text, and the others hold JSON:
 
 ```html
-<p>Pets allowed? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets allowed" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-required="true" data-field-role="landlord" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-required="true" data-field-role="tenant">[Pet name]</span></p>
+<p>Pets allowed? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets allowed" data-field-name="pets_allowed" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-required="true" data-field-role="landlord" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-name="pet_name" data-field-required="true" data-field-role="tenant">[Pet name]</span></p>
 ```
 
 Parsing that HTML reads every property back. A span needs `data-field-kind`, `data-field-label` and `data-field-role` to read as a field. A pasted HTML template gets new ids, and its conditions name the copies.
@@ -452,7 +485,7 @@ The demo's HTML panel serializes with `lossPolicy: 'allow'`, because the date el
 Markdown writes each field as a `<field>` tag with every property, the `fieldId` and the condition included:
 
 ```md
-Pets allowed? <field kind="choice" label="Pets allowed" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" required role="landlord" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" required role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
+Pets allowed? <field kind="choice" label="Pets allowed" name="pets_allowed" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" required role="landlord" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" name="pet_name" required role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
 ```
 
 The reader needs `kind`, `label` and `role`. A tag without them stays as text, with a `markdown-unsupported-node` diagnostic. A pasted Markdown template gets new ids, and its conditions name the copies.
@@ -470,7 +503,7 @@ const dropped = result.diagnostics.filter(
 );
 ```
 
-The export drops each field's id, kind, role, settings and condition. It reports them with one `property-dropped` warning whose message is "Word keeps each field answer and drops its settings.", whose `feature` is `field` and whose `count` is the number of fields. The warning never refuses an export, under `lossPolicy: 'allow'` or `'reject'`. The demo's Word panel shows that warning, and its count goes up as you insert fields.
+The export drops each field's id, kind, role, name, settings and condition. It reports them with one `property-dropped` warning whose message is "Word keeps each field answer and drops its name and settings.", whose `feature` is `field` and whose `count` is the number of fields. The warning never refuses an export, under `lossPolicy: 'allow'` or `'reject'`. The demo's Word panel shows that warning, and its count goes up as you insert fields.
 
 Plain text, through `serializePlainText` from `platejs`, writes the same text as Word.
 
@@ -481,7 +514,7 @@ Plain text, through `serializePlainText` from `platejs`, writes the same text as
 | `BaseFieldPlugin` | `platejs/field` | Headless inline void field plugin. |
 | `FieldPlugin` | `platejs/field/react` | React field plugin. |
 | `tx.plugin(BaseFieldPlugin).insert(settings, options?)` | `BaseFieldPlugin` update | Inserts a field and returns its `fieldId`. |
-| `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` update | Changes a field's settings or value. |
+| `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` update | Changes a field's settings or value, and writes a value to every field of its role and name. |
 | `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` read | The field that holds an id, with its problems and whether it applies, or `null`. |
 | `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` read | Every field in reading order, with its problems and whether it applies. |
 | `editor.plugin(BaseFieldPlugin).read.submission(role)` | `BaseFieldPlugin` read | The values of one role's fields, keyed by `fieldId`, to pass to `applyFieldValues`. |
