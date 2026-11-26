@@ -151,7 +151,13 @@ export const loadElementIds = (
         );
       }
 
-      let repaired = hidden.length > 0 ? getDefined(spares).write(lines) : null;
+      const spareRepair =
+        hidden.length > 0 ? getDefined(spares).write(lines) : null;
+      const containers = spareRepair?.containers ?? [];
+      let repaired: Readonly<{
+        change: ReturnType<typeof renameChange>;
+        value: EditorDocumentValue;
+      }> | null = spareRepair;
 
       if (renames.length > 0) {
         const spared = repaired?.value ?? document;
@@ -172,7 +178,7 @@ export const loadElementIds = (
         };
       }
 
-      return repaired;
+      return repaired && { ...repaired, containers, renames };
     },
     withStandInIds: <T>(read: () => T) =>
       withPropertyDraws(descriptor, drawStandIn, read),

@@ -4,6 +4,7 @@ import type {
   EditorUpdateTag,
   PluginPoint,
 } from '../interfaces/editor';
+import type { Path } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
 import { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
@@ -70,7 +71,10 @@ export type DocumentAdmission = Readonly<{
     schema: CompiledEditorSchema
   ) => Readonly<{
     lines: ReadonlyArray<Readonly<{ built: boolean; node: JsonNode }>>;
-    write: (nodes: readonly JsonNode[]) => Repaired;
+    write: (nodes: readonly JsonNode[]) => Repaired &
+      Readonly<{
+        containers?: ReadonlyArray<Readonly<{ path: Path; root: string }>>;
+      }>;
   }> | null;
 }>;
 

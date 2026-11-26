@@ -18,12 +18,14 @@ import { letterOriginsOfChange } from '../../core/change/new-letters';
 import { historyFollowsAllFacts } from '../../core/change/record';
 import { type EmptyTextRead, retractionOf } from '../../core/change/retraction';
 import { getEditorCommitValue } from '../../core/commit';
+import { editorDocumentAdmission } from '../../core/document-admission';
 import { getEditorSchema } from '../../core/editor-runtime';
 import {
   holdsImportedRoot,
   holdsOneText,
   readEmptyText,
 } from '../../core/editor-schema';
+import { loadElementIds } from '../../core/element-id';
 import {
   notifyObservers,
   reportEditorLifecycleError,
@@ -51,6 +53,7 @@ import {
   getRecordEntries,
   getRecordIds,
   getValueRecords,
+  NO_RECORD_OPS,
   type RecordOps,
   recordOpsFromJson,
 } from '../../core/record-store';
@@ -69,6 +72,7 @@ import { countCoreWork } from '../../core/work';
 import type {
   Descendant,
   EditorCommit,
+  EditorDocumentValue,
   EditorEffect,
   EditorSchemaIdentity,
   EditorSnapshot,
@@ -77,6 +81,8 @@ import type {
 } from '../../index';
 import { DocumentChange, NodeApi, RangeApi, SelectionApi } from '../../index';
 import { getDefined } from '../../internal/get-defined';
+import { yjsAddressesOf } from './addresses';
+import { setYjsAttribute } from './attributes';
 import {
   createYjsAwarenessAdapter,
   type YjsAwarenessAdapter,
@@ -88,11 +94,14 @@ import {
   reconcileYjsRoot,
 } from './change-bridge';
 import {
+  createYjsPropertyContext,
+  createYjsPropertyLocationAt,
   hideYjsNode,
   readPliteValueFromYjs,
   removeRedundantEmptyYjsTextNodes,
   replaceYjsChildren,
   withYjsWrites,
+  yjsKeyStorageOf,
   type YjsPropertyContext,
   type YjsSetPropertyResolver,
   type YjsTextAdmission,
@@ -118,6 +127,7 @@ import { areJsonLikeValuesEqual } from './json-equality';
 import { DEFAULT_YJS_ROOT_NAME } from './keys';
 import { yjsLettersOf } from './new-letters';
 import { isRecord } from './record';
+import { setYjsElementAttributes } from './replacement';
 import { retractYjsRoot } from './retraction';
 import { findSecondYjsRootOwners, mayAddYjsRootOwner } from './root-owners';
 import {
@@ -1356,11 +1366,18 @@ export class YjsController<
 
         if (claimed) {
           this.repairRootOwners();
+          const loaded = this.fillLoadElementIds();
           this.markAllRecordsPending();
-          this.importDocumentFromYjs('seed', {
-            effects: pending.effects,
-            records: this.raiseRecords(),
-          });
+          this.importDocumentFromYjs(
+            'seed',
+            {
+              effects: pending.effects,
+              records: this.raiseRecords(),
+            },
+            undefined,
+            null,
+            loaded
+          );
         } else {
           this.seedInitialValue();
           if (pending.effects.length > 0) {
@@ -1685,6 +1702,128 @@ export class YjsController<
         source: 'yjs',
       });
     }
+  }
+
+  private fillLoadElementIds(): ReadonlyMap<
+    string,
+    readonly Descendant[]
+  > | null {
+    const compiled = getCompiledEditorSchema(this.editor);
+
+    if (!compiled.everyElementHasId) return null;
+
+    const read = (yRoot: Y.XmlElement) =>
+      readPliteValueFromYjs(
+        yRoot,
+        undefined,
+        this.admitsText,
+        this.isSetValued
+      );
+    const main = read(this.root);
+    const named: Record<string, Descendant[]> = {};
+    const loaded = new Map<string, readonly Descendant[]>([
+      [MAIN_ROOT_KEY, main],
+    ]);
+
+    for (const [root, yRoot] of this.roots) {
+      if (!(yRoot instanceof Y.XmlElement)) {
+        throw new Error(`Yjs named root "${root}" must be a Y.XmlElement.`);
+      }
+      const children = read(yRoot);
+
+      named[root] = children;
+      loaded.set(root, children);
+    }
+
+    const rawRecords: Record<string, Record<string, string>> = Object.create(
+      null
+    );
+
+    for (const [set, map] of this.recordMaps) {
+      for (const [id, value] of map.entries()) {
+        if (typeof value === 'string') {
+          (rawRecords[set] ??= Object.create(null))[id] = value;
+        }
+      }
+    }
+
+    const rawDoc = deriveValue(
+      {
+        children: main,
+        ...(Object.keys(named).length === 0 ? {} : { roots: named }),
+      } as EditorDocumentValue,
+      {},
+      Object.keys(rawRecords).length === 0
+        ? NO_RECORD_OPS
+        : recordOpsFromJson(rawRecords)
+    );
+    const filled = loadElementIds(
+      compiled,
+      rawDoc,
+      editorDocumentAdmission(this.editor)
+    )?.fill(rawDoc);
+
+    if (!filled) return loaded;
+
+    const addresses = new Map<string, ReturnType<typeof yjsAddressesOf>>();
+    const addressOf = (r: string) => {
+      const cur = addresses.get(r);
+
+      if (cur) return cur;
+      const yRoot =
+        r === MAIN_ROOT_KEY ? this.root : getDefined(this.roots.get(r));
+      const next = yjsAddressesOf(yRoot, childrenOf(rawDoc, r));
+
+      addresses.set(r, next);
+
+      return next;
+    };
+    const recordOps = getInternalDocumentChangeRecords(filled.change);
+
+    this.transact(() => {
+      for (const { path, root, value } of filled.renames) {
+        const element = addressOf(root).elementAt(path);
+
+        if (element) setYjsAttribute(element, 'id', value);
+      }
+      for (const { path, root } of filled.containers) {
+        const element = addressOf(root).elementAt(path);
+        const prev = valueRootIndex(rawDoc, root).node(path);
+        const next = valueRootIndex(filled.value, root).node(path);
+
+        if (!element || !NodeApi.isElement(prev) || !NodeApi.isElement(next)) {
+          continue;
+        }
+        const loc = createYjsPropertyLocationAt(
+          childrenOf(filled.value, root),
+          path.slice(0, -1),
+          root === MAIN_ROOT_KEY ? null : root
+        );
+
+        setYjsElementAttributes(
+          element,
+          { authored: prev.authored },
+          { authored: next.authored },
+          yjsKeyStorageOf(
+            this.isSetValued,
+            next,
+            createYjsPropertyContext(next, { ...loc, path: [...path] })
+          )
+        );
+      }
+      if (recordOps.size > 0) this.lowerRecords(recordOps);
+    }, this.canonicalizeOrigin);
+
+    return new Map(
+      [...loaded.keys()].map((root) => [
+        root,
+        asDescendants(
+          root === MAIN_ROOT_KEY
+            ? filled.value.children
+            : (filled.value.roots?.[root] ?? [])
+        ),
+      ])
+    );
   }
 
   private repairRootOwners(): ReadonlySet<string> {
@@ -2033,7 +2172,8 @@ export class YjsController<
       main: boolean;
       named: ReadonlySet<string>;
     }>,
-    events: CapturedYjsEventBatch | null = null
+    events: CapturedYjsEventBatch | null = null,
+    loaded: ReadonlyMap<string, readonly Descendant[]> | null = null
   ): void {
     const namedRoots =
       changed?.named ??
@@ -2070,10 +2210,14 @@ export class YjsController<
     }, this.canonicalizeOrigin);
 
     const before = this.editorAdapter.readValue();
-    const { records, value: next } = this.readYjsDocumentValue(before, {
-      main: changed?.main ?? true,
-      named: namedRoots,
-    });
+    const { records, value: next } = this.readYjsDocumentValue(
+      before,
+      {
+        main: changed?.main ?? true,
+        named: namedRoots,
+      },
+      loaded
+    );
     let change = withSpareRecords(
       DocumentChange.between(before, next),
       records
@@ -2156,7 +2300,8 @@ export class YjsController<
     changed: Readonly<{
       main: boolean;
       named: ReadonlySet<string>;
-    }>
+    }>,
+    loaded: ReadonlyMap<string, readonly Descendant[]> | null = null
   ): Readonly<{ records: RecordOps | null; value: JsonEditorValue }> {
     const primary = this.bindings.get(MAIN_ROOT_KEY);
 
@@ -2169,7 +2314,7 @@ export class YjsController<
     };
     let records: RecordOps | null = null;
     const read = (root: string, binding: YjsRootBinding) => {
-      const room = this.readRoomRoot(binding, root);
+      const room = this.readRoomRoot(binding, root, loaded?.get(root));
 
       records = mergeRecordOps(
         records,

@@ -1046,6 +1046,7 @@ export const spareLinesOf = (
         change: DocumentChange.between(document, value, {
           isSetValued: isAuthoredSetValued,
         }),
+        containers: containers.map(({ path, root }) => ({ path, root })),
         value,
       };
     },
