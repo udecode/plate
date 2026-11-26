@@ -79,7 +79,7 @@ Save finished reports under `<main checkout>/docs/plans/artifacts/local-ci/<day>
 > Operator woke for a beta: `<event JSON>`. Work from `<main checkout>`; read `AGENTS.md`, `release-lanes`, `changeset`.
 > 1. Cut fresh worktree from `origin/next`, run `node tooling/scripts/beta-release.mjs due` (stop if not due).
 > 2. Run `beta-release.mjs pending`, condense changesets per `changeset`; if changed, land `chore(release): condense changesets` via `land.mjs`.
-> 3. Run `node tooling/scripts/beta-release.mjs ship --force` in background (retry on exit 75).
+> 3. Run `node tooling/scripts/beta-release.mjs ship --force` in background (`release.yml` closes fixed public issues in place; `ship` runs `close-released-issues.mjs` as a fallback; retry on exit 75).
 > 4. Send no team message. End with one line: beta and closed issues, or why none shipped.
 
 ### Friction brief

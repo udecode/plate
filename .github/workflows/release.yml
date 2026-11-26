@@ -21,6 +21,7 @@ jobs:
     permissions:
       actions: read
       contents: write
+      issues: write
       pull-requests: write
       id-token: write
     outputs:
@@ -368,6 +369,13 @@ jobs:
             gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TITLE" --notes-file "$NOTES_FILE" --target "$GITHUB_SHA" "${PAGE_FLAGS[@]}"
             echo "Created release $TAG."
           fi
+
+      - name: ✅ Close issues fixed in this release
+        if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' && steps.raw-notes.outputs.version != '' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.raw-notes.outputs.version }}
+        run: node tooling/scripts/close-released-issues.mjs --version "$VERSION" --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_SHA"
 
       - name: 🤖 Merge Version Packages PR
         if: ${{ steps.auto_release.outputs.enabled == 'true' && steps.changesets.outputs.pullRequestNumber != '' }}

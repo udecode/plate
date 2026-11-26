@@ -30,7 +30,6 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { EFFORTS, findLead, leadLabel } from '../../.agents/pstack/lead.mjs';
-import { mainCheckout } from '../../.agents/pstack/plan-page.mjs';
 import {
   board,
   boardState,
@@ -42,6 +41,7 @@ import {
   readTasks,
   SESSION,
 } from '../../.agents/pstack/tasks.mjs';
+import { closeReleasedIssues } from './close-released-issues.mjs';
 import {
   BRANCH,
   citedEditedBetween,
@@ -2451,103 +2451,23 @@ function shippedCommand(options) {
   if (!BETA_RELEASE.test(version ?? '') || extra !== undefined) {
     usage('shipped takes one published beta version, such as 54.0.0-beta.3');
   }
-  const primary = repoNameOf(localConfig().triage.repos[0]);
+  const repo = localConfig().triage.repos[0];
+  const primary = repoNameOf(repo);
   if (repoName !== null && repoName !== primary) {
     usage(
       `shipped closes ${primary} issues only, because a ${repoName} issue closes on a passing retest`
     );
   }
-  const reads = freshReads({ fallback: false });
-  if (!reads.policy) {
-    refuse(
-      `shipped needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
-    );
-  }
-  const { repo } = reads.policy;
-  const tag = `platejs@${version}`;
-  const missing = fetchRef(reads.remote, `+refs/tags/${tag}:refs/tags/${tag}`);
-  if (missing) {
-    refuse(
-      `${reads.remote} has no ${tag} tag (${missing.message}); run shipped once the release pushed it`
-    );
-  }
-  const line = `Fixed in [${tag}](https://github.com/${repo}/releases/tag/v${version}).`;
-  const media = join(mainCheckout(root), 'docs/plans/artifacts/issue-media');
-  for (const issue of openIssues(reads)) {
-    const number = String(issue.number);
-    const { state, head } = stateFor(number, reads);
-    if (
-      state !== 'current' ||
-      !CLOSED_BY_BETA.has(head.outcome) ||
-      !hasLanded(number, head, reads) ||
-      run('git', [
-        'merge-base',
-        '--is-ancestor',
-        parseDetail(head.detail).get('commit'),
-        `refs/tags/${tag}`,
-      ]).status !== 0
-    ) {
-      continue;
-    }
-    const folder = join(media, number);
-    const clips = existsSync(folder)
-      ? readdirSync(folder)
-          .filter((name) => !name.startsWith('.'))
-          .sort()
-          .map((name) => join(folder, name))
-      : [];
-    if (options['dry-run']) {
-      console.log(
-        `#${number} would close: ${line}${clips.map((clip) => ` + ${clip}`).join('')}`
-      );
-      continue;
-    }
-    const commented = issue.comments.some((comment) =>
-      comment.body.trim().startsWith(line)
-    );
-    const posted =
-      clips.length === 0 || commented
-        ? null
-        : run(
-            'gh',
-            [
-              'issue',
-              'comment',
-              number,
-              '--repo',
-              repo,
-              '--body',
-              line,
-              ...clips.flatMap((clip) => ['--attach', clip]),
-            ],
-            { timeout: NETWORK_MS }
-          );
-    if (posted && posted.status !== 0) {
-      console.error(`#${number} did not get its comment: ${ghProblem(posted)}`);
-      process.exitCode = 1;
-      continue;
-    }
-    const closed = run(
-      'gh',
-      [
-        'issue',
-        'close',
-        number,
-        '--repo',
-        repo,
-        '--reason',
-        'completed',
-        ...(clips.length === 0 && !commented ? ['--comment', line] : []),
-      ],
-      { timeout: NETWORK_MS }
-    );
-    if (closed.status === 0) {
-      console.log(`#${number} closed: ${line}`);
-    } else {
-      console.error(`#${number} did not close: ${ghProblem(closed)}`);
-      process.exitCode = 1;
-    }
-  }
+  process.exitCode = closeReleasedIssues(
+    [
+      '--version',
+      version,
+      '--repo',
+      repo,
+      ...(options['dry-run'] ? ['--dry-run'] : []),
+    ],
+    { cwd: root }
+  );
 }
 
 const BETA = 'beta.platejs.org';

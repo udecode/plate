@@ -261,9 +261,11 @@ const close = (args) => {
     spawnSync(
       process.execPath,
       [
-        join(here, 'triage.mjs'),
-        'shipped',
+        join(here, 'close-released-issues.mjs'),
+        '--version',
         version,
+        '--repo',
+        REPO,
         ...(args.includes('--dry') ? ['--dry-run'] : []),
       ],
       { cwd: root, stdio: 'inherit' }
