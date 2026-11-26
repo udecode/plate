@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-25-keyboard-bar-keeps-focus",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-25-keyboard-bar-keeps-focus.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the docked keyboard bar while focus sits on its buttons",
+  "targets": [
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "more-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/more-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-25-floating-toolbar-keep-docked-keyboard-bar-bfee8240",
+      "kind": "fix",
+      "summary": "On a touch screen, the bar above the keyboard now stays while focus sits on one of its buttons, so a button that a screen reader focuses before pressing it still gets the press. Before, the bar disappeared as soon as the editor lost focus to it. While focus sits in the bar, the editor still shows its selection or caret.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-keyboard-bar-keeps-focus",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-25-fixed-toolbar-keep-selection-visible",
+      "kind": "behavior",
+      "summary": "The editor still shows its selection or caret while focus sits in the toolbar.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["fixed-toolbar"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-keyboard-bar-keeps-focus",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-25-more-toolbar-button-menu-height",
+      "kind": "fix",
+      "summary": "Remove the menu's fixed `max-h-[500px]`, which replaced the menu's own limit to the space left on screen.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["more-toolbar-button"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-keyboard-bar-keeps-focus",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -170,6 +170,7 @@ function KeyboardToolbar({ children }: { children: React.ReactNode }) {
   const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
   const [ownedOverlayOpen, setOwnedOverlayOpen] = React.useState(false);
+  const [barFocused, setBarFocused] = React.useState(false);
   const viewportBottom = React.useSyncExternalStore(
     subscribeViewport,
     readViewportBottom,
@@ -180,7 +181,25 @@ function KeyboardToolbar({ children }: { children: React.ReactNode }) {
     !isFloatingLinkOpen &&
     !isAIChatOpen &&
     !readOnly &&
-    (editorFocused || ownedOverlayOpen);
+    (editorFocused || barFocused || ownedOverlayOpen);
+
+  React.useEffect(() => {
+    // When the browser itself moves focus, React renders the editor's blur before the button's focus arrives. That blur names the button as its relatedTarget, and the document hears it before React does.
+    const trackFocus = (event: FocusEvent) => {
+      const next =
+        event.type === 'focusin' ? event.target : event.relatedTarget;
+
+      setBarFocused(next instanceof Node && !!barRef.current?.contains(next));
+    };
+
+    document.addEventListener('focusin', trackFocus, true);
+    document.addEventListener('focusout', trackFocus, true);
+
+    return () => {
+      document.removeEventListener('focusin', trackFocus, true);
+      document.removeEventListener('focusout', trackFocus, true);
+    };
+  }, []);
 
   React.useEffect(() => {
     const document = editableRef.current?.ownerDocument;
@@ -247,6 +266,7 @@ function KeyboardToolbar({ children }: { children: React.ReactNode }) {
   return createPortal(
     <Toolbar
       ref={barRef}
+      data-editor-keep-selection-visible=""
       data-slot="keyboard-toolbar"
       onOverlayOpenChange={setOwnedOverlayOpen}
       style={{ top: viewportBottom }}

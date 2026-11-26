@@ -216,6 +216,10 @@ export type DeviceEditor = Pick<
 
 export type DeviceLane = {
   copy: (text: string) => Promise<void>;
+  focusToolbarButton: (
+    toolbar: DeviceToolbar,
+    name: RegExp | string
+  ) => Promise<void>;
   keyboard: {
     readonly languages: readonly DeviceLanguage[];
     shown: () => Promise<boolean>;
@@ -700,6 +704,47 @@ export const createDeviceLane = ({
       await driver.page
         .find({ css: 'body' })
         .evaluate((_, value) => navigator.clipboard.writeText(value), text);
+    },
+    focusToolbarButton: async (toolbar, name) => {
+      const hadKeyboard = await keyboard.shown();
+      const body = driver.page.find({ css: 'body' });
+
+      await driver.page
+        .find({ button: name, within: { toolbar } })
+        .evaluate((element) => {
+          if (!(element instanceof HTMLElement)) {
+            throw new Error('Toolbar target is not focusable.');
+          }
+          element.focus();
+        }, undefined);
+      if (hadKeyboard) {
+        await expect
+          .poll(
+            async () =>
+              !(await keyboard.shown()) &&
+              body.evaluate(
+                () =>
+                  (window.visualViewport?.height ?? innerHeight) >=
+                  innerHeight - 50,
+                undefined
+              ),
+            {
+              message:
+                'The keyboard did not dismiss after focusing the toolbar button.',
+              timeout: 5000,
+            }
+          )
+          .toBe(true);
+      }
+      await body.evaluate(
+        () =>
+          new Promise<void>((resolveFrame) => {
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => resolveFrame())
+            );
+          }),
+        undefined
+      );
     },
     keyboard: {
       languages: keyboard.languages,

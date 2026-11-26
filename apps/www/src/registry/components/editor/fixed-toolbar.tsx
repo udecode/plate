@@ -206,6 +206,7 @@ export function FixedToolbar({
 }: React.ComponentProps<typeof Toolbar>) {
   return (
     <Toolbar
+      data-editor-keep-selection-visible=""
       {...props}
       ref={ref}
       className={cn(

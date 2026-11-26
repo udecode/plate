@@ -114,6 +114,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-25-keyboard-bar-keeps-focus",
+      "href": "/registry/changelog/2026-11-25-keyboard-bar-keeps-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the docked keyboard bar while focus sits on its buttons",
+      "change": {
+        "type": "source",
+        "date": "2026-11-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-toolbar", "fixed-toolbar", "more-toolbar-button"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-25-toolbar-menus-keep-keyboard-up",
       "href": "/registry/changelog/2026-11-25-toolbar-menus-keep-keyboard-up.json",
       "status": "draft",
