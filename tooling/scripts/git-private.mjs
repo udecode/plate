@@ -699,30 +699,32 @@ const hook = (root, name, args) => {
   return note;
 };
 
-const status = (root) => {
+const privateStatus = (root) => {
+  const work = unsaved(root);
+  if (!work) return [];
   const lines = [
+    ...privateMust(root, ['status', '--short'])
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => `private ${line}`),
+    ...work.added.map((file) => `private ?? ${file}`),
+  ];
+  if (work.unpushed > 0) {
+    lines.push(
+      `private: ${work.unpushed} commits not on plate-private's ${BRANCH}`
+    );
+  }
+  return lines;
+};
+
+const status = (root) =>
+  [
     ...must(root, ['status', '--short'])
       .split('\n')
       .filter(Boolean)
       .map((line) => `public  ${line}`),
-  ];
-  const work = unsaved(root);
-  if (work) {
-    lines.push(
-      ...privateMust(root, ['status', '--short'])
-        .split('\n')
-        .filter(Boolean)
-        .map((line) => `private ${line}`),
-      ...work.added.map((file) => `private ?? ${file}`)
-    );
-    if (work.unpushed > 0) {
-      lines.push(
-        `private: ${work.unpushed} commits not on plate-private's ${BRANCH}`
-      );
-    }
-  }
-  return lines.join('\n');
-};
+    ...privateStatus(root),
+  ].join('\n');
 
 const USAGE = `Usage: node tooling/scripts/git-private.mjs <command>
   init      set up this team clone's private half and its git hooks
@@ -781,9 +783,15 @@ const main = async (argv) => {
     }
     case 'start': {
       const at = rest.indexOf('--remote');
-      return report(
-        start(sessionRoot(), at === -1 ? undefined : { remote: rest[at + 1] })
-      );
+      const session = sessionRoot();
+      report(start(session, at === -1 ? undefined : { remote: rest[at + 1] }));
+      const work = privateStatus(session);
+      if (work.length > 0) {
+        console.info(
+          `[git-private] udecode/plate-private's changes in ${session}:\n${work.join('\n')}`
+        );
+      }
+      return 0;
     }
     case 'attach': {
       return report(attach(root));
