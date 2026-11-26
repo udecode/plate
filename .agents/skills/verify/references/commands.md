@@ -412,7 +412,8 @@ pinned one.
 
 The same device config and drive session run on the iPhone simulator that
 `tooling/device/targets.mjs` pins as `iosTarget`. It is plate_ios_27, an
-iPhone 17 on iOS 27.2 with Xcode 27.2 and the English (US) keyboard.
+iPhone 17 on iOS 27.2 with Xcode 27.2. Its keyboards are English (US),
+Japanese Romaji, Korean and Simplified Chinese Pinyin.
 
 ```bash
 node tooling/device/device.mjs doctor ios
@@ -430,22 +431,38 @@ creates the simulator and builds the runner from this checkout into
 names, and downloads nothing. Run `install ios` again after any change under
 `tooling/device/ios-runner/`, because the lane sends the runner commands that
 only the new build knows. `boot` refuses a booted simulator. Otherwise it
-erases the simulator, writes its English settings and boots it with no
+erases the simulator, writes its keyboard settings and boots it with no
 window, so Simulator.app stays closed and each boot forgets the words the
 keyboard learned. `<udid>` is the UDID that `doctor ios` and `boot ios` print,
 and a simulator UDID in `PLATE_DEVICE_SERIALS` picks the iPhone lane. Start a
 www server of this checkout first and pass its port, as on Android. Shut the simulator down with `xcrun simctl shutdown <udid>`.
 
-The lane reads and drives the page through Safari's Web Inspector and taps
-the on-screen keyboard's keys through the runner. Each run quits Safari before
-it opens its tab. The runner ends each XCUITest wait for Safari's animations
-after 1 s, because Safari's keyboard animation can leave that wait stuck at
-60 s before every tap. Do not turn the wait off. A tap during the keyboard's
-slide never reaches the page. Only English types on the iPhone, so the cases
-that type other languages skip, and so do the cases for Gboard's suggestion
-strip and the Android-only bypass case. One run of the config took 2 to 3
-minutes once the Plite app was built. The first run builds the app, which can
-take several minutes more.
+The lane reads and drives the page through Safari's Web Inspector and taps the
+on-screen keyboard's keys through the runner. Each run quits Safari before it
+opens its tab. The runner ends each XCUITest wait for Safari's animations
+after 1 s, because Safari's keyboard animation can leave that wait stuck at 60
+s before every tap. Do not turn the wait off. A tap during the keyboard's
+slide never reaches the page. The lane types English, Japanese, Korean and
+Pinyin. `device.keyboard.use` taps Safari's Next keyboard button until the
+delete key's label names the language. `device.tapStrip` taps a word in the
+bar above the Japanese or Pinyin keyboard by its exact text. The English and
+Korean keyboards show prediction buttons instead of that bar. Korean on the
+iPhone never composes. Each letter arrives as a non-composing `insertText`,
+after a `deleteContentBackward` when it joins the syllable before it. The
+cases for Gboard's English suggestion strip, the pending Korean toolbar case
+and the Android-only bypass case skip. One run of the config took 2 to 3
+minutes once the Plite app was built, before the Japanese, Korean and Pinyin
+cases ran on the iPhone. Those seven case files take about 8 minutes more. The
+first run builds the app, which can take several minutes more.
+
+Run one device config at a time from a checkout. Each run's global setup
+rewrites `apps/plite/test-results/device/state.json` with only its own
+serials. A second run started beside the first erases the first run's serials,
+so the first run's next worker finds no state for its device and fails. Both
+runs also serve the Plite app on port 3410 unless `PLATE_DEVICE_APP_PORT`
+differs. To test both phones in one command, put both serials in one
+`PLATE_DEVICE_SERIALS`, separated by a comma. The config runs one worker, so
+the phones still run one after the other.
 
 `drive ios` takes the same actions as `drive android` and needs no `--serial`.
 Boot the simulator and start a www server first, and request the page once with
@@ -466,7 +483,7 @@ node tooling/device/device.mjs drive ios stop
 
 `tap-button` and `tap-menu` have not run on the iPhone yet. On the iPhone,
 `drag` takes screenshot pixels, 1206 by 2622 on the iPhone 17, and the runner
-converts them to points. `use` knows only `en`. `record` runs
+converts them to points. `use` takes `en`, `ja`, `ko` or `zh`. `record` runs
 `simctl io recordVideo`. `back` fails, because the simulator has no system
 Back button. `start` can take about 10 s, because the simulator's Web
 Inspector answers a new connection only about 10 s after the last one closed.
