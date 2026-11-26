@@ -31,6 +31,8 @@ component, hook, provider, store, primitive, or composition decision. Package
 implementation and proof still route to `plate-plugins`; plugin builders,
 schema law, and application typing remain outside this skill.
 
+- **UI / visual model routing (T3 Code):** Opus (`opus @high`) owns UI and screenshot/visual work (`ui, visual: opus @high`). For a UI/visual slice inside a Neon-led session, delegate the UI build or screenshot critique to Claude Opus via T3 `delegate_task` (`claudeAgent`, `opus @high`) passing the screenshot paths and scope; for a pure UI/screenshot task, run the thread on Opus directly.
+
 ## Principles
 
 1. **Preserve open code.** A shadcn-derived component should still look like source code a user can own, read, diff, and tweak.

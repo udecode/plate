@@ -12,6 +12,7 @@ perf-issue: inherit-parent
 hillclimb: inherit-parent
 judgment and prose: inherit-parent
 strongest judgment: fable @high
+ui, visual: opus @high
 arena runners: fable @high, codex:gpt-6.2-sol @xhigh or opus @high, agy:gemini-4-neon @xhigh
 arena cross-judge pool: opus @high, agy:gemini-4-neon @high
 swarm workers: inherit-parent @high

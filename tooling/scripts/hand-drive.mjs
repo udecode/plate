@@ -391,6 +391,18 @@ function report({ states, unmapped }) {
   return lines;
 }
 
+const AGY_EDIT_TOOLS = new Set(['edit_file', 'write_file']);
+const AGY_USER_REQUEST = /<USER_REQUEST>\s*([\s\S]*?)\s*<\/USER_REQUEST>/u;
+const agyString = (value) => {
+  if (typeof value !== 'string') return '';
+  try {
+    const parsed = JSON.parse(value);
+    return typeof parsed === 'string' ? parsed : value;
+  } catch {
+    return value;
+  }
+};
+
 function filesEditedSinceSkipDrive(transcript, root) {
   let files = new Set();
 
@@ -415,6 +427,23 @@ function filesEditedSinceSkipDrive(transcript, root) {
           files.add(block.input?.file_path ?? block.input?.notebook_path);
         }
       }
+    } else if (
+      record.type === 'PLANNER_RESPONSE' &&
+      Array.isArray(record.tool_calls)
+    ) {
+      for (const call of record.tool_calls) {
+        if (AGY_EDIT_TOOLS.has(call?.name)) {
+          files.add(agyString(call.args?.Path));
+        }
+      }
+    } else if (
+      record.type === 'USER_INPUT' &&
+      record.source === 'USER_EXPLICIT' &&
+      typeof record.content === 'string'
+    ) {
+      const text =
+        record.content.match(AGY_USER_REQUEST)?.[1] ?? record.content;
+      if (SKIP_WORDS.test(text)) files = new Set();
     } else if (change?.type === 'FileChange' && change.status === 'completed') {
       for (const [file, { move_path: moved }] of Object.entries(
         change.changes ?? {}

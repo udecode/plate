@@ -970,6 +970,23 @@ export const steps = [
     key: [],
   },
   {
+    name: 'agent-contracts',
+    land: true,
+    run: 'node tooling/scripts/check-agent-contracts.mjs',
+    affected: touches(
+      'AGENTS.md',
+      '.agents/hooks.json',
+      '.agents/pstack.json',
+      '.agents/pstack/',
+      '.agents/skills/',
+      '.claude/pstack-models.md',
+      'tooling/scripts/check-agent-contracts',
+      'tooling/scripts/read-budget.mjs',
+      'tooling/scripts/type-probe-guard.mjs'
+    ),
+    key: [],
+  },
+  {
     // It judges every plan, so another session's open plan can turn it red;
     // the daily full check runs it instead of each landing.
     name: 'review-ledger',
