@@ -107,6 +107,8 @@ export const retiredGeneratedPaths = [
     'grill-me', 'registry-changelog', 'slate-migration', 'testing',
     'slate-ar', 'shadcn-parity', 'gpt-pro', 'plate-review',
     'sync-vision', 'plate-architecture',
+    'authored-decision-order', 'authored-recording-order', 'effect-ledger',
+    'undo-redo-history', 'delete-paste-ranges', 'local-ci',
   ].map((name) => `${agentRoot}/${name}`)),
   ...agentRoots.flatMap((agentRoot) => [
     `${agentRoot}/auto/references/quality-loop.md`,

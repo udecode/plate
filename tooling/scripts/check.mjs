@@ -1135,7 +1135,7 @@ export const manualOnly = {
   'check:plite:packages':
     'Runs plite:typecheck, plite:test and check:plite:contracts, which other steps cover.',
   'local-ci':
-    'Runs Local CI on next after landing; its launchd job and the local-ci skill start it.',
+    'Runs Local CI on next after landing; its launchd job and the operator skill start it.',
   'deps:check': 'Lists available dependency updates; it gates nothing.',
   'p:test': 'Template that each package test script calls.',
   test: 'Runs every root test file, which the test and test-slow steps split between them.',

@@ -21,7 +21,7 @@ Potion's Plate packages and UI components follow Plate. Potion may restyle a com
 
 ## Before you run it
 
-- By default the command reads Plate's main checkout beside Potion, which must be on `next` with a clean tree. To use a Plate fix that has not landed, pass the current Plate worktree's path and `--no-pull`. To reproduce a bug or prove a fix in Potion without syncing it, follow `verify`'s Potion proof lane (`.agents/rules/verify/references/potion.md`) instead.
+- By default the command reads Plate's main checkout beside Potion, which must be on `next` with a clean tree. To use a Plate fix that has not landed, pass the current Plate worktree's path and `--no-pull`. To reproduce a bug or prove a fix in Potion without syncing it, follow the Potion stack recipe (`.agents/rules/potion/references/stack.md`) instead.
 - The Potion worktree needs no `bun install` first. The command syncs the packages, which writes `tmp/plate-local/*.tgz` and runs `bun install`, then syncs the UI. `--ui-only` needs `node_modules/.bin/biome` to exist already.
 - Copy into the Potion worktree, from Potion's main checkout, the tarballs in `tmp/plate-local/`, which `package.json` names through `file:` specs, and the env files git ignores.
 
@@ -55,6 +55,6 @@ Arguments:
 2. Read the rest of the report:
    - A missing `@/registry/ui/*` is a shadcn component Potion lacks. Add it to `src/registry/ui` with the shadcn CLI.
    - Delete a file Plate no longer ships once nothing imports it. Keep Potion's own files: its tools in hooks and lib, and the files in the registry reference's table of Potion-only registry components.
-3. Run `bun typecheck`, then drive the editor in a browser as `verify`'s Potion stack recipe (`.agents/rules/verify/references/potion/stack.md`) says.
+3. Run `bun typecheck`, then drive the editor in a browser as the Potion stack recipe (`.agents/rules/potion/references/stack.md`) says.
 4. An error in `src/registry` or in a Plate package is Plate's problem. Never fix it or work around it in Potion; handle it as the `potion` skill's Plate problems section says. Fix an error in Potion's own code, such as `src/components` or `src/server`, as usual.
 5. Report the size of the change from `git diff --stat` and the Plate commit range. Then commit in the Potion worktree, fast-forward Potion's `next` and push it.

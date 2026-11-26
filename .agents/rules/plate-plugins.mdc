@@ -62,8 +62,8 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
   shape. This skill only implements that accepted shape inside the package and
   proves package behavior.
 - React tests live beside the component family or its single semantic
-  controller owner. `verify`'s [testing reference](../verify/references/testing.md)
-  owns spec families, fixtures and inline test construction.
+  controller owner. `.agents/pstack/rules/tests.md` and `verify`
+  own test shape, boundaries, and runners.
 
 ## Package Host → [package-host.md](./references/package-host.md)
 
@@ -117,12 +117,12 @@ and the Build playbook closes it with
 
 ## References
 
-- [creation-flow.md](./rules/creation-flow.md) — semantic and file ownership
-- [typing.md](./rules/typing.md) — contextual inference and contracts
-- [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) — current
+- [creation-flow.md](./rules/creation-flow.md): semantic and file ownership
+- [typing.md](./rules/typing.md): contextual inference and contracts
+- [plugin-authoring-audit.md](./references/plugin-authoring-audit.md): current
   examples and rejected precedent
-- [package-host.md](./references/package-host.md) — package host law, entrypoint
+- [package-host.md](./references/package-host.md): package host law, entrypoint
   creation and the import graph
-- [manifest.md](./references/feature/manifest.md) — the Feature Manifest,
+- [manifest.md](./references/feature/manifest.md): the Feature Manifest,
   package boundary contract and flow modes, with its plan
   [template](./references/feature/template.md)

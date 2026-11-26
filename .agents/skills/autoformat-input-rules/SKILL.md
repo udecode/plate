@@ -1,5 +1,5 @@
 ---
-description: Formal check for www autoformat and basic marks keystroke shorthands, paragraph isolation, undo/Backspace, and IME commit parity. Use before/after changing apps/www/src/registry/components/editor/autoformat.tsx, basic-marks.tsx, or its coverage record, or when pnpm check autoformat-rules fails.
+description: Active Local CI formal check for www autoformat and basic marks keystroke shorthands, paragraph isolation, undo/Backspace, and IME commit parity. Use before and after changing apps/www/src/registry/components/editor/autoformat.tsx, basic-marks.tsx, or input rules.
 argument-hint: '[check | deep | lower | typed <keys> | update]'
 name: autoformat-input-rules
 metadata:
@@ -9,123 +9,36 @@ metadata:
 
 # Autoformat input rules
 
-Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--length=4` and compares its failures with Findings. `lower` runs `--lower` after a fix removes a known finding. `typed <keys>` runs `--typed=<keys>` to show one sequence's results. `update` brings the verification in line with changed code, as Coverage record says.
+Handle `$ARGUMENTS`. Active Local CI gate parsing shorthands from `autoformat.tsx` and `basic-marks.tsx` and typing them key by key into real `BasicMarksKit` + `AutoformatKit` editors.
 
-**The property.** Typed key by key into a paragraph between two others, every shorthand the kits declare gives its declared result whole: the substituted symbol, or the content with exactly its marks and no delimiter left. Inside a word, a mark shorthand stays literal, except subscript and superscript around a script token. No typed sequence changes the paragraphs above or below. When a keystroke fires a rule, one undo gives back the document from before that keystroke, and one Backspace right after it gives that document with the key typed as plain text. Committed through a composition, as an input method commits it, the last keystroke gives the same document, caret and pending marks that typing it gives. Committed two letters into another author's struck text with the pending marks set to `{}`, it throws nothing, and when typing it there fires a rule, it gives what typing gives.
+**The property.** Typed key by key between neighbor paragraphs, every declared shorthand yields its promised symbol or marked text with no stray delimiter, stays literal inside words (except sub/sup tokens), leaves neighbor paragraphs untouched, reverts cleanly on one undo or Backspace, and matches when the final key commits via composition.
 
-**The harm.** A user who types `==yellow==`, `***both***`, `H~2~O` or `!>=` from the docs gets symbols or stray delimiters instead of what the kit promises, and closing an inline-code backtick pulled the next paragraph into the current one until plate-private#13's fix. Each case is one string a test can check, but rules that share keys collide in sequences nobody wrote down, as five Beta bugs on the Autoformat demo showed. With Doubao IME on, typing `!>=` stopped after `!` and threw `points outside document root` until plate-private#127's fix, because after a rule on a composed key deleted its source, the caret the view reported still pointed into the text from before the deletion.
-
-## What it checks
-
-`apps/www/scripts/autoformat-input-rules.ts` types into real editors built from `BasicMarksKit` then `AutoformatKit`, the order `EditorKit` uses, with `editor.update.text.insert` once per key, as `apps/www/src/__tests__/package-integration/autoformat/current-kit.spec.tsx` does. It checks the TypeScript code itself, exhaustively up to a bound, not a model of it. No verifier runs on input rules, so the script enumerates the inputs. Each run starts from the paragraphs `x`, the caret paragraph and `y`, with the caret at the end of the caret paragraph.
-
-1. It reads the declarations with the Babel parser, because the repository's TypeScript has no compiler API. From `autoformat.tsx` it takes every `createTextSubstitutionInputRule` constant in an `inputRules` list, with each pattern's `format` and `match`. From `basic-marks.tsx` it takes every `<Mark>Rules.markdown()` call in an `inputRules` list, with its `variant` or `value`. A value that is not a string literal, an `inputRules` value that is not a list literal, a rule of another shape or a file with no `inputRules` list exits 2. Each worker also counts the text input rules an editor of the two kits runs, through `getPlateRuntime`. The script exits 2 when that count differs from the number of rules it read, because a rule that reaches the editor another way would go untyped.
-2. A mark rule's syntax comes from the script's `EXPECTED_MARK_SYNTAX` table, not from the factories in `BaseMarkPlugins.ts`, so a factory whose delimiters drift from the table fails. The table copies the Inline Mark Autoformat rules of `docs/editor-behavior/markdown-editing-spec.md` where they name a syntax: `**`, `*`, `` ` ``, `~~`, `==`, `~`, `^` and `***`. The spec names only the opening runs `__*`, `__**` and `___***` of `EDIT-PROFILE-AUTOFMT-MARK-003`, so each combo's closing run mirrors its opening run, `___***a***___` for `boldItalicUnderline`. The spec names no syntax for the `_` variants of bold and italic, the `≡` highlight variant or underline, so their rows hold CommonMark's `__` and `_` and what their factories type, `≡a≡` and `__a__`. A factory or variant the table lacks exits 2.
-3. A declared character that no key types, such as `≤` in `≤=` or `≯` in `≯=`, is typed as the source of the rule that writes it, `<=` and `!>`, as a user would reach it.
-4. Declared shorthands. Each substitution source is typed at a paragraph start, after the word `w ` and after a bold `w `, and must give the context followed by its symbol; a smart quote is typed around `a`. Each mark rule is typed around `a` and around one character for each substitution rule whose source that character completes with the rule's opening or closing delimiter, such as `~=~` for `equalityRule` and `^o^` for `superscriptSymbolsRule`. It must give the content with the rule's marks, plus bold in the bold context. Subscript and superscript need a letter or a digit between their delimiters, as `EDIT-PROFILE-AUTOFMT-MARK-002` says, so around other content, such as `~=~`, they must leave no leaf with their marks. Typed right after `w`, a mark rule must leave no leaf with its marks, as `EDIT-PROFILE-AUTOFMT-MARK-004` says, except subscript and superscript around a script token, ASCII letters or digits with an optional sign at either end, which must apply there, as `EDIT-PROFILE-AUTOFMT-MARK-002` says. Around any other content, such as `w~!~`, they stay literal too. These are the `autoformat-declared` findings, owned by the kit file that declares the shorthand. The check judges the caret paragraph on its own. When a typed sequence joins `y` into it, the script drops that `y` before comparing, because the blocks rule already reports the join.
-5. Sequences. Every sequence of up to three keys over `a` and the characters of the mark syntaxes and of the substitution sources that hold no letter or digit is typed at a paragraph start. That is 15 characters and 3,615 sequences. A run whose result holds other than three paragraphs, or changes `x` or `y`, is an `autoformat-blocks` finding, owned by `createInputRules.ts`.
-6. Undo, on every run. The last keystroke fired a rule when the caret paragraph is no longer its old text plus the key, or its old characters changed marks, or the other paragraphs changed. Then one `editor.api.history.undo()` must give back the children from before that keystroke. Each shorter sequence is a run of its own, so every keystroke of every sequence is checked. These are the `autoformat-undo` findings, owned by `InputRulesPlugin.ts`. A fresh editor then types the same keys and presses Backspace once through `editorCommands.delete`, as the Backspace key does, and the last keystroke must no longer count as fired against the document from before it: the caret paragraph holds its old text plus the key, its old characters keep their marks and the other paragraphs are unchanged, as `EDIT-INPUT-RULE-004` says. These are the `autoformat-backspace` findings, owned by `InputRulesPlugin.ts`.
-7. Composition, on every run. A second editor types the same keys while a view of it holds the caret. It then commits the last key through that view with `getUserTextLanding` and `dispatchUserText`, as `commitChromeCompositionEndFallback` in `composition-state.ts` does when Chrome ends a composition. A target runtime reports the caret in the document the update started from, as the React view's does. The commit must give the children, caret and pending marks that typing gives. A throw or a difference is an `autoformat-composition` finding, owned by `packages/plitejs/src/react/editable/mutation-controller.ts`, whose `dispatchUserText` decides where the composed key and a rule's later write land. Each run then does this again in editors that add `AuthoredPlugin`, in a caret paragraph that ends with bob's struck `gone`. After the earlier keys, both editors move the caret two letters into `gone` and set the pending marks to `{}`, as turning a mark off does. Each command frame's accept-all projection hides struck text, so with no active pending mark the commit takes the `stored` landing and keeps the key inside `gone`, where typing puts it beside `gone` instead. There the commit must not throw. When typing the last key fires a rule, judged on the text outside `gone`, the commit must also give the children, caret and pending marks that typing gives. Such a finding's identity starts with `struck`.
-8. It sorts the findings and compares them with `apps/www/scripts/autoformat-input-rules-baseline.json` through `tooling/scripts/finding-baseline.mjs`, the shrink-only baseline the decision-order and lint checks use. A finding's identity names the rule or sequence, the typed keys and the context, never the result.
+**The harm.** Colliding input rules break documented shorthands (`==yellow==`, `***both***`, `H~2~O`, `!>=`), pull neighbor paragraphs in, or throw on IME commits.
 
 ## Run it
 
-Run every command from the repository root.
+- `pnpm check autoformat-rules` (`pnpm check:autoformat-rules`, active Local CI gate): 3-key bound (3,821 runs in plain + struck-text paragraphs + 241 declared checks).
+- `pnpm check autoformat-rules --light`: 2-key bound (461 runs + all 241 declared checks) for pre-panel runs.
+- `pnpm check:autoformat-rules --length=4`: 4-key deep run (54,446 runs, skips baseline).
+- `pnpm check:autoformat-rules --typed='<keys>'`: inspect one sequence across contexts.
+- `pnpm check:autoformat-rules --lower`: shrink `apps/www/scripts/autoformat-input-rules-baseline.json` after fixes.
 
-- `pnpm check:autoformat-rules` checks the gate bound, three keys. It makes 3,821 runs, each typed and composed in a plain paragraph and again inside struck text, and 241 declared checks in about 45 s on an 18-core M5 Max while other sessions load the machine. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check autoformat-rules` runs the same step through the check runner, and Local CI runs it on next after each landing.
-- `--light` types every sequence of up to two keys and keeps every declared check. It makes 461 runs and 241 declared checks, 12% of the gate's runs. It took 23 s with 8 workers at load averages from 143 to 158. Each of its sequences is a gate sequence with the same identity, and the declared checks run at every length, so its findings are a subset of the gate's. It fails only on a finding the baseline does not list and passes the listed findings it does not reach. The gate pins no count, so the light run pins none, and the rule count check still exits 2. A session runs `pnpm check autoformat-rules --light` before a diff panel and `--typed` on the sequences it fixes, and Local CI runs the gate after landing. `--light` with `--length`, `--typed`, `--init` or `--lower` exits 2.
-- `--length=4` types every sequence of up to four keys: 54,446 runs in about 600 s on the same machine with 8 workers while other sessions load it. A bound other than the gate's skips the baseline and exits 1 on any finding, because the known findings repeat there in more sequences. Compare its counts with Findings. Run it after a change to how rules match or apply.
-- `--typed='<keys>'` runs one typed sequence in each context the gate types it in, or at a start, after a word, after a bold word and inside a word when the gate has no such run, and prints every finding without reading the baseline.
-- `--jobs=<n>` sets the number of worker processes. It defaults to `CHECK_CORES`, the cores the check runner reserves for the step, and otherwise to the machine's cores, at most 8 either way, because each worker holds its own editor runtime. Any other argument exits 2, and so does `--init` or `--lower` with `--length` or `--typed`.
-- After a fix removes a known finding, the gate fails until you run `pnpm check:autoformat-rules --lower`, which drops the entries the tree no longer holds. The baseline never grows. `--lower` refuses a new entry, and `finding-baseline.mjs` refuses an entry its copy at the base commit lacks. `--init` seeds only a rule the baseline lacks.
+Exit 0 passes, 1 reports findings (`autoformat-declared`, `autoformat-blocks`, `autoformat-undo`, `autoformat-backspace`, `autoformat-composition`), 2 reports bad flags or AST-vs-runtime rule-count mismatch.
 
-## Read a failure
+## Bounds and assumptions
 
-A finding prints its rule and identity, then what each paragraph holds. A leaf is its text in quotes, followed by its marks, and `|` separates paragraphs:
+- 15-character alphabet up to length 3, 1-char mark content, and `stored` composition landing in struck text (Editing mode only).
+- Excludes block input rules (`# `, lists, quotes, code fences, HR, link automd), browser `beforeinput`/real IME events, Suggesting composition, multi-step undo/redo, and word Backspace.
 
-```text
-autoformat-declared comparisonsRule "<=" at start
-  expected "x" | "≤" | "y"
-  got      "x" | "⇐" | "y"
+## Bug vs drift
 
-autoformat-blocks "`a`" at start
-  "x" | "`a" | "y"  then "`"  gives "x" | "a"⟨code⟩ "y"
-
-autoformat-undo "->" at start
-  "x" | "-" | "y"  then ">"  gives "x" | "→" | "y"
-  one undo gives "x" | "" | "y" (applied)
-```
-
-The first is `arrowsRule`'s `<=` firing as `⇐` before `comparisonsRule` sees the key. The second is the closing backtick joining `y` into the caret paragraph, as it did before plate-private#13's fix. The third is a planted history bug from What a pass proves, where one undo also takes back the `-` typed before the rule.
-
-Tell a real bug from a modeling error before you change code:
-
-- **Real bug.** The typed keys are what a user types for a shorthand the kit declares, or a sequence of real keys, and the result differs from the spec's or the declaration's. Fix the rule, the kit's rule order or the runtime, then run `--lower`. When two declarations share their keys, as `__a__` does for `BoldRules _` and `UnderlineRules`, the spec's first matching rule wins, so the later one never applies. Fix that by removing or changing a declaration, never by adding a baseline entry.
-- **Modeling error.** `EXPECTED_MARK_SYNTAX` names a syntax the spec does not promise, the content the script picks makes the expected result ambiguous, or the difference is one no user sees, such as an empty leaf. The script compares leaves with empty text dropped and equal marks merged. Fix the table or the script with the spec rule it follows.
-- **Intended change.** Changing what a shorthand gives changes its declaration in the kit, or the spec and `EXPECTED_MARK_SYNTAX` together, in the same change. Never weaken the property or add a baseline entry to get green.
-
-## Findings
-
-The gate finds 25, all `autoformat-declared`, with no `autoformat-backspace`, `autoformat-blocks`, `autoformat-composition` or `autoformat-undo`. `--length=4` finds the same 25 and nothing else. Each class is one cause:
-
-- `<=` gives `⇐`, never `≤`, because `arrowsRule` declares `<=` and runs before `comparisonsRule`, and `arrowsRule`'s own `≤=`, typed `<==`, gives `⇐=` (t_dceb960e). 6 entries.
-- `==!==`, `==<==` and `==>==` give `==≢` and the like, because a substitution inside the span takes the first key of the closing `==` (t_c4407e94). 9 entries.
-- `__a__` gives bold, never underline, because `BoldRules _` and `UnderlineRules` both match `__` and bold comes first. 3 entries.
-- `^o^` gives `°^` and `~~=~~` gives `~≈~~`, because `^o` and `~=` fire inside the span. 7 entries.
-
-No run needs more than one undo, and one Backspace takes back every rule. The undo and Backspace checks cover every keystroke of every sequence at a paragraph start up to the bound, and the last keystroke of each declared shorthand in its other contexts.
-
-## What a pass proves
-
-The gate catches a shorthand that stops applying whole, a typed sequence that changes another paragraph, a rule step that undo no longer takes back on its own, and a composed key that leaves a different document, caret or pending marks than the typed key. At base `95a313df66` with this check copied in, bugs planted in a detached proof worktree gave:
-
-- Keeping a substitution's end text, by turning `if (match.end)` in `createTextSubstitutionInputRule`'s apply into `if (!match.end)`, gives 293 `autoformat-declared`, 127 `autoformat-blocks` and 456 `autoformat-undo` findings against 86, 86 and 0. One is `arrowsRule "->" at start`, which gives `-→`.
-- Merging every text batch in `shouldMergeBatch` of `packages/plitejs/src/history/history-merge-policy.ts` gives 456 `autoformat-undo` findings and leaves the other counts unchanged. One is the `->` failure in Read a failure.
-- Writing one pattern's `match` as `String('->')` exits 2, naming `autoformat.tsx:7`.
-- Adding a plugin to `AutoformatKit` whose rules sit in `Object.fromEntries([['inputRules', [arrowsRule]]])`, which the reader cannot see, exits 2, because the editor runs 29 text input rules and the lists declare 28.
-- After each plant was dropped, the gate matched the baseline again.
-
-At `fc9906287b` with plate-private#127's fix, `dispatchUserText` points the implicit target at the caret the view holds before it lands a composed key there, at every landing. A rule's later write in the same update then lands at that caret, moved by the rule's own changes. Limiting that step to the `selection` landing again, as before the fix, gives 588 `autoformat-composition` findings, 270 in a plain paragraph and 318 inside struck text, and leaves the other counts unchanged. Each one throws `points outside document root`, such as `"!>=" at start` and `struck "!>=" at start`. Skipping it only for the `stored` landing, as the fix did until a review found the struck case, gives 318, all `struck` and each a throw. Restoring the fix brings the gate back to the baseline. Leaving bold pending after a composed key, by calling `tx.marks.set({ bold: true })` after the composed insert in `dispatchUserText`, gives 4,179 `autoformat-composition` findings, which only the comparison of pending marks reports.
-
-At base `80e5d8ebe5`, before Backspace could take a rule back, the script with its Backspace law gives 433 `autoformat-backspace` findings, such as `"1/4" at start`, where one Backspace leaves an empty paragraph, and leaves the other counts unchanged. With the fix it gives none.
-
-The code before plate-private#13's fix failed `autoformat-blocks` on its own, the code before plate-private#127's fix failed `autoformat-composition`, the code before the Backspace fix failed `autoformat-backspace`, and the current code fails `autoformat-declared`, as Findings lists. So four of the five properties have failed on real bugs too.
+- **Real bug:** declared shorthand fails/collides, corrupts neighbors, or diverges on undo/Backspace/composition. Fix rule, kit order, or runtime and run `--lower`.
+- **Modeling error / intended change:** update `apps/www/scripts/autoformat-input-rules.ts` (`EXPECTED_MARK_SYNTAX`), kit declarations, and `docs/editor-behavior/markdown-editing-spec.md` together; never grow baseline.
 
 ## Coverage record
 
-Synced at `fix(platejs): give back a shorthand that just fired on the next Backspace`. The verification describes these files as they stand there:
+Synced at `fix(platejs): give back a shorthand that just fired on the next Backspace`. Check drift with `git log --oneline <commit>..HEAD -- apps/www/src/registry/components/editor/{autoformat,basic-marks}.tsx packages/platejs/src/lib/plugins/input-rules apps/www/scripts/autoformat-input-rules.ts`; move sync commit only after confirming script and passing `pnpm check:autoformat-rules`.
 
-| File | What the check exercises |
-| --- | --- |
-| `apps/www/src/registry/components/editor/autoformat.tsx` | the substitution rules it reads and types |
-| `apps/www/src/registry/components/editor/basic-marks.tsx` | which mark rules the kit declares, read through `EXPECTED_MARK_SYNTAX` |
-| `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts` | the `<Mark>Rules.markdown()` factories, judged against `EXPECTED_MARK_SYNTAX` |
-| `packages/platejs/src/lib/plugins/input-rules/createInputRules.ts` | `createMarkInputRule` and `createTextSubstitutionInputRule`, their match and apply |
-| `packages/platejs/src/lib/plugins/input-rules/markInputRule.internal.ts` | the mark span resolver that `createMarkInputRule` and `ScriptRules` share |
-| `packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts` | the `insertText` rule transaction, one per accepted rule, and the Backspace that takes a rule back |
-| `packages/platejs/src/internal/plugin/resolvePlugins.ts` | the order rules run in |
-| `packages/platejs/src/internal/plugin/compilePlateModel.ts` | `getPlateRuntime`, which gives the count of text input rules the editor runs |
-| `packages/plitejs/src/history/history-merge-policy.ts` | whether a rule's step merges with the typing before it |
-| `packages/plitejs/src/react/editable/mutation-controller.ts` | `getUserTextLanding` and `dispatchUserText`, which land a composed key and point a rule's later write at the caret |
-| `packages/plitejs/src/react/editable/mutation-full-block-editing.ts` | `decideUserTextLanding`, which picks where a composed key lands |
-| `packages/plitejs/src/core/view-carets.ts` | `holdsCaretAt`, which says whether the view holds the caret it commits at |
-| `packages/plitejs/src/core/public-state.ts` | `syncImplicitTargetToCurrentSelection` and `moveImplicitTarget`, which decide where a rule's implicit write lands |
-| `packages/plitejs/src/core/composition-stamp.ts` | the stamp a composition commit runs under |
-| `packages/plitejs/src/authored/authored.ts` | the command document that hides struck text in each command frame, so the second composition takes the `stored` landing |
-| `packages/plitejs/src/core/command-frame.ts` | the accept-all projection a command runs in and the implicit target it hands into each frame |
-| `docs/editor-behavior/markdown-editing-spec.md` | the Inline Mark Autoformat rules that `EXPECTED_MARK_SYNTAX` copies where they name a syntax; not run |
+Covered paths: `apps/www/src/registry/components/editor/{autoformat,basic-marks}.tsx`, `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts`, `packages/platejs/src/lib/plugins/input-rules/{createInputRules,markInputRule.internal,InputRulesPlugin}.ts`, `packages/platejs/src/internal/plugin/{resolvePlugins,compilePlateModel}.ts`, `packages/plitejs/src/react/editable/{mutation-controller,mutation-full-block-editing}.ts`, `packages/plitejs/src/core/{view-carets,public-state,composition-stamp,command-frame}.ts`, `packages/plitejs/src/history/history-merge-policy.ts`, `packages/plitejs/src/authored/authored.ts`.
 
-To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep 'give back a shorthand that just fired on the next Backspace'`, then run `git log --oneline <that commit>..HEAD --` with the table's files and `apps/www/scripts/autoformat-input-rules.ts`. For each commit it lists, read the diff and confirm five things. The script still builds its editors from the kits the way `EditorKit` orders them. `EXPECTED_MARK_SYNTAX` still matches the spec's mark rules where they name a syntax. A new rule shape in either kit file still reaches the script, or exits 2. The script still commits the last key through `getUserTextLanding` and `dispatchUserText` the way `commitChromeCompositionEndFallback` in `packages/plitejs/src/react/editable/composition-state.ts` does. The Backspace law still presses Backspace through `editorCommands.delete`, the command the Backspace key dispatches. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:autoformat-rules`.
-
-## What it does not cover
-
-- The other kits of `EditorKit` and their input rules: block shorthands such as `# `, lists, quotes, code fences, the horizontal rule and link automd. The demo pages use the full `EditorKit`.
-- The browser: `beforeinput`, a real input method's composition events, mobile keyboards, paste and the caret the DOM shows. The script calls the model's `insertText` once per key. Its composition commit calls the functions the browser's commit calls, with a target runtime that reports a fixed caret instead of the DOM's and with no composition events. Only the last key of a run is composed. The `stored` landing is checked in Editing only, two letters into one struck run, with the pending marks set to `{}`. Suggesting, where typing records a suggestion of its own, goes unchecked. When no rule fires there, the check looks only for a throw and compares neither where the composed key lands nor its marks. A key composed there after bold text comes out bold, where typing gives a plain key. Base `fc9906287b` does the same. The `stored` landing passes `insertText` an explicit point, so `insertText` skips the pending marks, and the command frame gives the key the marks of the visible text before `gone`. That bug stays open until a change to how the `stored` landing applies pending marks fixes it. Its owner is natamox.
-- Where the caret lands after a rule and which marks carry to the next key, except as later keys in a sequence show them.
-- Redo and undo past the last keystroke. The Backspace check presses Backspace only in a plain paragraph, never inside struck text, in Suggesting or after another edit, and never by word.
-- Content longer than one character, text after the caret, marks other than bold around the caret, and substitutions or smart quotes inside a word.
-- Sequences of more than three keys at the gate, and keys outside the 15-character alphabet, so `(tm)`, `1/2` and `&copy;` are typed only as declared shorthands. A mark rule gets one content per colliding rule and side, so a rule whose several sources complete with the same delimiter is typed with only one of them.
-- A known finding whose result changes. An identity names the keys and the context, not the result, so a known failure that gets worse stays green.
-- Which of two rules on the same keys should win. The check reports the declaration that never applies; the spec decides.
-
-`/pstack:maintain-formal-verification-skill` brings this verification back in line after changes that did not recheck it.
+Use `/pstack:maintain-formal-verification-skill` after changes that skipped this check.

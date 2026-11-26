@@ -22,10 +22,7 @@ const DEPLOY_LOOKBACK_DAYS = 7;
 const LANE_TARGET = 50;
 const LANE_CAP = 60;
 const LANGUAGES = { en: 'English', zh: 'Chinese' };
-const LANE_RULES = path.join(
-  ROOT,
-  '.agents/rules/verify/references/sweep-lane.md'
-);
+const LANE_RULES = path.join(ROOT, '.agents/rules/verify/references/sweep.md');
 const ISO_TIME = /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d+)?)?(Z|[+-]\d\d:\d\d)$/;
 const VIDEO = /\.(mp4|webm)$/i;
 
