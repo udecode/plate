@@ -379,21 +379,72 @@ const withoutUnchangedTail = (
     return candidate;
   }
 
-  const limit = Math.min(
-    candidate.to - candidate.from,
-    candidate.insert.length
+  const { insert } = candidate;
+  const replaced = document.slice(candidate.from, candidate.to);
+  const common = commonSuffixLength(
+    replaced.tokens,
+    insert.tokens,
+    Math.min(replaced.length, insert.length)
   );
-  const tail = commonSuffixLength(
-    document.slice(candidate.to - limit, candidate.to).tokens,
-    candidate.insert.tokens,
-    limit
-  );
+
+  if (common === 0) return candidate;
+  const replacedStart = replaced.length - common;
+  const insertStart = insert.length - common;
+  // Close tokens carry no type, so the common suffix can pair the replaced
+  // block's close with the close of a block the insert adds after its first
+  // block. The trim keeps that close, or the edit would read as the replaced
+  // block becoming the added one.
+  const insertSplits: boolean[] = [];
+  let seenElementClose = false;
+
+  for (const [index, token] of insert.tokens.entries()) {
+    if (insert.offsets[index] >= insertStart) break;
+    if (token.kind === 'open' && token.nodeKind === 'element') {
+      insertSplits.push(seenElementClose);
+    } else if (token.kind === 'close' && token.nodeKind === 'element') {
+      seenElementClose = true;
+      insertSplits.pop();
+    }
+  }
+
+  let cut = replacedStart;
+  let docOpen = 0;
+  let tailDepth = 0;
+
+  for (const [index, token] of replaced.tokens.entries()) {
+    const at = replaced.offsets[index];
+
+    if (at < replacedStart) {
+      if (token.kind === 'open' && token.nodeKind === 'element') {
+        docOpen += 1;
+      } else if (
+        token.kind === 'close' &&
+        token.nodeKind === 'element' &&
+        docOpen > 0
+      ) {
+        docOpen -= 1;
+      }
+    } else if (token.kind === 'open' && token.nodeKind === 'element') {
+      tailDepth += 1;
+    } else if (token.kind === 'close' && token.nodeKind === 'element') {
+      if (tailDepth > 0) {
+        tailDepth -= 1;
+      } else {
+        const inReplaced = docOpen > 0;
+
+        if (inReplaced) docOpen -= 1;
+        if (insertSplits.pop() && inReplaced) cut = at + 1;
+      }
+    }
+  }
+
+  const tail = replaced.length - cut;
 
   return tail === 0 || trimsEverything(tail, candidate)
     ? candidate
     : Object.freeze({
         ...candidate,
-        insert: candidate.insert.slice(0, candidate.insert.length - tail),
+        insert: insert.slice(0, insert.length - tail),
         to: candidate.to - tail,
       });
 };
