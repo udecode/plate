@@ -437,6 +437,14 @@ const reviewed = (token: JsonToken) =>
 const innermostInsert = (marks: readonly AuthoredMark[]) =>
   marks.findLast((mark) => mark.kind === 'insert');
 
+const contentClaim = (insertion: AuthoredMark): AuthoredMark => ({
+  at: insertion.at,
+  author: insertion.author,
+  change: insertion.change,
+  ...(insertion.inc === undefined ? {} : { inc: insertion.inc }),
+  kind: 'insert',
+});
+
 const othersDelete = (member: AuthoredMember) =>
   member.kind === 'delete' && !isEditingChange(member.change);
 
@@ -742,7 +750,11 @@ const rebaseProperties = (
     const text = entry && plain.node(entry.path).text;
 
     if (!entry || typeof text !== 'string' || text === '') {
-      return [map(token, 1, false)];
+      const at = map(token, 1, false);
+
+      return plain === review || review.nodeStartingAt(at)?.from === at
+        ? [at]
+        : [];
     }
 
     return reviewOpensOf(map, review, token, text.length);
@@ -2712,7 +2724,13 @@ class RootRecorder {
     Span & Readonly<{ contexts: readonly Context[] }>
   > = [];
   private readonly keptLines: Array<
-    Readonly<{ at: number; from: number; inside: number }>
+    Readonly<{
+      at: number;
+      contentFrom: number;
+      contentTo: number;
+      from: number;
+      inside: number;
+    }>
   > = [];
   private readonly index: DocumentIndex;
   private readonly options: RecorderOptions;
@@ -4191,6 +4209,8 @@ class RootRecorder {
     this.ops.push({ at, kind: 'insert', tokens });
     this.keptLines.push({
       at,
+      contentFrom: line.contentFrom,
+      contentTo: line.contentTo,
       from,
       inside:
         tokens.findIndex(
@@ -4839,6 +4859,21 @@ class RootRecorder {
       emit(openToken('text', props));
       outLeaf = props;
     };
+    const claimOf = (marks: readonly AuthoredMark[]) => {
+      const inserts = marks.filter((mark) => mark.kind === 'insert');
+      const pending = inserts.filter((mark) => !isEditingChange(mark.change));
+      const ownEditing = pending.length
+        ? inserts.find(
+            (mark) =>
+              isEditingChange(mark.change) &&
+              mark.change === this.options.changeId
+          )
+        : undefined;
+
+      return ownEditing
+        ? { insertion: ownEditing, outer: pending }
+        : { insertion: innermostInsert(pending), outer: pending.slice(0, -1) };
+    };
     const ownElement = () => {
       for (const context of [...stack].reverse()) {
         if (context.kind !== 'element') continue;
@@ -4846,11 +4881,7 @@ class RootRecorder {
         // A block an Editing edit placed after a pending join carries an
         // Editing insertion that only says which join it goes with, so
         // nothing inside it is pending.
-        const insertion = innermostInsert(
-          this.marks(context.props).filter(
-            (mark) => !isEditingChange(mark.change)
-          )
-        );
+        const { insertion, outer } = claimOf(this.marks(context.props));
 
         if (!insertion) continue;
         // An element another author inserted inside one's own is theirs, so
@@ -4858,17 +4889,11 @@ class RootRecorder {
         if (!this.options.isOwn(insertion)) return null;
 
         const { type } = context.props;
+        const mark = contentClaim(insertion);
 
         return {
-          // What is written inside the block claims its insertion, never
-          // its place after a pending join.
-          mark: {
-            at: insertion.at,
-            author: insertion.author,
-            change: insertion.change,
-            ...(insertion.inc === undefined ? {} : { inc: insertion.inc }),
-            kind: 'insert' as const,
-          },
+          mark,
+          marks: [...outer, mark],
           oneText: typeof type === 'string' && this.options.oneText(type),
         };
       }
@@ -4891,7 +4916,7 @@ class RootRecorder {
       if (own) {
         return own.oneText && baseLeaf
           ? this.marks(baseLeaf).filter((mark) => mark.kind !== 'delete')
-          : [own.mark];
+          : own.marks;
       }
 
       return [
@@ -5408,13 +5433,18 @@ class RootRecorder {
   private suggestedTextProps(
     leaf: Context | undefined,
     at: number,
-    ownElement: Readonly<{ mark: AuthoredMark; oneText: boolean }> | null,
+    ownElement: Readonly<{
+      mark: AuthoredMark;
+      marks: readonly AuthoredMark[];
+      oneText: boolean;
+    }> | null,
     inOneText: boolean
   ): Props {
     if (!leaf || leaf.kind !== 'text') {
-      return this.withMarks({}, [
-        ownElement?.mark ?? this.options.markOf('insert'),
-      ]);
+      return this.withMarks(
+        {},
+        ownElement ? ownElement.marks : [this.options.markOf('insert')]
+      );
     }
 
     const marks = this.marks(leaf.props);
@@ -5437,7 +5467,7 @@ class RootRecorder {
         leaf.props,
         ownElement.oneText
           ? marks.filter((mark) => mark.kind !== 'delete')
-          : [...live, ownElement.mark],
+          : [...live, ...ownElement.marks],
         true
       );
     }
@@ -6036,8 +6066,27 @@ class RootRecorder {
         (replacing.offsets[0] ?? 0)
       );
     }
+    const inKeptLine = (at: number) => {
+      const kept = this.keptLines.find(
+        (line) => line.contentFrom <= at && at <= line.contentTo
+      );
+
+      if (!kept) return null;
+
+      return (
+        (recorded.mapPos(kept.at, -1) ?? position) +
+        (caret || at === kept.from
+          ? kept.inside
+          : at < kept.from
+            ? kept.inside - 1
+            : kept.inside + 1)
+      );
+    };
     const throughKept = (piece: Extract<Piece, { kind: 'kept' }>) => {
       const at = piece.beforeFrom + position - piece.afterFrom;
+      const kept = inKeptLine(at);
+
+      if (kept !== null) return kept;
 
       return (
         recorded.mapPos(
@@ -6083,12 +6132,9 @@ class RootRecorder {
     }
 
     if (removed) {
-      const { beforeFrom } = removed;
-      const kept = this.keptLines.find((line) => line.from === beforeFrom);
+      const kept = inKeptLine(removed.beforeFrom);
 
-      if (kept) {
-        return (recorded.mapPos(kept.at, -1) ?? position) + kept.inside;
-      }
+      if (kept !== null) return kept;
 
       const right = caret ? !removed.leftward : assoc === 1;
       const edge = right ? removed.beforeTo : removed.beforeFrom;
