@@ -183,6 +183,7 @@ Synced at `test(plitejs): run the delete and paste range check over a code block
 | `packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts` | where a slice's lines land |
 | `packages/plitejs/src/core/public-state.ts` | `state.slice.get()` and the slice landing it calls |
 | `packages/plitejs/src/history` | the one undo |
+| `packages/plitejs/src/core/anchor.ts` | the `drop` anchor `range-kept` puts on each selected letter, which must not resolve after a command over the range |
 | `packages/plitejs/test/support/recording-laws.ts` | `editorFor`, `rootChildren` and `isRefusal` |
 | `packages/plitejs/scripts/check-harness.ts` | the flags, workers and gate |
 | `packages/plitejs/scripts/authored-documents.ts` | `story`, which names each document |
