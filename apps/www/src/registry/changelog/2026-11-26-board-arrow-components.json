@@ -35,7 +35,8 @@
       "summary": "Draw each arrow's line, head and label through `BoardArrowPath`, `BoardArrowhead` and `BoardArrowLabel` from `platejs/board/react`, so an arrow follows a dragged or resized shape without a render. `board-styles` exports the head as `ARROW_HEAD`, which the static arrow draws too.",
       "details": [],
       "migrationNotes": [
-        "Copy the `board` item again with all its files, because `board-static` draws the head that `board-styles` exports as `ARROW_HEAD`."
+        "Copy the `board` item again with all its files, because `board-static` draws the head that `board-styles` exports as `ARROW_HEAD`.",
+        "`platejs/board/react` drops `useArrowPath`, so an arrow renderer of your own draws through `BoardArrowPath`, `BoardArrowhead` and `BoardArrowLabel` inside its `BoardShape`."
       ],
       "targets": ["board"],
       "source": {

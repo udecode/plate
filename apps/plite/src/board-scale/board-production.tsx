@@ -15,6 +15,9 @@ import { BaseBoardPlugin } from '../../../../packages/platejs/src/features/board
 import { boardMembersOf } from '../../../../packages/platejs/src/features/board/lib/boardMember.internal';
 import { boardShapesOf } from '../../../../packages/platejs/src/features/board/lib/boardShape.internal';
 import {
+  BoardArrowhead,
+  BoardArrowLabel,
+  BoardArrowPath,
   BoardArrowPlugin,
   BoardFramePlugin,
   BoardGeoPlugin,
@@ -26,7 +29,6 @@ import {
   type BoardShapeDescription,
   BoardStrokePlugin,
   BoardSurface,
-  useArrowPath,
 } from '../../../../packages/platejs/src/react/features/board';
 import {
   type BoardView as ShippedView,
@@ -127,6 +129,7 @@ const FRAME_NAME_LOOK: React.CSSProperties = {
 };
 
 const ARROW_LOOK: React.CSSProperties = { pointerEvents: 'none' };
+const ARROW_HEAD = '0,0 -10.81,-5.22 -10.81,5.22';
 
 const DROP_MS = 40;
 const WHEEL_STEP_ZOOM = 100;
@@ -175,7 +178,9 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     for (const listener of reindexListeners) listener();
   });
 
-  countCommittedRenders({ shapes: [BoardShape] });
+  countCommittedRenders({
+    shapes: [BoardShape, BoardArrowPath, BoardArrowhead, BoardArrowLabel],
+  });
 
   const instrumented = new WeakSet<ShippedView>();
   const layoutPlant =
@@ -589,44 +594,36 @@ export const createProductionRenderer = (config: ProductionConfig) => {
 
   function ArrowShape(props: RenderElementProps) {
     'use no memo';
-    const drawn = useArrowPath(props.element);
-
-    if (!drawn) return <ShapeComponent {...props} />;
-
-    const { end, start } = drawn;
-    const x = Math.min(start.x, end.x);
-    const y = Math.min(start.y, end.y);
 
     return (
       <ShapeComponent {...props}>
         <div
-          {...marksOf(props.element)}
           contentEditable={false}
-          style={{
-            height: Math.abs(end.y - start.y),
-            left: x,
-            position: 'absolute',
-            top: y,
-            width: Math.abs(end.x - start.x),
-          }}
+          style={{ left: 0, position: 'absolute', top: 0 }}
         >
           <svg
             aria-hidden
             height={1}
-            style={{ overflow: 'visible', position: 'absolute' }}
+            style={{
+              overflow: 'visible',
+              pointerEvents: 'none',
+              position: 'absolute',
+            }}
             width={1}
           >
-            <line
+            <BoardArrowPath
+              {...marksOf(props.element)}
+              fill="none"
+              pointerEvents="stroke"
               stroke="#475569"
               strokeWidth={2}
-              x1={start.x - x}
-              x2={end.x - x}
-              y1={start.y - y}
-              y2={end.y - y}
             />
+            <BoardArrowhead>
+              <polygon fill="#475569" points={ARROW_HEAD} />
+            </BoardArrowhead>
           </svg>
         </div>
-        {props.children}
+        <BoardArrowLabel>{props.children}</BoardArrowLabel>
       </ShapeComponent>
     );
   }

@@ -221,13 +221,16 @@ export const createInstruments = (moving: () => boolean) => {
     busyMs: 0,
     cameraWrites: 0,
     deferredKeys: 0,
+    diagonalArrowWrites: 0,
     dragRenders: 0,
     droppedFrames: 0,
     endpointCulls: 0,
+    frozenArrowWrites: 0,
     ignoredEvents: 0,
     lateMotion: 0,
     layoutReads: 0,
     renderBumps: 0,
+    reversedArrowWrites: 0,
     shapeSelectorRuns: 0,
     skippedUpdates: 0,
     stillMembers: 0,
@@ -289,25 +292,31 @@ export const createInstruments = (moving: () => boolean) => {
     shapes,
   }: Readonly<{ boards?: readonly unknown[]; shapes: readonly unknown[] }>) => {
     window.__BOARD_SCALE_COMMIT__ = (root) => {
-      const stack = [root.current];
+      const counted = new Set<string>();
+      const stack: Array<{ fiber: CommittedFiber; shapeId: string }> = [
+        { fiber: root.current, shapeId: '' },
+      ];
 
       while (stack.length > 0) {
-        const fiber = stack.pop();
+        const entry = stack.pop();
 
-        if (!fiber) continue;
+        if (!entry?.fiber) continue;
+        const { fiber } = entry;
+        const shapeId = fiber.memoizedProps?.element?.shapeId ?? entry.shapeId;
+
         if (fiber.flags & PERFORMED_WORK) {
           if (shapes.includes(fiber.type)) {
-            countShapeRender(
-              fiber.memoizedProps?.element?.shapeId ?? '',
-              fiber.alternate !== null
-            );
+            if (!shapeId || !counted.has(shapeId)) {
+              if (shapeId) counted.add(shapeId);
+              countShapeRender(shapeId, fiber.alternate !== null);
+            }
           } else if (boards.includes(fiber.type)) {
             stats.boardRenders += 1;
           }
         }
         if (fiber.subtreeFlags & PERFORMED_WORK) {
           for (let { child } = fiber; child; child = child.sibling) {
-            stack.push(child);
+            stack.push({ fiber: child, shapeId });
           }
         }
       }

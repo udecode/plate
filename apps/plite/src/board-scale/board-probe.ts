@@ -232,6 +232,7 @@ const measureFrameInterval = async () => {
 
 type DragMove = {
   arrowsBehind: number;
+  arrowsChecked: number;
   atPointer: boolean;
   frames: number;
   membersMissing: number;
@@ -318,7 +319,7 @@ type KeySample = {
 type K2Done =
   | Readonly<{ from: string | null; kind: 'selectionMoved' }>
   | Readonly<{ arrow?: string; id: string; kind: 'boxPreviewed' }>
-  | Readonly<{ id: string; kind: 'boxWritten' }>
+  | Readonly<{ arrow?: string; id: string; kind: 'boxWritten' }>
   | Readonly<{ kind: 'aimMoved' }>
   | Readonly<{ kind: 'cursorMoved' | 'selectionToggled' }>
   | Readonly<{ kind: 'shapeAdded' }>;
@@ -333,6 +334,7 @@ type K2Arm = Readonly<{
 }>;
 
 type K2Sample = {
+  arrowPath?: string | null;
   arrowRenders?: number;
   done?: number;
   extraMs: number;
@@ -476,7 +478,15 @@ export const installBoardProbe = (
         } else if (plant === 'render' || plant === 'shape-render') {
           bumpShapeTick();
         } else {
-          const shapes = shapeElements().slice(0, LAYOUT_THRASH_SHAPES);
+          const shapes = shapeElements()
+            .flatMap((shape) => {
+              const root =
+                shape.closest<HTMLElement>('[data-board-shape]') ??
+                ((shape as Element) instanceof HTMLElement ? shape : null);
+
+              return root ? [root] : [];
+            })
+            .slice(0, LAYOUT_THRASH_SHAPES);
 
           for (const shape of shapes) {
             shape.style.marginTop = shape.style.marginTop ? '' : '0.5px';
@@ -597,6 +607,66 @@ export const installBoardProbe = (
   const shapeElement = (id: string) =>
     boardHost()?.querySelector<HTMLElement>(`[data-board-shape="${id}"]`) ??
     null;
+  const arrowPathOf = (id: string) =>
+    shapeElement(id)?.querySelector('svg path')?.getAttribute('d') ?? null;
+  let frozen: MutationObserver | null = null;
+  const freezeArrows = (ids: readonly string[]) => {
+    const held = new Map<Element, string>();
+
+    for (const id of ids) {
+      const path = shapeElement(id)?.querySelector('svg path');
+      const d = path?.getAttribute('d') ?? '';
+
+      if (path && d) held.set(path, d);
+    }
+    frozen = new MutationObserver(() => {
+      for (const [path, value] of held) {
+        if (path.getAttribute('d') === value) continue;
+        path.setAttribute('d', value);
+        plantWork.frozenArrowWrites += 1;
+      }
+    });
+    for (const path of held.keys()) {
+      frozen.observe(path, { attributeFilter: ['d'], attributes: true });
+    }
+  };
+  const corruptArrows = (
+    mode: 'diagonal' | 'reverse',
+    ids: readonly string[]
+  ) => {
+    const paths = ids.flatMap((id) => {
+      const path = shapeElement(id)?.querySelector('svg path');
+
+      return path ? [path] : [];
+    });
+    const written = new Map<Element, string>();
+    const rewrite = (path: Element) => {
+      const d = path.getAttribute('d') ?? '';
+
+      if (!d || written.get(path) === d) return;
+      const match = /^M([^\s]+) ([^\s]+)L([^\s]+) ([^\s]+)$/.exec(d);
+
+      if (!match) return;
+      const [, sx, sy, ex, ey] = match;
+      const next =
+        mode === 'reverse'
+          ? `M${ex} ${ey}L${sx} ${sy}`
+          : `M${sx} ${ey}L${ex} ${sy}`;
+
+      written.set(path, next);
+      path.setAttribute('d', next);
+      if (mode === 'reverse') plantWork.reversedArrowWrites += 1;
+      else plantWork.diagonalArrowWrites += 1;
+    };
+
+    frozen = new MutationObserver(() => {
+      for (const path of paths) rewrite(path);
+    });
+    for (const path of paths) {
+      rewrite(path);
+      frozen.observe(path, { attributeFilter: ['d'], attributes: true });
+    }
+  };
   const boxText = (width: number, height: number) => `${width}x${height}`;
   const k2Read = (done: K2Done) => {
     if (done.kind === 'boxPreviewed') {
@@ -703,12 +773,7 @@ export const installBoardProbe = (
     const { done } = armed.arm;
 
     if (done.kind === 'boxPreviewed' && done.arrow !== undefined) {
-      const before = armed.before?.renders.get(done.arrow);
-
-      if (before !== undefined) {
-        sample.arrowRenders =
-          (boardStats.renderedIds.get(done.arrow) ?? 0) - before;
-      }
+      sample.arrowPath = arrowPathOf(done.arrow);
     }
     // A second commit after the operation's own, so React cannot fold it in.
     if (armed.arm.planted && plant === 'write-render') {
@@ -788,6 +853,22 @@ export const installBoardProbe = (
       sample.rerenderedIds = counts.flatMap(([id, count]) =>
         count > 0 ? [id] : []
       );
+      const { done } = armed.arm;
+
+      if (
+        (done.kind === 'boxPreviewed' || done.kind === 'boxWritten') &&
+        done.arrow !== undefined
+      ) {
+        const before = renders.get(done.arrow);
+
+        if (done.kind === 'boxWritten') {
+          sample.arrowPath = arrowPathOf(done.arrow);
+        }
+        if (before !== undefined) {
+          sample.arrowRenders =
+            (boardStats.renderedIds.get(done.arrow) ?? 0) - before;
+        }
+      }
       k2Observer.disconnect();
       armed.settled = true;
       armed.notify?.();
@@ -941,12 +1022,80 @@ export const installBoardProbe = (
       (edge) => Math.abs(rect[edge] - want[edge]) > slack
     );
 
+  const screenPoint = (
+    point: BoardPoint,
+    surface: DOMRect,
+    camera = readCamera()
+  ): BoardPoint => ({
+    x: surface.left + (point.x - camera.x) * camera.zoom,
+    y: surface.top + (point.y - camera.y) * camera.zoom,
+  });
+
+  const endsOff = (got: BoardArrowEnds, want: BoardArrowEnds, slack: number) =>
+    Math.abs(got.start.x - want.start.x) > slack ||
+    Math.abs(got.start.y - want.start.y) > slack ||
+    Math.abs(got.end.x - want.end.x) > slack ||
+    Math.abs(got.end.y - want.end.y) > slack;
+
+  const arrowScreenEnds = (element: Element): BoardArrowEnds | null => {
+    const shape =
+      typeof (element as SVGGeometryElement).getPointAtLength === 'function'
+        ? (element as SVGGeometryElement)
+        : element.querySelector<SVGPathElement>('svg path');
+
+    if (!shape || !shape.getAttribute('d')) {
+      return null;
+    }
+
+    const matrix = shape.getScreenCTM();
+
+    if (!matrix) return null;
+
+    const at = (length: number) =>
+      DOMPoint.fromPoint(shape.getPointAtLength(length)).matrixTransform(
+        matrix
+      );
+
+    return { end: at(shape.getTotalLength()), start: at(0) };
+  };
+
+  const arrowScreenRect = (element: Element): ScreenRect | null => {
+    if (query.renderer === 'stub') return element.getBoundingClientRect();
+    const ends = arrowScreenEnds(element);
+
+    if (!ends) return null;
+
+    return {
+      bottom: Math.max(ends.start.y, ends.end.y),
+      left: Math.min(ends.start.x, ends.end.x),
+      right: Math.max(ends.start.x, ends.end.x),
+      top: Math.min(ends.start.y, ends.end.y),
+    };
+  };
+
   const placeError = (
     element: HTMLElement,
     shape: StoredNode,
     targetOf: (id: string) => BoardArrowTarget | undefined,
     surface: DOMRect
   ) => {
+    const ends = drawnEnds(shape, targetOf);
+
+    if (ends && query.renderer !== 'stub') {
+      const got = arrowScreenEnds(element);
+
+      if (!got) return `${element.dataset.shapeId} has no drawn path`;
+      const want = {
+        end: screenPoint(ends.end, surface),
+        start: screenPoint(ends.start, surface),
+      };
+      const at = ({ end, start }: BoardArrowEnds) =>
+        `${start.x.toFixed(1)},${start.y.toFixed(1)} to ${end.x.toFixed(1)},${end.y.toFixed(1)}`;
+
+      return endsOff(got, want, 0.75)
+        ? `${element.dataset.shapeId} at ${at(got)} not ${at(want)}`
+        : null;
+    }
     const rect = element.getBoundingClientRect();
     const want = screenRect(drawnBox(shape, targetOf), surface);
     const arrow = Boolean(shape.start && shape.end);
@@ -1567,8 +1716,17 @@ export const installBoardProbe = (
         )
       );
       const bound = shapes.filter(
-        ({ end, start }) =>
-          start && end && (carried.has(start.shape) || carried.has(end.shape))
+        (
+          shape
+        ): shape is StoredNode & {
+          end: NonNullable<StoredNode['end']>;
+          start: NonNullable<StoredNode['start']>;
+        } =>
+          Boolean(
+            shape.start &&
+            shape.end &&
+            (carried.has(shape.start.shape) || carried.has(shape.end.shape))
+          )
       );
       const dragged = shapes.flatMap((shape) =>
         carried.has(shape.shapeId ?? '')
@@ -1609,11 +1767,17 @@ export const installBoardProbe = (
       const boundIds = new Set(bound.map((arrow) => arrow.shapeId ?? ''));
       const inDrag = new Set([...carried, ...boundIds]);
       const elementsInView = (keep: (id: string) => boolean) =>
-        shapeElements().filter(
-          (element) =>
-            keep(element.dataset.shapeId ?? '') &&
-            meets(element.getBoundingClientRect())
-        );
+        shapeElements().filter((element) => {
+          const id = element.dataset.shapeId ?? '';
+
+          if (!keep(id)) return false;
+          const rect =
+            byId.get(id)?.type === 'boardArrow'
+              ? arrowScreenRect(element)
+              : element.getBoundingClientRect();
+
+          return rect !== null && meets(rect);
+        });
       const nonMemberIds = new Set(
         shapeElements().flatMap((element) => {
           const id = element.dataset.shapeId ?? '';
@@ -1627,6 +1791,11 @@ export const installBoardProbe = (
       const boundInView = elementsInView((id) => boundIds.has(id)).map(
         (element) => element.dataset.shapeId ?? ''
       );
+      if (plant === 'freeze-arrow') freezeArrows(boundInView);
+      else if (plant === 'reverse-arrow') corruptArrows('reverse', boundInView);
+      else if (plant === 'diagonal-arrow') {
+        corruptArrows('diagonal', boundInView);
+      }
       const fixedRects = inView.map((element) =>
         element.getBoundingClientRect()
       );
@@ -1694,20 +1863,39 @@ export const installBoardProbe = (
             y: dy / zoom,
           });
           let arrowsBehind = 0;
+          let arrowsChecked = 0;
 
           for (const arrow of bound) {
-            const want = screenRect(drawnBox(arrow, movedTargets), surface);
+            const ends = resolveBoardArrow(
+              { end: arrow.end, start: arrow.start },
+              movedTargets
+            );
+            const wantBox = screenRect(spanOf(ends), surface);
 
-            if (!meets(want)) continue;
-            const rect = document
-              .querySelector(`[data-shape-id="${arrow.shapeId}"]`)
-              ?.getBoundingClientRect();
+            if (!meets(wantBox)) continue;
+            arrowsChecked += 1;
+            const node = document.querySelector(
+              `[data-shape-id="${arrow.shapeId}"]`
+            );
 
-            if (!rect || rectOff(rect, want, 1)) arrowsBehind += 1;
+            if (query.renderer === 'stub') {
+              const rect = node?.getBoundingClientRect();
+
+              if (!rect || rectOff(rect, wantBox, 1)) arrowsBehind += 1;
+            } else {
+              const got = node ? arrowScreenEnds(node) : null;
+              const want = {
+                end: screenPoint(ends.end, surface),
+                start: screenPoint(ends.start, surface),
+              };
+
+              if (!got || endsOff(got, want, 1)) arrowsBehind += 1;
+            }
           }
 
           moves.push({
             arrowsBehind,
+            arrowsChecked,
             atPointer: placed(own) === true,
             // A frame's own stamp can name a vsync it started after, so the
             // count reads when its callbacks ran. The quarter frame absorbs a
@@ -1758,6 +1946,8 @@ export const installBoardProbe = (
           window.removeEventListener('pointerdown', onDown, true);
           window.removeEventListener('pointermove', onMove, true);
           window.removeEventListener('pointerup', snapshotBeforeRelease, true);
+          frozen?.disconnect();
+          frozen = null;
           const ended = changesBeforeRelease ?? boardStats.valueChanges;
           const moved = inView.flatMap((element, index) => {
             const rect = element.getBoundingClientRect();
@@ -1853,7 +2043,7 @@ export const installBoardProbe = (
           !note(shape) ||
           !arrow ||
           more.length > 0 ||
-          arrow.end?.shape !== shape.shapeId ||
+          arrow.start?.shape !== shape.shapeId ||
           !isMounted(arrow.shapeId ?? '')
         ) {
           continue;
@@ -1870,7 +2060,7 @@ export const installBoardProbe = (
       }
       if (!loneArrowNote) {
         throw new Error(
-          'K3 found no note in view whose one bound arrow ends on it'
+          'K3 found no note in view whose one bound arrow starts on it'
         );
       }
       const resizeBox = shapeBox(loneArrowNote.shape);
@@ -1951,21 +2141,35 @@ export const installBoardProbe = (
     k2Count: () => rootShapes().length,
 
     k2Shape: (id: string) => {
-      const shape = rootShapes().find((each) => each.shapeId === id);
-      const freeEnd = shape?.end && !shape.end.shape ? shape.end : null;
+      const shapes = storedBoard() ?? [];
+      const shape = shapes.find((each) => each.shapeId === id);
 
-      return shape
-        ? {
-            box:
-              shape.place && shape.size
-                ? { ...shape.size, x: shape.place.x, y: shape.place.y }
-                : null,
-            end: shape.end?.shape ?? null,
-            endAt: freeEnd ? { x: freeEnd.x, y: freeEnd.y } : null,
-            start: shape.start?.shape ?? null,
-            type: shape.type ?? '',
-          }
-        : null;
+      if (!shape) return null;
+      const boxOf = (targetId: string | undefined) => {
+        const target = targetId
+          ? shapes.find((each) => each.shapeId === targetId)
+          : undefined;
+
+        return target?.place && target.size
+          ? { ...target.size, x: target.place.x, y: target.place.y }
+          : null;
+      };
+      const freeEnd = shape.end && !shape.end.shape ? shape.end : null;
+
+      return {
+        box:
+          shape.place && shape.size
+            ? { ...shape.size, x: shape.place.x, y: shape.place.y }
+            : null,
+        end: shape.end?.shape ?? null,
+        endAt: freeEnd ? { x: freeEnd.x, y: freeEnd.y } : null,
+        endBinding: shape.end ?? null,
+        endBox: boxOf(shape.end?.shape),
+        start: shape.start?.shape ?? null,
+        startBinding: shape.start ?? null,
+        startBox: boxOf(shape.start?.shape),
+        type: shape.type ?? '',
+      };
     },
 
     k2HandlePressPoint: (id: string, corner: string) => {

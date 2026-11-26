@@ -11712,17 +11712,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/board/react:useArrowPath": {
-          "aliases": [],
-          "documentation": "Where the board arrow `element` draws: its two ends in board coordinates,\neach bound end stopped at its shape's outline, and the path between them.\nIt follows a drag or resize of a bound shape, and a drag of the arrow\nitself, from the view's preview, with no write, and changes only when the\narrow's stored ends or a bound shape's box change.",
-          "entrypoint": "platejs/board/react",
-          "kind": "const",
-          "name": "useArrowPath",
-          "runtime": true,
-          "signature": "useArrowPath: (element: Element) => BoardArrowPath$1 | undefined",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs/board/react:useBoardActions": {
           "aliases": [],
           "documentation": "Change the surrounding board view's tool, next style and camera.",

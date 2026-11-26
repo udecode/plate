@@ -347,25 +347,6 @@ export function BoardArrowLabel({
 }
 
 /**
- * Where the board arrow `element` draws: its two ends in board coordinates,
- * each bound end stopped at its shape's outline, and the path between them.
- * It follows a drag or resize of a bound shape, and a drag of the arrow
- * itself, from the view's preview, with no write, and changes only when the
- * arrow's stored ends or a bound shape's box change.
- */
-export const useArrowPath = (element: Element): ArrowPath | undefined => {
-  const view = useBoardViewContext();
-  const id = shapeIdOf(element);
-  const subscribe = React.useCallback(
-    (listener: () => void) => view.subscribeArrow(id, listener),
-    [id, view]
-  );
-  const read = () => view.arrowPathOf(id);
-
-  return React.useSyncExternalStore(subscribe, read, read);
-};
-
-/**
  * Where the board stroke `element` draws its line: an SVG path within a box
  * of the stroke's stored size, which a component scales to the stroke's box,
  * so a resize preview stretches it until the release redraws it. It stays the
