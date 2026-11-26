@@ -22,6 +22,7 @@ import {
 } from '../../core/public-state';
 import { collectValueRecords, withValueRecords } from '../../core/record-store';
 import { publishEditorRefusal } from '../../core/refusal';
+import { bindSharedRoom } from '../../core/shared-room';
 import { withoutUpdateTagContext } from '../../core/update-context';
 import { REMOTE_UPDATE } from '../../core/update-policy';
 import type { AnyEditor, EditorCommit } from '../../interfaces/editor';
@@ -394,10 +395,12 @@ const startClient = (
   });
   const stop = editor.subscribeCommit(notice.flushOutermost);
   const resumePlacement = suspendMovePlacement(getEditorRuntimeOwner(editor));
+  const unbindRoom = bindSharedRoom(editor);
 
   const detach = () => {
     stop();
     resumePlacement();
+    unbindRoom();
     gate.release();
   };
   const teardown = () => {

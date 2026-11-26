@@ -7,6 +7,7 @@ import {
   queueAfterPluginAcquisition,
 } from '../../core/plugin';
 import { setRootCopyScope } from '../../core/public-state';
+import { bindSharedRoom } from '../../core/shared-room';
 import {
   definePlugin,
   type Descendant,
@@ -126,10 +127,12 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
 
       const current = binding;
       const resumePlacement = suspendMovePlacement(owner);
+      const unbindRoom = bindSharedRoom(owner);
 
       current.records += 1;
       context.onCleanup(() => {
         resumePlacement();
+        unbindRoom();
         current.records -= 1;
         if (current.records > 0) return;
 

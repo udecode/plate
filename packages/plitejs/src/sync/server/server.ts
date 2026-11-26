@@ -9,6 +9,7 @@ import {
 } from '../../core/change/effect-ledger';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
+import { bindSharedRoom } from '../../core/shared-room';
 import type {
   AnyEditor,
   Editor,
@@ -231,7 +232,7 @@ export const createSyncServer = <
 >({
   authorize,
   authored,
-  editor: createRoomEditor,
+  editor: createEditor,
   maxChangeBytes = SYNC_MAX_MESSAGE_BYTES,
   storage,
   unload: unloadAfter = 'idle',
@@ -246,6 +247,13 @@ export const createSyncServer = <
     );
   }
 
+  const createRoomEditor = () => {
+    const editor = createEditor();
+
+    bindSharedRoom(editor);
+
+    return editor;
+  };
   const slots = new Map<string, Slot>();
 
   const load = async (name: string): Promise<LoadedRoom> => {
