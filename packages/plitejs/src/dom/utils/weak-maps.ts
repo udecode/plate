@@ -59,7 +59,6 @@ export const EDITOR_TO_DOM_SCOPE_LISTENERS = new WeakMap<
   object,
   Set<() => void>
 >();
-export const EDITOR_TO_PLACEHOLDER = new WeakMap<AnyPluginEditor, string>();
 export const EDITOR_TO_PLACEHOLDER_ELEMENT = new WeakMap<
   AnyPluginEditor,
   HTMLElement

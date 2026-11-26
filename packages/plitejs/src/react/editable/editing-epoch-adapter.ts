@@ -72,11 +72,6 @@ export const isEditableEditingEpochCommand = (
 const getInputRuntime = (editor: AnyEditor) =>
   DOMRootRuntime.resolveInputRuntime(editor);
 
-export const getCurrentEditableEditingEpoch = (
-  editor: AnyEditor
-): EditableEditingEpoch | null =>
-  getInputRuntime(editor).currentEditingEpoch() as EditableEditingEpoch | null;
-
 export const beginEditableEditingEpoch = (
   editor: AnyEditor,
   input: EditableEditingEpochInput
@@ -92,11 +87,6 @@ export const beginEditableEditingEpoch = (
     targetOwner: input.targetOwner,
   });
 
-export const endEditableEditingEpoch = (
-  editor: AnyEditor
-): EditableEditingEpoch | null =>
-  getInputRuntime(editor).endEditingEpoch() as EditableEditingEpoch | null;
-
 export const markEditableEditingEpochCommandHandled = (
   editor: AnyEditor,
   command: EditableCommand | null
@@ -105,11 +95,6 @@ export const markEditableEditingEpochCommandHandled = (
     getInputRuntime(editor).markCommandEditingEpochHandled(command);
   }
 };
-
-export const shouldSkipDuplicateEditableEditingEpochCommand = (
-  editor: AnyEditor,
-  command: EditableCommand | null
-) => getInputRuntime(editor).shouldSkipCommandEditingEpoch(command);
 
 export const completeDuplicateEditableEditingEpochCommand = (
   editor: AnyEditor,

@@ -42,12 +42,6 @@ export const testModuleEffects = {
   'packages/platejs/test/public-package-import-smoke.spec.ts': {
     reads: ['packages/plitejs/package.json', 'packages/test/package.json'],
   },
-  'packages/plitejs/test/core-benchmark-scripts-contract.ts': {
-    reads: [
-      'benchmarks/slate-v2/donor/core/current/*.mjs',
-      'benchmarks/targets/slate-v2.json',
-    ],
-  },
   'packages/plitejs/test/core/runtime-load-order.test.ts': {
     runs: [
       'packages/plitejs/src/core/plugin-dispatch.ts',
@@ -77,29 +71,14 @@ export const testModuleEffects = {
   'packages/plitejs/test/dom/hotkeys-no-navigator.test.ts': {
     runs: ['packages/plitejs/src/dom/utils/hotkeys.ts'],
   },
-  'packages/plitejs/test/dom/public-surface-contract.ts': {
-    reads: [
-      'content/docs/**/dom-coverage.mdx',
-      'content/docs/api/dom.mdx',
-      'packages/plitejs/package.json',
-      'packages/plitejs/src/dom/**/*.ts',
-      'packages/plitejs/tsdown.config.mts',
-    ],
-  },
   'packages/plitejs/test/history/index.spec.ts': {
     reads: [
       'packages/plitejs/test/history/isHistory/**',
       'packages/plitejs/test/history/undo/**',
     ],
   },
-  'packages/plitejs/test/history/package-readme-contract.spec.ts': {
-    reads: ['content/docs/**/history.mdx'],
-  },
   'packages/plitejs/test/hyperscript/index.spec.ts': {
     reads: ['packages/plitejs/test/hyperscript/fixtures/**'],
-  },
-  'packages/plitejs/test/hyperscript/package-readme-contract.test.ts': {
-    reads: ['content/docs/**/unit-testing.mdx'],
   },
   'packages/plitejs/test/index.spec.ts': {
     reads: [
@@ -123,14 +102,8 @@ export const testModuleEffects = {
       'packages/*/package.json',
     ],
   },
-  'packages/plitejs/test/react/dom-repair-policy-contract.test.ts': {
-    reads: ['packages/plitejs/src/react/editable/dom-repair-queue.ts'],
-  },
-  'packages/plitejs/test/react/kernel-authority-audit-contract.ts': {
-    reads: ['packages/plitejs/src/dom/**', 'packages/plitejs/src/react/**'],
-  },
   'packages/plitejs/test/react/surface-contract.tsx': {
-    reads: ['packages/plitejs/package.json', 'packages/plitejs/src/react/**'],
+    reads: ['packages/plitejs/package.json'],
   },
   'packages/plitejs/test/react/vitest-setup.ts':
     'appends to the audit report that PLITE_PROOF_AUDIT_REPORT names',
@@ -145,9 +118,6 @@ export const testModuleEffects = {
   },
   'packages/plitejs/test/sync/websocket.spec.ts':
     'serves its WebSocket room on a free local port and reads no repository file',
-  'packages/plitejs/test/test-helper-boundary-contract.ts': {
-    reads: ['packages/plitejs/test/support/snapshot.ts'],
-  },
   'packages/plitejs/test/yjs/package-config-contract.spec.ts': {
     reads: [
       'apps/plite/package.json',

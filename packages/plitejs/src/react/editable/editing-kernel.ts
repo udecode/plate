@@ -438,8 +438,6 @@ export type EditableKernelTraceInput = Omit<
   transition?: EditableKernelTransition;
 };
 
-export const EDITABLE_KERNEL_TRACE_LIMIT = 200;
-
 export const mapSelectionSourceToKernelState = (
   source: SelectionSource
 ): EditableKernelState => DOMRootRuntime.resolveInputKernelState(source);
@@ -496,13 +494,6 @@ export const beginEditableEventFrame = (
     viewEpoch: input.viewEpoch ?? null,
   });
 };
-
-export const endEditableEventFrame = (
-  editor: AnyEditor
-): EditableEventFrame | null =>
-  DOMRootRuntime.resolveInputRuntime(
-    editor
-  ).endFrame() as EditableEventFrame | null;
 
 export const recordEditableKernelTrace = ({
   editor,

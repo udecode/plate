@@ -147,10 +147,6 @@ export const getNativeSingleCharacterInputDecision = ({
     : blocked('material-command');
 };
 
-export const canUseNativeSingleCharacterInput = (
-  options: Parameters<typeof getNativeSingleCharacterInputDecision>[0]
-) => getNativeSingleCharacterInputDecision(options).native;
-
 export const getNativeBeforeInputDecision = ({
   allowDirtyDOMText = false,
   editor,

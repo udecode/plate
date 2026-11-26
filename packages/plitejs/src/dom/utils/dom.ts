@@ -442,31 +442,6 @@ export const readClipboardFragmentPayload = (
   return htmlValue === undefined ? null : { source: 'html', value: htmlValue };
 };
 
-/** Make a supported HTML envelope available under the configured MIME. */
-export const getClipboardData = (
-  dataTransfer: DataTransfer,
-  clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY
-): DataTransfer => {
-  if (!dataTransfer.getData(`application/${clipboardFormatKey}`)) {
-    const fragment = readClipboardFragmentPayload(
-      dataTransfer,
-      clipboardFormatKey
-    );
-    if (fragment?.value) {
-      const clipboardData = new DataTransfer();
-      dataTransfer.types.forEach((type) => {
-        clipboardData.setData(type, dataTransfer.getData(type));
-      });
-      clipboardData.setData(
-        `application/${clipboardFormatKey}`,
-        fragment.value
-      );
-      return clipboardData;
-    }
-  }
-  return dataTransfer;
-};
-
 /**
  * Get the dom selection from Shadow Root if possible, otherwise from the document
  */

@@ -3,10 +3,8 @@ import {
   type Node,
   NodeApi,
   PathApi,
-  type Point,
   type Range,
   RangeApi,
-  type RootKey,
 } from '../..';
 import {
   type Editor as RuntimeEditor,
@@ -58,11 +56,6 @@ const getSelectedBlockVoidPath = (
 
   return isBlockVoid(editor, NodeApi.get(editor, blockPath)) ? blockPath : null;
 };
-
-export const getPointWithRoot = (
-  point: Point,
-  root: RootKey | undefined
-): Point => (root === undefined ? point : { ...point, root });
 
 export const applyParagraphBreakAfterSelectedBlockVoid = (
   editor: RuntimeEditor,

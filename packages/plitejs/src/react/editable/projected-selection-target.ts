@@ -36,12 +36,3 @@ export const resolveProjectedSelectionTarget = (
 
   return target ? { kind: 'target', target } : { kind: 'stale' };
 };
-
-export const createProjectedSelectionTarget = (
-  editor: RuntimeEditor,
-  viewSelection: PliteViewSelection
-): ProjectedSelectionTarget | null => {
-  const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
-
-  return resolution.kind === 'target' ? resolution.target : null;
-};
