@@ -275,6 +275,18 @@ const SyncedBlock = ({ attributes, element, slots }) => (
 );
 ```
 
+Undo and redo keys pressed in an editable move focus to the view that made the
+step, when that view shows another root inside the same `<Editable>`. Type in
+the second of two copies of a synced block, click the page and press Mod+Z.
+Focus goes to the second copy, and the caret goes back to where it was before
+that typing. Focus stays where the key was pressed when the view that made the
+step is gone, hidden or read-only, when that view is outside the `<Editable>`,
+or when the step's selection ran from one view into another. It also stays for
+a step whose plugin history effect settles after the replay, such as creating a
+comment thread. A history control from `useEditorHistory`, an external control
+wired to history and the browser handle's `undo()` never move focus to the view
+that made the step.
+
 A root whose blocks are selected as whole objects, such as a board's shapes,
 can give focus to an element of its own instead of its editable. Pass
 `nodeSelectionFocus`, a ref to that element, and give the element
@@ -292,7 +304,12 @@ a focus call replaces it, focus falls to the page. An element that inherits
 editing runs the editable's own focus handler, which in Firefox moves focus to
 the editable. Unless the element is a control, such as a button, the editor
 reads no keys from it, so it must handle the keys it needs, such as undo and
-redo through the `onKeyDown` of `useEditorHistory`.
+redo through the `onKeyDown` of `useEditorHistory`. An undo or redo key leaves
+focus where it was pressed when the view that made the step, or the view where
+the key was pressed, renders inside a slot that passes `nodeSelectionFocus`. So
+an undo pressed in the document of a step made on a board leaves focus and the
+caret in the document. An undo pressed on the board of a step made in the
+document leaves them on the board.
 
 ```tsx
 const Board = ({ attributes, children, slots }) => {

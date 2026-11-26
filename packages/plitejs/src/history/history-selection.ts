@@ -117,11 +117,9 @@ export const shouldRestoreHistoricSelection = <V extends Value>(
   return caretRootGoes || stepPlacedCaret;
 };
 
-export const restoreHistoricSelection = <V extends Value>(
+export const readHistoricSelection = <V extends Value>(
   editor: AnyEditor,
-  tx: Pick<EditorUpdateTransaction<V>, 'selection'>,
   batch: Batch<V>,
-  viewRoot: string,
   target: 'after' | 'before'
 ) => {
   const selection =
@@ -132,17 +130,33 @@ export const restoreHistoricSelection = <V extends Value>(
     MAIN_ROOT_KEY;
   const owner = getEditorRuntimeOwner(editor);
   const cloned = cloneSelection(selection, root);
-  const restoredSelection =
-    SelectionApi.isText(cloned) && cloned.marks
-      ? withLandedMarks(owner, cloned, getEditorDocumentValue(owner), root)
-      : cloned;
+
+  return Object.freeze({
+    root,
+    selection:
+      SelectionApi.isText(cloned) && cloned.marks
+        ? withLandedMarks(owner, cloned, getEditorDocumentValue(owner), root)
+        : cloned,
+  });
+};
+
+export const restoreHistoricSelection = <V extends Value>(
+  editor: AnyEditor,
+  tx: Pick<EditorUpdateTransaction<V>, 'selection'>,
+  batch: Batch<V>,
+  viewRoot: string,
+  target: 'after' | 'before'
+) => {
+  const { root, selection } = readHistoricSelection(editor, batch, target);
 
   if (root === viewRoot) {
-    tx.selection.set(restoredSelection);
+    tx.selection.set(selection);
     return;
   }
 
+  const owner = getEditorRuntimeOwner(editor);
+
   withEditorUpdateRootScope(owner, root, () => {
-    getUpdateView(owner).selection.set(restoredSelection);
+    getUpdateView(owner).selection.set(selection);
   });
 };

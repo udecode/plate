@@ -56,7 +56,10 @@ import {
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
 import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
-import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
+import {
+  focusedElementOnPage,
+  isElementFocused,
+} from '../../dom/plugin/dom-root-runtime';
 import { isDOMNode } from '../../dom/utils/dom';
 import type {
   EditableHandlerContext,
@@ -143,6 +146,18 @@ type SelectionFocusHandler = (
   policy: EditorHistoryFocusPolicy,
   replayChanges: EditorCommit['changes'] | null
 ) => void;
+
+export type HistoryReplayOrigin = 'control' | 'view';
+
+export type EditableHistoryReplay = Readonly<{
+  changes: EditorCommit['changes'] | null;
+  direction: 'redo' | 'undo';
+  focusPolicy: EditorHistoryFocusPolicy;
+  focusedView: EditableDOMRuntime;
+  origin: HistoryReplayOrigin;
+  receipt: EditorHistoryReplayReceipt;
+  runtime: EditableDOMRuntime;
+}>;
 
 export type EditableHistoryReplayResult =
   | HistoryOutcome
@@ -430,6 +445,7 @@ type EditableDOMRuntimeUpdate = {
 /** Private imperative owner for one mounted editable root. */
 export class EditableDOMRuntime {
   readonly externalText = new ExternalTextRuntime(this);
+  readonly historyStepPage = Symbol('history step page');
   readonly renderContract = new RenderContractMonitor(this);
   readonly androidInputManagerRef: MutableCell<
     AndroidInputManager | null | undefined
@@ -482,6 +498,10 @@ export class EditableDOMRuntime {
     () => void
   >();
   private selectionFocusHandler: SelectionFocusHandler = () => {};
+
+  private providerHistoryFocus:
+    | ((replay: EditableHistoryReplay) => void)
+    | null = null;
 
   private historySettleHandler: () => void = () => {};
 
@@ -1394,8 +1414,17 @@ export class EditableDOMRuntime {
     this.selectionFocusHandler = handler;
   }
 
-  restoreSelectionFocus() {
-    this.selectionFocusHandler('restore-root', null);
+  restoreSelectionFocus(
+    policy: EditorHistoryFocusPolicy = 'restore-root',
+    replayChanges: EditorCommit['changes'] | null = null
+  ) {
+    if (this.connected) this.selectionFocusHandler(policy, replayChanges);
+  }
+
+  updateProviderHistoryFocus(
+    handler: ((replay: EditableHistoryReplay) => void) | null
+  ) {
+    this.providerHistoryFocus = handler;
   }
 
   updateHistorySettleHandler(handler: () => void) {
@@ -1435,7 +1464,8 @@ export class EditableDOMRuntime {
   private async replayHistory(
     direction: 'redo' | 'undo',
     focusPolicy: EditorHistoryFocusPolicy,
-    rootCheck: HistoryRootCheck
+    rootCheck: HistoryRootCheck,
+    origin: HistoryReplayOrigin
   ): Promise<EditableHistoryReplayResult> {
     const root = this.rootElement;
 
@@ -1455,7 +1485,21 @@ export class EditableDOMRuntime {
         : { reason: 'unmounted', status: 'unavailable' };
     }
 
-    const { history } = this.editorValue.api as { history?: HistoryApi };
+    const active = focusedElementOnPage(root);
+    const focusedView =
+      (active &&
+        containsShadowAware(root, active) &&
+        findMountedEditableDOMRuntime(active)) ||
+      this;
+    const replaysFocusedView =
+      origin === 'view' &&
+      focusPolicy === 'restore-root' &&
+      getEditorRuntimeOwner(focusedView.editorValue) ===
+        getEditorRuntimeOwner(this.editorValue);
+    const replayEditor = replaysFocusedView
+      ? focusedView.editorValue
+      : this.editorValue;
+    const { history } = replayEditor.api as { history?: HistoryApi };
 
     if (!history) {
       return { reason: 'not-installed', status: 'unavailable' };
@@ -1501,26 +1545,26 @@ export class EditableDOMRuntime {
 
     const receipt = readEditorHistoryReplayReceipt(result);
 
-    if (
-      !receipt ||
-      !this.connected ||
-      this.rootElement !== root ||
-      watched.interrupted(receipt)
-    ) {
-      return result;
-    }
+    if (!receipt || watched.interrupted(receipt)) return result;
 
-    this.observeHistoryReplay(direction, () =>
-      writePliteViewSelection(
-        this.editorValue,
-        direction === 'undo' ? readHistoryStepUndoRange(receipt.group) : null,
-        { placedAt: watched.placedAt }
-      )
-    );
+    const shown = this.connected && this.rootElement === root;
+
+    if (shown) {
+      this.observeHistoryReplay(direction, () =>
+        writePliteViewSelection(
+          this.editorValue,
+          direction === 'undo' && replayEditor === this.editorValue
+            ? readHistoryStepUndoRange(receipt.group)
+            : null,
+          { placedAt: watched.placedAt }
+        )
+      );
+    }
 
     const viewport = this.viewportRuntime;
     const restored = readRuntimeSelectionRange(this.editorValue);
     const restoredOutsideMountedBlocks =
+      shown &&
       viewport &&
       restored &&
       RangeApi.isExpanded(restored) &&
@@ -1536,11 +1580,23 @@ export class EditableDOMRuntime {
       );
     }
 
-    const replayChanges = watched.changes(receipt);
+    const replay: EditableHistoryReplay = {
+      changes: watched.changes(receipt),
+      direction,
+      focusPolicy,
+      focusedView,
+      origin,
+      receipt,
+      runtime: this,
+    };
 
-    this.observeHistoryReplay(direction, () =>
-      this.selectionFocusHandler(focusPolicy, replayChanges)
-    );
+    this.observeHistoryReplay(direction, () => {
+      if (this.providerHistoryFocus) {
+        this.providerHistoryFocus(replay);
+      } else {
+        this.restoreSelectionFocus(focusPolicy, replay.changes);
+      }
+    });
     return result;
   }
 
@@ -1570,7 +1626,8 @@ export class EditableDOMRuntime {
     direction: 'redo' | 'undo',
     focusPolicy: EditorHistoryFocusPolicy = 'restore-root',
     onOutcome?: (result: EditableHistoryReplayResult) => void,
-    rootCheck: HistoryRootCheck = 'check'
+    rootCheck: HistoryRootCheck = 'check',
+    origin: HistoryReplayOrigin = 'view'
   ): void {
     const deliver = (result: EditableHistoryReplayResult) => {
       this.observeHistoryReplay(direction, () =>
@@ -1579,7 +1636,7 @@ export class EditableDOMRuntime {
       this.observeHistoryReplay(direction, () => onOutcome?.(result));
     };
 
-    void this.replayHistory(direction, focusPolicy, rootCheck).then(
+    void this.replayHistory(direction, focusPolicy, rootCheck, origin).then(
       deliver,
       (error: unknown) => {
         this.reportHistoryReplayError(direction, 'replay', error);

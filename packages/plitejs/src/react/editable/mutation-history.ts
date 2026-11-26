@@ -25,6 +25,7 @@ import {
   type EditorHistoryFocusPolicy,
   getMountedEditableDOMRuntime,
   getMountedEditableDOMRuntimes,
+  type HistoryReplayOrigin,
   type HistoryRootCheck,
 } from './editable-dom-runtime';
 
@@ -221,12 +222,14 @@ export const applyModelOwnedHistoryIntent = ({
   direction,
   editor,
   focusPolicy = 'restore-root',
+  origin = 'view',
   rootCheck = 'check',
   runtime,
 }: {
   direction: 'redo' | 'undo';
   editor: ReactRuntimeEditor;
   focusPolicy?: EditorHistoryFocusPolicy;
+  origin?: HistoryReplayOrigin;
   rootCheck?: HistoryRootCheck;
   runtime?: EditableDOMRuntime | null;
 }) => {
@@ -234,7 +237,13 @@ export const applyModelOwnedHistoryIntent = ({
 
   if (!historyRuntime || editor.read.view.isReadOnly()) return false;
 
-  historyRuntime.dispatchHistory(direction, focusPolicy, undefined, rootCheck);
+  historyRuntime.dispatchHistory(
+    direction,
+    focusPolicy,
+    undefined,
+    rootCheck,
+    origin
+  );
   return true;
 };
 

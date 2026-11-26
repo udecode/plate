@@ -127,6 +127,7 @@ import {
 } from './history-replay';
 import {
   cloneSelection,
+  readHistoricSelection,
   restoreHistoricSelection,
   shouldPreserveHistoricDOMSelection,
   shouldRestoreHistoricSelection,
@@ -906,6 +907,7 @@ const createHistoryPlugin = <
             receipt: Object.freeze({
               claimVersion,
               group: identity,
+              selection: null,
               version: commit.version,
             }),
             request: replaySettlement.request,
@@ -1043,6 +1045,11 @@ const createHistoryPlugin = <
       return Object.freeze({
         receipt: Object.freeze({
           group: entry.identity,
+          selection: readHistoricSelection(
+            editor,
+            batch,
+            action === 'undo' ? 'before' : 'after'
+          ),
           version: commit.version,
         }),
         request: replayRequest,

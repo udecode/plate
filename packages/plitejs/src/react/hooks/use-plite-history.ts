@@ -203,6 +203,7 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
             direction,
             editor,
             focusPolicy,
+            origin: 'control',
             rootCheck: follows ? 'check' : 'skip',
           })
         : false;

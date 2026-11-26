@@ -20,7 +20,9 @@ import { PreparedTokenSlice } from '../../core/change/tokens';
 import { reportEditorLifecycleError } from '../../core/lifecycle-error';
 import { nativeGroupingInput } from '../../core/native-grouping-input';
 import { setShownSelectionAsView } from '../../core/view-carets';
+import { containsShadowAware } from '../../dom';
 import { IS_FOCUSED } from '../../dom/internal';
+import { focusedElementOnPage } from '../../dom/plugin/dom-root-runtime';
 import type { PliteDecorationStore } from '../decoration-context';
 import type { DecorationSlice } from '../decoration-source';
 import type {
@@ -105,6 +107,9 @@ const externalDecorations = (bucket: readonly DecorationSlice[]) => {
   }
   return result;
 };
+const holdsFocusIn = (host: HTMLElement) =>
+  containsShadowAware(host, focusedElementOnPage(host));
+
 const APPLIED = Object.freeze({ status: 'applied' } as const);
 const READ_ONLY = Object.freeze({ status: 'read-only' } as const);
 const STALE = Object.freeze({ status: 'stale' } as const);
@@ -607,6 +612,10 @@ export class ExternalTextRuntime {
     return offset === null ? point : { ...point, offset };
   }
 
+  holdsFocus() {
+    return [...this.entries.values()].some((entry) => holdsFocusIn(entry.host));
+  }
+
   focusSelection() {
     const snapshot = getSnapshot(this.runtime.editor);
     if (
@@ -625,15 +634,15 @@ export class ExternalTextRuntime {
     if (entry.sourceVersion !== snapshot.version) this.refresh(entry);
     if (!entry.view || entry.invalid) return false;
     const { view } = entry;
-    const active = entry.host.ownerDocument.activeElement;
-    if (!this.runtime.rootElement?.contains(active)) return false;
+    const active = focusedElementOnPage(entry.host);
+    if (!containsShadowAware(this.runtime.rootElement, active)) return false;
     if (
-      !entry.host.contains(active) &&
+      !containsShadowAware(entry.host, active) &&
       !this.call(entry, 'focus', () => view.focus())
     ) {
       return false;
     }
-    if (!entry.host.contains(entry.host.ownerDocument.activeElement)) {
+    if (!holdsFocusIn(entry.host)) {
       return false;
     }
     this.focusChanged(entry, true);
@@ -742,14 +751,18 @@ export class ExternalTextRuntime {
   private deliverKey(entry: Entry, deliver: () => void) {
     const { host } = entry;
     const document = host.ownerDocument;
-    const focused = host.contains(document.activeElement);
+    const focused = holdsFocusIn(host);
     deliver();
     if (!focused) return;
-    const handlerMovedFocus = !host.contains(document.activeElement);
+    const handlerMovedFocus = !holdsFocusIn(host);
     if (handlerMovedFocus && entry.active) return;
     const settle = () => {
-      const settled = document.activeElement;
-      if (settled && settled !== document.body && !host.contains(settled)) {
+      const settled = focusedElementOnPage(host);
+      if (
+        settled &&
+        settled !== document.body &&
+        !containsShadowAware(host, settled)
+      ) {
         return;
       }
       try {
@@ -827,9 +840,7 @@ export class ExternalTextRuntime {
           anchor: backward ? end.offset : start.offset,
           focus: backward ? start.offset : end.offset,
           mode:
-            whollyInside &&
-            this.focused === entry &&
-            entry.host.contains(entry.host.ownerDocument.activeElement)
+            whollyInside && this.focused === entry && holdsFocusIn(entry.host)
               ? 'native'
               : 'model',
         });
@@ -1203,13 +1214,14 @@ export class ExternalTextRuntime {
         ) {
           return false;
         }
-        const focused = entry.host.contains(
-          entry.host.ownerDocument.activeElement
-        );
+        const focused = holdsFocusIn(entry.host);
         this.endComposition(entry);
         this.runtime.dispatchHistory(
           direction,
-          focused ? 'restore-root' : 'none'
+          focused ? 'restore-root' : 'none',
+          undefined,
+          'check',
+          'control'
         );
 
         return true;
@@ -1256,9 +1268,7 @@ export class ExternalTextRuntime {
         ) {
           return this.stale(entry);
         }
-        const focused = entry.host.contains(
-          entry.host.ownerDocument.activeElement
-        );
+        const focused = holdsFocusIn(entry.host);
         this.endComposition(entry);
         dispatchCommand(this.runtime.editor, editorCommands.delete, {
           direction,

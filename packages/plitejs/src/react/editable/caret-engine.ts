@@ -390,25 +390,20 @@ const moveSelectionAndRespectBoundaries = ({
   }
 };
 
-// Apps own their copied caption UI and may hide child text in any state, so
-// whether it is drawn comes from the mounted DOM, not from its model text.
-const isObjectTextDrawn = (
-  editor: ReactRuntimeEditor,
-  ownerPath: Path,
-  textPath: Path
+export const isElementDrawn = (
+  element: HTMLElement,
+  owner: HTMLElement | null = null
 ) => {
-  const owner = getPathElement(editor, ownerPath);
-  const text = getPathElement(editor, textPath);
-  const view = text?.ownerDocument.defaultView;
+  const view = element.ownerDocument.defaultView;
 
-  if (!owner || !text || !view) return false;
+  if (!view) return false;
 
-  const { visibility } = view.getComputedStyle(text);
+  const { visibility } = view.getComputedStyle(element);
 
   if (visibility === 'hidden' || visibility === 'collapse') return false;
 
   for (
-    let current: HTMLElement | null = text;
+    let current: HTMLElement | null = element;
     current;
     current = current.parentElement
   ) {
@@ -418,7 +413,20 @@ const isObjectTextDrawn = (
     if (current === owner) return true;
   }
 
-  return false;
+  return owner === null;
+};
+
+// Apps own their copied caption UI and may hide child text in any state, so
+// whether it is drawn comes from the mounted DOM, not from its model text.
+const isObjectTextDrawn = (
+  editor: ReactRuntimeEditor,
+  ownerPath: Path,
+  textPath: Path
+) => {
+  const owner = getPathElement(editor, ownerPath);
+  const text = getPathElement(editor, textPath);
+
+  return !!owner && !!text && isElementDrawn(text, owner);
 };
 
 // Child text the page does not draw has no keyboard stop, so an empty caption

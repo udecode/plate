@@ -1099,6 +1099,7 @@ export type EditorHistoryReplayReceipt = Readonly<{
   /** Version of the claim commit when the replay waited on an effect owner. */
   claimVersion?: number;
   group: object;
+  selection: Readonly<{ root: string; selection: Selection }> | null;
   version: number;
 }>;
 

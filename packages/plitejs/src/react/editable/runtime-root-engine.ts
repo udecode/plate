@@ -165,6 +165,9 @@ export const useEditableRootRuntime = ({
     runtime,
   } = rootRuntimeState;
   const { domPhaseScheduler, inputController, rootRef } = runtime;
+  runtime.updateProviderHistoryFocus(
+    pliteRuntimeContext?.completeHistoryReplay ?? null
+  );
 
   // A layout effect cleans up when an Activity hides the editable, so a hidden
   // editable does not count.

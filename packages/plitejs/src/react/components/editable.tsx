@@ -12,9 +12,11 @@ import { markRootViewUsed } from '../../core/root-target';
 import { type DOMRange, isDOMNode } from '../../dom';
 import {
   createDOMGeometryKernel,
+  findDOMRootRuntime,
   getPliteStringPlacementDOMPoint,
 } from '../../dom/internal';
 import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
+import { focusedElementOnPage } from '../../dom/plugin/dom-root-runtime';
 import {
   getFlatTreeParentElement,
   isDOMInputOrTextArea,
@@ -24,6 +26,7 @@ import {
   clearDragScrollRepaint,
 } from '../../dom/utils/drag-session';
 import type {
+  EditableDOMRuntime,
   EditableHistoryReplayEvent,
   EditableDropResult,
   EditablePasteResult,
@@ -56,8 +59,10 @@ import { ComposingContext } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { ReadOnlyContext } from '../hooks/use-editor-read-only';
 import { useHydrated } from '../hooks/use-hydrated';
+import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import {
   EditingAreaRootEditors,
+  useOptionalPliteRuntimeContext,
   useRequiredPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -321,6 +326,18 @@ export type EditableKeyDownHandler = (
   context: EditableHandlerContext
 ) => EditableHandlerResult;
 
+// React runs this layout effect before the pane's children's and connects the
+// pane after them, so the history step recorder credits the edits its
+// children make on mount to this pane. A pane that Activity hides runs no
+// layout effect, so it never takes that credit.
+const HistoryStepPane = ({ runtime }: { runtime: EditableDOMRuntime }) => {
+  const register = useOptionalPliteRuntimeContext()?.registerHistoryStepPane;
+
+  useIsomorphicLayoutEffect(() => register?.(runtime), [register, runtime]);
+
+  return null;
+};
+
 /**
  * Editable.
  */
@@ -484,15 +501,21 @@ export const EditableDOMRoot = (
   };
   const rootInteractionEventBindings = {
     onFocusCapture: (event: React.FocusEvent<HTMLDivElement>) => {
-      activateRootView();
-      if (
-        !runtime.mousePressActive &&
-        !runtime.longPressSelected &&
-        event.target === event.currentTarget
-      ) {
-        activateViewCaret(editor, {
-          superseded: watchFocusSuperseded(editor, event.currentTarget),
-        });
+      // A focus handler can move focus away before this event reaches the
+      // editables around its target, and the view that now holds focus got
+      // its own focus event.
+      if (findDOMRootRuntime(event.target)?.holdsFocus()) {
+        activateRootView();
+        if (
+          !runtime.mousePressActive &&
+          !runtime.longPressSelected &&
+          event.target === event.currentTarget &&
+          focusedElementOnPage(event.currentTarget) === event.currentTarget
+        ) {
+          activateViewCaret(editor, {
+            superseded: watchFocusSuperseded(editor, event.currentTarget),
+          });
+        }
       }
       propsOnFocusCapture?.(event);
     },
@@ -573,6 +596,7 @@ export const EditableDOMRoot = (
     <ReadOnlyContext value={readOnly}>
       <ComposingContext value={isComposing}>
         <EditableDOMRuntimeContext value={runtime}>
+          <HistoryStepPane runtime={runtime} />
           <EditableDOMCommitFence runtime={runtime}>
             <Component
               aria-multiline

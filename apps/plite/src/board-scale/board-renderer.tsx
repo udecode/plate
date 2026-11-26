@@ -91,6 +91,8 @@ const stackRankOf = (shapes: readonly ShapeFields[], shape: ShapeFields) => {
 
 const StackRank = React.createContext<(shape: ShapeFields) => number>(() => 0);
 
+const UNMOUNTED_FOCUS_TARGET = React.createRef<HTMLElement>();
+
 export type RendererView = Readonly<{
   camera: BoardCamera;
   layer: HTMLElement | null;
@@ -972,7 +974,9 @@ export const createBoardRenderer = (config: RendererConfig) => {
 
     return (
       <BoardSurface
-        content={props.slots.contentRoot('shapes')}
+        content={props.slots.contentRoot('shapes', {
+          nodeSelectionFocus: UNMOUNTED_FOCUS_TARGET,
+        })}
         props={props}
         view={view}
       />
@@ -994,7 +998,9 @@ export const createBoardRenderer = (config: RendererConfig) => {
       <BoardSurface
         content={props.slots.contentRoot(
           'shapes',
-          unwindowed || keptAlive ? undefined : { viewport }
+          unwindowed || keptAlive
+            ? { nodeSelectionFocus: UNMOUNTED_FOCUS_TARGET }
+            : { nodeSelectionFocus: UNMOUNTED_FOCUS_TARGET, viewport }
         )}
         props={props}
         view={view}

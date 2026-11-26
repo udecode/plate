@@ -69,9 +69,11 @@ import type { Editor } from '../../interfaces/editor';
 import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
 import { PliteEditableRootContext } from '../context';
 import {
+  type EditableDOMRuntime,
+  type EditableHistoryReplay,
   getMountedEditableDOMRuntime,
-  getMountedEditableDOMRuntimes,
 } from '../editable/editable-dom-runtime';
+import { completeHistoryFocus } from '../editable/history-focus';
 import type { HistoryGateScope } from '../editable/mutation-history';
 import {
   getEditorRuntime,
@@ -122,23 +124,6 @@ export type PliteContentRootOwner = {
   ownerRoot: RootKey;
 };
 
-const findPaneOfView = (runtime: ReactEditorType, view: Editor) => {
-  const key = getEditorRuntime(view);
-  const panes = getMountedEditableDOMRuntimes(runtime).filter(
-    (pane) => getEditorRuntime(pane.editor) === key
-  );
-
-  if (panes.length < 2) return panes[0] ?? null;
-
-  return (
-    panes.find((pane) =>
-      pane.rootRef.current?.contains(
-        pane.rootRef.current.ownerDocument.activeElement
-      )
-    ) ?? null
-  );
-};
-
 const getContentRootOwnerKey = (owner: PliteContentRootOwner) =>
   `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${
     owner.childRoot
@@ -180,6 +165,7 @@ type MountedViewEditor = ReactRuntimeEditor<Value, PluginsOf<ReactEditorType>>;
 type MountedRootTarget = Readonly<{ shown: boolean; view: MountedViewEditor }>;
 
 type PliteRuntimeContextValue = {
+  completeHistoryReplay: (replay: EditableHistoryReplay) => void;
   getActiveContentRootOwner: (root: RootKey) => PliteContentRootOwner | null;
   getContentRootOwnerViewEditor: (
     owner: PliteContentRootOwner
@@ -200,6 +186,11 @@ type PliteRuntimeContextValue = {
     owner: PliteContentRootOwner,
     slot: HistoryStepSlot
   ) => () => void;
+  registerHistoryStepPane: (pane: EditableDOMRuntime) => () => void;
+  registerHistoryStepSlot: (
+    editor: MountedViewEditor,
+    slot: HistoryStepSlot
+  ) => void;
   registerHistoryStepView: (editor: MountedViewEditor, root: RootKey) => void;
   registerViewEditor: (editor: MountedViewEditor, root: RootKey) => () => void;
   rootEditor: (root?: NamedRootKey, readOnly?: boolean) => ReactEditorType;
@@ -556,8 +547,11 @@ export function EditorRuntimeProvider({
     )
   );
   const reactEditor = toReactRuntimeEditor(runtime);
-  const [historyStepViews] = useState(() =>
-    createHistoryStepViews(runtime, (view) => findPaneOfView(runtime, view))
+  const [historyStepViews] = useState(() => createHistoryStepViews(runtime));
+  const completeHistoryReplay = useCallback(
+    (replay: EditableHistoryReplay) =>
+      completeHistoryFocus(replay, historyStepViews),
+    [historyStepViews]
   );
   const contentRootOwnersRef = useRef(
     new Map<typeof reactEditor, PliteContentRootOwner>()
@@ -668,7 +662,6 @@ export function EditorRuntimeProvider({
 
       lastRootUseBySlotRef.current.set(slot.parent, lastRootUses);
       continueRootViewUse(editor, lastRootUses.get(place) ?? 0);
-      historyStepViews.registerSlot(editor, slot);
       contentRootOwnersRef.current.set(editor, owner);
       ownerViewEditors.set(getContentRootOwnerKey(owner), editor);
 
@@ -680,7 +673,7 @@ export function EditorRuntimeProvider({
         }
       };
     },
-    [historyStepViews]
+    []
   );
   // Insertion effects survive StrictMode replays and Activity hides, so the
   // recorder stays subscribed until the provider unmounts.
@@ -766,12 +759,15 @@ export function EditorRuntimeProvider({
 
   const provider = useMemo(
     () => ({
+      completeHistoryReplay,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
       getMountedViewEditor: findMountedViewEditor,
       getRootTarget: readProviderRootTarget,
       getView,
       registerContentRootOwner,
+      registerHistoryStepPane: historyStepViews.registerPane,
+      registerHistoryStepSlot: historyStepViews.registerSlot,
       registerHistoryStepView: historyStepViews.registerView,
       registerViewEditor,
       runtime,
@@ -779,6 +775,7 @@ export function EditorRuntimeProvider({
       subscribeRootTarget: subscribeProviderRootTarget,
     }),
     [
+      completeHistoryReplay,
       findMountedViewEditor,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,

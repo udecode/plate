@@ -547,35 +547,36 @@ function EditableContentRootView({
   useIsomorphicLayoutEffect(() => {
     flushEditorViewState(editor);
   }, [editor, surfaceReadOnly]);
-  const { getMountedViewEditor, registerContentRootOwner } =
-    useRequiredPliteRuntimeContext();
+  const {
+    getMountedViewEditor,
+    registerContentRootOwner,
+    registerHistoryStepSlot,
+  } = useRequiredPliteRuntimeContext();
   const passesNodeSelectionFocus = nodeSelectionFocus !== undefined;
   const renderedBy = useEditableDOMRuntime();
+  const stepSlot = React.useMemo(
+    () => ({
+      nodeSelectionFocus: passesNodeSelectionFocus,
+      owner: ownerKey,
+      parent: ownerEditor,
+      renderedBy,
+      slot,
+    }),
+    [ownerEditor, ownerKey, passesNodeSelectionFocus, renderedBy, slot]
+  );
+  // The step recorder reads this slot for an edit its content makes in a
+  // layout effect on first mount, which runs before this view's own.
+  React.useInsertionEffect(() => {
+    registerHistoryStepSlot(editor, stepSlot);
+  }, [editor, registerHistoryStepSlot, stepSlot]);
   useIsomorphicLayoutEffect(
     () =>
       registerContentRootOwner(
         editor,
         { childRoot: root, ownerPath, ownerRoot },
-        {
-          nodeSelectionFocus: passesNodeSelectionFocus,
-          owner: ownerKey,
-          parent: ownerEditor,
-          renderedBy,
-          slot,
-        }
+        stepSlot
       ),
-    [
-      editor,
-      ownerEditor,
-      ownerKey,
-      ownerPath,
-      ownerRoot,
-      passesNodeSelectionFocus,
-      registerContentRootOwner,
-      renderedBy,
-      root,
-      slot,
-    ]
+    [editor, ownerPath, ownerRoot, registerContentRootOwner, root, stepSlot]
   );
   const externalMouseGestureRef = React.useRef(false);
   const getViewEditor = React.useCallback(
@@ -624,11 +625,6 @@ function EditableContentRootView({
     },
     [rootInteraction]
   );
-  const onFocusCapture = React.useCallback<
-    React.FocusEventHandler<HTMLDivElement>
-  >(() => {
-    markRootViewUsed(editor);
-  }, [editor]);
   const editableProps: EditableProps = {
     ...ownerHandlers,
     'aria-label': ariaLabel,
@@ -653,7 +649,6 @@ function EditableContentRootView({
       data-editor-content-root-owner-path={ownerPath.join(',')}
       data-editor-content-root-owner-root={ownerRoot}
       data-editor-content-root-slot={slot}
-      onFocusCapture={onFocusCapture}
       onMouseDownCapture={onMouseDownCapture}
       onMouseMoveCapture={onMouseMoveCapture}
       onMouseUpCapture={onMouseUpCapture}
