@@ -2202,14 +2202,15 @@ export const createAuthoredPlugin = (
         input: Parameters<EditorDocumentRecorder>[0],
         writer: string
       ) => {
-        const { projection } = input;
+        const { projection, selectionBefore } = input;
         const target =
           input.removal ??
-          (input.selectionBefore?.kind === 'text' &&
-          !RangeApi.isCollapsed(input.selectionBefore)
+          (selectionBefore &&
+          (SelectionApi.isNode(selectionBefore) ||
+            !RangeApi.isCollapsed(selectionBefore))
             ? {
                 root: input.selectionBeforeRoot,
-                selection: input.selectionBefore,
+                selection: selectionBefore,
               }
             : null);
 
@@ -2224,11 +2225,14 @@ export const createAuthoredPlugin = (
         }
 
         const before = input.before as JsonEditorValue;
-        const { root } = target;
+        const { root, selection } = target;
         const stored = rootOf(before, root);
-        const [start, end] = RangeApi.edges(target.selection);
-        const from = stored.positionAt(start);
-        const to = stored.positionAt(end);
+        const [from, to] = SelectionApi.isNode(selection)
+          ? [
+              stored.nodeRange(selection.paths[0]).from,
+              stored.nodeRange(getDefined(selection.paths.at(-1))).to,
+            ]
+          : RangeApi.edges(selection).map((point) => stored.positionAt(point));
 
         if (
           !(input.change.empty
