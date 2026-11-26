@@ -1,11 +1,16 @@
 import type { Editor, EditorDocumentValue } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
 import { valueRootIndex } from './change/document-change';
-import { isElementNode, type JsonNode } from './change/tokens';
+import {
+  isElementNode,
+  type JsonElementNode,
+  type JsonNode,
+} from './change/tokens';
 import type { DocumentAdmission } from './document-admission';
 import { withPropertyDraws } from './editor-schema';
 import { getCompiledEditorSchema } from './plugin-registry';
 import { canonicalRecordJson } from './record-store';
+import { assertValidElementId } from './reserved-element-id';
 import {
   type CompiledEditorSchema,
   uniquePropertiesOf,
@@ -59,10 +64,23 @@ export const loadElementIds = (
   const sparesOf = (document: EditorDocumentValue) =>
     admission?.spareLines?.(document, schema) ?? null;
   let next = 0;
-  const reserve = (node: JsonNode) => {
-    const id = storedElementIdOf(node);
-
-    if (id !== undefined) reserved.add(id);
+  const idAt = (
+    node: JsonElementNode,
+    root: string | null,
+    path: readonly number[]
+  ) => ({
+    nodeType: typeof node.type === 'string' ? node.type : undefined,
+    path,
+    root: root === 'main' ? null : root,
+  });
+  const reserve = (
+    node: JsonNode,
+    root: string | null,
+    path: readonly number[]
+  ) => {
+    if (!isElementNode(node) || node.id === undefined) return;
+    assertValidElementId(node.id, idAt(node, root, path));
+    reserved.add(node.id);
   };
   const drawStandIn = () => {
     let standIn = `\u0000${standIns.size}`;
@@ -75,27 +93,31 @@ export const loadElementIds = (
 
   visitRootElements(incoming, reserve);
   for (const { node } of sparesOf(incoming)?.lines ?? []) {
-    visitElements([node], reserve);
+    visitElements([node], (element, path) => reserve(element, null, path));
   }
 
   return {
     fill: (document: EditorDocumentValue) => {
       const held = new Set<string>();
-      const lacks = (node: JsonNode, countsAsHolder: boolean) => {
+      const lacks = (
+        node: JsonNode,
+        countsAsHolder: boolean,
+        root: string | null,
+        path: readonly number[]
+      ) => {
+        if (!isElementNode(node)) return false;
         const { id } = node;
 
-        if (
-          typeof id === 'string' &&
-          !standIns.has(id) &&
-          !(countsAsHolder && held.has(id))
-        ) {
+        if (id === undefined) return true;
+        assertValidElementId(id, idAt(node, root, path));
+        if (!standIns.has(id) && !(countsAsHolder && held.has(id))) {
           if (countsAsHolder) held.add(id);
           reserved.add(id);
 
           return false;
         }
 
-        return id === undefined || typeof id === 'string';
+        return true;
       };
       const fillId = () => {
         while (reserved.has(`fill.${next}`)) next += 1;
@@ -110,11 +132,11 @@ export const loadElementIds = (
       const hidden: Array<{ line: number; path: readonly number[] }> = [];
 
       visitRootElements(document, (node, root, path) => {
-        if (lacks(node, true)) lacking.push({ path, root });
+        if (lacks(node, true, root, path)) lacking.push({ path, root });
       });
       spares?.lines.forEach(({ built, node }, line) =>
         visitElements([node], (element, path) => {
-          if (lacks(element, !built)) hidden.push({ line, path });
+          if (lacks(element, !built, null, path)) hidden.push({ line, path });
         })
       );
 

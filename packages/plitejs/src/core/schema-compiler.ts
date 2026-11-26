@@ -33,6 +33,7 @@ import { cloneFrozen } from './clone';
 import { readSchemaIdentity } from './document-shape';
 import type { ContentRootSlots } from './identity-owner';
 import { profileCoreDuration } from './profiling';
+import { createElementIdMint, type ElementIdMint } from './reserved-element-id';
 import { countCoreWork } from './work';
 
 const BUILT_IN_GROUPS = [
@@ -356,6 +357,7 @@ export type CompiledSchemaVocabulary = Readonly<{
 
 export type CompiledEditorSchema = Readonly<{
   diagnostics: readonly EditorSchemaDiagnostic[];
+  elementIdMint: ElementIdMint;
   elements: Readonly<{
     allowedChildren: ReadonlyMap<string, ReadonlySet<string>>;
     allowedParents: ReadonlyMap<string, ReadonlySet<string>>;
@@ -413,7 +415,7 @@ export type StructuralCompiledSchemaProperty = Omit<
 /** Structural cache payload with no live validator closure. */
 export type StructuralCompiledEditorSchema = Omit<
   CompiledEditorSchema,
-  'properties'
+  'elementIdMint' | 'properties'
 > &
   Readonly<{
     properties: Omit<CompiledEditorSchema['properties'], 'byId'> &
@@ -3777,7 +3779,8 @@ const assertPropertyAgreesAcrossPlaces = (
 
 const compileEditorSchemaInternal = (
   inputRecords: readonly EditorSchemaContributionRecord[],
-  revision: number
+  revision: number,
+  elementIdMint?: ElementIdMint
 ): CompiledEditorSchema => {
   if (!Number.isSafeInteger(revision) || revision < 0) {
     compileFailure(
@@ -5562,6 +5565,7 @@ const compileEditorSchemaInternal = (
 
   return Object.freeze({
     diagnostics: Object.freeze([]),
+    elementIdMint: elementIdMint ?? createElementIdMint(),
     elements,
     everyElementHasId,
     identity: derived
@@ -5603,12 +5607,13 @@ const compileEditorSchemaInternal = (
 
 export const compileEditorSchemaContributions = (
   records: readonly EditorSchemaContributionRecord[],
-  options: Readonly<{ revision?: number }> = {}
+  options: Readonly<{ elementIdMint?: ElementIdMint; revision?: number }> = {}
 ): CompiledEditorSchema =>
   profileCoreDuration('schema-compile', () =>
     compileEditorSchemaInternal(
       prepareEditorSchemaRecords(records),
-      options.revision ?? 0
+      options.revision ?? 0,
+      options.elementIdMint
     )
   );
 
@@ -5730,7 +5735,8 @@ const haveEquivalentRuntimeValidationBindings = (
 const replaceCompiledPropertyDescriptors = (
   schema: CompiledEditorSchema | StructuralCompiledEditorSchema,
   descriptors: ReadonlyMap<string, RuntimePropertyDescriptor>,
-  revision: number
+  revision: number,
+  elementIdMint?: ElementIdMint
 ): CompiledEditorSchema => {
   const byId = new Map<string, CompiledSchemaProperty>();
 
@@ -5753,6 +5759,11 @@ const replaceCompiledPropertyDescriptors = (
 
   const compiled: CompiledEditorSchema = Object.freeze({
     ...schema,
+    elementIdMint:
+      elementIdMint ??
+      ('elementIdMint' in schema
+        ? schema.elementIdMint
+        : createElementIdMint()),
     properties: Object.freeze({
       ...schema.properties,
       byId: freezeMap(byId),
@@ -5808,9 +5819,10 @@ const toStructuralPropertyDescriptor = (
 export const stripCompiledEditorSchemaRuntimeValidations = (
   schema: CompiledEditorSchema
 ): StructuralCompiledEditorSchema => {
+  const { elementIdMint, ...rest } = schema;
   const byId = new Map<string, StructuralCompiledSchemaProperty>();
 
-  for (const [id, property] of schema.properties.byId) {
+  for (const [id, property] of rest.properties.byId) {
     const { references, ...structural } = property;
 
     byId.set(
@@ -5824,9 +5836,9 @@ export const stripCompiledEditorSchemaRuntimeValidations = (
   }
 
   return Object.freeze({
-    ...schema,
+    ...rest,
     properties: Object.freeze({
-      ...schema.properties,
+      ...rest.properties,
       byId: freezeMap(byId),
     }),
   });
@@ -5835,8 +5847,11 @@ export const stripCompiledEditorSchemaRuntimeValidations = (
 const isBoundTo = (
   schema: CompiledEditorSchema | StructuralCompiledEditorSchema,
   current: ReadonlyMap<string, RuntimePropertyDescriptor>,
-  revision: number
+  revision: number,
+  elementIdMint?: ElementIdMint
 ): schema is CompiledEditorSchema =>
+  'elementIdMint' in schema &&
+  (elementIdMint === undefined || schema.elementIdMint === elementIdMint) &&
   schema.revision === revision &&
   schema.properties.byId.size === current.size &&
   [...schema.properties.byId].every(([id, property]) => {
@@ -5863,11 +5878,12 @@ const isBoundTo = (
 export const rebindCompiledEditorSchemaRuntimeValidations = (
   schema: CompiledEditorSchema | StructuralCompiledEditorSchema,
   records: readonly EditorSchemaContributionRecord[],
-  revision: number
+  revision: number,
+  elementIdMint?: ElementIdMint
 ): CompiledEditorSchema => {
   const current = collectRuntimePropertyDescriptors(records);
 
-  if (isBoundTo(schema, current, revision)) return schema;
+  if (isBoundTo(schema, current, revision, elementIdMint)) return schema;
 
   const descriptors = new Map<string, RuntimePropertyDescriptor>();
 
@@ -5883,7 +5899,12 @@ export const rebindCompiledEditorSchemaRuntimeValidations = (
     });
   }
 
-  return replaceCompiledPropertyDescriptors(schema, descriptors, revision);
+  return replaceCompiledPropertyDescriptors(
+    schema,
+    descriptors,
+    revision,
+    elementIdMint
+  );
 };
 
 const EDITOR_SCHEMA_CONTRACT_FORMAT = 1 as const;

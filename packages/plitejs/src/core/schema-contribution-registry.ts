@@ -170,13 +170,18 @@ export const mergeSchemaContributionRegistries = (
     previous?.declarationKey === declarationKey
       ? previous.compiled
       : getCachedSchema(declarationKey);
+  const elementIdMint = previous?.compiled.elementIdMint;
   const compiled = reusable
     ? rebindCompiledEditorSchemaRuntimeValidations(
         reusable,
         [...records.values()],
-        revision
+        revision,
+        elementIdMint
       )
-    : compileEditorSchemaContributions([...records.values()], { revision });
+    : compileEditorSchemaContributions([...records.values()], {
+        elementIdMint,
+        revision,
+      });
 
   cacheSchema(declarationKey, compiled);
   const delta = createCompiledEditorSchemaDelta(
