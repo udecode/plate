@@ -1,5 +1,5 @@
 ---
-description: Drive Google Docs' suggesting mode in Claude in Chrome, with one author or two, to see what the reference editor does before Plate's suggestions code picks a behavior. Use when a suggestions or authored-review behavior is uncertain, such as which decision order may wait, what one keystroke records or how two authors' pending changes resolve, before writing that behavior into a plan, a test's expectation or a decision row, and for "check what Google Docs does".
+description: Drive Google Docs suggesting mode in Chrome (1 or 2 authors) as a behavioral reference before deciding Plate suggestions/authored-review expectations, plans, or tests. Use for "check what Google Docs does" or uncertain suggestion behavior.
 argument-hint: <the behavior question> [two authors]
 name: gdocs-reference
 metadata:

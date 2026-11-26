@@ -1,5 +1,5 @@
 ---
-description: Check that deciding the authored review tree's pending changes one at a time, in any order, gives the document that deciding them all at once gives, and that no change adds a set of verdicts a reviewer can only decide together, for every document up to a bound. Use before and after changing packages/plitejs/src/authored/tree/resolve.ts or another file in its coverage record, when the authored-order step of pnpm check fails, when fixing a decision-order bug, or when recording gains a new kind of mark.
+description: Formal check for order-independence of authored review tree decisions. Use before/after changing packages/plitejs/src/authored/tree/resolve.ts or its coverage record, when pnpm check authored-order fails, or when adding a new mark kind.
 argument-hint: '[check | deep | lower | update]'
 name: authored-decision-order
 metadata:

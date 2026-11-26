@@ -1,5 +1,5 @@
 ---
-description: Check that two Yjs peers, each running a short command on a small closed-schema document, end with the same schema-valid document for every order of their commands and every point where one hears from the other, in Plain and Suggesting intent, and that each peer's editor matches its own Yjs document after every step. Use before and after changing packages/plitejs/src/yjs or another file in its coverage record, when the yjs-peer-order step of pnpm check fails, or when fixing a bug where two collaborators end with different documents.
+description: Formal check for two-peer Yjs convergence and schema validity across command/delivery orders in Plain and Suggesting modes. Use before/after changing packages/plitejs/src/yjs or its coverage record, or when pnpm check yjs-peer-order fails.
 argument-hint: '[check | deep | lower | case <identity> | update]'
 ---
 

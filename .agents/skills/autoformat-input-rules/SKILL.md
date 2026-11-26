@@ -1,5 +1,5 @@
 ---
-description: Check that every shorthand the www autoformat and basic marks kits declare applies whole when typed key by key, that no typed sequence of up to three keys changes a paragraph it was not typed in, that one undo, or one Backspace right after it, takes back each keystroke that fires a rule, and that a key an input method commits gives what typing it gives. Use before and after changing apps/www/src/registry/components/editor/autoformat.tsx, basic-marks.tsx or another file in its coverage record, when the autoformat-rules step of pnpm check fails, or when fixing an autoformat or input-rule bug.
+description: Formal check for www autoformat and basic marks keystroke shorthands, paragraph isolation, undo/Backspace, and IME commit parity. Use before/after changing apps/www/src/registry/components/editor/autoformat.tsx, basic-marks.tsx, or its coverage record, or when pnpm check autoformat-rules fails.
 argument-hint: '[check | deep | lower | typed <keys> | update]'
 name: autoformat-input-rules
 metadata:

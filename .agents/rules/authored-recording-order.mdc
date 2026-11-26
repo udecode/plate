@@ -1,5 +1,5 @@
 ---
-description: Check that every command the recording laws use, run at every place in Suggesting and in Editing on every small document with another author's pending change, records a document whose accept-everything result is what a plain editor gives, whose reject-everything result is the document before, whose undo and redo give back each side, and whose review ledger matches the kernel. Use before and after changing packages/plitejs/src/authored or packages/plitejs/src/history or another file in its coverage record, when the authored-recording step of pnpm check fails, or when fixing a recording bug a seed or a tester found.
+description: Formal check for Suggesting/Editing recording laws, accept/reject-all equivalence, undo/redo, and review ledger parity. Use before/after changing packages/plitejs/src/authored, packages/plitejs/src/history, or its coverage record, or when pnpm check authored-recording fails.
 argument-hint: '[check | deep | lower | case <identity> | update]'
 ---
 

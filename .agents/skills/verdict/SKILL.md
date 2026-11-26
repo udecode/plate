@@ -1,5 +1,5 @@
 ---
-description: Say what to do from any input, such as a doc, draft, issue, PR or idea, with pushback, an outcome per item and a chip for each open question, or judge one Plate or Plite review scope by its exact id with a Stop, Pursue or Defer written into its review page's front matter. A scope verdict the owner types also grades the scope against other editors and picks its next step to build, cut or redesign, and `/loop verdict <scope id>` keeps building those steps. `explore <scope or idea>` settles a direction with the owner first. It restates the goal, then runs rounds of pushback and research that each stop for the owner's answer, and gives no verdict until the owner says `lock`. A bare `audit` gives the source files no scope owns to scopes and cards that verdict for the next three scopes no review has ranked, and `audit restart` makes every closed scope due again.
+description: Judge any doc, draft, issue, PR, idea, or Plate/Plite review scope id (Stop/Pursue/Defer) with pushback, outcomes, and open-question chips. Also handles `/loop verdict <scope>`, `explore <scope or idea>` (rounds until `lock`), `audit`, and `audit restart`.
 argument-hint: '[<doc, draft, issue, PR or idea> | <scope id> | explore <scope or idea> | audit | audit restart | audit <scope or group id>]'
 name: verdict
 metadata:

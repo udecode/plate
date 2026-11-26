@@ -1,5 +1,5 @@
 ---
-description: Start or be the operator, the one session on a Mac that stays open, waits for Local CI, release and friction events, and hands each one to a fresh agent. It starts a fix for each red or flaky step, a release agent for each beta that is due and a judge for each friction line zbot's sessions write. Use for /operator, "keep watching", "start the operator", "release a beta now", being the operator, the old name "Local CI watcher", and when a release or friction event or a local-ci task names a step.
+description: Run the persistent Mac operator session that watches Local CI, beta release, and zbot friction events and dispatches fix/release/judge agents. Use for /operator, "keep watching", "start the operator", "release a beta now", or "Local CI watcher".
 argument-hint: '[watch | release]'
 name: operator
 metadata:

@@ -1,5 +1,5 @@
 ---
-description: Find the review scopes whose fixes keep coming back, and card a verdict on the change that stops them. It blames the product lines each fix changed, and counts per scope the fixes that rework an earlier fix since the scope's newest verdict or the landing of the plan that verdict pursued. Use for /relapse, the weekly look at last week's fixes, "which fixes keep coming back", or "what architecture would obviate these fixes".
+description: Find review scopes whose fixes keep reworking earlier fixes since the last verdict and card a verdict to stop relapses. Use for /relapse, "which fixes keep coming back", or "what architecture would obviate these fixes".
 argument-hint: '[<YYYY-MM-DD>]'
 name: relapse
 metadata:

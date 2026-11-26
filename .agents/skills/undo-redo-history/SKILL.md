@@ -1,5 +1,5 @@
 ---
-description: Check that every undo gives back the document from before its step and every redo the one after, over every list of up to three short commands on every small document, under the grouping, skipping and restoration rules of Plite history. Use before and after changing packages/plitejs/src/history or another file in its coverage record, when the undo-redo-history step of pnpm check fails, or when fixing an undo or redo bug a seed or a tester found.
+description: Formal check for Plite undo/redo history restoration, grouping, and skipping invariants. Use before/after changing packages/plitejs/src/history or its coverage record, when pnpm check undo-redo-history fails, or when fixing an undo/redo bug.
 argument-hint: '[check | letters | deep | lower | case <identity> | update]'
 name: undo-redo-history
 metadata:

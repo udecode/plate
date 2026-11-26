@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, readlinkSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { hookPayload, sessionCheckout } from '../../../pstack/checkout.mjs';
 
 const hook = process.argv.includes('--hook');
@@ -93,6 +93,126 @@ if (existsSync(config)) {
       ![...tables.keys()].some((key) => key.startsWith(`hooks.state."${plugin}:`))
     )
       stale(`Codex has not trusted ${plugin}'s session hook.`, `a human opens Codex, runs /hooks and trusts the ${plugin} session hook`);
+  }
+}
+
+const gemini = join(home, '.gemini');
+const t3Antigravity = join(home, '.t3/userdata/providers/antigravity');
+if (existsSync(gemini) || existsSync(t3Antigravity)) {
+  const AGY_RULE_MAX_BYTES = 24_000;
+  const AGY_SKILL_DESC_BUDGET = 16_000;
+  const agentsMdSize = existsSync(join(root, 'AGENTS.md')) ? statSync(join(root, 'AGENTS.md')).size : 0;
+  const rulesDir = join(root, '.agents/rules');
+  const agyRuleFiles = existsSync(rulesDir) ? readdirSync(rulesDir).filter((name) => name.endsWith('.md')) : [];
+  if (agentsMdSize > AGY_RULE_MAX_BYTES && agyRuleFiles.length === 0)
+    stale(
+      `Antigravity truncates rule files past ${AGY_RULE_MAX_BYTES} bytes, and AGENTS.md has ${agentsMdSize} with no .agents/rules/*.md continuation.`,
+      'add a concise always_on continuation rule (< 24 KB) under .agents/rules/*.md'
+    );
+  for (const name of agyRuleFiles) {
+    const ruleSize = statSync(join(rulesDir, name)).size;
+    if (ruleSize > AGY_RULE_MAX_BYTES)
+      stale(
+        `Antigravity truncates .agents/rules/${name} past ${AGY_RULE_MAX_BYTES} bytes (currently ${ruleSize}).`,
+        `trim or split .agents/rules/${name} under ${AGY_RULE_MAX_BYTES} bytes`
+      );
+  }
+  const claudeSettings = readJson(join(root, '.claude/settings.json'));
+  if (claudeSettings?.hooks && !existsSync(join(root, '.agents/hooks.json')))
+    stale(
+      'Claude Code hooks exist in .claude/settings.json, but .agents/hooks.json is missing for Antigravity.',
+      'add .agents/hooks.json bridging Antigravity lifecycle events to the repository guards'
+    );
+  if (existsSync(join(root, '.mcp.json')) && !existsSync(join(root, '.agents/mcp_config.json')))
+    stale(
+      'Repo .mcp.json exists, but Antigravity .agents/mcp_config.json is missing.',
+      'enable "antigravity" in .agents/skiller.toml and run pnpm run prepare'
+    );
+  const skillsDir = join(root, '.agents/skills');
+  if (existsSync(skillsDir)) {
+    const descLens = readdirSync(skillsDir)
+      .map((name) => {
+        const skillFile = join(skillsDir, name, 'SKILL.md');
+        if (!existsSync(skillFile)) return null;
+        const fm = readFileSync(skillFile, 'utf8').match(/^---\n([\s\S]*?)\n---/u)?.[1] ?? '';
+        const desc = fm.match(/description:\s*([\s\S]*?)(?=\n[a-zA-Z0-9_-]+:|$)/u)?.[1]?.trim() ?? '';
+        return { len: desc.length, name };
+      })
+      .filter(Boolean);
+    const totalDesc = descLens.reduce((sum, item) => sum + item.len, 0);
+    if (totalDesc > AGY_SKILL_DESC_BUDGET) {
+      const top = descLens
+        .sort((a, b) => b.len - a.len)
+        .slice(0, 3)
+        .map((item) => `${item.name} (${item.len})`)
+        .join(', ');
+      stale(
+        `Antigravity skill descriptions total ${totalDesc} chars (budget ${AGY_SKILL_DESC_BUDGET}; largest: ${top}), risking dropped skills.`,
+        'trim verbose description frontmatter in .agents/rules/*.mdc and run pnpm run prepare'
+      );
+    }
+  }
+  const homeAgentsSkills = join(home, '.agents/skills');
+  const skillsJsonPath = join(gemini, 'config/skills.json');
+  if (existsSync(homeAgentsSkills)) {
+    const entries = readJson(skillsJsonPath)?.entries ?? [];
+    const hasAgentsSkills = entries.some((entry) => typeof entry?.path === 'string' && (entry.path === '~/.agents/skills' || resolve(entry.path.replace(/^~(?=\/|$)/u, home)) === homeAgentsSkills));
+    if (!hasAgentsSkills)
+      stale(
+        'Antigravity global config does not include ~/.agents/skills in ~/.gemini/config/skills.json.',
+        'add {"entries":[{"path":"~/.agents/skills"}]} to ~/.gemini/config/skills.json'
+      );
+  }
+  const globalPluginsDir = join(gemini, 'config/plugins');
+  for (const { name, plugin, version } of newestPins) {
+    const manifestPath = join(globalPluginsDir, name, '.antigravity-plugin/plugin.json');
+    const manifest = readJson(manifestPath);
+    if (!manifest)
+      stale(
+        `Antigravity has no ${plugin} plugin in ~/.gemini/config/plugins/${name}.`,
+        `install ${name} for Antigravity (e.g. open-pstack or agy plugin install <path>/plugins/${name})`
+      );
+    else if (version && manifest.version !== version)
+      stale(
+        `Antigravity's ${plugin} plugin is ${manifest.version}, not ${version}.`,
+        `update ${name} for Antigravity to ${version}`
+      );
+  }
+  const globalMcpPath = join(gemini, 'config/mcp_config.json');
+  if (existsSync(t3Antigravity)) {
+    for (const entry of readdirSync(t3Antigravity, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (existsSync(globalMcpPath) && statSync(globalMcpPath).size > 0) {
+        const profileMcp = join(t3Antigravity, entry.name, 'config/mcp_config.json');
+        const linked = existsSync(profileMcp) && (() => {
+          try {
+            return resolve(join(t3Antigravity, entry.name, 'config'), readlinkSync(profileMcp)) === globalMcpPath;
+          } catch {
+            return statSync(profileMcp).size > 0;
+          }
+        })();
+        if (!linked)
+          stale(
+            `T3 Code Antigravity profile ${entry.name.slice(0, 12)} has an isolated/empty mcp_config.json instead of ~/.gemini/config/mcp_config.json.`,
+            `ln -sfn ~/.gemini/config/mcp_config.json "${profileMcp}"`
+          );
+      }
+      if (existsSync(globalPluginsDir)) {
+        const profilePlugins = join(t3Antigravity, entry.name, 'config/plugins');
+        const pluginsLinked = existsSync(profilePlugins) && (() => {
+          try {
+            return resolve(join(t3Antigravity, entry.name, 'config'), readlinkSync(profilePlugins)) === globalPluginsDir;
+          } catch {
+            return readdirSync(profilePlugins).length > 0;
+          }
+        })();
+        if (!pluginsLinked)
+          stale(
+            `T3 Code Antigravity profile ${entry.name.slice(0, 12)} does not link ~/.gemini/config/plugins.`,
+            `ln -sfn ~/.gemini/config/plugins "${profilePlugins}"`
+          );
+      }
+    }
   }
 }
 

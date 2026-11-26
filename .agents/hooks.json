@@ -1,0 +1,37 @@
+{
+  "plate-guards": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "node ./hooks/antigravity-bridge.mjs SessionStart",
+        "timeout": 45
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node ./hooks/antigravity-bridge.mjs PreInvocation",
+        "timeout": 10
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "run_command|edit_file|write_file|read_file|invoke_subagent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./hooks/antigravity-bridge.mjs PreToolUse",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node ./hooks/antigravity-bridge.mjs Stop",
+        "timeout": 30
+      }
+    ]
+  }
+}

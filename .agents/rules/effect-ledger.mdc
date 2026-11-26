@@ -1,5 +1,5 @@
 ---
-description: Check that the effect ledger, the internal judge of native sync, never calls a merge held when it lost work, over every merge the real rebase writes for short command lists on small documents and the intake's queue cases. Eleven planted mutations must read lost, an intent oracle written apart from the ledger must agree, held verdicts must compose, and every merge must reopen as a valid document through createEditor. Use before and after changing packages/plitejs/src/core/change/effect-ledger.ts, the rebase or another file in its coverage record, when the effect-ledger step of pnpm check fails, or when fixing a broken merge the native sync plan's M0.6 names and its C.13 fixes.
+description: Formal check for native sync's effect ledger and rebase merge invariants (planted mutations, intent oracle, composition, reopen). Use before/after changing packages/plitejs/src/core/change/effect-ledger.ts, rebase, or its coverage record, or when pnpm check effect-ledger fails.
 argument-hint: '[check | all [shard] | record | case <identity> | update]'
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Check that every small Markdown source and every CommonMark and GFM spec example parses, serializes and parses again to the same document, that a whole file that opens with a YAML or TOML front matter block stores that block, that a streamed parse that continues its previous result equals a fresh parse, and that each preview of a stream keeps the text it showed, takes back a guessed closer no more often than its source leaves markers open, hides at most three arrived characters and shows the text a strict parse of the same prefix shows, less only markers a later character can still pair, and that a partial parse or parseInline shows what a partial parseSlice of the same prefix shows, over the plugins of the Markdown test editor and the shipped kit's indent. Use before and after changing packages/platejs/src/markdown/lib or another file in its coverage record, when the markdown-round-trip step of pnpm check fails, or when fixing a Markdown or streaming bug a seed or a tester found.
+description: Formal check for Markdown round-trip, front matter, and streaming parse/preview invariants. Use before/after changing packages/platejs/src/markdown/lib or its coverage record, when pnpm check markdown-round-trip fails, or when fixing a Markdown/streaming bug.
 argument-hint: '[check | deep | lower | case <identity> | update]'
 ---
 

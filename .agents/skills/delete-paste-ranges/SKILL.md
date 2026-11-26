@@ -1,5 +1,5 @@
 ---
-description: Check that Backspace, Delete, Return, typing, paste, cut and bold keep the text outside their range in order over every caret and range of every small document, with a link, a read-only inline, a required title, a one-text code block and a block void among them, that typing never writes into a void, that a command over a range keeps none of its letters, that the result stays canonical and that one undo gives back the document. Use before and after changing packages/plitejs/src/transforms-text/delete-text.ts, delete-text-whole-blocks.ts, merge-nodes.ts, slice landing or another file in its coverage record, when the delete-paste-ranges step of pnpm check fails, or when fixing a delete, join, typing or paste bug a tester found.
+description: Formal check for Backspace, Delete, Return, typing, paste, cut, and bold range invariants and undo. Use before/after changing packages/plitejs/src/transforms-text/delete-text.ts, delete-text-whole-blocks.ts, merge-nodes.ts, slice landing, or its coverage record, or when pnpm check delete-paste-ranges fails.
 argument-hint: '[check | deep | lower | case <identity> | update]'
 name: delete-paste-ranges
 metadata:

@@ -1,5 +1,5 @@
 ---
-description: Check that every table insert, remove, merge and split command, Enter, Backspace, Delete, paste and delete inside and across cells, typing and paste over a picked cell, and typing right after a merge, leaves a table whose cells cover every slot exactly once and puts each cell's content where the Table section of docs/editor-behavior/markdown-editing-spec.md says, on every span layout of up to three rows and three columns. Use before and after changing packages/platejs/src/features/table or another file in its coverage record, when the table-grid step of pnpm check fails, or when fixing a table structure or cell-editing bug a test or a tester found.
+description: Formal check for table insert, remove, merge, split, cell editing, and paste grid invariants. Use before/after changing packages/platejs/src/features/table or its coverage record, when pnpm check table-grid fails, or when fixing a table structure/cell-editing bug.
 argument-hint: '[check | deep | lower | case <identity> | update]'
 ---
 
