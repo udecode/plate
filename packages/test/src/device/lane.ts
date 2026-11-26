@@ -116,6 +116,7 @@ export type DeviceScreen = {
   doubleTap: (point: Point) => Promise<void>;
   press: (point: Point, ms: number) => Promise<void>;
   afterLoad: () => Promise<void>;
+  settle: () => Promise<void>;
   tap: (point: Point) => Promise<void>;
 };
 
@@ -338,12 +339,14 @@ export const createDeviceLane = ({
     });
   };
 
-  const pointFor = (
+  const pointFor = async (
     editorRoot: EditorRoot,
     path: number[],
     target: number | 'past-end'
-  ) =>
-    editorRoot.evaluate(
+  ) => {
+    await driver.screen.settle();
+
+    return editorRoot.evaluate(
       async (element, { path: textPath, target: textTarget }) => {
         const renderedHere = (text: Element) =>
           text.closest('[data-editor="true"]') === element;
@@ -442,6 +445,7 @@ export const createDeviceLane = ({
       },
       { path, target }
     );
+  };
 
   const contentTouch = (
     label: string,
@@ -452,6 +456,8 @@ export const createDeviceLane = ({
   // The soft keyboard shrinks and scrolls the visual viewport, so a target in
   // the layout viewport can still sit under the browser toolbar.
   const tapQuery = async (label: string, query: DeviceQuery) => {
+    await driver.screen.settle();
+
     const found = driver.page.find(query);
     const center = await found.evaluate(async (element, ios) => {
       const container = element.closest(

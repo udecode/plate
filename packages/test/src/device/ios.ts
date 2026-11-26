@@ -1,7 +1,17 @@
 import { spawn } from 'node:child_process';
-import { closeSync, openSync } from 'node:fs';
+import { closeSync, openSync, readFileSync } from 'node:fs';
 import { createServer, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
+
+const readRunnerFailure = (log: string): string | undefined =>
+  readFileSync(log, 'utf-8')
+    .split('\n')
+    .findLast((line) =>
+      /(?:failed:\s*caught error:|Assertion Failure|error:\s*-\[|xcodebuild:\s*error:)/.test(
+        line
+      )
+    )
+    ?.trim() || undefined;
 
 export type RunnerCommand =
   | { action: 'activate' }
@@ -15,8 +25,9 @@ export type RunnerCommand =
       y2: number;
     }
   | { action: 'find'; label: string }
-  | { action: 'key'; label: string }
   | { action: 'frame'; label: string }
+  | { action: 'idle' }
+  | { action: 'key'; label: string }
   | { action: 'keyboard' }
   | { action: 'press'; ms: number; x: number; y: number }
   | { action: 'tap'; x: number; y: number };
@@ -125,7 +136,10 @@ export const startIosRunner = async ({
 
   if (start !== 'ready') {
     runner.kill();
-    throw new Error(`The iOS runner did not start (${start}); see ${log}`);
+    const detail = readRunnerFailure(log);
+    throw new Error(
+      `The iOS runner did not start (${start})${detail ? `: ${detail}` : ''}; see ${log}`
+    );
   }
 
   let queue = Promise.resolve();

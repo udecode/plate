@@ -321,8 +321,15 @@ export const connectIos = async (
   inspector: WebInspector,
   { insetURL, runnerLog }: { insetURL: string; runnerLog: string }
 ): Promise<IosConnection> => {
-  const listed = await inspector.safariPages();
-  const info = listed.find((candidate) => candidate.id === state.pageId);
+  let info: InspectorPageInfo | undefined;
+
+  for (const deadline = Date.now() + 10_000; Date.now() < deadline;) {
+    const listed = await inspector.safariPages();
+
+    info = listed.find((candidate) => candidate.id === state.pageId);
+    if (info) break;
+    await sleep(200);
+  }
 
   if (!info) throw new Error(`Safari no longer lists page ${state.pageId}.`);
 
@@ -496,6 +503,9 @@ export const createIosDriver = ({
       },
       afterLoad: async () => {
         await inspector.evaluate(`(${settleViewport.toString()})()`);
+      },
+      settle: async () => {
+        await send({ action: 'idle' });
       },
       tap: async (css) => {
         await send({ action: 'tap', ...(await webPoint(css)) });
