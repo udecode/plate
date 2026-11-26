@@ -1630,7 +1630,7 @@ const lowerAcrossBreaks = (
 /**
  * Where a composition commit's claimed write lands in the review draft: at
  * the commit's stored place, in the props of the leaf the command wrote, when
- * the command wrote into the element that holds that place. Hidden struck
+ * the command wrote into the element that shows that place. Hidden struck
  * text gives the frame's write position several stored places, and only the
  * stored one keeps the word where the person saw it.
  */
@@ -1644,25 +1644,43 @@ const compositionLanding = (
   const { composition, projection } = input;
 
   if (composition?.root !== root || !projection || !written) return null;
-  const element = projection.map.nodePath(root, composition.element);
   const stretch = changedStretch([change]);
 
-  if (!element || !stretch) return null;
-  const at = fold.frameChange
-    ? getDefined(
-        mapRootChangePositionBackward(fold.frameChange, stretch.from, -1)
-      )
-    : stretch.from;
-  const holder = getDefined(projection.indexes.get(root))
-    .openContextAt(at)
-    .findLast(
-      (entry) =>
-        entry.kind === 'element' &&
-        entry.contentFrom <= at &&
-        at <= entry.contentTo
+  if (!stretch) return null;
+  const holderAt = (position: number | null) =>
+    position === null
+      ? undefined
+      : getDefined(projection.indexes.get(root))
+          .openContextAt(position)
+          .findLast(
+            (entry) =>
+              entry.kind === 'element' &&
+              entry.contentFrom <= position &&
+              position <= entry.contentTo
+          )?.path;
+  // A struck line joined into the line before it still shows its end, as the
+  // end of the line it joins, which then holds the line's places.
+  const joinedInto = () => {
+    const { to } = valueRootIndex(input.before, root).nodeRange(
+      composition.element
     );
+    const end = projection.map.toProjected(root, to - 1, 'forward');
 
-  if (!holder || !jsonEqual(holder.path, element)) return null;
+    return end === projection.map.toProjected(root, to, 'forward')
+      ? undefined
+      : holderAt(end);
+  };
+  const element =
+    projection.map.nodePath(root, composition.element) ?? joinedInto();
+  const holder = holderAt(
+    fold.frameChange
+      ? getDefined(
+          mapRootChangePositionBackward(fold.frameChange, stretch.from, -1)
+        )
+      : stretch.from
+  );
+
+  if (!element || !holder || !jsonEqual(holder, element)) return null;
   const point = written.pointAt(getDefined(change.mapPos(stretch.from, -1)), 1);
   const { [AUTHORED_MARKS_KEY]: _marks, ...leaf } = point
     ? propsOf(written.node(point.path))
