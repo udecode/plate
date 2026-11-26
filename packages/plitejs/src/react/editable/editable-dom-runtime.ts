@@ -95,9 +95,11 @@ import {
   setEditableComposingState,
 } from './input-controller';
 import {
+  beginEditableNativeSelectionImport,
   cancelCompositionReceipt,
   captureEditableCompositionRuntimeMarks,
   clearEditableCompositionRuntimeState,
+  endHiddenAnchorPress,
   endSelectionImport,
   type EditableInputController,
   exportEditableDOMSelection,
@@ -496,6 +498,8 @@ export class EditableDOMRuntime {
 
   private externalMouseGesture = false;
   private nextClickSelected = false;
+  private ownedPressClick = false;
+  private ownedPressMouseDown = false;
   private cancelPressTask: (() => void) | null = null;
   private inEditableMouseUp = false;
   private nonMousePressHeld = false;
@@ -1220,6 +1224,30 @@ export class EditableDOMRuntime {
     return selected;
   }
 
+  markOwnedPressGesture() {
+    this.ownedPressClick = true;
+    this.ownedPressMouseDown = true;
+  }
+
+  clearOwnedPressGesture() {
+    this.ownedPressClick = false;
+    this.ownedPressMouseDown = false;
+  }
+
+  takeOwnedPressClick() {
+    const owned = this.ownedPressClick;
+
+    this.ownedPressClick = false;
+    return owned;
+  }
+
+  takeOwnedPressMouseDown() {
+    const owned = this.ownedPressMouseDown;
+
+    this.ownedPressMouseDown = false;
+    return owned;
+  }
+
   /**
    * Whether a focus belongs to a press in this Editable, whose own placement
    * wins over the view's activation.
@@ -1657,6 +1685,34 @@ export class EditableDOMRuntime {
     this.onDOMSelectionChange?.cancel();
     this.scheduleOnDOMSelectionChange?.cancel();
     endSelectionImport(this.inputController);
+  }
+
+  prepareNativeShiftSelection(holdExport: boolean) {
+    const { inputController } = this;
+
+    this.cancelSelectionChangeHandlers();
+    inputController.state.outsideFocusBoundarySettleUntil = 0;
+    if (
+      inputController.state.activeIntent === 'model-selection-move' ||
+      inputController.state.activeIntent === 'native-selection-move'
+    ) {
+      inputController.state.activeIntent = null;
+    }
+    inputController.state.modelOwnedTextInputGuard = 0;
+    setEditableModelSelectionPreference({
+      inputController,
+      preferModelSelection: false,
+      selectionSource: 'dom-current',
+    });
+    beginEditableNativeSelectionImport(inputController);
+    if (holdExport) {
+      inputController.state.pendingDOMSelectionImport = true;
+      inputController.state.nativeMoveHold = {
+        receipt: getPlacementGeneration(this.editorValue),
+      };
+      endHiddenAnchorPress(inputController);
+      this.scheduleOnDOMSelectionChange?.();
+    }
   }
 
   private attachNativeInputListeners() {

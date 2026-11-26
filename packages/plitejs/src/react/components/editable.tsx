@@ -495,6 +495,7 @@ export const EditableDOMRoot = (
     },
     onKeyDownCapture: (event: React.KeyboardEvent<HTMLDivElement>) => {
       runtime.clearNextClickSelected();
+      runtime.clearOwnedPressGesture();
       if (CARET_KEYS.has(event.key)) {
         activateViewCaret(editor);
         runtime.beginCaretKey();
@@ -504,6 +505,7 @@ export const EditableDOMRoot = (
     onMouseDownCapture: (event: React.MouseEvent<HTMLDivElement>) => {
       runtime.beginMousePress();
       runtime.clearNextClickSelected();
+      runtime.clearOwnedPressGesture();
       runtime.setExternalMouseGesture(event.defaultPrevented);
 
       if (!runtime.externalMouseGestureActive) {

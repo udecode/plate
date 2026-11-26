@@ -2,6 +2,7 @@ import {
   type MouseEvent,
   type MouseEventHandler,
   useCallback,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -24,7 +25,7 @@ import {
   getPlacementGeneration,
   liftShownTarget,
 } from '../../core/view-carets';
-import { isDOMNode } from '../../dom';
+import { getSelection, isDOMNode } from '../../dom';
 import {
   type DOMGeometryPoint,
   type DOMPhase,
@@ -35,12 +36,21 @@ import {
   resolveDOMTargetView,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
-import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
+import {
+  resolveDOMPointInRoot,
+  watchFocusSuperseded,
+} from '../../dom/plugin/dom-editor';
 import {
   isGeckoDOMHost,
   usesAppleDOMHotkeys,
 } from '../../dom/utils/environment';
-import { writeDOMSelection } from '../../dom/utils/selection-writes';
+import {
+  forgetDOMSelectionRecord,
+  readDOMSelectionPoints,
+  sameDOMSelectionPoints,
+  writeDOMSelection,
+} from '../../dom/utils/selection-writes';
+import { PliteContentRootOwnerContext } from '../context';
 import {
   type focusPliteEditable,
   focusPliteEditableAfterEventFrame,
@@ -57,6 +67,7 @@ import {
 } from '../view-boundary-graph';
 import {
   createPliteViewSelection,
+  type PliteViewSelection,
   readPliteViewSelection,
   refreshPliteViewSelection,
   writePliteViewSelection,
@@ -83,6 +94,7 @@ import {
   type EditableDOMRuntime,
 } from './editable-dom-runtime';
 import type { EditableDOMSelectionSyncOptions } from './input-controller';
+import { findNestedEditable } from './interaction-owner';
 import { writeCollapsedModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
   classifyPlacedPress,
@@ -212,6 +224,7 @@ type PendingRootInteraction = {
   clientY: number;
   coordinateDragSelection: boolean;
   currentRange: Range | null;
+  dragAnchor: Point | null;
   nativeSelectedTextClick: boolean;
   placementDOMPoint: PliteStringPlacementDOMPoint | null;
   preventNativeSelection: boolean;
@@ -248,6 +261,7 @@ type PendingDragAutoScroll = {
   clientX: number;
   clientY: number;
   currentRange: Range;
+  dragAnchor?: Point | null;
   editor: RootInteractionEditor;
   follow?: (clientX: number, clientY: number) => void;
   releaseCleanup: (() => void) | null;
@@ -414,6 +428,7 @@ const ignoreInteraction = (): PendingRootInteraction => ({
   clientY: 0,
   coordinateDragSelection: false,
   currentRange: null,
+  dragAnchor: null,
   nativeSelectedTextClick: false,
   placementDOMPoint: null,
   preventNativeSelection: false,
@@ -494,6 +509,63 @@ const hasContentRootOwnerBetweenDragEndpoints = ({
       PathApi.compare(owner.ownerPath, end.path) <= 0
   );
 };
+
+const hasContentRootHolderStrictlyBetween = ({
+  anchor,
+  editor,
+  focus,
+  root,
+}: {
+  anchor: Point;
+  editor: RootInteractionEditor;
+  focus: Point;
+  root: RootKey;
+}) => {
+  const [start, end] =
+    comparePoints(anchor, focus) <= 0 ? [anchor, focus] : [focus, anchor];
+
+  return findContentRootOwners(editor).some(
+    (owner) =>
+      owner.ownerRoot === root &&
+      PathApi.compare(owner.ownerPath, start.path) > 0 &&
+      PathApi.compare(owner.ownerPath, end.path) < 0
+  );
+};
+
+const isStoredViewSelectionAcrossRootsOrOwners = (
+  viewSelection: PliteViewSelection | null,
+  root: RootKey
+) => {
+  if (!viewSelection) return false;
+  const anchorRoot = viewSelection.anchor.point.root ?? MAIN_ROOT_KEY;
+  const focusRoot = viewSelection.focus.point.root ?? MAIN_ROOT_KEY;
+
+  return (
+    Boolean(viewSelection.anchor.owner || viewSelection.focus.owner) ||
+    anchorRoot !== root ||
+    focusRoot !== root ||
+    viewSelection.segments.parts.some(
+      (part) => part.root !== root || Boolean(part.owner)
+    )
+  );
+};
+
+const isDOMPointInPressedEditable = (
+  editableRoot: HTMLElement,
+  [node]: readonly [Node, number]
+) =>
+  node.isConnected &&
+  editableRoot.contains(node) &&
+  !findNestedEditable(editableRoot, node);
+
+const anchorDragAtHeldSelection = (
+  pressed: RootInteractionDragEndpoint | null,
+  pivot: Point,
+  root: RootKey
+): RootInteractionDragEndpoint | null =>
+  pressed?.root === root
+    ? { ...pressed, isDOMCoverageBoundary: false, point: pivot }
+    : null;
 
 const shouldUseModelProjectedDragSelection = ({
   anchor,
@@ -962,13 +1034,15 @@ const hasPointerMoved = (
   Math.abs(event.clientY - pending.clientY) > 4;
 
 const createDragSelectionRange = ({
+  anchor,
   endRange,
   startRange,
 }: {
+  anchor?: Point | null;
   endRange: Range;
   startRange: Range;
 }): Range => ({
-  anchor: RangeApi.start(startRange),
+  anchor: anchor ?? RangeApi.start(startRange),
   focus: RangeApi.end(endRange),
 });
 
@@ -1079,6 +1153,7 @@ const applyProjectedDragSelectionFromEvent = ({
         clientY: projectedDrag.clientY,
         coordinateDragSelection: false,
         currentRange: null,
+        dragAnchor: null,
         nativeSelectedTextClick: false,
         placementDOMPoint: null,
         preventNativeSelection: false,
@@ -1315,6 +1390,7 @@ const extendDragAutoScrollSelection = (
   if (!eventRange) return;
 
   const nextRange = createDragSelectionRange({
+    anchor: state.dragAnchor,
     endRange: eventRange,
     startRange: state.startRange,
   });
@@ -1433,6 +1509,8 @@ export const useRootInteractionController = ({
   selectionBridge,
   viewLines = null,
 }: RootInteractionControllerOptions): RootInteractionController => {
+  const slotOwner = useContext(PliteContentRootOwnerContext);
+  const viewOwner = slotOwner?.childRoot === root ? slotOwner : null;
   const [pendingInteractionRef] = useState(() => ({
     current: ignoreInteraction(),
   }));
@@ -2279,6 +2357,112 @@ export const useRootInteractionController = ({
               focus: ownerChromeClickEndpoint.point,
             }
           : startRange;
+        const isPrimaryShiftPlacementPress =
+          !viewLines &&
+          !viewOwner &&
+          action.type === 'place-native-editable' &&
+          !nativeEditableTextTarget &&
+          event.button === 0 &&
+          event.shiftKey &&
+          !event.altKey &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          clickRange !== null &&
+          !ownerChromeClickEndpoint;
+        const modelSelection = isPrimaryShiftPlacementPress
+          ? focusEditor.read((state) => state.selection())
+          : null;
+        const storedViewSelection = isPrimaryShiftPlacementPress
+          ? readPliteViewSelection(focusEditor)
+          : null;
+        const pressedPoint =
+          isPrimaryShiftPlacementPress &&
+          clickRange &&
+          (clickRange.focus.root ?? root) === root
+            ? toRootedPoint(clickRange.focus, root)
+            : null;
+        const shiftFrom =
+          pressedPoint &&
+          RangeApi.isRange(modelSelection) &&
+          (modelSelection.anchor.root ?? MAIN_ROOT_KEY) === root &&
+          (modelSelection.focus.root ?? MAIN_ROOT_KEY) === root &&
+          !isStoredViewSelectionAcrossRootsOrOwners(storedViewSelection, root)
+            ? withInteractionRangeRoot(modelSelection, root)
+            : null;
+        const keepsFarEnd = rootRuntime
+          ? rootRuntime.isAppleHost && !rootRuntime.isGeckoHost
+          : usesAppleDOMHotkeys(event.nativeEvent) &&
+            !isGeckoDOMHost(event.nativeEvent);
+        const shiftPivot =
+          shiftFrom && pressedPoint
+            ? toRootedPoint(
+                getShiftSpanFrom({
+                  editor: focusEditor,
+                  keepsFarEnd,
+                  point: pressedPoint,
+                  selection: shiftFrom,
+                  word: null,
+                }).anchor,
+                root
+              )
+            : null;
+        const pressedEditable = shiftPivot
+          ? target.kind === 'root-chrome'
+            ? placementDOMPoint
+              ? (findMountedEditableDOMRuntime(placementDOMPoint.node)
+                  ?.rootElement ?? null)
+              : null
+            : editableRoot
+          : null;
+        const shiftSpanHasHolderBetween =
+          shiftPivot && pressedPoint
+            ? hasContentRootHolderStrictlyBetween({
+                anchor: shiftPivot,
+                editor: focusEditor,
+                focus: pressedPoint,
+                root,
+              })
+            : false;
+        const pivotDOMPoint =
+          shiftPivot &&
+          pressedPoint &&
+          !shiftSpanHasHolderBetween &&
+          pressedEditable
+            ? resolveDOMPointInRoot(focusEditor, shiftPivot, pressedEditable)
+            : null;
+        const focusDOMPoint =
+          pivotDOMPoint && pressedPoint && pressedEditable
+            ? placementDOMPoint &&
+              placementDOMPoint.node.nodeType === 3 &&
+              isDOMPointInPressedEditable(pressedEditable, [
+                placementDOMPoint.node,
+                placementDOMPoint.offset,
+              ])
+              ? ([placementDOMPoint.node, placementDOMPoint.offset] as [
+                  Node,
+                  number,
+                ])
+              : resolveDOMPointInRoot(
+                  focusEditor,
+                  pressedPoint,
+                  pressedEditable
+                )
+            : null;
+        const nativeShiftWrite =
+          shiftPivot &&
+          pressedPoint &&
+          pressedEditable &&
+          pivotDOMPoint &&
+          focusDOMPoint &&
+          isDOMPointInPressedEditable(pressedEditable, pivotDOMPoint) &&
+          isDOMPointInPressedEditable(pressedEditable, focusDOMPoint)
+            ? {
+                editable: pressedEditable,
+                focus: focusDOMPoint,
+                pivot: pivotDOMPoint,
+                range: { anchor: shiftPivot, focus: pressedPoint },
+              }
+            : null;
 
         if (ignoreBlankEditableRootClick && !startRange) {
           action = { type: 'ignore' };
@@ -2324,7 +2508,7 @@ export const useRootInteractionController = ({
                 })
             )
           : null;
-        const projectedDragEndpoint =
+        const resolvedProjectedDragEndpoint =
           nativeEditableMultiClick ||
           ignoreBlankEditableRootClick ||
           ignoreBlankNativeEditableClick ||
@@ -2343,11 +2527,20 @@ export const useRootInteractionController = ({
                     root: rootChromeCoordinatePlacement ? root : undefined,
                   })
               ));
+        const projectedDragEndpoint = shiftPivot
+          ? (anchorDragAtHeldSelection(
+              resolvedProjectedDragEndpoint,
+              shiftPivot,
+              root
+            ) ?? resolvedProjectedDragEndpoint)
+          : resolvedProjectedDragEndpoint;
 
         const projectedDragEditor = projectedDragEndpoint?.owner
           ? (getMountedViewEditor(projectedDragEndpoint.owner.ownerRoot) ??
             editor)
           : editor;
+
+        let nativeShiftPress = false;
 
         pendingProjectedDrag?.releaseCleanup();
         pendingProjectedDrag?.finish();
@@ -2362,7 +2555,12 @@ export const useRootInteractionController = ({
             wroteViewSelection: false,
             finish: () => {
               setNativeSelectionDragActive(rootRuntime, false);
-              if (!nextProjectedDrag.browserOwned) {
+              if (
+                !nextProjectedDrag.browserOwned &&
+                (!nativeShiftPress ||
+                  nextProjectedDrag.wroteViewSelection ||
+                  nextProjectedDrag.ownsSettledSelection)
+              ) {
                 selectionBridge?.finishProjectedDrag();
                 refreshPliteViewSelection(projectedDragEditor);
               }
@@ -2408,7 +2606,8 @@ export const useRootInteractionController = ({
           clientX: event.clientX,
           clientY: event.clientY,
           coordinateDragSelection: coordinateDragRootChromePlacement,
-          currentRange: clickRange,
+          currentRange: nativeShiftWrite ? nativeShiftWrite.range : clickRange,
+          dragAnchor: nativeShiftWrite ? nativeShiftWrite.range.anchor : null,
           nativeSelectedTextClick: nativeEditableSelectedTextTarget,
           placementDOMPoint,
           preventNativeSelection,
@@ -2450,6 +2649,55 @@ export const useRootInteractionController = ({
         }
 
         if (action.type === 'place-native-editable') {
+          if (nativeShiftWrite && shiftFrom) {
+            const selectionTree = nativeShiftWrite.editable.getRootNode() as
+              | Document
+              | ShadowRoot;
+            const domSelection = getSelection(selectionTree);
+
+            if (domSelection) {
+              const domMatches = sameDOMSelectionPoints(
+                readDOMSelectionPoints(domSelection),
+                {
+                  anchor: nativeShiftWrite.pivot,
+                  focus: nativeShiftWrite.focus,
+                }
+              );
+              const alreadySelected =
+                domMatches &&
+                RangeApi.equals(shiftFrom, nativeShiftWrite.range);
+
+              if (readPliteViewSelection(focusEditor)) {
+                writePliteViewSelection(focusEditor, null);
+              }
+              focusPressedView(nativeShiftWrite.editable);
+              if (
+                !isRootInteractionEditableFocused(nativeShiftWrite.editable)
+              ) {
+                nativeShiftWrite.editable.focus({ preventScroll: true });
+              }
+              if (!domMatches) {
+                forgetDOMSelectionRecord(selectionTree);
+                domSelection.setBaseAndExtent(
+                  nativeShiftWrite.pivot[0],
+                  nativeShiftWrite.pivot[1],
+                  nativeShiftWrite.focus[0],
+                  nativeShiftWrite.focus[1]
+                );
+              }
+
+              const mountedRuntime = findMountedEditableDOMRuntime(
+                nativeShiftWrite.editable
+              );
+
+              nativeShiftPress = true;
+              mountedRuntime?.markOwnedPressGesture();
+              mountedRuntime?.prepareNativeShiftSelection(!alreadySelected);
+              return;
+            }
+            pendingInteractionRef.current.dragAnchor = null;
+            pendingInteractionRef.current.currentRange = clickRange;
+          }
           if (clickRange) {
             profilePliteReactDuration(
               'root-mousedown.apply-place-native-selection',
@@ -2506,6 +2754,7 @@ export const useRootInteractionController = ({
       selectionBridge,
       startPlacedDrag,
       viewLines,
+      viewOwner,
     ]
   );
 
@@ -2580,6 +2829,7 @@ export const useRootInteractionController = ({
 
         if (eventRange) {
           const nextRange = createDragSelectionRange({
+            anchor: pendingInteraction.dragAnchor,
             endRange: eventRange,
             startRange: pendingInteraction.startRange,
           });
@@ -2607,6 +2857,7 @@ export const useRootInteractionController = ({
               currentRange:
                 pendingInteraction.currentRange ??
                 pendingInteraction.startRange,
+              dragAnchor: pendingInteraction.dragAnchor,
               editor: focusEditor,
               root,
               rootElement: event.currentTarget,
@@ -2861,6 +3112,7 @@ export const useRootInteractionController = ({
         pointerMoved
       ) {
         const nextRange = createDragSelectionRange({
+          anchor: pendingInteraction.dragAnchor,
           endRange: eventRange,
           startRange: pendingInteraction.startRange,
         });
@@ -2871,6 +3123,16 @@ export const useRootInteractionController = ({
             startRange: pendingInteraction.startRange,
           })
         ) {
+          return;
+        }
+
+        if (pendingInteraction.dragAnchor) {
+          applyModelDragSelection({
+            editor: focusEditor,
+            range: nextRange,
+            root,
+            selectionBridge,
+          });
           return;
         }
 
@@ -2886,6 +3148,10 @@ export const useRootInteractionController = ({
         pendingInteraction.startRange &&
         pointerMoved
       ) {
+        return;
+      }
+
+      if (pendingInteraction.dragAnchor && !pointerMoved) {
         return;
       }
 

@@ -321,12 +321,12 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      const mountedRuntime = findMountedEditableDOMRuntime(event.currentTarget);
+
       if (
         externalMouseGestureRef.current ||
-        (event.detail > 0 &&
-          findMountedEditableDOMRuntime(
-            event.currentTarget
-          )?.takeNextClickSelected())
+        mountedRuntime?.takeOwnedPressClick() ||
+        (event.detail > 0 && mountedRuntime?.takeNextClickSelected())
       ) {
         externalMouseGestureRef.current = false;
         onClick?.(event);
@@ -416,7 +416,12 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleMouseDown = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
-      if (externalMouseGestureRef.current) {
+      if (
+        externalMouseGestureRef.current ||
+        findMountedEditableDOMRuntime(
+          event.currentTarget
+        )?.takeOwnedPressMouseDown()
+      ) {
         onMouseDown?.(event);
         return;
       }
