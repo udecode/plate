@@ -35,6 +35,7 @@ export type RunnerCommand =
   | { action: 'press'; ms: number; x: number; y: number }
   | { action: 'snapshot' }
   | { action: 'tap'; x: number; y: number }
+  | { action: 'typeKey'; key: string; modifiers: string[] }
   | {
       action: 'touch';
       double: boolean;
