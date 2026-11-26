@@ -10,6 +10,7 @@ import {
   INK_VOID,
   type InkBox,
   type InkLiveBlock,
+  type InkText,
   inkText,
   inkWords,
 } from '../../../features/ink/lib/inkMatch.internal';
@@ -25,25 +26,25 @@ export type InkMeasuredBlock = InkLiveBlock &
 
 export type InkBand = Readonly<{ from: number; to: number }>;
 
-export type InkTextBlock = Readonly<{
-  element: HTMLElement;
-  id: string;
-  key: NodeKey;
-  path: Path;
-  text: string;
-}>;
+export type InkTextBlock = InkText &
+  Readonly<{
+    element: HTMLElement;
+    id: string;
+    key: NodeKey;
+    path: Path;
+  }>;
 
 export const inkTextBlockOf = (
   schema: Editor['read']['schema'],
   node: Node
-): Readonly<{ id: string; text: string }> | undefined =>
+): (InkText & Readonly<{ id: string }>) | undefined =>
   ElementApi.isElement(node) &&
   typeof node.id === 'string' &&
   !schema.isVoid(node) &&
   node.children.every(
     (child) => TextApi.isText(child) || schema.isInline(child)
   )
-    ? { id: node.id, text: inkText(schema, node) }
+    ? { id: node.id, ...inkText(schema, node) }
     : undefined;
 
 export const inkTextBlocks = (view: Editor): InkTextBlock[] => {

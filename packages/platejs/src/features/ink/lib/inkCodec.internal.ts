@@ -19,6 +19,27 @@ export const countInkDecode = (kind: keyof typeof decodes) => {
 
 export const getInkDecodeMetrics = () => Object.freeze({ ...decodes });
 
+// cyrb53's mixing (public domain, bryc).
+export const digest = (text: string) => {
+  let h1 = 0xde_ad_be_ef;
+  let h2 = 0x41_c6_ce_57;
+
+  for (let at = 0; at < text.length; at++) {
+    const code = text.charCodeAt(at);
+
+    h1 = Math.imul(h1 ^ code, 2_654_435_761);
+    h2 = Math.imul(h2 ^ code, 1_597_334_677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2_246_822_507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3_266_489_909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2_246_822_507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3_266_489_909);
+
+  const hex = (value: number) => (value >>> 0).toString(16).padStart(8, '0');
+
+  return hex(h2) + hex(h1);
+};
+
 const zigzag = (delta: number) => (delta < 0 ? -delta * 2 - 1 : delta * 2);
 
 const unzigzag = (value: number) =>

@@ -4,6 +4,7 @@ import { blockAbove } from '../../../features/ink/lib/inkGone.internal';
 import {
   type InkBox,
   type InkPlacement,
+  type InkText,
   placeMark,
 } from '../../../features/ink/lib/inkMatch.internal';
 import {
@@ -371,6 +372,7 @@ type NearBlock = Readonly<{
   id: string;
   key: NodeKey;
   text: string;
+  voids?: string;
 }>;
 
 export const createInkPlacer = ({
@@ -383,7 +385,7 @@ export const createInkPlacer = ({
   const lowestOf = new WeakMap<Element, readonly HTMLElement[]>();
   const textBlocks = new WeakMap<
     object,
-    WeakMap<object, Readonly<{ id: string; text: string }> | undefined>
+    WeakMap<object, (InkText & Readonly<{ id: string }>) | undefined>
   >();
   const held = new Map<string, Held>();
   let index: MarkIndex | null = null;
@@ -531,7 +533,7 @@ export const createInkPlacer = ({
     const blocks = blocksBetween(viewportLow, viewportHigh);
     const byKey = new Map<
       NodeKey,
-      Pick<NearBlock, 'box' | 'element' | 'text'> | undefined
+      Pick<NearBlock, 'box' | 'element' | 'text' | 'voids'> | undefined
     >(blocks.map((block) => [block.key, block]));
     const measured = new Map<NodeKey, InkMeasuredBlock | undefined>();
     const blockAt = (key: NodeKey) => {
@@ -542,7 +544,12 @@ export const createInkPlacer = ({
         byKey.set(
           key,
           element && found
-            ? { box: inkBoxOf(element, origin), element, text: found.text }
+            ? {
+                box: inkBoxOf(element, origin),
+                element,
+                text: found.text,
+                voids: found.voids,
+              }
             : undefined
         );
       }
@@ -552,11 +559,17 @@ export const createInkPlacer = ({
     const measure = (key: NodeKey) => {
       if (!measured.has(key)) {
         const block = blockAt(key);
+        const layout =
+          block &&
+          layouts.measure(block.element, block.text, block.box, origin, fresh);
 
+        // A layout is kept per element, and a mention changed in place can
+        // leave its element untouched, so the voids come from the node.
         measured.set(
           key,
-          block &&
-            layouts.measure(block.element, block.text, block.box, origin, fresh)
+          layout && block.voids !== undefined
+            ? { ...layout, voids: block.voids }
+            : layout
         );
       }
 

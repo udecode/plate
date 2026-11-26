@@ -1,5 +1,6 @@
-import { ElementApi, type Node, TextApi } from '../../../facade';
+import { type Element, ElementApi, type Node, TextApi } from '../../../facade';
 import type { InkCopy, InkLine, InkMark, InkMarkBlock } from './BaseInkPlugin';
+import { digest } from './inkCodec.internal';
 
 export type InkBox = Readonly<{
   height: number;
@@ -13,6 +14,7 @@ export type InkLiveBlock = Readonly<{
   line: (offset: number) => InkLine | undefined;
   measure: (start: number, end: number) => InkBox | undefined;
   text: string;
+  voids?: string;
 }>;
 
 export type InkMargins = Readonly<{ left: number; right: number }>;
@@ -36,23 +38,46 @@ export const INK_VOID = String.fromCodePoint(0xff_fc);
 
 const INK_RUNS = new RegExp(`[^\\s${INK_VOID}]+|${INK_VOID}`, 'gu');
 
-const textsBySchema = new WeakMap<object, WeakMap<Node, string>>();
+export type InkText = Readonly<{ text: string; voids?: string }>;
+
+const textsBySchema = new WeakMap<object, WeakMap<Node, InkText>>();
+
+const sortedKeys = (_: string, value: unknown) =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? Object.fromEntries(
+        Object.entries(value).sort(([a], [b]) => (a < b ? -1 : 1))
+      )
+    : value;
+
+type InkSchema = Readonly<{
+  identity: () => object;
+  isInline: (node: Node) => boolean;
+  isVoid: (node: Node) => boolean;
+  property: (
+    query: Readonly<{ key: string; placement: 'element'; type?: string }>
+  ) => Readonly<{ role: string }> | null;
+}>;
+
+const voidEntry = (schema: InkSchema, child: Element, at: number) => {
+  const type = typeof child.type === 'string' ? child.type : undefined;
+  const content = Object.fromEntries(
+    Object.entries(child).filter(
+      ([key]) =>
+        key !== 'children' &&
+        key !== 'id' &&
+        schema.property({ key, placement: 'element', type })?.role !==
+          'metadata'
+    )
+  );
+
+  return `[${at},${JSON.stringify(content, sortedKeys)}]`;
+};
 
 /**
  * A block's text as ink reads it: its text, with each inline void as one
  * `INK_VOID`, so a mention the copy lacks changes the text.
  */
-export const inkText = (
-  schema: Readonly<{
-    identity: () => object;
-    isInline: (node: Node) => boolean;
-    isVoid: (node: Node) => boolean;
-  }>,
-  node: Node
-): string => {
-  if (TextApi.isText(node)) return node.text;
-  if (!ElementApi.isElement(node)) return '';
-
+export const inkText = (schema: InkSchema, block: Node): InkText => {
   const identity = schema.identity();
   let texts = textsBySchema.get(identity);
 
@@ -61,23 +86,41 @@ export const inkText = (
     textsBySchema.set(identity, texts);
   }
 
-  let text = texts.get(node);
+  let read = texts.get(block);
 
-  if (text === undefined) {
-    text = node.children
-      .map((child) =>
-        ElementApi.isElement(child) &&
-        schema.isInline(child) &&
-        schema.isVoid(child)
-          ? INK_VOID
-          : inkText(schema, child)
-      )
-      .join('');
-    texts.set(node, text);
+  if (!read) {
+    let text = '';
+    const voids: string[] = [];
+    const walk = (node: Node) => {
+      if (TextApi.isText(node)) text += node.text;
+      if (!ElementApi.isElement(node)) return;
+      for (const child of node.children) {
+        if (
+          ElementApi.isElement(child) &&
+          schema.isInline(child) &&
+          schema.isVoid(child)
+        ) {
+          voids.push(voidEntry(schema, child, text.length));
+          text += INK_VOID;
+        } else {
+          walk(child);
+        }
+      }
+    };
+
+    walk(block);
+    read =
+      voids.length > 0
+        ? { text, voids: digest(`[${voids.join(',')}]`) }
+        : { text };
+    texts.set(block, read);
   }
 
-  return text;
+  return read;
 };
+
+export const inkHolds = (copy: InkText, now: InkText) =>
+  now.text === copy.text && now.voids === copy.voids;
 
 const SEGMENTED_SCRIPT =
   /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u;
@@ -365,7 +408,7 @@ export const placeMark = ({
       now.box.top - block.top
     );
 
-    return placement.type === 'ink' && now.text !== copy.text
+    return placement.type === 'ink' && !inkHolds(copy, now)
       ? { ...placement, sign: 'changed' }
       : placement;
   }
@@ -374,7 +417,7 @@ export const placeMark = ({
   const shifts: number[] = [];
 
   for (const { block, copy, now } of blocks) {
-    if (now.text !== copy.text) return sign('changed');
+    if (!inkHolds(copy, now)) return sign('changed');
     if (
       !copyHolds(copy, block, now, markedLines(copy, block, points, radius))
     ) {

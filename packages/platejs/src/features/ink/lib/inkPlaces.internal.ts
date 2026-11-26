@@ -33,7 +33,7 @@ import {
   reachGone,
   walkGone,
 } from './inkGone.internal';
-import { inkText } from './inkMatch.internal';
+import { inkHolds, inkText } from './inkMatch.internal';
 
 type Side = 'next' | 'previous';
 
@@ -292,12 +292,12 @@ const resolveBlock = (
     block.holder = at ? { key: at.key, root: at.root } : null;
   }
 
-  const text = at && inkText(places.schema, at.node);
+  const now = at && inkText(places.schema, at.node);
   let moved = false;
 
   for (const [copyId, copy] of block.copies) {
     const was = places.held.get(copyId);
-    const kind = text === copy.text ? 'live' : 'changed';
+    const kind = now && inkHolds(copy, now) ? 'live' : 'changed';
 
     if (at ? was?.key === at.key && was.kind === kind : !was) continue;
     if (at) places.held.set(copyId, { key: at.key, kind });

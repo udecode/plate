@@ -7,14 +7,17 @@ import {
   getRecordSetVersion,
   type NodeKey,
   type RecordSetVersion,
+  readElementById,
   readRecord,
   readShownRecords,
   recordSetIds,
+  txStored,
 } from '../../../facade';
 import { readEditorAuthor } from '../../../lib/editor/editorUser.internal';
 import {
   countInkDecode,
   decodePoints,
+  digest,
   encodePoints,
   isInkRefusal,
   refuse,
@@ -30,6 +33,7 @@ import {
   idOf,
   MARKS,
 } from './inkGone.internal';
+import { INK_VOID, inkText } from './inkMatch.internal';
 import {
   advanceInkPlaces,
   readInkPlace,
@@ -104,6 +108,12 @@ export type InkCopy = Readonly<{
   id: string;
   lines: readonly InkLine[];
   text: string;
+  /**
+   * A digest of the content properties of the block's inline voids at their
+   * offsets, excluding metadata such as ids and review marks, so a mention
+   * swapped for another reads as changed.
+   */
+  voids?: string;
   width: number;
 }>;
 
@@ -145,7 +155,10 @@ export type InkBlockInput = Omit<InkCopy, 'id'> & Omit<InkMarkBlock, 'copy'>;
  * block's `text` is its ink text, with each inline void as one U+FFFC, and its
  * `runs` hold every word the stroke touches, one run per line of a word that
  * wraps. Words split on white space, and a run of Han, Hiragana, Katakana or
- * Thai splits into the words `Intl.Segmenter` finds.
+ * Thai splits into the words `Intl.Segmenter` finds. A block's `voids` digests
+ * its inline voids as the stroke measured them. A block that leaves `voids`
+ * out takes the document block's, or none when that block's ink text is not
+ * `text`, so a copy over a void then reads as changed.
  */
 export type InkMarkInput = Readonly<{
   at: number;
@@ -185,8 +198,8 @@ export type InkSignPlace =
 
 /**
  * Where a copy's block stands now. `live` while the block that holds the
- * copy's id holds its text, `changed` while it holds other text, and `gone`
- * when no block holds the id.
+ * copy's id holds its text and inline voids, `changed` while it holds other
+ * text or voids, and `gone` when no block holds the id.
  */
 export type InkCopyPlace =
   | Readonly<{ key: NodeKey; kind: 'changed' | 'live' }>
@@ -356,6 +369,12 @@ const copyRecord = (
     height: numberIn(copy.height, `${name}.height`, 0),
     lines: flat,
     text,
+    voids:
+      copy.voids === undefined
+        ? undefined
+        : text.includes(INK_VOID)
+          ? textIn(copy.voids, `${name}.voids`)
+          : refuse(`${name}.voids needs an inline void in its text`),
     width: numberIn(copy.width, `${name}.width`, 0),
   };
 };
@@ -363,6 +382,7 @@ const copyRecord = (
 const encodeMark = (
   input: InkMarkInput,
   author: string,
+  voidsOf: (block: string, text: string) => string | undefined,
   shape: SavedShape = 'packed'
 ) => {
   const list = <T>(values: readonly T[]) =>
@@ -388,11 +408,20 @@ const encodeMark = (
       height,
       lines,
       text,
+      voids: measured,
       width,
     } = typeof block === 'object' && block !== null
       ? copyRecord(block, `blocks[${at}]`)
       : refuse(`blocks[${at}] must be an object`);
-    const record = { block: id, height, lines: list(lines), text, width };
+    const voids = Object.hasOwn(block, 'voids') ? measured : voidsOf(id, text);
+    const record = {
+      block: id,
+      height,
+      lines: list(lines),
+      text,
+      width,
+      ...(voids === undefined ? {} : { voids }),
+    };
 
     return {
       id: `${shape === 'packed' ? 'p' : 'c'}_${digest(JSON.stringify(record))}`,
@@ -456,27 +485,6 @@ const encodeMark = (
   };
 };
 
-// cyrb53's mixing (public domain, bryc).
-const digest = (text: string) => {
-  let h1 = 0xde_ad_be_ef;
-  let h2 = 0x41_c6_ce_57;
-
-  for (let at = 0; at < text.length; at++) {
-    const code = text.charCodeAt(at);
-
-    h1 = Math.imul(h1 ^ code, 2_654_435_761);
-    h2 = Math.imul(h2 ^ code, 1_597_334_677);
-  }
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2_246_822_507);
-  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3_266_489_909);
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2_246_822_507);
-  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3_266_489_909);
-
-  const hex = (value: number) => (value >>> 0).toString(16).padStart(8, '0');
-
-  return hex(h2) + hex(h1);
-};
-
 const readSaved = <T>(read: () => T): T | undefined => {
   try {
     return read();
@@ -536,7 +544,7 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       top: numbers[at + 2],
       width: numbers[at + 3],
     }));
-    const { block, height, text, width, ...written } = copyRecord(
+    const { block, height, text, voids, width, ...written } = copyRecord(
       { ...record, lines },
       'copy'
     );
@@ -548,7 +556,15 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       refuse('a saved copy must be what add writes');
     }
 
-    return frozen({ block, height, id, lines, text, width });
+    return frozen({
+      block,
+      height,
+      id,
+      lines,
+      text,
+      width,
+      ...(voids === undefined ? {} : { voids }),
+    });
   });
 
 const decodeMark = (
@@ -627,10 +643,12 @@ const decodeMark = (
           height: copies[index].height,
           lines: copies[index].lines,
           text: copies[index].text,
+          voids: copies[index].voids,
           width: copies[index].width,
         })),
       },
       author,
+      () => undefined,
       shape
     ).mark;
 
@@ -788,15 +806,27 @@ export const BaseInkPlugin = definePlugin('ink', {
      * return the mark's id. Each sample saves rounded to a hundredth of a
      * pixel, a thousandth of pressure and a whole millisecond. Refuses
      * malformed input, and a sample whose hundredths of a pixel or
-     * milliseconds pass a quarter of `Number.MAX_SAFE_INTEGER`, writing
-     * nothing. A copy's
-     * block deleted by this update, by one of the last four updates that
-     * deleted blocks, or while a stroke that entered it was still unsaved,
-     * gets its place saved too.
-     * Each other copy's block and the block on each side of it get theirs.
+     * milliseconds pass a quarter of `Number.MAX_SAFE_INTEGER`, or a block
+     * whose `voids` comes with no inline void in its `text`, writing nothing.
+     * A block that leaves `voids` out takes the document block's, as
+     * `InkMarkInput` says. A copy's block deleted by this update, by one of
+     * the last four updates that deleted blocks, or while a stroke that
+     * entered it was still unsaved, gets its place saved too. Each other
+     * copy's block and the block on each side of it get theirs.
      */
-    add: txLocate(false, (input: InkMarkInput) => {
-      const { copies, mark } = encodeMark(input, readEditorAuthor(editor));
+    add: txStored((input: InkMarkInput) => {
+      const { copies, mark } = encodeMark(
+        input,
+        readEditorAuthor(editor),
+        (block, text) => {
+          if (!text.includes(INK_VOID)) return undefined;
+
+          const holder = readElementById(tx.nodes, block);
+          const now = holder && inkText(tx.schema, holder.node);
+
+          return now?.text === text ? now.voids : undefined;
+        }
+      );
       const points = encodeSamples(input.samples, 'packed');
       const id = `m_${nanoid()}`;
 

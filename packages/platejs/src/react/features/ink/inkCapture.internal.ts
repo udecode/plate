@@ -289,6 +289,7 @@ export const attachInkCapture = ({
         runs: margin ? [] : runsOf(live, points, radius),
         text: live.text,
         top: live.box.top,
+        voids: block.voids,
         width: live.box.width,
       })),
       brush,
