@@ -803,7 +803,6 @@ export const steps = [
   },
   {
     name: 'plite-call-parity',
-    land: true,
     private: true,
     run: 'node tooling/scripts/check-plite-call-parity.mjs',
     affected: touches(
