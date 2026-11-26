@@ -142,6 +142,11 @@ const latin1Text = (source) =>
 const mayName = (source, extensions) =>
   extensions.some((extension) => source.bytes.includes(extension));
 const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+const namePattern = (paths) =>
+  new RegExp(
+    `(?<![\\w.-])(?:${paths.map((path) => literal(basename(path))).join('|')})`,
+    'u'
+  );
 const toolingReaches = new Map();
 const toolingReach = (file) => {
   if (!isToolingScript(file) && !isAgentFile(file)) return null;
@@ -151,39 +156,55 @@ const toolingReach = (file) => {
     scripts: new Set([file]),
     tests: new Set(TEST.test(file) ? [file] : []),
   };
+  const dataImport = CODE.test(file)
+    ? null
+    : new RegExp(
+        `(?:\\bfrom\\s*|\\b(?:import|require)\\s*\\(\\s*)['"][^'"]*(?<![\\w.-])${literal(basename(file))}['"]`,
+        'u'
+      );
+  const typeCarriers = new Set([file]);
+  let first = true;
   let level = [file];
   while (level.length > 0) {
-    const names = `(?<![\\w.-])(?:${level
-      .map((path) => literal(basename(path)))
-      .join('|')})`;
-    const pattern = new RegExp(names, 'u');
+    const pattern = namePattern(level);
+    const carriers = level.filter((path) => typeCarriers.has(path));
+    const carrierPattern = carriers.length > 0 ? namePattern(carriers) : null;
     const extensions = [...new Set(level.map((path) => extname(path)))].map(
       (extension) => Buffer.from(extension)
     );
-    const hits = sources()
-      .filter(
-        (source) =>
-          mayName(source, extensions) && pattern.test(latin1Text(source))
-      )
-      .map((source) => source.file);
-    const named = (hit) => mentionsOutsideComments(join(root, hit), pattern);
+    const hits = sources().filter(
+      (source) =>
+        mayName(source, extensions) && pattern.test(latin1Text(source))
+    );
+    const named = (hit) =>
+      mentionsOutsideComments(join(root, hit.file), pattern);
+    const importsData = (hit) => dataImport.test(latin1Text(hit));
+    const namesCarrier = (hit) =>
+      carrierPattern !== null &&
+      mentionsOutsideComments(join(root, hit.file), carrierPattern);
+    const carriesTypes = first && dataImport ? importsData : namesCarrier;
     level = [];
     for (const hit of hits) {
-      if (TEST.test(hit)) {
-        if (!reach.tests.has(hit) && named(hit)) reach.tests.add(hit);
-      } else if (isToolingScript(hit)) {
-        if (!reach.scripts.has(hit) && named(hit)) {
-          reach.scripts.add(hit);
-          level.push(hit);
+      if (TEST.test(hit.file)) {
+        if (!reach.tests.has(hit.file) && named(hit)) {
+          reach.tests.add(hit.file);
         }
+      } else if (isToolingScript(hit.file)) {
+        if (typeCarriers.has(hit.file) || !named(hit)) continue;
+        const fresh = !reach.scripts.has(hit.file);
+        const carries = carriesTypes(hit);
+        reach.scripts.add(hit.file);
+        if (carries) typeCarriers.add(hit.file);
+        if (fresh || carries) level.push(hit.file);
       } else if (
         !reach.product &&
-        hit !== 'package.json' &&
-        (CODE.test(hit) || BUILD_CONFIG.test(hit))
+        hit.file !== 'package.json' &&
+        (CODE.test(hit.file) || BUILD_CONFIG.test(hit.file))
       ) {
-        reach.product = named(hit);
+        reach.product = first ? named(hit) : carriesTypes(hit);
       }
     }
+    first = false;
   }
   toolingReaches.set(file, reach);
   return reach;
@@ -192,7 +213,7 @@ const reachesProduct = (file) => toolingReach(file)?.product ?? true;
 // tsc, oxlint and the audits this rule gates read only scripts and JSON, so
 // another file reaches them only once deleted, when code may still import it.
 // A step that reads more, such as plite-docs, names those paths itself.
-const TYPED = /\.(?:[cm]?[jt]sx?|json)$/u;
+const TYPED = /\.(?:[cm]?[jt]sx?|sh|json)$/u;
 const source = (files) =>
   files.some(
     (file) =>
