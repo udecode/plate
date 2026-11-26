@@ -335,19 +335,20 @@ const revisionOf = (list: readonly Occurrence[]) =>
     0
   );
 
-const shapeOf = (node: Node): unknown => {
+const unorderedShapeOf = (node: Node): string => {
   const { children, ...own } = node;
 
-  return [own, (children ?? []).filter((child) => !isText(child)).map(shapeOf)];
+  return JSON.stringify([
+    own,
+    (children ?? [])
+      .filter((child) => !isText(child))
+      .map(unorderedShapeOf)
+      .sort(),
+  ]);
 };
 
-/**
- * Exactly what a change's revision hashes, as one key, so two lists of
- * occurrences give one key only when the revision reads the same content.
- *
- * @internal
- */
-export const revisionReadOf = (list: readonly Occurrence[]) =>
+/** @internal */
+export const decisionReadOf = (list: readonly Occurrence[]) =>
   JSON.stringify(
     blockPartsOf(list)
       .map(({ list: part, root }) =>
@@ -356,7 +357,7 @@ export const revisionReadOf = (list: readonly Occurrence[]) =>
           part.map(({ mark, node, path }) => [
             isLineBreak(mark) ? path : null,
             mark,
-            KINDS[mark.kind] === 'structure' ? shapeOf(node) : node,
+            KINDS[mark.kind] === 'structure' ? unorderedShapeOf(node) : node,
           ]),
         ])
       )

@@ -700,6 +700,20 @@ export const changesBuild = (mark: AuthoredMark, on: 'child' | 'container') =>
       mergesUp(mark, 'reject') ||
       isStructureChange(mark);
 
+export type BuildReach<N> = Readonly<{
+  slots: readonly ConstructionSlot[];
+  kept?: (child: N) => boolean;
+  unlistedStanding?: number;
+}>;
+
+const someSlotInReach = (
+  slots: readonly ConstructionSlot[],
+  standingUnderEveryVerdict: number
+) =>
+  slots.some((slot) => 'prefix' in slot) ||
+  standingUnderEveryVerdict <=
+    Math.max(...slots.map((slot) => ('min' in slot ? slot.min : -1)));
+
 /**
  * The claims that can change what completing a container builds: the
  * container's own and each child's that `changesBuild` names, among those
@@ -716,14 +730,16 @@ export const buildClaimsOf = <N>(
   children: readonly N[],
   claimsOf: (node: N) => readonly AuthoredMark[],
   isPending: (mark: AuthoredMark) => boolean,
-  joinOf: (link: string, child: N) => AuthoredMark | null
-): AuthoredMark[] => [
-  ...(container === null
-    ? []
-    : claimsOf(container).filter(
-        (mark) => isPending(mark) && changesBuild(mark, 'container')
-      )),
-  ...children.flatMap((child) =>
+  joinOf: (link: string, child: N) => AuthoredMark | null,
+  reach?: BuildReach<N>
+): AuthoredMark[] => {
+  const own =
+    container === null
+      ? []
+      : claimsOf(container).filter(
+          (mark) => isPending(mark) && changesBuild(mark, 'container')
+        );
+  const onChild = (child: N) =>
     claimsOf(child).flatMap((mark) => {
       const follows = followsOf(mark);
       const join = follows === undefined ? null : joinOf(follows, child);
@@ -732,9 +748,21 @@ export const buildClaimsOf = <N>(
         ...(isPending(mark) && changesBuild(mark, 'child') ? [mark] : []),
         ...(join ? [join] : []),
       ];
-    })
-  ),
-];
+    });
+  const perChild = children.map(onChild);
+  const claims = [...own, ...perChild.flat()];
+
+  if (!reach || own.length > 0 || claims.length === 0) return claims;
+
+  const standing =
+    (reach.unlistedStanding ?? 0) +
+    children.filter(
+      (child, index) =>
+        (reach.kept?.(child) ?? true) && perChild[index]?.length === 0
+    ).length;
+
+  return someSlotInReach(reach.slots, standing) ? claims : [];
+};
 
 export const joinKeysOf = (marks: readonly AuthoredMark[]) =>
   new Set(
@@ -2989,12 +3017,16 @@ const resolveIn = (
           },
           stores &&
             sparesIn(shell).length > 0 &&
-            stillBuilds(shell, [
-              ...(node.children ?? []),
-              ...(mergedBlocks.get(node) ?? []).flatMap(
-                (block) => block.children ?? []
-              ),
-            ])
+            stillBuilds(
+              shell,
+              [
+                ...(node.children ?? []),
+                ...(mergedBlocks.get(node) ?? []).flatMap(
+                  (block) => block.children ?? []
+                ),
+              ],
+              sparesIn(shell).map(({ slot }) => slot)
+            )
         ),
         landedSpares.get(original) ?? landedSpares.get(node)
       );
@@ -3178,6 +3210,7 @@ const resolveIn = (
   const stillBuilds = (
     container: Node | null,
     inside: readonly Node[],
+    slots: readonly ConstructionSlot[],
     resolvedLevel?: readonly Node[]
   ) => {
     const keeps = (mark: AuthoredMark) => decisionOf(mark) === 'keep';
@@ -3206,7 +3239,8 @@ const resolveIn = (
         joins.add(join);
 
         return join;
-      }
+      },
+      { slots }
     );
 
     if (!resolvedLevel || claims.length === 0) return claims.length > 0;
@@ -3603,7 +3637,12 @@ const resolveIn = (
   if (stores && rootSpares.length > 0) {
     putRootSpares(
       rootSpares,
-      stillBuilds(null, given, resolvedChildren),
+      stillBuilds(
+        null,
+        given,
+        rootSpares.map(({ slot }) => slot),
+        resolvedChildren
+      ),
       rootBuilt,
       spares
     );

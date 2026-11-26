@@ -28,7 +28,7 @@ import {
   type MarkBase,
   readMembers,
 } from '../tree/marks';
-import { isSpareEveryEditorBuilds } from '../tree/reserves';
+import { isSpareEveryEditorBuilds, isUnreachedSpare } from '../tree/reserves';
 import { editingChangeOf, isEditingChange } from './editing';
 import { claimsOf, contentRootsOf, factsOf, type ReviewFacts } from './facts';
 import {
@@ -100,6 +100,7 @@ type Judge = Readonly<{
   head: ReviewFacts;
   headCutHalves: () => ReadonlySet<string>;
   takenGridParts: () => TakenGridParts;
+  unreachedSpare: (write: WriteOf<'reserve'>) => boolean;
   writes: AuthoredWrites;
 }>;
 
@@ -280,6 +281,9 @@ const reserveStands = ({
 }: WriteOf<'reserve'>) =>
   op === 'put' ? stands : !stands || batchPutsSlotAgain;
 
+const dropsUnreached = (write: WriteOf<'reserve'>, judge: Judge) =>
+  write.op === 'drop' && judge.unreachedSpare(write);
+
 const NEVER = () => false;
 
 const STRUCTURE_KINDS: ReadonlySet<Claim['kind']> = new Set([
@@ -353,15 +357,17 @@ const RULES: { [K in OrdinaryKind]: Rule<K> } = {
   },
   reserve: {
     editing: (write, judge) =>
-      write.op === 'put' &&
-      (isOwnEditingReserve(write.base, judge) ||
-        judge.spareEveryEditorBuilds(write)) &&
-      reserveStands(write),
+      dropsUnreached(write, judge) ||
+      (write.op === 'put' &&
+        (isOwnEditingReserve(write.base, judge) ||
+          judge.spareEveryEditorBuilds(write)) &&
+        reserveStands(write)),
     own: (write, judge) =>
-      (write.op === 'drop' ||
+      dropsUnreached(write, judge) ||
+      ((write.op === 'drop' ||
         isOwnPending(write.base, judge) ||
         judge.spareEveryEditorBuilds(write)) &&
-      reserveStands(write),
+        reserveStands(write)),
   },
   set: {
     editing: (write, judge) =>
@@ -720,6 +726,13 @@ const ordinaryCover = (
         schema,
         site.kind === 'root' ? { path: [], root: site.root } : site,
         spare
+      ),
+    unreachedSpare: ({ site, spare }) =>
+      isUnreachedSpare(
+        step.after,
+        schema,
+        site.kind === 'root' ? { path: [], root: site.root } : site,
+        spare.type
       ),
     cutHalves: () => {
       cutHalves ??= cutHalvesIn(step.after);

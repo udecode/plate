@@ -71,7 +71,12 @@ import {
   readMembers,
   withMembers,
 } from './marks';
-import { buildClaimsOf, type JoinBlock, placementLinksIn } from './resolve';
+import {
+  type BuildReach,
+  buildClaimsOf,
+  type JoinBlock,
+  placementLinksIn,
+} from './resolve';
 import { type Spare, slotKeyOf, spareFits, sparesIn } from './spares';
 
 /**
@@ -253,7 +258,7 @@ const nodeAt = (children: readonly Node[], path: Path) => {
     level = node.children ?? [];
   }
 
-  return { ancestors, children: level, node };
+  return { ancestors, children: level, node, unlistedStanding: 0 };
 };
 
 const rootChildren = (value: JsonEditorValue, root: string) =>
@@ -268,7 +273,14 @@ const siteIn = (blocks: SpareBlocks, { path, root }: SpareSite) => {
 
   if (!index) return null;
   if (path.length === 0) {
-    return { ancestors: [], children: [...blocks.marked(root)], node: null };
+    const children = [...blocks.marked(root)];
+
+    return {
+      ancestors: [],
+      children,
+      node: null,
+      unlistedStanding: index.size - children.length,
+    };
   }
 
   const [head, ...rest] = path as [number, ...number[]];
@@ -276,7 +288,12 @@ const siteIn = (blocks: SpareBlocks, { path, root }: SpareSite) => {
 
   if (!top) return null;
   if (rest.length === 0) {
-    return { ancestors: [top], children: top.children ?? [], node: top };
+    return {
+      ancestors: [top],
+      children: top.children ?? [],
+      node: top,
+      unlistedStanding: 0,
+    };
   }
 
   const found = nodeAt(top.children ?? [], rest);
@@ -377,8 +394,20 @@ export const buildClaimsIn = <N extends Readonly<{ children?: readonly N[] }>>(
     return join && isPending(join) ? join : null;
   };
 
-  return (container: N | null, children: readonly N[], root: string) =>
-    buildClaimsOf(container, children, claimsOf, isPending, joinOf(root));
+  return (
+    container: N | null,
+    children: readonly N[],
+    root: string,
+    reach?: BuildReach<N>
+  ) =>
+    buildClaimsOf(
+      container,
+      children,
+      claimsOf,
+      isPending,
+      joinOf(root),
+      reach
+    );
 };
 
 /**
@@ -583,6 +612,10 @@ export const sparesFor = (
         site.root
       );
 
+      if (noVerdictReaches(buildClaims, found, site.root, completion.built)) {
+        continue;
+      }
+
       for (const { node, slot } of completion.built) {
         if (!generating.generates(String(node.type)) || filled(type, slot)) {
           continue;
@@ -628,20 +661,9 @@ const withoutValuesOf = (keys: ReadonlySet<string>, node: Node): Node =>
 export const isSpareEveryEditorBuilds = (
   document: JsonEditorValue,
   schema: CompiledEditorSchema,
-  { path, root }: SpareSite,
+  site: SpareSite,
   { node, slot, type }: WrittenSpare
 ) => {
-  const children = rootChildren(document, root);
-  const found = children && nodeAt(children, path);
-
-  if (!found || (found.node === null) !== (type === null)) return false;
-
-  const site = found.node
-    ? ([
-        { ...withMembers(found.node, []), children: [], type },
-        ...found.ancestors.slice(1),
-      ] as unknown as Element[])
-    : [];
   const keys = new Set(
     [...sparePropertiesOf(schema)].flatMap(({ key }) =>
       typeof key === 'string' ? [key] : []
@@ -649,18 +671,84 @@ export const isSpareEveryEditorBuilds = (
   );
   const want = canonicalJsonKey(withoutValuesOf(keys, node));
 
-  return completeChildrenAt(
-    getRepresentationEditorFromApi(
-      createDetachedEditorSchema(schema, document as EditorDocumentValue)
-    ),
-    site,
-    [],
-    root
-  ).built.some(
-    (built) =>
-      slotKeyOf(built.slot) === slotKeyOf(slot) &&
-      canonicalJsonKey(withoutValuesOf(keys, built.node)) === want
+  return (
+    emptyCompletionAt(document, schema, site, type)?.built.some(
+      (built) =>
+        slotKeyOf(built.slot) === slotKeyOf(slot) &&
+        canonicalJsonKey(withoutValuesOf(keys, built.node)) === want
+    ) ?? false
   );
+};
+
+export const isUnreachedSpare = (
+  document: JsonEditorValue,
+  schema: CompiledEditorSchema,
+  site: SpareSite,
+  type: string | null
+) => {
+  const completion = emptyCompletionAt(document, schema, site, type);
+
+  if (!completion) return true;
+
+  const facts = factsOf(document);
+  const buildClaims = buildClaimsIn<Node>(
+    facts,
+    createDependencies(facts),
+    (root, visit) => rootChildren(document, root)?.forEach(visit)
+  );
+
+  return noVerdictReaches(
+    buildClaims,
+    completion.found,
+    site.root,
+    completion.built
+  );
+};
+
+const noVerdictReaches = (
+  buildClaims: ReturnType<typeof buildClaimsIn<Node>>,
+  found: Readonly<{
+    children: readonly Node[];
+    node: Node | null;
+    unlistedStanding: number;
+  }>,
+  root: string,
+  built: ReadonlyArray<Readonly<{ slot: ConstructionSlot }>>
+) =>
+  buildClaims(found.node, found.children, root, {
+    slots: built.map(({ slot }) => slot),
+    unlistedStanding: found.unlistedStanding,
+  }).length === 0;
+
+const emptyCompletionAt = (
+  document: JsonEditorValue,
+  schema: CompiledEditorSchema,
+  { path, root }: SpareSite,
+  type: string | null
+) => {
+  const children = rootChildren(document, root);
+  const found = children && nodeAt(children, path);
+
+  if (!found || (found.node === null) !== (type === null)) return null;
+
+  const site = found.node
+    ? ([
+        { ...withMembers(found.node, []), children: [], type },
+        ...found.ancestors.slice(1),
+      ] as unknown as Element[])
+    : [];
+
+  return {
+    built: completeChildrenAt(
+      getRepresentationEditorFromApi(
+        createDetachedEditorSchema(schema, document as EditorDocumentValue)
+      ),
+      site,
+      [],
+      root
+    ).built,
+    found,
+  };
 };
 
 /**

@@ -8,12 +8,7 @@ import type { JsonEditorValue } from '../../core/change/tokens';
 import { getValueRecords, recordStoreToJson } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import type { EditorDocumentValue } from '../../interfaces/editor';
-import {
-  changeOf,
-  isStructureMark,
-  type Occurrence,
-  revisionReadOf,
-} from '../changes';
+import { decisionReadOf, isStructureMark, type Occurrence } from '../changes';
 import {
   type Decided,
   type DecisionRequest,
@@ -178,17 +173,9 @@ export const replayAt = (
 const incarnationsOf = (list: readonly Occurrence[]) =>
   [...new Set(list.map(({ mark }) => incarnationOf(mark)))].sort();
 
-// The revision is a 32-bit sum, so equal revisions only start the exact
-// comparison of what each one reads.
-const readsAlike = (
-  id: string,
-  was: readonly Occurrence[],
-  now: readonly Occurrence[]
-) =>
+const readsAlike = (was: readonly Occurrence[], now: readonly Occurrence[]) =>
   jsonEqual(incarnationsOf(was), incarnationsOf(now)) &&
-  (was.length === 0 ||
-    (changeOf(id, was).revision === changeOf(id, now).revision &&
-      revisionReadOf(was) === revisionReadOf(now)));
+  (was.length === 0 || decisionReadOf(was) === decisionReadOf(now));
 
 export const decideAtHead = (
   { request, site }: Replay,
@@ -198,7 +185,7 @@ export const decideAtHead = (
   const at = storedDecisionSiteOf(schema, head);
 
   return [...request.actions.keys()].every((id) =>
-    readsAlike(id, site.book.occurrences(id), at.book.occurrences(id))
+    readsAlike(site.book.occurrences(id), at.book.occurrences(id))
   )
     ? decides(head, request, at, schema)
     : null;

@@ -20,6 +20,7 @@ import {
   type JsonNode,
   PreparedTokenSlice,
 } from '../../core/change/tokens';
+import type { ConstructionSlot } from '../../core/content-completion';
 import {
   elementSplitOutput,
   isLeftOutDefault,
@@ -142,7 +143,8 @@ type Pass = Readonly<{
   stillBuilds: (
     container: Node | null,
     children: readonly Node[],
-    root: string
+    root: string,
+    slots: readonly ConstructionSlot[]
   ) => boolean;
 }>;
 
@@ -809,7 +811,14 @@ const withSettledSpares = (
   const members = readMembers(container);
 
   if (!members.some((member) => member.kind === 'reserve')) return container;
-  if (!pass.stillBuilds(stored, stored.children ?? [], root)) {
+  if (
+    !pass.stillBuilds(
+      stored,
+      stored.children ?? [],
+      root,
+      sparesIn(stored).map(({ slot }) => slot)
+    )
+  ) {
     return withMembers(
       container,
       members.filter((member) => member.kind !== 'reserve')
@@ -832,7 +841,12 @@ const settleRootSpares = (
   if (records.length > 0) {
     putRootSpares(
       records,
-      pass.stillBuilds(null, stored(), root),
+      pass.stillBuilds(
+        null,
+        stored(),
+        root,
+        records.map(({ slot }) => slot)
+      ),
       taken,
       pass.reserveWrites
     );
@@ -1221,8 +1235,11 @@ export const settleValue = <V extends JsonEditorValue>(
     resolveSchema: () => (resolve ??= resolveSchema()),
     returnsHeld,
     schema,
-    stillBuilds: (container, children, root) =>
-      buildClaims(container, children, root).length > 0,
+    stillBuilds: (container, children, root, slots) =>
+      buildClaims(container, children, root, {
+        slots,
+        kept: (child) => !pass.gone.has(child),
+      }).length > 0,
   };
 
   if (!facts.hasVerdicts && !restoreMissingFormats) {
