@@ -979,7 +979,6 @@ export const editorNodes: Registry['items'] = [
       examples: ['basic-marks-demo'],
     },
     name: 'highlight',
-    registryDependencies: ['@plate/highlight-style'],
     title: 'Highlight',
     type: 'registry:component',
   },
@@ -992,7 +991,6 @@ export const editorNodes: Registry['items'] = [
       },
     ],
     name: 'highlight-static',
-    registryDependencies: ['@plate/highlight-style'],
     type: 'registry:component',
   },
   {

@@ -57,9 +57,10 @@ export type DeriveRegistryDependenciesOptions = {
   }) => string;
 };
 
-const PLATE_UI_ITEM = 'plate-ui';
 const DEFAULT_HOST_PROVIDED_ALIASES = ['@/lib/utils'] as const;
 const DEFAULT_HOST_PROVIDED_PACKAGES = ['react', 'react-dom'] as const;
+const TAILWIND_COLOR_UTILITY_PREFIX =
+  '(?:bg|text|decoration|border(?:-[xysebtlr])?|divide|outline|ring(?:-offset)?|inset-ring|shadow|inset-shadow|drop-shadow|text-shadow|accent|caret|fill|stroke|from|via|to|placeholder)-';
 const NODE_BUILTINS = new Set([
   ...builtinModules,
   ...builtinModules.map((moduleName) => `node:${moduleName}`),
@@ -270,11 +271,10 @@ function createColorUsePattern(cssVars: RegistryItem['cssVars']) {
   const alternatives = [...names]
     .map((name) => name.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`))
     .join('|');
-  const tailwindUtilityPrefix = String.raw`[a-z][\w-]*?-`;
   const cssVariablePrefix = '--(?:color-)?';
 
   return new RegExp(
-    String.raw`(?<![\w-])(?:${tailwindUtilityPrefix}|${cssVariablePrefix})(?:${alternatives})(?![\w-])`
+    String.raw`(?<![\w-])(?:${TAILWIND_COLOR_UTILITY_PREFIX}|${cssVariablePrefix})(?:${alternatives})(?![\w-])`
   );
 }
 
@@ -330,9 +330,18 @@ export function deriveRegistryDependencies(
   );
   const itemsByName = new Map(registry.items.map((item) => [item.name, item]));
   const targetResolver = createRegistryInstalledTargetResolver(registry);
-  const plateUiColorUse = createColorUsePattern(
-    itemsByName.get(PLATE_UI_ITEM)?.cssVars
-  );
+  const colorItemPatterns = registry.items.flatMap((entry) => {
+    if (
+      entry.type !== 'registry:lib' ||
+      entry.meta?.registry === false ||
+      (entry.files?.length ?? 0) > 0
+    ) {
+      return [];
+    }
+    const pattern = createColorUsePattern(entry.cssVars);
+
+    return pattern ? [{ name: entry.name, pattern }] : [];
+  });
 
   for (const item of registry.items) {
     for (const file of item.files ?? []) {
@@ -453,15 +462,18 @@ export function deriveRegistryDependencies(
             })
           : source;
 
-        if (
-          plateUiColorUse?.test(served) &&
-          !directPlateDependencies.has(PLATE_UI_ITEM) &&
-          !requiredPlate.has(PLATE_UI_ITEM)
-        ) {
-          requiredPlate.set(
-            PLATE_UI_ITEM,
-            `${item.name}:${file.path} uses a ${PLATE_UI_ITEM} color`
-          );
+        for (const { name, pattern } of colorItemPatterns) {
+          if (
+            name !== item.name &&
+            pattern.test(served) &&
+            !directPlateDependencies.has(name) &&
+            !requiredPlate.has(name)
+          ) {
+            requiredPlate.set(
+              name,
+              `${item.name}:${file.path} uses a ${name} color`
+            );
+          }
         }
         if (!isImportableRegistrySource(file.path)) continue;
 

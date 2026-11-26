@@ -47,7 +47,6 @@ export const registryStaticFeatures: Registry['items'] = [
       },
     ],
     name: 'code-block-static',
-    registryDependencies: ['@plate/code-syntax-style'],
     type: 'registry:component',
   },
   {
@@ -434,7 +433,6 @@ export const registryFeatures: Registry['items'] = [
         'code-block-codemirror-demo',
       ],
     },
-    registryDependencies: ['@plate/code-syntax-style'],
   },
   {
     dependencies: [
@@ -592,7 +590,6 @@ export const registryFeatures: Registry['items'] = [
         'comment-review-demo',
       ],
     },
-    registryDependencies: ['@plate/highlight-style'],
     title: 'Comment Threads',
     type: 'registry:component',
   },
@@ -611,7 +608,6 @@ export const registryFeatures: Registry['items'] = [
     },
     description:
       'Decoration attributes for static comment ranges and overlaps.',
-    registryDependencies: ['@plate/highlight-style'],
     title: 'Static Comment Styling',
     type: 'registry:component',
   },
@@ -888,7 +884,6 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'footnote',
-    registryDependencies: ['@plate/highlight-style'],
     type: 'registry:component',
     description:
       'Inline footnote references, definitions, and a reference picker.',
@@ -1193,7 +1188,6 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'toc',
-    registryDependencies: ['@plate/highlight-style'],
     type: 'registry:component',
     description:
       'A table of contents component with links to document headings.',

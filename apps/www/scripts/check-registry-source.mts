@@ -14,7 +14,7 @@ import { registryFeatures } from '../src/registry/registry-features';
 import {
   assertSourceColorReads,
   assertThemeEntries,
-  PLATE_UI_THEME,
+  REGISTRY_COLOR_ITEMS,
 } from './css-reads.mts';
 import {
   toPublicRegistryDependencySpecifier,
@@ -167,16 +167,21 @@ function getRegistryDependencyTarget(
   return null;
 }
 
+const importCache = new Map<string, string[]>();
+
 function getRegistryFileImportSources(filePath: string) {
   if (!isImportableRegistrySource(filePath)) return [];
-
-  return parseModuleImports(
-    readFileSync(
-      new URL(`../src/registry/${filePath}`, import.meta.url),
-      'utf-8'
-    ),
-    { filePath }
-  ).map((entry) => entry.specifier);
+  const imports =
+    importCache.get(filePath) ??
+    parseModuleImports(
+      readFileSync(
+        new URL(`../src/registry/${filePath}`, import.meta.url),
+        'utf-8'
+      ),
+      { filePath }
+    ).map((entry) => entry.specifier);
+  importCache.set(filePath, imports);
+  return imports;
 }
 
 function getDependencyPackageName(dependency: string) {
@@ -644,27 +649,11 @@ for (const item of publicRegistry.items) {
   }
 }
 
-function readsColor(source: string, names: ReadonlySet<string>) {
-  return source.split(/[\s"'`,;()]+/).some((word) => {
-    const utility = word
-      .slice(word.lastIndexOf(':') + 1)
-      .replaceAll('!', '')
-      .split('/')[0];
-
-    return [...names].some((name) => utility.endsWith(`-${name}`));
-  });
-}
-
-const PLATE_UI_COLOR_NAMES = new Set(
-  Object.keys(PLATE_UI_THEME).map((key) => key.slice('color-'.length))
-);
-const PLATE_UI_LIB_ITEMS = ['plate-ui', 'highlight-style', 'code-syntax-style'];
 const readWwwCss = (path: string) =>
   readFileSync(new URL(`../src/app/${path}`, import.meta.url), 'utf-8');
 
 const globalsCss = readWwwCss('globals.css');
 
-await assertThemeEntries('www globals.css', globalsCss);
 await assertSourceColorReads('www globals.css', globalsCss);
 await assertSourceColorReads(
   'the Plite example stylesheet plite-example-styles.css',
@@ -677,50 +666,65 @@ const PLATE_UI_COLOR_CONTROLS = new Set([
   'upload',
   'upload-browser',
 ]);
+const checkedSources = new Map<
+  string,
+  ReturnType<typeof assertSourceColorReads>
+>();
+const usedThemeTokens = new Set<string>();
 const missingPlateUiEdges: string[] = [];
 
 for (const base of PLATE_REGISTRY_BASES) {
   const servedItems = new Map(
     getRegistryMetadata(base).items.map((item) => [item.name, item])
   );
-  const cssVars = servedItems.get('plate-ui')?.cssVars;
 
-  assert(
-    JSON.stringify(cssVars) === JSON.stringify({ theme: PLATE_UI_THEME }),
-    `Expected ${base} plate-ui to ship only the theme entry ${JSON.stringify(PLATE_UI_THEME)}`
-  );
-  for (const name of PLATE_UI_LIB_ITEMS) {
+  for (const colorItem of REGISTRY_COLOR_ITEMS) {
+    const served = servedItems.get(colorItem.name);
     assert(
-      servedItems.get(name)?.type === 'registry:lib',
-      `Expected ${base} ${name} to be a registry:lib item, so adding it again keeps the app's own values of its variables`
+      served?.type === 'registry:lib' &&
+        JSON.stringify(served.cssVars) === JSON.stringify(colorItem.cssVars),
+      `Expected ${base} ${colorItem.name} to be a registry:lib item shipping ${JSON.stringify(colorItem.cssVars)}`
     );
   }
 
   for (const item of servedItems.values()) {
-    const sources = (item.files ?? []).map((file) => ({
-      path: file.path,
-      source: readFileSync(
-        new URL(`../src/registry/${file.path}`, import.meta.url),
-        'utf-8'
-      ),
-    }));
-    const reader = sources.find(({ source }) =>
-      readsColor(source, PLATE_UI_COLOR_NAMES)
-    );
-    const hasEdge = item.registryDependencies?.includes('@plate/plate-ui');
-
-    for (const { path, source } of sources) {
-      await assertSourceColorReads(`${base} ${path}`, source);
+    const usedItems = new Map<string, string>();
+    for (const file of item.files ?? []) {
+      const pending =
+        checkedSources.get(file.path) ??
+        assertSourceColorReads(
+          file.path,
+          readFileSync(
+            new URL(`../src/registry/${file.path}`, import.meta.url),
+            'utf-8'
+          )
+        );
+      checkedSources.set(file.path, pending);
+      const reads = await pending;
+      for (const token of reads.themeTokens) usedThemeTokens.add(token);
+      for (const name of reads.items) {
+        if (!usedItems.has(name)) usedItems.set(name, file.path);
+      }
     }
-
+    if (item.meta?.registry === false) continue;
     if (PLATE_UI_COLOR_CONTROLS.has(item.name)) {
+      const listed = REGISTRY_COLOR_ITEMS.some((colorItem) =>
+        item.registryDependencies?.includes(`@plate/${colorItem.name}`)
+      );
       assert(
-        !reader && !hasEdge,
-        `Expected ${base} ${item.name} to read no plate-ui color and install no plate-ui`
+        usedItems.size === 0 && !listed,
+        `Expected ${base} ${item.name} to read no registry color item and install none`
       );
     }
-    if (reader && !hasEdge) {
-      missingPlateUiEdges.push(`${base} ${item.name}:${reader.path}`);
+    for (const [name, readerPath] of usedItems) {
+      if (
+        name !== item.name &&
+        !item.registryDependencies?.includes(`@plate/${name}`)
+      ) {
+        missingPlateUiEdges.push(
+          `${base} ${item.name}:${readerPath} -> @plate/${name}`
+        );
+      }
     }
   }
 
@@ -732,10 +736,12 @@ for (const base of PLATE_REGISTRY_BASES) {
   }
 }
 
+await assertThemeEntries('www globals.css', globalsCss, usedThemeTokens);
+
 assert(
   missingPlateUiEdges.length === 0,
   [
-    'Expected every item whose copied files read a plate-ui color to list @plate/plate-ui. Run pnpm --filter www build:registry. If an edge is still missing, this word scan found a read that the color pattern in registry-package-dependencies.mts misses; keep the two detectors separate.',
+    'Expected every item whose copied files read a registry color item to list that @plate/<item> dependency. Run pnpm --filter www build:registry.',
     ...missingPlateUiEdges,
   ].join('\n')
 );
