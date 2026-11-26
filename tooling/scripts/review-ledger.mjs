@@ -141,6 +141,7 @@ function repoPath(path) {
 export function observe(root) {
   let visible;
   let listed;
+  let directories;
   const digests = new Map();
   const visibleFiles = () =>
     (visible ??= new Set(trackedFiles(root, { untracked: true })));
@@ -206,15 +207,29 @@ export function observe(root) {
     };
     return pages;
   };
-  return { root, files, under, digest, pageRepo };
+  const isListedDirectory = (path) => {
+    if (!directories) {
+      directories = new Set();
+      for (const file of visibleFiles()) {
+        for (
+          let at = file.indexOf('/');
+          at !== -1;
+          at = file.indexOf('/', at + 1)
+        ) {
+          directories.add(file.slice(0, at));
+        }
+      }
+    }
+    return directories.has(path);
+  };
+  return { root, files, under, digest, isListedDirectory, pageRepo };
 }
 
-const entryOf = (root, path) =>
-  path.endsWith('/') ||
-  !existsSync(join(root, path)) ||
-  !statSync(join(root, path)).isDirectory()
-    ? path
-    : `${path}/`;
+// A cached pass covers only the files git lists, so a build that writes an
+// ignored folder, such as apps/www/public/rd, must not change which entries
+// count as directories.
+const entryOf = (tree, path) =>
+  path.endsWith('/') || !tree.isListedDirectory(path) ? path : `${path}/`;
 
 function readJson(root, path, warnings, fallback = null) {
   if (!existsSync(join(root, path))) return { value: fallback, sha256: null };
@@ -1863,14 +1878,14 @@ function git(root, args) {
   }
 }
 
-function assertScope(root, ledger, scope) {
+function assertScope(tree, ledger, scope) {
   for (const field of ['title', 'question']) {
     assert.ok(isText(scope[field]), `Missing ${field}`);
   }
   for (const path of entriesOf(scope)) {
     repoPath(path);
     assert.equal(
-      entryOf(root, path),
+      entryOf(tree, path),
       path,
       `A directory entry ends with "/": ${path}`
     );
@@ -1914,9 +1929,10 @@ export function check(root, { base = 'HEAD' } = {}) {
       errors.push(`${label}: ${error.message.split('\n')[0]}`);
     }
   };
+  const tree = observe(root);
   for (const scope of ledger.scopes.values()) {
     attempt(`${scopesDir}/${scope.id}.json`, () =>
-      assertScope(root, ledger, scope)
+      assertScope(tree, ledger, scope)
     );
   }
   for (const [id, group] of ledger.groups) {
@@ -2128,11 +2144,12 @@ export function checkLanding(root, { base }) {
       scopePaths.has(warning.split(':')[0])
     )
   );
+  const tree = observe(root);
   for (const scope of ledger.scopes.values()) {
     const path = `${scopesDir}/${scope.id}.json`;
     if (!scopePaths.has(path)) continue;
     try {
-      assertScope(root, ledger, scope);
+      assertScope(tree, ledger, scope);
     } catch (error) {
       errors.push(`${path}: ${error.message.split('\n')[0]}`);
     }

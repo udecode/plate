@@ -282,8 +282,12 @@ const main = () => {
         }
       }
     }
+    // A folder no build has written yet holds nothing to read, so listing it
+    // is stale only once it exists.
     if (complete) {
-      for (const prefix of declared.filter((entry) => !used.has(entry))) {
+      for (const prefix of declared.filter(
+        (entry) => !used.has(entry) && existsSync(path.join(root, entry))
+      )) {
         gaps.push(
           `${step.name}: ignoredReads lists ${prefix}, which it no longer reads`
         );

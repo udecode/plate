@@ -896,10 +896,16 @@ export const steps = [
     run: 'pnpm entrypoint:turbo:check',
     write: 'pnpm entrypoint:turbo:generate',
     // migrate-platejs-entrypoint-imports.mjs scans every code file under
-    // tooling/, product or not, for root imports of moved symbols.
+    // tooling/, product or not, and the Markdown and MDX under the folders it
+    // lists, for root imports of moved symbols.
     affected: (files) =>
       source(files) ||
-      files.some((file) => file.startsWith('tooling/') && CODE.test(file)),
+      files.some(
+        (file) =>
+          (file.startsWith('tooling/') && CODE.test(file)) ||
+          (/^(?:apps|content|packages|tooling)\/.*\.mdx?$/u.test(file) &&
+            !file.startsWith('apps/www/public/r/'))
+      ),
     key: [],
   },
   {
