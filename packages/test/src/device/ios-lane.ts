@@ -14,13 +14,15 @@ import type {
   DeviceToolbar,
   IosRunState,
 } from './lane';
-import {
+import type {
   connectWebInspector,
-  type InspectorPage,
-  type InspectorPageInfo,
-  inspectorSocket,
+  InspectorPage,
+  InspectorPageInfo,
 } from './webkit';
 import type { DeviceWitnessKey } from './witness';
+
+export const isSimulatorUdid = (serial: string) =>
+  /^[\dA-F]{8}(-[\dA-F]{4}){3}-[\dA-F]{12}$/.test(serial);
 
 export type IosConnection = {
   close: () => Promise<void>;
@@ -276,32 +278,26 @@ export const openSafariTab = async (
 
 export const connectIos = async (
   state: IosRunState,
-  { runnerLog }: { runnerLog: string }
+  inspector: WebInspector,
+  { insetURL, runnerLog }: { insetURL: string; runnerLog: string }
 ): Promise<IosConnection> => {
-  const inspector = await connectWebInspector(inspectorSocket(state.serial));
+  const listed = await inspector.safariPages();
+  const info = listed.find((candidate) => candidate.id === state.pageId);
 
-  try {
-    const listed = await inspector.safariPages();
-    const info = listed.find((candidate) => candidate.id === state.pageId);
+  if (!info) throw new Error(`Safari no longer lists page ${state.pageId}.`);
 
-    if (!info) {
-      throw new Error(
-        `Safari no longer lists page ${state.pageId}, which global setup opened.`
-      );
-    }
-
-    const page = await inspector.open(info);
-    const runner = await startIosRunner({
+  const [page, runner] = await Promise.all([
+    inspector.open(info),
+    startIosRunner({
       log: runnerLog,
       udid: state.serial,
       xctestrun: state.xctestrun,
-    });
+    }),
+  ]);
 
+  try {
     checked(await runner.send({ action: 'activate' }));
-    await loadPage(
-      page,
-      `${state.appURL}/.editor-proof-build.json?inset=${Date.now()}`
-    );
+    await loadPage(page, insetURL);
 
     const inset = await measureInset(page, runner);
 
@@ -309,7 +305,6 @@ export const connectIos = async (
       close: async () => {
         await runner.stop();
         page.close();
-        inspector.close();
       },
       inset,
       page,
@@ -318,7 +313,7 @@ export const connectIos = async (
       state,
     };
   } catch (error) {
-    inspector.close();
+    await runner.stop();
     throw error;
   }
 };

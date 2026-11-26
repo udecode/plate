@@ -293,8 +293,12 @@ export const connectWebInspector = async (socketPath: string) => {
     }
   });
 
+  // The simulator's webinspectord answers a connection made within about 10 s
+  // of another closing only once those 10 s pass, and a cold start under load
+  // took up to 10 s, so a lane reconnecting across processes waits past 10 s.
   const applications = next(
-    (message) => message.__selector === '_rpc_reportConnectedApplicationList:'
+    (message) => message.__selector === '_rpc_reportConnectedApplicationList:',
+    30_000
   );
 
   send('_rpc_reportIdentifier:', {});

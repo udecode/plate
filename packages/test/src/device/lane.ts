@@ -27,6 +27,7 @@ import {
   createAndroidDriver,
 } from './android-lane';
 import { connectIos, createIosDriver, type IosConnection } from './ios-lane';
+import { connectWebInspector, inspectorSocket } from './webkit';
 import {
   type DeviceWitnessGesture,
   type DeviceWitnessStep,
@@ -933,18 +934,33 @@ export const deviceLaneTest = base.extend<DeviceFixtures, DeviceWorkerFixtures>(
           workerInfo.config.configFile ?? process.cwd()
         );
         const state = readDeviceRunState(deviceSerial, configDir);
-        const connection =
-          state.platform === 'ios'
-            ? await connectIos(state, {
-                runnerLog: resolve(
-                  configDir,
-                  `test-results/device/ios-runner-${workerInfo.workerIndex}.log`
-                ),
-              })
-            : await connectAndroid(state);
 
-        await use(connection);
-        await connection.close();
+        if (state.platform === 'android') {
+          const connection = await connectAndroid(state);
+
+          await use(connection);
+          await connection.close();
+          return;
+        }
+
+        const inspector = await connectWebInspector(
+          inspectorSocket(state.serial)
+        );
+
+        try {
+          const connection = await connectIos(state, inspector, {
+            insetURL: `${state.appURL}/.editor-proof-build.json?inset=${Date.now()}`,
+            runnerLog: resolve(
+              configDir,
+              `test-results/device/ios-runner-${workerInfo.workerIndex}.log`
+            ),
+          });
+
+          await use(connection);
+          await connection.close();
+        } finally {
+          inspector.close();
+        }
       },
       { scope: 'worker' },
     ],
