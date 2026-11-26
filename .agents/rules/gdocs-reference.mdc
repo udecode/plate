@@ -15,15 +15,15 @@ A result is evidence, not law. The Authored changes law in `docs/vision/plite.md
 
 1. Read the Google Docs results section. When a row already answers the question, cite it and stop.
 2. Write the question as a case: the starting lines, each author's keystrokes in Suggesting mode, and every decision order to try. Try each order of the decisions that can differ, because one order proves nothing about another.
-3. Load the `anthropic-skills:chrome-browser` skill and read `.agents/pstack/rules/browser.md` in full.
+3. Read `.agents/pstack/rules/browser.md` in full. Drive Chrome through OpenCode `browse` (`~/.local/bin/browse`) by default; load `anthropic-skills:chrome-browser` only when falling back to Claude in Chrome for an unpaired secondary profile.
 
 ## Connect the authors
 
-1. Call `list_connected_browsers`. Each Chrome profile with the Claude extension shows as one browser. A browser's `deviceId` changes when its extension reconnects, so never reuse one from an earlier run.
-2. For each browser, `select_browser`, then `tabs_context_mcp` with `createIfEmpty: true`, open the test document, and `find` the text `Google Account:`. The button names the account the tab edits as.
+1. Run `browse status --json` to list connected Chrome browsers/profiles (pass `--browser <id>` when targeting a non-default paired profile). When falling back to Claude in Chrome, call `list_connected_browsers` and `select_browser` (never reuse a `deviceId` from an earlier run).
+2. Open the test document in a background tab (`browse navigate <url>` or `browse execute`) and read the `Google Account:` control to confirm which account the tab edits as.
 3. A profile signed into two Google accounts can open the document as the other account. Add the `authuser` value the Reference drive section gives for that author to the URL, open it again and read the button again.
 4. Dismiss an informational notice, such as "You're currently signed in as" or "Editors can see your view history", with its OK or "I understand" button. It changes no setting.
-5. When fewer authors connect than the case needs, ask the owner once to sign the Claude extension in on the missing profile, and stop until they answer.
+5. When fewer authors connect than the case needs, ask the owner once to pair the missing Chrome profile in `browse` (or sign in to the second Google account), and stop until they answer.
 
 Codex's browser lane cannot drive these profiles from the command line. ChatGPT's computer-use plugin grants browser access only to a Codex task the ChatGPT app itself starts, and `cross.mjs` starts Codex alone, so every call fails with "The browser access host is unavailable".
 

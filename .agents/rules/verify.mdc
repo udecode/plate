@@ -245,7 +245,7 @@ for each browser. Confirm the active mark before typing, then read back both
 the inserted text and its rendered marks after the update. Before a claim that
 depends on frames, such as virtualization, scroll anchoring, a floating
 toolbar's position, drag autoscroll or type-to-paint, run that file's frame
-check. A native copy or paste goes to Claude in Chrome or to the `'native'`
+check. A native copy or paste goes to OpenCode `browse` (`browse press Meta+a` / `Meta+c` / `Meta+v`), Claude in Chrome, or the `'native'`
 clipboard spec below.
 
 Existing repository Playwright specs are executable proof owners. Run them

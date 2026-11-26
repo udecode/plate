@@ -142,7 +142,8 @@ For route-level editor proof, simulate real use:
 - scroll away and back, then continue typing;
 - rendering-control changes when the example exposes them.
 
-Claude Code's built-in browser and Claude in Chrome have no locator API; drive
+OpenCode `browse` exposes Playwright-style locators inside `browse execute`;
+Claude Code's built-in browser and Claude in Chrome have no locator API, so drive
 them as verify's Drive section says. When using Codex's in-app Browser:
 
 - use Browser Playwright locators for keyboard shortcut proof such as
@@ -154,7 +155,7 @@ them as verify's Drive section says. When using Codex's in-app Browser:
   integration tests;
 - if Browser typing fails with a missing virtual clipboard, stop retrying
   Browser typing in that packet and drive that input in the owner's Chrome
-  through Claude in Chrome; a route Playwright test stays the replayable proof,
+  through OpenCode `browse` (or Claude in Chrome); a route Playwright test stays the replayable proof,
   never the [hand drive](./hand-drive.md);
 - if a tab is stuck on an error page or Browser prints a huge encoded failure
   document, retry once from a fresh in-app Browser tab, catch per-route errors
