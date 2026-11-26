@@ -68,7 +68,7 @@ Use the host's built-in browser (`preview_*` in T3 Code, Claude browser in Claud
 - **Read dumps before rerunning:** inspect `error-context.md`, failure screenshot, and `editor-state.json` in `test-results/` first. Use `--trace retain-on-failure` (www) or `PLITE_BROWSER_TRACE=1` (Plite) only when timing remains unclear.
 - **React Compiler:** Bun specs run uncompiled; prove copied-UI values from editor/plugin state in the www browser without `PLATE_WWW_WEBPACK`.
 - **Native clipboard:** only `'native'` transport (Chromium/Firefox) proves native clipboard; WebKit/emulated mobile use `'event'`.
-- **Runners:** run `platejs`/`plitejs` folders via partitions (`pnpm --filter platejs run test:partition:<name>` or `node tooling/scripts/package-tests.mjs`), never raw `bun test <folder>` (`mock.module` leaks). Run `apps/www` Bun specs from root via `pnpm test apps/www/<path>`. Android emulator / iOS Simulator drives reproduce within emulator limits; real device or OS IME claims still need a person's recheck.
+- **Runners:** run `platejs`/`plitejs` folders via partitions (`pnpm --filter platejs run test:partition:<name>` or `node tooling/scripts/package-tests.mjs`), never raw `bun test <folder>` (`mock.module` leaks). Run `apps/www` Bun specs from root via `pnpm test apps/www/<path>`. Android emulator / iOS Simulator drives reproduce within emulator limits, through the [phone drive](./references/phone-drive.md); real device or OS IME claims still need a person's recheck.
 
 ## Hand drive
 
