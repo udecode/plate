@@ -295,9 +295,8 @@ export const runTraced = ({ taskId, testFiles }, runTests) => {
     return tracedEnv(traceDir);
   };
 
-  try {
-    const status = runTests(traceEnv);
-
+  const cleanup = () => fs.rmSync(traceRoot, { force: true, recursive: true });
+  const finish = (status) => {
     if (status !== 0) return status;
 
     const problems = traceProblems({
@@ -318,7 +317,22 @@ export const runTraced = ({ taskId, testFiles }, runTests) => {
     );
 
     return 1;
-  } finally {
-    fs.rmSync(traceRoot, { force: true, recursive: true });
+  };
+
+  try {
+    const status = runTests(traceEnv);
+
+    if (typeof status?.then === 'function') {
+      return status.then(finish).finally(cleanup);
+    }
+
+    try {
+      return finish(status);
+    } finally {
+      cleanup();
+    }
+  } catch (error) {
+    cleanup();
+    throw error;
   }
 };

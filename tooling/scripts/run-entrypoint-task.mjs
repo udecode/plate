@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
+import { availableParallelism } from 'node:os';
 import path from 'node:path';
 
 import {
@@ -55,6 +56,38 @@ const runProcess = (executable, args, cwd = packageRoot, env = process.env) => {
   return result.status ?? 1;
 };
 
+const runProcessAsync = (
+  executable,
+  args,
+  cwd = packageRoot,
+  env = process.env,
+  { buffered = false } = {}
+) =>
+  new Promise((resolve, reject) => {
+    const child = spawn(executable, args, {
+      cwd,
+      env,
+      stdio: buffered ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+    });
+    const stdout = [];
+    const stderr = [];
+
+    if (buffered) {
+      child.stdout.on('data', (chunk) => stdout.push(chunk));
+      child.stderr.on('data', (chunk) => stderr.push(chunk));
+    }
+
+    child.once('error', reject);
+    child.once('exit', (code) => {
+      if (buffered) {
+        if (stdout.length > 0) process.stdout.write(Buffer.concat(stdout));
+        if (stderr.length > 0) process.stderr.write(Buffer.concat(stderr));
+      }
+
+      resolve(code ?? 1);
+    });
+  });
+
 const runLint = () => {
   const files = relativePackageFiles(
     partitionNames.flatMap((name) => getPackageLintFiles(packageName, name))
@@ -65,15 +98,8 @@ const runLint = () => {
   return runProcess('pnpm', ['exec', 'ultracite', 'check', ...files]);
 };
 
-const runTests = (runtimeTestFiles, partitionOf, traceEnv) => {
+const runTests = async (runtimeTestFiles, partitionOf, traceEnv) => {
   const files = relativePackageFiles(runtimeTestFiles);
-  const runTest = (configFile, executable, args, cwd = packageRoot) =>
-    runProcess(
-      executable,
-      args,
-      cwd,
-      traceEnv([executable, ...args].join(' '), configFile)
-    );
 
   if (files.length === 0) return 0;
 
@@ -95,15 +121,68 @@ const runTests = (runtimeTestFiles, partitionOf, traceEnv) => {
       : ['--reporter=junit', `--reporter-outfile=${outfile}`];
   };
 
-  const runBunTestBatch = (testFiles) => {
+  const bunParallelWorkers = (fileCount, { isolated = false } = {}) => {
+    if (fileCount < (isolated ? 2 : 4)) return 1;
+
+    const cpus = availableParallelism();
+    // Turbo runs multiple partitions concurrently, so bound per-batch workers
+    // tightly under Turbo to avoid CPU oversubscription and test timeouts, and
+    // stay single-process on <= 4-core runners.
+    const turboCap = isolated ? 2 : fileCount >= 40 ? 3 : 2;
+    const maxWorkers = process.env.TURBO_HASH
+      ? Math.min(turboCap, Math.floor(cpus / (isolated ? 6 : 4)))
+      : Math.min(6, Math.floor(cpus / 2));
+
+    if (maxWorkers <= 1) return 1;
+
+    return isolated
+      ? Math.min(maxWorkers, fileCount)
+      : Math.min(maxWorkers, Math.floor(fileCount / 2));
+  };
+
+  const vitestParallelArgs = (suite) => {
+    if (
+      !process.env.TURBO_HASH ||
+      suite.browser ||
+      suite.config !== 'vitest.config.mjs'
+    ) {
+      return [];
+    }
+
+    const workers = Math.max(
+      1,
+      Math.min(6, Math.floor(availableParallelism() / 3))
+    );
+
+    return [`--maxWorkers=${workers}`];
+  };
+
+  const batches = [];
+  const queueBatch = (configFile, executable, args, cwd = packageRoot) => {
+    batches.push({
+      args,
+      cwd,
+      env: traceEnv([executable, ...args].join(' '), configFile),
+      executable,
+    });
+  };
+
+  const queueBunTestBatch = (testFiles, { isolated = false } = {}) => {
+    const workers = bunParallelWorkers(testFiles.length, { isolated });
+    const parallelArgs =
+      workers > 1
+        ? [`--parallel=${workers}`, ...(isolated ? [] : ['--no-isolate'])]
+        : [];
+
     if (packageName === 'platejs') {
-      return runTest(
+      queueBatch(
         path.join(repoRoot, 'bunfig.toml'),
         'bun',
         [
           `--config=${path.join(repoRoot, 'bunfig.toml')}`,
           `--cwd=${repoRoot}`,
           'test',
+          ...parallelArgs,
           `--timeout=${TEST_TIMEOUT_MS}`,
           ...reporterArgs('bun', repoRoot),
           // Without `./`, bun treats each path as a substring filter and scans the whole repository for matching test files.
@@ -113,11 +192,13 @@ const runTests = (runtimeTestFiles, partitionOf, traceEnv) => {
         ],
         repoRoot
       );
+      return;
     }
 
     // Bun reads bunfig.toml from its cwd.
-    return runTest(path.join(packageRoot, 'bunfig.toml'), 'bun', [
+    queueBatch(path.join(packageRoot, 'bunfig.toml'), 'bun', [
       'test',
+      ...parallelArgs,
       `--timeout=${TEST_TIMEOUT_MS}`,
       ...reporterArgs(),
       `--preload=${path.join(repoRoot, 'config/plite-source-test-setup.ts')}`,
@@ -125,7 +206,7 @@ const runTests = (runtimeTestFiles, partitionOf, traceEnv) => {
     ]);
   };
 
-  const runBunTests = (testFiles) => {
+  const queueBunTests = (testFiles) => {
     const isolatedFiles = testFiles.filter((filename) =>
       usesMockModule(path.join(packageRoot, filename))
     );
@@ -133,11 +214,17 @@ const runTests = (runtimeTestFiles, partitionOf, traceEnv) => {
       (filename) => !isolatedFiles.includes(filename)
     );
 
-    return [
-      ...(sharedFiles.length > 0 ? [runBunTestBatch(sharedFiles)] : []),
+    if (sharedFiles.length > 0) queueBunTestBatch(sharedFiles);
+
+    if (
+      isolatedFiles.length > 1 &&
+      bunParallelWorkers(isolatedFiles.length, { isolated: true }) > 1
+    ) {
+      queueBunTestBatch(isolatedFiles, { isolated: true });
+    } else {
       // Bun module mocks outlive an individual test file in a shared process.
-      ...isolatedFiles.map((filename) => runBunTestBatch([filename])),
-    ];
+      for (const filename of isolatedFiles) queueBunTestBatch([filename]);
+    }
   };
 
   const suiteOf = (filename) =>
@@ -147,32 +234,38 @@ const runTests = (runtimeTestFiles, partitionOf, traceEnv) => {
       filename
     );
   const bunFiles = files.filter((filename) => !suiteOf(filename));
-  const batchStatuses = bunFiles.length > 0 ? runBunTests(bunFiles) : [];
+  if (bunFiles.length > 0) queueBunTests(bunFiles);
 
   for (const suite of vitestSuites[packageName] ?? []) {
     const vitestFiles = files.filter((filename) => suiteOf(filename) === suite);
 
     if (vitestFiles.length === 0) continue;
 
-    batchStatuses.push(
-      runTest(path.join(packageRoot, suite.config), 'pnpm', [
-        'exec',
-        'vitest',
-        'run',
-        '--config',
-        `./${suite.config}`,
-        `--testTimeout=${TEST_TIMEOUT_MS}`,
-        ...reporterArgs('vitest'),
-        ...suite.args,
-        ...vitestFiles,
-      ])
-    );
+    queueBatch(path.join(packageRoot, suite.config), 'pnpm', [
+      'exec',
+      'vitest',
+      'run',
+      '--config',
+      `./${suite.config}`,
+      `--testTimeout=${TEST_TIMEOUT_MS}`,
+      ...vitestParallelArgs(suite),
+      ...reporterArgs('vitest'),
+      ...suite.args,
+      ...vitestFiles,
+    ]);
   }
+
+  const buffered = batches.length > 1;
+  const batchStatuses = await Promise.all(
+    batches.map(({ args, cwd, env, executable }) =>
+      runProcessAsync(executable, args, cwd, env, { buffered })
+    )
+  );
 
   return batchStatuses.find((status) => status !== 0) ?? 0;
 };
 
-const runTestTask = () => {
+const runTestTask = async () => {
   const only = new Set(onlyFiles.map((file) => path.resolve(repoRoot, file)));
   const partitionOf = new Map(
     partitionNames.flatMap((name) =>
@@ -205,8 +298,8 @@ const runTestTask = () => {
       : null;
 
   return turboTaskId
-    ? runTraced({ taskId: turboTaskId, testFiles }, run)
-    : run(() => process.env);
+    ? await runTraced({ taskId: turboTaskId, testFiles }, run)
+    : await run(() => process.env);
 };
 
-process.exit(command === 'lint' ? runLint() : runTestTask());
+process.exit(command === 'lint' ? runLint() : await runTestTask());
