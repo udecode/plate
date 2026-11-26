@@ -41,6 +41,7 @@ import {
 } from './android-composition';
 import {
   applyEditableCaretMovement,
+  collapseNodeSelectionOnEscape,
   getSelectableOwnerHorizontalNavigationTarget,
   getSelectableOwnerVerticalNavigationTarget,
 } from './caret-engine';
@@ -966,6 +967,30 @@ export const applyEditableKeyDown = ({
 
     if (projectedCollapseResult.handled) {
       return keyDownHandled();
+    }
+
+    if (
+      !event.isDefaultPrevented() &&
+      !nativeEvent.altKey &&
+      !nativeEvent.ctrlKey &&
+      !nativeEvent.metaKey &&
+      !nativeEvent.shiftKey &&
+      nativeEvent.key === 'Escape' &&
+      SelectionApi.isNode(selection) &&
+      collapseNodeSelectionOnEscape(editor, selection, event.currentTarget)
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      return keyDownHandled({
+        focus: true,
+        kind: 'sync-selection',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        },
+      });
     }
 
     const horizontalOwnerTarget = getSelectableOwnerHorizontalNavigationTarget({

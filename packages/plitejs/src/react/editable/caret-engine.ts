@@ -46,7 +46,10 @@ import {
   getPlainVerticalLargeDocumentPlugin,
   shouldModelOwnPlainVerticalLargeDocumentPlugin,
 } from './dom-coverage-vertical-selection';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import {
+  findMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from './editable-dom-runtime';
 import {
   getDocumentBoundaryKeyboardMove,
   isPlainVerticalDocumentBoundary,
@@ -490,6 +493,56 @@ const getNodeSelectionExitTarget = (
     ? (getObjectReverseEntryTarget(editor, point) ??
         SelectionApi.text({ anchor: point, focus: point }))
     : null;
+};
+
+const getNodeSelectionEscapeTarget = (
+  editor: ReactRuntimeEditor,
+  selection: NodeSelection
+): Selection | null => {
+  const { focusPath } = selection;
+  const isObjectOrVoid = editor.read((state) => {
+    const node = state.nodes.get(focusPath)?.[0];
+
+    return !!node && (state.schema.isObject(node) || state.schema.isVoid(node));
+  });
+
+  if (!isObjectOrVoid) {
+    const end = editor.read((state) => state.points.end(focusPath));
+
+    if (end) return SelectionApi.text({ anchor: end, focus: end });
+  }
+
+  const focusSelection: NodeSelection = {
+    ...selection,
+    anchorPath: focusPath,
+    focusPath,
+    paths: [focusPath],
+  };
+  const forward = getNodeSelectionExitTarget(editor, focusSelection, false);
+
+  if (forward && SelectionApi.isText(forward)) return forward;
+
+  const backward = getNodeSelectionExitTarget(editor, focusSelection, true);
+
+  return backward && SelectionApi.isText(backward) ? backward : null;
+};
+
+export const collapseNodeSelectionOnEscape = (
+  editor: ReactRuntimeEditor,
+  selection: NodeSelection,
+  rootElement: HTMLDivElement
+): boolean => {
+  const target = getNodeSelectionEscapeTarget(editor, selection);
+
+  if (!target) return false;
+
+  writePliteViewSelection(editor, null);
+  findMountedEditableDOMRuntime(
+    rootElement
+  )?.clearModelSelectionDOMPreference();
+  dispatchCommand(editor, editorCommands.select, { target });
+
+  return true;
 };
 
 export const getSelectableOwnerVerticalNavigationTarget = ({
