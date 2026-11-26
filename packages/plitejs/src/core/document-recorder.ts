@@ -11,6 +11,7 @@ import type { DocumentIndex } from './change/document-index';
 import type { CommandProjection } from './command-document';
 import type { CompositionStamp } from './composition-stamp';
 import { getEditorRuntimeOwner } from './editor-runtime';
+import type { RecordedDeleteGroupingInput } from './native-grouping-input';
 import { EditorRefusalError } from './refusal';
 
 /**
@@ -56,6 +57,7 @@ export type EditorDocumentRecorder = (
   /** The input bookmarks in the committed draft, in order; omitted, unmoved. */
   bookmarks?: readonly Selection[];
   change: DocumentChange;
+  deleteGrouping?: RecordedDeleteGroupingInput | null;
   indexedAfter?: ReadonlyMap<string, DocumentIndex>;
   /**
    * Maps a position in the draft commands wrote to the committed draft, as a

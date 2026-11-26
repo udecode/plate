@@ -184,6 +184,14 @@ export type AuthoredRecordInput = Readonly<{
   writer: string;
 }>;
 
+export type RecordedTextStrike = Readonly<{
+  author: string;
+  blockPath: readonly number[];
+  change: string;
+  direction: 'backward' | 'forward';
+  root: string;
+}>;
+
 export type AuthoredRecordResult = Readonly<{
   anchorChange: (plainAfter: (root: string) => DocumentIndex) => DocumentChange;
   change: DocumentChange;
@@ -199,6 +207,7 @@ export type AuthoredRecordResult = Readonly<{
     assoc: -1 | 1,
     caret?: boolean
   ) => number;
+  textStrike?: RecordedTextStrike | null;
   writtenPlain: boolean;
 }>;
 
@@ -1965,6 +1974,14 @@ const recordSteps = (
 
   let removesStruckParts = false;
   let writesOther = false;
+  let recordedStrike: RecordedTextStrike | 'invalid' | null =
+    !isEditingChange(changeId) &&
+    input.createRoots.size === 0 &&
+    input.deleteRoots.size === 0 &&
+    input.followed.size === 0 &&
+    input.selectionBefore !== null
+      ? null
+      : 'invalid';
 
   for (const { changes, step } of stepChanges) {
     for (const [root, rootChange, retypedStarts, recordsAlone] of changes) {
@@ -1978,6 +1995,7 @@ const recordSteps = (
         const previous = fold.map;
 
         if (carried && step.drops) {
+          recordedStrike = 'invalid';
           foldIn(
             fold,
             carried.drops(
@@ -2013,6 +2031,7 @@ const recordSteps = (
           fold.map = back;
           continue;
         }
+        recordedStrike = 'invalid';
         foldIn(fold, recorded);
         fold.map = (position, assoc, caret) => {
           const leaf = leaves.find(
@@ -2128,6 +2147,7 @@ const recordSteps = (
         // pending, so both apply as written.
         if (fold.created || step.origin === 'migration') {
           recorded = groupsChange(groups);
+          recordedStrike = 'invalid';
         } else {
           const result = new RootRecorder(fold.index, {
             joinAside: (mark) => isJoinAside(facts, mark),
@@ -2174,6 +2194,54 @@ const recordSteps = (
           ({ copies } = result);
           fold.leftward = result.leftward;
           writtenPlain &&= result.writtenPlain;
+          if (
+            recordedStrike === null &&
+            result.textStrike &&
+            retypedStarts.size === 0 &&
+            subSteps.length === 1 &&
+            copies.length === 0 &&
+            input.selectionBefore?.root === root
+          ) {
+            const strike = result.textStrike;
+            const plainBefore =
+              fold.frameIndex ?? getDefined(step.indexedBefore.get(root));
+            const plainCaret = input.projection
+              ? input.projection.map.toProjected(
+                  root,
+                  input.selectionBefore.position,
+                  'backward'
+                )
+              : input.selectionBefore.position;
+            const onlyTextEdges = (from: number, to: number) =>
+              from === to ||
+              plainBefore
+                .slice(from, to)
+                .tokens.every(
+                  (token) => token.kind !== 'text' && token.nodeKind === 'text'
+                );
+            const direction =
+              plainCaret === null
+                ? null
+                : plainCaret >= strike.plainTo &&
+                    onlyTextEdges(strike.plainTo, plainCaret)
+                  ? 'backward'
+                  : plainCaret <= strike.plainFrom &&
+                      onlyTextEdges(plainCaret, strike.plainFrom)
+                    ? 'forward'
+                    : null;
+
+            recordedStrike = direction
+              ? {
+                  author: strike.author,
+                  blockPath: strike.blockPath,
+                  change: strike.change,
+                  direction,
+                  root,
+                }
+              : 'invalid';
+          } else {
+            recordedStrike = 'invalid';
+          }
         }
         fold.touched = true;
         if (frameAfter) {
@@ -2216,7 +2284,10 @@ const recordSteps = (
   if (carried) {
     for (const [root, fold] of folds) {
       if (!fold.created && fold.composed && !fold.composed.empty) {
-        foldIn(fold, carried.settle(root, fold.index, fold.composed));
+        const settled = carried.settle(root, fold.index, fold.composed);
+
+        if (settled && !settled.empty) recordedStrike = 'invalid';
+        foldIn(fold, settled);
       }
     }
   }
@@ -2283,6 +2354,8 @@ const recordSteps = (
     if (!input.deleteRoots.has(root)) indexedAfter.set(root, fold.index);
   }
 
+  if (doubled.size > 0 || loweredRoots.size > 0) recordedStrike = 'invalid';
+
   return {
     anchorChange: (plainAfter) =>
       createInternalDocumentChange(
@@ -2305,6 +2378,7 @@ const recordSteps = (
     indexedAfter,
     mapPosition: (root, position, assoc, caret = true) =>
       folds.get(root)?.map(position, assoc, caret) ?? position,
+    textStrike: recordedStrike === 'invalid' ? null : recordedStrike,
     writtenPlain,
   };
 };
@@ -2486,6 +2560,17 @@ class RootRecorder {
   > = [];
   private readonly index: DocumentIndex;
   private readonly options: RecorderOptions;
+  private activeTextStrike: Readonly<{
+    plainFrom: number;
+    plainTo: number;
+  }> | null = null;
+  private textStrike: Readonly<{
+    author: string;
+    blockPath: readonly number[];
+    change: string;
+    plainFrom: number;
+    plainTo: number;
+  }> | null = null;
   private withdrawsWrap = false;
 
   constructor(index: DocumentIndex, options: RecorderOptions) {
@@ -2569,6 +2654,25 @@ class RootRecorder {
       })
     );
 
+    if (
+      !isEditingChange(this.options.changeId) &&
+      this.options.origin !== 'move' &&
+      this.options.moveRole === null
+    ) {
+      const replaces = groups.filter((group) => group.kind === 'replace');
+      const hasProps = groups.some(
+        (group) => group.kind === 'kept' && group.data !== null
+      );
+      const only = replaces.length === 1 && !hasProps ? replaces[0] : null;
+
+      if (only && only.slice.length === 0 && only.removed > 0) {
+        this.activeTextStrike = {
+          plainFrom: only.plainFrom,
+          plainTo: only.plainFrom + only.plainRemoved,
+        };
+      }
+    }
+
     if (this.options.origin !== 'move' || !this.recordNodeMove(groups)) {
       for (const group of groups) {
         if (group.kind === 'replace') {
@@ -2592,7 +2696,10 @@ class RootRecorder {
       }
     }
 
+    const opsBeforeWrappers = this.ops.length;
+
     this.strikeEmptiedWrappers();
+    if (this.ops.length > opsBeforeWrappers) this.textStrike = null;
     this.freshCopyKeys();
     const recorded = RootChange.create(this.index, this.sections());
 
@@ -2614,6 +2721,7 @@ class RootRecorder {
           caret === true,
           caret === false
         ),
+      textStrike: this.textStrike,
       writtenPlain: groups.every((group) =>
         group.kind === 'replace' ? plain.has(group) : !group.data
       ),
@@ -3764,9 +3872,13 @@ class RootRecorder {
       this.options.moveRole === 'source' ? 'move' : 'delete',
       reinserted
     );
+    this.activeTextStrike = null;
 
     if (this.options.framed && inserted.length === 0) {
+      const opsBeforeKeep = this.ops.length;
+
       this.keepEmptiedLine(from, to, startContext);
+      if (this.ops.length > opsBeforeKeep) this.textStrike = null;
     }
     this.recordInsertion({
       after,
@@ -4131,6 +4243,29 @@ class RootRecorder {
       };
     };
 
+    const strikeTracking = mode === 'delete' ? this.activeTextStrike : null;
+    const strikeParent = strikeTracking
+      ? startContext.findLast((context) => context.kind === 'element')
+      : undefined;
+    const textStrikeState: { mark: AuthoredMark | null; pure: boolean } = {
+      mark: null,
+      pure: Boolean(
+        strikeTracking && strikeParent && to <= strikeParent.contentTo
+      ),
+    };
+    const noteTextStrike = (mark: AuthoredMark) => {
+      if (!textStrikeState.pure) return;
+      if (
+        textStrikeState.mark &&
+        (textStrikeState.mark.author !== mark.author ||
+          textStrikeState.mark.change !== mark.change)
+      ) {
+        textStrikeState.pure = false;
+      } else {
+        textStrikeState.mark = mark;
+      }
+    };
+
     for (let index = 0; index < local.length; index += 1) {
       const token = local[index];
       const position = from + localOffsets[index];
@@ -4146,6 +4281,7 @@ class RootRecorder {
 
         if (struck(marks)) continue;
         if (withdrawn(marks)) {
+          textStrikeState.pure = false;
           this.ops.push({
             from: position,
             kind: 'remove',
@@ -4155,10 +4291,10 @@ class RootRecorder {
         }
         if (!opened.has(leaf.contentFrom) && firstSplitLeaf !== leaf) {
           // Split the leaf so only the removed characters are struck.
-          const struckProps = this.withMarks(leaf.props, [
-            ...marks,
-            strikeMark(leaf, position),
-          ]);
+          const mark = strikeMark(leaf, position);
+
+          noteTextStrike(mark);
+          const struckProps = this.withMarks(leaf.props, [...marks, mark]);
 
           this.ops.push({
             at: position,
@@ -4189,6 +4325,9 @@ class RootRecorder {
         const parent = stack.at(-1);
         const parentChildren = parent && keptElementChildren.get(parent);
 
+        if (token.nodeKind !== 'text' || removedOutright) {
+          textStrikeState.pure = false;
+        }
         if (parentChildren && !removedOutright) parentChildren.survived = true;
         else if (parentChildren) parentChildren.removed = true;
         if (close !== undefined) {
@@ -4220,10 +4359,13 @@ class RootRecorder {
             });
           }
           if (strikeOpIndex !== null) {
+            const mark = markOf('delete');
+
+            if (token.nodeKind === 'text') noteTextStrike(mark);
             this.ops.push({
               at: position,
               kind: 'props',
-              props: this.withMarks(props, [...marks, markOf('delete')]),
+              props: this.withMarks(props, [...marks, mark]),
             });
           }
           if (token.nodeKind === 'text') {
@@ -4244,12 +4386,16 @@ class RootRecorder {
 
         if (token.nodeKind === 'text') {
           openLeaf = props;
-          if (struck(marks) || withdrawn(marks)) continue;
+          if (withdrawn(marks)) {
+            textStrikeState.pure = false;
+            continue;
+          }
+          if (struck(marks)) continue;
 
-          const struckProps = this.withMarks(props, [
-            ...marks,
-            strikeMark(context, context.contentFrom),
-          ]);
+          const mark = strikeMark(context, context.contentFrom);
+
+          noteTextStrike(mark);
+          const struckProps = this.withMarks(props, [...marks, mark]);
 
           this.ops.push({ at: position, kind: 'props', props: struckProps });
           openLeaf = struckProps;
@@ -4395,6 +4541,22 @@ class RootRecorder {
           )
         ).slice.tokens,
       });
+    }
+
+    if (
+      textStrikeState.pure &&
+      strikeTracking &&
+      strikeParent &&
+      textStrikeState.mark &&
+      emptiedKeptElementAt.size === 0
+    ) {
+      this.textStrike = {
+        author: textStrikeState.mark.author,
+        blockPath: strikeParent.path,
+        change: textStrikeState.mark.change,
+        plainFrom: strikeTracking.plainFrom,
+        plainTo: strikeTracking.plainTo,
+      };
     }
 
     if (this.options.framed && from < to) {

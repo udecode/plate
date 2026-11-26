@@ -2695,6 +2695,24 @@ export const createAuthoredPlugin = (
 
           if (split) throw split;
 
+          const selection = record(input.selection, input.selectionRoot);
+          const strike =
+            !editing &&
+            !composition &&
+            recorded.textStrike &&
+            !relink &&
+            !filled &&
+            !owned &&
+            !spares &&
+            !shown &&
+            [...records.values()].every((set) => set.size === 0) &&
+            selection?.kind === 'text' &&
+            PointApi.equals(selection.anchor, selection.focus) &&
+            (selection.anchor.root ?? input.selectionRoot) ===
+              recorded.textStrike.root
+              ? recorded.textStrike
+              : null;
+
           return {
             anchorChange: (plainAfter) =>
               [
@@ -2707,13 +2725,23 @@ export const createAuthoredPlugin = (
                   next ? anchor.compose(next) : anchor,
                 recorded.anchorChange(plainAfter)
               ),
-            bookmarks: input.bookmarks.map(({ root, selection }) =>
-              record(selection, root)
+            bookmarks: input.bookmarks.map(({ root, selection: bookmark }) =>
+              record(bookmark, root)
             ),
             change: withDocumentChangeRecords(later, records),
+            ...(strike
+              ? {
+                  deleteGrouping: Object.freeze({
+                    blockPath: strike.blockPath,
+                    direction: strike.direction,
+                    group: `${strike.author}\0${strike.change}`,
+                    root: strike.root,
+                  }),
+                }
+              : {}),
             indexedAfter,
             mapPosition,
-            selection: record(input.selection, input.selectionRoot),
+            selection,
           };
         })
       );

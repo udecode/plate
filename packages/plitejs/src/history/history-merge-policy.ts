@@ -10,7 +10,11 @@ import {
   getEditorCommitSnapshot,
   getEditorCommitValue,
 } from '../core/commit';
-import type { NativeGroupingInput } from '../core/native-grouping-input';
+import {
+  type NativeGroupingInput,
+  type RecordedDeleteGroupingInput,
+  recordedDeleteGroupingInput,
+} from '../core/native-grouping-input';
 import { MAIN_ROOT_KEY, toPublicRoot } from '../core/public-root';
 import type { Batch } from './history';
 
@@ -30,6 +34,11 @@ type HistoryPoint = Readonly<{
 
 type ChangedRange = readonly [number, number, number, number];
 
+type RecordedDeleteGroup = Readonly<{
+  direction: 'backward' | 'forward';
+  group: string;
+}>;
+
 type TextHistoryGroup = Readonly<{
   afterPoint: HistoryPoint | null;
   beforePoint: HistoryPoint | null;
@@ -37,6 +46,7 @@ type TextHistoryGroup = Readonly<{
   fromBefore: number;
   kind: 'text';
   mode: 'delete' | 'insert' | 'replace' | 'structural-replace';
+  recordedDelete?: RecordedDeleteGroup;
   replacedSelection: boolean;
   root: RootKey;
   target: HistoryTarget;
@@ -242,13 +252,17 @@ const sameGroupRoots = (left: HistoryBatchGroup, right: HistoryBatchGroup) =>
 export const createHistoryBatchGroup = (
   commit: EditorCommit
 ): HistoryBatchGroup | null => {
-  const propertyGroup = getPropertyGroup(commit);
+  const recordedDelete = commit.annotations[recordedDeleteGroupingInput.key] as
+    | RecordedDeleteGroupingInput
+    | null
+    | undefined;
+  const propertyGroup = recordedDelete ? null : getPropertyGroup(commit);
 
   if (propertyGroup) return propertyGroup;
 
   const root = getChangedRoot(commit);
 
-  if (!root) return null;
+  if (!root) return recordedDelete ? getPropertyGroup(commit) : null;
 
   const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
   const ranges: readonly ChangedRange[] = getInternalDocumentChangeRanges(
@@ -274,6 +288,52 @@ export const createHistoryBatchGroup = (
     commit.selectionBeforeRoot ?? MAIN_ROOT_KEY,
     root
   );
+
+  if (recordedDelete) {
+    const blockKey =
+      recordedDelete.root === root
+        ? getEditorCommitSnapshot(commit, root, 'before').index.keyAt(
+            recordedDelete.blockPath
+          )
+        : null;
+
+    if (
+      changedSpan &&
+      !replacedSelection &&
+      beforePoint &&
+      afterPoint &&
+      blockKey &&
+      blockKey ===
+        getEditorCommitSnapshot(commit, root, 'after').index.keyAt(
+          recordedDelete.blockPath
+        )
+    ) {
+      return Object.freeze({
+        afterPoint,
+        beforePoint,
+        fromAfter: changedSpan[2],
+        fromBefore: changedSpan[0],
+        kind: 'text',
+        mode: 'delete',
+        recordedDelete: Object.freeze({
+          direction: recordedDelete.direction,
+          group: recordedDelete.group,
+        }),
+        replacedSelection: false,
+        root,
+        target: Object.freeze({
+          nodeKey: blockKey,
+          path: pathKey(recordedDelete.blockPath),
+        }),
+        toAfter: changedSpan[3],
+        toBefore: changedSpan[1],
+      });
+    }
+
+    const fallbackPropertyGroup = getPropertyGroup(commit);
+
+    if (fallbackPropertyGroup) return fallbackPropertyGroup;
+  }
   const selectionStart = RangeApi.isRange(commit.selectionBefore)
     ? RangeApi.edges(commit.selectionBefore)[0]
     : null;
@@ -427,6 +487,17 @@ const shouldMergeText = (
   }
 
   if (current.mode === 'delete' && previous.mode === 'delete') {
+    if (current.recordedDelete || previous.recordedDelete) {
+      return Boolean(
+        current.recordedDelete &&
+        previous.recordedDelete &&
+        current.recordedDelete.group === previous.recordedDelete.group &&
+        current.recordedDelete.direction ===
+          previous.recordedDelete.direction &&
+        samePoint(previous.afterPoint, current.beforePoint)
+      );
+    }
+
     return current.toBefore === previous.fromAfter;
   }
 

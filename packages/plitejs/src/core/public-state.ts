@@ -354,6 +354,7 @@ import {
   getSourcesForChange,
   initializeListenerState,
 } from './listener-state';
+import { recordedDeleteGroupingInput } from './native-grouping-input';
 import { normalizeNodeUnsetInput } from './node-property-mutation';
 import {
   asBlockEntries,
@@ -2072,6 +2073,14 @@ export const commitRecordedDraft = (
     snapshot.implicitTarget = cloneValue(recorded.selection);
   }
   if (resumes || !change.empty) settleBeforeRecordingFrontier(editor, snapshot);
+  if (!frontier && recorded.deleteGrouping) {
+    snapshot.annotations.set(recordedDeleteGroupingInput.key, {
+      type: recordedDeleteGroupingInput,
+      value: recorded.deleteGrouping,
+    });
+  } else if (snapshot.annotations.has(recordedDeleteGroupingInput.key)) {
+    snapshot.annotations.delete(recordedDeleteGroupingInput.key);
+  }
   RECORDING_FRONTIERS.set(snapshot, {
     selection: context.caret.selection,
     selectionRoot: context.caret.root,
@@ -14591,6 +14600,15 @@ export const runEditorTransaction = <R>(
               canonicalChanges === snapshot.builder.change
                 ? snapshot.builder.completedTextDeletion()
                 : null;
+            if (
+              snapshot.annotations.has(recordedDeleteGroupingInput.key) &&
+              (canonicalChanges !== snapshot.builder.change ||
+                snapshot.builder.draftSteps.some(
+                  (step, index) => index > 0 && step.origin !== 'canonical'
+                ))
+            ) {
+              snapshot.annotations.delete(recordedDeleteGroupingInput.key);
+            }
             const canonicalIndexes =
               snapshot.builder.indexedAfter(canonicalChanges);
 
