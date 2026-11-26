@@ -1,480 +1,26 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: a Claude Code PreToolUse hook on Bash, Edit, MultiEdit, Write,
-// NotebookEdit and the desktop app's sync_with_base_branch tool,
-// `node .agents/pstack/guard.mjs`.
-// Denies an agent's `git push` that forces or deletes the branch or the
-// protected branch that .agents/pstack.json names: --force, -f, a short-flag
-// cluster holding f or d, --force-with-lease, --mirror, --delete, a `+`
-// refspec or a `:<branch>` refspec. It also denies any other push to the
-// branch, because land.mjs squashes, checks and signs each landing there,
-// except a dry run and a push prefixed with PSTACK_RELEASE=1, which only a
-// project's release skill writes. A push from a checkout of another repository
-// passes, because that repository's rules own its branches. A push with no refspec, or one whose
-// destination is HEAD, targets the current branch, and one with --tags and no
-// refspec targets no branch. A matching `:` refspec and a wildcard refspec
-// target each branch they match. The guard reads no git config, so a push with
-// no refspec that `remote.<name>.push` or `push.default` sends to the branch
-// passes. It reads every command in the line, including one after a shell
-// keyword such as `then`, the bodies of `$(...)` and backticks outside single
-// quotes and of `<(...)` and `>(...)` outside any quotes, `eval`'s arguments
-// and a shell's `-c` payload wherever `-c` sits among its options, skips
-// heredoc bodies, passes every other command, and prints the command for the
-// owner to run in their own terminal. It judges each command in every directory
-// the shell may run it in: after `cd <dir> &&` in `<dir>`, after `cd <dir> ||`
-// in the earlier directory, and after `cd <dir>;` or a newline in both, because
-// the `cd` may fail. A `cd` before a `|`, inside `( )` or in a list that `&`
-// sends to the background moves nothing after it, one that ends a pipeline
-// counts both ways, because zsh runs it in the current shell and bash does not,
-// and one whose target the guard cannot resolve, such as a variable, keeps the
-// earlier directory, as does a `git -C` value holding `$`, a backtick, `*`,
-// `?` or `[`, so such a target that leads into a checkout holding the
-// companion directory, or into one on the branch, passes there. A push or
-// companion denial names each `cd` target holding `$` or a backtick and each
-// `git -C` value the guard cannot resolve. A bare name also counts in the
-// earlier directory, because CDPATH could send it
-// elsewhere, and `cd <old> <new>` counts where zsh swaps the operands, in
-// `<old>`, where bash 3.2 moves, and in the earlier directory. The owner's
-// terminal never runs this hook. It denies an agent's `gh pr create` or `gh pr
-// new` into the branch or with no --base, because land.mjs opens those PRs,
-// unless it runs in a checkout of another repository and names no --repo;
-// one that names another base, such as a PR stacked on someone's head branch,
-// passes, and so does one where --help or -h is a flag rather than an option's
-// value. It denies any line whose text, with quotes and backslashes removed,
-// holds `actions/runs/` followed later by `/approve` or
-// `/pending_deployments`, whatever the client or method, so a read of pending
-// deployments or a commit message that spells such a path is denied too. In a
-// checkout that holds the config's `companion.dir`, it denies what
-// would delete or overwrite the files that companion repository tracks there:
-// `git clean -x` or `-X`, any `git clean` through its git directory, and a
-// checkout, switch, reset, merge or rebase to a commit without
-// `companion.list`. It also denies the app's base-branch sync, which refuses
-// the branch whenever it changes .claude files, and names the rebase to run
-// instead. On Edit, MultiEdit, Write and NotebookEdit it denies a file inside
-// the main checkout, its .git folder included, while that checkout is on the
-// branch or the protected branch, except the plans artifacts directory, which
-// holds the suggested-task ledger and the run directories; a linked worktree,
-// even one nested in the main checkout's folder, is its own checkout and
-// passes. In a checkout of this repository whose change builds a dated plan's
-// step, it also denies an edit of a file the step budget counts when the change,
-// as status.mjs's stepLines counts it, passes the budget that the worktree's own
-// .agents/pstack.json sets. For a Write, and for an Edit or MultiEdit whose old
-// strings the file holds, it counts the change with the edit's text in place on
-// a copy of the worktree's index, so git applies its own line-ending filters and
-// rename detection; for any other edit it counts the change as it stands. It
-// lets the edit through when git cannot put the edit's text in place, when the
-// edit lowers the step's count, when it edits a .gitignore or .gitattributes
-// file, whose effect on other files counts at the next edit it checks, or when a
-// changed decision log holds a build or owner "big step:" row with no later
-// "landed as" row and no later delivery row that names a step as landed,
-// published or dropped. It also lets the edit through when git cannot count
-// the change or the budget check fails. Otherwise it refuses the edit when git
-// or the guard itself fails, because a hook that exits with an error lets the
-// edit through. The desktop app
-// runs a worktree session's hooks from the main checkout, so a change to this
-// file takes effect once it lands there and setup.mjs fast-forwards that
-// checkout.
+// PreToolUse guard for Claude Code and Antigravity. Protects real boundaries:
+// force-push/delete on branch/protected, direct push to branch bypassing land.mjs,
+// gh pr create into branch, workflow run approvals, main-checkout edits while on
+// branch/protected (outside plans/artifacts), and companion-repo destructive git.
+// Fails open if .agents/pstack.json is missing, conflicted, or invalid JSON.
 
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, lstatSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync } from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
-import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { existsSync, realpathSync, readFileSync, statSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const CONFIG = new URL('../pstack.json', import.meta.url);
+const HERE_DIR = dirname(fileURLToPath(import.meta.url));
 const BASE_SYNC = /(?:^|__)sync_with_base_branch$/u;
 const EDIT_TOOLS = new Set(['Edit', 'MultiEdit', 'Write', 'NotebookEdit']);
-const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--config-env']);
-const PUSH_VALUE_OPTIONS = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
-const PREFIXES = new Set(['sudo', 'env', 'command', 'builtin', 'exec', 'nohup', 'time', 'timeout']);
-const SHELLS = new Set(['bash', 'sh', 'zsh']);
-const KEYWORDS = new Set(['!', 'if', 'then', 'elif', 'else', 'while', 'until', 'do']);
-const OPERATOR = /;|&&|\|[|&]?|&(?!>)|\n|[(){}]/uy;
-const BARE = /(?:\\.|\$\{[^{}\s$`\\]*\}|[<>]&|&>|[$<>](?!\()|[^\s;&|(){}"'`\\$<>])+/uy;
-const SUBSTITUTION = /[$<>]\(/uy;
-
-function stripHeredocs(text) {
-  const kept = [];
-  let tag = null;
-  for (const line of text.split('\n')) {
-    if (tag) {
-      if (line.trim() === tag) tag = null;
-      continue;
-    }
-    kept.push(line);
-    tag = line.match(/(?<!<)<<-?(?!<)\s*['"]?([A-Za-z_]\w*)['"]?/u)?.[1] ?? null;
-  }
-  return kept.join('\n');
-}
-
-function closingQuote(text, at, quote) {
-  while (at < text.length && text[at] !== quote) at += quote === '"' && text[at] === '\\' ? 2 : 1;
-  return Math.min(at, text.length);
-}
-
-function closingParen(text, at) {
-  for (let depth = 1; at < text.length; at += 1) {
-    if (text[at] === '\\') at += 1;
-    else if (text[at] === "'" || text[at] === '"') at = closingQuote(text, at + 1, text[at]);
-    else if (text[at] === '(') depth += 1;
-    else if (text[at] === ')' && (depth -= 1) === 0) return at;
-  }
-  return text.length;
-}
-
-function closingTick(text, at) {
-  while (at < text.length && text[at] !== '`') at += text[at] === '\\' ? 2 : 1;
-  return Math.min(at, text.length);
-}
-
-function substitutionsIn(text) {
-  const bodies = [];
-  for (let at = 0; at < text.length; at += 1) {
-    if (text[at] === '\\') at += 1;
-    else if (text.startsWith('$(', at)) {
-      const end = closingParen(text, at + 2);
-      bodies.push(text.slice(at + 2, end));
-      at = end;
-    } else if (text[at] === '`') {
-      const end = closingTick(text, at + 1);
-      bodies.push(text.slice(at + 1, end));
-      at = end;
-    }
-  }
-  return bodies;
-}
-
-function segments(source) {
-  const text = stripHeredocs(source.replaceAll('\\\n', ' '));
-  const result = [{ words: [], operator: null, substitutions: [] }];
-  let joining = false;
-  const add = (word) => {
-    const { words } = result.at(-1);
-    if (joining && words.length > 0) words[words.length - 1] += word;
-    else words.push(word);
-    joining = true;
-  };
-  let at = 0;
-  while (at < text.length) {
-    OPERATOR.lastIndex = at;
-    BARE.lastIndex = at;
-    SUBSTITUTION.lastIndex = at;
-    if (text[at] === '"' || text[at] === "'") {
-      const end = closingQuote(text, at + 1, text[at]);
-      if (text[at] === '"') result.at(-1).substitutions.push(...substitutionsIn(text.slice(at + 1, end)));
-      add(text.slice(at + 1, end));
-      at = end + 1;
-    } else if (SUBSTITUTION.test(text) || text[at] === '`') {
-      const end = text[at] === '`' ? closingTick(text, at + 1) : closingParen(text, at + 2);
-      result.at(-1).substitutions.push(text.slice(at + (text[at] === '`' ? 1 : 2), end));
-      add(text.slice(at, end + 1));
-      at = end + 1;
-    } else if (OPERATOR.test(text)) {
-      result.at(-1).operator = text.slice(at, OPERATOR.lastIndex);
-      result.push({ words: [], operator: null, substitutions: [] });
-      joining = false;
-      at = OPERATOR.lastIndex;
-    } else if (BARE.test(text)) {
-      add(text.slice(at, BARE.lastIndex).replace(/\\(.)/gu, '$1'));
-      at = BARE.lastIndex;
-    } else {
-      joining = false;
-      at += 1;
-    }
-  }
-  return result;
-}
-
-const unresolved = new Set();
-
-function shellPath(word, dir) {
-  if (/[$`*?[]/u.test(word)) return null;
-  return word === '~' || word.startsWith('~/') ? join(homedir(), word.slice(2)) : resolve(dir, word);
-}
-
-function cdTargets(args, dir) {
-  const targets = args.filter((arg) => arg !== '--' && !/^-[LPeqs@]+$/u.test(arg));
-  if (targets.length === 0) return [homedir()];
-  if (targets.length === 2) {
-    const swapped = dir.replace(targets[0], targets[1]);
-    return [...(swapped !== dir && existsSync(swapped) ? [swapped] : []), ...cdTargets(targets.slice(0, 1), dir), dir];
-  }
-  const path = targets.length === 1 && targets[0] !== '-' ? shellPath(targets[0], dir) : null;
-  if (!path || !existsSync(path)) return [dir];
-  return /^(?:\/|~(?:\/|$)|\.\.?(?:\/|$))/u.test(targets[0]) ? [path] : [path, dir];
-}
-
-const GROUPS = new Set(['(', ')', '{', '}']);
-const STAYS = new Set([...KEYWORDS, 'builtin', 'command', 'time']);
-const union = (...sets) => new Set(sets.flatMap((set) => [...set]));
-const level = (dirs, group = null) => ({ group, start: dirs, dirs, ifOk: null, ifFailed: null, join: null, pipeline: null, closedGroup: null });
-
-function eachCommand(command, visit, cwds, depth = 0) {
-  const levels = [level(cwds)];
-  for (const { words, operator, substitutions } of segments(command)) {
-    const here = levels.at(-1);
-    const entry = here.pipeline ?? here.closedGroup?.start ?? (here.join === '&&' ? here.ifOk : here.join === '||' ? here.ifFailed : here.dirs);
-    let ifOk = here.closedGroup?.after ?? entry;
-    let ifFailed = ifOk;
-    if (words.length > 0) {
-      let start = 0;
-      let wrapped = false;
-      for (; start < words.length; start += 1) {
-        if (PREFIXES.has(words[start])) wrapped = true;
-        else if (!KEYWORDS.has(words[start]) && !(wrapped && /^[-\d]/u.test(words[start])) && !/^[A-Za-z_]\w*=/u.test(words[start])) break;
-      }
-      const prefix = words.slice(0, start);
-      if (start < words.length) for (const dir of entry) visit(words.slice(start), prefix, dir);
-      if (words[start] === 'cd' && prefix.every((word) => STAYS.has(word) || /^[A-Za-z_]\w*=/u.test(word))) {
-        ifOk = new Set([...entry].flatMap((dir) => cdTargets(words.slice(start + 1), dir)));
-        if (words.slice(start + 1).some((word) => /[$`]/u.test(word))) unresolved.add(['cd', ...words.slice(start + 1)].join(' '));
-        if (prefix.includes('!')) ifOk = ifFailed = union(ifOk, ifFailed);
-      }
-      if (depth < 4) {
-        for (const [index, word] of words.entries()) {
-          const rest = words.slice(index + 1);
-          if (SHELLS.has(word.split('/').at(-1)) && rest.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/u.test(arg))) {
-            for (const arg of rest) if (!arg.startsWith('-')) eachCommand(arg, visit, entry, depth + 1);
-          }
-        }
-        for (const body of substitutions) eachCommand(body, visit, entry, depth + 1);
-        if (words[start] === 'eval') eachCommand(words.slice(start + 1).join(' '), visit, entry, depth + 1);
-      }
-    } else if (!here.closedGroup && !GROUPS.has(operator)) continue;
-    if (operator === '(' || operator === '{') {
-      levels.push(level(entry, operator));
-      continue;
-    }
-    here.closedGroup = null;
-    if (operator === '|' || operator === '|&') {
-      here.pipeline = entry;
-      continue;
-    }
-    // zsh runs a pipeline's last command in the current shell, and bash runs it in a subshell.
-    if (here.pipeline) [ifOk, ifFailed] = [union(entry, ifOk), union(entry, ifFailed)];
-    here.pipeline = null;
-    if (here.join === '&&') [here.ifOk, here.ifFailed] = [ifOk, union(here.ifFailed, ifFailed)];
-    else if (here.join === '||') [here.ifOk, here.ifFailed] = [union(here.ifOk, ifOk), ifFailed];
-    else [here.ifOk, here.ifFailed] = [ifOk, ifFailed];
-    here.join = operator === '&&' || operator === '||' ? operator : null;
-    if (here.join) continue;
-    if (operator !== '&') here.dirs = union(here.ifOk, here.ifFailed);
-    if ((operator === ')' || operator === '}') && levels.length > 1) {
-      levels.pop();
-      levels.at(-1).closedGroup = { start: here.start, after: here.group === '{' ? here.dirs : here.start };
-    }
-  }
-}
-
-// The subcommand of a `git` command, its arguments, the directory it runs in
-// and its --git-dir, or null for any other command.
-function gitCommand(words, cwd) {
-  if (words[0]?.split('/').at(-1) !== 'git') return null;
-  let index = 1;
-  let dir = cwd;
-  let gitDir = null;
-  while (words[index]?.startsWith('-')) {
-    if (words[index] === '-C') {
-      const path = shellPath(words[index + 1] ?? '.', dir);
-      if (path === null) unresolved.add(`git -C ${words[index + 1]}`);
-      dir = path ?? dir;
-    }
-    if (words[index] === '--git-dir') gitDir = words[index + 1] ?? '';
-    if (words[index].startsWith('--git-dir=')) gitDir = words[index].slice('--git-dir='.length);
-    index += GIT_VALUE_OPTIONS.has(words[index]) ? 2 : 1;
-  }
-  return { sub: words[index], args: words.slice(index + 1), dir, gitDir };
-}
-
-// Returns the branches a `git push` updates, whether it forces or deletes them
-// and whether it is a dry run, or null for any other command.
-function pushes(words, cwd) {
-  const call = gitCommand(words, cwd);
-  if (call?.sub !== 'push') return null;
-  const { args, dir } = call;
-  if (otherRepository(dir)) return null;
-  let forced = false;
-  let every = false;
-  let deleting = false;
-  let dry = false;
-  let tags = false;
-  const positional = [];
-  for (let at = 0; at < args.length; at += 1) {
-    const word = args[at];
-    if (word === '--') {
-      positional.push(...args.slice(at + 1));
-      break;
-    }
-    if (PUSH_VALUE_OPTIONS.has(word)) at += 1;
-    else if (word === '--force' || word.startsWith('--force-with-lease')) forced = true;
-    else if (word === '--mirror') forced = every = true;
-    else if (word === '--all' || word === '--branches') every = true;
-    else if (word === '--delete') deleting = true;
-    else if (word === '--dry-run') dry = true;
-    else if (word === '--tags') tags = true;
-    else if (/^-[A-Za-z]+$/u.test(word)) {
-      forced ||= word.includes('f');
-      deleting ||= word.includes('d');
-      dry ||= word.includes('n');
-    } else if (!word.startsWith('-')) positional.push(word);
-  }
-  const current = () => spawnSync('git', ['-C', dir, 'branch', '--show-current'], { encoding: 'utf8' }).stdout.trim();
-  const refspecs = positional.slice(1);
-  const targets = [];
-  for (const spec of refspecs) {
-    const plain = spec.replace(/^\+/u, '');
-    if (spec.startsWith('+')) forced = true;
-    if (plain === ':') {
-      targets.push('*');
-      continue;
-    }
-    if (plain.startsWith(':')) deleting = true;
-    const dst = plain.includes(':') ? plain.slice(plain.lastIndexOf(':') + 1) : plain;
-    targets.push(dst === 'HEAD' || dst === '@' ? current() : dst.replace(/^refs\/heads\//u, ''));
-  }
-  const rewriting = forced || deleting;
-  if (every) return { targets: ['*'], rewriting, dry };
-  if (refspecs.length > 0) return { targets, rewriting, dry };
-  return { targets: tags ? [] : [current()], rewriting, dry };
-}
-
-// Whether a command is `gh pr create` into the branch or with no base, which defaults to the repository's default branch.
-function opensPr(words, branch, dir) {
-  if (words[0]?.split('/').at(-1) !== 'gh' || words[1] !== 'pr' || !['create', 'new'].includes(words[2])) return false;
-  if (asksHelp(words.slice(3))) return false;
-  let base = null;
-  let repo = false;
-  for (let at = 3; at < words.length; at += 1) {
-    const word = words[at];
-    if (word === '--repo' || word === '-R' || word.startsWith('--repo=') || /^-R./u.test(word)) repo = true;
-    if (word === '--base' || word === '-B') base = words[++at] ?? '';
-    else if (word.startsWith('--base=')) base = word.slice('--base='.length);
-    else if (/^-B./u.test(word)) base = word.slice(2);
-  }
-  if (!repo && otherRepository(dir)) return false;
-  return base === null || base.replace(/^refs\/heads\//u, '') === branch;
-}
-
-// Whether dir is a checkout of a repository other than the one this guard belongs to; unknown counts as ours.
-function otherRepository(dir) {
-  const common = git(dir, 'rev-parse', '--path-format=absolute', '--git-common-dir');
-  const ours = git(dirname(fileURLToPath(import.meta.url)), 'rev-parse', '--path-format=absolute', '--git-common-dir');
-  return Boolean(common && ours && !sameDir(common, ours));
-}
-
-// gh pr create's flags that take no value; any other option consumes the next word, so `--title --help` sets a title.
-const PR_SWITCHES = new Set(['--draft', '--editor', '--fill', '--fill-first', '--fill-verbose', '--web', '--dry-run', '--no-maintainer-edit']);
-const SHORT_SWITCHES = /^[dewf]+/u;
-
-function asksHelp(args) {
-  for (let at = 0; at < args.length; at += 1) {
-    const word = args[at];
-    if (word === '--') return false;
-    if (word === '--help' || word === '--help=true') return true;
-    if (word.startsWith('--')) {
-      if (!word.includes('=') && !PR_SWITCHES.has(word)) at += 1;
-    } else if (word.startsWith('-')) {
-      // A short cluster such as `-dt` ends with a flag that takes the next word, while `-tx` holds its value.
-      const rest = word.slice(1).replace(SHORT_SWITCHES, '');
-      if (rest.startsWith('h')) return true;
-      if (rest.length === 1) at += 1;
-    }
-  }
-  return false;
-}
-
+const GIT_VAL = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--config-env']);
+const PUSH_VAL = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
+const PREFIXES = new Set(['sudo', 'env', 'command', 'builtin', 'exec', 'nohup', 'time', 'timeout', '!', 'if', 'then', 'elif', 'else', 'do']);
 const RUN_APPROVAL = /actions\/runs\/.*?\/(?:approve|pending_deployments)\b/u;
-
 const MOVES = new Set(['checkout', 'switch', 'reset', 'merge', 'rebase']);
-
-// Why a command would delete or overwrite files that the config's companion
-// repository tracks in a checkout holding its git directory, or null.
-function companionDenial(words, cwd, companion) {
-  const call = gitCommand(words, cwd);
-  if (!call || !companion?.dir) return null;
-  const { sub, args, dir, gitDir } = call;
-  if (sub !== 'clean' && !MOVES.has(sub)) return null;
-  const top = git(dir, 'rev-parse', '--show-toplevel');
-  if (top === null || !existsSync(join(top, companion.dir))) return null;
-  const flags = args.filter((word) => /^-[A-Za-z]+$/u.test(word)).join('');
-  if (sub === 'clean' && !flags.includes('n') && !args.includes('--dry-run')) {
-    if (gitDir !== null && existsSync(resolve(dir, gitDir)) && sameDir(resolve(dir, gitDir), join(top, companion.dir))) return `git clean through ${companion.dir} deletes every public file, which that repository does not track. Clean through this checkout's own git instead.`;
-    if (/[xX]/u.test(flags)) return `git clean -x or -X in ${top} deletes the files ${companion.dir} tracks, which that checkout's git ignores. Run it without -x or -X, or with -n to list what it would delete.`;
-  }
-  if (!MOVES.has(sub) || gitDir !== null) return null;
-  const paths = args.indexOf('--');
-  if (paths !== -1 && paths < args.length - 1 && ['checkout', 'reset'].includes(sub)) return null;
-  for (const rev of (paths === -1 ? args : args.slice(0, paths)).filter((word) => !word.startsWith('-'))) {
-    if (git(dir, 'rev-parse', '--verify', '--quiet', `${rev}^{commit}`) === null) continue;
-    if (git(dir, 'cat-file', '-e', `${rev}:${companion.list}`) !== null) continue;
-    return `${rev} has no ${companion.list}, so moving ${top} there overwrites the files ${companion.dir} tracks with their old copies. Read an old file with \`git show ${rev}:<path>\`, or look around in a detached worktree from \`git worktree add --detach <path> ${rev}\`.`;
-  }
-  return null;
-}
-
-const globMatches = (pattern, name) =>
-  new RegExp(`^${pattern.split('*').map((part) => part.replace(/[.+?^${}()|[\]\\]/gu, '\\$&')).join('.*')}$`, 'u').test(name);
-
-// Claude Code kills a hook at its settings entry's timeout, 10 seconds in Plate,
-// and a killed hook lets the edit through. So the git calls share one budget
-// that ends 8 seconds after the process starts.
-const GIT_DEADLINE = performance.timeOrigin + 8000;
-const gitRun = (dir, args, { env, input } = {}) => {
-  const timeout = Math.floor(GIT_DEADLINE - Date.now());
-  if (timeout <= 0) return null;
-  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', input, env: env && { ...process.env, ...env }, maxBuffer: 1 << 28, timeout, killSignal: 'SIGKILL' });
-  return run.error || run.status !== 0 ? null : run.stdout;
-};
-const git = (dir, ...args) => gitRun(dir, args)?.replace(/\n$/u, '') ?? null;
-const sameDir = (a, b) => {
-  const [x, y] = [statSync(a), statSync(b)];
-  return x.dev === y.dev && x.ino === y.ino;
-};
-
-function resolvePhysically(path) {
-  let parts = path.split(sep).filter(Boolean);
-  let current = sep;
-  for (let index = 0, hops = 0; index < parts.length; index += 1) {
-    if (parts[index] === '.') continue;
-    if (parts[index] === '..') {
-      current = dirname(current);
-      continue;
-    }
-    const next = join(current, parts[index]);
-    let link;
-    try {
-      link = lstatSync(next).isSymbolicLink();
-    } catch {
-      current = next;
-      continue;
-    }
-    if (!link) {
-      current = realpathSync.native(next);
-      continue;
-    }
-    if ((hops += 1) > 40) throw new Error(`too many symlinks at ${next}`);
-    const target = readlinkSync(next);
-    parts = [...target.split(sep).filter(Boolean), ...parts.slice(index + 1)];
-    if (isAbsolute(target)) current = sep;
-    index = -1;
-  }
-  return current;
-}
-
-function mainCheckoutPath(file, main) {
-  let root = file;
-  while (!existsSync(root) || !sameDir(root, main)) {
-    if (dirname(root) === root) return null;
-    root = dirname(root);
-  }
-  const path = relative(root, file);
-  if (path.split(sep)[0] === '.git') return path;
-  let dir = file;
-  while (!existsSync(dir) || !statSync(dir).isDirectory()) dir = dirname(dir);
-  const top = git(dir, 'rev-parse', '--show-toplevel');
-  if (top === null) throw new Error(`git could not read ${dir}`);
-  return sameDir(top, main) ? path : null;
-}
 
 let agyHook = false;
 const allow = () => {
@@ -486,188 +32,288 @@ const deny = (reason) => {
     JSON.stringify(
       agyHook
         ? { decision: 'deny', reason: `guard.mjs: ${reason}` }
-        : { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: `guard.mjs: ${reason}` } }
-    )
+        : { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: `guard.mjs: ${reason}` } },
+    ),
   );
   process.exit(0);
 };
 
-// Claude Code trims the path, expands ~ and resolves it against cwd before the
-// hook sees it and before it writes, so the cleaned spelling is the one that
-// lands. A host that wrote the raw spelling would follow links before any ..,
-// so a raw path holding . or .. is walked too, and either walk can deny.
-function editDenial(config, file, cwd) {
-  if (typeof config.branch !== 'string' || config.branch === '') throw new Error('.agents/pstack.json names no branch');
-  const common = git(dirname(fileURLToPath(import.meta.url)), 'rev-parse', '--path-format=absolute', '--git-common-dir');
-  if (common === null) return 'git could not read this repository, so the guard cannot tell whether this edit lands in the main checkout. Fix git, then retry.';
-  const main = dirname(common);
-  const raw = file.trim().replace(/^~(?=\/|$)/u, homedir());
-  const spellings = new Set([resolve(cwd, raw), isAbsolute(raw) ? raw : `${cwd}${sep}${raw}`]);
-  const hits = [...spellings].map((spelling) => mainCheckoutPath(resolvePhysically(spelling), main)).filter((path) => path !== null);
-  if (hits.length === 0) return null;
-  const branch = git(main, 'branch', '--show-current');
-  if (branch === null) return "git could not read the main checkout's branch, so the guard refuses this edit there. Fix git, then retry.";
-  if (branch !== '' && ![config.branch, config.protected].includes(branch)) return null;
-  const artifacts = config.plans && join(config.plans, 'artifacts') + sep;
-  const path = hits.find((hit) => !(artifacts && hit.startsWith(artifacts)));
-  if (path === undefined) return null;
-  const here = git(cwd, 'rev-parse', '--show-toplevel');
-  const worktree =
-    path.split(sep)[0] !== '.git' && here !== null && !sameDir(here, main) && sameDir(git(here, 'rev-parse', '--path-format=absolute', '--git-common-dir') ?? here, common) ? here : null;
-  return `agents never edit the main checkout on ${branch || 'a detached HEAD'}, here ${path}. ${worktree ? `Edit ${join(worktree, path)} in your worktree instead` : 'Move to your own worktree, such as with EnterWorktree, edit there'}, and land it with land.mjs.${artifacts ? ` Only ${artifacts}, which holds the suggested-task ledger, is writable in the main checkout.` : ''}`;
-}
-
-function editedText(tool, edit, path) {
-  if (tool === 'Write') return typeof edit.content === 'string' ? edit.content : null;
-  if (tool !== 'Edit' && tool !== 'MultiEdit') return null;
-  let text = existsSync(path) ? readFileSync(path, 'utf8') : '';
-  for (const { old_string: from, new_string: to, replace_all: all } of tool === 'MultiEdit' ? (edit.edits ?? []) : [edit]) {
-    if (typeof from !== 'string' || typeof to !== 'string') return null;
-    // Claude Code's Edit fills an empty or missing file when old_string is empty.
-    if (from === '') {
-      if (text !== '') return null;
-      text = to;
-      continue;
-    }
-    if (!text.includes(from)) return null;
-    text = all ? text.split(from).join(to) : text.replace(from, () => to);
-  }
-  return text;
-}
-
-function stepWithEdit({ countText, stepLines }, top, config, step, name, text) {
-  const index = git(top, 'rev-parse', '--path-format=absolute', '--git-path', 'index');
-  if (index === null) return null;
-  const dir = mkdtempSync(join(tmpdir(), 'pstack-guard-'));
+function loadConfig() {
+  if (!existsSync(CONFIG)) return null;
   try {
-    const env = { GIT_INDEX_FILE: join(dir, 'index') };
-    if (existsSync(index)) copyFileSync(index, env.GIT_INDEX_FILE);
-    const inCopy = (at, ...args) => gitRun(at, args, { env })?.replace(/\n$/u, '') ?? null;
-    // git add --update drops the entry of a tracked file missing from disk, so the entry is read first. A literal
-    // pathspec also matches the files under a directory of that name, so only the entry for the path itself counts.
-    const entries = inCopy(top, 'ls-files', '-z', '--stage', '--', `:(literal)${name}`);
-    if (entries === null || inCopy(top, 'add', '--update') === null) return null;
-    const entry = entries.split('\0').find((line) => line.slice(line.indexOf('\t') + 1) === name);
-    if (!entry) return stepLines(top, config, inCopy, { cached: true, edited: { path: name, lines: countText(text) }, from: step.from });
-    const blob = gitRun(top, ['hash-object', '-w', `--path=${name}`, '--stdin'], { input: text })?.trim();
-    if (!blob || inCopy(top, 'update-index', '--add', '--cacheinfo', `${entry.split(' ')[0]},${blob},${name}`) === null) return null;
-    return stepLines(top, config, inCopy, { cached: true, from: step.from });
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-}
-
-const GIT_RULE_FILES = new Set(['.gitignore', '.gitattributes']);
-
-function budgetDenial(status, mainConfig, file, cwd, input) {
-  const path = resolvePhysically(resolve(cwd, file.trim().replace(/^~(?=\/|$)/u, homedir())));
-  let dir = dirname(path);
-  while (!existsSync(dir)) dir = dirname(dir);
-  const top = git(dir, 'rev-parse', '--show-toplevel');
-  const common = top && git(top, 'rev-parse', '--path-format=absolute', '--git-common-dir');
-  const ours = git(dirname(fileURLToPath(import.meta.url)), 'rev-parse', '--path-format=absolute', '--git-common-dir');
-  if (!common || !ours || !sameDir(common, ours)) return null;
-  const own = join(top, '.agents/pstack.json');
-  const config = existsSync(own) ? JSON.parse(readFileSync(own, 'utf8')) : mainConfig;
-  const budget = status.stepBudget(config);
-  const name = relative(top, path).split(sep).join('/');
-  if (budget.excluded(name) || GIT_RULE_FILES.has(basename(name)) || git(top, 'check-ignore', '-q', '--', name) !== null) return null;
-  const step = status.budgetedStep(top, config, git);
-  if (!step) return null;
-  const text = editedText(input.tool_name, input.tool_input, path);
-  const edited = text === null ? null : stepWithEdit(status, top, config, step, name, text);
-  if (text !== null && edited === null) return null;
-  const product = edited?.product ?? step.product;
-  if (product <= budget.lines || (edited && edited.product < step.product)) return null;
-  const companion = config.companion?.dir && existsSync(join(top, config.companion.dir));
-  return `this worktree's change since ${step.base}${edited ? ', with this edit,' : ''} ${status.overBudget(product, budget.lines)}. So the guard refuses this edit to ${name} now, while the step is built, instead of at its panel. To split, save the whole diff in the run directory${companion ? `, the ${config.companion.dir} half's too` : ''}, restore in this worktree every file the first lettered step does not need, with \`git restore --source ${step.sha} -- <paths>\` for a tracked file, land that step, then apply the rest in this worktree for the next one. Tests, specs, fixtures, Markdown, plans, excluded globs, files git ignores and .gitignore and .gitattributes files stay editable, and so does an edit that lowers the step's count. A "big step:" row counts in a decision log this worktree changes, until that log's next "landed as" row or delivery row that names the step as landed, published or dropped.`;
-}
-
-const failOpen = (check) => {
-  try {
-    return check();
+    const raw = readFileSync(CONFIG, 'utf8');
+    if (/^(?:<<<<<<<|=======|>>>>>>>)/mu.test(raw)) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
   } catch {
     return null;
   }
+}
+
+const git = (dir, ...args) => {
+  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', timeout: 5000 });
+  return run.error || run.status !== 0 ? null : run.stdout.replace(/\n$/u, '');
+};
+const sameDir = (a, b) => {
+  try {
+    const [x, y] = [statSync(a), statSync(b)];
+    return x.dev === y.dev && x.ino === y.ino;
+  } catch {
+    return false;
+  }
+};
+const realPath = (p) => {
+  let cur = resolve(p);
+  const tail = [];
+  while (!existsSync(cur) && dirname(cur) !== cur) {
+    tail.unshift(cur.slice(dirname(cur).length).replace(/^\/+/u, ''));
+    cur = dirname(cur);
+  }
+  try {
+    return join(realpathSync.native(cur), ...tail);
+  } catch {
+    return resolve(p);
+  }
+};
+const otherRepo = (dir) => {
+  const common = git(dir, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  const ours = git(HERE_DIR, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  return Boolean(common && ours && !sameDir(common, ours));
 };
 
-function normalizeHookInput(raw) {
-  if (!raw?.toolCall) return raw;
+function editDenial(config, file, cwd) {
+  if (typeof config.branch !== 'string' || !config.branch) return null;
+  const common = git(HERE_DIR, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  if (!common) return null;
+  const main = realPath(dirname(common));
+  const raw = file.trim().replace(/^~(?=\/|$)/u, homedir());
+  const target = realPath(isAbsolute(raw) ? raw : resolve(cwd, raw));
+  const rel = relative(main, target);
+  if (!rel || rel.startsWith('..') || isAbsolute(rel)) return null;
+  if (rel.split(sep)[0] !== '.git') {
+    let dir = target;
+    while (!existsSync(dir) || !statSync(dir).isDirectory()) dir = dirname(dir);
+    const top = git(dir, 'rev-parse', '--show-toplevel');
+    if (!top || !sameDir(top, main)) return null;
+  }
+  const branch = git(main, 'branch', '--show-current');
+  if (branch === null || (branch !== '' && ![config.branch, config.protected].includes(branch))) return null;
+  const artifacts = config.plans && join(config.plans, 'artifacts') + sep;
+  if (artifacts && rel.startsWith(artifacts)) return null;
+  return `agents never edit the main checkout on ${branch || 'a detached HEAD'}, here ${rel}. Edit in your worktree and land with land.mjs.${artifacts ? ` Only ${artifacts} is writable in the main checkout.` : ''}`;
+}
+
+function splitCommands(source) {
+  const clean = source.replaceAll('\\\n', ' ');
+  const cmds = [[]];
+  let word = '';
+  let quote = null;
+  let inWord = false;
+  const pushWord = () => {
+    if (inWord) cmds.at(-1).push(word);
+    word = '';
+    inWord = false;
+  };
+  for (let i = 0; i < clean.length; i += 1) {
+    const ch = clean[i];
+    if (quote) {
+      if (quote === '"' && ch === '\\' && i + 1 < clean.length) word += clean[++i];
+      else if (ch === quote) quote = null;
+      else word += ch;
+      continue;
+    }
+    if (ch === '\\' && i + 1 < clean.length) {
+      word += clean[++i];
+      inWord = true;
+    } else if (ch === "'" || ch === '"') {
+      quote = ch;
+      inWord = true;
+    } else if (/[\s]/u.test(ch)) {
+      pushWord();
+      if (ch === '\n' && cmds.at(-1).length) cmds.push([]);
+    } else if (';|&'.includes(ch)) {
+      pushWord();
+      if ((ch === '&' || ch === '|') && clean[i + 1] === ch) i += 1;
+      if (cmds.at(-1).length) cmds.push([]);
+    } else {
+      word += ch;
+      inWord = true;
+    }
+  }
+  pushWord();
+  return cmds.filter((words) => words.length > 0);
+}
+
+function parseGit(words, cwd) {
+  if (words[0]?.split('/').at(-1) !== 'git') return null;
+  let i = 1;
+  let dir = cwd;
+  let gitDir = null;
+  while (words[i]?.startsWith('-')) {
+    if (words[i] === '-C' && words[i + 1] && !/[$`*?[]/u.test(words[i + 1])) dir = resolve(dir, words[i + 1]);
+    if (words[i] === '--git-dir') gitDir = words[i + 1] ?? '';
+    if (words[i].startsWith('--git-dir=')) gitDir = words[i].slice(10);
+    i += GIT_VAL.has(words[i]) ? 2 : 1;
+  }
+  return { sub: words[i], args: words.slice(i + 1), dir, gitDir };
+}
+
+const globMatches = (pat, name) => new RegExp(`^${pat.split('*').map((p) => p.replace(/[.+?^${}()|[\]\\]/gu, '\\$&')).join('.*')}$`, 'u').test(name);
+
+function checkPush(words, cwd) {
+  const call = parseGit(words, cwd);
+  if (call?.sub !== 'push' || otherRepo(call.dir)) return null;
+  let forced = false;
+  let every = false;
+  let deleting = false;
+  let dry = false;
+  let tags = false;
+  const pos = [];
+  for (let i = 0; i < call.args.length; i += 1) {
+    const w = call.args[i];
+    if (w === '--') {
+      pos.push(...call.args.slice(i + 1));
+      break;
+    }
+    if (PUSH_VAL.has(w)) i += 1;
+    else if (w === '--force' || w.startsWith('--force-with-lease')) forced = true;
+    else if (w === '--mirror') forced = every = true;
+    else if (w === '--all' || w === '--branches') every = true;
+    else if (w === '--delete') deleting = true;
+    else if (w === '--dry-run') dry = true;
+    else if (w === '--tags') tags = true;
+    else if (/^-[A-Za-z]+$/u.test(w)) {
+      forced ||= w.includes('f');
+      deleting ||= w.includes('d');
+      dry ||= w.includes('n');
+    } else if (!w.startsWith('-')) pos.push(w);
+  }
+  const current = () => git(call.dir, 'branch', '--show-current') ?? '';
+  const specs = pos.slice(1);
+  const targets = specs.map((spec) => {
+    const plain = spec.replace(/^\+/u, '');
+    if (spec.startsWith('+')) forced = true;
+    if (plain === ':') return '*';
+    if (plain.startsWith(':')) deleting = true;
+    const dst = plain.includes(':') ? plain.slice(plain.lastIndexOf(':') + 1) : plain;
+    return dst === 'HEAD' || dst === '@' ? current() : dst.replace(/^refs\/heads\//u, '');
+  });
+  const rewriting = forced || deleting;
+  if (every) return { targets: ['*'], rewriting, dry };
+  return { targets: specs.length ? targets : tags ? [] : [current()], rewriting, dry };
+}
+
+function opensPr(words, branch, dir) {
+  if (words[0]?.split('/').at(-1) !== 'gh' || words[1] !== 'pr' || !['create', 'new'].includes(words[2])) return false;
+  let base = null;
+  let repo = false;
+  for (let i = 3; i < words.length; i += 1) {
+    const w = words[i];
+    if (w === '--help' || w === '-h') return false;
+    if (w === '--repo' || w === '-R' || w.startsWith('--repo=') || /^-R./u.test(w)) repo = true;
+    if (w === '--base' || w === '-B') base = words[++i] ?? '';
+    else if (w.startsWith('--base=')) base = w.slice(7);
+    else if (/^-B./u.test(w)) base = w.slice(2);
+  }
+  if (!repo && otherRepo(dir)) return false;
+  return base === null || base.replace(/^refs\/heads\//u, '') === branch;
+}
+
+function companionDenial(words, cwd, companion) {
+  const call = parseGit(words, cwd);
+  if (!call || !companion?.dir || (call.sub !== 'clean' && !MOVES.has(call.sub))) return null;
+  const top = git(call.dir, 'rev-parse', '--show-toplevel');
+  if (!top || !existsSync(join(top, companion.dir))) return null;
+  const flags = call.args.filter((w) => /^-[A-Za-z]+$/u.test(w)).join('');
+  if (call.sub === 'clean' && !flags.includes('n') && !call.args.includes('--dry-run')) {
+    if (call.gitDir && sameDir(resolve(call.dir, call.gitDir), join(top, companion.dir))) return `git clean through ${companion.dir} deletes public files. Clean through this checkout's own git instead.`;
+    if (/[xX]/u.test(flags)) return `git clean -x or -X in ${top} deletes files ${companion.dir} tracks. Run without -x/-X, or with -n.`;
+  }
+  if (!MOVES.has(call.sub) || call.gitDir !== null) return null;
+  const dd = call.args.indexOf('--');
+  if (dd !== -1 && dd < call.args.length - 1 && ['checkout', 'reset'].includes(call.sub)) return null;
+  for (const rev of (dd === -1 ? call.args : call.args.slice(0, dd)).filter((w) => !w.startsWith('-'))) {
+    if (git(call.dir, 'rev-parse', '--verify', '--quiet', `${rev}^{commit}`) === null) continue;
+    if (git(call.dir, 'cat-file', '-e', `${rev}:${companion.list}`) !== null) continue;
+    return `${rev} has no ${companion.list}, so moving ${top} there overwrites files ${companion.dir} tracks. Use \`git show ${rev}:<path>\` or a detached worktree.`;
+  }
+  return null;
+}
+
+function normalizeInput(raw) {
+  if (!raw?.toolCall) return raw ?? {};
   agyHook = true;
   const { name, args = {} } = raw.toolCall;
   if (name === 'run_command') return { ...raw, tool_name: 'Bash', tool_input: { command: args.CommandLine } };
-  if (name === 'write_file') return { ...raw, tool_name: 'Write', tool_input: { file_path: args.Path, content: args.Content } };
-  if (name === 'edit_file') return { ...raw, tool_name: 'Edit', tool_input: { file_path: args.Path, old_string: args.Target, new_string: args.Replacement, replace_all: true } };
+  if (name === 'write_file') return { ...raw, tool_name: 'Write', tool_input: { file_path: args.Path } };
+  if (name === 'edit_file') return { ...raw, tool_name: 'Edit', tool_input: { file_path: args.Path } };
   return { ...raw, tool_name: name, tool_input: args };
 }
 
-const input = normalizeHookInput(JSON.parse(readFileSync(0, 'utf8')));
-if (!existsSync(CONFIG)) allow();
-if (EDIT_TOOLS.has(input.tool_name)) {
-  const file = input.tool_input?.file_path ?? input.tool_input?.notebook_path;
-  if (typeof file !== 'string') allow();
-  let reason;
-  try {
-    const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
-    const cwd = input.cwd ?? process.cwd();
-    reason = editDenial(config, file, cwd);
-    if (!reason) {
-      const status = await import('./status.mjs');
-      reason = failOpen(() => budgetDenial(status, config, file, cwd, input));
-    }
-  } catch (error) {
-    reason = `the guard failed (${error.message}), so it refuses this edit. Fix the path, git or .agents/pstack.json, then retry.`;
-  }
-  if (reason) deny(reason);
+let rawInput;
+try {
+  rawInput = JSON.parse(readFileSync(0, 'utf8'));
+} catch {
   allow();
 }
-const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
+const input = normalizeInput(rawInput);
+const config = loadConfig();
+if (!config) allow();
+
+if (EDIT_TOOLS.has(input.tool_name)) {
+  const file = input.tool_input?.file_path ?? input.tool_input?.notebook_path;
+  if (typeof file === 'string') {
+    const reason = editDenial(config, file, input.cwd ?? process.cwd());
+    if (reason) deny(reason);
+  }
+  allow();
+}
 if (BASE_SYNC.test(input.tool_name ?? '')) {
-  deny(
-    `the app's base-branch sync refuses origin/${config.branch} whenever it changes .claude files. Commit your work, then run \`git fetch origin ${config.branch} && git rebase origin/${config.branch}\` in this worktree; land.mjs also rebases before it pushes.`
-  );
+  deny(`base-branch sync fails on .claude files; run \`git fetch origin ${config.branch} && git rebase origin/${config.branch}\` in this worktree instead.`);
 }
 const command = input.tool_input?.command;
 if (typeof command !== 'string') allow();
+
 const kept = new Set([config.branch, config.protected].filter(Boolean));
 const hits = new Set();
 let direct = false;
 let pr = false;
 let lost = null;
-eachCommand(command, (words, prefix, dir) => {
+let dir = input.cwd ?? process.cwd();
+for (const raw of splitCommands(command)) {
+  let start = 0;
+  let wrapped = false;
+  while (start < raw.length) {
+    if (PREFIXES.has(raw[start])) {
+      wrapped = true;
+      start += 1;
+    } else if (/^[A-Za-z_]\w*=/u.test(raw[start]) || (wrapped && /^[-\d]/u.test(raw[start]))) {
+      start += 1;
+    } else break;
+  }
+  const prefix = raw.slice(0, start);
+  const words = raw.slice(start);
+  if (!words.length) continue;
+  if (words[0] === 'cd' && words[1] && !/[$`*?[]/u.test(words[1]) && words[1] !== '-') {
+    const next = words[1] === '~' || words[1].startsWith('~/') ? join(homedir(), words[1].slice(2)) : resolve(dir, words[1]);
+    if (existsSync(next)) dir = next;
+    continue;
+  }
   lost ??= companionDenial(words, dir, config.companion);
-  const push = pushes(words, dir);
+  const push = checkPush(words, dir);
   for (const target of push?.targets ?? []) {
-    for (const name of target.includes('*') ? [...kept].filter((branch) => globMatches(target, branch)) : [target]) {
-      if (push.rewriting) {
-        if (kept.has(name)) hits.add(name);
-      } else if (name === config.branch && !push.dry && !prefix.includes('PSTACK_RELEASE=1')) direct = true;
+    for (const name of target.includes('*') ? [...kept].filter((b) => globMatches(target, b)) : [target]) {
+      if (push.rewriting && kept.has(name)) hits.add(name);
+      else if (!push.rewriting && name === config.branch && !push.dry && !prefix.includes('PSTACK_RELEASE=1')) direct = true;
     }
   }
   pr ||= opensPr(words, config.branch, dir);
-}, new Set([input.cwd ?? process.cwd()]));
+}
 const reasons = [];
-if (hits.size > 0) reasons.push(`agents never force-push or delete ${[...hits].join(' and ')}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`);
-if (direct) {
-  reasons.push(
-    `agents push ${config.branch} only through \`node .agents/pstack/land.mjs\` from their worktree, which squashes the task, runs its checks and adds the Session: line review.mjs reads. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`
-  );
-}
+if (hits.size > 0) reasons.push(`agents never force-push or delete ${[...hits].join(' and ')}. Ask the owner to run it:\n  ${command}`);
+if (direct) reasons.push(`agents push ${config.branch} only through \`node .agents/pstack/land.mjs\` from a worktree:\n  ${command}`);
 if (lost) reasons.push(lost);
-if (pr) {
-  reasons.push(
-    `agents open a PR into ${config.branch} only through \`node .agents/pstack/land.mjs\`, which renders the plan page as its body. A PR stacked on another branch names that branch with --base.`
-  );
-}
-if (RUN_APPROVAL.test(command.replace(/['"\\]/gu, ''))) {
-  reasons.push(
-    `agents never approve a workflow run, such as a contributor's fork run waiting for approval, because that needs the user's word. Tell the user which runs wait, so they click "Approve and run workflows" on the PR or run the command in their own terminal. A line that only mentions such a path, such as a commit message, writes it without \`actions/runs/\`:\n  ${command}`
-  );
-}
-if ((lost || direct || hits.size > 0) && unresolved.size > 0) {
-  reasons.push(
-    `The guard could not resolve ${[...unresolved].map((part) => `\`${part}\``).join(', ')}, so it judged what follows in the directory before that step. If it runs elsewhere, repeat it with an absolute path.`
-  );
-}
+if (pr) reasons.push(`agents open a PR into ${config.branch} only through \`node .agents/pstack/land.mjs\`. Use --base for a stacked PR.`);
+if (RUN_APPROVAL.test(command.replace(/['"\\]/gu, ''))) reasons.push(`agents never approve a workflow run. Tell the user which runs wait for approval:\n  ${command}`);
 if (reasons.length > 0) deny(reasons.join('\n'));
 allow();

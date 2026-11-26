@@ -4,29 +4,36 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, readSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { constants, homedir, tmpdir } from 'node:os';
+import { constants, homedir, tmpdir, userInfo } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { StringDecoder } from 'node:string_decoder';
 import { fileURLToPath } from 'node:url';
-import { browserLaunch } from './codex-browser.mjs';
-import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
 import { capEffort, claudeSessionRun, claudeTranscript, maxEffort } from './lead.mjs';
+
+const NO_EXEC_RULES = ['--ignore-rules'];
+const ISOLATED_FEATURES = ['apps', 'plugins', 'remote_plugin', 'browser_use', 'browser_use_external', 'browser_use_full_cdp_access', 'computer_use', 'in_app_browser', 'in_app_local_automation', 'image_generation', 'skill_mcp_dependency_install', 'tool_suggest', 'multi_agent', 'multi_agent_v2', 'memories', 'chronicle'];
+const ISOLATED_CODEX_ARGS = ['--ignore-user-config', ...NO_EXEC_RULES, '-c', 'web_search="disabled"', '-c', 'project_doc_max_bytes=0', ...ISOLATED_FEATURES.flatMap((f) => ['--disable', f])];
+function managedCodexConfig() {
+  let user;
+  try {
+    user = userInfo().username;
+  } catch {
+    return 'managed config for a user with no passwd entry';
+  }
+  return ['/etc/codex', '/Library/Managed Preferences/com.openai.codex.plist', `/Library/Managed Preferences/${user}/com.openai.codex.plist`].find((p) => existsSync(p));
+}
 
 export const MODELS = { claude: 'opus', codex: 'gpt-6.2-sol', agy: 'gemini-4-neon' };
 
 export const otherRuntime = (env = process.env) => (env.CLAUDECODE ? 'codex' : 'claude');
 
 const DASHED_WORD = /^-\S+$/u;
-// A seat or a Codex worker has no time limit, so a run stops only once it shows no sign of
-// work for this long. One xhigh reasoning step can pass ten minutes with no output.
 export const IDLE_SECONDS = 1200;
 const VALUE_FLAGS = new Map([
   ['--to', 'to'],
   ['--timeout', 'timeout'],
   ['--model', 'model'],
   ['--effort', 'effort'],
-  ['--computer-use', 'events'],
-  ['--chrome-profile', 'chromeProfile'],
   ['--prompt-file', 'promptFile'],
   ['--prompt', 'prompt'],
 ]);
@@ -220,22 +227,17 @@ export const onStop = (cleanup) => {
 // as more prompt, so stdin is closed and the answer comes only from that file.
 // A child that ignores SIGTERM, or leaves a descendant holding its pipes, is
 // killed and abandoned at the deadline.
-export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false } = {}) {
+export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], bypass = false, reach = false, offline = false } = {}) {
   const max = maxEffort(effortRoot);
   effort = capEffort(effort ?? max, max);
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
   const scratch = reach || runtime === 'agy';
-  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
-  // A Firefox or WebKit crash in the sandbox puts a crash dialog on the owner's screen.
+  const runCwd = scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
   if (reach) prompt = scratchBrief(cwd, 'Your sandbox cannot run a browser, because Chromium, Firefox and WebKit die there as they start, so never start or drive one, through Playwright or any other tool.', prompt);
   const unboxed = runtime === 'agy' && !offline;
   if (runtime === 'agy') prompt = scratchBrief(cwd, `${unboxed ? AGY_UNBOXED : AGY_SANDBOXED} Never start or drive a browser, through Playwright, your browser tools or any other tool.`, prompt);
-  let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
-  if (computerUse) {
-    launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
-    if (launch.refusal) return { runtime, ok: false, text: `refusing the browser lane: ${launch.refusal}` };
-  }
+  const launchArgs = bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS;
   stopOnSignals();
   const answerDir = mkdtempSync(join(tmpdir(), 'pstack-cross-'));
   folders.add(answerDir);
@@ -251,8 +253,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
           'codex',
           [
             'exec',
-            ...(computerUse ? ['--json', '--skip-git-repo-check'] : []),
-            ...launch.args,
+            ...launchArgs,
             '-m',
             model,
             ...(effort ? ['-c', `model_reasoning_effort=${effort}`] : []),
@@ -347,7 +348,6 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
         signalSeat('SIGKILL');
       }
       try {
-        if (computerUse) writeFileSync(computerUse.events, stdout);
         const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : runtime === 'agy' ? agyAnswer(stdout) : stdout).trim();
         const filtered = runtime === 'agy' && (GEMINI_FILTERED.test(text) || GEMINI_FILTERED.test(stdout.trim()));
         const touched = mainCheckout && checkoutState(mainCheckout) !== mainBefore;
@@ -393,11 +393,11 @@ async function main(argv) {
     else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
     else positional.push(arg);
   }
-  const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile } = values;
+  const { to = otherRuntime(), model, effort, promptFile } = values;
   const sources = [...positional, values.prompt, promptFile].filter((source) => source !== undefined);
   let prompt = sources[0] ?? '';
   const timeout = values.timeout === undefined ? undefined : Number(values.timeout);
-  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude|agy] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude|agy] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
   if (help) {
     console.info(usage);
     return 0;
@@ -415,12 +415,8 @@ async function main(argv) {
     return 2;
   }
   const lane = bypass ? '--bypass' : reach ? '--reach' : null;
-  if (lane && (to !== 'codex' || isolated || events)) {
-    console.error(`${lane} runs only --to codex, without --ignore-user-config or --computer-use\n${usage}`);
-    return 2;
-  }
-  if (isolated && events) {
-    console.error(`--ignore-user-config and --computer-use conflict\n${usage}`);
+  if (lane && (to !== 'codex' || isolated)) {
+    console.error(`${lane} runs only --to codex, without --ignore-user-config\n${usage}`);
     return 2;
   }
   if (sources.length > 1) {
@@ -432,11 +428,7 @@ async function main(argv) {
     console.error(usage);
     return 2;
   }
-  if ((events || chromeProfile) && (to !== 'codex' || !events || !chromeProfile)) {
-    console.error(`--computer-use and --chrome-profile go together, and only --to codex\n${usage}`);
-    return 2;
-  }
-  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile } });
+  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach });
   (answer.ok ? console.info : console.error)(answer.text);
   if (answer.refused) console.error(`refused: ${answer.refused}`);
   if (answer.seat) console.error(`seat: ${answer.seat}`);

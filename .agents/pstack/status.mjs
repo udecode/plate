@@ -3,7 +3,7 @@
 // cited proof is a path under <plans>/artifacts/.
 
 import { spawnSync } from 'node:child_process';
-import { closeSync, existsSync, lstatSync, openSync, readdirSync, readFileSync, readSync, realpathSync } from 'node:fs';
+import { closeSync, existsSync, lstatSync, openSync, readdirSync, readSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const GLOB = { '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' };
@@ -12,122 +12,6 @@ export const globMatcher = (globs = []) => {
   const patterns = globs.map((glob) => new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/gu, '\\$&').replace(/\*\*\/|\*\*|\*|\?/gu, (token) => GLOB[token])}$`, 'u'));
   return (path) => patterns.some((pattern) => pattern.test(path));
 };
-
-const STEP_EXCLUDE = ['**/*.test.*', '**/*.spec.*', '**/__tests__/**', '**/fixtures/**', '**/*.md', '**/*.mdx'];
-export const plansOf = (config) => (config.plans || 'docs/plans').replace(/^(?:\.\/)+/u, '').replace(/\/+$/u, '');
-export const stepBudget = (config) => {
-  const { stepBudget: { lines = 400, exclude = [] } = {}, generated = [] } = config;
-  if (!Number.isInteger(lines) || lines < 1) throw new Error(`.agents/pstack.json: stepBudget.lines is ${JSON.stringify(lines)}, not a whole number of 1 or more`);
-  return { lines, excluded: globMatcher([...STEP_EXCLUDE, `${plansOf(config)}/**`, ...generated.flatMap((entry) => entry.paths ?? []), ...exclude]) };
-};
-export const isBigStep = (phase, decision) => ['build', 'owner'].includes(phase) && /^big step:\s*\S/u.test(decision);
-const LANDED_ROW = /^(?:steps? [^\t]*?)?landed as [0-9a-f]{7,64}\b/iu;
-export const STEP_ID = String.raw`\d{1,9}(?:\.\d{1,9})*[a-z]?`;
-export const STEP_CLOSED = new RegExp(String.raw`(?:^|\bstep\s+)(${STEP_ID})(?![a-z0-9]|\.\d)[^\t]*?\b(?:landed|published|dropped)\b`, 'iu');
-const liftedStep = (decision) => decision.match(new RegExp(`^big step:\\s*step (${STEP_ID})(?!\\w|\\.\\d)`, 'iu'))?.[1]?.toLowerCase() ?? null;
-export const bigStepId = (decision, word) => {
-  const step = liftedStep(decision);
-  return step && plainWord(word ?? '') === `split step ${step}` ? step : null;
-};
-// ASCII and matched without the i flag, because under the u flag case folding turns ſ into s.
-export const NAMED_STEP_ID = String.raw`[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*`;
-export const NAMED_STEP_END = String.raw`(?=$|\s|[,;:)\]}'"’”]|\.(?![\p{L}\p{N}]))`;
-const namedLift = new RegExp(String.raw`^big step:\s*[Ss]tep\s+(${NAMED_STEP_ID})${NAMED_STEP_END}`, 'u');
-const liftNames = (decision) => liftedStep(decision) ?? decision.match(namedLift)?.[1].toLowerCase() ?? null;
-export const liftsStep = (text, ends = () => false, step = null) =>
-  text.split('\n').reduce((lifted, line) => {
-    const [, phase, decision = ''] = line.split('\t');
-    if (isBigStep(phase, decision)) return lifted || !step || [null, step].includes(liftNames(decision));
-    return LANDED_ROW.test(decision) || (phase === 'delivery' && STEP_CLOSED.test(decision)) || ends(line) ? false : lifted;
-  }, false);
-export const overBudget = (product, lines) =>
-  `changes ${product} product lines, past the step budget of ${lines}. Split the step into lettered steps that land one by one, such as step 4a and step 4b, when each lands under the budget, proven by behavior tests of its own, with its own diff round. When no such split exists, log a build row whose decision starts "big step: step 4" and names the split you tried and why it fails, and whose evidence names the plan's Defaults word that reverses it, as "word: split step 4"`;
-
-export const countText = (text) => {
-  const bytes = Buffer.from(text);
-  if (bytes.length === 0 || bytes.includes(0)) return 0;
-  const lines = bytes.toString('utf8').split('\n').length;
-  return bytes.at(-1) === 10 ? lines - 1 : lines;
-};
-
-// Git counts a symlink as the one line of its target path.
-const countLines = (path) => {
-  try {
-    return lstatSync(path).isSymbolicLink() ? 1 : countText(readFileSync(path));
-  } catch {
-    return 0;
-  }
-};
-
-const split = (output) => (output === null ? null : output.split('\0').filter(Boolean));
-
-const nearestBase = (git, config) => {
-  const names = ['upstream', 'origin'].flatMap((remote) => [config.branch, config.protected].filter(Boolean).map((branch) => `refs/remotes/${remote}/${branch}`));
-  if (names.length === 0) return null;
-  const listed = git('for-each-ref', '--format=%(refname)', ...names)?.split('\n') ?? [];
-  let best = null;
-  for (const ref of listed.filter((name) => names.includes(name))) {
-    const sha = git('merge-base', 'HEAD', ref);
-    const count = sha && git('rev-list', '--count', `${sha}..HEAD`);
-    const ahead = count === null ? Number.NaN : Number(count);
-    if (sha && Number.isInteger(ahead) && (best === null || ahead < best.ahead)) best = { ref: ref.replace(/^refs\/remotes\//u, ''), sha, ahead };
-  }
-  return best;
-};
-
-export function stepLines(top, config, gitAt, { cached = false, edited, from } = {}) {
-  const { excluded } = stepBudget(config);
-  const git = (...args) => gitAt(top, ...args);
-  const base = from ?? nearestBase(git, config);
-  const fields = base && split(git('diff', ...(cached ? ['--cached'] : []), '--numstat', '-z', base.sha));
-  const untracked = fields && split(git('ls-files', '--others', '--exclude-standard', '-z'));
-  if (!untracked) return null;
-  const step = { product: 0, base: `${base.ref} at ${base.sha.slice(0, 10)}`, sha: base.sha.slice(0, 10), from: base, files: [] };
-  const count = (file, lines) => {
-    step.files.push(file);
-    if (lines !== null && !excluded(file)) step.product += lines;
-  };
-  for (let at = 0; at < fields.length; at += 1) {
-    const [added, deleted, ...rest] = fields[at].split('\t');
-    const path = rest.join('\t');
-    // A rename's numstat leaves the path empty and names the old and new paths in the next two fields.
-    count(path === '' ? fields[(at += 2)] : path, added === '-' ? null : Number(added) + Number(deleted));
-  }
-  for (const file of new Set([...untracked, ...(edited ? [edited.path] : [])])) count(file, excluded(file) ? null : file === edited?.path ? edited.lines : countLines(join(top, file)));
-  return step;
-}
-
-const companionPlanFiles = (top, config, gitAt, plans) => {
-  const companion = (...args) => gitAt(top, `--git-dir=${join(top, config.companion.dir)}`, `--work-tree=${top}`, ...args);
-  const from = nearestBase(companion, config);
-  const changed = from ? split(companion('diff', '--name-only', '--diff-filter=d', '-z', from.sha)) : [];
-  const companionNew = split(companion('ls-files', '--others', '-z', '--', `:(glob)${plans}/*`, `:(exclude,glob)${plans}/*/**`));
-  const tracked = split(gitAt(top, 'ls-files', '-z', '--', `${plans}/`));
-  if (!changed || !companionNew || !tracked) return null;
-  const publicTracked = new Set(tracked);
-  return [...changed, ...companionNew.filter((file) => !publicTracked.has(file))];
-};
-
-export function stepRecords(top, config, gitAt, files) {
-  const plans = plansOf(config);
-  const companion = config.companion?.dir && existsSync(join(top, config.companion.dir)) ? companionPlanFiles(top, config, gitAt, plans) : [];
-  if (companion === null) return null;
-  const records = { logs: [], planned: false };
-  for (const file of [...files, ...companion]) {
-    const name = file.startsWith(`${plans}/`) ? file.slice(plans.length + 1) : '/';
-    if (name.includes('/') || !existsSync(join(top, file))) continue;
-    if (name.endsWith('.decisions.tsv')) records.logs.push(join(top, file));
-    if (/^\d{4}-\d{2}-\d{2}-.+\.(?:md|decisions\.tsv)$/u.test(name)) records.planned = true;
-  }
-  return records;
-}
-
-export function budgetedStep(top, config, gitAt) {
-  const step = stepLines(top, config, gitAt);
-  if (!step) return null;
-  const records = stepRecords(top, config, gitAt, step.files);
-  return records?.planned && !records.logs.some((log) => liftsStep(readFileSync(log, 'utf8'))) ? step : null;
-}
 
 const LANDED = ['done', 'complete', 'completed', 'shipped', 'executed', 'implemented', 'fixed', 'released', 'merged', 'verified', 'landed'];
 
@@ -164,39 +48,6 @@ export const waitsOnOwner = (status) =>
   });
 
 export const SEATS = /^seats\s/u;
-export const CRITICAL_SEATS = /^critical \[([^\]]*)\]:\s*\S/u;
-
-export const SEAT_MODEL = /(?<![\w.:-])(?:codex:|agy:)?(?:claude-[\w.-]*\w|gpt-[\w.-]*\w|gemini-[\w.-]*\w|opus|sonnet|haiku|fable)(?![\w-])/gu;
-export const seatName = (name) => name.trim().replace(/^(?:codex|agy):/u, '').replace(/\s+missing$/u, '').replace(/\s+@\w+$/u, '');
-export const seatKey = (name) => seatName(name.toLowerCase()).replace(/^claude-([a-z]+)-.*$/u, '$1');
-
-function modelForSeatWord(key, models) {
-  if (key === 'lead' || models.includes(key) || !/^[a-z]+$/u.test(key)) return key;
-  const matches = models.filter((model) => model.split('-').at(-1) === key);
-  return matches.length === 1 ? matches[0] : key;
-}
-
-export function bracketSeats(decision, models) {
-  return decision.match(CRITICAL_SEATS)?.[1].split(',').map((name) => modelForSeatWord(seatKey(name), models));
-}
-
-export function seatRoster(decision) {
-  const marked = new Set();
-  const slots = decision
-    .replace(/^seats\b(?:[^,]*?:\s)?/u, '')
-    .replace(/\([^)]*\)/gu, ' ')
-    .split(/[,;]/u)
-    .flatMap((entry) => {
-      const [named, ...after] = entry.split(/\b(?:missing|skipped)\b/u);
-      const seat = named.match(SEAT_MODEL)?.[0];
-      if (after.length === 0) return seat ? [seatKey(seat)] : [];
-      if (seat) marked.add(seatKey(seat));
-      const ran = after.join(' ').match(SEAT_MODEL)?.[0];
-      return ran ? [seatKey(ran)] : seat ? [null] : [];
-    });
-  const models = [...new Set(slots.filter(Boolean))];
-  return { slots, models, missing: [...marked].filter((model) => !models.includes(model)) };
-}
 
 export const decisionLogs = (plans) =>
   readdirSync(plans)
