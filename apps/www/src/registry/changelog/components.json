@@ -1,6 +1,18 @@
 {
   "schemaVersion": 1,
   "components": {
+    "board": [
+      "2026-11-26-board-arrow-components",
+      "2026-11-23-board-export",
+      "2026-11-22-board-styles-file",
+      "2026-11-20-board-picture-button",
+      "2026-11-19-board-images",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-12-add-board"
+    ],
     "field-demo": [
       "2026-11-25-field-demo-answer-conflict",
       "2026-11-25-field-name-input",
@@ -280,17 +292,6 @@
       "2026-08-28-canonical-editor-api-names",
       "2026-08-25-base-first-registry",
       "2026-08-17-flat-editor-registry"
-    ],
-    "board": [
-      "2026-11-23-board-export",
-      "2026-11-22-board-styles-file",
-      "2026-11-20-board-picture-button",
-      "2026-11-19-board-images",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-12-add-board"
     ],
     "block-list-static": [
       "2026-11-23-board-export",

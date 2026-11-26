@@ -94,18 +94,8 @@ export const geoOutline = (
   );
 };
 
-const HEAD_LENGTH = 12;
-const BARB_TURN = 0.45;
-
-type Point = Readonly<{ x: number; y: number }>;
-
-/** The arrowhead's triangle at `end`, pointing along the line from `start`. */
-export const arrowHead = (start: Point, end: Point) => {
-  const angle = Math.atan2(end.y - start.y, end.x - start.x);
-  const barb = (turn: number) =>
-    `${end.x - HEAD_LENGTH * Math.cos(angle + turn)},${
-      end.y - HEAD_LENGTH * Math.sin(angle + turn)
-    }`;
-
-  return `${end.x},${end.y} ${barb(BARB_TURN)} ${barb(-BARB_TURN)}`;
-};
+/**
+ * The arrowhead's triangle, its tip at the origin pointing along +x and its two
+ * 12 px sides 0.45 rad off the line, for a group turned along the arrow.
+ */
+export const ARROW_HEAD = '0,0 -10.81,-5.22 -10.81,5.22';

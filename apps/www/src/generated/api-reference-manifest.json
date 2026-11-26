@@ -11448,14 +11448,36 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/board/react:BoardArrowhead": {
+          "aliases": [],
+          "documentation": "An SVG `<g>` inside an arrow's `BoardShape` that draws its children at the\narrow's end, turned so that the positive x axis points away from the arrow's\nstart. It follows the arrow without a render, and is hidden with\n`display=\"none\"` until the arrow has a drawing.",
+          "entrypoint": "platejs/board/react",
+          "kind": "function",
+          "name": "BoardArrowhead",
+          "runtime": true,
+          "signature": "declare function BoardArrowhead({ ref, ...props }: Omit<React.ComponentPropsWithRef<'g'>, 'display' | 'transform'>): React.JSX.Element;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/board/react:BoardArrowLabel": {
+          "aliases": [],
+          "documentation": "A `<div>` inside an arrow's `BoardShape`, for the arrow's text, with its\n`left` and `top` at the arrow's middle in board coordinates. It sets\n`position: absolute` and a `translate` that centers it on that point,\nunless `style` sets either one. It follows the arrow without a render, and\nis `hidden` until the arrow has a drawing.",
+          "entrypoint": "platejs/board/react",
+          "kind": "function",
+          "name": "BoardArrowLabel",
+          "runtime": true,
+          "signature": "declare function BoardArrowLabel({ ref, style, ...props }: Omit<React.ComponentPropsWithRef<'div'>, 'hidden' | 'style'> & {\n  style?: Omit<React.CSSProperties, 'left' | 'top'>;\n}): React.JSX.Element;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/board/react:BoardArrowPath": {
           "aliases": [],
-          "documentation": "Where an arrow draws: its two ends in board coordinates and the path between them.",
+          "documentation": "An SVG `<path>` inside an arrow's `BoardShape`, whose `d` runs between the\narrow's ends in board coordinates. It follows the arrow without a render, and\nhas no `d` until the arrow has a drawing.",
           "entrypoint": "platejs/board/react",
-          "kind": "type",
+          "kind": "function",
           "name": "BoardArrowPath",
-          "runtime": false,
-          "signature": "type BoardArrowPath = BoardArrowEnds & Readonly<{\n  path: string;\n}>;",
+          "runtime": true,
+          "signature": "declare function BoardArrowPath({ ref, ...props }: Omit<React.ComponentPropsWithRef<'path'>, 'd'>): React.JSX.Element;",
           "source": null,
           "typeParameters": []
         },
@@ -11604,7 +11626,7 @@
         },
         "platejs/board/react:BoardShape": {
           "aliases": [],
-          "documentation": "One member of a board, painted at its stacking rank while the DOM keeps the\nboard's stored order. A shape, frame or stroke sits at its box and,\nselected alone while the view's tool is `select`, shows four resize\nhandles, `[data-board-handle]`, each valued with its `BoardCorner`. An\narrow sits at the board's origin with no size, so its component draws in\nboard coordinates from `useArrowPath`, and it has no handles. A frame takes\na press only on its edge or on a child marked `[data-board-frame-name]`,\nsuch as its name, and a stroke only on its line, which its component draws\nfrom `useStrokePath`. A selected member shows `data-selected`, one the\neraser will remove on release shows `data-erasing`, and the one under the\npicking cursor that Space starts shows `data-board-cursor`.",
+          "documentation": "One member of a board, painted at its stacking rank while the DOM keeps the\nboard's stored order. A shape, frame or stroke sits at its box and,\nselected alone while the view's tool is `select`, shows four resize\nhandles, `[data-board-handle]`, each valued with its `BoardCorner`. An\narrow sits at the board's origin with no size, so its component draws in\nboard coordinates through `BoardArrowPath`, `BoardArrowhead` and\n`BoardArrowLabel`, and it has no handles. A frame takes\na press only on its edge or on a child marked `[data-board-frame-name]`,\nsuch as its name, and a stroke only on its line, which its component draws\nfrom `useStrokePath`. A selected member shows `data-selected`, one the\neraser will remove on release shows `data-erasing`, and the one under the\npicking cursor that Space starts shows `data-board-cursor`.",
           "entrypoint": "platejs/board/react",
           "kind": "function",
           "name": "BoardShape",
@@ -11697,7 +11719,7 @@
           "kind": "const",
           "name": "useArrowPath",
           "runtime": true,
-          "signature": "useArrowPath: (element: Element) => BoardArrowPath | undefined",
+          "signature": "useArrowPath: (element: Element) => BoardArrowPath$1 | undefined",
           "source": null,
           "typeParameters": []
         },

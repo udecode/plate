@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-26-board-arrow-components",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-26-board-arrow-components.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Draw board arrows through the arrow components",
+  "targets": [
+    {
+      "name": "board",
+      "files": [
+        "apps/www/src/registry/components/editor/board-static.tsx",
+        "apps/www/src/registry/components/editor/board-styles.tsx",
+        "apps/www/src/registry/components/editor/board.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-26-board-draw-arrows-through-arrow-d285e280",
+      "kind": "behavior",
+      "summary": "Draw each arrow's line, head and label through `BoardArrowPath`, `BoardArrowhead` and `BoardArrowLabel` from `platejs/board/react`, so an arrow follows a dragged or resized shape without a render. `board-styles` exports the head as `ARROW_HEAD`, which the static arrow draws too.",
+      "details": [],
+      "migrationNotes": [
+        "Copy the `board` item again with all its files, because `board-static` draws the head that `board-styles` exports as `ARROW_HEAD`."
+      ],
+      "targets": ["board"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-26",
+          "entry": "2026-11-26-board-arrow-components",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

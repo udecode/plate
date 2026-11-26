@@ -26,6 +26,9 @@ import {
 } from 'lucide-react';
 import { ElementApi } from 'platejs';
 import {
+  BoardArrowhead,
+  BoardArrowLabel,
+  BoardArrowPath,
   BoardArrowPlugin,
   type BoardCorner,
   BoardFramePlugin,
@@ -43,7 +46,6 @@ import {
   type BoardStyle,
   BoardSurface,
   type BoardTool,
-  useArrowPath,
   useBoardActions,
   useBoardView,
   useStrokePath,
@@ -62,7 +64,7 @@ import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
 import {
-  arrowHead,
+  ARROW_HEAD,
   BOARD_COLORS,
   COLORS,
   dashArray,
@@ -951,11 +953,6 @@ export function BoardArrowElement(
   props: EditorElementProps<typeof BoardArrowPlugin>
 ) {
   const { element } = props;
-  const drawn = useArrowPath(element);
-
-  if (!drawn) return <BoardShape {...props} />;
-
-  const { end, path, start } = drawn;
   const width = STROKE_WIDTHS[element.strokeWidth];
   const hitWidth = Math.max(14, width + 10);
 
@@ -975,15 +972,13 @@ export function BoardArrowElement(
           height={1}
           width={1}
         >
-          <path
-            d={path}
+          <BoardArrowPath
             pointerEvents="stroke"
             stroke="transparent"
             strokeWidth={hitWidth}
           />
-          <path
+          <BoardArrowPath
             className="hidden stroke-ring/50"
-            d={path}
             data-board-arrow-halo=""
             fill="none"
             strokeLinecap="round"
@@ -995,8 +990,7 @@ export function BoardArrowElement(
             opacity={element.opacity}
             style={{ color: paint(element.strokeColor) }}
           >
-            <path
-              d={path}
+            <BoardArrowPath
               data-board-arrow-path=""
               fill="none"
               stroke="currentColor"
@@ -1004,21 +998,18 @@ export function BoardArrowElement(
               strokeLinecap="round"
               strokeWidth={width}
             />
-            <polygon fill="currentColor" points={arrowHead(start, end)} />
+            <BoardArrowhead>
+              <polygon fill="currentColor" points={ARROW_HEAD} />
+            </BoardArrowhead>
           </g>
         </svg>
       </div>
-      <div
-        className="absolute min-w-4 -translate-1/2 rounded-sm px-1 text-center leading-snug whitespace-nowrap has-[[data-editor-string]]:bg-background"
-        data-board-arrow-label=""
-        style={{
-          left: (start.x + end.x) / 2,
-          opacity: element.opacity,
-          top: (start.y + end.y) / 2,
-        }}
+      <BoardArrowLabel
+        className="min-w-4 rounded-sm px-1 text-center leading-snug whitespace-nowrap has-[[data-editor-string]]:bg-background"
+        style={{ opacity: element.opacity }}
       >
         {props.children}
-      </div>
+      </BoardArrowLabel>
     </BoardShape>
   );
 }

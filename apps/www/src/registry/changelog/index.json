@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-26-board-arrow-components",
+      "href": "/registry/changelog/2026-11-26-board-arrow-components.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Draw board arrows through the arrow components",
+      "change": {
+        "type": "source",
+        "date": "2026-11-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["board"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-25-field-demo-answer-conflict",
       "href": "/registry/changelog/2026-11-25-field-demo-answer-conflict.json",
       "status": "draft",

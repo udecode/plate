@@ -17,7 +17,7 @@ import * as React from 'react';
 import { BaseBasicBlocksKit } from '@/registry/components/editor/basic-blocks-static';
 import { BaseBasicMarksKit } from '@/registry/components/editor/basic-marks-static';
 import {
-  arrowHead,
+  ARROW_HEAD,
   BOARD_COLORS,
   dashArray,
   geoOutline,
@@ -245,6 +245,7 @@ export function BoardArrowElementStatic(
   };
   const start = { x: ends.start.x - box.x, y: ends.start.y - box.y };
   const end = { x: ends.end.x - box.x, y: ends.end.y - box.y };
+  const angle = (Math.atan2(end.y - start.y, end.x - start.x) * 180) / Math.PI;
   const width = STROKE_WIDTHS[element.strokeWidth];
 
   return (
@@ -269,7 +270,9 @@ export function BoardArrowElementStatic(
             strokeLinecap="round"
             strokeWidth={width}
           />
-          <polygon fill="currentColor" points={arrowHead(start, end)} />
+          <g transform={`translate(${end.x} ${end.y}) rotate(${angle})`}>
+            <polygon fill="currentColor" points={ARROW_HEAD} />
+          </g>
         </g>
       </svg>
       {NodeApi.string(element) !== '' && (
