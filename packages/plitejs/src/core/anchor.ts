@@ -56,12 +56,14 @@ import {
 } from './change/document-change';
 import { DocumentIndex, nodeAtPath } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
+import { coversContent } from './change/range-content';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
 import { isDocumentView } from './document-view-read';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
+  getEditorSchema,
 } from './editor-runtime';
 import {
   assertPublicLocationRoot,
@@ -1507,28 +1509,6 @@ export function createAnchor<TValue extends AnchorValue>(
         kind === 'range'
           ? beforeDocument.positionAt(getDefined(pointStates[1]).point)
           : sourceFrom;
-      const sourceNodesKeepIdentity = pointStates.every((state) => {
-        const runtimePath = runtimePathOf(state.nodeKey, context);
-        if (!runtimePath) return false;
-
-        try {
-          return (
-            beforeDocument.node(state.point.path) ===
-            nextDocument().node(runtimePath)
-          );
-        } catch {
-          return false;
-        }
-      });
-      const sourceRangeWasDeleted =
-        targetWasExpanded &&
-        !sourceNodesKeepIdentity &&
-        changeCoversSourceRange(
-          change,
-          root,
-          Math.min(sourceFrom, sourceTo),
-          Math.max(sourceFrom, sourceTo)
-        );
       const associations =
         kind === 'point'
           ? ([association === 'backward' ? -1 : 1] as const)
@@ -1604,6 +1584,55 @@ export function createAnchor<TValue extends AnchorValue>(
             }
           : null;
       });
+      const sourceRangeWasDeleted = (() => {
+        if (!targetWasExpanded) return false;
+
+        const afterDocument = nextDocument();
+        const sourceNodesKeepIdentity = pointStates.every((state) => {
+          const runtimePath = runtimePathOf(state.nodeKey, context);
+          if (!runtimePath) return false;
+
+          try {
+            return (
+              beforeDocument.node(state.point.path) ===
+              afterDocument.node(runtimePath)
+            );
+          } catch {
+            return false;
+          }
+        });
+
+        if (sourceNodesKeepIdentity) return false;
+
+        const sourceMin = Math.min(sourceFrom, sourceTo);
+        const sourceMax = Math.max(sourceFrom, sourceTo);
+
+        if (changeCoversSourceRange(change, root, sourceMin, sourceMax)) {
+          return true;
+        }
+
+        const mappedStart = mappedPoints[0]?.point;
+        const mappedEnd = mappedPoints[1]?.point;
+
+        if (!mappedStart || !mappedEnd) return false;
+
+        const mappedFrom = afterDocument.positionAt(mappedStart);
+        const mappedTo = afterDocument.positionAt(mappedEnd);
+        const schema = getEditorSchema(runtimeEditor);
+
+        if (
+          coversContent(
+            afterDocument,
+            Math.min(mappedFrom, mappedTo),
+            Math.max(mappedFrom, mappedTo),
+            schema
+          )
+        ) {
+          return false;
+        }
+
+        return coversContent(beforeDocument, sourceMin, sourceMax, schema);
+      })();
       const start = sourceFrom <= sourceTo ? 0 : 1;
       const sources =
         options.deletion === 'nearest' && sourceRangeWasDeleted && !replacement
