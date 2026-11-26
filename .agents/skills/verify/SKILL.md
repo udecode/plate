@@ -259,8 +259,8 @@ the `clip` skill's recorder. An agent pass's lane runs it to record a find it
 already made and to check dark mode, and a find that shows only in its replay
 stays open for a person. A retest also runs it to replay a reporter's steps
 that no agent browser delivers, such as Cmd+Z in a text input. Browser emulation does not prove raw
-Android/iOS input. On the Android emulator an agent tries a page by hand
-through the drive session in the command recipes, and a device case still
+Android/iOS input. On the Android emulator or the iPhone simulator an agent
+tries a page by hand through the drive session in the command recipes, and a device case still
 proves each bug it finds there.
 
 Copied UI runs through the React Compiler only in www. Its dev and production

@@ -379,6 +379,10 @@ there go through adb and skip Gboard, so they never count as proof.
 Each `drive` action prints its result as JSON and exits 1 when it fails:
 
 - `open <path>` opens a www page; `tap <text>` taps visible text.
+- `tap-button <name>` taps a button by its accessible name. With
+  `--bar keyboard` or `--bar fixed` it looks only in the docked keyboard bar
+  or the fixed toolbar and scrolls that bar to the button. `tap-menu <name>`
+  taps an item of the open menu.
 - `tap-at <path> <offset>` taps a text position, such as `0,0 9` for offset 9
   of the first block's first text; `press-at <path> <offset> [ms]`
   long-presses one.
@@ -386,13 +390,90 @@ Each `drive` action prints its result as JSON and exits 1 when it fails:
   up it covers the screen below about y=1500, and a drag there glide-types.
 - `use <en|ja|ko|zh>` switches Gboard's language; `type <text>` types through
   Gboard's keys; `key <backspace|enter|space|label>` taps one key.
-- `read` returns the editor's DOM text, model text and selection and whether
-  the keyboard shows; `shot` saves a screenshot only.
+- `back` presses Android Back and returns where focus sits and whether the
+  keyboard shows.
+- `read` returns the editor's DOM text, model text and selection, where focus
+  sits, the visual viewport, the page's URL and whether the keyboard shows.
+  `focus` and `viewport` return one of those alone. `shot` saves a screenshot
+  only.
 - `record start` and `record stop` save an MP4 of the screen.
 
 Each action saves a screenshot and a line in `steps.jsonl` in the `--dir`
 folder. `stop`, or 30 minutes with no action, closes the session's tab and
 releases the lock.
+
+An Android emulator the Mac already has runs the drive session too, without
+the pinned image. Point `PLATE_DEVICE_ANDROID_SDK` at its SDK, such as
+`~/Library/Android/sdk`, and pass the emulator's serial with `--serial` on
+every `drive android` command. An SDK folder with `platform-tools` and no
+`avd` folder counts as the host's, so the emulator keeps the host's AVD and
+user homes. A proof made there covers that emulator and its Gboard, not the
+pinned one.
+
+The same device config and drive session run on the iPhone simulator that
+`tooling/device/targets.mjs` pins as `iosTarget`. It is plate_ios_27, an
+iPhone 17 on iOS 27.2 with Xcode 27.2 and the English (US) keyboard.
+
+```bash
+node tooling/device/device.mjs doctor ios
+node tooling/device/device.mjs install ios
+node tooling/device/device.mjs boot ios
+PLATE_DEVICE_SERIALS=<udid> PLATE_DEVICE_REPEAT=1 PLATE_DEVICE_WWW_PORT=3297 pnpm --filter plite exec playwright test --config playwright.device.config.ts
+```
+
+`doctor` checks Xcode's version, the iOS 27.2 runtime, the simulator and the
+build of the XCUITest runner, and prints the command that fixes each missing
+piece. A missing runtime comes from `xcodebuild -downloadPlatform iOS`, a
+download of several gigabytes, so ask the owner before running it. `install`
+creates the simulator and builds the runner from this checkout into
+`~/.cache/plate-device/ios-runner`, or the folder `PLATE_DEVICE_IOS_RUNNER`
+names, and downloads nothing. Run `install ios` again after any change under
+`tooling/device/ios-runner/`, because the lane sends the runner commands that
+only the new build knows. `boot` refuses a booted simulator. Otherwise it
+erases the simulator, writes its English settings and boots it with no
+window, so Simulator.app stays closed and each boot forgets the words the
+keyboard learned. `<udid>` is the UDID that `doctor ios` and `boot ios` print,
+and a simulator UDID in `PLATE_DEVICE_SERIALS` picks the iPhone lane. Start a
+www server of this checkout first and pass its port, as on Android. Shut the simulator down with `xcrun simctl shutdown <udid>`.
+
+The lane reads and drives the page through Safari's Web Inspector and taps
+the on-screen keyboard's keys through the runner. Each run quits Safari before
+it opens its tab. The runner ends each XCUITest wait for Safari's animations
+after 1 s, because Safari's keyboard animation can leave that wait stuck at
+60 s before every tap. Do not turn the wait off. A tap during the keyboard's
+slide never reaches the page. Only English types on the iPhone, so the cases
+that type other languages skip, and so do the cases for Gboard's suggestion
+strip and the Android-only bypass case. One run of the config took 2 to 3
+minutes once the Plite app was built. The first run builds the app, which can
+take several minutes more.
+
+`drive ios` takes the same actions as `drive android` and needs no `--serial`.
+Boot the simulator and start a www server first, and request the page once with
+`curl`, as for `drive android`:
+
+```bash
+node tooling/device/device.mjs drive ios start --www 3297 --dir <main checkout>/docs/plans/artifacts/<slug>/drive
+node tooling/device/device.mjs drive ios open /docs/basic-blocks
+node tooling/device/device.mjs drive ios record start
+node tooling/device/device.mjs drive ios tap-at 0,0 9
+node tooling/device/device.mjs drive ios use en
+node tooling/device/device.mjs drive ios type hello
+node tooling/device/device.mjs drive ios read
+node tooling/device/device.mjs drive ios drag 600 1400 600 700
+node tooling/device/device.mjs drive ios record stop
+node tooling/device/device.mjs drive ios stop
+```
+
+`tap-button` and `tap-menu` have not run on the iPhone yet. On the iPhone,
+`drag` takes screenshot pixels, 1206 by 2622 on the iPhone 17, and the runner
+converts them to points. `use` knows only `en`. `record` runs
+`simctl io recordVideo`. `back` fails, because the simulator has no system
+Back button. `start` can take about 10 s, because the simulator's Web
+Inspector answers a new connection only about 10 s after the last one closed.
+There is no `watch ios`, because Claude Code's iOS Simulator panel shows the
+screen. Open that panel on plate_ios_27 only after `boot ios`. The panel boots a
+simulator that is off without the lane's settings, and `boot ios` then refuses
+it until it is shut down.
 
 ## Base worktree for a HEAD comparison
 
