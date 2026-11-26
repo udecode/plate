@@ -365,7 +365,7 @@
       ".agents/pstack/rules/browser.md": "38d06d2bbceeb611a4be078420f136e641dd74496acc5d181b2d7da23f7cd83a",
       ".agents/pstack/rules/chips.md": "a2f97fade5459eb74c54aadc542d5c29d62f16be59b90cbc8a623f8e55400503",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
-      ".agents/pstack/rules/colead.md": "9fbed36f50cd27a162354bcfc49b995b2c1925daeddae4fcee7e3d7a08e682ba",
+      ".agents/pstack/rules/colead.md": "878b2175e8a8948f60e89fcaa7641ecc360c32f787698a411e5f1da8090e4447",
       ".agents/pstack/rules/land.md": "838336399ee760a18442fb6eb030389f66dcc3f20ee1f2fb34c0a2d437f26099",
       ".agents/pstack/rules/linked.md": "d80a9985fbd2e3c33f095f3f1cf30f2774030d999b76a3f6c3a5e7ad1786b6df",
       ".agents/pstack/rules/long-runs.md": "733c7a5802b116b63f342c65d6f89b089484988a00ef8587be231bb2395db1d9",
@@ -379,7 +379,7 @@
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af",
       ".claude/pstack-models.md": "d145e959921f86d17dc1d0e69750a3c47453524ae0bcf7c56ab232c8a0124419"
     },
-    "source": "03eff4be149694333df141dcf68e49469cb1edc7"
+    "source": "69ee5f700a90053108e0e08a8d7b1df8520a24b0"
   },
   "pageTopic": {
     "field": "review_scopes",
