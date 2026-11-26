@@ -820,6 +820,24 @@ export const chromeContentTop = (serial: string) => {
   return container?.bounds[3] ?? 0;
 };
 
+export type PhoneItem = { box: [number, number, number, number]; name: string };
+
+export const listPhoneItems = (serial: string): PhoneItem[] =>
+  dumpWindows(serial)
+    .filter(
+      (node) =>
+        node.clickable &&
+        (node.text || node.desc) &&
+        (node.pkg !== 'com.android.chrome' ||
+          node.id.startsWith('com.android.chrome:id/')) &&
+        (node.pkg !== GBOARD_PACKAGE ||
+          !/:id\/(?:[A-Z]\d\d|key_pos_(?!header_).*)$/.test(node.id))
+    )
+    .map(({ bounds: [x1, y1, x2, y2], desc, text }) => ({
+      box: [x1, y1, x2 - x1, y2 - y1],
+      name: text || desc,
+    }));
+
 export const chromeContentBounds = (serial: string) => {
   const nodes = dumpWindows(serial);
   const content = nodes.find(
