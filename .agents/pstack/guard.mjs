@@ -476,11 +476,18 @@ function mainCheckoutPath(file, main) {
   return sameDir(top, main) ? path : null;
 }
 
+let agyHook = false;
+const allow = () => {
+  if (agyHook) process.stdout.write('{"decision":"allow"}');
+  process.exit(0);
+};
 const deny = (reason) => {
   process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: `guard.mjs: ${reason}` },
-    })
+    JSON.stringify(
+      agyHook
+        ? { decision: 'deny', reason: `guard.mjs: ${reason}` }
+        : { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: `guard.mjs: ${reason}` } }
+    )
   );
   process.exit(0);
 };
@@ -584,11 +591,21 @@ const failOpen = (check) => {
   }
 };
 
-const input = JSON.parse(readFileSync(0, 'utf8'));
-if (!existsSync(CONFIG)) process.exit(0);
+function normalizeHookInput(raw) {
+  if (!raw?.toolCall) return raw;
+  agyHook = true;
+  const { name, args = {} } = raw.toolCall;
+  if (name === 'run_command') return { ...raw, tool_name: 'Bash', tool_input: { command: args.CommandLine } };
+  if (name === 'write_file') return { ...raw, tool_name: 'Write', tool_input: { file_path: args.Path, content: args.Content } };
+  if (name === 'edit_file') return { ...raw, tool_name: 'Edit', tool_input: { file_path: args.Path, old_string: args.Target, new_string: args.Replacement, replace_all: true } };
+  return { ...raw, tool_name: name, tool_input: args };
+}
+
+const input = normalizeHookInput(JSON.parse(readFileSync(0, 'utf8')));
+if (!existsSync(CONFIG)) allow();
 if (EDIT_TOOLS.has(input.tool_name)) {
   const file = input.tool_input?.file_path ?? input.tool_input?.notebook_path;
-  if (typeof file !== 'string') process.exit(0);
+  if (typeof file !== 'string') allow();
   let reason;
   try {
     const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
@@ -602,7 +619,7 @@ if (EDIT_TOOLS.has(input.tool_name)) {
     reason = `the guard failed (${error.message}), so it refuses this edit. Fix the path, git or .agents/pstack.json, then retry.`;
   }
   if (reason) deny(reason);
-  process.exit(0);
+  allow();
 }
 const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
 if (BASE_SYNC.test(input.tool_name ?? '')) {
@@ -611,7 +628,7 @@ if (BASE_SYNC.test(input.tool_name ?? '')) {
   );
 }
 const command = input.tool_input?.command;
-if (typeof command !== 'string') process.exit(0);
+if (typeof command !== 'string') allow();
 const kept = new Set([config.branch, config.protected].filter(Boolean));
 const hits = new Set();
 let direct = false;
@@ -653,3 +670,4 @@ if ((lost || direct || hits.size > 0) && unresolved.size > 0) {
   );
 }
 if (reasons.length > 0) deny(reasons.join('\n'));
+allow();

@@ -1,35 +1,100 @@
 {
-  "plate-guards": {
+  "plate-hooks": {
     "SessionStart": [
       {
         "type": "command",
-        "command": "node ./hooks/antigravity-bridge.mjs SessionStart",
-        "timeout": 45
+        "command": "cd .. && { [ ! -f .agents/pstack/reread.mjs ] || node .agents/pstack/reread.mjs --hook AGENTS.md .claude/pstack-models.md \"$HOME/.claude/pstack-models.md\" .claude/settings.json .agents/pstack/rules .agents/playbooks; }",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f .agents/pstack/head.mjs ] || node .agents/pstack/head.mjs; } >/dev/null 2>&1; printf '{}'",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "payload=$(cat); cd .. && { [ ! -f .agents/pstack/setup.mjs ] || printf '%s' \"$payload\" | node .agents/pstack/setup.mjs --hook --install 'pnpm install --offline' --installs node_modules; }; { [ ! -f tooling/scripts/git-private.mjs ] || printf '%s' \"$payload\" | node tooling/scripts/git-private.mjs start --hook >/dev/null; } || true",
+        "timeout": 600
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f tooling/scripts/dev-servers.mjs ] || node tooling/scripts/dev-servers.mjs --hook; }",
+        "timeout": 30
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "run_command|edit_file|write_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd .. && { [ ! -f .agents/pstack/guard.mjs ] || node .agents/pstack/guard.mjs; }",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd .. && { [ ! -f tooling/scripts/type-probe-guard.mjs ] || node tooling/scripts/type-probe-guard.mjs; }",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "read_file|run_command|edit_file|write_file|invoke_subagent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd .. && { [ ! -f tooling/scripts/read-budget.mjs ] || node tooling/scripts/read-budget.mjs; }",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PreInvocation": [
       {
         "type": "command",
-        "command": "node ./hooks/antigravity-bridge.mjs PreInvocation",
+        "command": "cd .. && { [ ! -f .agents/pstack/title.mjs ] || node .agents/pstack/title.mjs --hook; }",
         "timeout": 10
-      }
-    ],
-    "PreToolUse": [
+      },
       {
-        "matcher": "run_command|edit_file|write_file|read_file|invoke_subagent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ./hooks/antigravity-bridge.mjs PreToolUse",
-            "timeout": 15
-          }
-        ]
+        "type": "command",
+        "command": "cd .. && { [ ! -f .agents/pstack/reread.mjs ] || node .agents/pstack/reread.mjs --hook AGENTS.md .claude/pstack-models.md \"$HOME/.claude/pstack-models.md\" .claude/settings.json .agents/pstack/rules .agents/playbooks; }",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f tooling/scripts/read-budget.mjs ] || node tooling/scripts/read-budget.mjs --reset; }",
+        "timeout": 10
       }
     ],
     "Stop": [
       {
         "type": "command",
-        "command": "node ./hooks/antigravity-bridge.mjs Stop",
+        "command": "cd .. && { [ ! -f tooling/scripts/hand-drive.mjs ] || node tooling/scripts/hand-drive.mjs --hook; }",
+        "timeout": 60
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f tooling/scripts/git-private.mjs ] || node tooling/scripts/git-private.mjs autosave --hook >/dev/null; } || true; printf '{}'",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f tooling/scripts/formal-intake-due.mjs ] || node tooling/scripts/formal-intake-due.mjs; }",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f tooling/scripts/relapse-due.mjs ] || node tooling/scripts/relapse-due.mjs; }",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f tooling/scripts/dev-servers.mjs ] || node tooling/scripts/dev-servers.mjs --hook; }",
         "timeout": 30
       }
     ]

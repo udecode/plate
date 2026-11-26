@@ -63,12 +63,25 @@ for (let i = 0; i < args.length; i += 1) {
   }
 }
 if (names.length === 0) names.push('.env', '.env.local');
+const payload = hook ? hookPayload() : {};
+const isAgy = Boolean(payload.isAgy);
+const agyNotes = [];
+const say = (line) => {
+  if (isAgy) agyNotes.push(line);
+  else console.log(line);
+};
+if (isAgy) {
+  process.on('exit', () => {
+    process.stdout.write(JSON.stringify(agyNotes.length ? { injectSteps: [{ systemMessage: { systemMessage: agyNotes.join('\n') } }] } : {}));
+  });
+}
+
 if (process.env.PSTACK_READ_ONLY) {
-  console.log('setup.mjs: skipped, because this session is read-only');
+  say('setup.mjs: skipped, because this session is read-only');
   process.exit();
 }
 
-const checkout = sessionCheckout(hook ? hookPayload().cwd : undefined);
+const checkout = sessionCheckout(payload.cwd);
 if (!checkout) process.exit(0);
 process.chdir(checkout.root);
 const gitDir = out('rev-parse', '--path-format=absolute', '--git-dir');
@@ -81,7 +94,7 @@ if (lag) {
   const behind = `pstack ${lag.installed ?? 'is not installed'}${lag.installed ? ' is older than' : ', and'} .claude/settings.json pins v${lag.pin}`;
   const run = hook && runtime === 'claude' ? spawnSync(lag.command, { shell: true, cwd: lag.cwd, encoding: 'utf8', timeout: 180_000 }) : null;
   const tail = run ? `${run.stdout}${run.stderr}`.trim().split('\n').at(-1) : '';
-  console.log(
+  say(
     run?.status === 0
       ? `setup.mjs: ${behind}, so it ran ${lag.command}; restart this session to load v${lag.pin}`
       : `setup.mjs: ${behind}${run ? `, and the update failed: ${tail}` : ''}; run \`cd ${lag.cwd} && ${lag.command}\`, then restart this session`
@@ -97,7 +110,7 @@ if (linked) {
     copyFileSync(join(main, path), path);
     copied.push(path);
   }
-  if (copied.length > 0) console.log(`setup.mjs: copied ${copied.join(', ')} from ${main}`);
+  if (copied.length > 0) say(`setup.mjs: copied ${copied.join(', ')} from ${main}`);
   // A worktree can arrive with node_modules copied from the main checkout, which skipped every
   // install script, so a node_modules folder does not mean an install ran here.
   const installMarker = join(gitDir, 'pstack-installed');
@@ -105,7 +118,7 @@ if (linked) {
     const run = spawnSync(install, { shell: true, encoding: 'utf8' });
     if (run.status === 0) writeFileSync(installMarker, `${install}\n`);
     const tail = `${run.stdout}${run.stderr}`.trim().split('\n').at(-1);
-    console.log(run.status === 0 ? `setup.mjs: ran ${install}` : `setup.mjs: ${install} failed (exit ${run.status}): ${tail}`);
+    say(run.status === 0 ? `setup.mjs: ran ${install}` : `setup.mjs: ${install} failed (exit ${run.status}): ${tail}`);
     if (run.status !== 0 && !hook) process.exitCode = 1;
   }
   if (!main) process.exit();
@@ -113,7 +126,7 @@ if (linked) {
 }
 
 const local = runtime === 'codex' ? null : localOverrides(process.cwd());
-if (local?.lines.length) console.log(`setup.mjs: ${local.path} overrides these lines of .claude/pstack-models.md for this person:\n${local.lines.join('\n')}`);
+if (local?.lines.length) say(`setup.mjs: ${local.path} overrides these lines of .claude/pstack-models.md for this person:\n${local.lines.join('\n')}`);
 
 const rows = (text) => text.slice(0, text.lastIndexOf('\n') + 1).split('\n').filter(Boolean);
 
@@ -184,7 +197,7 @@ if (checked === null) process.exit();
 const behind = Number(out('rev-list', '--count', `HEAD..${checked}`) ?? 0);
 if (behind === 0) process.exit();
 if (git(['merge-base', '--is-ancestor', 'HEAD', checked]).status !== 0) {
-  console.log(`setup.mjs: ${branch} has commits origin/${branch} lacks, so it was not fast-forwarded`);
+  say(`setup.mjs: ${branch} has commits origin/${branch} lacks, so it was not fast-forwarded`);
   process.exit();
 }
 const changes = git(['diff', '--name-status', '--no-renames', '-z', 'HEAD', checked]);
@@ -196,7 +209,7 @@ const touched = localEdits().filter(({ path }) => incoming.has(path));
 const kept = touched.filter(({ status, path }) => status === ' M' && incoming.get(path) === 'D' && lstatSync(path).isFile()).map(({ path }) => path);
 const blocked = touched.filter(({ path }) => !kept.includes(path)).map(({ path }) => path);
 if (blocked.length > 0) {
-  console.log(`setup.mjs: ${behind} commit(s) on origin/${branch} not pulled, because local edits touch ${blocked.slice(0, 10).join(', ')}`);
+  say(`setup.mjs: ${behind} commit(s) on origin/${branch} not pulled, because local edits touch ${blocked.slice(0, 10).join(', ')}`);
   process.exit();
 }
 const start = out('rev-parse', 'HEAD');
@@ -230,7 +243,7 @@ if (!pulled && saved && head === start) {
 }
 const savedTo = saved && existsSync(saved) ? `${kept.slice(0, 10).join(', ')} in ${saved}` : '';
 const failure = merged.stderr?.trim() || merged.error?.message || `git exited with status ${merged.status}`;
-console.log(
+say(
   pulled
     ? `setup.mjs: fast-forwarded ${branch} by ${behind} commit(s)${savedTo ? `, saving the local edits to ${savedTo}, because those commits delete them` : ''}`
     : `setup.mjs: fast-forward failed: ${failure}${savedTo ? `; the local edits to ${savedTo} were not all put back` : ''}`,

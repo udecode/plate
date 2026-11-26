@@ -160,18 +160,31 @@ const shellWord = (word) => (/^[\w./@:=+-]+$/u.test(word) ? word : `'${word.repl
 
 const args = process.argv.slice(2);
 if (args[0] === '--hook') {
-  const { cwd, session_id: session, source, transcript_path: transcript } = hookPayload();
-  if (!session) process.exit(0);
+  const { cwd, session_id: session, source, transcript_path: transcript, hook_event_name: hookEvent, last_user_input: lastInput, isAgy } = hookPayload();
+  if (!session) {
+    if (isAgy) console.log('{}');
+    process.exit(0);
+  }
   const checkout = sessionCheckout(cwd);
   if (checkout) process.chdir(checkout.root);
   const dir = resolve(checkout?.main ?? '.', plansDir(), 'artifacts', 'reread', session);
-  const freshContext = ['startup', 'clear'].includes(source);
+  const isCompact = source === 'compact' || (isAgy && hookEvent === 'PreInvocation' && typeof lastInput === 'string' && lastInput.trim() === '/compact');
+  if (isAgy && hookEvent === 'PreInvocation' && !isCompact) {
+    console.log('{}');
+    process.exit(0);
+  }
+  const freshContext = ['startup', 'clear'].includes(source) || (isAgy && hookEvent === 'SessionStart');
   // The hook runs before the next turn, so every skill load in the transcript
   // predates this compaction, even when its compact_boundary record lags.
   const skills = source === 'compact' && transcript ? loadedSkills(transcript) : [];
   const reload = skills.length > 0 ? [`reload: ${skills.join(', ')}. The compaction restored only the first 20,000 characters of these skills; as the Long runs rule says, reload through the Skill tool each one whose mode you are running before your next step.`] : [];
   const command = args.length > 1 ? [`Instruction snapshots: run node .agents/pstack/reread.mjs --dir ${[dir, ...args.slice(1)].map(shellWord).join(' ')} before each gate to compare against them.`] : [];
-  console.log([...reread(dir, args.slice(1), { quiet: freshContext }), ...reload, ...command].join('\n'));
+  const message = [...reread(dir, args.slice(1), { quiet: freshContext }), ...reload, ...command].join('\n');
+  if (isAgy) {
+    console.log(JSON.stringify(message ? { injectSteps: [{ systemMessage: { systemMessage: message } }] } : {}));
+  } else {
+    console.log(message);
+  }
 } else if (args[0] === '--dir' && args[1] && args.length > 2) {
   console.log(reread(args[1], args.slice(2)).join('\n'));
 } else {

@@ -134,7 +134,7 @@ const FRICTION_TOPIC = 'land-friction';
 const FRICTION_BOUND_MINUTES = 60;
 const FRICTION_WINDOW = 24 * 60 * 60_000;
 const RUNS_KEPT = 7 * 24 * 60 * 60_000;
-const session = process.env.CLAUDE_CODE_HOST_SESSION_ID || process.env.CLAUDE_CODE_SESSION_ID || process.env.CODEX_SESSION_ID || '';
+const session = process.env.CLAUDE_CODE_HOST_SESSION_ID || process.env.CLAUDE_CODE_SESSION_ID || process.env.CODEX_SESSION_ID || process.env.T3CODE_THREAD_ID || '';
 const startedAt = Date.now();
 const runId = `${process.pid}-${startedAt}`;
 

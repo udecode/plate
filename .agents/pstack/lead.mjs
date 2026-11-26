@@ -70,7 +70,7 @@ export function claudeSessionRun(sessionId) {
 const ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/u;
 
 // Windows has no ps that takes -o, so there a command names its runtime by the variable each runtime sets in its shell.
-export const runtimeFromEnv = (env) => (env.CLAUDE_CODE_SESSION_ID ? 'claude' : env.CODEX_THREAD_ID ? 'codex' : null);
+export const runtimeFromEnv = (env) => (env.CLAUDE_CODE_SESSION_ID ? 'claude' : env.CODEX_THREAD_ID ? 'codex' : env.T3CODE_THREAD_ID || env.ANTIGRAVITY_CONVERSATION_ID ? 'agy' : null);
 
 function nearestRuntime() {
   if (process.platform === 'win32') {
@@ -279,17 +279,39 @@ function claudeLead(sessionId, command) {
 
 const commandOf = (pid) => bashCommandOf(execFileSync('ps', ['-ww', '-o', 'command=', '-p', String(pid)], { encoding: 'utf8' }));
 
+function t3Lead(env = process.env) {
+  const nodeBin = env.T3_ACP_MCP_NODE;
+  if (!nodeBin) return null;
+  const args = [...(env.T3_ACP_MCP_ENTRYPOINT ? [env.T3_ACP_MCP_ENTRYPOINT] : []), 'acp-mcp-call', 'orchestrator_capabilities', '{}'];
+  const result = spawnSync(nodeBin, args, { encoding: 'utf8', env: { ...env, ELECTRON_RUN_AS_NODE: '1' }, timeout: 10_000 });
+  if (result.status !== 0) return { miss: `T3 orchestrator_capabilities failed: ${(result.stderr || result.stdout).trim().split('\n').at(-1)}` };
+  const payload = parse(result.stdout)?.structuredContent;
+  const model = payload?.inheritedModel;
+  const options = Array.isArray(payload?.inheritedOptions) ? payload.inheritedOptions : [];
+  const effort = options.find((opt) => ['thought_level', 'effort', 'reasoningEffort'].includes(opt?.id))?.value;
+  if (!model || !effort) return { miss: 'T3 orchestrator_capabilities returned no model or effort' };
+  const provider = payload?.inheritedProviderInstanceId;
+  const runtime = provider === 'claudeAgent' ? 'claude' : provider === 'codex' ? 'codex' : 'agy';
+  const sessionId = (env.T3CODE_THREAD_ID || env.ANTIGRAVITY_CONVERSATION_ID || 't3-thread').replace(/[^\w.-]+/gu, '_');
+  return { run: { runtime, model, effort, transcript: `${sessionId}.jsonl` } };
+}
+
 export function findLead() {
   try {
     const nearest = nearestRuntime();
     const runtime = nearest?.name;
     if (runtime === 'claude') return claudeLead(process.env.CLAUDE_CODE_SESSION_ID, nearest.shell === null ? null : commandOf(nearest.shell));
-    if (runtime !== 'codex') return { miss: 'no claude or codex process is an ancestor of this command' };
-    const claudeKey = ['CLAUDECODE', 'CLAUDE_SESSION_ID', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_PID', 'CLAUDE_CODE_ENTRYPOINT'].find((key) => process.env[key]);
-    if (claudeKey) return { miss: `codex runs this command, but ${claudeKey} is set` };
-    const identity = { runtime, thread: process.env.CODEX_THREAD_ID, session: process.env.CODEX_SESSION_ID, invocation: process.env.CODEX_TOOL_CALL_ID };
-    const files = ID.test(identity.thread ?? '') ? filesUnder(join(codexHome(), 'sessions'), 3).filter((file) => file.endsWith(`-${identity.thread}.jsonl`)) : [];
-    return invocationRun(identity, files.map((transcript) => ({ transcript, text: readFileSync(transcript, 'utf8') })));
+    if (runtime === 'codex') {
+      const claudeKey = ['CLAUDECODE', 'CLAUDE_SESSION_ID', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_PID', 'CLAUDE_CODE_ENTRYPOINT'].find((key) => process.env[key]);
+      if (claudeKey) return { miss: `codex runs this command, but ${claudeKey} is set` };
+      const identity = { runtime, thread: process.env.CODEX_THREAD_ID, session: process.env.CODEX_SESSION_ID, invocation: process.env.CODEX_TOOL_CALL_ID };
+      const files = ID.test(identity.thread ?? '') ? filesUnder(join(codexHome(), 'sessions'), 3).filter((file) => file.endsWith(`-${identity.thread}.jsonl`)) : [];
+      return invocationRun(identity, files.map((transcript) => ({ transcript, text: readFileSync(transcript, 'utf8') })));
+    }
+    if (process.env.T3_ACP_MCP_NODE && (process.env.T3CODE_THREAD_ID || process.env.ANTIGRAVITY_CONVERSATION_ID)) {
+      return t3Lead(process.env);
+    }
+    return { miss: 'no claude, codex or T3/agy runtime is an ancestor of this command' };
   } catch (error) {
     return { miss: error.message };
   }
@@ -324,6 +346,12 @@ export function pluginLag(runtime, root = process.cwd(), env = process.env) {
   const pin = ref?.replace(/^v/u, '');
   if (!pin || !runtime) return null;
   const home = env.HOME ?? homedir();
+  if (runtime === 'agy') {
+    const geminiHome = env.GEMINI_HOME ?? join(home, '.gemini');
+    const meta = readJson(join(geminiHome, 'config/plugins/pstack/.antigravity-plugin/plugin.json')) ?? readJson(join(geminiHome, 'config/plugins/pstack/plugin.json'));
+    if (meta?.version && versionOrder(meta.version, pin) >= 0) return null;
+    return { pin, installed: meta?.version ?? null, cwd: home, command: `agy plugin install ${REPO}@v${pin}` };
+  }
   if (runtime === 'codex') {
     const cache = join(env.CODEX_HOME ?? join(home, '.codex'), 'plugins/cache', MARKETPLACE, 'pstack');
     if (existsSync(join(cache, pin))) return null;
@@ -358,18 +386,22 @@ export const capEffort = (effort, max) => (max && EFFORTS.indexOf(effort) > EFFO
 // follow pstack's own defaults at high, below a project's maxEffort of xhigh (owner's word, 2026-11-20).
 const SEAT_ROLES = ['interrogate reviewers', 'arena runners'];
 const SEAT_FLOOR = 'high';
-const NEVER = /\b(?:sonnet|haiku)\b/gu;
+const NEVER = /\b(?:sonnet|haiku|pro|flash|flash_lite)\b/gu;
 
 const ROLE_LINE = /^([a-z][a-z ,-]*):\s*(.*)$/u;
 export const LOCAL_SHEET = '.claude/pstack-models.local.md';
 
-// A Claude Code sheet committed at the repository root replaces each person's, as pstack's session hook reads it.
-export const modelsSheet = (runtime, env = process.env, root = process.cwd()) =>
-  runtime === 'claude'
-    ? existsSync(join(root, '.claude/pstack-models.md'))
-      ? join(root, '.claude/pstack-models.md')
-      : join(env.HOME ?? homedir(), '.claude/pstack-models.md')
-    : join(env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex'), 'pstack-models.md');
+// A project sheet committed at .claude/pstack-models.md replaces each person's; otherwise each runtime reads its own user sheet.
+export const modelsSheet = (runtime, env = process.env, root = process.cwd()) => {
+  const home = env.HOME ?? homedir();
+  if (runtime === 'claude' || runtime === 'agy') {
+    if (existsSync(join(root, '.claude/pstack-models.md'))) return join(root, '.claude/pstack-models.md');
+    return runtime === 'agy'
+      ? join(env.GEMINI_HOME ?? join(home, '.gemini'), 'config/pstack-models.md')
+      : join(home, '.claude/pstack-models.md');
+  }
+  return join(env.CODEX_HOME ?? join(home, '.codex'), 'pstack-models.md');
+};
 
 export function localOverrides(main) {
   const path = join(main, LOCAL_SHEET);
@@ -381,7 +413,7 @@ export function effectiveModelsSheet(runtime, env = process.env, root = process.
   const path = modelsSheet(runtime, env, root);
   const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
   const trunk = readJson(join(root, '.agents/pstack.json'))?.delivery === 'trunk';
-  const local = runtime === 'claude' && trunk ? localOverrides(main) : null;
+  const local = (runtime === 'claude' || runtime === 'agy') && trunk ? localOverrides(main) : null;
   if (!local) return { paths: [path], text };
   const overrides = new Map(local.lines.map((line) => [line.match(ROLE_LINE)[1], line]));
   const lines = text ? text.trimEnd().split('\n') : [];

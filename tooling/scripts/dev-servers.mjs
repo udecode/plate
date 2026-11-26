@@ -236,7 +236,8 @@ function judgeServers({ event, idle }) {
   const session =
     process.env.CLAUDE_CODE_HOST_SESSION_ID ||
     process.env.CLAUDE_CODE_SESSION_ID ||
-    process.env.CODEX_SESSION_ID;
+    process.env.CODEX_SESSION_ID ||
+    process.env.T3CODE_THREAD_ID;
   const { servers, sessions, shared } = survey(checkout);
   const landings = landingsOf(
     path.join(common, 'pstack-land-runs.jsonl'),
@@ -289,21 +290,28 @@ async function stopGroup(pgid) {
 }
 
 async function hook() {
-  const payload = JSON.parse(readFileSync(0, 'utf-8'));
-  if (!RULES.some((rule) => rule.events.includes(payload.hook_event_name))) {
+  const payload = JSON.parse(readFileSync(0, 'utf-8') || '{}');
+  const isAgy = Boolean(payload.hookEventName || payload.conversationId);
+  const eventName = payload.hook_event_name ?? payload.hookEventName;
+  if (!RULES.some((rule) => rule.events.includes(eventName))) {
+    if (isAgy) process.stdout.write('{}');
     return;
   }
   const stopping = judgeServers({
-    event: payload.hook_event_name,
-    idle: !payload.background_tasks?.length && !payload.session_crons?.length,
+    event: eventName,
+    idle:
+      !payload.background_tasks?.length &&
+      !payload.session_crons?.length &&
+      (!isAgy || payload.fullyIdle !== false),
   }).filter((server) => server.verdict === 'stop');
+  const notes = [];
   await Promise.all(
     stopping.map(async (server) => {
       try {
         await stopGroup(server.pgid);
-        console.log(
-          `dev-servers: stopped the preview server on port ${server.port} in ${server.checkout}: ${server.reason}. preview_start starts it again.`
-        );
+        const msg = `dev-servers: stopped the preview server on port ${server.port} in ${server.checkout}: ${server.reason}.`;
+        if (isAgy) notes.push(msg);
+        else console.log(msg);
       } catch (error) {
         console.error(
           `dev-servers: could not stop the preview server on port ${server.port} in ${server.checkout}: ${error.message}`
@@ -311,6 +319,19 @@ async function hook() {
       }
     })
   );
+  if (isAgy) {
+    process.stdout.write(
+      JSON.stringify(
+        notes.length && eventName === 'SessionStart'
+          ? {
+              injectSteps: [
+                { systemMessage: { systemMessage: notes.join('\n') } },
+              ],
+            }
+          : {}
+      )
+    );
+  }
 }
 
 function list() {

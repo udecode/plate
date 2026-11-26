@@ -190,7 +190,7 @@ details.iteration[open] > summary { margin-bottom: 4px; }
 .shots { display: grid; gap: 1rem; }
 .shot { margin: 0; }
 .shot img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 8px; cursor: zoom-in; }
-.lightbox { padding: 0; border: 0; max-width: 96vw; max-height: 96vh; overflow: auto; background: transparent; }
+.lightbox { padding: 0; border: 0; max-width: 96vw; max-height: 900px; overflow: auto; background: transparent; }
 .lightbox::backdrop { background: rgb(0 0 0 / 0.8); }
 .lightbox img { display: block; max-width: none; cursor: zoom-out; }
 .shot figcaption { font-size: 0.8rem; opacity: 0.75; margin-top: 0.25rem; }
@@ -1176,9 +1176,8 @@ function rosterByLead(entries) {
     let lead = '';
     for (const row of logRowsOf(entry.path)) {
       if (row.phase === 'lead') lead = row.decision;
-      if (!byLead.has(lead)) byLead.set(lead, { coleads: new Map(), seats: new Map() });
-      const { coleads, seats } = byLead.get(lead);
-      for (const seat of row.phase === 'colead' ? seatList(row.decision) : []) coleads.set(`${seat.name}@${seat.effort}`, seat);
+      if (!byLead.has(lead)) byLead.set(lead, { seats: new Map() });
+      const { seats } = byLead.get(lead);
       if (row.phase !== 'panel' || !SEATS.test(row.decision)) continue;
       for (const seat of seatList(row.decision.replace(SEATS, ''))) {
         const key = `${seat.name}@${seat.effort}${seat.mark ? ` ${seat.mark}` : ''}`;
@@ -1187,15 +1186,15 @@ function rosterByLead(entries) {
     }
   }
   return [...byLead]
-    .filter(([lead, { coleads, seats }]) => lead || coleads.size || seats.size)
-    .map(([lead, { coleads, seats }]) => ({ lead: lead && lead !== 'unknown' ? seatList(lead)[0] : null, coleads: [...coleads.values()], seats: [...seats.values()] }));
+    .filter(([lead, { seats }]) => lead || seats.size)
+    .map(([lead, { seats }]) => ({ lead: lead && lead !== 'unknown' ? seatList(lead)[0] : null, seats: [...seats.values()] }));
 }
 
 const rosterByLeadHtml = (entries) =>
   rosterByLead(entries)
     .map(
-      ({ lead, coleads, seats }) =>
-        `<span class="round-tag"><span class="badge hue-grey">Lead</span>${lead ? `<span class="seats">${seatChip(lead)}</span>` : ' unknown'}</span>${coleads.length ? `<span class="round-tag"><span class="badge hue-teal">Co-lead</span><span class="seats">${coleads.map((seat) => seatChip(seat)).join('')}</span></span>` : ''}${seats.length ? `<span class="round-tag"><span class="badge hue-indigo">Reviews</span><span class="seats">${seats.map(({ seat, count }) => seatChip(seat, count)).join('')}</span></span>` : ''}`
+      ({ lead, seats }) =>
+        `<span class="round-tag"><span class="badge hue-grey">Lead</span>${lead ? `<span class="seats">${seatChip(lead)}</span>` : ' unknown'}</span>${seats.length ? `<span class="round-tag"><span class="badge hue-indigo">Reviews</span><span class="seats">${seats.map(({ seat, count }) => seatChip(seat, count)).join('')}</span></span>` : ''}`
     )
     .join('');
 
@@ -1780,7 +1779,8 @@ function page(planPath, { folded = false, run = null } = {}) {
   const name = subject ? join('topics', subject) : basename(planPath, '.md');
   if (run) return { html: `<section class="run" data-key="${escapeHtml(run.key)}">${inner}</section>\n`, name };
   const main = `<main>${inner}</main>`;
-  const html = `<title>${title}</title>
+  const html = `<!doctype html>
+<title>${title}</title>
 ${PAGE_HEAD}
 ${main.includes('<figure class="shot"><img') ? main.replace(/<\/main>$/, `${LIGHTBOX}\n</main>`) : main}
 <script src="${HLJS}"></script>
@@ -2354,9 +2354,8 @@ function prProcess(entries, playbooks) {
 }
 
 const prModels = (entries) =>
-  rosterByLead(entries).flatMap(({ lead, coleads, seats }) => [
+  rosterByLead(entries).flatMap(({ lead, seats }) => [
     lead ? `- \`${[lead.name, lead.effort].filter(Boolean).join(' ')}\`` : '- Lead not logged',
-    ...coleads.map((seat) => `  - co-lead ${seatMd(seat)}`),
     ...seats.map(({ seat, count }) => `  - ${seatMd(seat)}${count > 1 ? ` ×${count}` : ''}`),
   ]);
 

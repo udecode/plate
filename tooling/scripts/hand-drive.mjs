@@ -456,24 +456,37 @@ function filesEditedSinceSkipDrive(transcript, root) {
 
 function hook({ dir, root }) {
   const input = JSON.parse(readFileSync(0, 'utf-8') || '{}');
-  if (
+  const isAgy = Boolean(input.hookEventName || input.conversationId);
+  const stopActive =
     input.stop_hook_active ||
+    (isAgy && (input.continuationActive || Number(input.executionNum) > 0));
+  const transcriptPath = input.transcript_path ?? input.transcriptPath;
+  if (
+    stopActive ||
     input.background_tasks?.length ||
     input.session_crons?.length ||
-    !input.transcript_path ||
-    !existsSync(input.transcript_path)
+    (isAgy && input.fullyIdle === false) ||
+    !transcriptPath ||
+    !existsSync(transcriptPath)
   ) {
+    if (isAgy) process.stdout.write('{}');
     return;
   }
 
   const files = filesEditedSinceSkipDrive(
-    readFileSync(input.transcript_path, 'utf-8'),
+    readFileSync(transcriptPath, 'utf-8'),
     root
   );
-  if (files.length === 0) return;
+  if (files.length === 0) {
+    if (isAgy) process.stdout.write('{}');
+    return;
+  }
   const result = judgeFiles(files, { dir, root });
   const open = result.states.filter((cell) => cell.state !== 'covered');
-  if (open.length === 0 && result.unmapped.length === 0) return;
+  if (open.length === 0 && result.unmapped.length === 0) {
+    if (isAgy) process.stdout.write('{}');
+    return;
+  }
 
   const lines = report({
     states: open,
@@ -481,7 +494,7 @@ function hook({ dir, root }) {
   });
   process.stdout.write(
     JSON.stringify({
-      decision: 'block',
+      decision: isAgy ? 'continue' : 'block',
       reason: [
         `The hand drive is not done: ${open.length} cells and ${result.unmapped.length} unmapped files are open for the browser-visible files this session edited. Open each cell's page in the built-in browser against the www-drive server in light, in a tab at least ${DESKTOP_MIN_WIDTH} px wide, such as 1280x900, because the pane often opens narrower, at least ${SETTLE_MS / 1000} s after the last edit to its files, take a screenshot and read it, then run node tooling/scripts/hand-drive.mjs check, as verify's Hand drive section says. The owner's message starting with "skip drive" waives the edits made before it.`,
         ...lines.slice(0, 40),

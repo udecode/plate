@@ -487,10 +487,11 @@ converts them to points. `use` takes `en`, `ja`, `ko` or `zh`. `record` runs
 `simctl io recordVideo`. `back` fails, because the simulator has no system
 Back button. `start` can take about 10 s, because the simulator's Web
 Inspector answers a new connection only about 10 s after the last one closed.
-There is no `watch ios`, because Claude Code's iOS Simulator panel shows the
-screen. Open that panel on plate_ios_27 only after `boot ios`. The panel boots a
-simulator that is off without the lane's settings, and `boot ios` then refuses
-it until it is shut down.
+There is no `watch ios`, because Claude Code's iOS Simulator panel or T3 Code's
+Device panel (`device_list` / `device_open` / `device_screenshot` / `device_close`,
+driving via `agent-device` CLI) shows the screen. Open that panel on plate_ios_27
+only after `boot ios`. The panel boots a simulator that is off without the lane's
+settings, and `boot ios` then refuses it until it is shut down.
 
 ## Base worktree for a HEAD comparison
 

@@ -102,19 +102,32 @@ function emptyProbeRun(command, cwd) {
 const reason = ({ config, entry }) =>
   `${config} includes ${entry}, a file that does not exist. tsc skips that entry, so it can compile none of the probe and still exit 0. Run the probe through node tooling/scripts/type-probe.mjs [--tree <checkout or worktree>] [--package <name>] <probe.ts>..., which extends that package's tsconfig and exits 2 when the compiler did not read every probe, as verify's command recipes say.`;
 
-const event = JSON.parse(readFileSync(0, 'utf-8'));
+const raw = JSON.parse(readFileSync(0, 'utf-8') || '{}');
+const isAgy = Boolean(raw.toolCall || raw.hookEventName);
+const toolName = raw.toolCall
+  ? raw.toolCall.name === 'run_command'
+    ? 'Bash'
+    : raw.toolCall.name
+  : raw.tool_name;
+const command = raw.toolCall
+  ? (raw.toolCall.args?.CommandLine ?? '')
+  : (raw.tool_input?.command ?? '');
 const run =
-  event.tool_name === 'Bash'
-    ? emptyProbeRun(event.tool_input?.command ?? '', event.cwd ?? process.cwd())
-    : null;
+  toolName === 'Bash' ? emptyProbeRun(command, raw.cwd ?? process.cwd()) : null;
 if (run) {
   process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: reason(run),
-      },
-    })
+    JSON.stringify(
+      isAgy
+        ? { decision: 'deny', reason: reason(run) }
+        : {
+            hookSpecificOutput: {
+              hookEventName: 'PreToolUse',
+              permissionDecision: 'deny',
+              permissionDecisionReason: reason(run),
+            },
+          }
+    )
   );
+} else if (isAgy) {
+  process.stdout.write('{"decision":"allow"}');
 }

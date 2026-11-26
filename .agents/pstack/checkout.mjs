@@ -18,7 +18,16 @@ const locate = (dir) => {
 
 export const hookPayload = () => {
   if (process.stdin.isTTY) return {};
-  return JSON.parse(readFileSync(0, 'utf8') || '{}');
+  const raw = JSON.parse(readFileSync(0, 'utf8') || '{}');
+  if (!raw || typeof raw !== 'object') return {};
+  return {
+    ...raw,
+    session_id: raw.session_id ?? raw.conversationId ?? process.env.T3CODE_THREAD_ID,
+    transcript_path: raw.transcript_path ?? raw.transcriptPath,
+    hook_event_name: raw.hook_event_name ?? raw.hookEventName,
+    last_user_input: raw.last_user_input ?? raw.lastUserInput,
+    isAgy: Boolean(raw.hookEventName || raw.conversationId || raw.toolCall),
+  };
 };
 
 export const sessionCheckout = (cwd) => {

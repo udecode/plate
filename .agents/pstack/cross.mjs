@@ -11,7 +11,6 @@ import { fileURLToPath } from 'node:url';
 import { browserLaunch } from './codex-browser.mjs';
 import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
 import { capEffort, claudeSessionRun, claudeTranscript, maxEffort } from './lead.mjs';
-import { budgetedStep, overBudget, stepBudget } from './status.mjs';
 
 export const MODELS = { claude: 'opus', codex: 'gpt-6.2-sol', agy: 'gemini-4-neon' };
 
@@ -30,9 +29,6 @@ const VALUE_FLAGS = new Map([
   ['--chrome-profile', 'chromeProfile'],
   ['--prompt-file', 'promptFile'],
   ['--prompt', 'prompt'],
-  ['--colead', 'colead'],
-  ['--conversation', 'conversation'],
-  ['--stream', 'stream'],
 ]);
 
 // Each child runs in its own process group, which outlives this process, so
@@ -188,41 +184,9 @@ const agyAnswer = (stdout) => {
   }
   return '';
 };
-const agyConversation = (stdout) => {
-  for (const line of stdout.split('\n')) {
-    try {
-      const event = JSON.parse(line);
-      if (event.event === 'init') return event.conversation_id ?? null;
-    } catch {}
-  }
-  return null;
-};
-
-const COLEAD_TIMEOUT_SECONDS = 6 * 60 * 60;
-const stopTime = (seconds) => new Date(Date.now() + seconds * 1000).toISOString().replace(/\.\d{3}Z$/u, 'Z');
-const coleadBrief = (worktree, prompt, step, timeout) =>
-  `${prompt}\n\n${step ? `This worktree's change since ${step.base} builds a plan step and counts ${step.product} of the step budget's ${step.budget} product lines. Tests, fixtures, docs and plans do not count. Stop before the budget, and say where the step would split. ` : ''}You are the co-lead of this run. Your working directory ${worktree} is the lead's worktree: write only there, in the run directory the brief names and in a detached worktree you add for a probe or for a base control the brief asks for. A probe that edits a tracked file for a moment, such as to add a trace, makes that edit in a detached worktree it adds, never here, because a stopped call leaves the edit in place and two probes that edit one file restore each other's edits. Never commit, push, open a PR, post anywhere or change another checkout's tracked files, because the lead reviews and lands your work. The project's rules on code, tests and proof bind you. Its rules on plans, reviews, writing passes, landing, messages and missing pstack skills are the lead's duties, not yours. This call returns only once every background task you started has ended. So start a dev server or any other process that never exits on its own with its output in a file, poll it until it is ready, and never wait for its task to end. ${timeout ? `The helper stops this call at ${stopTime(timeout)} and keeps only what you said by then. Wait on a proof only while it can end with time left to answer. Otherwise kill its task and name its command and log in your answer, so the lead runs it. ` : ''}Before your final message, kill every task you started and remove each file and worktree you added only for a probe or a control. Leave a booted emulator or simulator running, because other runs share it. Put your whole answer in your final message, and name each file you changed.`;
-const gitOut = (dir, ...args) => {
-  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', maxBuffer: 1 << 28 });
-  return run.status === 0 ? run.stdout.replace(/\n$/u, '') : null;
-};
-const coleadBudget = (worktree) => {
-  const own = join(worktree, '.agents/pstack.json');
-  if (!existsSync(own)) return null;
-  const config = JSON.parse(readFileSync(own, 'utf8'));
-  const step = budgetedStep(worktree, config, gitOut);
-  return step && { ...step, budget: stepBudget(config).lines };
-};
 const gitLines = (dir, args) => {
   const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8' });
   return run.status === 0 ? run.stdout.trim().split('\n') : null;
-};
-const coleadRefusal = (worktree) => {
-  const [top, gitDir, common] = gitLines(worktree, ['rev-parse', '--path-format=absolute', '--show-toplevel', '--git-dir', '--git-common-dir']) ?? [];
-  if (!top) return `${worktree} is not a git checkout`;
-  if (realPath(top) !== realPath(worktree)) return `give --colead the worktree's root, ${top}`;
-  if (gitDir === common) return `${worktree} is a main checkout, and a co-lead writes only a linked worktree`;
-  return null;
 };
 const linkedMainCheckout = (dir) => {
   const [top, common] = gitLines(dir, ['rev-parse', '--path-format=absolute', '--show-toplevel', '--git-common-dir']) ?? [];
@@ -235,13 +199,13 @@ const checkoutState = (dir) => {
   return hash.digest('hex');
 };
 const withoutPushOrGitHub = (env) => {
-  const guard = mkdtempSync(join(tmpdir(), 'pstack-colead-'));
+  const guard = mkdtempSync(join(tmpdir(), 'pstack-seat-'));
   mkdirSync(join(guard, 'gh'));
   mkdirSync(join(guard, 'hooks'));
-  writeFileSync(join(guard, 'hooks/pre-push'), '#!/bin/sh\necho "a co-lead never pushes" >&2\nexit 1\n', { mode: 0o755 });
+  writeFileSync(join(guard, 'hooks/pre-push'), '#!/bin/sh\necho "a seat never pushes" >&2\nexit 1\n', { mode: 0o755 });
   for (const name of ['GH_TOKEN', 'GITHUB_TOKEN', 'GH_ENTERPRISE_TOKEN', 'GITHUB_ENTERPRISE_TOKEN']) delete env[name];
   const count = Number(env.GIT_CONFIG_COUNT ?? 0);
-  const config = [['core.hooksPath', join(guard, 'hooks')], ['url.pstack-colead-no-push:.pushInsteadOf', '']];
+  const config = [['core.hooksPath', join(guard, 'hooks')], ['url.pstack-seat-no-push:.pushInsteadOf', '']];
   config.forEach(([key, value], i) => Object.assign(env, { [`GIT_CONFIG_KEY_${count + i}`]: key, [`GIT_CONFIG_VALUE_${count + i}`]: value }));
   Object.assign(env, { GH_CONFIG_DIR: join(guard, 'gh'), GIT_CONFIG_COUNT: String(count + config.length) });
   return guard;
@@ -256,18 +220,17 @@ export const onStop = (cleanup) => {
 // as more prompt, so stdin is closed and the answer comes only from that file.
 // A child that ignores SIGTERM, or leaves a descendant holding its pipes, is
 // killed and abandoned at the deadline.
-export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false, colead, conversation, stream, onConversation } = {}) {
+export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false } = {}) {
   const max = maxEffort(effortRoot);
   effort = capEffort(effort ?? max, max);
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
-  if (colead) timeout = Math.min(timeout ?? COLEAD_TIMEOUT_SECONDS, COLEAD_TIMEOUT_SECONDS);
-  const scratch = reach || (runtime === 'agy' && !colead);
-  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : (colead ?? cwd);
+  const scratch = reach || runtime === 'agy';
+  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
   // A Firefox or WebKit crash in the sandbox puts a crash dialog on the owner's screen.
   if (reach) prompt = scratchBrief(cwd, 'Your sandbox cannot run a browser, because Chromium, Firefox and WebKit die there as they start, so never start or drive one, through Playwright or any other tool.', prompt);
-  const unboxed = runtime === 'agy' && !colead && !offline;
-  if (runtime === 'agy') prompt = colead ? coleadBrief(colead, prompt, coleadBudget(colead), timeout) : scratchBrief(cwd, `${unboxed ? AGY_UNBOXED : AGY_SANDBOXED} Never start or drive a browser, through Playwright, your browser tools or any other tool.`, prompt);
+  const unboxed = runtime === 'agy' && !offline;
+  if (runtime === 'agy') prompt = scratchBrief(cwd, `${unboxed ? AGY_UNBOXED : AGY_SANDBOXED} Never start or drive a browser, through Playwright, your browser tools or any other tool.`, prompt);
   let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
@@ -283,7 +246,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
     runtime === 'claude'
       ? ['claude', ['-p', '--session-id', sessionId, '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), ...readDirs.flatMap((dir) => ['--add-dir', dir]), ...(offline ? ['--disallowed-tools', 'WebFetch,WebSearch', '--strict-mcp-config'] : []), '--permission-mode', 'plan', '--', prompt]]
       : runtime === 'agy'
-      ? ['agy', ['-p', prompt, '--model', effort ? `${model}-${effort}` : model, ...(colead ? [...(conversation ? ['--conversation', conversation] : []), '--dangerously-skip-permissions'] : ['--settings', JSON.stringify(agySettings(runCwd, [cwd, ...readDirs], offline)), unboxed ? '--dangerously-skip-permissions' : '--sandbox']), '--output-format', 'stream-json']]
+      ? ['agy', ['-p', prompt, '--model', effort ? `${model}-${effort}` : model, '--settings', JSON.stringify(agySettings(runCwd, [cwd, ...readDirs], offline)), unboxed ? '--dangerously-skip-permissions' : '--sandbox', '--output-format', 'stream-json']]
       : [
           'codex',
           [
@@ -303,11 +266,11 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
         ];
   // A Codex Desktop parent exports its permission profile, which outranks --sandbox in a run that loads the user's config.
   const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, PSTACK_READ_ONLY: ___, ...env } = process.env;
-  if (!bypass && !colead) env.PSTACK_READ_ONLY = '1';
+  if (!bypass) env.PSTACK_READ_ONLY = '1';
   env[SEAT_MARK] = sessionId;
-  const guard = colead || unboxed ? withoutPushOrGitHub(env) : null;
+  const guard = unboxed ? withoutPushOrGitHub(env) : null;
   if (guard) folders.add(guard);
-  const mainCheckout = colead || unboxed ? linkedMainCheckout(colead ?? cwd) : null;
+  const mainCheckout = unboxed ? linkedMainCheckout(cwd) : null;
   const mainBefore = mainCheckout && checkoutState(mainCheckout);
   // Codex resolves a relative CODEX_HOME against its own working directory.
   const codexHome = resolve(runCwd, env.CODEX_HOME || join(homedir(), '.codex'));
@@ -328,10 +291,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       resolve(answer);
     };
     const startedAt = new Date();
-    // The child writes the stream file itself, so what it says after this helper dies still lands there.
-    const out = stream ? openSync(stream, 'w') : 'pipe';
-    const child = spawn(command, args, { cwd: runCwd, env, stdio: ['ignore', out, 'pipe'], detached: true });
-    if (stream) closeSync(out);
+    const child = spawn(command, args, { cwd: runCwd, env, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
     const signalSeat = (signal) => signalProcesses(child.pid, sessionId, signal);
     // A session restart can kill this helper outright, which no signal handler sees, and the child's process group outlives it.
     if (child.pid) {
@@ -352,23 +312,12 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
     let stdout = '';
     let stderr = '';
     let workedAt = Date.now();
-    let announced = null;
     const decoder = new StringDecoder('utf8');
     const onStdout = (text) => {
       stdout += text;
       workedAt = Date.now();
-      if (colead && !announced) {
-        announced = agyConversation(stdout);
-        if (announced) onConversation?.(announced);
-      }
     };
-    const tail = stream ? openSync(stream, 'r') : null;
-    const drain = () => {
-      const buffer = Buffer.alloc(1 << 16);
-      for (let read; (read = readSync(tail, buffer)) > 0; ) onStdout(decoder.write(buffer.subarray(0, read)));
-    };
-    if (stream) timers.push(setInterval(drain, 500));
-    else child.stdout.on('data', (chunk) => onStdout(decoder.write(chunk)));
+    child.stdout.on('data', (chunk) => onStdout(decoder.write(chunk)));
     child.stderr.on('data', (chunk) => {
       stderr += chunk;
       workedAt = Date.now();
@@ -385,18 +334,13 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       }
     };
     if (timeout) timers.push(setTimeout(() => stop(`no answer within ${timeout} seconds`), timeout * 1000));
-    if (!colead)
-      timers.push(
-        setInterval(() => {
-          if (Date.now() - lastWork() > idle * 1000) stop(`no sign of work for ${idle} seconds`);
-        }, Math.min(30_000, idle * 250)),
-      );
+    timers.push(
+      setInterval(() => {
+        if (Date.now() - lastWork() > idle * 1000) stop(`no sign of work for ${idle} seconds`);
+      }, Math.min(30_000, idle * 250)),
+    );
     child.on('error', (error) => done({ runtime, ok: false, text: error.message }));
     child.on('close', async (code, signal) => {
-      if (stream) {
-        drain();
-        closeSync(tail);
-      }
       onStdout(decoder.end());
       if (signalSeat('SIGTERM')) {
         await waitGone([signalSeat]);
@@ -407,8 +351,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
         const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : runtime === 'agy' ? agyAnswer(stdout) : stdout).trim();
         const filtered = runtime === 'agy' && (GEMINI_FILTERED.test(text) || GEMINI_FILTERED.test(stdout.trim()));
         const touched = mainCheckout && checkoutState(mainCheckout) !== mainBefore;
-        const step = colead && coleadBudget(colead);
-        const warnings = [touched && `the ${colead ? 'co-lead run' : 'seat'} changed the main checkout ${mainCheckout}; check it before using this answer.`, step?.product > step?.budget && `this worktree's change since ${step.base} ${overBudget(step.product, step.budget)}`].filter(Boolean);
+        const warnings = [touched && `the seat changed the main checkout ${mainCheckout}; check it before using this answer.`].filter(Boolean);
         const ok = code === 0 && text && !late && !filtered && !warnings.length;
         const codex = runtime === 'codex' && !ok ? codexFailure(stdout, stderr, codexHome, startedAt) : null;
         // The Claude CLI prints a usage-limit refusal on stdout and nothing on stderr.
@@ -418,8 +361,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
         // A Claude seat without --effort runs at the machine's default, which only its transcript records.
         const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
         const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;
-        const resumable = colead ? { conversation: agyConversation(stdout) ?? conversation } : {};
-        done(ok ? { runtime, ok: true, text, seat, ...resumable } : { runtime, ok: false, text: failure, seat, ...resumable, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }), ...(codex?.kind === 'usage_limit_exceeded' && { limited: true }), ...(filtered && { refused: 'safety' }) });
+        done(ok ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }), ...(codex?.kind === 'usage_limit_exceeded' && { limited: true }), ...(filtered && { refused: 'safety' }) });
       } catch (error) {
         done({ runtime, ok: false, text: error.message });
       }
@@ -451,12 +393,11 @@ async function main(argv) {
     else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
     else positional.push(arg);
   }
-  const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile, conversation, stream } = values;
-  const colead = values.colead && realPath(resolve(values.colead));
+  const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile } = values;
   const sources = [...positional, values.prompt, promptFile].filter((source) => source !== undefined);
   let prompt = sources[0] ?? '';
   const timeout = values.timeout === undefined ? undefined : Number(values.timeout);
-  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude|agy] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name> | --to agy --colead <worktree> [--conversation <id>] [--stream <file>]] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude|agy] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
   if (help) {
     console.info(usage);
     return 0;
@@ -482,23 +423,6 @@ async function main(argv) {
     console.error(`--ignore-user-config and --computer-use conflict\n${usage}`);
     return 2;
   }
-  if ((conversation || stream) && !colead) {
-    console.error(`--conversation and --stream go with --colead\n${usage}`);
-    return 2;
-  }
-  if (colead && (to !== 'agy' || bypass || reach || isolated || events)) {
-    console.error(`--colead runs only --to agy, without --bypass, --reach, --ignore-user-config or --computer-use\n${usage}`);
-    return 2;
-  }
-  if (conversation && !new RegExp(`^${UUID}$`, 'u').test(conversation)) {
-    console.error(`--conversation takes the id an earlier co-lead run printed\n${usage}`);
-    return 2;
-  }
-  const coleadRefused = colead && coleadRefusal(colead);
-  if (coleadRefused) {
-    console.error(`refusing the co-lead: ${coleadRefused}\n${usage}`);
-    return 2;
-  }
   if (sources.length > 1) {
     console.error(`give one prompt: a positional prompt, --prompt or --prompt-file\n${usage}`);
     return 2;
@@ -512,7 +436,7 @@ async function main(argv) {
     console.error(`--computer-use and --chrome-profile go together, and only --to codex\n${usage}`);
     return 2;
   }
-  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile }, colead, conversation, stream: stream && resolve(stream), onConversation: (id) => console.error(`conversation: ${id}`) });
+  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile } });
   (answer.ok ? console.info : console.error)(answer.text);
   if (answer.refused) console.error(`refused: ${answer.refused}`);
   if (answer.seat) console.error(`seat: ${answer.seat}`);

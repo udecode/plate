@@ -155,7 +155,6 @@ import { acceptedWord, bigStepId, bracketSeats, committedLines, decisionLogs, de
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
 const CELLS = ['phase', 'decision', 'why', 'evidence', 'result'];
-const COLEAD = new RegExp(`^(?:(?:agy|codex):)?[a-z][\\w.-]* @(?:${EFFORTS.join('|')})$`, 'u');
 
 const opens = (line) => {
   const [, phase, decision = ''] = line.split('\t');
@@ -520,7 +519,6 @@ function rowProblems(line, where, roster, chips) {
     }
   }
   if (rest[0] === 'panel' && SEATS.test(rest[1])) found.push(...skippedClaudeSeats(rest[1], where));
-  if (rest[0] === 'colead' && !COLEAD.test(rest[1])) found.push(`${where}: a colead row's decision is only the co-lead's model and effort, such as agy:gemini-4-neon @xhigh, or opus @high after a fallback`);
   if (rest[0] !== 'panel' && isRecorded(rest)) found.push(...recordedProblems('critical', rest, where));
   if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) {
     found.push(`${where}: ${/^[aeiou]/u.test(status) ? 'an' : 'a'} ${status} result belongs only in a chip row; a run's log records the same step as applied, decided, fixed or verified`);
@@ -544,7 +542,7 @@ function newRowProblems(cells, where, chips, writer) {
   return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, writer, shipList, invokedFrom) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
 }
 
-const transcriptOf = (run) => (run ? basename(run.transcript, '.jsonl') : null);
+const transcriptOf = (run) => (run?.transcript ? basename(run.transcript, '.jsonl') : null);
 
 // An owner's session id can change with the account, so an offer or a takeover
 // that names session: also records the writing session's transcript id.
@@ -758,7 +756,7 @@ function leadRow(existing, run, miss) {
   const label = run ? leadLabel(run) : 'unknown';
   const why = `runtime identity could not be verified${miss ? ` because ${miss.replace(/\s+/gu, ' ')}` : ''}`;
   if (!run) return last === label ? [] : [['lead', label, why, 'proof: none', 'recorded unknown session']];
-  return last === label ? [] : [['lead', label, 'read from the session transcript, since an agent cannot see its own effort', `transcript ${basename(run.transcript)}`, `recorded ${run.runtime} session`]];
+  return last === label ? [] : [['lead', label, 'read from the session transcript, since an agent cannot see its own effort', run.transcript ? `transcript ${basename(run.transcript)}` : `runtime ${run.runtime}`, `recorded ${run.runtime} session`]];
 }
 
 function append(path, batch, run, miss = null) {

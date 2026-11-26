@@ -90,14 +90,72 @@ export function readKind(tool, input = {}) {
 const reason = (count) =>
   `Wide reading: this is the lead's read number ${count} since its last edit or subagent dispatch. Send the rest of the exploration to a subagent, such as an Agent with subagent_type Explore, with the question it must answer, then read in full only the code you change and the callers it can break. If you will edit this exact file next, run the same call again unchanged and it goes through.`;
 
+function normalizeEvent(raw) {
+  if (!raw || typeof raw !== 'object') return { isAgy: false };
+  const isAgy = Boolean(
+    raw.hookEventName || raw.conversationId || raw.toolCall
+  );
+  const session_id = raw.session_id ?? raw.conversationId;
+  if (!raw.toolCall) return { ...raw, session_id, isAgy };
+  const { name, args = {} } = raw.toolCall;
+  if (name === 'run_command') {
+    return {
+      ...raw,
+      session_id,
+      isAgy,
+      tool_name: 'Bash',
+      tool_input: { command: args.CommandLine },
+    };
+  }
+  if (name === 'read_file') {
+    return {
+      ...raw,
+      session_id,
+      isAgy,
+      tool_name: 'Read',
+      tool_input: { file_path: args.Path },
+    };
+  }
+  if (name === 'edit_file') {
+    return {
+      ...raw,
+      session_id,
+      isAgy,
+      tool_name: 'Edit',
+      tool_input: { file_path: args.Path },
+    };
+  }
+  if (name === 'write_file') {
+    return {
+      ...raw,
+      session_id,
+      isAgy,
+      tool_name: 'Write',
+      tool_input: { file_path: args.Path },
+    };
+  }
+  if (name === 'invoke_subagent') {
+    return { ...raw, session_id, isAgy, tool_name: 'Agent', tool_input: args };
+  }
+  return { ...raw, session_id, isAgy, tool_name: name, tool_input: args };
+}
+
 function main(argv) {
-  let event;
+  let raw;
   try {
-    event = JSON.parse(readFileSync(0, 'utf-8'));
+    raw = JSON.parse(readFileSync(0, 'utf-8') || '{}');
   } catch {
     return 0;
   }
-  if (event.agent_id || !event.session_id) return 0;
+  const event = normalizeEvent(raw);
+  const isReset = argv.includes('--reset');
+  const replyEmpty = () => {
+    if (event.isAgy) {
+      process.stdout.write(isReset ? '{}' : '{"decision":"allow"}');
+    }
+    return 0;
+  };
+  if (event.agent_id || !event.session_id) return replyEmpty();
   const dir = join(tmpdir(), 'plate-read-budget');
   const file = join(
     dir,
@@ -113,36 +171,40 @@ function main(argv) {
     mkdirSync(dir, { recursive: true });
     writeFileSync(file, JSON.stringify(state));
   };
-  if (argv.includes('--reset')) {
+  if (isReset) {
     state = { count: 0, retried: [] };
     save();
-    return 0;
+    return replyEmpty();
   }
   const kind = readKind(event.tool_name, event.tool_input);
   if (kind === 'reset') {
     state = { count: 0, retried: [] };
     save();
-    return 0;
+    return replyEmpty();
   }
-  if (kind !== 'read') return 0;
+  if (kind !== 'read') return replyEmpty();
   state.count += 1;
   const key = createHash('sha1')
     .update(`${event.tool_name}\0${JSON.stringify(event.tool_input)}`)
     .digest('hex');
   if (state.count <= LIMIT || state.retried.includes(key)) {
     save();
-    return 0;
+    return replyEmpty();
   }
   state.retried.push(key);
   save();
   process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: reason(state.count),
-      },
-    })
+    JSON.stringify(
+      event.isAgy
+        ? { decision: 'deny', reason: reason(state.count) }
+        : {
+            hookSpecificOutput: {
+              hookEventName: 'PreToolUse',
+              permissionDecision: 'deny',
+              permissionDecisionReason: reason(state.count),
+            },
+          }
+    )
   );
   return 0;
 }

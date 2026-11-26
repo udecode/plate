@@ -71,21 +71,32 @@ function countStart(intakeDay, rows, closedIntakes) {
 
 function main() {
   const input = hookPayload();
+  const isAgy = Boolean(input.isAgy);
+  const done = () => {
+    if (isAgy) process.stdout.write('{}');
+  };
+  const stopActive =
+    input.stop_hook_active ||
+    (isAgy && (input.continuationActive || Number(input.executionNum) > 0));
   // Codex sets CODEX_SESSION_ID only in its shell commands, so a Codex hook's
   // environment holds only ids inherited from a parent session, and only the
   // payload names this one.
   const session = process.argv.includes('--codex')
     ? input.session_id
-    : process.env.CLAUDE_CODE_HOST_SESSION_ID ||
-      process.env.CLAUDE_CODE_SESSION_ID ||
-      input.session_id;
+    : isAgy
+      ? process.env.T3CODE_THREAD_ID || input.session_id
+      : process.env.CLAUDE_CODE_HOST_SESSION_ID ||
+        process.env.CLAUDE_CODE_SESSION_ID ||
+        input.session_id;
   if (
     process.env.PSTACK_READ_ONLY ||
-    input.stop_hook_active ||
+    stopActive ||
     input.background_tasks?.length ||
     input.session_crons?.length ||
+    (isAgy && input.fullyIdle === false) ||
     !session
   ) {
+    done();
     return;
   }
 
@@ -93,7 +104,10 @@ function main() {
     readFileSync(path.join(ROOT, '.agents/pstack.json'), 'utf-8')
   );
   const companion = path.join(ROOT, config.companion.dir);
-  if (!existsSync(companion)) return;
+  if (!existsSync(companion)) {
+    done();
+    return;
+  }
   const landedIn = (...gitDir) =>
     git(
       ...gitDir,
@@ -105,7 +119,10 @@ function main() {
       BRANCH
     );
   const landed = landedIn() || landedIn('--git-dir', companion);
-  if (!landed) return;
+  if (!landed) {
+    done();
+    return;
+  }
 
   const intake = git(
     '--git-dir',
@@ -120,7 +137,10 @@ function main() {
     .filter((name) => INTAKE.test(name))
     .sort()
     .at(-1);
-  if (!intake) return;
+  if (!intake) {
+    done();
+    return;
+  }
 
   const common = git('rev-parse', '--path-format=absolute', '--git-common-dir');
   const ledger = path.join(
@@ -128,7 +148,10 @@ function main() {
     ledgerPath(config.plans, config.delivery)
   );
   const lock = path.join(common, 'formal-intake.lock');
-  if (!takeLock(lock)) return;
+  if (!takeLock(lock)) {
+    done();
+    return;
+  }
   try {
     const rows = (existsSync(ledger) ? readFileSync(ledger, 'utf-8') : '')
       .split('\n')
@@ -141,6 +164,7 @@ function main() {
         (task) => task.status === 'offered' || task.status === 'started'
       )
     ) {
+      done();
       return;
     }
 
@@ -154,7 +178,10 @@ function main() {
     )
       .split('\n')
       .filter((subject) => /^fix\b/.test(subject)).length;
-    if (fixes < FIXES_DUE) return;
+    if (fixes < FIXES_DUE) {
+      done();
+      return;
+    }
 
     const id = run('node', [HELPER, 'chips', 'id']);
     run('node', [
@@ -169,7 +196,7 @@ function main() {
     ]);
     process.stdout.write(
       JSON.stringify({
-        decision: 'block',
+        decision: isAgy ? 'continue' : 'block',
         reason: `Formal intake is due: ${fixes} fix commits landed on next since ${since}, and this session landed ${landed}. This hook offered it as ${id} in the suggested-task ledger with no owner, because it lies outside this session's domain, so only /chips all cards it. Say so in one line.`,
       })
     );

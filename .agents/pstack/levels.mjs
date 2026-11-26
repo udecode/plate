@@ -26,7 +26,6 @@ const seatKey = (model) => model.replace(/^(?:codex|agy):/u, '').replace(/^claud
 const ROUNDS = {
   panel: { opens: /^seats\b/u, role: 'interrogate reviewers', sheet: 'runtime' },
   arena: { opens: /^runners\b/u, role: 'arena runners', sheet: 'runtime' },
-  colead: { opens: /./u, role: 'co-lead', sheet: 'claude' },
 };
 const BLOCK = /<!-- pstack:begin[\s\S]*?<!-- pstack:end -->/gu;
 
@@ -163,13 +162,12 @@ function main(argv) {
     return [error.message, 1];
   }
   const run = { ...found, effort: capEffort(found.effort, max) };
-  const { text: sheet } = effectiveModelsSheet(family(run.model) === 'claude' ? 'claude' : 'codex');
+  const { text: sheet } = effectiveModelsSheet(family(run.model) === 'codex' ? 'codex' : 'claude');
   const sheetEffort = sheet?.match(/^default effort:\s*(\w+)/mu)?.[1];
   const defaultEffort = !sheetEffort || sheetEffort === 'session' ? run.effort : sheetEffort;
   const agents = existsSync('AGENTS.md') ? readFileSync('AGENTS.md', 'utf8') : null;
   const seatsFor = {
     runtime: targets(sheet, agents, defaultEffort, flags.seats, max),
-    claude: targets(effectiveModelsSheet('claude').text, agents, defaultEffort, null, max),
   };
   const panel = seatsFor.runtime(ROUNDS.panel.role);
   const out = [`target: lead ${run.model} @${run.effort}${panel ? `; seats ${panel.map(seatLabel).join(', ')}` : ''}${max ? `; maxEffort ${max}` : ''}`];

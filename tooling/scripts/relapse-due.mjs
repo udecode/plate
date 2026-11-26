@@ -19,21 +19,32 @@ const git = (...args) =>
 
 function main() {
   const input = hookPayload();
+  const isAgy = Boolean(input.isAgy);
+  const done = () => {
+    if (isAgy) process.stdout.write('{}');
+  };
+  const stopActive =
+    input.stop_hook_active ||
+    (isAgy && (input.continuationActive || Number(input.executionNum) > 0));
   // Codex sets CODEX_SESSION_ID only in its shell commands, so a Codex hook's
   // environment holds only ids inherited from a parent session, and only the
   // payload names this one.
   const session = process.argv.includes('--codex')
     ? input.session_id
-    : process.env.CLAUDE_CODE_HOST_SESSION_ID ||
-      process.env.CLAUDE_CODE_SESSION_ID ||
-      input.session_id;
+    : isAgy
+      ? process.env.T3CODE_THREAD_ID || input.session_id
+      : process.env.CLAUDE_CODE_HOST_SESSION_ID ||
+        process.env.CLAUDE_CODE_SESSION_ID ||
+        input.session_id;
   if (
     process.env.PSTACK_READ_ONLY ||
-    input.stop_hook_active ||
+    stopActive ||
     input.background_tasks?.length ||
     input.session_crons?.length ||
+    (isAgy && input.fullyIdle === false) ||
     !session
   ) {
+    done();
     return;
   }
 
@@ -50,7 +61,10 @@ function main() {
   )
     .split('\n')
     .filter((sha) => sha && !existsSync(path.join(checked, sha)));
-  if (!landed.length) return;
+  if (!landed.length) {
+    done();
+    return;
+  }
 
   const report = execFileSync(
     'node',
@@ -86,11 +100,14 @@ function main() {
   const cards = [...report.matchAll(/^== card (\S+):/gm)]
     .map((match) => match[1])
     .filter((id) => !open.has(`review-${id}`));
-  if (!cards.length) return;
+  if (!cards.length) {
+    done();
+    return;
+  }
 
   process.stdout.write(
     JSON.stringify({
-      decision: 'block',
+      decision: isAgy ? 'continue' : 'block',
       reason: `This session landed fixes that rework recent fixes in ${cards.join(', ')}, whose fixes keep coming back two weeks running. Run step 2 of the Verdict playbook's Relapse pass for ${cards.length === 1 ? 'that scope' : 'each of those scopes'} from the report below, as the pass's fix-time check says, then the chips skill's Close, and say so in one line.\n\n${report}`,
     })
   );
