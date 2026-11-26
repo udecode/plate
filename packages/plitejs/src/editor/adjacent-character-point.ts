@@ -12,7 +12,7 @@ import {
   point as editorPoint,
 } from '../interfaces/editor';
 import { type Descendant, NodeApi } from '../interfaces/node';
-import type { Path } from '../interfaces/path';
+import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { getDefined } from '../internal/get-defined';
 import { getCharacterDistance } from '../utils/string';
@@ -186,7 +186,11 @@ const getNextCharacterPoint = (editor: Editor, point: Point): Point | null => {
     };
   }
 
-  return getNextTextStartPoint(editor, point.path);
+  const next = getNextTextStartPoint(editor, point.path);
+
+  return next && PathApi.isSibling(next.path, point.path)
+    ? getNextCharacterPoint(editor, next)
+    : next;
 };
 
 const getPreviousCharacterPoint = (
@@ -204,7 +208,11 @@ const getPreviousCharacterPoint = (
     };
   }
 
-  return getPreviousTextEndPoint(editor, point.path);
+  const previous = getPreviousTextEndPoint(editor, point.path);
+
+  return previous && PathApi.isSibling(previous.path, point.path)
+    ? getPreviousCharacterPoint(editor, previous)
+    : previous;
 };
 
 export const getAdjacentCharacterPoint = (
