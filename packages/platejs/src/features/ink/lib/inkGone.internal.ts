@@ -23,9 +23,14 @@ export type InkGone = Readonly<{ next?: string; previous?: string }>;
 
 export const COPIES = 'ink-copies';
 
+export const DIGITIZED = 'ink-digitized';
+
 export const GONE = 'ink-gone';
 
 export const MARKS = 'ink-marks';
+
+export const isInkMarkShown = (digitized: RecordSetVersion, id: string) =>
+  readRecord(digitized, id) === undefined;
 
 type GoneTx = Readonly<{
   changes: Readonly<{ apply: (change: DocumentChange) => void }>;

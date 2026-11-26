@@ -9618,7 +9618,7 @@ export const getUpdateView = <
     records: Object.freeze({
       drop: (set: string, id: string) => {
         runActive(() => {
-          applyDocumentChange(
+          applyRecordChange(
             editor,
             createInternalDocumentChange(new Map(), {
               records: recordDrop(set, id),
@@ -9632,7 +9632,7 @@ export const getUpdateView = <
         record: Readonly<Record<string, unknown>>
       ) => {
         runActive(() => {
-          applyDocumentChange(
+          applyRecordChange(
             editor,
             createInternalDocumentChange(new Map(), {
               records: recordPut(
@@ -13946,6 +13946,20 @@ const applyTransactionSpecDocumentChangeStep = (
       listener(context);
     }
   }
+};
+
+const applyRecordChange = (editor: Editor, change: DocumentChange) => {
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (!snapshot || !getTransactionSpecContext(editor)) {
+    throw new Error('Document changes require an active transaction draft.');
+  }
+
+  applyTransactionSpecDocumentChangeStep(
+    editor,
+    snapshot.builder.applyRecordChange(change),
+    {}
+  );
 };
 
 export const applyDocumentChange = (

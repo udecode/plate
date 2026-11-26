@@ -5,6 +5,7 @@ import {
   defineRuntimePlugin,
   getDocumentValueNode,
   getRecordSetVersion,
+  getValueRecords,
   type NodeKey,
   type RecordSetVersion,
   readElementById,
@@ -27,15 +28,18 @@ import {
   addGone,
   captureGone,
   COPIES,
+  DIGITIZED,
   flushGone,
   GONE,
   hasPendingGone,
   idOf,
+  isInkMarkShown,
   MARKS,
 } from './inkGone.internal';
 import { INK_VOID, inkText } from './inkMatch.internal';
 import {
   advanceInkPlaces,
+  byMark,
   readInkPlace,
   takeFirstChangeWalkMemo,
 } from './inkPlaces.internal';
@@ -224,12 +228,35 @@ const copiesOf = ({ copies }: Readonly<Record<string, unknown>>) => {
 const beta2MayUndoTo = (id: string) => id.startsWith('c_');
 
 const inkRecords = defineRuntimePlugin('ink-records', {
+  activate: ({ afterPublish, editor }) => {
+    afterPublish(() => {
+      const store = readShownRecords(editor);
+      const digitized = getRecordSetVersion(store, DIGITIZED);
+      if (!digitized) return;
+      const marks = getRecordSetVersion(store, MARKS);
+      const orphans = recordSetIds(digitized).filter(
+        (id) => !readRecord(marks, id)
+      );
+      if (orphans.length === 0) return;
+      editor.update((tx) => {
+        tx.tags.add('history-skip');
+        const currentMarks = getRecordSetVersion(
+          getValueRecords(tx.value()),
+          MARKS
+        );
+        for (const id of orphans) {
+          if (!readRecord(currentMarks, id)) tx.records.drop(DIGITIZED, id);
+        }
+      });
+    });
+  },
   schema: {
     records: {
       [COPIES]: {
         history: 'retain',
         namedBy: { keep: beta2MayUndoTo, names: copiesOf, set: MARKS },
       },
+      [DIGITIZED]: {},
       [GONE]: { history: 'retain' },
       [MARKS]: {},
     },
@@ -256,7 +283,21 @@ const decodedMarks = new WeakMap<
 >();
 
 const markLists = new WeakMap<object, WeakMap<object, readonly InkMark[]>>();
+const shownMarkLists = new WeakMap<
+  object,
+  WeakMap<object, WeakMap<object, readonly InkMark[]>>
+>();
 const EMPTY_SET_VERSION = {};
+
+const cached = <K extends object, V>(
+  map: WeakMap<K, V>,
+  key: K,
+  make: () => V
+) => {
+  let value = map.get(key);
+  if (!value) map.set(key, (value = make()));
+  return value;
+};
 
 const frozen = <T extends object>(value: T) => {
   for (const field of Object.values(value)) {
@@ -751,7 +792,7 @@ export const BaseInkPlugin = definePlugin('ink', {
       getRecordSetVersion(readShownRecords(editor), set);
     const copy = (id: string) => copyIn(version(COPIES), id);
 
-    return {
+    const read = {
       /** The copy saved under `id`, or `undefined`. */
       copy,
       /** The mark saved under `id`, or `undefined`. */
@@ -800,7 +841,38 @@ export const BaseInkPlugin = definePlugin('ink', {
        */
       place: (copyId: string): InkCopyPlace | undefined =>
         readInkPlace({ copy, editor, state }, copyId),
+      /** Every saved mark with no digitized record, oldest first, frozen. */
+      shownMarks: () => {
+        const digitized = version(DIGITIZED);
+        if (!digitized) return read.marks();
+        const saved = version(MARKS);
+        const copies = version(COPIES);
+        const byCopies = cached(
+          shownMarkLists,
+          saved ?? EMPTY_SET_VERSION,
+          () => new WeakMap()
+        );
+        const byDigitized = cached(
+          byCopies,
+          copies ?? EMPTY_SET_VERSION,
+          () => new WeakMap()
+        );
+        return cached(byDigitized, digitized, () =>
+          Object.freeze(
+            recordSetIds(saved)
+              .flatMap((id) => {
+                const record = isInkMarkShown(digitized, id)
+                  ? readRecord(saved, id)
+                  : undefined;
+                return (record && markIn(id, record, copies)) ?? [];
+              })
+              .sort(byMark)
+          )
+        );
+      },
     };
+
+    return read;
   },
   update: ({ editor, tx }) => ({
     /**
@@ -840,9 +912,28 @@ export const BaseInkPlugin = definePlugin('ink', {
 
       return id;
     }),
-    /** Drop the marks `ids` names. Their copies stay. */
+    /** Drop the marks `ids` names and their digitized records. Their copies stay. */
     remove: txLocate(false, (ids: readonly string[]) => {
-      for (const id of ids) tx.records.drop(MARKS, id);
+      const digitized = getRecordSetVersion(
+        getValueRecords(tx.value()),
+        DIGITIZED
+      );
+      for (const id of new Set(ids)) {
+        tx.records.drop(MARKS, id);
+        if (readRecord(digitized, id)) tx.records.drop(DIGITIZED, id);
+      }
+    }),
+    /** Mark or unmark `ids` as digitized, skipping missing or unchanged ids. */
+    setDigitized: txStored((ids: readonly string[], value: boolean) => {
+      const store = getValueRecords(tx.value());
+      const marks = getRecordSetVersion(store, MARKS);
+      const digitized = getRecordSetVersion(store, DIGITIZED);
+      for (const id of new Set(ids)) {
+        if (!readRecord(marks, id)) continue;
+        const has = readRecord(digitized, id) !== undefined;
+        if (value && !has) tx.records.put(DIGITIZED, id, {});
+        else if (!value && has) tx.records.drop(DIGITIZED, id);
+      }
     }),
   }),
 });

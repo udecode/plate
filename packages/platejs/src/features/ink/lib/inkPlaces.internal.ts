@@ -26,9 +26,11 @@ import type { InkCopy, InkCopyPlace, InkMark } from './BaseInkPlugin';
 import {
   besideAt,
   COPIES,
+  DIGITIZED,
   GONE,
   goneIn,
   idOf,
+  isInkMarkShown,
   MARKS,
   reachGone,
   walkGone,
@@ -95,7 +97,10 @@ type InkPlaces = {
 
 type CommittedPlaces = {
   places: InkPlaces;
-  sets: Record<typeof COPIES | typeof GONE | typeof MARKS, RecordSetVersion>;
+  sets: Record<
+    typeof COPIES | typeof DIGITIZED | typeof GONE | typeof MARKS,
+    RecordSetVersion
+  >;
   version: number;
 };
 
@@ -488,6 +493,7 @@ const placesOf = ({ editor, state }: InkPlaceRead) => {
     places,
     sets: {
       [COPIES]: getRecordSetVersion(store, COPIES),
+      [DIGITIZED]: getRecordSetVersion(store, DIGITIZED),
       [GONE]: getRecordSetVersion(store, GONE),
       [MARKS]: getRecordSetVersion(store, MARKS),
     },
@@ -536,6 +542,15 @@ export const readInkSign = (
   read: InkPlaceRead,
   mark: InkMark
 ): InkMarkSign | undefined => {
+  if (
+    !isInkMarkShown(
+      getRecordSetVersion(readShownRecords(read.editor), DIGITIZED),
+      mark.id
+    )
+  ) {
+    return undefined;
+  }
+
   const kept = indexedMark(placesOf(read), read, mark);
 
   return kept?.group?.sign ?? kept?.changed;
@@ -633,11 +648,21 @@ export const readInkDeletedSigns = (
 
   if (places.listed !== marks) {
     places.listed = marks;
-    for (const mark of marks) {
-      if (places.signs.get(mark.id)?.mark !== mark) dropSign(places, mark.id);
+
+    const digitized = getRecordSetVersion(
+      readShownRecords(read.editor),
+      DIGITIZED
+    );
+    const shown = digitized
+      ? marks.filter((mark) => isInkMarkShown(digitized, mark.id))
+      : marks;
+    const byId = new Map(shown.map((mark) => [mark.id, mark]));
+
+    for (const [id, kept] of [...places.signs]) {
+      if (byId.get(id) !== kept.mark) dropSign(places, id);
     }
     places.stale = new Map(
-      marks.flatMap((mark) =>
+      shown.flatMap((mark) =>
         places.signs.has(mark.id) ? [] : [[mark.id, mark]]
       )
     );
@@ -843,6 +868,9 @@ export const advanceInkPlaces = (
   }
   for (const id of changedIn(COPIES)) untrackCopy(places, id);
   for (const id of changedIn(MARKS)) dropSign(places, id);
+  const digitizedChanged = changedIn(DIGITIZED);
+  if (digitizedChanged.length > 0) places.listed = undefined;
+  for (const id of digitizedChanged) dropSign(places, id);
 
   const dirty = new Set<string>();
   const moved = changed.hasAny('structure') || changed.hasAny('properties');

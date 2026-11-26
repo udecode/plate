@@ -1302,6 +1302,22 @@ export class ChangeDraft {
     return step;
   }
 
+  applyRecordChange(
+    change: DocumentChange,
+    facts: ChangeFacts = UNKNOWN_FACTS
+  ): DocumentChangeStep {
+    if (
+      isInternalRecordsOnlyChange(change) &&
+      (this.validateRecordsOnlyChange || !this.canonical)
+    ) {
+      this.validateRecordsOnlyChange?.(change);
+
+      return this.applyRecords(change, facts);
+    }
+
+    return this.applyCanonical(change, facts);
+  }
+
   applyPropertyWrites(change: DocumentChange): DocumentChangeStep {
     if (!this.canonical || this.validationPending) return this.apply(change);
 
