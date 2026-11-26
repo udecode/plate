@@ -347,7 +347,7 @@
       ".agents/pstack/reread.mjs": "27d4b9161e486e3be21f720c1b9688593d755d6a6e43f2ac739438e2d64e0100",
       ".agents/pstack/seats.mjs": "dae2b1f91488e0670b11b86edc887bf2ba2abbead7e76ed8b2e5642e290dd1f7",
       ".agents/pstack/title.mjs": "0469631408516ce5c09a0fad97e829aa594dd465a194281a951d67b9bcb87c88",
-      ".agents/pstack/decisions-check.mjs": "9836c8bbaf2eefee515b0133d15752d7b30f4e16fefd2bef462263ac0d53ec59",
+      ".agents/pstack/decisions-check.mjs": "bd54e043b8085ef8007e667a243146c42571e942ac9ecc9f3ef3827b8a0b19a0",
       ".agents/pstack/levels.mjs": "22d8f1814015302e0dca6c5a620384d9196003c29e437789293efa67be3f9fe3",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
       ".agents/pstack/page-stop.mjs": "32a72996ed02570bf6368e27f6ccce5a44d28fcbc147d77ec4978e68d8d09ad4",
@@ -370,7 +370,7 @@
       ".agents/pstack/rules/long-runs.md": "733c7a5802b116b63f342c65d6f89b089484988a00ef8587be231bb2395db1d9",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
       ".agents/pstack/rules/pages.md": "2fa3014e78ab176422673a1f53a455f6675652b5aa221b5aebdbfd9b792931d8",
-      ".agents/pstack/rules/panel.md": "c14dd09fd39af1dcf81f9daa78a63fd43fcf228b62acacb4f87f0597d391ab14",
+      ".agents/pstack/rules/panel.md": "c2821174f9998ee3334e66693b27c7d1768c6ffba5faec3255e65091a970805c",
       ".agents/pstack/rules/reflect.md": "3c6396725d81b688e0e03ebba66c34cf549b93ac9a57d57fe7d4f389bfc2df51",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "c083944ff161c08480f33eb592f3789296a05d331155fa331fa815683793718a",
@@ -378,7 +378,7 @@
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af",
       ".claude/pstack-models.md": "7fe82bd3caa562c5543e41f0deb3fe0eba5b069b346205e2c684f521d83aee77"
     },
-    "source": "aa3b68c9da9d5152063fb022aa3d83bd0f5b6839"
+    "source": "76e6674dbe591fe55a39538f50be0ad1f019f638"
   },
   "pageTopic": {
     "field": "review_scopes",
