@@ -32,8 +32,6 @@ const plateOxlintIgnorePatterns = [
   // The load-trace fixtures hold the CommonJS and computed load forms the
   // trace check must catch.
   'tooling/scripts/__fixtures__/load-trace/**',
-  // Copies Plite's documented calls as the docs write them.
-  'packages/plitejs/type-tests/plite-call-parity.tsx',
 ];
 
 const plateJsPlugins = {
@@ -269,7 +267,6 @@ const config = defineConfig({
         'packages/plitejs/test/**',
         'packages/plitejs/type-tests/**',
         'packages/platejs/test/public-package-import-smoke.spec.ts',
-        'packages/platejs/test/plite-call-parity.spec.tsx',
         // Shared JSX fixtures are part of the raw Plite package test harness.
         'config/plite-test-jsx.js',
         // Shared raw examples feed the dedicated Plite proof app.

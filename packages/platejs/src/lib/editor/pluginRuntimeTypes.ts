@@ -2265,7 +2265,7 @@ type PluginNodeSetProps<D> = Partial<Omit<Element, 'children'>> &
   PluginWritablePropertyPatch<D> &
   PluginForbiddenWritablePropertyPatch<D>;
 
-type PluginNodeSetOptions = Omit<NodeSetNodesOptions<any>, 'at'> & {
+type PluginNodeSetOptions = Omit<NodeSetNodesOptions<Element>, 'at'> & {
   at?: Descendant | ElementIdTarget | Location | NodeKey | NodeSelection;
 };
 

@@ -151,13 +151,9 @@ const skippedDirectoryNames = new Set([
   'public',
   'templates',
 ]);
-const filesParsedCaseByCase = new Set([
-  'packages/plitejs/type-tests/plite-call-parity.tsx',
-]);
 export const isPlateSchemaAdoptionSourcePath = (file) =>
   sourceRoots.some((root) => file.startsWith(`${root}/`)) &&
   auditedFilePattern.test(file) &&
-  !filesParsedCaseByCase.has(file) &&
   !file.split('/').some((part) => skippedDirectoryNames.has(part));
 const deletedNodeBagKeys = new Set([
   'component',

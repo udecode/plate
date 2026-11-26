@@ -39,9 +39,6 @@ export const testModuleEffects = {
       'packages/platejs/src/math/lib/__fixtures__/katex-docs-chrome-copy.html',
     ],
   },
-  'packages/platejs/test/plite-call-parity.spec.tsx': {
-    reads: ['packages/plitejs/type-tests/plite-call-parity.tsx'],
-  },
   'packages/platejs/test/public-package-import-smoke.spec.ts': {
     reads: ['packages/plitejs/package.json', 'packages/test/package.json'],
   },

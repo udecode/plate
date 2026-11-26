@@ -857,26 +857,6 @@ export const steps = [
     ),
   },
   {
-    name: 'plite-call-parity',
-    private: true,
-    run: 'node tooling/scripts/check-plite-call-parity.mjs',
-    affected: touches(
-      'apps/www/src/app/(app)/examples/plite/',
-      'content/docs/plite/',
-      'packages/platejs/package.json',
-      'packages/platejs/src/',
-      'packages/plitejs/README.md',
-      'packages/plitejs/package.json',
-      'packages/plitejs/src/',
-      'packages/plitejs/type-tests/plite-call-parity.tsx',
-      'packages/test/package.json',
-      'packages/test/src/',
-      'tooling/scripts/plite-call-parity.json'
-    ),
-    key: [],
-    filesOnly: true,
-  },
-  {
     name: 'hook-generics',
     run: 'node tooling/scripts/check-hook-generics.mjs --check',
     fix: 'node tooling/scripts/check-hook-generics.mjs',

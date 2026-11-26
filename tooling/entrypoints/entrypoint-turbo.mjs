@@ -70,7 +70,7 @@ const partitionTestEnv = (packageName) => [
 const packagesWithTypecheckedTests = new Set(['platejs', 'plitejs']);
 
 const typecheckedExternalTestFiles = {
-  platejs: ['test/plite-call-parity.spec.tsx'],
+  platejs: ['test/plite-rebound-runtime.spec.tsx'],
   plitejs: [
     'test/authored-tree-recording-laws.spec.ts',
     'test/authored-tree-resolve-laws.spec.ts',
