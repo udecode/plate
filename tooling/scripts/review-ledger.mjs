@@ -2494,7 +2494,9 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
     }
     for (const path of inputs) {
       if (!close.includes(path)) {
-        problems.push(`## Close does not name ${path}`);
+        problems.push(
+          `## Close does not name ${path}; name each review_inputs path there, such as in an "Inputs read:" line`
+        );
       }
     }
   }
