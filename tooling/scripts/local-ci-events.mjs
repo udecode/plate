@@ -43,6 +43,33 @@ export const isRunEvent = (event) => RUN_KINDS.has(event.kind);
 export const startsBrokenStreak = (events) =>
   events.findLast(isRunEvent)?.kind !== 'broken';
 
+export const localCiRedSince = (
+  redStart,
+  taskRowTimes = [],
+  now = Date.now()
+) => ({
+  redSince: new Date(Math.min(now, redStart, ...taskRowTimes)).toISOString(),
+});
+
+const whereFailed = (event) =>
+  event.kind === 'flake'
+    ? `once and passing its rerun${event.loaded ? ' under load' : ''}`
+    : event.culprit
+      ? `since ${event.culprit.slice(0, 10)} (${event.subject})${event.author ? ` by ${event.author}` : ''}`
+      : event.range?.startsWith('..')
+        ? `since ${event.range.slice(2, 12)} or earlier`
+        : `somewhere in ${event.range}`;
+
+export const localCiTaskFinding = (event, eventsPath) => {
+  const results = event.results
+    ? ` Failed tests' results: ${event.results}.`
+    : '';
+  if (event.kind === 'flake') {
+    return `Local CI found ${event.step} failing on next ${whereFailed(event)}, so a test it names depends on timing or host load. Log: ${event.log}.${results} The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs. Follow operator's 3-step green-convergence loop (escalate once to Neon @xhigh if a first fix attempt fails; never freeze on a P0 decide chip).`;
+  }
+  return `Local CI found ${event.step} failing on next ${whereFailed(event)}. Log: ${event.log}.${results} The newest ${event.kind} event in ${eventsPath} names the commits. Follow operator's 3-step green-convergence loop: on a big red (3 or more failures with a bisected culprit), try a clean code-only revert via land.mjs and wake event.session; on a small red, unknown culprit, or tangled revert, wake the live culprit session or fix forward and land through land.mjs; if a first fix attempt leaves ${event.step} red, escalate once to Neon @xhigh instead of freezing on a P0 decide chip.`;
+};
+
 export const searchFirstBad = (commits, fails, deadline) => {
   if (Date.now() < deadline && fails(commits[0])) {
     return { failsAtStart: commits[0] };

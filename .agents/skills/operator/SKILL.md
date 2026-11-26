@@ -9,97 +9,99 @@ metadata:
 
 # Operator and Local CI
 
-Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/next`) and the persistent `operator` session on Macs that install it.
+Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/next`) and the persistent `operator` session. Let `<main>` be the main checkout.
 
 ## How Local CI runs
 
-`pnpm check --affected` runs only `land` steps at landing. Local CI runs all remaining non-opt-in steps on newest `origin/next` (`--deep`, plus daily fresh `--build --browser --reads` after 04:00 on main); heavy baseline-pinned formal sweeps are opt-in via `pnpm check --audit` or by name.
+`pnpm check --affected` runs `land` steps; Local CI runs all other non-opt-in steps on `origin/next` (`--deep`, daily fresh `--build --browser --reads` after 04:00 on main). Heavy baseline-pinned sweeps are opt-in via `pnpm check --audit` or by name.
 
-- Launchd (`dev.plate.local-ci`) runs `local-ci.mjs run` every 20 min in `<main checkout>/.claude/worktrees/local-ci`. Main CI checks all steps and pushes `refs/pstack/local-ci-green`; teammate Macs check `--steps` in `config.json`.
-- State, events, lock, and config live in `<git-common-dir>/plate-local-ci/`; logs live in `docs/plans/artifacts/local-ci/<day>/`.
-- New failures rerun failing test files (or the step alone) to separate flakes from reds, then bisect within 1 hour (`PLITE_BROWSER_KEEP_GOING=1`). Flakes stay defects until timing/load dependence is removed.
-- Each red/flake offers a P0 `local-ci` task (`refs/pstack/ledger`) and wakes the operator. After 24h or 2 fix runs, `cut: true` fires: stop fixing forward, then delete a wrong test, revert the first bad commit (with its `Lands-With:` companion), or offer a P0 `decide` task (never cut Yjs tests; never park, retry, or raise limits).
-- Three starts of the same failure in 7 days offer a P3 `red-recurrence` task (`tooling/scripts/red-recurrence.mjs`) to add an earlier guard via `/pstack:correct`.
-- `beta-release.mjs wake` emits `release` after a green run when a daily beta is due. Nothing here posts to Discord.
+- Launchd (`dev.plate.local-ci`) runs `local-ci.mjs run` every 20m in `<main>/.claude/worktrees/local-ci`. Main CI checks all steps and pushes `refs/pstack/local-ci-green`; teammates check `--steps` in `config.json`.
+- State, events, lock, config: `<git-common-dir>/plate-local-ci/`; logs: `docs/plans/artifacts/local-ci/<day>/`.
+- Failures rerun failing test files (or the step) to separate flakes from reds, then bisect within 1h (`PLITE_BROWSER_KEEP_GOING=1`). Flakes stay defects until timing/load dependence is gone.
+- Each red/flake offers a P0 `local-ci` task (`refs/pstack/ledger`) and wakes `operator` for the 3-step green-convergence loop (never cut Yjs tests, park, retry, raise limits, or freeze on a P0 `decide` chip).
+- Three starts of one failure in 7d offer a P3 `red-recurrence` task (`red-recurrence.mjs`) to add an earlier guard via `/pstack:correct`.
+- `beta-release.mjs wake` emits `release` after green when a daily beta is due. Nothing here posts to Discord.
 
-Run commands below from the main checkout (`.claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` for CI; main checkout's `tooling/scripts/local-ci.mjs` for `friction`). Mode from `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skipping due check); `status`, `rerun`, `install`, `uninstall` -> below.
+Run from `<main>` (`.claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` for CI; `<main>/tooling/scripts/local-ci.mjs` for `friction`). `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skip due check); `status`, `rerun`, `install`, `uninstall` -> below.
 
 ## status
 
-Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs status`. Report launchd state, checked steps, author email, last run, last green commit, newest events (with step, culprit/range, and log for reds), `red now:` durations, and 14-day time-to-green.
+Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs status`. Report launchd state, steps, author email, last run/green, newest events (step, culprit/range, log), `red now:`, and 14d time-to-green.
 
 ## rerun
 
-1. Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs run --force` in the background (`run --full` for daily fresh).
+1. Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs run --force` in background (`run --full` for daily fresh).
 2. For another commit without side effects: `run --ref <sha> --green <last-green> [--step <name>] --dry`.
 3. Run `status` on exit and report.
 
 ## install and uninstall
 
-Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs install` (or `node tooling/scripts/local-ci.mjs install` before the worktree exists) to install `dev.plate.local-ci`, and `uninstall` to remove it. Main CI (zbeyens) omits `--steps`; teammates pass `--steps <a,b>` (requires `git config user.email`). Confirm with `launchctl print gui/$(id -u)/dev.plate.local-ci`.
+Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs install` (or `node tooling/scripts/local-ci.mjs install` first) for `dev.plate.local-ci`, `uninstall` to remove. Main CI (zbeyens) omits `--steps`; teammates pass `--steps <a,b>` (needs `git config user.email`). Confirm: `launchctl print gui/$(id -u)/dev.plate.local-ci`.
 
 ## Keep watching
 
-Keep one pinned `operator` session running (Sonnet at medium, own worktree, commands prefixed with `cd <main checkout> && `). Prompt: `"Read <main checkout>/.claude/worktrees/local-ci/.agents/skills/operator/SKILL.md in full and run its watch mode. Run each command it says to run from the main checkout as one Bash call that starts with cd <main checkout> && ."`
+Keep one pinned `operator` session (Sonnet @medium, own worktree, commands prefixed `cd <main> && `). Prompt: `"Read <main>/.claude/worktrees/local-ci/.agents/skills/operator/SKILL.md in full and run watch mode. Prefix every <main> Bash call with cd <main> && ."`
 
 1. `get_session("self")`: if titled `operator`, run `watch` here.
 2. `list_sessions`: find unarchived `operator` (or legacy `Local CI`, retitle to `operator`). If mid-turn, stop; if idle, send the prompt via `SendMessage` and stop.
-3. Otherwise `start_session` (`initiation: "user_asked"`, `context: "fresh"`, `title: "operator"`, `model: "claude-sonnet-5-5"`, `effort: "medium"`, `use_worktree: true`), `detach_session`, and `set_pinned`.
+3. Else `start_session` (`initiation: "user_asked"`, `context: "fresh"`, `title: "operator"`, `model: "claude-sonnet-5-5"`, `effort: "medium"`, `use_worktree: true`), `detach_session`, `set_pinned`.
 
 ## watch
 
-Never edit or land code directly. Run up to 3 fix subagents (at most 1 on a heavy step: `plite-browser` or any formal check in `tooling/scripts/check.mjs` with a `light` command), 1 release agent, and 1 friction judge. Spawn via `Agent` (`subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`). Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
+Never edit or land directly. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `check.mjs` step with `light`), 1 release, 1 friction judge. Spawn via `Agent` (`subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`). Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
 
-1. On first loop, note ISO time and run step 3 first, then start `<ci> wait --after <last-at>` in background.
+1. First loop: note ISO time, run step 3, then start `<ci> wait --after <last-at>` in background.
 2. Handle each waking JSON event, then run step 3:
-   - `red`/`flake` (`wake: true`): keep 1 queued event per step; drop if `startedIn` is another active session (`lastActivityAt` < 2h); prioritize `cut: true` ahead of fixes and message any running fix on that step to apply the cut rule.
+   - `red`/`flake` (`wake: true`): keep 1 queued event per step; drop if `startedIn` is active (`lastActivityAt` < 2h); prioritize big reds (`failures.length >= 3` with bisected `culprit`). Track attempts per streak: 1st runs normal fix; if still red with no clean revert, escalate 2nd once to Neon `@xhigh`. Never freeze on `decide`.
    - `passed`: drop from queue and message any running fix on that step to recheck and close.
    - `dry: true`: spawn **Dry brief**.
-   - `broken`: check `output` and `plate-local-ci/launchd.log`; if worktree install broke, run `pnpm install --frozen-lockfile` in `.claude/worktrees/local-ci`, else report without Discord.
-   - `release`: main CI only (drop if `config.json` exists or release agent runs); spawn **Release brief**.
+   - `broken`: check `output` and `plate-local-ci/launchd.log`; if install broke, run `pnpm install --frozen-lockfile` in `.claude/worktrees/local-ci`, else report without Discord.
+   - `release`: main CI only (drop if `config.json` exists or release runs); spawn **Release brief**.
    - `friction`: continue to step 3.
 3. Dispatch:
-   - Fill up to 3 fix subagents from the red queue respecting 1-per-step and 1-heavy-step cap (**Fix brief**).
-   - If 0 fixes run and red queue is empty, run `<friction> next`; if it prints `item`, run `<friction> start --item <id>` and spawn **Friction fix brief**.
-   - If no judge runs and `<friction> next` shows `unjudged`/`stuck` (on first loop, after `friction` event, or after `<friction> failed`), spawn **Friction brief**.
+   - Fill up to 3 fix agents from the red queue (1 per step, max 1 heavy) using **Fix brief**.
+   - If 0 fixes run and red queue is empty, run `<friction> next`; if `item`, run `<friction> start --item <id>` and spawn **Friction fix brief**.
+   - If no judge runs and `<friction> next` shows `unjudged`/`stuck` (first loop, after `friction`, or after `<friction> failed`), spawn **Friction brief**.
 4. Repeat from step 1 with newest handled event's `at`.
 
-Save finished reports under `<main checkout>/docs/plans/artifacts/local-ci/<day>/` (`fix-<task-or-step>.md`, `fix-friction-<id>-<HHMMSS>.md`, `release-<day>.md`, `friction-<HHMMSS>.md`), run `<friction> failed --item <id>` after friction fixes, run step 3, and reply with one line per finished agent plus active steps and queued reds.
+Save reports to `<main>/docs/plans/artifacts/local-ci/<day>/` (`fix-<task-or-step>.md`, `fix-friction-<id>-<HHMMSS>.md`, `release-<day>.md`, `friction-<HHMMSS>.md`), run `<friction> failed --item <id>` after friction fixes, run step 3, and reply with 1 line per finished agent plus active steps and queued reds.
 
 ### Fix brief
 
-> Local CI found `<step>` failing on `next`. Event: `<event JSON>`. Work from `<main checkout>`; read `AGENTS.md` and `operator` first.
-> 1. Load `chips`; stop if an open `decide` task names `<step>`. Cut a fresh worktree from `origin/next`. For `red`, run `pnpm check <step>`; if green, dismiss `<task id>` as `dismissed done` and stop. For `flake`, remove timing/load dependence and prove with 5 warm retry-free runs.
-> 2. Start `<task id>` via `chips` (or open `local-ci` task for `<step>`).
-> 3. Run `.agents/playbooks/bug-fix.md`, fix every named failure forward, and land via `land.mjs`. If `cut: true` or >24h past `redSince`, stop fixing: cut wrong test, revert first bad commit (+ `Lands-With:` companion) once green, or offer P0 `decide` task naming `<step>`. Never park, retry, or raise timeouts.
-> 4. Send no team message. End with one line: step and commit, or why still open.
+> Local CI found `<step>` failing on `next`. Event: `<event JSON>`. Work from `<main>`; read `AGENTS.md` and `operator` first.
+> 1. Load `chips`, start `<task id>` (or open `local-ci` task for `<step>`), and cut a fresh worktree from `origin/next`. For `red`, run `pnpm check <step>`; if green, dismiss `<task id>` as `dismissed done` and stop. For `flake`, remove timing/load dependence and prove with 5 warm retry-free runs.
+> 2. Follow the 3-step green-convergence loop (never cut Yjs tests, park, retry, or raise limits):
+>    - **Big red (`failures.length >= 3` with bisected `culprit`):** try clean code-only `git revert <culprit>` (+ `Lands-With:` companion, skipping `docs/plans/` and `.decisions.tsv` conflicts). If clean and `typecheck` + `pnpm check <step>` pass, land via `land.mjs` and message `event.session` (`t3_thread_send` if active/idle, else log a follow-up chip naming the reverted commit) with failure log and revert SHA to pivot and re-land.
+>    - **Small red (1 to 2 failures), unknown `culprit`, or tangled revert (real code/type conflict with later commits):** abort conflicting revert. If `event.session` is live/idle and owns `culprit`, message via `t3_thread_send` with failure log; else run `.agents/playbooks/bug-fix.md` for the best reversible fix (fix forward, update stale test, or cut bad test) and land via `land.mjs`.
+>    - **Failed 1st fix attempt (still red with no clean revert):** escalate once to Neon `@xhigh` to fix root cause, pivot, or cleanly revert. Never silently freeze the release lane on a P0 `decide` chip; alert owner in-thread only if a genuinely irreversible product decision blocks green.
+> 3. Send no team message. End with 1 line: step and commit (or woken session), or why still open.
 
 ### Dry brief
 
-> Local CI dry proof for `<step>`: `<event JSON>`. Read event and log; reply in one paragraph with step, culprit/range, log, and first fix. Edit, land, and message nothing.
+> Local CI dry proof for `<step>`: `<event JSON>`. Read event and log; reply in 1 paragraph with step, culprit/range, log, and first fix. Edit, land, and message nothing.
 
 ### Release brief
 
-> Operator woke for a beta: `<event JSON>`. Work from `<main checkout>`; read `AGENTS.md`, `release-lanes`, `changeset`.
-> 1. Cut fresh worktree from `origin/next`, run `node tooling/scripts/beta-release.mjs due` (stop if not due).
+> Operator woke for a beta: `<event JSON>`. Work from `<main>`; read `AGENTS.md`, `release-lanes`, `changeset`.
+> 1. Cut worktree from `origin/next`, run `node tooling/scripts/beta-release.mjs due` (stop if not due).
 > 2. Run `beta-release.mjs pending`, condense changesets per `changeset`; if changed, land `chore(release): condense changesets` via `land.mjs`.
-> 3. Run `node tooling/scripts/beta-release.mjs ship --force` in background (`release.yml` closes fixed public issues in place; `ship` runs `close-released-issues.mjs` as a fallback; retry on exit 75).
-> 4. Send no team message. End with one line: beta and closed issues, or why none shipped.
+> 3. Run `node tooling/scripts/beta-release.mjs ship --force` in background (`release.yml` closes fixed public issues; `ship` runs `close-released-issues.mjs` fallback; retry on exit 75).
+> 4. Send no team message. End with 1 line: beta and closed issues, or why none shipped.
 
 ### Friction brief
 
-> Judge zbot friction via `node <main checkout>/tooling/scripts/local-ci.mjs friction`. Work from `<main checkout>`; edit no repo files, land nothing, send no messages.
-> 1. Run `friction list` and `git -C <main checkout> fetch --quiet origin next`; read files via `git show origin/next:<path>`.
+> Judge zbot friction via `node <main>/tooling/scripts/local-ci.mjs friction`. Work from `<main>`; edit no files, land nothing, send no messages.
+> 1. Run `friction list` and `git -C <main> fetch --quiet origin next`; read files via `git show origin/next:<path>`.
 > 2. Classify each `unjudged` line (`<report>-<n>`): `fixed` (`same`/`commit`/`fix`), `chip` (product bug, zbot/zstack, owner call), or `dropped` (`reason`).
 > 3. Offer each `chip` via `chips` (`via: hook`, `session: none`, dedupe against `suggested-tasks.decisions.tsv`; never card).
 > 4. Submit all verdicts in one `friction judged` stdin JSON call (`{"verdicts":[...]}`).
 > 5. Offer any `stuck` item as a chip and run `friction done --item <id> --task <task-id>`.
-> 6. End with one line per judged line and stuck item.
+> 6. End with 1 line per judged line and stuck item.
 
 ### Friction fix brief
 
-> Fix queued zbot friction `<item JSON>` via `node <main checkout>/tooling/scripts/local-ci.mjs friction`.
-> 1. Cut fresh worktree from `origin/next` (or owning repo's main). If already fixed, run `friction done --item <id> --commit <sha>` and stop.
+> Fix queued zbot friction `<item JSON>` via `node <main>/tooling/scripts/local-ci.mjs friction`.
+> 1. Cut worktree from `origin/next` (or owning repo's main). If fixed, run `friction done --item <id> --commit <sha>` and stop.
 > 2. If `after` is set and persists, run `/pstack:correct` on its class; else fix the skill/rule/script/helper.
 > 3. Land via `land.mjs` (or owning repo rules), then run `friction done --item <id> --commit <sha>` (if unlandable, offer chip `via: hook`, `session: none` and run `friction done --item <id> --task <task-id>`).
-> 4. Send no team message. End with one line: commit or task, and why.
+> 4. Send no team message. End with 1 line: commit or task, and why.

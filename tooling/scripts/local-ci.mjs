@@ -39,13 +39,15 @@ import {
 } from './check-steps.mjs';
 import {
   appendLocalCiEvent,
-  startsBrokenStreak,
   frictionCommand,
   FULL_RUN_HOUR,
   localCiFiles,
+  localCiRedSince,
+  localCiTaskFinding,
   readLocalCiEvents,
   readLocalCiState,
   searchFirstBad,
+  startsBrokenStreak,
 } from './local-ci-events.mjs';
 import { newPrivateFiles, PRIVATE_DIR } from './private-files.mjs';
 import {
@@ -452,15 +454,6 @@ const firstBad = (
   }
 };
 
-const where = (event) =>
-  event.kind === 'flake'
-    ? `once and passing its rerun${event.loaded ? ' under load' : ''}`
-    : event.culprit
-      ? `since ${event.culprit.slice(0, 10)} (${event.subject})${event.author ? ` by ${event.author}` : ''}`
-      : event.range?.startsWith('..')
-        ? `since ${event.range.slice(2, 12)} or earlier`
-        : `somewhere in ${event.range}`;
-
 const ledgerHelper = join(main, '.agents', 'pstack', 'decisions-check.mjs');
 const ledger = join(main, ledgerPath('docs/plans', 'trunk'));
 const fixTitle = (step) => `Fix the ${step} check that fails on next`;
@@ -494,14 +487,6 @@ const taskRowTimes = (task) =>
     .split('\n')
     .filter((line) => line.split('\t')[2]?.startsWith(`${task.id} `))
     .map((line) => Date.parse(line.split('\t')[0]));
-const fixRunsSince = (step, since) =>
-  existsSync(ledger)
-    ? [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].filter(
-        (task) =>
-          task.title?.includes(fixTitle(step)) &&
-          Date.parse(task.startedAt) >= since
-      ).length
-    : 0;
 
 const isRed = (step, event) =>
   event.step === step && ['flake', 'red'].includes(event.kind);
@@ -528,22 +513,6 @@ const redStart = (step, tipStillReporting) =>
     openStreakStart(step, tipStillReporting)
   );
 
-const CUT_MS = 24 * 60 * 60_000;
-const CUT_RUNS = 2;
-const cutDue = (step, open, tip) => {
-  const since = Math.min(
-    Date.now(),
-    redStart(step, tip),
-    ...(open ? taskRowTimes(open) : [])
-  );
-  return {
-    redSince: new Date(since).toISOString(),
-    ...(Date.now() - since >= CUT_MS || fixRunsSince(step, since) >= CUT_RUNS
-      ? { cut: true }
-      : {}),
-  };
-};
-
 const missesLandedFix = (task, event) => {
   const halves = [
     [[], event.tip],
@@ -561,24 +530,22 @@ const report = (event) => {
   const title = fixTitle(event.step);
   const tasks = stepTasks(event.step);
   const open = tasks.find(isOpen);
-  const due = cutDue(event.step, open, event.tip);
+  const redMeta = localCiRedSince(
+    redStart(event.step, event.tip),
+    open ? taskRowTimes(open) : []
+  );
   if (open) {
     return {
-      ...due,
+      ...redMeta,
       startedIn: open.status === 'started' ? (open.startedIn ?? null) : null,
       task: open.id,
     };
   }
   const closed = tasks.at(-1);
   if (event.kind === 'red' && closed && missesLandedFix(closed, event)) {
-    return { ...due, heldFor: closed.id, wake: false };
+    return { ...redMeta, heldFor: closed.id, wake: false };
   }
-  const cut =
-    " When the step is still red 24 hours after it first failed, or two fix runs have not cleared it, stop fixing. Cut the failing test or case only when the test is wrong, revert the first bad commit when the code is wrong, and otherwise offer the owner a P0 decide task, as AGENTS.md's Proof and tooling rule says.";
-  const found =
-    event.kind === 'flake'
-      ? `Local CI found ${event.step} failing on next ${where(event)}, so a test it names depends on timing or host load. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs.${cut}`
-      : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.${cut}`;
+  const found = localCiTaskFinding(event, eventsPath);
   let id = null;
   if (existsSync(ledger)) {
     id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
@@ -596,7 +563,7 @@ const report = (event) => {
     ]);
     if (added.status !== 0) id = null;
   }
-  return { ...due, task: id };
+  return { ...redMeta, task: id };
 };
 
 // Dismisses a step's offered task once a run on next passes the step, so a
