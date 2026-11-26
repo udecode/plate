@@ -142,12 +142,14 @@ const writesNothing = (mark: AuthoredMark) =>
     ? jsonEqual(mark.write.value, mark.before)
     : !Object.hasOwn(mark, 'before') && mark.over === undefined);
 
+// A change that starts inside the content the change before it inserts or
+// deletes continues it, such as a join inside a deletion of both its lines.
 /** @internal */
 export const continues = (end: Occurrence, first: Occurrence) =>
   touches(end, first) ||
   (isContent(end.mark) &&
     end.root === first.root &&
-    isInside(end.path, first.path));
+    (first.first <= end.last || isInside(end.path, first.path)));
 
 type MarkedNode = {
   below?: Map<number, MarkedNode>;
