@@ -124,6 +124,19 @@ export function FloatingPopover({
         {...props}
         open={resolvedOpen}
         onOpenChange={(nextOpen, details) => {
+          // Nothing can close a popover whose caller owns `open` and hears no
+          // change, yet Base UI's dismiss marks Escape handled unless canceled
+          // and stops it at the document unless propagation is allowed.
+          if (
+            details.reason === 'escape-key' &&
+            open !== undefined &&
+            !onOpenChange
+          ) {
+            details.cancel();
+            details.allowPropagation();
+
+            return;
+          }
           if (isToolbarSwipe(toolbar, details.event)) {
             details.cancel();
 

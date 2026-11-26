@@ -1,5 +1,15 @@
 'use client';
 
+import {
+  autoUpdate,
+  flip,
+  FloatingPortal,
+  limitShift,
+  offset,
+  shift,
+  size,
+  useFloating,
+} from '@floating-ui/react';
 import { cn } from 'cn';
 import { useComposedRef } from 'platejs/react';
 import { Popover as PopoverPrimitive } from 'radix-ui';
@@ -16,6 +26,8 @@ type FloatingAnchor =
     }
   | null;
 
+type FloatingAnchorTarget = Exclude<FloatingAnchor, React.ReactElement>;
+
 const PopoverContentWithPlaced =
   PopoverPrimitive.Content as React.ForwardRefExoticComponent<
     React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> &
@@ -25,8 +37,17 @@ const PopoverContentWithPlaced =
   >;
 
 const FloatingPopoverRefsContext = React.createContext<{
+  anchor: FloatingAnchorTarget;
   insideElement?: Element | null;
+  open: boolean;
+  /**
+   * The caller owns `open` and hears no change, so nothing can dismiss the
+   * popover. It renders without Radix's dismiss layer, which marks every
+   * Escape handled before the editor sees it.
+   */
+  pinned: boolean;
   scrollDismissedRef: React.RefObject<boolean>;
+  setAnchor: (anchor: FloatingAnchorTarget) => void;
   setHost: (host: Element | null) => void;
 } | null>(null);
 
@@ -42,6 +63,7 @@ function isInside(
 }
 
 export function FloatingPopover({
+  children,
   defaultOpen = false,
   insideElement,
   onOpenChange,
@@ -58,18 +80,25 @@ export function FloatingPopover({
   open?: boolean;
 }>) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
+  const [anchor, setAnchor] = React.useState<FloatingAnchorTarget>(null);
   const resolvedOpen = open ?? uncontrolledOpen;
+  const pinned = open !== undefined && !onOpenChange;
   const hostRef = React.useRef<Element | null>(null);
   const scrollDismissedRef = React.useRef(false);
+  const setHost = React.useCallback((host: Element | null) => {
+    hostRef.current = host;
+  }, []);
   const refs = React.useMemo(
     () => ({
+      anchor,
       insideElement,
+      open: resolvedOpen,
+      pinned,
       scrollDismissedRef,
-      setHost: (host: Element | null) => {
-        hostRef.current = host;
-      },
+      setAnchor,
+      setHost,
     }),
-    [insideElement]
+    [anchor, insideElement, pinned, resolvedOpen, setHost]
   );
   const setOpen = (next: boolean) => {
     setUncontrolledOpen(next);
@@ -87,11 +116,17 @@ export function FloatingPopover({
 
   return (
     <FloatingPopoverRefsContext.Provider value={refs}>
-      <PopoverPrimitive.Root
-        {...props}
-        open={resolvedOpen}
-        onOpenChange={setOpen}
-      />
+      {pinned ? (
+        children
+      ) : (
+        <PopoverPrimitive.Root
+          {...props}
+          open={resolvedOpen}
+          onOpenChange={setOpen}
+        >
+          {children}
+        </PopoverPrimitive.Root>
+      )}
     </FloatingPopoverRefsContext.Provider>
   );
 }
@@ -101,15 +136,33 @@ export function FloatingPopoverAnchor({
 }: {
   element: FloatingAnchor;
 }) {
-  const setHost = React.useContext(FloatingPopoverRefsContext)?.setHost;
+  const refs = React.useContext(FloatingPopoverRefsContext);
+  const setAnchor = refs?.setAnchor;
+  const setHost = refs?.setHost;
+  const reactElement = React.isValidElement(element)
+    ? (element as React.ReactElement<{ ref?: React.Ref<Element> }>)
+    : null;
+  const pinnedRef = useComposedRef(reactElement?.props.ref, setAnchor, setHost);
 
   React.useLayoutEffect(() => {
-    if (!setHost || !(element instanceof Element)) return undefined;
+    if (!setAnchor || !setHost || React.isValidElement(element)) {
+      return undefined;
+    }
 
-    setHost(element);
+    setAnchor(element);
+    setHost(element instanceof Element ? element : null);
 
-    return () => setHost(null);
-  }, [element, setHost]);
+    return () => {
+      setAnchor(null);
+      setHost(null);
+    };
+  }, [element, setAnchor, setHost]);
+
+  if (refs?.pinned) {
+    return reactElement
+      ? React.cloneElement(reactElement, { ref: pinnedRef })
+      : null;
+  }
 
   if (React.isValidElement(element)) {
     return (
@@ -129,10 +182,12 @@ export function FloatingPopoverTrigger({
 }: {
   children: React.ReactElement;
 }) {
-  const setHost = React.useContext(FloatingPopoverRefsContext)?.setHost;
+  const refs = React.useContext(FloatingPopoverRefsContext);
+
+  if (refs?.pinned) return <FloatingPopoverAnchor element={children} />;
 
   return (
-    <PopoverPrimitive.Trigger asChild ref={setHost}>
+    <PopoverPrimitive.Trigger asChild ref={refs?.setHost}>
       {children}
     </PopoverPrimitive.Trigger>
   );
@@ -182,6 +237,23 @@ export function FloatingPopoverContent({
   );
   const contentRef = useComposedRef(ref, hideWrapper);
 
+  if (refs?.pinned) {
+    return (
+      <PinnedPopoverContent
+        {...props}
+        align={align}
+        alignOffset={alignOffset}
+        anchorHidden={anchorHidden}
+        className={className}
+        onPlaced={onPlaced}
+        ref={ref}
+        side={side}
+        sideOffset={sideOffset}
+        style={style}
+      />
+    );
+  }
+
   return (
     <PopoverPrimitive.Portal>
       <PopoverContentWithPlaced
@@ -225,5 +297,116 @@ export function FloatingPopoverContent({
         }
       />
     </PopoverPrimitive.Portal>
+  );
+}
+
+function getTransformOrigin(placedSide: string, placedAlign: string) {
+  const along =
+    placedAlign === 'start' ? '0%' : placedAlign === 'end' ? '100%' : '50%';
+
+  if (placedSide === 'top') return `${along} 100%`;
+  if (placedSide === 'left') return `100% ${along}`;
+  if (placedSide === 'right') return `0% ${along}`;
+
+  return `${along} 0%`;
+}
+
+// Places and marks the content the way Radix's popper does for the same props,
+// so a pinned toolbar sits where a dismissable one would and still matches
+// `[data-radix-popper-content-wrapper]`, which browser tests locate.
+function PinnedPopoverContent({
+  align = 'center',
+  alignOffset,
+  anchorHidden = false,
+  className,
+  onPlaced,
+  side = 'bottom',
+  sideOffset = 4,
+  style,
+  ...props
+}: Omit<
+  React.ComponentProps<typeof FloatingPopoverContent>,
+  'onEscapeKeyDown' | 'onFinalFocus' | 'onInitialFocus'
+>) {
+  const popover = React.useContext(FloatingPopoverRefsContext);
+  const anchor = popover?.anchor ?? null;
+  const open = !!popover?.open;
+  const onPlacedRef = React.useRef(onPlaced);
+  const { floatingStyles, isPositioned, placement, refs } = useFloating({
+    middleware: [
+      offset({ alignmentAxis: alignOffset, mainAxis: sideOffset }),
+      shift({ crossAxis: false, limiter: limitShift() }),
+      flip(),
+      size({
+        apply: ({ availableHeight, elements, rects }) => {
+          elements.floating.style.setProperty(
+            '--floating-popover-anchor-width',
+            `${rects.reference.width}px`
+          );
+          elements.floating.style.setProperty(
+            '--floating-popover-available-height',
+            `${availableHeight}px`
+          );
+        },
+      }),
+    ],
+    open,
+    placement: align === 'center' ? side : `${side}-${align}`,
+    strategy: 'fixed',
+    whileElementsMounted: autoUpdate,
+  });
+  const [placedSide, placedAlign = 'center'] = placement.split('-');
+  const floatingRef = useComposedRef(refs.setFloating);
+
+  React.useLayoutEffect(() => {
+    refs.setPositionReference(anchor);
+  }, [anchor, refs]);
+  React.useInsertionEffect(() => {
+    onPlacedRef.current = onPlaced;
+  });
+  React.useLayoutEffect(() => {
+    if (isPositioned) onPlacedRef.current?.();
+  }, [isPositioned]);
+
+  if (!open || !anchor) return null;
+
+  return (
+    <FloatingPortal>
+      <div
+        ref={floatingRef}
+        className="z-50"
+        data-radix-popper-content-wrapper=""
+        style={{
+          ...floatingStyles,
+          minWidth: 'max-content',
+          transform: isPositioned
+            ? floatingStyles.transform
+            : 'translate(0, -200%)',
+          // A modal Radix layer below, such as a dialog or drawer the editor
+          // sits in, turns off pointer events on the body, and only Radix's own
+          // layers turn them back on.
+          ...(anchorHidden
+            ? { pointerEvents: 'none', visibility: 'hidden' }
+            : { pointerEvents: 'auto' }),
+        }}
+      >
+        <div
+          {...props}
+          className={cn(
+            'cn-popover-content z-50 w-72 outline-hidden',
+            className,
+            anchorHidden && 'transition-none **:transition-none!'
+          )}
+          data-align={placedAlign}
+          data-side={placedSide}
+          data-state="open"
+          style={{
+            transformOrigin: getTransformOrigin(placedSide, placedAlign),
+            ...style,
+            animation: isPositioned ? undefined : 'none',
+          }}
+        />
+      </div>
+    </FloatingPortal>
   );
 }

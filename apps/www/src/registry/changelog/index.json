@@ -56,6 +56,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-26-floating-popover-escape",
+      "href": "/registry/changelog/2026-11-26-floating-popover-escape.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Let Escape reach the editor while a selection toolbar is open",
+      "change": {
+        "type": "source",
+        "date": "2026-11-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-popover"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-25-field-demo-answer-conflict",
       "href": "/registry/changelog/2026-11-25-field-demo-answer-conflict.json",
       "status": "draft",

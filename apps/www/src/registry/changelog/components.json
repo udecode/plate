@@ -35,6 +35,19 @@
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
+    "floating-popover": [
+      "2026-11-26-floating-popover-escape",
+      "2026-11-19-popovers-hide-with-text",
+      "2026-11-18-radix-ui-package",
+      "2026-11-17-cn-package",
+      "2026-11-10-discussion-safari-taps",
+      "2026-11-07-toolbar-overlays-close-on-scroll",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-07-provider-lifetimes",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-31-inline-component-props",
+      "2026-08-25-base-first-registry"
+    ],
     "field": [
       "2026-11-25-field-name-conflicts",
       "2026-11-25-field-name-input",
@@ -768,18 +781,6 @@
     ],
     "board-page-demo": ["2026-11-19-board-images", "2026-11-12-add-board"],
     "lint": ["2026-11-19-popovers-hide-with-text", "2026-10-13-lint"],
-    "floating-popover": [
-      "2026-11-19-popovers-hide-with-text",
-      "2026-11-18-radix-ui-package",
-      "2026-11-17-cn-package",
-      "2026-11-10-discussion-safari-taps",
-      "2026-11-07-toolbar-overlays-close-on-scroll",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-07-provider-lifetimes",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-31-inline-component-props",
-      "2026-08-25-base-first-registry"
-    ],
     "use-visible-anchor": ["2026-11-19-popovers-hide-with-text"],
     "align-toolbar-button": [
       "2026-11-19-rtl-editor-ui",

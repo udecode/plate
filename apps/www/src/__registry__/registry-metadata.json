@@ -1,5 +1,5 @@
 {
-  "generation": "636bffaba982ccf05181608c12beb2ae102edc802f25dd6aa7a6b5f84d8f5502",
+  "generation": "0fff7ef723f070761c41c63a5613f19417724d204be13eeba10153e49d6868f1",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -9022,6 +9022,7 @@
         {
           "dependencies": [
             "platejs",
+            "@floating-ui/react",
             "cn",
             "diff-match-patch-ts@^0.6.0",
             "radix-ui"

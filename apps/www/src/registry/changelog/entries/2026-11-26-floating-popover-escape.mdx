@@ -1,0 +1,14 @@
+---
+id: 2026-11-26-floating-popover-escape
+date: 2026-11-26
+status: draft
+kind: fix
+summary: 'Let Escape reach the editor while a selection toolbar is open'
+change: { 'type': 'source', 'date': '2026-11-26', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-26-floating-popover-let-escape-through-controlled-d65a2d87","kind":"fix","migrationNotes":[]} -->
+
+- **`floating-popover`**: A popover whose caller passes `open` and no `onOpenChange` lets Escape reach the page, so Escape clears a block selection while the media or table toolbar is open. The Radix base positions such a popover with `@floating-ui/react`, which the item now installs.

@@ -51,6 +51,7 @@
       "description": "Provider-neutral anchored floating content for Plate UI.",
       "dependencies": [
         "platejs",
+        "@floating-ui/react",
         "cn",
         "diff-match-patch-ts@^0.6.0",
         "radix-ui"
