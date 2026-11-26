@@ -38,6 +38,28 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-25-ink-tools",
+      "href": "/registry/changelog/2026-11-25-ink-tools.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Pick the highlighter, the eraser or the lasso from the Draw button, and hide all ink",
+      "change": {
+        "type": "source",
+        "date": "2026-11-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "draw-toolbar-button",
+        "ink-switch-toolbar-button",
+        "ink-demo"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-24-editor-primary-color",
       "href": "/registry/changelog/2026-11-24-editor-primary-color.json",
       "status": "draft",

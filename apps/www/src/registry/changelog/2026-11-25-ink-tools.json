@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-25-ink-tools",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-25-ink-tools.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Pick the highlighter, the eraser or the lasso from the Draw button, and hide all ink",
+  "targets": [
+    {
+      "name": "draw-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/draw-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-switch-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/ink-switch-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-demo",
+      "files": ["apps/www/src/registry/examples/ink-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-25-draw-toolbar-ink-tools-45623694",
+      "kind": "new",
+      "summary": "Turn Draw into a split button whose menu picks the pen, the highlighter, the eraser or the lasso, and whose main part turns Draw on with the last tool picked or off.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["draw-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-ink-tools",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-25-ink-switch-toolbar-button-7d1e0b52",
+      "kind": "new",
+      "summary": "Add a toolbar toggle that hides or shows every ink mark and sign, with Draw on or off.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-switch-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-ink-tools",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-25-ink-demo-tools-2c9a4f17",
+      "kind": "behavior",
+      "summary": "Show the ink tools and the ink switch in the demo toolbar.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-demo"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-ink-tools",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

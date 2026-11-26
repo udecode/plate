@@ -16,6 +16,7 @@ import {
   FixedToolbarPlugin,
 } from '@/registry/components/editor/fixed-toolbar';
 import { InkKit } from '@/registry/components/editor/ink';
+import { InkSwitchToolbarButton } from '@/registry/components/editor/ink-switch-toolbar-button';
 import { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-button';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { ToolbarGroup } from '@/registry/components/editor/toolbar';
@@ -72,6 +73,9 @@ const initialValue = [
   ),
   paragraph(
     'Undo takes back one pen contact at a time, and redo puts it back.'
+  ),
+  paragraph(
+    'The arrow beside Draw picks the pen, the highlighter, the eraser or the lasso. The eraser removes every mark it touches, and Backspace removes the marks the lasso picks. Hide ink hides every mark and sign until you show them again.'
   ),
   paragraph('In Suggesting, a stroke is saved as ink, not as a suggestion.'),
   paragraph(
@@ -193,6 +197,7 @@ function InkEditor({
         <FixedToolbar className="justify-start rounded-none">
           <ToolbarGroup>
             <DrawToolbarButton />
+            <InkSwitchToolbarButton />
             <ModeToolbarButton />
           </ToolbarGroup>
         </FixedToolbar>

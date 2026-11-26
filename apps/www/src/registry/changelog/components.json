@@ -14,6 +14,9 @@
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
+    "draw-toolbar-button": ["2026-11-25-ink-tools"],
+    "ink-switch-toolbar-button": ["2026-11-25-ink-tools"],
+    "ink-demo": ["2026-11-25-ink-tools"],
     "plate-ui": [
       "2026-11-24-editor-primary-color",
       "2026-09-18-ui-commands-and-installation",

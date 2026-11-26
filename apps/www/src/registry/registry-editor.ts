@@ -550,7 +550,8 @@ export const editorComponents: Registry['items'] = [
   },
   {
     dependencies: ['platejs'],
-    description: 'A toolbar toggle for the ink Draw tool.',
+    description:
+      'A split toolbar button that turns the ink Draw tool on or off and picks the pen, the highlighter, the eraser or the lasso.',
     files: [
       {
         path: 'components/editor/draw-toolbar-button.tsx',
@@ -560,6 +561,20 @@ export const editorComponents: Registry['items'] = [
     meta: { examples: ['ink-demo'], registry: false },
     name: 'draw-toolbar-button',
     title: 'Draw Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description: 'A toolbar toggle that hides or shows all ink and signs.',
+    files: [
+      {
+        path: 'components/editor/ink-switch-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: { examples: ['ink-demo'], registry: false },
+    name: 'ink-switch-toolbar-button',
+    title: 'Ink Switch Toolbar Button',
     type: 'registry:component',
   },
   {

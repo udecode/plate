@@ -437,6 +437,13 @@ const ICON_NAMES: Record<string, IconNames> = {
     remixicon: 'RiKeyboardLine',
     tabler: 'IconKeyboard',
   },
+  Lasso: {
+    hugeicons: 'LassoIcon',
+    lucide: 'Lasso',
+    phosphor: 'LassoIcon',
+    remixicon: 'RiShapeLine',
+    tabler: 'IconLasso',
+  },
   Lightbulb: {
     hugeicons: 'BulbIcon',
     lucide: 'Lightbulb',
