@@ -40,11 +40,12 @@ import { isEditingChange } from '../facts/editing';
 import {
   factsOf,
   isAccepted,
+  isJoinAside,
   isRejected,
   NO_FACTS,
   type ReviewFacts,
   standingClaimsOf,
-  isJoinAside,
+  undecided as isUndecided,
 } from '../facts/facts';
 import {
   changeOfLink,
@@ -2054,9 +2055,15 @@ const resolveIn = (
       ? []
       : (into.children ?? []).flatMap(contentMarksIn);
 
-    const reshapedByAnother = () =>
-      pending(into).filter(isStructureChange).some(onAnotherCard);
-    return !rejoins || keepsContent(into, joinOf(node)) || reshapedByAnother()
+    const shapedByAnother = () =>
+      pending(into).some(
+        (mark) =>
+          (isStructureChange(mark) && onAnotherCard(mark)) ||
+          (mark.kind === 'format' &&
+            isUndecided(facts, mark) &&
+            onAnotherAuthorsCard(mark))
+      );
+    return !rejoins || keepsContent(into, joinOf(node)) || shapedByAnother()
       ? { merges: true, reads }
       : { merges: false, reads: [...reads, ...subtreeMarks(into)] };
   };
