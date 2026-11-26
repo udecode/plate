@@ -456,6 +456,8 @@ import {
   valueSite,
 } from './set-root';
 import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
+import { replacesEmptyBlockHead } from './slice-fit/edge-plan';
+import { isFittingMove } from './slice-fit/provenance';
 import { renewContentSlice } from './slice-identities';
 import { readSliceLanding } from './slice-landing';
 import type { SliceLandingTarget } from './slice-landing-types';
@@ -5976,7 +5978,16 @@ const writeSliceAtRange = <V extends Value>(
     : null;
 
   if (options.replaceEmptyBlock && !emptyBlock) return false;
-  const replacedEntries = emptyBlock ? [emptyBlock] : [];
+  const replacedEntries =
+    emptyBlock &&
+    replacesEmptyBlockHead(
+      emptyBlock[0],
+      slice.content[0],
+      (node) => state.schema.getElementBehavior(node),
+      isFittingMove()
+    )
+      ? [emptyBlock]
+      : [];
 
   const landings: DraftTrack[] = [];
   const fit = () => {

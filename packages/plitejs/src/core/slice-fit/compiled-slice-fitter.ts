@@ -36,11 +36,8 @@ import type { Relocation } from '../change/lineage';
 import { historyFollowsAllFacts } from '../change/record';
 import {
   RootChange,
-  propertyDeltaFromModifications,
   reconcileChildrenStep,
-  semanticPropertyModifications,
   type DocumentPropertyContext,
-  type RootChangeSection,
 } from '../change/root-change';
 import { sliceFacts } from '../change/slice-facts';
 import {
@@ -48,7 +45,6 @@ import {
   PreparedTokenSliceStructureError,
   commonSuffixLength,
   encodeNodes,
-  getDocumentSliceNodeKeys,
   getPreparedDocumentSlice,
   openToken,
   type JsonEditorValue,
@@ -91,6 +87,7 @@ import { EditorSchemaValidationError } from '../schema-validation';
 import { mapSelectionWithContext } from '../selection-protocol';
 import { withoutStoredElementId } from '../stored-element-id';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from '../value-codec';
+import { applyPasteEdgePlan, planPasteEdges } from './edge-plan';
 import {
   type EditorSchemaFitReport,
   EditorSchemaFitRepairCollector,
@@ -528,56 +525,6 @@ const splitAtKeptCloses = (
   replace(to - from, insert.length);
 
   return changes;
-};
-
-const keepRewrittenHead = (
-  document: DocumentIndex,
-  change: FitSection
-): Readonly<{
-  changes: readonly FitSection[];
-  properties: readonly RootChangeSection[];
-}> => {
-  const { from, insert, to } = change;
-  const unchanged = { changes: [change], properties: [] };
-
-  if (to === from || insert.length === 0) return unchanged;
-  const replaced = document.slice(from, to);
-  const ownKeys = getDocumentSliceNodeKeys(insert);
-  const properties: RootChangeSection[] = [];
-  let head = 0;
-
-  for (const token of replaced.tokens) {
-    const landed = insert.tokens[head];
-
-    if (
-      token.kind !== 'open' ||
-      token.nodeKind !== 'element' ||
-      landed?.kind !== 'open' ||
-      landed.nodeKind !== 'element' ||
-      token.props.type !== landed.props.type ||
-      ownKeys.has(head)
-    ) {
-      break;
-    }
-    const modifications = semanticPropertyModifications(
-      token.props,
-      landed.props,
-      () => false
-    );
-
-    if (modifications.length > 0) {
-      properties.push({
-        from: from + head,
-        properties: propertyDeltaFromModifications(modifications),
-      });
-    }
-    head += 1;
-  }
-
-  if (head === 0) return unchanged;
-  const changes = splitAtKeptCloses(change, replaced, head);
-
-  return changes.length === 0 ? unchanged : { changes, properties };
 };
 
 const lookAlikeChange = (
@@ -2804,6 +2751,21 @@ export const compileSliceFitter = <V extends Value>(
     const exactFrom = exactBounds?.from ?? document.positionAt(start);
     const exactTo = exactBounds?.to ?? document.positionAt(end);
     const collapsed = exactFrom === exactTo;
+    const edgePlan =
+      options.target.kind === 'range'
+        ? planPasteEdges(document, {
+            at,
+            callerBounds: options.target.exactBounds,
+            collapsed,
+            declarative: getDeclarativeSchema(),
+            emptyPath: emptyCaretBlockPath,
+            getElementBehavior,
+            getElementType,
+            inputSlice,
+            isMove: isFittingMove(),
+            replaceEmpty: Boolean(options.target.replaceEmptyBlock),
+          })
+        : null;
     const sameTextPath =
       start.path.length === end.path.length &&
       start.path.every((part, index) => part === end.path[index]);
@@ -3026,6 +2988,8 @@ export const compileSliceFitter = <V extends Value>(
 
       const preparedOpenBlockCandidate = (() => {
         if (
+          (edgePlan?.head.kind === 'keep' &&
+            edgePlan.head.propertyWrite !== null) ||
           variant.openStart !== 1 ||
           variant.openEnd !== 1 ||
           start.path.length !== 2 ||
@@ -4662,29 +4626,31 @@ export const compileSliceFitter = <V extends Value>(
       'slice-fit-candidate-materialize',
       () => materializeCandidate(withTailSplit(selectedCandidate))
     );
+    const allowKeptHead =
+      Boolean(edgePlan) &&
+      (!exactBounds ||
+        Boolean(
+          rangeTarget?.replaceEmptyBlock && edgePlan?.head.kind === 'keep'
+        ));
+    const applyEdge = (cs: readonly FitSection[]) =>
+      applyPasteEdgePlan(
+        document,
+        edgePlan,
+        cs,
+        getDeclarativeSchema(),
+        splitAtKeptCloses
+      );
     const sections =
-      options.target.kind === 'range' &&
-      !exactBounds &&
-      options.target.byLook !== 'commit'
-        ? fitSections(fittedCandidate).flatMap((section) => {
-            const { changes, properties } = keepRewrittenHead(
-              document,
-              section
-            );
-
-            return [...properties, ...changes];
-          })
+      allowKeptHead && rangeTarget?.byLook !== 'commit'
+        ? applyEdge(fitSections(fittedCandidate)).sections
         : null;
     const materializedCandidate =
-      options.target.kind === 'range' && !exactBounds && !sections
+      allowKeptHead && !sections
         ? withoutUnchangedTail(document, fittedCandidate)
         : fittedCandidate;
     const plain =
-      options.target.kind === 'range' &&
-      !exactBounds &&
-      !sections &&
-      !materializedCandidate.semanticChange
-        ? keepRewrittenHead(document, materializedCandidate)
+      allowKeptHead && !sections && !materializedCandidate.semanticChange
+        ? applyEdge([materializedCandidate])
         : { changes: [materializedCandidate], properties: [] };
     const candidate = materializedCandidate.preparation
       ? Object.freeze({

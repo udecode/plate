@@ -28,6 +28,7 @@ import {
 } from './public-state';
 import { executeEditorRead } from './read-registry';
 import { dissolveOpenEndMatter } from './slice-end-matter';
+import { identityKeysOf, replacesEmptyBlockHead } from './slice-fit/edge-plan';
 import type {
   SliceLanding,
   SliceLandingInput,
@@ -117,7 +118,8 @@ export const planPaste = (
               target,
               replaceEmpty,
               site.remainingLength,
-              copy
+              copy,
+              intent
             )
           )
         : null,
@@ -225,7 +227,8 @@ const prepareEmptyBlockReplacement = (
     slice,
   }: NonNullable<SliceLanding['replaceEmpty']>,
   remaining: number | undefined,
-  copy: RenewedCopy | null
+  copy: RenewedCopy | null,
+  intent: SliceLandingInput['intent']
 ): ContentSlice | null => {
   const [head, ...rest] = slice.content;
 
@@ -236,6 +239,13 @@ const prepareEmptyBlockReplacement = (
   const schema = getEditorSchema(editor);
   const behavior = schema.getElementBehavior(head);
   const root = target.root ?? MAIN_ROOT_KEY;
+  const replaces = replacesEmptyBlockHead(
+    block,
+    head,
+    (node) => schema.getElementBehavior(node),
+    intent === 'move'
+  );
+  const identityKeys = identityKeysOf(getCompiledEditorSchemaFromApi(schema));
   // The pasted head brings its own children, so only the block's own
   // properties go through the type change.
   const kept: Record<string, unknown> =
@@ -251,6 +261,9 @@ const prepareEmptyBlockReplacement = (
         );
 
   for (const key of omitTargetProperties) delete kept[key];
+  if (replaces && identityKeys) {
+    for (const key of identityKeys) delete kept[key];
+  }
   const landedHead = { ...kept, ...head };
 
   for (const [key, sourceByDrawn] of copy?.sources ?? []) {

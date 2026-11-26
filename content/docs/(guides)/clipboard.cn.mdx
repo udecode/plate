@@ -100,8 +100,9 @@ const calloutPaste = definePlugin('calloutPaste', {
 ```
 
 使用这个插件时，粘贴两个或更多块会替换空 callout，单行文本仍落在 callout 内。Plate 按 schema 和
-`maxLength` 检查这个提议，放不下时落地 `slice`。替换内容的第一个块在类型相同时保留
-目标的全部属性，文本块换类型时保留 schema 允许的属性，对象块或 void 块不保留任何属性。
+`maxLength` 检查这个提议，放不下时落地 `slice`。第一个块与目标类型相同且不是对象块或 void 块时，
+空目标块保留自己的 key 和存储 id，并在原有属性上应用第一个块的属性；文本块换类型时替换目标块，
+保留 schema 允许的非唯一属性（不含存储 id），对象块或 void 块不保留任何属性。
 `omitTargetProperties` 再去掉其中一些，例如第一个粘贴块本身是 callout 时的 `icon`。
 改写 `slice` 的 middleware 必须同时改写或移除 `replaceEmpty`。
 

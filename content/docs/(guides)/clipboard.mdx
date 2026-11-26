@@ -147,12 +147,14 @@ const calloutPaste = definePlugin("calloutPaste", {
 
 With this plugin, two or more pasted blocks replace an empty callout, and one
 line of text still lands inside it. Plate checks the proposal against the schema
-and `maxLength`, and lands `slice` when the proposal does not fit. The first
-replacing block keeps all of the target's properties when its type matches the
-target's. A text block of another type keeps what the schema allows, and an
-object or void block keeps none. `omitTargetProperties` drops more of them, such
-as `icon` when the first pasted block is itself a callout. A middleware that rewrites `slice` must
-rewrite or drop `replaceEmpty` too.
+and `maxLength`, and lands `slice` when the proposal does not fit. When the
+first block matches the target's type (and is not an object or void), the empty
+target block stays with its key and stored id and takes the first block's
+properties on top of its own. A text block of another type replaces the target
+block and keeps what the schema allows except stored ids and unique properties,
+and an object or void block keeps none. `omitTargetProperties` drops more of
+them, such as `icon` when the first pasted block is itself a callout. A
+middleware that rewrites `slice` must rewrite or drop `replaceEmpty` too.
 
 ## DOM clipboard API
 

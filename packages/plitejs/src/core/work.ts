@@ -149,6 +149,8 @@ export type CoreWork = {
   wholeListPasses: number;
   /** Projected roots a frame installs as its snapshot's roots. */
   snapshotRoots: number;
+  /** Document and candidate tokens the paste edge applier inspects. */
+  pasteEdgeTokens: number;
   /** Path components a token cursor or a content slice snapshot built. */
   pathComponents: number;
   /**
@@ -317,6 +319,7 @@ export const coreWork: CoreWork = {
   identityMembersExamined: 0,
   wholeListPasses: 0,
   snapshotRoots: 0,
+  pasteEdgeTokens: 0,
   pathComponents: 0,
   renewalVisits: 0,
   walkedSlots: 0,
