@@ -47,7 +47,12 @@ export const fieldValue: Value = (
         name: 'landlord_name',
         required: true,
       })}
-      , lets the home from{' '}
+      , lets the home at{' '}
+      {field('address', 'text', 'Address', 'app', {
+        name: 'address',
+        required: true,
+      })}{' '}
+      from{' '}
       {field('start', 'date', 'Start date', 'landlord', { name: 'start_date' })}
       .
     </hp>
@@ -66,7 +71,7 @@ export const fieldValue: Value = (
         </htd>
         <htd>
           <hp>
-            {field('rent', 'number', 'Rent', 'landlord', {
+            {field('rent', 'number', 'Rent', 'app', {
               name: 'rent',
               required: true,
             })}

@@ -1,5 +1,5 @@
 {
-  "generation": "a5ca30025d5cd624720cbad84198952c9300322121981f562931d62a6bdee2b9",
+  "generation": "ce62231c8faa412cf8d3b07a608c28fbdf524eb2d0c01997ec4b3dc009ccdb8f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -6541,7 +6541,7 @@
           "type": "registry:example"
         },
         {
-          "description": "A two-role lease template with fields, a date, a mention and a fee table, and its HTML, Markdown and Word export.",
+          "description": "A lease template whose landlord, tenant and app fill their own fields, with a fill from sample data, answers read back by name, a date, a mention, a fee table, and its HTML, Markdown and Word export.",
           "files": [
             {
               "path": "examples/field-demo.tsx",
@@ -14184,7 +14184,7 @@
           "type": "registry:example"
         },
         {
-          "description": "A two-role lease template with fields, a date, a mention and a fee table, and its HTML, Markdown and Word export.",
+          "description": "A lease template whose landlord, tenant and app fill their own fields, with a fill from sample data, answers read back by name, a date, a mention, a fee table, and its HTML, Markdown and Word export.",
           "files": [
             {
               "path": "examples/field-demo.tsx",

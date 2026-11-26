@@ -1109,7 +1109,7 @@ export const demoExamples: Registry['items'] = (
     },
     {
       description:
-        'A two-role lease template with fields, a date, a mention and a fee table, and its HTML, Markdown and Word export.',
+        'A lease template whose landlord, tenant and app fill their own fields, with a fill from sample data, answers read back by name, a date, a mention, a fee table, and its HTML, Markdown and Word export.',
       files: [
         { path: 'examples/field-demo.tsx', type: 'registry:example' },
         {

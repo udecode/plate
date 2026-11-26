@@ -33,7 +33,12 @@ export const fieldValue: Value = (
         required: true,
       })}{' '}
       自 {field('start', 'date', '起租日期', '房东', { name: 'start_date' })}{' '}
-      起出租该房屋。
+      起出租位于{' '}
+      {field('address', 'text', '地址', '应用', {
+        name: 'address',
+        required: true,
+      })}{' '}
+      的房屋。
     </hp>
     <htable>
       <htr>
@@ -50,7 +55,7 @@ export const fieldValue: Value = (
         </htd>
         <htd>
           <hp>
-            {field('rent', 'number', '月租', '房东', {
+            {field('rent', 'number', '月租', '应用', {
               name: 'rent',
               required: true,
             })}

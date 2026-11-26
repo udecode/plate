@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-26-field-demo-app-data",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-26-field-demo-app-data.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Fill the lease from app data and read its answers by name",
+  "targets": [
+    {
+      "name": "field-demo",
+      "files": [
+        "apps/www/src/registry/examples/field-demo.tsx",
+        "apps/www/src/registry/examples/values/cn/field-value.tsx",
+        "apps/www/src/registry/examples/values/field-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-26-field-demo-app-data",
+      "kind": "behavior",
+      "summary": "Give the lease an `app` role that holds the home's address and the rent. In the Author view, Fill from sample data submits the app's answers from one sample record, fills the tenant's name from the same record as a starting value and opens the tenant's fill view. An Answers panel lists each role's saved answers by name after each Submit.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with the copied `field-demo`, because it calls `fieldSubmission`, `startFieldValues` and `readFieldAnswers`, which older versions do not export."
+      ],
+      "targets": ["field-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-26",
+          "entry": "2026-11-26-field-demo-app-data",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

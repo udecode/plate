@@ -1,0 +1,14 @@
+---
+id: 2026-11-26-field-demo-app-data
+date: 2026-11-26
+status: draft
+kind: behavior
+summary: 'Fill the lease from app data and read its answers by name'
+change: { 'type': 'source', 'date': '2026-11-26', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-26-field-demo-app-data","kind":"behavior","migrationNotes":["Update `platejs` with the copied `field-demo`, because it calls `fieldSubmission`, `startFieldValues` and `readFieldAnswers`, which older versions do not export."]} -->
+
+- **`field-demo`**: Give the lease an `app` role that holds the home's address and the rent. In the Author view, Fill from sample data submits the app's answers from one sample record, fills the tenant's name from the same record as a starting value and opens the tenant's fill view. An Answers panel lists each role's saved answers by name after each Submit.

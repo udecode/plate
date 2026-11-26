@@ -5,8 +5,12 @@ import type { DocxDiagnostic } from 'platejs/docx/export';
 import {
   applyFieldValues,
   BaseFieldPlugin,
+  fieldSubmission,
   type FieldRefusal,
   type FieldSubmission,
+  type FieldValue,
+  readFieldAnswers,
+  startFieldValues,
 } from 'platejs/field';
 import { FieldPlugin } from 'platejs/field/react';
 import { MarkdownPlugin, RawHtmlPlugin } from 'platejs/markdown';
@@ -59,6 +63,34 @@ const presentation = [
 ];
 const panel = 'flex min-w-0 flex-col gap-2 rounded-md border p-3';
 const AUTHOR = 'author';
+const leases = {
+  cn: {
+    app: '应用',
+    labels: {
+      [AUTHOR]: '编辑模板',
+      房东: '以房东身份填写',
+      租客: '以租客身份填写',
+    },
+    sample: {
+      address: '北京市朝阳区建国路 1 号',
+      rent: 8000,
+      tenant_name: '林小雨',
+    },
+    tenant: '租客',
+    value: fieldValueCn,
+  },
+  en: {
+    app: 'app',
+    labels: {
+      [AUTHOR]: 'Author',
+      landlord: 'Fill as landlord',
+      tenant: 'Fill as tenant',
+    },
+    sample: { address: '1 Main St', rent: 1200, tenant_name: 'Ada Lovelace' },
+    tenant: 'tenant',
+    value: fieldValue,
+  },
+};
 
 function FillRoleSwitch({
   labels,
@@ -123,7 +155,11 @@ type Accepted = Readonly<{
 
 type Shown = Readonly<{ children: unknown }> &
   (
-    | { filled: ReturnType<typeof createEditor>; pending: readonly string[] }
+    | {
+        answers: ReturnType<typeof readFieldAnswers>;
+        filled: ReturnType<typeof createEditor>;
+        pending: readonly string[];
+      }
     | { refusals: ReadonlyArray<{ key: string; line: string }> }
   );
 
@@ -176,7 +212,15 @@ const refusalLine = (
   }
 };
 
-function FieldSubmit() {
+function FieldSubmit({
+  app,
+  sample,
+  tenant,
+}: {
+  app: string;
+  sample: Readonly<Record<string, FieldValue>>;
+  tenant: string;
+}) {
   const editor = useEditor();
   const fillRole = usePluginStore(FieldPlugin, 'fillRole') ?? null;
   const value = useEditorValue();
@@ -186,6 +230,23 @@ function FieldSubmit() {
   });
   const [shown, setShown] = React.useState<Shown | null>(null);
   const current = shown?.children === value ? shown : null;
+
+  const refuse = (refusals: readonly FieldRefusal[]) => {
+    const labels = new Map(
+      editor
+        .plugin(FieldPlugin)
+        .read.fields()
+        .map(({ fieldId, node }) => [fieldId, node.label])
+    );
+
+    setShown({
+      children: editor.read.children(),
+      refusals: refusals.map((refusal) => ({
+        key: JSON.stringify(refusal),
+        line: refusalLine(refusal, labels),
+      })),
+    });
+  };
 
   const submit = (role: string) => {
     const fields = editor.plugin(FieldPlugin).read;
@@ -199,23 +260,14 @@ function FieldSubmit() {
     const result = applyFieldValues(template, [...before, submission]);
 
     if (!result.ok) {
-      const labels = new Map(
-        fields.fields().map(({ fieldId, node }) => [fieldId, node.label])
-      );
-
-      setShown({
-        children,
-        refusals: result.refusals.map((refusal) => ({
-          key: JSON.stringify(refusal),
-          line: refusalLine(refusal, labels),
-        })),
-      });
+      refuse(result.refusals);
 
       return;
     }
 
     setAccepted({ submissions: [...before, submission], templateJson });
     setShown({
+      answers: readFieldAnswers(result.document),
       children,
       filled: createEditor({
         initialValue: result.document,
@@ -225,39 +277,94 @@ function FieldSubmit() {
     });
   };
 
+  const prefill = () => {
+    const template = withoutAnswers(editor.read.value());
+    const appSubmission = fieldSubmission(template, app, sample);
+    const start = startFieldValues(
+      template,
+      [appSubmission],
+      fieldSubmission(template, tenant, sample)
+    );
+
+    if (!start.ok) {
+      refuse(start.refusals);
+
+      return;
+    }
+
+    const started = createEditor({
+      initialValue: start.document,
+      plugins: presentation,
+    })
+      .plugin(BaseFieldPlugin)
+      .read.fields();
+
+    editor.update((tx) => {
+      for (const { fieldId, node } of started) {
+        tx.plugin(FieldPlugin).update(fieldId, { value: node.value });
+      }
+    });
+    setAccepted({ submissions: [appSubmission], templateJson: json(template) });
+    editor.plugin(FieldPlugin).store.set({ fillRole: tenant });
+  };
+
   return (
-    <section aria-label="Submission" className={panel}>
-      <div className="flex items-center gap-2">
-        <h3 className="text-sm font-medium">Submission</h3>
-        <Button
-          disabled={fillRole === null}
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            if (fillRole !== null) submit(fillRole);
-          }}
-        >
-          Submit
-        </Button>
-      </div>
-      {current && 'refusals' in current && (
-        <ul className="flex flex-col gap-1 text-sm text-destructive">
-          {current.refusals.map(({ key, line }) => (
-            <li key={key}>{line}</li>
-          ))}
-        </ul>
-      )}
-      {current && 'filled' in current && (
-        <>
-          {current.pending.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Waiting on {current.pending.join(', ')}
-            </p>
+    <>
+      <section aria-label="Submission" className={panel}>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium">Submission</h3>
+          {fillRole === null && (
+            <Button size="sm" variant="outline" onClick={prefill}>
+              Fill from sample data
+            </Button>
           )}
-          <EditorStatic className="text-sm" editor={current.filled} />
-        </>
+          <Button
+            disabled={fillRole === null}
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              if (fillRole !== null) submit(fillRole);
+            }}
+          >
+            Submit
+          </Button>
+        </div>
+        {current && 'refusals' in current && (
+          <ul className="flex flex-col gap-1 text-sm text-destructive">
+            {current.refusals.map(({ key, line }) => (
+              <li key={key}>{line}</li>
+            ))}
+          </ul>
+        )}
+        {current && 'filled' in current && (
+          <>
+            {current.pending.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Waiting on {current.pending.join(', ')}
+              </p>
+            )}
+            <EditorStatic className="text-sm" editor={current.filled} />
+          </>
+        )}
+      </section>
+      {current && 'answers' in current && (
+        <section aria-label="Answers" className={panel}>
+          <h3 className="text-sm font-medium">Answers</h3>
+          <ul className="flex flex-col gap-1 text-sm">
+            {Object.entries(current.answers).flatMap(([role, names]) =>
+              Object.entries(names).map(([name, answer]) => (
+                <li key={JSON.stringify([role, name])}>
+                  {role} › {name}:{' '}
+                  {'problem' in answer
+                    ? answer.problem
+                    : String(answer.value ?? '')}
+                </li>
+              ))
+            )}
+          </ul>
+        </section>
       )}
-    </section>
+    </>
   );
 }
 
@@ -331,7 +438,7 @@ function FieldOutputs() {
 }
 
 export default function FieldDemo() {
-  const locale = useLocale();
+  const lease = useLocale() === 'cn' ? leases.cn : leases.en;
   const editor = useCreateEditor({
     plugins: [
       ...BasicBlocksKit,
@@ -342,27 +449,13 @@ export default function FieldDemo() {
       ...FieldKit,
       ...MarkdownKit,
     ],
-    initialValue: locale === 'cn' ? fieldValueCn : fieldValue,
+    initialValue: lease.value,
   });
 
   return (
     <EditorRoot editor={editor}>
       <div className="@container flex flex-col gap-4 p-4">
-        <FillRoleSwitch
-          labels={
-            locale === 'cn'
-              ? {
-                  [AUTHOR]: '编辑模板',
-                  房东: '以房东身份填写',
-                  租客: '以租客身份填写',
-                }
-              : {
-                  [AUTHOR]: 'Author',
-                  landlord: 'Fill as landlord',
-                  tenant: 'Fill as tenant',
-                }
-          }
-        />
+        <FillRoleSwitch labels={lease.labels} />
         <EditorFrame className="h-[520px] rounded-md border">
           <Toolbar className="border-b p-1">
             <FieldToolbarButton />
@@ -371,7 +464,11 @@ export default function FieldDemo() {
             <Editor />
           </EditorContainer>
         </EditorFrame>
-        <FieldSubmit />
+        <FieldSubmit
+          app={lease.app}
+          sample={lease.sample}
+          tenant={lease.tenant}
+        />
         <FieldOutputs />
       </div>
     </EditorRoot>

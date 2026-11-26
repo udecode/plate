@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-26-field-demo-app-data",
+      "href": "/registry/changelog/2026-11-26-field-demo-app-data.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Fill the lease from app data and read its answers by name",
+      "change": {
+        "type": "source",
+        "date": "2026-11-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-25-field-demo-answer-conflict",
       "href": "/registry/changelog/2026-11-25-field-demo-answer-conflict.json",
       "status": "draft",
