@@ -53,15 +53,14 @@ export type HistoryBatchGroup = Readonly<{
   (
     | Readonly<{
         kind: 'effects';
-        root: undefined;
       }>
     | Readonly<{
         kind: 'document';
-        root: RootKey;
+        roots: readonly RootKey[];
       }>
     | Readonly<{
         kind: 'properties';
-        root: RootKey | undefined;
+        roots: readonly RootKey[];
         targets: readonly string[];
       }>
     | TextHistoryGroup
@@ -187,29 +186,58 @@ const getPropertyGroup = (commit: EditorCommit): HistoryBatchGroup | null => {
 
   if (!writes || writes.length === 0) return null;
 
-  const targets = new Set<string>();
+  const nodes = new Map<
+    string,
+    { keys: Set<string>; nodeKey: string; root: RootKey }
+  >();
 
-  for (const { path, root } of writes) {
+  for (const { keys, path, root } of writes) {
     const nodeKey = getEditorCommitSnapshot(commit, root, 'before').index.keyAt(
       path
     );
 
     if (!nodeKey) return null;
-    targets.add(JSON.stringify([root, nodeKey]));
+
+    const targetKey = JSON.stringify([root, nodeKey]);
+    let entry = nodes.get(targetKey);
+
+    if (!entry) {
+      entry = { keys: new Set<string>(), nodeKey, root };
+      nodes.set(targetKey, entry);
+    }
+    for (const key of keys) entry.keys.add(key);
   }
 
-  const roots = new Set(writes.map(({ root }) => root));
+  const includeKeys = nodes.size > 1;
+  const targets = [...nodes.values()]
+    .map(({ keys, nodeKey, root }) =>
+      JSON.stringify(
+        includeKeys ? [root, nodeKey, [...keys].sort()] : [root, nodeKey]
+      )
+    )
+    .sort();
+  const roots = [...new Set(writes.map(({ root }) => root))].sort();
 
   return Object.freeze({
     kind: 'properties',
-    root: roots.size === 1 ? writes[0].root : undefined,
-    targets: Object.freeze([...targets].sort()),
+    roots: Object.freeze(roots),
+    targets: Object.freeze(targets),
   });
 };
 
-const sameTargets = (left: readonly string[], right: readonly string[]) =>
+const sameStrings = (left: readonly string[], right: readonly string[]) =>
   left.length === right.length &&
-  left.every((target, index) => target === right[index]);
+  left.every((item, index) => item === right[index]);
+
+export const groupRoots = (group: HistoryBatchGroup): readonly RootKey[] =>
+  group.kind === 'effects'
+    ? []
+    : group.kind === 'text'
+      ? [group.root]
+      : group.roots;
+
+const sameGroupRoots = (left: HistoryBatchGroup, right: HistoryBatchGroup) =>
+  sameStrings(groupRoots(left), groupRoots(right));
 
 export const createHistoryBatchGroup = (
   commit: EditorCommit
@@ -363,7 +391,7 @@ export const createHistoryBatchGroup = (
     });
   }
 
-  return Object.freeze({ kind: 'document', root });
+  return Object.freeze({ kind: 'document', roots: Object.freeze([root]) });
 };
 
 const shouldMergeText = (
@@ -422,7 +450,7 @@ export const shouldMergeBatch = (
   if (
     !current ||
     !previous ||
-    current.root !== previous.root ||
+    !sameGroupRoots(current, previous) ||
     current.scope !== previous.scope
   ) {
     return false;
@@ -435,7 +463,7 @@ export const shouldMergeBatch = (
   return (
     current.kind === 'properties' &&
     previous.kind === 'properties' &&
-    sameTargets(current.targets, previous.targets)
+    sameStrings(current.targets, previous.targets)
   );
 };
 
@@ -448,7 +476,7 @@ export const shouldMergeCompositionBatch = (
     previous &&
     (current.kind === 'effects' ||
       previous.kind === 'effects' ||
-      current.root === previous.root) &&
+      sameGroupRoots(current, previous)) &&
     current.scope === previous.scope
   );
 
@@ -485,7 +513,7 @@ export const shouldMergeExplicitBatch = (
   if (
     !current ||
     !previous ||
-    current.root !== previous.root ||
+    !sameGroupRoots(current, previous) ||
     current.scope !== previous.scope
   ) {
     return false;

@@ -687,7 +687,7 @@ const prepareHistoryBatch = <V extends Value>(
     ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
     : native?.composition === undefined
       ? null
-      : Object.freeze({ kind: 'effects', native, root: undefined });
+      : Object.freeze({ kind: 'effects', native });
   const resolveSelectionRoot = (
     selection: Selection,
     fallback?: string

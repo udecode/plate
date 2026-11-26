@@ -51,6 +51,7 @@ import {
   invertiblePropertyNode,
 } from './root-change';
 import type { JsonEditorValue, JsonNode, JsonPoint } from './tokens';
+import type { PropertyModification } from './transform';
 
 export type DocumentChangedRange = Readonly<{
   fromAfter: number;
@@ -975,11 +976,13 @@ export const documentChangePropertyOnlyWrites = (
   change: DocumentChange,
   value: JsonEditorValue
 ): ReadonlyArray<
-  Readonly<{ path: readonly number[]; root: string }>
+  Readonly<{ keys: readonly string[]; path: readonly number[]; root: string }>
 > | null => {
   if (change.createRoots.size > 0 || change.deleteRoots.size > 0) return null;
 
-  const writes: Array<Readonly<{ path: readonly number[]; root: string }>> = [];
+  const writes: Array<
+    Readonly<{ keys: readonly string[]; path: readonly number[]; root: string }>
+  > = [];
 
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
     let index: DocumentIndex | undefined;
@@ -995,7 +998,18 @@ export const documentChangePropertyOnlyWrites = (
         const node = invertiblePropertyNode(index, position, length);
 
         if (!node) return null;
-        writes.push(Object.freeze({ path: node.path, root }));
+        const modifications = rootChange.data[
+          at / 2
+        ] as readonly PropertyModification[];
+        const keys = [...new Set(modifications.map(({ key }) => key))].sort();
+
+        writes.push(
+          Object.freeze({
+            keys: Object.freeze(keys),
+            path: node.path,
+            root,
+          })
+        );
       }
       position += length;
     }

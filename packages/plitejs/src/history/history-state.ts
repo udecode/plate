@@ -48,7 +48,7 @@ import type { AnyEditor } from '../interfaces/editor';
 import { ElementApi } from '../interfaces/element';
 import type { Batch, History } from './history';
 import { type HistoryCarets, mapHistoryCarets } from './history-carets';
-import type { HistoryBatchGroup } from './history-merge-policy';
+import { groupRoots, type HistoryBatchGroup } from './history-merge-policy';
 import {
   historyReplaySchemaOf,
   keepsUndoThrough,
@@ -714,9 +714,9 @@ const retainMappedCompositionGroup = (
     ...(group.scope ? { scope: group.scope } : {}),
   };
 
-  return group.root === undefined
-    ? Object.freeze({ ...shared, kind: 'effects', root: undefined })
-    : Object.freeze({ ...shared, kind: 'document', root: group.root });
+  return group.kind === 'effects'
+    ? Object.freeze({ ...shared, kind: 'effects' })
+    : Object.freeze({ ...shared, kind: 'document', roots: groupRoots(group) });
 };
 
 const yieldTo = <V extends Value>(
