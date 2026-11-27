@@ -21,7 +21,6 @@ import {
   evaluateCommandWithState,
   getActiveCommandEditor,
 } from '../../core/command-registry';
-import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { importContentSlice } from '../../core/import-content-slice';
 import { dispatchPaste, landPaste } from '../../core/moved-anchors';
 import { getInstalledPlugin } from '../../core/plugin';
@@ -32,6 +31,12 @@ import {
   getSelection as getEditorSelection,
   void as editorVoid,
 } from '../../interfaces/editor';
+import {
+  clearDOMClipboardFormatKey,
+  DEFAULT_CLIPBOARD_FORMAT_KEY,
+  getDOMClipboardFormatKey,
+  setDOMClipboardFormatKey,
+} from '../../internal/clipboard-format-key';
 import { failInvariant } from '../../internal/fail-invariant';
 import { SOFT_LINE_END_SELECTOR } from '../dom-soft-line-end';
 import {
@@ -57,12 +62,15 @@ import { PLITE_STRING_SELECTOR } from './dom-geometry';
 import { findEditorDOMRootRuntime } from './dom-root-runtime';
 import { isEditorRoot, isFlowHost, TEXT_HOST } from './dom-text-freshness';
 
+export {
+  clearDOMClipboardFormatKey,
+  getDOMClipboardFormatKey,
+  setDOMClipboardFormatKey,
+};
+
 const PLITE_FRAGMENT_ATTRIBUTE_RE = /\bdata-editor-fragment\s*=/i;
 const OPENING_HTML_TAG_RE = /<[A-Za-z][^<>]*?>/;
-const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-editor-fragment';
 const PLITE_FRAGMENT_FORMAT_ATTRIBUTE = 'data-editor-fragment-format';
-
-const EDITOR_TO_CLIPBOARD_FORMAT_KEY = new WeakMap<object, string>();
 
 /** Semantic commands that own DOM clipboard ingress. */
 export const domCommands = Object.freeze({
@@ -106,27 +114,6 @@ const stripRenderOnlyLeafWrappers = (root: ParentNode, ui: Set<DOMNode>) => {
     }
   });
 };
-
-// Mounted views share the clipboard key of the runtime owner that activated
-// the DOM plugin.
-export const setDOMClipboardFormatKey = (
-  editor: Editor<any, any>,
-  clipboardFormatKey: string
-) => {
-  EDITOR_TO_CLIPBOARD_FORMAT_KEY.set(
-    getEditorRuntimeOwner(editor),
-    clipboardFormatKey
-  );
-};
-
-export const clearDOMClipboardFormatKey = (editor: Editor<any, any>) => {
-  EDITOR_TO_CLIPBOARD_FORMAT_KEY.delete(getEditorRuntimeOwner(editor));
-};
-
-/** Read the configured MIME suffix used for exact Plite clipboard payloads. */
-export const getDOMClipboardFormatKey = (editor: Editor<any, any>) =>
-  EDITOR_TO_CLIPBOARD_FORMAT_KEY.get(getEditorRuntimeOwner(editor)) ??
-  DEFAULT_CLIPBOARD_FORMAT_KEY;
 
 const escapeHtmlText = (text: string) =>
   text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');

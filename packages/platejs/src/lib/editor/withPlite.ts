@@ -44,6 +44,7 @@ import {
   type EditorTransactionSpecBuilder,
   type Value,
   getCompiledEditorSchemaFromApi,
+  getPluginSlotInput,
   mapSemanticUpdateMethodArguments,
   repairEditorValue,
   setEditorStateViewTransform,
@@ -765,6 +766,29 @@ export type EditorOptions<
   skipInitialization?: boolean;
 };
 
+const assertNoPlatePluginInput = (
+  input: unknown,
+  seen = new Set<unknown>()
+): void => {
+  if (input == null || typeof input !== 'object' || seen.has(input)) return;
+  seen.add(input);
+  if (Array.isArray(input)) {
+    for (const item of input) {
+      assertNoPlatePluginInput(item, seen);
+    }
+    return;
+  }
+  if (isNominalPluginDescriptor(input)) {
+    throw new Error(
+      `Plate plugin "${input.name}" cannot be installed or reconfigured at runtime. Pass it to createEditor({ plugins }) and update its runtime state with store.set({ ... }).`
+    );
+  }
+  const slotInput = getPluginSlotInput(input as RuntimePluginReference);
+  if (slotInput !== undefined) {
+    assertNoPlatePluginInput(slotInput, seen);
+  }
+};
+
 const partitionPluginInputs = (
   plugins: readonly RuntimePluginReference[]
 ): Readonly<{
@@ -778,6 +802,7 @@ const partitionPluginInputs = (
     if (isNominalPluginDescriptor(plugin)) {
       plate.push(plugin as BasePluginInput);
     } else {
+      assertNoPlatePluginInput(plugin);
       runtime.push(plugin);
     }
   }
@@ -863,6 +888,29 @@ const prepareInitialPlatePlugins = (
             );
           }
         }
+        const txPlugins = transaction.plugins as
+          | (Record<string, unknown> & {
+              reconfigure?: (
+                slot: unknown,
+                input: unknown,
+                reconfigureOptions?: unknown
+              ) => unknown;
+            })
+          | undefined;
+        if (txPlugins && typeof txPlugins.reconfigure === 'function') {
+          const runtimeReconfigure = txPlugins.reconfigure;
+          transaction.plugins = Object.freeze({
+            ...txPlugins,
+            reconfigure: (
+              slot: unknown,
+              input: unknown,
+              reconfigureOptions?: unknown
+            ) => {
+              assertNoPlatePluginInput(input);
+              return runtimeReconfigure(slot, input, reconfigureOptions);
+            },
+          });
+        }
       }
     );
     return {
@@ -929,6 +977,12 @@ export const buildEditor = <TEditor extends Editor = Editor>(
   const editor = (dormant
     ? createDormantEditor(runtimeOptions)
     : createPliteEditor(runtimeOptions)) as unknown as Editor;
+
+  const runtimeInstall = editor.install;
+  editor.install = (input, installOptions) => {
+    assertNoPlatePluginInput(input);
+    return runtimeInstall(input, installOptions);
+  };
 
   defineEditorUser(editor, editorUserId);
   const pluginInputs = partitionPluginInputs(plugins);

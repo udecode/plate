@@ -9,7 +9,10 @@ import {
   type RuntimePluginsFromTuple,
 } from '../../lib/editor/withPlite';
 import type { Editor } from './Editor';
-import { getPlateCorePlugins } from './getPlateCorePlugins.internal';
+import {
+  getPlateCorePlugins,
+  ReactDOMPlugin,
+} from './getPlateCorePlugins.internal';
 
 type PluginInput = RuntimePluginReference;
 
@@ -23,6 +26,12 @@ export type CreateEditorOptions<
 > = Partial<
   Omit<HeadlessEditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'>
 > & {
+  /**
+   * Bare `DataTransfer` subtype for Plate's internal fragment payload.
+   *
+   * Plate writes and reads `application/${clipboardFormatKey}`.
+   */
+  clipboardFormatKey?: string;
   /** Stable logical identity for the created editor. */
   id?: string;
   initialValue?:
@@ -39,9 +48,14 @@ export type CreateEditorOptions<
   schema?: TSchema;
 };
 
+const REACT_EDITOR_OPTION_KEYS = {
+  ...EDITOR_OPTION_KEYS,
+  clipboardFormatKey: true,
+} satisfies Record<keyof CreateEditorOptions, true>;
+
 /** @internal */
 export const USE_CREATE_EDITOR_OPTION_KEYS = {
-  ...EDITOR_OPTION_KEYS,
+  ...REACT_EDITOR_OPTION_KEYS,
   enabled: true,
 } satisfies Record<keyof CreateEditorOptions | 'enabled', true>;
 
@@ -112,13 +126,27 @@ export const createDormantPlateEditor = (options: unknown) =>
   createPlateEditor(options, true);
 
 const createPlateEditor = (options: unknown, dormant: boolean) => {
-  const { plugins = [], ...rest } = readConstructorOptions(
+  const {
+    clipboardFormatKey,
+    plugins = [],
+    ...rest
+  } = readConstructorOptions(
     options as CreateEditorOptions,
-    EDITOR_OPTION_KEYS
+    REACT_EDITOR_OPTION_KEYS
   );
+  const corePlugins = getPlateCorePlugins();
+  const basePlugins =
+    clipboardFormatKey === undefined
+      ? corePlugins
+      : [
+          ...corePlugins,
+          ReactDOMPlugin.configure({
+            initialState: { clipboardFormatKey },
+          }),
+        ];
 
   return buildEditor(
-    { ...rest, plugins: [...getPlateCorePlugins(), ...plugins] },
+    { ...rest, plugins: [...basePlugins, ...plugins] },
     dormant
   );
 };

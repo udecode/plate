@@ -764,9 +764,6 @@
       "HistoryBatchJSON",
       "HistoryControlTx",
       "HistoryJSON",
-      "HistoryOptions",
-      "HistoryPlugin",
-      "HistoryPluginTypes",
       "HistoryStateApi",
       "HistoryTxApi"
     ],

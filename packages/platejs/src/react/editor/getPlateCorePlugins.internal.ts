@@ -5,7 +5,7 @@ import { toReactPlugin } from '../plugin/toReactPlugin';
 import { ParagraphPlugin } from '../plugins';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
 
-const ReactDOMPlugin = toReactPlugin(DOMPlugin);
+export const ReactDOMPlugin = toReactPlugin(DOMPlugin);
 const plateReactPlugin: RuntimeReactPlugin = react({
   dom: plateDOMPlugin,
 });

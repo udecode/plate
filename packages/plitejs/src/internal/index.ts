@@ -226,6 +226,8 @@ export {
   type EditorSchemaDiagnostic,
 } from '../core/schema-compiler';
 export { getSchemaElementSourceReference } from '../core/schema-definition';
+export { getPluginSlotInput } from '../core/plugin-slot';
+export { setDOMClipboardFormatKey } from './clipboard-format-key';
 export {
   containsCompleteEditorSchema,
   brandPluginDescriptor,

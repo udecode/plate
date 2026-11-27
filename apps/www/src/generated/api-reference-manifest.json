@@ -1819,7 +1819,7 @@
           "kind": "type",
           "name": "DomPluginState",
           "runtime": false,
-          "signature": "type DomPluginState = {\n  /** Choose the first or last matching change as the scroll target. */\n  scrollMode: ScrollMode;\n  /** Change map; true enables scrolling for that canonical change kind. */\n  scrollChanges: AutoScrollChangesMap;\n  /** Options passed to scrollIntoView. */\n  scrollOptions: ScrollIntoViewOptions;\n};",
+          "signature": "type DomPluginState = {\n  /** Bare DataTransfer subtype for internal fragment payloads. */\n  clipboardFormatKey: string | null;\n  /** Choose the first or last matching change as the scroll target. */\n  scrollMode: ScrollMode;\n  /** Change map; true enables scrolling for that canonical change kind. */\n  scrollChanges: AutoScrollChangesMap;\n  /** Options passed to scrollIntoView. */\n  scrollOptions: ScrollIntoViewOptions;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -13456,17 +13456,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/history:history": {
-          "aliases": [],
-          "documentation": "Create the inverse-change history plugin.",
-          "entrypoint": "platejs/history",
-          "kind": "const",
-          "name": "history",
-          "runtime": true,
-          "signature": "history: <const TEnabled extends boolean | undefined = undefined>(options?: HistoryOptions<TEnabled>) => HistoryPlugin<TEnabled>",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs/history:History": {
           "aliases": [],
           "documentation": "Undo and redo stacks of inverse document changes.",
@@ -13512,56 +13501,6 @@
           "signature": "type HistoryJSON = Readonly<{\n  redos: readonly HistoryBatchJSON[];\n  schema: EditorSchemaIdentity;\n  undos: readonly HistoryBatchJSON[];\n  /** 7 for every history this build saves. It still reads 4, 5 and 6. */\n  version: 4 | 5 | 6 | 7;\n}>;",
           "source": null,
           "typeParameters": []
-        },
-        "platejs/history:HistoryOptions": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/history",
-          "kind": "type",
-          "name": "HistoryOptions",
-          "runtime": false,
-          "signature": "type HistoryOptions<TEnabled extends boolean | undefined = undefined> = {\n  /** Disable history for an editor that installs history through a preset. */\n  enabled?: TEnabled;\n  /** Maximum number of undo and redo batches retained per branch. */\n  maxDepth?: number;\n  /** Idle time in milliseconds before an automatic edit starts a new batch. */\n  newBatchDelay?: number;\n};",
-          "source": null,
-          "typeParameters": [
-            "TEnabled extends boolean | undefined = undefined"
-          ]
-        },
-        "platejs/history:HistoryPlugin": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/history",
-          "kind": "type",
-          "name": "HistoryPlugin",
-          "runtime": false,
-          "signature": "type HistoryPlugin<TEnabled extends boolean | undefined = undefined> = Plugin<HistoryPluginDefinition<TEnabled>> & HistoryPluginTypeProvider;",
-          "source": null,
-          "typeParameters": [
-            "TEnabled extends boolean | undefined = undefined"
-          ]
-        },
-        "platejs/history:HistoryPluginTypeProvider": {
-          "aliases": [],
-          "documentation": "Value-sensitive history capability provider for plugin composition.",
-          "entrypoint": "platejs/history",
-          "kind": "type",
-          "name": "HistoryPluginTypeProvider",
-          "runtime": false,
-          "signature": "type HistoryPluginTypeProvider = PluginTypeProvider<HistoryPluginTypeProvider.Contract>;",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs/history:HistoryPluginTypes": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/history",
-          "kind": "type",
-          "name": "HistoryPluginTypes",
-          "runtime": false,
-          "signature": "type HistoryPluginTypes<V extends Value = Value> = {\n  api: {\n    history: HistoryApi;\n  };\n  read: {\n    history: HistoryStateApi<V>;\n  };\n  update: {\n    history: HistoryTxApi<V>;\n  };\n};",
-          "source": null,
-          "typeParameters": [
-            "V extends Value = Value"
-          ]
         },
         "platejs/history:HistoryStateApi": {
           "aliases": [],
@@ -17862,7 +17801,7 @@
           "kind": "type",
           "name": "CreateEditorOptions",
           "runtime": false,
-          "signature": "type CreateEditorOptions<TPlugins extends readonly PluginReference[] = readonly PluginInput[], TSchema extends EditorApplicationSchema | undefined = EditorApplicationSchema | undefined> = Partial<Omit<EditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'>> & {\n  /** Stable logical identity for the created editor. */\n  id?: string;\n  initialValue?: ((context: {\n    editor: Editor<Value, TPlugins, PlatePluginsFromTuple<TPlugins>, TSchema>;\n  }) => EditorValueInput<Value>) | EditorValueInput<Value>;\n  plugins?: TPlugins;\n  schema?: TSchema;\n};",
+          "signature": "type CreateEditorOptions<TPlugins extends readonly PluginReference[] = readonly PluginInput[], TSchema extends EditorApplicationSchema | undefined = EditorApplicationSchema | undefined> = Partial<Omit<EditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'>> & {\n  /**\n   * Bare `DataTransfer` subtype for Plate's internal fragment payload.\n   *\n   * Plate writes and reads `application/${clipboardFormatKey}`.\n   */\n  clipboardFormatKey?: string;\n  /** Stable logical identity for the created editor. */\n  id?: string;\n  initialValue?: ((context: {\n    editor: Editor<Value, TPlugins, PlatePluginsFromTuple<TPlugins>, TSchema>;\n  }) => EditorValueInput<Value>) | EditorValueInput<Value>;\n  plugins?: TPlugins;\n  schema?: TSchema;\n};",
           "source": null,
           "typeParameters": [
             "TPlugins extends readonly PluginReference[] = readonly PluginInput[]",
@@ -18455,7 +18394,7 @@
           "kind": "type",
           "name": "DomPluginState",
           "runtime": false,
-          "signature": "type DomPluginState = {\n  /** Choose the first or last matching change as the scroll target. */\n  scrollMode: ScrollMode;\n  /** Change map; true enables scrolling for that canonical change kind. */\n  scrollChanges: AutoScrollChangesMap;\n  /** Options passed to scrollIntoView. */\n  scrollOptions: ScrollIntoViewOptions;\n};",
+          "signature": "type DomPluginState = {\n  /** Bare DataTransfer subtype for internal fragment payloads. */\n  clipboardFormatKey: string | null;\n  /** Choose the first or last matching change as the scroll target. */\n  scrollMode: ScrollMode;\n  /** Change map; true enables scrolling for that canonical change kind. */\n  scrollChanges: AutoScrollChangesMap;\n  /** Options passed to scrollIntoView. */\n  scrollOptions: ScrollIntoViewOptions;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -23471,7 +23410,7 @@
           "kind": "const",
           "name": "NavigationFeedbackPlugin",
           "runtime": true,
-          "signature": "NavigationFeedbackPlugin: Plugin<Readonly<{\n  readonly name: \"navigation\";\n  readonly initialState: {\n    readonly duration: number;\n  };\n  readonly api: {\n    /** Flash one live element in this mounted view without changing the document or selection. */\n    flashTarget: ({ key, attributes, duration }: NavigationFlashTargetOptions) => boolean;\n    /** Clear this mounted view's feedback, returning whether a target was active. */\n    clear: () => boolean;\n  };\n  readonly dependencies: readonly [PluginReference$1<\"dom\"> & PluginDependency<Readonly<{\n    name: \"dom\";\n  }> & Readonly<{\n    __pluginWritableProperties: never;\n  }> & Readonly<Record<\"api\", AutoScrollApi & DOMApi & {\n    clipboard: DOMClipboardApi;\n  }>> & Readonly<Record<\"update\", {\n    autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n  } & Pick<DOMClipboardApi<Value>, \"insertData\">>> & Readonly<Record<never, never>>> & Pick<InternalBasePluginRuntimeExtension<BasePlugin<Readonly<{\n    on: true;\n  }> & Readonly<{\n    name: \"dom\";\n  }> & Readonly<Record<never, never>> & Readonly<{\n    initialState: {\n      readonly scrollMode: ScrollMode;\n      readonly scrollChanges: {\n        readonly properties?: boolean | undefined;\n        readonly structure?: boolean | undefined;\n        readonly text?: boolean | undefined;\n      };\n      readonly scrollOptions: ScrollIntoViewOptions;\n    };\n  }> & Readonly<{\n    api: AutoScrollApi;\n  }> & Readonly<{\n    update: {\n      autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n    };\n  }>>, Readonly<{\n    on: true;\n  }> & Readonly<{\n    name: \"dom\";\n  }> & Readonly<Record<never, never>> & Readonly<{\n    initialState: {\n      readonly scrollMode: ScrollMode;\n      readonly scrollChanges: {\n        readonly properties?: boolean | undefined;\n        readonly structure?: boolean | undefined;\n        readonly text?: boolean | undefined;\n      };\n      readonly scrollOptions: ScrollIntoViewOptions;\n    };\n  }> & Readonly<{\n    api: AutoScrollApi;\n  }> & Readonly<{\n    update: {\n      autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n    };\n  }>, DOMPlugin>, \"~schema.plugins\">];\n  readonly render: true;\n}>>",
+          "signature": "NavigationFeedbackPlugin: Plugin<Readonly<{\n  readonly name: \"navigation\";\n  readonly initialState: {\n    readonly duration: number;\n  };\n  readonly api: {\n    /** Flash one live element in this mounted view without changing the document or selection. */\n    flashTarget: ({ key, attributes, duration }: NavigationFlashTargetOptions) => boolean;\n    /** Clear this mounted view's feedback, returning whether a target was active. */\n    clear: () => boolean;\n  };\n  readonly dependencies: readonly [PluginReference$1<\"dom\"> & PluginDependency<Readonly<{\n    name: \"dom\";\n  }> & Readonly<{\n    __pluginWritableProperties: never;\n  }> & Readonly<Record<\"api\", AutoScrollApi & DOMApi & {\n    clipboard: DOMClipboardApi;\n  }>> & Readonly<Record<\"update\", {\n    autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n  } & Pick<DOMClipboardApi<Value>, \"insertData\">>> & Readonly<Record<never, never>>> & Pick<BasePlugin<Readonly<{\n    readonly activate: true;\n    readonly on: true;\n    readonly name: \"dom\";\n    readonly api: AutoScrollApi & DOMApi & {\n      clipboard: DOMClipboardApi;\n    };\n    readonly initialState: {\n      readonly clipboardFormatKey: string | null;\n      readonly scrollMode: ScrollMode;\n      readonly scrollChanges: {\n        readonly properties?: boolean | undefined;\n        readonly structure?: boolean | undefined;\n        readonly text?: boolean | undefined;\n      };\n      readonly scrollOptions: ScrollIntoViewOptions;\n    };\n    readonly update: {\n      autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n    } & Pick<DOMClipboardApi<Value>, \"insertData\">;\n  }>> & Readonly<Record<never, never>>, \"~schema.plugins\">];\n  readonly render: true;\n}>>",
           "source": null,
           "typeParameters": []
         },

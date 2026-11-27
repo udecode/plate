@@ -423,6 +423,26 @@ const resolveReference = <const TPlugin extends PluginReference | string>(
       : string;
 };
 
+const ALLOWED_PLUGIN_SCHEMA_KEYS = new Set([
+  'contentRoots',
+  'element',
+  'mark',
+  'properties',
+]);
+
+const assertPluginSchemaKeys = (
+  pluginName: string,
+  declaration: PluginSchemaDeclaration
+): void => {
+  for (const key of Object.keys(declaration)) {
+    if (!ALLOWED_PLUGIN_SCHEMA_KEYS.has(key)) {
+      throw new Error(
+        `Plate plugin "${pluginName}" schema key "${key}" is not supported. Use only contentRoots, element, mark, and properties.`
+      );
+    }
+  }
+};
+
 const isPluginSchemaDeclaration = (
   value: unknown
 ): value is PluginSchemaDeclaration =>
@@ -447,6 +467,7 @@ export const evaluatePluginSchemaDeclaration = (
         `Plate plugin "${plugin.name}" schema must be a declaration or factory.`
       );
     }
+    assertPluginSchemaKeys(plugin.name, declaration);
 
     return declaration;
   }
@@ -484,6 +505,7 @@ export const evaluatePluginSchemaDeclaration = (
       `Plate plugin "${plugin.name}" schema factory must return a declaration.`
     );
   }
+  assertPluginSchemaKeys(plugin.name, result);
 
   return freezePluginDescriptorValue(result);
 };

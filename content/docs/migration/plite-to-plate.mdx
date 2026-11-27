@@ -24,9 +24,8 @@ Plate re-exports Plite's document model with the same bindings. Unless
 only its import path: `plitejs` becomes `platejs`, and `plitejs/<entrypoint>`
 becomes `platejs/<entrypoint>`. `editor.read`, `editor.update`, `tx`, `NodeApi`
 and the rest of the document API work as before. `platejs/diff`,
-`platejs/history`, `platejs/hyperscript`, `platejs/pagination`,
-`platejs/testing`, `platejs/yjs` and `platejs/yjs/react` re-export their Plite
-entrypoint whole.
+`platejs/hyperscript`, `platejs/pagination`, `platejs/testing`, `platejs/yjs`
+and `platejs/yjs/react` re-export their Plite entrypoint whole.
 
 ## Migration Map
 
@@ -271,8 +270,8 @@ them. Every other value keeps its binding, as
 | `useEditorContext()` | `useEditor()` | |
 | `useOptionalEditorContext()` | `useOptionalEditor()` | |
 | `useCaretEditor()` | `useEditor()` outside `EditorContent` | Outside every editing area, `useEditor()` returns the editor of the root that holds the caret. |
-| `createEditor(options)` | `createEditor(options)` from `platejs`, or from `platejs/react` in React | The options are the same except `clipboardFormatKey`, which Plate refuses. |
-| `definePlugin(name, definition)` | `definePlugin(name, definition)` from `platejs`, or from `platejs/react` in React | The definition fields are the same, and `PluginDefinitionInput` has no `name`. The result is a Plate plugin with `.configure()` and `.extend()`, and a `name` key inside the definition throws. Plate runs the `api` factory while it resolves the plugin's `.extend()` stages, so the factory gets no `getContributions`. Read contributions in `validate`. |
+| `createEditor(options)` | `createEditor(options)` from `platejs`, or from `platejs/react` in React | `platejs/react`'s `createEditor` and `useCreateEditor` accept `clipboardFormatKey`; root `platejs`'s `createEditor` refuses it, matching Plite. |
+| `definePlugin(name, definition)` | `definePlugin(name, definition)` from `platejs`, or from `platejs/react` in React | The definition fields are the same, and `PluginDefinitionInput` has no `name`. The result is a Plate plugin with `.configure()` and `.extend()`, and a `name` key inside the definition throws. A Plate plugin declares one node, so rewrite a multi-element `schema.elements` plugin into one plugin per node with `schema.element`; `schema` keys other than `contentRoots`, `element`, `mark`, and `properties` fail at compile time and throw at runtime. Pass Plate plugins to `createEditor({ plugins })` and toggle runtime flags with `store.set({ readOnly: false })` instead of passing Plate plugins to `editor.install`, `tx.plugins.reconfigure`, or `definePluginSlot().of()`. Plate runs the `api` factory while it resolves the plugin's `.extend()` stages, so the factory gets no `getContributions`. Read contributions in `validate`. |
 | `useCommand(command, options)` | `editor.update.command(command, input)`, with the editor from `useEditor()` | Plate has no `root` or `focus` option for a command. |
 
 ### Rendering
@@ -336,6 +335,18 @@ them. Every other value keeps its binding, as
 | `isEditor`, `isElement`, `isLeaf`, `isNode`, `isString`, `isText`, `isVoid`, `getElements`, `getNodeDataAttributeKeys`, `keyToDataAttribute` | None | They read Plite's DOM data attributes. `isEditor` from `platejs` is a different function that checks an editor object. |
 | `getSelection`, `getActiveElement`, `getDefaultView`, `isDOMNode`, `isDOMElement`, `isDOMText`, `isDOMSelection`, `hasShadowRoot`, `closestShadowAware`, `containsShadowAware`, `isAfter`, `isBefore`, `normalizeDOMPoint`, `isPlainTextOnlyPaste`, `CAN_USE_DOM`, `isGeckoDOMHost`, `TRIPLE_CLICK` | None | Use the DOM API. |
 | `DOMCoverage`, `isTrackedMutation`, `applyStringDiff`, `mergeStringDiffs`, `normalizeStringDiff`, `normalizePoint`, `normalizeRange`, `targetRange`, `verifyDiffState` | None | `EditorContent` owns DOM coverage, mutation tracking and Android input diffs. |
+
+### History
+
+`platejs/history` re-exports `History` and the history data types by identity.
+Plate installs `HistoryPlugin` by default, so `platejs/history` drops the raw
+Plite plugin factory and its plugin-only types.
+
+| Plite | Plate | Notes |
+| --- | --- | --- |
+| `history(options)` from `plitejs/history` | `HistoryPlugin.configure({ initialState: { maxDepth, newBatchDelay } })` from `platejs` | Disable history with `HistoryPlugin.configure({ enabled: false })`. Turning history off uninstalls it at runtime while keeping `api.history` in the editor types. |
+| `HistoryOptions` | `HistoryPluginState` from `platejs` | Passed through `HistoryPlugin.configure({ initialState })`. |
+| `HistoryPlugin`, `HistoryPluginTypes`, `HistoryPluginTypeProvider` from `plitejs/history` | `typeof HistoryPlugin` from `platejs` | Plate's `HistoryPlugin` is a core plugin descriptor. |
 
 ### Review And Annotations
 

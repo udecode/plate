@@ -13,6 +13,7 @@ import {
   type Point,
   getSelectionDOMRange,
   readEditorSelection,
+  setDOMClipboardFormatKey,
   type TxDeclaredMethod,
   txLocate,
 } from '../../../facade';
@@ -42,6 +43,8 @@ export type AutoScrollApi = {
 };
 
 export type DomPluginState = {
+  /** Bare DataTransfer subtype for internal fragment payloads. */
+  clipboardFormatKey: string | null;
   /** Choose the first or last matching change as the scroll target. */
   scrollMode: ScrollMode;
   /** Change map; true enables scrolling for that canonical change kind. */
@@ -72,6 +75,7 @@ export type DomApi = AutoScrollApi &
 export type ScrollMode = 'first' | 'last';
 
 const initialState: DomPluginState = {
+  clipboardFormatKey: null,
   scrollMode: 'last',
   scrollChanges: {
     structure: true,
@@ -217,4 +221,14 @@ export const DOMPlugin = definePlugin('dom', {
       }
     }),
   }),
-}).extend(plateDOMPlugin);
+})
+  .extend(plateDOMPlugin)
+  .extend(({ store }) => ({
+    activate({ editor }) {
+      const clipboardFormatKey = store.get('clipboardFormatKey');
+
+      if (clipboardFormatKey) {
+        setDOMClipboardFormatKey(editor, clipboardFormatKey);
+      }
+    },
+  }));

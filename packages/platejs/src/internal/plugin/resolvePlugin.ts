@@ -27,6 +27,7 @@ export type ResolvedPluginConfiguration = Readonly<
 >;
 
 type PluginContribution = Record<PropertyKey, unknown> & {
+  activate?: (context: object) => void;
   api?: (context: object) => object;
   dataTransferFormats?: readonly unknown[];
   formats?: Readonly<Record<PropertyKey, unknown>>;
@@ -162,6 +163,24 @@ const mergeFactory =
 
     return mergePlugins(prior, contribution);
   };
+
+const mergeActivate = (
+  plugin: Readonly<{ name: string }>,
+  previous: unknown,
+  next: unknown
+) => {
+  if (typeof next !== 'function') {
+    throw new Error(
+      `Plate plugin "${plugin.name}" activate must be a function.`
+    );
+  }
+  if (typeof previous !== 'function') return next;
+
+  return (context: unknown) => {
+    Reflect.apply(previous, undefined, [context]);
+    Reflect.apply(next, undefined, [context]);
+  };
+};
 
 const mergeCommandFactories =
   (
@@ -336,6 +355,7 @@ const applyStage = (
   }
 
   const {
+    activate,
     api,
     dataTransferFormats,
     formats,
@@ -375,6 +395,13 @@ const applyStage = (
     ]);
   }
 
+  if (activate !== undefined) {
+    Reflect.set(
+      next,
+      'activate',
+      mergeActivate(plugin, Reflect.get(next, 'activate'), activate)
+    );
+  }
   if (on !== undefined) {
     if (!isObjectRecord(on)) {
       throw new Error(`Plate plugin "${plugin.name}" on must be an object.`);
