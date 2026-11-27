@@ -97,6 +97,16 @@ answers `false` without reading any index. A key that left the root, or whose
 root the commit deleted, reports `"presence"` there, not `"path"`, so a view
 that rereads a moved key checks both kinds.
 
+`commit.changed.anchors()` returns the persistent anchors whose stored value
+the commit changed, including undo and redo restores, except anchors released
+before commit listeners run. A view's commit lists the stored commit's anchors.
+
+`commit.changed.rootPlacements()` returns the named roots whose place in
+`read.roots()` the commit changed: each root whose owners changed (such as a
+deleted board or swapped `childRoots`) and each root whose `top` moved into
+another top-level page block (such as a board moved into a container block). An
+insert or delete above an owner that only shifts its path names no root.
+
 ## Removed nodes
 
 Each step of an update calls every plugin's `on.transactionChange` handler

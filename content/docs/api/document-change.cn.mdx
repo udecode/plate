@@ -51,5 +51,8 @@ editor.update({ tags: 'remote-import' }, (tx) => {
 移动、拆分或包裹会保留节点的 key，被解包或合并的节点的子节点也会保留。
 每个步骤只报告自己的移除；整个提交新增或移除的 key 用 `commit.changed.nodeKeys("presence")` 查询。
 
+`commit.changed.anchors()` 返回本次提交改变了存储值的持久锚点（包含撤销与重做恢复），但不包含在提交监听器运行前已释放的锚点；视图提交返回存储提交的锚点列表。
+`commit.changed.rootPlacements()` 返回 `read.roots()` 中位置发生变化的具名根：所有者发生变化的根（例如删除画板或交换 `childRoots`），以及 `top` 移入另一顶层页面块的根（例如画板移入容器块）。仅在所有者上方插入或删除、只平移路径时不会列出任何根。
+
 适配器在同一更新中导入变更与共享 effect。运行时 `NodeKey` 不作为远程
 身份；并发、传输、持久化与在线状态由[协作适配器](/docs/yjs)负责。

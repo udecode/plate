@@ -385,6 +385,19 @@ another `EditorRoot` holds the caret, and `focus()` does nothing.
 `resolveNode` and `resolvePoint` still resolve a text node that any view of the editor renders, because they
 read the document's text before they look for a view.
 
+#### `useEditorRootAreas(editor): EditorRootAreas`
+
+Subscribe to the standalone editing areas mounted in `editor`'s presentation.
+It returns `{ isPrimaryForRoot, nestedView, standaloneRoots }`:
+
+- `standaloneRoots` lists the named roots that currently have their own shown
+  standalone editing area in that presentation.
+- `isPrimaryForRoot` is `true` when `editor` is the active shown standalone
+  editing area for its root in that presentation (or when no standalone area is
+  mounted yet), and `false` for nested content-root views or hidden copies.
+- `nestedView(root)` returns the mounted view of a nested content root inside
+  `editor`'s editing area, or `null` when none is mounted there.
+
 #### `useRootChrome(root?, options?): RootChromeController`
 
 Create root chrome props for mouse interaction outside the editable content,
