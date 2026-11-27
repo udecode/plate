@@ -1,5 +1,5 @@
 ---
-title: "Selection And DOM"
+title: "Selection and DOM"
 description: "Understand model selection, browser-native selection, DOM coverage, voids, hidden content, and browser proof."
 ---
 
@@ -81,7 +81,7 @@ The browser can move native selection through mouse, keyboard, touch, compositio
 
 Application code should not patch the browser `Selection` directly for normal editor behavior. Use model transactions, `EditorContent` handlers, or DOM-aware React APIs that preserve Plite's repair path.
 
-Use [React Editor](../libraries/plite-react/react-editor) for DOM translation helpers and [Plite React Event Handling](../libraries/plite-react/event-handling) for browser event hooks.
+Use [React Editor](../libraries/plite-react/react-editor) for DOM translation helpers and [Event Handling](../libraries/plite-react/event-handling) for browser event hooks.
 
 Horizontal arrow and word movement are visual DOM operations. Plite React asks
 the DOM capability for the next physical left or right point and affinity, so

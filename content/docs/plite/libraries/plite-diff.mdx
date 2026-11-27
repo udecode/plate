@@ -1,0 +1,74 @@
+---
+title: "Diff"
+description: "Compare immutable Plite documents with two-way diffs and three-way conflict resolution."
+---
+
+`plitejs/diff` compares immutable, schema-valid Plite documents without
+mutating editor state. Use `compare` for two-way document diffs or three-way
+branch comparisons, and `resolveComparison` to apply conflict resolutions.
+
+## Install
+
+`plitejs/diff` requires `diff-match-patch-ts` as an optional peer dependency:
+
+```bash
+npm install plitejs diff-match-patch-ts
+```
+
+## Two-way comparison
+
+Pass `before`, `after`, and the editor's schema to `compare`:
+
+```ts
+import { compare } from "plitejs/diff";
+
+const comparison = await compare({
+  before: previousDocument,
+  after: nextDocument,
+  schema: editor.read.schema,
+});
+```
+
+Each returned `TwoWayComparison` contains:
+
+- `change`: the canonical `DocumentChange` from `before` to `after`.
+- `changes`: grouped `ComparedChange` entries with spans, effects, and evidence.
+- `diagnostics`: warnings or fallback notices such as `coarse-replacement` or `work-limit`.
+- `before` and `after`: fingerprinted `ComparisonSnapshot` values.
+
+Pass `projection: { before, after }` (`"accepted"` or `"proposed"`) when
+comparing documents that hold authored review marks, and pass `signal` to cancel
+long comparisons with an `AbortSignal`.
+
+To turn a `TwoWayComparison` into native pending suggestions on a live editor,
+pass it to `proposeAuthoredComparison` from [Authored Changes](/docs/plite/libraries/plite-authored#import-a-comparison).
+
+## Three-way comparison and resolution
+
+Pass `base`, `local`, `remote`, and `schema` to `compare` to get a
+`ThreeWayComparison`, then resolve conflicts with `resolveComparison`:
+
+```ts
+import { compare, resolveComparison } from "plitejs/diff";
+
+const comparison = await compare({
+  base,
+  local,
+  remote,
+  schema: editor.read.schema,
+});
+
+const result = await resolveComparison({
+  baseline: "local",
+  comparison,
+  resolutions: comparison.conflicts.map((conflict) => ({
+    choice: "local",
+    comparisonId: comparison.id,
+    conflictId: conflict.id,
+  })),
+});
+```
+
+`resolveComparison` validates each resolution's `comparisonId` and `conflictId`
+against the published comparison and returns a `ComparisonResolutionResult`
+without rematching the inputs.

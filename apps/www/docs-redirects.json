@@ -1,7 +1,11 @@
 {
   "/docs/plite/concepts/08-extensions": "/docs/plite/concepts/08-plugins",
-  "/docs/plite/general/docs-proof-map": "/docs/plite/general/contributing#plite-proof-lanes",
-  "/docs/plite/libraries/plite-history/history-extension-setup": "/docs/plite/libraries/plite-history/history-plugin-setup",
+  "/docs/plite/general/docs-proof-map": "/docs/plite/general/contributing",
+  "/docs/plite/libraries/plite-history/history": "/docs/plite/libraries/plite-history",
+  "/docs/plite/libraries/plite-history/history-editor": "/docs/plite/libraries/plite-history",
+  "/docs/plite/libraries/plite-history/history-extension-setup": "/docs/plite/libraries/plite-history",
+  "/docs/plite/libraries/plite-history/history-plugin-setup": "/docs/plite/libraries/plite-history",
+  "/docs/migration/plite-to-plate": "/docs/plite/to-plate",
   "/docs/forced-layout": "/docs/schema#require-a-title",
   "/docs/code-drawing": "/docs/code-block#diagrams",
   "/docs/components/code-drawing": "/docs/code-block#diagrams",

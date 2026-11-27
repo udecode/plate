@@ -1,5 +1,5 @@
 ---
-title: "Migration"
+title: "From Slate 0.x"
 description: "Move an upstream Slate 0.x editor to the Plite runtime without keeping compatibility aliases."
 ---
 
@@ -20,7 +20,7 @@ This guide walks through moving an upstream Slate 0.x editor to the Plite runtim
 Migrate when the runtime solves a real ownership problem in your editor. Do not
 migrate just to rename APIs.
 
-> Warning: this package set is a hard API cut. Do not migrate by keeping old helpers
+> Warning: `plitejs` is a hard API cut. Do not migrate by keeping old helpers
 > alive behind aliases. Move one surface at a time, keep the old editor working
 > until the new editor has matching behavior, and delete each old path as soon
 > as the replacement is verified.
@@ -84,17 +84,16 @@ into archaeology.
 
 ## Step 1: install the packages
 
-For the beta package set, install the core editor, DOM helpers, React
-renderer, and React peer packages.
+Install `plitejs` with React:
 
 ```text
 npm install plitejs react react-dom
 ```
 
-Install the optional packages only when your app imports them directly.
+Install optional peer dependencies only when your app imports the subpaths that need them:
 
 ```text
-npm install platejs @tanstack/react-virtual diff-match-patch-ts yjs
+npm install @chenglou/pretext @tanstack/react-virtual diff-match-patch-ts yjs
 ```
 
 Package ownership is split deliberately:
@@ -790,8 +789,8 @@ of view and the codebase no longer depends on old helper aliases.
 - [Transforms](api/transforms)
 - [Roots](concepts/13-roots)
 - [Document Meta](concepts/14-document-state)
-- [Plite React Hooks](libraries/plite-react/hooks)
-- [Plite React Event Handling](libraries/plite-react/event-handling)
-- [Plite History](libraries/plite-history/history-plugin-setup)
-- [Plite Hyperscript](libraries/plite-hyperscript)
-- [Plite Yjs](libraries/plite-yjs)
+- [Hooks](libraries/plite-react/hooks)
+- [Event Handling](libraries/plite-react/event-handling)
+- [History](libraries/plite-history)
+- [Hyperscript](libraries/plite-hyperscript)
+- [Yjs](libraries/plite-yjs)

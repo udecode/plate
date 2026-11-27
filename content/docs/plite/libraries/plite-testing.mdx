@@ -1,0 +1,60 @@
+---
+title: "Testing"
+description: "Headless fixture helpers, DataTransfer stubs, and browser-handle constants for Plite tests."
+---
+
+`plitejs/testing` provides headless test fixtures, `DataTransfer` helpers, and
+runtime inspection utilities for unit and browser tests.
+
+## Fixture editors
+
+Build a headless editor from a [Hyperscript](/docs/plite/libraries/plite-hyperscript)
+fixture with `createEditorFromFixture`:
+
+```tsx
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from "plitejs/hyperscript";
+import {
+  createEditorFromFixture,
+  projectTestSelectionRange,
+  type TestEditorFixture,
+} from "plitejs/testing";
+
+const fixture: TestEditorFixture = (
+  <editor>
+    <element type="paragraph">
+      hello
+      <cursor />
+    </element>
+  </editor>
+);
+
+const editor = createEditorFromFixture(fixture);
+const range = projectTestSelectionRange(editor.read.selection() ?? undefined);
+```
+
+`plitejs/testing` also re-exports `createEditor` and `createHyperscript` from
+`plitejs/hyperscript` for custom fixture tags.
+
+## DataTransfer and editor helpers
+
+Use `createDataTransfer` in unit tests that exercise clipboard or drop handlers:
+
+```ts
+import { createDataTransfer } from "plitejs/testing";
+
+const dataTransfer = createDataTransfer(
+  new Map([["text/plain", "pasted text"]])
+);
+```
+
+Additional exports for headless test assertions and browser harnesses:
+
+| Export | Purpose |
+| --- | --- |
+| `BROWSER_HANDLE_KEY` | Property key attached to mounted editables after `installBrowserHandle()`. |
+| `getEditorLiveSelection`, `setEditorFocused` | Inspect live selection state or toggle focus in headless tests. |
+| `after`, `before`, `end`, `move`, `positions`, `unhangRange` | Pure location helpers for test assertions. |
+| `insertText`, `insertBreak`, `deleteBackward`, `deleteForward`, `replace` | Direct fixture editing helpers. |
+| `getChildren`, `getSelection`, `getSnapshot`, `isBlock`, `isEditor`, `string` | Snapshot and node assertion helpers. |
