@@ -42,6 +42,12 @@ export type PlateCreateEditor = (typeof PLATE_CREATE_EDITORS)[number]['name'];
 
 export const PLATE_DEFAULT_CREATE_EDITOR: PlateCreateEditor = 'editor-ai';
 
+export const PLATE_CREATE_VIEWS = ['sink', 'editor'] as const;
+
+export type PlateCreateView = (typeof PLATE_CREATE_VIEWS)[number];
+
+export const PLATE_DEFAULT_CREATE_VIEW: PlateCreateView = 'sink';
+
 export const PLATE_CREATE_TEMPLATES = [
   { label: 'Next.js', value: 'next' },
   { label: 'Vite', value: 'vite' },
@@ -75,6 +81,7 @@ export type PlateCreateConfig = PresetConfig & {
   base: PlateRegistryBase;
   editor: PlateCreateEditor;
   rtl: boolean;
+  view: PlateCreateView;
 };
 
 type BaseColor = PresetConfig['baseColor'];
@@ -141,6 +148,7 @@ export function createPlateCreateConfig(
     base: PLATE_DEFAULT_REGISTRY_BASE,
     editor: PLATE_DEFAULT_CREATE_EDITOR,
     rtl: false,
+    view: PLATE_DEFAULT_CREATE_VIEW,
     ...config,
   });
 }
@@ -152,14 +160,23 @@ export function readPlateCreateConfig({
   editor,
   preset,
   rtl,
+  view,
 }: Record<string, unknown>): PlateCreateConfig {
+  const hasValidEditor =
+    typeof editor === 'string' && isPlateCreateEditor(editor);
+  const resolvedView: PlateCreateView =
+    typeof view === 'string' && isPlateCreateView(view)
+      ? view
+      : hasValidEditor
+        ? 'editor'
+        : PLATE_DEFAULT_CREATE_VIEW;
+
   return createPlateCreateConfig({
     ...(typeof preset === 'string' ? decodePreset(preset) : null),
     ...(typeof base === 'string' && isPlateCreateBase(base) ? { base } : null),
-    ...(typeof editor === 'string' && isPlateCreateEditor(editor)
-      ? { editor }
-      : null),
+    ...(hasValidEditor ? { editor } : null),
     ...(rtl === true || rtl === 'true' || rtl === '1' ? { rtl: true } : null),
+    view: resolvedView,
   });
 }
 
@@ -167,6 +184,7 @@ export function getPlateCreatePreset({
   base: _base,
   editor: _editor,
   rtl: _rtl,
+  view: _view,
   ...preset
 }: PlateCreateConfig) {
   return encodePreset(preset);
@@ -247,6 +265,9 @@ const getPlateCreateSearch = (config: PlateCreateConfig) => {
     preset: getPlateCreatePreset(config),
   });
 
+  if (config.view === 'sink') {
+    params.set('view', 'sink');
+  }
   if (config.rtl) {
     params.set('rtl', 'true');
   }
@@ -268,4 +289,8 @@ export function isPlateCreateEditor(value: string): value is PlateCreateEditor {
 
 export function isPlateCreateBase(value: string): value is PlateRegistryBase {
   return PLATE_REGISTRY_BASES.includes(value as PlateRegistryBase);
+}
+
+export function isPlateCreateView(value: string): value is PlateCreateView {
+  return PLATE_CREATE_VIEWS.includes(value as PlateCreateView);
 }

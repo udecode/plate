@@ -87,38 +87,89 @@ const isTextTarget = (target: EventTarget | null) =>
   target instanceof HTMLTextAreaElement ||
   target instanceof HTMLSelectElement;
 
+export type CreateShortcutAction =
+  | 'open-preset'
+  | 'randomize'
+  | 'redo'
+  | 'reset'
+  | 'toggle-theme'
+  | 'undo';
+
+const APPLE_PLATFORM_REGEX = /Mac|iPhone|iPad|iPod/;
+const emptySubscribe = () => () => {};
+
+function useIsMac() {
+  return React.useSyncExternalStore(
+    emptySubscribe,
+    () => APPLE_PLATFORM_REGEX.test(navigator.platform || navigator.userAgent),
+    () => false
+  );
+}
+
 export function useCreateActions({
   config,
   onPick,
+  onRedo,
+  onUndo,
+  shortcutRef,
 }: {
   config: PlateCreateConfig;
   onPick: (patch: Partial<PlateCreateConfig>) => void;
+  onRedo: () => void;
+  onUndo: () => void;
+  shortcutRef: React.RefObject<((action: CreateShortcutAction) => void) | null>;
 }) {
+  const { resolvedTheme, setTheme } = useTheme();
   const [presetOpen, setPresetOpen] = React.useState(false);
   const [resetOpen, setResetOpen] = React.useState(false);
   const randomize = () => onPick(shuffle(config));
+  const toggleTheme = () =>
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   const reset = () => {
     onPick(PLATE_DEFAULT_CREATE_CONFIG);
     setResetOpen(false);
   };
-  const onKeyDown = React.useEffectEvent((event: KeyboardEvent) => {
-    if (
-      event.metaKey ||
-      event.ctrlKey ||
-      event.altKey ||
-      isTextTarget(event.target)
-    ) {
-      return;
-    }
-    const key = event.key.toLowerCase();
-
-    if (key === 'o' && !event.shiftKey) {
+  const runAction = React.useEffectEvent((action: CreateShortcutAction) => {
+    if (action === 'open-preset') {
       setPresetOpen(true);
-    } else if (key === 'r' && !event.shiftKey) {
+    } else if (action === 'randomize') {
       randomize();
-    } else if (key === 'r') {
+    } else if (action === 'toggle-theme') {
+      toggleTheme();
+    } else if (action === 'undo') {
+      onUndo();
+    } else if (action === 'redo') {
+      onRedo();
+    } else if (action === 'reset') {
       if (resetOpen) reset();
       else setResetOpen(true);
+    }
+  });
+  const onKeyDown = React.useEffectEvent((event: KeyboardEvent) => {
+    if (isTextTarget(event.target)) return;
+
+    const key = event.key.toLowerCase();
+
+    if ((event.metaKey || event.ctrlKey) && !event.altKey) {
+      if ((key === 'z' && event.shiftKey) || (key === 'y' && event.ctrlKey)) {
+        event.preventDefault();
+        runAction('redo');
+      } else if (key === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        runAction('undo');
+      }
+
+      return;
+    }
+
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+    if (key === 'o' && !event.shiftKey) {
+      runAction('open-preset');
+    } else if (key === 'r' && !event.shiftKey) {
+      runAction('randomize');
+    } else if (key === 'r') {
+      runAction('reset');
     } else {
       return;
     }
@@ -128,10 +179,14 @@ export function useCreateActions({
   React.useEffect(() => {
     const down = (event: KeyboardEvent) => onKeyDown(event);
 
+    shortcutRef.current = (action) => runAction(action);
     document.addEventListener('keydown', down);
 
-    return () => document.removeEventListener('keydown', down);
-  }, []);
+    return () => {
+      shortcutRef.current = null;
+      document.removeEventListener('keydown', down);
+    };
+  }, [shortcutRef]);
 
   return {
     openPreset: (preset: string) => onPick(decodePreset(preset) ?? {}),
@@ -141,19 +196,30 @@ export function useCreateActions({
     resetOpen,
     setPresetOpen,
     setResetOpen,
+    toggleTheme,
   };
 }
 
 export function CreateMenu({
+  canRedo,
+  canUndo,
   onOpenPreset,
   onRandomize,
+  onRedo,
   onReset,
+  onToggleTheme,
+  onUndo,
 }: {
+  canRedo: boolean;
+  canUndo: boolean;
   onOpenPreset: () => void;
   onRandomize: () => void;
+  onRedo: () => void;
   onReset: () => void;
+  onToggleTheme: () => void;
+  onUndo: () => void;
 }) {
-  const { resolvedTheme, setTheme } = useTheme();
+  const isMac = useIsMac();
 
   return (
     <Picker>
@@ -180,16 +246,20 @@ export function CreateMenu({
           <PickerItem onClick={onRandomize}>
             Shuffle <PickerShortcut>R</PickerShortcut>
           </PickerItem>
-          <PickerItem
-            onClick={() =>
-              setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-            }
-          >
+          <PickerItem onClick={onToggleTheme}>
             Light/Dark <PickerShortcut>D</PickerShortcut>
           </PickerItem>
         </PickerGroup>
         <PickerSeparator />
         <PickerGroup>
+          <PickerItem disabled={!canUndo} onClick={onUndo}>
+            Undo <PickerShortcut>{isMac ? '⌘Z' : 'Ctrl+Z'}</PickerShortcut>
+          </PickerItem>
+          <PickerItem disabled={!canRedo} onClick={onRedo}>
+            Redo{' '}
+            <PickerShortcut>{isMac ? '⇧⌘Z' : 'Ctrl+Shift+Z'}</PickerShortcut>
+          </PickerItem>
+          <PickerSeparator />
           <PickerItem onClick={onReset}>
             Reset <PickerShortcut>⇧R</PickerShortcut>
           </PickerItem>

@@ -14,7 +14,18 @@ import type { PlateCreateTheme } from '@/lib/plate-create-theme';
 
 import { IconLibraryContext } from './icon-placeholder';
 
+const createSinkPages = {
+  base: React.lazy(() => import('./create-sink-base')),
+  radix: React.lazy(() => import('./create-sink-radix')),
+};
+
 type PreviewTheme = PlateCreateTheme & { preset: string };
+
+const isTextTarget = (target: EventTarget | null) =>
+  (target instanceof HTMLElement && target.isContentEditable) ||
+  target instanceof HTMLInputElement ||
+  target instanceof HTMLTextAreaElement ||
+  target instanceof HTMLSelectElement;
 
 const toDeclarations = (vars: Record<string, string>) =>
   Object.entries(vars)
@@ -61,9 +72,12 @@ export function CreatePreview({
   const [theme, setTheme] = React.useState(initialTheme);
   const [failedPreset, setFailedPreset] = React.useState<string | null>(null);
   const { base, editor } = initialConfig;
-  const { menuColor, rtl, style } = config;
+  const { menuColor, rtl, style, view } = config;
   const preset = getPlateCreatePreset(config);
-  const Page = createPreviewPages[`${base}/${editor}`];
+  const Page =
+    view === 'sink'
+      ? createSinkPages[base]
+      : createPreviewPages[`${base}/${editor}`];
 
   React.useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -77,7 +91,10 @@ export function CreatePreview({
       const next = readPlateCreateConfig(event.data);
       const path = getPlateCreatePreviewPath(next);
 
-      if (next.base !== base || next.editor !== editor) {
+      if (
+        next.base !== base ||
+        (next.view === 'editor' && next.editor !== editor)
+      ) {
         window.location.replace(path);
 
         return;
@@ -98,6 +115,49 @@ export function CreatePreview({
 
     return () => window.removeEventListener('message', onMessage);
   }, [base, editor]);
+
+  React.useEffect(() => {
+    if (window.parent === window) return undefined;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isTextTarget(event.target)) return;
+
+      const key = event.key.toLowerCase();
+      let action:
+        | 'open-preset'
+        | 'randomize'
+        | 'redo'
+        | 'reset'
+        | 'toggle-theme'
+        | 'undo'
+        | null = null;
+
+      if ((event.metaKey || event.ctrlKey) && !event.altKey) {
+        if ((key === 'z' && event.shiftKey) || (key === 'y' && event.ctrlKey)) {
+          action = 'redo';
+        } else if (key === 'z' && !event.shiftKey) {
+          action = 'undo';
+        }
+      } else if (!event.metaKey && !event.ctrlKey && !event.altKey) {
+        if (key === 'o' && !event.shiftKey) action = 'open-preset';
+        else if (key === 'r' && !event.shiftKey) action = 'randomize';
+        else if (key === 'r' && event.shiftKey) action = 'reset';
+        else if (key === 'd' && !event.shiftKey) action = 'toggle-theme';
+      }
+
+      if (!action) return;
+
+      event.preventDefault();
+      window.parent.postMessage(
+        { action, type: 'plate-create-shortcut' },
+        window.location.origin
+      );
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const themeFailed = failedPreset === preset;
 
@@ -188,6 +248,7 @@ export function CreatePreview({
         data-preview-editor={editor}
         data-preview-rtl={rtl ? 'true' : 'false'}
         data-preview-style={style}
+        data-preview-view={view}
         dir={rtl ? 'rtl' : 'ltr'}
       >
         {themeFailed && (

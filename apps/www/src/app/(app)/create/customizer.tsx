@@ -20,7 +20,6 @@ import {
   getPlateCreatePreset,
   getShadcnCreateUrl,
   isPlateCreateBase,
-  isPlateCreateEditor,
   PLATE_CREATE_EDITORS,
   PLATE_CREATE_PACKAGE_MANAGERS,
   PLATE_CREATE_TEMPLATES,
@@ -37,6 +36,7 @@ import { useMounted } from '@/registry/hooks/use-mounted';
 import {
   button,
   CreateMenu,
+  type CreateShortcutAction,
   OpenPreset,
   outlineButton,
   ResetDialog,
@@ -81,7 +81,7 @@ type PickerRow = {
 
 type OptionName = Exclude<
   keyof PlateCreateConfig,
-  'base' | 'chartColor' | 'editor' | 'menuColor' | 'rtl'
+  'base' | 'chartColor' | 'editor' | 'menuColor' | 'rtl' | 'view'
 >;
 
 const optionLabels: Partial<Record<string, Record<string, string>>> = {
@@ -178,26 +178,6 @@ function getPickerRows({
 
   return [
     [
-      {
-        groups: [
-          {
-            choices: PLATE_CREATE_EDITORS.map(({ name, title }) => ({
-              label: title,
-              value: name,
-            })),
-            patch: (value) =>
-              isPlateCreateEditor(value) ? { editor: value } : {},
-            value: config.editor,
-          },
-        ],
-        label: 'Editor',
-        name: 'editor',
-        previews: false,
-        sample: null,
-        value:
-          PLATE_CREATE_EDITORS.find(({ name }) => name === config.editor)
-            ?.title ?? config.editor,
-      },
       {
         groups: [
           {
@@ -314,15 +294,25 @@ const cardFooter =
   'flex min-w-0 items-center gap-2 rounded-b-xl border-t bg-muted/50 p-3 md:flex-col md:**:[button,a]:w-full';
 
 export function Customizer({
+  canRedo,
+  canUndo,
   config,
   onPick,
   onPreview,
   onPreviewEnd,
+  onRedo,
+  onUndo,
+  shortcutRef,
 }: {
+  canRedo: boolean;
+  canUndo: boolean;
   config: PlateCreateConfig;
   onPick: (patch: CreatePatch) => void;
   onPreview: (patch: CreatePatch) => void;
   onPreviewEnd: () => void;
+  onRedo: () => void;
+  onUndo: () => void;
+  shortcutRef: React.RefObject<((action: CreateShortcutAction) => void) | null>;
 }) {
   const isMobile = useIsMobile();
   const anchorRef = React.useRef<HTMLDivElement>(null);
@@ -331,7 +321,13 @@ export function Customizer({
   const theme = useSampleTheme(config);
   const sections = getPickerRows({ config, siteDark, theme });
   const lastRow = sections.at(-1)?.at(-1);
-  const actions = useCreateActions({ config, onPick });
+  const actions = useCreateActions({
+    config,
+    onPick,
+    onRedo,
+    onUndo,
+    shortcutRef,
+  });
 
   return (
     <div
@@ -355,9 +351,14 @@ export function Customizer({
         data-slot="card-header"
       >
         <CreateMenu
+          canRedo={canRedo}
+          canUndo={canUndo}
           onOpenPreset={() => actions.setPresetOpen(true)}
           onRandomize={actions.randomize}
+          onRedo={onRedo}
           onReset={() => actions.setResetOpen(true)}
+          onToggleTheme={actions.toggleTheme}
+          onUndo={onUndo}
         />
       </div>
       <div
@@ -502,7 +503,7 @@ export function Customizer({
         className={cn(cardFooter, '-mt-3 hidden md:flex')}
         data-slot="card-footer"
       >
-        <GetCode config={config} />
+        <GetCode config={config} onPick={onPick} />
       </div>
     </div>
   );
@@ -557,7 +558,13 @@ function CopyButton({
   );
 }
 
-function GetCode({ config }: { config: PlateCreateConfig }) {
+function GetCode({
+  config,
+  onPick,
+}: {
+  config: PlateCreateConfig;
+  onPick: (patch: CreatePatch) => void;
+}) {
   const [mode, setMode] = React.useState<'add' | 'create'>('create');
   const [packageManager, setPackageManager] =
     React.useState<PlateCreatePackageManager>('npm');
@@ -593,32 +600,53 @@ function GetCode({ config }: { config: PlateCreateConfig }) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3">
-          <div
-            className="inline-flex w-fit items-center gap-1 rounded-lg bg-muted p-1 text-xs"
-            role="tablist"
-          >
-            {(
-              [
-                { label: 'New Project', value: 'create' },
-                { label: 'Existing App', value: 'add' },
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab.value}
-                aria-selected={mode === tab.value}
-                className={cn(
-                  'rounded-md px-2.5 py-1 font-medium transition-colors',
-                  mode === tab.value
-                    ? 'bg-background text-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-                onClick={() => setMode(tab.value)}
-                role="tab"
-                type="button"
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div
+              className="inline-flex w-fit items-center gap-1 rounded-lg bg-muted p-1 text-xs"
+              role="tablist"
+            >
+              {(
+                [
+                  { label: 'New Project', value: 'create' },
+                  { label: 'Existing App', value: 'add' },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.value}
+                  aria-selected={mode === tab.value}
+                  className={cn(
+                    'rounded-md px-2.5 py-1 font-medium transition-colors',
+                    mode === tab.value
+                      ? 'bg-background text-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  onClick={() => setMode(tab.value)}
+                  role="tab"
+                  type="button"
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-1 text-xs">
+              {PLATE_CREATE_EDITORS.map((item) => (
+                <button
+                  key={item.name}
+                  aria-pressed={config.editor === item.name}
+                  className={cn(
+                    'rounded-md border px-2 py-1 font-medium transition-colors',
+                    config.editor === item.name
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                  )}
+                  onClick={() => onPick({ editor: item.name })}
+                  type="button"
+                >
+                  {item.title}
+                </button>
+              ))}
+            </div>
           </div>
 
           {mode === 'create' && (
