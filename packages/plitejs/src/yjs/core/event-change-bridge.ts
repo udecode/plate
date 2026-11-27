@@ -1120,6 +1120,17 @@ const mergeTokenLengthNodes = (
   return updateTokenLengthNode(right);
 };
 
+type PeeledElement = Readonly<{
+  node: YjsNode | null;
+  path: readonly number[];
+  previous: Element;
+}>;
+
+type PendingPeels = Readonly<{
+  document: DocumentIndex;
+  unwritten: Map<Y.XmlElement, PeeledElement>;
+}>;
+
 const splitTokenLengthNodes = (
   root: TokenLengthNode | null,
   count: number
@@ -2817,6 +2828,14 @@ export class YjsEventChangeBridge {
     }));
 
     const middleNodes = middle.nodes as NodeList<Descendant>;
+    const peeled: PendingPeels = {
+      document: middle,
+      unwritten: new Map(
+        elements.flatMap((element) =>
+          element.node instanceof Y.XmlElement ? [[element.node, element]] : []
+        )
+      ),
+    };
 
     this.setMirror(middleNodes);
     this.advanceLetters(expected, [split.inner], middle);
@@ -2825,7 +2844,8 @@ export class YjsEventChangeBridge {
       write,
       createInternalDocumentChange(new Map([[this.rootKey, split.outer]])),
       expected,
-      () => ({ after: indexes().after, before: middle })
+      () => ({ after: indexes().after, before: middle }),
+      peeled
     );
 
     // A rest that falls back before writing leaves the room as the mirror
@@ -2835,7 +2855,7 @@ export class YjsEventChangeBridge {
     if (rest.lowered.kind !== 'lowered' && this.mirror === middleNodes) {
       this.setMirror(mirror);
     } else {
-      this.lowerPeeledProperties(elements, middle);
+      this.lowerPeeledProperties([...peeled.unwritten.values()], middle);
     }
 
     return rest;
@@ -2846,13 +2866,7 @@ export class YjsEventChangeBridge {
    * the commit kept. One the rest wrote anew already carries them.
    */
   private lowerPeeledProperties(
-    elements: ReadonlyArray<
-      Readonly<{
-        node: YjsNode | null;
-        path: readonly number[];
-        previous: Element;
-      }>
-    >,
+    elements: readonly PeeledElement[],
     document: DocumentIndex
   ): void {
     for (const { node, path, previous } of elements) {
@@ -3048,7 +3062,8 @@ export class YjsEventChangeBridge {
     write: YjsWrite,
     change: DocumentChange,
     expected: NodeList<Descendant>,
-    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>,
+    peeled?: PendingPeels
   ): MirrorLowering {
     const joined = this.lowerJoins(
       write,
@@ -3075,7 +3090,12 @@ export class YjsEventChangeBridge {
       };
     }
 
-    const split = this.lowerSplits(write, afterJoins.change, afterJoins.before);
+    const split = this.lowerSplits(
+      write,
+      afterJoins.change,
+      afterJoins.before,
+      peeled
+    );
     const rest = split
       ? split.rest && { change: split.rest, before: split.middle }
       : afterJoins;
@@ -3333,7 +3353,8 @@ export class YjsEventChangeBridge {
   private lowerSplits(
     write: YjsWrite,
     change: DocumentChange,
-    before: DocumentIndex
+    before: DocumentIndex,
+    peeled?: PendingPeels
   ): Readonly<{
     /** The changes that turn `before` into `middle`. */
     changes: readonly RootChange[];
@@ -3393,6 +3414,17 @@ export class YjsEventChangeBridge {
       if (top === undefined || wrote === null) {
         if (index === 0) return null;
         break;
+      }
+
+      // A one-level split that leaves the line above empty keeps the line's
+      // Yjs element for its right half, which copies the line's props, so
+      // that element takes the line's peeled props before the rest writes
+      // the right half's own.
+      const kept = peeled?.unwritten.get(wrote[1]);
+
+      if (peeled && kept) {
+        this.lowerPeeledProperties([kept], peeled.document);
+        peeled.unwritten.delete(wrote[1]);
       }
 
       writtenLines.push(...wrote);
