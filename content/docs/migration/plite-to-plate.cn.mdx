@@ -3,11 +3,37 @@ title: 从 Plite 迁移到 Plate
 description: 学习如何从 Plite 迁移到 Plate。
 ---
 
-Plate 构建于 Plite 之上，因此从纯 Plite 实现迁移到 Plate 相对简单。本指南将帮助您将基于 Plite 的编辑器过渡到 Plate。
+Plate 保留 Plite 的文档模型，并将编辑器配置、渲染、事件和命令移入插件。先运行自动化 codemod 重写导入、基础组件和安全的插件选项，再把自定义渲染和行为迁移到插件中。
 
-## 1. 安装 Plate
+## 自动化 Codemod
 
-首先，安装必要的 Plate 包。如果您是 Plate 的新用户，可以先阅读[介绍](/docs/installation)了解库的概况。
+先预览源码目录中的改动，不写入文件：
+
+```bash
+npx @platejs/cli@beta codemod plite-to-plate ./src --dry --print
+```
+
+应用迁移：
+
+```bash
+npx @platejs/cli@beta codemod plite-to-plate ./src
+```
+
+在 Plate v2 处于 `beta` 阶段期间，请使用 `@platejs/cli@beta`。该 codemod 会：
+
+- 将 `plitejs` 和 `plitejs/*` 导入重写为 `platejs` 和 `platejs/*`，合并到已有的 `platejs` 导入并保留类型导入与别名。
+- 重命名 `Editable`、`PagedEditable`、`VirtualizedEditable`、`useEditorContext`、`useOptionalEditorContext`、`ReactPlugin` 以及选择器选项类型。
+- 将安全的 `DOMEditor.*` 和 `DOMEditor.clipboard.*` 调用重写为 `editor.api.dom.*` 和 `editor.api.dom.clipboard.*`。
+- 将无参 `history()`、静态 `history({ enabled, maxDepth, newBatchDelay })`、React 中的 `dom({ clipboardFormatKey })`、静态 `authored({ authorId })` 以及 `authoredRecords` 转换为 Plate 选项和插件。
+- 当 `<EditorRoot>` 没有观察者或展开属性时，将 `root` 移动到唯一直接子元素 `<EditorContent>` 上。
+- 向 `package.json` 添加 `platejs`，并在整个包内不再存在任何 `plitejs` 导入后移除 `plitejs`。
+- 对 `renderElement`、`renderLeaf`、`defineEditorSchema`、`<EditorRoot decorations>` 和 Plite 专用 hook 等手动步骤插入 `TODO(plate-codemod:...)` 注释并输出诊断信息。
+
+常用参数：`--dry`、`--print`、`--force`（跳过 git 工作区干净检查）、`--no-install` 和 `--no-package-json`。将自定义 schema 转为 Plate 插件后，运行 `npx @platejs/cli@beta generate` 生成精确的编辑器类型。
+
+## 1. 手动安装 Plate
+
+如果不使用 codemod，请直接安装 `platejs`。如果您是 Plate 的新用户，可以先阅读[介绍](/docs/installation)了解库的概况。
 
 ```bash
 npm install platejs
@@ -269,8 +295,7 @@ const editor = useCreateEditor({
 | 来自 `plitejs/pagination/react` 的 `PagedEditable` | 来自 `platejs/pagination/react` 的 `PagedEditorContent` | 渲染属性移到插件组件中，与 `EditorContent` 相同。 |
 | 来自 `plitejs/react/virtualized` 的 `VirtualizedEditable` | 来自 `platejs/react/virtualized` 的 `VirtualizedEditorContent` | 渲染属性移到插件组件中，与 `EditorContent` 相同。 |
 | `EditorPlaceholder` | `EditorContent` 的 `placeholder`，空块使用 `BlockPlaceholderPlugin` | Plate 没有 `renderPlaceholder`。 |
-| `EditorRoot` | `EditorRoot` | `onValueChange` 收到完整的文档值 `{ children, ... }`，而不是子节点数组。Plate 的 `EditorRoot` 没有 `authorId`、`decorations`、`document` 或 `root` 属性。把 `userId` 传给 `createEditor`，通过插件的 `decorate` 装饰，并在 `EditorContent` 上设置 `root`。要渲染另一份文档，用 `createEditor({ initialValue })` 为它创建一个编辑器。 |
-| `EditorElement`、`EditorLeaf`、`EditorText` | `EditorElement`、`EditorLeaf`、`EditorText` | Plate 的版本接收插件组件得到的属性，需要展开传入：`<EditorElement {...props}>`。Plite 的版本从上下文读取节点。 |
+| `EditorRoot` | `EditorRoot` | Plate 的 `EditorRoot` 没有 `decorations` 或 `root` 属性。请通过插件的 `decorate` 添加装饰，并在 `EditorContent` 上设置 `root`。 |
 | `EditorReadOnlyProvider` | `EditorRoot` 或 `EditorContent` 上的 `readOnly` | |
 | `useClaimEditableDOMCommit`、`setDOMTextSyncRendererCapability`、`setRetainedTextFlowRendererCapability` | 无 | Plate 的渲染器会为每个插件组件调用它们。 |
 
@@ -302,8 +327,7 @@ const editor = useCreateEditor({
 | `CreateEditorOptions` | 来自 `platejs` 或 `platejs/react` 的 `CreateEditorOptions` | 接受 Plate 插件与选项；`platejs/react` 的版本额外支持 `clipboardFormatKey`。 |
 | `EditorSelectorOptions`、`EditorStateSelectorOptions`、`EditorRuntimeSelectorOptions` | `UseEditorSelectorOptions`、`UseEditorStateOptions` | |
 | `UseStateFieldValueOptions` | 来自 `platejs/react` 的 `UseStateFieldValueOptions` | Plate 的 `UseStateFieldValueOptions` 省略了 Plite 的 `deferred` 选项。 |
-| `EditorRootProps`、`CommitContext`、`SelectionChangeContext`、`ValueChangeContext` | 同名 | `CommitContext`、`SelectionChangeContext` 和 `ValueChangeContext` 中的 `editor` 为 Plate 的 `Editor`，`value` 是完整的文档值。 |
-| 来自 `plitejs/react` 的 `NodeProps` | 来自 `platejs` 的 `NodeProps` | 来自 `platejs/react` 的 `NodeProps` 描述插件注入节点的属性。 |
+| `EditorRootProps`、`CommitContext`、`SelectionChangeContext`、`ValueChangeContext` | 同名 | `CommitContext`、`SelectionChangeContext` 和 `ValueChangeContext` 中的 `editor` 为 Plate 的 `Editor`。 |
 | `Editor`、`Plugin`、`DefinitionOf`、`PluginPortal`、`PluginReference`、`BlockInsertOptions` | 同名 | Plate 的版本使用 Plate 的插件和编辑器类型参数；Plite 的状态字段或原生 Plite 插件可传入 `createEditor({ plugins })`，但不满足 Plate 自身的 `PluginReference` 或 `PluginPortal`。 |
 | `TransferPlugin` 类型 | `typeof TransferPlugin` | Plate 的 `TransferPlugin` 是核心插件值。 |
 | `ReactPlugin` | `RuntimeReactPlugin` | |
