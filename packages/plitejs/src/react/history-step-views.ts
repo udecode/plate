@@ -1,20 +1,40 @@
 import {
   defineUpdateAnnotation,
+  type Descendant,
   type EditorCommit,
+  type Element,
   ElementApi,
   type NodeKey,
+  type Path,
+  RangeApi,
   type RootKey,
+  type Selection,
+  SelectionApi,
+  TextApi,
 } from '..';
+import { getInternalDocumentChangeRootKeys } from '../core/change/document-change';
+import { getEditorCommitSnapshot } from '../core/commit';
 import {
   type EditorRuntimeCarrier,
   getEditorRuntime,
   getEditorRuntimeOwner,
 } from '../core/editor-runtime';
+import { toPublicRoot } from '../core/public-root';
 import {
   type EditorHistoryEdge,
+  getEditorDocumentRoots,
+  getEditorDocumentValue,
+  getLiveNode,
+  getNodeKey,
+  getPathByNodeKey,
   readEditorCommitHistoryEntry,
+  withEditorRootChildren,
 } from '../core/public-state';
 import { readRootContentTarget } from '../core/root-target';
+import {
+  isValidEditorSelection,
+  withLandedMarks,
+} from '../core/selection-protocol';
 import { containsShadowAware } from '../dom';
 import { findEditorDOMRootRuntime } from '../dom/internal';
 import { focusedElementOnPage } from '../dom/plugin/dom-root-runtime';
@@ -28,7 +48,11 @@ export const projectedHistoryRange = defineUpdateAnnotation<PliteViewSelection>(
   { key: 'react.projected-history-range' }
 );
 
-export type HistoryStepHop = Readonly<{ owner: string; slot: string }>;
+export type HistoryStepHop = Readonly<{
+  owner: string;
+  root: RootKey;
+  slot: string;
+}>;
 
 /**
  * A view as model keys under the page that renders it, so the address
@@ -42,6 +66,7 @@ export type HistoryStepSite = Readonly<{
 
 export type HistoryStepSites = Readonly<{
   after: HistoryStepSite | null;
+  afterSelection?: NonNullable<Selection> | null;
   before: HistoryStepSite | null;
 }>;
 
@@ -61,12 +86,18 @@ export type HistoryStepPlace = Readonly<{
 
 export type HistoryStepTarget =
   | Readonly<{ focusOwned: boolean; kind: 'mounted'; pane: EditableDOMRuntime }>
-  | Readonly<{ focusOwned: boolean; kind: 'rebinding' }>
+  | Readonly<{
+      focusOwned: boolean;
+      kind: 'rebinding';
+      pane: EditableDOMRuntime;
+    }>
   | null;
 
 type ViewKey = object;
 
 type HistoryStepViews = Readonly<{
+  paneListeners: Set<() => void>;
+  paneNotify: { pending: boolean };
   panes: Map<ViewKey, Set<EditableDOMRuntime>>;
   records: WeakMap<object, HistoryStepSites>;
   roots: WeakMap<ViewKey, RootKey>;
@@ -154,7 +185,7 @@ const placeOf = (
       : null;
   }
 
-  const hop = { owner: slot.owner, slot: slot.slot };
+  const hop = { owner: slot.owner, root, slot: slot.slot };
 
   if (!views.slots.has(keyOf(slot.parent))) {
     return slot.renderedBy
@@ -185,57 +216,148 @@ const placeOf = (
     : null;
 };
 
-const isAt = (place: HistoryStepPlace, site: HistoryStepSite) =>
+const matchesPrefix = (
+  place: HistoryStepPlace,
+  site: HistoryStepSite,
+  count: number
+) =>
   place.site.page === site.page &&
-  place.site.hops.length === site.hops.length &&
+  place.site.hops.length === count &&
   place.site.hops.every(
     (hop, index) =>
       hop.owner === site.hops[index]?.owner &&
-      hop.slot === site.hops[index]?.slot
+      hop.slot === site.hops[index]?.slot &&
+      (index === count - 1 || hop.root === site.hops[index]?.root)
   );
+
+const readChildRoot = (node: unknown, slot: string): RootKey | null => {
+  const childRoots =
+    node && ElementApi.isElement(node) ? node.childRoots : null;
+  const bound =
+    typeof childRoots === 'object' && childRoots !== null
+      ? Reflect.get(childRoots, slot)
+      : null;
+
+  return typeof bound === 'string' ? bound : null;
+};
 
 const slotBindsRoot = (slot: HistoryStepSlot, root: RootKey) => {
   const [owner] = slot.parent.read.nodes.get(slot.owner as NodeKey) ?? [];
-  const childRoots = owner && ElementApi.isElement(owner) && owner.childRoots;
 
-  return (
-    typeof childRoots === 'object' &&
-    childRoots !== null &&
-    Reflect.get(childRoots, slot.slot) === root
-  );
+  return readChildRoot(owner, slot.slot) === root;
 };
 
 const viewsAt = (views: HistoryStepViews, site: HistoryStepSite) => {
-  const last = site.hops.at(-1);
   const atSite: Array<NonNullable<HistoryStepTarget>> = [];
-  let rebinding: HistoryStepTarget = null;
+  let rebindingPane: EditableDOMRuntime | null = null;
+  let rebindingCount = 0;
+  let rebindingFocusOwned = false;
+  const depth = site.hops.length;
 
   for (const panes of views.panes.values()) {
     for (const pane of panes) {
       const slot = views.slots.get(keyOf(pane.editor));
 
-      if (
-        last
-          ? slot?.owner !== last.owner || slot.slot !== last.slot
-          : slot !== undefined
+      if (depth === 0) {
+        if (slot !== undefined) continue;
+      } else if (
+        !slot ||
+        !site.hops.some(
+          (hop) => hop.owner === slot.owner && hop.slot === slot.slot
+        )
       ) {
         continue;
       }
 
       const place = placeOf(views, pane.editor, pane);
 
-      if (!place?.page.connected || !pane.connected || !isAt(place, site)) {
-        continue;
-      }
-      if (place.site.root === site.root) {
+      if (!place?.page.connected || !pane.connected) continue;
+
+      const placeDepth = place.site.hops.length;
+
+      if (
+        placeDepth === depth &&
+        matchesPrefix(place, site, depth) &&
+        place.site.root === site.root
+      ) {
         atSite.push({ focusOwned: place.focusOwned, kind: 'mounted', pane });
-      } else if (slot && slotBindsRoot(slot, site.root)) {
-        rebinding = { focusOwned: place.focusOwned, kind: 'rebinding' };
+      } else if (
+        slot &&
+        placeDepth > 0 &&
+        placeDepth <= depth &&
+        matchesPrefix(place, site, placeDepth)
+      ) {
+        const targetRoot = site.hops[placeDepth - 1]?.root;
+
+        if (
+          targetRoot !== undefined &&
+          place.site.root !== targetRoot &&
+          slotBindsRoot(slot, targetRoot)
+        ) {
+          rebindingPane ??= pane;
+          rebindingCount += 1;
+          rebindingFocusOwned ||= place.focusOwned;
+        }
       }
     }
   }
 
-  return { atSite, rebinding };
+  return {
+    atSite,
+    rebinding:
+      rebindingCount === 1 && rebindingPane
+        ? ({
+            focusOwned: rebindingFocusOwned,
+            kind: 'rebinding',
+            pane: rebindingPane,
+          } as const)
+        : null,
+  };
+};
+
+const isSiteBound = (
+  views: HistoryStepViews,
+  runtime: Editor,
+  site: HistoryStepSite
+) => {
+  if (site.hops.length === 0) return false;
+
+  const pageRoot = pageRootOf(views, site.page);
+
+  if (pageRoot === undefined || viewsAt(views, site).atSite.length > 1) {
+    return false;
+  }
+
+  for (const panes of views.panes.values()) {
+    for (const pane of panes) {
+      if (!pane.connected) continue;
+
+      const place = placeOf(views, pane.editor, pane);
+
+      if (
+        place?.focusOwned &&
+        place.site.hops.length > 0 &&
+        place.site.hops.length <= site.hops.length &&
+        matchesPrefix(place, site, place.site.hops.length)
+      ) {
+        return false;
+      }
+    }
+  }
+
+  const owner = getEditorRuntimeOwner(runtime);
+  let currentRoot = pageRoot;
+
+  for (const hop of site.hops) {
+    const entry = readNodeEntryInRoot(owner, currentRoot, hop.owner as NodeKey);
+
+    if (!entry || readChildRoot(entry.node, hop.slot) !== hop.root) {
+      return false;
+    }
+    currentRoot = hop.root;
+  }
+
+  return true;
 };
 
 const rendersAtMostOnce = (views: HistoryStepViews, site: HistoryStepSite) =>
@@ -251,6 +373,305 @@ const resolve = (
   return atSite.length === 1 ? atSite[0] : null;
 };
 
+const nodeAtPath = (
+  children: readonly Descendant[] | undefined,
+  path: Path
+): Descendant | undefined => {
+  let node: Descendant | undefined;
+  let nodes = children;
+
+  for (const index of path) {
+    node = nodes?.[index];
+    nodes = node && ElementApi.isElement(node) ? node.children : undefined;
+  }
+
+  return node;
+};
+
+const readNodeEntryInRoot = (
+  owner: Editor,
+  root: RootKey,
+  at: NodeKey | Path
+): Readonly<{ key: NodeKey; node: Element; path: Path }> | null => {
+  if (!Object.hasOwn(getEditorDocumentRoots(owner), root)) return null;
+
+  return withEditorRootChildren(owner, root, () => {
+    const path = typeof at === 'string' ? getPathByNodeKey(owner, at) : at;
+
+    if (!path) return null;
+
+    const node = getLiveNode(owner, path);
+    const key = typeof at === 'string' ? at : getNodeKey(owner, path);
+
+    return key && node && ElementApi.isElement(node)
+      ? { key, node, path }
+      : null;
+  });
+};
+
+const sameNodeKind = (left: Descendant, right: Descendant) =>
+  ElementApi.isElement(left)
+    ? ElementApi.isElement(right) && left.type === right.type
+    : TextApi.isText(right);
+
+const samePathSiblingShape = (
+  beforeChildren: readonly Descendant[],
+  afterChildren: readonly Descendant[],
+  path: Path
+) => {
+  let beforeNodes: readonly Descendant[] | undefined = beforeChildren;
+  let afterNodes: readonly Descendant[] | undefined = afterChildren;
+
+  for (const index of path) {
+    if (
+      !beforeNodes ||
+      !afterNodes ||
+      beforeNodes.length !== afterNodes.length
+    ) {
+      return false;
+    }
+
+    for (let i = 0; i < beforeNodes.length; i += 1) {
+      const left = beforeNodes[i];
+      const right = afterNodes[i];
+
+      if (!left || !right || !sameNodeKind(left, right)) return false;
+    }
+
+    const beforeNext: Descendant | undefined = beforeNodes[index];
+    const afterNext: Descendant | undefined = afterNodes[index];
+
+    beforeNodes =
+      beforeNext && ElementApi.isElement(beforeNext)
+        ? beforeNext.children
+        : undefined;
+    afterNodes =
+      afterNext && ElementApi.isElement(afterNext)
+        ? afterNext.children
+        : undefined;
+  }
+
+  return true;
+};
+
+const readBeforeNodeInRoot = (
+  commit: EditorCommit,
+  root: RootKey,
+  key: NodeKey
+): Readonly<{
+  children: readonly Descendant[];
+  node: Element;
+  path: Path;
+}> | null => {
+  const snapshot = getEditorCommitSnapshot(commit, root, 'before');
+  const path = snapshot.index.pathOf(key);
+  const node = path ? nodeAtPath(snapshot.children, path) : undefined;
+
+  return path && node && ElementApi.isElement(node)
+    ? { children: snapshot.children, node, path }
+    : null;
+};
+
+const retargetSelectionInRoot = (
+  owner: Editor,
+  targetRoot: RootKey,
+  selection: NonNullable<Selection>
+): NonNullable<Selection> | null => {
+  if (!Object.hasOwn(getEditorDocumentRoots(owner), targetRoot)) return null;
+
+  const publicRoot = toPublicRoot(targetRoot);
+  let candidate: NonNullable<Selection> | null = null;
+
+  withEditorRootChildren(owner, targetRoot, () => {
+    if (SelectionApi.isNode(selection)) {
+      if (
+        selection.paths.length === 0 ||
+        !selection.paths.every((path) => getLiveNode(owner, path)) ||
+        !getLiveNode(owner, selection.anchorPath) ||
+        !getLiveNode(owner, selection.focusPath)
+      ) {
+        return;
+      }
+
+      candidate = SelectionApi.nodes(selection.paths, {
+        anchorPath: selection.anchorPath,
+        focusPath: selection.focusPath,
+        mode: selection.mode,
+        ...(publicRoot ? { root: publicRoot } : {}),
+      });
+      return;
+    }
+    if (!RangeApi.isRange(selection)) return;
+
+    const retargetPoint = (point: typeof selection.anchor) => {
+      const node = getLiveNode(owner, point.path);
+
+      return node && TextApi.isText(node) && point.offset <= node.text.length
+        ? {
+            offset: point.offset,
+            path: point.path,
+            ...(publicRoot ? { root: publicRoot } : {}),
+          }
+        : null;
+    };
+    const anchor = retargetPoint(selection.anchor);
+    const focus = retargetPoint(selection.focus);
+
+    if (!anchor || !focus) return;
+
+    const raw = {
+      anchor,
+      focus,
+      kind: 'text' as const,
+      ...(selection.affinity ? { affinity: selection.affinity } : {}),
+      ...(selection.marks ? { marks: selection.marks } : {}),
+    };
+
+    candidate =
+      SelectionApi.isText(raw) && raw.marks
+        ? withLandedMarks(owner, raw, getEditorDocumentValue(owner), targetRoot)
+        : raw;
+  });
+
+  return candidate && isValidEditorSelection(owner, candidate)
+    ? candidate
+    : null;
+};
+
+const pageRootOf = (
+  views: HistoryStepViews,
+  page: symbol
+): RootKey | undefined => {
+  for (const panes of views.panes.values()) {
+    for (const pane of panes) {
+      if (pane.historyStepPage === page) {
+        return views.roots.get(keyOf(pane.editor));
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const followSiteAfterCommit = (
+  runtime: Editor,
+  commit: EditorCommit,
+  before: HistoryStepSite,
+  pageRoot: RootKey,
+  afterEdge: EditorHistoryEdge
+): Readonly<{
+  selection: NonNullable<Selection> | null;
+  site: HistoryStepSite;
+}> | null => {
+  if (!afterEdge.selection || before.hops.length === 0) return null;
+
+  const owner = getEditorRuntimeOwner(runtime);
+  const afterRoot = afterEdge.root ?? MAIN_ROOT_KEY;
+  const createdRoots = new Set<RootKey>(commit.changes.createRoots);
+  const changedRoots = new Set<RootKey>(
+    getInternalDocumentChangeRootKeys(commit.changes)
+  );
+  let oldRoot = pageRoot;
+  let currentRoot = pageRoot;
+  let rebound = false;
+  const nextHops: HistoryStepHop[] = [];
+
+  for (let index = 0; index < before.hops.length; index += 1) {
+    const hop = before.hops[index];
+    const isLast = index === before.hops.length - 1;
+
+    if (currentRoot === oldRoot && !changedRoots.has(currentRoot)) {
+      nextHops.push(hop);
+      oldRoot = hop.root;
+      currentRoot = hop.root;
+      continue;
+    }
+
+    let nextHop: HistoryStepHop | null = null;
+
+    if (currentRoot === oldRoot) {
+      const entry = readNodeEntryInRoot(
+        owner,
+        currentRoot,
+        hop.owner as NodeKey
+      );
+      const nextRoot = entry ? readChildRoot(entry.node, hop.slot) : null;
+
+      if (entry && nextRoot) {
+        nextHop = { owner: entry.key, root: nextRoot, slot: hop.slot };
+      }
+    } else {
+      const oldEntry = readBeforeNodeInRoot(
+        commit,
+        oldRoot,
+        hop.owner as NodeKey
+      );
+      const afterChildren = getEditorDocumentRoots(owner)[currentRoot];
+      const byPath =
+        oldEntry &&
+        afterChildren &&
+        samePathSiblingShape(oldEntry.children, afterChildren, oldEntry.path)
+          ? readNodeEntryInRoot(owner, currentRoot, oldEntry.path)
+          : null;
+      const byPathRoot =
+        byPath && byPath.node.type === oldEntry?.node.type
+          ? readChildRoot(byPath.node, hop.slot)
+          : null;
+
+      if (
+        byPath &&
+        byPathRoot &&
+        (byPathRoot === hop.root ||
+          createdRoots.has(byPathRoot) ||
+          (isLast && byPathRoot === afterRoot)) &&
+        (!isLast || afterRoot === before.root || byPathRoot === afterRoot)
+      ) {
+        nextHop = { owner: byPath.key, root: byPathRoot, slot: hop.slot };
+      }
+    }
+
+    if (!nextHop) return null;
+    if (nextHop.root !== hop.root) rebound = true;
+    nextHops.push(nextHop);
+    if (rebound && nextHop.root === afterRoot && afterRoot !== before.root) {
+      return {
+        selection: null,
+        site: { hops: nextHops, page: before.page, root: afterRoot },
+      };
+    }
+    oldRoot = hop.root;
+    currentRoot = nextHop.root;
+  }
+
+  if (!rebound) return null;
+  if (currentRoot === afterRoot) {
+    return {
+      selection: null,
+      site: { hops: nextHops, page: before.page, root: afterRoot },
+    };
+  }
+  if (
+    afterRoot === before.root &&
+    createdRoots.has(currentRoot) &&
+    !commit.changed.hasAny('selection')
+  ) {
+    const selection = retargetSelectionInRoot(
+      owner,
+      currentRoot,
+      afterEdge.selection
+    );
+
+    if (selection) {
+      return {
+        selection,
+        site: { hops: nextHops, page: before.page, root: currentRoot },
+      };
+    }
+  }
+
+  return null;
+};
+
 const recordCommit = (
   runtime: Editor,
   views: HistoryStepViews,
@@ -262,7 +683,7 @@ const recordCommit = (
 
   const spansViews =
     commit.annotations[projectedHistoryRange.key] !== undefined;
-  const siteOf = ({ root: named, selection }: EditorHistoryEdge) => {
+  const placeOfEdge = ({ root: named, selection }: EditorHistoryEdge) => {
     if (!selection || spansViews) return null;
 
     const root = named ?? MAIN_ROOT_KEY;
@@ -276,22 +697,88 @@ const recordCommit = (
             root
           )?.view;
 
-    const site = target ? (placeOf(views, target, null)?.site ?? null) : null;
+    const place = target ? placeOf(views, target, null) : null;
 
-    return site && rendersAtMostOnce(views, site) ? site : null;
+    return place && rendersAtMostOnce(views, place.site) ? place : null;
   };
-  const after = siteOf(step.after);
 
-  if (step.how === 'push') {
-    views.records.set(step.entry, { after, before: siteOf(step.before) });
+  if (step.how === 'merge') {
+    const previous = views.records.get(step.entry);
+
+    if (!previous) return;
+    if (previous.after && !spansViews) {
+      const pageRoot = pageRootOf(views, previous.after.page);
+      const followed =
+        pageRoot !== undefined
+          ? followSiteAfterCommit(
+              runtime,
+              commit,
+              previous.after,
+              pageRoot,
+              step.after
+            )
+          : null;
+
+      if (followed && rendersAtMostOnce(views, followed.site)) {
+        views.records.set(step.entry, {
+          after: followed.site,
+          ...(followed.selection ? { afterSelection: followed.selection } : {}),
+          before: previous.before,
+        });
+        return;
+      }
+      if (
+        !commit.changed.hasAny('selection') &&
+        views.roots.get(keyOf(step.made)) !== (step.after.root ?? MAIN_ROOT_KEY)
+      ) {
+        return;
+      }
+    }
+
+    const after = placeOfEdge(step.after)?.site ?? null;
+
+    if (after) {
+      views.records.set(step.entry, { after, before: previous.before });
+    }
     return;
   }
 
-  const previous = views.records.get(step.entry);
+  const beforePlace = placeOfEdge(step.before);
+  const pageRoot = beforePlace
+    ? views.roots.get(keyOf(beforePlace.page.editor))
+    : undefined;
+  const followed =
+    beforePlace && pageRoot !== undefined
+      ? followSiteAfterCommit(
+          runtime,
+          commit,
+          beforePlace.site,
+          pageRoot,
+          step.after
+        )
+      : null;
+  const followedValid =
+    followed && rendersAtMostOnce(views, followed.site) ? followed : null;
+  const after = followedValid?.site ?? placeOfEdge(step.after)?.site ?? null;
 
-  if (previous && after) {
-    views.records.set(step.entry, { after, before: previous.before });
-  }
+  views.records.set(step.entry, {
+    after,
+    ...(followedValid?.selection
+      ? { afterSelection: followedValid.selection }
+      : {}),
+    before: beforePlace?.site ?? null,
+  });
+};
+
+const schedulePaneNotify = (views: HistoryStepViews) => {
+  if (views.paneListeners.size === 0 || views.paneNotify.pending) return;
+  views.paneNotify.pending = true;
+  queueMicrotask(() => {
+    views.paneNotify.pending = false;
+    for (const listener of [...views.paneListeners]) {
+      if (views.paneListeners.has(listener)) listener();
+    }
+  });
 };
 
 /**
@@ -301,6 +788,8 @@ const recordCommit = (
  */
 export const createHistoryStepViews = (runtime: Editor) => {
   const views: HistoryStepViews = {
+    paneListeners: new Set(),
+    paneNotify: { pending: false },
     panes: new Map(),
     records: new WeakMap(),
     roots: new WeakMap(),
@@ -308,6 +797,7 @@ export const createHistoryStepViews = (runtime: Editor) => {
   };
 
   return Object.freeze({
+    isSiteBound: (site: HistoryStepSite) => isSiteBound(views, runtime, site),
     placeOf: (pane: EditableDOMRuntime) => placeOf(views, pane.editor, pane),
     registerPane: (pane: EditableDOMRuntime) => {
       const key = keyOf(pane.editor);
@@ -315,12 +805,14 @@ export const createHistoryStepViews = (runtime: Editor) => {
 
       panes.add(pane);
       views.panes.set(key, panes);
+      schedulePaneNotify(views);
 
       return () => {
         panes.delete(pane);
         if (panes.size === 0 && views.panes.get(key) === panes) {
           views.panes.delete(key);
         }
+        schedulePaneNotify(views);
       };
     },
     registerSlot: (view: Editor, slot: HistoryStepSlot) => {
@@ -339,6 +831,13 @@ export const createHistoryStepViews = (runtime: Editor) => {
       return runtime.subscribeCommit((commit) => {
         recordCommit(runtime, views, commit);
       });
+    },
+    subscribePanes: (listener: () => void) => {
+      views.paneListeners.add(listener);
+
+      return () => {
+        views.paneListeners.delete(listener);
+      };
     },
   });
 };

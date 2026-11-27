@@ -1,5 +1,14 @@
-import type { EditorCommit, Path, RootKey, Selection } from '../..';
+import {
+  type EditorCommit,
+  type Path,
+  type RootKey,
+  type Selection,
+  SelectionApi,
+} from '../..';
+import { reportEditorLifecycleError } from '../../core/lifecycle-error';
 import { getMutationVersion } from '../../core/public-state';
+import { markRootViewUsed } from '../../core/root-target';
+import { isValidEditorSelection } from '../../core/selection-protocol';
 import { setSelectionAsView } from '../../core/view-carets';
 import { focusedElementOnPage } from '../../dom/plugin/dom-root-runtime';
 import {
@@ -190,12 +199,31 @@ const isShown = (element: HTMLElement) =>
     element.checkVisibility()) &&
   isElementDrawn(element);
 
+const hasReboundAncestor = (
+  invoker: HistoryStepSite,
+  site: HistoryStepSite
+) => {
+  const shared = Math.min(invoker.hops.length, site.hops.length);
+
+  for (let index = 0; index < shared; index += 1) {
+    const from = invoker.hops[index];
+    const to = site.hops[index];
+
+    if (from.owner !== to.owner || from.slot !== to.slot) return false;
+    if (from.root !== to.root) return true;
+  }
+
+  return false;
+};
+
 const decideHistoryFocus = ({
+  afterSelection,
   invoker,
   replay,
   resolve,
   site,
 }: {
+  afterSelection: NonNullable<Selection> | null;
   invoker: HistoryStepPlace | null;
   replay: EditableHistoryReplay;
   resolve: (site: HistoryStepSite) => HistoryStepTarget;
@@ -207,18 +235,38 @@ const decideHistoryFocus = ({
   if (replay.origin === 'control') {
     return replay.runtime.externalText.holdsFocus() ? KEEP : RESTORE;
   }
-  if (!site || !saved?.selection || saved.root !== site.root) return RESTORE;
+  if (!site) return RESTORE;
+
+  const selection =
+    saved?.selection && saved.root === site.root
+      ? saved.selection
+      : replay.direction === 'redo' &&
+          afterSelection &&
+          replay.changes?.createRoots.has(site.root)
+        ? afterSelection
+        : null;
+
+  if (!selection) return RESTORE;
   if (
     !invoker ||
     invoker.site.page !== site.page ||
-    invoker.site.root === site.root ||
+    (invoker.site.root === site.root &&
+      !hasReboundAncestor(invoker.site, site)) ||
     invoker.focusOwned
   ) {
     return RESTORE;
   }
 
-  return decideTarget(resolve(site), site, saved.selection);
+  return decideTarget(resolve(site), site, selection);
 };
+
+const selectionFitsPane = (
+  pane: EditableDOMRuntime,
+  selection: NonNullable<Selection>
+) =>
+  toInternalRoot(SelectionApi.root(selection)) ===
+    toInternalRoot(pane.editor.read((state) => state.view.root())) &&
+  isValidEditorSelection(getEditorRuntimeOwner(pane.editor), selection);
 
 const decideTarget = (
   target: HistoryStepTarget,
@@ -226,7 +274,13 @@ const decideTarget = (
   selection: NonNullable<Selection>
 ): HistoryFocusDecision => {
   if (!target || target.focusOwned) return RESTORE;
-  if (target.kind === 'rebinding') return { kind: 'wait', selection, site };
+  if (target.kind === 'rebinding') {
+    const element = target.pane.rootElement;
+
+    return element && isShown(element)
+      ? { kind: 'wait', selection, site }
+      : RESTORE;
+  }
 
   const { pane } = target;
   const element = pane.rootElement;
@@ -235,7 +289,8 @@ const decideTarget = (
     element &&
     !pane.readOnly &&
     !pane.editor.read.view.isReadOnly() &&
-    isShown(element)
+    isShown(element) &&
+    selectionFitsPane(pane, selection)
     ? { kind: 'walk', pane, selection }
     : RESTORE;
 };
@@ -246,27 +301,30 @@ const walkHistoryFocus = (
 ) => {
   const root = pane.rootElement;
 
-  if (!root) return false;
+  if (!root || !selectionFitsPane(pane, selection)) return false;
 
   const owner = getEditorRuntimeOwner(pane.editor);
   const before = focusedElementOnPage(root);
   const version = getMutationVersion(owner);
 
-  root.focus({ preventScroll: true });
+  if (before !== root) root.focus({ preventScroll: true });
 
   const focused = focusedElementOnPage(root);
   const refused = focused === before && focused !== root;
   const handlerEdited = getMutationVersion(owner) !== version;
 
   if (focused === root && !handlerEdited) {
+    markRootViewUsed(pane.editor);
     setSelectionAsView(pane.editor, selection);
   }
   return !refused;
 };
 
 type HistoryFocusViews = Readonly<{
+  isSiteBound: (site: HistoryStepSite) => boolean;
   placeOf: (pane: EditableDOMRuntime) => HistoryStepPlace | null;
   resolve: (site: HistoryStepSite) => HistoryStepTarget;
+  subscribePanes: (listener: () => void) => () => void;
 }>;
 
 const WAITS = new WeakMap<HistoryFocusViews, () => void>();
@@ -292,30 +350,61 @@ const waitForRebindingSlot = (
   invoker: HistoryStepPlace | null,
   decision: Extract<HistoryFocusDecision, { kind: 'wait' }>
 ) => {
-  const document = replay.runtime.rootElement?.ownerDocument;
+  const document =
+    invoker?.page.rootElement?.ownerDocument ??
+    replay.runtime.rootElement?.ownerDocument;
 
   if (!document) {
     restoreHistoryFocus(replay);
     return;
   }
 
+  const owner = getEditorRuntimeOwner(replay.runtime.editor);
+  const startVersion = getMutationVersion(owner);
+
   const close = () => {
-    WAITS.delete(views);
-    cancelFrame();
+    if (WAITS.get(views) === close) WAITS.delete(views);
+    unsubscribePanes();
+    unsubscribeCommits();
+    document.removeEventListener('focusin', close, true);
     document.removeEventListener('keydown', close, true);
     document.removeEventListener('pointerdown', close, true);
   };
-  const cancelFrame = replay.runtime.domPhaseScheduler.schedule(
-    'selection-repair',
-    'history-focus-wait',
-    () => {
-      close();
+  const unsubscribeCommits = owner.subscribeCommit((commit) => {
+    if (!commit.changed.hasAny('snapshot')) return;
+    close();
+    const pageRoot = invoker?.page.rootElement;
+    if (
+      !replay.focusedView.connected &&
+      pageRoot &&
+      focusedElementOnPage(pageRoot) === document.body
+    ) {
+      focusInvokingView(replay, invoker);
+    }
+  });
+  const unsubscribePanes = views.subscribePanes(() => {
+    try {
+      if (views.placeOf(replay.focusedView)?.focusOwned) {
+        close();
+        restoreHistoryFocus(replay);
+        return;
+      }
+      if (
+        getMutationVersion(owner) !== startVersion ||
+        (invoker && !invoker.page.connected)
+      ) {
+        close();
+        return;
+      }
 
-      const next = decideTarget(
-        views.resolve(decision.site),
-        decision.site,
-        decision.selection
-      );
+      const resolved = views.resolve(decision.site);
+
+      if (!resolved && views.isSiteBound(decision.site)) return;
+
+      const next = decideTarget(resolved, decision.site, decision.selection);
+
+      if (next.kind === 'wait') return;
+      close();
 
       if (next.kind === 'walk') {
         if (!walkHistoryFocus(next.pane, next.selection)) {
@@ -324,10 +413,19 @@ const waitForRebindingSlot = (
         return;
       }
       focusInvokingView(replay, invoker);
-    },
-    { timing: 'animation-frame' }
-  );
+    } catch (error) {
+      close();
+      reportEditorLifecycleError({
+        cause: error,
+        direction: replay.direction,
+        editor: replay.runtime.editor,
+        phase: 'observer',
+        source: 'history',
+      });
+    }
+  });
 
+  document.addEventListener('focusin', close, true);
   document.addEventListener('keydown', close, true);
   document.addEventListener('pointerdown', close, true);
   WAITS.set(views, close);
@@ -345,6 +443,7 @@ export const completeHistoryFocus = (
   );
   const invoker = views.placeOf(replay.focusedView);
   const decision = decideHistoryFocus({
+    afterSelection: sites?.afterSelection ?? null,
     invoker,
     replay,
     resolve: views.resolve,
