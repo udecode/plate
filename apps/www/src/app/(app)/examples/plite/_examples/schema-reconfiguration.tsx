@@ -18,16 +18,16 @@ import {
 
 type SchemaProfile =
   | 'block'
-  | 'inline'
   | 'non-selectable'
   | 'read-only'
+  | 'read-only-block'
   | 'void';
 
 const profileVersions: Record<SchemaProfile, number> = {
   block: 1,
-  inline: 2,
   'non-selectable': 5,
   'read-only': 4,
+  'read-only-block': 2,
   void: 3,
 };
 
@@ -51,15 +51,13 @@ const createSchema = (profile: SchemaProfile) =>
         readOnly: profile === 'read-only',
         selectable: profile !== 'non-selectable',
       },
-      line: {
-        content: schema.content.open({ default: 'text', min: 1 }),
-      },
+      line: schema.element.textBlock(),
       probe:
         profile === 'void'
           ? { void: 'block' }
           : {
               content: schema.content.text({ default: 'text', min: 1 }),
-              inline: profile === 'inline',
+              readOnly: profile === 'read-only-block',
             },
     },
     id: 'schema-reconfiguration-browser-proof',
@@ -87,11 +85,27 @@ const interactionLine = () => ({
   type: 'line',
 });
 
+const ProbeElement = ({
+  attributes,
+  children,
+  element,
+}: Pick<RenderElementProps, 'attributes' | 'children' | 'element'>) => {
+  const isReadOnly = useEditorState(
+    (state) => state.schema.getElementBehavior(element).readOnly
+  );
+
+  return (
+    <div {...attributes} data-probe-read-only={isReadOnly ? 'true' : undefined}>
+      <span contentEditable={false}>probe</span>
+      {children}
+    </div>
+  );
+};
+
 const renderElement = ({
   attributes,
   children,
   element,
-  isInline,
   slots,
 }: RenderElementProps) => {
   if (element.type === 'content-card') {
@@ -118,13 +132,10 @@ const renderElement = ({
     );
   }
 
-  const Tag = isInline ? 'span' : 'div';
-
   return (
-    <Tag {...attributes}>
-      <span contentEditable={false}>probe</span>
+    <ProbeElement attributes={attributes} element={element}>
       {children}
-    </Tag>
+    </ProbeElement>
   );
 };
 
@@ -147,7 +158,7 @@ const SchemaControls = () => {
     const commit = state.lastCommit();
 
     return [
-      `inline:${probeBehavior.inline}`,
+      `probeReadOnly:${probeBehavior.readOnly}`,
       `void:${probeBehavior.void}`,
       `readOnly:${guardBehavior.readOnly}`,
       `selectable:${guardBehavior.selectable}`,
@@ -165,7 +176,7 @@ const SchemaControls = () => {
         {(
           [
             ['Use block schema', 'block'],
-            ['Use inline schema', 'inline'],
+            ['Use read-only block schema', 'read-only-block'],
             ['Use void schema', 'void'],
             ['Use read-only schema', 'read-only'],
             ['Use non-selectable schema', 'non-selectable'],

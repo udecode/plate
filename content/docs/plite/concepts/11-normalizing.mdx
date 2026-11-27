@@ -14,7 +14,7 @@ canonical changes, history, and collaboration deterministic.
 
 1. **Text containers keep a text anchor.** Void elements keep one empty text child. A block-only container can be empty when its schema permits zero children.
 2. **Adjacent text nodes with the same properties merge.** Construction emits one canonical leaf instead of retaining equivalent neighbors.
-3. **Children follow the parent grammar.** A schema can allow block children, inline/text children, or mixed content.
+3. **Children follow the parent grammar.** A schema element holds either block children or text and inline children.
 4. **Inline nodes have text on both sides.** Empty text nodes are inserted before, after, or between inline nodes when needed.
 5. **Roots contain elements allowed by their grammar.** Root grammars reject text children; snapshot fitting can wrap stray text in the root default.
 6. **Nodes must be JSON-serializable.** Documents and changes need to move cleanly through storage and collaboration layers.

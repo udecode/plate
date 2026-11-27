@@ -452,19 +452,16 @@ const hiddenContentBlocks = () =>
     schema: {
       elements: {
         'accordion-block': {
-          content: schema.content.open(),
+          content: schema.content.openBlocks(),
           isolating: true,
         },
         'collapsible-block': {
-          content: schema.content.open(),
+          content: schema.content.openBlocks(),
           isolating: true,
         },
-        'tab-panel': {
-          content: schema.content.open(),
-          isolating: true,
-        },
+        'tab-panel': schema.element.textBlock({ isolating: true }),
         'tabs-block': {
-          content: schema.content.open(),
+          content: schema.content.openBlocks(),
           isolating: true,
         },
       },

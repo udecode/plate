@@ -360,7 +360,7 @@ export type SchemaContentRule =
   | Readonly<{ kind: 'any'; rules: readonly SchemaContentRule[] }>
   | Readonly<{ group: string; kind: 'group' }>
   | Readonly<{ kind: 'not'; rule: SchemaContentRule }>
-  | Readonly<{ kind: 'open' }>
+  | Readonly<{ kind: 'open-blocks' }>
   | Readonly<{ kind: 'text' }>
   | Readonly<{ kind: 'type'; type: string }>
   | Readonly<{ kind: 'types'; types: readonly string[] }>;
@@ -378,6 +378,16 @@ export type SchemaContentDefault =
 
 export type SchemaContentOptions = Readonly<{
   default?: SchemaContentDefault;
+  max?: number;
+  min?: number;
+}>;
+
+/**
+ * Options for a block-only content rule. `default` names a block element,
+ * never `'text'`.
+ */
+export type SchemaBlockContentOptions = Readonly<{
+  default?: Exclude<SchemaContentDefault, 'text'>;
   max?: number;
   min?: number;
 }>;

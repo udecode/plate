@@ -58,11 +58,14 @@ const sectionBodyHidden: Partial<Record<string, keyof HiddenBoundaryState>> = {
 const isolateHiddenContent = definePlugin('domCoverageIsolating', {
   schema: {
     elements: {
-      'deep-section': { content: schema.content.open(), isolating: true },
-      footer: { content: schema.content.open(), isolating: true },
-      header: { content: schema.content.open(), isolating: true },
-      'nested-section': { content: schema.content.open(), isolating: true },
-      section: { content: schema.content.open(), isolating: true },
+      'deep-section': { content: schema.content.openBlocks(), isolating: true },
+      footer: schema.element.textBlock({ isolating: true }),
+      header: schema.element.textBlock({ isolating: true }),
+      'nested-section': {
+        content: schema.content.openBlocks(),
+        isolating: true,
+      },
+      section: { content: schema.content.openBlocks(), isolating: true },
     },
   },
 });

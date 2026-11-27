@@ -73,10 +73,7 @@ const DEFAULT_DERIVED_EDITOR_SCHEMA: EditorSchemaDefinition = Object.freeze({
     }),
   }),
   root: Object.freeze({
-    allowed: Object.freeze({
-      kind: 'not' as const,
-      rule: Object.freeze({ kind: 'text' as const }),
-    }),
+    allowed: Object.freeze({ kind: 'open-blocks' as const }),
     default: Object.freeze({ type: 'paragraph' }),
   }),
   unknown: 'preserve' as const,
@@ -148,10 +145,26 @@ const createDerivedBaseSchemaRecord = (
     });
   }
 
+  const ownsInlineParagraph = explicitRecords.some(({ contribution }) => {
+    const paragraph = contribution.elements?.paragraph;
+
+    return (
+      paragraph !== undefined &&
+      (paragraph.inline === true || isInlineVoid(paragraph.void))
+    );
+  });
+
   return Object.freeze({
     contribution: Object.freeze({
       ...DEFAULT_DERIVED_EDITOR_SCHEMA,
       elements: Object.freeze({}),
+      ...(ownsInlineParagraph
+        ? {
+            root: Object.freeze({
+              allowed: Object.freeze({ kind: 'open-blocks' as const }),
+            }),
+          }
+        : {}),
     }),
     pluginName: DEFAULT_DERIVED_EDITOR_SCHEMA_RECORD.pluginName,
   });
@@ -834,6 +847,7 @@ type MutableContentProgram = {
   allowedElementTypes: Set<string>;
   allowsText: boolean;
   allowsUnknownElements: boolean;
+  declaredDefaultPlan?: CompiledSchemaConstructionPlan | null;
   defaultPlan: CompiledSchemaConstructionPlan | null;
   max: number | null;
   min: number;
@@ -1839,6 +1853,8 @@ const remapSchemaContentRule = (
   rule: SchemaContentRule,
   renames: ReadonlyMap<string, string>
 ): SchemaContentRule => {
+  if (!rule || typeof rule !== 'object') return rule;
+
   switch (rule.kind) {
     case 'type': {
       return Object.freeze({
@@ -1870,13 +1886,13 @@ const remapSchemaContentRule = (
       });
     }
     case 'group':
-    case 'open':
+    case 'open-blocks':
     case 'text': {
       return rule;
     }
   }
 
-  return failInvariant('Unexpected schema content rule');
+  return rule;
 };
 
 const remapSchemaContent = (
@@ -2484,6 +2500,7 @@ const compileContentRule = (
   rule: SchemaContentRule,
   source: Source<SchemaContent>,
   elementTypes: ReadonlySet<string>,
+  inlineTypes: ReadonlySet<string>,
   groups: ReadonlyMap<string, ReadonlySet<string>>,
   textGroups: ReadonlySet<string>,
   unknownPolicy: EditorSchemaUnknownPolicy
@@ -2493,11 +2510,13 @@ const compileContentRule = (
   types: Set<string>;
 }> => {
   switch (rule.kind) {
-    case 'open': {
+    case 'open-blocks': {
       return {
-        allowsText: true,
+        allowsText: false,
         allowsUnknownElements: unknownPolicy === 'preserve',
-        types: new Set(elementTypes),
+        types: new Set(
+          [...elementTypes].filter((type) => !inlineTypes.has(type))
+        ),
       };
     }
     case 'text': {
@@ -2563,6 +2582,7 @@ const compileContentRule = (
         rule.rule,
         source,
         elementTypes,
+        inlineTypes,
         groups,
         textGroups,
         unknownPolicy
@@ -2589,6 +2609,7 @@ const compileContentRule = (
           child,
           source,
           elementTypes,
+          inlineTypes,
           groups,
           textGroups,
           unknownPolicy
@@ -2611,6 +2632,7 @@ const compileContentRule = (
           child,
           source,
           elementTypes,
+          inlineTypes,
           groups,
           textGroups,
           unknownPolicy
@@ -2625,7 +2647,12 @@ const compileContentRule = (
     }
   }
 
-  return failInvariant('Unexpected schema content rule');
+  return compileFailure(
+    'invalid-content-rule',
+    `Schema content at ${source.path} uses unsupported rule kind "${String((rule as { kind?: unknown }).kind)}". Use schema.content.openBlocks() for open block content or schema.element.textBlock() for text content.`,
+    [source],
+    source.path
+  );
 };
 
 const compileContent = (
@@ -2661,6 +2688,7 @@ const compileContent = (
     value.allowed,
     source,
     elementTypes,
+    inlineTypes,
     groups,
     textGroups,
     unknownPolicy
@@ -2729,15 +2757,27 @@ const compileContent = (
     }
   }
 
-  const remainder: MutableContentProgram = {
-    allowedElementTypes: allowed.types,
-    allowsText: allowed.allowsText,
-    allowsUnknownElements: allowed.allowsUnknownElements,
-    defaultPlan,
-    max,
-    min,
-    source,
-  };
+  const remainder: MutableContentProgram =
+    max === 0
+      ? {
+          allowedElementTypes: new Set(),
+          allowsText: false,
+          allowsUnknownElements: false,
+          declaredDefaultPlan: defaultPlan,
+          defaultPlan: null,
+          max: 0,
+          min: 0,
+          source,
+        }
+      : {
+          allowedElementTypes: allowed.types,
+          allowsText: allowed.allowsText,
+          allowsUnknownElements: allowed.allowsUnknownElements,
+          defaultPlan,
+          max,
+          min,
+          source,
+        };
 
   if (!value.prefix) return remainder;
   if (value.prefix.length === 0) {
@@ -4255,7 +4295,7 @@ const compileEditorSchemaInternal = (
       if (!derivesVoidContent && !input.content) {
         compileFailure(
           'missing-element-content',
-          `Schema element "${type}" must declare content explicitly. Use schema.content.open() for intentionally open content.`,
+          `Schema element "${type}" must declare content explicitly. Use schema.content.openBlocks() for open block content or schema.element.textBlock() for text content.`,
           [source],
           `${source.path}.content`
         );
@@ -4360,7 +4400,8 @@ const compileEditorSchemaInternal = (
     const invalidClassification =
       names.has('text') ||
       names.has('inline') !== element.behavior.inline ||
-      (element.behavior.inline && names.has('block'));
+      (element.behavior.inline &&
+        (names.has('block') || names.has('textBlock')));
 
     if (invalidClassification) {
       const { source } = element;
@@ -4393,13 +4434,23 @@ const compileEditorSchemaInternal = (
 
       if (program.allowsText && !element.behavior.void) {
         element.directGroups.add('textBlock');
-      } else if (element.input.ownsExit) {
-        compileFailure(
-          'invalid-element-behavior',
-          `Schema element "${element.type}" declares ownsExit but is not a text block.`,
-          [element.source],
-          `${element.source.path}.ownsExit`
-        );
+      } else {
+        if (initialMemberships.get(element.type)?.has('textBlock')) {
+          compileFailure(
+            'invalid-built-in-group',
+            `Schema element "${element.type}" declares compiler-owned group "textBlock", but its content admits no text.`,
+            [element.source],
+            element.source.path
+          );
+        }
+        if (element.input.ownsExit) {
+          compileFailure(
+            'invalid-element-behavior',
+            `Schema element "${element.type}" declares ownsExit but is not a text block.`,
+            [element.source],
+            `${element.source.path}.ownsExit`
+          );
+        }
       }
     }
   }
@@ -4668,6 +4719,37 @@ const compileEditorSchemaInternal = (
     }
   }
 
+  const assertRootHasNoInlineTypes = (
+    program: MutableContentProgram,
+    label: string,
+    source: Source<SchemaContent>
+  ) => {
+    const inlineChildTypes = sortedStrings(
+      [...program.allowedElementTypes].filter((type) => inlineTypes.has(type))
+    );
+
+    if (inlineChildTypes.length === 0) return;
+
+    const inlineChildren =
+      inlineChildTypes.length === 1
+        ? `inline element type "${inlineChildTypes[0]}"`
+        : `inline element types ${inlineChildTypes
+            .map((type) => `"${type}"`)
+            .join(', ')}`;
+
+    compileFailure(
+      'inline-in-root-content',
+      `${label} allows ${inlineChildren}, but a root holds blocks only. Use schema.content.openBlocks() or block types instead.`,
+      [
+        source,
+        ...inlineChildTypes.map(
+          (type) => getDefined(mutableElements.get(type)).source
+        ),
+      ],
+      source.path
+    );
+  };
+
   const mutablePrograms = new Map<string, MutableContentProgram>();
   for (const element of mutableElements.values()) {
     const source: Source<SchemaContent> = {
@@ -4720,6 +4802,38 @@ const compileEditorSchemaInternal = (
         'inline-content-rejects-unknown-elements',
         `Schema inline element "${element.type}" allows unknown element children, but undeclared elements cannot be proven inline.`,
         [source],
+        source.path
+      );
+    }
+
+    if (
+      (program.allowsText || inlineChildTypes.length > 0) &&
+      (blockChildTypes.length > 0 ||
+        program.allowsUnknownElements ||
+        (program.prefix?.length ?? 0) > 0)
+    ) {
+      const mixedWith = [
+        ...(blockChildTypes.length > 0 ? ['blocks'] : []),
+        ...(program.allowsUnknownElements ? ['undeclared elements'] : []),
+        ...((program.prefix?.length ?? 0) > 0 ? ['a required prefix'] : []),
+      ].join(' and ');
+      const prefixSources = (program.prefix ?? []).map(
+        (slot) => getDefined(mutableElements.get(slot.type)).source
+      );
+
+      compileFailure(
+        'mixed-element-content',
+        `Schema element "${element.type}" mixes text or inline content with ${mixedWith}. Use schema.element.textBlock() for text and inline elements, or schema.content.openBlocks() or block types for block content.`,
+        [
+          source,
+          ...blockChildTypes.map(
+            (type) => getDefined(mutableElements.get(type)).source
+          ),
+          ...inlineChildTypes.map(
+            (type) => getDefined(mutableElements.get(type)).source
+          ),
+          ...prefixSources,
+        ],
         source.path
       );
     }
@@ -4789,6 +4903,11 @@ const compileEditorSchemaInternal = (
           contentSource.path
         );
       }
+      assertRootHasNoInlineTypes(
+        innerProgram,
+        `Projected root grammar at ${contentSource.path}`,
+        contentSource
+      );
       if (root.value.structure) {
         const joinable = [...innerProgram.allowedElementTypes].find((type) => {
           const behavior = mutableElements.get(type)?.behavior;
@@ -4830,6 +4949,11 @@ const compileEditorSchemaInternal = (
       primaryRoot.path
     );
   }
+  assertRootHasNoInlineTypes(
+    primaryProgram,
+    'The primary root grammar',
+    primaryRoot
+  );
   mutablePrograms.set('root', primaryProgram);
   for (const [name, source] of [...rootsByName].sort(([left], [right]) =>
     left.localeCompare(right)
@@ -4851,6 +4975,7 @@ const compileEditorSchemaInternal = (
         source.path
       );
     }
+    assertRootHasNoInlineTypes(program, `Named root "${name}" grammar`, source);
     mutablePrograms.set(`root:${name}`, program);
   }
 
@@ -4879,7 +5004,10 @@ const compileEditorSchemaInternal = (
 
     for (const programId of [`element:${type}`, ...contentRootProgramIds]) {
       const program = mutablePrograms.get(programId);
-      const plan = program?.defaultPlan;
+      const plan =
+        program?.declaredDefaultPlan ??
+        program?.remainder?.declaredDefaultPlan ??
+        program?.defaultPlan;
 
       if (plan?.kind === 'element') validateElementConstruction(plan.type);
       for (const slot of program?.prefix ?? []) {
@@ -4891,8 +5019,13 @@ const compileEditorSchemaInternal = (
   };
 
   for (const program of mutablePrograms.values()) {
-    if (program.defaultPlan?.kind === 'element') {
-      validateElementConstruction(program.defaultPlan.type);
+    const plan =
+      program.declaredDefaultPlan ??
+      program.remainder?.declaredDefaultPlan ??
+      program.defaultPlan;
+
+    if (plan?.kind === 'element') {
+      validateElementConstruction(plan.type);
     }
     for (const slot of program.prefix ?? []) {
       validateElementConstruction(slot.type);
@@ -5345,7 +5478,10 @@ const compileEditorSchemaInternal = (
     );
 
   for (const program of mutablePrograms.values()) {
-    const plan = program.defaultPlan;
+    const plan =
+      program.declaredDefaultPlan ??
+      program.remainder?.declaredDefaultPlan ??
+      program.defaultPlan;
 
     if (plan?.kind === 'element') {
       const path = `${program.source.path}.default`;

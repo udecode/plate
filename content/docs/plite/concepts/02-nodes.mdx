@@ -198,8 +198,8 @@ complete rendering example.
 Plite keeps document trees valid while transaction writes run.
 
 - Roots contain block elements.
-- Element children follow the schema content grammar, which can admit mixed
-  block and inline/text content.
+- Element children follow the schema content grammar, holding either block
+  elements or text and inline elements.
 - The schema defines required children through minimum counts and defaults.
 - Text nodes merge with adjacent text nodes that have matching marks.
 - Inline and void elements get empty text spacing where selection needs it.

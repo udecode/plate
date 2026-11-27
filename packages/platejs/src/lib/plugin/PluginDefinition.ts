@@ -14,8 +14,8 @@ import type {
   Element,
   Path,
   PropertyValueDescriptor,
+  SchemaBlockContentOptions,
   SchemaContent,
-  SchemaContentOptions,
   SchemaContentRootContribution,
   SchemaElement,
   SchemaProperty,
@@ -407,9 +407,9 @@ type PluginDependencyInstalledDefinitionOf<P> = [
   ? ExactPluginDefinitionOf<P> | RuntimeDependencyInstalledDefinitionOf<P>
   : SourcePluginInstalledDefinitionOf<P>;
 
-type PluginBlockContentOptions = Omit<SchemaContentOptions, 'default'> &
+type PluginBlockContentOptions = Omit<SchemaBlockContentOptions, 'default'> &
   Readonly<{
-    default?: PluginReference | SchemaContentOptions['default'];
+    default?: PluginReference | SchemaBlockContentOptions['default'];
   }>;
 
 export type PluginSchemaReferences = Readonly<{

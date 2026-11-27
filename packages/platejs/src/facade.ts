@@ -139,6 +139,7 @@ export type {
   PropertyValueOf,
   Range,
   RootKey,
+  SchemaBlockContentOptions,
   SchemaContent,
   SchemaContentOptions,
   SchemaContentPrefixSlot,

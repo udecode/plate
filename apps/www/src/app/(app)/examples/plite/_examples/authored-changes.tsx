@@ -60,7 +60,7 @@ const inlineSchema = defineEditorSchema('authoredExampleInlineSchema', {
     },
     paragraph: schema.element.textBlock(),
   },
-  root: schema.content.not(schema.content.text(), {
+  root: schema.content.openBlocks({
     default: { type: 'paragraph' },
   }),
 });

@@ -4,10 +4,10 @@ import {
   type EditorSchemaOverride,
   type EditorStateSchemaApi,
   type Node,
+  type SchemaBlockContentOptions,
   type SchemaContent,
   type SchemaContentRule,
   type SchemaContentRootContribution,
-  type SchemaContentOptions,
   type SchemaElement,
   type SchemaProperty,
   type SchemaPropertyHandle,
@@ -161,8 +161,15 @@ export const resolvePluginPropertyKey = (
     : plugin.name;
 };
 
-export const createPlateBlockContent = (options?: SchemaContentOptions) =>
-  schema.content.group(PLATE_BLOCK_CONTENT_SCHEMA_GROUP, options);
+export const createPlateBlockContent = (
+  options?: SchemaBlockContentOptions
+) => {
+  if ((options as { default?: unknown } | undefined)?.default === 'text') {
+    throw new Error('plugins.blockContent() cannot default to text.');
+  }
+
+  return schema.content.group(PLATE_BLOCK_CONTENT_SCHEMA_GROUP, options);
+};
 
 /** @internal */
 export const isPlateBlockContent = (

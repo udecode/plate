@@ -2021,6 +2021,8 @@ export const createEditorSchema = <V extends Value = Value>(
   ) =>
     contentAllows(schema, content, child) ||
     (schema.identity.kind === 'derived' &&
+      !content.allowsText &&
+      content.max !== 0 &&
       ElementApi.isElement(child) &&
       !getCompiledElement(child));
 
@@ -4481,6 +4483,26 @@ export const createEditorSchema = <V extends Value = Value>(
     schema.elements.byType.get(getElementType(child) ?? '')?.behavior.inline ===
       true;
 
+  const assertUndeclaredRootBlocksOnly = (
+    children: NodeList<Descendant>,
+    schema: CompiledEditorSchema,
+    owner: string,
+    root: RootKey
+  ) => {
+    if (!hasDeclaredSchema()) return;
+
+    for (let index = 0; index < children.length; index += 1) {
+      const child = children.at(index);
+
+      if (!child || !isInlineChild(schema, child)) continue;
+      throw createEditorSchemaValidationError(
+        'invalid-content',
+        `${owner} cannot contain ${NodeApi.isText(child) ? 'text' : `inline element "${getElementType(child) ?? 'unknown'}"`}.`,
+        toSchemaValidationLocation(root, [index], getValidationNodeType(child))
+      );
+    }
+  };
+
   const assertUndeclaredContentUnmixed = (
     children: NodeList<Descendant>,
     schema: CompiledEditorSchema,
@@ -5115,12 +5137,11 @@ export const createEditorSchema = <V extends Value = Value>(
       if (content) {
         validateDeclarativeRootContent(root, children, content, schema);
       } else {
-        assertUndeclaredContentUnmixed(
+        assertUndeclaredRootBlocksOnly(
           children,
           schema,
           `Editor ${editorRootLabel(root)}`,
-          root,
-          []
+          root
         );
       }
     }
@@ -5363,12 +5384,11 @@ export const createEditorSchema = <V extends Value = Value>(
               toSchemaValidationLocation(root, [])
             );
           }
-          assertUndeclaredContentUnmixed(
+          assertUndeclaredRootBlocksOnly(
             rootNodes(roots[root]),
             schema,
             `Editor ${editorRootLabel(root)}`,
-            root,
-            []
+            root
           );
         }
 
@@ -5757,12 +5777,11 @@ export const createEditorSchema = <V extends Value = Value>(
               `Undeclared editor root "${root}" in closed editor schema.`
             );
           }
-          assertUndeclaredContentUnmixed(
+          assertUndeclaredRootBlocksOnly(
             children,
             schema,
             `Editor ${editorRootLabel(root)}`,
-            root,
-            []
+            root
           );
           continue;
         }

@@ -8126,6 +8126,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:SchemaBlockContentOptions": {
+          "aliases": [],
+          "documentation": "Options for a block-only content rule. `default` names a block element,\nnever `'text'`.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SchemaBlockContentOptions",
+          "runtime": false,
+          "signature": "type SchemaBlockContentOptions = Readonly<{\n  default?: Exclude<SchemaContentDefault, 'text'>;\n  max?: number;\n  min?: number;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:SchemaBuiltInGroupName": {
           "aliases": [],
           "documentation": "",
@@ -8278,7 +8289,7 @@
           "kind": "type",
           "name": "SchemaContentRule",
           "runtime": false,
-          "signature": "type SchemaContentRule = Readonly<{\n  kind: 'all';\n  rules: readonly SchemaContentRule[];\n}> | Readonly<{\n  kind: 'any';\n  rules: readonly SchemaContentRule[];\n}> | Readonly<{\n  group: string;\n  kind: 'group';\n}> | Readonly<{\n  kind: 'not';\n  rule: SchemaContentRule;\n}> | Readonly<{\n  kind: 'open';\n}> | Readonly<{\n  kind: 'text';\n}> | Readonly<{\n  kind: 'type';\n  type: string;\n}> | Readonly<{\n  kind: 'types';\n  types: readonly string[];\n}>;",
+          "signature": "type SchemaContentRule = Readonly<{\n  kind: 'all';\n  rules: readonly SchemaContentRule[];\n}> | Readonly<{\n  kind: 'any';\n  rules: readonly SchemaContentRule[];\n}> | Readonly<{\n  group: string;\n  kind: 'group';\n}> | Readonly<{\n  kind: 'not';\n  rule: SchemaContentRule;\n}> | Readonly<{\n  kind: 'open-blocks';\n}> | Readonly<{\n  kind: 'text';\n}> | Readonly<{\n  kind: 'type';\n  type: string;\n}> | Readonly<{\n  kind: 'types';\n  types: readonly string[];\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -26050,6 +26061,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/react:SchemaBlockContentOptions": {
+          "aliases": [],
+          "documentation": "Options for a block-only content rule. `default` names a block element,\nnever `'text'`.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "SchemaBlockContentOptions",
+          "runtime": false,
+          "signature": "type SchemaBlockContentOptions = Readonly<{\n  default?: Exclude<SchemaContentDefault, 'text'>;\n  max?: number;\n  min?: number;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/react:SchemaBuiltInGroupName": {
           "aliases": [],
           "documentation": "",
@@ -26202,7 +26224,7 @@
           "kind": "type",
           "name": "SchemaContentRule",
           "runtime": false,
-          "signature": "type SchemaContentRule = Readonly<{\n  kind: 'all';\n  rules: readonly SchemaContentRule[];\n}> | Readonly<{\n  kind: 'any';\n  rules: readonly SchemaContentRule[];\n}> | Readonly<{\n  group: string;\n  kind: 'group';\n}> | Readonly<{\n  kind: 'not';\n  rule: SchemaContentRule;\n}> | Readonly<{\n  kind: 'open';\n}> | Readonly<{\n  kind: 'text';\n}> | Readonly<{\n  kind: 'type';\n  type: string;\n}> | Readonly<{\n  kind: 'types';\n  types: readonly string[];\n}>;",
+          "signature": "type SchemaContentRule = Readonly<{\n  kind: 'all';\n  rules: readonly SchemaContentRule[];\n}> | Readonly<{\n  kind: 'any';\n  rules: readonly SchemaContentRule[];\n}> | Readonly<{\n  group: string;\n  kind: 'group';\n}> | Readonly<{\n  kind: 'not';\n  rule: SchemaContentRule;\n}> | Readonly<{\n  kind: 'open-blocks';\n}> | Readonly<{\n  kind: 'text';\n}> | Readonly<{\n  kind: 'type';\n  type: string;\n}> | Readonly<{\n  kind: 'types';\n  types: readonly string[];\n}>;",
           "source": null,
           "typeParameters": []
         },

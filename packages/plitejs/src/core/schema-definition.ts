@@ -19,6 +19,7 @@ import type {
   PropertyValueKind,
   PropertyValueOf,
   PropertyValueOptions,
+  SchemaBlockContentOptions,
   SchemaContent,
   SchemaContentDefault,
   SchemaContentInput,
@@ -1436,9 +1437,9 @@ type SchemaContentApi = (<
       Readonly<{ kind: 'not'; rule: ContentRuleOf<TInput> }>,
       TOptions
     >;
-    open: <const TOptions extends SchemaContentOptions = {}>(
+    openBlocks: <const TOptions extends SchemaBlockContentOptions = {}>(
       options?: TOptions
-    ) => SchemaContent<Readonly<{ kind: 'open' }>, TOptions>;
+    ) => SchemaContent<Readonly<{ kind: 'open-blocks' }>, TOptions>;
     text: <const TOptions extends SchemaContentOptions = {}>(
       options?: TOptions
     ) => SchemaContent<Readonly<{ kind: 'text' }>, TOptions>;
@@ -1610,9 +1611,15 @@ const schemaContent: SchemaContentApi = Object.assign(content, {
 
     return cloneFrozenDeclaration({ ...rest, prefix }, 'Schema content prefix');
   },
-  open: <const TOptions extends SchemaContentOptions = {}>(
+  openBlocks: <const TOptions extends SchemaBlockContentOptions = {}>(
     options: TOptions = {} as TOptions
-  ) => content(Object.freeze({ kind: 'open' }), options),
+  ) => {
+    if ((options as SchemaContentOptions).default === 'text') {
+      throw new Error('schema.content.openBlocks() cannot default to text.');
+    }
+
+    return content(Object.freeze({ kind: 'open-blocks' }), options);
+  },
   text: <const TOptions extends SchemaContentOptions = {}>(
     options: TOptions = {} as TOptions
   ) => content(Object.freeze({ kind: 'text' }), options),
