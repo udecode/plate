@@ -8,7 +8,7 @@ docs:
     title: 字段工具栏按钮
 ---
 
-字段是文档中由一个角色填写的有类型的空白处，例如租客姓名、起租日期、复选框或签名。每个字段是一个行内 void `field` 元素，带有 `kind`、`role`、`label`，以及文档中其他字段都不持有的 `fieldId`。字段的 `condition` 通过这个 id 指向另一个字段。Plate 只检查角色，从不检查用户。由你的应用决定哪个人填写哪个角色。
+字段是文档中由一个角色填写的有类型的空白处，例如租客姓名、起租日期、复选框或签名。每个字段是一个行内 void `field` 元素，带有 `kind`、`role`、`label`，以及文档中其他字段都不持有的 `fieldId`。字段的 `condition` 通过 `fieldId` 检查一个或多个字段。Plate 只检查角色，从不检查用户。由你的应用决定哪个人填写哪个角色。
 
 <ComponentPreview name="field-demo" height="1340px" />
 
@@ -20,7 +20,7 @@ docs:
 
 - 行内 void `field` 元素，共六种类型：文本、数字、日期、复选框、选择和签名。
 - 每个字段有一个角色、一个标签，以及可选的必填标记、默认值、选择选项和值，每一项都按字段的类型检查。
-- 条件通过 `fieldId` 指向另一个字段，并检查那个字段的值。条件不成立的字段被跳过，因此不需要答案。
+- 条件可以是单个测试，或是由两个及以上测试组成的 `all` 或 `any` 列表，每个测试通过 `fieldId` 指向一个字段。条件不成立的字段被跳过，因此不需要答案。
 - 可选的 `name`，让一个角色的多个字段共用一个答案，因此文档问两次的问题只需回答一次。
 - `insert` 和 `update` 命令拒绝不符合的设置或条件，读取会报告每个字段的问题以及它是否适用。
 - 一个角色的只填写视图，只接受该角色的答案，拒绝其他所有本地修改，撤销时只撤回该角色的答案。
@@ -159,7 +159,7 @@ export const readFields = (value: Value) =>
 | `defaultValue` | `FieldValue` | 符合字段类型的值。 |
 | `options` | `FieldOption[]` | 仅用于选择字段。每个选项为 `{ value, label }`，任意两个选项的 `value` 都不相同。 |
 | `value` | `FieldValue` | 答案。没有答案，或 `fillsField` 判断它的答案不算填写时，字段未填写。 |
-| `condition` | `FieldCondition` | `{ ref, test, value? }`，见下文的条件一节。 |
+| `condition` | `FieldCondition` | `{ ref, test, value? }`、`{ all: tests }` 或 `{ any: tests }`，见下文的条件一节。 |
 | `children` | `[{ text: '' }]` | 行内 void 元素必需的子节点。 |
 
 ## 类型
@@ -203,7 +203,7 @@ fillsField({ kind: 'checkbox' }, false); // false
 
 `update` 把 `value`（包括清空的值）写入该角色中与该字段同名的每个字段，并在同一个提交和同一个撤销步骤中完成。其他设置不会传到其他字段。在示例中，租赁合同以同一个名称询问两次租客姓名，因此在一处输入会填写另一处，撤销会同时撤回两处。
 
-同一角色中名称相同的字段必须有相同的类型、相同的选项值和相同的条件。默认值不参与比较。两个条件指向同一个字段，或者指向同一角色中同名的字段，并且测试和值相同时，它们相同。名称下的字段不一致时，其中每个字段都读到 `name-conflict`，此时 `update` 只把值写入它自己的字段。`insert` 和 `update` 从不拒绝名称冲突，因此作者可以逐个修改同名的字段。
+同一角色中名称相同的字段必须有相同的类型、相同的选项值和相同的条件。默认值不参与比较。两个条件形式相同（单个测试、`all` 或 `any`），且它们的测试可以按任意顺序一一对应时，它们相同。两个测试指向同一个字段，或指向同一角色中同名且该名称组没有 `name-conflict` 的字段，并且测试和值相同时，这两个测试相同。名称下的字段不一致时，其中每个字段都读到 `name-conflict`，此时 `update` 只把值写入它自己的字段。`insert` 和 `update` 从不拒绝名称冲突，因此作者可以逐个修改同名的字段。
 
 名称下的字段持有不同的值时，其中每个字段都读到 `answer-conflict`。空文本与没有值不同，`false` 与没有值也不同。`insert` 和粘贴不会写入其他字段。因此以不同的值或没有值加入某个名称的字段会读到 `answer-conflict`，直到某次 `update` 向该名称下的一个字段写入值，这次写入会写入该名称下的每个字段。
 
@@ -223,7 +223,7 @@ const fieldId = editor.plugin(BaseFieldPlugin).update.insert({
 });
 ```
 
-当值、默认值或选项不符合类型，设置中指定了 `fieldId` 或[名称规则](#names)拒绝的名称，或者条件指向不存在的字段，或使用了被指向字段的类型不接受的测试或值时，`insert` 会抛出错误。
+当值、默认值或选项不符合类型，设置中指定了 `fieldId` 或[名称规则](#names)拒绝的名称，或者条件包含指向不存在字段的测试，或使用了被指向字段的类型不接受的测试或值时，`insert` 会抛出错误。
 
 `update` 修改持有某个 `fieldId` 的字段的设置或值。传入 `undefined` 的设置会被移除。`value` 还会写入该角色中同名的每个其他字段。
 
@@ -239,36 +239,54 @@ editor.update((tx) => {
 - 补丁中的某项设置不符合字段的类型；
 - 补丁指定了名称规则拒绝的 `name`；
 - 补丁移除了 `kind`、`role` 或 `label`，或者指定了 `fieldId`；
-- 条件指向不存在的字段，使用了被指向字段的类型不接受的测试或值，或者指向一个此前未指向、且条件链会指回该字段的字段。
+- 条件中的某个测试出现了补丁之前同一测试没有的问题（`missing-target`、`unsupported-test` 或 `invalid-value`），无论这是补丁新增的测试，还是补丁修改字段的类型或选项所致；
+- 补丁新增的测试指向一个条件路径会指回该字段的字段。
+
+补丁前已有同一问题的测试可以通过，因此作者可以在另一条规则仍损坏时逐条修复，或者在损坏规则旁边移除一条正常规则。
 
 修改 `kind` 或 `options` 的补丁还会丢弃字段不再符合的值、默认值和选项。把带默认值的数字字段改为日期字段会丢弃默认值。字段保留它的 `fieldId`。
 
 ## 条件
 
-条件说明字段何时适用。当 `fieldId` 为 `ref` 的字段通过 `test` 时，该字段适用。除 `filled` 和 `blank` 外，每种测试都与 `value` 比较，`value` 使用被指向字段的值的结构。示例中由租客填写的宠物名字字段，在房东的允许养宠物选择为 `yes` 时适用：
+条件说明字段何时适用。它可以是单个测试 `{ ref, test, value? }`，或是包含两个及以上测试的列表 `{ all: tests }` 或 `{ any: tests }`。除 `filled` 和 `blank` 外，每个测试都与 `value` 比较，`value` 使用被指向字段的值的结构。列表不能嵌套列表，可以重复同一个测试。加载、`insert`、`update` 和直接的 `tx.nodes.set` 会拒绝少于两个测试的列表、嵌套列表、同时带有 `all` 和 `any` 的对象，以及同时带有 `ref` 和列表的对象。单个测试或列表会保留其持有的任何额外键。
+
+示例中由租客填写的宠物名字字段，在房东的允许养宠物选择为 `yes` 且租客勾选我有宠物时适用：
 
 ```tsx
 editor.update((tx) => {
   tx.plugin(BaseFieldPlugin).update(petNameId, {
-    condition: { ref: petsId, test: 'equals', value: 'yes' },
+    condition: {
+      all: [
+        { ref: petsId, test: 'equals', value: 'yes' },
+        { ref: hasPetId, test: 'equals', value: true },
+      ],
+    },
   });
 });
 ```
 
-弹出框的 Show when 列表提供条件已指向的字段，以及条件不会指回该字段的其他所有字段。测试列表只提供那个字段的类型接受的测试。
+在注册表 UI 中，弹出框的 Show when 区域从 `read.conditionTargets(fieldId)` 读取可选的目标字段。属于其他角色的目标会在标签后显示它的角色。测试列表只提供那个字段的类型接受的测试。点击 Add rule 构建 `all` 或 `any` 列表，切换 Match all 与 Match any，或把规则删减到一条以保存为单个测试。
 
-编辑器从不隐藏字段。条件不成立的字段被跳过。即使它是 `required`，它也不需要答案，并且 `applyFieldValues` 会拒绝它的已填答案。条件检查它指向的字段的答案：
+编辑器从不隐藏字段。条件不成立的字段被跳过。即使它是 `required`，它也不需要答案，并且 `applyFieldValues` 会拒绝它的已填答案。条件检查它指向的每个字段的答案：
 
 - `equals` 在答案等于 `value` 时成立，`not-equals` 在答案不等于它时成立，没有答案也算不等于。
 - `above` 和 `below` 比较数字，并按日期比较 ISO 日期。没有答案时两者都不成立。
 - 不符合字段类型的答案算作没有答案，本身被跳过的字段的答案也算作没有答案。
 - 没有答案的复选框在它的角色完成作答后读作 `false`。在编辑器中，这适用于填写被读取字段的那个角色的复选框。在 `applyFieldValues` 中，这在复选框的角色提交之后适用。
 
-`update` 拒绝会形成循环的条件，例如 A 指向 B 而 B 指向 A，或者字段指向自身。修改循环中字段的测试或值不会被拒绝。循环仍可能来自加载的文档、直接的节点写入或两个协作者同时进行的更新，此时其中每个字段都会报告 `condition-loop`。
+列表在三种状态上折叠其测试：成立、不成立和等待。
+
+- `all` 列表只要有任一测试不成立就立即不成立，即使另一项测试仍在等待。否则，只要有测试在等待就等待，全部测试都成立时才成立。
+- `any` 列表只要有任一测试成立就立即成立，即使另一项测试仍在等待。否则，只要有测试在等待就等待，全部测试都不成立时才不成立。
+- 列表中任一测试有问题时，整个条件视为损坏，该字段适用。
+
+当补丁新增的测试指向一个条件路径会指回该字段的字段时（例如 A 指向 B 而 B 指向 A，或者字段指向自身），`update` 会拒绝该条件。对条件原本已指向的 `ref` 更换测试或值可以通过，已经在循环中的字段仍可添加指向循环外字段的新测试。循环仍可能来自加载的文档、直接的节点写入或两个协作者同时进行的更新，此时循环中的每个字段都会报告 `condition-loop`。只指向循环内部字段的外部字段会把循环中的字段读作适用。
 
 ## 读取字段及其问题
 
-`read.field(fieldId)` 返回持有该 id 的字段（可在任意根中），没有时返回 `null`。它查找该字段，然后沿条件链每经过一个条件查找一个字段。`read.fields()` 按阅读顺序返回文档中的每个字段。每次读取得到一个 `FieldRead`：`{ applies, fieldId, node, problems }`。
+`read.field(fieldId)` 返回持有该 id 的字段（可在任意根中），没有时返回 `null`。`read.fields()` 按阅读顺序返回文档中的每个字段。读取会按文档版本构建一次条件图并在各次读取之间共享，每个读取角色对每个字段只判断一次。每次读取得到一个 `FieldRead`：`{ applies, fieldId, node, problems }`。
+
+`read.conditionTargets(fieldId)` 按文档顺序返回所有没有条件路径指回 `fieldId` 的其他字段，以及该条件已经指向的每个字段（若测试指向自身，也包含该字段本身）。id 不指向任何字段时返回空列表。
 
 ```tsx
 import { BaseFieldPlugin } from 'platejs/field';
@@ -278,24 +296,25 @@ const fields = editor.plugin(BaseFieldPlugin).read;
 const tenant = fields.field(tenantId);
 const broken = fields.fields().filter((field) => field.problems.length > 0);
 const skipped = fields.fields().filter((field) => field.applies === false);
+const targets = fields.conditionTargets(petNameId);
 ```
 
 | 问题 | 何时出现 |
 |------|----------|
-| `missing-target` | 没有字段持有其条件指向的 id，例如那个字段被删除之后。 |
-| `unsupported-test` | 条件指向的字段的类型不接受该条件的测试。 |
-| `invalid-value` | 它的值、默认值或选项不符合它的类型，或者它的条件的值不符合测试或被指向字段的类型。 |
-| `condition-loop` | 它的条件指向的字段沿条件链又指回它，例如 A 指向 B 而 B 指向 A。 |
+| `missing-target` | 没有字段持有其条件指向的某个 id，例如那个字段被删除之后。 |
+| `unsupported-test` | 条件指向的某个字段的类型不接受该测试。 |
+| `invalid-value` | 它的值、默认值或选项不符合它的类型，或者某个测试的值不符合测试或被指向字段的类型。 |
+| `condition-loop` | 从该字段出发的条件路径指回它自身，例如 A 指向 B 而 B 指向 A。 |
 | `name-conflict` | 同一角色中同名的某个字段的类型、选项值或条件不同。 |
 | `answer-conflict` | 同一角色中同名的某个字段持有不同的值，或者没有值。 |
 
-`insert` 和 `update` 会拒绝导致前四种问题的写入。它们从不拒绝名称冲突或答案冲突，由读取报告这些问题。问题来自之后的编辑，例如删除或修改条件指向的字段，或者来自绕过这些命令的写入，例如直接的 `tx.nodes.set` 或加载的文档。
+即使列表中多条测试触发同一个问题，每个问题代码在 `problems` 中最多出现一次。`insert` 和 `update` 会拒绝引入前四种问题的写入。它们从不拒绝名称冲突或答案冲突，由读取报告这些问题。问题来自之后的编辑，例如删除或修改条件指向的字段，或者来自绕过这些命令的写入，例如直接的 `tx.nodes.set` 或加载的文档。
 
-`applies` 说明字段在它的条件下是否适用。它依据文档当前持有的答案，以字段自己的角色的视角沿整条条件链读取：
+`applies` 说明字段在它的条件下是否适用。它依据文档当前持有的答案，以字段自己的角色的视角沿所有条件路径读取：
 
-- 字段没有条件、条件有问题或处于循环中，或者条件成立时，为 `true`。
-- 字段被跳过，即条件不成立时，为 `false`。
-- 依赖另一个角色尚未给出的答案时为 `null`，例如房东选择允许养宠物之前租客的宠物名字。只有 `applyFieldValues` 知道哪些角色已经提交，因此编辑器把这样的字段读作等待中。
+- 字段没有条件、条件有问题或处于循环中、条件成立，或 `any` 列表中至少有一项测试成立（即使另一项仍在等待）时，为 `true`。
+- 字段被跳过，即条件不成立，包括 `all` 列表中至少有一项测试不成立（即使另一项仍在等待）时，为 `false`。
+- 条件仍依赖另一个角色尚未给出的答案时为 `null`，例如租客勾选我有宠物后、房东选择允许养宠物之前的宠物名字。只有 `applyFieldValues` 知道哪些角色已经提交，因此编辑器把这样的字段读作等待中。
 
 条件指向被跳过字段的字段是确定的，即使那个被跳过的字段属于另一个角色。
 
@@ -394,7 +413,7 @@ await saveFilled(result.document);
 
 填写后的文档是模板加上每个被接受的答案，答案作为其字段的 `value`。默认值始终是设置，从不变成答案。
 
-成功时，`pending` 列出每个尚未提交、且有适用或等待中的必填字段的角色。它还列出每个这样的等待中字段下一个需要其答案的角色。可选字段从不会让角色出现在 `pending` 中。示例把 `pending` 显示为 Waiting on。
+成功时，`pending` 列出每个尚未提交、且有适用或等待中的必填字段的角色。它还列出尚未提交的角色下所有等待中字段（无论必填还是可选）所需的每个角色，沿每条等待路径取最远且尚未提交的角色。可选字段从不会让它自己的角色出现在 `pending` 中。示例把 `pending` 显示为 Waiting on。
 
 ### 拒绝 [#refusals]
 
@@ -409,7 +428,7 @@ await saveFilled(result.document);
 | `unknown-field` | 答案指向的字段不在模板中。 |
 | `wrong-role` | 答案属于另一个角色的字段。 |
 | `invalid-value` | 答案不符合它的字段。 |
-| `waiting` | 该角色的字段在等待一个尚未提交的角色，由 `waitsOn` 给出。即使该字段的答案也被拒绝，仍会报告这条拒绝。 |
+| `waiting` | 该角色的字段在等待一个或多个尚未提交的角色。`waitsOn` 给出其中按 UTF-16 码元顺序排在最前的角色。即使该字段的答案也被拒绝，仍会报告这条拒绝。 |
 | `skipped` | 该角色的字段被跳过，却持有已填答案。未填写的答案按原样保留，因此清空答案或取消勾选即可消除这条拒绝。 |
 | `missing-required` | 该角色的必填字段适用，但没有已填答案。 |
 | `answer-conflict` | 该角色的答案应用后，它的某个名称下的字段持有不同的值。拒绝会给出 `name`，并按文档顺序在 `fieldIds` 中列出该名称的每个字段。如果提交已经以 `invalid-value`、`waiting` 或 `skipped` 拒绝了该名称下的某个字段，则不报告这条拒绝。漏填的必填字段不会阻止它，因此它可能与 `missing-required` 一起出现。 |
@@ -428,7 +447,7 @@ applyFieldValues(template, [
 // { ok: false, refusals: [{ code: 'answer-conflict', fieldIds: ['tenant', 'tenant-again'], name: 'tenant_name', role: 'tenant' }] }
 ```
 
-在示例中，租客在房东之前点击 Submit 会得到一条 `waiting` 拒绝，因为宠物名字在等待房东的允许养宠物。房东提交否时，租客仍然输入的宠物名字会被拒绝为 `skipped`，直到清空它。
+在示例中，宠物名字在房东的允许养宠物为 `yes` 且租客勾选我有宠物时适用。租客勾选我有宠物并在房东之前点击 Submit，会得到一条 `waiting` 拒绝，因为宠物名字在等待房东的允许养宠物。如果租客不勾选我有宠物，`all` 列表无需等待房东就已不成立，宠物名字被跳过，租客可以先提交。房东提交否时，租客仍然输入的宠物名字会被拒绝为 `skipped`，直到清空它。
 
 两个角色互相等待对方的模板可以通过，因为第三个角色的答案可以让链上的某个字段被跳过，从而结束等待。两个字段都仍在等待时，先提交的角色会被拒绝为 `waiting`，等待另一个角色。
 
@@ -550,9 +569,9 @@ if (rent && !('problem' in rent) && rent.kind === 'number') {
 
 字段在移动（包括拖动移动）、被撤销恢复以及加载已保存的文档时保留它的 `fieldId`。复制会获得新 id：
 
-- 粘贴、拖动复制、`tx.blocks.duplicate` 和表格填充会给它们复制的每个字段新 id，并保留它的名称。指向同一份副本中字段的复制条件会指向那个字段的副本。
+- 粘贴、拖动复制、`tx.blocks.duplicate` 和表格填充会给它们复制的每个字段新 id，并保留它的名称。在复制的条件中，每个指向同一份副本内字段的测试都会指向该字段的副本。
 - 复制的条款可以同时包含一个有名称的字段及其条件指向的无名称字段。副本的条件随后指向复制出的字段，因此该名称下的两个字段检查不同的字段，两者都读到 `name-conflict`。给条件指向的字段及其副本取同一个名称，冲突就会消失。
-- 如果复制条件指向的字段没有被复制或没有落下，条件继续指向原字段。
+- 每个目标未被复制或在同文档粘贴中未落下的测试都会继续指向原字段。跨文档粘贴时，目标未落下的测试若在目标文档中找不到持有该 id 的字段，会报告 `missing-target`。
 - 粘贴到表格单元格选区时每个单元格复制一次，因此每个单元格中的条件指向它自己单元格里的副本。
 - 粘贴到另一个文档同样获得新 id。
 - 剪切后粘贴会给字段新 id，因此在撤销之前，其他地方指向它的条件会报告 `missing-target`。
@@ -568,7 +587,7 @@ if (rent && !('problem' in rent) && rent.kind === 'number') {
 <p>Pets allowed? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets allowed" data-field-name="pets_allowed" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-required="true" data-field-role="landlord" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-name="pet_name" data-field-required="true" data-field-role="tenant">[Pet name]</span></p>
 ```
 
-解析这段 HTML 会读回每个属性。span 需要 `data-field-kind`、`data-field-label` 和 `data-field-role` 才会被读成字段。粘贴的 HTML 模板会获得新 id，其中的条件指向副本。
+解析这段 HTML 会读回每个有效属性，丢弃格式错误的条件并保留该字段。span 需要 `data-field-kind`、`data-field-label` 和 `data-field-role` 才会被读成字段。粘贴的 HTML 模板会获得新 id，其中的条件指向副本。
 
 示例的 HTML 面板使用 `lossPolicy: 'allow'` 序列化，因为日期元素没有 HTML 编码器。面板为丢弃的日期列出一行 `html-unsupported-content`。
 
@@ -580,7 +599,7 @@ Markdown 把每个字段写成一个 `<field>` 标签，包含每个属性，`fi
 Pets allowed? <field kind="choice" label="Pets allowed" name="pets_allowed" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" required role="landlord" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" name="pet_name" required role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
 ```
 
-读取器需要 `kind`、`label` 和 `role`。缺少它们的标签保留为文本，并返回 `markdown-unsupported-node` diagnostic。粘贴的 Markdown 模板会获得新 id，其中的条件指向副本。
+读取器需要 `kind`、`label` 和 `role`，并会丢弃格式错误的条件同时保留字段。缺少它们的标签保留为文本，并返回 `markdown-unsupported-node` diagnostic。粘贴的 Markdown 模板会获得新 id，其中的条件指向副本。
 
 ## Word
 
@@ -609,6 +628,7 @@ const dropped = result.diagnostics.filter(
 | `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` 更新 | 修改字段的设置或值，并把值写入该角色中同名的每个字段。 |
 | `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` 读取 | 持有该 id 的字段及其问题和它是否适用，或 `null`。 |
 | `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` 读取 | 按阅读顺序返回每个字段及其问题和它是否适用。 |
+| `editor.plugin(BaseFieldPlugin).read.conditionTargets(fieldId)` | `BaseFieldPlugin` 读取 | 按文档顺序返回 `fieldId` 的条件测试可指向而不形成循环的字段，以及该条件已指向的目标。 |
 | `editor.plugin(BaseFieldPlugin).read.submission(role)` | `BaseFieldPlugin` 读取 | 一个角色的字段的值，以 `fieldId` 为键，用于传给 `applyFieldValues`。 |
 | `fillRole` | `BaseFieldPlugin` 状态 | 该编辑器填写时使用的角色，编辑模板时为 `null`。通过 `initialState` 或 `editor.plugin(FieldPlugin).store.set` 设置。 |
 | `useFieldRead(fieldId)` | `platejs/field/react` | 读取一个字段、它的问题以及它是否适用，任一变化时重新渲染。 |
@@ -619,4 +639,4 @@ const dropped = result.diagnostics.filter(
 | `fitsField(field, value)` | `platejs/field` | 判断一个值是否符合字段的类型和选项。 |
 | `fillsField(field, value)` | `platejs/field` | 判断一个值是否是字段的已填答案。 |
 | `FIELD_TESTS` | `platejs/field` | 每种类型的条件可以使用的测试。 |
-| `FieldElement`、`FieldSettings`、`FieldPatch`、`FieldRead`、`FieldCondition`、`FieldProblem`、`FieldKind`、`FieldTest`、`FieldValue`、`FieldOption`、`FieldSubmission`、`FieldRefusal`、`FieldApplyResult`、`FieldAnswer` | `platejs/field` | 字段类型。 |
+| `FieldElement`、`FieldSettings`、`FieldPatch`、`FieldRead`、`FieldCondition`、`FieldConditionTest`、`FieldProblem`、`FieldKind`、`FieldTest`、`FieldValue`、`FieldOption`、`FieldSubmission`、`FieldRefusal`、`FieldApplyResult`、`FieldAnswer` | `platejs/field` | 字段类型。 |

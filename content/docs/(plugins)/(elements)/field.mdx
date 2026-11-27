@@ -8,7 +8,7 @@ docs:
     title: Field Toolbar Button
 ---
 
-A field is a typed blank in a document that one role fills, such as a tenant's name, a start date, a checkbox or a signature. Each field is an inline void `field` element with a `kind`, a `role`, a `label` and a `fieldId` that no other field in the document holds. A field's `condition` names another field by that id. Plate checks roles, never users. Your app decides which person fills which role.
+A field is a typed blank in a document that one role fills, such as a tenant's name, a start date, a checkbox or a signature. Each field is an inline void `field` element with a `kind`, a `role`, a `label` and a `fieldId` that no other field in the document holds. A field's `condition` tests one or more fields by their `fieldId`. Plate checks roles, never users. Your app decides which person fills which role.
 
 <ComponentPreview name="field-demo" height="1340px" />
 
@@ -20,7 +20,7 @@ The demo is a lease template for a landlord, a tenant and an `app` role that hol
 
 - Inline void `field` element of six kinds: text, number, date, checkbox, choice and signature.
 - A role per field, a label, and an optional required flag, default, choice options and value, each checked against the field's kind.
-- A condition that names another field by its `fieldId` and tests that field's value. A field whose condition fails is skipped, so it needs no answer.
+- A condition of one test or an `all` or `any` list of two or more tests, each naming a field by its `fieldId`. A field whose condition fails is skipped, so it needs no answer.
 - An optional `name` that gives the fields of one role one answer, so a question the document asks twice is answered once.
 - `insert` and `update` commands that refuse a setting or condition that does not fit, and reads that report what is wrong with each field and whether it applies.
 - A fill-only view of one role, which takes that role's answers, refuses every other local change and undoes only that role's answers.
@@ -159,7 +159,7 @@ A field sits inside a paragraph, like a date or a mention.
 | `defaultValue` | `FieldValue` | A value of the field's kind. |
 | `options` | `FieldOption[]` | Choice fields only. Each option is `{ value, label }`, and no two share a `value`. |
 | `value` | `FieldValue` | The answer. A field is unfilled without one, or when `fillsField` says its answer does not fill it. |
-| `condition` | `FieldCondition` | `{ ref, test, value? }`, see [Conditions](#conditions). |
+| `condition` | `FieldCondition` | `{ ref, test, value? }`, `{ all: tests }` or `{ any: tests }`, see [Conditions](#conditions). |
 | `children` | `[{ text: '' }]` | Required child of an inline void element. |
 
 ## Kinds
@@ -203,7 +203,7 @@ A name is a text that is not empty, has no whitespace at either end, and holds n
 
 `update` writes a `value`, a cleared one included, to every field of the role that shares the field's name, in the same commit and the same undo step. No other setting reaches the other fields. In the demo, the lease asks for the tenant's name twice under one name, so typing it in one place fills the other, and undo takes it back in both.
 
-Fields of one role that share a name must share their kind, the values of their options and their condition. A default takes no part. Two conditions match when they name the same field, or fields of one role and name, with the same test and value. Each field of a name whose fields differ reads `name-conflict`, and `update` then writes a value to its own field alone. `insert` and `update` never refuse a name conflict, so an author can change the fields of a name one at a time.
+Fields of one role that share a name must share their kind, the values of their options and their condition. A default takes no part. Two conditions match when they have the same form (one test, `all` or `any`) and their tests match one to one in any order. Two tests match when they name the same field, or fields of one role and name whose own group reads no `name-conflict`, with the same test and value. Each field of a name whose fields differ reads `name-conflict`, and `update` then writes a value to its own field alone. `insert` and `update` never refuse a name conflict, so an author can change the fields of a name one at a time.
 
 Each field of a name whose fields hold different values reads `answer-conflict`. An empty text and no value differ, and so do `false` and no value. `insert` and a paste write no other field. So a field that joins a name with another value, or with none, reads `answer-conflict` until an `update` writes a value to a field of that name, which writes every field of it.
 
@@ -223,7 +223,7 @@ const fieldId = editor.plugin(BaseFieldPlugin).update.insert({
 });
 ```
 
-`insert` throws when a value, default or options do not fit the kind, when the settings name a `fieldId` or a name the [name rule](#names) refuses, or when the condition names no field, or a test or value that the named field's kind does not take.
+`insert` throws when a value, default or options do not fit the kind, when the settings name a `fieldId` or a name the [name rule](#names) refuses, or when the condition holds a test that names no field, or uses a test or value that the named field's kind does not take.
 
 `update` changes the settings or value of the field that holds a `fieldId`. A setting given as `undefined` is removed. A `value` also goes to every other field of the role and name.
 
@@ -239,36 +239,54 @@ editor.update((tx) => {
 - a setting the patch names does not fit the field's kind;
 - the patch names a `name` the name rule refuses;
 - the patch removes `kind`, `role` or `label`, or names `fieldId`;
-- the condition names no field, a test or value that the named field's kind does not take, or a field it did not name before whose chain of conditions leads back to this one.
+- a test of the condition has a problem (`missing-target`, `unsupported-test` or `invalid-value`) that the same test did not have before the patch, whether the patch added the test or changed the field's kind or options under it;
+- a test the patch adds names a field whose paths of conditions lead back to this one.
+
+A test that already had the same problem before the patch passes, so an author can fix one broken test while another stays broken, or remove a working test beside a broken one.
 
 A patch that changes `kind` or `options` also drops each value, default and options that the field no longer fits. Turning a number field with a default into a date field drops the default. The field keeps its `fieldId`.
 
 ## Conditions
 
-A condition says when a field applies. It applies when the field whose `fieldId` is `ref` passes `test`. Every test but `filled` and `blank` compares against `value`, which takes the shape of the named field's value. The demo's Pet name field, which the tenant fills, applies when the landlord's Pets allowed choice is `yes`:
+A condition says when a field applies. It is either one test, `{ ref, test, value? }`, or a list of two or more tests, `{ all: tests }` or `{ any: tests }`. Every test but `filled` and `blank` compares against `value`, which takes the shape of the named field's value. A list holds no nested list, and it may repeat a test. Loading, `insert`, `update` and a plain `tx.nodes.set` refuse a list with fewer than two tests, a nested list, an object with both `all` and `any`, and an object with both `ref` and a list. A test or a list keeps any extra keys it holds.
+
+The demo's Pet name field, which the tenant fills, applies when the landlord's Pets allowed choice is `yes` and the tenant ticked I have a pet:
 
 ```tsx
 editor.update((tx) => {
   tx.plugin(BaseFieldPlugin).update(petNameId, {
-    condition: { ref: petsId, test: 'equals', value: 'yes' },
+    condition: {
+      all: [
+        { ref: petsId, test: 'equals', value: 'yes' },
+        { ref: hasPetId, test: 'equals', value: true },
+      ],
+    },
   });
 });
 ```
 
-The popover's Show when list offers the field the condition names and every other field whose conditions do not lead back to this one. Its test list offers only the tests that field's kind takes.
+In the registry UI, the popover's Show when section reads its target choices from `read.conditionTargets(fieldId)`. A target owned by another role shows that role after its label. Its test list offers only the tests that field's kind takes. Click Add rule to build an `all` or `any` list, switch between Match all and Match any, or remove rules down to one to save a single test.
 
-The editor never hides a field. A field whose condition fails is skipped. It needs no answer even when it is `required`, and `applyFieldValues` refuses a filled answer for it. A condition tests the answer of the field it names:
+The editor never hides a field. A field whose condition fails is skipped. It needs no answer even when it is `required`, and `applyFieldValues` refuses a filled answer for it. A condition tests the answer of each field it names:
 
 - `equals` holds when the answer is `value`, and `not-equals` when it is not, no answer included.
 - `above` and `below` compare numbers, and ISO dates as dates. Neither holds without an answer.
 - An answer that does not fit its field's kind counts as no answer, and so does the answer of a field that is skipped itself.
 - A checkbox with no answer reads as `false` once its role is done answering. In the editor, that holds for a checkbox of the role that fills the field being read. In `applyFieldValues`, it holds once the checkbox's role has submitted.
 
-`update` refuses a condition that would close a loop, such as A naming B while B names A, or a field naming itself. A new test or value on a field of a loop passes. A loop can still come from a loaded document, a plain node write or two peers' updates made at the same time, and each of its fields then reports `condition-loop`.
+A list folds its tests over three states: holds, fails and waits.
+
+- An `all` list fails as soon as any test fails, even while another test waits. Otherwise it waits when any test waits, and holds when every test holds.
+- An `any` list holds as soon as any test holds, even while another test waits. Otherwise it waits when any test waits, and fails when every test fails.
+- When any test in a list has a problem, the whole condition counts as broken and the field applies.
+
+`update` refuses a condition when a test it adds names a field whose paths of conditions lead back to this one, such as A naming B while B names A, or a field naming itself. A new test or value on a `ref` the condition already held passes, and a field already in a loop still takes a new test on a field outside the loop. A loop can still come from a loaded document, a plain node write or two peers' updates made at the same time, and each field in the loop reports `condition-loop`. A field that only points into a loop reads the loop's field as applying.
 
 ## Read fields and their problems
 
-`read.field(fieldId)` returns the field that holds an id, in any root, or `null`. It looks up that field, then one field for each condition it follows along the chain. `read.fields()` returns every field of the document in reading order. Each read is a `FieldRead`: `{ applies, fieldId, node, problems }`.
+`read.field(fieldId)` returns the field that holds an id, in any root, or `null`. `read.fields()` returns every field of the document in reading order. Reads build the document's condition graph once per document version and share it across reads, judging each field once per reading role. Each read is a `FieldRead`: `{ applies, fieldId, node, problems }`.
+
+`read.conditionTargets(fieldId)` returns, in document order, every other field with no path of conditions leading back to `fieldId`, plus every field the condition already names (the field itself included when a test names it). An id that names no field returns an empty list.
 
 ```tsx
 import { BaseFieldPlugin } from 'platejs/field';
@@ -278,24 +296,25 @@ const fields = editor.plugin(BaseFieldPlugin).read;
 const tenant = fields.field(tenantId);
 const broken = fields.fields().filter((field) => field.problems.length > 0);
 const skipped = fields.fields().filter((field) => field.applies === false);
+const targets = fields.conditionTargets(petNameId);
 ```
 
 | Problem | When |
 |---------|------|
-| `missing-target` | No field holds the id its condition names, such as after that field is deleted. |
-| `unsupported-test` | The kind of the field its condition names does not take the condition's test. |
-| `invalid-value` | Its value, default or options do not fit its kind, or its condition's value does not fit the test or the named field's kind. |
-| `condition-loop` | Its condition names a field whose chain of conditions leads back to it, such as A naming B while B names A. |
+| `missing-target` | No field holds an id its condition names, such as after that field is deleted. |
+| `unsupported-test` | The kind of a field its condition names does not take that test. |
+| `invalid-value` | Its value, default or options do not fit its kind, or a test's value does not fit the test or the named field's kind. |
+| `condition-loop` | A path of conditions from the field leads back to it, such as A naming B while B names A. |
 | `name-conflict` | A field of its role and name has another kind, other option values or another condition. |
 | `answer-conflict` | A field of its role and name holds another value, or none. |
 
-`insert` and `update` refuse a write that would cause one of the first four problems. They never refuse a name or answer conflict, which the read reports. A problem comes from a later edit, such as deleting or changing the field a condition names, or from a write that skipped the commands, such as a plain `tx.nodes.set` or a loaded document.
+Each problem appears at most once in `problems`, even when several tests in a list share it. `insert` and `update` refuse a write that introduces one of the first four problems. They never refuse a name or answer conflict, which the read reports. A problem comes from a later edit, such as deleting or changing a field a condition names, or from a write that skipped the commands, such as a plain `tx.nodes.set` or a loaded document.
 
-`applies` says whether the field applies under its condition. It reads the answers the document holds now, along the whole chain of conditions, as the field's own role reads them:
+`applies` says whether the field applies under its condition. It reads the answers the document holds now, along every path of conditions, as the field's own role reads them:
 
-- `true` for a field with no condition, a condition that has a problem or one in a loop, and a condition that holds.
-- `false` for a skipped field, whose condition fails.
-- `null` while it depends on an answer another role has not given, such as the tenant's Pet name before the landlord picks Pets allowed. Only `applyFieldValues` knows which roles have submitted, so the editor reads such a field as waiting.
+- `true` for a field with no condition, a condition that has a problem or one in a loop, a condition that holds, or an `any` list where at least one test holds even while another waits.
+- `false` for a skipped field, whose condition fails, an `all` list where at least one test fails even while another waits included.
+- `null` while the condition still depends on an answer another role has not given, such as the tenant's Pet name once I have a pet is ticked before the landlord picks Pets allowed. Only `applyFieldValues` knows which roles have submitted, so the editor reads such a field as waiting.
 
 A field whose condition names a skipped field is decided, even when another role owns that field.
 
@@ -394,7 +413,7 @@ await saveFilled(result.document);
 
 The filled document is the template with each accepted answer set as its field's `value`. A default stays a setting and never becomes an answer.
 
-On success, `pending` lists each role that has not submitted and holds a required field that applies or waits. It also lists the role whose answer each such waiting field needs next. An optional field never puts a role in `pending`. The demo shows `pending` as Waiting on.
+On success, `pending` lists each role that has not submitted and holds a required field that applies or waits. It also lists every role needed by any waiting field, required or optional, of a role that has not submitted, taking the farthest unsubmitted role along each waiting path. An optional field never puts its own role in `pending`. The demo shows `pending` as Waiting on.
 
 ### Refusals
 
@@ -409,7 +428,7 @@ On a refusal, `result` is `{ ok: false, refusals }` with at least one refusal. W
 | `unknown-field` | An answer names no field of the template. |
 | `wrong-role` | An answer is for another role's field. |
 | `invalid-value` | An answer does not fit its field. |
-| `waiting` | A field of the role waits on a role that has not submitted, which `waitsOn` names. It is reported even when the field's answer is refused too. |
+| `waiting` | A field of the role waits on one or more roles that have not submitted. `waitsOn` names the first of those roles in UTF-16 code-unit order. It is reported even when the field's answer is refused too. |
 | `skipped` | A field of the role is skipped and holds a filled answer. An unfilled answer stays as written, so clearing the answer or unticking the box ends the refusal. |
 | `missing-required` | A required field of the role applies and has no filled answer. |
 | `answer-conflict` | Once the role's answers apply, the fields of one of its names hold different values. The refusal names the `name` and lists every field of the name in document order as `fieldIds`. A name gets none when the submission already refused one of its fields as `invalid-value`, `waiting` or `skipped`. A required field left out does not stop it, so it can come beside `missing-required`. |
@@ -428,7 +447,7 @@ applyFieldValues(template, [
 // { ok: false, refusals: [{ code: 'answer-conflict', fieldIds: ['tenant', 'tenant-again'], name: 'tenant_name', role: 'tenant' }] }
 ```
 
-In the demo, the tenant's Submit before the landlord's gets a `waiting` refusal, because Pet name waits on the landlord's Pets allowed. When the landlord submits No, a pet name the tenant types anyway is refused as `skipped` until it is cleared.
+In the demo, Pet name applies when the landlord's Pets allowed is `yes` and the tenant's I have a pet is ticked. When the tenant ticks I have a pet and submits before the landlord, Submit gets a `waiting` refusal, because Pet name waits on the landlord's Pets allowed. While I have a pet stays unticked, the `all` list fails without waiting on the landlord, so Pet name is skipped and the tenant can submit first. When the landlord submits No, a pet name the tenant types anyway is refused as `skipped` until it is cleared.
 
 A template where two roles each wait on the other passes, because a third role's answer can end the wait by making a field along the chain skip. While both fields still wait, the role that submits first is refused as `waiting` on the other.
 
@@ -550,9 +569,9 @@ The read keeps no record of submissions, so it says nothing of which fields appl
 
 A field keeps its `fieldId` through a move, a drag move included, through an undo that brings it back and when a saved document loads. A copy gets new ids:
 
-- A paste, a drag copy, `tx.blocks.duplicate` and a table fill give each field they copy a new id and keep its name. A copied condition that names a field in the same copy names that field's copy.
+- A paste, a drag copy, `tx.blocks.duplicate` and a table fill give each field they copy a new id and keep its name. In a copied condition, each test that names a field in the same copy names that field's copy.
 - A copied clause can hold a named field together with the unnamed field its condition names. The copy's condition then names the copied field, so the two fields of the name test different fields and both read `name-conflict`. Give the condition's field and its copy one name, and the conflict ends.
-- A copied condition whose field was not copied, or did not land, keeps naming the original.
+- Each test whose target was not copied, or did not land in a same-document paste, keeps naming the original. In a cross-document paste, a test whose target did not land reports `missing-target` when no field in the destination holds that id.
 - A paste into a table cell selection copies once per cell, so a condition in each cell names the copy in its own cell.
 - A paste into another document gets new ids too.
 - Cut and paste gives the field a new id, so a condition elsewhere that named it reports `missing-target` until an undo.
@@ -568,7 +587,7 @@ In Suggesting mode, a change from a field to a mention shows the field as delete
 <p>Pets allowed? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets allowed" data-field-name="pets_allowed" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-required="true" data-field-role="landlord" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-name="pet_name" data-field-required="true" data-field-role="tenant">[Pet name]</span></p>
 ```
 
-Parsing that HTML reads every property back. A span needs `data-field-kind`, `data-field-label` and `data-field-role` to read as a field. A pasted HTML template gets new ids, and its conditions name the copies.
+Parsing that HTML reads every valid property back, dropping a malformed condition while keeping the field. A span needs `data-field-kind`, `data-field-label` and `data-field-role` to read as a field. A pasted HTML template gets new ids, and its conditions name the copies.
 
 The demo's HTML panel serializes with `lossPolicy: 'allow'`, because the date element has no HTML encoder. The panel lists one `html-unsupported-content` line for the date it drops.
 
@@ -580,7 +599,7 @@ Markdown writes each field as a `<field>` tag with every property, the `fieldId`
 Pets allowed? <field kind="choice" label="Pets allowed" name="pets_allowed" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" required role="landlord" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" name="pet_name" required role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
 ```
 
-The reader needs `kind`, `label` and `role`. A tag without them stays as text, with a `markdown-unsupported-node` diagnostic. A pasted Markdown template gets new ids, and its conditions name the copies.
+The reader needs `kind`, `label` and `role`, and drops a malformed condition while keeping the field. A tag without them stays as text, with a `markdown-unsupported-node` diagnostic. A pasted Markdown template gets new ids, and its conditions name the copies.
 
 ## Word
 
@@ -609,6 +628,7 @@ Plain text, through `serializePlainText` from `platejs`, writes the same text as
 | `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` update | Changes a field's settings or value, and writes a value to every field of its role and name. |
 | `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` read | The field that holds an id, with its problems and whether it applies, or `null`. |
 | `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` read | Every field in reading order, with its problems and whether it applies. |
+| `editor.plugin(BaseFieldPlugin).read.conditionTargets(fieldId)` | `BaseFieldPlugin` read | Fields that a condition test on `fieldId` may target without closing a loop, plus targets the condition already names, in document order. |
 | `editor.plugin(BaseFieldPlugin).read.submission(role)` | `BaseFieldPlugin` read | The values of one role's fields, keyed by `fieldId`, to pass to `applyFieldValues`. |
 | `fillRole` | `BaseFieldPlugin` state | The role this editor fills as, or `null` while authoring. Set it through `initialState` or `editor.plugin(FieldPlugin).store.set`. |
 | `useFieldRead(fieldId)` | `platejs/field/react` | Reads one field, its problems and whether it applies, and renders again when any of them changes. |
@@ -619,4 +639,4 @@ Plain text, through `serializePlainText` from `platejs`, writes the same text as
 | `fitsField(field, value)` | `platejs/field` | Whether a value fits a field's kind and options. |
 | `fillsField(field, value)` | `platejs/field` | Whether a value is a filled answer for a field. |
 | `FIELD_TESTS` | `platejs/field` | The tests a condition may use on each kind. |
-| `FieldElement`, `FieldSettings`, `FieldPatch`, `FieldRead`, `FieldCondition`, `FieldProblem`, `FieldKind`, `FieldTest`, `FieldValue`, `FieldOption`, `FieldSubmission`, `FieldRefusal`, `FieldApplyResult`, `FieldAnswer` | `platejs/field` | Field types. |
+| `FieldElement`, `FieldSettings`, `FieldPatch`, `FieldRead`, `FieldCondition`, `FieldConditionTest`, `FieldProblem`, `FieldKind`, `FieldTest`, `FieldValue`, `FieldOption`, `FieldSubmission`, `FieldRefusal`, `FieldApplyResult`, `FieldAnswer` | `platejs/field` | Field types. |
