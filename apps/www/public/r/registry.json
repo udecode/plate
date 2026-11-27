@@ -1117,6 +1117,7 @@
       "dependencies": [
         "platejs",
         "sonner",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [

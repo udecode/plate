@@ -310,13 +310,6 @@ export const attachInkPick = ({
     const { pointerId } = event;
 
     if (current.type === 'lasso') {
-      // The prevented press moves no focus, and the keys on the pick act only
-      // in the Editable.
-      if (
-        !view.api.dom.editable()?.contains(layer.ownerDocument.activeElement)
-      ) {
-        view.api.dom.focus();
-      }
       contact = { loop: [], path: '', pointerId, tool: current };
       for (const [name, value] of Object.entries(LOOP)) {
         preview.setAttribute(name, value);
@@ -357,6 +350,11 @@ export const attachInkPick = ({
       lasso(current, pointOf(event));
       end();
       pick(current.loop);
+      const editable = view.api.dom.editable();
+
+      if (editable && !editable.contains(layer.ownerDocument.activeElement)) {
+        editable.focus({ preventScroll: true });
+      }
 
       return;
     }

@@ -44,13 +44,11 @@ export const INK_PEN_SIZES = [1.5, 2.5, 4] as const;
 export const INK_HIGHLIGHT_SIZES = [12, 16, 22] as const;
 export const INK_ERASER_SIZES = [12, 16, 24] as const;
 
-const INK_HIGHLIGHT_OPACITY = 0.4;
-
 const DEFAULT_PREFS: InkBrushPrefs = Object.freeze({
   eraserSize: INK_ERASER_SIZES[1],
   highlighter: Object.freeze({
     color: INK_HIGHLIGHT_COLORS[0].value,
-    opacity: INK_HIGHLIGHT_OPACITY,
+    opacity: 0.4,
     size: INK_HIGHLIGHT_SIZES[1],
   }),
   lastKind: 'pen',

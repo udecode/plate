@@ -1,5 +1,5 @@
 {
-  "generation": "59277be8f813e5636f8937ec682d89038e15803feb05bf440d61931db13dff25",
+  "generation": "2fe7c31e07d3199d9097592c44421f8fcf00da39127c63266949099dbc41b94f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1139,6 +1139,7 @@
           "dependencies": [
             "platejs",
             "sonner",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -9106,6 +9107,7 @@
           "dependencies": [
             "platejs",
             "sonner",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],

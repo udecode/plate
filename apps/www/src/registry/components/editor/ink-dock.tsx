@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -68,7 +69,6 @@ import {
   validateInkDigitizeReading,
 } from '@/registry/lib/ink-digitize';
 
-const DEFAULT_MODEL = 'google/gemini-3.8-flash';
 const DIGITIZE_ENDPOINT = '/api/ai/ink-digitize';
 const SIZE_NAMES = [
   ['Small', 'S'],
@@ -80,8 +80,6 @@ const digitizeAllByEditable = new WeakMap<HTMLElement, () => void>();
 const digitizeAllByView = new WeakMap<object, () => void>();
 const digitizeAllByOwner = new WeakMap<object, Set<() => void>>();
 
-// One Digitize run at a time per editor: every view of it hides its dock and
-// lasso actions while one view reads, confirms or saves.
 type DigitizeLock = { holder: object | null; listeners: Set<() => void> };
 
 const digitizeLocks = new WeakMap<object, DigitizeLock>();
@@ -151,7 +149,7 @@ type BatchContext = Readonly<{
 type DigitizeNotice =
   | Readonly<{ kind: 'error'; message: string; needsKey?: boolean }>
   | Readonly<{ kind: 'needs-key' }>
-  | Readonly<{ kind: 'passage-too-large'; markIds: readonly string[] }>
+  | Readonly<{ kind: 'passage-too-large' }>
   | Readonly<{
       canRetryLassoOnly: boolean;
       kind: 'too-many-words';
@@ -177,8 +175,21 @@ type ConfirmState = Readonly<{
 type SessionState =
   | Readonly<{ kind: 'confirm'; state: ConfirmState }>
   | Readonly<{ kind: 'idle' }>
-  | Readonly<{ kind: 'loading'; pickedIds: readonly string[] }>
+  | Readonly<{ kind: 'loading' }>
   | Readonly<{ kind: 'notice'; notice: DigitizeNotice }>;
+
+const unauthorizedNotice = (apiKey: string): SessionState =>
+  apiKey
+    ? {
+        kind: 'notice',
+        notice: {
+          kind: 'error',
+          message:
+            'Add a valid AI Gateway API key in Settings to digitize ink.',
+          needsKey: true,
+        },
+      }
+    : { kind: 'notice', notice: { kind: 'needs-key' } };
 
 const describeEdit = (edit: InkDigitizeEdit): string => {
   if (edit.kind === 'delete') return `Delete "${edit.quote}"`;
@@ -272,14 +283,13 @@ function PenNib({ color }: { color: string }) {
   return (
     <svg aria-hidden fill="none" viewBox="0 0 24 24">
       <path
-        d="M8 23V12l4-9 4 9v11"
-        fill="var(--background)"
+        d="M8.5 24V13.5L12 3l3.5 10.5V24"
+        fill="none"
         stroke="currentColor"
         strokeLinejoin="round"
         strokeWidth={1.5}
       />
-      <path d="M10.2 7 12 3l1.8 4Z" fill={color} />
-      <path d="M8 12h8" stroke="currentColor" strokeWidth={1.5} />
+      <path d="M10.6 7.2 12 3l1.4 4.2Z" fill={color} />
     </svg>
   );
 }
@@ -288,14 +298,14 @@ function HighlighterNib({ color }: { color: string }) {
   return (
     <svg aria-hidden fill="none" viewBox="0 0 24 24">
       <path
-        d="M7 23v-9h10v9"
-        fill="var(--background)"
+        d="M6.5 24v-9.5h11V24"
+        fill="none"
         stroke="currentColor"
         strokeLinejoin="round"
         strokeWidth={1.5}
       />
       <path
-        d="M8.5 14v-3.5l7-3.5v7"
+        d="M8 14.5V10l8-3v7.5Z"
         fill={color}
         stroke="currentColor"
         strokeLinejoin="round"
@@ -309,22 +319,21 @@ function EraserNib() {
   return (
     <svg aria-hidden fill="none" viewBox="0 0 24 24">
       <path
-        d="M7.5 23V11a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v12"
-        fill="var(--background)"
+        d="M7 24V10.5A2.5 2.5 0 0 1 9.5 8h5a2.5 2.5 0 0 1 2.5 2.5V24"
+        fill="none"
         stroke="currentColor"
         strokeLinejoin="round"
         strokeWidth={1.5}
       />
       <rect
         fill="currentColor"
-        fillOpacity={0.2}
-        height={5.25}
-        rx={1.25}
-        width={7.5}
-        x={8.25}
-        y={9.75}
+        fillOpacity={0.28}
+        height={5}
+        rx={1.75}
+        width={8.5}
+        x={7.75}
+        y={8.75}
       />
-      <path d="M7.5 15h9" stroke="currentColor" strokeWidth={1.5} />
     </svg>
   );
 }
@@ -339,30 +348,28 @@ function LassoNib() {
       strokeWidth={1.5}
       viewBox="0 0 24 24"
     >
-      <ellipse cx={12} cy={9} rx={7.5} ry={5} strokeDasharray="3 2.5" />
-      <path d="M8 13.5c-1.3 1-1.8 2.3-1.3 3.6.5 1.4 2 1.9 3.3 1.4" />
-      <circle cx={11} cy={18.4} fill="currentColor" r={1.2} stroke="none" />
+      <ellipse
+        cx={12}
+        cy={9.5}
+        rx={7.25}
+        ry={4.5}
+        strokeDasharray="2 2"
+        transform="rotate(-18 12 9.5)"
+      />
+      <path d="M8.5 14c-1.5 1.3-2 3-1 4.4 1 1.4 3.2 1.4 4.4.3" />
+      <circle cx={12.2} cy={18.5} fill="currentColor" r={1.3} stroke="none" />
     </svg>
   );
 }
 
-function BrushOptionsIcon() {
-  return (
-    <svg
-      aria-hidden
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      viewBox="0 0 24 24"
-    >
-      <path d="M5 6.5h14" strokeWidth={1} />
-      <path d="M5 12h14" strokeWidth={2} />
-      <path d="M5 17.5h14" strokeWidth={3.5} />
-    </svg>
-  );
-}
+const previewRadius = (kind: InkToolKind, size: number) => {
+  if (kind === 'eraser') return Math.min(6.5, Math.max(3, size / 4));
+  if (kind === 'highlighter') return Math.min(6.5, Math.max(3, size / 3.6));
 
-function SizePreview({
+  return Math.min(5.5, Math.max(1.75, size * 1.15));
+};
+
+function BrushSizeDot({
   color,
   kind,
   size,
@@ -371,6 +378,8 @@ function SizePreview({
   kind: InkToolKind;
   size: number;
 }) {
+  const r = previewRadius(kind, size);
+
   if (kind === 'eraser') {
     return (
       <svg aria-hidden viewBox="0 0 16 16">
@@ -378,9 +387,9 @@ function SizePreview({
           cx={8}
           cy={8}
           fill="none"
-          r={size / 4}
+          r={r}
           stroke="currentColor"
-          strokeWidth={1.25}
+          strokeWidth={1.4}
         />
       </svg>
     );
@@ -388,15 +397,12 @@ function SizePreview({
 
   return (
     <svg aria-hidden viewBox="0 0 16 16">
-      <line
-        stroke={color}
-        strokeLinecap="round"
-        strokeOpacity={kind === 'highlighter' ? 0.55 : 1}
-        strokeWidth={kind === 'highlighter' ? size / 3 : size}
-        x1={3}
-        x2={13}
-        y1={8}
-        y2={8}
+      <circle
+        cx={8}
+        cy={8}
+        fill={color}
+        fillOpacity={kind === 'highlighter' ? 0.8 : 1}
+        r={r}
       />
     </svg>
   );
@@ -404,10 +410,12 @@ function SizePreview({
 
 function SwatchRow({
   brush,
+  className,
   colors,
   onPick,
 }: {
   brush: InkBrush;
+  className?: string;
   colors: typeof INK_HIGHLIGHT_COLORS | typeof INK_PEN_COLORS;
   onPick: (color: string) => void;
 }) {
@@ -415,7 +423,10 @@ function SwatchRow({
     <button
       aria-label={swatch.label}
       aria-pressed={brush.color === swatch.value}
-      className="size-5 shrink-0 rounded-full border border-black/10 transition-transform outline-none hover:scale-110 focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-pressed:ring-2 aria-pressed:ring-ring aria-pressed:ring-offset-2 aria-pressed:ring-offset-background dark:border-white/15"
+      className={cn(
+        'size-5 shrink-0 rounded-full border border-black/10 transition-transform outline-none hover:scale-110 focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-pressed:ring-2 aria-pressed:ring-foreground/80 aria-pressed:ring-offset-2 aria-pressed:ring-offset-background dark:border-white/15',
+        className
+      )}
       key={swatch.value}
       onClick={() => onPick(swatch.value)}
       onMouseDown={keepFocus}
@@ -439,21 +450,16 @@ export function InkDock() {
   const tool = useViewStore(InkPlugin, (state) => state.tool);
   const hidden = useViewStore(InkPlugin, (state) => state.hidden);
   const picked = useViewStore(InkPlugin, (state) => state.picked);
-  const readOnly = useEditorSelector(
-    (current) => current.read.view.isReadOnly(),
-    { dependsOn: 'readOnly' }
-  );
-  const authoredPreview = useEditorSelector(
+  const canDigitize = useEditorSelector(
     (current) => {
+      if (current.read.view.isReadOnly()) return false;
+
       const authored = current.plugin(AuthoredPlugin);
 
-      if (!authored.installed) return false;
-
-      return 'preview' in authored.read.view();
+      return !(authored.installed && 'preview' in authored.read.view());
     },
-    { dependsOn: 'authored' }
+    { dependsOn: ['readOnly', 'authored'] }
   );
-  const canDigitize = !readOnly && !authoredPreview;
   const ownerLocked = useDigitizeLocked(owner);
 
   const { pickedDigitized, pickedLive, pickedShown } = useEditorSelector(
@@ -486,6 +492,9 @@ export function InkDock() {
   const [collapsed, setCollapsed] = React.useState(false);
   const [flyoutOpen, setFlyoutOpen] = React.useState(false);
   const [pill, setPill] = React.useState<HTMLDivElement | null>(null);
+  const [optionsEl, setOptionsEl] = React.useState<HTMLButtonElement | null>(
+    null
+  );
   const abortRef = React.useRef<AbortController | null>(null);
   const savingRef = React.useRef(false);
   const dockRef = React.useRef<HTMLDivElement | null>(null);
@@ -575,7 +584,6 @@ export function InkDock() {
           (!!dock?.contains(target) || !!container?.contains(target)));
 
       if (event.key === 'Escape') {
-        // Escape in another split pane belongs to that pane.
         if (!ours) return;
         event.preventDefault();
         event.stopPropagation();
@@ -687,7 +695,7 @@ export function InkDock() {
     const model =
       typeof body.model === 'string' && body.model.trim().length > 0
         ? body.model.trim()
-        : DEFAULT_MODEL;
+        : 'google/gemini-3.8-flash';
 
     return { apiKey, model };
   }, [editor]);
@@ -710,7 +718,7 @@ export function InkDock() {
       const controller = new AbortController();
 
       abortRef.current = controller;
-      setSession({ kind: 'loading', pickedIds: [...ids] });
+      setSession({ kind: 'loading' });
 
       const prep = await prepareInkDigitizeRequest(editor, ids, {
         lassoOnly: options?.lassoOnly,
@@ -739,7 +747,7 @@ export function InkDock() {
       if (prep.kind === 'passage-too-large') {
         setSession({
           kind: 'notice',
-          notice: { kind: 'passage-too-large', markIds: prep.markIds },
+          notice: { kind: 'passage-too-large' },
         });
 
         return;
@@ -760,19 +768,7 @@ export function InkDock() {
         if (controller.signal.aborted || !canDigitizeInk(editor)) return;
 
         if (response.status === 401) {
-          setSession(
-            apiKey
-              ? {
-                  kind: 'notice',
-                  notice: {
-                    kind: 'error',
-                    message:
-                      'Add a valid AI Gateway API key in Settings to digitize ink.',
-                    needsKey: true,
-                  },
-                }
-              : { kind: 'notice', notice: { kind: 'needs-key' } }
-          );
+          setSession(unauthorizedNotice(apiKey));
 
           return;
         }
@@ -855,10 +851,15 @@ export function InkDock() {
   );
 
   const runDigitizeAll = React.useCallback(() => {
+    if (!claimDigitizeLock(owner, lockToken)) return;
+
     const batches = planInkDigitizeAllBatches(editor);
 
-    if (batches.length === 0) return;
-    if (!claimDigitizeLock(owner, lockToken)) return;
+    if (batches.length === 0) {
+      releaseDigitizeLock(owner, lockToken);
+
+      return;
+    }
 
     const [first, ...remaining] = batches;
 
@@ -872,12 +873,7 @@ export function InkDock() {
 
   React.useEffect(() => {
     const triggers = digitizeAllByOwner.get(owner) ?? new Set();
-    // A press from a toolbar starts a run only while no view of the editor
-    // has one.
-    const trigger = () => {
-      if (digitizeLock(owner).holder) return;
-      runDigitizeAll();
-    };
+    const trigger = () => runDigitizeAll();
     const editable = editableRef.current;
 
     digitizeAllByOwner.set(owner, triggers);
@@ -896,141 +892,48 @@ export function InkDock() {
     };
   }, [editableRef, editor, owner, runDigitizeAll]);
 
-  const handleReask = React.useCallback(
-    async (correctionIndex: number) => {
-      if (session.kind !== 'confirm') return;
-      const { state } = session;
-      const instruction = (state.typedByIndex[correctionIndex] ?? '').trim();
-      const target = state.validated.corrections[correctionIndex];
+  const handleReask = async (correctionIndex: number) => {
+    if (session.kind !== 'confirm') return;
+    const { state } = session;
+    const instruction = (state.typedByIndex[correctionIndex] ?? '').trim();
+    const target = state.validated.corrections[correctionIndex];
 
-      if (!instruction || !target) return;
+    if (!instruction || !target) return;
 
-      const { apiKey, model } = readAiConfig();
+    const { apiKey, model } = readAiConfig();
 
-      setSession({
-        kind: 'confirm',
-        state: { ...state, reaskingIndex: correctionIndex, staleMessage: null },
+    setSession({
+      kind: 'confirm',
+      state: { ...state, reaskingIndex: correctionIndex, staleMessage: null },
+    });
+
+    const controller = new AbortController();
+
+    abortRef.current = controller;
+
+    try {
+      const response = await fetch(DIGITIZE_ENDPOINT, {
+        body: JSON.stringify({
+          ...state.prepared.request,
+          ...(apiKey ? { apiKey } : {}),
+          correction: { marks: [...target.markKeys] },
+          instruction,
+          model,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        signal: controller.signal,
       });
 
-      const controller = new AbortController();
+      if (controller.signal.aborted || !canDigitizeInk(editor)) return;
 
-      abortRef.current = controller;
+      if (response.status === 401) {
+        setSession(unauthorizedNotice(apiKey));
 
-      try {
-        const response = await fetch(DIGITIZE_ENDPOINT, {
-          body: JSON.stringify({
-            ...state.prepared.request,
-            ...(apiKey ? { apiKey } : {}),
-            correction: { marks: [...target.markKeys] },
-            instruction,
-            model,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-          method: 'POST',
-          signal: controller.signal,
-        });
+        return;
+      }
 
-        if (controller.signal.aborted || !canDigitizeInk(editor)) return;
-
-        if (response.status === 401) {
-          setSession(
-            apiKey
-              ? {
-                  kind: 'notice',
-                  notice: {
-                    kind: 'error',
-                    message:
-                      'Add a valid AI Gateway API key in Settings to digitize ink.',
-                    needsKey: true,
-                  },
-                }
-              : { kind: 'notice', notice: { kind: 'needs-key' } }
-          );
-
-          return;
-        }
-
-        if (!response.ok) {
-          setSession((prev) =>
-            prev.kind === 'confirm'
-              ? {
-                  kind: 'confirm',
-                  state: {
-                    ...prev.state,
-                    reaskingIndex: null,
-                    staleMessage: `Could not re-read meaning (${response.status}).`,
-                  },
-                }
-              : prev
-          );
-
-          return;
-        }
-
-        const reading = (await response.json()) as InkDigitizeReading;
-
-        if (controller.signal.aborted || !canDigitizeInk(editor)) return;
-
-        const mergedReading: InkDigitizeReading = {
-          corrections: state.validated.corrections.map((c, idx) =>
-            idx === correctionIndex
-              ? {
-                  marks: [...c.markKeys],
-                  meanings: reading.corrections[0]?.meanings ?? c.meanings,
-                }
-              : { marks: [...c.markKeys], meanings: [...c.meanings] }
-          ),
-          request: reading.request,
-        };
-        const revalidated = validateInkDigitizeReading(
-          state.prepared,
-          mergedReading,
-          latestInkDigitizeRequestId(editor)
-        );
-
-        if (!revalidated.ok) {
-          setSession((prev) =>
-            prev.kind === 'confirm'
-              ? {
-                  kind: 'confirm',
-                  state: {
-                    ...prev.state,
-                    reaskingIndex: null,
-                    staleMessage: `That meaning did not match the marked words (${revalidated.reason}).`,
-                  },
-                }
-              : prev
-          );
-
-          return;
-        }
-
-        setSession((prev) => {
-          if (prev.kind !== 'confirm') return prev;
-          const nextKept = new Set(prev.state.keptIndices);
-          const nextMeanings = new Map(prev.state.meaningIndices);
-
-          nextKept.add(correctionIndex);
-          nextMeanings.set(correctionIndex, 0);
-
-          return {
-            kind: 'confirm',
-            state: {
-              ...prev.state,
-              keptIndices: nextKept,
-              meaningIndices: nextMeanings,
-              reaskingIndex: null,
-              staleMessage: null,
-              typedByIndex: {
-                ...prev.state.typedByIndex,
-                [correctionIndex]: '',
-              },
-              validated: revalidated,
-            },
-          };
-        });
-      } catch {
-        if (controller.signal.aborted) return;
+      if (!response.ok) {
         setSession((prev) =>
           prev.kind === 'confirm'
             ? {
@@ -1038,17 +941,95 @@ export function InkDock() {
                 state: {
                   ...prev.state,
                   reaskingIndex: null,
-                  staleMessage: 'Could not re-read that meaning.',
+                  staleMessage: `Could not re-read meaning (${response.status}).`,
                 },
               }
             : prev
         );
-      }
-    },
-    [editor, readAiConfig, session]
-  );
 
-  const handleConfirm = React.useCallback(async () => {
+        return;
+      }
+
+      const reading = (await response.json()) as InkDigitizeReading;
+
+      if (controller.signal.aborted || !canDigitizeInk(editor)) return;
+
+      const mergedReading: InkDigitizeReading = {
+        corrections: state.validated.corrections.map((c, idx) =>
+          idx === correctionIndex
+            ? {
+                marks: [...c.markKeys],
+                meanings: reading.corrections[0]?.meanings ?? c.meanings,
+              }
+            : { marks: [...c.markKeys], meanings: [...c.meanings] }
+        ),
+        request: reading.request,
+      };
+      const revalidated = validateInkDigitizeReading(
+        state.prepared,
+        mergedReading,
+        latestInkDigitizeRequestId(editor)
+      );
+
+      if (!revalidated.ok) {
+        setSession((prev) =>
+          prev.kind === 'confirm'
+            ? {
+                kind: 'confirm',
+                state: {
+                  ...prev.state,
+                  reaskingIndex: null,
+                  staleMessage: `That meaning did not match the marked words (${revalidated.reason}).`,
+                },
+              }
+            : prev
+        );
+
+        return;
+      }
+
+      setSession((prev) => {
+        if (prev.kind !== 'confirm') return prev;
+        const nextKept = new Set(prev.state.keptIndices);
+        const nextMeanings = new Map(prev.state.meaningIndices);
+
+        nextKept.add(correctionIndex);
+        nextMeanings.set(correctionIndex, 0);
+
+        return {
+          kind: 'confirm',
+          state: {
+            ...prev.state,
+            keptIndices: nextKept,
+            meaningIndices: nextMeanings,
+            reaskingIndex: null,
+            staleMessage: null,
+            typedByIndex: {
+              ...prev.state.typedByIndex,
+              [correctionIndex]: '',
+            },
+            validated: revalidated,
+          },
+        };
+      });
+    } catch {
+      if (controller.signal.aborted) return;
+      setSession((prev) =>
+        prev.kind === 'confirm'
+          ? {
+              kind: 'confirm',
+              state: {
+                ...prev.state,
+                reaskingIndex: null,
+                staleMessage: 'Could not re-read that meaning.',
+              },
+            }
+          : prev
+      );
+    }
+  };
+
+  const handleConfirm = async () => {
     if (session.kind !== 'confirm' || session.state.saving) return;
     if (savingRef.current || !claimDigitizeLock(owner, lockToken)) return;
     savingRef.current = true;
@@ -1174,15 +1155,15 @@ export function InkDock() {
     }
 
     closeSession();
-  }, [closeSession, editor, lockToken, owner, runDigitize, session]);
+  };
 
-  const handleBringBack = React.useCallback(() => {
+  const handleBringBack = () => {
     if (pickedDigitized.length === 0 || !canDigitize) return;
     editor.update((tx) => {
       tx.plugin(InkPlugin).setDigitized(pickedDigitized, false);
     });
     editor.plugin(InkPlugin).api.setPicked([]);
-  }, [canDigitize, editor, pickedDigitized]);
+  };
 
   const handleDelete = () => {
     if (!canDigitize) return;
@@ -1262,7 +1243,7 @@ export function InkDock() {
 
   return (
     <div
-      className="pointer-events-none sticky top-[calc(100%-1rem)] bottom-4 z-50 flex h-0 items-end justify-center overflow-visible px-4"
+      className="pointer-events-none sticky top-[calc(100%-1rem)] bottom-4 z-50 flex h-0 items-end justify-center overflow-visible px-4 max-sm:pe-16"
       data-ink-digitize-locked={locked ? 'true' : undefined}
       data-ink-digitize-ui=""
       ref={dockRef}
@@ -1271,21 +1252,20 @@ export function InkDock() {
         <div className="relative flex max-w-full flex-col items-center gap-2">
           {showLasso && (
             <div
-              className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-xl border bg-background/95 px-2 py-1 shadow-md backdrop-blur-md"
+              className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-1 rounded-2xl border bg-background/95 p-1 ps-2.5 shadow-md backdrop-blur-md"
               data-ink-lasso-actions=""
             >
               <span
                 aria-live="polite"
-                className="px-1 text-xs font-medium text-muted-foreground tabular-nums"
+                className="pe-1 text-xs font-medium text-muted-foreground tabular-nums"
               >
-                {pickedLive.length + pickedDigitized.length} selected
+                {pickedShown.length + pickedDigitized.length} selected
               </span>
               {pickedShown.length > 0 && (
                 <>
                   <Button
                     disabled={!canDigitize}
                     onClick={() => {
-                      if (digitizeLock(owner).holder) return;
                       void runDigitize(pickedShown);
                     }}
                     onMouseDown={keepFocus}
@@ -1299,7 +1279,7 @@ export function InkDock() {
                     onClick={handleDelete}
                     onMouseDown={keepFocus}
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                   >
                     <Trash2Icon className="me-1.5 size-3.5" />
                     Delete
@@ -1319,12 +1299,14 @@ export function InkDock() {
                 </Button>
               )}
               <Button
+                aria-label="Clear pick"
                 onClick={() => editor.plugin(InkPlugin).api.setPicked([])}
                 onMouseDown={keepFocus}
-                size="sm"
+                size="icon-sm"
+                title="Clear pick"
                 variant="ghost"
               >
-                Clear pick
+                <X className="size-3.5" />
               </Button>
             </div>
           )}
@@ -1338,17 +1320,24 @@ export function InkDock() {
               ref={setPill}
             >
               {collapsed ? (
-                <span
-                  aria-hidden
-                  className="flex size-8 items-center justify-center [&_svg]:size-6"
+                <ToolbarButton
+                  aria-label="Expand ink tools"
+                  className="h-8 gap-1 px-1.5 [&_svg:first-child]:size-6"
+                  onClick={() => setCollapsed(false)}
+                  tooltip="Expand ink tools"
                 >
                   {activeIcon}
-                </span>
+                  <ChevronUpIcon className="size-3.5 text-muted-foreground" />
+                </ToolbarButton>
               ) : (
                 <>
                   {tools.map((item) => (
                     <ToolbarButton
-                      className="size-8 p-0 [&_svg]:size-6! [&_svg]:transition-transform aria-pressed:[&_svg]:-translate-y-0.5"
+                      className={
+                        item.kind === 'lasso'
+                          ? 'size-8 p-0 aria-pressed:bg-muted max-sm:size-9 [&_svg]:size-5!'
+                          : 'size-8 items-end overflow-hidden p-0 aria-pressed:bg-muted max-sm:size-9 [&_svg]:size-7! [&_svg]:translate-y-1.5 [&_svg]:transition-transform aria-pressed:[&_svg]:translate-y-0'
+                      }
                       key={item.kind}
                       onClick={(event) =>
                         setKind(item.kind, event.detail === 0)
@@ -1360,58 +1349,79 @@ export function InkDock() {
                     </ToolbarButton>
                   ))}
 
-                  {activeBrush && (
-                    <>
-                      <div aria-hidden className="mx-0.5 h-5 w-px bg-border" />
-                      <div
-                        aria-label="Colors"
-                        className="hidden items-center gap-1.5 px-1 sm:flex"
-                        role="group"
-                      >
-                        <SwatchRow
-                          brush={activeBrush}
-                          colors={colors}
-                          onPick={(color) => setBrush({ color })}
+                  <div aria-hidden className="mx-0.5 h-5 w-px bg-border" />
+                  <div className="flex items-center justify-between gap-1.5 sm:w-[13.5rem]">
+                    {activeBrush ? (
+                      <div className="flex items-center gap-1.5 px-1">
+                        <div
+                          aria-label="Colors"
+                          className="hidden items-center gap-1.5 sm:flex"
+                          role="group"
+                        >
+                          <SwatchRow
+                            brush={activeBrush}
+                            colors={colors}
+                            onPick={(color) => setBrush({ color })}
+                          />
+                        </div>
+                        <input
+                          aria-label="Custom color"
+                          className="size-5 shrink-0 cursor-pointer appearance-none rounded-full border-0 bg-[conic-gradient(#f43f5e,#f59e0b,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)] p-0 data-[custom=true]:ring-2 data-[custom=true]:ring-foreground/80 data-[custom=true]:ring-offset-2 data-[custom=true]:ring-offset-background [&::-moz-color-swatch]:rounded-full [&::-moz-color-swatch]:border-2 [&::-moz-color-swatch]:border-background [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-2 [&::-webkit-color-swatch]:border-background [&::-webkit-color-swatch-wrapper]:p-[3px]"
+                          data-custom={
+                            colors.some(
+                              (swatch) => swatch.value === activeBrush.color
+                            )
+                              ? 'false'
+                              : 'true'
+                          }
+                          onInput={(event) =>
+                            setBrush({ color: event.currentTarget.value })
+                          }
+                          title="Custom color"
+                          type="color"
+                          value={activeBrush.color}
                         />
                       </div>
-                      <input
-                        aria-label="Custom color"
-                        className="size-5 shrink-0 cursor-pointer appearance-none rounded-full border-0 bg-transparent p-0 [&::-moz-color-swatch]:rounded-full [&::-moz-color-swatch]:border-black/10 [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border [&::-webkit-color-swatch]:border-black/10 [&::-webkit-color-swatch-wrapper]:p-0"
-                        onInput={(event) =>
-                          setBrush({ color: event.currentTarget.value })
-                        }
-                        title="Custom color"
-                        type="color"
-                        value={activeBrush.color}
-                      />
-                    </>
-                  )}
-
-                  {activeKind !== 'lasso' && (
-                    <ToolbarButton
-                      aria-expanded={flyoutOpen}
-                      className="size-8 p-0"
-                      onClick={(event) => {
-                        if (flyoutOpen) closeFlyout('pick');
-                        else openFlyout(event.detail === 0);
-                      }}
-                      pressed={flyoutOpen}
-                      tooltip="Brush options"
-                    >
-                      <BrushOptionsIcon />
-                    </ToolbarButton>
-                  )}
+                    ) : (
+                      <span className="hidden px-1.5 text-xs text-muted-foreground sm:inline">
+                        {activeKind === 'eraser'
+                          ? 'Drag over ink to erase'
+                          : 'Circle ink to select'}
+                      </span>
+                    )}
+                    {activeKind !== 'lasso' && (
+                      <ToolbarButton
+                        aria-expanded={flyoutOpen}
+                        className="size-8 p-0 max-sm:size-9 [&_svg]:size-5!"
+                        onClick={(event) => {
+                          if (flyoutOpen) closeFlyout('pick');
+                          else openFlyout(event.detail === 0);
+                        }}
+                        pressed={flyoutOpen}
+                        ref={setOptionsEl}
+                        tooltip="Brush options"
+                      >
+                        <BrushSizeDot
+                          color={activeBrush?.color ?? 'currentColor'}
+                          kind={activeKind}
+                          size={currentSize ?? sizes[1]}
+                        />
+                      </ToolbarButton>
+                    )}
+                  </div>
                 </>
               )}
 
               <div aria-hidden className="mx-0.5 h-5 w-px bg-border" />
-              <ToolbarButton
-                className="size-8 p-0"
-                onClick={() => setCollapsed(!collapsed)}
-                tooltip={collapsed ? 'Expand ink tools' : 'Collapse ink tools'}
-              >
-                {collapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
-              </ToolbarButton>
+              {!collapsed && (
+                <ToolbarButton
+                  className="size-8 p-0"
+                  onClick={() => setCollapsed(true)}
+                  tooltip="Collapse ink tools"
+                >
+                  <ChevronDownIcon />
+                </ToolbarButton>
+              )}
               <ToolbarButton
                 className="h-8 gap-1 px-2"
                 onClick={() => editor.plugin(InkPlugin).api.setTool(null)}
@@ -1430,7 +1440,7 @@ export function InkDock() {
             }}
             open={flyoutOpen}
           >
-            <FloatingPopoverAnchor element={pill} />
+            <FloatingPopoverAnchor element={optionsEl ?? pill} />
             <FloatingPopoverContent
               className="w-auto p-2"
               data-ink-brush-flyout=""
@@ -1478,7 +1488,7 @@ export function InkDock() {
                         title={`${SIZE_NAMES[index][0]} (${size}px)`}
                         type="button"
                       >
-                        <SizePreview
+                        <BrushSizeDot
                           color={activeBrush?.color ?? 'currentColor'}
                           kind={activeKind}
                           size={size}
@@ -1490,11 +1500,12 @@ export function InkDock() {
                   {activeBrush && (
                     <div
                       aria-label="Colors"
-                      className="flex items-center gap-1.5 px-1 pb-0.5 sm:hidden"
+                      className="flex items-center gap-2.5 px-1 pb-0.5 sm:hidden"
                       role="group"
                     >
                       <SwatchRow
                         brush={activeBrush}
+                        className="size-7"
                         colors={colors}
                         onPick={(color) => setBrush({ color })}
                       />
@@ -1622,9 +1633,7 @@ export function InkDock() {
                 void handleConfirm();
               }}
               onDigitizeAgain={() => {
-                if (session.state.batch) {
-                  runDigitizeAll();
-                } else if (pickedShown.length > 0) {
+                if (!session.state.batch && pickedShown.length > 0) {
                   void runDigitize(pickedShown);
                 } else {
                   runDigitizeAll();

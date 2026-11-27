@@ -14,9 +14,9 @@ Open [the full-page Ink demo](/blocks/ink-demo) to test drawing, margin signs, a
 
 ## Features
 
-- Pen, highlighter, eraser, and lasso tools stored per mounted view, never in the document. A pen or primary mouse button draws while a finger still scrolls, typing keeps working while Draw is on, and a stroke never moves the caret.
+- Floating bottom `InkDock` with Pen, Highlighter, Eraser, and Lasso tools, preset mid-luminance swatches, a custom color picker, a non-blocking width flyout, and a collapse toggle. Brush colors and widths persist per editor across toggles while tool state stays per mounted view. A pen or primary mouse button draws while a finger still scrolls, typing keeps working while Draw is on, and a stroke never moves the caret.
 - Document-backed ink storage (`ink-marks`, `ink-copies`, `ink-digitized`, and `ink-gone` records) that survives reload and syncs across peers. Each mark stores its block copies, line boxes, and touched word runs.
-- Live word attachment while writing and wrapping. Untouched marks track their words across edits elsewhere in the same paragraph via deterministic dual-alignment matching, and reflow across wrapped lines by shape family (`flow` underlines and highlights split per line, `box` enclosures refit within bounds, `span` vertical margin bars stretch vertically, and `rigid` margin notes stay aligned in bursts). Marks whose own words change, whose duplicates become ambiguous, or whose margins narrow fold into a margin sign whose popover shows the original words and ink through `InkCopyView`.
+- Live word attachment while writing and wrapping. Untouched marks track their words across edits elsewhere in the same paragraph via deterministic dual-alignment matching, and reflow across wrapped lines by shape family (`flow` underlines and highlights split per line, `box` enclosures refit within bounds, `span` vertical margin bars stretch vertically, and `rigid` margin notes stay aligned in bursts). Marks whose own words change, whose duplicates become ambiguous, or whose margins narrow fold into a compact `InkSignButton` badge that distinguishes `changed`, `deleted`, and `narrow` states (live and digitized) with a mark count and opens `InkCopyView`.
 - AI Digitize over a lasso pick, all live shown marks (**Digitize all**), or a single edit kind (**Digitize by kind**), reading rough handwriting into deletes, replacements, inserts, highlights, handwritten comments, and circled-question answers after confirmation.
 - Writes under the view's current intent: direct edits in Editing, one independent suggestion per kept correction in Suggesting, and comment threads via `CommentsPlugin`, with one undo step restoring text, comments, and ink together.
 - **Show digitized ink** view switch to inspect digitized ink faded over its words (or as digitized signs after later edits) and **Bring back** to restore it, plus `dropDigitized` to permanently remove digitized ink and unreferenced saved copies.
@@ -33,12 +33,12 @@ Open [the full-page Ink demo](/blocks/ink-demo) to test drawing, margin signs, a
 
 <ComponentSource name="ink" />
 
-- `InkKit` (`ink.tsx`): wires `InkContent` with `InkSignButton` in `slots.wrapContent` and `InkDock` in `slots.afterEditable`.
-- `DrawToolbarButton` (`draw-toolbar-button.tsx`): toolbar button that toggles Draw on or off with the last tool used, plus the brush preferences each tool remembers per editor.
-- `DigitizeAllToolbarButton` (`ink-dock.tsx`): toolbar trigger that reads all live shown marks in sequential batches.
+- `InkKit` (`ink.tsx`): wires `InkContent` with per-tool `--ink-cursor` SVG cursors and `InkSignButton` in `slots.wrapContent`, and mounts `InkDock` in `slots.afterEditable`.
+- `DrawToolbarButton` (`draw-toolbar-button.tsx`): one-click toolbar toggle that turns Draw on with the last tool and remembered brush preferences for that editor, disabled in read-only views and Authored Preview.
+- `DigitizeAllToolbarButton` (`ink-dock.tsx`): toolbar trigger that routes to the active view's dock and reads all live shown marks in sequential batches.
 - `InkSwitchToolbarButton` (`ink-switch-toolbar-button.tsx`): ink visibility menu with toggles for **Hide ink** and **Show digitized ink**, plus a confirmation-gated **Drop digitized ink** action.
-- `InkSignButton` (`ink-sign-button.tsx`): margin sign button and popover displaying `InkCopyView` with Delete or Bring back actions.
-- `InkDock` (`ink-dock.tsx`): floating dock with Pen, Highlighter, Eraser, and Lasso, color swatches, a width flyout, lasso Digitize, Delete, and Bring back actions, and the confirmation dialog with kind filter chips, typed re-read instructions, and async comment save and retry handling.
+- `InkSignButton` (`ink-sign-button.tsx`): compact margin badge distinguishing `changed`, `deleted`, and `narrow` states across live and digitized marks with a count, opening `InkCopyView` with Delete or Bring back actions (disabled in read-only views and Authored Preview).
+- `InkDock` (`ink-dock.tsx`): out-of-flow floating bottom dock with Pen, Highlighter, Eraser, and Lasso, preset color swatches, a custom color picker, a non-blocking width flyout, a collapse toggle, a Done exit button, contextual lasso actions (count, Digitize, Delete, Bring back, and clear selection), and the Digitize confirmation dialog with kind filter chips, typed re-read instructions, and async comment save and retry handling.
 
 ### Add kit
 
@@ -94,7 +94,7 @@ For each contiguous run of marked lines (plus one surrounding line on each side)
 
 ### Lasso picks, Digitize all, and kind filters
 
-- **Lasso pick:** Encircling marks with the Lasso tool opens a floating bar with **Digitize**. Digitize widens the request to include every live shown mark on touched paragraphs so you can review sibling marks together. Corrections from the lassoed marks start checked, and sibling corrections on the same paragraph start unchecked.
+- **Lasso pick:** Encircling marks with the Lasso tool opens a contextual action bar above `InkDock` showing the selected count alongside **Digitize**, **Delete** (removes live marks in one undo step), **Bring back** (for digitized marks), and a clear button. Digitize widens the request to include every live shown mark on touched paragraphs so you can review sibling marks together. Corrections from the lassoed marks start checked, and sibling corrections on the same paragraph start unchecked.
 - **Digitize all:** Clicking `DigitizeAllToolbarButton` clusters live shown marks within each block copy by spatial distance (48 px) and stroke time (30 s), then packs them into sequential batches under the 1,000-word cap (`maxSide: 2048` px per passage).
 - **Confirm and Digitize by kind:** Nothing writes to the document before confirmation. Each correction offers up to four candidate meanings and accepts a typed instruction to re-read that correction. Filter chips (**All**, **Delete**, **Replace**, **Insert**, **Highlight**, **Comment**, **Answer**) let you apply one kind at a time while leaving other marks on the page.
 
@@ -230,6 +230,6 @@ Headless plugin (`platejs/ink`) that uses core element IDs and owns the `ink-mar
 | `editor.plugin(InkPlugin).api.setShowDigitized(show)` | `InkPlugin` | Draws digitized marks faded over their words (or as digitized signs) and lets the lasso pick them. Turning it off drops digitized marks from the pick. |
 | `editor.plugin(InkPlugin).api.setPicked(ids)` | `InkPlugin` | Sets the view's picked mark ids, painted with a pick halo. |
 | `editor.plugin(InkPlugin).api.images(passages, { maxSide })` | `InkPlugin` | Renders `inkAlone` and `inkOnText` PNG data URLs, pixel mark boxes, and inline-void visible text for each live passage in Canvas 2D, or `null` if a passage is not live or exceeds `maxSide`. |
-| `InkContent` | `platejs/ink/react` | `wrapContent` slot component that renders the ink canvas overlay and margin sign buttons directly after the Editable. |
+| `InkContent` | `platejs/ink/react` | `wrapContent` slot component that renders the ink canvas overlay (`data-ink-tool`, `var(--ink-cursor, crosshair)`, optional `className` and `style`) and margin sign buttons directly after the Editable. |
 | `InkCopyView` | `platejs/ink/react` | Renders the saved plain-text lines and strokes of one or more marks inside a sign popover. |
 | `InkSign`, `InkImagesOptions`, `InkPassageImages` | `platejs/ink/react` | Types for margin signs and `api.images` inputs and outputs. |
