@@ -39,7 +39,6 @@ Work in a loop: `look`, decide, `touch` a ref or act, then read the screenshot a
 ## Limits
 
 - Portrait only, no pinch and no Back on the iPhone.
-- The iPhone refuses `hardware-key` for Backspace, Delete, Enter, Escape, Home and End, which never reach the page; `key` taps the soft keyboard's delete and return.
 - iOS takes Command+Z for its own record of soft keyboard typing, even from earlier pages, until that record is empty, and `pageKeys` stays empty meanwhile. Press `hardware-key cmd+z` until `pageKeys` shows the z, and type with `hardware-key` letters before an undo you rely on. On Android, `pageKeys` may show `Unidentified` for the letter of a key combination.
 - `type` and `key` know only Gboard's letter layout, so a symbol on Android takes `touch` on the symbols key and then on the symbol. Gboard capitalizes the first letter typed at the start of a block or cell.
 - `tap <text>` searches the whole page, not the editor `editor` picked. `tap-at` and `read`'s value and focus need a Plite or Plate editor; on another editor, such as slatejs.org, read with `eval`.
