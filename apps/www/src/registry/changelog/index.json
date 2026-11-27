@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-27-dark-mode-editor-chrome",
+      "href": "/registry/changelog/2026-11-27-dark-mode-editor-chrome.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix dark-mode contrast for find, table of contents, footnotes, lint, and AI draft",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find", "toc", "footnote", "lint", "ai-menu"],
+      "entries": 5,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-diff-and-cursor-colors",
       "href": "/registry/changelog/2026-11-27-diff-and-cursor-colors.json",
       "status": "draft",

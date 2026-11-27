@@ -81,6 +81,22 @@ Plate UI 使用 Tailwind 颜色 `editor-primary` 绘制编辑器的文本选区�
 
 没有 shadcn 主题的应用没有 `--primary`，因此必须设置 `--editor-primary`。
 
+### 建议与差异颜色
+
+需要审阅颜色的组件会把各自的颜色项安装到您的全局样式表中：
+
+- `@plate/suggestion` 会安装 `@plate/suggestion-colors`，在 `:root` 和 `.dark` 中声明 `--editor-suggestion-1` 到 `--editor-suggestion-7`，并在 `@theme inline` 中注册每个槽位。
+- `@plate/diff` 会安装 `@plate/diff-colors`，在 `:root` 和 `.dark` 中声明 `--editor-insert`，并在 `@theme inline` 中注册 `editor-insert` 和 `editor-delete`：
+
+```css title="app/globals.css"
+@theme inline {
+  --color-editor-insert: var(--editor-insert);
+  --color-editor-delete: var(--editor-delete, var(--destructive));
+}
+```
+
+`editor-delete` 跟随 shadcn 的 `--destructive`。要独立自定义删除颜色，请在 `:root` 和 `.dark` 中设置 `--editor-delete`。如果主题在暗色模式下使用低亮度的 `--destructive`，请在 `.dark` 中设置 `--editor-delete` 以保持差异标题清晰可读。单独重新添加 `@plate/suggestion`、`@plate/suggestion-colors`、`@plate/diff` 或 `@plate/diff-colors` 会保留您的自定义值。
+
 ## 手动安装
 
 如果您偏好逐步安装或不使用 shadcn CLI，请按照以下步骤操作：

@@ -82,6 +82,22 @@ To give the editor a color of its own, add `--editor-primary` to your stylesheet
 
 An app without shadcn's theme has no `--primary`, so it must set `--editor-primary`.
 
+### Suggestion and diff colors
+
+Components that need review colors install their own color items into your global stylesheet:
+
+- `@plate/suggestion` installs `@plate/suggestion-colors`, which declares `--editor-suggestion-1` through `--editor-suggestion-7` in `:root` and `.dark` and registers each slot in `@theme inline`.
+- `@plate/diff` installs `@plate/diff-colors`, which declares `--editor-insert` in `:root` and `.dark` and registers `editor-insert` and `editor-delete` in `@theme inline`:
+
+```css title="app/globals.css"
+@theme inline {
+  --color-editor-insert: var(--editor-insert);
+  --color-editor-delete: var(--editor-delete, var(--destructive));
+}
+```
+
+`editor-delete` follows shadcn's `--destructive`. To customize delete colors apart from `--destructive`, set `--editor-delete` in `:root` and `.dark`. If your theme uses a low-luminance dark `--destructive`, set `--editor-delete` in `.dark` so diff titles stay readable. Re-adding `@plate/suggestion`, `@plate/suggestion-colors`, `@plate/diff`, or `@plate/diff-colors` alone keeps your edited values.
+
 ## Manual installation
 
 If you prefer a step-by-step approach or are not using the shadcn CLI, follow these steps:

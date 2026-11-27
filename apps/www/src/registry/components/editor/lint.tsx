@@ -185,7 +185,7 @@ export const LintKit = [
     decorate: {
       attributes: {
         className:
-          'underline decoration-wavy decoration-from-font underline-offset-4 data-[lint-severity=error]:decoration-destructive data-[lint-severity=info]:decoration-sky-500 data-[lint-severity=warning]:decoration-amber-500',
+          'underline decoration-wavy decoration-from-font underline-offset-4 data-[lint-severity=error]:decoration-destructive data-[lint-severity=info]:decoration-sky-600 dark:data-[lint-severity=info]:decoration-sky-400 data-[lint-severity=warning]:decoration-amber-600 dark:data-[lint-severity=warning]:decoration-amber-400',
       },
     },
     shortcuts: {

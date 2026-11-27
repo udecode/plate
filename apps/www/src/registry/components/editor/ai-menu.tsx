@@ -150,9 +150,9 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
         document={previewDocument}
         editor={aiEditor}
         className={cn(
-          '[&_[data-editor-string]]:border-b-2 [&_[data-editor-string]]:border-b-purple-100 [&_[data-editor-string]]:bg-purple-50 [&_[data-editor-string]]:text-purple-800',
+          '[&_[data-editor-string]]:border-b-2 [&_[data-editor-string]]:border-b-purple-100 [&_[data-editor-string]]:bg-purple-50 [&_[data-editor-string]]:text-purple-800 dark:[&_[data-editor-string]]:border-b-purple-800 dark:[&_[data-editor-string]]:bg-purple-950/60 dark:[&_[data-editor-string]]:text-purple-200',
           streaming &&
-            '[&_[data-editor-ai-end]]:after:ms-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'
+            '[&_[data-editor-ai-end]]:after:ms-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""] dark:[&_[data-editor-ai-end]]:after:bg-purple-400'
         )}
       />
     ),
@@ -171,7 +171,7 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
       <span
         data-editor-ai-end={endWithoutText ? '' : undefined}
         className={cn(
-          'size-3 rounded-full bg-purple-600 align-middle',
+          'size-3 rounded-full bg-purple-600 align-middle dark:bg-purple-400',
           endWithoutText ? 'inline-block' : 'hidden'
         )}
       />

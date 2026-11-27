@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-dark-mode-editor-chrome",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-dark-mode-editor-chrome.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix dark-mode contrast for find, table of contents, footnotes, lint, and AI draft",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "lint",
+      "files": ["apps/www/src/registry/components/editor/lint.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-find-dark-mode",
+      "kind": "fix",
+      "summary": "Add dark-mode match and active-match background and ring classes so search highlights stay readable in dark mode.",
+      "details": [],
+      "migrationNotes": [
+        "A `find` component copied before this change keeps light-only yellow and orange match classes. Add `find` again with `shadcn add --overwrite`, which replaces local edits to that file."
+      ],
+      "targets": ["find"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-dark-mode-editor-chrome",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-toc-flash-dark-mode",
+      "kind": "fix",
+      "summary": "Paint navigation target flashes with `bg-highlight/30` instead of opaque `--color-highlight` so dark-mode heading text stays readable.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toc"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-dark-mode-editor-chrome",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-footnote-dark-mode",
+      "kind": "fix",
+      "summary": "Paint footnote reference and definition flashes with `bg-highlight/30` and add dark amber text classes to duplicate definition labels and renumber buttons.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["footnote"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-dark-mode-editor-chrome",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-lint-underline-contrast",
+      "kind": "fix",
+      "summary": "Darken info and warning wavy underline shades in light mode (`sky-600`, `amber-600`) and lighten them in dark mode (`sky-400`, `amber-400`) to meet 3:1 graphical contrast.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["lint"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-dark-mode-editor-chrome",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ai-draft-dark-mode",
+      "kind": "fix",
+      "summary": "Add dark-mode purple surface, border, text, and streaming dot classes to the AI draft preview.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu"],
+      "source": {
+        "line": 30,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-dark-mode-editor-chrome",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

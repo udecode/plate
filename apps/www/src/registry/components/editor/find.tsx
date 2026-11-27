@@ -288,7 +288,7 @@ export const FindKit = [
     decorate: {
       attributes: {
         className:
-          'scroll-mt-16 rounded-[2px] bg-yellow-200 text-inherit data-find-active:bg-orange-400! data-find-active:ring-1 data-find-active:ring-orange-600',
+          'scroll-mt-16 rounded-[2px] bg-yellow-200 text-inherit dark:bg-yellow-500/35 data-find-active:bg-orange-400! dark:data-find-active:bg-orange-500/50! data-find-active:ring-1 data-find-active:ring-orange-600 dark:data-find-active:ring-orange-400',
       },
     },
     slots: {

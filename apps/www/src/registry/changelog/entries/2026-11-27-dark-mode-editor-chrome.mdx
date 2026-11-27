@@ -1,0 +1,30 @@
+---
+id: 2026-11-27-dark-mode-editor-chrome
+date: 2026-11-27
+status: draft
+kind: fix
+summary: 'Fix dark-mode contrast for find, table of contents, footnotes, lint, and AI draft'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-find-dark-mode","kind":"fix","migrationNotes":["A `find` component copied before this change keeps light-only yellow and orange match classes. Add `find` again with `shadcn add --overwrite`, which replaces local edits to that file."]} -->
+
+- **`find`**: Add dark-mode match and active-match background and ring classes so search highlights stay readable in dark mode.
+
+<!-- entry: {"id":"2026-11-27-toc-flash-dark-mode","kind":"fix","migrationNotes":[]} -->
+
+- **`toc`**: Paint navigation target flashes with `bg-highlight/30` instead of opaque `--color-highlight` so dark-mode heading text stays readable.
+
+<!-- entry: {"id":"2026-11-27-footnote-dark-mode","kind":"fix","migrationNotes":[]} -->
+
+- **`footnote`**: Paint footnote reference and definition flashes with `bg-highlight/30` and add dark amber text classes to duplicate definition labels and renumber buttons.
+
+<!-- entry: {"id":"2026-11-27-lint-underline-contrast","kind":"fix","migrationNotes":[]} -->
+
+- **`lint`**: Darken info and warning wavy underline shades in light mode (`sky-600`, `amber-600`) and lighten them in dark mode (`sky-400`, `amber-400`) to meet 3:1 graphical contrast.
+
+<!-- entry: {"id":"2026-11-27-ai-draft-dark-mode","kind":"fix","migrationNotes":[]} -->
+
+- **`ai-menu`**: Add dark-mode purple surface, border, text, and streaming dot classes to the AI draft preview.

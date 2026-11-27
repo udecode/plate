@@ -164,7 +164,7 @@ export function FootnoteReferenceElement(
           <button
             type="button"
             className={cn(
-              'cursor-pointer rounded-xs font-medium text-primary text-xs focus:ring-2 focus:ring-ring focus:ring-offset-1 group-data-[nav-target=true]/footnote-ref:bg-(--color-highlight)',
+              'cursor-pointer rounded-xs font-medium text-primary text-xs focus:ring-2 focus:ring-ring focus:ring-offset-1 group-data-[nav-target=true]/footnote-ref:bg-highlight/30',
               (selected && focused) || isSelectionInsideAtom
                 ? 'ring-2 ring-ring ring-offset-1'
                 : null
@@ -288,14 +288,14 @@ export function FootnoteDefinitionElement(
     <EditorElement
       {...props}
       className={cn(
-        'mt-1.5 flex items-start gap-1.5 data-[nav-target=true]:rounded-md data-[nav-target=true]:bg-(--color-highlight)',
+        'mt-1.5 flex items-start gap-1.5 data-[nav-target=true]:rounded-md data-[nav-target=true]:bg-highlight/30',
         isDuplicateDefinition &&
           'rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-2'
       )}
     >
       <div contentEditable={false}>
         {isDuplicateDefinition ? (
-          <div className="min-w-3 text-xs text-amber-700 tabular-nums">
+          <div className="min-w-3 text-xs text-amber-700 tabular-nums dark:text-amber-300">
             {ref}
           </div>
         ) : (
@@ -398,7 +398,7 @@ export function FootnoteDefinitionElement(
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-6 rounded-xs border-amber-500/40 px-2 text-[11px] text-amber-700 hover:bg-amber-500/10 hover:text-amber-800"
+                className="h-6 rounded-xs border-amber-500/40 px-2 text-[11px] text-amber-700 hover:bg-amber-500/10 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200"
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();

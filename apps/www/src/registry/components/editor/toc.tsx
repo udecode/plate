@@ -124,7 +124,7 @@ export function TocElement({
                   navigation.api.flashTarget({
                     key: item.key,
                     attributes: {
-                      className: 'rounded-md bg-(--color-highlight)',
+                      className: 'rounded-md bg-highlight/30',
                     },
                   });
                 };
