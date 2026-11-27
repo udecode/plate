@@ -20,6 +20,7 @@ export type HistoryStoreBase<
   PendingReplay,
 > = Readonly<{
   crossingDrops: number;
+  forgottenStepIds: ReadonlySet<string>;
   maxDepth: number;
   pendingReplay: PendingReplay | null;
   /** The steps whose running first writes keep `redos` listed but frozen. */
@@ -42,6 +43,7 @@ const HISTORY_DRAFTS = new WeakMap<
 const PUBLISHED_HISTORY_READ_DEPTH = new WeakMap<AnyEditor, number>();
 
 export const NO_DROPS: readonly CrossingDrop[] = Object.freeze([]);
+export const NO_FORGOTTEN: ReadonlySet<string> = new Set();
 
 export const withDrops = <S extends AnyStore>(
   store: S,
@@ -160,6 +162,7 @@ const createStore = <
   editor: Editor<V>
 ): HistoryStoreBase<V, Branch, PendingReplay> => ({
   crossingDrops: 0,
+  forgottenStepIds: NO_FORGOTTEN,
   maxDepth: 100,
   pendingReplay: null,
   redoFreeze: null,
@@ -193,7 +196,6 @@ export const getStore = <
   return store;
 };
 
-/** Write the store; a freeze never outlives the redo list it froze. */
 export const setStore = <
   V extends Value,
   Branch extends BranchWithDepth,
@@ -204,10 +206,19 @@ export const setStore = <
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const draft = getHistoryDraft(owner);
+  const dropsForgotten =
+    !value.redos && !value.pendingReplay && value.forgottenStepIds.size > 0;
+  const dropsFreeze = !value.redos && !!value.redoFreeze;
   const store =
-    value.redos || !value.redoFreeze
-      ? value
-      : Object.freeze({ ...value, redoFreeze: null });
+    dropsForgotten || dropsFreeze
+      ? Object.freeze({
+          ...value,
+          forgottenStepIds: dropsForgotten
+            ? NO_FORGOTTEN
+            : value.forgottenStepIds,
+          redoFreeze: dropsFreeze ? null : value.redoFreeze,
+        })
+      : value;
 
   if (draft) {
     draft.state = store;

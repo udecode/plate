@@ -134,6 +134,7 @@ import {
   settleFirstWrite,
   startFirstWrite,
 } from './history-first-write';
+import { forgetHistoryStep } from './history-forget';
 import {
   createHistoryBatchGroup,
   type HistoryBatchGroup,
@@ -166,7 +167,6 @@ import {
   dropHistoryHead,
   attachKeptHistoryRedo,
   dropPendingHistoryReplayEntry,
-  forgetHistoryStep,
   historyFactsOf,
   historyProgramOf,
   historyStepId,
