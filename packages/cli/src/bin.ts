@@ -6,6 +6,7 @@ import { relative } from 'node:path';
 
 import { Command } from 'commander';
 
+import { registerCodemodCommand } from './codemod';
 import { registerDepsCommand } from './deps';
 import { generateEditors } from './generate';
 import { createEditorMigration } from './migrate';
@@ -33,6 +34,7 @@ const program = new Command()
   .description('Generate exact Plate editor schema contracts.');
 
 registerDepsCommand(program);
+registerCodemodCommand(program);
 
 program
   .command('generate')

@@ -1,7 +1,7 @@
 {
   "name": "@platejs/cli",
   "version": "54.0.0-beta.6",
-  "description": "Generate exact Plate editor schema contracts and migrations.",
+  "description": "Generate exact Plate editor schema contracts, migrations, and codemods.",
   "keywords": [
     "codegen",
     "editor",
@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@antfu/ni": "24.3.0",
+    "@babel/parser": "7.29.0",
     "commander": "14.0.1",
     "esbuild": "0.25.12",
     "kleur": "4.1.5",
@@ -59,5 +60,10 @@
   },
   "peerDependencies": {
     "platejs": ">=54.0.0-beta.6"
+  },
+  "peerDependenciesMeta": {
+    "platejs": {
+      "optional": true
+    }
   }
 }
