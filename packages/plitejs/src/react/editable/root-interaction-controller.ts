@@ -2214,7 +2214,7 @@ export const useRootInteractionController = ({
   const onMouseDownCapture = useCallback<MouseEventHandler<HTMLElement>>(
     (event) => {
       profilePliteReactDuration('root-mousedown.capture', () => {
-        if (disabled || event.defaultPrevented || event.button !== 0) {
+        if (disabled || event.defaultPrevented) {
           return;
         }
 
@@ -2611,6 +2611,7 @@ export const useRootInteractionController = ({
             )
           : null;
         const resolvedProjectedDragEndpoint =
+          event.button !== 0 ||
           nativeEditableMultiClick ||
           ignoreBlankEditableRootClick ||
           ignoreBlankNativeEditableClick ||
@@ -2684,7 +2685,7 @@ export const useRootInteractionController = ({
         } else {
           pendingProjectedDrag = null;
         }
-        if (nativeSelectionOwnsInteraction) {
+        if (nativeSelectionOwnsInteraction && event.button === 0) {
           setNativeSelectionDragActive(rootRuntime, true);
         }
         if (
