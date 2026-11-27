@@ -391,6 +391,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-fix-toolbar-button-ref",
+      "href": "/registry/changelog/2026-11-27-fix-toolbar-button-ref.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Accept ref prop on Radix ToolbarButton",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-ink-attached-digitize",
       "href": "/registry/changelog/2026-11-27-ink-attached-digitize.json",
       "status": "draft",

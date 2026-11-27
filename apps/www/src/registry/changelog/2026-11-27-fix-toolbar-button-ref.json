@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-fix-toolbar-button-ref",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-fix-toolbar-button-ref.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Accept ref prop on Radix ToolbarButton",
+  "targets": [
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-toolbar-accept-ref-prop-radix-b725bd1f",
+      "kind": "fix",
+      "summary": "Accept ref prop on Radix ToolbarButton",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-fix-toolbar-button-ref",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

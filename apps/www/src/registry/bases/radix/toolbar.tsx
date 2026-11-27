@@ -85,10 +85,7 @@ export function ToolbarButton({
     React.ComponentProps<typeof TooltipTrigger>,
     'asChild' | 'children'
   >;
-} & Omit<
-  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
-  'asChild'
-> &
+} & Omit<React.ComponentProps<typeof ToolbarPrimitive.Button>, 'asChild'> &
   VariantProps<typeof toggleVariants>) {
   const overlayTrigger = useToolbarOverlayTrigger(props);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { LockIcon, UnlockIcon } from 'lucide-react';
+import { LockIcon, LockOpenIcon } from 'lucide-react';
 import { BaseLockPlugin } from 'platejs/lock';
 import { useIsLocked, useIsOwnLocked } from 'platejs/lock/react';
 import { EditorRoot, useCreateEditor, useEditor } from 'platejs/react';
@@ -51,7 +51,7 @@ function LockToolbar() {
       >
         {ownLocked ? (
           <>
-            <UnlockIcon className="size-4" />
+            <LockOpenIcon className="size-4" />
             <span>Unlock block</span>
           </>
         ) : (
