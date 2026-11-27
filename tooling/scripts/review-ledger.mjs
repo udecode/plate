@@ -1,33 +1,21 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { landed, stateOf, waitsOnOwner } from '../../.agents/pstack/status.mjs';
-import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import {
-  changedSince,
-  existsAt,
-  filesAt,
   grepFiles,
-  inHistory,
   isSplit,
-  landingPair,
-  pairedCommit,
   privateGit,
-  showAt,
   trackedFiles,
-  untrackedFiles,
   UPSTREAM,
 } from './private-files.mjs';
 
 export const scopesDir = 'docs/research/review-scopes';
 export const recordsDir = 'docs/research/review-records';
 export const groupsPath = 'docs/research/review-groups.json';
-export const documentsPath = 'docs/research/review-documents.json';
-export const legacyPath = 'docs/research/review-legacy.json';
 export const subjectOf = (id) => `docs/plans/topics/${id}.md`;
 
 export const census = {
@@ -49,57 +37,23 @@ export const census = {
   ],
   extension: /\.(?:[cm]?[jt]sx?|json|css|mdx?|snap|html|txt|ya?ml)$/,
   exclusions: [
-    {
-      pattern: /\/(?:AGENTS|CLAUDE|README|CHANGELOG)\.md$/,
-      reason:
-        'Package and workflow prose is context, not a product capability.',
-    },
-    {
-      pattern: /^apps\/www\/src\/registry\/changelog\//,
-      reason: 'Historical release prose is not current feature source.',
-    },
-    { pattern: /\/tsconfig\.tsbuildinfo$/, reason: 'Build cache.' },
-    {
-      pattern: /^apps\/plite\/(out|plite|tmp)\//,
-      reason: 'Static build output, nested proof copies and stress artifacts.',
-    },
-    {
-      pattern: /^apps\/www\/tests\/browser\/docs-sidebar\.spec\.ts$/,
-      reason: 'Documentation-site navigation is not editor proof.',
-    },
+    { pattern: /\/(?:AGENTS|CLAUDE|README|CHANGELOG)\.md$/ },
+    { pattern: /^apps\/www\/src\/registry\/changelog\// },
+    { pattern: /\/tsconfig\.tsbuildinfo$/ },
+    { pattern: /^apps\/plite\/(out|plite|tmp)\// },
+    { pattern: /^apps\/www\/tests\/browser\/docs-sidebar\.spec\.ts$/ },
   ],
 };
 
-// Directory digests skip the directories the retired inventory walker skipped,
-// so legacy directory digests stay comparable.
-const skippedDirectories = new Set([
-  'node_modules',
-  '.claude',
-  '.next',
-  '.git',
-  '.turbo',
-  '.tmp',
-  '.cache',
-  'dist',
-  'test-results',
-  'playwright-report',
-]);
-// Legacy drafts hashed these method and package files into records regardless of scope.
-const legacyPolicyInputs = new Set([
-  'package.json',
-  'pnpm-lock.yaml',
-  '.agents/skills/verdict/SKILL.md',
-  '.agents/rules/verdict.mdc',
-]);
-const isLaw = (path) => path === 'VISION.md' || path.startsWith('docs/vision/');
-
-const hash = (value) => createHash('sha256').update(value).digest('hex');
 const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const read = (root, path) => readFileSync(join(root, path), 'utf-8');
-const isDigest = (value) => /^[a-f0-9]{64}$/.test(value ?? '');
 const isText = (value) => typeof value === 'string' && value.trim() !== '';
+const isObject = (value) =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+const strings = (value) =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+const optionalStrings = (value) => value === undefined || strings(value);
 const byId = (a, b) => a.id.localeCompare(b.id);
-// Record bytes depend on this order, so it stays the default code-unit sort.
 const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const bounded = (items, limit) => ({
   items: items.slice(0, limit),
@@ -107,15 +61,7 @@ const bounded = (items, limit) => ({
 });
 const clip = (text = '', limit = 600) =>
   text.length > limit ? `${text.slice(0, limit - 3)}...` : text;
-
-function bySegment(a, b) {
-  const left = a.split('/');
-  const right = b.split('/');
-  for (let i = 0; i < Math.min(left.length, right.length); i++) {
-    if (left[i] !== right[i]) return left[i].localeCompare(right[i]);
-  }
-  return left.length - right.length;
-}
+const list = (items) => items.join(', ') || 'none';
 
 function repoPath(path) {
   assert.ok(
@@ -125,75 +71,19 @@ function repoPath(path) {
   return path;
 }
 
-/** Live observation of the working tree, memoized for one command. */
-export function observe(root) {
+function visibleTree(root) {
   let visible;
   let listed;
   let directories;
-  const digests = new Map();
   const visibleFiles = () =>
     (visible ??= new Set(trackedFiles(root, { untracked: true })));
-  const files = () => {
-    listed ??= [...visibleFiles()]
-      .filter(
-        (path) =>
-          path &&
-          !path
-            .split('/')
-            .slice(0, -1)
-            .some((part) => skippedDirectories.has(part)) &&
-          existsSync(join(root, path))
-      )
-      .sort(bySegment);
-    return listed;
-  };
-  // The ledger digests only files git lists, so a record naming an ignored
-  // file finds it missing and no rebuild or local file changes its answer.
-  const fileDigest = (path) => {
-    if (!digests.has(path)) {
-      digests.set(
-        path,
-        visibleFiles().has(path) &&
-          existsSync(join(root, path)) &&
-          statSync(join(root, path)).isFile()
-          ? hash(readFileSync(join(root, path)))
-          : null
-      );
-    }
-    return digests.get(path);
-  };
+  const files = () =>
+    (listed ??= [...visibleFiles()]
+      .filter((path) => path && existsSync(join(root, path)))
+      .sort(byCodeUnit));
   const under = (directory) => {
     const prefix = directory.endsWith('/') ? directory : `${directory}/`;
     return files().filter((path) => path.startsWith(prefix));
-  };
-  const digest = (entry) => {
-    if (!entry.endsWith('/')) return fileDigest(entry);
-    if (!existsSync(join(root, entry))) return null;
-    return hash(
-      under(entry)
-        .map((path) => `${path}\0${fileDigest(path)}`)
-        .join('\n')
-    );
-  };
-  let pages;
-  // The repository that tracks review pages, which is the companion one in a
-  // split checkout.
-  const pageRepo = () => {
-    const split = isSplit(root);
-    const pageGit = split
-      ? (args) => privateGit(root, ['--literal-pathspecs', ...args]).stdout
-      : (args) => git(root, args) ?? '';
-    const list = (args) =>
-      pageGit([...args, '-z'])
-        .split('\0')
-        .filter(Boolean);
-    pages ??= {
-      git: pageGit,
-      base: split ? (commit) => pairedCommit(root, commit) : (commit) => commit,
-      tracks: split ? new Set(list(['ls-files'])) : null,
-      dirty: new Set(list(['diff', '--name-only', '--no-renames', 'HEAD'])),
-    };
-    return pages;
   };
   const isListedDirectory = (path) => {
     if (!directories) {
@@ -210,23 +100,19 @@ export function observe(root) {
     }
     return directories.has(path);
   };
-  return { root, files, under, digest, isListedDirectory, pageRepo };
+  return { root, files, under, isListedDirectory };
 }
 
-// A cached pass covers only the files git lists, so a build that writes an
-// ignored folder, such as apps/www/public/rd, must not change which entries
-// count as directories.
 const entryOf = (tree, path) =>
   path.endsWith('/') || !tree.isListedDirectory(path) ? path : `${path}/`;
 
 function readJson(root, path, warnings, fallback = null) {
-  if (!existsSync(join(root, path))) return { value: fallback, sha256: null };
+  if (!existsSync(join(root, path))) return fallback;
   try {
-    const text = read(root, path);
-    return { value: JSON.parse(text), sha256: hash(text) };
+    return JSON.parse(read(root, path));
   } catch (error) {
-    warnings.push(`${path}: ${error.message.split('\n')[0]}`);
-    return { value: fallback, sha256: null };
+    warnings?.push(`${path}: ${error.message.split('\n')[0]}`);
+    return fallback;
   }
 }
 
@@ -238,177 +124,33 @@ function jsonFiles(root, directory) {
     .map((name) => `${directory}/${name}`);
 }
 
-function evidenceOf(raw) {
-  if (raw.inputs) {
-    return {
-      inputs: raw.inputs,
-      upstreams: raw.upstreams ?? [],
-      legacyGroups: 0,
-    };
-  }
-  if (!raw.source) return null;
-  const inputs = {};
-  for (const [path, digest] of Object.entries(raw.source.files ?? {})) {
-    if (!legacyPolicyInputs.has(path)) inputs[path] = digest;
-  }
-  for (const [path, digest] of Object.entries(raw.source.directories ?? {})) {
-    inputs[path.endsWith('/') ? path : `${path}/`] = digest;
-  }
-  return {
-    inputs,
-    upstreams: raw.source.upstreams ?? [],
-    legacyGroups: Object.keys(raw.source.features ?? {}).length,
-  };
-}
-
-function normalize(raw) {
-  const common = {
-    id: raw.id,
-    kind: raw.kind,
-    date: raw.date,
-    summary: raw.summary ?? '',
-    references: raw.references ?? [],
-    evidence: evidenceOf(raw),
-    raw,
-  };
-  if (raw.kind === 'execution') {
-    return {
-      ...common,
-      scopes: raw.scopes ?? [],
-      reviewBasis: raw.reviewBasis ?? [],
-      workKind: raw.workKind,
-      plan: raw.plan?.path ?? raw.plan ?? null,
-      previous: raw.previous ?? [],
-      outcome: raw.outcome,
-      proof: raw.proof ?? { state: 'unknown', evidence: [], limits: '' },
-      // Imported completion claims without a recovered binding never adopt.
-      bound: raw.binding
-        ? raw.binding === 'current'
-        : (raw.reviewBasis ?? []).length > 0,
-    };
-  }
-  return {
-    ...common,
-    scope: raw.scope,
-    question: raw.question,
-    verdict: raw.verdict ?? null,
-    previous: raw.previous ?? null,
-    relation: raw.relation,
-    reconciliation: raw.reconciliation ?? [],
-    callSites: raw.callSites ?? null,
-    alternatives: raw.alternatives ?? [],
-    proofLimits: raw.proofLimits ?? '',
-  };
-}
-
-const strings = (value) =>
-  Array.isArray(value) && value.every((item) => typeof item === 'string');
-const optionalStrings = (value) => value === undefined || strings(value);
-
-const isObject = (value) =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-const stringMap = (value) =>
-  isObject(value) &&
-  Object.values(value).every((item) => typeof item === 'string');
-const upstreamsShape = (value) =>
-  value === undefined ||
-  (Array.isArray(value) &&
-    value.every(
-      (item) =>
-        isObject(item) &&
-        typeof item.checkout === 'string' &&
-        typeof item.commit === 'string' &&
-        (item.files === undefined || stringMap(item.files))
-    ));
-
-function recordShape(raw) {
-  if (!isObject(raw) || typeof raw.id !== 'string') return 'id is not a string';
-  if (typeof raw.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw.date)) {
-    return 'date is not YYYY-MM-DD';
-  }
-  if (raw.kind === 'execution') {
-    if (!strings(raw.scopes)) return 'scopes is not a list';
-    if (!optionalStrings(raw.reviewBasis)) return 'reviewBasis is not a list';
-    if (!optionalStrings(raw.previous)) return 'previous is not a list';
-    if (
-      raw.proof !== undefined &&
-      !(
-        isObject(raw.proof) &&
-        (raw.proof.evidence === undefined ||
-          (Array.isArray(raw.proof.evidence) &&
-            raw.proof.evidence.every(
-              (item) => isObject(item) && typeof item.path === 'string'
-            )))
-      )
-    ) {
-      return 'proof.evidence is not a list of paths';
-    }
-  } else if (['review', 'historical'].includes(raw.kind)) {
-    if (typeof raw.scope !== 'string') return 'scope is not a string';
-    if (
-      ![null, undefined].includes(raw.previous) &&
-      typeof raw.previous !== 'string'
-    ) {
-      return 'previous is not a record id';
-    }
-    if (
-      raw.reconciliation !== undefined &&
-      !(
-        Array.isArray(raw.reconciliation) &&
-        raw.reconciliation.every(
-          (entry) => isObject(entry) && typeof entry.record === 'string'
-        )
-      )
-    ) {
-      return 'reconciliation is not a list of records';
-    }
-  } else return `unknown kind ${raw.kind}`;
-  if (raw.inputs !== undefined && !stringMap(raw.inputs)) {
-    return 'inputs is not a map of digests';
-  }
-  if (!upstreamsShape(raw.upstreams)) return 'upstreams is malformed';
-  if (
-    raw.source !== undefined &&
-    raw.source !== null &&
-    (!isObject(raw.source) ||
-      !['files', 'directories', 'features'].every(
-        (key) => raw.source[key] === undefined || stringMap(raw.source[key])
-      ) ||
-      !upstreamsShape(raw.source.upstreams))
-  ) {
-    return 'source is malformed';
-  }
-  if (!optionalStrings(raw.references)) return 'references is not a list';
-  return null;
-}
+const scopeArrayKeys = [
+  'owners',
+  'members',
+  'consumers',
+  'proof',
+  'evidenceInputs',
+  'dependsOn',
+  'relatedScopes',
+  'historyCandidates',
+];
 
 function scopeShape(scope) {
   if (typeof scope?.id !== 'string') return 'id is not a string';
-  for (const key of [
-    'owners',
-    'members',
-    'consumers',
-    'proof',
-    'evidenceInputs',
-    'dependsOn',
-    'relatedScopes',
-    'historyCandidates',
-  ]) {
-    if (!optionalStrings(scope[key])) return `${key} is not a list of strings`;
-  }
-  return null;
+  const bad = scopeArrayKeys.find((key) => !optionalStrings(scope[key]));
+  return bad ? `${bad} is not a list of strings` : null;
 }
 
 /**
- * Reads every ledger file. A file that does not parse or has the wrong shape
- * becomes a warning, so another session's half-written file does not stop this
- * command; `check` reports it.
+ * Reads scopes, groups, review pages and legacy review records. Malformed scope
+ * or group files become warnings so readers keep working while `check` reports
+ * them.
  */
 export function loadLedger(root) {
   const warnings = [];
   const scopes = new Map();
   for (const path of jsonFiles(root, scopesDir)) {
-    const scope = readJson(root, path, warnings).value;
+    const scope = readJson(root, path, warnings);
     if (!scope) continue;
     const problem = scopeShape(scope);
     if (problem) {
@@ -421,54 +163,46 @@ export function loadLedger(root) {
     }
     scopes.set(scope.id, scope);
   }
-  const topLevel = (path, fallback, valid, kind) => {
-    const { value } = readJson(root, path, warnings, fallback);
-    if (valid(value)) return value;
-    warnings.push(`${path}: not ${kind}`);
-    return fallback;
-  };
-  const groupFile = topLevel(groupsPath, {}, isObject, 'an object');
-  const groups = new Map(
-    Object.entries(groupFile).filter(([id, group]) => {
-      if (isObject(group)) return true;
-      warnings.push(`${groupsPath}: group ${id} is not an object`);
-      return false;
-    })
-  );
-  const listed = topLevel(documentsPath, [], Array.isArray, 'a list');
-  const documents = listed.filter((document) => {
-    const valid =
-      typeof document?.path === 'string' &&
-      strings(document.scopes) &&
-      optionalStrings(document.reviewBasis);
-    if (!valid) {
-      warnings.push(
-        `${documentsPath}: malformed entry ${JSON.stringify(document)?.slice(0, 80)}`
-      );
+  const groupFile = readJson(root, groupsPath, warnings, {});
+  const groups = new Map();
+  if (isObject(groupFile)) {
+    for (const [id, group] of Object.entries(groupFile)) {
+      if (isObject(group)) groups.set(id, group);
+      else warnings.push(`${groupsPath}: group ${id} is not an object`);
     }
-    return valid;
-  });
-  const manifest = topLevel(legacyPath, [], Array.isArray, 'a list');
-  const legacy = new Map();
-  for (const [position, item] of manifest.entries()) {
-    if (typeof item?.id === 'string' && isDigest(item.sha256)) {
-      legacy.set(item.id, { ...item, position });
-    } else warnings.push(`${legacyPath}: malformed entry at ${position}`);
+  } else {
+    warnings.push(`${groupsPath}: not an object`);
   }
-  const records = new Map();
+  const reviews = new Map();
+  const pushReview = (scopeId, entry) => {
+    if (!reviews.has(scopeId)) reviews.set(scopeId, []);
+    reviews.get(scopeId).push(entry);
+  };
   for (const path of jsonFiles(root, recordsDir)) {
-    const { value: raw, sha256 } = readJson(root, path, warnings);
-    if (!raw) continue;
-    const problem = recordShape(raw);
-    if (problem) {
-      warnings.push(`${path}: malformed record, ${problem}`);
+    const raw = readJson(root, path);
+    if (
+      !isObject(raw) ||
+      !['review', 'historical'].includes(raw.kind) ||
+      typeof raw.id !== 'string' ||
+      typeof raw.scope !== 'string' ||
+      typeof raw.date !== 'string'
+    ) {
       continue;
     }
-    if (raw.id !== path.slice(recordsDir.length + 1, -5)) {
-      warnings.push(`${path}: id ${raw.id} differs from its file name`);
-      continue;
-    }
-    records.set(raw.id, { ...normalize(raw), sha256 });
+    pushReview(raw.scope, {
+      id: raw.id,
+      kind: raw.kind,
+      scope: raw.scope,
+      date: raw.date,
+      verdict: raw.verdict ?? null,
+      previous: typeof raw.previous === 'string' ? raw.previous : null,
+      reconciliation: Array.isArray(raw.reconciliation)
+        ? raw.reconciliation.filter(
+            (entry) => isObject(entry) && typeof entry.record === 'string'
+          )
+        : [],
+      summary: raw.summary ?? '',
+    });
   }
   const pages = new Map();
   for (const path of grepFiles(
@@ -478,34 +212,20 @@ export function loadLedger(root) {
   )
     .split('\n')
     .filter(Boolean)) {
-    const page = pageOf(scopes, path, read(root, path));
+    const page = pageOf(path, read(root, path));
     if (page) pages.set(page.id, page);
-  }
-  const reviews = new Map();
-  const executions = new Map();
-  for (const record of records.values()) {
-    if (record.kind === 'execution') {
-      for (const scope of record.scopes) {
-        if (!executions.has(scope)) executions.set(scope, []);
-        executions.get(scope).push(record);
-      }
-    } else {
-      if (!reviews.has(record.scope)) reviews.set(record.scope, []);
-      reviews.get(record.scope).push(record);
-    }
   }
   for (const page of pages.values()) {
     for (const scope of page.scopes) {
-      if (!reviews.has(scope)) reviews.set(scope, []);
-      reviews
-        .get(scope)
-        .push({ ...page, scope, verdict: page.verdicts.get(scope) ?? null });
+      pushReview(scope, {
+        ...page,
+        scope,
+        verdict: page.verdicts.get(scope) ?? null,
+      });
     }
   }
   const byDate = (a, b) => a.date.localeCompare(b.date) || byId(a, b);
-  for (const list of [...reviews.values(), ...executions.values()]) {
-    list.sort(byDate);
-  }
+  for (const entries of reviews.values()) entries.sort(byDate);
   const membership = new Map();
   for (const scope of scopes.values()) {
     for (const entry of scope.members ?? []) {
@@ -513,56 +233,11 @@ export function loadLedger(root) {
       membership.get(entry).add(scope.id);
     }
   }
-  return {
-    root,
-    scopes,
-    groups,
-    documents,
-    records,
-    pages,
-    reviews,
-    executions,
-    membership,
-    legacy,
-    warnings,
-  };
-}
-
-function pageOf(scopes, path, text) {
-  const meta = documentMetadata(text);
-  if (!Array.isArray(meta.review_scopes) || meta.verdict === undefined) {
-    return null;
-  }
-  const id = idOf(path);
-  const inputs = Array.isArray(meta.review_inputs) ? meta.review_inputs : [];
-  return {
-    id,
-    kind: 'review',
-    path,
-    date: id.match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '',
-    scopes: meta.review_scopes,
-    verdicts: verdictsOf(meta.review_scopes, meta.verdict),
-    basis: Array.isArray(meta.review_basis) ? meta.review_basis : [],
-    workKind: meta.work_kind ?? null,
-    commit: meta.review_commit ?? null,
-    inputs,
-    upstreams: Array.isArray(meta.review_upstreams)
-      ? meta.review_upstreams
-      : [],
-    entries: entriesFor(scopes, meta.review_scopes, inputs, path),
-    summary: leadOf(text),
-    jobs: jobsOf(text),
-    previous: null,
-    reconciliation: [],
-    references: [],
-    alternatives: [],
-    raw: { id, path, ...meta },
-  };
+  return { root, scopes, groups, pages, reviews, membership, warnings };
 }
 
 const idOf = (path) =>
   path.slice(path.lastIndexOf('/') + 1).replace(/\.md$/, '');
-
 const verdictWords = new Set(['stop', 'pursue', 'defer']);
 
 function verdictsOf(scopeIds, verdict) {
@@ -582,25 +257,26 @@ function verdictsOf(scopeIds, verdict) {
   return result;
 }
 
-function entriesFor(scopes, scopeIds, inputs, own) {
-  const added = inputs.filter((input) => !input.startsWith('!'));
-  const dropped = new Set(
-    inputs
-      .filter((input) => input.startsWith('!'))
-      .map((input) => input.slice(1))
-  );
-  const skipped = new Set(
-    [own, ...scopeIds.map(subjectOf)].filter(
-      (path) => path && !added.includes(path)
-    )
-  );
-  const entries = new Set(added);
-  for (const id of scopeIds) {
-    for (const entry of scopes.has(id) ? entriesOf(scopes.get(id)) : []) {
-      if (!skipped.has(entry)) entries.add(entry);
-    }
+function pageOf(path, text) {
+  const meta = documentMetadata(text);
+  if (!Array.isArray(meta.review_scopes) || meta.verdict === undefined) {
+    return null;
   }
-  return [...entries].filter((entry) => !dropped.has(entry)).sort(byCodeUnit);
+  const id = idOf(path);
+  return {
+    id,
+    kind: 'review',
+    path,
+    date: id.match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '',
+    scopes: meta.review_scopes,
+    verdicts: verdictsOf(meta.review_scopes, meta.verdict),
+    basis: Array.isArray(meta.review_basis) ? meta.review_basis : [],
+    workKind: meta.work_kind ?? null,
+    summary: leadOf(text),
+    jobs: jobsOf(text),
+    previous: null,
+    reconciliation: [],
+  };
 }
 
 export function headsOf(ledger, scopeId) {
@@ -617,51 +293,12 @@ export function headsOf(ledger, scopeId) {
 }
 
 const latest = (heads) => heads.at(-1) ?? null;
-
-const adopting = (execution) =>
-  execution.bound &&
-  ['implementation', 'workflow'].includes(execution.workKind);
-
-/**
- * The implementation or workflow executions that currently stand for a review:
- * a later execution supersedes the ones it names as previous, and imported
- * executions supersede each other in their original append order.
- */
-export function effectiveExecutions(ledger, reviewId) {
-  const review = ledger.records.get(reviewId);
-  const candidates = (ledger.executions.get(review?.scope) ?? []).filter(
-    (record) => adopting(record) && record.reviewBasis.includes(reviewId)
-  );
-  const superseded = new Set(candidates.flatMap((record) => record.previous));
-  const legacy = candidates
-    .filter((record) => ledger.legacy.has(record.id))
-    .sort(
-      (a, b) =>
-        ledger.legacy.get(a.id).position - ledger.legacy.get(b.id).position
-    );
-  for (const record of legacy.slice(0, -1)) superseded.add(record.id);
-  return candidates.filter((record) => !superseded.has(record.id));
-}
-
 const executes = (plan) =>
   ['implementation', 'workflow'].includes(plan.workKind);
-
 const isReviewPage = (plan) => plan.verdict !== undefined;
 
-const legacyAdoption = (ledger, review) => {
-  const effective = effectiveExecutions(ledger, review.id);
-  return effective.length === 1 && effective[0].outcome === 'completed'
-    ? effective[0]
-    : null;
-};
-
-/**
- * What closes a Pursue: the implementation or workflow plans that name it, or
- * its own review page, when every one of them is landed. A plan that closed
- * without landing, such as a superseded iteration, neither holds it open nor
- * closes it. A review page's basis adopts nothing.
- */
-export function adoptionOf(ledger, review, plans) {
+/** Closes a Pursue when every live implementation or workflow plan naming it has landed. */
+export function adoptionOf(_ledger, review, plans) {
   const executing = plans.filter(
     (plan) =>
       executes(plan) &&
@@ -669,120 +306,40 @@ export function adoptionOf(ledger, review, plans) {
       (plan.path === review.path ||
         (!isReviewPage(plan) && plan.reviewBasis.includes(review.id)))
   );
-  if (executing.length) {
-    const live = executing.filter(
-      (plan) => plan.landed || plan.conflict || stateOf(plan.status) !== 'done'
-    );
-    return live.length && live.every((plan) => plan.landed)
-      ? { id: live[0].path }
-      : null;
-  }
-  return legacyAdoption(ledger, review);
+  if (!executing.length) return null;
+  const live = executing.filter(
+    (plan) => plan.landed || plan.conflict || stateOf(plan.status) !== 'done'
+  );
+  return live.length && live.every((plan) => plan.landed)
+    ? { id: live[0].path }
+    : null;
 }
 
-/**
- * A plan's review association. Front matter wins; a classified document entry
- * covers historical plans without it.
- */
-export function associationOf(root, ledger, path) {
+export function associationOf(root, _ledger, path) {
   const text = read(root, path);
   const meta = documentMetadata(text);
   if (
-    ['review_scopes', 'review_basis', 'work_kind'].some((key) =>
+    !['review_scopes', 'review_basis', 'work_kind'].some((key) =>
       Object.hasOwn(meta, key)
     )
   ) {
-    const scopeIds = Array.isArray(meta.review_scopes)
-      ? meta.review_scopes
-      : [];
-    const lists = ['review_basis', 'review_inputs', 'review_upstreams'];
-    const invalid = [
-      ...(Array.isArray(meta.review_scopes) ? [] : ['review_scopes']),
-      ...lists.filter(
-        (key) => Object.hasOwn(meta, key) && !Array.isArray(meta[key])
-      ),
-      ...(meta.work_kind && !workKinds.has(meta.work_kind)
-        ? ['work_kind']
-        : []),
-      ...(meta.verdict !== undefined &&
-      (verdictsOf(scopeIds, meta.verdict).size !== scopeIds.length ||
-        (Array.isArray(meta.verdict) &&
-          meta.verdict.length !== scopeIds.length))
-        ? ['verdict']
-        : []),
-      ...(meta.review_commit !== undefined &&
-      !/^[0-9a-f]{40}$/.test(meta.review_commit)
-        ? ['review_commit']
-        : []),
-      ...(Array.isArray(meta.review_upstreams) &&
-      !meta.review_upstreams.every((entry) =>
-        /^[^@\s]+@[0-9a-f]{40}$/.test(entry)
-      )
-        ? ['review_upstreams']
-        : []),
-    ];
-    const inputs = Array.isArray(meta.review_inputs) ? meta.review_inputs : [];
-    return {
-      path,
-      scopes: scopeIds,
-      reviewBasis: Array.isArray(meta.review_basis) ? meta.review_basis : [],
-      workKind: meta.work_kind ?? null,
-      ...(meta.verdict === undefined ? {} : { verdict: meta.verdict }),
-      ...(Object.hasOwn(meta, 'review_inputs') ? { inputs } : {}),
-      ...(meta.review_commit
-        ? {
-            commit: meta.review_commit,
-            inputs,
-            upstreams: Array.isArray(meta.review_upstreams)
-              ? meta.review_upstreams
-              : [],
-            entries: entriesFor(ledger.scopes, scopeIds, inputs, path),
-          }
-        : {}),
-      ...planStatus(text),
-      association: 'plan-metadata',
-      ...(invalid.length ? { invalid } : {}),
-    };
+    return null;
   }
-  const document = ledger.documents.find(
-    (item) =>
-      item.path === path &&
-      item.kind === 'plan' &&
-      item.disposition !== 'rejected'
-  );
-  if (!document) return null;
-  const invalid =
-    document.workKind && !workKinds.has(document.workKind) ? ['workKind'] : [];
   return {
     path,
-    scopes: document.scopes,
-    reviewBasis: document.reviewBasis ?? [],
-    workKind: document.workKind ?? null,
+    scopes: Array.isArray(meta.review_scopes) ? meta.review_scopes : [],
+    reviewBasis: Array.isArray(meta.review_basis) ? meta.review_basis : [],
+    workKind: meta.work_kind ?? null,
+    ...(meta.verdict === undefined ? {} : { verdict: meta.verdict }),
     ...planStatus(text),
-    association: 'classified-document',
-    ...(invalid.length ? { invalid } : {}),
   };
 }
 
-const literalPaths = ['-c', 'core.quotePath=false'];
-
-/** Plans that declare review metadata, plus classified historical plans. */
+/** Plans under `docs/plans/*.md` that declare `review_scopes` front matter. */
 export function plansOf(root, ledger) {
-  const declared = grepFiles(
-    root,
-    ['-l', '-E', '^review_scopes:'],
-    ['docs/plans/*.md']
-  )
+  return grepFiles(root, ['-l', '-E', '^review_scopes:'], ['docs/plans/*.md'])
     .split('\n')
-    .filter(Boolean);
-  const paths = new Set([
-    ...declared,
-    ...ledger.documents
-      .filter((document) => document.kind === 'plan')
-      .map((document) => document.path),
-  ]);
-  return [...paths]
-    .filter((path) => existsSync(join(root, path)))
+    .filter((path) => path && existsSync(join(root, path)))
     .map((path) => associationOf(root, ledger, path))
     .filter(Boolean)
     .sort((a, b) => b.path.localeCompare(a.path));
@@ -797,10 +354,7 @@ export const planLabels = (text) =>
     ...text.matchAll(/^[Ss]tatus:[ \t]*\r?\n[ \t]*-[ \t]+(.+)$/gm),
   ].map((match) => match[1].replaceAll('**', '').trim());
 
-/**
- * A plan counts as landed only when every label is a landed word, so a
- * reopened Status beside an old completion is not landed.
- */
+/** Counts a plan as landed only when every status label is a landed word. */
 export function planStatus(text) {
   const labels = planLabels(text);
   const verdicts = new Set(labels.map((label) => landed(label)));
@@ -811,7 +365,6 @@ export function planStatus(text) {
   };
 }
 
-/** The open state of one scope, derived from its records and plans. */
 export function openState(ledger, scopeId, plans) {
   const heads = headsOf(ledger, scopeId);
   if (heads.length > 1) {
@@ -846,296 +399,6 @@ export function owningScopes(ledger, path) {
     }
   }
   return [...owners].sort(byCodeUnit);
-}
-
-const importRoots = ['packages', 'apps/www/src'];
-const importSpecifier = /(?:\bfrom|\bimport\s*\()\s*['"]([^'"]+)['"]/;
-// Apple Git's `grep -E` takes POSIX classes only.
-const importGrep = `(from|import[[:space:]]*\\()[[:space:]]*['"][^'"]+['"]`;
-const testSource =
-  /(?:\.(?:spec|test|slow)\.[cm]?[jt]sx?$|\/(?:__tests__|type-tests)\/)/;
-const edgeCache = new WeakMap();
-const covers = (entries, path) =>
-  entries.some((entry) =>
-    entry.endsWith('/') ? path.startsWith(entry) : path === entry
-  );
-
-function importEdges(ledger, commit = null) {
-  const { root } = ledger;
-  if (!edgeCache.has(ledger)) edgeCache.set(ledger, new Map());
-  const cache = edgeCache.get(ledger);
-  if (cache.has(commit)) return cache.get(commit);
-  const files = new Set(
-    commit
-      ? filesAt(root, commit, importRoots)
-      : trackedFiles(root, { pathspecs: importRoots, untracked: true })
-  );
-  const specifiers = new Map(
-    getWorkspaceSourceEntries(root).map(({ sourceEntry, specifier }) => [
-      specifier,
-      relative(root, sourceEntry),
-    ])
-  );
-  const target = (file, specifier) =>
-    specifier.startsWith('.')
-      ? ['', '.ts', '.tsx', '/index.ts', '/index.tsx']
-          .map((extension) => `${join(dirname(file), specifier)}${extension}`)
-          .find((path) => files.has(path))
-      : specifiers.get(specifier);
-  const found = grepFiles(root, ['-I', '-o', '-E', importGrep], importRoots, {
-    rev: commit,
-  });
-  const edges = [];
-  for (const line of found.split('\n')) {
-    const split = line.indexOf(':');
-    const file = line.slice(0, split);
-    const specifier = line.slice(split + 1).match(importSpecifier)?.[1];
-    if (
-      !specifier ||
-      file.startsWith('packages/plitejs/') ||
-      testSource.test(file)
-    ) {
-      continue;
-    }
-    const path = target(file, specifier);
-    if (path) edges.push([file, path]);
-  }
-  cache.set(commit, edges);
-  return edges;
-}
-
-function dependentsOf(ledger, scope, commit = null) {
-  const own = [...(scope.owners ?? []), ...(scope.members ?? [])];
-  const byScope = new Map();
-  const unowned = new Set();
-  for (const [file, path] of importEdges(ledger, commit)) {
-    if (!covers(own, path) || covers(own, file)) continue;
-    const owners = owningScopes(ledger, file);
-    if (!owners.length) unowned.add(file);
-    for (const id of owners) {
-      if (!byScope.has(id)) byScope.set(id, new Set());
-      byScope.get(id).add(file);
-    }
-  }
-  return {
-    scopes: [...byScope]
-      .map(([id, files]) => ({ id, files: [...files].sort(byCodeUnit) }))
-      .sort(byId),
-    unowned: [...unowned].sort(byCodeUnit),
-  };
-}
-
-/** Source and law freshness of a review page, plan or legacy record against the live tree. Matching is not behavior proof. */
-export function freshness(tree, record) {
-  if (record.commit) return commitFreshness(tree, record);
-  const { evidence } = record;
-  const result = {
-    state: 'unknown',
-    changed: [],
-    missing: [],
-    law: { changed: [] },
-    legacyGroups: evidence?.legacyGroups ?? 0,
-    upstream: null,
-  };
-  if (!evidence) return { ...result, reason: 'no captured source' };
-  const inputs = Object.entries(evidence.inputs);
-  if (record.kind === 'execution') {
-    for (const item of record.proof.evidence ?? []) {
-      if (item.sha256) inputs.push([item.path, item.sha256]);
-    }
-  }
-  for (const [path, recorded] of inputs) {
-    const current = tree.digest(path);
-    if (current === recorded) continue;
-    if (isLaw(path)) result.law.changed.push(path);
-    else if (current === null) result.missing.push(path);
-    else result.changed.push(path);
-  }
-  for (const upstream of evidence.upstreams) {
-    result.upstream = upstreamState(upstream, result.upstream);
-  }
-  const moved =
-    result.changed.length ||
-    result.missing.length ||
-    result.upstream === 'stale';
-  result.state = moved
-    ? 'stale'
-    : inputs.length === 0 ||
-        result.legacyGroups > 0 ||
-        result.upstream === 'unknown'
-      ? 'unknown'
-      : 'matching';
-  result.law.state = result.law.changed.length ? 'moved' : 'unchanged';
-  return result;
-}
-
-// The commit that records a page's review_commit also writes what its verdict
-// changes, such as its evidence pages. Of the paths given, those that commit
-// alone changed since review_commit stale nothing. Only the repository that
-// tracks review pages counts, so in a split checkout these are companion files.
-function landingWrites(tree, record, paths) {
-  if (!paths.length) return new Set();
-  const repo = tree.pageRepo();
-  const candidates = paths.filter(
-    (path) => (!repo.tracks || repo.tracks.has(path)) && !repo.dirty.has(path)
-  );
-  const base = candidates.length ? repo.base(record.commit) : null;
-  if (!base) return new Set();
-  const lines = (args) => repo.git(args).split('\n').filter(Boolean);
-  const [landing] = lines([
-    'log',
-    '-1',
-    '--format=%H',
-    '-S',
-    `review_commit: ${record.commit}`,
-    '--',
-    record.path,
-  ]);
-  if (!landing) return new Set();
-  const writers = new Map();
-  let commit;
-  for (const line of lines([
-    'log',
-    '--format=%x00%H',
-    '--name-only',
-    '--no-renames',
-    `${base}..HEAD`,
-    '--',
-    ...candidates,
-  ])) {
-    if (line.startsWith('\0')) commit = line.slice(1);
-    else writers.set(line, [...(writers.get(line) ?? []), commit]);
-  }
-  return new Set(
-    candidates.filter((path) => {
-      const commits = writers.get(path);
-      return commits?.length === 1 && commits[0] === landing;
-    })
-  );
-}
-
-function commitFreshness(tree, record) {
-  const result = {
-    state: 'unknown',
-    changed: [],
-    missing: [],
-    law: { changed: [], state: 'unchanged' },
-    legacyGroups: 0,
-    upstream: null,
-  };
-  const moved = changedSince(tree.root, record.commit);
-  if (moved === null) {
-    return { ...result, reason: `commit ${record.commit} is not reachable` };
-  }
-  // A page's own fold rewrites its subject file after review_commit, so
-  // freshness leaves that file out, and with it every later edit to it.
-  const foldTarget = subjectOf(leadScope(record));
-  const matches = new Map();
-  for (const path of [...moved, ...untrackedFiles(tree.root)]) {
-    if (isLaw(path)) {
-      result.law.changed.push(path);
-      continue;
-    }
-    if (path === foldTarget) continue;
-    for (const entry of record.entries) {
-      if (entry === path || (entry.endsWith('/') && path.startsWith(entry))) {
-        matches.set(path, [...(matches.get(path) ?? []), entry]);
-      }
-    }
-  }
-  const own = landingWrites(tree, record, [...matches.keys()]);
-  const hit = new Set(
-    [...matches].flatMap(([path, matched]) => (own.has(path) ? [] : matched))
-  );
-  for (const entry of [...hit].sort(byCodeUnit)) {
-    const present = entry.endsWith('/')
-      ? tree.under(entry).length > 0
-      : existsSync(join(tree.root, entry));
-    (present ? result.changed : result.missing).push(entry);
-  }
-  for (const upstream of record.upstreams) {
-    result.upstream = checkoutState(tree.root, upstream, result.upstream);
-  }
-  result.state =
-    result.changed.length ||
-    result.missing.length ||
-    result.upstream === 'stale'
-      ? 'stale'
-      : result.upstream === 'unknown'
-        ? 'unknown'
-        : 'matching';
-  result.law.state = result.law.changed.length ? 'moved' : 'unchanged';
-  return result;
-}
-
-function checkoutState(root, upstream, previous) {
-  if (previous === 'stale') return previous;
-  const at = upstream.lastIndexOf('@');
-  const checkout = resolve(root, upstream.slice(0, at));
-  if (!existsSync(checkout)) return 'unknown';
-  const head = git(checkout, ['rev-parse', 'HEAD'])?.trim();
-  const dirty = git(checkout, ['status', '--porcelain']);
-  if (!head || dirty === null) return 'unknown';
-  return head !== upstream.slice(at + 1) || dirty
-    ? 'stale'
-    : (previous ?? 'matching');
-}
-
-function upstreamState(upstream, previous) {
-  if (previous === 'stale') return previous;
-  if (!existsSync(upstream.checkout)) return 'unknown';
-  let head;
-  try {
-    head = execFileSync('git', ['-C', upstream.checkout, 'rev-parse', 'HEAD'], {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
-  } catch {
-    return 'unknown';
-  }
-  const moved =
-    head !== upstream.commit ||
-    Object.entries(upstream.files ?? {}).some(
-      ([path, digest]) =>
-        !existsSync(join(upstream.checkout, path)) ||
-        hash(readFileSync(join(upstream.checkout, path))) !== digest
-    );
-  return moved ? 'stale' : (previous ?? 'matching');
-}
-
-function headSummary(review) {
-  return review
-    ? {
-        id: review.id,
-        date: review.date,
-        verdict: review.verdict,
-        relation: review.relation,
-        summary: clip(review.summary),
-        ...(review.callSites ? { callSites: review.callSites } : {}),
-      }
-    : null;
-}
-
-function briefFreshness(state) {
-  return {
-    state: state.state,
-    changed: bounded(state.changed, 5),
-    missing: bounded(state.missing, 5),
-    lawMoved: bounded(state.law.changed, 5),
-    ...(state.legacyGroups ? { legacyGroups: state.legacyGroups } : {}),
-    ...(state.upstream ? { upstream: state.upstream } : {}),
-  };
-}
-
-function unresolvedCandidates(ledger, scope) {
-  const classified = new Set(
-    ledger.documents
-      .filter((document) => document.scopes.includes(scope.id))
-      .map((document) => document.path)
-  );
-  return [...new Set(scope.historyCandidates)].filter(
-    (path) => !classified.has(path)
-  );
 }
 
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1173,91 +436,56 @@ function incomingOpenWorkByScope(root, ledger) {
       if (!/^(?:[-*]|\d+\.)\s+/.test(line)) continue;
       const match = /\bowner:\s*(.+?)(?=\s+\bstop:|$)/i.exec(line);
       if (!match) continue;
-      const owner = match[1];
       const text = line.replace(/^(?:[-*]|\d+\.)\s+/, '');
       for (const [id, pattern] of patterns) {
-        if (id === fromId) continue;
-        if (pattern.test(owner)) byScope.get(id).push({ from, text });
+        if (id !== fromId && pattern.test(match[1])) {
+          byScope.get(id).push({ from, text });
+        }
       }
     }
   }
   return byScope;
 }
 
-function compact(
-  ledger,
-  tree,
-  plans,
-  scope,
-  { freshness: withFreshness = true, incoming } = {}
-) {
-  const state = openState(ledger, scope.id, plans);
-  const dependents = dependentsOf(ledger, scope);
+const entriesOf = (scope) => [
+  ...(scope.owners ?? []),
+  ...(scope.members ?? []),
+  ...(scope.consumers ?? []),
+  ...(scope.proof ?? []),
+  ...(scope.evidenceInputs ?? []),
+];
+
+function compact(ledger, tree, plans, scope, incoming) {
   const head = latest(headsOf(ledger, scope.id));
-  const executions = ledger.executions.get(scope.id) ?? [];
   const scopePlans = plans.filter((plan) => plan.scopes.includes(scope.id));
-  const documents = ledger.documents.filter(
-    (document) =>
-      document.scopes.includes(scope.id) && document.disposition !== 'rejected'
-  );
-  const incomingItems = incoming?.get(scope.id) ?? [];
   return {
     id: scope.id,
     title: scope.title,
     question: scope.question,
     ...(scope.group ? { group: scope.group } : {}),
-    open: state,
-    head: headSummary(head),
-    freshness:
-      head && withFreshness ? briefFreshness(freshness(tree, head)) : null,
-    executions: bounded(
-      executions
-        .slice()
-        .reverse()
-        .map((execution) => ({
-          id: execution.id,
-          date: execution.date,
-          outcome: execution.outcome,
-          workKind: execution.workKind,
-          namesHead: Boolean(head && execution.reviewBasis.includes(head.id)),
-        })),
-      3
-    ),
+    open: openState(ledger, scope.id, plans),
+    head: head
+      ? {
+          id: head.id,
+          date: head.date,
+          verdict: head.verdict,
+          summary: clip(head.summary),
+        }
+      : null,
     plans: bounded(
       scopePlans.map((plan) => ({
         path: plan.path,
         status: plan.status,
         reviewBasis: plan.reviewBasis,
-        freshness:
-          plan.commit && withFreshness
-            ? briefFreshness(freshness(tree, plan))
-            : null,
       })),
       5
     ),
-    documents: bounded(
-      documents.map((document) => ({
-        path: document.path,
-        kind: document.kind,
-        disposition: document.disposition,
-      })),
-      3
-    ),
-    candidates: bounded(unresolvedCandidates(ledger, scope), 5),
-    incomingOpenWork: bounded(incomingItems, 10),
+    incomingOpenWork: bounded(incoming?.get(scope.id) ?? [], 10),
     related: (scope.relatedScopes ?? []).map((id) => ({
       id,
       verdict: latest(headsOf(ledger, id))?.verdict ?? null,
       open: openState(ledger, id, plans).open,
     })),
-    dependents: {
-      scopes: dependents.scopes.map(({ id, files }) => ({
-        id,
-        files: bounded(files, 3),
-        open: openState(ledger, id, plans).open,
-      })),
-      unowned: bounded(dependents.unowned, 5),
-    },
     subject: existsSync(join(tree.root, subjectOf(scope.id)))
       ? subjectOf(scope.id)
       : null,
@@ -1267,40 +495,32 @@ function compact(
 }
 
 function detailed(ledger, tree, plans, scope, incoming) {
-  const history = [
-    ...(ledger.reviews.get(scope.id) ?? []),
-    ...(ledger.executions.get(scope.id) ?? []),
-  ].sort((a, b) => a.date.localeCompare(b.date) || byId(a, b));
   return {
-    ...compact(ledger, tree, plans, scope, { incoming }),
+    ...compact(ledger, tree, plans, scope, incoming),
     scope,
-    history: history.map((record) => ({
-      ...record.raw,
-      freshness: freshness(tree, record),
-    })),
-    plans: plans
-      .filter((plan) => plan.scopes.includes(scope.id))
-      .map((plan) => ({
-        ...plan,
-        freshness: plan.commit ? freshness(tree, plan) : null,
-      })),
-    documents: ledger.documents.filter((document) =>
-      document.scopes.includes(scope.id)
+    history: (ledger.reviews.get(scope.id) ?? []).map(
+      ({ id, kind, date, verdict, path, summary }) => ({
+        id,
+        kind,
+        date,
+        verdict,
+        ...(path ? { path } : {}),
+        summary,
+      })
     ),
-    candidates: unresolvedCandidates(ledger, scope),
+    plans: plans.filter((plan) => plan.scopes.includes(scope.id)),
     incomingOpenWork: incoming?.get(scope.id) ?? [],
-    executionsTotal: (ledger.executions.get(scope.id) ?? []).length,
   };
 }
 
 const lookupLimit = 10;
 
-/** The ledger, tree and plans one or more lookups read. */
+/** The ledger, visible tree, plans and incoming handoffs shared across lookups. */
 export function lookupContext(root) {
   const ledger = loadLedger(root);
   return {
     ledger,
-    tree: observe(root),
+    tree: visibleTree(root),
     plans: plansOf(root, ledger),
     incoming: incomingOpenWorkByScope(root, ledger),
   };
@@ -1312,12 +532,11 @@ export const lookup = (root, query, options) =>
 export function lookupIn(
   { ledger, tree, plans, incoming },
   query,
-  { detail = false, freshness: withFreshness = true } = {}
+  { detail = false } = {}
 ) {
   assert.ok(isText(query), 'Supply a scope, group, path or search term');
   const needle = query.toLowerCase();
   const scopes = [...ledger.scopes.values()].sort(byId);
-  const legacy = legacyGroups(ledger);
   const matchesAny = (texts) =>
     texts.some((text) => text.toLowerCase().includes(needle));
   const path = query.replace(/^\.\//, '');
@@ -1325,7 +544,6 @@ export function lookupIn(
   const steps = [
     () => (ledger.scopes.has(needle) ? [ledger.scopes.get(needle)] : []),
     () => scopes.filter((scope) => scope.group === needle),
-    () => scopes.filter((scope) => legacy.get(scope.id)?.has(query)),
     () => {
       if (!pathLike) return [];
       const owners = new Set(owningScopes(ledger, path));
@@ -1343,12 +561,7 @@ export function lookupIn(
         : [],
     () =>
       scopes.filter((scope) =>
-        matchesAny([
-          scope.id,
-          scope.title,
-          scope.question,
-          ...(legacy.get(scope.id) ?? []),
-        ])
+        matchesAny([scope.id, scope.title, scope.question])
       ),
     () => scopes.filter((scope) => matchesAny(entriesOf(scope))),
   ];
@@ -1365,20 +578,19 @@ export function lookupIn(
       .flatMap((file) => owningScopes(ledger, file));
     const counts = Object.entries(Object.groupBy(siblings, (id) => id))
       .sort((x, y) => y[1].length - x[1].length)
-      .map(([id, list]) => `${id} (${list.length})`);
+      .map(([id, items]) => `${id} (${items.length})`);
     throw new Error(
       `No scope owns ${path}.${counts.length ? ` Files beside it belong to: ${counts.join(', ')}.` : ''} Add it to "members" in ${scopesDir}/<scope>.json.`
     );
   }
   assert.ok(matched.length, `No scope, group or path matches: ${query}`);
-  const shown = matched.slice(0, lookupLimit).map((scope) =>
-    detail
-      ? detailed(ledger, tree, plans, scope, incoming)
-      : compact(ledger, tree, plans, scope, {
-          freshness: withFreshness,
-          incoming,
-        })
-  );
+  const shown = matched
+    .slice(0, lookupLimit)
+    .map((scope) =>
+      detail
+        ? detailed(ledger, tree, plans, scope, incoming)
+        : compact(ledger, tree, plans, scope, incoming)
+    );
   return matched.length > lookupLimit
     ? [
         ...shown,
@@ -1388,27 +600,6 @@ export function lookupIn(
         },
       ]
     : shown;
-}
-
-const entriesOf = (scope) => [
-  ...(scope.owners ?? []),
-  ...(scope.members ?? []),
-  ...(scope.consumers ?? []),
-  ...(scope.proof ?? []),
-  ...(scope.evidenceInputs ?? []),
-];
-
-/** Retired feature-group ids each scope's records bound, so old names still resolve. */
-function legacyGroups(ledger) {
-  const groups = new Map();
-  for (const record of ledger.records.values()) {
-    if (record.kind === 'execution') continue;
-    const ids = Object.keys(record.raw.source?.features ?? {});
-    if (!ids.length) continue;
-    if (!groups.has(record.scope)) groups.set(record.scope, new Set());
-    for (const id of ids) groups.get(record.scope).add(id);
-  }
-  return groups;
 }
 
 export function status(root) {
@@ -1435,80 +626,17 @@ export function status(root) {
         open: state.open,
         verdict: latest(headsOf(ledger, id))?.verdict ?? null,
       })),
-    ...report(ledger),
+    ...(ledger.warnings.length ? { warnings: ledger.warnings } : {}),
   };
 }
 
-const report = (ledger) =>
-  ledger.warnings.length ? { warnings: ledger.warnings } : {};
-
-const shipSteps = {
-  unreviewed: (scope) => ({
-    title: `Review ${scope.title}`,
-    kind: 'decide',
-    finding: `Nobody has reviewed the ${scope.id} scope yet. Start it with verdict ${scope.id}.`,
-  }),
-  fork: (scope) => ({
-    title: `Settle the open fork in ${scope.title}`,
-    kind: 'decide',
-    finding: `The ${scope.id} scope has more than one current review. Start it with verdict ${scope.id}, which settles them into one.`,
-  }),
-  'pursue-not-adopted': (scope) => ({
-    title: `Build the pursued ${scope.title} design`,
-    kind: 'fix',
-    finding: `The ${scope.id} review's verdict is pursue, and no landed plan adopts it. Plan and build it from that review page through the Plan playbook.`,
-  }),
-};
-
-/**
- * The open scopes, which chips offers as P1 tasks through `chips.ship` in
- * `.agents/pstack.json`. A deferred scope waits on outside evidence, and a
- * scope that `triage.experimental` lists does not hold up a release, so both
- * are left out. Each item waits on the open plans that name its scope.
- */
-export function ship(root) {
-  const ledger = loadLedger(root);
-  const plans = plansOf(root, ledger);
-  const running = runningPlans(plans);
-  const experimental = configOf(root, ledger).triage?.experimental ?? [];
-  return [...ledger.scopes.values()].sort(byId).flatMap((scope) => {
-    const step = shipSteps[openState(ledger, scope.id, plans).open];
-    if (!step || experimental.includes(scope.id)) return [];
-    const item = offerOf(scope, step, running);
-    const prerequisites = (scope.dependsOn ?? []).filter(
-      (id) => ledger.scopes.has(id) && openState(ledger, id, plans).open
-    );
-    return [
-      prerequisites.length
-        ? {
-            ...item,
-            finding: `${item.finding} It builds on ${prerequisites.join(', ')}, still open: ${scope.prerequisiteReason}`,
-          }
-        : item,
-    ];
-  });
-}
-
 const configOf = (root, ledger) =>
-  readJson(root, '.agents/pstack.json', ledger.warnings).value ?? {};
+  readJson(root, '.agents/pstack.json', ledger.warnings, {});
 
 const runningPlans = (plans) =>
   plans.filter((plan) =>
     ['active', 'held', 'planning'].includes(stateOf(plan.status))
   );
-
-const offerOf = (scope, step, running) => ({
-  id: scope.id,
-  ...step({ id: scope.id, title: scope.title ?? scope.id }),
-  writes: [
-    subjectOf(scope.id),
-    ...(scope.owners ?? []).map((path) => path.replace(/\/$/, '')),
-  ],
-  topic: `review-${scope.id}`,
-  waits: running
-    .filter((plan) => plan.scopes.includes(scope.id))
-    .map((plan) => `run:${plan.path}`),
-});
 
 const dueSteps = {
   closed: (scope) => ({
@@ -1580,12 +708,7 @@ function beganAt(root, page) {
   );
 }
 
-/**
- * A worktree keeps the plans it was cut with until land.mjs rebases it, so the
- * pass also reads each review page that has landed on origin/next since, or it
- * offers a scope one of those pages already ranked.
- */
-function pagesLandedSinceFork(root, ledger) {
+function pagesLandedSinceFork(root) {
   const pageGit = isSplit(root)
     ? (args) => privateGit(root, args).stdout
     : (args) => git(root, args) ?? '';
@@ -1603,7 +726,7 @@ function pagesLandedSinceFork(root, ledger) {
     .split('\0')
     .filter((path) => path.endsWith('.md'))
     .flatMap((path) => {
-      const page = pageOf(ledger.scopes, path, at(path));
+      const page = pageOf(path, at(path));
       return page
         ? [{ page, began: firstRowAt(at(logOf(page)), page.date) }]
         : [];
@@ -1617,7 +740,7 @@ function dueScopes(root, ledger, plans) {
       page,
       began: beganAt(root, page),
     })),
-    ...pagesLandedSinceFork(root, ledger),
+    ...pagesLandedSinceFork(root),
   ]
     .filter(
       ({ page, began }) =>
@@ -1651,11 +774,10 @@ function changesSince(root, paths, head) {
     '--',
     ...paths,
   ];
-  const halves = [
+  return [
     git(root, count),
     isSplit(root) ? privateGit(root, count).stdout : null,
-  ];
-  return halves.reduce((sum, out) => sum + Number(out?.trim() || 0), 0);
+  ].reduce((sum, out) => sum + Number(out?.trim() || 0), 0);
 }
 
 const DEFAULT_DEFERRED = ['collaboration'];
@@ -1722,16 +844,10 @@ export function planActiveAt(root, given) {
   const plan = isAbsolute(given) ? relative(root, given) : given;
   const log = plan.replace(/\.md$/u, '.decisions.tsv');
   const paths = [plan, log];
-  let ref = 'HEAD';
-  const cfgPath = join(root, '.agents/pstack.json');
-  if (existsSync(cfgPath)) {
-    try {
-      const cfg = JSON.parse(readFileSync(cfgPath, 'utf-8'));
-      if (cfg.delivery === 'trunk') ref = UPSTREAM;
-    } catch {
-      ref = 'HEAD';
-    }
-  }
+  const ref =
+    readJson(root, '.agents/pstack.json', null, {})?.delivery === 'trunk'
+      ? UPSTREAM
+      : 'HEAD';
   const commitMs = (out) => Number(out?.trim() || 0) * 1000 || 0;
   const pub = commitMs(
     git(root, ['log', '-1', '--format=%ct', ref, '--', ...paths])
@@ -1742,32 +858,27 @@ export function planActiveAt(root, given) {
           .stdout
       )
     : 0;
-  let rowAt = 0;
   const logPath = join(root, log);
-  if (existsSync(logPath)) {
-    const last =
-      readFileSync(logPath, 'utf-8').trimEnd().split('\n').at(-1) ?? '';
-    rowAt = Date.parse(last.split('\t')[0]) || 0;
-  }
+  const rowAt = existsSync(logPath)
+    ? Date.parse(
+        (
+          readFileSync(logPath, 'utf-8').trimEnd().split('\n').at(-1) ?? ''
+        ).split('\t')[0]
+      ) || 0
+    : 0;
   return Math.max(0, pub, priv, rowAt) || null;
 }
 
-/** The scopes the audit pass has not reached, each as the verdict to run next. */
+/** The scopes the audit pass has not reached, ordered by tier and recent owner commits. */
 export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
   const ledger = loadLedger(root);
   const plans = plansOf(root, ledger);
   const config = configOf(root, ledger);
-  const hasExplicit =
-    config.audit?.tiers !== undefined || config.chips?.tiers !== undefined;
-  const tiers =
-    config.audit?.tiers ??
-    config.chips?.tiers ??
-    (config.triage ? DEFAULT_TIERS : []);
+  const hasExplicit = config.audit?.tiers !== undefined;
+  const tiers = config.audit?.tiers ?? (config.triage ? DEFAULT_TIERS : []);
   const deferred =
     config.audit?.deferred ??
-    config.chips?.deferred ??
     (hasExplicit || !config.triage ? [] : DEFAULT_DEFERRED);
-  const experimental = config.triage?.experimental ?? [];
   const scopes = dueScopes(root, ledger, plans);
   const reached = new Set(scopes.map(({ scope }) => scope.id));
   const running = runningPlans(plans).filter((plan) =>
@@ -1780,7 +891,10 @@ export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
   const live = running.filter((plan) => !idle.includes(plan));
   return scopes
     .map(({ scope, open, unread }) => {
-      const offer = offerOf(scope, dueSteps[open], live);
+      const step = dueSteps[open]({
+        id: scope.id,
+        title: scope.title ?? scope.id,
+      });
       const led = idle
         .filter((plan) => plan.scopes[0] === scope.id)
         .map((plan) => plan.path);
@@ -1793,26 +907,30 @@ export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
           : '',
       ];
       const item = {
-        ...offer,
-        finding: [offer.finding, ...notes].filter(Boolean).join(' '),
-        writes: [...offer.writes, ...led],
-        waits: [...offer.waits],
+        id: scope.id,
+        ...step,
+        finding: [step.finding, ...notes].filter(Boolean).join(' '),
+        writes: [
+          subjectOf(scope.id),
+          ...(scope.owners ?? []).map((path) => path.replace(/\/$/, '')),
+          ...led,
+        ],
+        topic: `review-${scope.id}`,
+        waits: live
+          .filter((plan) => plan.scopes.includes(scope.id))
+          .map((plan) => `run:${plan.path}`),
       };
       const at = tierAt(tiers, item);
       const head = latest(headsOf(ledger, scope.id));
-      const date = head?.date ?? '';
       return {
         item: {
           ...item,
           tier: tiers[at]?.name ?? 'other',
           changes: changesSince(root, scope.owners ?? [], head),
-          ...(open === 'unreviewed' && !experimental.includes(scope.id)
-            ? { ship: scope.id }
-            : {}),
         },
         deferred: Number(deferred.includes(scope.id)),
         at,
-        date,
+        date: head?.date ?? '',
       };
     })
     .sort(
@@ -1826,33 +944,26 @@ export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
     .map(({ item }) => item);
 }
 
-/** Markdown for people, printed instead of committed. */
+/** Markdown summary of all scopes, or one scope's review history and ownership. */
 export function show(root, scopeId) {
   const ledger = loadLedger(root);
   const plans = plansOf(root, ledger);
   if (!scopeId) {
-    const lines = [
-      '# Review scopes',
-      '',
-      '| Scope | Review | Open state |',
-      '| --- | --- | --- |',
-    ];
-    for (const scope of [...ledger.scopes.values()].sort(byId)) {
-      lines.push(
-        `| ${scope.id} | ${scope.title} | ${openState(ledger, scope.id, plans).open ?? 'closed'} |`
+    const rows = [...ledger.scopes.values()]
+      .sort(byId)
+      .map(
+        (scope) =>
+          `| ${scope.id} | ${scope.title} | ${openState(ledger, scope.id, plans).open ?? 'closed'} |`
       );
-    }
-    return `${lines.join('\n')}\n`;
+    return `${['# Review scopes', '', '| Scope | Review | Open state |', '| --- | --- | --- |', ...rows].join('\n')}\n`;
   }
   const scope = ledger.scopes.get(scopeId);
   assert.ok(scope, `Unknown scope: ${scopeId}`);
-  const tree = observe(root);
   const state = openState(ledger, scope.id, plans);
-  const history = [
-    ...(ledger.reviews.get(scope.id) ?? []),
-    ...(ledger.executions.get(scope.id) ?? []),
-  ].sort((a, b) => b.date.localeCompare(a.date) || byId(b, a));
-  const list = (items) => items.join(', ') || 'none';
+  const history = [...(ledger.reviews.get(scope.id) ?? [])].sort(
+    (a, b) => b.date.localeCompare(a.date) || byId(b, a)
+  );
+  const scopePlans = plans.filter((plan) => plan.scopes.includes(scope.id));
   const lines = [
     `# ${scope.title}`,
     '',
@@ -1862,54 +973,23 @@ export function show(root, scopeId) {
     '',
     '## History, newest first',
     '',
-  ];
-  for (const record of history) {
-    const seen = freshness(tree, record);
-    lines.push(
+    ...history.flatMap((record) => [
       `### ${record.date}: ${record.id}`,
       '',
-      `${record.kind}; ${record.verdict ?? record.outcome ?? 'no verdict'}; source ${seen.state}${seen.law.changed.length ? '; doctrine moved since' : ''}.`,
+      `${record.kind}; ${record.verdict ?? 'no verdict'}.`,
       '',
       record.summary,
-      ''
-    );
-    for (const alternative of record.alternatives ?? []) {
-      lines.push(`- ${alternative}`);
-    }
-    for (const entry of record.reconciliation ?? []) {
-      lines.push(`- ${entry.action} ${entry.record}: ${entry.reason}`);
-    }
-    if (record.kind === 'execution') {
-      lines.push(
-        `- plan ${record.plan}; basis ${list(record.reviewBasis)}; proof ${record.proof.state}: ${record.proof.limits}`
-      );
-    } else if (record.path) {
-      lines.push('', `Page: ${record.path}`);
-    } else {
-      lines.push('', `Proof limits: ${record.proofLimits}`);
-    }
-    lines.push('', `References: ${list(record.references)}.`, '');
-  }
-  const scopePlans = plans.filter((plan) => plan.scopes.includes(scope.id));
-  lines.push('## Plans', '');
-  for (const plan of scopePlans) {
-    lines.push(
-      `- ${plan.path}: ${plan.status || 'no status'}; ${plan.workKind ?? 'no work kind'}; basis ${list(plan.reviewBasis)}${plan.commit ? `; source ${freshness(tree, plan).state}` : ''}`
-    );
-  }
-  if (!scopePlans.length) lines.push('None associated.');
-  lines.push('');
-  const documents = ledger.documents.filter((document) =>
-    document.scopes.includes(scope.id)
-  );
-  lines.push('## Documents', '');
-  for (const document of documents) {
-    lines.push(
-      `- ${document.path}: ${document.kind}, ${document.disposition}. ${document.rationale}`
-    );
-  }
-  if (!documents.length) lines.push('None classified.');
-  lines.push(
+      ...(record.path ? ['', `Page: ${record.path}`] : []),
+      '',
+    ]),
+    '## Plans',
+    '',
+    ...(scopePlans.length
+      ? scopePlans.map(
+          (plan) =>
+            `- ${plan.path}: ${plan.status || 'no status'}; ${plan.workKind ?? 'no work kind'}; basis ${list(plan.reviewBasis)}`
+        )
+      : ['None associated.']),
     '',
     '## Owners and evidence',
     '',
@@ -1919,13 +999,11 @@ export function show(root, scopeId) {
     '',
     `Consumers: ${list(scope.consumers ?? [])}.`,
     '',
-    `Dependents: ${list(dependentsOf(ledger, scope).scopes.map(({ id }) => id))}.`,
-    '',
     `Proof: ${list(scope.proof ?? [])}.${scope.gaps ? ` ${scope.gaps}` : ''}`,
     '',
     `Evidence inputs: ${list(scope.evidenceInputs ?? [])}.`,
-    ''
-  );
+    '',
+  ];
   return `${lines.join('\n')}\n`;
 }
 
@@ -1945,7 +1023,7 @@ export function coverage(
   root,
   { prefix = '', ledger = loadLedger(root) } = {}
 ) {
-  const tree = observe(root);
+  const tree = visibleTree(root);
   const universe = sourceFiles(tree).filter((path) => path.startsWith(prefix));
   const unowned = universe.filter((path) => !owningScopes(ledger, path).length);
   const dangling = [];
@@ -1970,22 +1048,18 @@ export function coverage(
   };
 }
 
-const workKinds = new Set([
-  'design',
-  'implementation',
-  'research',
-  'workflow',
-  'verification',
-]);
-
 function git(root, args) {
   try {
-    return execFileSync('git', ['-C', root, ...literalPaths, ...args], {
-      encoding: 'utf-8',
-      env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' },
-      maxBuffer: 1 << 28,
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
+    return execFileSync(
+      'git',
+      ['-C', root, '-c', 'core.quotePath=false', ...args],
+      {
+        encoding: 'utf-8',
+        env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' },
+        maxBuffer: 1 << 28,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }
+    );
   } catch {
     return null;
   }
@@ -2031,7 +1105,8 @@ function assertScope(tree, ledger, scope) {
   }
 }
 
-export function check(root, { base = 'HEAD' } = {}) {
+/** Validates scope JSON structure, group definitions, forks, and reports unowned/dangling paths. */
+export function check(root) {
   const ledger = loadLedger(root);
   const errors = [...ledger.warnings];
   const warnings = [];
@@ -2042,7 +1117,7 @@ export function check(root, { base = 'HEAD' } = {}) {
       errors.push(`${label}: ${error.message.split('\n')[0]}`);
     }
   };
-  const tree = observe(root);
+  const tree = visibleTree(root);
   for (const scope of ledger.scopes.values()) {
     attempt(`${scopesDir}/${scope.id}.json`, () =>
       assertScope(tree, ledger, scope)
@@ -2062,117 +1137,12 @@ export function check(root, { base = 'HEAD' } = {}) {
       );
     });
   }
-  attempt(documentsPath, () => {
-    const paths = ledger.documents.map((document) => document.path);
-    assert.equal(new Set(paths).size, paths.length, 'Duplicate document path');
-  });
-  for (const document of ledger.documents) {
-    attempt(`${documentsPath} ${document.path}`, () => {
-      repoPath(document.path);
-      assert.ok(
-        [
-          'plan',
-          'decision',
-          'lesson',
-          'specification',
-          'report',
-          'history',
-        ].includes(document.kind) &&
-          ['active', 'historical', 'superseded', 'rejected'].includes(
-            document.disposition
-          ) &&
-          isText(document.rationale),
-        'A document needs a kind, a disposition and a rationale'
-      );
-      assert.ok(
-        document.scopes?.length &&
-          document.scopes.every((id) => ledger.scopes.has(id)),
-        'Unknown document scope'
-      );
-      for (const id of document.reviewBasis ?? []) {
-        assert.ok(
-          ledger.records.has(id) || ledger.pages.has(id),
-          `Unknown review basis: ${id}`
-        );
-      }
-      if (!existsSync(join(root, document.path))) {
-        warnings.push(`Missing document: ${document.path}`);
-      }
-    });
-  }
-  for (const item of ledger.records.values()) {
-    attempt(`${recordsDir}/${item.id}.json`, () => {
-      if (item.kind === 'execution') {
-        assert.ok(
-          item.scopes.length &&
-            item.scopes.every((id) => ledger.scopes.has(id)),
-          'Unknown execution scope'
-        );
-        for (const id of item.reviewBasis) {
-          assert.ok(ledger.records.has(id), `Unknown review basis: ${id}`);
-        }
-        for (const id of item.previous) {
-          assert.equal(
-            ledger.records.get(id)?.kind,
-            'execution',
-            `previous ${id} is not a recorded execution`
-          );
-        }
-        return;
-      }
-      assert.ok(ledger.scopes.has(item.scope), `Unknown scope: ${item.scope}`);
-      if (item.previous) {
-        assert.equal(
-          ledger.records.get(item.previous)?.scope,
-          item.scope,
-          `previous ${item.previous} is not a review of ${item.scope}`
-        );
-      }
-      for (const entry of item.reconciliation) {
-        assert.ok(
-          ledger.records.has(entry.record),
-          `Unknown reconciliation record: ${entry.record}`
-        );
-      }
-    });
-  }
   for (const id of ledger.scopes.keys()) {
     const heads = headsOf(ledger, id);
     if (heads.length > 1) {
       (heads.some((head) => head.path) ? errors : warnings).push(
         `Fork in ${id}: ${heads.map((head) => head.id).join(', ')}`
       );
-    }
-    for (const head of heads) {
-      const standing = effectiveExecutions(ledger, head.id);
-      if (standing.length > 1) {
-        warnings.push(
-          `Executions fork for ${head.id}: ${standing.map((item) => item.id).join(', ')}`
-        );
-      }
-    }
-  }
-  const plans = plansOf(root, ledger);
-  const context = planContext(root, ledger, plans, base, errors);
-  for (const plan of plans) {
-    const problems = planProblems(context, plan);
-    if (plan.conflict) {
-      warnings.push(
-        `${plan.path}: conflicting status labels ${plan.conflict.join(' | ')}`
-      );
-    }
-    if (problems.length) errors.push(`${plan.path}: ${problems.join(', ')}`);
-  }
-  for (const path of grepFiles(
-    root,
-    ['-l', '-i', '-E', '^(review|verdict|work.?kind)'],
-    ['docs/plans/*.md']
-  )
-    .split('\n')
-    .filter(Boolean)) {
-    const unknown = unknownReviewKeys(read(root, path));
-    if (unknown.length) {
-      errors.push(`${path}: unknown review key ${unknown.join(', ')}`);
     }
   }
   const covered = coverage(root, { ledger });
@@ -2188,225 +1158,10 @@ export function check(root, { base = 'HEAD' } = {}) {
   return {
     ok: true,
     scopes: ledger.scopes.size,
-    records: ledger.records.size,
     pages: ledger.pages.size,
     ...(warnings.length ? { warnings } : {}),
   };
 }
-
-/**
- * Checks only the named plans: their review keys and the per-plan problems
- * `check` reports. Skips scope, record and queue validation, the coverage
- * census and every other plan, so a plan can be checked while it is written.
- */
-export function checkPlans(root, paths, { base = 'HEAD' } = {}) {
-  const errors = planErrors(root, loadLedger(root), paths, base);
-  assert.ok(!errors.length, errors.join('\n'));
-  return { ok: true, plans: paths.length };
-}
-
-/**
- * Checks only what a landing changes since `base`: the plans it adds or
- * changes, as `checkPlans` does, and each fork `check` fails on where one head
- * is a review page whose scopes or basis the landing adds, changes or deletes,
- * or a review that such a page named at `base`. Other forks and plan problems
- * stay for `check`, so another plan's repair never blocks the land, and
- * editing a forked head's prose does not count as forking it. Review records
- * are frozen legacy, so the landing reads only pages.
- */
-export function checkLanding(root, { base }) {
-  const pairing = { pair: landingPair };
-  const changed = changedSince(root, base, pairing);
-  assert.ok(
-    changed,
-    `Cannot diff against the base commit ${base}. Pass a base this checkout holds.`
-  );
-  const ledger = loadLedger(root);
-  const pageLinks = (path, text) => {
-    const page = text === null ? null : pageOf(ledger.scopes, path, text);
-    return page && { scopes: page.scopes, basis: page.basis };
-  };
-  const landing = [
-    ...new Set([
-      ...changed,
-      ...untrackedFiles(root, ['docs/plans', ...census.roots]),
-    ]),
-  ];
-  const paths = landing.filter(
-    (path) => path.startsWith('docs/plans/') && path.endsWith('.md')
-  );
-  const touched = new Set();
-  for (const path of paths) {
-    const shown = showAt(root, base, path, pairing);
-    const before = pageLinks(path, shown.status === 0 ? shown.stdout : null);
-    const after = pageLinks(
-      path,
-      existsSync(join(root, path)) ? read(root, path) : null
-    );
-    if (JSON.stringify(before) === JSON.stringify(after)) continue;
-    touched.add(idOf(path));
-    for (const id of before?.basis ?? []) touched.add(id);
-  }
-  const plans = paths.filter((path) => existsSync(join(root, path)));
-  const errors = planErrors(root, ledger, plans, base, pairing);
-  const scopePaths = new Set(
-    landing.filter((path) => path.startsWith(`${scopesDir}/`))
-  );
-  errors.push(
-    ...ledger.warnings.filter((warning) =>
-      scopePaths.has(warning.split(':')[0])
-    )
-  );
-  const tree = observe(root);
-  for (const scope of ledger.scopes.values()) {
-    const path = `${scopesDir}/${scope.id}.json`;
-    if (!scopePaths.has(path)) continue;
-    try {
-      assertScope(tree, ledger, scope);
-    } catch (error) {
-      errors.push(`${path}: ${error.message.split('\n')[0]}`);
-    }
-  }
-  const holdsLedger = ledger.scopes.size > 0;
-  const unnamed = holdsLedger
-    ? landing.filter(
-        (path) =>
-          inCensus(path) &&
-          existsSync(join(root, path)) &&
-          !owningScopes(ledger, path).length &&
-          !existsAt(root, base, path, pairing)
-      )
-    : [];
-  for (const path of unnamed) {
-    const holders = [...ledger.scopes.values()]
-      .filter((scope) => under(path, scope.owners))
-      .map((scope) => scope.id);
-    errors.push(
-      `No scope's members name ${path}, which this landing adds. ${holders.length ? `The owners of ${holders.join(', ')} hold its folder, and an owners entry does not count. ` : ''}Add the file or its folder to the members of the scope whose question it serves, or when it serves a new question, add a scope file in ${scopesDir} whose members name it; node tooling/scripts/review-ledger.mjs lookup ${path} lists the owners of nearby files.`
-    );
-  }
-  for (const id of ledger.scopes.keys()) {
-    const heads = headsOf(ledger, id);
-    if (
-      heads.length > 1 &&
-      heads.some((head) => head.path) &&
-      heads.some((head) => touched.has(head.id))
-    ) {
-      errors.push(
-        `Fork in ${id}: ${heads.map((head) => head.id).join(', ')}. The review that continues ${id} names every head in review_basis; node tooling/scripts/review-ledger.mjs lookup ${id} lists them.`
-      );
-    }
-  }
-  assert.ok(!errors.length, errors.join('\n'));
-  return { ok: true, plans: plans.length };
-}
-
-function planErrors(root, ledger, paths, base, pairing) {
-  const errors = [];
-  const context = planContext(
-    root,
-    ledger,
-    plansOf(root, ledger),
-    base,
-    errors,
-    pairing
-  );
-  for (const path of paths) {
-    if (!existsSync(join(root, path))) {
-      errors.push(`${path}: no such plan`);
-      continue;
-    }
-    const text = read(root, path);
-    const plan = associationOf(root, ledger, path);
-    const unknown = unknownReviewKeys(text);
-    const problems = [
-      ...(unknown.length ? [`unknown review key ${unknown.join(', ')}`] : []),
-      ...(plan
-        ? planProblems(context, plan)
-        : context.added(path)
-          ? externalCitationProblems(text, null, null)
-          : []),
-    ];
-    if (problems.length) errors.push(`${path}: ${problems.join(', ')}`);
-  }
-  return errors;
-}
-
-function planContext(root, ledger, plans, base, errors, pairing) {
-  const baseCommit = git(root, [
-    'rev-parse',
-    '--verify',
-    '--quiet',
-    `${base}^{commit}`,
-  ])?.trim();
-  if (!baseCommit) {
-    errors.push(
-      `Cannot resolve the base commit ${base}, so new review pages cannot be told from committed ones. Pass a base this checkout holds.`
-    );
-  }
-  const atBase = baseCommit
-    ? new Set(filesAt(root, baseCommit, ['docs/plans'], pairing))
-    : null;
-  return {
-    root,
-    ledger,
-    plans,
-    unignored: unignoredPaths(root),
-    added: (path) => atBase !== null && !atBase.has(path),
-  };
-}
-
-function planProblems({ root, ledger, plans, unignored, added }, plan) {
-  return [
-    ...(plan.invalid ? [`invalid ${plan.invalid.join(', ')}`] : []),
-    ...plan.scopes
-      .filter((id) => !ledger.scopes.has(id))
-      .map((id) => `unknown scope ${id}`),
-    ...plan.scopes
-      .filter((id, index) => plan.scopes.indexOf(id) !== index)
-      .map((id) => `repeated scope ${id}`),
-    ...plan.reviewBasis.flatMap((id) => {
-      const reviewed = scopesOfReview(ledger, id);
-      if (!reviewed) return [`unknown review ${id}`];
-      return reviewed.some((scope) => plan.scopes.includes(scope))
-        ? []
-        : [`${id} is not a review of ${plan.scopes.join(', ')}`];
-    }),
-    ...pageProblems(root, unignored, ledger, plans, plan, added),
-  ];
-}
-
-const unknownReviewKeys = (text) =>
-  [...(text.match(frontmatterPattern)?.[1] ?? '').matchAll(/^([\w-]+):/gm)]
-    .map((match) => match[1])
-    .filter(
-      (key) =>
-        /^(review|verdict|work.?kind)/i.test(key) && !reviewKeys.includes(key)
-    );
-
-function scopesOfReview(ledger, id) {
-  if (ledger.pages.has(id)) return ledger.pages.get(id).scopes;
-  const record = ledger.records.get(id);
-  return record?.kind === 'review' ? [record.scope] : null;
-}
-
-const unignoredPaths = (root) => {
-  const paths = new Set();
-  for (const file of trackedFiles(root, { untracked: true })) {
-    for (let end = file.length; end > 0; end = file.lastIndexOf('/', end - 1)) {
-      paths.add(file.slice(0, end));
-    }
-  }
-  return paths;
-};
-
-const inTreeOrHistory = (root, unignored, path) =>
-  unignored.has(path.replace(/\/$/, '')) || inHistory(root, path);
-
-const absence = (root, path) =>
-  existsSync(join(root, path))
-    ? 'is git-ignored, so a fresh checkout lacks it; commit it or cite a tracked file'
-    : 'is in no tree or commit';
 
 function sectionOf(text, heading, level = '##') {
   const lines = text.split(/\r?\n/);
@@ -2445,9 +1200,6 @@ const unfenced = (text) => {
     .join('\n');
 };
 
-const withoutCode = (text) =>
-  unfenced(text).replace(/(`+)(?!`)[\s\S]*?[^`]\1(?!`)/g, '');
-
 const htmlLine = /^ {0,3}</;
 const threePipeLines = /(?:^ {0,3}\|.*(?:\n|$)){3}/m;
 
@@ -2460,9 +1212,6 @@ function jobsOf(text) {
   if (threePipeLines.test(jobsIn(aboveHtml))) return 'ranked';
   return /^\s*\|/m.test(jobsIn(text)) ? 'unread' : 'none';
 }
-
-const listItems = (text) =>
-  (text.match(/^[ \t]*(?:[-*]|\d+\.)[ \t]+\S/gm) ?? []).length;
 
 function leadOf(text) {
   const body = text.replace(frontmatterPattern, '');
@@ -2480,296 +1229,9 @@ function leadOf(text) {
   return '';
 }
 
-function linksOf(path, text) {
-  return [...text.matchAll(/\]\(([^)\s]+)/g)]
-    .map((match) => match[1])
-    .filter((link) => !/^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(link))
-    .map((link) => {
-      const target = link.split('#')[0];
-      try {
-        return join(dirname(path), decodeURIComponent(target));
-      } catch {
-        return join(dirname(path), target);
-      }
-    })
-    .filter((target) => target && target !== '.');
-}
-
-function inlinedFrames(path, text) {
-  const demo = sectionOf(text, 'Demo');
-  const firstStep = demo.search(/^\d+[.)]\s/m);
-  const images = [
-    firstStep === -1 ? '' : demo.slice(firstStep),
-    sectionOf(text, 'Teach'),
-  ].flatMap(
-    (section) =>
-      section.match(/!\[[^\]]*\]\([^)\s]+\.(?:gif|jpe?g|png|svg|webp)\)/gi) ??
-      []
-  );
-  return linksOf(path, images.join('\n')).filter((target) =>
-    target.startsWith('docs/plans/artifacts/')
-  );
-}
-
-function reconciliationOf(evidence, id) {
-  const named = new RegExp(
-    `(?:^|[^\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`
-  );
-  for (const line of evidence.split('\n')) {
-    if (!named.test(line)) continue;
-    const match = line.match(/\b(retains|reopens|supersedes)\b(.*)$/);
-    if (!match) continue;
-    const reason = match[2]
-      .replace(id, '')
-      .replace(/[\s:;,.`*-]+/g, ' ')
-      .trim();
-    return { action: match[1], reason };
-  }
-  return null;
-}
-
-const unaffectedWithReason = /\bunaffected\b\W+(?:\S+\s+){2,}\S/i;
-
-function dependentProblems(ledger, plan, evidence) {
-  const commit = plan.commit ?? null;
-  if (
-    commit &&
-    !git(ledger.root, [
-      'rev-parse',
-      '--verify',
-      '--quiet',
-      `${commit}^{commit}`,
-    ])
-  ) {
-    return [
-      `review_commit ${commit} is not in this checkout, so its dependents cannot be read`,
-    ];
-  }
-  const dependents = new Map();
-  for (const id of plan.scopes) {
-    const scope = ledger.scopes.get(id);
-    if (!scope) continue;
-    for (const { files, id: dependent } of dependentsOf(ledger, scope, commit)
-      .scopes) {
-      if (!plan.scopes.includes(dependent) && !dependents.has(dependent)) {
-        dependents.set(dependent, files);
-      }
-    }
-  }
-  if (!dependents.size) return [];
-  const section = sectionOf(evidence, 'Dependents', '###');
-  if (!section) {
-    return [
-      `## Evidence needs a ### Dependents list for ${[...dependents.keys()].join(', ')}; \`node tooling/scripts/review-ledger.mjs lookup ${plan.scopes[0]}\` lists the files each imports`,
-    ];
-  }
-  const items = section.split(/\n(?=[ \t]*[-*][ \t])/);
-  const inputs = (plan.inputs ?? []).filter((input) => !input.startsWith('!'));
-  return [...dependents]
-    .filter(([id, files]) => {
-      const scope = ledger.scopes.get(id);
-      const owned = [
-        ...(scope.owners ?? []),
-        ...(scope.members ?? []),
-        ...(scope.consumers ?? []),
-      ];
-      const fromScope = (input) =>
-        files.includes(input) || covers(owned, input);
-      const named = new RegExp(
-        `(?:^|[^\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`
-      );
-      return !items.some(
-        (item) =>
-          named.test(item) &&
-          (unaffectedWithReason.test(item) ||
-            inputs.some((input) => item.includes(input) && fromScope(input)))
-      );
-    })
-    .map(
-      ([id, files]) =>
-        `### Dependents does not account for ${id}, which imports ${files[0]}: name it beside a review_inputs path it owns or imports from, or beside "unaffected" and the reason`
-    );
-}
-
-const externalCitation =
-  /[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+@[0-9a-f]{7,40}\b|https?:\/\/\S+|(?:docs\/research\/sources\/|\.\.\/research\/sources\/|docs\/plans\/topics\/|(?:\.\.\/)?topics\/)[\w./-]+\.md\b|\bno other editor\b/i;
-
-function externalCitationProblems(text, plan, page) {
-  const problems = [];
-  const upstreams = plan?.upstreams ?? documentMetadata(text).review_upstreams;
-  const hasUpstreams = Array.isArray(upstreams) && upstreams.length > 0;
-  const otherEditors = sectionOf(text, 'What other editors do');
-  if (otherEditors && !hasUpstreams && !externalCitation.test(otherEditors)) {
-    problems.push(
-      '## What other editors do cites no grounded external source: cite <owner>/<repo>@<commit>:<path>, a docs/research/sources/ or docs/plans/topics/ path, an https:// URL, review_upstreams frontmatter, or "no other editor"'
-    );
-  }
-  if (page?.jobs === 'ranked') {
-    const jobs = sectionOf(sectionOf(text, 'Evidence'), 'Jobs', '###');
-    if (
-      !hasUpstreams &&
-      !externalCitation.test(jobs) &&
-      !externalCitation.test(otherEditors)
-    ) {
-      problems.push(
-        '### Jobs cites no grounded external source: cite <owner>/<repo>@<commit>:<path>, a docs/research/sources/ or docs/plans/topics/ path, an https:// URL, or review_upstreams frontmatter'
-      );
-    }
-  }
-  return problems;
-}
-
-function pageProblems(root, unignored, ledger, plans, plan, added) {
-  const problems = [];
-  const text = read(root, plan.path);
-  const inputs = (plan.inputs ?? []).filter((input) => !input.startsWith('!'));
-  for (const path of inputs) {
-    if (path.startsWith('/') || path.split('/').includes('..')) {
-      problems.push(`review_inputs path ${path} is in no tree or commit`);
-    } else if (!inTreeOrHistory(root, unignored, path)) {
-      problems.push(`review_inputs path ${path} ${absence(root, path)}`);
-    }
-  }
-  if (executes(plan) && plan.landed) {
-    const close = sectionOf(text, 'Close');
-    if (
-      !close &&
-      (plan.commit || plan.reviewBasis.some((id) => ledger.pages.has(id)))
-    ) {
-      problems.push('a landed plan needs a ## Close');
-    }
-    for (const path of inputs) {
-      if (!close.includes(path)) {
-        problems.push(
-          `## Close does not name ${path}; name each review_inputs path there, such as in an "Inputs read:" line`
-        );
-      }
-    }
-  }
-  if (added(plan.path)) {
-    problems.push(
-      ...externalCitationProblems(
-        text,
-        plan,
-        isReviewPage(plan) ? ledger.pages.get(idOf(plan.path)) : null
-      )
-    );
-  }
-  if (!isReviewPage(plan)) return problems;
-  const page = ledger.pages.get(idOf(plan.path));
-  if (!plan.commit) problems.push('a review page needs review_commit');
-  if (!leadOf(text)) problems.push('a review page needs a lead paragraph');
-  if (!/^Playbook:[ \t]*\S/m.test(text)) {
-    problems.push('a review page needs a Playbook: line');
-  }
-  const evidence = sectionOf(text, 'Evidence');
-  if (!evidence) problems.push('a review page needs ## Evidence');
-  if (!/^(?:[-*][ \t]+)?Model:[ \t]*\S/m.test(evidence)) {
-    problems.push('## Evidence needs a Model: line');
-  }
-  if (listItems(sectionOf(evidence, 'Requirements', '###')) < 1) {
-    problems.push('## Evidence needs a ### Requirements list');
-  }
-  if (listItems(sectionOf(evidence, 'Lanes', '###')) < 2) {
-    problems.push('### Lanes needs at least two lanes');
-  }
-  if (
-    [...(page?.verdicts.values() ?? [])].includes('pursue') &&
-    !sectionOf(text, 'Public API')
-  ) {
-    problems.push('a Pursue page needs ## Public API');
-  }
-  const linked = withoutCode(text);
-  for (const [, link] of linked.matchAll(/\]\((\/[^)\s]*)/g)) {
-    problems.push(`link ${link} is absolute, not a repository path`);
-  }
-  const inlined = inlinedFrames(plan.path, text);
-  for (const target of linksOf(plan.path, linked)) {
-    if (target.startsWith('..')) {
-      problems.push(`link ${target} leaves the repository`);
-    } else if (
-      !inlined.includes(target) &&
-      !inTreeOrHistory(root, unignored, target)
-    ) {
-      problems.push(`link ${target} ${absence(root, target)}`);
-    }
-  }
-  if (
-    !linksOf(plan.path, withoutCode(evidence)).some(
-      (target) => !target.startsWith('..')
-    )
-  ) {
-    problems.push(
-      '## Evidence links no repository file; write at least one source path as a relative Markdown link, such as [file.ts](../../packages/<package>/src/file.ts), because a path in backticks is not a link'
-    );
-  }
-  if (added(plan.path)) {
-    problems.push(...dependentProblems(ledger, plan, evidence));
-  }
-  // A plan that landed after the tree a review read is the later plan's to reconcile.
-  const reviewedTree =
-    plan.commit &&
-    git(root, ['rev-parse', '--verify', '--quiet', `${plan.commit}^{commit}`])
-      ? plan.commit
-      : null;
-  const inReviewedTree = (path) =>
-    !reviewedTree || existsAt(root, reviewedTree, path);
-  for (const id of plan.reviewBasis) {
-    const reconciled = [
-      id,
-      ...plans
-        .filter(
-          (other) =>
-            executes(other) &&
-            other.landed &&
-            !isReviewPage(other) &&
-            other.reviewBasis.includes(id) &&
-            inReviewedTree(other.path)
-        )
-        .map((other) => idOf(other.path)),
-      ...effectiveExecutions(ledger, id).map((execution) => execution.id),
-    ];
-    for (const name of reconciled) {
-      const entry = reconciliationOf(evidence, name);
-      if (!entry?.reason) {
-        problems.push(
-          `## Evidence does not reconcile ${name} with an action and a reason: name it on one line with retains, reopens or supersedes, then the reason`
-        );
-      }
-    }
-    const record = ledger.records.get(id);
-    const basisVerdicts =
-      ledger.pages.get(id)?.verdicts ??
-      new Map(record?.verdict ? [[record.scope, record.verdict]] : []);
-    for (const [scope, verdict] of page?.verdicts ?? []) {
-      const before = basisVerdicts.get(scope);
-      if (
-        before &&
-        before !== verdict &&
-        reconciliationOf(evidence, id)?.action === 'retains'
-      ) {
-        problems.push(
-          `a changed verdict retains ${id}: on that ## Evidence line write supersedes or reopens in place of retains, then the reason`
-        );
-      }
-    }
-  }
-  return problems;
-}
-
 const unquote = (value) => value.trim().replace(/^(['"])(.*)\1$/, '$2');
-
 const frontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
-
-const reviewKeys = [
-  'review_scopes',
-  'review_basis',
-  'work_kind',
-  'verdict',
-  'review_commit',
-  'review_inputs',
-  'review_upstreams',
-];
+const reviewKeys = ['review_scopes', 'review_basis', 'work_kind', 'verdict'];
 
 export function documentMetadata(text) {
   const frontmatter = text.match(frontmatterPattern)?.[1] ?? '';
@@ -2783,7 +1245,7 @@ export function documentMetadata(text) {
     );
     if (!match) continue;
     const value = match[1].trim();
-    if (key === 'work_kind' || key === 'review_commit') {
+    if (key === 'work_kind') {
       result[key] = unquote(value);
     } else if (value.startsWith('[') && value.endsWith(']')) {
       result[key] = value.slice(1, -1).trim()
@@ -2875,13 +1337,12 @@ export function researchRows(root) {
 }
 
 const usage =
-  'Usage: node tooling/scripts/review-ledger.mjs status|ship|due|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|land [--base <rev>]|research <term>';
+  'Usage: node tooling/scripts/review-ledger.mjs status|due|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check|research <term>';
 
 export function main(root, args) {
   const [command, argument] = args;
   if (command === '--help' || command === '-h') return `${usage}\n`;
   if (command === 'status') return status(root);
-  if (command === 'ship') return ship(root);
   if (command === 'due') {
     return due(root, { activeAt: (path) => planActiveAt(root, path) });
   }
@@ -2890,29 +1351,7 @@ export function main(root, args) {
   }
   if (command === 'show') return show(root, argument);
   if (command === 'coverage') return coverage(root, { prefix: argument ?? '' });
-  if (command === 'check') {
-    const base = process.env.PLATE_BASELINE_BASE || 'HEAD';
-    const paths = args.slice(1);
-    return paths.length
-      ? checkPlans(
-          root,
-          paths.map((path) => relative(root, resolve(path))),
-          { base }
-        )
-      : check(root, { base });
-  }
-  if (command === 'land') {
-    const at = args.indexOf('--base');
-    const base =
-      at === -1
-        ? git(root, ['merge-base', 'HEAD', UPSTREAM])?.trim()
-        : args[at + 1];
-    assert.ok(
-      base,
-      `Cannot find where HEAD meets ${UPSTREAM}; pass --base <rev>.`
-    );
-    return checkLanding(root, { base });
-  }
+  if (command === 'check') return check(root);
   if (command === 'research') return searchResearch(root, argument);
   throw new Error(usage);
 }
