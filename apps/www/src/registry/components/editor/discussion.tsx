@@ -8,7 +8,9 @@ import {
   XIcon,
 } from 'lucide-react';
 import {
+  createEditorView,
   ElementApi,
+  type NamedRootKey,
   type NodeKey,
   type Path,
   PathApi,
@@ -32,6 +34,7 @@ import {
   type RenderNodeWrapperProps,
   type WrapRootProps,
   useEditor,
+  useEditorRootAreas,
   useEditorRootElement,
   useEditorSelector,
   useEditorViewState,
@@ -184,27 +187,79 @@ const blockThreadCount = (
   return count;
 };
 
-type RootTops = ReadonlyMap<string, number | undefined>;
+type AreaOwner = Readonly<{ path: Path; root: NamedRootKey | undefined }>;
 
-const rootTops = (editor: RuntimeEditor): RootTops =>
-  new Map(editor.read.roots().map(({ root, top }) => [root, top?.[0]]));
+type AreaPlaces = Readonly<{
+  owners: ReadonlyMap<string, readonly AreaOwner[]>;
+  root: NamedRootKey | undefined;
+  standaloneRoots: ReadonlySet<NamedRootKey>;
+}>;
 
-const pageIndexOf = (tops: RootTops, point: Point) =>
-  point.root === undefined ? (point.path[0] ?? 0) : tops.get(point.root);
+const areaPlaces = (
+  editor: RuntimeEditor,
+  standaloneRoots: readonly NamedRootKey[]
+): AreaPlaces => ({
+  owners: new Map(
+    editor.read.roots().map(({ owners, root }) => [root, owners])
+  ),
+  root: editor.read.view.root(),
+  standaloneRoots: new Set(standaloneRoots),
+});
+
+const areaIndicesOf = (
+  { owners, root: areaRoot, standaloneRoots }: AreaPlaces,
+  point: Point
+): readonly number[] => {
+  if (point.root === areaRoot) return [point.path[0] ?? 0];
+  if (point.root === undefined || standaloneRoots.has(point.root)) return [];
+
+  const indices = new Set<number>();
+  const visited = new Set<string>([point.root]);
+  const stack: NamedRootKey[] = [point.root];
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) continue;
+
+    for (const owner of owners.get(current) ?? []) {
+      if (owner.root === areaRoot) {
+        const blockIndex = owner.path[0];
+        if (blockIndex !== undefined) indices.add(blockIndex);
+      } else if (
+        owner.root !== undefined &&
+        !standaloneRoots.has(owner.root) &&
+        !visited.has(owner.root)
+      ) {
+        visited.add(owner.root);
+        stack.push(owner.root);
+      }
+    }
+  }
+
+  return [...indices].sort((left, right) => left - right);
+};
+
+const areaIndexOf = (places: AreaPlaces, point: Point) =>
+  areaIndicesOf(places, point)[0];
 
 const discussionBlocks = (
   editor: RuntimeEditor,
-  tops: RootTops,
+  places: AreaPlaces,
   range: Range
 ) => {
   const [start, end] = RangeApi.edges(range);
-  const first = pageIndexOf(tops, start);
-  const last = pageIndexOf(tops, end);
 
-  if (first === undefined || last === undefined) return [];
+  if (start.root === places.root && end.root === places.root) {
+    const first = start.path[0] ?? 0;
+    const last = end.path[0] ?? 0;
 
-  return Array.from({ length: last - first + 1 }).flatMap(
-    (_, offset) => editor.key([first + offset]) ?? []
+    return Array.from({ length: last - first + 1 }).flatMap(
+      (_, offset) => editor.key([first + offset]) ?? []
+    );
+  }
+
+  return areaIndicesOf(places, start).flatMap(
+    (index) => editor.key([index]) ?? []
   );
 };
 
@@ -388,36 +443,60 @@ const useDiscussionStore = () => {
   return store;
 };
 
+const readAuthoredViewMode = (editor: RuntimeEditor) => {
+  const authored = editor.plugin(AuthoredPlugin);
+  const current = authored.installed ? authored.read.view() : null;
+
+  if (!current) return null;
+
+  return 'intent' in current ? current.intent : `preview:${current.preview}`;
+};
+
 const useDiscussionController = () => {
   const editor = useEditor();
-  const { api: comments } = useEditor().plugin(CommentsPlugin);
+  const { standaloneRoots } = useEditorRootAreas(editor);
+  const authoredView = useEditorViewState(editor, () =>
+    readAuthoredViewMode(editor)
+  );
+  const presentationView = React.useMemo(
+    () =>
+      editor.read.view.root() === undefined
+        ? editor
+        : createEditorView(editor, { readOnly: true }),
+    [editor]
+  );
+  const { api: comments } = presentationView.plugin(CommentsPlugin);
   const visibleThreadIds = useVisibleCommentThreadIds();
   const [store] = React.useState(createDiscussionStore);
   React.useEffect(() => {
-    const { api } = editor.plugin(CommentsPlugin);
+    const areaRoot = editor.read.view.root();
     const locate = (
       id: string,
       thread: ReturnType<typeof comments.getThread>,
-      tops: RootTops
+      places: AreaPlaces
     ) => {
       if (!thread || thread.resolution) return null;
-      const attachment = api.attachment(id);
+      const attachment = comments.attachment(id);
       if (thread.target.type === 'change') return null;
       if (attachment?.type !== 'range' || attachment.status !== 'attached') {
         return null;
       }
-      return {
-        blockKeys: discussionBlocks(editor, tops, attachment.range),
-        createdAt: new Date(thread.createdAt),
-        id,
-        kind: 'comment' as const,
-      };
+      const blockKeys = discussionBlocks(editor, places, attachment.range);
+
+      return blockKeys.length > 0
+        ? {
+            blockKeys,
+            createdAt: new Date(thread.createdAt),
+            id,
+            kind: 'comment' as const,
+          }
+        : null;
     };
     const publish = () => {
       const suggestionThreads = new Map<string, string[]>();
       const commentItems: CommentItem[] = [];
       const visible = new Set(visibleThreadIds);
-      const tops = rootTops(editor);
+      const places = areaPlaces(editor, standaloneRoots);
 
       comments.getThreads().forEach((thread) => {
         if (thread.resolution) return;
@@ -429,20 +508,38 @@ const useDiscussionController = () => {
           return;
         }
         if (!visible.has(thread.id)) return;
-        const item = locate(thread.id, thread, tops);
+        const item = locate(thread.id, thread, places);
         if (item) commentItems.push(item);
       });
       store.update(commentItems, suggestionThreads);
     };
-    const unsubscribeAttachments = api.subscribeAttachments(publish);
-    const unsubscribeThreads = api.subscribeThreads(publish);
+    const unsubscribeAttachments = comments.subscribeAttachments(publish);
+    const unsubscribeThreads = comments.subscribeThreads(publish);
+    const unsubscribeCommits = editor.subscribeCommit((commit) => {
+      if (
+        !commit ||
+        commit.changed.has('structure', areaRoot) ||
+        commit.changed.has('properties', areaRoot) ||
+        commit.changed.has('replace', areaRoot)
+      ) {
+        publish();
+      }
+    });
 
     publish();
     return () => {
       unsubscribeAttachments();
       unsubscribeThreads();
+      unsubscribeCommits();
     };
-  }, [comments, editor, store, visibleThreadIds]);
+  }, [
+    authoredView,
+    comments,
+    editor,
+    standaloneRoots,
+    store,
+    visibleThreadIds,
+  ]);
 
   return store;
 };
@@ -1015,11 +1112,21 @@ function SuggestionDiscussionCard({
 function NewComment({
   autoFocus,
   focusEditor,
+  pendingRoot,
 }: {
   autoFocus: boolean;
   focusEditor: () => void;
+  pendingRoot: NamedRootKey | undefined;
 }) {
-  const { api: comments } = useEditor().plugin(CommentsPlugin);
+  const editor = useEditor();
+  const submitEditor = React.useMemo(
+    () =>
+      pendingRoot === editor.read.view.root()
+        ? editor
+        : createEditorView(editor, { root: pendingRoot }),
+    [editor, pendingRoot]
+  );
+  const { api: comments } = submitEditor.plugin(CommentsPlugin);
 
   return (
     <CommentComposer
@@ -1185,18 +1292,27 @@ function DiscussionPopover({
 }) {
   const editor = useEditor();
   const model = useModelEditor();
+  const { isPrimaryForRoot, nestedView, standaloneRoots } =
+    useEditorRootAreas(editor);
+  const presentationView = React.useMemo(
+    () =>
+      editor.read.view.root() === undefined
+        ? editor
+        : createEditorView(editor, { readOnly: true }),
+    [editor]
+  );
   const rootElement = useEditorRootElement(editor);
   const store = useDiscussionStore();
   const popoverRef = React.useRef<HTMLDivElement>(null);
-  const { api: comments } = useEditor().plugin(CommentsPlugin);
-  const pending = usePendingComment();
+  const { api: comments } = presentationView.plugin(CommentsPlugin);
+  const rawPending = usePendingComment();
   // React focus events bubble out of portals, so a menu opened from the
   // popover counts as a control inside it.
   const focusedControlRef = React.useRef<EventTarget | null>(null);
   // Safari focuses the popover itself, not a pressed button, so a press holds
   // the popover until the pointer is released.
   const pressingRef = React.useRef(false);
-  const releasedPendingRef = React.useRef<typeof pending>(null);
+  const releasedPendingRef = React.useRef<typeof rawPending>(null);
   const activeCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
   const activeOrder = new Map(activeCommentIds.map((id, index) => [id, index]));
   const suggestions = React.useContext(SuggestionsInstalledContext);
@@ -1210,17 +1326,31 @@ function DiscussionPopover({
   // anchor reads each range through its own selector.
   const commentAnchor = useEditorSelector(
     (current) => {
+      if (!isPrimaryForRoot) return null;
+
       const authored = current.plugin(AuthoredPlugin);
+      let places: AreaPlaces | undefined;
 
       for (const id of activeCommentIds) {
         const attachment = comments.attachment(id);
         if (attachment?.type === 'range' && attachment.status === 'attached') {
-          return { changeId: null, range: attachment.range };
+          places ??= areaPlaces(current, standaloneRoots);
+          if (
+            areaIndexOf(places, RangeApi.start(attachment.range)) !== undefined
+          ) {
+            return { changeId: null, range: attachment.range };
+          }
+          continue;
         }
         if (attachment?.type === 'change' && authored.installed) {
           const range = authored.read.change(attachment.id)?.ranges[0];
 
-          if (range) return { changeId: attachment.id, range };
+          if (range) {
+            places ??= areaPlaces(current, standaloneRoots);
+            if (areaIndexOf(places, RangeApi.start(range)) !== undefined) {
+              return { changeId: attachment.id, range };
+            }
+          }
         }
       }
       return null;
@@ -1261,18 +1391,22 @@ function DiscussionPopover({
         : NO_GROUPS,
     { equalityFn: sameGroups }
   );
-  const activeItems: DiscussionItem[] = [
-    ...activeCommentIds.flatMap((id) => {
-      const item = store.getComment(id);
+  const activeItems: DiscussionItem[] = isPrimaryForRoot
+    ? [
+        ...activeCommentIds.flatMap((id) => {
+          const item = store.getComment(id);
 
-      return item ? [item] : [];
-    }),
-    ...activeGroups.map((group) => suggestionItemOf(editor, threads, group)),
-  ].toSorted(
-    (left, right) =>
-      (activeOrder.get(left.id) ?? activeCommentIds.length) -
-      (activeOrder.get(right.id) ?? activeCommentIds.length)
-  );
+          return item ? [item] : [];
+        }),
+        ...activeGroups.map((group) =>
+          suggestionItemOf(editor, threads, group)
+        ),
+      ].toSorted(
+        (left, right) =>
+          (activeOrder.get(left.id) ?? activeCommentIds.length) -
+          (activeOrder.get(right.id) ?? activeCommentIds.length)
+      )
+    : [];
   const targetItems = targetKey
     ? sortDiscussionItems([
         ...store.getComments(targetKey),
@@ -1281,6 +1415,26 @@ function DiscussionPopover({
         ),
       ])
     : [];
+  const pendingRange = useEditorSelector(
+    (current) => {
+      if (!rawPending || !isPrimaryForRoot) return null;
+
+      const range = comments.pendingRange();
+
+      return range &&
+        areaIndexOf(
+          areaPlaces(current, standaloneRoots),
+          RangeApi.start(range)
+        ) !== undefined
+        ? range
+        : null;
+    },
+    {
+      dependsOn: 'document',
+      equalityFn: RangeApi.equals,
+    }
+  );
+  const pending = pendingRange ? rawPending : null;
   const target = !pending && activeItems.length === 0 ? snapshot.target : null;
   const [pagination, setPagination] = React.useState<{
     count: number;
@@ -1292,22 +1446,8 @@ function DiscussionPopover({
       : DISCUSSION_PAGE_SIZE;
   const shownItems =
     activeItems.length > 0 ? activeItems : targetItems.slice(0, visibleCount);
-  const view = useEditorViewState(editor, () => {
-    const authored = editor.plugin(AuthoredPlugin);
-    const current = authored.installed ? authored.read.view() : null;
-
-    if (!current) return null;
-
-    return 'intent' in current ? current.intent : `preview:${current.preview}`;
-  });
+  const view = useEditorViewState(editor, () => readAuthoredViewMode(editor));
   const preview = view?.startsWith('preview:') ?? false;
-  const pendingRange = useEditorSelector(
-    () => (pending ? comments.pendingRange() : null),
-    {
-      equalityFn: RangeApi.equals,
-      dependsOn: 'document',
-    }
-  );
   // A suggestion's ranges are places of the stored document, so a preview
   // anchors on the block whose trigger was pressed last, and only while that
   // block shows the open card.
@@ -1344,16 +1484,21 @@ function DiscussionPopover({
     const selection = model.read.selection();
     const root = selection ? RangeApi.start(selection).root : undefined;
 
-    if (root === undefined || root === editor.read.view.root()) {
+    if (!selection || root === editor.read.view.root()) {
       editableRef.current?.focus();
     } else {
-      model.api.dom.focus();
+      (
+        (root ? nestedView(root) : null) ?? createEditorView(editor, { root })
+      ).api.dom.focus();
     }
   };
   const anchorRangeKey = useEditorSelector((current) => {
     if (!anchorRange) return null;
 
-    const index = pageIndexOf(rootTops(current), RangeApi.start(anchorRange));
+    const index = areaIndexOf(
+      areaPlaces(current, standaloneRoots),
+      RangeApi.start(anchorRange)
+    );
 
     return index === undefined ? null : current.key([index]);
   });
@@ -1376,11 +1521,18 @@ function DiscussionPopover({
       };
     }
 
+    const { root } = RangeApi.start(range);
+    const fallbackView =
+      root === editor.read.view.root()
+        ? editor
+        : createEditorView(editor, { readOnly: true, root });
+
     return () => {
-      const { root } = RangeApi.start(range);
-      const domRange = (
-        root === undefined || root === editor.read.view.root() ? editor : model
-      ).api.dom.resolveDOMRange(range);
+      const rangeView =
+        root === editor.read.view.root()
+          ? editor
+          : ((root ? nestedView(root) : null) ?? fallbackView);
+      const domRange = rangeView.api.dom.resolveDOMRange(range);
       const lines = domRange
         ? Array.from(domRange.getClientRects()).filter(
             ({ height, width }) => height > 0 || width > 0
@@ -1403,7 +1555,14 @@ function DiscussionPopover({
 
       return rangeRect ? [rangeRect] : [];
     };
-  }, [anchorBlockKey, anchorRangeJson, editor, model, store, targetElement]);
+  }, [
+    anchorBlockKey,
+    anchorRangeJson,
+    editor,
+    nestedView,
+    store,
+    targetElement,
+  ]);
   const { anchor: anchorElement, hidden } = useVisibleAnchor({
     editableRef,
     keepShown: () =>
@@ -1442,6 +1601,16 @@ function DiscussionPopover({
     }
   }, [activeItems.length, pending, snapshot.target, store, targetItems.length]);
 
+  React.useEffect(() => {
+    store.setPrepareSelection(() => {
+      if (pending) comments.cancel();
+      if (activeItems.length > 0) comments.setActive([]);
+      setActiveSuggestionId?.(null);
+    });
+
+    return () => store.setPrepareSelection(null);
+  }, [activeItems.length, comments, pending, setActiveSuggestionId, store]);
+
   const editorDecidesOpen = !pending && activeItems.length > 0;
 
   return (
@@ -1452,17 +1621,21 @@ function DiscussionPopover({
         open={open}
         onOpenChange={(nextOpen) => {
           if (nextOpen) return;
+          const { draftThreadIds } = comments.getSnapshot();
           if (
-            activeCommentIds.some((id) =>
-              comments.getSnapshot().draftThreadIds.includes(id)
+            activeItems.some(
+              (item) =>
+                item.kind === 'comment' && draftThreadIds.includes(item.id)
             )
           ) {
             return;
           }
 
           store.clearTarget();
-          comments.cancel();
-          editor.plugin(CommentsPlugin).api.setActive([]);
+          if (pending) comments.cancel();
+          if (activeItems.length > 0) {
+            comments.setActive([]);
+          }
           setActiveSuggestionId?.(null);
         }}
       >
@@ -1522,6 +1695,9 @@ function DiscussionPopover({
               <NewComment
                 autoFocus={placedPending === pending}
                 focusEditor={focusEditor}
+                pendingRoot={
+                  pendingRange ? RangeApi.start(pendingRange).root : undefined
+                }
               />
             </div>
           ) : (
@@ -1578,31 +1754,11 @@ function DiscussionPopover({
   );
 }
 
-const usePrepareDiscussionSelection = (
-  setActiveSuggestionId?: (id: string | null) => void
-) => {
-  const editor = useEditor();
-  const store = useDiscussionStore();
-  const { api: comments } = editor.plugin(CommentsPlugin);
-
-  React.useEffect(() => {
-    store.setPrepareSelection(() => {
-      comments.cancel();
-      editor.plugin(CommentsPlugin).api.setActive([]);
-      setActiveSuggestionId?.(null);
-    });
-
-    return () => store.setPrepareSelection(null);
-  }, [comments, editor, setActiveSuggestionId, store]);
-};
-
 function SuggestionDiscussion({
   editableRef,
   snapshot,
 }: EditableSiblingProps & { snapshot: DiscussionSnapshot }) {
   const { activeId, setActiveId } = useActiveSuggestion();
-
-  usePrepareDiscussionSelection(setActiveId);
 
   return (
     <DiscussionPopover
@@ -1618,8 +1774,6 @@ function CommentDiscussion({
   editableRef,
   snapshot,
 }: EditableSiblingProps & { snapshot: DiscussionSnapshot }) {
-  usePrepareDiscussionSelection();
-
   return (
     <DiscussionPopover
       activeSuggestionId={null}

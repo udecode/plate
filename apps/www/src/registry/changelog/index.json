@@ -79,6 +79,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-discussion-editing-areas",
+      "href": "/registry/changelog/2026-11-27-discussion-editing-areas.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Place comment counts and popovers per editing area using mounted presentation areas",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-field-condition-lists-read",
       "href": "/registry/changelog/2026-11-27-field-condition-lists-read.json",
       "status": "draft",

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-discussion-editing-areas",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-discussion-editing-areas.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Place comment counts and popovers per editing area using mounted presentation areas",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-discussion-place-comment-counts-popovers-0af5f439",
+      "kind": "fix",
+      "summary": "Place comment counts and popovers per editing area using mounted presentation areas",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-discussion-editing-areas",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -47,6 +47,7 @@ export type {
   UseElementSelectedMode,
   UseElementSelectedOptions,
   EditorRuntimeStateSelectorOptions,
+  EditorRootAreas,
   EditorSelectorDependencies,
   EditorSelectorDependency,
   EditorViewStateSelectorOptions,
@@ -77,6 +78,7 @@ export type {
   ViewSourceStatus,
 } from './plite-react';
 export {
+  useEditorRootAreas,
   useEditorRootElement,
   useEditorRuntimeState,
   useEditorScrollElement,

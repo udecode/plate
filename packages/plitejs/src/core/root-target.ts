@@ -1,5 +1,10 @@
 import { getViewPresentation } from '../editor-runtime-view';
-import type { Editor, EditorCommit, RootKey } from '../interfaces/editor';
+import type {
+  Editor,
+  EditorCommit,
+  NamedRootKey,
+  RootKey,
+} from '../interfaces/editor';
 import {
   type EditorRuntimeCarrier,
   getEditorRuntime,
@@ -608,7 +613,16 @@ export const readNestedRootView = (
   if (entry.views.has(mountedIn) && isShown(mountedIn)) return mountedIn;
 
   const host = getEditorRuntime(mountedIn);
-  const isNested = (view: Editor) => getEditorRuntime(view).mountedIn === host;
+  const isNested = (view: Editor) => {
+    let runtime = getEditorRuntime(view).mountedIn;
+
+    while (runtime) {
+      if (runtime === host) return true;
+      runtime = runtime.mountedIn;
+    }
+
+    return false;
+  };
 
   return (
     pickTarget(
@@ -756,4 +770,88 @@ export const readLatestShownWritableView = (
   }
 
   return { shown, view: latest };
+};
+
+/** Standalone editing areas mounted in a view's presentation. */
+export type PresentationRootAreasSnapshot = Readonly<{
+  /** Whether this view is the active shown standalone editing area for its root in this presentation. */
+  isPrimaryForRoot: boolean;
+  /** Named roots that currently have their own shown standalone editing area in this presentation. */
+  standaloneRoots: readonly NamedRootKey[];
+}>;
+
+const isStandaloneView = (view: Editor) =>
+  getEditorRuntime(view).mountedIn === undefined;
+
+export const readPresentationRootAreas = (
+  view: Editor
+): PresentationRootAreasSnapshot => {
+  const owner = getEditorRuntimeOwner(view);
+  const presentation = getViewPresentation(view);
+  const roots = ENTRIES.get(owner)?.get(presentation);
+  const standaloneRoots: NamedRootKey[] = [];
+
+  if (roots) {
+    for (const [root, entry] of roots) {
+      if (root === 'main') continue;
+      for (const candidate of entry.views) {
+        if (isStandaloneView(candidate) && isShown(candidate)) {
+          standaloneRoots.push(root);
+          break;
+        }
+      }
+    }
+  }
+  standaloneRoots.sort();
+
+  const viewRuntime = getEditorRuntime(view);
+  const viewRoot = view.read.view.root() ?? 'main';
+  const ownEntry = roots?.get(viewRoot);
+  const standaloneOwn = ownEntry
+    ? [...ownEntry.views].filter(isStandaloneView)
+    : [];
+  const primaryTarget =
+    ownEntry && standaloneOwn.length > 0
+      ? pickTarget(
+          ownEntry.usedLatestFirst.filter(isStandaloneView),
+          standaloneOwn
+        )
+      : null;
+  const isPrimaryForRoot = !isStandaloneView(view)
+    ? false
+    : standaloneOwn.length === 0
+      ? true
+      : Boolean(
+          primaryTarget?.shown &&
+          getEditorRuntime(primaryTarget.view) === viewRuntime
+        );
+
+  return {
+    isPrimaryForRoot,
+    standaloneRoots,
+  };
+};
+
+export const subscribePresentationRootAreas = (
+  view: Editor,
+  listener: () => void
+): (() => void) => {
+  const owner = getEditorRuntimeOwner(view);
+  const presentation = getViewPresentation(view);
+  const viewRoot = view.read.view.root() ?? 'main';
+  const stopPresentation = subscribeRootViewPresentation(
+    presentation,
+    listener
+  );
+  const stopTarget = subscribeRootTarget(
+    owner,
+    presentation,
+    viewRoot,
+    listener
+  );
+
+  return () => {
+    stopPresentation();
+    stopTarget();
+  };
 };

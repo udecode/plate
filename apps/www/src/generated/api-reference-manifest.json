@@ -19991,6 +19991,19 @@
             "E extends EditorReference = Editor"
           ]
         },
+        "platejs/react:EditorRootAreas": {
+          "aliases": [],
+          "documentation": "Standalone editing areas mounted in a view's presentation.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "EditorRootAreas",
+          "runtime": false,
+          "signature": "type EditorRootAreas<TEditor extends AnyEditor = AnyEditor> = Readonly<{\n  /** Whether this view is the active shown standalone editing area for its root in this presentation. */\n  isPrimaryForRoot: boolean;\n  /** Return the mounted view of a nested content root inside this editing area, if one is mounted. */\n  nestedView: (root: NamedRootKey) => TEditor | null;\n  /** Named roots that currently have their own shown standalone editing area in this presentation. */\n  standaloneRoots: readonly NamedRootKey[];\n}>;",
+          "source": null,
+          "typeParameters": [
+            "TEditor extends AnyEditor = AnyEditor"
+          ]
+        },
         "platejs/react:EditorRootEntry": {
           "aliases": [],
           "documentation": "A named root with the elements that own it, as `read.roots()` lists it.",
@@ -28777,6 +28790,19 @@
           "signature": "useEditorReadOnly: () => boolean",
           "source": null,
           "typeParameters": []
+        },
+        "platejs/react:useEditorRootAreas": {
+          "aliases": [],
+          "documentation": "Subscribe to the standalone editing areas mounted in this view's\npresentation, and whether this view is the active standalone area for its\nroot.",
+          "entrypoint": "platejs/react",
+          "kind": "function",
+          "name": "useEditorRootAreas",
+          "runtime": true,
+          "signature": "declare function useEditorRootAreas<TEditor extends AnyEditor = AnyEditor>(editor: TEditor): EditorRootAreas<TEditor>;",
+          "source": null,
+          "typeParameters": [
+            "TEditor extends AnyEditor = AnyEditor"
+          ]
         },
         "platejs/react:useEditorRootElement": {
           "aliases": [],

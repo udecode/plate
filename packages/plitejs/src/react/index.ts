@@ -111,6 +111,10 @@ export {
   useEditorState,
 } from './hooks/use-editor-selector';
 export {
+  type EditorRootAreas,
+  useEditorRootAreas,
+} from './hooks/use-editor-root-areas';
+export {
   type EditorViewStateSelectorOptions,
   useEditorViewState,
 } from './hooks/use-editor-view-state';
