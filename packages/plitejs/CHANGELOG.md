@@ -1,5 +1,170 @@
 # plite
 
+## 54.0.0-beta.7
+
+### Major Changes
+
+- [`fe90073`](https://github.com/udecode/plate/commit/fe9007333bf6eaa697a7d32c942863067f31b5e4) by [@zbeyens](https://github.com/zbeyens) – Unify Plite selector options, read-only hook, and DOM API with Plate:
+
+  - Rename `EditorSelectorOptions` to `UseEditorSelectorOptions`, add `= unknown` default on `UseStateFieldValueOptions`, and remove public `deferred` from `UseEditorSelectorOptions`, `UseStateFieldValueOptions`, and `EditorRuntimeSelectorOptions` (wrap selector results with React `useDeferredValue` instead).
+  - Remove `useOptionalEditorReadOnly` from `plitejs/react`; use `useEditorReadOnly()` directly (returns `false` outside providers).
+  - Unexport `DOMEditor` (value and type) from `plitejs/dom`; use `editor.api.dom.*` and `editor.api.dom.clipboard.*`.
+
+### Minor Changes
+
+- [`38eb5de`](https://github.com/udecode/plate/commit/38eb5de630efafc070eb1ab102a141a270cbfda6) by [@zbeyens](https://github.com/zbeyens) – Rename the `authoredRecords` plugin name from `'authored-records'` to `'authoredRecords'` to match the lower camel case plugin naming convention.
+
+- [`353fcec`](https://github.com/udecode/plate/commit/353fcec6ab5b8ad6f3c9a310d20157eeae16f757) by [@zbeyens](https://github.com/zbeyens) – Replace the `shouldUpdate` callback option and internal options (`runtimeEventSource`, `profileId`, `includeRootOrderChanges`, `nodeKey`, `nodeKeys`) on public React selector hooks (`useEditorSelector`, `useEditorState`, `useEditorRuntimeState`, `useRuntimeState`, `useRootState`) with declarative `dependsOn`.
+
+  - Export `EditorSelectorDependency` and `EditorSelectorDependencies` from `plitejs/react`. Pass commit change kinds (such as `'selection'`, `'document'`, or `['properties', 'structure']`), `defineStateField` descriptors, or `{ nodeKey, kind? }` / `{ nodeKeys, kind? }` objects to `dependsOn`.
+  - Remove `shouldUpdate` and `runtimeEventSource` from public selector option types, and drop the unused second `TEditor` type parameter on `EditorRuntimeStateSelectorOptions<T = unknown>` (callers passing two type arguments drop the second one); internal mounted-render subscriptions stay private inside `plitejs/react`.
+  - Keep `useNodeSelector` and `useTextSelector` from accepting internal render-skip policies through forwarded option objects, and remove `useRootState`'s unconditional root prefilter so record-only writes and version reads stay fresh.
+
+### Patch Changes
+
+- [`82c983d`](https://github.com/udecode/plate/commit/82c983d464e0ea7f605923b9952c1739cc38cd54) by [@zbeyens](https://github.com/zbeyens) – Remove `ElementIdPlugin` and reserve `id` across every editor schema
+
+  - `plitejs` schemas now refuse declaring an element `id` property (naming the reserved `id` key), and editor readers type returned elements with a required `id: string` while detached inputs (`ElementIn`, `InitialValue`) and element guards (`ElementApi.isElement`) keep `id` optional.
+  - Removed `ElementIdPlugin`, its `generateId` option, `HtmlExportKit` / `HtmlExportSchemaKit`, and the internal `readElementById` helper; Markdown `<block id>`, Ink, HTML export, and document migrations now read core's reserved `id` directly.
+
+- [`4a54c17`](https://github.com/udecode/plate/commit/4a54c172f9519e27af0d217cafa89c9098ce9cd9) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix collapsed deletes, merges, and `points.before`/`points.after` inside or beside non-selectable blocks, childless block atoms, isolating siblings, trailing-inline line breaks, and container hanging ranges
+
+- [`c06c7de`](https://github.com/udecode/plate/commit/c06c7de445579d1141c7d35c3293b66538861d7f) by [@zbeyens](https://github.com/zbeyens) – Add `useEditorRootAreas` to read which named roots have standalone editing areas in the view's presentation and whether a view is the active copy for its root.
+
+- [`93af01d`](https://github.com/udecode/plate/commit/93af01d1961d61d84b5e404cc5130d5f48d271f3) by [@zbeyens](https://github.com/zbeyens) – Merge derived-read React hooks (`useEditorState`, `useEditorRuntimeState`, `useRuntimeState`, `useRootState`, and `useEditorViewState`) into `useEditorSelector`, add view-state `dependsOn` tokens (`'authored'`, `'composing'`, `'focused'`, `'readOnly'`, and `'view'`), export `useModelEditor` from `plitejs/react`, and fix stale-view `readOnly` locking for absent roots.
+
+- [`132c1ce`](https://github.com/udecode/plate/commit/132c1cee796c088490a851eeb96810f012bc3807) by [@zbeyens](https://github.com/zbeyens) – Remove `EditorElement`, `EditorLeaf`, and `EditorText` from `plitejs/react` public exports
+
+  **Migration:** Spread `attributes` onto your own element in `renderElement`, `renderLeaf`, or `renderText`:
+
+  ```tsx
+  const renderElement = ({ attributes, children }: RenderElementProps) => (
+    <p {...attributes}>{children}</p>
+  );
+  ```
+
+- [`55025b2`](https://github.com/udecode/plate/commit/55025b2156d4c99270f3aa00841b9c1fd033502d) by [@zbeyens](https://github.com/zbeyens) – Unify `EditorRoot` `onValueChange` to emit the full `EditorDocumentValue` on document or persisted-state changes, align `CommitContext`, `SelectionChangeContext`, and `ValueChangeContext` to take `<E>`, drop unused `authorId` and `document` props from `EditorRootProps`, and recreate `useCreateEditor` when `options.id` changes
+
+  **Migration:** Read `value.children` (or `value.roots`) in `onValueChange` handlers, and pass the editor type (for example `ValueChangeContext<typeof editor>`) instead of a value array type to commit context generics.
+
+- [`48ff60f`](https://github.com/udecode/plate/commit/48ff60f655572ef57982473e43a9a759e850e44b) by [@felixfeng33](https://github.com/felixfeng33) – Fix creating the `authored` plugin at module scope on Cloudflare Workers, which threw because it drew a random id on creation
+
+- [`caeb87e`](https://github.com/udecode/plate/commit/caeb87e8076a070970ecf68c1916a3005fd6a2c6) by [@felixfeng33](https://github.com/felixfeng33) – Fix Backspace or typing over a block selection in Editing mode leaving another author's pending deletion struck when the selected blocks hold all of it. The write now accepts that deletion, as it already did over a text selection.
+
+- [`b25e5e8`](https://github.com/udecode/plate/commit/b25e5e811f87139603e6b9858dfdb58e248f280f) by [@zbeyens](https://github.com/zbeyens) –
+
+  - When app code moves focus during an editor focus call, a selection export, a caret repair or a queued selection clear, focus and the caret stay where the app put them, and the editor no longer marks itself focused while it does not hold focus
+
+- [`cbf74c3`](https://github.com/udecode/plate/commit/cbf74c3a91f7cd54a8ca146f2ee9c8b53ff7c87c) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Clear a root's pending DOM selection import hold when selection leaves that root or the root blurs, so returning focus within the selectionchange throttle window still exports the root's saved caret to the DOM
+
+- [`9515b86`](https://github.com/udecode/plate/commit/9515b86e72e14abe70cb5402c8dac59f72e3262e) by [@zbeyens](https://github.com/zbeyens) – Add `commit.changed.anchors()` and the `ReadonlyAnchor` type so commit listeners can read the live anchors whose stored value a commit changed without polling every anchor, and restore history anchors immediately on undo and redo commits.
+
+- [`5cad385`](https://github.com/udecode/plate/commit/5cad38535a9382920ac0aa934b7c62f6325a2304) by [@zbeyens](https://github.com/zbeyens) – Keep anchors, peer rebases, and history intact in untouched roots when another named root is created, edited, or deleted in the same update
+
+- [`e9898c6`](https://github.com/udecode/plate/commit/e9898c635d8f7a2ae9fc30daa6d236b2f8e74b7d) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix a crash when starting an IME composition over a selection that spans an inline element such as a link
+
+- [`d3a3d25`](https://github.com/udecode/plate/commit/d3a3d25d4e7994b67a1f986ff428c2a43994e1dd) by [@felixfeng33](https://github.com/felixfeng33) – Fix an Editing or Suggesting delete across two quotes that threw `cannot contain "quote"` when another author's pending deletion strikes a quote between them
+
+- [`f4f653b`](https://github.com/udecode/plate/commit/f4f653bab32f17bb8307350f1874e191187c9d08) by [@zbeyens](https://github.com/zbeyens) – Preserve another field or nested editable's DOM selection when `DOMEditor.focus`, WebKit blur, or projected drag clears run without owning the selection
+
+- [`1cc288e`](https://github.com/udecode/plate/commit/1cc288edda4a8172b793dd725678346050557ed7) by [@zbeyens](https://github.com/zbeyens) – Remove block voids spanned by a hanging selection on delete and text insert
+
+- [`1a2a3fa`](https://github.com/udecode/plate/commit/1a2a3fa86788b2f31ae413a0180badb4b48e5ca9) by [@felixfeng33](https://github.com/felixfeng33) – Add `editor.api.history.record(effect, value, { firstWrite })` to record a session step, with `HistoryRecordResult`, `HistoryRecordOptions` and `EditorEffectHistoryKind` exported from `plitejs`. While a `firstWrite` promise runs, the step stays in undo and holds the redo it cleared, so redo returns `busy`. A first write that resolves `blocked` takes the step back and gives back the redo it held. The session effect's replay reads the promise as `firstWrite` on `EditorEffectHistoryReplayContext`, and a first write that rejects reports to the lifecycle error sink with phase `apply`.
+
+  **Migration:** `tx.effects.emit` and `editor.update.effects.emit` now refuse a session effect, one defined with `history: { replay }`, both in types and at runtime. Record it outside any update instead:
+
+  ```ts
+  // Before
+  editor.update((tx) => tx.effects.emit(threadEffect, step));
+
+  // After
+  editor.api.history.record(threadEffect, step);
+  ```
+
+  `EditorEffectType<T>` and `EditorEffect<T>` now stand for an effect of any history kind, so `emit` refuses them in types. A state field's `effect`, the effects `getCollabEffects` returns and the effect `defineEffect` returns for a `push` or `skip` effect keep emitting as before. Type your own parameter `EditorEffectType<T, EditorJsonValue, StateFieldHistoryPolicy>` to emit it.
+
+- [`66aca3e`](https://github.com/udecode/plate/commit/66aca3ecacdc82f29ce76aec7cea1d1e9d7c10e2) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Keep focus in the active external text control, editor view, or outside button when an undo or redo runs from another external control, a `focusPolicy: 'preserve'` history control, or `editor.api.history.undo()`.
+  - Return focus and the caret to the forked synced-block copy after keyboard redo of an Unsync and after button undo of single- or nested-level Unsyncs, including keyed and delayed-mount slots.
+  - Return focus to the last-used slot view when a history control replays a child root rendered by two panes sharing an owner element.
+
+- [`d2cc369`](https://github.com/udecode/plate/commit/d2cc369348f43f57df8b01ef51ba1aeb1dae76e7) by [@zbeyens](https://github.com/zbeyens) – Export `setDOMClipboardFormatKey` and `getPluginSlotInput` from `plitejs/internal` for Plate's DOM plugin activation and dynamic plugin input validation.
+
+- [`83cefab`](https://github.com/udecode/plate/commit/83cefabaabdcba208b22c7803ea50a7906394399) by [@felixfeng33](https://github.com/felixfeng33) – Fix a redo whose owner answers late: it keeps its place in undo when a skipped edit removed the step below it, it leaves undo when the undo limit would have dropped it, and a redo whose every effect a skipped edit removed no longer leaves an undo step that does nothing
+
+- [`1f7b27c`](https://github.com/udecode/plate/commit/1f7b27ced7f71a3f0684f9346dcba63a79cc7940) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Publish multi-source native typing and deferred decoration refreshes in one repaint per node while keeping fast typing across editors with multiple decoration sources.
+  - Remove the `plitejs/annotations` entrypoint, `useAnnotationStore`, `useAnnotation`, `useAnnotations`, `UseAnnotationStoreOptions`, and unused `ViewSource*` (`ViewSourceOptions`, `ViewSourceStatus`, `ViewSourceError`, `ViewSourceErrorSink`, `ViewSourcePhase`) exports from `plitejs/react`.
+
+  **Migration:** Replace `plitejs/annotations` and `useAnnotation*` with `editor.anchor`, `commit.changed.anchors()`, and a `DecorationSource` registered through `EditorRoot` or a plugin.
+
+- [`487d022`](https://github.com/udecode/plate/commit/487d02278c34a6ad579460ff1d56d3384fda55cb) by [@felixfeng33](https://github.com/felixfeng33) – Keep one author's change that starts inside that author's previous insertion or deletion on the same review card, such as a join inside a deletion of both its lines, so accepting the card no longer returns `blocked`
+
+- [`ee42782`](https://github.com/udecode/plate/commit/ee4278247503055c392fb3e2d8cc28bab21fd07d) by [@zbeyens](https://github.com/zbeyens) – Keep the destination line's key and stored id when pasting a matching block over an empty or wholly selected line (including inside quotes and under `replaceEmpty` landing policies), and restore the original document when rejecting a suggested multi-line paste at a line's end or over an empty line
+
+- [`815c8e3`](https://github.com/udecode/plate/commit/815c8e3adec8115c90b10683eb39d33ebc1ee251) by [@zbeyens](https://github.com/zbeyens) – Record blocks pasted over part of a paragraph's text or at the end of a paragraph or quote as insertions in Suggesting, even when the document holds another pending change. Rejecting the suggestion now removes the pasted block instead of keeping it or refusing one-text blocks such as code blocks.
+
+- [`d31dbf4`](https://github.com/udecode/plate/commit/d31dbf4ef041d1266d723596ba3851c6a778d232) by [@zbeyens](https://github.com/zbeyens) – Stamp pending DOM selection imports with the editor's placement generation and route deferred selection clears, settles, and caret repair retries through one freshness check so stale timers and pre-placement flags cannot overwrite newer browser or model selections.
+
+- [`12a911e`](https://github.com/udecode/plate/commit/12a911e032146d2ab4ae4572dc1ae1b2b8cd76ab) by [@felixfeng33](https://github.com/felixfeng33) – Fix a letter typed after Backspace removes the last letter of a line that another author's pending join strikes landing at the end of the line before. The letter now stays on that line, in Editing and Suggesting, and accepting the join still puts it after the text of the line before.
+
+- [`170132f`](https://github.com/udecode/plate/commit/170132f8b1a80e2284d33d06b1388432cfaa3a8c) by [@zbeyens](https://github.com/zbeyens) – Rename `plitejs/react`'s editor-creation hook to `useCreateEditor`, make `useEditor()` and `useOptionalEditor()` read the active editor from context, align React read hooks with `useEditor()`, and remove `useCaretEditor` and `UseEditorOptions`.
+
+  - Replace `useEditor(options, deps)` with `useCreateEditor(options, deps)` (and `UseEditorOptions` with `CreateEditorOptions`). Zero-argument `useCreateEditor()` returns `Editor<Value, readonly []>` and rejects input-free type parameters.
+  - `useEditor()` and `useOptionalEditor()` take no arguments (passing any argument, including `undefined`, throws at runtime) and return the editing area's editor inside an `Editable` or the active caret root's editor (falling back to `EditorRoot`'s own root) outside every editing area. Note for apps upgrading from bare `useEditor()` with no arguments: `useEditor()` now reads from context instead of creating an empty editor, so switch creation calls to `useCreateEditor()`.
+  - Replace `useCaretEditor()` with `useEditor()`.
+  - `useEditorSelector`, `useEditorState`, `useEditorSelection`, `useEditorFocused`, `useEditorComposing`, `useEditorReadOnly`, `useStateFieldValue`, and `useSetStateField` now follow `useEditor()` so toolbars read and act on the same active root editor.
+
+- [`d77c7d1`](https://github.com/udecode/plate/commit/d77c7d130811bceae182c260b60337a8f949f3fd) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Allow `tx.records.put` and `tx.records.drop` in the same `editor.update` after a text or node edit whose intermediate draft is not yet canonical, normalizing and validating the draft at commit as usual.
+
+- [`39fa61e`](https://github.com/udecode/plate/commit/39fa61e5662eddb51c3df1003ec7e9581bda7c7c) by [@zbeyens](https://github.com/zbeyens) – Remove unused `@noble/hashes` dependency
+
+- [`14beff3`](https://github.com/udecode/plate/commit/14beff360622902ec014e46c1ea2c14360c1f244) by [@zbeyens](https://github.com/zbeyens) – Store a core-generated `id` on every element in every editor
+
+  - Every editor whose schema declares no `id` element property now stores a unique non-empty string `id` on every element, including kept elements under `preserve` schemas, and supports `nodes.byId(id)` and `at: { id }` without declaring an `id` property.
+  - New elements created by insert, split, wrap, paste, or live duplicate repair receive `<scope>.<counter>` ids from each editor's own mint, while loading a document without ids fills missing ids deterministically as `fill.<n>` across roots, spare lines, and Yjs rooms.
+  - Empty strings and non-string element ids are refused locally, from peers, and on load with `EditorSchemaValidationError`.
+  - Schema fingerprints now include the reserved `id`, so saved envelopes, native sync rooms, Yjs rooms, and saved history created before this change refuse to open with a schema-mismatch error; pass the plain document value to load it with filled ids.
+
+- [`ef3675f`](https://github.com/udecode/plate/commit/ef3675fa62cad77e286fb1440ffff87d4fa97d3b) by [@zbeyens](https://github.com/zbeyens) – Invoke an editable root's registered viewport reveal handler and schedule one cancelable retry when `DOMEditor.scrollIntoView` misses a culled block or range.
+
+- [`e6f8893`](https://github.com/udecode/plate/commit/e6f889312c29b350923f0532445c42d67b5375d8) by [@zbeyens](https://github.com/zbeyens) – Keep right-clicks and middle-clicks from starting projected text drags or collapsing model selection before `contextmenu` fires
+
+- [`ee0a8d7`](https://github.com/udecode/plate/commit/ee0a8d7c17ccff77be76ca586da1c2c2c6395762) by [@felixfeng33](https://github.com/felixfeng33) – Keep the key of a content root declared `ownership: 'shared'` when its owner is copied, pasted, duplicated or dragged, so the copy shows the same root instead of a clone. A root declared by its grammar alone is now `exclusive`: a second owner is refused, an open schema drops the root with its last owner, and an `each` table fill gives each cell its own copy.
+
+  **Migration:** Declare `ownership: 'shared'` on a root that several blocks should show.
+
+  ```ts
+  body: { content: schema.content.text(), ownership: 'shared' }
+  ```
+
+- [`6606f85`](https://github.com/udecode/plate/commit/6606f858d92dd9efa665963e1ed13369cf95ea6f) by [@felixfeng33](https://github.com/felixfeng33) – Fix deciding a suggested line split in a different order giving a different document once someone moved the split's lower line: rejecting the split now joins the line it cut with the line now after it, as Google Docs does, and waits for another pending suggestion on that next line.
+
+- [`7c07401`](https://github.com/udecode/plate/commit/7c07401a99c99ba5e1451da815cee05bc4b453ab) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Include `PluginReference` in `EditorStateField`, the type `defineStateField` returns, so TypeScript accepts a state field wherever it accepts a plugin reference, such as in `plugins`. Make a state field with `defineStateField`, because an object you build by hand no longer types as one.
+
+- [`a709688`](https://github.com/udecode/plate/commit/a709688b5f2ef2f59f7c5ab61d1b6d836fad8fe7) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Hold one pending row, column or format suggestion per table. Suggesting a second one, adding or removing a single cell, changing a span (including inside an author's own pending inserted table), moving or splitting a row, adding, deleting, wrapping or unwrapping a block or outer table that holds a table, and an undo or redo that changes a table whose value or block window changed since its step while any pending mark waits there or the replayed step held one now refuse with cause-specific messages. After a history restore, an undo or redo that changes a table refuses in a document that holds a verdict or another authored record, unless it withdraws the writer's own pending change. A writer's own undo or redo of their pending row or column goes through when the sync room would take it.
+  - Record a whole column as one suggestion in a forced proposal.
+  - Refuse in Editing, while a table holds such a suggestion, inserting a row or column, moving a row or cell, removing some but not all columns, merging or splitting cells, and writing a property on the table, a row or a cell.
+  - Add `read.authored.gridLocked(node)`, which says whether a table waits as a suggested deletion or holds a pending row, column or format suggestion.
+
+- [`c59e6ec`](https://github.com/udecode/plate/commit/c59e6ec1a94249768896a6453efdb2a06aeb2ab3) by [@zbeyens](https://github.com/zbeyens) – Keep select-all in a virtualized editor from drawing a duplicate native selection highlight while mount focus settles.
+
+- [`c945376`](https://github.com/udecode/plate/commit/c9453761aaa92754b716aca750a3a50013e5f151) by [@felixfeng33](https://github.com/felixfeng33) – Fix Yjs peers reading the upper line's set-valued property on the lower line after one update changed that property on a line and split the line at its start.
+
 ## 54.0.0-beta.6
 
 ### Patch Changes
