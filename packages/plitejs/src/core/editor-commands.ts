@@ -1172,7 +1172,8 @@ export const editorCommands: EditorCommands = Object.freeze({
             index: replacement.index,
             ...(replacement.root ? { root: replacement.root } : {}),
             newSelection:
-              input.options?.at !== undefined && state.selection() === null
+              input.options?.at !== undefined &&
+              getCurrentSelection(getActiveCommandEditor()) === null
                 ? null
                 : replacement.selection,
           });

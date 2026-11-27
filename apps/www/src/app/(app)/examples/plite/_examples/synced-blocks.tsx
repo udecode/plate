@@ -50,8 +50,6 @@ const createSyncedBlockBody = (
   second = 'Editing any copy updates every synced copy.'
 ): CustomValue => [paragraph(first), paragraph(second)];
 
-const cloneValue = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-
 const getNextSiblingPath = (path: readonly number[]) => [
   ...path.slice(0, -1),
   (path.at(-1) ?? 0) + 1,
@@ -106,7 +104,10 @@ const syncedBlocks = () =>
           content: schema.content.text({ default: 'text', min: 1 }),
           contentRoots: {
             body: {
-              content: schema.content.not(schema.content.text()),
+              content: schema.content.not(schema.content.text(), {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
               ownership: 'shared',
             },
           },
@@ -210,19 +211,10 @@ const SyncedBlock = ({
       return;
     }
 
-    const nextRoot = nextSyncedBlockRoot();
-    const body = editor.read.root(bodyRoot);
-
     editor.update((tx) => {
-      tx.roots.create(
-        nextRoot,
-        cloneValue(body.length > 0 ? [...body] : createSyncedBlockBody())
-      );
+      tx.roots.fork(nextSyncedBlockRoot(), { at: path, slot: 'body' });
       tx.nodes.set(
-        {
-          childRoots: { body: nextRoot },
-          copyId: nextSyncedBlockCopyId(),
-        } as Partial<SyncedBlockElement>,
+        { copyId: nextSyncedBlockCopyId() } as Partial<SyncedBlockElement>,
         { at: path }
       );
     });

@@ -1,5 +1,5 @@
 import { jsonEqual } from '../core/change/json';
-import { getEditorSchema } from '../core/editor-runtime';
+import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
   getCurrentMarks,
@@ -283,12 +283,14 @@ const getMarksAtNonInclusiveEnd = (
     : null;
 };
 
-const readAt = <T>(editor: Editor, at: Point, read: () => T) =>
-  at.root
-    ? withEditorUpdateRoot(editor, at.root, () =>
-        withEditorUpdateRootChildren(editor, at.root, read)
-      )
-    : read();
+const readAt = <T>(editor: Editor, at: Point, read: (owner: Editor) => T) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const root = at.root ?? getCurrentSelectionRoot(owner);
+
+  return withEditorUpdateRoot(owner, root, () =>
+    withEditorUpdateRootChildren(owner, root, () => read(owner))
+  );
+};
 
 export const typesAtSelection = (
   editor: Editor,
@@ -297,33 +299,35 @@ export const typesAtSelection = (
   if (marks === false) return false;
   if (at == null) return true;
 
-  const selection = getPublicSelection(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const selection = getPublicSelection(owner);
   const range = LocationApi.isPoint(at) ? { anchor: at, focus: at } : at;
 
   return (
     !!selection &&
     LocationApi.isRange(range) &&
     (getLocationRoot(at) ?? getEditorUpdateRoot(editor)) ===
-      (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) &&
+      (SelectionApi.root(selection) ?? getCurrentSelectionRoot(owner)) &&
     samePlace(RangeApi.start(range), RangeApi.start(selection)) &&
     samePlace(RangeApi.end(range), RangeApi.end(selection))
   );
 };
 
 export const setNextKeyMarks = (editor: Editor) => {
-  const selection = getPublicSelection(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const selection = getPublicSelection(owner);
   const at =
     selection && RangeApi.isCollapsed(selection) ? selection.anchor : null;
 
   setTypedMarks(
-    editor,
+    owner,
     at &&
-      readAt(editor, at, () => {
-        const node = NodeApi.has(editor, at.path)
-          ? NodeApi.get(editor, at.path)
+      readAt(owner, at, (target) => {
+        const node = NodeApi.has(target, at.path)
+          ? NodeApi.get(target, at.path)
           : null;
 
-        return TextApi.isText(node) && getMarksAtNonInclusiveEnd(editor, at)
+        return TextApi.isText(node) && getMarksAtNonInclusiveEnd(target, at)
           ? NodeApi.extractProps(node)
           : null;
       })
@@ -334,13 +338,16 @@ export const withoutTypedMarks = <T extends object>(
   editor: Editor,
   marks: T | null
 ): T | null => {
-  const selection = getPublicSelection(editor);
-  const typed = getTypedMarks(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const selection = getPublicSelection(owner);
+  const typed = getTypedMarks(owner);
 
   if (!marks || !selection || !typed) return marks;
 
   const at = selection.anchor;
-  const kept = readAt(editor, at, () => getMarksAtNonInclusiveEnd(editor, at));
+  const kept = readAt(owner, at, (target) =>
+    getMarksAtNonInclusiveEnd(target, at)
+  );
 
   if (!kept) return marks;
 

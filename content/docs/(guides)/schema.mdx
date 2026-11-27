@@ -127,7 +127,7 @@ Use `editor.read.schema.create(...)` to construct valid nodes and `isMarkableVoi
 | Input | Operation |
 | --- | --- |
 | Complete document snapshot | `tx.value.replace(...)` |
-| Targeted named-root change | `tx.roots.create`, `replace`, or `remove` |
+| Targeted named-root change | `tx.roots.create`, `fork`, `replace`, or `delete` |
 | Closed decoded nodes | `tx.fragment.replace(...)` |
 | Open clipboard or transport content | `ContentSlice` and `tx.slice.replace(...)` |
 | Detached fitting preview | `state.slice.fitContent(...)` |

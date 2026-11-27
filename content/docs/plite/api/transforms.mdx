@@ -559,6 +559,22 @@ named-root change and `tx.setField` for one metadata field.
 
 Create a named root.
 
+#### `tx.roots.fork(root: NamedRootKey, options: { at: NodeTarget; slot: string })`
+
+Give the element at `at` its own root, named `root`, from the root its `slot`
+shows. When no other slot on any surviving element holds the old root, `fork`
+moves that root under `root` and keeps nested exclusive roots and element
+properties intact. When another holder remains, `fork` copies the root and any
+nested exclusive roots, renews `unique` properties and their references
+together, drops `copy: 'drop'` properties, and keeps nested shared roots
+linked. A text or node selection shown through that slot (or in a copied nested
+exclusive root) moves into the fork at the same path and offset, while a
+selection in a nested shared root stays put; without a carry host (such as a
+headless editor), selection moves only when no holder remains on the old root.
+Throws without changing the document if `root` is invalid or already exists,
+`at` does not resolve to an element, `slot` has no declared content root, or
+the slot's root is missing from the document.
+
 #### `tx.roots.replace(root: NamedRootKey, children: Value)`
 
 Replace an existing named root.

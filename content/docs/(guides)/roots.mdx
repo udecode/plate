@@ -62,7 +62,7 @@ const body = editor.read.children();
 const header = editor.read.root("header");
 ```
 
-Create, replace, or delete extra roots inside `editor.update`.
+Create, fork, replace, or delete extra roots inside `editor.update`.
 
 ```tsx
 editor.update((tx) => {
@@ -177,6 +177,21 @@ the root only when it becomes orphaned, so an exclusive root goes with its last
 owner in every schema. In an
 [authored](/docs/authored-changes#configure-a-view) `propose` view, deleting an
 owner keeps its root until someone accepts the deletion.
+
+To detach one shared copy into its own root without dropping the caret or
+duplicating nested shared roots, call `tx.roots.fork(nextRoot, { at, slot })`.
+When another holder remains on the old root, nested exclusive roots get copies
+of their own, `unique` properties and references renew together, and nested
+shared roots stay linked; when the element is the sole holder, the root moves
+under `nextRoot` intact. A text or node selection shown by that slot (or in a
+copied nested exclusive root) moves into the fork at the same path and offset,
+while a selection in a nested shared root stays put.
+
+```tsx
+editor.update((tx) => {
+  tx.roots.fork(nextRoot, { at: path, slot: "body" });
+});
+```
 
 ### Copy, paste, and drag
 

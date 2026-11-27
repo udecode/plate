@@ -109,7 +109,7 @@ Reads go through `editor.read(...)`. Writes go through `editor.update(...)`. Ins
 | `tx.fragment`        | replace or delete closed fragments                     |
 | `tx.selection`       | set, clear, collapse, and move model selection                  |
 | `tx.marks`           | read, set, toggle, add, and remove active marks                 |
-| `tx.roots`           | create, replace, and delete extra roots                         |
+| `tx.roots`           | create, fork, replace, and delete extra roots                   |
 | `editor.api.history` | replay complete undo and redo batches when `plitejs/history` is installed |
 | `tx.changes`         | apply canonical root-aware document changes                     |
 | `tx.effects`         | emit typed state and integration effects                        |

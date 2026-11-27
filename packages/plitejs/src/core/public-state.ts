@@ -12047,10 +12047,13 @@ export const samePlace = (
 ) =>
   point.offset === another.offset && PathApi.equals(point.path, another.path);
 
-const readCaretText = (editor: Editor, root: string, path: Path) =>
-  withEditorRootChildren(editor, root, () =>
-    NodeApi.has(editor, path) ? NodeApi.get(editor, path) : null
+const readCaretText = (editor: Editor, root: string, path: Path) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  return withEditorRootChildren(owner, root, () =>
+    NodeApi.has(owner, path) ? NodeApi.get(owner, path) : null
   );
+};
 
 const sameText = (text: PliteNode | null, another: PliteNode | null) =>
   TextApi.isText(text) &&
@@ -12099,9 +12102,14 @@ export const getTypedMarks = (editor: Editor): EditorMarks | null => {
     : null;
 };
 
-export const getRestorableMarks = (editor: Editor): EditorMarks | null =>
-  getCurrentMarks(editor) ??
-  (getTypedMarks(editor) ? null : getSelectionMarks(editor));
+export const getRestorableMarks = (editor: Editor): EditorMarks | null => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  return (
+    getCurrentMarks(owner) ??
+    (getTypedMarks(owner) ? null : getSelectionMarks(owner))
+  );
+};
 
 const keepSpecTypedMarks = (
   context: TransactionSpecContext,
