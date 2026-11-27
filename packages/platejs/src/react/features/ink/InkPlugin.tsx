@@ -1,7 +1,34 @@
-import { BaseInkPlugin, type InkTool } from '../../../features/ink/lib';
+import {
+  BaseInkPlugin,
+  type InkPassage,
+  type InkTool,
+} from '../../../features/ink/lib';
 import { readInkSign } from '../../../features/ink/lib/inkPlaces.internal';
 import { toReactPlugin } from '../../core';
 import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
+import { renderInkPassageImages } from './inkImages.internal';
+
+/** Options for `InkPlugin`'s `api.images(passages, options)`. */
+export type InkImagesOptions = Readonly<{
+  maxSide: number;
+}>;
+
+/**
+ * Two PNG data URLs for one passage (`inkAlone` and `inkOnText`), each mark's
+ * bounding box in picture pixels (`[left, top, right, bottom]`), and each
+ * inline void's visible text keyed by its character offset in the saved copy.
+ */
+export type InkPassageImages = Readonly<{
+  boxes: Readonly<
+    Record<
+      string,
+      readonly [left: number, top: number, right: number, bottom: number]
+    >
+  >;
+  inkAlone: string;
+  inkOnText: string;
+  voids: Readonly<Record<number, string>>;
+}>;
 
 // The key whose press acted on each view's pick, until its next fresh press,
 // so the repeats of a held Backspace never reach the text.
@@ -19,6 +46,17 @@ const heldKeys = new WeakMap<object, string>();
  */
 export const InkPlugin = toReactPlugin(BaseInkPlugin, {
   api: ({ editor, viewStore }) => ({
+    /**
+     * Draw two PNG pictures (`inkAlone` and `inkOnText`) for each passage in
+     * Canvas 2D from the live view, reading every input synchronously before
+     * returning. Returns `null` for a passage whose block is not live or whose
+     * cropped long side passes `maxSide`.
+     */
+    images: (
+      passages: readonly InkPassage[],
+      options: InkImagesOptions
+    ): Promise<ReadonlyArray<InkPassageImages | null>> =>
+      renderInkPassageImages(editor, passages, options),
     /** Pick the marks `ids` names, which the layer paints distinctly. */
     setPicked: (ids: readonly string[]) => {
       viewStore.set((draft) => {

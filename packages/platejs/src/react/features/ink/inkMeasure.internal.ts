@@ -90,6 +90,12 @@ const isInlineVoid = (element: Element) =>
 
 type Piece = Element | Readonly<{ length: number; node: Text }>;
 
+export type InkElementSpan = Readonly<{
+  end: number;
+  piece: Piece;
+  start: number;
+}>;
+
 const piecesOf = (block: Element) => {
   const pieces: Piece[] = [];
   const rest = new Map<Element, number>();
@@ -141,6 +147,33 @@ const union = (boxes: readonly InkBox[]): InkBox => {
   };
 };
 
+export const inkElementSpans = (
+  element: Element,
+  text: string
+): readonly InkElementSpan[] | undefined => {
+  const pieces = piecesOf(element);
+  const rendered = pieces
+    .map((piece) =>
+      piece instanceof Element
+        ? INK_VOID
+        : piece.node.data.slice(0, piece.length)
+    )
+    .join('');
+
+  if (rendered !== text) return undefined;
+
+  const spans: InkElementSpan[] = [];
+
+  for (const piece of pieces) {
+    const start = spans.at(-1)?.end ?? 0;
+    const end = start + (piece instanceof Element ? 1 : piece.length);
+
+    if (end > start) spans.push({ end, piece, start });
+  }
+
+  return spans;
+};
+
 /**
  * Its lines, and the boxes `line` and `measure` return, sit inside the
  * block's `box`. `line` at the text's end returns the last line, and `measure`
@@ -153,26 +186,9 @@ export const measureInkBlock = (
   text: string,
   origin: InkLayerOrigin
 ): InkMeasuredBlock | undefined => {
-  const pieces = piecesOf(element);
-  const rendered = pieces
-    .map((piece) =>
-      piece instanceof Element
-        ? INK_VOID
-        : piece.node.data.slice(0, piece.length)
-    )
-    .join('');
+  const spans = inkElementSpans(element, text);
 
-  if (rendered !== text) return undefined;
-
-  const spans: Array<Readonly<{ end: number; piece: Piece; start: number }>> =
-    [];
-
-  for (const piece of pieces) {
-    const start = spans.at(-1)?.end ?? 0;
-    const end = start + (piece instanceof Element ? 1 : piece.length);
-
-    if (end > start) spans.push({ end, piece, start });
-  }
+  if (!spans) return undefined;
 
   const range = element.ownerDocument.createRange();
   const blockBoxesBySpanRange = new Map<string, InkBox>();
