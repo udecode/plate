@@ -76,7 +76,7 @@ into archaeology.
 | `Editor.*` reads that inspect the current editor  | `editor.read.<group>.<method>()` for one read, or `editor.read((state) => state.*...)` for grouped reads |
 | Pure node, point, path, range, and text helpers   | `NodeApi`, `ElementApi`, `PointApi`, `PathApi`, `RangeApi`, and `TextApi` from `plitejs`                 |
 | `ReactEditor.*` DOM bridge calls                  | `editor.api.dom.*`, `editor.api.react.*`, or renderer hooks such as `useElementPath()`                   |
-| `useSlate`, `useSlateStatic`                      | `useEditor()` and `useEditorState(...)`                                                                  |
+| `useSlate`, `useSlateStatic`                      | `useEditor()` and `useEditorSelector(...)`                                                               |
 | `useSelected`, `useFocused`, `useReadOnly`        | `useElementSelected(...)`, `useEditorFocused()`, and `useEditorReadOnly()`                               |
 | `onChange(value)` as the primary persistence hook | `onValueChange({ value })`, or `editor.read.value()` for the full document                               |
 | editor-only `children` persistence                | primary `children`, optional extra `roots`, persistent `meta`, and keyed `records`                                |
@@ -357,7 +357,7 @@ Use editor hooks for editor-wide UI and element hooks for rendered nodes.
 | Slate 0.x hook          | Plite hook                                                                                    |
 | ----------------------- | --------------------------------------------------------------------------------------------- |
 | `useSlate()`            | `useEditor()` for the active editor, or `useEditorContext()` for the nearest mounted view     |
-| `useSlateSelector(...)` | `useEditorState(...)` for state reads, or `useEditorSelector(...)` for low-level editor reads |
+| `useSlateSelector(...)` | `useEditorSelector(...)`                                                                      |
 | `useSlateSelection()`   | `useEditorSelection()`                                                                        |
 | `useFocused()`          | `useEditorFocused()`                                                                          |
 | `useReadOnly()`         | `useEditorReadOnly()`                                                                         |
@@ -366,11 +366,11 @@ Use editor hooks for editor-wide UI and element hooks for rendered nodes.
 Toolbar state should subscribe to a derived value.
 
 ```tsx
-import { useEditorState } from "plitejs/react";
+import { useEditorSelector } from "plitejs/react";
 
 const BoldButton = () => {
-  const isBold = useEditorState((state) => {
-    return state.marks()?.bold === true;
+  const isBold = useEditorSelector((editor) => {
+    return editor.read.marks()?.bold === true;
   });
 
   return <button aria-pressed={isBold}>Bold</button>;
@@ -734,7 +734,7 @@ import {
   createEditor,
   useCreateEditor,
   useEditor,
-  useEditorState,
+  useEditorSelector,
 } from "plitejs/react";
 import { history } from "plitejs/history";
 import { createHyperscript, jsx } from "plitejs/hyperscript";

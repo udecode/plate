@@ -14,7 +14,7 @@ import {
   EditorRoot,
   type RenderElementProps,
   useCreateEditor,
-  useEditorState,
+  useEditorSelector,
   useEditorHistory,
 } from 'plitejs/react';
 import { StrictMode, useMemo, useState } from 'react';
@@ -348,11 +348,11 @@ const renderNative = ({ attributes, element, slots }: RenderElementProps) =>
   );
 
 const Status = () => {
-  const snapshot = useEditorState((state) =>
+  const snapshot = useEditorSelector((current) =>
     JSON.stringify(
       {
-        selection: state.selection(),
-        value: state.value(),
+        selection: current.read.selection(),
+        value: current.read.value(),
       },
       null,
       2

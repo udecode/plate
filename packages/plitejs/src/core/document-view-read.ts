@@ -1,19 +1,34 @@
-import { getEditorRuntimeOwner } from './editor-runtime';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+  hasEditorRuntime,
+} from './editor-runtime';
 
 // The guard needs only the runtime owner, so it takes any editor or view
 // without relating editor generics.
 type EditorRuntimeCarrier = Parameters<typeof getEditorRuntimeOwner>[0];
 
 const DOCUMENT_VIEWS = new WeakSet<EditorRuntimeCarrier>();
+const DOCUMENT_VIEW_RUNTIMES = new WeakSet<object>();
 const DOCUMENT_VIEW_READS = new WeakMap<EditorRuntimeCarrier, number>();
 
 /** Whether a view renders its own document. @internal */
-export const isDocumentView = (view: object) =>
-  DOCUMENT_VIEWS.has(view as EditorRuntimeCarrier);
+export const isDocumentView = (view: object) => {
+  const carrier = view as EditorRuntimeCarrier;
+
+  return (
+    DOCUMENT_VIEWS.has(carrier) ||
+    (hasEditorRuntime(carrier) &&
+      DOCUMENT_VIEW_RUNTIMES.has(getEditorRuntime(carrier)))
+  );
+};
 
 /** Mark a view bound to its own document. @internal */
 export const registerDocumentView = (view: EditorRuntimeCarrier) => {
   DOCUMENT_VIEWS.add(view);
+  if (hasEditorRuntime(view)) {
+    DOCUMENT_VIEW_RUNTIMES.add(getEditorRuntime(view));
+  }
 };
 
 /**
@@ -28,7 +43,7 @@ export const withDocumentViewRead = <T>(
   editor: EditorRuntimeCarrier,
   fn: () => T
 ): T => {
-  if (!DOCUMENT_VIEWS.has(editor)) return fn();
+  if (!isDocumentView(editor)) return fn();
 
   const owner = getEditorRuntimeOwner(editor);
   const depth = DOCUMENT_VIEW_READS.get(owner) ?? 0;

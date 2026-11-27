@@ -247,11 +247,7 @@ return (
 
 ### `useEditorSelector`
 
-`useEditorSelector(selector, options?)` 从所选编辑器派生值，并仅在结果变化时重新渲染。`selector` 接收编辑器，选项为 `dependsOn` 和 `equalityFn`。调用未传入 `equalityFn` 时，hook 按值比较每次的结果与上一次的结果，因此 selector 可以返回对象或列表。该比较的限制见[选择器结果](/docs/api/react-hooks#selector-results)。
-
-### `useEditorState`
-
-`useEditorState(selector, options?)` 订阅从不可变编辑器状态派生的值，返回 selector 的推断结果。需要具体编辑器类型时，使用 `useEditorRuntimeState(editor, selector, options?)`。
+`useEditorSelector(selector, options?)` 和 `useEditorSelector(editor, selector, options?)` 从所选编辑器或显式传入的编辑器实例派生值，并仅在结果变化时重新渲染。`selector` 在 `editor.read` 中接收编辑器，选项为 `dependsOn`（提交变更类型、state field、节点 key，或视图状态 token `'authored'`、`'composing'`、`'focused'`、`'readOnly'`、`'view'`）和 `equalityFn`。调用未传入 `equalityFn` 时，hook 按值比较每次的结果与上一次的结果，因此 selector 可以返回对象或列表。该比较的限制见[选择器结果](/docs/api/react-hooks#selector-results)。
 
 ### `useEditorComposing`
 

@@ -30,10 +30,12 @@ import {
   getEditorRuntimeElementEntries,
   getRestorableMarks,
   getEditorRuntimeRootKeys,
+  hasEditorRuntimeRoot,
   getEditorStateView,
   getLiveNode as getEditorLiveNode,
   getLiveText as getEditorLiveText,
   hasEditorSurface,
+  readEditorViewStateFacts,
   registerEditorSurface,
   runTrustedUpdate,
   continueTransactionSpecOrDiscardPrefix,
@@ -44,7 +46,11 @@ import {
   setEditorReadOnly,
   setTargetRuntime as setEditorTargetRuntime,
   subscribeEditorViewState,
+  subscribeSharedEditorViewState,
+  viewStateFactsChanged,
   withEditorUpdateRootScope,
+  type EditorViewStateFacts,
+  type SharedViewStateSubscription,
 } from '../../core/public-state';
 import { getSelectionDOMRange } from '../../core/selection-protocol';
 import { areEditorJsonValuesEqual } from '../../core/value-codec';
@@ -84,6 +90,7 @@ import { projectRangeInSnapshot } from '../../range-projection';
 import { getNodeKeyDOMValue } from '../../utils/node-keys';
 
 export type { AnyEditor } from '../../interfaces/editor';
+export type { EditorViewStateFacts, SharedViewStateSubscription };
 
 export {
   applyTransactionSpec,
@@ -100,6 +107,7 @@ export {
   getEditorLiveText,
   getEditorRuntimeElementEntries,
   getEditorRuntimeRootKeys,
+  hasEditorRuntimeRoot,
   getEditorStateView,
   getInternalDocumentChangeRootKeys,
   getEditorMaxLength,
@@ -112,6 +120,7 @@ export {
   hasEditorRuntime,
   projectRangeInSnapshot,
   probeCommandNativeEquivalent,
+  readEditorViewStateFacts,
   runTrustedUpdate,
   continueTransactionSpec,
   createTransactionSpec,
@@ -127,7 +136,9 @@ export {
   setEditorTargetRuntime,
   withEditorUpdateRootScope,
   subscribeEditorViewState,
+  subscribeSharedEditorViewState,
   toInternalRoot,
+  viewStateFactsChanged,
 };
 
 export const inheritPluginRegistry = (

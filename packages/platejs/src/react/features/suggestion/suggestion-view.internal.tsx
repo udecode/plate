@@ -3,8 +3,8 @@ import * as React from 'react';
 import { AuthoredPlugin, type AuthoredView } from '../../../authored';
 import type { Editor } from '../../editor';
 import { redrawBlocks } from '../../internal/block-redraws';
-import { useEditorViewState } from '../../plite-react';
 import { useEditor } from '../../stores';
+import { useEditorSelector } from '../../stores/plate/useEditorSelector';
 
 type SuggestionViewSnapshot = Readonly<{ activeId: string | null }>;
 
@@ -58,8 +58,10 @@ export function SuggestionViewProvider({
 }) {
   const editor = useEditor();
   const [store] = React.useState(createSuggestionViewStore);
-  const view = useEditorViewState(editor, () =>
-    viewKey(editor.plugin(AuthoredPlugin).read.view())
+  const view = useEditorSelector(
+    editor,
+    (current) => viewKey(current.plugin(AuthoredPlugin).read.view()),
+    { dependsOn: 'authored' }
   );
 
   React.useInsertionEffect(() => {

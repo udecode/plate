@@ -14,7 +14,8 @@ import {
 } from '../internal/plate-context';
 import { useComposedRef } from '../internal/react-helpers';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
-import { useEditorViewState, useEditorScrollElementRef } from '../plite-react';
+import { useEditorScrollElementRef } from '../plite-react';
+import { useEditorSelector } from '../stores/plate/useEditorSelector';
 
 export const EditorContainer = ({
   children,
@@ -27,7 +28,11 @@ export const EditorContainer = ({
 
   usePlateModelRevision(editor);
 
-  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
+  const readOnly = useEditorSelector(
+    editor,
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
+  );
 
   const scrollElementRef = useEditorScrollElementRef(editor, {
     fallback: true,

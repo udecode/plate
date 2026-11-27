@@ -5,7 +5,7 @@ import type { ChatTransport, DataUIPart, UIMessage } from 'ai';
 import * as React from 'react';
 
 import { getEditorRuntimeOwner } from '../../core';
-import { type Editor, useEditor, useEditorViewState } from '../../react/core';
+import { type Editor, useEditor, useEditorSelector } from '../../react/core';
 import { AIChatPlugin, getAIChatCommandEditor } from './AIChatPlugin';
 
 type ToolName = 'comment' | 'edit' | 'generate';
@@ -371,8 +371,10 @@ export function useAIChat({
   const mountedEditor = useEditor();
   const editor = getEditorRuntimeOwner(mountedEditor) as Editor;
 
-  const readOnly = useEditorViewState(mountedEditor, (state) =>
-    state.isReadOnly()
+  const readOnly = useEditorSelector(
+    mountedEditor,
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
   );
   const attachment = React.useRef<{
     view: ChatView;

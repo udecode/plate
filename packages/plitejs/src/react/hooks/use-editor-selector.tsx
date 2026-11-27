@@ -1,14 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 
-import type {
-  EditorCommit,
-  EditorStateView,
-  NamedRootKey,
-  PluginsOf,
-  NodeKey,
-  ValueOf,
-} from '../..';
-import { readShownPreview } from '../../core/authored-runtime';
+import type { EditorCommit, NamedRootKey, NodeKey } from '../..';
 import { keyMovedAt } from '../../core/commit';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { runEditorObserver } from '../../core/lifecycle-error';
@@ -17,18 +9,31 @@ import {
   getActiveCaretRoot,
   subscribeActiveCaretRoot,
 } from '../../core/public-state';
+import { sameResult } from '../../core/same-result';
 import {
   commitMatchesSelectorDependencies,
   type EditorSelectorDependencies,
+  type NormalizedSelectorDependencies,
   normalizeSelectorDependencies,
   sameSelectorDependencies,
+  selectorDependenciesSubscriptionKey,
+  selectorDependenciesViewSubscription,
+  selectorDependenciesWantCommits,
 } from '../../core/selector-dependencies';
-import type { BaseEditor } from '../../interfaces/editor';
+import type { AnyEditor, BaseEditor } from '../../interfaces/editor';
 import { PliteEditingAreaContext } from '../context';
-import { subscribeEditorViewState } from '../editable/runtime-editor-api';
+import {
+  type EditorViewStateFacts,
+  readEditorViewStateFacts,
+  subscribeSharedEditorViewState,
+  viewStateFactsChanged,
+} from '../editable/runtime-editor-api';
 import type { EditorContextValue } from '../plugin/with-react';
 import { recordPliteReactRender } from '../render-profiler';
-import { useEditorContext } from './use-editor-context';
+import {
+  useEditorContext,
+  useOptionalEditorContext,
+} from './use-editor-context';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import { useOptionalPliteRuntimeContext } from './use-plite-runtime';
@@ -58,6 +63,7 @@ type ContextEditor = EditorContextValue<any>;
 export interface InternalEditorSelectorOptions<T = unknown> {
   deferred?: boolean;
   equalityFn?: (a: T, b: T) => boolean;
+  handlesViewState?: boolean;
   includeRootOrderChanges?: boolean;
   profileId?: string;
   runtimeEventSource?: 'node' | 'path' | 'render' | 'selection';
@@ -75,15 +81,8 @@ export type EditorSelectorContextValue = {
   invalidate: (nodeKeys: readonly NodeKey[]) => void;
 };
 
-/** Commit-subscription options for selectors that read from the editor. */
+/** Commit and view-state subscription options for `useEditorSelector`. */
 export interface EditorSelectorOptions<T = unknown> {
-  deferred?: boolean;
-  dependsOn?: EditorSelectorDependencies;
-  equalityFn?: (a: T, b: T) => boolean;
-}
-
-/** Options for selectors that read from the immutable editor state view. */
-export interface EditorStateSelectorOptions<T> {
   deferred?: boolean;
   dependsOn?: EditorSelectorDependencies;
   equalityFn?: (a: T, b: T) => boolean;
@@ -201,110 +200,168 @@ export function useInternalEditorSelector<T>(
 }
 
 /**
- * Subscribe to editor commits and derive a render value from the editor.
+ * Subscribe to editor commits and view-state changes and derive a render value
+ * from the active context editor or an explicit editor instance.
  *
- * Scope updates with `dependsOn`, and use `useEditorState` when the selector
- * only needs the immutable state view.
+ * Scope updates with `dependsOn` using commit kinds, state fields, node keys,
+ * or view-state tokens (`'authored'`, `'composing'`, `'focused'`, `'readOnly'`,
+ * `'view'`). Omitting `dependsOn` subscribes to commits and all view-state
+ * changes (including focus and composition).
  */
 export function useEditorSelector<T>(
   selector: (editor: ContextEditor) => T,
-  { deferred, dependsOn, equalityFn }: EditorSelectorOptions<T> = {}
+  options?: EditorSelectorOptions<T>
+): T;
+export function useEditorSelector<T, TEditor extends AnyEditor = AnyEditor>(
+  editor: TEditor,
+  selector: (editor: TEditor) => T,
+  options?: EditorSelectorOptions<T>
+): T;
+export function useEditorSelector<T>(
+  arg0: AnyEditor | ((editor: ContextEditor) => T),
+  arg1?: ((editor: AnyEditor) => T) | EditorSelectorOptions<T>,
+  arg2?: EditorSelectorOptions<T>
 ): T {
+  const hasExplicitEditor = typeof arg0 !== 'function';
+  const explicitEditor = hasExplicitEditor ? arg0 : null;
+  const selector = (hasExplicitEditor ? arg1 : arg0) as (
+    editor: AnyEditor
+  ) => T;
+  const { deferred, dependsOn, equalityFn } = ((hasExplicitEditor
+    ? arg2
+    : arg1) ?? {}) as EditorSelectorOptions<T>;
   const normalizedDeps = normalizeSelectorDependencies(dependsOn);
-  const { addEventListener } = useRequiredEditorSelectorContext();
-  const contextEditor = useEditorContext();
+  const subscriptionKey = selectorDependenciesSubscriptionKey(normalizedDeps);
+  const selectorContext = useContext(EditorSelectorContext);
+  const contextEditor = useOptionalEditorContext();
   const insideEditingArea = useContext(PliteEditingAreaContext);
   const runtimeContext = useOptionalPliteRuntimeContext();
-  const usesProviderContext = insideEditingArea || !runtimeContext;
+
+  if (!hasExplicitEditor && (!selectorContext || !contextEditor)) {
+    throw new Error(
+      `The \`useEditorSelector\` hook must be used inside <EditorRoot>.`
+    );
+  }
+
+  const usesProviderContext =
+    !hasExplicitEditor && (insideEditingArea || !runtimeContext);
   const owner =
-    !usesProviderContext && runtimeContext
+    !hasExplicitEditor && !usesProviderContext && runtimeContext
       ? getEditorRuntimeOwner(runtimeContext.runtime)
       : null;
-  const fallbackRoot = contextEditor.read.view.root();
-  const resolveTarget = useCallback((): ContextEditor => {
+  const fallbackRoot =
+    !hasExplicitEditor && contextEditor
+      ? contextEditor.read.view.root()
+      : undefined;
+  const resolveTarget = useCallback((): AnyEditor => {
+    if (explicitEditor) return explicitEditor;
     if (usesProviderContext || !runtimeContext || !owner) {
-      return contextEditor;
+      return contextEditor as AnyEditor;
     }
     const activeRoot = getActiveCaretRoot(owner);
     const targetRoot =
       activeRoot !== null ? toPublicRoot(activeRoot) : fallbackRoot;
 
-    return runtimeContext.rootEditor(targetRoot) as unknown as ContextEditor;
-  }, [contextEditor, fallbackRoot, owner, runtimeContext, usesProviderContext]);
-  const renderedSnapshotRef = useRef<{
-    preview: ReturnType<typeof readShownPreview>;
-    target: ContextEditor;
+    return runtimeContext.rootEditor(targetRoot);
+  }, [
+    contextEditor,
+    explicitEditor,
+    fallbackRoot,
+    owner,
+    runtimeContext,
+    usesProviderContext,
+  ]);
+  const depsRef = useRef(normalizedDeps);
+  const committedSnapshotRef = useRef<{
+    deps: NormalizedSelectorDependencies;
+    facts: EditorViewStateFacts;
+    target: AnyEditor;
     version: number | undefined;
   } | null>(null);
+  const updatingRef = useRef(false);
   const genericSelector = useCallback(() => {
     const target = resolveTarget();
-
-    renderedSnapshotRef.current = {
-      preview: readShownPreview(target),
+    const deps = depsRef.current;
+    const snapshot = {
+      deps,
+      facts: readEditorViewStateFacts(target, deps),
       target,
       version: target.read.lastCommit()?.version,
     };
+    const value = target.read(() => selector(target));
 
-    return selector(target);
+    if (updatingRef.current) {
+      committedSnapshotRef.current = snapshot;
+    }
+
+    return { snapshot, value };
   }, [resolveTarget, selector]);
-  const [selectedState, update] = useGenericSelector(
-    genericSelector,
-    equalityFn
+  const compareEntry = useCallback(
+    (
+      previous: Readonly<{
+        snapshot: {
+          deps: NormalizedSelectorDependencies;
+          facts: EditorViewStateFacts;
+          target: AnyEditor;
+          version: number | undefined;
+        };
+        value: T;
+      }>,
+      next: Readonly<{
+        snapshot: {
+          deps: NormalizedSelectorDependencies;
+          facts: EditorViewStateFacts;
+          target: AnyEditor;
+          version: number | undefined;
+        };
+        value: T;
+      }>
+    ) => (equalityFn ?? sameResult)(previous.value, next.value),
+    [equalityFn]
   );
-  const updateFromCommit = useCallback(() => {
-    update();
+  const [selectedEntry, update] = useGenericSelector(
+    genericSelector,
+    compareEntry
+  );
+  const selectedState = selectedEntry.value;
+  const runUpdate = useCallback(() => {
+    updatingRef.current = true;
+    try {
+      update();
+    } finally {
+      updatingRef.current = false;
+    }
   }, [update]);
-  const depsRef = useRef(normalizedDeps);
 
   useIsomorphicLayoutEffect(() => {
+    committedSnapshotRef.current = selectedEntry.snapshot;
+
     const changed = !sameSelectorDependencies(depsRef.current, normalizedDeps);
 
     depsRef.current = normalizedDeps;
 
-    if (changed) update();
-  }, [normalizedDeps, update]);
+    if (changed) runUpdate();
+  });
 
   const matchesProviderCommit = useCallback(
     (change?: EditorCommit) =>
-      commitMatchesSelectorDependencies(contextEditor, change, depsRef.current),
+      contextEditor
+        ? commitMatchesSelectorDependencies(
+            contextEditor,
+            change,
+            depsRef.current
+          )
+        : false,
     [contextEditor]
   );
 
   useIsomorphicLayoutEffect(() => {
-    const needsSync = () => {
-      const rendered = renderedSnapshotRef.current;
-
-      if (!rendered) return true;
-
-      const liveTarget = resolveTarget();
-
-      return (
-        liveTarget !== rendered.target ||
-        liveTarget.read.lastCommit()?.version !== rendered.version ||
-        readShownPreview(liveTarget) !== rendered.preview
-      );
-    };
-
-    if (usesProviderContext) {
-      const unsubscribe = addEventListener(updateFromCommit, {
-        deferred,
-        shouldUpdate: matchesProviderCommit,
-      });
-
-      if (needsSync()) update();
-
-      return unsubscribe;
-    }
-
     let cancelled = false;
     let scheduled = false;
-    let currentTarget: ContextEditor | null = null;
-    let unsubscribeCommit: (() => void) | null = null;
-    let unsubscribeView: (() => void) | null = null;
     const scheduleUpdate = () => {
       if (cancelled) return;
       if (!deferred) {
-        update();
+        runUpdate();
         return;
       }
       if (scheduled) return;
@@ -312,88 +369,182 @@ export function useEditorSelector<T>(
       scheduleMicrotask(() => {
         scheduled = false;
         if (cancelled) return;
-        update();
+        runUpdate();
       });
     };
-    const follow = (notifyOnSwitch: boolean) => {
-      const next = resolveTarget();
+    const activeDeps = depsRef.current;
+    const wantsCommits = selectorDependenciesWantCommits(activeDeps);
+    const viewSub = selectorDependenciesViewSubscription(activeDeps);
+    const needsSync = () => {
+      const committed = committedSnapshotRef.current;
 
-      if (next === currentTarget) return;
-      unsubscribeCommit?.();
-      unsubscribeView?.();
-      currentTarget = next;
-      unsubscribeCommit = next.subscribeCommit((change) => {
-        if (resolveTarget() !== next) {
-          follow(true);
-          return;
-        }
-        if (commitMatchesSelectorDependencies(next, change, depsRef.current)) {
-          scheduleUpdate();
-        }
-      });
-      unsubscribeView = subscribeEditorViewState(next, (change) => {
-        if (resolveTarget() !== next) {
-          follow(true);
-          return;
-        }
-        if (change === 'authored') scheduleUpdate();
-      });
-      if (notifyOnSwitch) scheduleUpdate();
+      if (!committed) return true;
+
+      const liveTarget = resolveTarget();
+
+      if (liveTarget !== committed.target) return true;
+      if (!sameSelectorDependencies(committed.deps, depsRef.current)) {
+        return true;
+      }
+      if (
+        wantsCommits &&
+        liveTarget.read.lastCommit()?.version !== committed.version
+      ) {
+        return true;
+      }
+
+      return viewStateFactsChanged(
+        committed.facts,
+        readEditorViewStateFacts(liveTarget, depsRef.current),
+        depsRef.current
+      );
     };
 
-    follow(false);
-    const unsubscribeCaretRoot = owner
-      ? subscribeActiveCaretRoot(owner, () => follow(true))
-      : () => {};
+    let unsubscribeCommit: (() => void) | null = null;
+    let unsubscribeView: (() => void) | null = null;
+    let unsubscribeCaretRoot: (() => void) | null = null;
 
-    if (needsSync()) update();
+    if (usesProviderContext && selectorContext && contextEditor) {
+      const addProviderListener = selectorContext.addEventListener;
+      let lastFacts =
+        committedSnapshotRef.current?.target === contextEditor &&
+        sameSelectorDependencies(committedSnapshotRef.current.deps, activeDeps)
+          ? committedSnapshotRef.current.facts
+          : readEditorViewStateFacts(contextEditor, activeDeps);
+      if (wantsCommits) {
+        unsubscribeCommit = addProviderListener(runUpdate, {
+          deferred,
+          handlesViewState: true,
+          shouldUpdate: matchesProviderCommit,
+        });
+      }
+      if (viewSub !== null) {
+        unsubscribeView = subscribeSharedEditorViewState(
+          contextEditor,
+          viewSub,
+          () => {
+            const currentDeps = depsRef.current;
+            const committed = committedSnapshotRef.current;
+            const baseline =
+              committed?.target === contextEditor &&
+              sameSelectorDependencies(committed.deps, currentDeps)
+                ? committed.facts
+                : lastFacts;
+            const nextFacts = readEditorViewStateFacts(
+              contextEditor,
+              currentDeps
+            );
+            const changed = viewStateFactsChanged(
+              baseline,
+              nextFacts,
+              currentDeps
+            );
+
+            lastFacts = nextFacts;
+            if (changed) scheduleUpdate();
+          }
+        );
+      }
+    } else {
+      let currentTarget: AnyEditor | null = null;
+      let lastFacts: EditorViewStateFacts | null = null;
+      const follow = (notifyOnSwitch: boolean) => {
+        const next = resolveTarget();
+
+        if (next === currentTarget) return;
+        unsubscribeCommit?.();
+        unsubscribeView?.();
+        unsubscribeCommit = null;
+        unsubscribeView = null;
+        currentTarget = next;
+        const currentDeps = depsRef.current;
+        const initialCommitted = committedSnapshotRef.current;
+        lastFacts =
+          initialCommitted &&
+          initialCommitted.target === next &&
+          sameSelectorDependencies(initialCommitted.deps, currentDeps)
+            ? initialCommitted.facts
+            : readEditorViewStateFacts(next, currentDeps);
+        if (wantsCommits) {
+          unsubscribeCommit = next.subscribeCommit((change) => {
+            if (!hasExplicitEditor && resolveTarget() !== next) {
+              follow(true);
+              return;
+            }
+            if (
+              commitMatchesSelectorDependencies(next, change, depsRef.current)
+            ) {
+              scheduleUpdate();
+            }
+          });
+        }
+        if (viewSub !== null) {
+          unsubscribeView = subscribeSharedEditorViewState(
+            next,
+            viewSub,
+            () => {
+              if (!hasExplicitEditor && resolveTarget() !== next) {
+                follow(true);
+                return;
+              }
+              const depsNow = depsRef.current;
+              const committed = committedSnapshotRef.current;
+              const baseline =
+                committed &&
+                committed.target === next &&
+                sameSelectorDependencies(committed.deps, depsNow)
+                  ? committed.facts
+                  : (lastFacts ?? readEditorViewStateFacts(next, depsNow));
+              const nextFacts = readEditorViewStateFacts(next, depsNow);
+              const changed = viewStateFactsChanged(
+                baseline,
+                nextFacts,
+                depsNow
+              );
+
+              lastFacts = nextFacts;
+              if (changed) scheduleUpdate();
+            }
+          );
+        }
+        if (notifyOnSwitch) scheduleUpdate();
+      };
+
+      follow(false);
+      if (!hasExplicitEditor && owner) {
+        unsubscribeCaretRoot = subscribeActiveCaretRoot(owner, () =>
+          follow(true)
+        );
+      }
+    }
+
+    if (needsSync()) runUpdate();
 
     return () => {
       cancelled = true;
-      unsubscribeCaretRoot();
+      unsubscribeCaretRoot?.();
       unsubscribeCommit?.();
       unsubscribeView?.();
     };
   }, [
-    addEventListener,
+    contextEditor,
     deferred,
+    hasExplicitEditor,
     matchesProviderCommit,
     owner,
     resolveTarget,
-    update,
-    updateFromCommit,
+    runUpdate,
+    selectorContext,
+    subscriptionKey,
     usesProviderContext,
   ]);
 
   return selectedState;
 }
 
-/**
- * Reads from the immutable editor state view and re-renders only when the
- * selected value changes.
- *
- * Inline selectors always observe the latest render values.
- */
-export function useEditorState<T>(
-  selector: (
-    state: EditorStateView<ValueOf<ContextEditor>, PluginsOf<ContextEditor>>
-  ) => T,
-  { deferred, dependsOn, equalityFn }: EditorStateSelectorOptions<T> = {}
-): T {
-  const stateSelector = useCallback(
-    (editor: ContextEditor) => editor.read((state) => selector(state)),
-    [selector]
-  );
-
-  return useEditorSelector<T>(stateSelector, {
-    deferred,
-    dependsOn,
-    equalityFn,
-  });
-}
-
 export function useEditorSelectorContext() {
   const eventListeners = useRef(new Set<Callback>());
+  const viewAwareEventListeners = useRef(new Set<Callback>());
   const runtimeEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
   const runtimePathEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
   const runtimeRenderEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
@@ -455,9 +606,16 @@ export function useEditorSelectorContext() {
     (
       change?: EditorCommit,
       invalidatedNodeKeys: readonly NodeKey[] = [],
-      root?: NamedRootKey
+      root?: NamedRootKey,
+      options?: Readonly<{ skipPublicSelectors?: boolean }>
     ) => {
       eventListeners.current.forEach((listener) => {
+        if (
+          options?.skipPublicSelectors &&
+          viewAwareEventListeners.current.has(listener)
+        ) {
+          return;
+        }
         listener(change);
       });
 
@@ -552,6 +710,7 @@ export function useEditorSelectorContext() {
       callbackProp: Callback,
       {
         deferred = false,
+        handlesViewState = false,
         includeRootOrderChanges = false,
         profileId,
         runtimeEventSource = 'node',
@@ -663,12 +822,16 @@ export function useEditorSelectorContext() {
       }
 
       eventListeners.current.add(callback);
+      if (handlesViewState) {
+        viewAwareEventListeners.current.add(callback);
+      }
 
       return () => {
         if (!isSubscribed) return;
         isSubscribed = false;
         deferredEventListeners.current.delete(queuedCallback);
         eventListeners.current.delete(callback);
+        viewAwareEventListeners.current.delete(callback);
       };
     },
     []

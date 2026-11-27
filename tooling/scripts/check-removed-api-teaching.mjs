@@ -687,7 +687,10 @@ export const findRemovedApiTeaching = ({ base, cwd = process.cwd() }) => {
           .filter(Boolean);
   const lines = ['-n', '--full-name'];
   const membersGoneFromApi = [...baseNames.members].filter(
-    (name) => isCompoundName(name) && !headNames.mentionedWords.has(name)
+    (name) =>
+      isCompoundName(name) &&
+      !removedExports.has(name) &&
+      !headNames.mentionedWords.has(name)
   );
   const stillInSource = new Set(
     grep(['-o', '-h', '-w', '-F'], membersGoneFromApi, sourcePathspecs)

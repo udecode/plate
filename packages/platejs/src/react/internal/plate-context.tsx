@@ -6,12 +6,11 @@ import {
   getEditorRuntimeOwner,
   getViewPresentation,
   markRootViewInteraction,
-  notifyObservers,
   readCaretViewIn,
   readRootViewUse,
   readShownViewUse,
   subscribeCaretTarget,
-  subscribeEditorViewState,
+  subscribeSharedEditorViewState,
   subscribeShownViewUse,
 } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
@@ -373,52 +372,6 @@ export function PlateCaretSlots({
   );
 }
 
-type ViewStateReaders = {
-  any: Set<() => void>;
-  authored: Set<() => void>;
-  stop: () => void;
-};
-
-const viewStateReaders = new WeakMap<Editor, ViewStateReaders>();
-
-const subscribeSharedViewState = (
-  editor: Editor,
-  heard: 'any' | 'authored',
-  listener: () => void
-) => {
-  let readers = viewStateReaders.get(editor);
-  if (!readers) {
-    const any = new Set<() => void>();
-    const authored = new Set<() => void>();
-    const notifyAll = (listeners: Set<() => void>) =>
-      notifyObservers(editor, listeners, 'commit-listener', (notify) =>
-        notify()
-      );
-    const stop = subscribeEditorViewState(editor, (change) => {
-      notifyAll(any);
-      if (change !== 'authored') return;
-      notifyAll(authored);
-    });
-    readers = { any, authored, stop };
-    viewStateReaders.set(editor, readers);
-  }
-  const shared = readers;
-  const listeners = shared[heard];
-  const registration = () => listener();
-  listeners.add(registration);
-  return () => {
-    if (!listeners.delete(registration)) return;
-    if (shared.any.size > 0 || shared.authored.size > 0) return;
-    shared.stop();
-    viewStateReaders.delete(editor);
-  };
-};
-
-export const subscribeAuthoredViewState = (
-  editor: Editor,
-  listener: () => void
-) => subscribeSharedViewState(editor, 'authored', listener);
-
 export const useTargetViewState = (
   target: PlateTarget | null,
   fact: ViewFact,
@@ -434,9 +387,9 @@ export const useTargetViewState = (
     React.useCallback(
       (listener: () => void) =>
         editor
-          ? subscribeSharedViewState(editor, 'any', listener)
+          ? subscribeSharedEditorViewState(editor, fact, listener)
           : stopNothing,
-      [editor]
+      [editor, fact]
     ),
     readFact,
     readBoolean(server?.[fact] ?? withoutEditor)

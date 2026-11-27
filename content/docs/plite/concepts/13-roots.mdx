@@ -97,9 +97,9 @@ return (
 );
 ```
 
-Use `useRootState(root, selector)` for UI that reads one root without
-subscribing to every editor change. Use `useRootEditor(root)` for commands
-that must run against a specific root.
+Pair `useRootEditor(root)` with `useEditorSelector(rootEditor, selector, options?)`
+for UI that reads one root without subscribing to every editor change. Use
+`useRootEditor(root)` for commands that must run against a specific root.
 
 A content root's view, such as a board note's text, is an `Editable` of its
 own inside the page's `Editable`. UI outside every `Editable`, such as a page

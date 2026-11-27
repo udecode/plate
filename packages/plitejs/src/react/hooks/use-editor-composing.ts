@@ -18,6 +18,7 @@ export const useEditorComposing = (): boolean => {
   const target = useOptionalEditor();
   const targetComposing = useOptionalEditorViewState(
     insideEditingArea ? null : target,
+    'composing',
     readViewComposing,
     false
   );

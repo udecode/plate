@@ -12,7 +12,7 @@ import {
   EditorRoot,
   type RenderElementProps,
   useEditor,
-  useEditorState,
+  useEditorSelector,
   useCreateEditor,
 } from 'plitejs/react';
 
@@ -90,8 +90,8 @@ const ProbeElement = ({
   children,
   element,
 }: Pick<RenderElementProps, 'attributes' | 'children' | 'element'>) => {
-  const isReadOnly = useEditorState(
-    (state) => state.schema.getElementBehavior(element).readOnly
+  const isReadOnly = useEditorSelector(
+    (current) => current.read.schema.getElementBehavior(element).readOnly
   );
 
   return (
@@ -145,17 +145,17 @@ const renderVoid = () => (
 
 const SchemaControls = () => {
   const editor = useEditor();
-  const status = useEditorState((state) => {
-    const probe = state.nodes.get([0])?.[0];
-    const guard = state.nodes.get([1, 1])?.[0];
+  const status = useEditorSelector((current) => {
+    const probe = current.read.nodes.get([0])?.[0];
+    const guard = current.read.nodes.get([1, 1])?.[0];
 
     if (!ElementApi.isElement(probe) || !ElementApi.isElement(guard)) {
       return 'missing';
     }
 
-    const probeBehavior = state.schema.getElementBehavior(probe);
-    const guardBehavior = state.schema.getElementBehavior(guard);
-    const commit = state.lastCommit();
+    const probeBehavior = current.read.schema.getElementBehavior(probe);
+    const guardBehavior = current.read.schema.getElementBehavior(guard);
+    const commit = current.read.lastCommit();
 
     return [
       `probeReadOnly:${probeBehavior.readOnly}`,
@@ -165,7 +165,9 @@ const SchemaControls = () => {
       `document:${commit?.changes.empty ? 'unchanged' : 'initial'}`,
     ].join(';');
   });
-  const document = useEditorState((state) => JSON.stringify(state.value()));
+  const document = useEditorSelector((current) =>
+    JSON.stringify(current.read.value())
+  );
   const applyProfile = (profile: SchemaProfile) => {
     editor.update.plugins.reconfigure(schemaSlot, createSchema(profile));
   };

@@ -312,11 +312,7 @@ return (
 
 ### `useEditorSelector`
 
-`useEditorSelector(selector, options?)` derives a value from the selected editor and rerenders when the result changes. The selector receives the editor, and the options are `dependsOn` and `equalityFn`. When the call passes no `equalityFn`, the hook compares each result with the earlier one by value, so a selector may return an object or a list. [Selector results](/docs/api/react-hooks#selector-results) gives the limits of that comparison.
-
-### `useEditorState`
-
-`useEditorState(selector, options?)` subscribes to a value derived from immutable editor state and returns the selector's inferred result. For a concrete editor type, use `useEditorRuntimeState(editor, selector, options?)`.
+`useEditorSelector(selector, options?)` and `useEditorSelector(editor, selector, options?)` derive a value from the selected editor or an explicit editor instance and rerender when the result changes. The selector receives the editor inside `editor.read`, and the options are `dependsOn` (commit change kinds, state fields, node keys, or view-state tokens `'authored'`, `'composing'`, `'focused'`, `'readOnly'`, `'view'`) and `equalityFn`. When the call passes no `equalityFn`, the hook compares each result with the earlier one by value, so a selector may return an object or a list. [Selector results](/docs/api/react-hooks#selector-results) gives the limits of that comparison.
 
 ### `useEditorComposing`
 

@@ -20,7 +20,7 @@ import {
 } from '../../../features/list/lib/listIndex.internal';
 import { toReactPlugin } from '../../core';
 import { useEditorContext } from '../../internal/plite-components';
-import { useEditorRuntimeState } from '../../plite-react';
+import { useEditorSelector } from '../../stores/plate/useEditorSelector';
 
 const LIST_RENUMBER_DEPENDENCIES = [
   'structure',
@@ -66,9 +66,9 @@ const rewriteMountedLists = (editor: Editor, content: HTMLElement) => {
 function ListNumberWriter({ editor }: { editor: Editor }) {
   const view = useEditorContext();
   const root = view.read.view.root() ?? 'main';
-  const lastCommit = useEditorRuntimeState(
+  const lastCommit = useEditorSelector(
     view,
-    (state) => state.lastCommit(),
+    (current) => current.read.lastCommit(),
     { dependsOn: LIST_RENUMBER_DEPENDENCIES }
   );
   const written = React.useRef<Map<RootKey, number> | undefined>(undefined);

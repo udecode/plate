@@ -1,24 +1,31 @@
 import React from 'react';
 
 import {
+  type AnyEditor,
   commitMatchesSelectorDependencies,
   type EditorCommit,
+  type EditorSelectorDependencies,
+  type EditorViewStateBucket,
+  type EditorViewStateFacts,
   type NormalizedSelectorDependencies,
   normalizeSelectorDependencies,
-  readShownPreview,
+  readEditorViewStateFacts,
   sameResult,
   sameSelectorDependencies,
+  selectorDependenciesViewSubscription,
+  selectorDependenciesWantCommits,
+  selectorDependenciesWantShownPreview,
+  subscribeSharedEditorViewState,
+  viewStateFactsChanged,
 } from '../../../facade';
 import type { Editor } from '../../editor';
-import {
-  subscribeAuthoredViewState,
-  usePlateScope,
-} from '../../internal/plate-context';
-import type { EditorRuntimeStateSelectorOptions } from '../../plite-react';
+import { usePlateScope } from '../../internal/plate-context';
 
-/** Options for Plate's `useEditorSelector` hook. */
-export type UseEditorSelectorOptions<T = unknown> =
-  EditorRuntimeStateSelectorOptions<T>;
+/** Subscription options for `useEditorSelector`. */
+export type UseEditorSelectorOptions<T = unknown> = {
+  dependsOn?: EditorSelectorDependencies;
+  equalityFn?: (prev: T, next: T) => boolean;
+};
 
 const useIsomorphicLayoutEffect =
   typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect;
@@ -26,36 +33,40 @@ const useIsomorphicLayoutEffect =
 type EqualityFn<T> = NonNullable<UseEditorSelectorOptions<T>['equalityFn']>;
 
 type Selected<T> = {
-  editor: Editor;
+  deps: NormalizedSelectorDependencies;
+  editor: AnyEditor;
   equalityFn: EqualityFn<T>;
-  preview: ReturnType<typeof readShownPreview>;
+  facts: EditorViewStateFacts;
   revision: number;
-  selector: (editor: Editor) => T;
+  selector: (editor: AnyEditor) => T;
   value: T;
   version: number | undefined;
 };
 
 const matchesSelected = <T>(
   entry: Selected<T>,
-  editor: Editor,
-  selector: (editor: Editor) => T,
+  editor: AnyEditor,
+  selector: (editor: AnyEditor) => T,
   equalityFn: EqualityFn<T>,
-  preview: ReturnType<typeof readShownPreview>,
+  facts: EditorViewStateFacts,
+  deps: NormalizedSelectorDependencies,
   revision: number
 ): boolean =>
   entry.editor === editor &&
   entry.selector === selector &&
   entry.equalityFn === equalityFn &&
-  entry.preview === preview &&
-  entry.revision === revision;
+  entry.revision === revision &&
+  sameSelectorDependencies(entry.deps, deps) &&
+  !viewStateFactsChanged(entry.facts, facts, deps);
 
 const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
   let committed: Selected<T> | undefined;
   let tentative: Selected<T> | undefined;
   let committedDeps = initialDeps;
   let revision = 0;
-  let seenEditor: Editor | undefined;
-  let seenPreview: ReturnType<typeof readShownPreview> | undefined;
+  let seenDeps = initialDeps;
+  let seenEditor: AnyEditor | undefined;
+  let seenFacts: EditorViewStateFacts | undefined;
   let seenVersion: number | undefined;
   let notify: (() => void) | undefined;
 
@@ -64,21 +75,30 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
       notify = listener;
     },
     commit: (
-      editor: Editor | undefined,
-      selector: (editor: Editor) => T,
+      editor: AnyEditor | undefined,
+      selector: (editor: AnyEditor) => T,
       equalityFn: EqualityFn<T>,
       value: T,
       renderedRevision: number,
       nextDeps: NormalizedSelectorDependencies
     ) => {
+      const depsChanged = !sameSelectorDependencies(committedDeps, nextDeps);
+
+      if (depsChanged) {
+        committedDeps = nextDeps;
+      }
+
+      let changed = false;
+
       if (editor) {
-        const preview = readShownPreview(editor);
+        const facts = readEditorViewStateFacts(editor, committedDeps);
         const version = editor.read.lastCommit()?.version;
         const fromTentative =
           tentative &&
           tentative.revision === renderedRevision &&
           tentative.selector === selector &&
-          tentative.equalityFn === equalityFn
+          tentative.equalityFn === equalityFn &&
+          sameSelectorDependencies(tentative.deps, committedDeps)
             ? tentative
             : null;
         tentative = undefined;
@@ -87,13 +107,15 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
           (committed &&
           committed.revision === renderedRevision &&
           committed.selector === selector &&
-          committed.equalityFn === equalityFn
+          committed.equalityFn === equalityFn &&
+          sameSelectorDependencies(committed.deps, committedDeps)
             ? committed
             : null);
         committed = {
+          deps: committedDeps,
           editor: rendered ? rendered.editor : editor,
           equalityFn,
-          preview: rendered ? rendered.preview : preview,
+          facts: rendered ? rendered.facts : facts,
           revision: renderedRevision,
           selector,
           value,
@@ -101,53 +123,67 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
         };
         if (renderedRevision === revision) {
           if (fromTentative) {
+            seenDeps = fromTentative.deps;
             seenEditor = fromTentative.editor;
-            seenPreview = fromTentative.preview;
+            seenFacts = fromTentative.facts;
             seenVersion = fromTentative.version;
           }
+          const wantsCommits = selectorDependenciesWantCommits(committedDeps);
           if (
             editor !== seenEditor ||
-            version !== seenVersion ||
-            preview !== seenPreview
+            !sameSelectorDependencies(seenDeps, committedDeps) ||
+            (wantsCommits && version !== seenVersion) ||
+            !seenFacts ||
+            viewStateFactsChanged(seenFacts, facts, committedDeps)
           ) {
+            seenDeps = committedDeps;
             seenEditor = editor;
-            seenPreview = preview;
+            seenFacts = facts;
             seenVersion = version;
-            revision += 1;
-            notify?.();
+            changed = true;
           }
         }
       }
-      if (!sameSelectorDependencies(committedDeps, nextDeps)) {
-        committedDeps = nextDeps;
+      if (changed) {
         revision += 1;
         notify?.();
       }
     },
+    factsChanged: (editor: AnyEditor) => {
+      const nextFacts = readEditorViewStateFacts(editor, committedDeps);
+      if (
+        seenEditor === editor &&
+        sameSelectorDependencies(seenDeps, committedDeps) &&
+        seenFacts &&
+        !viewStateFactsChanged(seenFacts, nextFacts, committedDeps)
+      ) {
+        return false;
+      }
+      seenDeps = committedDeps;
+      seenEditor = editor;
+      seenFacts = nextFacts;
+      return true;
+    },
+    getDeps: () => committedDeps,
     getRevision: () => revision,
     invalidate: () => {
       revision += 1;
     },
-    previewChanged: (editor: Editor) => {
-      const nextPreview = readShownPreview(editor);
-      if (seenEditor === editor && seenPreview === nextPreview) return false;
-      seenEditor = editor;
-      seenPreview = nextPreview;
-      return true;
-    },
     read: (
-      editor: Editor | undefined,
-      selector: (editor: Editor) => T,
-      equalityFn: EqualityFn<T>
+      editor: AnyEditor | undefined,
+      selector: (editor: AnyEditor) => T,
+      equalityFn: EqualityFn<T>,
+      activeDeps: NormalizedSelectorDependencies
     ) => {
       if (!editor) {
         throw new Error('useEditor() requires an active Plate editor.');
       }
-      const preview = readShownPreview(editor);
+      const facts = readEditorViewStateFacts(editor, activeDeps);
       const version = editor.read.lastCommit()?.version;
       if (seenEditor === undefined) {
+        seenDeps = activeDeps;
         seenEditor = editor;
-        seenPreview = preview;
+        seenFacts = facts;
         seenVersion = version;
       }
       if (
@@ -157,7 +193,8 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
           editor,
           selector,
           equalityFn,
-          preview,
+          facts,
+          activeDeps,
           revision
         )
       ) {
@@ -171,7 +208,8 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
           editor,
           selector,
           equalityFn,
-          preview,
+          facts,
+          activeDeps,
           revision
         )
       ) {
@@ -181,9 +219,10 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
       const value =
         committed && equalityFn(committed.value, raw) ? committed.value : raw;
       tentative = {
+        deps: activeDeps,
         editor,
         equalityFn,
-        preview,
+        facts,
         revision,
         selector,
         value,
@@ -191,61 +230,113 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
       };
       return value;
     },
-    syncEditorVersion: (editor: Editor | undefined) => {
+    recordVersion: (version: number) => {
+      seenVersion = version;
+    },
+    syncEditorVersion: (
+      editor: AnyEditor | undefined,
+      activeDeps: NormalizedSelectorDependencies
+    ) => {
       const version = editor?.read.lastCommit()?.version;
-      const preview = editor ? readShownPreview(editor) : undefined;
+      const facts = editor
+        ? readEditorViewStateFacts(editor, activeDeps)
+        : undefined;
+      const wantsCommits = selectorDependenciesWantCommits(activeDeps);
       if (
         editor !== seenEditor ||
-        version !== seenVersion ||
-        preview !== seenPreview
+        (wantsCommits && version !== seenVersion) ||
+        (facts &&
+          (!seenFacts || viewStateFactsChanged(seenFacts, facts, activeDeps)))
       ) {
         seenEditor = editor;
-        seenPreview = preview;
+        seenFacts = facts;
         seenVersion = version;
         revision += 1;
         return true;
       }
       return false;
     },
-    recordVersion: (version: number) => {
-      seenVersion = version;
-    },
-    wants: (editor: Editor, change: EditorCommit | undefined) =>
+    wants: (editor: AnyEditor, change: EditorCommit | undefined) =>
       commitMatchesSelectorDependencies(editor, change, committedDeps),
   };
 };
 
 /**
- * Subscribe to a value derived from the selected editor. A selector that
- * keeps its identity between renders runs at most once per matching commit,
- * once more when the selected editor changes, such as when the caret moves to
- * another root, and once more when the editor shows a different review preview
- * than the selector last read. A selector or `equalityFn` written inline gets
- * a new identity each render, so it also runs on every render of its
- * component. A change that leaves the value equal renders nothing.
+ * Subscribe to a value derived from the active Plate editor or an explicit
+ * editor instance. Scope updates with `dependsOn` using commit kinds, state
+ * fields, node keys, or view-state tokens (`'authored'`, `'composing'`,
+ * `'focused'`, `'readOnly'`, `'view'`). Omitting `dependsOn` subscribes to
+ * commits and all view-state changes (including focus and composition). A
+ * change that leaves the value equal renders nothing.
  */
-export const useEditorSelector = <T>(
+export function useEditorSelector<T>(
   selector: (editor: Editor) => T,
-  options: UseEditorSelectorOptions<T> = {}
-): T => {
-  const { dependsOn, equalityFn = sameResult } = options;
+  options?: UseEditorSelectorOptions<T>
+): T;
+export function useEditorSelector<T, TEditor extends AnyEditor = AnyEditor>(
+  editor: TEditor,
+  selector: (editor: TEditor) => T,
+  options?: UseEditorSelectorOptions<T>
+): T;
+export function useEditorSelector<T>(
+  arg0: AnyEditor | ((editor: Editor) => T),
+  arg1?: ((editor: AnyEditor) => T) | UseEditorSelectorOptions<T>,
+  arg2?: UseEditorSelectorOptions<T>
+): T {
+  const hasExplicitEditor = typeof arg0 !== 'function';
+  const explicitEditor = hasExplicitEditor ? arg0 : undefined;
+  const selector = (hasExplicitEditor ? arg1 : arg0) as (
+    editor: AnyEditor
+  ) => T;
+  const { dependsOn, equalityFn = sameResult } = ((hasExplicitEditor
+    ? arg2
+    : arg1) ?? {}) as UseEditorSelectorOptions<T>;
   const normalizedDeps = normalizeSelectorDependencies(dependsOn);
+  const wantsCommits = selectorDependenciesWantCommits(normalizedDeps);
+  const wantsShownPreview =
+    selectorDependenciesWantShownPreview(normalizedDeps);
+  const { allViewKinds, viewKinds } = normalizedDeps;
+  const watchAuthored = allViewKinds || viewKinds.includes('authored');
+  const watchComposing = allViewKinds || viewKinds.includes('composing');
+  const watchFocused = allViewKinds || viewKinds.includes('focused');
+  const watchReadOnly = allViewKinds || viewKinds.includes('readOnly');
   const scope = usePlateScope();
   const [selection] = React.useState(() => createSelection<T>(normalizedDeps));
 
-  const read = (editor: Editor | undefined) =>
-    selection.read(editor, selector, equalityFn);
+  const read = (editor: AnyEditor | undefined) =>
+    selection.read(editor, selector, equalityFn, normalizedDeps);
 
   const value = React.useSyncExternalStore(
     React.useCallback(
       (listener: () => void) => {
         selection.bindListener(listener);
-        let editor: Editor | undefined;
+        let editor: AnyEditor | undefined;
         let stopCommits: (() => void) | undefined;
         let stopView: (() => void) | undefined;
+        const activeViewKinds: EditorViewStateBucket[] = [];
+
+        if (!allViewKinds) {
+          if (watchAuthored) activeViewKinds.push('authored');
+          if (watchComposing) activeViewKinds.push('composing');
+          if (watchFocused) activeViewKinds.push('focused');
+          if (watchReadOnly) activeViewKinds.push('readOnly');
+        }
+        const activeSyncDeps: NormalizedSelectorDependencies = {
+          all: wantsShownPreview && allViewKinds,
+          allCommits: wantsShownPreview,
+          allViewKinds,
+          changeKinds: wantsCommits && !wantsShownPreview ? ['state'] : [],
+          nodeEntries: [],
+          stateFieldKeys: [],
+          viewKinds: activeViewKinds,
+        };
+        const activeViewSub =
+          selectorDependenciesViewSubscription(activeSyncDeps);
+        const resolve = () =>
+          hasExplicitEditor ? explicitEditor : scope.getSnapshot()?.editor;
         const follow = () => {
-          const next = scope.getSnapshot()?.editor;
-          const changed = selection.syncEditorVersion(next);
+          const next = resolve();
+          const changed = selection.syncEditorVersion(next, activeSyncDeps);
           if (next === editor) return changed;
           stopCommits?.();
           stopView?.();
@@ -253,50 +344,76 @@ export const useEditorSelector = <T>(
           stopView = undefined;
           editor = next;
           if (!next) return true;
-          stopCommits = next.subscribeCommit((change) => {
-            if (scope.getSnapshot()?.editor !== next) {
-              if (follow()) listener();
-              return;
-            }
-            selection.recordVersion(change.version);
-            if (selection.wants(next, change)) {
-              selection.invalidate();
-              listener();
-            }
-          });
-          stopView = subscribeAuthoredViewState(next, () => {
-            if (scope.getSnapshot()?.editor !== next) {
-              if (follow()) listener();
-              return;
-            }
-            if (selection.previewChanged(next)) {
-              selection.invalidate();
-              listener();
-            }
-          });
+          if (wantsCommits) {
+            stopCommits = next.subscribeCommit((change) => {
+              if (!hasExplicitEditor && resolve() !== next) {
+                if (follow()) listener();
+                return;
+              }
+              selection.recordVersion(change.version);
+              if (selection.wants(next, change)) {
+                selection.invalidate();
+                listener();
+              }
+            });
+          }
+          if (activeViewSub !== null) {
+            stopView = subscribeSharedEditorViewState(
+              next,
+              activeViewSub,
+              () => {
+                if (!hasExplicitEditor && resolve() !== next) {
+                  if (follow()) listener();
+                  return;
+                }
+                if (selection.factsChanged(next)) {
+                  selection.invalidate();
+                  listener();
+                }
+              }
+            );
+          }
           return true;
         };
         follow();
-        const stopScope = scope.subscribe(() => {
-          if (follow()) listener();
-        });
+        const stopScope = hasExplicitEditor
+          ? undefined
+          : scope.subscribe(() => {
+              if (follow()) listener();
+            });
         return () => {
           selection.bindListener(undefined);
-          stopScope();
+          stopScope?.();
           stopCommits?.();
           stopView?.();
         };
       },
-      [scope, selection]
+      [
+        allViewKinds,
+        explicitEditor,
+        hasExplicitEditor,
+        scope,
+        selection,
+        wantsCommits,
+        wantsShownPreview,
+        watchAuthored,
+        watchComposing,
+        watchFocused,
+        watchReadOnly,
+      ]
     ),
-    () => read(scope.getSnapshot()?.editor),
-    () => read(scope.getServerSnapshot()?.editor)
+    () =>
+      read(hasExplicitEditor ? explicitEditor : scope.getSnapshot()?.editor),
+    () =>
+      read(
+        hasExplicitEditor ? explicitEditor : scope.getServerSnapshot()?.editor
+      )
   );
   const renderedRevision = selection.getRevision();
 
   useIsomorphicLayoutEffect(() => {
     selection.commit(
-      scope.getSnapshot()?.editor,
+      hasExplicitEditor ? explicitEditor : scope.getSnapshot()?.editor,
       selector,
       equalityFn,
       value,
@@ -306,4 +423,4 @@ export const useEditorSelector = <T>(
   });
 
   return value;
-};
+}

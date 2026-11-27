@@ -14,16 +14,17 @@ description: 探索可用于与Plate编辑器交互及自定义的各种方法�
 使用以下钩子之一：
 
 - `useEditor`: 获取必需的活动编辑器，不触发重新渲染。
-- `useEditorSelector`: 仅当特定编辑器属性变化时重新渲染。
-- `useEditorState`: 从不可变 state view 订阅派生值。
+- `useEditorSelector`: 仅当从编辑器派生的结果变化时重新渲染。
 
 ```ts
-import { useEditor, useEditorSelector, useEditorState } from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 
 const MyComponent = () => {
   const editor = useEditor();
   const hasSelection = useEditorSelector((editor) => !!editor.read.selection());
-  const selection = useEditorState((state) => state.selection());
+  const selection = useEditorSelector((editor) => editor.read.selection(), {
+    dependsOn: ['selection', 'document'],
+  });
   
   // ...
 };
@@ -45,13 +46,10 @@ const MyComponent = () => {
 
 ```tsx title="components/selection-state.tsx"
 const isSelectionExpanded = useEditorSelector(
-  (editor) => editor.read.selection.isExpanded()
+  (editor) => editor.read.selection.isExpanded(),
+  { dependsOn: 'selection' }
 );
 ```
-
-#### useEditorState
-
-- 从不可变 editor state 派生值，仅在结果变化时重新渲染。
 
 ### Plate组件外部
 

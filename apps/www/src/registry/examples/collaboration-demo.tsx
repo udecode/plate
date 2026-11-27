@@ -1,7 +1,7 @@
 'use client';
 
 import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
-import { createEditor, EditorRoot, useEditorRuntimeState } from 'platejs/react';
+import { createEditor, EditorRoot, useEditorSelector } from 'platejs/react';
 import {
   yjs,
   type YjsAwarenessChange,
@@ -757,7 +757,9 @@ function PeerControls({
   peer: DemoPeer;
   provider: DemoProvider;
 }) {
-  const history = useEditorRuntimeState(editor, (state) => state.history());
+  const history = useEditorSelector(editor, (current) =>
+    current.read.history()
+  );
   const redoDepth = history.redos.length;
   const undoDepth = history.undos.length;
 

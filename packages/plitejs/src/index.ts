@@ -350,6 +350,11 @@ export type {
   Value,
   ValueOf,
 } from './interfaces/editor';
+export type {
+  EditorSelectorDependencies,
+  EditorSelectorDependency,
+  EditorViewStateDependency,
+} from './core/selector-dependencies';
 export { PluginPublicationError } from './core/plugin';
 
 export { getEditorRuntimeOwner } from './core/editor-runtime';

@@ -319,6 +319,7 @@ export {
   getEditorMaxLength,
   getEditorRuntimeElementEntries,
   getEditorRuntimeRootKeys,
+  hasEditorRuntimeRoot,
   getEditorStateView,
   getEditorUpdateRoot,
   getEditorNodeKeyForNode,
@@ -345,17 +346,22 @@ export {
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
   readEditorCommitHistoryEntry,
+  readEditorViewStateFacts,
   recordEditorHistoryEffect,
   readElementPropertyWrites,
   registerEditorTransactionGuard,
   subscribeCaretTarget,
   subscribeEditorViewState,
+  subscribeSharedEditorViewState,
+  viewStateFactsChanged,
   withEditorUpdateRootScope,
 } from '../core/public-state';
 export type {
+  EditorViewStateFacts,
   ElementPropertyWrite,
   InternalSliceChildrenTarget,
   InternalSlicePlacement,
+  SharedViewStateSubscription,
 } from '../core/public-state';
 export { projectRangeInSnapshot } from '../range-projection';
 export { EditorRefusalError } from '../core/refusal';
@@ -393,6 +399,7 @@ export {
   getAuthoredUpdateView,
   getAuthoredViewCommit,
   getViewCommitSource,
+  readAuthoredViewKey,
   readShownPreview,
   readAuthoredView,
   withStoredAuthoredRead,
@@ -411,6 +418,13 @@ export {
   commitMatchesSelectorDependencies,
   normalizeSelectorDependencies,
   sameSelectorDependencies,
+  selectorDependenciesSubscriptionKey,
+  selectorDependenciesViewSubscription,
+  selectorDependenciesWantCommits,
+  selectorDependenciesWantShownPreview,
+  selectorDependenciesWantViewKind,
+  type EditorViewStateBucket,
+  type EditorViewStateDependency,
   type NormalizedSelectorDependencies,
 } from '../core/selector-dependencies';
 export { withPliteReactPreservedSelection } from './update-policy';

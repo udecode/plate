@@ -32,7 +32,6 @@ import {
   createEditor,
   useEditor,
   useEditorSelector,
-  useEditorState,
   useEditorValue,
   useElement,
   useElementSelector,
@@ -556,9 +555,9 @@ const FANOUT_CASES: FanoutCase[] = [
   },
   {
     description:
-      'Many components reading tracked editor state through useEditorState().',
+      'Many components reading tracked editor state through useEditorSelector() with default equality.',
     id: 'editor-state',
-    label: 'useEditorState',
+    label: 'useEditorSelector (default)',
   },
   {
     description:
@@ -2083,7 +2082,9 @@ function PluginCensusEditorSurface({
 }
 
 function EditorStateSubscriber() {
-  const blockCount = useEditorState((state) => state.children().length);
+  const blockCount = useEditorSelector(
+    (editor) => editor.read.children().length
+  );
 
   consume(blockCount);
 
@@ -2120,7 +2121,9 @@ function PluginStoreSubscriber() {
 }
 
 function MixedSubscriber() {
-  const stateBlockCount = useEditorState((state) => state.children().length);
+  const stateBlockCount = useEditorSelector(
+    (nextEditor) => nextEditor.read.children().length
+  );
   const value = useEditorValue();
   const blockCount = useEditorSelector(
     (nextEditor) => nextEditor.read.children().length,

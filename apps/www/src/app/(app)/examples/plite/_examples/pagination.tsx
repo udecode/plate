@@ -33,7 +33,7 @@ import {
   type RenderLeafProps,
   useCreateEditor,
   useEditorContext,
-  useEditorState,
+  useEditorSelector,
   useSetStateField,
 } from 'plitejs/react';
 import {
@@ -754,7 +754,9 @@ const PaginationSurface = ({
   const [viewportRef, viewportSize] = useLayoutSize<HTMLDivElement>();
   const [editableRef, editableSize] = useLayoutSize<HTMLDivElement>();
   const layout = usePageLayout(editableRef);
-  const blockCount = useEditorState((state) => state.children().length);
+  const blockCount = useEditorSelector(
+    (current) => current.read.children().length
+  );
   const tableRowsEffectMounted = useRef(false);
   const stressPagesEffectMounted = useRef(false);
   const usesVirtualizedLayout = controls.renderingMode === 'virtualized';

@@ -58,7 +58,11 @@ import {
   registerEditorDraftView,
   registerEditorFitsByLook,
 } from '../core/document-recorder';
-import { isDocumentViewReading } from '../core/document-view-read';
+import {
+  isDocumentView,
+  isDocumentViewReading,
+} from '../core/document-view-read';
+import { getEditorLifetime } from '../core/editor-lifetime';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -1399,6 +1403,8 @@ export const createAuthoredPlugin = (
   const viewOf = (editor: Editor): AuthoredView => {
     const { views } = stateOf(editor);
 
+    if (isDocumentView(editor)) return { intent: 'edit' };
+
     for (
       let runtime: InternalEditorRuntime | undefined = getEditorRuntime(editor);
       runtime;
@@ -2042,85 +2048,89 @@ export const createAuthoredPlugin = (
         })
       );
 
-      onCleanup(
-        registerAuthoredRuntime(owner, {
-          mapToView: (view, root, value) => {
-            const preview = previewModeOf(view);
+      const stopAuthoredRuntime = registerAuthoredRuntime(owner, {
+        mapToView: (view, root, value) => {
+          const preview = previewModeOf(view);
 
-            if (!preview) return value;
+          if (!preview) return value;
 
-            const map = ledger
-              .lens(storedValue(owner), preview)
-              .locations(root);
+          const map = ledger.lens(storedValue(owner), preview).locations(root);
 
-            if (PathApi.isPath(value)) return map.path(value) as typeof value;
-            if (PointApi.isPoint(value)) {
-              return map.point(value, -1) as typeof value;
-            }
+          if (PathApi.isPath(value)) return map.path(value) as typeof value;
+          if (PointApi.isPoint(value)) {
+            return map.point(value, -1) as typeof value;
+          }
 
-            return map.range(value) as typeof value;
-          },
-          readStored: storedRead,
-          readView: (view, read) => {
-            const preview = isDocumentViewReading(owner)
-              ? null
-              : previewModeOf(view);
+          return map.range(value) as typeof value;
+        },
+        readStored: storedRead,
+        readView: (view, read) => {
+          const preview = isDocumentViewReading(owner)
+            ? null
+            : previewModeOf(view);
 
-            if (!preview) {
-              return withEditorDocumentProjection(owner, undefined, read);
-            }
+          if (!preview) {
+            return withEditorDocumentProjection(owner, undefined, read);
+          }
 
-            const stored = storedValue(owner);
-            const root = withEditorDocumentProjection(owner, undefined, () =>
-              getCurrentSelectionRoot(owner)
-            );
+          const stored = storedValue(owner);
+          const root = withEditorDocumentProjection(owner, undefined, () =>
+            getCurrentSelectionRoot(owner)
+          );
 
-            return withEditorDocumentProjection(
-              owner,
-              ledger.preview(stored, preview) as EditorDocumentValue,
-              read,
-              {
-                root,
-                selection: () =>
-                  ledger.lens(stored, preview).toView(
-                    withEditorDocumentProjection(owner, undefined, () =>
-                      getCurrentSelection(owner)
-                    ),
-                    root,
-                    leansFor(preview)
+          return withEditorDocumentProjection(
+            owner,
+            ledger.preview(stored, preview) as EditorDocumentValue,
+            read,
+            {
+              root,
+              selection: () =>
+                ledger.lens(stored, preview).toView(
+                  withEditorDocumentProjection(owner, undefined, () =>
+                    getCurrentSelection(owner)
                   ),
-              }
-            );
-          },
-          requestView,
-          setView: (view, value) => {
-            state.views.set(getViewPresentation(view), value);
-          },
-          toStored: (view, root, target) => {
-            const preview = previewModeOf(view);
-
-            if (!preview) return { kind: 'stored', target };
-
-            const lifted = ledger
-              .lens(storedValue(owner), preview)
-              .fromView(target, root);
-
-            if (lifted.kind === 'stored' && lifted.shownInBuilt) {
-              builtPlacements.set(nextMintedGeneration(owner), preview);
+                  root,
+                  leansFor(preview)
+                ),
             }
+          );
+        },
+        requestView,
+        setView: (view, value) => {
+          state.views.set(getViewPresentation(view), value);
+        },
+        toStored: (view, root, target) => {
+          const preview = previewModeOf(view);
 
-            return lifted;
-          },
-          view: viewOf,
-          viewCommit: (view, commit) => {
-            const preview = previewModeOf(view);
+          if (!preview) return { kind: 'stored', target };
 
-            return preview
-              ? ledger.previewCommit(commit, preview, leansFor(preview))
-              : commit;
-          },
-        })
-      );
+          const lifted = ledger
+            .lens(storedValue(owner), preview)
+            .fromView(target, root);
+
+          if (lifted.kind === 'stored' && lifted.shownInBuilt) {
+            builtPlacements.set(nextMintedGeneration(owner), preview);
+          }
+
+          return lifted;
+        },
+        view: viewOf,
+        viewCommit: (view, commit) => {
+          const preview = previewModeOf(view);
+
+          return preview
+            ? ledger.previewCommit(commit, preview, leansFor(preview))
+            : commit;
+        },
+      });
+      notifyPresentationViewState(owner, 'authored');
+      onCleanup(() => {
+        stopAuthoredRuntime();
+        const lifetime = getEditorLifetime(owner);
+        if (lifetime !== 'destroyed' && lifetime !== 'released') {
+          notifyPresentationViewState(owner, 'authored');
+        }
+      });
 
       const passesThrough = () => {
         const update = getActiveEditorUpdateId(editor);

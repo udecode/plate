@@ -86,6 +86,16 @@ export const readShownPreview = (view: Editor) => {
   return authored && 'preview' in authored ? authored.preview : undefined;
 };
 
+export const readAuthoredViewKey = (view: Editor): string | undefined => {
+  const authored = readAuthoredView(view);
+
+  if (!authored) return undefined;
+
+  return 'preview' in authored
+    ? `preview:${authored.preview}`
+    : `intent:${authored.intent}`;
+};
+
 export const withAuthoredViewRead = <T>(
   source: Editor,
   view: Editor,

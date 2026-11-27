@@ -46,18 +46,16 @@ export type {
   EditorHistoryFocusPolicy,
   UseElementSelectedMode,
   UseElementSelectedOptions,
-  EditorRuntimeStateSelectorOptions,
   EditorRootAreas,
   EditorSelectorDependencies,
   EditorSelectorDependency,
-  EditorViewStateSelectorOptions,
+  EditorViewStateDependency,
   UseAnnotationStoreOptions,
   ContentRootController,
   UseContentRootOptions,
   UseEditorHistoryOptions,
   RootChromeController,
   UseRootChromeOptions,
-  RuntimeStateSelectorOptions,
   UseRootEditorOptions,
   StateFieldSetter,
   ReactApi,
@@ -79,10 +77,8 @@ export type {
 export {
   useEditorRootAreas,
   useEditorRootElement,
-  useEditorRuntimeState,
   useEditorScrollElement,
   useEditorScrollElementRef,
-  useEditorViewState,
   useElementPath,
   useElementSelected,
   useAnnotationStore,
@@ -93,8 +89,6 @@ export {
   useDropIndicator,
   installBrowserHandle,
   useRootChrome,
-  useRootState,
-  useRuntimeState,
   useEditableClip,
   useSelectionGeometry,
   react,
@@ -175,17 +169,13 @@ export {
   useEditorId,
   useEditorMounted,
   useEditorSelection,
-  useEditorState,
   useEditorValue,
   useOptionalEditor,
   useRootEditor,
   useSetStateField,
   useStateFieldValue,
 } from './stores/plate/useEditor';
-export type {
-  UseEditorStateOptions,
-  UseStateFieldValueOptions,
-} from './stores/plate/useEditor';
+export type { UseStateFieldValueOptions } from './stores/plate/useEditor';
 export * from './stores/plate/useEditorHistory';
 export * from './stores/plate/useEditorSelector';
 export {

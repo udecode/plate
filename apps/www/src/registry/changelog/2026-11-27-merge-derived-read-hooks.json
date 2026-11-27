@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-merge-derived-read-hooks",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-merge-derived-read-hooks.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use useEditorSelector with view-state dependsOn in toolbar, table, discussion, ink, and demo components",
+  "targets": [
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-switch-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/ink-switch-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/suggestion-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-digitize-bar",
+      "files": ["apps/www/src/registry/components/editor/ink-digitize-bar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-view-demo",
+      "files": [
+        "apps/www/src/registry/examples/suggestion-view-demo.tsx",
+        "apps/www/src/registry/examples/values/suggestion-document.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-table-useeditorselector-view-state-dependson-05917030",
+      "kind": "wiring",
+      "summary": "Use useEditorSelector with view-state dependsOn in toolbar, table, discussion, ink, and demo components",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "table",
+        "mode-toolbar-button",
+        "comment-toolbar-button",
+        "ink-switch-toolbar-button",
+        "suggestion-toolbar-button",
+        "ink-digitize-bar",
+        "fixed-toolbar",
+        "discussion",
+        "collaboration-demo",
+        "suggestion-view-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-merge-derived-read-hooks",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

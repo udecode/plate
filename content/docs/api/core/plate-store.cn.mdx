@@ -20,7 +20,7 @@ description: 通过 Plate React hook 读取编辑器、插件和焦点状态。
 | `useEditorSelection()` | 当前所选根的范围选区，或 `null`。 |
 | `useEditorHasSelection()` | 所选根是否有文本选区，包括折叠的光标。仅在选区存在状态变化时重新渲染。 |
 | `useEditorValue()` | 当前所选根的子节点。 |
-| `useEditorState(selector, options?)` | 从不可变编辑器状态派生并订阅的值。 |
+| `useEditorSelector(selector, options?)` | 从所选编辑器派生并订阅的值。 |
 
 hook 使用最近的 `EditorContent`、`EditorRoot`、`EditorController` 或 `EditorProvider` 所选的编辑器。`useOptionalEditor()` 在没有 provider 或没有所选编辑器时返回 `null`。应用 ID 不参与挂载视图的查找。
 
@@ -96,6 +96,6 @@ export function EditorTools() {
 
 ## 显式编辑器
 
-用 `<EditorProvider editor={editor}>` 将 UI 绑定到已有编辑器；`editor={null}` 表示没有目标。此 provider 不创建文档、历史或可编辑视图。需要保留具体编辑器类型时，使用 `useEditorRuntimeState(editor, selector)`、`useEditorViewState(editor, selector)` 或 `useEditorPluginStore(editor, Plugin, selector)`。
+用 `<EditorProvider editor={editor}>` 将 UI 绑定到已有编辑器；`editor={null}` 表示没有目标。此 provider 不创建文档、历史或可编辑视图。需要保留具体编辑器类型时，使用 `useEditorSelector(editor, selector, options?)` 或 `useEditorPluginStore(editor, Plugin, selector)`。
 
 `useEditorReadOnly()` 读取所选视图当前的只读状态；捕获的视图卸载后会拒绝写入。一个模型的多个视图共享文档、插件 store 和撤销历史。

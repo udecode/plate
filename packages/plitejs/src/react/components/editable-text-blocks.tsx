@@ -88,7 +88,7 @@ import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorFocused } from '../hooks/use-editor-focused';
 import { useInheritedReadOnly } from '../hooks/use-editor-read-only';
 import { useEditorSelection } from '../hooks/use-editor-selection';
-import { useEditorViewState } from '../hooks/use-editor-view-state';
+import { useOptionalEditorViewState } from '../hooks/use-editor-view-state';
 import { useHydrated } from '../hooks/use-hydrated';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
@@ -588,7 +588,13 @@ function EditableContentRootView({
   } = renderers;
   const editor = useEditorContext();
   const ownerHandlers = React.useContext(OwnerHandlersContext);
-  const viewReadOnly = useEditorViewState(editor, (view) => view.isReadOnly());
+  const viewReadOnly = useOptionalEditorViewState(
+    editor,
+    'readOnly',
+    (view) => view.isReadOnly(),
+    false,
+    true
+  );
   const surfaceReadOnly = Boolean(options.readOnly || ownerReadOnly);
   const readOnly = surfaceReadOnly || viewReadOnly;
   useIsomorphicLayoutEffect(() => {

@@ -18,6 +18,7 @@ export const useEditorFocused = (): boolean => {
   const target = useOptionalEditor();
   const targetFocused = useOptionalEditorViewState(
     insideEditingArea ? null : target,
+    'focused',
     readViewFocused,
     false
   );

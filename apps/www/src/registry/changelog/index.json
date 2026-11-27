@@ -355,6 +355,35 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-merge-derived-read-hooks",
+      "href": "/registry/changelog/2026-11-27-merge-derived-read-hooks.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use useEditorSelector with view-state dependsOn in toolbar, table, discussion, ink, and demo components",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "table",
+        "mode-toolbar-button",
+        "comment-toolbar-button",
+        "ink-switch-toolbar-button",
+        "suggestion-toolbar-button",
+        "ink-digitize-bar",
+        "fixed-toolbar",
+        "discussion",
+        "collaboration-demo",
+        "suggestion-view-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-render-prop-type-imports",
       "href": "/registry/changelog/2026-11-27-render-prop-type-imports.json",
       "status": "draft",

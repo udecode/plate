@@ -4,7 +4,7 @@ import { readShownPreview, subscribeEditorViewState } from '../../../facade';
 import {
   useEditableRef,
   useEditor,
-  useEditorViewState,
+  useEditorSelector,
   useModelEditor,
   useViewStore,
   type WrapContentProps,
@@ -143,9 +143,11 @@ function InkLayer({
   const tool = useViewStore(InkPlugin, (state) => state.tool);
   const hidden = useViewStore(InkPlugin, (state) => state.hidden);
   const picked = useViewStore(InkPlugin, (state) => state.picked);
-  const readOnly = useEditorViewState(
+  const readOnly = useEditorSelector(
     view,
-    (state) => state.isReadOnly() || readShownPreview(view) !== undefined
+    (current) =>
+      current.read.view.isReadOnly() || readShownPreview(current) !== undefined,
+    { dependsOn: ['readOnly', 'authored'] }
   );
   const [layer, setLayer] = React.useState<HTMLDivElement | null>(null);
   const [surface, setSurface] = React.useState<ReturnType<

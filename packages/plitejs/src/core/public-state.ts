@@ -175,7 +175,11 @@ import {
   rebuildUnderAnchors,
   suspendAnchorScopes,
 } from './anchor-state';
-import { withAuthoredViewRead } from './authored-runtime';
+import {
+  readAuthoredViewKey,
+  readShownPreview,
+  withAuthoredViewRead,
+} from './authored-runtime';
 import { notifyEditorChangeListeners } from './change-events';
 import {
   ChangeDraft,
@@ -304,7 +308,7 @@ import {
   trackDraftSpans,
 } from './draft-track';
 import { editorCommands } from './editor-commands';
-import { assertEditorNotDestroyed } from './editor-lifetime';
+import { assertEditorNotDestroyed, getEditorLifetime } from './editor-lifetime';
 import {
   isEditorNodeSelectable,
   projectEditorExportSlice,
@@ -452,6 +456,12 @@ import {
   getSelectionStateCaret,
   setSelectionStateCaret,
 } from './selection-state';
+import {
+  type EditorViewStateBucket,
+  type NormalizedSelectorDependencies,
+  selectorDependenciesWantShownPreview,
+  selectorDependenciesWantViewKind,
+} from './selector-dependencies';
 import { defineSemanticUpdateMethod } from './semantic-update-method';
 import {
   bootstrapCaret,
@@ -4893,6 +4903,33 @@ export const getEditorRootOwnerPlaces = (editor: Editor, root: RootKey) =>
  */
 export const getEditorRuntimeRootKeys = (editor: Editor): readonly RootKey[] =>
   Object.freeze(Object.keys(getEditorDocumentRoots(editor)));
+
+export const hasEditorRuntimeRoot = (
+  editor: Editor,
+  root: RootKey
+): boolean => {
+  if (root === MAIN_ROOT_KEY) return true;
+  const owner = getEditorRuntimeOwner(editor);
+  const projection = getReadProjection(owner);
+
+  if (projection) {
+    return (
+      projection.roots !== undefined && Object.hasOwn(projection.roots, root)
+    );
+  }
+
+  const context = getTransactionSpecContext(owner);
+
+  if (context) {
+    const { roots } = context.snapshot.builder.value;
+
+    return roots !== undefined && Object.hasOwn(roots, root);
+  }
+
+  const storedRoots = ROOTS.get(owner);
+
+  return storedRoots !== undefined && Object.hasOwn(storedRoots, root);
+};
 
 const currentRootIndex = (owner: Editor, root: string): SnapshotIndex => {
   const cached = SNAPSHOT_CACHE.get(owner)?.get(root);
@@ -12479,13 +12516,36 @@ const reportReadOnlyChange = <T>(
   return result;
 };
 
+const OWN_READ_ONLY_LISTENERS = new WeakMap<
+  object,
+  (readOnly: boolean) => void
+>();
+
+export const onOwnViewReadOnlyChange = (
+  editor: AnyPluginEditor,
+  listener: (readOnly: boolean) => void
+) => {
+  OWN_READ_ONLY_LISTENERS.set(getEditorRuntime(editor), listener);
+};
+
 export const setEditorReadOnly = (
   editor: AnyPluginEditor,
   readOnly: boolean
 ) => {
-  reportReadOnlyChange(editor, () =>
-    writeEditorViewStateFlag(editor, 'readOnly', readOnly, EDITOR_READ_ONLY)
-  );
+  reportReadOnlyChange(editor, () => {
+    const changed = writeEditorViewStateFlag(
+      editor,
+      'readOnly',
+      readOnly,
+      EDITOR_READ_ONLY
+    );
+
+    if (changed) {
+      OWN_READ_ONLY_LISTENERS.get(getEditorRuntime(editor))?.(readOnly);
+    }
+
+    return changed;
+  });
 };
 
 const presentationOf = (editor: AnyPluginEditor) =>
@@ -12541,6 +12601,10 @@ const PENDING_VIEW_STATE_NOTICES = new WeakMap<object, Set<ViewStateNotice>>();
 
 const deliverViewStateNotice = (channel: object, notice: ViewStateNotice) => {
   if (!PENDING_VIEW_STATE_NOTICES.get(channel)?.delete(notice)) return;
+
+  const lifetime = getEditorLifetime(notice.editor);
+
+  if (lifetime === 'destroyed' || lifetime === 'released') return;
 
   for (const listeners of [EDITOR_VIEW_STATE_LISTENERS, VIEW_STATE_FOLLOWS]) {
     notifyObservers(
@@ -12818,6 +12882,203 @@ export const subscribeEditorViewState = <V extends Value>(
     subscribed = false;
     for (const stop of stops) stop();
   };
+};
+
+export type SharedViewStateSubscription =
+  | 'any'
+  | EditorViewStateBucket
+  | readonly EditorViewStateBucket[];
+
+type SharedViewStateHub = Readonly<{
+  any: Set<() => void>;
+  authored: Set<() => void>;
+  composing: Set<() => void>;
+  focused: Set<() => void>;
+  readOnly: Set<() => void>;
+  stop: () => void;
+}>;
+
+const SHARED_VIEW_STATE_HUBS = new WeakMap<object, SharedViewStateHub>();
+
+const bucketForViewStateChange = (
+  change: EditorViewStateChange
+): EditorViewStateBucket => (change === 'composition' ? 'composing' : change);
+
+export const subscribeSharedEditorViewState = <V extends Value>(
+  editor: Editor<V>,
+  kinds: SharedViewStateSubscription,
+  listener: () => void
+): (() => void) => {
+  if (Array.isArray(kinds) && kinds.length === 0) return () => {};
+
+  const runtime = getEditorRuntime(editor);
+  let hub = SHARED_VIEW_STATE_HUBS.get(runtime);
+
+  if (!hub) {
+    const any = new Set<() => void>();
+    const authored = new Set<() => void>();
+    const composing = new Set<() => void>();
+    const focused = new Set<() => void>();
+    const readOnly = new Set<() => void>();
+    const buckets: Record<EditorViewStateBucket, Set<() => void>> = {
+      authored,
+      composing,
+      focused,
+      readOnly,
+    };
+    const notifyBucket = (listeners: Set<() => void>) => {
+      if (listeners.size === 0) return;
+      notifyObservers(editor, listeners, 'commit-listener', (notify) => {
+        notify();
+      });
+    };
+    const stop = subscribeEditorViewState(editor, (change) => {
+      notifyBucket(any);
+      notifyBucket(buckets[bucketForViewStateChange(change)]);
+    });
+
+    hub = { any, authored, composing, focused, readOnly, stop };
+    SHARED_VIEW_STATE_HUBS.set(runtime, hub);
+  }
+
+  const shared = hub;
+  const registration = () => {
+    listener();
+  };
+  const targets: Array<Set<() => void>> =
+    kinds === 'any'
+      ? [shared.any]
+      : typeof kinds === 'string'
+        ? [shared[kinds]]
+        : [...new Set(kinds)].map((kind) => shared[kind]);
+
+  for (const target of targets) target.add(registration);
+
+  let active = true;
+
+  return () => {
+    if (!active) return;
+    active = false;
+    for (const target of targets) target.delete(registration);
+    if (
+      shared.any.size > 0 ||
+      shared.authored.size > 0 ||
+      shared.composing.size > 0 ||
+      shared.focused.size > 0 ||
+      shared.readOnly.size > 0
+    ) {
+      return;
+    }
+    shared.stop();
+    if (SHARED_VIEW_STATE_HUBS.get(runtime) === shared) {
+      SHARED_VIEW_STATE_HUBS.delete(runtime);
+    }
+  };
+};
+
+export type EditorViewStateFacts = Readonly<{
+  authoredKey: string | undefined;
+  composing: boolean;
+  compositionPending: boolean;
+  focused: boolean;
+  readOnly: boolean;
+  shownPreview: ReturnType<typeof readShownPreview>;
+  viewing: boolean;
+}>;
+
+const EMPTY_VIEW_STATE_FACTS: EditorViewStateFacts = Object.freeze({
+  authoredKey: undefined,
+  composing: false,
+  compositionPending: false,
+  focused: false,
+  readOnly: false,
+  shownPreview: undefined,
+  viewing: false,
+});
+
+export const readEditorViewStateFacts = (
+  editor: AnyPluginEditor,
+  deps?: NormalizedSelectorDependencies
+): EditorViewStateFacts => {
+  if (!deps) {
+    return {
+      authoredKey: readAuthoredViewKey(editor),
+      composing: editor.read.view.isComposing(),
+      compositionPending: isEditorCompositionPending(editor),
+      focused: editor.read.view.isFocused(),
+      readOnly: editor.read.view.isReadOnly(),
+      shownPreview: readShownPreview(editor),
+      viewing: editor.read.view.isViewing(),
+    };
+  }
+
+  const wantsAuthored = selectorDependenciesWantViewKind(deps, 'authored');
+  const wantsComposing = selectorDependenciesWantViewKind(deps, 'composing');
+  const wantsFocused = selectorDependenciesWantViewKind(deps, 'focused');
+  const wantsReadOnly = selectorDependenciesWantViewKind(deps, 'readOnly');
+  const wantsShownPreview = selectorDependenciesWantShownPreview(deps);
+
+  if (
+    !wantsAuthored &&
+    !wantsComposing &&
+    !wantsFocused &&
+    !wantsReadOnly &&
+    !wantsShownPreview
+  ) {
+    return EMPTY_VIEW_STATE_FACTS;
+  }
+
+  return {
+    authoredKey: wantsAuthored ? readAuthoredViewKey(editor) : undefined,
+    composing: wantsComposing ? editor.read.view.isComposing() : false,
+    compositionPending: wantsComposing
+      ? isEditorCompositionPending(editor)
+      : false,
+    focused: wantsFocused ? editor.read.view.isFocused() : false,
+    readOnly: wantsReadOnly ? editor.read.view.isReadOnly() : false,
+    shownPreview: wantsShownPreview ? readShownPreview(editor) : undefined,
+    viewing: wantsReadOnly ? editor.read.view.isViewing() : false,
+  };
+};
+
+export const viewStateFactsChanged = (
+  previous: EditorViewStateFacts,
+  next: EditorViewStateFacts,
+  deps: NormalizedSelectorDependencies
+): boolean => {
+  if (
+    selectorDependenciesWantViewKind(deps, 'readOnly') &&
+    (previous.readOnly !== next.readOnly || previous.viewing !== next.viewing)
+  ) {
+    return true;
+  }
+  if (
+    selectorDependenciesWantViewKind(deps, 'focused') &&
+    previous.focused !== next.focused
+  ) {
+    return true;
+  }
+  if (
+    selectorDependenciesWantViewKind(deps, 'composing') &&
+    (previous.composing !== next.composing ||
+      previous.compositionPending !== next.compositionPending)
+  ) {
+    return true;
+  }
+  if (
+    selectorDependenciesWantViewKind(deps, 'authored') &&
+    previous.authoredKey !== next.authoredKey
+  ) {
+    return true;
+  }
+  if (
+    selectorDependenciesWantShownPreview(deps) &&
+    previous.shownPreview !== next.shownPreview
+  ) {
+    return true;
+  }
+
+  return false;
 };
 
 export const getPublicSelection = (editor: Editor): Range | null =>

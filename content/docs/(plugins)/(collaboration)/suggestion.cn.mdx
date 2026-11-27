@@ -113,16 +113,19 @@ export function SuggestionEditor() {
 
 ```tsx
 import { AuthoredPlugin } from 'platejs/authored';
-import { useEditor, useEditorViewState } from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 
 export function SuggestionModeButton() {
   const editor = useEditor();
   const authored = editor.plugin(AuthoredPlugin);
-  const isSuggesting = useEditorViewState(editor, () => {
-    const view = authored.read.view();
+  const isSuggesting = useEditorSelector(
+    (current) => {
+      const view = current.plugin(AuthoredPlugin).read.view();
 
-    return 'intent' in view && view.intent === 'propose';
-  });
+      return 'intent' in view && view.intent === 'propose';
+    },
+    { dependsOn: 'authored' }
+  );
 
   return (
     <button

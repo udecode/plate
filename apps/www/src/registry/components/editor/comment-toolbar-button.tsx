@@ -11,7 +11,6 @@ import {
   useEditorHasSelection,
   useEditorReadOnly,
   useEditorSelector,
-  useEditorViewState,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -395,7 +394,9 @@ function AllCommentsRow({
     },
     [comments, editor]
   );
-  const previewing = useEditorViewState(editor, () => isPreviewing(editor));
+  const previewing = useEditorSelector(editor, isPreviewing, {
+    dependsOn: 'authored',
+  });
   const getSnapshot = React.useCallback(
     () => readCommentTarget(editor, id, previewing).status,
     [editor, id, previewing]

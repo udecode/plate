@@ -10,7 +10,7 @@ import {
   EditorRoot,
   ReactUpdatePolicy,
   useEditor,
-  useEditorState,
+  useEditorSelector,
   useSetStateField,
   useCreateEditor,
   useStateFieldValue,
@@ -100,8 +100,8 @@ const DocumentStatePanel = () => {
   const spellcheckEnabled = useStateFieldValue(spellcheck);
   const setSpellcheckEnabled = useSetStateField(spellcheck);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const commitSummary = useEditorState((state) =>
-    formatCommit(state.lastCommit())
+  const commitSummary = useEditorSelector((current) =>
+    formatCommit(current.read.lastCommit())
   );
 
   const updateTitle = (event: ChangeEvent<HTMLInputElement>) => {

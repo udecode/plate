@@ -18,7 +18,7 @@ import {
   type NodeKey,
 } from '../../facade';
 import type { Editor } from '../editor/Editor';
-import { useEditorEditableElement, useEditorViewState } from '../plite-react';
+import { useEditorEditableElement } from '../plite-react';
 import { useEditor } from '../stores/plate/useEditor';
 import { useEditorSelector } from '../stores/plate/useEditorSelector';
 
@@ -603,7 +603,11 @@ export function NodeSelectionDrag({
   const editor = useEditor();
   const editable = useEditorEditableElement(editor);
   const selectionElementRef = React.useRef<HTMLDivElement>(null);
-  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
+  const readOnly = useEditorSelector(
+    editor,
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
+  );
   const [selectionRect, setSelectionRect] =
     React.useState<SelectionRect | null>(null);
 

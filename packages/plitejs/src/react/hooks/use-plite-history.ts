@@ -24,8 +24,7 @@ import { failInvariant } from '../editable/runtime-editor-api';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { Editor } from '../plugin/with-react';
 import { MAIN_ROOT_KEY } from '../root-key';
-import { useEditorRuntimeState } from './use-editor-runtime-state';
-import { useEditorViewState } from './use-editor-view-state';
+import { useEditorSelector } from './use-editor-selector';
 import { useGenericSelector } from './use-generic-selector';
 import { useOptionalPliteRuntimeContext } from './use-plite-runtime';
 
@@ -179,13 +178,19 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
     ? (openView(gates?.undo) ?? openView(gates?.redo))
     : fixedView;
   const shown = providedEditor || follows ? true : (target?.shown ?? false);
-  const readOnly = useEditorViewState(historyEditor ?? source, (view) =>
-    view.isReadOnly()
+  const readOnly = useEditorSelector(
+    historyEditor ?? source,
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
   );
-  const composing = useEditorViewState(historyEditor ?? source, (view) =>
-    view.isComposing()
+  const composing = useEditorSelector(
+    historyEditor ?? source,
+    (current) => current.read.view.isComposing(),
+    { dependsOn: 'composing' }
   );
-  const pending = useEditorRuntimeState(source, selectHistoryPending);
+  const pending = useEditorSelector(source, (current) =>
+    current.read(selectHistoryPending)
+  );
   const undoReady = isReady(gates?.undo);
   const redoReady = isReady(gates?.redo);
 

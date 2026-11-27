@@ -2,13 +2,10 @@ import React from 'react';
 
 import {
   type EditorStateField,
-  type EditorStateView,
   type NamedRootKey,
-  type PluginsOf,
   type Range,
   RangeApi,
   type RootKey,
-  type ValueOf,
   withPliteReactPreservedSelection,
 } from '../../../facade';
 import type { Editor } from '../../editor';
@@ -23,14 +20,16 @@ import {
   useTargetViewState,
 } from '../../internal/plate-context';
 import {
-  type EditorRuntimeStateSelectorOptions,
   ReactUpdatePolicy,
   type StateFieldSetter,
   type UseRootEditorOptions,
   useEditorRootElement,
-  useEditorRuntimeState,
   useRootEditor as usePliteRootEditor,
 } from '../../plite-react';
+import {
+  type UseEditorSelectorOptions,
+  useEditorSelector,
+} from './useEditorSelector';
 
 /** Get the editor selected by the nearest Plate, PlateController, or EditorProvider. */
 export function useEditor(): Editor {
@@ -123,37 +122,27 @@ export function useEditableRef(): React.RefObject<HTMLElement | null> {
 
 /** Get the selected root's text selection. */
 export const useEditorSelection = (): Range | null =>
-  useEditorRuntimeState(useEditor(), (state) => state.selection(), {
+  useEditorSelector((editor) => editor.read.selection(), {
     dependsOn: ['selection', 'document'],
     equalityFn: RangeApi.equals,
   });
 
 /** Whether the selected root has a text selection, including a caret. */
 export const useEditorHasSelection = (): boolean =>
-  useEditorRuntimeState(useEditor(), (state) => state.selection() !== null, {
+  useEditorSelector((editor) => editor.read.selection() !== null, {
     dependsOn: 'selection',
   });
 
-/** Options for Plate's `useEditorState` selector hook. */
-export type UseEditorStateOptions<T = unknown> =
-  EditorRuntimeStateSelectorOptions<T>;
-
-/** Subscribe to a value derived from the selected editor's immutable state. */
-export const useEditorState = <T>(
-  selector: (state: EditorStateView<ValueOf<Editor>, PluginsOf<Editor>>) => T,
-  options: UseEditorStateOptions<T> = {}
-): T => useEditorRuntimeState(useEditor(), selector, options);
-
 /** Get the selected root's children. */
 export const useEditorValue = () =>
-  useEditorRuntimeState(useEditor(), (state) => state.children(), {
+  useEditorSelector((editor) => editor.read.children(), {
     dependsOn: 'document',
     equalityFn: Object.is,
   });
 
 /** Options for Plate's `useStateFieldValue` selector hook. */
 export type UseStateFieldValueOptions<TValue = unknown> = Pick<
-  UseEditorStateOptions<TValue>,
+  UseEditorSelectorOptions<TValue>,
   'equalityFn'
 >;
 
@@ -162,7 +151,7 @@ export function useStateFieldValue<TValue>(
   field: EditorStateField<TValue>,
   options: UseStateFieldValueOptions<TValue> = {}
 ): TValue {
-  return useEditorState<TValue>((state) => state.getField(field), {
+  return useEditorSelector<TValue>((editor) => editor.read.getField(field), {
     ...options,
     dependsOn: field,
   });

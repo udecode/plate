@@ -165,6 +165,7 @@
     ],
     "discussion": [
       "2026-11-27-discussion-editing-areas",
+      "2026-11-27-merge-derived-read-hooks",
       "2026-11-27-selector-depends-on",
       "2026-11-23-suggestion-card-lines",
       "2026-11-23-table-suggestion-columns",
@@ -236,6 +237,7 @@
     ],
     "comment-toolbar-button": [
       "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-27-merge-derived-read-hooks",
       "2026-11-20-drop-editor-selection-view",
       "2026-11-19-all-comments-from-note",
       "2026-11-19-rtl-editor-ui",
@@ -302,11 +304,13 @@
     "ink": ["2026-11-27-ink-digitize"],
     "ink-digitize-bar": [
       "2026-11-27-ink-digitize",
-      "2026-11-27-ink-toolbar-and-digitize"
+      "2026-11-27-ink-toolbar-and-digitize",
+      "2026-11-27-merge-derived-read-hooks"
     ],
     "ink-switch-toolbar-button": [
       "2026-11-27-ink-digitize",
       "2026-11-27-ink-toolbar-and-digitize",
+      "2026-11-27-merge-derived-read-hooks",
       "2026-11-25-ink-tools"
     ],
     "ink-demo": [
@@ -315,6 +319,104 @@
       "2026-11-25-ink-tools"
     ],
     "ink-digitize-api": ["2026-11-27-ink-toolbar-and-digitize"],
+    "table": [
+      "2026-11-27-merge-derived-read-hooks",
+      "2026-11-27-use-no-scrollbar",
+      "2026-11-24-editor-primary-color",
+      "2026-11-24-install-plate-ui-color",
+      "2026-11-23-table-suggestion-columns",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-17-table-toolbar-single-cell-selection",
+      "2026-10-13-table-block-selection",
+      "2026-10-12-toolbar-button-names",
+      "2026-10-01-block-move-actions",
+      "2026-10-01-native-block-drag",
+      "2026-09-10-table-selection-rendering",
+      "2026-09-08-drag-preparation",
+      "2026-09-05-bound-editor-selection-styles",
+      "2026-08-26-hide-block-drag-handles-during-table-selection",
+      "2026-08-26-hide-table-selection-highlight",
+      "2026-08-26-schema-driven-block-selection",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "mode-toolbar-button": [
+      "2026-11-27-merge-derived-read-hooks",
+      "2026-11-23-fix-toolbar-menu-checks",
+      "2026-11-21-mode-button-one-viewing-setter",
+      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
+      "2026-11-19-mode-per-editor-root",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-10-17-accept-all-suggestions",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-12-toolbar-button-names",
+      "2026-10-07-editor-user",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-toolbar-control-values",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
+    "suggestion-toolbar-button": [
+      "2026-11-27-merge-derived-read-hooks",
+      "2026-11-24-editor-primary-color",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-08-17-flat-editor-registry",
+      "2026-07-26-plugin-store-state"
+    ],
+    "fixed-toolbar": [
+      "2026-11-27-merge-derived-read-hooks",
+      "2026-11-27-use-no-scrollbar",
+      "2026-11-25-keyboard-bar-keeps-focus",
+      "2026-11-20-drop-editor-selection-view",
+      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
+      "2026-11-18-registry-icon-library",
+      "2026-11-18-toolbars-act-on-board-note-text",
+      "2026-11-17-cn-package",
+      "2026-11-17-format-painter",
+      "2026-11-16-clear-formatting",
+      "2026-11-13-platform-shortcut-labels",
+      "2026-10-19-strikethrough-shortcut-hint",
+      "2026-09-18-comment-discovery",
+      "2026-09-16-fixed-toolbar-caret-scroll",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-17-flat-editor-registry",
+      "2025-11-20-biome-ultracite"
+    ],
+    "collaboration-demo": [
+      "2026-11-27-merge-derived-read-hooks",
+      "2026-11-18-registry-icon-library",
+      "2026-10-12-neutral-stored-names",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-14-collaboration-plugin-factory",
+      "2026-09-04-yjs-cursor-presentation",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-transient-editor-geometry",
+      "2026-07-26-plugin-store-state",
+      "2026-07-24-collaboration-runtime",
+      "2025-11-20-biome-ultracite"
+    ],
+    "suggestion-view-demo": [
+      "2026-11-27-merge-derived-read-hooks",
+      "2026-10-13-editor-width-padding",
+      "2026-10-13-suggestions-review-tree",
+      "2026-09-13-suggestion-examples"
+    ],
     "caption": [
       "2026-11-27-render-prop-type-imports",
       "2026-11-27-selector-depends-on",
@@ -382,25 +484,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
     ],
-    "fixed-toolbar": [
-      "2026-11-27-use-no-scrollbar",
-      "2026-11-25-keyboard-bar-keeps-focus",
-      "2026-11-20-drop-editor-selection-view",
-      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
-      "2026-11-18-registry-icon-library",
-      "2026-11-18-toolbars-act-on-board-note-text",
-      "2026-11-17-cn-package",
-      "2026-11-17-format-painter",
-      "2026-11-16-clear-formatting",
-      "2026-11-13-platform-shortcut-labels",
-      "2026-10-19-strikethrough-shortcut-hint",
-      "2026-09-18-comment-discovery",
-      "2026-09-16-fixed-toolbar-caret-scroll",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-17-flat-editor-registry",
-      "2025-11-20-biome-ultracite"
-    ],
     "floating-toolbar": [
       "2026-11-27-use-no-scrollbar",
       "2026-11-26-keyboard-bar-keeps-caret-above",
@@ -432,34 +515,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
-    ],
-    "table": [
-      "2026-11-27-use-no-scrollbar",
-      "2026-11-24-editor-primary-color",
-      "2026-11-24-install-plate-ui-color",
-      "2026-11-23-table-suggestion-columns",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-17-table-toolbar-single-cell-selection",
-      "2026-10-13-table-block-selection",
-      "2026-10-12-toolbar-button-names",
-      "2026-10-01-block-move-actions",
-      "2026-10-01-native-block-drag",
-      "2026-09-10-table-selection-rendering",
-      "2026-09-08-drag-preparation",
-      "2026-09-05-bound-editor-selection-styles",
-      "2026-08-26-hide-block-drag-handles-during-table-selection",
-      "2026-08-26-hide-table-selection-highlight",
-      "2026-08-26-schema-driven-block-selection",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "column": [
       "2026-11-26-column-drop-selection-tint",
@@ -660,14 +715,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
     ],
-    "suggestion-toolbar-button": [
-      "2026-11-24-editor-primary-color",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-08-17-flat-editor-registry",
-      "2026-07-26-plugin-store-state"
-    ],
     "media": [
       "2026-11-24-media-paste-embed",
       "2026-09-19-files-sdk-upload-kit",
@@ -723,25 +770,6 @@
       "2026-10-18-layout-style-values",
       "2026-09-18-item-focus-block-upsert",
       "2026-08-17-flat-editor-registry"
-    ],
-    "mode-toolbar-button": [
-      "2026-11-23-fix-toolbar-menu-checks",
-      "2026-11-21-mode-button-one-viewing-setter",
-      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
-      "2026-11-19-mode-per-editor-root",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-10-17-accept-all-suggestions",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-12-toolbar-button-names",
-      "2026-10-07-editor-user",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-08-toolbar-control-values",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "markdown": [
       "2026-11-23-markdown-raw-html",
@@ -1175,19 +1203,6 @@
     "clear-formatting-toolbar-button": [
       "2026-11-18-registry-icon-library",
       "2026-11-16-clear-formatting"
-    ],
-    "collaboration-demo": [
-      "2026-11-18-registry-icon-library",
-      "2026-10-12-neutral-stored-names",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-14-collaboration-plugin-factory",
-      "2026-09-04-yjs-cursor-presentation",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-transient-editor-geometry",
-      "2026-07-26-plugin-store-state",
-      "2026-07-24-collaboration-runtime",
-      "2025-11-20-biome-ultracite"
     ],
     "details-toolbar-button": [
       "2026-11-18-registry-icon-library",
@@ -1684,11 +1699,6 @@
       "2026-10-13-suggestions-review-tree",
       "2026-10-07-editor-user",
       "2026-09-18-comment-discovery",
-      "2026-09-13-suggestion-examples"
-    ],
-    "suggestion-view-demo": [
-      "2026-10-13-editor-width-padding",
-      "2026-10-13-suggestions-review-tree",
       "2026-09-13-suggestion-examples"
     ],
     "lint-demo": ["2026-10-13-lint"],

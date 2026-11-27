@@ -86,6 +86,7 @@ import {
   isSelectionWithinBlock,
   notifyEditorViewState,
   replaceTransformedSnapshot,
+  setEditorFocused,
   setViewChildrenSource,
   transformEditorSnapshotInput,
   withEditorDocumentProjection,
@@ -1722,18 +1723,26 @@ export const createEditorViewRuntime = <
     root,
     surfaces: { readOnly: 0, writable: 0 },
   };
-  const focusState = (call: 'blur' | 'focus') => {
-    if (ownsFocus(viewState)) return viewState;
+  const focusTarget = (call: 'blur' | 'focus') => {
+    if (ownsFocus(viewState)) return getDefined(viewEditor);
 
-    const area = followedArea(viewState.policySource.follows, root);
+    const targetEditor = viewState.policySource.follows.current();
+    const runtime = viewRuntimeOf(targetEditor);
+    const area = runtime && VIEW_STATES.get(runtime);
 
-    if (!area || !isShown(area)) {
+    if (
+      !targetEditor ||
+      !area ||
+      !ownsFocus(area) ||
+      area.root !== root ||
+      !isShown(area)
+    ) {
       throw new Error(
         `Cannot ${call} an editor view while no editing area shows its root.`
       );
     }
 
-    return area;
+    return targetEditor;
   };
   const baseRuntime = getEditorRuntime(runtimeEditor);
   let viewEditor: Editor<V> | null = null;
@@ -1800,14 +1809,14 @@ export const createEditorViewRuntime = <
     },
     anchor: createViewAnchor,
     blur: () => {
-      focusState('blur').focused = false;
+      setEditorFocused(focusTarget('blur'), false);
     },
     get children() {
       return viewRead.children();
     },
     install: installView,
     focus: () => {
-      focusState('focus').focused = true;
+      setEditorFocused(focusTarget('focus'), true);
     },
     plugin: ((descriptor: PluginReference) =>
       (

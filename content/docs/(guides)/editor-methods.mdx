@@ -13,7 +13,6 @@ pick the editor hook by how often the component should re-render.
 | --- | --- |
 | Read the required editor inside callbacks. | `useEditor()` |
 | Re-render from an editor-derived value. | `useEditorSelector(selector, options?)` |
-| Re-render from immutable state. | `useEditorState(selector, options?)` |
 | Render while a controller may have no editor. | `useOptionalEditor()` and handle `null`. |
 
 ```tsx title="components/bold-button.tsx" showLineNumbers
@@ -57,27 +56,19 @@ editor.update((tx) => {
 
 ### `useEditorSelector`
 
-`useEditorSelector` subscribes to a derived value. When the call passes no
-`equalityFn`, the hook compares each result with the earlier one by value, so a
-selector may return an object or a list.
+`useEditorSelector` subscribes to a derived value from the active editor or an
+explicit editor instance (`useEditorSelector(editor, selector, options?)`). The
+selector runs inside `editor.read`. When the call passes no `equalityFn`, the
+hook compares each result with the earlier one by value, so a selector may
+return an object or a list.
 [Selector results](/docs/api/react-hooks#selector-results) gives the limits of
 that comparison and how `equalityFn` replaces it.
 
 ```tsx title="components/selection-state.tsx"
 const isSelectionExpanded = useEditorSelector(
-  (editor) => editor.read.selection.isExpanded()
+  (editor) => editor.read.selection.isExpanded(),
+  { dependsOn: 'selection' }
 );
-```
-
-### `useEditorState`
-
-`useEditorState` reads through the immutable state view and re-renders only
-when the selected result changes.
-
-```tsx title="components/selection-debug.tsx"
-const selection = useEditorState((state) => state.selection());
-
-return <pre>{JSON.stringify(selection, null, 2)}</pre>;
 ```
 
 ## Outside Plate

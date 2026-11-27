@@ -2,11 +2,7 @@
 
 import { PencilLineIcon } from 'lucide-react';
 import { AuthoredPlugin } from 'platejs/authored';
-import {
-  useEditor,
-  useEditorSelector,
-  useEditorViewState,
-} from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 
@@ -25,11 +21,14 @@ export function SuggestionToolbarButton() {
 function SuggestionToolbarButtonContent() {
   const editor = useEditor();
   const authored = editor.plugin(AuthoredPlugin);
-  const isSuggesting = useEditorViewState(editor, () => {
-    const view = authored.read.view();
+  const isSuggesting = useEditorSelector(
+    (current) => {
+      const view = current.plugin(AuthoredPlugin).read.view();
 
-    return 'intent' in view && view.intent === 'propose';
-  });
+      return 'intent' in view && view.intent === 'propose';
+    },
+    { dependsOn: 'authored' }
+  );
 
   return (
     <ToolbarButton

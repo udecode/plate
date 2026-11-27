@@ -23,7 +23,6 @@ import {
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
-  useEditorViewState,
   useElement,
   useElementSelected,
   useFocusedLast,
@@ -160,11 +159,17 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
   const authored = editor.plugin(AuthoredPlugin).installed
     ? editor.plugin(AuthoredPlugin).read
     : null;
-  const suggesting = useEditorViewState(editor, () => {
-    const view = authored?.view() ?? null;
+  const suggesting = useEditorSelector(
+    (current) => {
+      const currentAuthored = current.plugin(AuthoredPlugin);
+      const view = currentAuthored.installed
+        ? currentAuthored.read.view()
+        : null;
 
-    return view !== null && 'intent' in view && view.intent === 'propose';
-  });
+      return view !== null && 'intent' in view && view.intent === 'propose';
+    },
+    { dependsOn: 'authored' }
+  );
   const marginLeft = props.element.marginLeft ?? 0;
   const baseColSizes = usePluginStore(
     TablePlugin,

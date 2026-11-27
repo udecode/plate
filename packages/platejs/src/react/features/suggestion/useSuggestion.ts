@@ -12,9 +12,9 @@ import {
   type NodeKey,
   type Path,
 } from '../../../core';
-import { useEditorViewState } from '../../plite-react';
+import { subscribeSharedEditorViewState } from '../../../facade';
 import { useEditor } from '../../stores';
-import { useSuggestionViewStore, viewKey } from './suggestion-view.internal';
+import { useSuggestionViewStore } from './suggestion-view.internal';
 
 const sameChanges = (
   left: readonly AuthoredChange[] | null,
@@ -66,10 +66,12 @@ const useAuthoredRead = <T>(
   {
     commit,
     equal,
+    watchView,
     when,
   }: {
     commit?: (commit: EditorCommit) => boolean;
     equal: (last: T, next: T) => boolean;
+    watchView?: boolean;
     when: (delta: AuthoredChangesDelta) => boolean;
   }
 ) => {
@@ -87,13 +89,17 @@ const useAuthoredRead = <T>(
             if (commit(next)) wake();
           })
         : null;
+      const unsubscribeView = watchView
+        ? subscribeSharedEditorViewState(editor, 'authored', wake)
+        : null;
 
       return () => {
         unsubscribeChanges();
         unsubscribeCommits?.();
+        unsubscribeView?.();
       };
     },
-    [commit, editor, when]
+    [commit, editor, watchView, when]
   );
   const snapshot = () => {
     const next = read();
@@ -130,11 +136,6 @@ export const useSuggestionChanges = (path: Path) => {
     [editor, top]
   );
 
-  // A view switch changes what the path shows without a commit.
-  useEditorViewState(editor, () =>
-    viewKey(editor.plugin(AuthoredPlugin).read.view())
-  );
-
   return useAuthoredRead(
     () => {
       const changes: AuthoredChange[] = [];
@@ -149,7 +150,7 @@ export const useSuggestionChanges = (path: Path) => {
         ({ cursor } = page);
       }
     },
-    { commit: authoredChanged, equal: sameChanges, when }
+    { commit: authoredChanged, equal: sameChanges, watchView: true, when }
   );
 };
 

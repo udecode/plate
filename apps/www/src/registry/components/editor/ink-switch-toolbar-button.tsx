@@ -4,12 +4,7 @@ import { EyeIcon, EyeOffIcon, Trash2Icon } from 'lucide-react';
 import { AuthoredPlugin } from 'platejs/authored';
 import { BaseInkPlugin } from 'platejs/ink';
 import { InkPlugin } from 'platejs/ink/react';
-import {
-  useEditor,
-  useEditorSelector,
-  useEditorViewState,
-  useViewStore,
-} from 'platejs/react';
+import { useEditor, useEditorSelector, useViewStore } from 'platejs/react';
 import * as React from 'react';
 
 import {
@@ -36,13 +31,16 @@ export function InkSwitchToolbarButton() {
   const editor = useEditor();
   const hidden = useViewStore(InkPlugin, (state) => state.hidden);
   const showDigitized = useViewStore(InkPlugin, (state) => state.showDigitized);
-  const readOnly = useEditorViewState(editor, (state) => {
-    if (state.isReadOnly()) return true;
+  const readOnly = useEditorSelector(
+    (current) => {
+      if (current.read.view.isReadOnly()) return true;
 
-    const authored = editor.plugin(AuthoredPlugin);
+      const authored = current.plugin(AuthoredPlugin);
 
-    return authored.installed && 'preview' in authored.read.view();
-  });
+      return authored.installed && 'preview' in authored.read.view();
+    },
+    { dependsOn: ['readOnly', 'authored'] }
+  );
   const hasDigitized = useEditorSelector((current) => {
     const ink = current.plugin(BaseInkPlugin);
 

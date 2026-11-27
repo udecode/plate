@@ -15,7 +15,6 @@ import {
   type CompatibleEditorCommand,
   type EditorCommandDescriptor,
   type EditorCommandInput,
-  type EditorCommit,
   type EditorStateView,
   type EditorView,
   type EditorViewOptions,
@@ -27,7 +26,6 @@ import {
   type Value,
   type ValueOf,
 } from '../..';
-import { getAuthoredViewCommit } from '../../core/authored-runtime';
 import {
   createEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
@@ -40,9 +38,10 @@ import { toPublicRoot } from '../../core/public-root';
 import {
   getActiveCaretRoot,
   getEditorReadDepth,
-  getEditorRuntimeRootKeys,
+  hasEditorRuntimeRoot,
   hasEditorSurface,
   isInTransaction,
+  onOwnViewReadOnlyChange,
   subscribeActiveCaretRoot,
 } from '../../core/public-state';
 import {
@@ -57,12 +56,6 @@ import {
   subscribeRootTarget,
   subscribeRootViewPresentation,
 } from '../../core/root-target';
-import {
-  commitMatchesSelectorDependencies,
-  type EditorSelectorDependencies,
-  normalizeSelectorDependencies,
-  sameSelectorDependencies,
-} from '../../core/selector-dependencies';
 import type { ViewPresentation } from '../../core/view-presentation';
 import type { DOMApi } from '../../dom';
 import {
@@ -123,7 +116,6 @@ import {
   type EditorSelectorContextValue,
   useEditorSelectorContext,
 } from './use-editor-selector';
-import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 const selectActiveRoot = (state: ReactEditorState): RootKey => {
@@ -292,30 +284,73 @@ const withRootEditors = (
 ): PliteRuntimeContextValue => {
   const rootEditors = new Map<
     string,
-    Readonly<{ editor: ReactEditorType; readOnly: boolean; root: RootKey }>
+    Readonly<{
+      editor: ReactEditorType;
+      readOnly: boolean;
+      root: RootKey;
+    }>
+  >();
+  const lockedAbsent = new Map<
+    string,
+    Readonly<{
+      editor: ReactEditorType;
+      readOnly: boolean;
+      root: RootKey;
+    }>
   >();
   const departed = new Map<string, WeakRef<ReactEditorType>>();
-  const releaseDeparted = () => {
-    const inDocument = new Set(getEditorRuntimeRootKeys(lookups.runtime));
+  let nextDepartedPruneSize = 64;
+  let lastSweepVersion = lookups.runtime.read.lastCommit()?.version;
+  let sweptOnce = false;
 
+  const pruneDeparted = () => {
     for (const [key, held] of departed) {
       if (!held.deref()) departed.delete(key);
     }
-    for (const [key, { editor, readOnly, root }] of rootEditors) {
-      const lockChanged = getOwnViewReadOnly(editor) !== readOnly;
+    nextDepartedPruneSize = Math.max(64, departed.size * 2);
+  };
 
-      if (inDocument.has(root) || lockChanged) continue;
+  const releaseLockedAbsent = () => {
+    if (lockedAbsent.size === 0) return;
+    for (const [key, entry] of lockedAbsent) {
+      if (hasEditorRuntimeRoot(lookups.runtime, entry.root)) {
+        lockedAbsent.delete(key);
+        rootEditors.set(key, entry);
+      }
+    }
+  };
 
+  const releaseDeparted = () => {
+    const version = lookups.runtime.read.lastCommit()?.version;
+
+    if (departed.size > nextDepartedPruneSize) pruneDeparted();
+
+    if (sweptOnce && version === lastSweepVersion) {
+      return;
+    }
+
+    sweptOnce = true;
+    lastSweepVersion = version;
+    releaseLockedAbsent();
+
+    for (const [key, entry] of rootEditors) {
+      if (hasEditorRuntimeRoot(lookups.runtime, entry.root)) continue;
       rootEditors.delete(key);
-      departed.set(key, new WeakRef(editor));
+      if (getOwnViewReadOnly(entry.editor) !== entry.readOnly) {
+        lockedAbsent.set(key, entry);
+      } else {
+        departed.set(key, new WeakRef(entry.editor));
+      }
     }
   };
   const context: PliteRuntimeContextValue = {
     ...lookups,
     rootEditor: (root, readOnly = false) => {
+      releaseDeparted();
+
       const internalRoot = root ?? MAIN_ROOT_KEY;
       const key = `${readOnly}\u0000${internalRoot}`;
-      const cached = rootEditors.get(key);
+      const cached = rootEditors.get(key) ?? lockedAbsent.get(key);
 
       if (cached) return cached.editor;
 
@@ -324,10 +359,36 @@ const withRootEditors = (
       if (editor) {
         departed.delete(key);
       } else {
-        releaseDeparted();
         editor = createPliteRootEditor(lookups, root, readOnly);
+        const weakEditor = new WeakRef(editor);
+
+        onOwnViewReadOnlyChange(editor, (nextReadOnly) => {
+          const live = weakEditor.deref();
+
+          if (!live || rootEditors.has(key)) return;
+          if (nextReadOnly !== readOnly) {
+            departed.delete(key);
+            lockedAbsent.set(key, {
+              editor: live,
+              readOnly,
+              root: internalRoot,
+            });
+          } else if (lockedAbsent.get(key)?.editor === live) {
+            lockedAbsent.delete(key);
+            departed.set(key, weakEditor);
+          }
+        });
       }
-      rootEditors.set(key, { editor, readOnly, root: internalRoot });
+
+      const entry = { editor, readOnly, root: internalRoot };
+
+      if (hasEditorRuntimeRoot(lookups.runtime, internalRoot)) {
+        rootEditors.set(key, entry);
+      } else if (getOwnViewReadOnly(editor) !== readOnly) {
+        lockedAbsent.set(key, entry);
+      } else {
+        departed.set(key, new WeakRef(editor));
+      }
 
       return editor;
     },
@@ -417,13 +478,6 @@ export const EditingAreaRootEditors = ({
   const value = useMemo(() => withRootEditors(around), [around]);
 
   return <PliteRuntimeContext value={value}>{children}</PliteRuntimeContext>;
-};
-
-/** Selector options for `useRuntimeState` and `useRootState`. */
-export type RuntimeStateSelectorOptions<T = unknown> = {
-  deferred?: boolean;
-  dependsOn?: EditorSelectorDependencies;
-  equalityFn?: (a: T, b: T) => boolean;
 };
 
 export const PliteRuntimeContext =
@@ -881,122 +935,15 @@ type ReactEditorState = EditorStateView<
 >;
 
 /**
- * Subscribe to a selected value from the root runtime editor state.
- *
- * Use this for toolbar, sidebar, and shell UI that reads the whole editor
- * runtime. Use `useRootState` for root-scoped UI in multi-root editors.
- * Inline selectors observe current render values. Scope updates with
- * `dependsOn`. The selector state holds the core editor groups; read a
- * plugin's state through `editor.plugin(Plugin)`.
+ * Return the owning model editor from the nearest `<EditorRoot>` or
+ * `<EditorRuntimeProvider>`.
  */
-export function useRuntimeState<T>(
-  selector: (state: ReactEditorState) => T,
-  { deferred, dependsOn, equalityFn }: RuntimeStateSelectorOptions<T> = {}
-): T {
-  const normalizedDeps = normalizeSelectorDependencies(dependsOn);
-  const { runtime, selectorContext } = useRequiredPliteRuntimeContext();
-  const stateSelector = useCallback(
-    () => runtime.read(selector),
-    [runtime, selector]
-  );
-  const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
-  const depsRef = useRef(normalizedDeps);
-
-  useIsomorphicLayoutEffect(() => {
-    const changed = !sameSelectorDependencies(depsRef.current, normalizedDeps);
-
-    depsRef.current = normalizedDeps;
-
-    if (changed) update();
-  }, [normalizedDeps, update]);
-
-  const matchesCommit = useCallback(
-    (change?: EditorCommit) =>
-      commitMatchesSelectorDependencies(runtime, change, depsRef.current),
-    [runtime]
-  );
-
-  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- The registration returns the unsubscribe function used by this effect's cleanup.
-  useIsomorphicLayoutEffect(() => {
-    const unsubscribe = selectorContext.addEventListener(update, {
-      deferred,
-      shouldUpdate: matchesCommit,
-    });
-
-    update();
-
-    return unsubscribe;
-  }, [deferred, matchesCommit, selectorContext, update]);
-
-  return selectedState;
-}
-
-/**
- * Subscribe to a selected value from one root.
- *
- * Use this for chrome tied to a known root, such as headers, sidebars, and
- * nested content roots. Scope updates with `dependsOn`. The selector state
- * holds the core editor groups; read a plugin's state through
- * `editor.plugin(Plugin)`.
- */
-export function useRootState<T, const TRoot extends RootKey = RootKey>(
-  root: NamedRootKey<TRoot> | undefined,
-  selector: (state: ReactEditorState) => T,
-  { deferred, dependsOn, equalityFn }: RuntimeStateSelectorOptions<T> = {}
-): T {
-  if (root === MAIN_ROOT_KEY) {
-    throw new Error('Omit root to read the primary document root state.');
+export function useModelEditor(): ReactEditorType {
+  if (arguments.length > 0) {
+    throw new Error('useModelEditor() takes no arguments.');
   }
 
-  const normalizedDeps = normalizeSelectorDependencies(dependsOn);
-  const { getView, presentation, selectorContext } =
-    useRequiredPliteRuntimeContext();
-  const matchView = useMemo(
-    () => getView({ root }, presentation ?? undefined),
-    [getView, presentation, root]
-  );
-  const stateSelector = useCallback(
-    () => getView({ root }, presentation ?? undefined).read(selector),
-    [getView, presentation, root, selector]
-  );
-  const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
-  const depsRef = useRef(normalizedDeps);
-
-  useIsomorphicLayoutEffect(() => {
-    const changed = !sameSelectorDependencies(depsRef.current, normalizedDeps);
-
-    depsRef.current = normalizedDeps;
-
-    if (changed) update();
-  }, [normalizedDeps, update]);
-
-  const matchesViewCommit = useCallback(
-    (change?: EditorCommit) => {
-      if (!change || depsRef.current.all) return true;
-      const viewCommit = getAuthoredViewCommit(matchView, change);
-
-      return commitMatchesSelectorDependencies(
-        matchView,
-        viewCommit,
-        depsRef.current
-      );
-    },
-    [matchView]
-  );
-
-  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- The registration returns the unsubscribe function used by this effect's cleanup.
-  useIsomorphicLayoutEffect(() => {
-    const unsubscribe = selectorContext.addEventListener(update, {
-      deferred,
-      shouldUpdate: matchesViewCommit,
-    });
-
-    update();
-
-    return unsubscribe;
-  }, [deferred, matchesViewCommit, selectorContext, update]);
-
-  return selectedState;
+  return useRequiredPliteRuntimeContext().runtime;
 }
 
 /** Options for creating a root-specific command editor. */

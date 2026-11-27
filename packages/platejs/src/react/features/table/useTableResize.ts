@@ -6,7 +6,7 @@ import type {
   TableResize,
   TableResizeTarget,
 } from '../../../features/table';
-import { useEditor, useEditorReadOnly, useEditorViewState } from '../../core';
+import { useEditor, useEditorReadOnly, useEditorSelector } from '../../core';
 import { bindPointerSession } from '../../utils/bindPointerSession.internal';
 import { TablePlugin } from './TablePlugin';
 
@@ -34,12 +34,16 @@ export const useTableResize = ({
 }) => {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const intent = useEditorViewState(editor, () => {
-    const authored = editor.plugin(AuthoredPlugin);
-    const view = authored.installed ? authored.read.view() : null;
+  const intent = useEditorSelector(
+    editor,
+    (current) => {
+      const authored = current.plugin(AuthoredPlugin);
+      const view = authored.installed ? authored.read.view() : null;
 
-    return view && 'intent' in view ? view.intent : null;
-  });
+      return view && 'intent' in view ? view.intent : null;
+    },
+    { dependsOn: 'authored' }
+  );
   const cancelRef = React.useRef<(() => void) | null>(null);
   const callbacksRef = React.useRef({ onResize, onResizeEnd });
 

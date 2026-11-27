@@ -20,7 +20,7 @@ that connects shared UI to its editors.
 | `useEditorSelection()` | The current selected-root range, or `null`. |
 | `useEditorHasSelection()` | Whether a selected-root text selection exists, including a caret. Rerenders only when presence changes. |
 | `useEditorValue()` | The current selected-root children. |
-| `useEditorState(selector, options?)` | A subscribed value derived from immutable editor state. |
+| `useEditorSelector(selector, options?)` | A subscribed value derived from the selected editor. |
 
 Hooks use the editor selected by the nearest `EditorContent`, `EditorRoot`, `EditorController`, or `EditorProvider`. `useOptionalEditor()` returns `null` without a provider or selected editor. Application IDs do not route mounted views.
 
@@ -102,6 +102,6 @@ active editor.
 
 ## Explicit editors
 
-Use `<EditorProvider editor={editor}>` to bind UI to an existing editor; `editor={null}` represents no target. This provider creates no document, history, or editable view. To retain a concrete editor type in selectors, use `useEditorRuntimeState(editor, selector)`, `useEditorViewState(editor, selector)`, or `useEditorPluginStore(editor, Plugin, selector)`.
+Use `<EditorProvider editor={editor}>` to bind UI to an existing editor; `editor={null}` represents no target. This provider creates no document, history, or editable view. To retain a concrete editor type in selectors, use `useEditorSelector(editor, selector, options?)` or `useEditorPluginStore(editor, Plugin, selector)`.
 
-`useEditorReadOnly()` reads the selected view’s current permission. A captured view rejects writes after unmount. Views of one model share document content, plugin stores, and undo history.
+`useEditorReadOnly()` reads the selected view's current permission. A captured view rejects writes after unmount. Views of one model share document content, plugin stores, and undo history.

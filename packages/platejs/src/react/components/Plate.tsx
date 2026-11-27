@@ -29,7 +29,7 @@ import {
 import { EditorRoot as RuntimeEditorRoot } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
-import { useEditorViewState } from '../plite-react';
+import { useEditorSelector } from '../stores/plate/useEditorSelector';
 
 export type SelectionChangeContext<E = Editor> = CommitContext<E> & {
   selection: Selection;
@@ -105,8 +105,10 @@ function PlateInner({
 
     return getPlateDecorationSources(currentEditor);
   }, [currentEditor, modelRevision]);
-  const editorReadOnly = useEditorViewState(currentEditor, (view) =>
-    view.isReadOnly()
+  const editorReadOnly = useEditorSelector(
+    currentEditor,
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
   );
   const plateReadOnly = readOnly ?? editorReadOnly;
   const model = React.useMemo(

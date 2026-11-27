@@ -8,7 +8,6 @@ import {
   useEditableRef,
   useEditor,
   useEditorSelector,
-  useEditorViewState,
   useViewStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -130,12 +129,18 @@ const openAiSettings = () => {
 
 export function DigitizeAllToolbarButton() {
   const editor = useEditor();
-  const readOnly = useEditorViewState(editor, (state) => state.isReadOnly());
-  const authoredPreview = useEditorViewState(editor, () => {
-    const authored = editor.plugin(AuthoredPlugin);
+  const readOnly = useEditorSelector(
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
+  );
+  const authoredPreview = useEditorSelector(
+    (current) => {
+      const authored = current.plugin(AuthoredPlugin);
 
-    return authored.installed && 'preview' in authored.read.view();
-  });
+      return authored.installed && 'preview' in authored.read.view();
+    },
+    { dependsOn: 'authored' }
+  );
   const hasLiveMarks = useEditorSelector(
     (current) => liveShownInkMarkIds(current).length > 0
   );
@@ -169,14 +174,20 @@ export function InkDigitizeBar() {
   const editor = useEditor();
   const editableRef = useEditableRef();
   const picked = useViewStore(InkPlugin, (state) => state.picked);
-  const readOnly = useEditorViewState(editor, (state) => state.isReadOnly());
-  const authoredPreview = useEditorViewState(editor, () => {
-    const authored = editor.plugin(AuthoredPlugin);
+  const readOnly = useEditorSelector(
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
+  );
+  const authoredPreview = useEditorSelector(
+    (current) => {
+      const authored = current.plugin(AuthoredPlugin);
 
-    if (!authored.installed) return false;
+      if (!authored.installed) return false;
 
-    return 'preview' in authored.read.view();
-  });
+      return 'preview' in authored.read.view();
+    },
+    { dependsOn: 'authored' }
+  );
   const canDigitize = !readOnly && !authoredPreview;
 
   const { pickedDigitized, pickedShown } = useEditorSelector((current) => {

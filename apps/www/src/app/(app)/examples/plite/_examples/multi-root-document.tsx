@@ -9,12 +9,12 @@ import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
-  useEditorState,
+  useEditorSelector,
   useSetStateField,
   useCreateEditor,
   useEditorHistory,
   useRootChrome,
-  useRootState,
+  useRootEditor,
   useStateFieldValue,
 } from 'plitejs/react';
 import type { ChangeEvent } from 'react';
@@ -103,7 +103,10 @@ const RootStatus = ({
   label: string;
   root?: string;
 }) => {
-  const text = useRootState(root, rootText);
+  const rootEditor = useRootEditor(root);
+  const text = useEditorSelector(rootEditor, (current) =>
+    rootText(current.read)
+  );
 
   return (
     <Badge
@@ -160,8 +163,8 @@ const MultiRootPanel = () => {
   const titleHistory = useEditorHistory({ focusPolicy: 'preserve' });
   const title = useStateFieldValue(documentTitle);
   const setTitleField = useSetStateField(documentTitle);
-  const commitSummary = useEditorState((state) =>
-    formatCommit(state.lastCommit())
+  const commitSummary = useEditorSelector((current) =>
+    formatCommit(current.read.lastCommit())
   );
 
   const setTitle = (value: string) => {

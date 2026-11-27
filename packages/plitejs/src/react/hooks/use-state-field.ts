@@ -10,14 +10,14 @@ import {
   ReactUpdatePolicy,
 } from '../update-policy';
 import {
-  type EditorStateSelectorOptions,
-  useEditorState,
+  type EditorSelectorOptions,
+  useEditorSelector,
 } from './use-editor-selector';
 import { useEditor } from './use-plite-runtime';
 
 /** Selector options for subscribing to one editor state field. */
 export type UseStateFieldValueOptions<TValue> = Pick<
-  EditorStateSelectorOptions<TValue>,
+  EditorSelectorOptions<TValue>,
   'deferred' | 'equalityFn'
 >;
 
@@ -40,7 +40,7 @@ export function useStateFieldValue<TValue>(
   field: EditorStateField<TValue>,
   options: UseStateFieldValueOptions<TValue> = {}
 ): TValue {
-  return useEditorState<TValue>((state) => state.getField(field), {
+  return useEditorSelector<TValue>((editor) => editor.read.getField(field), {
     ...options,
     dependsOn: field,
   });

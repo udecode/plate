@@ -13,11 +13,7 @@ import {
   AuthoredPlugin,
   type AuthoredView,
 } from 'platejs/authored';
-import {
-  useEditor,
-  useEditorSelector,
-  useEditorViewState,
-} from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -65,9 +61,9 @@ export function ModeToolbarButton() {
 }
 
 function SuggestionModeToolbarButton() {
-  const editor = useEditor();
-  const isSuggesting = useEditorViewState(editor, () =>
-    proposes(editor.plugin(AuthoredPlugin).read.view())
+  const isSuggesting = useEditorSelector(
+    (current) => proposes(current.plugin(AuthoredPlugin).read.view()),
+    { dependsOn: 'authored' }
   );
 
   return <ModeToolbarButtonContent isSuggesting={isSuggesting} />;
@@ -79,8 +75,14 @@ function ModeToolbarButtonContent({
   isSuggesting: boolean | null;
 }) {
   const editor = useEditor();
-  const viewing = useEditorViewState(editor, (view) => view.isViewing());
-  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
+  const viewing = useEditorSelector(
+    (current) => current.read.view.isViewing(),
+    { dependsOn: 'readOnly' }
+  );
+  const readOnly = useEditorSelector(
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
+  );
   const [open, setOpen] = React.useState(false);
   const suggestionsInstalled = isSuggesting !== null;
   const value = viewing ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';

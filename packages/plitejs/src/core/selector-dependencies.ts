@@ -9,10 +9,25 @@ import type {
 import { hasCommitNodeKeyAny } from './commit';
 import { isDefinedStateField } from './plugin-registry';
 
-/** Dependency declared by a public selector hook to scope commit invalidation. */
+/** View-state dependency declared by a public selector hook. */
+export type EditorViewStateDependency =
+  | 'authored'
+  | 'composing'
+  | 'focused'
+  | 'readOnly'
+  | 'view';
+
+export type EditorViewStateBucket =
+  | 'authored'
+  | 'composing'
+  | 'focused'
+  | 'readOnly';
+
+/** Dependency declared by a public selector hook to scope commit and view-state invalidation. */
 export type EditorSelectorDependency =
   | EditorCommitChangeKind
   | EditorStateField<any>
+  | EditorViewStateDependency
   | Readonly<{
       kind?: EditorCommitRuntimeChangeKind;
       nodeKey: NodeKey | null | undefined;
@@ -36,16 +51,22 @@ type NormalizedNodeDependency = Readonly<{
 
 export type NormalizedSelectorDependencies = Readonly<{
   all: boolean;
+  allCommits: boolean;
+  allViewKinds: boolean;
   changeKinds: readonly EditorCommitChangeKind[];
   nodeEntries: readonly NormalizedNodeDependency[];
   stateFieldKeys: readonly string[];
+  viewKinds: readonly EditorViewStateBucket[];
 }>;
 
 const ALL_DEPENDENCIES: NormalizedSelectorDependencies = Object.freeze({
   all: true,
+  allCommits: true,
+  allViewKinds: true,
   changeKinds: Object.freeze([]),
   nodeEntries: Object.freeze([]),
   stateFieldKeys: Object.freeze([]),
+  viewKinds: Object.freeze([]),
 });
 
 const VALID_COMMIT_CHANGE_KINDS = new Set<EditorCommitChangeKind>([
@@ -59,6 +80,14 @@ const VALID_COMMIT_CHANGE_KINDS = new Set<EditorCommitChangeKind>([
   'state',
   'structure',
   'text',
+]);
+
+const VALID_VIEW_STATE_KINDS = new Set<EditorViewStateDependency>([
+  'authored',
+  'composing',
+  'focused',
+  'readOnly',
+  'view',
 ]);
 
 const VALID_RUNTIME_CHANGE_KINDS = new Set<EditorCommitRuntimeChangeKind>([
@@ -111,20 +140,30 @@ export const normalizeSelectorDependencies = (
     throw new TypeError('Selector dependsOn cannot be an empty array.');
   }
 
-  let failOpen = false;
+  let allCommits = false;
+  let allViewKinds = false;
   const changeKinds = new Set<EditorCommitChangeKind>();
   const stateFieldKeys = new Set<string>();
   const nodeEntryMap = new Map<string, NormalizedNodeDependency>();
+  const viewKinds = new Set<EditorViewStateBucket>();
 
   for (const entry of entries) {
     if (typeof entry === 'string') {
-      if (!VALID_COMMIT_CHANGE_KINDS.has(entry as EditorCommitChangeKind)) {
-        throw new TypeError(
-          `Invalid selector dependency change kind "${entry}".`
-        );
+      if (VALID_COMMIT_CHANGE_KINDS.has(entry as EditorCommitChangeKind)) {
+        changeKinds.add(entry as EditorCommitChangeKind);
+        continue;
       }
-      changeKinds.add(entry as EditorCommitChangeKind);
-      continue;
+      if (VALID_VIEW_STATE_KINDS.has(entry as EditorViewStateDependency)) {
+        if (entry === 'view') {
+          allViewKinds = true;
+        } else {
+          viewKinds.add(entry as EditorViewStateBucket);
+        }
+        continue;
+      }
+      throw new TypeError(
+        `Invalid selector dependency change kind "${entry}".`
+      );
     }
 
     if (isDefinedStateField(entry)) {
@@ -134,7 +173,7 @@ export const normalizeSelectorDependencies = (
 
     if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
       throw new TypeError(
-        'Selector dependsOn entries must be a commit change kind, a defineStateField descriptor, or a { nodeKey } / { nodeKeys } object.'
+        'Selector dependsOn entries must be a commit or view-state kind, a defineStateField descriptor, or a { nodeKey } / { nodeKeys } object.'
       );
     }
 
@@ -173,7 +212,7 @@ export const normalizeSelectorDependencies = (
     if (hasOwnNodeKey && (!hasOwnNodeKeys || record.nodeKeys === undefined)) {
       const { nodeKey } = record;
       if (nodeKey == null) {
-        failOpen = true;
+        allCommits = true;
       } else {
         const validKey = validateNodeKey(nodeKey);
         const dedupeKey = `${validKey}\u0000${kind ?? ''}`;
@@ -189,7 +228,7 @@ export const normalizeSelectorDependencies = (
 
     const { nodeKeys } = record;
     if (nodeKeys == null) {
-      failOpen = true;
+      allCommits = true;
       continue;
     }
     if (!Array.isArray(nodeKeys)) {
@@ -198,7 +237,7 @@ export const normalizeSelectorDependencies = (
       );
     }
     if (nodeKeys.length === 0) {
-      failOpen = true;
+      allCommits = true;
       continue;
     }
     for (const item of nodeKeys) {
@@ -210,21 +249,33 @@ export const normalizeSelectorDependencies = (
     }
   }
 
-  if (failOpen) return ALL_DEPENDENCIES;
+  if (allCommits && allViewKinds) return ALL_DEPENDENCIES;
 
-  const sortedChangeKinds = Object.freeze([...changeKinds].sort());
-  const sortedStateFieldKeys = Object.freeze([...stateFieldKeys].sort());
-  const sortedNodeEntries = Object.freeze(
-    [...nodeEntryMap.entries()]
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([, value]) => value)
-  );
+  const sortedChangeKinds = allCommits
+    ? Object.freeze([])
+    : Object.freeze([...changeKinds].sort());
+  const sortedStateFieldKeys = allCommits
+    ? Object.freeze([])
+    : Object.freeze([...stateFieldKeys].sort());
+  const sortedNodeEntries = allCommits
+    ? Object.freeze([])
+    : Object.freeze(
+        [...nodeEntryMap.entries()]
+          .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+          .map(([, value]) => value)
+      );
+  const sortedViewKinds = allViewKinds
+    ? Object.freeze([])
+    : Object.freeze([...viewKinds].sort());
 
   return Object.freeze({
     all: false,
+    allCommits,
+    allViewKinds,
     changeKinds: sortedChangeKinds,
     nodeEntries: sortedNodeEntries,
     stateFieldKeys: sortedStateFieldKeys,
+    viewKinds: sortedViewKinds,
   });
 };
 
@@ -233,12 +284,19 @@ export const sameSelectorDependencies = (
   right: NormalizedSelectorDependencies
 ): boolean => {
   if (left === right) return true;
-  if (left.all !== right.all) return false;
+  if (
+    left.all !== right.all ||
+    left.allCommits !== right.allCommits ||
+    left.allViewKinds !== right.allViewKinds
+  ) {
+    return false;
+  }
   if (left.all) return true;
   if (
     left.changeKinds.length !== right.changeKinds.length ||
     left.stateFieldKeys.length !== right.stateFieldKeys.length ||
-    left.nodeEntries.length !== right.nodeEntries.length
+    left.nodeEntries.length !== right.nodeEntries.length ||
+    left.viewKinds.length !== right.viewKinds.length
   ) {
     return false;
   }
@@ -255,7 +313,58 @@ export const sameSelectorDependencies = (
     const b = right.nodeEntries[index];
     if (a.nodeKey !== b.nodeKey || a.kind !== b.kind) return false;
   }
+  for (let index = 0; index < left.viewKinds.length; index += 1) {
+    if (left.viewKinds[index] !== right.viewKinds[index]) return false;
+  }
   return true;
+};
+
+export const selectorDependenciesWantCommits = (
+  deps: NormalizedSelectorDependencies
+): boolean =>
+  deps.allCommits ||
+  deps.changeKinds.length > 0 ||
+  deps.stateFieldKeys.length > 0 ||
+  deps.nodeEntries.length > 0;
+
+export const selectorDependenciesWantViewKind = (
+  deps: NormalizedSelectorDependencies,
+  kind: EditorViewStateBucket
+): boolean => deps.allViewKinds || deps.viewKinds.includes(kind);
+
+export const selectorDependenciesWantShownPreview = (
+  deps: NormalizedSelectorDependencies
+): boolean =>
+  deps.allCommits ||
+  deps.nodeEntries.length > 0 ||
+  deps.changeKinds.some((kind) => kind !== 'state');
+
+export const selectorDependenciesViewSubscription = (
+  deps: NormalizedSelectorDependencies
+): 'any' | readonly EditorViewStateBucket[] | null => {
+  if (deps.allViewKinds) return 'any';
+
+  const wantsPreview = selectorDependenciesWantShownPreview(deps);
+
+  if (!wantsPreview) {
+    return deps.viewKinds.length > 0 ? deps.viewKinds : null;
+  }
+  if (deps.viewKinds.includes('authored')) {
+    return deps.viewKinds;
+  }
+
+  return [...deps.viewKinds, 'authored'];
+};
+
+export const selectorDependenciesSubscriptionKey = (
+  deps: NormalizedSelectorDependencies
+): string => {
+  const commits = selectorDependenciesWantCommits(deps) ? '1' : '0';
+  const view = selectorDependenciesViewSubscription(deps);
+  const viewPart =
+    view === null ? '' : view === 'any' ? '*' : [...view].sort().join(',');
+
+  return `${commits}|${viewPart}`;
 };
 
 const hasNodeKeyInScope = (
@@ -292,7 +401,8 @@ export const commitMatchesSelectorDependencies = (
   commit: EditorCommit<any> | undefined,
   deps: NormalizedSelectorDependencies
 ): boolean => {
-  if (!commit || deps.all) return true;
+  if (!commit) return selectorDependenciesWantCommits(deps);
+  if (deps.allCommits) return true;
 
   for (const kind of deps.changeKinds) {
     if (kind === 'selection') {

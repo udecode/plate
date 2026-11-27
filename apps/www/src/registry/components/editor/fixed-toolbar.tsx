@@ -27,9 +27,8 @@ import {
   UnderlinePlugin,
   FontBackgroundColorPlugin,
   FontColorPlugin,
-  useEditor,
   useEditorReadOnly,
-  useEditorViewState,
+  useEditorSelector,
   definePlugin,
 } from 'platejs/react';
 import * as React from 'react';
@@ -76,8 +75,10 @@ export function FixedToolbarButtons({
 }: {
   children?: React.ReactNode;
 } = {}) {
-  const editor = useEditor();
-  const viewing = useEditorViewState(editor, (view) => view.isViewing());
+  const viewing = useEditorSelector(
+    (current) => current.read.view.isViewing(),
+    { dependsOn: 'readOnly' }
+  );
   const readOnly = useEditorReadOnly();
 
   return (

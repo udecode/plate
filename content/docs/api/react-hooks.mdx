@@ -87,73 +87,83 @@ Get whether the current editor is read-only.
 Get the current editor selection. This hook re-renders when the selection
 changes, so keep it out of large rendered node trees.
 
-#### `useEditorState<T>(selector, options?): T`
+#### `useEditorSelector<T>(selector, options?): T`
 
-Subscribe to a derived editor-state value. The selector runs inside
-`editor.read`, so toolbar UI does not need to open a read boundary by
-hand.
+#### `useEditorSelector<T, TEditor>(editor, selector, options?): T`
+
+Subscribe to a derived value from the active editor (from `useEditor()`) or from
+an explicit editor instance. The selector runs inside `editor.read`, so toolbar
+UI does not need to open a read boundary by hand.
 
 ```typescript
-const isBold = useEditorState((state) => {
-  return state.marks()?.bold === true;
+const isBold = useEditorSelector((editor) => {
+  return editor.read.marks()?.bold === true;
 });
 ```
 
-A selector may return an object or a list. The hook renders the component
-again only when a value inside it changes, as
+Pass an explicit editor as the first argument for toolbars, containers, root
+readers, or app chrome that receives an editor directly or renders outside that
+editor's `EditorRoot` provider:
+
+```typescript
+const rootEditor = useRootEditor("header");
+const headerCount = useEditorSelector(
+  rootEditor,
+  (editor) => editor.read.children().length,
+  { dependsOn: "document" }
+);
+```
+
+A selector may return an object or a list. The hook renders the component again
+only when a value inside it changes, as
 [Selector results](/docs/api/react-hooks#selector-results) describes.
 
 ```typescript
-const marks = useEditorState((state) => ({
-  bold: state.marks()?.bold === true,
-  italic: state.marks()?.italic === true,
+const marks = useEditorSelector((editor) => ({
+  bold: editor.read.marks()?.bold === true,
+  italic: editor.read.marks()?.italic === true,
 }));
 ```
 
 Use `options.dependsOn` to scope invalidation to a single dependency or a
-non-empty tuple of commit change kinds, `defineStateField` descriptors, or
-live node-key descriptors (`{ nodeKey, kind? }` / `{ nodeKeys, kind? }`).
+non-empty tuple of:
+
+- commit change kinds (`"document"`, `"text"`, `"structure"`, `"properties"`,
+  `"replace"`, `"root-order"`, `"selection"`, `"marks"`, `"state"`,
+  `"snapshot"`),
+- `defineStateField` descriptors,
+- live node-key descriptors (`{ nodeKey, kind? }` / `{ nodeKeys, kind? }`),
+- view-state tokens (`"authored"`, `"composing"`, `"focused"`, `"readOnly"`, or
+  `"view"` for every view-state bucket).
+
 Omitted `kind` on a node-key descriptor watches `'node'`, `'path'`, and
 `'presence'`. Passing a nullish `nodeKey` or an empty/nullish `nodeKeys` fails
-open and updates on every commit. Passing an empty array (`dependsOn: []`) or
-an invalid entry throws `TypeError` synchronously during render.
+open and updates on every commit. Passing an empty array (`dependsOn: []`) or an
+invalid entry throws `TypeError` synchronously during render.
 
 ```typescript
-// Include "document" when reading state.selection() because a block
+// Include "document" when reading selection because a block
 // selection's end offset follows the selected block's text length.
-const selection = useEditorState((state) => state.selection(), {
+const selection = useEditorSelector((editor) => editor.read.selection(), {
   dependsOn: ["selection", "document"],
 });
+
+const readOnly = useEditorSelector(
+  (editor) => editor.read.view.isReadOnly(),
+  { dependsOn: "readOnly" }
+);
 ```
 
 Selectors always call the latest render's function, so they can close over
-component props without a dependency list.
+component props without a dependency list. Prefer the
+[element and node hooks](/docs/api/react-hooks#element-and-node-hooks) when
+rendering editor content.
 
 ```typescript
-const matchingText = useEditorState(
-  (state) => state.text.string([]).includes(query)
+const matchingText = useEditorSelector((editor) =>
+  editor.read.text.string([]).includes(query)
 );
 ```
-
-#### `useEditorRuntimeState<T>(editor, selector, options?): T`
-
-Subscribe to editor state from an explicit editor instance. Use this for
-toolbars, containers, or app chrome that receives an editor but is not rendered
-inside that editor's `EditorRoot` provider.
-
-```typescript
-const readOnly = useEditorRuntimeState(editor, (state) =>
-  state.view.isReadOnly()
-);
-```
-
-Inside provider descendants, prefer `useEditorState`. It reads the same state
-but gets the editor from context.
-
-Commit subscriptions invalidate this selector synchronously. Pass `dependsOn`
-to declare which commit change kinds, state fields, or node keys invalidate
-the selector. Use a provider selector's explicit `deferred` option when
-delayed delivery is an intentional product choice.
 
 #### `useStateFieldValue<T>(field, options?): T`
 
@@ -181,25 +191,6 @@ setTitle("Q3 Launch Brief", { history: "new-batch", tags: "title-input" });
 The setter writes through `editor.update` and preserves DOM selection by
 default. Pass the editor's typed update policy when the app needs history or
 additional tags; the hook appends its selection-preservation tags.
-
-#### `useEditorSelector<T>(selector, options?): T`
-
-Subscribe to a low-level derived editor value.
-
-Use `useEditorState` for normal app-level editor reads. Use
-`useEditorSelector` when you intentionally need the editor object or an
-installed runtime API. Prefer the
-[element and node hooks](/docs/api/react-hooks#element-and-node-hooks) when
-rendering editor content.
-
-```typescript
-const blockCount = useEditorSelector(
-  (editor) => editor.read.children().length,
-  {
-    dependsOn: "document",
-  }
-);
-```
 
 #### `useEditorHistory(options?): EditorHistoryController`
 
@@ -312,39 +303,37 @@ still run.
 
 Use these when one editor owns multiple roots or external chrome.
 
-- Runtime hooks read the whole editor runtime.
-- Root state hooks read one root.
-- Root editor hooks return a command-capable editor for one root.
+- `useModelEditor()` returns the complete document editor owned by the nearest
+  `EditorRoot`.
+- `useRootEditor(root)` returns a command-capable editor for one root.
+- Pair either hook with `useEditorSelector(editor, selector, options?)` to
+  subscribe to whole-runtime or single-root derived state.
 
 Prefer `useRootEditor(root)` when UI knows its root. For UI that follows the
-current selection, select the root that owns it and pass it to `useRootEditor`:
+current selection, select the root that owns it from `useModelEditor()` and pass
+it to `useRootEditor`:
 
 ```tsx
 import { SelectionApi } from "platejs";
-import { useRootEditor, useRuntimeState } from "platejs/react";
+import {
+  useEditorSelector,
+  useModelEditor,
+  useRootEditor,
+} from "platejs/react";
 
-const activeRoot = useRuntimeState((state) =>
-  SelectionApi.root(state.selection())
+const model = useModelEditor();
+const activeRoot = useEditorSelector(
+  model,
+  (current) => SelectionApi.root(current.read.selection()),
+  { dependsOn: "selection" }
 );
 const editor = useRootEditor(activeRoot);
 ```
 
-#### `useRuntimeState<T>(selector, options?): T`
+#### `useModelEditor(): Editor`
 
-Subscribe to whole-runtime editor state. The selector runs in a read boundary,
-and the hook re-renders only when the selected value changes, as
-[Selector results](/docs/api/react-hooks#selector-results) describes. Its
-state holds the core editor groups; read a plugin's state through
-`editor.plugin(Plugin)`.
-
-Shared selector options are `dependsOn`, `equalityFn`, and `deferred`.
-Selectors always read the latest render closure. Pass `dependsOn` to declare
-which commit change kinds, state fields, or node keys invalidate the selector.
-
-#### `useRootState<T>(root, selector, options?): T`
-
-Subscribe to one root's state. Pass `dependsOn` to declare which commit
-changes invalidate the selector.
+Get the complete document editor owned by the nearest `EditorRoot`. Pass it to
+`useEditorSelector` when UI needs whole-runtime state across roots.
 
 #### `useRootEditor(root?, options?)`
 
@@ -636,8 +625,7 @@ A selector hook runs its selector again when the state it reads changes. When
 the call passes no `equalityFn`, the hook compares the new result with the
 earlier one. When both hold the same contents, it returns the earlier result
 and the component does not render again. So a selector may return an object
-or a list. This applies to `useEditorState`, `useEditorRuntimeState`,
-`useEditorSelector`, `useStateFieldValue`, `useRuntimeState`, `useRootState`,
+or a list. This applies to `useEditorSelector`, `useStateFieldValue`,
 `useElementSelector`, `usePath` with a selector, `usePluginStore` and
 `useViewStore`.
 
@@ -662,7 +650,7 @@ value. Use it too when the component must render each time the selector builds
 a new object.
 
 ```typescript
-const children = useEditorState((state) => state.children(), {
+const children = useEditorSelector((editor) => editor.read.children(), {
   equalityFn: Object.is,
 });
 ```
@@ -673,5 +661,7 @@ To render after every commit, select the commit's version number. Each commit
 increases it by one:
 
 ```typescript
-const version = useEditorState((state) => state.runtime.snapshot().version);
+const version = useEditorSelector(
+  (editor) => editor.read.runtime.snapshot().version
+);
 ```

@@ -16,16 +16,13 @@ import {
   txLocate,
   locateAt,
 } from '../../core';
+import { subscribeSharedEditorViewState } from '../../facade';
 import {
   type MarkdownEditor,
   type MarkdownSerializeResult,
   MarkdownPlugin,
 } from '../../markdown';
-import {
-  type Editor,
-  definePlugin,
-  useEditorViewState,
-} from '../../react/core';
+import { type Editor, definePlugin } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
 
 const nonSpaceRegex = /^\s*(\S)/;
@@ -517,7 +514,6 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
       slots: {
         // oxlint-disable-next-line eslint/func-name-matching -- React hooks require a named component in this slot.
         wrapRoot: function CopilotIntegration({ children, editableRef }) {
-          useEditorViewState(context.editor, (view) => view.isReadOnly());
           const attachment = React.useRef<{
             element: HTMLElement;
             detach: () => void;
@@ -532,13 +528,20 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
             }
             if (!isWritable()) stop();
           });
-          React.useLayoutEffect(
-            () => () => {
+          React.useLayoutEffect(() => {
+            const unsubscribeReadOnly = subscribeSharedEditorViewState(
+              context.editor,
+              'readOnly',
+              () => {
+                if (!isWritable()) stop();
+              }
+            );
+            return () => {
+              unsubscribeReadOnly();
               attachment.current?.detach();
               attachment.current = null;
-            },
-            []
-          );
+            };
+          }, []);
           return children;
         },
       },

@@ -70,6 +70,7 @@ export const useOptionalEditorReadOnly = (): boolean | undefined => {
   const target = useOptionalEditor();
   const viewReadOnly = useOptionalEditorViewState(
     explicitOverride === undefined && !insideEditingArea ? target : null,
+    'readOnly',
     readViewReadOnly,
     false,
     true

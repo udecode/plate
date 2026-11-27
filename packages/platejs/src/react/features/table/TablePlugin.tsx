@@ -34,10 +34,8 @@ import {
   useModelEditor,
 } from '../../core';
 import { useEditorContext } from '../../internal/plite-components';
-import {
-  useClaimEditableDOMCommit,
-  useEditorRuntimeState,
-} from '../../plite-react';
+import { useClaimEditableDOMCommit } from '../../plite-react';
+import { useEditorSelector } from '../../stores/plate/useEditorSelector';
 import {
   getTableSelectionCellRef,
   updateTableSelectionHostState,
@@ -337,15 +335,21 @@ function TableSelectionHostEffect() {
   const editor = useEditor();
   const modelEditor = useModelEditor();
   const viewEditor = useEditorContext();
-  const modelState = useEditorRuntimeState(
+  const modelState = useEditorSelector(
     modelEditor,
     () => readTableSelectionHostState(modelEditor),
-    { equalityFn: hasSameTableSelectionHostState }
+    {
+      dependsOn: ['document', 'selection'],
+      equalityFn: hasSameTableSelectionHostState,
+    }
   );
-  const editorState = useEditorRuntimeState(
+  const editorState = useEditorSelector(
     editor,
     () => readTableSelectionHostState(editor),
-    { equalityFn: hasSameTableSelectionHostState }
+    {
+      dependsOn: ['document', 'selection'],
+      equalityFn: hasSameTableSelectionHostState,
+    }
   );
   const state = editorState.ownsSelection ? editorState : modelState;
 

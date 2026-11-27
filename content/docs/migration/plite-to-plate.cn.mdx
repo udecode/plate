@@ -303,8 +303,8 @@ const editor = useCreateEditor({
 
 | Plite | Plate | 说明 |
 | --- | --- | --- |
-| `useEditorSelector(selector, options)` | `useEditorSelector(selector, options)` | 选项只有 `dependsOn` 和 `equalityFn`。该 hook 跟随光标所在根的编辑器。 |
-| `useEditorState(selector, options)` | `useEditorState(selector, options)` | 没有 `deferred` 选项。 |
+| `useEditorSelector(selector, options)` / `useEditorSelector(editor, selector, options)` | 同名重载 | 选项只有 `dependsOn` 和 `equalityFn`（省略 `deferred`）。上下文模式跟随光标所在根的编辑器。 |
+| `useModelEditor()` | `useModelEditor()` | 返回最近 `EditorRoot` 拥有的完整文档 Plate React `Editor`。 |
 | `useEditorSelection`、`useEditorFocused`、`useEditorComposing`、`useEditorReadOnly` | 同名 | 调用方式相同。Plate 读取当前选中的编辑区域。 |
 | `useStateFieldValue(field, options)`、`useSetStateField(field)` | 同名 | 绑定到 Plate 的 `useEditor()`，支持被动 `EditorProvider` 目标。 |
 | `useOptionalEditorReadOnly()` | `useEditorReadOnly()` | Plate 总是返回布尔值。 |
@@ -325,13 +325,13 @@ const editor = useCreateEditor({
 | `EditableHandlerContext`、`EditableInputEventContext`、`EditableDOMBeforeInputContext`、`EditableDOMBeforeInputHandler`、`EditableKeyDownHandler`、`EditablePointerSelectionEndHandler` | 来自 `platejs/react` 的同名类型 | `context.editor` 为 Plate 的 React `Editor`。 |
 | `PagedEditableProps`、`VirtualizedEditableProps` | `PagedEditorContentProps`、`VirtualizedEditorContentProps` | |
 | `CreateEditorOptions` | 来自 `platejs` 或 `platejs/react` 的 `CreateEditorOptions` | 接受 Plate 插件与选项；`platejs/react` 的版本额外支持 `clipboardFormatKey`。 |
-| `EditorSelectorOptions`、`EditorStateSelectorOptions`、`EditorRuntimeSelectorOptions` | `UseEditorSelectorOptions`、`UseEditorStateOptions` | |
+| `EditorSelectorOptions` | `UseEditorSelectorOptions` | Plate 的 `UseEditorSelectorOptions` 省略了 Plite 的 `deferred` 选项。 |
 | `UseStateFieldValueOptions` | 来自 `platejs/react` 的 `UseStateFieldValueOptions` | Plate 的 `UseStateFieldValueOptions` 省略了 Plite 的 `deferred` 选项。 |
 | `EditorRootProps`、`CommitContext`、`SelectionChangeContext`、`ValueChangeContext` | 同名 | `CommitContext`、`SelectionChangeContext` 和 `ValueChangeContext` 中的 `editor` 为 Plate 的 `Editor`。 |
 | `Editor`、`Plugin`、`DefinitionOf`、`PluginPortal`、`PluginReference`、`BlockInsertOptions` | 同名 | Plate 的版本使用 Plate 的插件和编辑器类型参数；Plite 的状态字段或原生 Plite 插件可传入 `createEditor({ plugins })`，但不满足 Plate 自身的 `PluginReference` 或 `PluginPortal`。 |
 | `TransferPlugin` 类型 | `typeof TransferPlugin` | Plate 的 `TransferPlugin` 是核心插件值。 |
 | `ReactPlugin` | `RuntimeReactPlugin` | |
-| `CommandDispatcher`、`CommandFocusPolicy`、`UseCommandOptions`、`EditorNodeSelectorContext`、`EditorTextSelectorContext`、`EditorReadOnlyProviderProps`、`DOMTextSyncRendererCapabilityContext` | 无 | 已移除的 `useCommand`、`useNodeSelector`、`useTextSelector`、`EditorReadOnlyProvider` 和 `setDOMTextSyncRendererCapability` 的配套类型。 |
+| `CommandDispatcher`、`CommandFocusPolicy`、`UseCommandOptions`、`EditorNodeSelectorContext`、`EditorTextSelectorContext`、`EditorRuntimeSelectorOptions`、`EditorReadOnlyProviderProps`、`DOMTextSyncRendererCapabilityContext` | 无 | 已移除的 `useCommand`、`useNodeSelector`、`useTextSelector`、`EditorReadOnlyProvider` 和 `setDOMTextSyncRendererCapability` 的配套类型。 |
 
 ### DOM
 

@@ -319,8 +319,8 @@ them. Every other value keeps its binding, as
 
 | Plite | Plate | Notes |
 | --- | --- | --- |
-| `useEditorSelector(selector, options)` | `useEditorSelector(selector, options)` | The options are `dependsOn` and `equalityFn` only. The hook follows the editor of the root that holds the caret. |
-| `useEditorState(selector, options)` | `useEditorState(selector, options)` | There is no `deferred` option. |
+| `useEditorSelector(selector, options)` / `useEditorSelector(editor, selector, options)` | The same overloads | The options are `dependsOn` and `equalityFn` only (no `deferred` option). Context mode follows the editor of the root that holds the caret. |
+| `useModelEditor()` | `useModelEditor()` | Returns Plate's React `Editor` for the complete document owned by the nearest `EditorRoot`. |
 | `useEditorSelection`, `useEditorFocused`, `useEditorComposing`, `useEditorReadOnly` | The same names | The calls are the same. Plate reads the selected editing area. |
 | `useStateFieldValue(field, options)`, `useSetStateField(field)` | The same names | Rebound to Plate's `useEditor()`, including passive `EditorProvider` targets. |
 | `useOptionalEditorReadOnly()` | `useEditorReadOnly()` | Plate always returns a boolean. |
@@ -341,13 +341,13 @@ them. Every other value keeps its binding, as
 | `EditableHandlerContext`, `EditableInputEventContext`, `EditableDOMBeforeInputContext`, `EditableDOMBeforeInputHandler`, `EditableKeyDownHandler`, `EditablePointerSelectionEndHandler` | The same names from `platejs/react` | `context.editor` is Plate's React `Editor`. |
 | `PagedEditableProps`, `VirtualizedEditableProps` | `PagedEditorContentProps`, `VirtualizedEditorContentProps` | |
 | `CreateEditorOptions` | `CreateEditorOptions` from `platejs` or `platejs/react` | Takes Plate plugins and options; `platejs/react`'s adds `clipboardFormatKey`. |
-| `EditorSelectorOptions`, `EditorStateSelectorOptions`, `EditorRuntimeSelectorOptions` | `UseEditorSelectorOptions`, `UseEditorStateOptions` | |
+| `EditorSelectorOptions` | `UseEditorSelectorOptions` | Plate's `UseEditorSelectorOptions` omits Plite's `deferred` option. |
 | `UseStateFieldValueOptions` | `UseStateFieldValueOptions` from `platejs/react` | Plate's `UseStateFieldValueOptions` omits Plite's `deferred` option. |
 | `EditorRootProps`, `CommitContext`, `SelectionChangeContext`, `ValueChangeContext` | The same names | `CommitContext`, `SelectionChangeContext`, and `ValueChangeContext` type `editor` as Plate's `Editor`. |
 | `Editor`, `Plugin`, `DefinitionOf`, `PluginPortal`, `PluginReference`, `BlockInsertOptions` | The same names | Plate's take Plate's plugin and editor type parameters; a Plite state field or raw Plite plugin works in `createEditor({ plugins })` even though it does not satisfy Plate's own `PluginReference` or `PluginPortal`. |
 | `TransferPlugin` type | `typeof TransferPlugin` | Plate's `TransferPlugin` is the core plugin value. |
 | `ReactPlugin` | `RuntimeReactPlugin` | |
-| `CommandDispatcher`, `CommandFocusPolicy`, `UseCommandOptions`, `EditorNodeSelectorContext`, `EditorTextSelectorContext`, `EditorReadOnlyProviderProps`, `DOMTextSyncRendererCapabilityContext` | None | Companion types of dropped `useCommand`, `useNodeSelector`, `useTextSelector`, `EditorReadOnlyProvider`, and `setDOMTextSyncRendererCapability`. |
+| `CommandDispatcher`, `CommandFocusPolicy`, `UseCommandOptions`, `EditorNodeSelectorContext`, `EditorTextSelectorContext`, `EditorRuntimeSelectorOptions`, `EditorReadOnlyProviderProps`, `DOMTextSyncRendererCapabilityContext` | None | Companion types of dropped `useCommand`, `useNodeSelector`, `useTextSelector`, `EditorReadOnlyProvider`, and `setDOMTextSyncRendererCapability`. |
 
 ### DOM
 

@@ -83,7 +83,7 @@ receives `leafPosition`. It contains the segment's `start` and `end` offsets
 plus optional `isFirst` and `isLast` flags. Decoration attributes are already
 applied inside `children`; they never become fields on `leaf`.
 
-One disadvantage of text-level formatting is that you cannot guarantee that any given format is "contiguous"—meaning that it stays as a single leaf. This limitation with respect to leaves is similar to the DOM, where this is invalid:
+One disadvantage of text-level formatting is that you cannot guarantee that any given format is "contiguous", meaning that it stays as a single leaf. This limitation with respect to leaves is similar to the DOM, where this is invalid:
 
 ```markup
 <em>t<strong>e</em>x</strong>t
@@ -95,7 +95,7 @@ Because the elements in the above example do not properly close themselves they 
 <em>t</em><strong><em>e</em>x</strong>t
 ```
 
-If you happened to add another overlapping section of `<strike>` to that text, you might have to rearrange the closing tags yet again. Rendering leaves in Plite is similar—you can't guarantee that even though a word has one type of formatting applied to it that that leaf will be contiguous, because it depends on how it overlaps with other formatting.
+If you happened to add another overlapping section of `<strike>` to that text, you might have to rearrange the closing tags yet again. Rendering leaves in Plite is similar: you can't guarantee that even though a word has one type of formatting applied to it that that leaf will be contiguous, because it depends on how it overlaps with other formatting.
 
 Use text-level formatting and element-level formatting for different jobs:
 
@@ -188,11 +188,11 @@ const MyEditor = () => {
   );
 };
 
-import { useEditorState } from "plitejs/react";
+import { useEditorSelector } from "plitejs/react";
 
 const Toolbar = () => {
-  const isBold = useEditorState((state) => {
-    return state.marks()?.bold === true;
+  const isBold = useEditorSelector((editor) => {
+    return editor.read.marks()?.bold === true;
   });
 
   return (
@@ -204,7 +204,7 @@ const Toolbar = () => {
 };
 ```
 
-Because the toolbar draws editor-level state, `useEditorState` is the right level of subscription. It runs the selector inside `editor.read` and re-renders only when the selected result changes. Element renderers should prefer target-scoped hooks such as `useElementSelected()`, `useElementSelected({ mode: 'collapsed' })`, `useNodeSelector`, and `useTextSelector`.
+Because the toolbar draws editor-level state, `useEditorSelector` is the right level of subscription. It runs the selector inside `editor.read` and re-renders only when the selected result changes. Element renderers should prefer target-scoped hooks such as `useElementSelected()`, `useElementSelected({ mode: 'collapsed' })`, `useNodeSelector`, and `useTextSelector`.
 
 ## Editor styling
 

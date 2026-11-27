@@ -8,14 +8,10 @@ import { PLUGINS } from '../../utils';
 import type { Editor } from '../editor/Editor';
 import { PlateEditorPlaceholderContext } from '../internal/plate-context';
 import type { PliteReactEditor } from '../internal/plite-types';
-import {
-  useEditorFocused,
-  useEditorReadOnly,
-  useEditorRuntimeState,
-  useEditorViewState,
-} from '../plite-react';
+import { useEditorFocused, useEditorReadOnly } from '../plite-react';
 import { definePlugin } from '../plugin/definePlugin';
 import { useEditorPluginStore } from '../stores';
+import { useEditorSelector } from '../stores/plate/useEditorSelector';
 
 export type BlockPlaceholderQueryContext = {
   editor: Editor;
@@ -118,15 +114,19 @@ export const BlockPlaceholderPlugin = definePlugin(PLUGINS.blockPlaceholder, {
         (state) => state
       );
       const view = {
-        composing: useEditorViewState(viewEditor, () =>
-          viewEditor.api.dom.isComposing()
+        composing: useEditorSelector(
+          viewEditor,
+          () => viewEditor.api.dom.isComposing(),
+          { dependsOn: 'composing' }
         ),
         focused: useEditorFocused(),
         hasEditorPlaceholder: React.use(PlateEditorPlaceholderContext),
         readOnly: useEditorReadOnly(),
       };
-      const target = useEditorRuntimeState(viewEditor, () =>
-        getBlockPlaceholderTarget(editor, viewEditor, pluginState, view)
+      const target = useEditorSelector(
+        viewEditor,
+        () => getBlockPlaceholderTarget(editor, viewEditor, pluginState, view),
+        { dependsOn: ['document', 'selection', 'state'] }
       );
 
       return target

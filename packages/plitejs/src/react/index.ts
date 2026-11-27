@@ -92,30 +92,20 @@ export {
   useEditorReadOnly,
   useOptionalEditorReadOnly,
 } from './hooks/use-editor-read-only';
-export {
-  type EditorRuntimeStateSelectorOptions,
-  useEditorRuntimeState,
-} from './hooks/use-editor-runtime-state';
 export { useEditorSelection } from './hooks/use-editor-selection';
 export {
   type EditorSelectorDependencies,
   type EditorSelectorDependency,
+  type EditorViewStateDependency,
 } from '../core/selector-dependencies';
 export {
   type EditorSelectorOptions,
-  type EditorStateSelectorOptions,
   useEditorSelector,
-  useEditorState,
 } from './hooks/use-editor-selector';
 export {
   type EditorRootAreas,
   useEditorRootAreas,
 } from './hooks/use-editor-root-areas';
-export {
-  type EditorViewStateSelectorOptions,
-  useEditorViewState,
-} from './hooks/use-editor-view-state';
-// Hooks
 export { useElement, useOptionalElement } from './hooks/use-element';
 export { useElementPath } from './hooks/use-element-path';
 export {
@@ -166,16 +156,14 @@ export {
 } from './hooks/use-plite-root-chrome';
 export {
   type CommandFocusPolicy,
-  type RuntimeStateSelectorOptions,
   type CommandDispatcher,
   type UseCommandOptions,
   type UseRootEditorOptions,
   useCommand,
   useEditor,
+  useModelEditor,
   useOptionalEditor,
   useRootEditor,
-  useRootState,
-  useRuntimeState,
 } from './hooks/use-plite-runtime';
 export {
   type UseSelectionGeometryOptions,

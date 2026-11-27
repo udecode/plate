@@ -25,6 +25,7 @@ import {
 import {
   readAuthoredView,
   requestAuthoredView,
+  readShownPreview,
 } from '../../core/authored-runtime';
 import {
   createEditorCommitPublicationQueue,
@@ -75,7 +76,7 @@ import {
   getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
   setEditorReadOnly,
-  subscribeEditorViewState,
+  subscribeSharedEditorViewState,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
@@ -718,15 +719,27 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
         { allowVersionGap: false }
       )
     );
-    const unsubscribeView = subscribeEditorViewState(editor, (change) => {
-      if (change !== 'authored') return;
-      const snapshot = editorGetSnapshot(editor);
-      if (snapshot.children !== lastSnapshotRef.current.children) {
-        syncChangedTextToDOM(editor, []);
+    let lastShownPreview = readShownPreview(editor);
+    const unsubscribeView = subscribeSharedEditorViewState(
+      editor,
+      'authored',
+      () => {
+        const nextPreview = readShownPreview(editor);
+        const snapshot = editorGetSnapshot(editor);
+        const childrenChanged =
+          snapshot.children !== lastSnapshotRef.current.children;
+
+        if (nextPreview === lastShownPreview && !childrenChanged) return;
+        lastShownPreview = nextPreview;
+        if (childrenChanged) {
+          syncChangedTextToDOM(editor, []);
+        }
+        lastSnapshotRef.current = snapshot;
+        onChange(undefined, [], editor.read.view.root(), {
+          skipPublicSelectors: true,
+        });
       }
-      lastSnapshotRef.current = snapshot;
-      onChange();
-    });
+    );
     const latestCommit = editorGetLastCommit(editor);
 
     if (

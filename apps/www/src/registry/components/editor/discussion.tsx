@@ -37,7 +37,6 @@ import {
   useEditorRootAreas,
   useEditorRootElement,
   useEditorSelector,
-  useEditorViewState,
   useModelEditor,
   usePath,
   usePluginStore,
@@ -455,10 +454,10 @@ const readAuthoredViewMode = (editor: RuntimeEditor) => {
 const useDiscussionController = () => {
   const editor = useEditor();
   const { standaloneRoots } = useEditorRootAreas(editor);
-  const authoredView = useEditorViewState(editor, () =>
-    readAuthoredViewMode(editor)
-  );
-  const viewRoot = useEditorSelector((current) => current.read.view.root());
+  const authoredView = useEditorSelector(readAuthoredViewMode, {
+    dependsOn: 'authored',
+  });
+  const viewRoot = editor.read.view.root();
   const presentationView = React.useMemo(
     () =>
       viewRoot === undefined
@@ -915,7 +914,10 @@ function SuggestionDiscussionCard({
 }) {
   const editor = useEditor();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
-  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
+  const readOnly = useEditorSelector(
+    (current) => current.read.view.isReadOnly(),
+    { dependsOn: 'readOnly' }
+  );
   const user = useCommentUser(group.authorId);
   const groupKey = `${group.id}:${group.revision}`;
   const [outcomeState, setOutcomeState] = React.useState<{
@@ -1120,7 +1122,7 @@ function NewComment({
   pendingRoot: NamedRootKey | undefined;
 }) {
   const editor = useEditor();
-  const viewRoot = useEditorSelector((current) => current.read.view.root());
+  const viewRoot = editor.read.view.root();
   const submitEditor = React.useMemo(
     () =>
       pendingRoot === viewRoot
@@ -1296,7 +1298,7 @@ function DiscussionPopover({
   const model = useModelEditor();
   const { isPrimaryForRoot, nestedView, standaloneRoots } =
     useEditorRootAreas(editor);
-  const viewRoot = useEditorSelector((current) => current.read.view.root());
+  const viewRoot = editor.read.view.root();
   const presentationView = React.useMemo(
     () =>
       viewRoot === undefined
@@ -1448,7 +1450,9 @@ function DiscussionPopover({
       : DISCUSSION_PAGE_SIZE;
   const shownItems =
     activeItems.length > 0 ? activeItems : targetItems.slice(0, visibleCount);
-  const view = useEditorViewState(editor, () => readAuthoredViewMode(editor));
+  const view = useEditorSelector(readAuthoredViewMode, {
+    dependsOn: 'authored',
+  });
   const preview = view?.startsWith('preview:') ?? false;
   // A suggestion's ranges are places of the stored document, so a preview
   // anchors on the block whose trigger was pressed last, and only while that

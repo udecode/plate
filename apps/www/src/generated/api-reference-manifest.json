@@ -3386,6 +3386,28 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:EditorSelectorDependencies": {
+          "aliases": [],
+          "documentation": "Single dependency or non-empty tuple of dependencies for a public selector hook.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorSelectorDependencies",
+          "runtime": false,
+          "signature": "type EditorSelectorDependencies = EditorSelectorDependency | readonly [EditorSelectorDependency, ...EditorSelectorDependency[]];",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:EditorSelectorDependency": {
+          "aliases": [],
+          "documentation": "Dependency declared by a public selector hook to scope commit and view-state invalidation.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorSelectorDependency",
+          "runtime": false,
+          "signature": "type EditorSelectorDependency = EditorCommitChangeKind | EditorStateField<any> | EditorViewStateDependency | Readonly<{\n  kind?: EditorCommitRuntimeChangeKind;\n  nodeKey: NodeKey | null | undefined;\n  nodeKeys?: never;\n}> | Readonly<{\n  kind?: EditorCommitRuntimeChangeKind;\n  nodeKey?: never;\n  nodeKeys: readonly NodeKey[] | null | undefined;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:EditorShortcut": {
           "aliases": [],
           "documentation": "",
@@ -4187,6 +4209,17 @@
           "typeParameters": [
             "TRoot extends RootKey = RootKey"
           ]
+        },
+        "platejs:EditorViewStateDependency": {
+          "aliases": [],
+          "documentation": "View-state dependency declared by a public selector hook.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorViewStateDependency",
+          "runtime": false,
+          "signature": "type EditorViewStateDependency = 'authored' | 'composing' | 'focused' | 'readOnly' | 'view';",
+          "source": null,
+          "typeParameters": []
         },
         "platejs:Element": {
           "aliases": [],
@@ -20138,19 +20171,6 @@
             "E extends EditorReference = Editor"
           ]
         },
-        "platejs/react:EditorRuntimeStateSelectorOptions": {
-          "aliases": [],
-          "documentation": "Options for explicit editor runtime-state selectors.",
-          "entrypoint": "platejs/react",
-          "kind": "interface",
-          "name": "EditorRuntimeStateSelectorOptions",
-          "runtime": false,
-          "signature": "interface EditorRuntimeStateSelectorOptions<T = unknown> {\n  dependsOn?: EditorSelectorDependencies;\n  equalityFn?: (a: T, b: T) => boolean;\n}",
-          "source": null,
-          "typeParameters": [
-            "T = unknown"
-          ]
-        },
         "platejs/react:EditorSchemaContent": {
           "aliases": [],
           "documentation": "Immutable compiled content facts exposed by `state.schema.element()`.",
@@ -20669,12 +20689,12 @@
         },
         "platejs/react:EditorSelectorDependency": {
           "aliases": [],
-          "documentation": "Dependency declared by a public selector hook to scope commit invalidation.",
+          "documentation": "Dependency declared by a public selector hook to scope commit and view-state invalidation.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditorSelectorDependency",
           "runtime": false,
-          "signature": "type EditorSelectorDependency = EditorCommitChangeKind | EditorStateField<any> | Readonly<{\n  kind?: EditorCommitRuntimeChangeKind;\n  nodeKey: NodeKey | null | undefined;\n  nodeKeys?: never;\n}> | Readonly<{\n  kind?: EditorCommitRuntimeChangeKind;\n  nodeKey?: never;\n  nodeKeys: readonly NodeKey[] | null | undefined;\n}>;",
+          "signature": "type EditorSelectorDependency = EditorCommitChangeKind | EditorStateField<any> | EditorViewStateDependency | Readonly<{\n  kind?: EditorCommitRuntimeChangeKind;\n  nodeKey: NodeKey | null | undefined;\n  nodeKeys?: never;\n}> | Readonly<{\n  kind?: EditorCommitRuntimeChangeKind;\n  nodeKey?: never;\n  nodeKeys: readonly NodeKey[] | null | undefined;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -21504,18 +21524,16 @@
             "TRoot extends RootKey = RootKey"
           ]
         },
-        "platejs/react:EditorViewStateSelectorOptions": {
+        "platejs/react:EditorViewStateDependency": {
           "aliases": [],
-          "documentation": "Options for explicit editor view-state selectors.",
+          "documentation": "View-state dependency declared by a public selector hook.",
           "entrypoint": "platejs/react",
-          "kind": "interface",
-          "name": "EditorViewStateSelectorOptions",
+          "kind": "type",
+          "name": "EditorViewStateDependency",
           "runtime": false,
-          "signature": "interface EditorViewStateSelectorOptions<T> {\n  equalityFn?: (a: T, b: T) => boolean;\n}",
+          "signature": "type EditorViewStateDependency = 'authored' | 'composing' | 'focused' | 'readOnly' | 'view';",
           "source": null,
-          "typeParameters": [
-            "T"
-          ]
+          "typeParameters": []
         },
         "platejs/react:Element": {
           "aliases": [],
@@ -26333,19 +26351,6 @@
             "TDOMPlugin extends AnyDOMPlugin = DOMPlugin"
           ]
         },
-        "platejs/react:RuntimeStateSelectorOptions": {
-          "aliases": [],
-          "documentation": "Selector options for `useRuntimeState` and `useRootState`.",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "RuntimeStateSelectorOptions",
-          "runtime": false,
-          "signature": "type RuntimeStateSelectorOptions<T = unknown> = {\n  deferred?: boolean;\n  dependsOn?: EditorSelectorDependencies;\n  equalityFn?: (a: T, b: T) => boolean;\n};",
-          "source": null,
-          "typeParameters": [
-            "T = unknown"
-          ]
-        },
         "platejs/react:schema": {
           "aliases": [
             "schema$1"
@@ -28991,20 +28996,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/react:useEditorRuntimeState": {
-          "aliases": [],
-          "documentation": "Subscribe to a derived state value from an explicit editor instance.\n\nUse this for chrome that owns or receives an editor but is outside a\n`<EditorRoot>` provider. Commit-driven selectors invalidate synchronously. Inside\nprovider descendants, prefer `useEditorState`.",
-          "entrypoint": "platejs/react",
-          "kind": "function",
-          "name": "useEditorRuntimeState",
-          "runtime": true,
-          "signature": "declare function useEditorRuntimeState<T, TEditor extends Editor$3<any, any> = Editor$3<any, any>>(editor: TEditor, selector: (state: EditorStateView<ValueOf<TEditor>, PluginsOf<TEditor>>) => T, { dependsOn, equalityFn }?: EditorRuntimeStateSelectorOptions<T>): T;",
-          "source": null,
-          "typeParameters": [
-            "T",
-            "TEditor extends Editor$3<any, any> = Editor$3<any, any>"
-          ]
-        },
         "platejs/react:useEditorScrollElement": {
           "aliases": [],
           "documentation": "Return the editor scroll container element.",
@@ -29040,47 +29031,25 @@
         },
         "platejs/react:useEditorSelector": {
           "aliases": [],
-          "documentation": "Subscribe to a value derived from the selected editor. A selector that\nkeeps its identity between renders runs at most once per matching commit,\nonce more when the selected editor changes, such as when the caret moves to\nanother root, and once more when the editor shows a different review preview\nthan the selector last read. A selector or `equalityFn` written inline gets\na new identity each render, so it also runs on every render of its\ncomponent. A change that leaves the value equal renders nothing.",
+          "documentation": "Subscribe to a value derived from the active Plate editor or an explicit\neditor instance. Scope updates with `dependsOn` using commit kinds, state\nfields, node keys, or view-state tokens (`'authored'`, `'composing'`,\n`'focused'`, `'readOnly'`, `'view'`). Omitting `dependsOn` subscribes to\ncommits and all view-state changes (including focus and composition). A\nchange that leaves the value equal renders nothing.",
           "entrypoint": "platejs/react",
-          "kind": "const",
+          "kind": "function",
           "name": "useEditorSelector",
           "runtime": true,
-          "signature": "useEditorSelector: <T>(selector: (editor: Editor) => T, options?: UseEditorSelectorOptions<T>) => T",
+          "signature": "declare function useEditorSelector<T>(selector: (editor: Editor) => T, options?: UseEditorSelectorOptions<T>): T;\ndeclare function useEditorSelector<T, TEditor extends AnyEditor = AnyEditor>(editor: TEditor, selector: (editor: TEditor) => T, options?: UseEditorSelectorOptions<T>): T;",
           "source": null,
-          "typeParameters": []
+          "typeParameters": [
+            "T"
+          ]
         },
         "platejs/react:UseEditorSelectorOptions": {
           "aliases": [],
-          "documentation": "Options for Plate's `useEditorSelector` hook.",
+          "documentation": "Subscription options for `useEditorSelector`.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "UseEditorSelectorOptions",
           "runtime": false,
-          "signature": "type UseEditorSelectorOptions<T = unknown> = EditorRuntimeStateSelectorOptions<T>;",
-          "source": null,
-          "typeParameters": [
-            "T = unknown"
-          ]
-        },
-        "platejs/react:useEditorState": {
-          "aliases": [],
-          "documentation": "Subscribe to a value derived from the selected editor's immutable state.",
-          "entrypoint": "platejs/react",
-          "kind": "const",
-          "name": "useEditorState",
-          "runtime": true,
-          "signature": "useEditorState: <T>(selector: (state: EditorStateView<ValueOf<Editor>, PluginsOf<Editor>>) => T, options?: UseEditorStateOptions<T>) => T",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs/react:UseEditorStateOptions": {
-          "aliases": [],
-          "documentation": "Options for Plate's `useEditorState` selector hook.",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "UseEditorStateOptions",
-          "runtime": false,
-          "signature": "type UseEditorStateOptions<T = unknown> = EditorRuntimeStateSelectorOptions<T>;",
+          "signature": "type UseEditorSelectorOptions<T = unknown> = {\n  dependsOn?: EditorSelectorDependencies;\n  equalityFn?: (prev: T, next: T) => boolean;\n};",
           "source": null,
           "typeParameters": [
             "T = unknown"
@@ -29096,20 +29065,6 @@
           "signature": "useEditorValue: () => ReadValue<Value>",
           "source": null,
           "typeParameters": []
-        },
-        "platejs/react:useEditorViewState": {
-          "aliases": [],
-          "documentation": "Subscribe to a derived view-state value from an explicit editor instance.\n\nView state covers editable facts such as read-only, focus, and composition.",
-          "entrypoint": "platejs/react",
-          "kind": "function",
-          "name": "useEditorViewState",
-          "runtime": true,
-          "signature": "declare function useEditorViewState<T, TEditor extends AnyEditor = AnyEditor>(editor: TEditor, selector: (view: EditorStateView<ValueOf<TEditor>>['view']) => T, { equalityFn }?: EditorViewStateSelectorOptions<T>): T;",
-          "source": null,
-          "typeParameters": [
-            "T",
-            "TEditor extends AnyEditor = AnyEditor"
-          ]
         },
         "platejs/react:useElement": {
           "aliases": [],
@@ -29296,33 +29251,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/react:useRootState": {
-          "aliases": [],
-          "documentation": "Subscribe to a selected value from one root.\n\nUse this for chrome tied to a known root, such as headers, sidebars, and\nnested content roots. Scope updates with `dependsOn`. The selector state\nholds the core editor groups; read a plugin's state through\n`editor.plugin(Plugin)`.",
-          "entrypoint": "platejs/react",
-          "kind": "function",
-          "name": "useRootState",
-          "runtime": true,
-          "signature": "declare function useRootState<T, const TRoot extends RootKey = RootKey>(root: NamedRootKey<TRoot> | undefined, selector: (state: ReactEditorState) => T, { deferred, dependsOn, equalityFn }?: RuntimeStateSelectorOptions<T>): T;",
-          "source": null,
-          "typeParameters": [
-            "T",
-            "const TRoot extends RootKey = RootKey"
-          ]
-        },
-        "platejs/react:useRuntimeState": {
-          "aliases": [],
-          "documentation": "Subscribe to a selected value from the root runtime editor state.\n\nUse this for toolbar, sidebar, and shell UI that reads the whole editor\nruntime. Use `useRootState` for root-scoped UI in multi-root editors.\nInline selectors observe current render values. Scope updates with\n`dependsOn`. The selector state holds the core editor groups; read a\nplugin's state through `editor.plugin(Plugin)`.",
-          "entrypoint": "platejs/react",
-          "kind": "function",
-          "name": "useRuntimeState",
-          "runtime": true,
-          "signature": "declare function useRuntimeState<T>(selector: (state: ReactEditorState) => T, { deferred, dependsOn, equalityFn }?: RuntimeStateSelectorOptions<T>): T;",
-          "source": null,
-          "typeParameters": [
-            "T"
-          ]
-        },
         "platejs/react:useSelectionFragmentProp": {
           "aliases": [],
           "documentation": "",
@@ -29389,7 +29317,7 @@
           "kind": "type",
           "name": "UseStateFieldValueOptions",
           "runtime": false,
-          "signature": "type UseStateFieldValueOptions<TValue = unknown> = Pick<UseEditorStateOptions<TValue>, 'equalityFn'>;",
+          "signature": "type UseStateFieldValueOptions<TValue = unknown> = Pick<UseEditorSelectorOptions<TValue>, 'equalityFn'>;",
           "source": null,
           "typeParameters": [
             "TValue = unknown"

@@ -5,7 +5,7 @@ import {
   EditorRoot,
   useCreateEditor,
   useEditor,
-  useEditorViewState,
+  useEditorSelector,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -32,11 +32,14 @@ export default function SuggestionViewDemo() {
 
 function SuggestionViewContent() {
   const editor = useEditor();
-  const projection = useEditorViewState(editor, () => {
-    const view = editor.plugin(AuthoredPlugin).read.view();
+  const projection = useEditorSelector(
+    (current) => {
+      const view = current.plugin(AuthoredPlugin).read.view();
 
-    return 'preview' in view ? view.preview : 'markup';
-  });
+      return 'preview' in view ? view.preview : 'markup';
+    },
+    { dependsOn: 'authored' }
+  );
 
   return (
     <div className="flex w-full flex-col gap-4 p-4 sm:p-6">

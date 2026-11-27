@@ -1681,6 +1681,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
   const inheritedReadOnly = useInheritedReadOnly();
   const viewReadOnly = useOptionalEditorViewState(
     editor,
+    'readOnly',
     readPagedViewReadOnly,
     false,
     true
@@ -1690,6 +1691,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
   );
   const pagedComposing = useOptionalEditorViewState(
     editor,
+    'composing',
     readPagedViewComposing,
     false
   );
