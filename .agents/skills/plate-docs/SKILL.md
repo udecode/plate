@@ -1,5 +1,5 @@
 ---
-description: Use before any edit under content/docs, including a one-line fix to existing advice, a Chinese twin or an embedded demo, and to write or audit Plate public documentation, page design, examples, installation, MDX and navigation.
+description: Use before any edit under content/docs, including a one-line fix to existing advice, a Chinese twin or an embedded demo, and to write or audit Plate and Plite public documentation, page design, examples, installation, MDX and navigation.
 name: plate-docs
 metadata:
   skiller:
@@ -8,122 +8,125 @@ metadata:
 
 # Plate Docs
 
-Own Plate's public documentation experience: house style, page composition,
-example coverage, setup, API teaching, MDX and navigation. Use
-`pstack:technical-writing` for prose, voice and document modes. Its general
-rules serve this project's house style. A docs edit keeps code, commands,
-identifiers, frontmatter and link targets unchanged unless the change covers
-them, and keeps numbers, versions and names tied to their source. It also keeps obligation words (must, may, never), uncertainty and meaningful scope limits as strong as the source says; never turn a possibility into a guarantee, whatever `technical-writing` says about hedging. Code snippets
-follow the repository formatter's two-space indentation, not technical-writing's
-tab rule.
+Own Plate and Plite public documentation under `content/docs`: house style,
+naming, navigation, page composition, examples, setup, API teaching and MDX.
 
-Handle the requested page, feature or documentation audit. An audit reports
-source-backed gaps; edits stay within the requested scope. General prose in
-plans, reports, READMEs and PR descriptions goes directly to `pstack:technical-writing`.
-For a tiny copy edit, read the text and resolve changed links without loading
-unrelated docs mechanics; it still runs the verify table's docs audits.
+Follow `.agents/pstack/rules/writing.md` Long-form mode: use
+`pstack:technical-writing` as reference (Diátaxis modes, STE commands, Global
+English), then run one `pstack:unslop` pass and
+`node .agents/pstack/writing-check.mjs <files>` before verification. Two-space
+code indentation and shadcn density override `technical-writing` defaults. Keep
+code, commands, identifiers, frontmatter, link targets, numbers, obligation
+words (`must`, `may`, `never`), uncertainty and scope limits tied to source;
+never turn a possibility into a guarantee. General prose outside `content/docs`
+(plans, reports, READMEs, PRs) goes directly to `.agents/pstack/rules/writing.md`
+and `pstack:technical-writing`.
 
-Read the target page, its nearest useful sibling, and the source that owns each
-changed claim. Start from the current source and public exports. Docs describe
-the current API; unresolved API design belongs to Best API before teaching it.
+Handle the requested page, feature or audit. An audit reports source-backed
+gaps; edits stay within scope. For a tiny copy edit, read the text and resolve
+changed links without loading unrelated mechanics, then run the docs audits.
+Read the target page, its nearest sibling and the owning source, exports and
+`package.json` first. Unresolved API design goes to `best-api` before teaching
+it.
+
 ## House style: shadcn
 
-This house style takes precedence over the generic presentation defaults of
-`pstack:technical-writing`. Use shadcn for density and page composition; Plate source owns API
-behavior, imports, requirements and examples.
+Shadcn density and composition take precedence over generic
+`pstack:technical-writing` defaults; repo source owns API behavior, imports,
+requirements and examples.
 
-- Start fast. Frontmatter supplies the title and description. Add a short lead
+- Start fast. Frontmatter supplies `title` and `description`. Add a short lead
   only when it clarifies the task, owner or an easily confused sibling.
-- Put the first useful preview or working path before deeper explanation.
-  Recommend the kit/CLI path first when it is the actual supported default;
-  put manual or headless alternatives after it.
+- Put the first useful preview or working path before deeper explanation. Lead
+  with the kit/CLI path when it is the supported default; put manual or headless
+  alternatives after it.
 - Keep component pages together: installation, usage, visible examples and
-  compact API reference can serve one reader goal. Each section does one job.
-- Show imports and the smallest real working example. Add context when the
-  code needs it; obvious usage does not need a ceremonial lead-in sentence.
-- Prefer a real preview and one useful line to paragraphs describing a visual
-  variant. Use MDX components for real structure or choices, not decoration.
+  compact API reference serve one reader goal, with one job per section.
+- Show real imports and the smallest working example. Skip ceremonial lead-ins.
+- Prefer a real preview and one useful line to paragraphs describing visual
+  variants. Use MDX components for real structure or choices, not decoration.
 - Keep reference compact: exact names, types, options and short caveats.
   Preserve established headings and anchors across comparable pages.
-- Explain a non-obvious choice briefly. Runtime concepts can need more context
-  than a UI component; density must not hide ownership or lifecycle behavior.
-- Document only the latest state. Never write changelog-style language ("has
-  been removed", "new feature", "previously", "now supports"), migration notes
-  or "what changed"; write as if no prior version exists.
-For a substantial style or page-shape decision, compare the nearest Plate
-sibling with a relevant page in `../shadcn/apps/v4/content/docs/`. Component
-examples include `components/base/button.mdx`, `chart.mdx` and `sidebar.mdx`;
-installation and registry pages cover their own shapes. Read the applicable
-page, not the whole corpus. This comparison does not require an upstream sync.
+- Explain non-obvious ownership or lifecycle briefly; density must not hide
+  runtime contracts.
+- Document only the latest state. Never write changelog prose ("has been
+  removed", "new feature", "previously", "now supports"), migration notes or
+  "what changed"; write as if no prior version exists.
+
+For a substantial page-shape decision, compare the nearest sibling with the
+matching page in `../shadcn/apps/v4/content/docs/` (such as
+`components/base/button.mdx`, `chart.mdx` or `sidebar.mdx`). Read only the
+applicable page; no upstream sync is required.
+
+## Naming, navigation and boundaries
+
+Apply these consistency rules across both Plate (`content/docs/`) and Plite
+(`content/docs/plite/`):
+
+- **One name, no redundant prefixes.** Never repeat the section, root or product
+  name in titles inside that section (`Hyperscript`, `DOM`, `Yjs`, `EditorRoot`,
+  `Anchor`, not `Plite Hyperscript`, `Plite Component` or `Anchor API`). Keep
+  every sidebar label in `meta.json` aligned with the page's frontmatter `title`
+  (shorter only for width, never a different noun).
+- **Mirror current package structure.** Organize navigation by real entrypoints
+  and reader jobs (`React`, `Subpaths`, `Guides`, `API`), not legacy
+  multi-package leftovers (`Libraries`, "package set", "unpublished beta" or
+  fork manifestos).
+- **Executable by the reader.** Derive install commands, peer dependencies and
+  imports directly from the owning `package.json` (raw `plitejs` docs never tell
+  readers to install `platejs`). Never publish unrunnable private-repo test
+  commands in public docs.
+- **Plate vs Plite boundary (`docs/vision/plate.md`).** Plate docs teach one
+  Plate API and never name `plitejs` outside the Performance comparison. Plite
+  docs stay under `content/docs/plite/` with their own `meta.json` and zero
+  orphan pages.
 
 ## Cover the feature's actual use
 
-Choose examples by reader need. Identify the page's important reader tasks,
-claims and likely misunderstandings, and give each a clear home in an example,
-a precise reference section or a linked guide. Choose each example for
-something distinct it helps the reader do or understand, keep it small enough
-to understand and complete enough to use, and name its prerequisites. Reuse or
-link an existing example when it already serves the reader. Label a mock
-service or local snapshot at the example, and state unsupported or unverified
-behavior as a limitation instead of inventing it. An audit reports missing
-coverage; implementation stays within the requested scope. For feature and
-component pages:
+Identify the page's key reader tasks, states and misunderstandings, and give
+each one clear home in an example, reference section or linked guide. Keep every
+example focused, runnable and honest to its proof: label mocks, state
+unverified/unsupported behavior as a limit, and never imply authorization from a
+read-only editor setting.
 
-- Lead with a focused example of the named feature. Use its kit and required
-  dependencies in setup; a full application `EditorKit` belongs in an example
-  whose purpose is that composition. Preserve explicit feature configuration
-  under Plate UI's teaching/install rules.
-- Give important tasks and materially different states a clear home in an
-  example, snippet, reference section or linked guide. Consider creation and
-  editing, boundaries and history, persistence and recovery, and rendering or
-  access modes only where they affect this feature. Do not require every
-  category, a demo per API method or a fixed number of previews.
-- Let each additional example teach a distinct task, behavior or useful visual
-  variant. When a feature grows a distinct user flow (such as a fill mode,
-  server submission, or persistence view), add a focused preview under
-  `## Examples` instead of bolting another panel onto the primary demo. Reuse
-  registered demos and link composition to its owning page instead of
-  reproducing the same mixed-feature preview across sibling pages.
-- Keep integration requirements next to the example that needs them. Show
-  minimum prerequisites in setup; put detailed ownership and lifecycle
-  explanations after working examples or in a linked concept guide.
-- Keep example claims within their proof. An in-memory save/reload demonstrates
-  a local round trip; label simulated failures. A read-only editor setting
-  does not establish application authorization. Preserve established fixtures
-  and meaningful interactions when revising examples.
-
-For a coverage audit, account for the important in-scope tasks and states and
-their homes or gaps. Use the existing report or plan when one is needed; do
-not create a second inventory or expand a wording-only edit into an audit.
-Verify changed examples through the existing proof owners below.
+- Lead feature and component pages with a focused example of the named feature
+  using its kit and required dependencies; use full `EditorKit` only when the
+  page teaches full composition.
+- Add extra previews under `## Examples` only for distinct tasks, behaviors or
+  visual variants (do not bolt extra panels onto the primary demo or duplicate
+  mixed-feature demos across sibling pages; link composition to its owner).
+- Put minimum prerequisites next to the setup step that needs them; put deeper
+  ownership and lifecycle details after working examples or in a linked guide.
+- For coverage audits, account for in-scope tasks and gaps inside the existing
+  report or plan without expanding wording edits into audits.
 
 ## Select the needed mechanics
 
 | Changed contract | Read |
 | --- | --- |
-| New page, substantial rewrite or a docs gap/topology decision | [Page shapes](./references/lanes.md); select only the matching lane |
+| New page, substantial rewrite or docs gap/topology decision | [Page shapes](./references/lanes.md); select only the matching lane |
 | MDX components, navigation, installation requirements or release routes | [MDX and routes](./references/mdx.md) |
 | Public schema, identity, migration, decoration or renderer examples | [Public API examples](./references/api-examples.md) |
 | Plugin setup, kit/manual paths, format mappings, events or API examples | [Plugin documentation](./references/plugin.md) |
 
-For a gap review, compare the nearest concept guide, public reference and
-feature page before adding a page. Put exact signatures in their reference,
-setup in the feature page, and cross-package explanations in a concept guide.
-Merge duplicated concepts and link to one owner. Read `content/docs/meta.json`
-only when adding, moving, merging or deleting routes or changing navigation.
+Before adding a page, check existing concept guides, references and feature
+pages: put exact signatures in reference, setup in the feature page and
+cross-package behavior in a concept guide; merge duplicates and link to one
+owner. Read `content/docs/meta.json` or `content/docs/plite/meta.json` only when
+changing routes or navigation.
 
 ## Verify the changed claims
 
 | Change | Required evidence |
 | --- | --- |
-| Prose or link only | Read the edited text and resolve changed links; preserve code and metadata |
-| MDX structure or examples | `pnpm --filter www build:source`; verify symbols, imports and fence content against source |
+| Prose or link only | Read the edited text, resolve changed links, preserve code/metadata and run `node .agents/pstack/writing-check.mjs <files>` |
+| MDX structure or examples | `pnpm --filter www build:source`; verify symbols, imports and fences against source |
 | Docs source parity or generated docs | `pnpm --filter www check:docs` |
-| Any `content/docs` edit | `node tooling/scripts/check-plite-docs.mjs` and `node tooling/scripts/check-plate-doc-code-contracts.mjs`, the docs audits that `pnpm check` runs in its plite-docs and core-audits steps. A landing runs only plite-docs, and core-audits first runs in Local CI after landing |
-| New/moved route or navigation | Parse changed metadata and request the exact route; inspect pager/sidebar when they changed |
-| Preview or visible component behavior | Resolve the real demo and use [`verify`](../verify/SKILL.md) on that exact route/state |
+| Any `content/docs` edit | `node tooling/scripts/check-plite-docs.mjs`, `node tooling/scripts/check-plate-doc-code-contracts.mjs` and `pnpm check removed-api-teaching` (landing runs `plite-docs` and `removed-api-teaching`; `core-audits` runs in Local CI) |
+| New/moved route or navigation | Parse changed metadata, run `pnpm --filter www exec bun test src/lib/docs-page-tree.test.ts` and `pnpm --filter www exec bun scripts/check-docs-source-parity.mts`, and check pager/sidebar |
+| Preview or visible component behavior | Resolve the real demo and run [`verify`](../verify/SKILL.md) on that exact route/state |
 | Registry source | [Plate UI](../plate-ui/SKILL.md) and the branch's registry-generation rule |
 
-Run applicable checks once after the final prose pass. New source changes or a
-failure can require another pass. An MDX parse does not prove a route, runtime
-API behavior or browser input. Report the exact proof limit.
+Run applicable checks once after the final `pstack:unslop` pass. An MDX parse
+does not prove a route, runtime API behavior or browser input; report the exact
+proof limit.

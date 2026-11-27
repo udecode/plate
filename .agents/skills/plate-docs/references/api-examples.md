@@ -6,8 +6,9 @@ examples honest to it.
 ## Code Example Rules
 
 - Repo-backed examples only. If a kit does what you're teaching, cite the exact kit file.
-- Include real imports. Show `platejs`, `platejs/react`, and optional
-  `platejs/<feature>` paths explicitly.
+- Include real imports from the owning distribution (`platejs`, `platejs/react`,
+  and optional `platejs/<feature>` in Plate docs; `plitejs`, `plitejs/react`,
+  and optional `plitejs/<subpath>` in Plite docs).
 - Use `// ...otherPlugins,` only when the omission is obvious.
 - No placeholder comments (`// your logic here`, `// Your validation logic`).
 - `showLineNumbers` + `{n-m}` highlights on snippets longer than ~15 lines.

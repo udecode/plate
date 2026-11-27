@@ -23,21 +23,25 @@ Sync Shadcn owns actual upstream adoption; writing does not require a sync.
 
 Adding, moving, merging, or deleting a docs page is a routing change.
 
-- Add the MDX page in the lane folder that matches its route.
-- Update `content/docs/meta.json` root `pages` when the raw page tree order
-  should change.
-- Update `_plate.categoryGroups` in `content/docs/meta.json` when the sidebar
-  overlay should show nested grouping, labels, descriptions, or CN titles.
-- Update `_plate.items` when the route needs title, label, description,
-  keywords, or CN title metadata.
+- Add the MDX page in the lane folder that matches its route (`content/docs/`
+  for Plate; `content/docs/plite/` for Plite).
+- For Plate docs, update `content/docs/meta.json`: root `pages` for page tree
+  order, `_plate.categoryGroups` for sidebar grouping/labels/CN titles, and
+  `_plate.items` for route title, description, keywords or CN metadata.
+- For Plite docs, update `content/docs/plite/meta.json` `pages` only; keep Plite
+  routes out of Plate's `content/docs/meta.json` sidebar groups and route items.
+- Keep sidebar labels aligned with each page's frontmatter `title`, without
+  repeating the root or section name (`Hyperscript`, `EditorRoot`, `Anchor`, not
+  `Plite Hyperscript`, `Plite Component` or `Anchor API`).
 - Add links from the nearest owning pages, not from every vaguely related page.
 - If no `.cn.mdx` page is added, know that CN docs may fall back to English.
   Record that as a caveat rather than pretending the page is translated.
 - Verify the route itself, not just the source file. Pager order and sidebar
   grouping are rendered contracts.
 
-Do not leave orphan pages: every new page needs a route, a nav decision, and at
-least one useful inbound link from the owning neighborhood.
+Do not leave orphan pages in either root: every page needs a route, a nav entry
+in its owning `meta.json`, and at least one useful inbound link from the owning
+neighborhood.
 
 ### Release Docs
 
