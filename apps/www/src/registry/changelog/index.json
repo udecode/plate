@@ -74,6 +74,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-collaboration-demo-history-gates",
+      "href": "/registry/changelog/2026-11-27-collaboration-demo-history-gates.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Gate the collaboration demo Undo and Redo buttons on useEditorHistory",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["collaboration-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-dark-highlight-token",
       "href": "/registry/changelog/2026-11-27-dark-highlight-token.json",
       "status": "draft",

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-collaboration-demo-history-gates",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-collaboration-demo-history-gates.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Gate the collaboration demo Undo and Redo buttons on useEditorHistory",
+  "targets": [
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-collaboration-demo-history-gates-6c1f2a94",
+      "kind": "wiring",
+      "summary": "Gate Undo and Redo on `useEditorHistory({ editor })`, so both turn off while a save holds the redo it cleared, while an undo waits on its owner, and while the editor is read-only.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["collaboration-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-collaboration-demo-history-gates",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,7 +1,12 @@
 'use client';
 
 import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
-import { createEditor, EditorRoot, useEditorSelector } from 'platejs/react';
+import {
+  createEditor,
+  EditorRoot,
+  useEditorHistory,
+  useEditorSelector,
+} from 'platejs/react';
 import {
   yjs,
   type YjsAwarenessChange,
@@ -760,9 +765,7 @@ function PeerControls({
   const history = useEditorSelector(editor, (current) =>
     current.read.history()
   );
-  const canRedo = useEditorSelector(editor, (current) =>
-    current.read.history.hasRedo()
-  );
+  const { canRedo, canUndo } = useEditorHistory({ editor });
   const redoDepth = history.redos.length;
   const undoDepth = history.undos.length;
 
@@ -791,7 +794,7 @@ function PeerControls({
       <Button
         aria-label={`Undo ${peer.name}`}
         data-history-action="undo"
-        disabled={undoDepth === 0}
+        disabled={!canUndo}
         onMouseDown={(event) => {
           event.preventDefault();
         }}

@@ -1,0 +1,14 @@
+---
+id: 2026-11-27-collaboration-demo-history-gates
+date: 2026-11-27
+status: draft
+kind: wiring
+summary: 'Gate the collaboration demo Undo and Redo buttons on useEditorHistory'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-collaboration-demo-history-gates-6c1f2a94","kind":"wiring","migrationNotes":[]} -->
+
+- **`collaboration-demo`**: Gate Undo and Redo on `useEditorHistory({ editor })`, so both turn off while a save holds the redo it cleared, while an undo waits on its owner, and while the editor is read-only.

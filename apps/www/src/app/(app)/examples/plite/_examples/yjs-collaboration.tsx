@@ -26,6 +26,8 @@ import {
   type RenderLeafProps,
   useCreateEditor,
   useEditorContext,
+  useEditorHistory,
+  useEditorSelector,
 } from 'plitejs/react';
 import {
   yjs,
@@ -67,10 +69,7 @@ type ExamplePeer = PeerDefinition & {
   connected: boolean;
   doc: Y.Doc;
   editor?: YjsEditor;
-  redoDepth: number;
-  redoReady: boolean;
   renderEpoch: number;
-  undoDepth: number;
 };
 
 type ExampleNetwork = {
@@ -172,12 +171,6 @@ type YjsEditor = ReactViewEditor<
     ReturnType<typeof createPresenceYjs>,
   ]
 >;
-
-const syncPeerHistory = (peer: ExamplePeer, editor: YjsEditor) => {
-  peer.undoDepth = editor.read.history().undos.length;
-  peer.redoDepth = editor.read.history().redos.length;
-  peer.redoReady = editor.read.history.hasRedo();
-};
 
 const INITIAL_VALUE: CollaborationValue = [
   {
@@ -314,10 +307,7 @@ const createExampleNetwork = (): ExampleNetwork => {
       awareness: new ExampleAwareness(doc),
       connected: true,
       doc,
-      redoDepth: 0,
-      redoReady: false,
       renderEpoch: 0,
-      undoDepth: 0,
     };
   });
 
@@ -724,14 +714,12 @@ const syncSelectionFromDom = (editor: YjsEditor) => {
 
 const runPeerCommand = (
   network: ExampleNetwork,
-  peer: ExamplePeer,
   editor: YjsEditor,
   command: PeerCommand
 ) => {
   syncSelectionFromDom(editor);
 
   editor.update({ history: 'new-batch' }, command);
-  syncPeerHistory(peer, editor);
 
   editor.api.dom.focus({ retries: 1 });
   network.syncAll();
@@ -1021,7 +1009,6 @@ const undoPeer = (
 
   editor.api.history.undo();
 
-  syncPeerHistory(peer, editor);
   syncPeerSelectionAfterHistory(
     network,
     peer,
@@ -1042,7 +1029,6 @@ const redoPeer = (
 
   editor.api.history.redo();
 
-  syncPeerHistory(peer, editor);
   syncPeerSelectionAfterHistory(
     network,
     peer,
@@ -1276,8 +1262,12 @@ const PeerPanelContent = ({
   const [reconfigureError, setReconfigureError] = useState<string | null>(null);
   const admission = useYjsAdmissionStatus(editor);
 
-  const canUndo = peer.undoDepth > 0;
-  const canRedo = peer.redoReady;
+  const { canRedo, canUndo } = useEditorHistory({ editor });
+  const historyDepths = useEditorSelector(editor, (current) => {
+    const { redos, undos } = current.read.history();
+
+    return `undo:${undos.length};redo:${redos.length}`;
+  });
   const { connected } = peer;
   const label = `Peer ${peer.id.toUpperCase()}`;
   const ready = admission.state === 'ready';
@@ -1303,7 +1293,7 @@ const PeerPanelContent = ({
             className="mt-0.5 text-xs text-muted-foreground"
             data-test-id={`yjs-peer-${peer.id}-history`}
           >
-            undo:{peer.undoDepth};redo:{peer.redoDepth}
+            {historyDepths}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -1395,7 +1385,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) => toggleBold(tx));
+            runPeerCommand(network, editor, (tx) => toggleBold(tx));
           }}
           testId={`yjs-peer-${peer.id}-mark-bold`}
         >
@@ -1443,7 +1433,7 @@ const PeerPanelContent = ({
       <div className="flex flex-wrap gap-1.5 border-b border-border px-3 py-2">
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) => appendText(peer, tx));
+            runPeerCommand(network, editor, (tx) => appendText(peer, tx));
           }}
           testId={`yjs-peer-${peer.id}-append`}
         >
@@ -1451,9 +1441,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              replaceDocument(peer, tx)
-            );
+            runPeerCommand(network, editor, (tx) => replaceDocument(peer, tx));
           }}
           testId={`yjs-peer-${peer.id}-replace`}
         >
@@ -1461,9 +1449,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              removeSecondBlock(tx)
-            );
+            runPeerCommand(network, editor, (tx) => removeSecondBlock(tx));
           }}
           testId={`yjs-peer-${peer.id}-remove-node`}
         >
@@ -1471,9 +1457,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              splitFirstText(peer, tx)
-            );
+            runPeerCommand(network, editor, (tx) => splitFirstText(peer, tx));
           }}
           testId={`yjs-peer-${peer.id}-split-node`}
         >
@@ -1481,9 +1465,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              mergeSecondBlock(peer, tx)
-            );
+            runPeerCommand(network, editor, (tx) => mergeSecondBlock(peer, tx));
           }}
           testId={`yjs-peer-${peer.id}-merge-node`}
         >
@@ -1491,9 +1473,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              moveFirstBlockDown(tx)
-            );
+            runPeerCommand(network, editor, (tx) => moveFirstBlockDown(tx));
           }}
           testId={`yjs-peer-${peer.id}-move-down`}
         >
@@ -1501,9 +1481,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              setFirstBlockRole(tx)
-            );
+            runPeerCommand(network, editor, (tx) => setFirstBlockRole(tx));
           }}
           testId={`yjs-peer-${peer.id}-set-node`}
         >
@@ -1511,9 +1489,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              unsetFirstBlockRole(tx)
-            );
+            runPeerCommand(network, editor, (tx) => unsetFirstBlockRole(tx));
           }}
           testId={`yjs-peer-${peer.id}-unset-node`}
         >
@@ -1521,7 +1497,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) => wrapFirstBlock(tx));
+            runPeerCommand(network, editor, (tx) => wrapFirstBlock(tx));
           }}
           testId={`yjs-peer-${peer.id}-wrap-node`}
         >
@@ -1529,7 +1505,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) => unwrapFirstBlock(tx));
+            runPeerCommand(network, editor, (tx) => unwrapFirstBlock(tx));
           }}
           testId={`yjs-peer-${peer.id}-unwrap`}
         >
@@ -1537,9 +1513,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              liftFirstWrappedBlock(tx)
-            );
+            runPeerCommand(network, editor, (tx) => liftFirstWrappedBlock(tx));
           }}
           testId={`yjs-peer-${peer.id}-lift`}
         >
@@ -1547,7 +1521,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
+            runPeerCommand(network, editor, (tx) =>
               insertFragmentText(peer, tx)
             );
           }}
@@ -1557,9 +1531,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              deleteFirstFragment(tx)
-            );
+            runPeerCommand(network, editor, (tx) => deleteFirstFragment(tx));
           }}
           testId={`yjs-peer-${peer.id}-delete-fragment`}
         >
@@ -1567,7 +1539,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
+            runPeerCommand(network, editor, (tx) =>
               deleteBackwardFromFirstBlockEnd(tx)
             );
           }}
@@ -1577,9 +1549,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
-              insertExclamation(tx)
-            );
+            runPeerCommand(network, editor, (tx) => insertExclamation(tx));
           }}
           testId={`yjs-peer-${peer.id}-insert-text`}
         >
@@ -1587,7 +1557,7 @@ const PeerPanelContent = ({
         </CommandButton>
         <CommandButton
           onRun={() => {
-            runPeerCommand(network, peer, editor, (tx) =>
+            runPeerCommand(network, editor, (tx) =>
               moveFirstBlockAfterSecond(tx)
             );
           }}
@@ -1646,8 +1616,7 @@ const PeerPanel = ({
   return (
     <EditorRoot
       editor={editor}
-      onCommit={({ editor: mountedEditor }) => {
-        syncPeerHistory(peer, mountedEditor);
+      onCommit={() => {
         network.syncAll();
       }}
     >

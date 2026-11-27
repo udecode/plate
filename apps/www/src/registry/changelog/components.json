@@ -44,6 +44,21 @@
       "2026-11-17-cn-package",
       "2026-11-12-add-board"
     ],
+    "collaboration-demo": [
+      "2026-11-27-collaboration-demo-history-gates",
+      "2026-11-27-merge-derived-read-hooks",
+      "2026-11-18-registry-icon-library",
+      "2026-10-12-neutral-stored-names",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-14-collaboration-plugin-factory",
+      "2026-09-04-yjs-cursor-presentation",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-transient-editor-geometry",
+      "2026-07-26-plugin-store-state",
+      "2026-07-24-collaboration-runtime",
+      "2025-11-20-biome-ultracite"
+    ],
     "highlight-style": ["2026-11-27-dark-highlight-token"],
     "find": [
       "2026-11-27-dark-mode-editor-chrome",
@@ -403,20 +418,6 @@
       "2026-09-01-plugin-render-contract",
       "2026-08-18-isolate-docx-file-io",
       "2026-08-17-flat-editor-registry",
-      "2025-11-20-biome-ultracite"
-    ],
-    "collaboration-demo": [
-      "2026-11-27-merge-derived-read-hooks",
-      "2026-11-18-registry-icon-library",
-      "2026-10-12-neutral-stored-names",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-14-collaboration-plugin-factory",
-      "2026-09-04-yjs-cursor-presentation",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-transient-editor-geometry",
-      "2026-07-26-plugin-store-state",
-      "2026-07-24-collaboration-runtime",
       "2025-11-20-biome-ultracite"
     ],
     "suggestion-view-demo": [
