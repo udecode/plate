@@ -1184,8 +1184,6 @@ export const manualOnly = {
   'test:watch': 'Watch mode.',
   'test:create-install':
     'Installs registry items into disposable workspaces over the network.',
-  'test:www-browser:chromium':
-    'Runs www Playwright specs against a running www server.',
   'test:www-browser:firefox':
     'Runs www Playwright specs against a running www server.',
   'test:www-browser:webkit':
