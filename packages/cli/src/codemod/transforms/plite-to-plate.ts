@@ -93,6 +93,24 @@ const STATEMENT_NODE_TYPES = new Set([
   'WhileStatement',
 ]);
 
+const CONTENT_COMPONENT_NAMES = new Set([
+  'Editable',
+  'EditorContent',
+  'PagedEditable',
+  'PagedEditorContent',
+  'VirtualizedEditable',
+  'VirtualizedEditorContent',
+]);
+
+const CONTENT_COMPONENT_MODULES = new Set([
+  'platejs/pagination/react',
+  'platejs/react',
+  'platejs/react/virtualized',
+  'plitejs/pagination/react',
+  'plitejs/react',
+  'plitejs/react/virtualized',
+]);
+
 const JSX_COMPONENT_RENAMES: Readonly<Record<string, string>> = {
   Editable: 'EditorContent',
   PagedEditable: 'PagedEditorContent',
@@ -324,7 +342,15 @@ const walkAst = (
 const isPliteModule = (specifier: string): boolean =>
   specifier === 'plitejs' || specifier.startsWith('plitejs/');
 
-const collectPliteImports = (ast: AstNode): BindingMap => {
+const isPliteOrPlateModule = (specifier: string): boolean =>
+  isPliteModule(specifier) ||
+  specifier === 'platejs' ||
+  specifier.startsWith('platejs/');
+
+const collectImports = (
+  ast: AstNode,
+  matchModule: (specifier: string) => boolean
+): BindingMap => {
   const bindings: BindingMap = new Map();
   const program = ast.program as AstNode | undefined;
   const body = (program?.body as AstNode[] | undefined) ?? [];
@@ -333,7 +359,7 @@ const collectPliteImports = (ast: AstNode): BindingMap => {
     if (stmt.type !== 'ImportDeclaration') continue;
     const sourceNode = stmt.source as AstNode | undefined;
     const sourceModule = sourceNode?.value;
-    if (typeof sourceModule !== 'string' || !isPliteModule(sourceModule)) {
+    if (typeof sourceModule !== 'string' || !matchModule(sourceModule)) {
       continue;
     }
     const declImportKind = stmt.importKind === 'type' ? 'type' : 'value';
@@ -362,6 +388,9 @@ const collectPliteImports = (ast: AstNode): BindingMap => {
 
   return bindings;
 };
+
+const collectPliteImports = (ast: AstNode): BindingMap =>
+  collectImports(ast, isPliteModule);
 
 const getNodeStart = (node: AstNode): number =>
   typeof node.start === 'number' ? node.start : 0;
@@ -1206,9 +1235,8 @@ const runPass2 = (
                 : undefined;
             const isEditableChild =
               !!childBinding &&
-              (childBinding.importedName === 'Editable' ||
-                childBinding.importedName === 'PagedEditable' ||
-                childBinding.importedName === 'VirtualizedEditable');
+              CONTENT_COMPONENT_MODULES.has(childBinding.sourceModule) &&
+              CONTENT_COMPONENT_NAMES.has(childBinding.importedName);
             const childAttrs =
               (childOpening?.attributes as AstNode[] | undefined) ?? [];
             const childHasRoot = childAttrs.some(
@@ -1589,6 +1617,21 @@ const runPass3 = (
 
       const rename = PLITE_TO_PLATE_SYMBOL_RENAMES[key];
       if (rename) {
+        if (
+          mod === 'plitejs/react' &&
+          (importedName === 'useEditorContext' ||
+            importedName === 'useOptionalEditorContext')
+        ) {
+          ctx.diagnostics.push(
+            makeDiagnostic(
+              ctx.filePath,
+              spec,
+              'warning',
+              'use-editor-context-multi-root',
+              `${importedName} returned the nearest mounted view editor; in multi-root Plate trees ${rename.targetName} follows the active caret root, so use useRootEditor(root) if you need one fixed root.`
+            )
+          );
+        }
         const isUnaliased = localName === importedName;
         const nextLocalName = isUnaliased ? rename.targetName : localName;
         if (isUnaliased && nextLocalName !== localName) {
@@ -1780,13 +1823,44 @@ const runPass3 = (
   };
 };
 
+const isBooleanLiteralAttr = (attr: AstNode, expected: boolean): boolean => {
+  const value = attr.value as AstNode | null | undefined;
+  if (!value) return expected;
+  if (value.type !== 'JSXExpressionContainer') return false;
+  const expr = value.expression as AstNode | undefined;
+  return expr?.type === 'BooleanLiteral' && expr.value === expected;
+};
+
 const runPass4 = (
   source: string,
   ctx: PassContext
 ): { code: string; editsCount: number } => {
   const ast = parseSource(source, ctx.filePath);
+  const bindings = collectImports(ast, isPliteOrPlateModule);
   const edits: CodemodEdit[] = [];
   const emittedTodoKeys = new Set<string>();
+
+  const resolveBinding = (name: string, walk: WalkContext) =>
+    walk.isShadowed(name) ? undefined : bindings.get(name);
+
+  const isContentTag = (tagName: string, walk: WalkContext): boolean => {
+    const binding = resolveBinding(tagName, walk);
+    return (
+      !!binding &&
+      CONTENT_COMPONENT_MODULES.has(binding.sourceModule) &&
+      CONTENT_COMPONENT_NAMES.has(binding.importedName)
+    );
+  };
+
+  const isEditorRootTag = (tagName: string, walk: WalkContext): boolean => {
+    const binding = resolveBinding(tagName, walk);
+    return (
+      !!binding &&
+      (binding.sourceModule === 'platejs/react' ||
+        binding.sourceModule === 'plitejs/react') &&
+      binding.importedName === 'EditorRoot'
+    );
+  };
 
   const scheduleTodo = (
     node: AstNode,
@@ -1819,6 +1893,68 @@ const runPass4 = (
   };
 
   walkAst(ast, (node, walk) => {
+    if (
+      node.type === 'JSXOpeningElement' &&
+      (node.name as AstNode).type === 'JSXIdentifier'
+    ) {
+      const tagName = String((node.name as AstNode).name);
+      if (isContentTag(tagName, walk)) {
+        const attrs = (node.attributes as AstNode[]) ?? [];
+        const spreadAttr = attrs.find((a) => a.type === 'JSXSpreadAttribute');
+        if (spreadAttr) {
+          ctx.diagnostics.push(
+            makeDiagnostic(
+              ctx.filePath,
+              spreadAttr,
+              'warning',
+              'editor-content-spread-props',
+              `Spread props on <${tagName}> may include Plite render props (renderElement/renderLeaf/renderText/renderVoid/renderPlaceholder) or readOnly={false} overrides; verify manually.`
+            )
+          );
+        }
+
+        const contentReadOnlyAttr = attrs.find(
+          (a) =>
+            a.type === 'JSXAttribute' &&
+            (a.name as AstNode).type === 'JSXIdentifier' &&
+            (a.name as AstNode).name === 'readOnly'
+        );
+        if (
+          contentReadOnlyAttr &&
+          !isBooleanLiteralAttr(contentReadOnlyAttr, true)
+        ) {
+          const hasReadOnlyRootAncestor = walk.ancestors.some((ancestor) => {
+            if (ancestor.type !== 'JSXElement') return false;
+            const ancestorOpening = ancestor.openingElement as AstNode;
+            const ancestorName = ancestorOpening.name as AstNode;
+            if (ancestorName.type !== 'JSXIdentifier') return false;
+            if (!isEditorRootTag(String(ancestorName.name), walk)) return false;
+            const ancestorAttrs =
+              (ancestorOpening.attributes as AstNode[]) ?? [];
+            const ancestorReadOnly = ancestorAttrs.find(
+              (a) =>
+                a.type === 'JSXAttribute' &&
+                (a.name as AstNode).type === 'JSXIdentifier' &&
+                (a.name as AstNode).name === 'readOnly'
+            );
+            return (
+              !!ancestorReadOnly &&
+              !isBooleanLiteralAttr(ancestorReadOnly, false)
+            );
+          });
+          if (hasReadOnlyRootAncestor) {
+            scheduleTodo(
+              contentReadOnlyAttr,
+              walk.ancestors,
+              'manual',
+              'editor-content-readonly-override',
+              'Plate lets <EditorContent readOnly={false}> override <EditorRoot readOnly>, whereas Plite kept root read-only locked; verify readOnly precedence.'
+            );
+          }
+        }
+      }
+    }
+
     if (node.type === 'JSXAttribute') {
       const attrName = (node.name as AstNode).name;
       if (typeof attrName !== 'string') return;
@@ -1831,10 +1967,8 @@ const runPass4 = (
 
       if (
         RENDER_PROP_DIAGNOSTIC_NAMES.has(attrName) &&
-        (tagName === 'EditorContent' ||
-          tagName === 'Editable' ||
-          tagName === 'PagedEditorContent' ||
-          tagName === 'VirtualizedEditorContent')
+        tagName &&
+        isContentTag(tagName, walk)
       ) {
         scheduleTodo(
           node,
@@ -1845,7 +1979,11 @@ const runPass4 = (
         );
       }
 
-      if (attrName === 'decorations' && tagName === 'EditorRoot') {
+      if (
+        attrName === 'decorations' &&
+        tagName &&
+        isEditorRootTag(tagName, walk)
+      ) {
         scheduleTodo(
           node,
           walk.ancestors,
@@ -1855,7 +1993,11 @@ const runPass4 = (
         );
       }
 
-      if (attrName === 'onValueChange' && tagName === 'EditorRoot') {
+      if (
+        attrName === 'onValueChange' &&
+        tagName &&
+        isEditorRootTag(tagName, walk)
+      ) {
         const valueExpr = (node.value as AstNode | null)?.expression as
           | AstNode
           | undefined;
@@ -1961,25 +2103,28 @@ const runPass4 = (
         }
       }
 
-      if (
-        callee.type === 'Identifier' &&
-        (callee.name === 'useEditorSelector' ||
-          callee.name === 'useEditorState')
-      ) {
-        const optArg = args[1];
-        if (optArg?.type === 'ObjectExpression') {
-          const deferredProp = ((optArg.properties as AstNode[]) ?? []).find(
-            (p) =>
-              p.type === 'ObjectProperty' && getPropertyName(p) === 'deferred'
-          );
-          if (deferredProp) {
-            scheduleTodo(
-              deferredProp,
-              walk.ancestors,
-              'manual',
-              'selector-deferred-option',
-              'Plate useEditorSelector/useEditorState does not accept `deferred`; wrap the selector output with React useDeferredValue instead.'
+      if (callee.type === 'Identifier') {
+        const calleeBinding = resolveBinding(String(callee.name), walk);
+        if (
+          calleeBinding &&
+          (calleeBinding.importedName === 'useEditorSelector' ||
+            calleeBinding.importedName === 'useStateFieldValue')
+        ) {
+          for (const optArg of [args[1], args[2]]) {
+            if (optArg?.type !== 'ObjectExpression') continue;
+            const deferredProp = ((optArg.properties as AstNode[]) ?? []).find(
+              (p) =>
+                p.type === 'ObjectProperty' && getPropertyName(p) === 'deferred'
             );
+            if (deferredProp) {
+              scheduleTodo(
+                deferredProp,
+                walk.ancestors,
+                'manual',
+                'selector-deferred-option',
+                `Plate ${calleeBinding.importedName} does not accept \`deferred\`; wrap the selector output with React useDeferredValue instead.`
+              );
+            }
           }
         }
       }

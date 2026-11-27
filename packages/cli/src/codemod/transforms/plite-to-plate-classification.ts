@@ -28,10 +28,25 @@ export const PLITE_TO_PLATE_SYMBOL_RENAMES: Readonly<
     targetModule: 'platejs/pagination/react',
     targetName: 'PagedEditorContent',
   },
+  'plitejs/pagination/react#PagedEditablePageAttributes': {
+    isTypeOnly: true,
+    targetModule: 'platejs/pagination/react',
+    targetName: 'PagedEditorContentPageAttributes',
+  },
+  'plitejs/pagination/react#PagedEditablePageView': {
+    isTypeOnly: true,
+    targetModule: 'platejs/pagination/react',
+    targetName: 'PagedEditorContentPageView',
+  },
   'plitejs/pagination/react#PagedEditableProps': {
     isTypeOnly: true,
     targetModule: 'platejs/pagination/react',
     targetName: 'PagedEditorContentProps',
+  },
+  'plitejs/pagination/react#PagedEditableRenderPageProps': {
+    isTypeOnly: true,
+    targetModule: 'platejs/pagination/react',
+    targetName: 'PagedEditorContentRenderPageProps',
   },
   'plitejs/react#Editable': {
     targetModule: 'platejs/react',
@@ -46,11 +61,6 @@ export const PLITE_TO_PLATE_SYMBOL_RENAMES: Readonly<
     isTypeOnly: true,
     targetModule: 'platejs/react',
     targetName: 'UseEditorSelectorOptions',
-  },
-  'plitejs/react#EditorStateSelectorOptions': {
-    isTypeOnly: true,
-    targetModule: 'platejs/react',
-    targetName: 'UseEditorStateOptions',
   },
   'plitejs/react#ReactPlugin': {
     isTypeOnly: true,
@@ -342,12 +352,8 @@ export const PLITE_ONLY_DIAGNOSTICS: Readonly<Record<string, string>> = {
     'useClaimEditableDOMCommit is Plite-only low-level DOM API.',
   'plitejs/react#useCommand':
     'useCommand is Plite-only (binds focus policy + command dispatch); migrate to editor.update / editor.tf.',
-  'plitejs/react#useEditorEditableElement':
-    'useEditorEditableElement returns an HTMLElement | null (reactive), whereas Plate useEditableRef returns a RefObject; migrate manually.',
   'plitejs/react#useNodeSelector':
     'useNodeSelector takes a Plite node selector context; migrate to useElementSelector or useEditorSelector in platejs/react.',
-  'plitejs/react#useOptionalEditorReadOnly':
-    'useOptionalEditorReadOnly returns boolean | undefined outside providers; Plate useEditorReadOnly returns boolean (true outside providers).',
   'plitejs/react#useOptionalElement':
     'useOptionalElement is Plite-only; use useElement inside element components.',
   'plitejs/react#useTextSelector':
@@ -404,6 +410,8 @@ export const REMOVED_PLITE_REACT_DIAGNOSTICS: Readonly<Record<string, string>> =
       'useAnnotations was removed from plitejs/react and platejs/react; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
     useAnnotationStore:
       'useAnnotationStore was removed from plitejs/react and platejs/react; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+    useOptionalEditorReadOnly:
+      'useOptionalEditorReadOnly was removed from plitejs/react; use useEditorReadOnly from platejs/react (returns false outside providers, or true under an empty controller).',
   };
 
 export const PLITE_TO_PLATE_CLASSIFICATION = Object.freeze({
