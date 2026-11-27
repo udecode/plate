@@ -55,7 +55,7 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
                 className={mediaResizeHandleVariants({ direction: 'left' })}
                 direction="left"
               />
-              <div>
+              <div data-ink-box="">
                 {/* oxlint-disable-next-line nextjs/no-img-element, jsx-a11y/no-noninteractive-element-interactions -- [P1 local-invariant] The editor node owns a user URL, native draggable image that starts its block drag, composed ref, and resizable width. */}
                 <img
                   className={cn(

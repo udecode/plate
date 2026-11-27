@@ -34,6 +34,18 @@
       "files": ["apps/www/src/registry/lib/ink-digitize.ts"],
       "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "media-image",
+      "files": ["apps/www/src/registry/components/editor/media-image.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video",
+      "files": ["apps/www/src/registry/components/editor/media-video.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
@@ -66,6 +78,23 @@
       "source": {
         "line": 18,
         "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-always-visible",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-always-visible-media",
+      "kind": "behavior",
+      "summary": "Mark the resizable media frame with `data-ink-box` so ink strokes anchor to the visual media box and scale proportionally on resize.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-image", "media-video"],
+      "source": {
+        "line": 22,
+        "row": 3,
         "legacyRelease": {
           "date": "2026-11-27",
           "entry": "2026-11-27-ink-always-visible",

@@ -447,6 +447,27 @@
       "2026-11-27-ink-always-visible",
       "2026-11-27-ink-attached-digitize"
     ],
+    "media-image": [
+      "2026-11-27-ink-always-visible",
+      "2026-11-17-cn-package",
+      "2026-10-18-layout-style-values",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-10-01-native-block-drag",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-video": [
+      "2026-11-27-ink-always-visible",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-17-cn-package",
+      "2026-10-18-layout-style-values",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-10-01-native-block-drag",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
     "ink-digitize-api": [
       "2026-11-27-ink-closing-fixes",
       "2026-11-27-ink-toolbar-and-digitize"
@@ -1153,17 +1174,6 @@
       "2026-08-04-infer-node-props-from-plugins",
       "2025-11-20-biome-ultracite"
     ],
-    "media-video": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-17-cn-package",
-      "2026-10-18-layout-style-values",
-      "2026-10-14-block-void-selection",
-      "2026-10-13-media-caption-preview",
-      "2026-10-01-native-block-drag",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "settings-dialog": [
       "2026-11-19-rtl-editor-ui",
       "2026-11-18-registry-icon-library",
@@ -1432,14 +1442,6 @@
       "2026-10-18-layout-style-values",
       "2026-10-14-block-void-selection",
       "2026-10-13-media-caption-preview",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-image": [
-      "2026-11-17-cn-package",
-      "2026-10-18-layout-style-values",
-      "2026-10-14-block-void-selection",
-      "2026-10-13-media-caption-preview",
-      "2026-10-01-native-block-drag",
       "2026-08-17-flat-editor-registry"
     ],
     "mention-static": [

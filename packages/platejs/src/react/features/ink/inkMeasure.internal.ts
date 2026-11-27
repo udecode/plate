@@ -64,18 +64,49 @@ export const inkTextBlocks = (view: Editor): InkTextBlock[] => {
     });
 };
 
-export const inkVoidBlockElements = (view: Editor): HTMLElement[] => {
+export type InkVoidBlock = Readonly<{
+  element: HTMLElement;
+  id: string;
+  key: NodeKey;
+  path: Path;
+  text: '';
+}>;
+
+export const inkVoidBlockOf = (
+  schema: Editor['read']['schema'],
+  node: Node
+): Readonly<{ id: string; text: '' }> | undefined =>
+  ElementApi.isElement(node) &&
+  typeof node.id === 'string' &&
+  schema.isVoid(node)
+    ? { id: node.id, text: '' }
+    : undefined;
+
+export const inkVoidBlocks = (view: Editor): InkVoidBlock[] => {
   const { schema } = view.read;
 
   return view.read.nodes
     .blocks({ at: [], mode: 'lowest' })
-    .flatMap(([node]) => {
-      if (!ElementApi.isElement(node) || !schema.isVoid(node)) return [];
+    .flatMap(([node, path]) => {
+      const block = inkVoidBlockOf(schema, node);
 
-      const element = view.api.dom.resolveDOMNode(view.key(node));
+      if (!block) return [];
 
-      return element ? [element] : [];
+      const key = view.key(node);
+      const element = view.api.dom.resolveDOMNode(key);
+
+      return element ? [{ element, key, path, ...block }] : [];
     });
+};
+
+export const inkVoidBoxOf = (
+  element: Element,
+  origin: InkLayerOrigin
+): InkBox | undefined => {
+  const target = element.querySelector('[data-ink-box]') ?? element;
+  const box = inkBoxOf(target, origin);
+
+  return box.width > 0 && box.height > 0 ? box : undefined;
 };
 
 const boxIn = (rect: DOMRectReadOnly, origin: InkLayerOrigin): InkBox => ({

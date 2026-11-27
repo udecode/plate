@@ -440,8 +440,14 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["ink", "ink-dock", "ink-digitize"],
-      "entries": 2,
+      "targets": [
+        "ink",
+        "ink-dock",
+        "ink-digitize",
+        "media-image",
+        "media-video"
+      ],
+      "entries": 3,
       "diagnostics": []
     },
     {

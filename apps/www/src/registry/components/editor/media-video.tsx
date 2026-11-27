@@ -81,7 +81,7 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
               }}
               width={props.element.width}
             >
-              <div className="group/media">
+              <div className="group/media" data-ink-box="">
                 <ResizeHandle
                   className={mediaResizeHandleVariants({ direction: 'left' })}
                   direction="left"

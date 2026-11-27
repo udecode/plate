@@ -26,6 +26,8 @@ import {
   type InkMeasuredBlock,
   inkBoxOf,
   inkTextBlockOf,
+  inkVoidBlockOf,
+  inkVoidBoxOf,
   sameInkBox,
 } from './inkMeasure.internal';
 import { InkPlugin } from './InkPlugin';
@@ -399,14 +401,14 @@ const everywhere: Span = () => [
   Number.POSITIVE_INFINITY,
 ];
 
-type NearBlock = Readonly<{
-  box: InkBox;
-  element: HTMLElement;
-  id: string;
-  key: NodeKey;
-  text: string;
-  voids?: string;
-}>;
+type ResolvedBlock = InkText & Readonly<{ id: string; isVoid?: boolean }>;
+
+type NearBlock = ResolvedBlock &
+  Readonly<{
+    box: InkBox;
+    element: HTMLElement;
+    key: NodeKey;
+  }>;
 
 export const createInkPlacer = ({
   editable,
@@ -418,7 +420,7 @@ export const createInkPlacer = ({
   const lowestOf = new WeakMap<Element, readonly HTMLElement[]>();
   const textBlocks = new WeakMap<
     object,
-    WeakMap<object, (InkText & Readonly<{ id: string }>) | undefined>
+    WeakMap<object, ResolvedBlock | undefined>
   >();
   const held = new Map<string, Held>();
   let index: MarkIndex | null = null;
@@ -430,7 +432,7 @@ export const createInkPlacer = ({
       readInkIndexedMark({ copy: read.copy, editor: view, state }, mark)
     );
 
-  const textBlock = (key: NodeKey) => {
+  const inkBlock = (key: NodeKey): ResolvedBlock | undefined => {
     const node = view.read.nodes.get(key)?.[0];
 
     if (!node) return undefined;
@@ -442,7 +444,15 @@ export const createInkPlacer = ({
       bySchema = new WeakMap();
       textBlocks.set(schema.identity(), bySchema);
     }
-    if (!bySchema.has(node)) bySchema.set(node, inkTextBlockOf(schema, node));
+    if (!bySchema.has(node)) {
+      const text = inkTextBlockOf(schema, node);
+      const voided = text ? undefined : inkVoidBlockOf(schema, node);
+
+      bySchema.set(
+        node,
+        text ?? (voided ? { ...voided, isVoid: true } : undefined)
+      );
+    }
 
     return bySchema.get(node);
   };
@@ -537,21 +547,25 @@ export const createInkPlacer = ({
         let allBelow = true;
 
         for (const element of lowestBlocks(top[at] as HTMLElement)) {
-          const box = inkBoxOf(element, origin);
+          const outer = inkBoxOf(element, origin);
 
-          if (box.top + origin.top > viewportTo) continue;
+          if (outer.top + origin.top > viewportTo) continue;
           allBelow = false;
-          if (box.top + box.height + origin.top < viewportFrom) continue;
+          if (outer.top + outer.height + origin.top < viewportFrom) continue;
 
           const key = element.getAttribute(
             'data-editor-node-key'
           ) as NodeKey | null;
           const block =
             key && element.getAttribute('data-editor-node') === 'element'
-              ? textBlock(key)
+              ? inkBlock(key)
               : undefined;
 
-          if (key && block) between.push({ box, element, key, ...block });
+          if (!key || !block) continue;
+
+          const box = block.isVoid ? inkVoidBoxOf(element, origin) : outer;
+
+          if (box) between.push({ box, element, key, ...block });
         }
         if (allBelow && stacks) break;
       }
@@ -562,20 +576,28 @@ export const createInkPlacer = ({
     const blocks = blocksBetween(viewportLow, viewportHigh);
     const byKey = new Map<
       NodeKey,
-      Pick<NearBlock, 'box' | 'element' | 'text' | 'voids'> | undefined
+      | Pick<NearBlock, 'box' | 'element' | 'isVoid' | 'text' | 'voids'>
+      | undefined
     >(blocks.map((block) => [block.key, block]));
     const measured = new Map<NodeKey, InkMeasuredBlock | undefined>();
     const blockAt = (key: NodeKey) => {
       if (!byKey.has(key)) {
         const element = view.api.dom.resolveDOMNode(key);
-        const found = textBlock(key);
+        const found = inkBlock(key);
+        const box =
+          element && found
+            ? found.isVoid
+              ? inkVoidBoxOf(element, origin)
+              : inkBoxOf(element, origin)
+            : undefined;
 
         byKey.set(
           key,
-          element && found
+          element && found && box
             ? {
-                box: inkBoxOf(element, origin),
+                box,
                 element,
+                isVoid: found.isVoid,
                 text: found.text,
                 voids: found.voids,
               }
@@ -733,10 +755,12 @@ export const createInkPlacer = ({
             }
           : undefined;
       };
+      const needsLines =
+        entry.aligned && copies.every((copy) => copy.lines.length > 0);
       const measuredLive = places.map((place) => {
         if (!place) return undefined;
 
-        return entry.aligned ? measure(place.key) : boxOnly(place.key);
+        return needsLines ? measure(place.key) : boxOnly(place.key);
       });
       const firstMeasured = measuredLive.find((block) => block !== undefined);
       const candidate = placeMark({
@@ -788,9 +812,9 @@ export const createInkPlacer = ({
       const firstTop = first?.box.top ?? 0;
       const witnesses = keys.flatMap((key): Witness[] => {
         const block = blockAt(key);
-        const lines = entry.aligned ? measure(key)?.lines : undefined;
+        const lines = needsLines ? measure(key)?.lines : undefined;
 
-        return block && (!entry.aligned || lines)
+        return block && (!needsLines || lines)
           ? [
               {
                 boxFromFirst: {

@@ -24,12 +24,14 @@ import {
 import { type Editor, HistoryPlugin } from '../../core';
 import { inkDraws, inkPressure, inkSamplesOf } from './inkInput.internal';
 import {
-  type InkMeasuredBlock,
   type InkLayerOrigin,
+  type InkMeasuredBlock,
   type InkTextBlock,
+  type InkVoidBlock,
   inkBoxOf,
   inkTextBlocks,
-  inkVoidBlockElements,
+  inkVoidBlocks,
+  inkVoidBoxOf,
   inkWordBoxes,
   measureInkBlock,
   sameInkBox,
@@ -46,12 +48,19 @@ type Entered = Readonly<{
   live: InkMeasuredBlock;
 }>;
 
+type EnteredVoid = Readonly<{
+  block: InkVoidBlock;
+  box: ReturnType<typeof inkBoxOf>;
+  direction: InkMarkInput['direction'];
+}>;
+
 type Epoch = {
   readonly at: number;
   readonly blocks: Entered[];
   note: Entered | undefined;
   readonly samples: InkSample[];
   readonly start: number;
+  readonly voidBlock?: EnteredVoid;
 };
 
 const heldBy = (epoch: Epoch) =>
@@ -192,7 +201,13 @@ export const attachInkCapture = ({
   let blocks: Array<
     Readonly<{ block: InkTextBlock; box: ReturnType<typeof inkBoxOf> }>
   > | null = null;
-  let voidBoxes: Array<ReturnType<typeof inkBoxOf>> | null = null;
+  let voidTargets: Array<
+    Readonly<{
+      block: InkVoidBlock;
+      box: ReturnType<typeof inkBoxOf> | undefined;
+      outer: ReturnType<typeof inkBoxOf>;
+    }>
+  > | null = null;
   let changedSinceCut = new Map<NodeKey, number>();
   let dropBefore = Number.NEGATIVE_INFINITY;
   let savedAt: number | undefined;
@@ -212,22 +227,47 @@ export const attachInkCapture = ({
     return blocks;
   };
 
-  const voidBoxesAt = (origin: InkLayerOrigin) => {
-    voidBoxes ??= inkVoidBlockElements(view).map((element) =>
-      inkBoxOf(element, origin)
-    );
+  const voidTargetsAt = (origin: InkLayerOrigin) => {
+    voidTargets ??= inkVoidBlocks(view).map((block) => ({
+      block,
+      box: inkVoidBoxOf(block.element, origin),
+      outer: inkBoxOf(block.element, origin),
+    }));
 
-    return voidBoxes;
+    return voidTargets;
   };
 
-  const hitsVoidBox = ([x, y]: Point, origin: InkLayerOrigin) =>
-    voidBoxesAt(origin).some(
-      (box) =>
-        x >= box.left &&
-        x <= box.left + box.width &&
-        y >= box.top &&
-        y <= box.top + box.height
+  const pointInBox = ([x, y]: Point, box: ReturnType<typeof inkBoxOf>) =>
+    x >= box.left &&
+    x <= box.left + box.width &&
+    y >= box.top &&
+    y <= box.top + box.height;
+
+  const voidTargetAt = (point: Point, origin: InkLayerOrigin) => {
+    const targets = voidTargetsAt(origin);
+    const visual = targets.find(
+      (target) => target.box !== undefined && pointInBox(point, target.box)
     );
+
+    if (visual?.box) {
+      return {
+        hit: {
+          block: visual.block,
+          box: visual.box,
+          direction:
+            getComputedStyle(visual.block.element).direction === 'rtl'
+              ? ('rtl' as const)
+              : ('ltr' as const),
+        },
+        kind: 'void' as const,
+      };
+    }
+    if (targets.some((target) => pointInBox(point, target.outer))) {
+      return { kind: 'outside-void-box' as const };
+    }
+
+    return undefined;
+  };
 
   const enter = (
     block: InkTextBlock,
@@ -280,6 +320,29 @@ export const attachInkCapture = ({
   };
 
   const inputOf = (done: Epoch, brush: InkBrush): InkMarkInput | undefined => {
+    if (done.voidBlock) {
+      const { block, box, direction } = done.voidBlock;
+
+      return {
+        at: done.at,
+        blocks: [
+          {
+            block: block.id,
+            height: box.height,
+            left: box.left,
+            lines: [],
+            runs: [],
+            text: '',
+            top: box.top,
+            width: box.width,
+          },
+        ],
+        brush,
+        direction,
+        samples: done.samples,
+      };
+    }
+
     const points = done.samples.map(([x, y]): Point => [x, y]);
     const radius = brush.size / 2;
     const entered = heldBy(done);
@@ -291,14 +354,6 @@ export const attachInkCapture = ({
       done.blocks.length === 0
         ? marginOf(first.live, points, radius)
         : undefined;
-
-    if (
-      done.blocks.length === 0 &&
-      !margin &&
-      points.some((point) => hitsVoidBox(point, originOf()))
-    ) {
-      return undefined;
-    }
 
     return {
       at: done.at,
@@ -370,8 +425,14 @@ export const attachInkCapture = ({
     open: Epoch,
     origin: InkLayerOrigin,
     change: InkLayoutChange
-  ) =>
-    heldBy(open).some(({ block, live }) =>
+  ) => {
+    if (open.voidBlock) {
+      const now = inkVoidBoxOf(open.voidBlock.block.element, origin);
+
+      return !now || !sameInkBox(open.voidBlock.box, now);
+    }
+
+    return heldBy(open).some(({ block, live }) =>
       keepsLayouts(change)
         ? !sameInkBox(live.box, inkBoxOf(block.element, origin))
         : !sameInkLayout(
@@ -379,8 +440,9 @@ export const attachInkCapture = ({
             measureInkBlock(block.element, block.text, origin)
           )
     );
+  };
 
-  const changedAt = (block: InkTextBlock) =>
+  const changedAt = (block: Pick<InkTextBlock, 'path'>) =>
     block.path.flatMap((_, at) => {
       const key = view.key(block.path.slice(0, at + 1));
       const time = key === null ? undefined : changedSinceCut.get(key);
@@ -388,7 +450,11 @@ export const attachInkCapture = ({
       return time === undefined ? [] : [time];
     });
 
-  const take = (event: PointerEvent, origin: InkLayerOrigin) => {
+  const take = (
+    event: PointerEvent,
+    origin: InkLayerOrigin,
+    initialVoid?: EnteredVoid
+  ) => {
     if (!contact || event.timeStamp < dropBefore) return;
 
     const point: Point = [
@@ -398,16 +464,50 @@ export const attachInkCapture = ({
     const [previous] = epoch?.samples.slice(-1) ?? [];
     const { brush } = contact;
     const radius = brush.size / 2;
+
+    if (previous && previous[0] === point[0] && previous[1] === point[1]) {
+      return;
+    }
+
+    const activeVoid = epoch?.voidBlock ?? initialVoid;
+
+    if (activeVoid) {
+      const open = epoch ?? {
+        at: Date.now(),
+        blocks: [],
+        note: undefined,
+        samples: [],
+        start: event.timeStamp,
+        voidBlock: activeVoid,
+      };
+      const [last] = open.samples.slice(-1);
+
+      epoch = open;
+      open.samples.push(
+        roundSample([
+          point[0],
+          point[1],
+          inkPressure(
+            event,
+            last && {
+              distance: Math.hypot(point[0] - last[0], point[1] - last[1]),
+              pressure: last[2],
+            },
+            brush.size
+          ),
+          Math.max(last?.[3] ?? 0, event.timeStamp - open.start),
+        ])
+      );
+
+      return;
+    }
+
     const entering = (segment: readonly Point[]) =>
       blocksAt(origin).filter(
         ({ block, box }) =>
           !epoch?.blocks.some((entered) => entered.block.key === block.key) &&
           footprintEnters(segment, radius, box)
       );
-
-    if (previous && previous[0] === point[0] && previous[1] === point[1]) {
-      return;
-    }
 
     const changes = entering(
       previous ? [[previous[0], previous[1]], point] : [point]
@@ -466,25 +566,20 @@ export const attachInkCapture = ({
   const onPointerDown = (event: PointerEvent) => {
     const current = tool();
 
-    if (
-      current?.type !== 'draw' ||
-      !inkDraws(event, contact !== null) ||
-      (event.target instanceof Element &&
-        event.target.closest('[data-ink-sign]'))
-    ) {
+    if (current?.type !== 'draw' || !inkDraws(event, contact !== null)) {
       return;
     }
 
     const origin = originOf();
 
-    if (
-      hitsVoidBox(
-        [event.clientX - origin.left, event.clientY - origin.top],
-        origin
-      )
-    ) {
-      return;
-    }
+    voidTargets = null;
+    const voidHit = voidTargetAt(
+      [event.clientX - origin.left, event.clientY - origin.top],
+      origin
+    );
+
+    if (voidHit?.kind === 'outside-void-box') return;
+
     event.preventDefault();
     contact = {
       brush: current.brush,
@@ -495,7 +590,7 @@ export const attachInkCapture = ({
     changedSinceCut = new Map();
     dropBefore = Number.NEGATIVE_INFINITY;
     layer.setPointerCapture(event.pointerId);
-    take(event, origin);
+    take(event, origin, voidHit?.hit);
     draw();
   };
   const holdOrEnd = (event: PointerEvent) => {
@@ -512,7 +607,7 @@ export const attachInkCapture = ({
 
     if (epoch && heldMoved(epoch, origin, 'boxes')) {
       blocks = null;
-      voidBoxes = null;
+      voidTargets = null;
       sealOnChange();
     }
     for (const sample of inkSamplesOf(event)) {
@@ -536,7 +631,7 @@ export const attachInkCapture = ({
 
   const unsubscribe = editor.subscribeCommit(({ changed }) => {
     blocks = null;
-    voidBoxes = null;
+    voidTargets = null;
     if (!contact) return;
     if (tool() !== contact.tool) {
       cancel();
@@ -547,9 +642,15 @@ export const attachInkCapture = ({
     const paths = changed.paths();
 
     if (paths.length === 0) return;
+    const heldBlocks: ReadonlyArray<Readonly<{ key: NodeKey }>> =
+      epoch?.voidBlock
+        ? [epoch.voidBlock.block]
+        : epoch
+          ? heldBy(epoch).map(({ block }) => block)
+          : [];
+
     if (
-      epoch &&
-      heldBy(epoch).some(({ block }) => {
+      heldBlocks.some((block) => {
         const path = view.read.nodes.get(block.key)?.[1];
 
         return !path || paths.some((at) => PathApi.compare(at, path) <= 0);
@@ -589,7 +690,7 @@ export const attachInkCapture = ({
     },
     layoutChanged: (change: InkLayoutChange) => {
       blocks = null;
-      voidBoxes = null;
+      voidTargets = null;
       if (!epoch || heldMoved(epoch, originOf(), change)) sealOnChange();
     },
   };
