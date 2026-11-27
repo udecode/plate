@@ -5,6 +5,7 @@ import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useRebuildLine } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
+  flushCompositionRender,
   grantCompositionLease,
   reenterCompositionLine,
   settleCompositionLeaseAndFlushRender,
@@ -50,6 +51,7 @@ export const useEditableCompositionLease = ({
     });
 
     return {
+      flushRender: flushCompositionRender,
       grant: (selection) => {
         const root = runtime.rootElement;
 

@@ -77,6 +77,7 @@ export {
   canWriteEditableDOMSelection,
   clearEditableDOMSelection,
   type ClearEditableDOMSelectionOptions,
+  documentOf,
   DOMRootRuntime,
   type DOMRootRuntimeOptions,
   type EditableDOMSelectionClearPolicy,

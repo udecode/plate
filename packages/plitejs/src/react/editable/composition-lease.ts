@@ -482,18 +482,12 @@ export const grantCompositionLease = ({
     const coveredBlockKeys = editor
       .read((state) => state.nodes.blocks({ at: selection, mode: 'lowest' }))
       .flatMap(([, path]) => getNodeKey(editor, path) ?? []);
-    const hostBlockKey = readLowestBlockKey(editor, RangeApi.start(selection));
 
     lease.grant({
       coveredBlockKeys,
       host: null,
-      hostBlockKey,
+      hostBlockKey: readLowestBlockKey(editor, RangeApi.start(selection)),
       leafKey: null,
-      line:
-        hostBlockKey &&
-        !PathApi.equals(selection.anchor.path, selection.focus.path)
-          ? captureHeldLine(editor, hostBlockKey, refresh)
-          : null,
     });
     return;
   }
@@ -663,6 +657,10 @@ export const reenterCompositionLine = ({
   if (lineKey && root) {
     redrawRestoredLineAndCaret(editor, lineKey, rebuild, root);
   }
+};
+
+export const flushCompositionRender = () => {
+  flushSync(() => {});
 };
 
 export const settleCompositionLeaseAndFlushRender = (

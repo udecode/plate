@@ -29,6 +29,7 @@ import { getSelection, isDOMNode } from '../../dom';
 import {
   canWriteEditableDOMSelection,
   clearEditableDOMSelection,
+  documentOf,
   type DOMGeometryPoint,
   type DOMPhase,
   type DOMPhaseScheduler,
@@ -1216,8 +1217,35 @@ const clearEditableDOMSelectionForEvent = (
 
   if (!editable) return;
 
-  clearEditableDOMSelection(editable, {
-    editor: findDOMRootRuntime(editable)?.editor ?? editor,
+  const editableEditor = findDOMRootRuntime(editable)?.editor ?? editor;
+
+  if (
+    clearEditableDOMSelection(editable, {
+      editor: editableEditor,
+      policy: 'owned',
+    })
+  ) {
+    return;
+  }
+
+  const selection = getSelection(
+    editable.getRootNode() as Document | ShadowRoot
+  );
+  const targetDocument = documentOf(editableEditor);
+  const selectionRuntime = [selection?.anchorNode, selection?.focusNode]
+    .map((node) => (node ? findDOMRootRuntime(node) : null))
+    .find(
+      (runtime) =>
+        runtime !== null &&
+        runtime.rootRef.current !== null &&
+        runtime.rootRef.current !== editable &&
+        documentOf(runtime.editor) === targetDocument
+    );
+
+  if (!selectionRuntime?.rootRef.current) return;
+
+  clearEditableDOMSelection(selectionRuntime.rootRef.current, {
+    editor: selectionRuntime.editor,
     policy: 'owned',
   });
 };

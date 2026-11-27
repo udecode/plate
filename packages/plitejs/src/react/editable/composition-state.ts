@@ -79,6 +79,7 @@ type EditableCompositionHandler = (
 type CompositionFinalInputType = 'insertFromComposition' | 'insertText';
 
 export type EditableCompositionLeaseBinding = Readonly<{
+  flushRender: () => void;
   grant: (selection: Range | null) => void;
   reenterLine: () => void;
   settleAndFlushRender: () => void;
@@ -1193,6 +1194,9 @@ export const applyEditableCompositionStart = ({
           ? getEditableNativeGroupingInput(inputController, true)
           : { origin: createNativeGroupingId() }
       );
+      // Commit the replaced-range deletion before the browser mutates or
+      // deletes the pre-composition DOM spans.
+      lease?.flushRender();
     }
 
     const caretText = selection

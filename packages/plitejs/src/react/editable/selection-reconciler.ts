@@ -1595,7 +1595,13 @@ export const useEditableSelectionReconciler = ({
             domSelection.rangeCount > 0
               ? readDOMSelectionRange(domSelection)
               : null;
-          const caret: DOMPoint = range
+          const keepNativeCaret =
+            !runtime.inputController.domInputRuntime.compositionEpoch
+              ?.ownerAfterDeletion &&
+            !!range &&
+            range.collapsed &&
+            containsShadowAware(editorElement, range.endContainer);
+          const caret: DOMPoint = keepNativeCaret
             ? [range.endContainer, range.endOffset]
             : end;
 
