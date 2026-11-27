@@ -4,7 +4,7 @@ import { coreWork as work } from './work';
 /** An item whose `length` the sequence sums, such as a node's token length. */
 export type Measured = { readonly length: number };
 
-export const WIDTH = 32;
+const WIDTH = 32;
 // Every list longer than WIDTH has exactly HEIGHT levels and every node of it
 // is WIDTH slots wide, so replacing one item copies the same slots at every
 // length. HEIGHT covers any list a document can hold in memory.

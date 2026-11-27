@@ -1414,12 +1414,6 @@ export const getTransactionSnapshot = (editor: Editor) =>
 export const getUpdateStartSnapshot = (editor: Editor) =>
   TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(0)?.snapshot;
 
-/** @internal */
-export const isPluginReconfigurationStagedInUpdate = (editor: Editor) =>
-  TRANSACTION_SPEC_CONTEXTS.get(getEditorRuntimeOwner(editor))?.some(
-    ({ snapshot }) => snapshot.pluginReconfigurations.size > 0
-  ) ?? false;
-
 /**
  * Final semantic tags visible to the active command layer.
  *

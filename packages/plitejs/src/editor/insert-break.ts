@@ -2,13 +2,9 @@ import { dispatchCommand } from '../core/command-registry';
 import { landTextWriteOutsideStruck } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
-import { admitLineBlock, textLineAt, wrapTextLine } from '../core/mixed-lines';
 import {
   getActiveUpdateRoot,
   getChildList,
-  getCurrentMarks,
-  getSelectionMarks,
-  peekImplicitTarget,
   runEditorTransaction,
 } from '../core/public-state';
 import { textPropertiesEqual } from '../core/value-codec';
@@ -19,11 +15,8 @@ import {
   leaf as editorLeaf,
 } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
-import { PathApi } from '../interfaces/path';
-import { type Point, PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
-import { getPointRoot } from '../internal/root-location';
 import { dividesTextCell, splitNodes } from '../transforms-node/split-nodes';
 import { deleteText } from '../transforms-text/delete-text';
 import { withoutTypedMarks } from '../transforms-text/insert-text';
@@ -81,47 +74,6 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
     return;
   }
 
-  const [at, end] =
-    landed === selection && selection ? RangeApi.edges(selection) : [];
-  const root = getActiveUpdateRoot(editor) ?? 'main';
-  const line = at && textLineAt(editor, root, at);
-  const block =
-    line &&
-    end &&
-    (PointApi.equals(at, end) || textLineAt(editor, root, end)) &&
-    admitLineBlock(editor, line, {
-      at,
-      end,
-      marks: withoutTypedMarks(
-        editor,
-        getCurrentMarks(editor) ?? getSelectionMarks(editor)
-      ),
-    });
-
-  const target = block && peekImplicitTarget(editor);
-  const samePlace = (point: Point, other: Point) =>
-    point.offset === other.offset &&
-    PathApi.equals(point.path, other.path) &&
-    getPointRoot(point, root).root === getPointRoot(other, root).root;
-  const targetIsCaret =
-    at &&
-    end &&
-    RangeApi.isRange(target) &&
-    samePlace(RangeApi.start(target), at) &&
-    samePlace(RangeApi.end(target), end);
-
-  if (line && block && targetIsCaret) {
-    runEditorTransaction(editor, () => {
-      wrapTextLine(editor, line, block);
-
-      const softBreak = getNextSoftBreakRange(editor);
-
-      if (softBreak) deleteText(editor, { at: softBreak, hanging: true });
-      splitKeepingMarks(editor);
-    });
-    return;
-  }
-
   if (landed && landed !== selection) {
     runEditorTransaction(editor, (tx) => {
       tx.setSelection(SelectionApi.text(landed));
@@ -136,12 +88,8 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
     return;
   }
 
-  splitKeepingMarks(editor);
-};
-
-const splitKeepingMarks = (
-  editor: Parameters<EditorStaticApi['insertBreak']>[0]
-) =>
+  // Canonical form drops formatting from the new line's empty text, so the
+  // caret carries the formatting typing continues with.
   runEditorTransaction(editor, (tx) => {
     const marks = withoutTypedMarks(editor, tx.marks ?? tx.getSelectionMarks());
 
@@ -175,6 +123,7 @@ const splitKeepingMarks = (
       tx.setMarks(caretMarks);
     }
   });
+};
 
 export const insertBreak: EditorStaticApi['insertBreak'] = (editor) => {
   dispatchCommand(editor, editorCommands.insertBreak);

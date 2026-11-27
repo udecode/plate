@@ -321,11 +321,7 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     createAt: (
       type: string,
       properties: Readonly<Record<string, unknown>> | undefined,
-      site: Readonly<{
-        ancestors: readonly Element[];
-        children?: readonly Descendant[];
-        root: RootKey;
-      }>
+      site: Readonly<{ ancestors: readonly Element[]; root: RootKey }>
     ) => Element;
     /**
      * `createDefaultChild`, except that a default with a required property
@@ -914,8 +910,7 @@ const toSchemaValidationLocation = (
   };
 };
 
-/** @internal */
-export const canonicalizePropertyValue = (
+const canonicalizePropertyValue = (
   owner: string,
   descriptor: PropertyValueDescriptor,
   value: unknown
@@ -2442,8 +2437,7 @@ export const createEditorSchema = <V extends Value = Value>(
       type,
       properties,
       new Set(),
-      site,
-      site.children
+      site
     );
   };
 

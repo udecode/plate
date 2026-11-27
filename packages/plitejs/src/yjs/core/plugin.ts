@@ -1,6 +1,5 @@
 import { getEditorSchema } from '../../core/editor-runtime';
 import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
-import { textLineRefusal } from '../../core/mixed-lines';
 import { suspendMovePlacement } from '../../core/moved-anchors';
 import {
   carryPluginFactoryType,
@@ -109,7 +108,6 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
     throw new Error('Yjs plugin is not active on this editor.');
   };
   const common = {
-    contributions: [textLineRefusal.of(true)],
     activate(context) {
       const owner = getEditorRuntimeOwner(context.editor);
       let binding = bindings.get(owner);
@@ -271,7 +269,7 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
     },
   } satisfies Pick<
     PluginDefinitionInput<YjsEditor>,
-    'activate' | 'contributions' | 'on' | 'validate'
+    'activate' | 'on' | 'validate'
   >;
 
   return { common, getBinding };
