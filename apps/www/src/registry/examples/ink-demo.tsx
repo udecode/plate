@@ -73,12 +73,33 @@ const initialValue = [
   {
     children: [
       {
-        text: 'Ink is saved in the document alongside comment threads. While marked words stay unchanged, ink draws directly over them. When words change or a block is deleted, affected marks move to a sign in the margin that opens the original words and ink. Use Digitize to convert rough markup into edits, suggestions, comments, or answers.',
+        text: 'Ink is saved in the document alongside comment threads. Marks stay attached as you edit text or resize the photo, and deleting marked text or the photo deletes its ink cleanly with Cmd+Z undo. Use Digitize to convert rough text markup into edits, suggestions, comments, or answers.',
       },
     ],
     type: 'paragraph',
   },
 ] as Value;
+
+const stripLegacyInkGone = (
+  document: EditorValueInput<Value>
+): EditorValueInput<Value> => {
+  if (
+    !document ||
+    typeof document !== 'object' ||
+    Array.isArray(document) ||
+    !('records' in document)
+  ) {
+    return document;
+  }
+
+  const { records } = document as { records?: Record<string, unknown> };
+
+  if (!records || !('ink-gone' in records)) return document;
+
+  const { 'ink-gone': _dropped, ...rest } = records;
+
+  return { ...document, records: rest } as EditorValueInput<Value>;
+};
 
 const parseSavedInkDemo = (raw: string | null): SavedInkDemoState => {
   if (!raw) {
@@ -101,13 +122,13 @@ const parseSavedInkDemo = (raw: string | null): SavedInkDemoState => {
 
       return {
         comments: state.comments ?? EMPTY_COMMENTS,
-        document: state.document,
+        document: stripLegacyInkGone(state.document),
       };
     }
 
     return {
       comments: EMPTY_COMMENTS,
-      document: parsed as EditorValueInput<Value>,
+      document: stripLegacyInkGone(parsed as EditorValueInput<Value>),
     };
   } catch {
     return { comments: EMPTY_COMMENTS, document: initialValue };

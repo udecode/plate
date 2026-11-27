@@ -4,7 +4,6 @@ import {
   type InkPassage,
   type InkTool,
 } from '../../../features/ink/lib';
-import { readInkSign } from '../../../features/ink/lib/inkPlaces.internal';
 import { toReactPlugin } from '../../core';
 import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
 import { renderInkPassageImages } from './inkImages.internal';
@@ -168,21 +167,9 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
           const mark = read.mark(id);
 
           if (!mark) return false;
-          if (removes) {
-            return (
-              shown.has(id) &&
-              !readInkSign({ copy: read.copy, editor, state }, mark)
-            );
-          }
+          if (removes) return shown.has(id);
 
-          return (
-            (shown.has(id) || showDigitized) &&
-            !readInkSign(
-              { copy: read.copy, editor, state },
-              mark,
-              showDigitized && !shown.has(id)
-            )
-          );
+          return shown.has(id) || showDigitized;
         });
       });
 

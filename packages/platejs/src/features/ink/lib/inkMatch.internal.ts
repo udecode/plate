@@ -49,26 +49,16 @@ export type InkLiveBlock = Readonly<{
 
 export type InkMargins = Readonly<{ left: number; right: number }>;
 
-export type InkSignReason = 'changed' | 'narrow';
-
-export type InkPlacement =
-  | Readonly<{
-      dx: number;
-      dy: number;
-      sign?: 'changed';
-      strokes?: ReadonlyArray<readonly InkSample[]>;
-      type: 'ink';
-    }>
-  | Readonly<{ reason: InkSignReason; type: 'sign' }>;
+export type InkPlacement = Readonly<{
+  dx: number;
+  dy: number;
+  strokes?: ReadonlyArray<readonly InkSample[]>;
+  type: 'ink';
+}> | null;
 
 type Point = readonly [x: number, y: number];
 
-const SUBPIXEL_DRIFT = 0.5;
-
-const sign = (reason: InkSignReason): InkPlacement => ({
-  reason,
-  type: 'sign',
-});
+const LAYER_CLAMP_INSET = 4;
 
 const INK_RUNS = new RegExp(`[^\\s${INK_VOID}]+|${INK_VOID}`, 'gu');
 
@@ -507,7 +497,7 @@ const copyHolds = (
 
 export const placedPolylinesOf = (
   mark: InkMark,
-  placement: Extract<InkPlacement, { type: 'ink' }>
+  placement: NonNullable<InkPlacement>
 ): ReadonlyArray<readonly Point[]> => {
   const source = placement.strokes ?? [mark.samples];
 
@@ -518,7 +508,7 @@ export const placedPolylinesOf = (
 
 export const placementClearsNearby = (
   mark: InkMark,
-  placement: Extract<InkPlacement, { type: 'ink' }>,
+  placement: NonNullable<InkPlacement>,
   nearby: readonly InkBox[]
 ) => {
   if (nearby.length === 0) return true;
@@ -531,54 +521,49 @@ export const placementClearsNearby = (
   );
 };
 
-const unmarkedWordBoxesIn = (
-  now: InkLiveBlock,
-  runs: readonly InkMatchedRun[]
-): InkBox[] => {
-  const boxes: InkBox[] = [];
+const strokeBoundsX = (
+  mark: InkMark,
+  dx: number,
+  strokes?: ReadonlyArray<readonly InkSample[]>
+): readonly [number, number] => {
+  const radius = mark.brush.size / 2;
+  const source = strokes ?? [mark.samples];
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
 
-  for (const [start, end] of inkWords(now.text)) {
-    if (runs.some((run) => run.start < end && run.end > start)) continue;
-
-    let cursor = start;
-
-    while (cursor < end) {
-      const line = now.line(cursor);
-
-      if (!line || line.end <= cursor) break;
-
-      const to = Math.min(end, line.end);
-      const box = now.measure(cursor, to);
-
-      if (box) boxes.push(box);
-      cursor = to;
+  for (const stroke of source) {
+    for (const [x] of stroke) {
+      if (x + dx - radius < minX) minX = x + dx - radius;
+      if (x + dx + radius > maxX) maxX = x + dx + radius;
     }
   }
 
-  return boxes;
+  return [minX, maxX];
 };
 
-const verifyPolylinesOnRuns = (
-  now: InkLiveBlock,
-  polylines: ReadonlyArray<readonly Point[]>,
-  runs: readonly InkMatchedRun[],
-  unheldReach: number
+const clampHorizontalDx = (
+  mark: InkMark,
+  dx: number,
+  minBound: number,
+  maxBound: number,
+  strokes?: ReadonlyArray<readonly InkSample[]>
 ) => {
-  for (const moved of polylines) {
-    const touched = inkTouchedWords(now, moved, unheldReach);
-
-    if (
-      !touched ||
-      touched.some(
-        ([start, end]) =>
-          !runs.some((run) => run.start < end && run.end > start)
-      )
-    ) {
-      return false;
-    }
+  if (
+    !Number.isFinite(minBound) ||
+    !Number.isFinite(maxBound) ||
+    maxBound <= minBound
+  ) {
+    return dx;
   }
 
-  return true;
+  const [minX, maxX] = strokeBoundsX(mark, dx, strokes);
+
+  if (!Number.isFinite(minX) || !Number.isFinite(maxX)) return dx;
+  if (maxX - minX > maxBound - minBound) return dx + (minBound - minX);
+  if (minX < minBound) return dx + (minBound - minX);
+  if (maxX > maxBound) return dx - (maxX - maxBound);
+
+  return dx;
 };
 
 export const placeMark = ({
@@ -586,13 +571,12 @@ export const placeMark = ({
   live,
   margins,
   mark,
-  nearby,
 }: Readonly<{
   copies: readonly InkCopy[];
   live: ReadonlyArray<InkLiveBlock | undefined>;
   margins: InkMargins;
   mark: InkMark;
-  nearby: readonly InkBox[];
+  nearby?: readonly InkBox[];
 }>): InkPlacement => {
   const points = mark.samples.map(([x, y]): Point => [x, y]);
   const radius = mark.brush.size / 2;
@@ -601,20 +585,17 @@ export const placeMark = ({
 
     return now ? [{ block, copy: copies[index], now }] : [];
   });
-  const finalize = (
-    candidate: Extract<InkPlacement, { type: 'ink' }>
-  ): InkPlacement =>
-    placementClearsNearby(mark, candidate, nearby)
-      ? candidate
-      : sign('changed');
 
-  if (blocks.length < mark.blocks.length) return sign('changed');
+  if (blocks.length < mark.blocks.length) return null;
+
+  const firstLive = blocks[0].now;
+  const layerWidth = firstLive.box.left + firstLive.box.width + margins.right;
+  const hasLayerWidth =
+    Number.isFinite(layerWidth) && layerWidth > LAYER_CLAMP_INSET * 2;
+
   if (mark.margin) {
     const [{ block, copy, now }] = blocks;
-    const { reach, side } = mark.margin;
-
-    if (reach > margins[side]) return sign('narrow');
-
+    const { side } = mark.margin;
     const marginDx =
       side === 'left'
         ? now.box.left - block.left
@@ -628,16 +609,94 @@ export const placeMark = ({
       mark,
       now,
     });
+    const dx = hasLayerWidth
+      ? clampHorizontalDx(
+          mark,
+          placed.dx,
+          LAYER_CLAMP_INSET,
+          layerWidth - LAYER_CLAMP_INSET,
+          placed.strokes
+        )
+      : placed.dx;
 
-    return finalize({
-      dx: placed.dx,
+    return {
+      dx,
       dy: placed.dy,
-      ...(anchor.changed && { sign: 'changed' as const }),
       ...(placed.strokes && { strokes: placed.strokes }),
       type: 'ink',
-    });
+    };
   }
-  if (mark.direction === 'rtl') return sign('changed');
+
+  if (blocks.length === 1 && blocks[0].copy.lines.length === 0) {
+    const [{ block, copy, now }] = blocks;
+
+    if (
+      copy.width <= 0 ||
+      copy.height <= 0 ||
+      now.box.width <= 0 ||
+      now.box.height <= 0
+    ) {
+      return null;
+    }
+    if (
+      Math.abs(now.box.width - copy.width) <= 0.5 &&
+      Math.abs(now.box.height - copy.height) <= 0.5
+    ) {
+      return {
+        dx: now.box.left - block.left,
+        dy: now.box.top - block.top,
+        type: 'ink',
+      };
+    }
+
+    const sx = now.box.width / copy.width;
+    const sy = now.box.height / copy.height;
+    const scaled: InkSample[] = mark.samples.map(([x, y, p, t]) => [
+      now.box.left + (x - block.left) * sx,
+      now.box.top + (y - block.top) * sy,
+      p,
+      t,
+    ]);
+
+    return {
+      dx: 0,
+      dy: 0,
+      strokes: [scaled],
+      type: 'ink',
+    };
+  }
+
+  const fallback = (): NonNullable<InkPlacement> => {
+    const [{ block, now }] = blocks;
+    let dx = now.box.left - block.left;
+    const dy = now.box.top - block.top;
+    const [, maxX] = strokeBoundsX(mark, dx);
+    const blockRight = now.box.left + now.box.width;
+
+    if (maxX > blockRight) {
+      dx = clampHorizontalDx(
+        mark,
+        dx,
+        hasLayerWidth
+          ? Math.max(LAYER_CLAMP_INSET, now.box.left)
+          : now.box.left,
+        hasLayerWidth
+          ? Math.min(layerWidth - LAYER_CLAMP_INSET, blockRight)
+          : blockRight
+      );
+    } else if (hasLayerWidth) {
+      dx = clampHorizontalDx(
+        mark,
+        dx,
+        LAYER_CLAMP_INSET,
+        layerWidth - LAYER_CLAMP_INSET
+      );
+    }
+
+    return { dx, dy, type: 'ink' };
+  };
+
+  if (mark.direction === 'rtl') return fallback();
 
   let allExactAndHeld = true;
   const shiftsX: number[] = [];
@@ -655,7 +714,6 @@ export const placeMark = ({
     shiftsY.push(now.box.top - block.top);
   }
 
-  const unheldReach = Math.max(0, radius - SUBPIXEL_DRIFT);
   const shiftTolerance = () => {
     const heights = blocks.flatMap(({ copy }) =>
       copy.lines.map((line) => line.height)
@@ -673,39 +731,11 @@ export const placeMark = ({
       ? ({ dx, dy } as const)
       : undefined;
   };
-  const verifyAndFinalize = (
-    candidate: Extract<InkPlacement, { type: 'ink' }>,
-    checks: ReadonlyArray<
-      Readonly<{ now: InkLiveBlock; runs: readonly InkMatchedRun[] }>
-    >
-  ) => {
-    const polylines = placedPolylinesOf(mark, candidate);
-
-    for (const { now, runs } of checks) {
-      if (!verifyPolylinesOnRuns(now, polylines, runs, unheldReach)) {
-        return sign('changed');
-      }
-    }
-
-    return finalize(candidate);
-  };
 
   if (allExactAndHeld) {
     const shift = consistentShift(shiftsX, shiftsY);
 
-    if (!shift) return sign('changed');
-
-    return verifyAndFinalize(
-      { dx: shift.dx, dy: shift.dy, type: 'ink' },
-      blocks.map(({ block, now }) => ({
-        now,
-        runs: block.runs.map((run) => ({
-          ...run,
-          copyEnd: run.end,
-          copyStart: run.start,
-        })),
-      }))
-    );
+    return shift ? { dx: shift.dx, dy: shift.dy, type: 'ink' } : fallback();
   }
 
   const matchedBlocks: Array<{
@@ -718,7 +748,7 @@ export const placeMark = ({
   for (const { block, copy, now } of blocks) {
     const matched = matchMarkBlock(copy, block, now);
 
-    if (matched.kind === 'changed') return sign('changed');
+    if (matched.kind === 'changed') return fallback();
     matchedBlocks.push({ block, copy, now, runs: matched.runs });
   }
 
@@ -732,50 +762,44 @@ export const placeMark = ({
       const endLine = now.line(Math.max(gapStart, gapEnd - 1));
 
       if (!startLine || !endLine || startLine.end !== endLine.end) {
-        return sign('changed');
+        return fallback();
       }
 
       const gap = now.measure(gapStart, gapEnd);
       const savedLine = copy.lines[lineOf(copy.lines, run.copyStart)];
 
-      if (!gap || !savedLine) return sign('changed');
+      if (!gap || !savedLine) return fallback();
 
-      return verifyAndFinalize(
-        {
-          dx:
-            now.box.left -
-            block.left +
-            (gap.left + gap.width / 2 - (run.left + run.width / 2)),
-          dy:
-            now.box.top -
-            block.top +
-            (gap.top + gap.height / 2 - (savedLine.top + savedLine.height / 2)),
-          type: 'ink',
-        },
-        [{ now, runs }]
-      );
+      return {
+        dx:
+          now.box.left -
+          block.left +
+          (gap.left + gap.width / 2 - (run.left + run.width / 2)),
+        dy:
+          now.box.top -
+          block.top +
+          (gap.top + gap.height / 2 - (savedLine.top + savedLine.height / 2)),
+        type: 'ink',
+      };
     }
 
     const reflowed = reflowInlineMark({
       block,
       copy,
-      getUnmarkedBoxes: () => unmarkedWordBoxesIn(now, runs),
+      getUnmarkedBoxes: () => [],
       mark,
       now,
       runs,
     });
 
-    if (!reflowed) return sign('changed');
+    if (!reflowed) return fallback();
 
-    return verifyAndFinalize(
-      {
-        dx: reflowed.dx,
-        dy: reflowed.dy,
-        ...(reflowed.strokes && { strokes: reflowed.strokes }),
-        type: 'ink',
-      },
-      [{ now, runs }]
-    );
+    return {
+      dx: reflowed.dx,
+      dy: reflowed.dy,
+      ...(reflowed.strokes && { strokes: reflowed.strokes }),
+      type: 'ink',
+    };
   }
 
   const multiShiftsX: number[] = [];
@@ -791,17 +815,12 @@ export const placeMark = ({
       runs,
     });
 
-    if (!reflowed) return sign('changed');
+    if (!reflowed) return fallback();
     multiShiftsX.push(reflowed.dx);
     multiShiftsY.push(reflowed.dy);
   }
 
   const shift = consistentShift(multiShiftsX, multiShiftsY);
 
-  if (!shift) return sign('changed');
-
-  return verifyAndFinalize(
-    { dx: shift.dx, dy: shift.dy, type: 'ink' },
-    matchedBlocks
-  );
+  return shift ? { dx: shift.dx, dy: shift.dy, type: 'ink' } : fallback();
 };

@@ -3,9 +3,12 @@ import { nanoid } from 'nanoid';
 import { definePlugin, txLocate } from '../../../core';
 import {
   defineRuntimePlugin,
+  getActiveEditorUpdateId,
   getDocumentValueNode,
   getRecordSetVersion,
   getValueRecords,
+  isEditorDraftView,
+  type Node,
   type NodeKey,
   PathApi,
   type Range,
@@ -32,18 +35,6 @@ import {
   roundSample,
 } from './inkCodec.internal';
 import {
-  addGone,
-  captureGone,
-  COPIES,
-  DIGITIZED,
-  flushGone,
-  GONE,
-  hasPendingGone,
-  idOf,
-  isInkMarkShown,
-  MARKS,
-} from './inkGone.internal';
-import {
   INK_VOID,
   inkBlockRange,
   inkHolds,
@@ -55,9 +46,13 @@ import {
 import {
   advanceInkPlaces,
   byMark,
+  COPIES,
+  DIGITIZED,
+  idOf,
+  isInkMarkShown,
+  MARKS,
   readInkLiveMarks,
   readInkPlace,
-  takeFirstChangeWalkMemo,
 } from './inkPlaces.internal';
 
 /** Which way a mark's text runs. */
@@ -128,12 +123,6 @@ export type InkCopy = Readonly<{
   id: string;
   lines: readonly InkLine[];
   text: string;
-  /**
-   * Optional visible display labels for inline voids in `text`, keyed by
-   * character offset, so `InkCopyView` renders readable labels instead of
-   * raw `U+FFFC` placeholders.
-   */
-  voidLabels?: Readonly<Record<number, string>>;
   /**
    * A digest of the content properties of the block's inline voids at their
    * offsets, excluding metadata such as ids and review marks, so a mention
@@ -218,21 +207,14 @@ export type InkViewState = {
 };
 
 /**
- * Where a deleted block's sign sits: after or before a block still in the
- * document, or on the document-start rail when none is left.
- */
-export type InkSignPlace =
-  | Readonly<{ at: 'after' | 'before'; key: NodeKey }>
-  | Readonly<{ at: 'start' }>;
-
-/**
  * Where a copy's block stands now. `live` while the block that holds the
- * copy's id holds its text and inline voids, `changed` while it holds other
- * text or voids, and `gone` when no block holds the id.
+ * copy's id holds its text and inline voids, and `changed` while it holds
+ * other text or voids.
  */
-export type InkCopyPlace =
-  | Readonly<{ key: NodeKey; kind: 'changed' | 'live' }>
-  | Readonly<{ beside: InkSignPlace; kind: 'gone' }>;
+export type InkCopyPlace = Readonly<{
+  key: NodeKey;
+  kind: 'changed' | 'live';
+}>;
 
 /** A word's character offsets in its saved copy's text. */
 export type InkPassageWord = Readonly<{
@@ -311,13 +293,12 @@ const inkRecords = defineRuntimePlugin('inkRecords', {
         namedBy: { names: copiesOf, set: MARKS },
       },
       [DIGITIZED]: {},
-      [GONE]: { history: 'retain' },
       [MARKS]: {},
     },
   },
   update: ({ editor, tx }) => ({
-    flush: txLocate(false, () => {
-      flushGone(editor, tx);
+    cleanup: txLocate(false, () => {
+      flushPendingCleanup(editor, tx);
     }),
   }),
 });
@@ -431,37 +412,6 @@ const encodeSamples = (input: unknown) => {
   return encodePoints(checked.map(roundSample));
 };
 
-const voidLabelsIn = (
-  value: unknown,
-  text: string,
-  name: string
-): Readonly<Record<number, string>> | undefined => {
-  if (value === undefined) return undefined;
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    refuse(`${name}.voidLabels must be an object`);
-  }
-
-  const entries = Object.entries(value as Record<string, unknown>)
-    .map(([key, label]) => {
-      const offset = Number(key);
-
-      if (
-        !Number.isInteger(offset) ||
-        offset < 0 ||
-        offset >= text.length ||
-        String(offset) !== key ||
-        text[offset] !== INK_VOID
-      ) {
-        refuse(`${name}.voidLabels[${key}] must point to an inline void`);
-      }
-
-      return [offset, textIn(label, `${name}.voidLabels[${key}]`)] as const;
-    })
-    .sort(([a], [b]) => a - b);
-
-  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
-};
-
 const copyRecord = (
   copy: Readonly<Partial<Record<keyof Omit<InkCopy, 'id'>, unknown>>>,
   name: string
@@ -488,14 +438,11 @@ const copyRecord = (
   }
   if (end !== text.length) refuse(`${name}.lines must end where its text ends`);
 
-  const voidLabels = voidLabelsIn(copy.voidLabels, text, name);
-
   return {
     block: textIn(copy.block, `${name}.block`),
     height: numberIn(copy.height, `${name}.height`, 0),
     lines: flat,
     text,
-    voidLabels,
     voids:
       copy.voids === undefined
         ? undefined
@@ -533,7 +480,6 @@ const encodeMark = (
       height,
       lines,
       text,
-      voidLabels,
       voids: measured,
       width,
     } = typeof block === 'object' && block !== null
@@ -546,7 +492,6 @@ const encodeMark = (
       lines: list(lines),
       text,
       width,
-      ...(voidLabels === undefined ? {} : { voidLabels }),
       ...(voids === undefined ? {} : { voids }),
     };
 
@@ -662,8 +607,10 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       top: numbers[at + 2],
       width: numbers[at + 3],
     }));
-    const { block, height, text, voidLabels, voids, width, ...written } =
-      copyRecord({ ...record, lines }, 'copy');
+    const { block, height, text, voids, width, ...written } = copyRecord(
+      { ...record, lines },
+      'copy'
+    );
 
     if (written.lines.join(' ') !== record.lines) {
       refuse('a saved copy must be what add writes');
@@ -676,7 +623,6 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       lines,
       text,
       width,
-      ...(voidLabels === undefined ? {} : { voidLabels }),
       ...(voids === undefined ? {} : { voids }),
     });
   });
@@ -786,12 +732,132 @@ const markIn = (id: string, record: SavedRecord, copies: RecordSetVersion) => {
   return mark;
 };
 
+type PendingCleanup = {
+  emptiedBlocks: Set<string>;
+  removedBlocks: Set<string>;
+};
+
+const pendingCleanups = new WeakMap<object, PendingCleanup>();
+
+const cleanupFor = (editor: Parameters<typeof getActiveEditorUpdateId>[0]) => {
+  const updateId = getActiveEditorUpdateId(editor);
+
+  if (!updateId) return undefined;
+
+  let pending = pendingCleanups.get(updateId);
+
+  if (!pending) {
+    pending = { emptiedBlocks: new Set(), removedBlocks: new Set() };
+    pendingCleanups.set(updateId, pending);
+  }
+
+  return pending;
+};
+
+const hasPendingCleanup = (
+  editor: Parameters<typeof getActiveEditorUpdateId>[0]
+) => {
+  const updateId = getActiveEditorUpdateId(editor);
+
+  return updateId !== null && pendingCleanups.has(updateId);
+};
+
+const flushPendingCleanup = (
+  editor: Parameters<typeof getActiveEditorUpdateId>[0],
+  tx: {
+    nodes: { byId: (id: string) => Readonly<{ node: Node }> | null };
+    records: { drop: (set: string, id: string) => void };
+    schema: Parameters<typeof inkText>[0];
+    tags: { has: (tag: string) => boolean };
+    value: () => Parameters<typeof getValueRecords>[0];
+  }
+) => {
+  if (
+    tx.tags.has('collaboration') ||
+    tx.tags.has('historic') ||
+    isEditorDraftView(editor)
+  ) {
+    return;
+  }
+
+  const updateId = getActiveEditorUpdateId(editor);
+
+  if (!updateId) return;
+
+  const pending = pendingCleanups.get(updateId);
+
+  if (!pending) return;
+  pendingCleanups.delete(updateId);
+
+  const deadBlocks = new Set<string>();
+
+  for (const id of pending.removedBlocks) {
+    if (!tx.nodes.byId(id)) deadBlocks.add(id);
+  }
+
+  const emptiedBlocks = new Set<string>();
+
+  for (const id of pending.emptiedBlocks) {
+    const holder = tx.nodes.byId(id);
+
+    if (
+      holder &&
+      !tx.schema.isVoid(holder.node) &&
+      inkText(tx.schema, holder.node).text.trim().length === 0
+    ) {
+      emptiedBlocks.add(id);
+    }
+  }
+  if (deadBlocks.size === 0 && emptiedBlocks.size === 0) return;
+
+  const store = getValueRecords(tx.value());
+  const marks = getRecordSetVersion(store, MARKS);
+  const copies = getRecordSetVersion(store, COPIES);
+
+  if (!marks || !copies) return;
+
+  const toDrop: string[] = [];
+
+  for (const id of recordSetIds(marks)) {
+    const record = readRecord(marks, id);
+
+    if (!record) continue;
+
+    const isMargin = record.side !== undefined;
+
+    for (const copyId of copiesOf(record) ?? []) {
+      const copyRec = readRecord(copies, copyId);
+
+      if (!copyRec || typeof copyRec.block !== 'string') continue;
+      if (deadBlocks.has(copyRec.block)) {
+        toDrop.push(id);
+        break;
+      }
+      if (
+        !isMargin &&
+        typeof copyRec.lines === 'string' &&
+        copyRec.lines.length > 0 &&
+        emptiedBlocks.has(copyRec.block)
+      ) {
+        toDrop.push(id);
+        break;
+      }
+    }
+  }
+  if (toDrop.length === 0) return;
+
+  const digitized = getRecordSetVersion(store, DIGITIZED);
+
+  for (const id of toDrop) {
+    tx.records.drop(MARKS, id);
+    if (readRecord(digitized, id)) tx.records.drop(DIGITIZED, id);
+  }
+};
+
 /**
- * Pen marks on a document's text, saved as records of the document value.
- * Its updates add and remove marks, and its reads return them decoded and say
- * where each copy's block stands. A mark names its blocks by id, and the
- * plugin saves where each marked block stands with its stroke, and again in a
- * delete that leaves that place wrong.
+ * Pen marks on a document's text or void blocks, saved as records of the
+ * document value. Deleting a marked block or emptying a marked text block
+ * removes its marks in the same transaction so undo restores both together.
  */
 export const BaseInkPlugin = definePlugin('ink', {
   corrections: [
@@ -799,14 +865,21 @@ export const BaseInkPlugin = definePlugin('ink', {
       event: 'children',
       query: 'root',
       correct: ({ editor, tx }) => {
-        if (hasPendingGone(editor)) tx.inkRecords.flush();
+        if (hasPendingCleanup(editor)) tx.inkRecords.cleanup();
       },
     },
     {
       event: 'properties',
       query: 'root',
       correct: ({ editor, tx }) => {
-        if (hasPendingGone(editor)) tx.inkRecords.flush();
+        if (hasPendingCleanup(editor)) tx.inkRecords.cleanup();
+      },
+    },
+    {
+      event: 'content',
+      query: 'root',
+      correct: ({ editor, tx }) => {
+        if (hasPendingCleanup(editor)) tx.inkRecords.cleanup();
       },
     },
   ],
@@ -822,21 +895,55 @@ export const BaseInkPlugin = definePlugin('ink', {
       advanceInkPlaces(editor, commit);
     },
     transactionChange: ({ after, before, changed, editor, tx }) => {
-      if (!changed.has('structure') && !changed.has('properties')) return;
-
-      const memo = takeFirstChangeWalkMemo(editor);
-
-      for (const { node, path } of changed.removed()) {
-        const id = idOf(node);
-
-        if (id) captureGone(editor, tx, after, [path, id], memo);
+      if (
+        tx.tags.has('collaboration') ||
+        tx.tags.has('historic') ||
+        isEditorDraftView(editor)
+      ) {
+        return;
       }
-      if (changed.has('structure')) return;
-      for (const path of changed.paths()) {
-        const id = idOf(getDocumentValueNode(before, path));
 
-        if (id && id !== idOf(getDocumentValueNode(after, path))) {
-          captureGone(editor, tx, after, [path, id], memo);
+      const pending = cleanupFor(editor);
+
+      if (!pending) return;
+
+      if (changed.has('structure') || changed.has('properties')) {
+        for (const { node } of changed.removed()) {
+          const id = idOf(node);
+
+          if (id) pending.removedBlocks.add(id);
+        }
+        if (!changed.has('structure')) {
+          for (const path of changed.paths()) {
+            const id = idOf(getDocumentValueNode(before, path));
+
+            if (id && id !== idOf(getDocumentValueNode(after, path))) {
+              pending.removedBlocks.add(id);
+            }
+          }
+        }
+      }
+      if (changed.has('text') || changed.has('structure')) {
+        for (const path of changed.paths()) {
+          for (let len = path.length; len >= 1; len -= 1) {
+            const beforeNode = getDocumentValueNode(before, path.slice(0, len));
+            const id = idOf(beforeNode);
+
+            if (!id || !beforeNode) continue;
+            if (tx.schema.isVoid(beforeNode)) break;
+            if (inkText(tx.schema, beforeNode).text.trim().length > 0) {
+              const afterHolder = tx.nodes.byId(id);
+
+              if (
+                afterHolder &&
+                !tx.schema.isVoid(afterHolder.node) &&
+                inkText(tx.schema, afterHolder.node).text.trim().length === 0
+              ) {
+                pending.emptiedBlocks.add(id);
+              }
+            }
+            break;
+          }
         }
       }
     },
@@ -1346,7 +1453,6 @@ export const BaseInkPlugin = definePlugin('ink', {
       for (const copy of copies) {
         tx.records.put(COPIES, copy.id, copy.record);
       }
-      addGone(editor, tx, copies);
       tx.records.put(MARKS, id, { ...mark, points });
 
       return id;
@@ -1407,39 +1513,6 @@ export const BaseInkPlugin = definePlugin('ink', {
       }
       for (const copyId of staleCopies) {
         tx.records.drop(COPIES, copyId);
-      }
-
-      const gone = getRecordSetVersion(store, GONE);
-
-      if (gone && staleCopies.size > 0) {
-        const reachable = new Set<string>();
-        const queue: string[] = [];
-
-        for (const copyId of recordSetIds(copies)) {
-          if (staleCopies.has(copyId)) continue;
-          const block = readRecord(copies, copyId)?.block;
-
-          if (typeof block === 'string' && !reachable.has(block)) {
-            reachable.add(block);
-            queue.push(block);
-          }
-        }
-        for (const id of queue) {
-          const entry = readRecord(gone, id);
-
-          if (!entry) continue;
-          for (const side of ['previous', 'next'] as const) {
-            const neighbor = entry[side];
-
-            if (typeof neighbor === 'string' && !reachable.has(neighbor)) {
-              reachable.add(neighbor);
-              queue.push(neighbor);
-            }
-          }
-        }
-        for (const id of recordSetIds(gone)) {
-          if (!reachable.has(id)) tx.records.drop(GONE, id);
-        }
       }
 
       return toDrop;

@@ -232,6 +232,7 @@ export {
   getEditorRuntimeRootKeys,
   getMutationVersion,
   getSnapshotVersion,
+  isEditorDraftView,
   markRootViewInteraction,
   markRootViewUsed,
   readRootEntries,

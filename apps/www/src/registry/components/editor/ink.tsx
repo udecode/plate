@@ -6,7 +6,6 @@ import { useViewStore } from 'platejs/react';
 import type * as React from 'react';
 
 import { InkDock } from '@/registry/components/editor/ink-dock';
-import { InkSignButton } from '@/registry/components/editor/ink-sign-button';
 
 const svgCursor = (svg: string, x: number, y: number) =>
   `url("data:image/svg+xml,${encodeURIComponent(svg)}") ${x} ${y}, crosshair`;
@@ -48,7 +47,6 @@ function InkLayerContent(props: { children: React.ReactNode }) {
   return (
     <InkContent
       {...props}
-      sign={InkSignButton}
       style={{ '--ink-cursor': inkCursorFor(tool) } as React.CSSProperties}
     />
   );

@@ -60,7 +60,6 @@ import {
   INK_DIGITIZE_KIND_LABELS,
   latestInkDigitizeRequestId,
   liveShownInkMarkIds,
-  marksTurningIntoSigns,
   planInkDigitizeAllBatches,
   type PreparedInkDigitize,
   prepareInkDigitizeRequest,
@@ -153,7 +152,6 @@ type DigitizeNotice =
   | Readonly<{
       canRetryLassoOnly: boolean;
       kind: 'too-many-words';
-      signMarkIds: readonly string[];
       wordCount: number;
     }>;
 
@@ -738,7 +736,6 @@ export function InkDock() {
           notice: {
             canRetryLassoOnly: prep.canRetryLassoOnly,
             kind: 'too-many-words',
-            signMarkIds: prep.signMarkIds,
             wordCount: prep.wordCount,
           },
         });
@@ -1170,8 +1167,8 @@ export function InkDock() {
     if (!canDigitize) return;
 
     const ink = editor.plugin(InkPlugin);
-    const live = new Set(ink.read.liveMarks().map((mark) => mark.id));
-    const ids = ink.viewStore.get('picked').filter((id) => live.has(id));
+    const shown = new Set(ink.read.shownMarks().map((mark) => mark.id));
+    const ids = ink.viewStore.get('picked').filter((id) => shown.has(id));
 
     if (ids.length === 0) return;
     editor.update((tx) => {
@@ -1264,19 +1261,21 @@ export function InkDock() {
               </span>
               {pickedShown.length > 0 && (
                 <>
+                  {pickedLive.length > 0 && (
+                    <Button
+                      disabled={!canDigitize}
+                      onClick={() => {
+                        void runDigitize(pickedLive);
+                      }}
+                      onMouseDown={keepFocus}
+                      size="sm"
+                    >
+                      <SparklesIcon className="me-1.5 size-3.5" />
+                      Digitize
+                    </Button>
+                  )}
                   <Button
                     disabled={!canDigitize}
-                    onClick={() => {
-                      void runDigitize(pickedShown);
-                    }}
-                    onMouseDown={keepFocus}
-                    size="sm"
-                  >
-                    <SparklesIcon className="me-1.5 size-3.5" />
-                    Digitize
-                  </Button>
-                  <Button
-                    disabled={!canDigitize || pickedLive.length === 0}
                     onClick={handleDelete}
                     onMouseDown={keepFocus}
                     size="sm"
@@ -1570,14 +1569,12 @@ export function InkDock() {
                   <p>
                     This pick covers {session.notice.wordCount} words (limit
                     1,000).
-                    {session.notice.signMarkIds.length > 0 &&
-                      ` Reading only the lassoed marks will turn ${session.notice.signMarkIds.length} other mark(s) on those paragraphs into signs.`}
                   </p>
                   <div className="flex gap-2">
                     {session.notice.canRetryLassoOnly && (
                       <Button
                         onClick={() => {
-                          void runDigitize(pickedShown, { lassoOnly: true });
+                          void runDigitize(pickedLive, { lassoOnly: true });
                         }}
                         size="sm"
                       >
@@ -1765,12 +1762,6 @@ function ConfirmDialog({
   onTypedChange: (correctionIndex: number, value: string) => void;
   state: ConfirmState;
 }) {
-  const signMarks = marksTurningIntoSigns(
-    state.prepared,
-    state.validated.corrections,
-    state.keptIndices,
-    state.meaningIndices
-  );
   const kindCounts = new Map<InkDigitizeEdit['kind'], number>();
 
   for (const [index, correction] of state.validated.corrections.entries()) {
@@ -1839,16 +1830,6 @@ function ConfirmDialog({
             </Button>
           ))}
         </div>
-      )}
-
-      {signMarks.length > 0 && (
-        <p
-          className="mb-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-xs"
-          data-ink-sign-warning={String(signMarks.length)}
-        >
-          {signMarks.length} left-out mark(s) on changed paragraphs will turn
-          into signs.
-        </p>
       )}
 
       {state.saveError && (

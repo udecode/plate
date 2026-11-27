@@ -1,0 +1,18 @@
+---
+id: 2026-11-27-ink-always-visible
+date: 2026-11-27
+status: draft
+kind: remove
+summary: 'Remove ink-sign-button and keep ink visible across edits, wraps, and narrow viewports with atomic delete and undo'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-ink-always-visible-remove-sign","kind":"remove","migrationNotes":["Remove `InkSignButton` from `ink.tsx`, delete `components/editor/ink-sign-button.tsx`, and render `<InkContent {...props} />` without a `sign` prop."]} -->
+
+- **`ink`**: Render `<InkContent {...props} />` without `InkSignButton` and remove the `ink-sign-button` registry item.
+
+<!-- entry: {"id":"2026-11-27-ink-always-visible-dock","kind":"behavior","migrationNotes":[]} -->
+
+- **`ink-dock`**, **`ink-digitize`**: Remove sign-conversion warnings, allow lasso Delete on all painted shown marks, and restrict Digitize to live word-matched text marks.

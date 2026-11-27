@@ -427,7 +427,20 @@
       "2026-07-24-configurable-color-controls",
       "2025-11-20-biome-ultracite"
     ],
-    "ink-digitize": ["2026-11-27-ink-attached-digitize"],
+    "ink": [
+      "2026-11-27-ink-always-visible",
+      "2026-11-27-ink-digitize",
+      "2026-11-27-ink-dock"
+    ],
+    "ink-dock": [
+      "2026-11-27-ink-always-visible",
+      "2026-11-27-ink-closing-fixes",
+      "2026-11-27-ink-dock"
+    ],
+    "ink-digitize": [
+      "2026-11-27-ink-always-visible",
+      "2026-11-27-ink-attached-digitize"
+    ],
     "ink-digitize-api": [
       "2026-11-27-ink-closing-fixes",
       "2026-11-27-ink-toolbar-and-digitize"
@@ -437,8 +450,6 @@
       "2026-11-27-ink-dock",
       "2026-11-25-ink-tools"
     ],
-    "ink-dock": ["2026-11-27-ink-closing-fixes", "2026-11-27-ink-dock"],
-    "ink": ["2026-11-27-ink-digitize", "2026-11-27-ink-dock"],
     "ink-digitize-bar": [
       "2026-11-27-ink-digitize",
       "2026-11-27-ink-toolbar-and-digitize",

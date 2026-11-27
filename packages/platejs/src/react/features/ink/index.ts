@@ -3,5 +3,4 @@
  */
 
 export * from './InkContent';
-export * from './InkCopyView';
 export * from './InkPlugin';

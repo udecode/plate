@@ -1,6 +1,6 @@
 ---
 title: 墨迹
-description: 在文档文字上手写批注，文字改动后在页边显示标记，并可用 AI 将手写内容数字化为编辑、建议、评论和回答。
+description: 在文档文字与媒体上手写批注，编辑和换行时始终可见，并可用 AI 将手写内容数字化为编辑、建议、评论和回答。
 docs:
   - route: /docs/components/ink
     title: 墨迹套件
@@ -8,18 +8,18 @@ docs:
 
 <ComponentPreview name="ink-demo" />
 
-打开[完整页面墨迹演示](/blocks/ink-demo)可体验手写批注、页边标记与 AI 数字化及本地持久化。该演示把文档和评论线程保存在同一个本地存储键下；如果服务端未配置 `AI_GATEWAY_API_KEY`，调用数字化前会提示在设置中输入你自己的 AI Gateway API 密钥。
+打开[完整页面墨迹演示](/blocks/ink-demo)可体验文字与媒体手写批注、原子删除与撤销及 AI 数字化和本地持久化。该演示把文档和评论线程保存在同一个本地存储键下；如果服务端未配置 `AI_GATEWAY_API_KEY`，调用数字化前会提示在设置中输入你自己的 AI Gateway API 密钥。
 
 <PackageInfo>
 
 ## 功能特性
 
 - 底部浮动 `InkDock` 工具栏，提供画笔、荧光笔、橡皮擦和套索、预设色板、自定义取色器、不抢焦点的线宽弹出面板与折叠开关。画笔颜色和粗细按编辑器记住，工具开关状态按挂载视图各自保存。手写笔或鼠标主按键用于绘制，手指仍可滚动页面；开启绘制时可以照常打字，落笔不会移动光标。
-- 墨迹以文档记录的形式存储（`ink-marks`、`ink-copies`、`ink-digitized` 和 `ink-gone`），刷新后不丢失，也能在协作者之间同步。每条笔迹保存其所在块的副本、行框和触及的词段。
-- 写作与换行时实时跟随附着。同段落其他位置发生编辑时，未触及的笔迹通过确定性双向对齐继续附着在原词上，并在换行时按形状族自动重排（`flow` 下划线与高亮按行拆分，`box` 圈选在限定缩放内贴合，`span` 竖向页边条随行高拉伸，`rigid` 页边笔记按连续落笔成组对齐）。自身词语被修改、重复词出现歧义或页边过窄的笔迹折叠进紧凑的 `InkSignButton` 徽章，按实时与已数字化区分 `changed`、`deleted` 和 `narrow` 状态并显示数量，弹窗通过 `InkCopyView` 展示原始文字和笔迹。
+- 墨迹以文档记录的形式存储（`ink-marks`、`ink-copies` 和 `ink-digitized`），刷新后不丢失，也能在协作者之间同步。每条笔迹保存其所在块的副本、行框和触及的词段。
+- 写作与换行时始终可见并实时跟随。同段落其他位置发生编辑时，未触及的笔迹通过确定性双向对齐继续附着在原词上，并在换行时按形状族自动重排（`flow` 下划线与高亮按行拆分，`box` 圈选在限定缩放内贴合，`span` 竖向页边条随行高拉伸，`rigid` 页边笔记按连续落笔成组对齐）。原地改动后的笔迹仍留在所属块上显示，窄视口下的页边笔记会约束在画布层内；删除带笔迹的块或清空带笔迹的段落会在同一步撤销中一并删除墨迹（`Cmd+Z` 同时恢复）。
 - 支持对套索选中的笔迹、全部实时显示的笔迹（**Digitize all**）或按单一修改类型（**Digitize by kind**）进行 AI 数字化，在确认后将手写批注转为删除、替换、插入、高亮、手写评论或圈选提问的 AI 回答。
 - 按视图当前意图写入：在编辑模式下直接修改文档，在建议模式下为每条保留的修正生成一条独立建议，评论与回答通过 `CommentsPlugin` 创建线程，一步撤销即可同时恢复文字、评论和墨迹。
-- **Show digitized ink** 视图开关可将已数字化的墨迹以淡化样式显示在原词上（或在文字后续改动后显示为已数字化标记），并支持 **Bring back** 恢复；`dropDigitized` 可永久清除已数字化的墨迹和不再被引用的保存副本。
+- **Show digitized ink** 视图开关可将已数字化的墨迹以淡化样式显示在原词上，并支持 **Bring back** 恢复；`dropDigitized` 可永久清除已数字化的墨迹和不再被引用的保存副本。
 
 </PackageInfo>
 
@@ -33,11 +33,10 @@ docs:
 
 <ComponentSource name="ink" />
 
-- `InkKit`（`ink.tsx`）：在 `slots.wrapContent` 中挂载带按工具 `--ink-cursor` SVG 光标和 `InkSignButton` 的 `InkContent`，在 `slots.afterEditable` 中挂载 `InkDock`。
+- `InkKit`（`ink.tsx`）：在 `slots.wrapContent` 中挂载带按工具 `--ink-cursor` SVG 光标的 `InkContent`，在 `slots.afterEditable` 中挂载 `InkDock`。
 - `DrawToolbarButton`（`draw-toolbar-button.tsx`）：一键工具栏开关，用上次使用的工具及该编辑器记住的笔刷设置开启或关闭绘制模式，在只读视图和 Authored Preview 下禁用。
 - `DigitizeAllToolbarButton`（`ink-dock.tsx`）：工具栏按钮，路由到当前活动视图的工具栏并分批读取页面上所有实时显示的笔迹。
 - `InkSwitchToolbarButton`（`ink-switch-toolbar-button.tsx`）：墨迹可见性下拉菜单，包含 **Hide ink**、**Show digitized ink** 开关，以及带二次确认的 **Drop digitized ink** 操作。
-- `InkSignButton`（`ink-sign-button.tsx`）：紧凑页边标记徽章，按实时与已数字化区分 `changed`、`deleted`、`narrow` 状态并显示数量，点击打开 `InkCopyView` 并提供删除或恢复操作（在只读视图和 Authored Preview 下禁用）。
 - `InkDock`（`ink-dock.tsx`）：脱离文档流的底部浮动工具栏，包含画笔、荧光笔、橡皮擦和套索、预设色板、自定义取色器、不抢焦点的线宽弹出面板、折叠开关、Done 退出按钮、套索上下文操作条（选中计数、数字化、删除、恢复与清空选中），以及确认弹窗（类型筛选按钮、手动补充说明重新识别、异步评论保存与重试）。
 
 ### 添加套件
@@ -107,14 +106,14 @@ export function InkEditor() {
 
 ### 实时笔迹范围与被拒绝的建议
 
-- **已折叠笔迹留在标记中**：数字化只读取当前附着在实时文字上的笔迹（`read.liveMarks()`），包括所在段落其他位置已编辑但自身词语未变的笔迹。已折叠进页边标记的笔迹（`changed`、`deleted` 或 `narrow`）不参与数字化，仍可在 `InkSignButton` 中查看。
-- **拒绝建议后墨迹保持已数字化**：审阅者拒绝由数字化生成的建议时，文字恢复原状，墨迹保持已数字化而不会自动重新铺满页面。打开 **Show digitized ink**（`api.setShowDigitized(true)`）即可看到淡化的已数字化墨迹（或已数字化标记），再通过套索选取或标记弹窗中的 **Bring back** 一步撤销恢复显示。
+- **仅限词对齐的文本笔迹**：数字化只读取当前附着在实时文字上的笔迹（`read.liveMarks()`），包括所在段落其他位置已编辑但自身词语未变的笔迹。落在已改写词语或 void 块上的笔迹仍会显示并可擦除或套索删除，但不会触发错误词语的 AI 编辑。
+- **拒绝建议后墨迹保持已数字化**：审阅者拒绝由数字化生成的建议时，文字恢复原状，墨迹保持已数字化而不会自动重新铺满页面。打开 **Show digitized ink**（`api.setShowDigitized(true)`）即可看到淡化的已数字化墨迹，再通过套索选取中的 **Bring back** 一步撤销恢复显示。
 
 ## 持久化与兼容性
 
 ### 文档与评论联合持久化
 
-墨迹、保存的块副本、已数字化记录和已删除块位置都保存在 Plate 文档值的记录存储中。若应用支持手写评论或 AI 回答，请将 Plate 文档值与 `CommentsPlugin` 状态（`{ document, comments: { ranges, threads } }`）一起原子化保存，避免刷新后出现评论与墨迹数字化状态不一致的情况。
+墨迹、保存的块副本和已数字化记录都保存在 Plate 文档值的记录存储中。若应用支持手写评论或 AI 回答，请将 Plate 文档值与 `CommentsPlugin` 状态（`{ document, comments: { ranges, threads } }`）一起原子化保存，避免刷新后出现评论与墨迹数字化状态不一致的情况。
 
 ### 旧版 beta 协作者
 
@@ -181,7 +180,7 @@ export function HeadlessInkEditor() {
 }
 ```
 
-向 `<InkContent {...props} sign={MySignButton} />` 传入自定义 `sign` 组件即可渲染改动、删除或窄页边标记；如需浮动工具栏和确认弹窗，可在 `slots.afterEditable` 中挂载 `InkDock`。
+如需浮动工具栏和确认弹窗，可在 `slots.afterEditable` 中挂载 `InkDock`。
 
 </Steps>
 
@@ -193,7 +192,7 @@ export function HeadlessInkEditor() {
 | 手指触摸拖动 | 滚动页面而不绘制。 |
 | 使用橡皮擦拖动 | 在一步撤销中删除路径触及的每条显示笔迹，跳过淡化的已数字化笔迹。 |
 | 使用套索拖动 | 画圈选中超过一半采样点落在圈内的笔迹，并聚焦 Editable。开启 **Show digitized ink** 时，圈选已数字化笔迹会提供 **Bring back**。 |
-| 套索激活时按 `Backspace` 或 `Delete` | 在一步撤销中删除已选中、未数字化且无页边标记的显示笔迹。 |
+| 套索激活时按 `Backspace` 或 `Delete` | 在一步撤销中删除已选中且未数字化的显示笔迹。 |
 | `Escape` | 清除当前套索选中，或在不写入的情况下关闭已打开的数字化确认弹窗。 |
 | 切换到只读模式或 Authored Preview | 关闭当前绘制工具，阻止绘制、擦除和套索删除，并在不写入的情况下关闭已打开的数字化确认弹窗。 |
 
@@ -205,7 +204,7 @@ export function HeadlessInkEditor() {
 
 ### `BaseInkPlugin`
 
-无界面插件（`platejs/ink`），使用核心元素 ID，拥有 `ink-marks`、`ink-copies`、`ink-digitized` 和 `ink-gone` 记录集、笔迹定位与段落读取，以及更新命令。
+无界面插件（`platejs/ink`），使用核心元素 ID，拥有 `ink-marks`、`ink-copies` 和 `ink-digitized` 记录集、笔迹定位与段落读取，以及更新命令。
 
 ## API 参考
 
@@ -220,16 +219,15 @@ export function HeadlessInkEditor() {
 | `editor.plugin(BaseInkPlugin).read.shownMarks()` | `BaseInkPlugin` | 返回所有没有已数字化记录的笔迹，按时间从旧到新排序并冻结。 |
 | `editor.plugin(BaseInkPlugin).read.liveMarks()` | `BaseInkPlugin` | 返回所有当前附着在实时文档文字上的显示笔迹，按时间从旧到新排序并冻结。 |
 | `editor.plugin(BaseInkPlugin).read.mark(id)`、`read.copy(id)` | `BaseInkPlugin` | 按 id 读取单条保存的笔迹或块副本，不存在时返回 `undefined`。 |
-| `editor.plugin(BaseInkPlugin).read.place(copyId)` | `BaseInkPlugin` | 返回副本所在块当前状态：`'live'`、`'changed'` 或 `'gone'`（附带最近存活块的锚点）。 |
+| `editor.plugin(BaseInkPlugin).read.place(copyId)` | `BaseInkPlugin` | 返回副本所在实时块的状态：`'live'` 或 `'changed'`；块不存在时返回 `undefined`。 |
 | `editor.plugin(BaseInkPlugin).read.passages(ids)` | `BaseInkPlugin` | 按文档顺序为每段连续的带笔迹行（含上下各一行上下文）返回一个 `InkPassage`，包含页边笔记以及编辑后段落的实时块坐标（`block`）。 |
 | `editor.plugin(BaseInkPlugin).read.range(input)` | `BaseInkPlugin` | 将 `{ copy, start, end }`（精确副本）或 `{ block, start, end }`（实时块）中的字符偏移解析为实时 `Range`；不可用时返回 `null`。 |
-| `InkMark`、`InkMarkInput`、`InkCopy`、`InkCopyPlace`、`InkSignPlace`、`InkPassage`、`InkPassageMark`、`InkPassageWord`、`InkRangeInput`、`InkTool`、`InkBrush`、`InkSample`、`InkLine`、`InkRun`、`InkMargin`、`InkDirection`、`InkViewState` | `platejs/ink` | 无界面入口导出的核心数据与视图状态类型。 |
+| `InkMark`、`InkMarkInput`、`InkCopy`、`InkCopyPlace`、`InkPassage`、`InkPassageMark`、`InkPassageWord`、`InkRangeInput`、`InkTool`、`InkBrush`、`InkSample`、`InkLine`、`InkRun`、`InkMargin`、`InkDirection`、`InkViewState` | `platejs/ink` | 无界面入口导出的核心数据与视图状态类型。 |
 | `InkPlugin` | `platejs/ink/react` | React 墨迹插件，提供视图级工具、可见性、选中与段落绘图 API。 |
 | `editor.plugin(InkPlugin).api.setTool(tool)` | `InkPlugin` | 设置视图当前的 `InkTool`（`draw`、`erase`、`lasso`），传 `null` 关闭绘制。在只读视图、Authored Preview 或画笔尺寸非法时返回 `false`。 |
-| `editor.plugin(InkPlugin).api.setHidden(hidden)` | `InkPlugin` | 隐藏或显示当前视图的墨迹与标记；隐藏时会清空选中。 |
-| `editor.plugin(InkPlugin).api.setShowDigitized(show)` | `InkPlugin` | 以淡化方式显示已数字化笔迹（或显示为已数字化标记），并允许套索选中。关闭时会从选中中移出已数字化笔迹。 |
+| `editor.plugin(InkPlugin).api.setHidden(hidden)` | `InkPlugin` | 隐藏或显示当前视图的墨迹；隐藏时会清空选中。 |
+| `editor.plugin(InkPlugin).api.setShowDigitized(show)` | `InkPlugin` | 以淡化方式显示已数字化笔迹，并允许套索选中。关闭时会从选中中移出已数字化笔迹。 |
 | `editor.plugin(InkPlugin).api.setPicked(ids)` | `InkPlugin` | 设置当前视图选中的笔迹 id，绘制选中光晕。 |
 | `editor.plugin(InkPlugin).api.images(passages, { maxSide })` | `InkPlugin` | 使用 Canvas 2D 为每个实时段落渲染 `inkAlone` 与 `inkOnText` PNG 数据 URL、像素笔迹框和行内 void 可见文字；段落非实时或超过 `maxSide` 时返回 `null`。 |
-| `InkContent` | `platejs/ink/react` | `wrapContent` 插槽组件，在 Editable 之后直接渲染墨迹画布覆盖层（`data-ink-tool`、`var(--ink-cursor, crosshair)`、可选 `className` 与 `style`）和页边标记按钮。 |
-| `InkCopyView` | `platejs/ink/react` | 在页边标记弹窗中渲染一条或多条笔迹保存的纯文本行与笔画。 |
-| `InkSign`、`InkImagesOptions`、`InkPassageImages` | `platejs/ink/react` | 页边标记与 `api.images` 输入输出类型。 |
+| `InkContent` | `platejs/ink/react` | `wrapContent` 插槽组件，在 Editable 之后直接渲染墨迹画布覆盖层（`data-ink-tool`、`var(--ink-cursor, crosshair)`、可选 `className` 与 `style`）。 |
+| `InkImagesOptions`、`InkPassageImages` | `platejs/ink/react` | `api.images` 输入输出类型。 |

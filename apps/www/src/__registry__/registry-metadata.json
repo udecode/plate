@@ -1,5 +1,5 @@
 {
-  "generation": "a71d4e6c8d0dee58f9c16af9d7d937489842743a7937340a7c417417105d3f32",
+  "generation": "74fd6ae6bbde77348b64143fb4e2d01da728218e7def20da6618dd52755b8bc9",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1100,39 +1100,6 @@
             "@plate/editor-dropdown-menu",
             "@plate/toolbar",
             "alert-dialog"
-          ]
-        },
-        {
-          "dependencies": [
-            "platejs",
-            "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
-          ],
-          "description": "The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes or brings back the marks.",
-          "files": [
-            {
-              "path": "components/editor/ink-sign-button.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/ink-sign-button.tsx"
-            }
-          ],
-          "meta": {
-            "docs": [
-              {
-                "route": "/docs/ink"
-              }
-            ],
-            "examples": [
-              "ink-demo"
-            ]
-          },
-          "name": "ink-sign-button",
-          "title": "Ink Sign Button",
-          "type": "registry:component",
-          "registryDependencies": [
-            "@plate/floating-popover",
-            "button"
           ]
         },
         {
@@ -2996,8 +2963,7 @@
           "registryDependencies": [
             "@plate/draw-toolbar-button",
             "@plate/ink-switch-toolbar-button",
-            "@plate/ink-dock",
-            "@plate/ink-sign-button"
+            "@plate/ink-dock"
           ]
         },
         {
@@ -9160,39 +9126,6 @@
         {
           "dependencies": [
             "platejs",
-            "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
-          ],
-          "description": "The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes or brings back the marks.",
-          "files": [
-            {
-              "path": "components/editor/ink-sign-button.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/ink-sign-button.tsx"
-            }
-          ],
-          "meta": {
-            "docs": [
-              {
-                "route": "/docs/ink"
-              }
-            ],
-            "examples": [
-              "ink-demo"
-            ]
-          },
-          "name": "ink-sign-button",
-          "title": "Ink Sign Button",
-          "type": "registry:component",
-          "registryDependencies": [
-            "@plate/floating-popover",
-            "button"
-          ]
-        },
-        {
-          "dependencies": [
-            "platejs",
             "sonner",
             "cn",
             "diff-match-patch-ts@^0.6.0",
@@ -11048,8 +10981,7 @@
           "registryDependencies": [
             "@plate/draw-toolbar-button",
             "@plate/ink-switch-toolbar-button",
-            "@plate/ink-dock",
-            "@plate/ink-sign-button"
+            "@plate/ink-dock"
           ]
         },
         {

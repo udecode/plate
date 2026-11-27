@@ -20,21 +20,7 @@ import {
   NOTHING_PLACED,
 } from './inkPlacement.internal';
 import { InkPlugin } from './InkPlugin';
-import { observeInkLayout, stackInkSigns } from './inkWatch.internal';
-
-/**
- * Marks whose ink is not on the page, shown as one sign: `changed` when their
- * words changed or moved, `deleted` when a marked block is gone, and `narrow`
- * when a margin note's margin is too narrow for it. `digitized` is `true` for
- * signs shown while `showDigitized` is on.
- */
-export type InkSign = Readonly<{
-  digitized?: boolean;
-  marks: readonly string[];
-  state: 'changed' | 'deleted' | 'narrow';
-}>;
-
-type InkSigns = Pick<InkPlaced, 'bottom' | 'signs'>;
+import { observeInkLayout } from './inkWatch.internal';
 
 const ARRIVE_MS = 50;
 const SETTLE_MS = 250;
@@ -56,20 +42,6 @@ const whenIdle = (run: () => void, timeoutMs?: number) => {
   return () => clearTimeout(id);
 };
 
-const sameSigns = (a: InkSigns, b: InkSigns) =>
-  a.bottom === b.bottom &&
-  a.signs.length === b.signs.length &&
-  a.signs.every(
-    ({ id, left, sign, top }, at) =>
-      id === b.signs[at].id &&
-      left === b.signs[at].left &&
-      top === b.signs[at].top &&
-      sign.digitized === b.signs[at].sign.digitized &&
-      (sign.marks === b.signs[at].sign.marks ||
-        (sign.marks.length === b.signs[at].sign.marks.length &&
-          sign.marks.every((mark, n) => mark === b.signs[at].sign.marks[n])))
-  );
-
 const firstElementAfter = (element: Element) => {
   for (let at: Element | null = element; at; at = at.parentElement) {
     if (at.nextElementSibling) return at.nextElementSibling;
@@ -81,68 +53,34 @@ const firstElementAfter = (element: Element) => {
 /**
  * The ink plugin's `wrapContent` slot: the slot's content, then a layer with
  * the ink of its Editable, drawn over it and its margins. Each mark tracks its
- * words across edits elsewhere in the same paragraph and reflows across wraps
- * by shape family, and otherwise shows as a `sign` in the Editable's padding
- * where the mark's lines end, the left padding for a mark drawn in right-to-left text: at its
- * block's top when the block's words changed or cannot be measured, or a
- * margin note's margin is too narrow, and beside the nearest block left when a
- * marked block is gone, or on the document's start when none is left. A place
- * shows one sign per state, and a sign that would cover the one above it on its
- * side of the Editable moves down below it. A press on a sign is the sign's
- * own. The layer draws the marks of the blocks within a screen of the view,
- * and every mark once the page is about to print. With the Draw tool on, a pen
- * or the primary mouse button draws a mark, which saves when the contact ends
- * and keeps the Editable's focus and caret. With the eraser on, it removes
- * each mark whose painted ink its path touches, and with the lasso on, it
- * draws a loop that picks the marks it holds and focuses the Editable, so the
- * keys on the pick reach it. An eraser or lasso contact ends when its primary
- * button lifts while another stays down. A finger still scrolls, and
- * other mouse buttons keep their own behavior. The view's `hidden` hides ink and
- * signs and leaves every press to the content, and picked marks paint with a
- * halo. Changing the tool, hiding ink or turning the view read-only ends the
- * contact, and a drawing contact ended so saves nothing more. Turning the view
- * read-only turns the tool off. The layer fills the nearest positioned ancestor
- * of the Editable, which should hold the Editable and its margins, and reaches
- * at least to the Editable's bottom, so it covers the whole content of a
- * scrolling ancestor. Pass the slot's props on with a `sign`, as in
- * `wrapContent: (props) => <InkContent {...props} sign={Sign} />`, so the
- * layer comes right after the Editable and before every `afterEditable` slot.
- * In development, the mount throws unless the layer is the first element after
- * the Editable, so a mount from `wrapRoot`, `beforeEditable` or
- * `afterEditable` that puts the layer elsewhere, such as after a toolbar,
- * fails. The layer sits at z-index 50, so a press on a control inside the
- * content at that level or below, such as a block's drag handle, reaches the
- * layer, while a toolbar or menu at that level from an `afterEditable` slot or
- * a portal stays above it. When page chrome at or below that level, such as a
- * sticky header, can sit over the editor, give the positioned ancestor its own
- * stacking context, such as with `isolation: isolate`, so the layer stays
- * below that chrome.
+ * words across edits and reflows across wraps by shape family, staying visible
+ * on its block by default and clamping margin notes inside narrow viewports.
+ * Deleting a marked block or emptying a marked text block removes its marks in
+ * the same undo step. Pass the slot's props on, as in
+ * `wrapContent: (props) => <InkContent {...props} />`, so the layer comes right
+ * after the Editable and before every `afterEditable` slot.
  */
 export function InkContent({
   children,
   className,
-  sign,
   style,
 }: WrapContentProps & {
   className?: string;
-  sign?: React.ComponentType<{ sign: InkSign }>;
   style?: React.CSSProperties;
 }) {
   return (
     <>
       {children}
-      <InkLayer className={className} sign={sign} style={style} />
+      <InkLayer className={className} style={style} />
     </>
   );
 }
 
 function InkLayer({
   className,
-  sign: Sign,
   style,
 }: {
   className?: string;
-  sign?: React.ComponentType<{ sign: InkSign }>;
   style?: React.CSSProperties;
 }) {
   const editableRef = useEditableRef();
@@ -164,32 +102,6 @@ function InkLayer({
   const mountInk = React.useCallback((into: SVGGElement | null) => {
     setSurface(into && createInkSurface(into));
   }, []);
-  const [shown] = React.useState(() => {
-    let current: InkSigns = NOTHING_PLACED;
-    const listeners = new Set<() => void>();
-
-    return {
-      get: () => current,
-      set: (next: InkSigns) => {
-        current = next;
-        for (const listener of listeners) listener();
-      },
-      subscribe: (listener: () => void) => {
-        listeners.add(listener);
-
-        return () => {
-          listeners.delete(listener);
-        };
-      },
-    };
-  });
-  // React renders a store change in the microtask after the listener that
-  // made it, so the signs a `beforeprint` listener places print.
-  const placed = React.useSyncExternalStore(
-    shown.subscribe,
-    shown.get,
-    shown.get
-  );
   const preview = React.useRef<SVGPathElement>(null);
 
   React.useEffect(() => {
@@ -262,22 +174,9 @@ function InkLayer({
     let scrollStartedAt: number | undefined;
     let stopArrival: (() => void) | undefined;
     const show = (next: InkPlaced) => {
-      const { bottom, ink, signs } = next;
-
       painted = next;
-      surface.paint(ink);
-      if (!sameSigns(next, shown.get())) shown.set({ bottom, signs });
-
-      const currentPicked = tools.get('picked');
-
-      if (currentPicked.length > 0 && signs.length > 0) {
-        const signedIds = new Set(signs.flatMap(({ sign }) => sign.marks));
-        const keptPicked = currentPicked.filter((id) => !signedIds.has(id));
-
-        if (keptPicked.length !== currentPicked.length) {
-          view.plugin(InkPlugin).api.setPicked(keptPicked);
-        }
-      }
+      surface.paint(next.ink);
+      layer.style.minHeight = `${next.bottom}px`;
     };
     const stopArriving = () => {
       stopArrival?.();
@@ -436,15 +335,11 @@ function InkLayer({
       attached.detach();
       picker.detach();
     };
-  }, [editableRef, editor, layer, shown, surface, view]);
+  }, [editableRef, editor, layer, surface, view]);
 
   React.useLayoutEffect(() => {
     surface?.setLook(hidden, picked);
   }, [hidden, picked, surface]);
-
-  React.useLayoutEffect(() =>
-    layer && !hidden && Sign ? stackInkSigns(layer, placed.signs) : undefined
-  );
 
   const activeTool = tool && !readOnly && !hidden ? tool : null;
 
@@ -458,7 +353,6 @@ function InkLayer({
         ...style,
         cursor: activeTool ? 'var(--ink-cursor, crosshair)' : undefined,
         inset: 0,
-        minHeight: placed.bottom,
         pointerEvents: activeTool ? 'auto' : 'none',
         position: 'absolute',
         touchAction: INK_TOUCH_ACTION,
@@ -480,17 +374,6 @@ function InkLayer({
         <g ref={mountInk} />
         <path data-ink-stroke="" ref={preview} />
       </svg>
-      {!hidden &&
-        Sign &&
-        placed.signs.map(({ id, left, sign }) => (
-          <div
-            data-ink-sign={sign.state}
-            key={id}
-            style={{ left, pointerEvents: 'auto', position: 'absolute' }}
-          >
-            <Sign sign={sign} />
-          </div>
-        ))}
     </div>
   );
 }

@@ -409,6 +409,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-ink-always-visible",
+      "href": "/registry/changelog/2026-11-27-ink-always-visible.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Remove ink-sign-button and keep ink visible across edits, wraps, and narrow viewports with atomic delete and undo",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ink", "ink-dock", "ink-digitize"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-ink-attached-digitize",
       "href": "/registry/changelog/2026-11-27-ink-attached-digitize.json",
       "status": "draft",

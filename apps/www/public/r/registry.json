@@ -1079,38 +1079,6 @@
       "type": "registry:component"
     },
     {
-      "name": "ink-sign-button",
-      "title": "Ink Sign Button",
-      "description": "The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes or brings back the marks.",
-      "dependencies": [
-        "platejs",
-        "cn",
-        "diff-match-patch-ts@^0.6.0"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/floating-popover.json",
-        "button"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/ink-sign-button.tsx",
-          "type": "registry:component",
-          "target": "@components/editor/ink-sign-button.tsx"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/ink"
-          }
-        ],
-        "examples": [
-          "ink-demo"
-        ]
-      },
-      "type": "registry:component"
-    },
-    {
       "name": "ink-dock",
       "title": "Ink Dock",
       "description": "Floating ink dock with Pen, Highlighter, Eraser and Lasso, color swatches, a width flyout, lasso Digitize, Delete and Bring back actions, the Digitize all toolbar trigger, and the confirm dialog with kind filters and async comment save/retry.",
@@ -2940,8 +2908,7 @@
       "registryDependencies": [
         "https://platejs.org/r/draw-toolbar-button.json",
         "https://platejs.org/r/ink-switch-toolbar-button.json",
-        "https://platejs.org/r/ink-dock.json",
-        "https://platejs.org/r/ink-sign-button.json"
+        "https://platejs.org/r/ink-dock.json"
       ],
       "files": [
         {

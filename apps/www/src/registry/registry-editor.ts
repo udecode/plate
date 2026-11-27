@@ -579,21 +579,6 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs'],
-    description:
-      'The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes or brings back the marks.',
-    files: [
-      {
-        path: 'components/editor/ink-sign-button.tsx',
-        type: 'registry:component',
-      },
-    ],
-    meta: { docs: [{ route: '/docs/ink' }], examples: ['ink-demo'] },
-    name: 'ink-sign-button',
-    title: 'Ink Sign Button',
-    type: 'registry:component',
-  },
-  {
     dependencies: ['platejs', 'sonner'],
     description:
       'Floating ink dock with Pen, Highlighter, Eraser and Lasso, color swatches, a width flyout, lasso Digitize, Delete and Bring back actions, the Digitize all toolbar trigger, and the confirm dialog with kind filters and async comment save/retry.',

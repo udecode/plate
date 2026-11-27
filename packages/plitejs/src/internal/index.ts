@@ -35,6 +35,7 @@ export {
   publishEditorCommitInVersionOrder,
   resetEditorCommitPublicationQueue,
 } from '../core/commit-publication';
+export { isEditorDraftView } from '../core/document-recorder';
 export { readingCovered } from '../core/property-validity';
 export {
   observeAnchorStateWork,

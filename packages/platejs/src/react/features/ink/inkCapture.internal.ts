@@ -15,7 +15,6 @@ import {
   roundPixel,
   roundSample,
 } from '../../../features/ink/lib/inkCodec.internal';
-import { holdInkBlock } from '../../../features/ink/lib/inkGone.internal';
 import {
   footprintEnters,
   gapAround,
@@ -50,14 +49,9 @@ type Entered = Readonly<{
 type Epoch = {
   readonly at: number;
   readonly blocks: Entered[];
-  readonly holds: Array<() => void>;
   note: Entered | undefined;
   readonly samples: InkSample[];
   readonly start: number;
-};
-
-const release = (epoch: Epoch) => {
-  for (const free of epoch.holds.splice(0)) free();
 };
 
 const heldBy = (epoch: Epoch) =>
@@ -316,9 +310,6 @@ export const attachInkCapture = ({
         runs: margin ? [] : runsOf(live, points, radius),
         text: live.text,
         top: live.box.top,
-        ...(live.voidLabels === undefined
-          ? {}
-          : { voidLabels: live.voidLabels }),
         voids: block.voids,
         width: live.box.width,
       })),
@@ -337,29 +328,22 @@ export const attachInkCapture = ({
 
     const input = contact && inputOf(done, contact.brush);
 
-    if (!contact || !input) {
-      release(done);
-
-      return;
-    }
+    if (!contact || !input) return;
 
     const by = contact.tool;
 
     scheduleAfterCommitNotification(editor, () => {
-      try {
-        if (tool() !== by) return;
+      if (tool() !== by) return;
 
-        const tracked = editor.plugin(HistoryPlugin).installed;
-        const joins = tracked && savedAt === editor.read.history().revision;
+      const tracked = editor.plugin(HistoryPlugin).installed;
+      const joins = tracked && savedAt === editor.read.history().revision;
 
-        editor.update((tx) => {
-          if (joins) tx.history.merge();
-          tx.plugin(BaseInkPlugin).add(input);
-        });
-        savedAt = tracked ? editor.read.history().revision : undefined;
-      } finally {
-        release(done);
-      }
+      editor.update((tx) => {
+        if (!input.blocks.every((block) => tx.nodes.byId(block.block))) return;
+        if (joins) tx.history.merge();
+        tx.plugin(BaseInkPlugin).add(input);
+      });
+      savedAt = tracked ? editor.read.history().revision : undefined;
     });
   };
 
@@ -439,29 +423,21 @@ export const attachInkCapture = ({
     const open = epoch ?? {
       at: Date.now(),
       blocks: [],
-      holds: [],
       note: undefined,
       samples: [],
       start: event.timeStamp,
     };
     const [last] = open.samples.slice(-1);
     const segment: Point[] = last ? [[last[0], last[1]], point] : [point];
-    const hold = (entered: Entered) => {
-      open.holds.push(holdInkBlock(editor, entered.block.id));
-
-      return entered;
-    };
 
     epoch = open;
     for (const { block } of entering(segment)) {
       const entered = enter(block, origin);
 
-      if (entered) open.blocks.push(hold(entered));
+      if (entered) open.blocks.push(entered);
     }
     if (open.samples.length === 0 && open.blocks.length === 0) {
-      const note = nearestTo(point, origin);
-
-      open.note = note && hold(note);
+      open.note = nearestTo(point, origin);
     }
     open.samples.push(
       roundSample([
@@ -481,7 +457,6 @@ export const attachInkCapture = ({
   };
 
   const cancel = () => {
-    if (epoch) release(epoch);
     epoch = null;
     contact = null;
     changedSinceCut = new Map();

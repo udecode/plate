@@ -83,7 +83,6 @@ export type PrepareInkDigitizeResult =
   | Readonly<{
       canRetryLassoOnly: boolean;
       kind: 'too-many-words';
-      signMarkIds: readonly string[];
       wordCount: number;
     }>
   | Readonly<{
@@ -268,7 +267,6 @@ export const prepareInkDigitizeRequest = async (
         extraMarkIds.length > 0 &&
         lassoOnlyWords <= maxWords,
       kind: 'too-many-words',
-      signMarkIds: options.lassoOnly ? [] : extraMarkIds,
       wordCount,
     };
   }
@@ -689,84 +687,6 @@ export const validateInkDigitizeReading = (
     ok: true,
     request: reading.request,
   };
-};
-
-const markTouchedByTextEdit = (
-  mark: InkPassage['marks'][number],
-  edit: Exclude<InkDigitizeEdit, { kind: 'answer' | 'comment' | 'highlight' }>
-): boolean => {
-  if (mark.margin !== undefined) return true;
-  if (edit.kind === 'insert') {
-    if (mark.gaps.includes(edit.gap)) return true;
-    if (mark.words.length === 0) return false;
-
-    const minWord = Math.min(...mark.words);
-    const maxWord = Math.max(...mark.words);
-
-    return edit.gap > minWord && edit.gap <= maxWord;
-  }
-
-  const [start, end] = edit.words;
-
-  return (
-    mark.words.some((w) => w >= start && w <= end) ||
-    mark.gaps.some((g) => g >= start && g <= end + 1)
-  );
-};
-
-export const marksTurningIntoSigns = (
-  prepared: PreparedInkDigitize,
-  corrections: readonly ValidatedCorrection[],
-  keptIndices: ReadonlySet<number>,
-  meaningIndices?: ReadonlyMap<number, number>
-): readonly string[] => {
-  const metaById = new Map(prepared.passages.map((meta) => [meta.id, meta]));
-  const keptMarks = new Set<string>();
-
-  for (const [index, correction] of corrections.entries()) {
-    if (keptIndices.has(index)) {
-      for (const id of correction.markIds) keptMarks.add(id);
-    }
-  }
-
-  const passageMarkIds = new Set<string>();
-
-  for (const meta of prepared.passages) {
-    for (const mark of meta.passage.marks) passageMarkIds.add(mark.id);
-  }
-
-  const affected = new Set<string>();
-
-  for (const [index, correction] of corrections.entries()) {
-    if (!keptIndices.has(index)) continue;
-    const meaning = correction.meanings[meaningIndices?.get(index) ?? 0];
-
-    if (!meaning) continue;
-    for (const edit of meaning.edits) {
-      if (
-        edit.kind === 'highlight' ||
-        edit.kind === 'comment' ||
-        edit.kind === 'answer'
-      ) {
-        continue;
-      }
-      const meta = metaById.get(edit.passage);
-
-      if (!meta) continue;
-      for (const mark of meta.passage.marks) {
-        if (!keptMarks.has(mark.id) && markTouchedByTextEdit(mark, edit)) {
-          affected.add(mark.id);
-        }
-      }
-      for (const markId of prepared.shownByBlock.get(meta.blockId) ?? []) {
-        if (!keptMarks.has(markId) && !passageMarkIds.has(markId)) {
-          affected.add(markId);
-        }
-      }
-    }
-  }
-
-  return [...affected];
 };
 
 type ResolvedEdit = Readonly<{

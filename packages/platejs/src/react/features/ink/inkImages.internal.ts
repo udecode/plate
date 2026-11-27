@@ -260,7 +260,7 @@ const capturePassage = (
         nearby: [],
       });
 
-      if (placement.type !== 'ink') continue;
+      if (!placement) continue;
       ({ dx, dy } = placement);
       outlines = placement.strokes
         ? inkStrokeOutlinesPoints(mark.brush, placement.strokes)

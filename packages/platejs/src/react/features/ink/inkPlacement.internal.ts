@@ -5,26 +5,20 @@ import type {
   InkMark,
   InkSample,
 } from '../../../features/ink/lib';
-import { blockAbove } from '../../../features/ink/lib/inkGone.internal';
 import {
   type InkBox,
+  type InkLiveBlock,
   type InkPlacement,
   type InkText,
   placedPolylinesOf,
-  placementClearsNearby,
   placeMark,
 } from '../../../features/ink/lib/inkMatch.internal';
 import {
   byMark,
-  type InkDeletedSign,
   type InkIndexedMark,
-  type InkMarkSign,
-  readInkDeletedSigns,
   readInkIndexedMark,
-  readInkSign,
 } from '../../../features/ink/lib/inkPlaces.internal';
 import type { Editor } from '../../core';
-import type { InkSign } from './InkContent';
 import { createInkLayouts } from './inkLayout.internal';
 import {
   type InkBand,
@@ -32,7 +26,6 @@ import {
   type InkMeasuredBlock,
   inkBoxOf,
   inkTextBlockOf,
-  inkWordBoxes,
   sameInkBox,
 } from './inkMeasure.internal';
 import { InkPlugin } from './InkPlugin';
@@ -53,16 +46,12 @@ export type InkPlaced = Readonly<{
       strokes?: ReadonlyArray<readonly InkSample[]>;
     }>
   >;
-  signs: ReadonlyArray<
-    Readonly<{ id: string; left: number; sign: InkSign; top: number }>
-  >;
 }>;
 
 export const NOTHING_PLACED: InkPlaced = {
   bottom: 0,
   contentOrigin: { left: 0, top: 0 },
   ink: [],
-  signs: [],
 };
 
 export type InkArrival = Readonly<{
@@ -75,7 +64,7 @@ type Places = ReadonlyArray<InkCopyPlace | undefined>;
 type Witness = Readonly<{
   boxFromFirst: InkBox;
   key: NodeKey;
-  lines: InkMeasuredBlock['lines'];
+  lines: InkMeasuredBlock['lines'] | undefined;
 }>;
 
 type Decided = Readonly<{
@@ -103,10 +92,9 @@ export type InkAudit = (expired: () => boolean) => boolean;
 type InkInputs = Readonly<{
   band: InkBand;
   crossing: number;
-  first: InkMeasuredBlock | undefined;
+  first: InkLiveBlock | undefined;
   keys: readonly NodeKey[];
-  live: ReadonlyArray<InkMeasuredBlock | undefined>;
-  near: readonly InkMeasuredBlock[];
+  live: ReadonlyArray<InkLiveBlock | undefined>;
 }>;
 
 const metrics = {
@@ -196,9 +184,8 @@ const inkInputs = (
   mark: InkMark,
   copies: readonly InkCopy[],
   places: Places,
-  live: ReadonlyArray<InkMeasuredBlock | undefined>,
+  live: ReadonlyArray<InkLiveBlock | undefined>,
   placement: InkPlacement,
-  measure: (key: NodeKey) => InkMeasuredBlock | undefined,
   candidatesBetween: (from: number, to: number) => readonly NearBlock[]
 ): InkInputs => {
   const at = live.findIndex((block) => block !== undefined);
@@ -209,38 +196,29 @@ const inkInputs = (
       0,
       ...copies.flatMap((copy) => copy.lines.map((line) => line.height))
     );
-  const band =
-    placement.type === 'ink'
-      ? bandOfPolylines(placedPolylinesOf(mark, placement), reach)
-      : (() => {
-          const shift = first ? first.box.top - mark.blocks[at].top : 0;
-          const [minY, maxY] = markYRange(mark);
+  const band = placement
+    ? bandOfPolylines(placedPolylinesOf(mark, placement), reach)
+    : (() => {
+        const shift = first ? first.box.top - mark.blocks[at].top : 0;
+        const [minY, maxY] = markYRange(mark);
 
-          return Number.isFinite(minY)
-            ? { from: minY + shift - reach, to: maxY + shift + reach }
-            : { from: 0, to: 0 };
-        })();
-  const marked = new Set(
-    places.flatMap((place) =>
-      place && place.kind !== 'gone' ? [place.key] : []
-    )
-  );
+        return Number.isFinite(minY)
+          ? { from: minY + shift - reach, to: maxY + shift + reach }
+          : { from: 0, to: 0 };
+      })();
+  const marked = new Set(places.flatMap((place) => (place ? [place.key] : [])));
   const crossing = candidatesBetween(band.from, band.to).filter(({ box }) =>
     crosses(box, band)
   );
-  const others = crossing.flatMap(({ key }) => (marked.has(key) ? [] : [key]));
 
   return {
     band,
     crossing: crossing.length,
     first,
-    keys: [...marked, ...others],
+    keys: [...marked],
     live,
-    near: others.flatMap((key) => measure(key) ?? []),
   };
 };
-
-type DeletedEntry = InkDeletedSign & Readonly<{ digitized?: boolean }>;
 
 const MARGIN_BURST_MS = 4000;
 const MARGIN_BURST_LINE_GAP = 1.5;
@@ -319,26 +297,14 @@ const alignMarginBursts = (
 };
 
 const placeInkMarks = (
-  view: Editor,
   editable: HTMLElement,
   origin: InkLayerOrigin,
   marks: readonly InkMark[],
-  deleted: readonly DeletedEntry[],
   entryOf: (mark: InkMark) => InkIndexedMark | undefined,
-  signOf: (mark: InkMark) => InkMarkSign | undefined,
   decide: (...of: Parameters<Decide>) => Decided | undefined,
   isDigitized: (mark: InkMark) => boolean
 ): InkPlaced => {
   const editableBox = inkBoxOf(editable, origin);
-  const style = getComputedStyle(editable);
-  const rails = {
-    ltr:
-      editableBox.left +
-      editableBox.width -
-      (Number.parseFloat(style.paddingRight) || 0),
-    rtl: editableBox.left,
-  };
-  const startTop = editableBox.top + (Number.parseFloat(style.paddingTop) || 0);
   const pins = new Map<Element, InkPin>();
   const pinAt = (element: Element) => {
     let pin = pins.get(element);
@@ -352,132 +318,27 @@ const placeInkMarks = (
 
     return pin;
   };
-  const anchors = new Map<NodeKey, InkBox | undefined>();
-  const anchorBox = (key: NodeKey) => {
-    if (!anchors.has(key)) {
-      const element = view.api.dom.resolveDOMNode(key);
-
-      anchors.set(key, element ? inkBoxOf(element, origin) : undefined);
-    }
-
-    return anchors.get(key);
-  };
-  const above = new Map<NodeKey, NodeKey | undefined>();
-  const aboveOf = (key: NodeKey) => {
-    if (!above.has(key)) {
-      above.set(
-        key,
-        view.read((state) => {
-          const [, path] = state.nodes.get(key) ?? [];
-          const id = path && blockAbove(state.value(), path);
-
-          return id === undefined ? undefined : state.nodes.byId(id)?.key;
-        })
-      );
-    }
-
-    return above.get(key);
-  };
-  const anchorOf = (place: InkCopyPlace | undefined) => {
-    if (place?.kind === 'live' || place?.kind === 'changed') {
-      return { id: place.key, top: anchorBox(place.key)?.top ?? startTop };
-    }
-
-    const beside = place?.kind === 'gone' ? place.beside : undefined;
-
-    if (!beside || beside.at === 'start') return { id: 'start', top: startTop };
-
-    const upper = beside.at === 'before' ? aboveOf(beside.key) : undefined;
-    const { at, key } =
-      upper === undefined ? beside : { at: 'after' as const, key: upper };
-    const box = anchorBox(key);
-
-    return {
-      id: `${at}:${key}`,
-      top: box ? box.top + (at === 'after' ? box.height : 0) : startTop,
-    };
-  };
   const ink: Array<InkPlaced['ink'][number]> = [];
-  const signs = new Map<
-    string,
-    {
-      digitized: boolean;
-      first: InkMark;
-      left: number;
-      marks: string[];
-      state: InkSign['state'];
-      top: number;
-    }
-  >();
 
   for (const mark of marks) {
     const entry = entryOf(mark);
 
     if (!entry) continue;
 
+    const decided = decide(mark, entry);
+
+    if (!decided?.placement) continue;
+
+    const { pin, placement } = decided;
     const digitized = isDigitized(mark);
-    const kept = signOf(mark);
-    let state: InkSign['state'] | undefined = kept?.state;
-    let place = kept?.place;
 
-    if (!kept) {
-      const decided = decide(mark, entry);
-
-      if (!decided) continue;
-
-      const { pin, placement } = decided;
-
-      if (placement.type === 'ink') {
-        ink.push({
-          ...(digitized && { digitized: true }),
-          dx: placement.dx,
-          dy: placement.dy,
-          mark,
-          ...(pin && { pin: pinAt(pin) }),
-          ...(placement.strokes && { strokes: placement.strokes }),
-        });
-      }
-      state = placement.type === 'sign' ? placement.reason : placement.sign;
-      ({ place } = decided);
-    }
-    if (!state) continue;
-
-    const anchor = anchorOf(place);
-    const id = `${mark.direction}|${anchor.id}|${state}${digitized ? '|digitized' : ''}`;
-    const sign = signs.get(id) ?? {
-      digitized,
-      first: mark,
-      left: rails[mark.direction],
-      marks: [],
-      state,
-      top: anchor.top,
-    };
-
-    sign.marks.push(mark.id);
-    signs.set(id, sign);
-  }
-
-  const gone = new Map<
-    string,
-    Readonly<{
-      digitized: boolean;
-      ids: readonly string[];
-      marks: readonly InkMark[];
-      top: number;
-    }>
-  >();
-
-  for (const { digitized = false, ids, marks: of, place } of deleted) {
-    const anchor = anchorOf(place);
-    const id = `${of[0].direction}|${anchor.id}|deleted${digitized ? '|digitized' : ''}`;
-    const there = gone.get(id);
-    const merged = there && [...there.marks, ...of].sort(byMark);
-
-    gone.set(id, {
-      digitized,
-      ids: merged ? merged.map((mark) => mark.id) : ids,
-      marks: merged ?? of,
-      top: anchor.top,
+    ink.push({
+      ...(digitized && { digitized: true }),
+      dx: placement.dx,
+      dy: placement.dy,
+      mark,
+      ...(pin && { pin: pinAt(pin) }),
+      ...(placement.strokes && { strokes: placement.strokes }),
     });
   }
 
@@ -490,30 +351,6 @@ const placeInkMarks = (
       top: editableBox.top - editable.scrollTop,
     },
     ink,
-    signs: [
-      ...[...signs].map(([id, { digitized, marks: ofSign, state, ...at }]) => ({
-        ...at,
-        id,
-        sign: {
-          ...(digitized && { digitized: true }),
-          marks: ofSign,
-          state,
-        },
-      })),
-      ...[...gone].map(([id, { digitized, ids, marks: of, top }]) => ({
-        first: of[0],
-        id,
-        left: rails[of[0].direction],
-        sign: {
-          ...(digitized && { digitized: true }),
-          marks: ids,
-          state: 'deleted' as const,
-        },
-        top,
-      })),
-    ]
-      .sort((a, b) => byMark(a.first, b.first))
-      .map(({ id, left, sign, top }) => ({ id, left, sign, top })),
   };
 };
 
@@ -591,26 +428,6 @@ export const createInkPlacer = ({
   const entryOf = (mark: InkMark) =>
     view.read((state) =>
       readInkIndexedMark({ copy: read.copy, editor: view, state }, mark)
-    );
-  const signOf = (mark: InkMark, includeDigitized = false) => {
-    metrics.signReads += 1;
-
-    return view.read((state) =>
-      readInkSign(
-        { copy: read.copy, editor: view, state },
-        mark,
-        includeDigitized
-      )
-    );
-  };
-  const deletedSigns = () =>
-    view.read((state) =>
-      readInkDeletedSigns({
-        copy: read.copy,
-        editor: view,
-        marks: read.shownMarks,
-        state,
-      })
     );
 
   const textBlock = (key: NodeKey) => {
@@ -698,7 +515,6 @@ export const createInkPlacer = ({
         : null;
     const isDigitized = (mark: InkMark) =>
       shownIds !== null && !shownIds.has(mark.id);
-    const readSign = (mark: InkMark) => signOf(mark, isDigitized(mark));
 
     const rect = layer.getBoundingClientRect();
     const origin = { left: rect.left, top: rect.top };
@@ -864,7 +680,7 @@ export const createInkPlacer = ({
 
           return (
             now !== undefined &&
-            layouts.lines(now.element) === lines &&
+            (lines === undefined || layouts.lines(now.element) === lines) &&
             sameInkBox(
               {
                 ...now.box,
@@ -884,14 +700,13 @@ export const createInkPlacer = ({
       return {
         pin,
         place,
-        placement:
-          placement.type === 'ink'
-            ? {
-                ...placement,
-                dx: placement.dx + left - kept.firstLeft,
-                dy: placement.dy + top - kept.firstTop,
-              }
-            : placement,
+        placement: placement
+          ? {
+              ...placement,
+              dx: placement.dx + left - kept.firstLeft,
+              dy: placement.dy + top - kept.firstTop,
+            }
+          : placement,
       };
     };
 
@@ -902,14 +717,27 @@ export const createInkPlacer = ({
 
       const { copies } = entry;
       const places = copies.map((copy) => read.place(copy.id));
-      const [start] = places.flatMap((at) =>
-        at && at.kind !== 'gone' ? [at.key] : []
-      );
+      const [start] = places.flatMap((at) => (at ? [at.key] : []));
       const anchor = start === undefined ? undefined : blockAt(start)?.element;
       const pin = anchor && pinOf(anchor);
-      const measuredLive = places.map((place) =>
-        place && place.kind !== 'gone' ? measure(place.key) : undefined
-      );
+      const boxOnly = (key: NodeKey): InkLiveBlock | undefined => {
+        const block = blockAt(key);
+
+        return block
+          ? {
+              box: block.box,
+              line: () => undefined,
+              measure: () => undefined,
+              text: block.text,
+              ...(block.voids !== undefined ? { voids: block.voids } : {}),
+            }
+          : undefined;
+      };
+      const measuredLive = places.map((place) => {
+        if (!place) return undefined;
+
+        return entry.aligned ? measure(place.key) : boxOnly(place.key);
+      });
       const firstMeasured = measuredLive.find((block) => block !== undefined);
       const candidate = placeMark({
         copies,
@@ -922,31 +750,23 @@ export const createInkPlacer = ({
             }
           : { left: 0, right: 0 },
         mark,
-        nearby: [],
       });
-      const { band, crossing, first, keys, live, near } = inkInputs(
+      const { band, crossing, first, keys, live } = inkInputs(
         mark,
         copies,
         places,
         measuredLive,
         candidate,
-        measure,
         candidatesMovingWith(pin)
       );
-      const nearby = near.flatMap((block) => inkWordBoxes(block, band));
-      const cleared =
-        candidate.type === 'ink' &&
-        !placementClearsNearby(mark, candidate, nearby)
-          ? ({ reason: 'changed', type: 'sign' } as const)
-          : candidate;
-      const clearedPolylines =
-        cleared.type === 'ink' && !mark.margin
-          ? placedPolylinesOf(mark, cleared)
+      const polylines =
+        candidate && !mark.margin
+          ? placedPolylinesOf(mark, candidate)
           : undefined;
       const placement: InkPlacement =
-        clearedPolylines !== undefined &&
+        polylines !== undefined &&
         places.some((at) => {
-          if (!at || at.kind === 'gone') return false;
+          if (!at) return false;
 
           const element = blockAt(at.key)?.element;
 
@@ -956,21 +776,21 @@ export const createInkPlacer = ({
               element,
               editable,
               origin,
-              clearedPolylines,
+              polylines,
               mark.brush.size / 2
             )
           );
         })
-          ? { reason: 'changed', type: 'sign' }
-          : cleared;
+          ? null
+          : candidate;
       const place = places.find((at) => at?.kind !== 'live') ?? places[0];
       const firstLeft = first?.box.left ?? 0;
       const firstTop = first?.box.top ?? 0;
       const witnesses = keys.flatMap((key): Witness[] => {
         const block = blockAt(key);
-        const lines = measure(key)?.lines;
+        const lines = entry.aligned ? measure(key)?.lines : undefined;
 
-        return block && lines
+        return block && (!entry.aligned || lines)
           ? [
               {
                 boxFromFirst: {
@@ -1009,25 +829,6 @@ export const createInkPlacer = ({
       return { pin, place, placement };
     };
 
-    const deleted: DeletedEntry[] = [...deletedSigns()];
-
-    if (shownIds !== null) {
-      for (const mark of marks) {
-        if (!isDigitized(mark)) continue;
-
-        const kept = readSign(mark);
-
-        if (kept?.state === 'deleted') {
-          deleted.push({
-            digitized: true,
-            ids: [mark.id],
-            marks: [mark],
-            place: kept.place,
-          });
-        }
-      }
-    }
-
     const visible = new Set(
       blocks.flatMap((block) => markIndex.byBlock.get(block.id) ?? [])
     );
@@ -1035,14 +836,10 @@ export const createInkPlacer = ({
     return {
       blocks,
       decide,
-      deleted,
       isDigitized,
       marksOn: (block: string) => markIndex.byBlock.get(block) ?? [],
       origin,
-      readSign,
-      shown: [...visible]
-        .filter((mark) => readSign(mark)?.state !== 'deleted')
-        .sort(byMark),
+      shown: [...visible].sort(byMark),
       stillHeld,
     };
   };
@@ -1052,13 +849,10 @@ export const createInkPlacer = ({
 
     return pass
       ? placeInkMarks(
-          view,
           editable,
           pass.origin,
           pass.shown,
-          pass.deleted,
           entryOf,
-          pass.readSign,
           pass.decide,
           pass.isDigitized
         )
@@ -1092,17 +886,11 @@ export const createInkPlacer = ({
         }
       }
 
-      const showing = new Set(pass.deleted.map(({ ids }) => ids));
       let before: ReadonlySet<string> | undefined;
       const shownBefore = (id: string) => {
         metrics.arrivalLookups += 1;
         if (!before) {
-          before = new Set([
-            ...shown.ink.map(({ mark }) => mark.id),
-            ...shown.signs.flatMap(({ sign }) =>
-              showing.has(sign.marks) ? [] : sign.marks
-            ),
-          ]);
+          before = new Set(shown.ink.map(({ mark }) => mark.id));
           metrics.shownIds += before.size;
         }
 
@@ -1115,7 +903,7 @@ export const createInkPlacer = ({
       for (const [mark, rank] of [...ranks].sort(([, a], [, b]) => a - b)) {
         const entry = entryOf(mark);
 
-        if (!entry || pass.readSign(mark)) continue;
+        if (!entry) continue;
 
         const kept = pass.stillHeld(mark, entry);
 
@@ -1133,13 +921,10 @@ export const createInkPlacer = ({
 
       return {
         placed: placeInkMarks(
-          view,
           editable,
           pass.origin,
           pass.shown,
-          pass.deleted,
           entryOf,
-          pass.readSign,
           (mark) => decided.get(mark),
           pass.isDigitized
         ),
@@ -1157,7 +942,7 @@ export const createInkPlacer = ({
           const entry = entryOf(mark);
 
           at += 1;
-          if (entry && !pass.readSign(mark)) pass.decide(mark, entry);
+          if (entry) pass.decide(mark, entry);
           if (expired()) break;
         }
 
