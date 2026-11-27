@@ -75,8 +75,9 @@ const CLOSE_REASONS = {
   feature: 'RESOLVED',
 };
 const BOTS = new Set(['dependabot[bot]', 'github-actions[bot]']);
+const TEAM = new Set(['COLLABORATOR', 'MEMBER', 'OWNER']);
 const TEAM_ROLES = new Set(['maintainer', 'qa']);
-const DRAFT_MARK = /\n\n<!-- triage:([0-9a-f]{12}) -->$/u;
+const DRAFT_MARK = /\n*<!-- triage:([0-9a-f]{12}) -->\s*$/u;
 const GH_FIELDS =
   'number,title,body,state,author,labels,milestone,issueType,assignees,comments';
 const LIST_FIELDS =
@@ -164,17 +165,14 @@ const markOf = (text) =>
 const marked = (text) =>
   `${unixText(text).trim()}\n\n<!-- triage:${markOf(text)} -->`;
 
-const isDraft = (comment) => {
-  const body = unixText(comment.body).trim();
-  const match = DRAFT_MARK.exec(body);
-  return Boolean(
-    match &&
-    ['COLLABORATOR', 'MEMBER', 'OWNER'].includes(comment.authorAssociation) &&
-    markOf(body.slice(0, match.index)) === match[1]
-  );
-};
+const isDraft = (comment) =>
+  TEAM.has(comment.authorAssociation) &&
+  DRAFT_MARK.test(unixText(comment.body));
 
-const isBot = (comment) => BOTS.has(comment.author?.login ?? '');
+const isBot = (comment) => {
+  const login = comment.author?.login ?? '';
+  return BOTS.has(login) || login.endsWith('[bot]');
+};
 
 const ghProblem = (result) =>
   result.error?.code === 'ETIMEDOUT'
@@ -1634,22 +1632,29 @@ function queueCommand(policy, options) {
         title: each.title,
       };
     });
-    const waiting = results
-      .filter(
-        (each) =>
-          each.state !== 'current' &&
-          (isMaintainer || each.state !== 'unconfirmed')
-      )
-      .slice(0, Number(options.limit ?? Infinity));
+    const allWaiting = results.filter(
+      (each) =>
+        each.state !== 'current' &&
+        (isMaintainer || each.state !== 'unconfirmed')
+    );
+    const shown = allWaiting.slice(0, Number(options.limit ?? Infinity));
     if (options.json) {
-      console.log(JSON.stringify({ note, discussions: waiting }, null, 2));
+      console.log(
+        JSON.stringify(
+          { note, totalWaiting: allWaiting.length, discussions: shown },
+          null,
+          2
+        )
+      );
       return;
     }
     if (note) console.log(`note: ${note}`);
+    const showing =
+      shown.length < allWaiting.length ? ` (showing ${shown.length})` : '';
     console.log(
-      `${results.length} open discussions${options.category ? ` in ${options.category}` : ''}: ${waiting.length} waiting`
+      `${results.length} open discussions${options.category ? ` in ${options.category}` : ''}: ${allWaiting.length} waiting${showing}`
     );
-    for (const item of waiting) {
+    for (const item of shown) {
       console.log(
         [
           `${DISCUSSIONS}#${item.issue}`,
