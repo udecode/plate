@@ -499,6 +499,7 @@ import {
   advanceRootDirectory,
   assertBuiltUniqueMaps,
   assertRootDirectory,
+  EMPTY_RUNTIME_INDEX,
   emptyRootDirectory,
   getSnapshotIndexElementEntries,
   hasRegisteredSnapshotIndex,
@@ -648,6 +649,7 @@ type TransactionSnapshot = {
   >;
   childrenRoot: string;
   contentSliceRoots: Set<string>;
+  deletedRoots: Set<string>;
   documentState: Record<string, unknown> | undefined;
   discardedNodeKeys: Set<NodeKey>;
   dirtyStateKeys: Set<string>;
@@ -1580,6 +1582,10 @@ const TRANSACTION_SPEC_CONTENT_SLICE_ROOTS = new WeakMap<
   TransactionSpec,
   readonly string[]
 >();
+const TRANSACTION_SPEC_DELETED_ROOTS = new WeakMap<
+  TransactionSpec,
+  readonly string[]
+>();
 const TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS = new WeakMap<
   TransactionSpec,
   readonly TransactionAfterCommitHandler[]
@@ -2087,6 +2093,7 @@ export const commitRecordedDraft = (
   for (const restore of snapshot.runtimeIndexRollbacks.values()) restore();
   snapshot.runtimeIndexRollbacks.clear();
   snapshot.rootIndexes = new Map();
+  snapshot.deletedRoots.clear();
   snapshot.discardedNodeKeys.clear();
   snapshot.builder = createEditorDocumentChangeBuilder(
     editor,
@@ -10823,6 +10830,7 @@ export const createTransactionSpecContext = (
     builder,
     childrenRoot: getCurrentChildrenRoot(editor),
     contentSliceRoots: new Set(parentSnapshot?.contentSliceRoots),
+    deletedRoots: new Set(),
     dirtyStateKeys: new Set(),
     documentState: copyDocumentState(getDocumentState(editor)),
     discardedNodeKeys: new Set(),
@@ -11190,6 +11198,12 @@ const finalizeTransactionSpecContext = (
       Object.freeze([...snapshot.contentSliceRoots])
     );
   }
+  if (snapshot.deletedRoots.size > 0) {
+    TRANSACTION_SPEC_DELETED_ROOTS.set(
+      spec,
+      Object.freeze([...snapshot.deletedRoots])
+    );
+  }
   if (snapshot.afterCommitHandlers.length > 0) {
     TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS.set(
       spec,
@@ -11360,10 +11374,14 @@ const applyTransactionSpecContents = <V extends Value>(
     if (snapshot) snapshot.reason = 'replace';
   }
   const contentSliceRoots = TRANSACTION_SPEC_CONTENT_SLICE_ROOTS.get(spec);
+  const deletedRoots = TRANSACTION_SPEC_DELETED_ROOTS.get(spec);
   const snapshot = getTransactionSnapshot(editor);
 
   if (contentSliceRoots && snapshot) {
     for (const root of contentSliceRoots) snapshot.contentSliceRoots.add(root);
+  }
+  if (deletedRoots && snapshot) {
+    for (const root of deletedRoots) snapshot.deletedRoots.add(root);
   }
 
   for (const effect of spec.effects) {
@@ -14631,11 +14649,45 @@ const inheritDocumentChangeStepNodeKeys = (
       snapshot.baseRuntimeIndexes.set(root, () => resolvedSourceIndex);
     }
 
-    snapshot.rootIndexes.set(root, mappedIndex);
+    snapshot.rootIndexes.set(
+      root,
+      step.change.deleteRoots.has(root) ? EMPTY_RUNTIME_INDEX : mappedIndex
+    );
     indexes.set(
       root,
       Object.freeze({ after: mappedIndex, before: resolvedSourceIndex })
     );
+  }
+  for (const root of step.change.deleteRoots) {
+    snapshot.deletedRoots.add(root);
+    if (indexes.has(root)) continue;
+
+    if (options.defer) {
+      snapshot.rootIndexes.delete(root);
+      snapshot.baseRuntimeIndexes.set(root, () => EMPTY_RUNTIME_INDEX);
+      continue;
+    }
+
+    const currentIndex = snapshot.rootIndexes.get(root);
+    const baseIndex = snapshot.baseRuntimeIndexes.get(root);
+
+    if (!currentIndex && !baseIndex) {
+      const previousIndex =
+        root === snapshot.childrenRoot
+          ? snapshot.previousSnapshot?.index
+          : null;
+      const beforeChildren = getDocumentRootChildren(step.before, root);
+      let resolvedBase: SnapshotIndex | undefined;
+
+      snapshot.baseRuntimeIndexes.set(
+        root,
+        () =>
+          (resolvedBase ??=
+            previousIndex ?? snapshotIndexOf(owner, beforeChildren))
+      );
+    }
+
+    snapshot.rootIndexes.set(root, EMPTY_RUNTIME_INDEX);
   }
   if (lawCheckEnabled()) {
     const roots = rootsOfValue(step.after);
@@ -15609,6 +15661,7 @@ const createEditorUpdateDraftContext = (
     builder,
     childrenRoot,
     contentSliceRoots: new Set(),
+    deletedRoots: new Set(),
     documentState,
     discardedNodeKeys: new Set(),
     dirtyStateKeys: new Set(),
@@ -16112,8 +16165,18 @@ export const runEditorTransaction = <R>(
             const beforeIndexAt = (root: string) =>
               root === MAIN_ROOT_KEY
                 ? beforeSnapshot.index
-                : (snapshot.baseRuntimeIndexes.get(root)?.() ??
-                  snapshot.baseSnapshots.get(root)?.index);
+                : Object.hasOwn(beforeValue.roots ?? {}, root)
+                  ? (snapshot.baseRuntimeIndexes.get(root)?.() ??
+                    snapshot.baseSnapshots.get(root)?.index)
+                  : undefined;
+            const recreatedRoots =
+              snapshot.deletedRoots.size > 0
+                ? new Set(
+                    [...snapshot.deletedRoots].filter((root) =>
+                      Object.hasOwn(afterValue.roots ?? {}, root)
+                    )
+                  )
+                : undefined;
             const change = profileCoreDuration('build-change', () =>
               createEditorCommit(
                 {
@@ -16148,6 +16211,10 @@ export const runEditorTransaction = <R>(
                   dirtyStateKeys: [...snapshot.dirtyStateKeys],
                   effects: [...snapshot.effects],
                   editor,
+                  recreatedRoots:
+                    recreatedRoots && recreatedRoots.size > 0
+                      ? recreatedRoots
+                      : undefined,
                   replace: snapshot.reason === 'replace',
                   schemas: pluginPublication?.schemas ?? {
                     after: getCompiledEditorSchema(editor),

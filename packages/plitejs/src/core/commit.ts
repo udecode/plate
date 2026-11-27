@@ -78,6 +78,7 @@ type CommitChangedInput = {
   beforeIndex: () => SnapshotIndex;
   before: JsonEditorValue;
   changes: DocumentChange;
+  recreatedRoots: ReadonlySet<RootKey>;
   replace: boolean;
   selectionAfter: Selection;
   selectionAfterRoot: RootKey;
@@ -107,6 +108,7 @@ type CommitInput<V extends Value> = Omit<
   carried?: readonly CarriedRun[];
   editor: Editor<V>;
   facts?: ChangeFacts;
+  recreatedRoots?: ReadonlySet<RootKey>;
   replace?: boolean;
   admission?: EditorCommitAdmission | null;
   schemas: SchemaSides;
@@ -599,6 +601,8 @@ const getPendingSelectionMarks = (selection: Selection) =>
     ? (selection.marks ?? null)
     : null;
 
+const NO_RECREATED_ROOTS: ReadonlySet<RootKey> = new Set();
+
 const createCommitChanged = ({
   afterIndex,
   afterIndexAt,
@@ -607,6 +611,7 @@ const createCommitChanged = ({
   beforeIndexAt,
   before,
   changes,
+  recreatedRoots,
   replace,
   selectionAfter,
   selectionAfterRoot,
@@ -644,6 +649,7 @@ const createCommitChanged = ({
     ...[...getInternalDocumentChangeEntries(changes)].map(([root]) => root),
     ...changes.createRoots,
     ...changes.deleteRoots,
+    ...recreatedRoots,
   ]);
 
   const getIndex = (phase: 'after' | 'before', root: RootKey) => {
@@ -760,6 +766,7 @@ const createCommitChanged = ({
   };
 
   const childrenUnchanged = (root: RootKey) =>
+    !recreatedRoots.has(root) &&
     !hasInRoot('document', root) &&
     (!replace ||
       (root === 'main'
@@ -796,7 +803,12 @@ const createCommitChanged = ({
       root
     );
 
-    if (!replace && classification && !classification.structure) {
+    if (
+      !replace &&
+      !recreatedRoots.has(root) &&
+      classification &&
+      !classification.structure
+    ) {
       const afterRoot = valueRootNodes(after, root) as NodeList<Descendant>;
       const touchedChangedNodeKeys = new Set<NodeKey>();
       const changedNodeKeys = new Set<NodeKey>();
@@ -862,7 +874,9 @@ const createCommitChanged = ({
     const afterRoot = afterDocument.nodes as NodeList<Descendant>;
     const change = getInternalDocumentRootChange(changes, root);
     const changedTopLevel = () => {
-      if (!change) return { from: 0, to: afterRoot.length - 1 };
+      if (!change || recreatedRoots.has(root)) {
+        return { from: 0, to: afterRoot.length - 1 };
+      }
       let from = afterRoot.length;
       let to = -1;
 
@@ -1198,7 +1212,12 @@ const createCommitChanged = ({
     const afterKeys = new Map<NodeKey, Path>();
     const change = getInternalDocumentRootChange(changes, root);
 
-    if (change) {
+    const rootCreatedOrDeleted =
+      recreatedRoots.has(root) ||
+      changes.createRoots.has(root) ||
+      changes.deleteRoots.has(root);
+
+    if (change && !recreatedRoots.has(root)) {
       for (const [phase, keys, value] of [
         ['before', beforeKeys, before],
         ['after', afterKeys, after],
@@ -1212,7 +1231,7 @@ const createCommitChanged = ({
           keys.set(key, [...path]);
         }
       }
-    } else if (changes.createRoots.has(root) || changes.deleteRoots.has(root)) {
+    } else if (rootCreatedOrDeleted) {
       for (const [phase, keys] of [
         ['before', beforeKeys],
         ['after', afterKeys],
@@ -1229,8 +1248,7 @@ const createCommitChanged = ({
     const result: TouchedKeys = Object.freeze({
       after: afterKeys,
       before: beforeKeys,
-      rootCreatedOrDeleted:
-        changes.createRoots.has(root) || changes.deleteRoots.has(root),
+      rootCreatedOrDeleted,
     });
 
     touchedKeys.set(root, result);
@@ -1450,6 +1468,7 @@ export const createEditorCommit = <V extends Value>(
     completedTextDeletion,
     editor,
     facts = UNKNOWN_FACTS,
+    recreatedRoots = NO_RECREATED_ROOTS,
     replace = false,
     schemas,
     settlement,
@@ -1482,6 +1501,7 @@ export const createEditorCommit = <V extends Value>(
       beforeIndexAt,
       before: beforeValue,
       changes: body.changes,
+      recreatedRoots,
       replace,
       selectionAfter: body.selectionAfter,
       selectionAfterRoot: body.selectionAfterRoot,
