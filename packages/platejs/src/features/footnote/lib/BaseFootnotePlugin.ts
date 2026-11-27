@@ -18,6 +18,7 @@ import {
   txSelection,
   locateAt,
 } from '../../../core';
+import { MAIN_ROOT_KEY } from '../../../facade';
 import { selectAfterInline } from '../../../internal/plugin/inlineInsertion';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import type { ComboboxState } from '../../combobox';
@@ -41,7 +42,7 @@ type FootnoteIndex = {
 
 const indexes = new WeakMap<
   readonly Descendant[],
-  Map<string | undefined, Map<string | undefined, FootnoteIndex>>
+  Map<string, Map<string | undefined, Map<string | undefined, FootnoteIndex>>>
 >();
 
 const encodeRef = (ref: string) => {
@@ -68,12 +69,18 @@ const encodeRef = (ref: string) => {
 const getFootnoteIndex = (
   children: readonly Descendant[],
   referenceType: string | undefined,
-  definitionType: string | undefined
+  definitionType: string | undefined,
+  root = MAIN_ROOT_KEY
 ): FootnoteIndex => {
-  let byReference = indexes.get(children);
+  let byRoot = indexes.get(children);
+  if (!byRoot) {
+    byRoot = new Map();
+    indexes.set(children, byRoot);
+  }
+  let byReference = byRoot.get(root);
   if (!byReference) {
     byReference = new Map();
-    indexes.set(children, byReference);
+    byRoot.set(root, byReference);
   }
   let byDefinition = byReference.get(referenceType);
   if (!byDefinition) {
@@ -109,21 +116,44 @@ const getFootnoteIndex = (
           const entries = byRef.get(footnote.ref) ?? [];
           entries.push(entry);
           byRef.set(footnote.ref, entries);
-          const encoded = encodeRef(footnote.ref);
-          const id = `${isDefinition ? 'fn' : 'fnref'}-${encoded}${entries.length > 1 ? `:${entries.length}` : ''}`;
-
-          index.anchors.set(path.join(','), {
-            id,
-            ...(!isDefinition || entries.length === 1
-              ? { target: `${isDefinition ? 'fnref' : 'fn'}-${encoded}` }
-              : {}),
-          });
         }
       }
       walk(node.children, path);
     });
   };
   walk(children, []);
+
+  const encodedRoot = root === MAIN_ROOT_KEY ? undefined : encodeRef(root);
+  const definitionCounts = new Map<string, number>();
+  const referenceCounts = new Map<string, number>();
+
+  for (const [footnote, path] of index.footnotes) {
+    if (!footnote.ref) continue;
+    const isDefinition = footnote.type === definitionType;
+    const counts = isDefinition ? definitionCounts : referenceCounts;
+    const occurrence = (counts.get(footnote.ref) ?? 0) + 1;
+    counts.set(footnote.ref, occurrence);
+
+    const encoded = encodeRef(footnote.ref);
+    const idPrefix =
+      encodedRoot === undefined
+        ? `${isDefinition ? 'fn' : 'fnref'}-${encoded}`
+        : `${isDefinition ? 'fn' : 'fnref'}@${encodedRoot}@${encoded}`;
+    const targetId =
+      encodedRoot === undefined
+        ? `${isDefinition ? 'fnref' : 'fn'}-${encoded}`
+        : `${isDefinition ? 'fnref' : 'fn'}@${encodedRoot}@${encoded}`;
+    const hasTarget = isDefinition
+      ? occurrence === 1 &&
+        (encodedRoot === undefined || index.referencesByRef.has(footnote.ref))
+      : encodedRoot === undefined || index.definitionsByRef.has(footnote.ref);
+
+    index.anchors.set(path.join(','), {
+      id: occurrence > 1 ? `${idPrefix}:${occurrence}` : idPrefix,
+      ...(hasTarget ? { target: targetId } : {}),
+    });
+  }
+
   byDefinition.set(definitionType, index);
 
   return index;
@@ -161,6 +191,7 @@ const getGithubFootnote = (document: Document, href: string | null) => {
 export const BaseFootnoteDefinitionPlugin = definePlugin(
   PLUGINS.footnoteDefinition,
   {
+    render: { readsDocument: true },
     schema: ({ plugins }) => ({
       element: {
         slice: { endMatter: true },
@@ -248,11 +279,22 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
             preserve('data-editor-footnote-definition');
             return { ref };
           },
-          encode: ({ content, document, node, path, preserve, registry }) => {
+          encode: ({
+            content,
+            document,
+            node,
+            path,
+            preserve,
+            registry,
+            root = MAIN_ROOT_KEY,
+          }) => {
             const anchor = getFootnoteIndex(
-              document.children,
+              root === MAIN_ROOT_KEY
+                ? document.children
+                : (document.roots?.[root] ?? []),
               registry.type(PLUGINS.footnote),
-              type
+              type,
+              root
             ).anchors.get(path.join(','));
             if (!anchor) {
               throw new Error(
@@ -416,11 +458,22 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
           preserve('data-editor-footnote-ref');
           return { children: [{ text: '' }], ref };
         },
-        encode: ({ content, document, node, path, preserve, registry }) => {
+        encode: ({
+          content,
+          document,
+          node,
+          path,
+          preserve,
+          registry,
+          root = MAIN_ROOT_KEY,
+        }) => {
           const anchor = getFootnoteIndex(
-            document.children,
+            root === MAIN_ROOT_KEY
+              ? document.children
+              : (document.roots?.[root] ?? []),
             type,
-            registry.type(BaseFootnoteDefinitionPlugin)
+            registry.type(BaseFootnoteDefinitionPlugin),
+            root
           ).anchors.get(path.join(','));
           if (!anchor) {
             throw new Error(
@@ -435,7 +488,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
                 tag: 'a',
                 attributes: {
                   'data-editor-footnote-ref': node.ref,
-                  href: `#${anchor.target}`,
+                  ...(anchor.target ? { href: `#${anchor.target}` } : {}),
                   id: anchor.id,
                 },
                 children: [content, { text: `${node.ref}` }],
@@ -467,7 +520,12 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       : undefined;
     const referenceType = schema.type;
     const getRegistry = () =>
-      getFootnoteIndex(state.children(), referenceType, definitionType);
+      getFootnoteIndex(
+        state.children(),
+        referenceType,
+        definitionType,
+        state.view.root() ?? MAIN_ROOT_KEY
+      );
     const definitions = ({ ref }: { ref?: string } = {}) => {
       const current = getRegistry();
 
@@ -539,6 +597,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
     };
   },
   component: 'sup',
+  render: { readsDocument: true },
   schema: {
     element: {
       properties: {
