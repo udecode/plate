@@ -131,7 +131,7 @@ export type {
   EditableSiblingComponent,
   EditableSiblingProps,
   InjectNodeProps,
-  NodeProps,
+  NodeAttributes,
   OnNodeChange,
   OnTextChange,
   PluginConfiguration,

@@ -71,6 +71,7 @@ export type ChildOf<N, I extends number = number> = N extends {
   ? N['children'][I]
   : never;
 
+/** Node properties without structural `children` or `text` fields. */
 export type NodeProps<N = Node> = N extends { children: unknown }
   ? Omit<N, 'children'>
   : N extends { text: string }

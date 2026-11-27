@@ -12,7 +12,6 @@ import type {
 import { history } from 'plitejs/history';
 import {
   Editable,
-  EditorElement,
   type RenderElementProps,
   EditorRoot,
   useCreateEditor,
@@ -468,7 +467,12 @@ const hiddenContentBlocks = () =>
     },
   });
 
-const Element = ({ children, element, slots }: RenderElementProps) => {
+const Element = ({
+  attributes,
+  children,
+  element,
+  slots,
+}: RenderElementProps) => {
   const {
     accordionOpen,
     activeTab,
@@ -484,7 +488,7 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
   switch (element.type) {
     case 'accordion-block': {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           <Accordion
             collapsible
             onValueChange={(value) => {
@@ -521,12 +525,12 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </EditorElement>
+        </div>
       );
     }
     case 'collapsible-block': {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           <Collapsible onOpenChange={setCollapsibleOpen} open={collapsibleOpen}>
             <div contentEditable={false}>
               <CollapsibleTrigger asChild>
@@ -557,12 +561,12 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               />
             </CollapsibleContent>
           </Collapsible>
-        </EditorElement>
+        </div>
       );
     }
     case 'tabs-block': {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           <Tabs
             onValueChange={(value) => {
               setActiveTab(value as HiddenBlocksState['activeTab']);
@@ -625,21 +629,21 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               );
             })}
           </Tabs>
-        </EditorElement>
+        </div>
       );
     }
     case 'tab-panel': {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           {children}
-        </EditorElement>
+        </div>
       );
     }
     default: {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           {children}
-        </EditorElement>
+        </div>
       );
     }
   }

@@ -814,10 +814,7 @@ export const PLATE_FACADE_DIFFS = {
   },
   'platejs/react': {
     rebound: [
-      'EditorElement',
-      'EditorLeaf',
       'EditorRoot',
-      'EditorText',
       'createEditor',
       'definePlugin',
       'useCreateEditor',
@@ -831,6 +828,7 @@ export const PLATE_FACADE_DIFFS = {
       'useEditorState',
       'useElement',
       'useOptionalEditor',
+      'useRootEditor',
       'useSetStateField',
       'useStateFieldValue',
     ],

@@ -6420,7 +6420,7 @@
         },
         "platejs:NodeProps": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Node properties without structural `children` or `text` fields.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "NodeProps",
@@ -23696,6 +23696,19 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/react:NodeAttributes": {
+          "aliases": [],
+          "documentation": "Static attributes or a pure per-node callback. React hooks are not supported.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "NodeAttributes",
+          "runtime": false,
+          "signature": "type NodeAttributes<C extends AnyBasePluginDefinition = BasePluginDefinition> = ((props: EditorNodeProps<C> & RenderElementProps$1<ElementWith<C>> & RenderLeafProps$1<Text, Text>) => AnyObject | undefined) | AnyObject;",
+          "source": null,
+          "typeParameters": [
+            "C extends AnyBasePluginDefinition = BasePluginDefinition"
+          ]
+        },
         "platejs/react:NodeChildEntry": {
           "aliases": [],
           "documentation": "",
@@ -24030,15 +24043,15 @@
         },
         "platejs/react:NodeProps": {
           "aliases": [],
-          "documentation": "Static attributes or a pure per-node callback. React hooks are not supported.",
+          "documentation": "Node properties without structural `children` or `text` fields.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "NodeProps",
           "runtime": false,
-          "signature": "type NodeProps<C extends AnyBasePluginDefinition = BasePluginDefinition> = ((props: EditorNodeProps<C> & RenderElementProps$1<ElementWith<C>> & RenderLeafProps$1<Text, Text>) => AnyObject | undefined) | AnyObject;",
+          "signature": "type NodeProps<N = Node> = N extends {\n  children: unknown;\n} ? Omit<N, 'children'> : N extends {\n  text: string;\n} ? Omit<N, 'text'> : Omit<N, 'getChildren'>;",
           "source": null,
           "typeParameters": [
-            "C extends AnyBasePluginDefinition = BasePluginDefinition"
+            "N = Node"
           ]
         },
         "platejs/react:NodeRemoveNodesOptions": {

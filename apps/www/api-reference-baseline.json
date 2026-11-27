@@ -385,7 +385,6 @@
       "NodeMutationMethods",
       "NodeNodesOptions",
       "NodeOf",
-      "NodeProps",
       "NodeRemoveNodesOptions",
       "NodeReplaceChildrenOptions",
       "NodeSelection",

@@ -12,7 +12,6 @@ import {
 import { history } from 'plitejs/history';
 import {
   Editable,
-  EditorElement,
   type RenderElementProps,
   EditorRoot,
   useCreateEditor,
@@ -384,6 +383,7 @@ const DomCoverageBoundariesExample = () => {
 };
 
 const Element = ({
+  attributes,
   children,
   element,
   hiddenBoundaries,
@@ -410,7 +410,7 @@ const Element = ({
     }
     case 'section': {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           <div className="editor-dom-coverage-summary" contentEditable={false}>
             Outer section
           </div>
@@ -425,12 +425,12 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </EditorElement>
+        </div>
       );
     }
     case 'nested-section': {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           <div className="editor-dom-coverage-summary" contentEditable={false}>
             Nested section
           </div>
@@ -445,12 +445,12 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </EditorElement>
+        </div>
       );
     }
     case 'deep-section': {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           <div className="editor-dom-coverage-summary" contentEditable={false}>
             Deep section
           </div>
@@ -465,7 +465,7 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </EditorElement>
+        </div>
       );
     }
     case 'bulleted-list': {
@@ -490,9 +490,9 @@ const Element = ({
     }
     default: {
       return (
-        <EditorElement style={{ position: 'relative' }}>
+        <div {...attributes} style={{ position: 'relative' }}>
           {children}
-        </EditorElement>
+        </div>
       );
     }
   }

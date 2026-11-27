@@ -67,10 +67,7 @@ export {
   type SelectionChangeContext,
   type ValueChangeContext,
 } from './components/plite';
-export { EditorElement } from './components/plite-element';
-export { EditorLeaf } from './components/plite-leaf';
 export { EditorPlaceholder } from './components/plite-placeholder';
-export { EditorText } from './components/plite-text';
 export type {
   DecorationAttributes,
   Decoration,

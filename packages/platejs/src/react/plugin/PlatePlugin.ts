@@ -330,7 +330,7 @@ type MarkNodeProps<C extends AnyBasePluginDefinition = BasePluginDefinition> =
   | AnyObject;
 
 /** Static attributes or a pure per-node callback. React hooks are not supported. */
-export type NodeProps<
+export type NodeAttributes<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > =
   | ((
@@ -446,7 +446,7 @@ export type RenderNodeWrapperProps<
     : never;
 
 type ReactRenderFields<C extends AnyBasePluginDefinition> = {
-  attributes?: NodeProps<WithAnyName<C>>;
+  attributes?: NodeAttributes<WithAnyName<C>>;
   mark?:
     | Readonly<{
         leafAttributes?: MarkNodeProps<WithAnyName<C>>;

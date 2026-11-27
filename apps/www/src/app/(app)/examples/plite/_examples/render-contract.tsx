@@ -4,7 +4,6 @@ import type { Element as ElementNode } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
-  EditorElement,
   EditorRoot,
   type RenderElementProps,
   useCreateEditor,
@@ -33,24 +32,32 @@ const LatePortal = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const renderElement = ({ children, element }: RenderElementProps) => {
+const renderElement = ({
+  attributes,
+  children,
+  element,
+}: RenderElementProps) => {
   if (element.type === 'late-portal') {
     return (
-      <EditorElement className="rounded border border-dashed p-2">
+      <div {...attributes} className="rounded border border-dashed p-2">
         <LatePortal>{children}</LatePortal>
-      </EditorElement>
+      </div>
     );
   }
 
   if (element.type === 'shell') {
     return (
-      <EditorElement className="rounded border p-2" contentEditable={false}>
+      <div
+        {...attributes}
+        className="rounded border p-2"
+        contentEditable={false}
+      >
         Shell without its children
-      </EditorElement>
+      </div>
     );
   }
 
-  return <EditorElement as="p">{children}</EditorElement>;
+  return <p {...attributes}>{children}</p>;
 };
 
 const paragraph = (text: string): ElementNode => ({
