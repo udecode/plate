@@ -6,8 +6,9 @@ import {
   readRecord,
   recordSetIds,
 } from '../../record-store';
+import type { DocumentIndex } from '../document-index';
 import { cloneJson, isRecord, jsonEqual, type JsonRecord } from '../json';
-import { visitRootNames } from '../lazy-root';
+import { lazyRootOf, visitRootNames } from '../lazy-root';
 import type {
   DocumentPropertyContext,
   DocumentSetPropertyResolver,
@@ -39,6 +40,8 @@ import {
 } from './types';
 
 export type ExtractV4Options = Readonly<{
+  indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+  indexedBefore?: ReadonlyMap<string, DocumentIndex>;
   isSetValued?: DocumentSetPropertyResolver;
 }>;
 
@@ -388,10 +391,388 @@ const extractTextElementDiff = (
   }
 };
 
+const indexForRootIfIndexed = (
+  value: JsonEditorValue,
+  root: string,
+  provided?: ReadonlyMap<string, DocumentIndex>
+): DocumentIndex | undefined => {
+  const direct = provided?.get(root);
+
+  if (direct) return direct;
+  if (root === 'main') return lazyRootOf(value, 'children');
+  if (value.roots && Object.hasOwn(value.roots, root)) {
+    return lazyRootOf(value.roots, root);
+  }
+
+  return undefined;
+};
+
+const shiftTopLevelPlace = (
+  place: V4Place,
+  offsets: ReadonlyMap<string, number>
+): V4Place => {
+  if (!('root' in place)) return place;
+  const offset = offsets.get(place.root) ?? 0;
+
+  return offset === 0
+    ? place
+    : { index: place.index + offset, root: place.root };
+};
+
+const shiftTopLevelSteps = (
+  steps: readonly V4Step[],
+  offsets: ReadonlyMap<string, number>
+): V4Step[] => {
+  if (offsets.size === 0) return [...steps];
+
+  return steps.map((step) => {
+    if (step.op === 'insert_node' || step.op === 'move_node') {
+      const shifted = shiftTopLevelPlace(step.to, offsets);
+
+      return shifted === step.to ? step : { ...step, to: shifted };
+    }
+
+    return step;
+  });
+};
+
+const extractRegisterSteps = (
+  before: JsonEditorValue,
+  after: JsonEditorValue
+): V4Step[] => {
+  if (!hasValueRecords(after)) return [];
+
+  const beforeStore = getValueRecords(before);
+  const afterStore = getValueRecords(after);
+  const beforeVer = getRecordSetVersion(beforeStore, V4_REGISTER_SET);
+  const afterVer = getRecordSetVersion(afterStore, V4_REGISTER_SET);
+
+  if (beforeVer === afterVer) return [];
+
+  const steps: V4Step[] = [];
+  const regKeys = new Set([
+    ...recordSetIds(beforeVer),
+    ...recordSetIds(afterVer),
+  ]);
+
+  for (const key of [...regKeys].sort()) {
+    const bEntry = readRecord(beforeVer, key);
+    const aEntry = readRecord(afterVer, key);
+
+    if (jsonEqual(bEntry, aEntry)) continue;
+    if (aEntry === undefined) {
+      const bWriteId =
+        isRecord(bEntry) && typeof bEntry.writeId === 'string'
+          ? bEntry.writeId
+          : 'extract';
+
+      steps.push({
+        after: null,
+        id: key,
+        op: 'set_register',
+        set: V4_REGISTER_SET,
+        writeId: `${bWriteId}:drop`,
+      });
+    } else if (
+      isRecord(aEntry) &&
+      typeof aEntry.encoded === 'string' &&
+      typeof aEntry.writeId === 'string'
+    ) {
+      steps.push({
+        after: aEntry.encoded,
+        id: key,
+        op: 'set_register',
+        set: V4_REGISTER_SET,
+        writeId: aEntry.writeId,
+      });
+    }
+  }
+
+  return steps;
+};
+
+const extractV4BetweenSparse = (
+  before: JsonEditorValue,
+  after: JsonEditorValue,
+  options: ExtractV4Options
+): readonly V4Step[] | null => {
+  const beforeRoots = new Set(visitRootNames(before.roots));
+  const afterRoots = new Set(visitRootNames(after.roots));
+  const allRoots = new Set<string>(['main', ...beforeRoots, ...afterRoots]);
+
+  // Only engage the sparse path when at least one root is indexed lazily or
+  // explicitly via options, avoiding extra DocumentIndex work on tiny raw JSON
+  // values.
+  let hasIndexedRoot = false;
+  const rootEntries = new Map<
+    string,
+    Readonly<{
+      afterIndex?: DocumentIndex;
+      beforeIndex?: DocumentIndex;
+      inAfter: boolean;
+      inBefore: boolean;
+    }>
+  >();
+
+  for (const root of allRoots) {
+    const inBefore = root === 'main' || beforeRoots.has(root);
+    const inAfter = root === 'main' || afterRoots.has(root);
+    const beforeIndex = inBefore
+      ? indexForRootIfIndexed(before, root, options.indexedBefore)
+      : undefined;
+    const afterIndex = inAfter
+      ? indexForRootIfIndexed(after, root, options.indexedAfter)
+      : undefined;
+
+    if (beforeIndex || afterIndex) hasIndexedRoot = true;
+    rootEntries.set(root, { afterIndex, beforeIndex, inAfter, inBefore });
+  }
+
+  if (!hasIndexedRoot) return null;
+
+  const changedRoots: Array<
+    Readonly<{
+      afterSlices: ReadonlyArray<readonly JsonNode[]>;
+      beforeSlices: ReadonlyArray<readonly JsonNode[]>;
+      offsets: readonly number[];
+      root: string;
+    }>
+  > = [];
+  const createdRoots: string[] = [];
+  const deletedRoots: string[] = [];
+
+  for (const root of [...allRoots].sort()) {
+    const entry = getDefined(rootEntries.get(root));
+
+    if (!entry.inBefore && entry.inAfter) {
+      createdRoots.push(root);
+      continue;
+    }
+    if (entry.inBefore && !entry.inAfter) {
+      deletedRoots.push(root);
+      continue;
+    }
+    if (!entry.beforeIndex || !entry.afterIndex) {
+      // Plain array root alongside indexed roots: skip cheaply if identical by
+      // reference, otherwise fall back to full extraction.
+      const beforeArr =
+        root === 'main' ? before.children : before.roots?.[root];
+      const afterArr = root === 'main' ? after.children : after.roots?.[root];
+
+      if (beforeArr === afterArr) continue;
+      if (beforeArr && afterArr) {
+        changedRoots.push({
+          afterSlices: [afterArr],
+          beforeSlices: [beforeArr],
+          offsets: [0],
+          root,
+        });
+        continue;
+      }
+
+      return null;
+    }
+
+    if (entry.beforeIndex === entry.afterIndex) continue;
+
+    const ranges = entry.beforeIndex.changedChildren(entry.afterIndex);
+
+    if (ranges.length === 0) continue;
+
+    const beforeSlices: Array<readonly JsonNode[]> = [];
+    const afterSlices: Array<readonly JsonNode[]> = [];
+    const offsets: number[] = [];
+
+    for (const [fromBefore, toBefore, fromAfter, toAfter] of ranges) {
+      const wholeBefore =
+        fromBefore === 0 && toBefore === entry.beforeIndex.size;
+      const wholeAfter = fromAfter === 0 && toAfter === entry.afterIndex.size;
+
+      beforeSlices.push(
+        wholeBefore
+          ? entry.beforeIndex.value
+          : entry.beforeIndex.nodes.slice(fromBefore, toBefore)
+      );
+      afterSlices.push(
+        wholeAfter
+          ? entry.afterIndex.value
+          : entry.afterIndex.nodes.slice(fromAfter, toAfter)
+      );
+      offsets.push(fromAfter);
+    }
+
+    changedRoots.push({ afterSlices, beforeSlices, offsets, root });
+  }
+
+  // Fast path: nothing in any tree changed (only records or no-op).
+  if (
+    changedRoots.length === 0 &&
+    createdRoots.length === 0 &&
+    deletedRoots.length === 0
+  ) {
+    return extractRegisterSteps(before, after);
+  }
+
+  // If every changed root has at most 1 range (the 99.9% case, including
+  // cross-root moves between two changed slices), build one mini before/after
+  // value with ONLY the changed slices and run the exact core extractor.
+  const singleRangeAll = changedRoots.every((r) => r.beforeSlices.length === 1);
+
+  if (singleRangeAll) {
+    const offsets = new Map<string, number>();
+    let beforeMain: readonly JsonNode[] = [];
+    let afterMain: readonly JsonNode[] = [];
+    const miniBeforeRoots: Record<string, readonly JsonNode[]> = {};
+    const miniAfterRoots: Record<string, readonly JsonNode[]> = {};
+
+    for (const item of changedRoots) {
+      const offset = getDefined(item.offsets[0]);
+
+      if (offset !== 0) offsets.set(item.root, offset);
+      if (item.root === 'main') {
+        beforeMain = getDefined(item.beforeSlices[0]);
+        afterMain = getDefined(item.afterSlices[0]);
+      } else {
+        miniBeforeRoots[item.root] = getDefined(item.beforeSlices[0]);
+        miniAfterRoots[item.root] = getDefined(item.afterSlices[0]);
+      }
+    }
+
+    for (const root of createdRoots) {
+      const entry = getDefined(rootEntries.get(root));
+      const nodes = entry.afterIndex
+        ? entry.afterIndex.value
+        : (after.roots?.[root] ?? []);
+
+      miniAfterRoots[root] = nodes;
+    }
+
+    for (const root of deletedRoots) {
+      const entry = getDefined(rootEntries.get(root));
+      const nodes = entry.beforeIndex
+        ? entry.beforeIndex.value
+        : (before.roots?.[root] ?? []);
+
+      miniBeforeRoots[root] = nodes;
+    }
+
+    const miniBefore: JsonEditorValue = {
+      children: beforeMain,
+      ...(Object.keys(miniBeforeRoots).length > 0
+        ? { roots: miniBeforeRoots }
+        : {}),
+    };
+    const miniAfter: JsonEditorValue = {
+      children: afterMain,
+      ...(Object.keys(miniAfterRoots).length > 0
+        ? { roots: miniAfterRoots }
+        : {}),
+    };
+
+    const treeSteps = extractV4BetweenCore(miniBefore, miniAfter, {
+      isSetValued: options.isSetValued,
+      rootOffsets: offsets,
+    });
+
+    return [
+      ...shiftTopLevelSteps(treeSteps, offsets),
+      ...extractRegisterSteps(before, after),
+    ];
+  }
+
+  // Multi-range case (e.g. two disjoint blocks updated in one root): if no
+  // element ID crosses between ranges or roots, diff each range independently
+  // without reading untouched blocks between them.
+  if (createdRoots.length === 0 && deletedRoots.length === 0) {
+    const allBeforeSets: Array<Set<string>> = [];
+    const allAfterSets: Array<Set<string>> = [];
+    let crossSliceOverlap = false;
+
+    for (const item of changedRoots) {
+      for (let k = 0; k < item.beforeSlices.length; k += 1) {
+        allBeforeSets.push(collectAllIds(getDefined(item.beforeSlices[k])));
+        allAfterSets.push(collectAllIds(getDefined(item.afterSlices[k])));
+      }
+    }
+
+    for (let i = 0; i < allBeforeSets.length && !crossSliceOverlap; i += 1) {
+      const bIds = getDefined(allBeforeSets[i]);
+
+      for (let j = 0; j < allAfterSets.length; j += 1) {
+        if (i === j) continue;
+        const aIds = getDefined(allAfterSets[j]);
+
+        for (const id of bIds) {
+          if (aIds.has(id)) {
+            crossSliceOverlap = true;
+            break;
+          }
+        }
+        if (crossSliceOverlap) break;
+      }
+    }
+
+    if (!crossSliceOverlap) {
+      const steps: V4Step[] = [];
+
+      for (const item of changedRoots) {
+        for (let k = 0; k < item.beforeSlices.length; k += 1) {
+          const offset = getDefined(item.offsets[k]);
+          const offsets = new Map<string, number>();
+
+          if (offset !== 0) offsets.set(item.root, offset);
+          const sliceBefore = getDefined(item.beforeSlices[k]);
+          const sliceAfter = getDefined(item.afterSlices[k]);
+          const miniBefore: JsonEditorValue =
+            item.root === 'main'
+              ? { children: sliceBefore }
+              : { children: [], roots: { [item.root]: sliceBefore } };
+          const miniAfter: JsonEditorValue =
+            item.root === 'main'
+              ? { children: sliceAfter }
+              : { children: [], roots: { [item.root]: sliceAfter } };
+          const rangeSteps = extractV4BetweenCore(miniBefore, miniAfter, {
+            isSetValued: options.isSetValued,
+            rootOffsets: offsets,
+          });
+
+          steps.push(...shiftTopLevelSteps(rangeSteps, offsets));
+        }
+      }
+
+      steps.push(...extractRegisterSteps(before, after));
+
+      return steps;
+    }
+  }
+
+  return null;
+};
+
 export const extractV4Between = (
   before: JsonEditorValue,
   after: JsonEditorValue,
   options: ExtractV4Options = {}
+): readonly V4Step[] => {
+  const sparse = extractV4BetweenSparse(before, after, options);
+
+  if (sparse !== null) return sparse;
+
+  return [
+    ...extractV4BetweenCore(before, after, {
+      isSetValued: options.isSetValued,
+    }),
+    ...extractRegisterSteps(before, after),
+  ];
+};
+
+const extractV4BetweenCore = (
+  before: JsonEditorValue,
+  after: JsonEditorValue,
+  options: Readonly<{
+    isSetValued?: DocumentSetPropertyResolver;
+    rootOffsets?: ReadonlyMap<string, number>;
+  }> = {}
 ): readonly V4Step[] => {
   const steps: V4Step[] = [];
   const state: MutableV4State = createMutableV4State(before);
@@ -501,7 +882,9 @@ export const extractV4Between = (
       }
 
       const currentLoc = getDefined(state.idMap.get(targetId));
-      const path = [...parentPath, targetIndex];
+      const rootOffset =
+        parentPath.length === 0 ? (options.rootOffsets?.get(rootName) ?? 0) : 0;
+      const path = [...parentPath, targetIndex + rootOffset];
       const { isSetValued } = options;
       const elementPropContext = isSetValued
         ? buildV4PropertyContext(state, targetId, rootName, path, 'element')
@@ -683,55 +1066,6 @@ export const extractV4Between = (
   for (const root of [...beforeRoots].sort()) {
     if (!afterRoots.has(root)) {
       emit({ op: 'delete_root', root });
-    }
-  }
-
-  // 5. Extract `plite:state` register diffs as `set_register` steps.
-  if (hasValueRecords(after)) {
-    const beforeStore = getValueRecords(before);
-    const afterStore = getValueRecords(after);
-    const regKeys = new Set([
-      ...recordSetIds(getRecordSetVersion(beforeStore, V4_REGISTER_SET)),
-      ...recordSetIds(getRecordSetVersion(afterStore, V4_REGISTER_SET)),
-    ]);
-
-    for (const key of [...regKeys].sort()) {
-      const bEntry = readRecord(
-        getRecordSetVersion(beforeStore, V4_REGISTER_SET),
-        key
-      );
-      const aEntry = readRecord(
-        getRecordSetVersion(afterStore, V4_REGISTER_SET),
-        key
-      );
-
-      if (jsonEqual(bEntry, aEntry)) continue;
-      if (aEntry === undefined) {
-        const bWriteId =
-          isRecord(bEntry) && typeof bEntry.writeId === 'string'
-            ? bEntry.writeId
-            : 'extract';
-
-        emit({
-          after: null,
-          id: key,
-          op: 'set_register',
-          set: V4_REGISTER_SET,
-          writeId: `${bWriteId}:drop`,
-        });
-      } else if (
-        isRecord(aEntry) &&
-        typeof aEntry.encoded === 'string' &&
-        typeof aEntry.writeId === 'string'
-      ) {
-        emit({
-          after: aEntry.encoded,
-          id: key,
-          op: 'set_register',
-          set: V4_REGISTER_SET,
-          writeId: aEntry.writeId,
-        });
-      }
     }
   }
 

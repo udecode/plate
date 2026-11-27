@@ -50,7 +50,12 @@ import {
   type TrackMode,
   invertiblePropertyNode,
 } from './root-change';
-import type { JsonEditorValue, JsonNode, JsonPoint } from './tokens';
+import {
+  isElementNode,
+  type JsonEditorValue,
+  type JsonNode,
+  type JsonPoint,
+} from './tokens';
 import type { PropertyModification } from './transform';
 import { applyV4Steps } from './v4/apply';
 import { extractV4Between } from './v4/extract';
@@ -2118,7 +2123,62 @@ export class DocumentChange {
 
     if (steps) {
       try {
-        attachV4Steps(inverted, invertV4Steps(value, steps));
+        let localMap: Map<
+          string,
+          Readonly<{ path: readonly number[]; root: string }>
+        > | null = null;
+        const boundLookup = (id: string) => {
+          if (localMap === null) {
+            const built = new Map<
+              string,
+              Readonly<{ path: readonly number[]; root: string }>
+            >();
+            const collectIds = (
+              root: string,
+              node: JsonNode,
+              path: readonly number[]
+            ) => {
+              if (!isElementNode(node)) return;
+              if (typeof node.id === 'string' && node.id.length > 0) {
+                built.set(node.id, { path, root });
+              }
+              for (let i = 0; i < node.children.length; i += 1) {
+                collectIds(root, getDefined(node.children[i]), [...path, i]);
+              }
+            };
+
+            for (const [root, rootChange] of getInternalDocumentChangeEntries(
+              this
+            )) {
+              const docIndex = valueRootIndex(value, root);
+              const visitedTop = new Set<number>();
+
+              rootChange.iterChangedRanges((fromBefore, toBefore) => {
+                const ranges = docIndex.nodeRangesTouching(
+                  fromBefore,
+                  toBefore
+                );
+
+                for (const entry of ranges) {
+                  if (entry.path.length !== 1) continue;
+                  const topIdx = getDefined(entry.path[0]);
+
+                  if (visitedTop.has(topIdx)) continue;
+                  visitedTop.add(topIdx);
+                  collectIds(root, docIndex.node([topIdx]), [topIdx]);
+                }
+              });
+            }
+            localMap = built;
+          }
+
+          return localMap.get(id) ?? null;
+        };
+
+        attachV4Steps(
+          inverted,
+          invertV4Steps(value, steps, { lookup: boundLookup })
+        );
       } catch {
         // Bound v3 invert callers may pass a raw value without element IDs.
       }

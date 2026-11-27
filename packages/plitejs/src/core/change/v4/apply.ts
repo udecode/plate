@@ -159,7 +159,7 @@ export type MutableV4State = {
   sourceRecords: RecordStore;
 };
 
-const indexSubtree = (
+export const indexSubtree = (
   idMap: Map<string, LocatedElement>,
   root: string,
   parent: JsonElementNode | null,

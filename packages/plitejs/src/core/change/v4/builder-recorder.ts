@@ -172,35 +172,48 @@ export class V4BuilderRecorder {
     }
   }
 
-  recordDeleteRoot(root: string, deletedChildren?: readonly JsonNode[]) {
+  recordDeleteRoot(
+    root: string,
+    deletedChildren?: readonly JsonNode[] | (() => readonly JsonNode[])
+  ) {
     if (this.steps === null) return;
-    if (deletedChildren && deletedChildren.length > 0) {
-      const deletedIds = new Map<string, JsonElementNode>();
-      const collect = (nodes: readonly JsonNode[]) => {
-        for (const node of nodes) {
-          if (!isElementNode(node)) continue;
-          const id = idOf(node);
+    if (
+      deletedChildren &&
+      this.steps.some((step) => step.op === 'insert_node')
+    ) {
+      const resolvedChildren =
+        typeof deletedChildren === 'function'
+          ? deletedChildren()
+          : deletedChildren;
 
-          if (id) deletedIds.set(id, node);
-          collect(node.children);
-        }
-      };
+      if (resolvedChildren.length > 0) {
+        const deletedIds = new Map<string, JsonElementNode>();
+        const collect = (nodes: readonly JsonNode[]) => {
+          for (const node of nodes) {
+            if (!isElementNode(node)) continue;
+            const id = idOf(node);
 
-      collect(deletedChildren);
-      for (let i = 0; i < this.steps.length; i += 1) {
-        const step = this.steps[i];
+            if (id) deletedIds.set(id, node);
+            collect(node.children);
+          }
+        };
 
-        if (step.op !== 'insert_node') continue;
-        const insertedId = idOf(step.node);
+        collect(resolvedChildren);
+        for (let i = 0; i < this.steps.length; i += 1) {
+          const step = this.steps[i];
 
-        if (!insertedId || !deletedIds.has(insertedId)) continue;
-        const deletedNode = deletedIds.get(insertedId);
+          if (step.op !== 'insert_node') continue;
+          const insertedId = idOf(step.node);
 
-        if (deletedNode && jsonEqual(deletedNode, step.node)) {
-          this.steps[i] = { id: insertedId, op: 'move_node', to: step.to };
-        } else {
-          this.invalidate();
-          return;
+          if (!insertedId || !deletedIds.has(insertedId)) continue;
+          const deletedNode = deletedIds.get(insertedId);
+
+          if (deletedNode && jsonEqual(deletedNode, step.node)) {
+            this.steps[i] = { id: insertedId, op: 'move_node', to: step.to };
+          } else {
+            this.invalidate();
+            return;
+          }
         }
       }
     }
@@ -664,17 +677,24 @@ export class V4BuilderRecorder {
       }
     }
 
-    const container =
-      path.length === 0 ? document.value : (document.node(path).children ?? []);
-    const parentId = path.length === 0 ? null : idOf(document.node(path));
+    const parentNode = path.length === 0 ? null : document.node(path);
+    const parentId = parentNode === null ? null : idOf(parentNode);
 
-    if (path.length > 0 && !parentId) {
+    if (
+      path.length > 0 &&
+      (!parentId || !parentNode || !isElementNode(parentNode))
+    ) {
       this.invalidate();
       return;
     }
 
     for (let i = 0; i < removeCount; i += 1) {
-      const removed = container[index + i];
+      const removed =
+        parentNode === null
+          ? document.node([index + i])
+          : isElementNode(parentNode)
+            ? parentNode.children[index + i]
+            : undefined;
       const removedId = idOf(removed);
 
       if (!removedId) {
@@ -769,16 +789,21 @@ export class V4BuilderRecorder {
       return;
     }
 
-    const container =
-      path.length === 0 ? document.value : (document.node(path).children ?? []);
+    const parentNode = path.length === 0 ? null : document.node(path);
     const to: V4Place =
-      path.length === 0
+      parentNode === null
         ? { index, root }
-        : { id: getDefined(idOf(document.node(path))), index };
+        : { id: getDefined(idOf(parentNode)), index };
 
     this.steps.push({ node: shell, op: 'insert_node', to });
     for (let k = 0; k < count; k += 1) {
-      const childId = idOf(container[index + k]);
+      const child =
+        parentNode === null
+          ? document.node([index + k])
+          : isElementNode(parentNode)
+            ? parentNode.children[index + k]
+            : undefined;
+      const childId = idOf(child);
 
       if (!childId) {
         this.invalidate();

@@ -1,6 +1,12 @@
 import { getDefined } from '../../../internal/get-defined';
-import { getRecordSetVersion, readRecord } from '../../record-store';
+import {
+  getRecordSetVersion,
+  getValueRecords,
+  readRecord,
+} from '../../record-store';
+import { DocumentIndex, rootIndexOf } from '../document-index';
 import { cloneJson, isRecord, jsonEqual, type JsonRecord } from '../json';
+import { lazyRootOf } from '../lazy-root';
 import {
   isElementNode,
   type JsonEditorValue,
@@ -11,11 +17,13 @@ import {
   applyV4StepToState,
   createMutableV4State,
   elementStreamLength,
+  indexSubtree,
   isTextBearingElement,
   type MutableV4State,
   toV4TextStream,
   type V4TextUnit,
 } from './apply';
+import { getValueIdLookup, type ValueIdLookup } from './lower';
 import {
   invertPropDelta,
   isEmptyPropDelta,
@@ -393,11 +401,304 @@ const invertOneStep = (state: MutableV4State, step: V4Step): V4Step[] => {
   return [];
 };
 
+const indexForRoot = (value: JsonEditorValue, root: string): DocumentIndex => {
+  if (root === 'main') {
+    return lazyRootOf(value, 'children') ?? rootIndexOf(value, 'children');
+  }
+
+  const { roots } = value;
+
+  if (!roots || !Object.hasOwn(roots, root)) {
+    return DocumentIndex.fromValue([]);
+  }
+
+  return lazyRootOf(roots, root) ?? rootIndexOf(roots, root);
+};
+
+const isContextFreeStep = (step: V4Step): boolean =>
+  step.op === 'insert_text' ||
+  step.op === 'insert_node' ||
+  step.op === 'split_node' ||
+  step.op === 'wrap_inline' ||
+  step.op === 'create_root';
+
+const invertContextFreeStep = (step: V4Step): V4Step[] => {
+  switch (step.op) {
+    case 'insert_text': {
+      return step.text.length === 0
+        ? []
+        : [
+            {
+              length: step.text.length,
+              offset: step.offset,
+              op: 'delete_text',
+              target: step.target,
+            },
+          ];
+    }
+    case 'insert_node': {
+      return [{ id: step.node.id as string, op: 'remove_node' }];
+    }
+    case 'split_node': {
+      return [{ op: 'join_nodes', source: step.newId, target: step.id }];
+    }
+    case 'wrap_inline': {
+      return [
+        {
+          id: step.node.id as string,
+          op: 'unwrap_inline',
+          parent: step.target,
+        },
+      ];
+    }
+    case 'create_root': {
+      return [{ op: 'delete_root', root: step.root }];
+    }
+    default: {
+      return [];
+    }
+  }
+};
+
+const referencedIdsOfStep = (step: V4Step): readonly string[] => {
+  switch (step.op) {
+    case 'insert_text':
+    case 'delete_text':
+    case 'format_text':
+    case 'wrap_inline': {
+      return [step.target];
+    }
+    case 'insert_node': {
+      return 'id' in step.to ? [step.to.id] : [];
+    }
+    case 'remove_node':
+    case 'split_node':
+    case 'set_props': {
+      return [step.id];
+    }
+    case 'move_node': {
+      return 'id' in step.to ? [step.id, step.to.id] : [step.id];
+    }
+    case 'join_nodes': {
+      return [step.target, step.source];
+    }
+    case 'unwrap_inline': {
+      return [step.id, step.parent];
+    }
+    case 'create_root':
+    case 'delete_root':
+    case 'set_register': {
+      return [];
+    }
+  }
+  return [];
+};
+
+const invertV4StepsSparsely = (
+  before: JsonEditorValue,
+  steps: readonly V4Step[],
+  explicitLookup?: ValueIdLookup
+): readonly V4Step[] | null => {
+  if (steps.every(isContextFreeStep)) {
+    const result: V4Step[] = [];
+
+    for (let i = steps.length - 1; i >= 0; i -= 1) {
+      result.push(...invertContextFreeStep(getDefined(steps[i])));
+    }
+
+    return result;
+  }
+
+  if (steps.some((step) => step.op === 'delete_root')) return null;
+
+  const valueLookup = getValueIdLookup(before);
+  const lookup: ValueIdLookup | undefined =
+    explicitLookup && valueLookup
+      ? (id) => explicitLookup(id) ?? valueLookup(id)
+      : (explicitLookup ?? valueLookup);
+
+  if (!lookup) return null;
+
+  const baseRecords = getValueRecords(before);
+  const state: MutableV4State = {
+    children: [],
+    idMap: new Map(),
+    records: baseRecords,
+    roots: {},
+    showRecords: false,
+    sourceRecords: baseRecords,
+  };
+  const loadedTopBlocks = new Set<string>();
+  const originalTopIndex = new Map<string, number>();
+  const rootShifted = new Set<string>();
+
+  const ensureRootList = (root: string) => {
+    if (root === 'main') return state.children;
+    let list = state.roots[root];
+
+    if (!list) {
+      list = [];
+      state.roots[root] = list;
+    }
+
+    return list;
+  };
+
+  const loadById = (id: string): boolean => {
+    if (state.idMap.has(id)) return true;
+
+    const loc = lookup(id);
+
+    if (!loc || loc.path.length === 0) return false;
+
+    const topIndex = getDefined(loc.path[0]);
+    const blockKey = `${loc.root}:${topIndex}`;
+
+    if (!loadedTopBlocks.has(blockKey)) {
+      loadedTopBlocks.add(blockKey);
+      const topNode = cloneJson(
+        indexForRoot(before, loc.root).node([topIndex])
+      );
+      const list = ensureRootList(loc.root);
+      const slot = list.length;
+
+      list.push(topNode);
+      if (isElementNode(topNode)) {
+        const topId =
+          typeof topNode.id === 'string' && topNode.id.length > 0
+            ? topNode.id
+            : null;
+
+        if (topId) {
+          originalTopIndex.set(topId, topIndex);
+          state.idMap.set(topId, {
+            ancestors: [],
+            index: slot,
+            node: topNode,
+            parent: null,
+            path: [slot],
+            root: loc.root,
+          });
+        }
+        indexSubtree(
+          state.idMap,
+          loc.root,
+          topNode,
+          topNode.children,
+          [slot],
+          topId ? [topId] : []
+        );
+      }
+    }
+
+    return state.idMap.has(id);
+  };
+
+  const perStepInverses: V4Step[][] = [];
+
+  for (const step of steps) {
+    for (const id of referencedIdsOfStep(step)) {
+      if (!loadById(id)) return null;
+    }
+
+    let inverse: V4Step[];
+
+    if (step.op === 'remove_node' || step.op === 'move_node') {
+      const loc = state.idMap.get(step.id);
+
+      if (!loc) return null;
+      if (loc.parent === null) {
+        if (rootShifted.has(loc.root)) return null;
+        const origIdx = originalTopIndex.get(step.id);
+
+        if (origIdx === undefined) return null;
+        inverse =
+          step.op === 'remove_node'
+            ? [
+                {
+                  node: cloneJson(loc.node),
+                  op: 'insert_node',
+                  to: { index: origIdx, root: loc.root },
+                },
+              ]
+            : [
+                {
+                  id: step.id,
+                  op: 'move_node',
+                  to: { index: origIdx, root: loc.root },
+                },
+              ];
+      } else {
+        inverse = invertOneStep(state, step);
+      }
+    } else {
+      inverse = invertOneStep(state, step);
+    }
+
+    perStepInverses.push(inverse);
+
+    if (steps.length === 1) break;
+
+    if (step.op === 'insert_node' && 'root' in step.to) {
+      rootShifted.add(step.to.root);
+      const list = ensureRootList(step.to.root);
+
+      applyV4StepToState(state, {
+        ...step,
+        to: {
+          index: Math.min(step.to.index, list.length),
+          root: step.to.root,
+        },
+      });
+    } else if (step.op === 'move_node' && 'root' in step.to) {
+      const srcLoc = state.idMap.get(step.id);
+
+      if (srcLoc?.parent === null) rootShifted.add(srcLoc.root);
+      rootShifted.add(step.to.root);
+      const list = ensureRootList(step.to.root);
+      const sameRoot = srcLoc?.parent === null && srcLoc.root === step.to.root;
+      const maxIndex = sameRoot ? Math.max(0, list.length - 1) : list.length;
+
+      applyV4StepToState(state, {
+        ...step,
+        to: {
+          index: Math.min(step.to.index, maxIndex),
+          root: step.to.root,
+        },
+      });
+    } else {
+      if (step.op === 'remove_node' || step.op === 'split_node') {
+        const loc = state.idMap.get(step.id);
+
+        if (loc?.parent === null) rootShifted.add(loc.root);
+      } else if (step.op === 'join_nodes') {
+        const loc = state.idMap.get(step.source);
+
+        if (loc?.parent === null) rootShifted.add(loc.root);
+      }
+      applyV4StepToState(state, step);
+    }
+  }
+
+  const result: V4Step[] = [];
+
+  for (let i = perStepInverses.length - 1; i >= 0; i -= 1) {
+    result.push(...getDefined(perStepInverses[i]));
+  }
+
+  return result;
+};
+
 export const invertV4Steps = (
   before: JsonEditorValue,
-  steps: readonly V4Step[]
+  steps: readonly V4Step[],
+  options?: Readonly<{ lookup?: ValueIdLookup }>
 ): readonly V4Step[] => {
   if (steps.length === 0) return [];
+
+  const sparse = invertV4StepsSparsely(before, steps, options?.lookup);
+
+  if (sparse !== null) return sparse;
 
   const state = createMutableV4State(before);
   const perStepInverses: V4Step[][] = [];

@@ -1954,17 +1954,27 @@ export class ChangeDraft {
         this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
       } else {
         this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
-        try {
-          const repairSteps = extractV4Between(step.before, step.after, {
-            isSetValued: this.isSetValued,
-          });
+        const attachedConstruction = constructionChange
+          ? getAttachedV4Steps(constructionChange)
+          : null;
 
-          if (repairSteps.length > 0) {
-            countV4BuilderFallbackDiff();
-            this.v4Recorder.appendRaw(repairSteps);
+        if (attachedConstruction) {
+          this.v4Recorder.appendRaw(attachedConstruction);
+        } else {
+          try {
+            const repairSteps = extractV4Between(step.before, step.after, {
+              indexedAfter: step.indexedAfter,
+              indexedBefore: step.indexedBefore,
+              isSetValued: this.isSetValued,
+            });
+
+            if (repairSteps.length > 0) {
+              countV4BuilderFallbackDiff();
+              this.v4Recorder.appendRaw(repairSteps);
+            }
+          } catch {
+            this.v4Recorder.invalidate();
           }
-        } catch {
-          this.v4Recorder.invalidate();
         }
       }
     }
@@ -2101,7 +2111,7 @@ export class ChangeDraft {
       []
     );
 
-    this.v4Recorder.recordDeleteRoot(root, document.value);
+    this.v4Recorder.recordDeleteRoot(root, () => document.value);
 
     return this.applyConstructed(
       createInternalDocumentChange(
