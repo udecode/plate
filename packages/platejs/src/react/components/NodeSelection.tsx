@@ -637,6 +637,7 @@ export function NodeSelectionDrag({
           painted: ClientPoint;
           pointer: { x: number; y: number };
           pointerId: number;
+          primaryButtonHeld: boolean;
           scale?: { x: number; y: number };
           start: MarqueeStart;
         }
@@ -792,9 +793,11 @@ export function NodeSelectionDrag({
       point: { x: number; y: number },
       {
         pointerId,
+        primaryButtonHeld,
         shiftKey,
       }: {
         pointerId: number;
+        primaryButtonHeld: boolean;
         shiftKey: boolean;
       },
       clip: HTMLElement
@@ -833,6 +836,7 @@ export function NodeSelectionDrag({
         painted: { x: nextRect.left, y: nextRect.top },
         pointer: point,
         pointerId,
+        primaryButtonHeld,
         start: captureStart(point, candidates, contentOrigin(editableRect)),
       };
       editable.setPointerCapture(pointerId);
@@ -966,7 +970,11 @@ export function NodeSelectionDrag({
       if (event.target === editable) {
         startGesture(
           { x: event.clientX, y: event.clientY },
-          { pointerId: event.pointerId, shiftKey: event.shiftKey },
+          {
+            pointerId: event.pointerId,
+            primaryButtonHeld: (event.buttons & 1) !== 0,
+            shiftKey: event.shiftKey,
+          },
           editable
         );
         event.preventDefault();
@@ -1020,7 +1028,11 @@ export function NodeSelectionDrag({
       ) {
         startGesture(
           { x: down.clientX, y: down.clientY },
-          { pointerId: event.pointerId, shiftKey: down.shiftKey },
+          {
+            pointerId: event.pointerId,
+            primaryButtonHeld: ((down.buttons | event.buttons) & 1) !== 0,
+            shiftKey: down.shiftKey,
+          },
           clip
         );
         event.preventDefault();
@@ -1042,6 +1054,16 @@ export function NodeSelectionDrag({
 
       event.preventDefault();
       event.stopPropagation();
+      // A pointer released outside the viewport can miss pointerup and report
+      // buttons=0 on the next move.
+      if (
+        event.pointerType !== 'touch' &&
+        gesture.primaryButtonHeld &&
+        (event.buttons & 1) === 0
+      ) {
+        finishGesture();
+        return;
+      }
       clearNativeDrag();
       moveGesture({ x: event.clientX, y: event.clientY });
     };
