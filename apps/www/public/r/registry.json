@@ -4938,6 +4938,43 @@
       "type": "registry:example"
     },
     {
+      "name": "suggestion-table-demo",
+      "title": "Table Suggestions",
+      "description": "Propose and review whole table row, column, and formatting changes.",
+      "dependencies": [
+        "diff-match-patch-ts@^0.6.0",
+        "platejs"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/basic-blocks.json",
+        "https://platejs.org/r/basic-marks.json",
+        "https://platejs.org/r/comment-toolbar-button.json",
+        "https://platejs.org/r/discussion.json",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/history-toolbar-button.json",
+        "https://platejs.org/r/mode-toolbar-button.json",
+        "https://platejs.org/r/suggestion.json",
+        "https://platejs.org/r/table.json",
+        "https://platejs.org/r/table-toolbar-button.json",
+        "https://platejs.org/r/toolbar.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/suggestion-table-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/suggestion",
+            "title": "Suggestions"
+          }
+        ]
+      },
+      "type": "registry:example"
+    },
+    {
       "name": "suggestion-view-demo",
       "title": "Suggestion Projections",
       "description": "Compare accepted, proposed, and markup content in a read-only document.",

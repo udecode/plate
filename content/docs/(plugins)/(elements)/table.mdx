@@ -256,7 +256,7 @@ In the reference below, `table` is `editor.plugin(TablePlugin)`. Public table ty
 | Pure API | Result | Purpose |
 | --- | --- | --- |
 | `table.api.columnWidths(tableElement)` | `readonly number[]` | Resolve widths for every logical column; array length is the column count. |
-| `table.api.createResize(tableElement, target)` | `(delta: number) => TableResize` | Calculate constrained resize previews. |
+| `table.api.createResize(tableElement, target)` | `(delta: number) => TableResize` | Calculate constrained resize previews; throws `RangeError` for every edge while `read.authored.gridLocked(tableElement)` is `true`. |
 
 | Read | Result | Purpose |
 | --- | --- | --- |
@@ -274,7 +274,7 @@ Read options are `TableTargetOptions`, except `cell`, which takes `{ at?: TableC
 
 ## Transforms
 
-Every table update returns `boolean`: `true` for an accepted change, `false` for an unavailable target, rejected operation, or unchanged request. A call through `editor.update.table` or the plugin's `update` returns `undefined` instead when the editor refuses its update, as Suggesting does for a table. Invalid dimensions and numeric options throw before publication. The command rechecks eligibility even after a capability read.
+Every table update returns `boolean`: `true` for an accepted change, `false` for an unavailable target, rejected operation, or unchanged request. Whole row, column, table, and table, row, or cell formatting updates record in Suggesting, one pending suggestion per table at a time. A call through `editor.update.table` or the plugin's `update` returns `undefined` instead when the editor refuses its update up front, such as a second pending row, column, or format suggestion on one table, a second suggested column on a resized table, a merge, split, row move, or edit on a table with merged cells in Suggesting, an Editing structural or property write on a locked table, or an undo or redo that crosses another author's waiting row or column change. Invalid dimensions and numeric options throw before publication. The command rechecks eligibility even after a capability read. The copied table reads `read.authored.gridLocked(element)` to hide resize handles while a table holds a pending row, column, or format suggestion or waits as a pending deletion.
 
 | Update | Options | Purpose |
 | --- | --- | --- |

@@ -21,6 +21,17 @@ export const examples: Registry['items'] = [
     meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
   },
   {
+    name: 'suggestion-table-demo',
+    title: 'Table Suggestions',
+    description:
+      'Propose and review whole table row, column, and formatting changes.',
+    type: 'registry:example',
+    files: [
+      { path: 'examples/suggestion-table-demo.tsx', type: 'registry:example' },
+    ],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+  },
+  {
     name: 'suggestion-view-demo',
     title: 'Suggestion Projections',
     description:

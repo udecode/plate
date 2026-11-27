@@ -264,6 +264,8 @@ const result = await exportDocx(editor, {
 
 Named roots, document metadata, removed link destinations, and other properties DOCX cannot represent are warnings under both policies. An `accepted` export omits a comment whose annotated content that projection excludes, and reports a warning, as Word does when the annotated suggestion is rejected.
 
+A `review` export whose table holds a pending row, column, or table format change reports a `lossy-content` diagnostic with the table's path, including when `source` would otherwise return the retained file unchanged, because Word revisions cannot represent those table changes. Default `lossPolicy: "reject"` refuses the export (`ok: false`), and `lossPolicy: "allow"` exports with the warning.
+
 A heading, list, table or other block inside a blockquote exports in its place but outside the quote. A blockquote inside a blockquote merges into the outer quote. Two blockquotes in a row come back from Word as one quote when the first ends and the second starts with a paragraph that is not a list item. Each case reports a `quote-structure` warning under both policies.
 
 ### Lists

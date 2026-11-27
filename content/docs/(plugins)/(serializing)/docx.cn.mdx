@@ -262,6 +262,8 @@ const result = await exportDocx(editor, {
 
 命名根、文档元数据、被移除的链接目标，以及 DOCX 无法表示的其他属性，在两种策略下都只返回警告。`accepted` 导出会省略所标注内容全部被该投影排除的批注，并返回警告；这与 Word 拒绝被批注的修订建议时的行为一致。
 
+当 `review` 导出包含持有待处理行、列或表格格式变更的表格时，导出器会以该表格的路径报告 `lossy-content` 诊断，即使在 `source` 本会原样返回已保留文件时也是如此，因为 Word 修订无法表示这些表格变更。默认的 `lossPolicy: "reject"` 会拒绝导出（`ok: false`），`lossPolicy: "allow"` 会带着该警告导出。
+
 blockquote 中的标题、列表、表格或其他块会在原位置导出，但位于引用之外。blockquote 中嵌套的 blockquote 会并入外层引用。两个相邻的 blockquote 中，前一个以非列表项段落结尾、后一个以非列表项段落开头时，从 Word 读回会合并为一个引用。每种情况在两种策略下都返回 `quote-structure` 警告。
 
 ### 列表

@@ -182,18 +182,28 @@ In the current view, clicking a marked element activates the first card its `dat
 
 ### Formatting and blocks
 
-The first proposal makes a sentence bold; the second inserts a paragraph. Open each block's discussion button to accept or reject it. Select text and use **Bold**, or press Enter to propose another paragraph.
+The first proposal makes a sentence bold and the second inserts a paragraph. Open each paragraph's discussion button to accept or reject it. Select text and use **Bold**, or press Enter to propose a new paragraph.
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. Text edits inside a table cell record too. Adding or deleting a whole table records as one change, such as **Delete table** or a table pasted between paragraphs. So do list edits, such as Enter or Tab in a list item, or Backspace at its start. Suggesting still refuses these edits for now:
-
-- a change to a table's rows, columns, cells or sizes, such as adding a row or merging cells
-- adding or deleting a table that holds another table or a code block, or a block that holds a table
-- pasting a table into a cell, or pasting over a selection across cells
-- any edit inside a code block
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. List edits and cell content record as proposals, while code blocks refuse edits in suggesting mode.
 
 A `propose` view refuses a write it cannot record as a proposal and rolls it back, and both modes refuse some edits beside a paragraph a pending join shows away from where it is saved; see [Authored Changes](/docs/authored-changes#configure-a-view). Formatting in Editing mode over a pending format suggestion applies directly and leaves the suggestion pending, so rejecting it later keeps the direct edit. If a collaborator decides or withdraws that suggestion while the edit syncs, the direct edit can be lost.
+
+### Tables
+
+The demo starts with a proposed table row. Open the table's discussion button to accept or reject it, then place the caret in a cell and use the table menu to suggest another row, column, or table edit.
+
+<ComponentPreview name="suggestion-table-demo" height="400px" />
+
+Whole rows, whole columns, whole tables, and formatting on tables, rows, and cells (such as cell backgrounds, borders, column widths, and row heights) record as proposals. Suggesting holds one pending row, column, or format suggestion per table at a time and refuses these edits up front:
+
+- a second pending row, column, or format suggestion on a table that already holds one, including a second suggested column on a resized table
+- moving a row, adding or removing a single cell, merging or splitting cells, or changing rows or columns in a table with merged cells
+- adding, deleting, wrapping, or unwrapping a block or outer table that holds a table
+- pasting a table into a cell, or pasting over a selection across cells
+- an undo or a redo that crosses another author's waiting row or column change, or that changes a table after another edit or decision while a pending mark waits or the replayed step held one
+- any edit inside a code block, or a row, column, or table deletion that reaches one
 
 ### Accepted, proposed, and markup
 
@@ -271,9 +281,9 @@ One call decides every change together, so it never returns `blocked`. When it a
 
 ### Decide a table
 
-Accepting a struck table, or rejecting a suggested one, removes the whole table with every pending change inside it, another author's text included. One undo brings back the table with those changes pending. A change that lies wholly inside the table leaves the review with no verdict, so its card disappears and `authored.read.outcome(id)` returns `null` for it, as [Authored Changes](/docs/authored-changes#how-a-change-left-the-review) describes. The change that struck or added the table keeps its verdict.
+Accepting a struck table, row, or column, or rejecting a suggested one, removes it with every pending change inside it, another author's text included. One undo brings back the table, row, or column with those changes pending when the table has not changed since. A change that lies wholly inside the removed table, row, or column leaves the review with no verdict, so its card disappears and `authored.read.outcome(id)` returns `null` for it, as [Authored Changes](/docs/authored-changes#how-a-change-left-the-review) describes. The change that struck or added the table, row, or column keeps its verdict.
 
-Until someone decides a struck table, both modes refuse typing in it, a table command aimed at it, and Backspace or Delete that would join the paragraphs on either side of it. `authored.api.subscribeRefusals` reports each with code `unrepresentable` and reason `grid`, and `SuggestionKit` shows a toast.
+A pending column deletion keeps each displayed column's width while waiting and preserves those displayed widths on copy. While a table holds a pending row, column, or format suggestion or waits as a pending deletion, resize handles stay hidden and both modes refuse edits inside or across a struck table, row, or column, Backspace or Delete that would join paragraphs across a struck table, and Editing structural or property changes on that table (other than removing whole rows or the whole table). `authored.api.subscribeRefusals` reports each refusal with code `unrepresentable` and reason `grid`, and `SuggestionKit` shows a toast.
 
 ## Save and reload
 

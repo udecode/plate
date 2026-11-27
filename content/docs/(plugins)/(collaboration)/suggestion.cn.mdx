@@ -182,18 +182,28 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 ### 格式和区块
 
-第一条 proposal 将句子加粗，第二条插入段落。打开每个区块的讨论按钮来接受或拒绝修改。选择文本并使用**加粗**，或按 Enter 提议另一个段落。
+第一条 proposal 将句子加粗，第二条插入段落。打开每个段落的讨论按钮来接受或拒绝修改。选择文本并使用**加粗**，或按 Enter 提议新段落。
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。表格单元格内的文本编辑也会记录。添加或删除整个表格会记录为一个 change，例如 **Delete table** 或粘贴到段落之间的表格。列表编辑同样会记录，例如在列表项中按 Enter 或 Tab，或在其开头按 Backspace。建议模式目前仍会拒绝以下编辑：
-
-- 修改表格的行、列、单元格或尺寸，例如添加行或合并单元格
-- 添加或删除包含另一个表格或代码块的表格，或包含表格的区块
-- 把表格粘贴到单元格中，或在跨越多个单元格的选区上粘贴
-- 代码块内的任何编辑
+为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。列表编辑和单元格内容都会记录为 proposal，而代码块在建议模式下会拒绝编辑。
 
 `propose` view 会拒绝无法记录为 proposal 的写入并将其回滚，两种模式也都会拒绝某些位于段落旁的编辑，这些段落被待处理的合并显示在其存储位置之外；参阅 [Authored Changes](/cn/docs/authored-changes#配置-view)。在编辑模式下对待处理的格式 suggestion 再设置格式会直接应用，并保留该 suggestion 待处理，因此之后拒绝它仍会保留这次直接编辑。如果协作者在这次编辑同步期间决定或撤回该 suggestion，这次直接编辑可能丢失。
+
+### 表格
+
+此示例以一条建议添加的表格行开头。打开表格的讨论按钮来接受或拒绝它，然后将光标放入单元格并使用表格菜单提议另一项行、列或表格变更。
+
+<ComponentPreview name="suggestion-table-demo" height="400px" />
+
+整行、整列、整个表格，以及表格、行和单元格上的格式（例如单元格背景、边框、列宽和行高）都会记录为 proposal。建议模式每张表格同时保留一条待处理的行、列或格式建议，并会预先拒绝以下编辑：
+
+- 在已持有待处理行、列或格式建议的表格上发起第二条此类建议，包括在已调整列宽的表格上插入第二条建议列
+- 移动行、添加或移除单个单元格、合并或拆分单元格，或在包含合并单元格的表格上修改行或列
+- 添加、删除、包裹或解除包裹包含表格的区块或外层表格
+- 把表格粘贴到单元格中，或在跨越多个单元格的选区上粘贴
+- 跨越另一位作者待处理行或列变更的撤销或重做，或在表格经历其他编辑或决定后、且表格持有待处理标记或被重放步骤曾持有标记时的撤销或重做
+- 代码块内的任何编辑，或触及代码块的行、列或表格删除
 
 ### Accepted、proposed 和 markup
 
@@ -271,9 +281,9 @@ const result = authored.update.decide({ action: 'accept', changes });
 
 ### 决定表格
 
-接受被划掉的表格，或拒绝建议添加的表格，会移除整个表格及其中的每个待处理 change，包括其他作者的文本。一次撤销会恢复该表格，其中的 change 仍待处理。完全位于表格内的 change 会在没有裁决的情况下离开审阅，因此它的卡片消失，`authored.read.outcome(id)` 对它返回 `null`，见 [Authored Changes](/cn/docs/authored-changes#change-如何离开审阅)。划掉或添加该表格的 change 保留自己的裁决。
+接受被划掉的表格、行或列，或拒绝建议添加的表格、行或列，会移除它及其中的每个待处理 change，包括其他作者的文本。若表格此后未发生变化，一次撤销会恢复该表格、行或列，其中的 change 仍待处理。完全位于被移除表格、行或列内的 change 会在没有裁决的情况下离开审阅，因此它的卡片消失，`authored.read.outcome(id)` 对它返回 `null`，见 [Authored Changes](/cn/docs/authored-changes#change-如何离开审阅)。划掉或添加该表格、行或列的 change 保留自己的裁决。
 
-在有人决定被划掉的表格之前，两种模式都会拒绝在其中输入、针对它的表格命令，以及会合并其两侧段落的 Backspace 或 Delete。`authored.api.subscribeRefusals` 以 code `unrepresentable` 和原因 `grid` 报告每次拒绝，`SuggestionKit` 会显示 toast。
+待处理的列删除在等待期间保留各可见列的宽度，并在复制时保留这些显示宽度。当表格持有待处理的行、列或格式建议，或作为待处理删除等待时，调整尺寸手柄保持隐藏；两种模式都会拒绝在被划掉的表格、行或列内或跨越它们的编辑、跨越被划掉表格合并段落的 Backspace 或 Delete，以及编辑模式下对该表格的结构或属性修改（移除整行或整个表格除外）。`authored.api.subscribeRefusals` 以 code `unrepresentable` 和原因 `grid` 报告每次拒绝，`SuggestionKit` 会显示 toast。
 
 ## 保存和重新加载
 

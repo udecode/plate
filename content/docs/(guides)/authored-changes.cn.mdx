@@ -156,26 +156,24 @@ authored.api.setView({ preview: "proposed" });
 
 Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改存储文档，例如带决定的 update、撤销和重做，以及远程协作变更。显示 preview 的 `Editable` 保留光标和选区，但会忽略输入、删除、粘贴、剪切和拖放。撤销和重做仍然可用。
 
-在被划掉的文本中输入，或用输入法确认一个词时，新文本落在光标处，并把待处理删除拆到它的两侧。在被划掉的文本中粘贴时，新文本落在待处理删除之后；在整行被删除的行中输入时，新文本落在上一行末尾。`edit` view 按原样应用新文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如向表格添加一行，或在内容只有一个 text 的元素内的部分编辑，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
+在被划掉的文本中输入，或用输入法确认一个词时，新文本落在光标处，并把待处理删除拆到它的两侧。在被划掉的文本中粘贴时，新文本落在待处理删除之后；在整行被删除的行中输入时，新文本落在上一行末尾。`edit` view 按原样应用新文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如移动表格行，或在内容只有一个 text 的元素内的部分编辑，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
 
 在只生成 text 属性的 schema 下，或者生成的属性都是具有精确键、值不是集合、target 不取决于元素位置、角色不是 `content` 的 element 属性时（例如 `ElementIdPlugin` 的 `id`），`propose` view 和两种 preview 都可以使用。`content` 是默认角色，因此请声明 `role: 'metadata'`。建议会在记录时生成之后构建所需的元素值。建议的 Enter 把新元素的 id 存放在该元素上。决定可能移除容器子元素（例如删除引用块中唯一的一行）或改变容器类型的建议，还会把该决定将在那里构建的 block 作为备用 block 存放在文档的审阅 mark 和 `records` 中。之后 preview、projection 和决定都显示这些已存储的值，不调用 element 属性的生成器。当已存储的 block（例如建议之后写入的 block）重复备用 block 所持的唯一值时，构建该备用 block 的决定会给它一个新值，与 preview 显示的值不同。在其他生成属性下，或在同时生成 element 属性和 text 属性的 schema 下，`setView` 保留当前 view，proposal 不写入任何内容，两者都报告拒绝代码 `generated-values`。
 
 在 `propose` view 中删除一个拥有 [content root](/cn/docs/roots#content-roots) 的 block 时，该 block 会被划掉，root 的内容保持原样且不带审阅标记，因此请在 block 的组件中把 root 显示为已删除。在该 root 中输入或粘贴不会写入任何内容，直到有人决定这个删除。接受删除会移除该 block 及其 root；若 root 中有同一作者的另一个待处理 change 插入的文本，结果为 `blocked`。拒绝删除会保留两者。拒绝一个拥有 content root 的待处理插入 block 时，root 也会一并移除。`propose` view 仍会拒绝删除没有任何元素拥有的 named root。
 
-接受被划掉的表格或行，或拒绝建议添加的表格或行，会移除它及其中的每个待处理 change，包括其他作者的 change。移除表格最后一行的决定会移除整个表格。`edit` view 移除整个表格或行时，也会带走其中的待处理 change。在有人决定被划掉的表格或行之前，两种 view 都会以原因 `grid` 拒绝以下写入：
+在 `propose` view 或强制 proposal 中，整个表格、整行、整列，以及表格、行和单元格上的格式变更都会记录为 proposal，每张表格同时保留一条待处理的行、列或格式建议。接受被划掉的表格、行或列，或拒绝建议添加的表格、行或列，会移除它及其中的每个待处理 change，包括其他作者的 change。移除表格最后一行或最后一列的决定会移除整个表格。`edit` view 移除整个表格或行时，也会带走其中的待处理 change。在有人决定被划掉的表格、行或列之前，两种 view 都会以 code `unrepresentable` 和原因 `grid` 拒绝在其中或跨越它的写入、针对它的命令，以及跨越被划掉表格合并两行的 Backspace 或 Delete。
 
-- 移除它的写入，或在其中、覆盖其部分内容的写入
-- 针对它的命令
-- 会跨越被划掉的表格合并两行的 Backspace 或 Delete
+来自 `propose` view 或 `tx.authored.propose()` 的 proposal 还会以 `grid` 预先拒绝以下写入：
 
-在 `propose` view 中，删除包含被划掉行的未划掉表格仍会记录，并连同该行一起移除。来自 `propose` view 或 `tx.authored.propose()` 的 proposal 还会以 `grid` 拒绝以下写入：
+- 在已持有待处理行、列或格式建议的表格上记录第二条此类建议（包括在已调整列宽的表格上插入第二条建议列），或划掉已持有此类建议的表格
+- 单独添加或移除单元格、移动行、在同一次更新插入修复之外修改 span、拆分或合并表格或行，或在包含合并单元格的表格上编辑行或列
+- 添加、删除、包裹或解除包裹包含表格的区块或外层表格
+- 把区块移出另一位作者的待处理建议所添加的表格或行
 
-- 单独添加或移除单元格，或修改 span
-- 拆分或合并表格或行
-- 在待处理的列变更旁添加行
-- 把区块移出另一位作者的待处理建议所添加的表格
+在 `edit` view 中，当表格持有待处理的行、列或格式建议时，守卫会拒绝插入行或列、移除部分而非全部列、移动行、修改 span、在表格、行或单元格上写入属性，或留下新的待处理单元格或行删除。移除整行或整个表格仍然允许。
 
-Plate 的表格插件在 `propose` view 中还会拒绝更多编辑，code 为 `veto`，原因为 `table`，见 [Suggestions](/cn/docs/suggestion#格式和区块)。
+修改表格行、单元格或设置的撤销或重做，会在表格自该步骤以来未变化（没有其他作者修改其窗口内的区块或在其旁边插入区块）、表格不含待处理标记且被重放步骤未持有标记，或作者按同步房间允许的方式撤回或重新提议自己的待处理行或列时通过。否则撤销或重做会以 `grid` 预先拒绝，例如跨越另一位作者待处理行或列变更的撤销或重做，或在待处理列删除旁撤销编辑模式的列宽调整。使用 `authored.read.gridLocked(node)` 可判断表格是否作为建议删除等待，或持有待处理的行、列或格式建议。
 
 待处理的合并可能让一个段落显示在其存储位置之外。`proposed` preview 会把从被合并行拆出的段落，或插入到合并两半之间的段落，显示在被合并行之后。`edit` view 和 `propose` view 会把跨越被移动段落边缘的 Backspace 或 Delete，以及跨越被移动段落的删除，记录为它们造成的合并。当被移动的行包含某个 content root 的 owner 时，`propose` view 会拒绝这次 Backspace，因为提议的合并会让该 root 有两个 owner；`edit` view 会记录它。全选会覆盖 preview 显示的每个段落，包括被移动的最后一个段落。两种 view 都会拒绝以下编辑，并给出所列原因：
 
@@ -401,6 +399,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 | `authored.read.groupOf(changeId)`          | 读取包含某个 change 的卡片；不存在时返回 `null`。                      |
 | `authored.read.groupDetails(changeId, options?)` | 按审阅卡片的显示方式读取卡片的 change 和 part；不存在时返回 `null`。 |
 | `authored.read.outcome(id)`                | 读取 change 是待处理、已接受、已拒绝还是 `'contested'`；没有裁决地离开审阅时返回 `null`。 |
+| `authored.read.gridLocked(node)`           | 读取表格是否作为建议删除等待，或持有待处理的行、列或格式建议。         |
 | `authored.read.reviewOf(node)`             | 读取存储 node 的待处理 mark，以及这些 mark 所格式化属性的已接受值。    |
 | `authored.update.decide(decision)`         | 接受或拒绝 change 或卡片；决定数组会一起决定。                         |
 | `authored.update.withdraw(changes)`        | 移除写入视图作者自己的待处理 change，不记录决定。                      |
