@@ -24,8 +24,8 @@ import type {
   EditorDocumentRecords,
   EditorDocumentValue,
   EditorEffect,
-  EditorEffectHistoryReplayResult,
   EditorEffectType,
+  HistoryRecordResult,
   PluginInput,
   PluginReference,
   PluginReconfigureOptions,
@@ -74,6 +74,7 @@ import type {
   SnapshotIndex,
   SnapshotInput,
   SnapshotSelectionInput,
+  StateFieldHistoryPolicy,
   StateFieldTransition,
   StateFieldValueInput,
   TransactionSpec,
@@ -85,6 +86,7 @@ import {
   type ElementIn,
   type ElementOrTextIn,
 } from '../interfaces/element';
+import type { EditorJsonValue } from '../interfaces/json';
 import { LocationApi, type Location, type Span } from '../interfaces/location';
 import {
   type Ancestor,
@@ -1164,25 +1166,17 @@ export type EditorHistoryEntry = Readonly<{
  */
 export type EditorHistoryHeadRoots = readonly RootKey[] | 'broken' | null;
 
-export type EditorHistoryRecordResult =
-  | Readonly<{ reason: string; status: 'blocked' }>
-  | Readonly<{ status: 'recorded' }>;
-
-export type EditorHistoryRecordOptions<TValue = unknown> = Readonly<{
-  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;
-}>;
-
 type EditorHistoryRuntime = Readonly<{
   entryOf: (commit: EditorCommit) => EditorHistoryEntry | null;
   forgetStep: (step: string) => boolean;
   headRoots: (direction: 'redo' | 'undo') => EditorHistoryHeadRoots;
   mintStepOf: (commit: EditorCommit) => EditorHistoryStep | null;
-  record: (
+  record: <TValue>(
     editor: Editor,
-    effect: EditorEffectType,
-    value: unknown,
-    options: EditorHistoryRecordOptions
-  ) => EditorHistoryRecordResult;
+    effect: EditorEffectType<TValue, EditorJsonValue, 'session'>,
+    value: TValue,
+    writeRecords: (tx: EditorUpdateTransaction) => void
+  ) => HistoryRecordResult;
   replaceUndoStep: (
     step: string,
     change: DocumentChange,
@@ -1222,33 +1216,18 @@ export const readEditorCommitHistoryEntry = (
   EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.entryOf(commit) ??
   null;
 
-/**
- * Record one session step through the editor's History, which opens its own
- * update. A rejected first write reports even when no History records it.
- *
- * @internal
- */
+/** @internal */
 export const recordEditorHistoryEffect = <TValue>(
   editor: Editor,
-  effect: EditorEffectType<TValue>,
+  effect: EditorEffectType<TValue, EditorJsonValue, 'session'>,
   value: TValue,
-  options: EditorHistoryRecordOptions<TValue> = {}
-): EditorHistoryRecordResult => {
+  writeRecords: (tx: EditorUpdateTransaction) => void
+): HistoryRecordResult => {
   const runtime = EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor));
 
-  if (!runtime) {
-    options.firstWrite?.then(undefined, (error: unknown) => {
-      reportEditorLifecycleError({
-        cause: error,
-        editor,
-        phase: 'apply',
-        source: 'history',
-      });
-    });
-    throw new Error('Recording a session step requires History.');
-  }
+  if (!runtime) throw new Error('Recording a session step requires History.');
 
-  return runtime.record(editor, effect, value, options);
+  return runtime.record(editor, effect, value, writeRecords);
 };
 
 export const readEditorHistoryHeadRoots = (
@@ -4159,7 +4138,7 @@ const setStateFieldValue = <TValue>(
     const snapshot = getTransactionSnapshot(editor);
     const previousEffect = snapshot?.effects.at(-1);
 
-    emitEditorEffect(editor, field.effect, {
+    emitAnyEditorEffect(editor, field.effect, {
       previousValue,
       value: storedValue,
     });
@@ -4253,7 +4232,8 @@ const setStateValueByKey = (
   markTransactionChanged(editor);
 };
 
-function emitEditorEffect<TValue>(
+/** @internal */
+export function emitAnyEditorEffect<TValue>(
   editor: Editor,
   type: EditorEffectType<TValue>,
   value: TValue
@@ -4295,8 +4275,13 @@ function emitEditorEffect<TValue>(
 export const getCollabEffects = (
   _editor: Editor,
   commit: EditorCommit
-): readonly EditorEffect[] =>
-  commit.effects.filter((effect) => effect.type.collab === 'shared');
+): ReadonlyArray<EditorEffect<any, EditorJsonValue, StateFieldHistoryPolicy>> =>
+  commit.effects.filter(
+    (
+      effect
+    ): effect is EditorEffect<any, EditorJsonValue, StateFieldHistoryPolicy> =>
+      effect.type.collab === 'shared'
+  );
 
 export const getCollabEffectTypes = (
   editor: Editor
@@ -9624,8 +9609,20 @@ export const getUpdateView = <
     }),
     effects: Object.freeze({
       all: () => runActive(() => getTransactionSnapshot(editor)?.effects ?? []),
-      emit: <TValue>(type: EditorEffectType<TValue>, value: TValue) => {
-        runActive(() => emitEditorEffect(editor, type, value));
+      emit: <TValue>(
+        type: EditorEffectType<
+          TValue,
+          EditorJsonValue,
+          StateFieldHistoryPolicy
+        >,
+        value: TValue
+      ) => {
+        if (typeof type.history === 'object') {
+          throw new Error(
+            `Session effect "${type.key}" records through editor.api.history.record, not in an update.`
+          );
+        }
+        runActive(() => emitAnyEditorEffect(editor, type, value));
       },
     }),
     plugins: Object.freeze({
@@ -11291,7 +11288,7 @@ const applyTransactionSpecContents = <V extends Value>(
   }
 
   for (const effect of spec.effects) {
-    emitEditorEffect(editor, effect.type, effect.value);
+    emitAnyEditorEffect(editor, effect.type, effect.value);
   }
 
   const afterCommitHandlers = TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS.get(spec);
@@ -11437,7 +11434,7 @@ const discardTransactionSpecPrefix = (
       tx.annotations.set(annotation.type, annotation.value);
     }
     for (const effect of effects) {
-      tx.effects.emit(effect.type, effect.value);
+      emitAnyEditorEffect(editor, effect.type, effect.value);
     }
     for (const tag of result.tags) tx.tags.add(tag);
   });

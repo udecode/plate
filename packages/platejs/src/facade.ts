@@ -206,6 +206,7 @@ export {
   getTextSearchScope,
   normalizeSetValues,
   readEditorCommitHistoryEntry,
+  recordEditorHistoryEffect,
   shouldMergeNodesRemovePrevNode,
 } from 'plitejs/internal';
 export { type CoreWork, readCoreWork } from 'plitejs/internal';

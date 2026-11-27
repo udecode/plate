@@ -1,6 +1,7 @@
 import type {
   EditorCoreStateView,
   EditorEffect,
+  EditorEffectHistoryKind,
   EditorEffectHistoryReplayContext,
   EditorEffectHistoryReplayResult,
   EditorEffectType,
@@ -45,6 +46,18 @@ type DefineLocalEffectOptions<
     history?: DefineEffectSessionHistory<TValue> | StateFieldHistoryPolicy;
   }>;
 
+type DefineSessionEffectOptions<
+  TValue,
+  TEncoded extends EditorJsonValue,
+> = DefineLocalEffectOptions<TValue, TEncoded> &
+  Readonly<{ history: DefineEffectSessionHistory<TValue> }>;
+
+type DefineStandardLocalEffectOptions<
+  TValue,
+  TEncoded extends EditorJsonValue,
+> = DefineLocalEffectOptions<TValue, TEncoded> &
+  Readonly<{ history?: StateFieldHistoryPolicy }>;
+
 type DefineSharedLiveEffectOptions<
   TValue,
   TEncoded extends EditorJsonValue,
@@ -81,12 +94,29 @@ export type DefineEffectOptions<
   | DefineSharedLatestEffectOptions<TValue, TEncoded>
   | DefineSharedLiveEffectOptions<TValue, TEncoded>;
 
-export const defineEffect = <
+/** Define a session effect, which History replays through its owner. */
+export function defineEffect<
+  TValue = null,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+>(
+  options: DefineSessionEffectOptions<TValue, TEncoded>
+): EditorEffectType<TValue, TEncoded, 'session'>;
+/** Define an effect that rides along with the update that emits it. */
+export function defineEffect<
+  TValue = null,
+  TEncoded extends EditorJsonValue = EditorJsonValue,
+>(
+  options:
+    | DefineSharedLatestEffectOptions<TValue, TEncoded>
+    | DefineSharedLiveEffectOptions<TValue, TEncoded>
+    | DefineStandardLocalEffectOptions<TValue, TEncoded>
+): EditorEffectType<TValue, TEncoded, StateFieldHistoryPolicy>;
+export function defineEffect<
   TValue = null,
   TEncoded extends EditorJsonValue = EditorJsonValue,
 >(
   options: DefineEffectOptions<TValue, TEncoded>
-): EditorEffectType<TValue, TEncoded> => {
+): EditorEffectType<TValue, TEncoded> {
   const { key } = options;
   const history = options.history ?? 'push';
   const sessionHistory =
@@ -180,12 +210,16 @@ export const defineEffect = <
     ...shared,
     collabReplay: 'live',
   });
-};
+}
 
-export const createEditorEffect = <TValue, TEncoded extends EditorJsonValue>(
-  type: EditorEffectType<TValue, TEncoded>,
+export const createEditorEffect = <
+  TValue,
+  TEncoded extends EditorJsonValue,
+  THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind,
+>(
+  type: EditorEffectType<TValue, TEncoded, THistory>,
   value: TValue
-): EditorEffect<TValue, TEncoded> =>
+): EditorEffect<TValue, TEncoded, THistory> =>
   Object.freeze({
     type,
     value: cloneFrozen(value),

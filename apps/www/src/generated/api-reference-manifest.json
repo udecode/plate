@@ -1401,7 +1401,7 @@
           "kind": "const",
           "name": "decodeEditorEffect",
           "runtime": true,
-          "signature": "decodeEditorEffect: <TValue, TEncoded extends EditorJsonValue>(type: EditorEffectType<TValue, TEncoded>, input: unknown) => EditorEffect<TValue>",
+          "signature": "decodeEditorEffect: <TValue, TEncoded extends EditorJsonValue, THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind>(type: EditorEffectType<TValue, TEncoded, THistory>, input: unknown) => EditorEffect<TValue, TEncoded, THistory>",
           "source": null,
           "typeParameters": []
         },
@@ -1515,14 +1515,17 @@
         },
         "platejs:defineEffect": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Define a session effect, which History replays through its owner.\nDefine an effect that rides along with the update that emits it.",
           "entrypoint": "platejs",
-          "kind": "const",
+          "kind": "function",
           "name": "defineEffect",
           "runtime": true,
-          "signature": "defineEffect: <TValue = null, TEncoded extends EditorJsonValue = EditorJsonValue>(options: DefineEffectOptions<TValue, TEncoded>) => EditorEffectType<TValue, TEncoded>",
+          "signature": "declare function defineEffect<TValue = null, TEncoded extends EditorJsonValue = EditorJsonValue>(options: DefineSessionEffectOptions<TValue, TEncoded>): EditorEffectType<TValue, TEncoded, 'session'>;\ndeclare function defineEffect<TValue = null, TEncoded extends EditorJsonValue = EditorJsonValue>(options: DefineSharedLatestEffectOptions<TValue, TEncoded> | DefineSharedLiveEffectOptions<TValue, TEncoded> | DefineStandardLocalEffectOptions<TValue, TEncoded>): EditorEffectType<TValue, TEncoded, StateFieldHistoryPolicy>;",
           "source": null,
-          "typeParameters": []
+          "typeParameters": [
+            "TValue = null",
+            "TEncoded extends EditorJsonValue = EditorJsonValue"
+          ]
         },
         "platejs:defineInputRule": {
           "aliases": [],
@@ -2175,7 +2178,7 @@
           "kind": "type",
           "name": "EditorCoreUpdateMethods",
           "runtime": false,
-          "signature": "type EditorCoreUpdateMethods<V extends Value = Value, TPlugins extends readonly unknown[] = readonly []> = {\n  annotations: EditorDirectMethods<EditorTransactionAnnotationsApi>;\n  blocks: EditorDirectMethods<EditorTransactionBlocksApi<V>>;\n  break: EditorDirectMethods<EditorTransactionBreakApi>;\n  changes: EditorDirectMethods<EditorTransactionChangesApi>;\n  /** Dispatch a typed semantic command in one update. */\n  command: EditorDirectCommandDispatch<BaseEditor<V, TPlugins>>;\n  effects: EditorDirectMethods<EditorTransactionEffectsApi>;\n  plugins: EditorDirectMethods<Pick<EditorTransactionPluginsApi, 'reconfigure'>>;\n  fragment: EditorDirectMethods<Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>>;\n  marks: EditorDirectMethods<Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>>;\n  nodes: EditorDirectMethods<Pick<EditorTransactionNodesApi<V>, 'insert' | 'lift' | 'merge' | 'move' | 'remove' | 'replace' | 'replaceChildren' | 'split' | 'unwrap' | 'wrap'>> & Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;\n  records: EditorTransactionRecordsApi;\n  roots: EditorDirectMethods<EditorTransactionRootsApi<V>>;\n  slice: EditorDirectMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;\n  selection: EditorDirectMethods<Pick<EditorTransactionSelectionApi<EditorSelection>, 'collapse' | 'move' | 'set' | 'setNodes' | 'setPoint'>>;\n  setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;\n  text: EditorDirectMethods<Pick<EditorTransactionTextApi, 'delete' | 'deleteBackward' | 'deleteForward' | 'insert'>>;\n  value: EditorDirectMethods<Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>>;\n};",
+          "signature": "type EditorCoreUpdateMethods<V extends Value = Value, TPlugins extends readonly unknown[] = readonly []> = {\n  annotations: EditorDirectMethods<EditorTransactionAnnotationsApi>;\n  blocks: EditorDirectMethods<EditorTransactionBlocksApi<V>>;\n  break: EditorDirectMethods<EditorTransactionBreakApi>;\n  changes: EditorDirectMethods<EditorTransactionChangesApi>;\n  /** Dispatch a typed semantic command in one update. */\n  command: EditorDirectCommandDispatch<BaseEditor<V, TPlugins>>;\n  effects: EditorDirectMethods<Pick<EditorTransactionEffectsApi, 'all'>> & Pick<EditorTransactionEffectsApi, 'emit'>;\n  plugins: EditorDirectMethods<Pick<EditorTransactionPluginsApi, 'reconfigure'>>;\n  fragment: EditorDirectMethods<Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>>;\n  marks: EditorDirectMethods<Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>>;\n  nodes: EditorDirectMethods<Pick<EditorTransactionNodesApi<V>, 'insert' | 'lift' | 'merge' | 'move' | 'remove' | 'replace' | 'replaceChildren' | 'split' | 'unwrap' | 'wrap'>> & Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;\n  records: EditorTransactionRecordsApi;\n  roots: EditorDirectMethods<EditorTransactionRootsApi<V>>;\n  slice: EditorDirectMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;\n  selection: EditorDirectMethods<Pick<EditorTransactionSelectionApi<EditorSelection>, 'collapse' | 'move' | 'set' | 'setNodes' | 'setPoint'>>;\n  setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;\n  text: EditorDirectMethods<Pick<EditorTransactionTextApi, 'delete' | 'deleteBackward' | 'deleteForward' | 'insert'>>;\n  value: EditorDirectMethods<Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>>;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value",
@@ -2251,11 +2254,12 @@
           "kind": "type",
           "name": "EditorEffect",
           "runtime": false,
-          "signature": "type EditorEffect<TValue = any, TEncoded extends EditorJsonValue = EditorJsonValue> = Readonly<{\n  type: EditorEffectType<TValue, TEncoded>;\n  value: TValue;\n}>;",
+          "signature": "type EditorEffect<TValue = any, TEncoded extends EditorJsonValue = EditorJsonValue, THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind> = Readonly<{\n  type: EditorEffectType<TValue, TEncoded, THistory>;\n  value: TValue;\n}>;",
           "source": null,
           "typeParameters": [
             "TValue = any",
-            "TEncoded extends EditorJsonValue = EditorJsonValue"
+            "TEncoded extends EditorJsonValue = EditorJsonValue",
+            "THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind"
           ]
         },
         "platejs:EditorEffectCollabDecodeContext": {
@@ -2304,6 +2308,17 @@
             "TValue = unknown"
           ]
         },
+        "platejs:EditorEffectHistoryKind": {
+          "aliases": [],
+          "documentation": "How History treats an effect: `push` and `skip` effects ride along with the\nupdate that emits them, and `session` effects record through\n`editor.api.history.record`.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorEffectHistoryKind",
+          "runtime": false,
+          "signature": "type EditorEffectHistoryKind = StateFieldHistoryPolicy | 'session';",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:EditorEffectHistoryReplayContext": {
           "aliases": [],
           "documentation": "What History hands a session effect's replay beside the step's value.",
@@ -2332,16 +2347,17 @@
         },
         "platejs:EditorEffectType": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "`THistory` says how History treats the effect: `session` effects record\nthrough `editor.api.history.record`, and the others emit through\n`tx.effects.emit`.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "EditorEffectType",
           "runtime": false,
-          "signature": "type EditorEffectType<TValue = any, TEncoded extends EditorJsonValue = EditorJsonValue> = EditorEffectLocalType<TValue, TEncoded> | EditorEffectSharedLatestType<TValue, TEncoded> | EditorEffectSharedLiveType<TValue, TEncoded>;",
+          "signature": "type EditorEffectType<TValue = any, TEncoded extends EditorJsonValue = EditorJsonValue, THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind> = EditorEffectLocalType<TValue, TEncoded, THistory> | ([Exclude<THistory, 'session'>] extends [never] ? never : EditorEffectSharedLatestType<TValue, TEncoded, Exclude<THistory, 'session'>> | EditorEffectSharedLiveType<TValue, TEncoded, Exclude<THistory, 'session'>>);",
           "source": null,
           "typeParameters": [
             "TValue = any",
-            "TEncoded extends EditorJsonValue = EditorJsonValue"
+            "TEncoded extends EditorJsonValue = EditorJsonValue",
+            "THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind"
           ]
         },
         "platejs:EditorElementBehavior": {
@@ -3412,7 +3428,7 @@
           "kind": "type",
           "name": "EditorStateField",
           "runtime": false,
-          "signature": "type EditorStateField<TValue = unknown, TEncoded extends EditorJsonValue = EditorJsonValue> = PluginReference & PluginDefinitionInput & Readonly<{\n  name: string;\n}> & Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {\n  compare: (left: TValue, right: TValue) => boolean;\n  deserialize: (value: unknown) => TValue;\n  effect: EditorEffectType<StateFieldTransition<TValue>>;\n  serialize: (value: TValue) => SerializedEditorValue<TEncoded>;\n};",
+          "signature": "type EditorStateField<TValue = unknown, TEncoded extends EditorJsonValue = EditorJsonValue> = PluginReference & PluginDefinitionInput & Readonly<{\n  name: string;\n}> & Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {\n  compare: (left: TValue, right: TValue) => boolean;\n  deserialize: (value: unknown) => TValue;\n  effect: EditorEffectType<StateFieldTransition<TValue>, EditorJsonValue, StateFieldHistoryPolicy>;\n  serialize: (value: TValue) => SerializedEditorValue<TEncoded>;\n};",
           "source": null,
           "typeParameters": [
             "TValue = unknown",
@@ -3777,7 +3793,7 @@
           "kind": "type",
           "name": "EditorTransactionEffectsApi",
           "runtime": false,
-          "signature": "type EditorTransactionEffectsApi = {\n  all: () => readonly EditorEffect[];\n  emit: <TValue>(type: EditorEffectType<TValue>, value: TValue) => void;\n};",
+          "signature": "type EditorTransactionEffectsApi = {\n  all: () => readonly EditorEffect[];\n  /**\n   * Emit a `push` or `skip` effect in this update. A session effect records\n   * through `editor.api.history.record`.\n   */\n  emit: <TValue>(type: EditorEffectType<TValue, EditorJsonValue, StateFieldHistoryPolicy>, value: TValue) => void;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -4596,7 +4612,7 @@
           "kind": "type",
           "name": "HistoryApi",
           "runtime": false,
-          "signature": "type HistoryApi = {\n  /** Replay the current redo batch as one complete editor update. */\n  redo: () => HistoryResult;\n  /** Replay the current undo batch as one complete editor update. */\n  undo: () => HistoryResult;\n};",
+          "signature": "type HistoryApi = {\n  /**\n   * Record one session step, whose effect History replays through its owner,\n   * in its own update. Throws inside an update, for an effect without a\n   * replay owner, and for a first write that is not a promise.\n   */\n  record: <TValue>(effect: EditorEffectType<TValue, EditorJsonValue, 'session'>, value: TValue, options?: HistoryRecordOptions<TValue>) => HistoryRecordResult;\n  /** Replay the current redo batch as one complete editor update. */\n  redo: () => HistoryResult;\n  /** Replay the current undo batch as one complete editor update. */\n  undo: () => HistoryResult;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -4641,6 +4657,30 @@
           "name": "HistoryPluginState",
           "runtime": false,
           "signature": "type HistoryPluginState = {\n  maxDepth: number;\n  newBatchDelay: number;\n};",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:HistoryRecordOptions": {
+          "aliases": [],
+          "documentation": "Options for one `editor.api.history.record` call.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "HistoryRecordOptions",
+          "runtime": false,
+          "signature": "type HistoryRecordOptions<TValue = unknown> = Readonly<{\n  /**\n   * The owner's first write of the step while it still runs, resolved to the\n   * replay result. Until it settles, the redo steps this record would clear\n   * stay in `read.history().redos`, `hasRedo()` reads false, and redo replays\n   * nothing. Only a `blocked` answer takes the step back; `applied` or a\n   * rejection keeps it.\n   */\n  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;\n}>;",
+          "source": null,
+          "typeParameters": [
+            "TValue = unknown"
+          ]
+        },
+        "platejs:HistoryRecordResult": {
+          "aliases": [],
+          "documentation": "`recorded` when the step is on undo, or `blocked` with `read-only` for a\nread-only view or the reason a guard refused the record's update.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "HistoryRecordResult",
+          "runtime": false,
+          "signature": "type HistoryRecordResult = Readonly<{\n  reason: string;\n  status: 'blocked';\n}> | Readonly<{\n  status: 'recorded';\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -8988,7 +9028,7 @@
           "kind": "const",
           "name": "screenReaderAnnouncementEffect",
           "runtime": true,
-          "signature": "screenReaderAnnouncementEffect: EditorEffectType<string, EditorJsonValue>",
+          "signature": "screenReaderAnnouncementEffect: EditorEffectType<string, EditorJsonValue, StateFieldHistoryPolicy>",
           "source": null,
           "typeParameters": []
         },
@@ -18173,7 +18213,7 @@
           "kind": "const",
           "name": "decodeEditorEffect",
           "runtime": true,
-          "signature": "decodeEditorEffect: <TValue, TEncoded extends EditorJsonValue>(type: EditorEffectType<TValue, TEncoded>, input: unknown) => EditorEffect<TValue>",
+          "signature": "decodeEditorEffect: <TValue, TEncoded extends EditorJsonValue, THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind>(type: EditorEffectType<TValue, TEncoded, THistory>, input: unknown) => EditorEffect<TValue, TEncoded, THistory>",
           "source": null,
           "typeParameters": []
         },
@@ -18287,14 +18327,17 @@
         },
         "platejs/react:defineEffect": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Define a session effect, which History replays through its owner.\nDefine an effect that rides along with the update that emits it.",
           "entrypoint": "platejs/react",
-          "kind": "const",
+          "kind": "function",
           "name": "defineEffect",
           "runtime": true,
-          "signature": "defineEffect: <TValue = null, TEncoded extends EditorJsonValue = EditorJsonValue>(options: DefineEffectOptions<TValue, TEncoded>) => EditorEffectType<TValue, TEncoded>",
+          "signature": "declare function defineEffect<TValue = null, TEncoded extends EditorJsonValue = EditorJsonValue>(options: DefineSessionEffectOptions<TValue, TEncoded>): EditorEffectType<TValue, TEncoded, 'session'>;\ndeclare function defineEffect<TValue = null, TEncoded extends EditorJsonValue = EditorJsonValue>(options: DefineSharedLatestEffectOptions<TValue, TEncoded> | DefineSharedLiveEffectOptions<TValue, TEncoded> | DefineStandardLocalEffectOptions<TValue, TEncoded>): EditorEffectType<TValue, TEncoded, StateFieldHistoryPolicy>;",
           "source": null,
-          "typeParameters": []
+          "typeParameters": [
+            "TValue = null",
+            "TEncoded extends EditorJsonValue = EditorJsonValue"
+          ]
         },
         "platejs/react:defineInputRule": {
           "aliases": [],
@@ -19221,7 +19264,7 @@
           "kind": "type",
           "name": "EditorCoreUpdateMethods",
           "runtime": false,
-          "signature": "type EditorCoreUpdateMethods<V extends Value = Value, TPlugins extends readonly unknown[] = readonly []> = {\n  annotations: EditorDirectMethods<EditorTransactionAnnotationsApi>;\n  blocks: EditorDirectMethods<EditorTransactionBlocksApi<V>>;\n  break: EditorDirectMethods<EditorTransactionBreakApi>;\n  changes: EditorDirectMethods<EditorTransactionChangesApi>;\n  /** Dispatch a typed semantic command in one update. */\n  command: EditorDirectCommandDispatch<BaseEditor<V, TPlugins>>;\n  effects: EditorDirectMethods<EditorTransactionEffectsApi>;\n  plugins: EditorDirectMethods<Pick<EditorTransactionPluginsApi, 'reconfigure'>>;\n  fragment: EditorDirectMethods<Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>>;\n  marks: EditorDirectMethods<Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>>;\n  nodes: EditorDirectMethods<Pick<EditorTransactionNodesApi<V>, 'insert' | 'lift' | 'merge' | 'move' | 'remove' | 'replace' | 'replaceChildren' | 'split' | 'unwrap' | 'wrap'>> & Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;\n  records: EditorTransactionRecordsApi;\n  roots: EditorDirectMethods<EditorTransactionRootsApi<V>>;\n  slice: EditorDirectMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;\n  selection: EditorDirectMethods<Pick<EditorTransactionSelectionApi<EditorSelection>, 'collapse' | 'move' | 'set' | 'setNodes' | 'setPoint'>>;\n  setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;\n  text: EditorDirectMethods<Pick<EditorTransactionTextApi, 'delete' | 'deleteBackward' | 'deleteForward' | 'insert'>>;\n  value: EditorDirectMethods<Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>>;\n};",
+          "signature": "type EditorCoreUpdateMethods<V extends Value = Value, TPlugins extends readonly unknown[] = readonly []> = {\n  annotations: EditorDirectMethods<EditorTransactionAnnotationsApi>;\n  blocks: EditorDirectMethods<EditorTransactionBlocksApi<V>>;\n  break: EditorDirectMethods<EditorTransactionBreakApi>;\n  changes: EditorDirectMethods<EditorTransactionChangesApi>;\n  /** Dispatch a typed semantic command in one update. */\n  command: EditorDirectCommandDispatch<BaseEditor<V, TPlugins>>;\n  effects: EditorDirectMethods<Pick<EditorTransactionEffectsApi, 'all'>> & Pick<EditorTransactionEffectsApi, 'emit'>;\n  plugins: EditorDirectMethods<Pick<EditorTransactionPluginsApi, 'reconfigure'>>;\n  fragment: EditorDirectMethods<Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>>;\n  marks: EditorDirectMethods<Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>>;\n  nodes: EditorDirectMethods<Pick<EditorTransactionNodesApi<V>, 'insert' | 'lift' | 'merge' | 'move' | 'remove' | 'replace' | 'replaceChildren' | 'split' | 'unwrap' | 'wrap'>> & Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;\n  records: EditorTransactionRecordsApi;\n  roots: EditorDirectMethods<EditorTransactionRootsApi<V>>;\n  slice: EditorDirectMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;\n  selection: EditorDirectMethods<Pick<EditorTransactionSelectionApi<EditorSelection>, 'collapse' | 'move' | 'set' | 'setNodes' | 'setPoint'>>;\n  setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;\n  text: EditorDirectMethods<Pick<EditorTransactionTextApi, 'delete' | 'deleteBackward' | 'deleteForward' | 'insert'>>;\n  value: EditorDirectMethods<Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>>;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value",
@@ -19297,11 +19340,12 @@
           "kind": "type",
           "name": "EditorEffect",
           "runtime": false,
-          "signature": "type EditorEffect<TValue = any, TEncoded extends EditorJsonValue = EditorJsonValue> = Readonly<{\n  type: EditorEffectType<TValue, TEncoded>;\n  value: TValue;\n}>;",
+          "signature": "type EditorEffect<TValue = any, TEncoded extends EditorJsonValue = EditorJsonValue, THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind> = Readonly<{\n  type: EditorEffectType<TValue, TEncoded, THistory>;\n  value: TValue;\n}>;",
           "source": null,
           "typeParameters": [
             "TValue = any",
-            "TEncoded extends EditorJsonValue = EditorJsonValue"
+            "TEncoded extends EditorJsonValue = EditorJsonValue",
+            "THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind"
           ]
         },
         "platejs/react:EditorEffectCollabDecodeContext": {
@@ -19350,6 +19394,17 @@
             "TValue = unknown"
           ]
         },
+        "platejs/react:EditorEffectHistoryKind": {
+          "aliases": [],
+          "documentation": "How History treats an effect: `push` and `skip` effects ride along with the\nupdate that emits them, and `session` effects record through\n`editor.api.history.record`.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "EditorEffectHistoryKind",
+          "runtime": false,
+          "signature": "type EditorEffectHistoryKind = StateFieldHistoryPolicy | 'session';",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/react:EditorEffectHistoryReplayContext": {
           "aliases": [],
           "documentation": "What History hands a session effect's replay beside the step's value.",
@@ -19378,16 +19433,17 @@
         },
         "platejs/react:EditorEffectType": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "`THistory` says how History treats the effect: `session` effects record\nthrough `editor.api.history.record`, and the others emit through\n`tx.effects.emit`.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditorEffectType",
           "runtime": false,
-          "signature": "type EditorEffectType<TValue = any, TEncoded extends EditorJsonValue = EditorJsonValue> = EditorEffectLocalType<TValue, TEncoded> | EditorEffectSharedLatestType<TValue, TEncoded> | EditorEffectSharedLiveType<TValue, TEncoded>;",
+          "signature": "type EditorEffectType<TValue = any, TEncoded extends EditorJsonValue = EditorJsonValue, THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind> = EditorEffectLocalType<TValue, TEncoded, THistory> | ([Exclude<THistory, 'session'>] extends [never] ? never : EditorEffectSharedLatestType<TValue, TEncoded, Exclude<THistory, 'session'>> | EditorEffectSharedLiveType<TValue, TEncoded, Exclude<THistory, 'session'>>);",
           "source": null,
           "typeParameters": [
             "TValue = any",
-            "TEncoded extends EditorJsonValue = EditorJsonValue"
+            "TEncoded extends EditorJsonValue = EditorJsonValue",
+            "THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind"
           ]
         },
         "platejs/react:EditorElement": {
@@ -20664,7 +20720,7 @@
           "kind": "type",
           "name": "EditorStateField",
           "runtime": false,
-          "signature": "type EditorStateField<TValue = unknown, TEncoded extends EditorJsonValue = EditorJsonValue> = PluginReference & PluginDefinitionInput & Readonly<{\n  name: string;\n}> & Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {\n  compare: (left: TValue, right: TValue) => boolean;\n  deserialize: (value: unknown) => TValue;\n  effect: EditorEffectType<StateFieldTransition<TValue>>;\n  serialize: (value: TValue) => SerializedEditorValue<TEncoded>;\n};",
+          "signature": "type EditorStateField<TValue = unknown, TEncoded extends EditorJsonValue = EditorJsonValue> = PluginReference & PluginDefinitionInput & Readonly<{\n  name: string;\n}> & Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {\n  compare: (left: TValue, right: TValue) => boolean;\n  deserialize: (value: unknown) => TValue;\n  effect: EditorEffectType<StateFieldTransition<TValue>, EditorJsonValue, StateFieldHistoryPolicy>;\n  serialize: (value: TValue) => SerializedEditorValue<TEncoded>;\n};",
           "source": null,
           "typeParameters": [
             "TValue = unknown",
@@ -21053,7 +21109,7 @@
           "kind": "type",
           "name": "EditorTransactionEffectsApi",
           "runtime": false,
-          "signature": "type EditorTransactionEffectsApi = {\n  all: () => readonly EditorEffect[];\n  emit: <TValue>(type: EditorEffectType<TValue>, value: TValue) => void;\n};",
+          "signature": "type EditorTransactionEffectsApi = {\n  all: () => readonly EditorEffect[];\n  /**\n   * Emit a `push` or `skip` effect in this update. A session effect records\n   * through `editor.api.history.record`.\n   */\n  emit: <TValue>(type: EditorEffectType<TValue, EditorJsonValue, StateFieldHistoryPolicy>, value: TValue) => void;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -22104,7 +22160,7 @@
           "kind": "type",
           "name": "HistoryApi",
           "runtime": false,
-          "signature": "type HistoryApi = {\n  /** Replay the current redo batch as one complete editor update. */\n  redo: () => HistoryResult;\n  /** Replay the current undo batch as one complete editor update. */\n  undo: () => HistoryResult;\n};",
+          "signature": "type HistoryApi = {\n  /**\n   * Record one session step, whose effect History replays through its owner,\n   * in its own update. Throws inside an update, for an effect without a\n   * replay owner, and for a first write that is not a promise.\n   */\n  record: <TValue>(effect: EditorEffectType<TValue, EditorJsonValue, 'session'>, value: TValue, options?: HistoryRecordOptions<TValue>) => HistoryRecordResult;\n  /** Replay the current redo batch as one complete editor update. */\n  redo: () => HistoryResult;\n  /** Replay the current undo batch as one complete editor update. */\n  undo: () => HistoryResult;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -22149,6 +22205,30 @@
           "name": "HistoryPluginState",
           "runtime": false,
           "signature": "type HistoryPluginState = {\n  maxDepth: number;\n  newBatchDelay: number;\n};",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/react:HistoryRecordOptions": {
+          "aliases": [],
+          "documentation": "Options for one `editor.api.history.record` call.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "HistoryRecordOptions",
+          "runtime": false,
+          "signature": "type HistoryRecordOptions<TValue = unknown> = Readonly<{\n  /**\n   * The owner's first write of the step while it still runs, resolved to the\n   * replay result. Until it settles, the redo steps this record would clear\n   * stay in `read.history().redos`, `hasRedo()` reads false, and redo replays\n   * nothing. Only a `blocked` answer takes the step back; `applied` or a\n   * rejection keeps it.\n   */\n  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;\n}>;",
+          "source": null,
+          "typeParameters": [
+            "TValue = unknown"
+          ]
+        },
+        "platejs/react:HistoryRecordResult": {
+          "aliases": [],
+          "documentation": "`recorded` when the step is on undo, or `blocked` with `read-only` for a\nread-only view or the reason a guard refused the record's update.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "HistoryRecordResult",
+          "runtime": false,
+          "signature": "type HistoryRecordResult = Readonly<{\n  reason: string;\n  status: 'blocked';\n}> | Readonly<{\n  status: 'recorded';\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -27072,7 +27152,7 @@
           "kind": "const",
           "name": "screenReaderAnnouncementEffect",
           "runtime": true,
-          "signature": "screenReaderAnnouncementEffect: EditorEffectType<string, EditorJsonValue>",
+          "signature": "screenReaderAnnouncementEffect: EditorEffectType<string, EditorJsonValue, StateFieldHistoryPolicy>",
           "source": null,
           "typeParameters": []
         },

@@ -16,6 +16,7 @@ import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import {
   type AdmittedRepair,
   applyUnnamedDocumentChange,
+  emitAnyEditorEffect,
   getCurrentSelection,
   runTrustedUpdate,
 } from '../../core/public-state';
@@ -283,7 +284,7 @@ export const createYjsEditorAdapter = (
 
           for (const pending of effects) {
             const effect = typeof pending === 'function' ? pending() : pending;
-            if (effect) tx.effects.emit(effect.type, effect.value);
+            if (effect) emitAnyEditorEffect(editor, effect.type, effect.value);
           }
         },
         { onAdmission: settleOnce, tags: YjsUpdatePolicy.remote.tags }

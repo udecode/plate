@@ -8,6 +8,9 @@
       "path": "./core.json"
     },
     {
+      "path": "./history.json"
+    },
+    {
       "path": "./react.json"
     }
   ]

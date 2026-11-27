@@ -4,6 +4,7 @@ import {
   defineEffect,
   definePlugin,
   getEditorRuntimeOwner,
+  HistoryPlugin,
   nanoid,
   NodeApi,
   PathApi,
@@ -32,6 +33,7 @@ import {
   type ReadonlyAnchor,
   readDocumentRange,
   readShownPreview,
+  recordEditorHistoryEffect,
   restoreAnchor,
   runEditorObserver,
   subscribeEditorViewState,
@@ -1958,18 +1960,31 @@ export const BaseCommentsPlugin = definePlugin('comments', {
                     commandEditor !== editor &&
                     commandEditor.read.view.isReadOnly();
                   if (!canonical || viewRefuses) return;
-                  commandEditor.update((tx) => {
-                    input.withHistory?.(tx, canonical);
-                    tx.effects.emit(commentCreationHistoryEffect, {
-                      anchorId: anchor ? getAnchorRuntimeId(anchor) : null,
-                      attachment: anchor
-                        ? commandEditor.anchor.save(anchor)
-                        : null,
-                      messageId: canonical.messages[0].id,
-                      previous: null,
-                      value: canonical,
-                    });
-                  });
+                  const history = commandEditor.plugin(HistoryPlugin);
+                  const { withHistory } = input;
+
+                  if (!history.installed) {
+                    if (withHistory) {
+                      commandEditor.update((tx) => withHistory(tx, canonical));
+                    }
+                    return;
+                  }
+                  const step = {
+                    anchorId: anchor ? getAnchorRuntimeId(anchor) : null,
+                    attachment: anchor
+                      ? commandEditor.anchor.save(anchor)
+                      : null,
+                    messageId: canonical.messages[0].id,
+                    previous: null,
+                    value: canonical,
+                  };
+
+                  recordEditorHistoryEffect(
+                    commandEditor,
+                    commentCreationHistoryEffect,
+                    step,
+                    (tx) => withHistory?.(tx, canonical)
+                  );
                 },
               }
             );

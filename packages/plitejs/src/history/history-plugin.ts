@@ -15,6 +15,8 @@ import {
   type EditorUpdateTransaction,
   type HistoryApi,
   type HistoryOutcome,
+  type HistoryRecordOptions,
+  type HistoryRecordResult,
   type HistoryResult,
   type HistorySettlement,
   type Selection,
@@ -81,6 +83,7 @@ import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   applyDocumentChange,
   documentReplacement,
+  emitAnyEditorEffect,
   getCurrentSelectionRoot,
   getEditorDocumentValue,
   getEditorUpdateRoot,
@@ -88,8 +91,6 @@ import {
   isInTransaction,
   type EditorHistoryEntry,
   type EditorHistoryHeadRoots,
-  type EditorHistoryRecordOptions,
-  type EditorHistoryRecordResult,
   type EditorHistoryReplayReceipt,
   type EditorHistoryStep,
   recordEditorHistoryReplayReceipt,
@@ -510,7 +511,7 @@ const FAILED_HISTORY_RESULT = Object.freeze({
 }) satisfies HistorySettlement;
 const RECORDED_HISTORY_RESULT = Object.freeze({
   status: 'recorded',
-}) satisfies EditorHistoryRecordResult;
+}) satisfies HistoryRecordResult;
 
 const reportFirstWrite = (editor: Editor, cause: unknown) => {
   reportEditorLifecycleError({
@@ -542,7 +543,7 @@ const refusalReason = (refusal: unknown) => {
 
 const blockedOf = <V extends Value>(
   editor: Editor<V>,
-  fn: (tx: HistoryTransaction<V>) => void,
+  fn: (tx: EditorUpdateTransaction<V>) => void,
   options: InternalEditorUpdateOptions = {}
 ): HistoryOutcome | null => {
   let blocked: HistoryOutcome | null = null;
@@ -695,7 +696,11 @@ const consumeHistoryBatch = <V extends Value>(
   );
   if (facts?.kind === 'recorded') countCoreWork('factedReplays');
   for (const effect of batch.effects) {
-    tx.effects.emit(effect.type, effect.value);
+    emitAnyEditorEffect(
+      getEditorRuntimeOwner(editor),
+      effect.type,
+      effect.value
+    );
   }
   if (shouldRestoreHistoricSelection(root, caretRoot, batch, target)) {
     restoreHistoricSelection(editor, tx, batch, root, target);
@@ -1014,8 +1019,17 @@ const recordHistoryStep = (
   editor: Editor,
   effect: EditorEffectType,
   value: unknown,
-  { firstWrite }: EditorHistoryRecordOptions
-): EditorHistoryRecordResult => {
+  options: HistoryRecordOptions | undefined,
+  writeRecords?: (tx: EditorUpdateTransaction) => void
+): HistoryRecordResult => {
+  const firstWrite = options?.firstWrite;
+
+  if (
+    firstWrite !== undefined &&
+    typeof (firstWrite as { then?: unknown } | null)?.then !== 'function'
+  ) {
+    throw new Error('History record takes a first write as a promise.');
+  }
   const write = firstWrite
     ? observeFirstWrite(firstWrite, (observed, outcome) =>
         answerFirstWrite(editor, observed, outcome)
@@ -1033,7 +1047,7 @@ const recordHistoryStep = (
       `History records only session effects; "${effect.key}" has no replay owner.`
     );
   }
-  if (editor.read.view.isReadOnly()) {
+  if (editor !== owner && editor.read.view.isReadOnly()) {
     return Object.freeze({ reason: 'read-only', status: 'blocked' });
   }
 
@@ -1043,7 +1057,8 @@ const recordHistoryStep = (
   try {
     blocked = historyRecord.with(token, (id) =>
       blockedOf(editor, (tx) => {
-        tx.effects.emit(effect, value);
+        writeRecords?.(tx);
+        emitAnyEditorEffect(owner, effect, value);
         tx.annotations.set(historyRecord.annotation, id);
       })
     );
@@ -1868,7 +1883,11 @@ const createHistoryPlugin = <
                   if (!companionChange.empty) {
                     applyDocumentChange(owner, companionChange);
                   }
-                  tx.effects.emit(replayedEffect.type, replayedEffect.value);
+                  emitAnyEditorEffect(
+                    owner,
+                    replayedEffect.type,
+                    replayedEffect.value
+                  );
                 });
                 tx.annotations.set(historyReplaySettlement, {
                   request,
@@ -2019,6 +2038,8 @@ const createHistoryPlugin = <
       };
 
       return {
+        record: (effect, value, recordOptions) =>
+          recordHistoryStep(editor, effect, value, recordOptions),
         redo: () => replay('redo'),
         undo: () => replay('undo'),
       } satisfies HistoryApi;
@@ -2095,8 +2116,8 @@ const createHistoryPlugin = <
           forgetStep: (step) => forgetHistoryStep(editor, step),
           headRoots: (direction) => readHeadRoots(editor, direction),
           mintStepOf: (commit) => commitStepWith(commit, historyStepId),
-          record: (caller, effect, value, recordOptions) =>
-            recordHistoryStep(caller, effect, value, recordOptions),
+          record: (caller, effect, value, writeRecords) =>
+            recordHistoryStep(caller, effect, value, undefined, writeRecords),
           replaceUndoStep: (step, change, matches) =>
             replaceUndoStep(editor, step, change, matches),
           restores: (commit) =>

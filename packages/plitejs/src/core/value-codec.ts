@@ -1,6 +1,7 @@
 import type { Descendant } from '../interfaces';
 import type {
   EditorEffect,
+  EditorEffectHistoryKind,
   EditorEffectType,
   EditorValuePersistence,
   SerializedEditorEffect,
@@ -592,10 +593,14 @@ export const encodeEditorEffect = <TValue, TEncoded extends EditorJsonValue>(
   });
 };
 
-export const decodeEditorEffect = <TValue, TEncoded extends EditorJsonValue>(
-  type: EditorEffectType<TValue, TEncoded>,
+export const decodeEditorEffect = <
+  TValue,
+  TEncoded extends EditorJsonValue,
+  THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind,
+>(
+  type: EditorEffectType<TValue, TEncoded, THistory>,
   input: unknown
-): EditorEffect<TValue> => {
+): EditorEffect<TValue, TEncoded, THistory> => {
   if (!isRecord(input) || input.key !== type.key) {
     throw new Error(`Invalid editor effect "${type.key}" envelope.`);
   }

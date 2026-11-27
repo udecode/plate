@@ -107,7 +107,7 @@ export const observeFirstWrite = (
     answer(write, { cause, kind: 'failed' });
     throw cause;
   };
-  const parsed = promise.then((result) => {
+  const parsed = Promise.resolve(promise).then((result) => {
     let value: EditorEffectHistoryReplayResult;
 
     try {

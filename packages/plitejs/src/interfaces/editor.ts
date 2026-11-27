@@ -590,7 +590,37 @@ export type HistoryResult =
       status: 'pending';
     }>;
 
+/** Options for one `editor.api.history.record` call. */
+export type HistoryRecordOptions<TValue = unknown> = Readonly<{
+  /**
+   * The owner's first write of the step while it still runs, resolved to the
+   * replay result. Until it settles, the redo steps this record would clear
+   * stay in `read.history().redos`, `hasRedo()` reads false, and redo replays
+   * nothing. Only a `blocked` answer takes the step back; `applied` or a
+   * rejection keeps it.
+   */
+  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;
+}>;
+
+/**
+ * `recorded` when the step is on undo, or `blocked` with `read-only` for a
+ * read-only view or the reason a guard refused the record's update.
+ */
+export type HistoryRecordResult =
+  | Readonly<{ reason: string; status: 'blocked' }>
+  | Readonly<{ status: 'recorded' }>;
+
 export type HistoryApi = {
+  /**
+   * Record one session step, whose effect History replays through its owner,
+   * in its own update. Throws inside an update, for an effect without a
+   * replay owner, and for a first write that is not a promise.
+   */
+  record: <TValue>(
+    effect: EditorEffectType<TValue, EditorJsonValue, 'session'>,
+    value: TValue,
+    options?: HistoryRecordOptions<TValue>
+  ) => HistoryRecordResult;
   /** Replay the current redo batch as one complete editor update. */
   redo: () => HistoryResult;
   /** Replay the current undo batch as one complete editor update. */
@@ -667,7 +697,11 @@ export type EditorStateField<
   Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {
     compare: (left: TValue, right: TValue) => boolean;
     deserialize: (value: unknown) => TValue;
-    effect: EditorEffectType<StateFieldTransition<TValue>>;
+    effect: EditorEffectType<
+      StateFieldTransition<TValue>,
+      EditorJsonValue,
+      StateFieldHistoryPolicy
+    >;
     serialize: (value: TValue) => SerializedEditorValue<TEncoded>;
   };
 
@@ -723,21 +757,35 @@ type EditorEffectTypeBase<TValue, TEncoded extends EditorJsonValue> = Readonly<{
   persist?: EditorValuePersistence<TValue, TEncoded>;
 }>;
 
+/**
+ * How History treats an effect: `push` and `skip` effects ride along with the
+ * update that emits them, and `session` effects record through
+ * `editor.api.history.record`.
+ */
+export type EditorEffectHistoryKind = StateFieldHistoryPolicy | 'session';
+
+type EditorEffectHistoryOf<
+  TValue,
+  THistory extends EditorEffectHistoryKind,
+> = THistory extends 'session' ? EditorEffectSessionHistory<TValue> : THistory;
+
 type EditorEffectLocalType<
   TValue,
   TEncoded extends EditorJsonValue,
+  THistory extends EditorEffectHistoryKind,
 > = EditorEffectTypeBase<TValue, TEncoded> &
   Readonly<{
     collab: 'local';
     collabReplay: 'live';
     collabSnapshot?: never;
     collabTransport?: never;
-    history: EditorEffectSessionHistory<TValue> | StateFieldHistoryPolicy;
+    history: EditorEffectHistoryOf<TValue, THistory>;
   }>;
 
 type EditorEffectSharedLiveType<
   TValue,
   TEncoded extends EditorJsonValue,
+  THistory extends StateFieldHistoryPolicy,
 > = EditorEffectTypeBase<TValue, TEncoded> &
   Readonly<{
     persist: EditorValuePersistence<TValue, TEncoded>;
@@ -745,12 +793,13 @@ type EditorEffectSharedLiveType<
     collabReplay: 'live';
     collabSnapshot?: never;
     collabTransport?: EditorEffectCollabTransport<TValue>;
-    history: StateFieldHistoryPolicy;
+    history: THistory;
   }>;
 
 type EditorEffectSharedLatestType<
   TValue,
   TEncoded extends EditorJsonValue,
+  THistory extends StateFieldHistoryPolicy,
 > = EditorEffectTypeBase<TValue, TEncoded> &
   Readonly<{
     persist: EditorValuePersistence<TValue, TEncoded>;
@@ -759,22 +808,40 @@ type EditorEffectSharedLatestType<
     /** Pure capture of the current absolute value for late-join checkpoints. */
     collabSnapshot: (state: EditorStateView<Value, any>) => TValue | undefined;
     collabTransport?: EditorEffectCollabTransport<TValue>;
-    history: StateFieldHistoryPolicy;
+    history: THistory;
   }>;
 
+/**
+ * `THistory` says how History treats the effect: `session` effects record
+ * through `editor.api.history.record`, and the others emit through
+ * `tx.effects.emit`.
+ */
 export type EditorEffectType<
   TValue = any,
   TEncoded extends EditorJsonValue = EditorJsonValue,
+  THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind,
 > =
-  | EditorEffectLocalType<TValue, TEncoded>
-  | EditorEffectSharedLatestType<TValue, TEncoded>
-  | EditorEffectSharedLiveType<TValue, TEncoded>;
+  | EditorEffectLocalType<TValue, TEncoded, THistory>
+  | ([Exclude<THistory, 'session'>] extends [never]
+      ? never
+      :
+          | EditorEffectSharedLatestType<
+              TValue,
+              TEncoded,
+              Exclude<THistory, 'session'>
+            >
+          | EditorEffectSharedLiveType<
+              TValue,
+              TEncoded,
+              Exclude<THistory, 'session'>
+            >);
 
 export type EditorEffect<
   TValue = any,
   TEncoded extends EditorJsonValue = EditorJsonValue,
+  THistory extends EditorEffectHistoryKind = EditorEffectHistoryKind,
 > = Readonly<{
-  type: EditorEffectType<TValue, TEncoded>;
+  type: EditorEffectType<TValue, TEncoded, THistory>;
   value: TValue;
 }>;
 
@@ -785,7 +852,14 @@ export type EditorUpdateAnnotation<TValue = unknown> = Readonly<{
 
 export type EditorTransactionEffectsApi = {
   all: () => readonly EditorEffect[];
-  emit: <TValue>(type: EditorEffectType<TValue>, value: TValue) => void;
+  /**
+   * Emit a `push` or `skip` effect in this update. A session effect records
+   * through `editor.api.history.record`.
+   */
+  emit: <TValue>(
+    type: EditorEffectType<TValue, EditorJsonValue, StateFieldHistoryPolicy>,
+    value: TValue
+  ) => void;
 };
 
 export type PluginMigrationContext = Readonly<{
@@ -2098,7 +2172,8 @@ export type EditorCoreUpdateMethods<
   changes: EditorDirectMethods<EditorTransactionChangesApi>;
   /** Dispatch a typed semantic command in one update. */
   command: EditorDirectCommandDispatch<BaseEditor<V, TPlugins>>;
-  effects: EditorDirectMethods<EditorTransactionEffectsApi>;
+  effects: EditorDirectMethods<Pick<EditorTransactionEffectsApi, 'all'>> &
+    Pick<EditorTransactionEffectsApi, 'emit'>;
   plugins: EditorDirectMethods<
     Pick<EditorTransactionPluginsApi, 'reconfigure'>
   >;
@@ -4560,7 +4635,9 @@ export interface EditorStaticApi {
   getCollabEffects: <V extends Value>(
     editor: AnyEditor<V>,
     commit: EditorCommit<V>
-  ) => readonly EditorEffect[];
+  ) => ReadonlyArray<
+    EditorEffect<any, EditorJsonValue, StateFieldHistoryPolicy>
+  >;
 
   /**
    * Get the plugin registry for an editor.
