@@ -880,6 +880,34 @@ export const resolveDOMReach = (
   return handle === owner ? reachDocumentView(mounted, handle, request) : null;
 };
 
+export const resolveMountedViewForRoot = (
+  handle: object,
+  root: RootKey
+): AnyEditor | null => {
+  if (!hasEditorRuntime(handle)) return null;
+  if (hasMountedDOMRoot(handle) && getEditorRuntimeRoot(handle) === root) {
+    return handle;
+  }
+
+  const owner = documentOf(handle);
+  const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(owner);
+
+  if (!mounted) return null;
+
+  const presentation = getOwnViewPresentation(handle);
+
+  if (presentation) {
+    return pickView(
+      mounted,
+      (view) =>
+        getOwnViewPresentation(view) === presentation &&
+        getEditorRuntimeRoot(view) === root
+    );
+  }
+
+  return handle === owner ? reachDocumentView(mounted, handle, { root }) : null;
+};
+
 export const resolveDOMTargetView = (
   handle: object,
   node: Node | null

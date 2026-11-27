@@ -20,7 +20,11 @@ import {
   TextApi,
   type Value,
 } from '../..';
-import { getEditorRuntimeRoot } from '../../core/editor-runtime';
+import {
+  getEditorRuntimeOwner,
+  getEditorRuntimeRoot,
+  hasEditorRuntime,
+} from '../../core/editor-runtime';
 import {
   getPublicExplicitLocationRoot,
   toInternalRoot,
@@ -33,8 +37,10 @@ import {
   setEditorFocused,
   withUpdateTagContext,
 } from '../../core/public-state';
+import { readRootEntries } from '../../core/root-entries';
 import { getSelectionDOMRange } from '../../core/selection-protocol';
 import { getPlacementGeneration, placedSince } from '../../core/view-carets';
+import { getOwnViewPresentation } from '../../editor-runtime-view';
 import {
   type AnyEditor as EditorType,
   getNodeKey as editorGetNodeKey,
@@ -163,6 +169,7 @@ import {
   resolveDOMTargetView,
   resolveInnermostElementAtPoint,
   resolveMountedEditorDOMRoot,
+  resolveMountedViewForRoot,
   subscribeDOMReach,
   writeEditableDOMSelection,
 } from './dom-root-runtime';
@@ -1200,12 +1207,83 @@ const ELEMENT_TO_ROOT_REVEAL = new WeakMap<
 
 const VIEW_TO_SCROLL_TOKEN = new WeakMap<object, number>();
 
-const nextScrollIntoViewToken = (view: object) => {
-  const token = (VIEW_TO_SCROLL_TOKEN.get(view) ?? 0) + 1;
+const nextScrollIntoViewToken = (scope: object) => {
+  const token = (VIEW_TO_SCROLL_TOKEN.get(scope) ?? 0) + 1;
 
-  VIEW_TO_SCROLL_TOKEN.set(view, token);
+  VIEW_TO_SCROLL_TOKEN.set(scope, token);
 
   return token;
+};
+
+const getScrollIntoViewScope = (
+  editor: EditorType,
+  fallback: object
+): object =>
+  hasEditorRuntime(editor)
+    ? (getOwnViewPresentation(editor) ?? documentOf(editor))
+    : fallback;
+
+const findMountedAncestorRevealStep = (
+  editor: EditorType,
+  targetRoot: RootKey
+): Readonly<{
+  ownerPath: Path;
+  ownerRoot: RootKey;
+  ownerView: EditorType;
+}> | null => {
+  if (!hasEditorRuntime(editor)) return null;
+
+  const owner = getEditorRuntimeOwner(editor);
+  const entryByRoot = new Map(
+    readRootEntries(owner).map((entry) => [entry.root, entry] as const)
+  );
+  const visited = new Set<string>([targetRoot]);
+  const queue: string[] = [targetRoot];
+
+  for (const currentRoot of queue) {
+    const entry = entryByRoot.get(currentRoot);
+
+    if (!entry) continue;
+
+    for (const edge of entry.owners) {
+      const parentRoot = toInternalRoot(edge.root);
+      const mountedParent = resolveMountedViewForRoot(editor, parentRoot);
+
+      if (mountedParent) {
+        return {
+          ownerPath: edge.path,
+          ownerRoot: parentRoot,
+          ownerView: mountedParent,
+        };
+      }
+      if (!visited.has(parentRoot)) {
+        visited.add(parentRoot);
+        queue.push(parentRoot);
+      }
+    }
+  }
+
+  return null;
+};
+
+const getScrollTargetRoot = (
+  editor: EditorType,
+  target: DOMRange | Path | Point | Range
+): RootKey | null => {
+  if (
+    !PathApi.isPath(target) &&
+    !PointApi.isPoint(target) &&
+    !RangeApi.isRange(target)
+  ) {
+    return null;
+  }
+
+  const explicitRoot = getPublicExplicitLocationRoot(target);
+
+  if (explicitRoot !== undefined) return toInternalRoot(explicitRoot);
+  if (hasEditorRuntime(editor)) return getEditorRuntimeRoot(editor);
+
+  return null;
 };
 
 export const setEditableRootReveal = (
@@ -2418,37 +2496,54 @@ const DOMEditorImpl: DOMEditorInterface = {
       );
     };
     const canReadEditor = typeof editor.read === 'function';
-    const resolvedView = canReadEditor
-      ? PathApi.isPath(target) ||
-        PointApi.isPoint(target) ||
-        RangeApi.isRange(target)
-        ? reachAt(editor, target)
-        : hasMountedDocumentView(editor)
-          ? resolveDOMReach(editor)
-          : editor
-      : editor;
+    const isLocationTarget =
+      PathApi.isPath(target) ||
+      PointApi.isPoint(target) ||
+      RangeApi.isRange(target);
+    const targetRoot = canReadEditor
+      ? getScrollTargetRoot(editor, target)
+      : null;
+    const resolveTargetView = (): EditorType | null => {
+      if (!canReadEditor) return editor;
+      if (isLocationTarget) {
+        return (
+          reachAt(editor, target) ??
+          (targetRoot ? resolveMountedViewForRoot(editor, targetRoot) : null)
+        );
+      }
 
-    if (!resolvedView) return () => {};
+      return hasMountedDocumentView(editor) ? resolveDOMReach(editor) : editor;
+    };
+    const initialView = resolveTargetView();
+    const initialAncestorStep =
+      !initialView && targetRoot
+        ? findMountedAncestorRevealStep(editor, targetRoot)
+        : null;
+    const initialSchedulerView =
+      initialView ?? initialAncestorStep?.ownerView ?? null;
 
-    const pinnedView = resolvedView;
-    const scrollToken = nextScrollIntoViewToken(pinnedView);
+    if (!initialSchedulerView) return () => {};
+
+    const scrollScope = getScrollIntoViewScope(editor, initialSchedulerView);
+    const scrollToken = nextScrollIntoViewToken(scrollScope);
     const isStale = () =>
-      cancelled || VIEW_TO_SCROLL_TOKEN.get(pinnedView) !== scrollToken;
-    const canReadPinnedView = typeof pinnedView.read === 'function';
+      cancelled || VIEW_TO_SCROLL_TOKEN.get(scrollScope) !== scrollToken;
     const initialPathElement =
-      PathApi.isPath(target) && canReadPinnedView
+      initialView &&
+      PathApi.isPath(target) &&
+      typeof initialView.read === 'function'
         ? (() => {
-            const node = pinnedView.read(
+            const node = initialView.read(
               (state) => state.nodes.get(target)?.[0]
             );
 
-            return node ? DOMEditor.resolveDOMNode(pinnedView, node) : null;
+            return node ? DOMEditor.resolveDOMNode(initialView, node) : null;
           })()
         : null;
     const initialScrollMarginTop = initialPathElement
       ? readScrollMarginTop(initialPathElement)
       : 0;
-    const resolveCulledPaths = (): Path[] => {
+    const resolveCulledPaths = (view: EditorType): Path[] => {
       if (PathApi.isPath(target)) return [target];
       if (PointApi.isPoint(target)) return [target.path];
       if (!RangeApi.isRange(target)) return [];
@@ -2456,20 +2551,21 @@ const DOMEditorImpl: DOMEditorInterface = {
       const startPath = RangeApi.start(target).path;
       const endPath = RangeApi.end(target).path;
 
-      if (PathApi.equals(startPath, endPath) || !canReadPinnedView) {
+      if (
+        PathApi.equals(startPath, endPath) ||
+        typeof view.read !== 'function'
+      ) {
         return [startPath];
       }
 
       const missing: Path[] = [];
-      const startNode = pinnedView.read(
-        (state) => state.nodes.get(startPath)?.[0]
-      );
-      const endNode = pinnedView.read((state) => state.nodes.get(endPath)?.[0]);
+      const startNode = view.read((state) => state.nodes.get(startPath)?.[0]);
+      const endNode = view.read((state) => state.nodes.get(endPath)?.[0]);
 
-      if (!startNode || !DOMEditor.resolveDOMNode(pinnedView, startNode)) {
+      if (!startNode || !DOMEditor.resolveDOMNode(view, startNode)) {
         missing.push(startPath);
       }
-      if (!endNode || !DOMEditor.resolveDOMNode(pinnedView, endNode)) {
+      if (!endNode || !DOMEditor.resolveDOMNode(view, endNode)) {
         missing.push(endPath);
       }
 
@@ -2478,9 +2574,13 @@ const DOMEditorImpl: DOMEditorInterface = {
 
     const alwaysMode =
       typeof options === 'object' && options?.scrollMode === 'always';
-    const schedulePhase = (label: string, callback: () => void) =>
+    const schedulePhase = (
+      schedulerView: EditorType,
+      label: string,
+      callback: () => void
+    ) =>
       scheduleEditorDOMPhase(
-        pinnedView,
+        schedulerView,
         alwaysMode ? 'post-selection' : 'dom-write',
         label,
         callback,
@@ -2491,14 +2591,15 @@ const DOMEditorImpl: DOMEditorInterface = {
       );
 
     let cancelled = false;
-    let retried = false;
+    let retriedTarget = false;
+    const revealedAncestors = new Set<string>();
     let cancelRetry: (() => void) | undefined;
 
-    const revealCulledTarget = (paths: readonly Path[]) => {
+    const revealCulledOnView = (view: EditorType, paths: readonly Path[]) => {
       if (paths.length === 0) return false;
       const editable =
-        EDITOR_TO_ELEMENT.get(pinnedView) ??
-        (canReadPinnedView ? DOMEditorImpl.editable(pinnedView) : null);
+        EDITOR_TO_ELEMENT.get(view) ??
+        (typeof view.read === 'function' ? DOMEditorImpl.editable(view) : null);
       const reveal = editable
         ? ELEMENT_TO_ROOT_REVEAL.get(editable)?.revealCulled
         : undefined;
@@ -2515,33 +2616,66 @@ const DOMEditorImpl: DOMEditorInterface = {
       return revealed;
     };
 
-    const retryAfterReveal = () => {
-      if (isStale() || retried) return;
-      const paths = resolveCulledPaths();
-      if (!revealCulledTarget(paths) || isStale()) return;
-      retried = true;
-      cancelRetry = schedulePhase('dom-editor-scroll-into-view-retry', run);
+    const retryAfterTargetReveal = (view: EditorType) => {
+      if (isStale() || retriedTarget) return;
+      const paths = resolveCulledPaths(view);
+
+      if (!revealCulledOnView(view, paths) || isStale()) return;
+      retriedTarget = true;
+      cancelRetry = schedulePhase(
+        view,
+        'dom-editor-scroll-into-view-retry',
+        run
+      );
     };
 
     const run = () => {
       if (isStale()) return;
 
+      const activeView = resolveTargetView();
+
+      if (!activeView) {
+        if (!targetRoot) return;
+        const step = findMountedAncestorRevealStep(editor, targetRoot);
+
+        if (!step) return;
+        const stepKey = `${step.ownerRoot}:${step.ownerPath.join('.')}`;
+
+        if (revealedAncestors.has(stepKey)) return;
+        revealedAncestors.add(stepKey);
+        if (
+          !revealCulledOnView(step.ownerView, [step.ownerPath]) ||
+          isStale()
+        ) {
+          return;
+        }
+        cancelRetry = schedulePhase(
+          step.ownerView,
+          'dom-editor-scroll-into-view-ancestor-retry',
+          run
+        );
+
+        return;
+      }
+
+      const canReadActiveView = typeof activeView.read === 'function';
+
       if (PathApi.isPath(target)) {
-        const node = canReadPinnedView
-          ? pinnedView.read((state) => state.nodes.get(target)?.[0])
+        const node = canReadActiveView
+          ? activeView.read((state) => state.nodes.get(target)?.[0])
           : undefined;
         const element = node
-          ? DOMEditor.resolveDOMNode(pinnedView, node)
+          ? DOMEditor.resolveDOMNode(activeView, node)
           : null;
 
         if (!element) {
-          retryAfterReveal();
+          retryAfterTargetReveal(activeView);
 
           return;
         }
 
         revealInEditableRoot(element, target);
-        const scrollElement = getRegisteredScrollElement(pinnedView);
+        const scrollElement = getRegisteredScrollElement(activeView);
         const requestedScrollMarginTop = initialPathElement
           ? initialScrollMarginTop
           : readScrollMarginTop(element);
@@ -2582,16 +2716,16 @@ const DOMEditorImpl: DOMEditorInterface = {
       }
 
       const domRange = PointApi.isPoint(target)
-        ? DOMEditor.resolveDOMRange(pinnedView, {
+        ? DOMEditor.resolveDOMRange(activeView, {
             anchor: target,
             focus: target,
           })
         : RangeApi.isRange(target)
-          ? DOMEditor.resolveDOMRange(pinnedView, target)
+          ? DOMEditor.resolveDOMRange(activeView, target)
           : target;
 
       if (!domRange) {
-        retryAfterReveal();
+        retryAfterTargetReveal(activeView);
 
         return;
       }
@@ -2649,7 +2783,11 @@ const DOMEditorImpl: DOMEditorInterface = {
     };
 
     if (!alwaysMode) {
-      const cancelInitial = schedulePhase('dom-editor-scroll-into-view', run);
+      const cancelInitial = schedulePhase(
+        initialSchedulerView,
+        'dom-editor-scroll-into-view',
+        run
+      );
 
       return () => {
         cancelled = true;
@@ -2660,10 +2798,15 @@ const DOMEditorImpl: DOMEditorInterface = {
 
     let cancelScroll: (() => void) | undefined;
     const cancelSettle = schedulePhase(
+      initialSchedulerView,
       'dom-editor-scroll-into-view-settle',
       () => {
         if (cancelled) return;
-        cancelScroll = schedulePhase('dom-editor-scroll-into-view', run);
+        cancelScroll = schedulePhase(
+          initialSchedulerView,
+          'dom-editor-scroll-into-view',
+          run
+        );
       }
     );
 
