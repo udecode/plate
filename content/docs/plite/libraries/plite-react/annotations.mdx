@@ -1,46 +1,22 @@
 ---
 title: "Annotations"
-description: "Attach durable range identities to editor text and read them from React UI."
+description: "Attach durable range identities to editor text with anchors and read them from React UI."
 ---
 
 Annotations attach durable ranges to editor text and publish them to sidebars
 and other React UI.
 Use [Decorations, annotations, and widgets](../../concepts/18-decorations-annotations-widgets) for the
-broader choice between decorations, annotation stores, and projected text
+broader choice between decorations, retained anchors, and projected text
 rendering.
 
 ## When to use annotations
 
-Use annotations when a range has identity beyond a single render pass: review
-comments, issue markers, tracked external diagnostics, resolved threads, or
-other application-owned ranges.
+Use anchored annotations when a range has identity beyond a single render pass:
+review comments, issue markers, tracked external diagnostics, resolved threads,
+or other application-owned ranges.
 
 Use decorations for transient paint such as search matches. Render app-owned UI
 for nodes, selections, or annotations.
-
-## Annotation shape
-
-```ts
-type AnnotationAnchor = {
-  resolve(): Range | null;
-};
-
-type Annotation<TData> = {
-  anchor: AnnotationAnchor;
-  data?: TData;
-  id: string;
-};
-```
-
-`anchor` resolves the current range. A local `Anchor<Range>` satisfies this contract.
-Adapters can use the same contract for service-owned anchors, remote positions,
-or document-embedded ids.
-
-`data` is application metadata. `useAnnotation` and `useAnnotations` return
-it.
-
-Inline paint is a separate `DecorationSource`. The feature that owns the
-visual states converts resolved annotations into keyed decoration attributes.
 
 ## Local anchors
 
@@ -54,14 +30,6 @@ const anchor = editor.anchor(
   },
   { association: "inward", deletion: "nearest" }
 );
-
-const annotationStore = useAnnotationStore(editor, [
-  {
-    anchor,
-    data: { label: "Comment 1" },
-    id: "comment-1",
-  },
-]);
 ```
 
 Use `nearest` for durable annotations. A range whose text is deleted still
@@ -69,37 +37,29 @@ spans the place where the text was.
 [`editor.read.ranges.isEmpty`](../../api/locations/range#editor-reads) tells whether it
 still covers anything, and saved undo and redo restore its exact endpoints.
 
-When annotations come from React state, pass the current array. A new array
-identity refreshes the store automatically.
+Resolve each anchor against the exact view reading it (`anchor.resolve(editor)`).
+Subscribe to `editor.subscribeCommit` and check `commit.changed.anchors()` to
+update your feature store and refresh only the affected text nodes on its
+`DecorationSource`.
 
 ```tsx
-const annotations = comments.map((comment) => ({
-  anchor: comment.anchor,
-  data: comment,
-  id: comment.id,
-}));
-
-const annotationStore = useAnnotationStore(editor, annotations);
+const commentDecorations: DecorationSource<typeof editor> = {
+  id: "comments",
+  observe: ({ refresh }) =>
+    commentsStore.subscribe(({ nodeKeys }) => refresh({ nodeKeys })),
+  read: ({ editor: view, entry: [node, path] }) =>
+    commentsStore.readDecorations(view, node, path),
+};
 ```
 
-Pass the annotation store explicitly to each reader. Another subtree can use a
-different store. `CommentThread` below is an app-owned component.
+Inline paint is a separate `DecorationSource`. The feature that owns the
+visual states converts resolved ranges into keyed decoration attributes.
 
 ```tsx
 <EditorRoot decorations={[commentDecorations]} editor={editor}>
   <Editable />
   <CommentsSidebar />
 </EditorRoot>;
-
-function CommentsSidebar() {
-  const snapshot = useAnnotations(annotationStore);
-
-  return snapshot.allIds.map((id) => {
-    const comment = snapshot.byId.get(id);
-
-    return <CommentThread key={id} comment={comment} />;
-  });
-}
 ```
 
 Release anchors when the app removes the annotation.
@@ -114,37 +74,6 @@ Comment bodies, permissions, resolved state, and audit events belong to the app
 or sync service. The Plite document value owns document content.
 Use [Document Meta](../../concepts/14-document-state) for document metadata
 and settings that should persist with the document.
-
-`useCommentChannel` is an app-owned hook that subscribes to the comment service.
-
-```tsx
-const comments = useCommentChannel();
-
-const annotations = comments.map((comment) => ({
-  anchor: comment.anchor,
-  data: {
-    body: comment.body,
-    label: comment.label,
-    status: comment.status,
-  },
-  id: comment.id,
-}));
-```
-
-When an external store knows which comments changed, refresh those ids.
-
-```tsx
-annotationStore.refresh({
-  ids: [threadId],
-  reason: "annotation",
-});
-```
-
-Refresh semantics:
-
-- omit `ids` for a full refresh
-- pass an empty array for a no-op
-- pass ids to re-resolve only those annotations
 
 ## Comment channels
 
@@ -162,12 +91,10 @@ commentsMap.set(threadId, {
   body,
   status: "open",
 });
-
-annotationStore.refresh({ ids: [threadId], reason: "annotation" });
 ```
 
 A read-only reviewer can select text, create a comment anchor, and update a
-thread without document-write permission. The adapter resolves the anchor
+thread without document-write permission. The feature resolves the anchor
 against the current document snapshot for rendering.
 
 The `comment-mode` example renders this as two panes:
@@ -182,9 +109,8 @@ document.
 
 ## Widgets
 
-Render app-owned UI from resolved annotation ranges. Use
-`useAnnotation(annotationStore, id)` for one annotation and
-`useAnnotations(annotationStore)` for the complete snapshot.
+Render app-owned UI from resolved anchor ranges in the target view (for example,
+via `useEditorSelector((view) => anchor.resolve(view))`).
 Use `useSelectionGeometry({ editableRef })` for selection-positioned UI in one
 exact Editable.
 
@@ -208,7 +134,6 @@ commentChannel.set(threadId, {
 ```
 
 The adapter owns mapping, drift recovery, deletion policy, and permissions.
-Plite React resolves the range once the adapter provides an anchor.
 
 ## Document-embedded ids
 
@@ -221,11 +146,7 @@ thread still belongs to the app or sync service.
 
 ## Performance rules
 
-Keep annotation rows stable when their range and app data do not change.
-
-Use `refresh({ ids })` for external comment updates when the changed ids are
-known. Fall back to `refresh()` when the external source cannot provide ids.
-
-Targeted subscribers wake only when their resolved range or data changes.
-Decoration subscribers are independent and wake only when merged text
-attributes change.
+Check `commit.changed.anchors()` in `editor.subscribeCommit` so edits re-resolve
+only anchors that moved. Call `refresh({ nodeKeys })` with exact affected node
+keys when external state changes. Decoration subscribers wake only when merged
+text attributes change.

@@ -2,15 +2,6 @@
 
 export * from '../core';
 export type {
-  Annotation,
-  AnnotationAnchor,
-  AnnotationChange,
-  AnnotationRefreshOptions,
-  AnnotationSnapshot,
-  AnnotationStore,
-  AnnotationStoreOptions,
-  OwnedAnnotationStore,
-  ResolvedAnnotation,
   EditableHandlerResult,
   EditableHistoryReplayEvent,
   EditableHistoryReplayResult,
@@ -50,7 +41,6 @@ export type {
   EditorSelectorDependencies,
   EditorSelectorDependency,
   EditorViewStateDependency,
-  UseAnnotationStoreOptions,
   ContentRootController,
   UseContentRootOptions,
   UseEditorHistoryOptions,
@@ -68,11 +58,6 @@ export type {
   ViewportRect,
   UseEditableClipOptions,
   UseSelectionGeometryOptions,
-  ViewSourceError,
-  ViewSourceErrorSink,
-  ViewSourceOptions,
-  ViewSourcePhase,
-  ViewSourceStatus,
 } from './plite-react';
 export {
   useEditorRootAreas,
@@ -81,9 +66,6 @@ export {
   useEditorScrollElementRef,
   useElementPath,
   useElementSelected,
-  useAnnotationStore,
-  useAnnotation,
-  useAnnotations,
   useChildRoot,
   useContentRoot,
   useDropIndicator,

@@ -1,19 +1,23 @@
-import type { Anchor, createEditor, Path, Point, Range, Value } from 'plitejs';
-import type { AnnotationStore } from 'plitejs/annotations';
+import {
+  type Anchor,
+  type createEditor,
+  type Path,
+  type Point,
+  RangeApi,
+  type Range,
+  type Value,
+} from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   EditorRoot,
-  useAnnotationStore,
-  useAnnotations,
   useCreateEditor,
   useEditorContext,
   useEditorSelector,
 } from 'plitejs/react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
-import { failInvariant } from '../../../../../lib/failInvariant';
 import { Instruction } from './components';
 
 const createChildren = (left = 'alpha', right = 'beta'): Value => [
@@ -165,41 +169,32 @@ const toBlockOffset = (row: BlockRowDescriptor, point: Point) => {
   return leadingLength + point.offset;
 };
 
+type ResolvedAnchorEntry = Readonly<{
+  data: AnnotationData;
+  id: string;
+  range: Range | null;
+}>;
+
 const ProjectionRow = ({
+  entry,
   row,
   slot,
-  store,
 }: {
+  entry: ResolvedAnchorEntry | null;
   row: BlockRowDescriptor;
   slot: 'left' | 'right';
-  store: AnnotationStore<AnnotationData>;
 }) => {
-  const snapshot = useAnnotations(store);
   const projectionText =
-    snapshot.allIds.length === 0
-      ? 'none'
-      : snapshot.allIds
-          .flatMap((id) => {
-            const annotation = snapshot.byId.get(id);
-
-            if (
-              !annotation?.range ||
-              annotation.range.anchor.path[0] !== row.path[0] ||
-              annotation.range.focus.path[0] !== row.path[0]
-            ) {
-              return [];
-            }
-
-            return [
-              `${id}:${toBlockOffset(
-                row,
-                annotation.range.anchor
-              )}-${toBlockOffset(row, annotation.range.focus)}:${
-                annotation.data?.kind ?? 'unknown'
-              }:${annotation.data?.tone ?? 'none'}`,
-            ];
-          })
-          .join('|') || 'none';
+    entry?.range &&
+    entry.range.anchor.path[0] === row.path[0] &&
+    entry.range.focus.path[0] === row.path[0]
+      ? `${entry.id}:${toBlockOffset(
+          row,
+          entry.range.anchor
+        )}-${toBlockOffset(row, entry.range.focus)}:${entry.data.kind}:${
+          entry.data.tone ?? 'none'
+        }`
+      : 'none';
 
   return (
     <div className="editor-persistent-annotation-anchors-row">
@@ -259,11 +254,10 @@ const formatAnnotationRange = (
     : 'none';
 
 const AnnotationSidebar = ({
-  store,
+  entry,
 }: {
-  store: AnnotationStore<AnnotationData>;
+  entry: ResolvedAnchorEntry | null;
 }) => {
-  const snapshot = useAnnotations(store);
   const rows = useEditorSelector((editor) =>
     getBlockRows(editor.read.children())
   );
@@ -275,19 +269,12 @@ const AnnotationSidebar = ({
         className="editor-persistent-annotation-anchors-code"
         id="annotation-sidebar"
       >
-        {snapshot.allIds.length === 0
-          ? 'none'
-          : snapshot.allIds
-              .map((id) => {
-                const annotation =
-                  snapshot.byId.get(id) ??
-                  failInvariant('Expected value to be defined');
-
-                return `${annotation.id}:${
-                  annotation.data?.label ?? 'none'
-                }:${formatAnnotationRange(annotation.range, rows)}`;
-              })
-              .join('|')}
+        {entry
+          ? `${entry.id}:${entry.data.label}:${formatAnnotationRange(
+              entry.range,
+              rows
+            )}`
+          : 'none'}
       </span>
     </div>
   );
@@ -296,15 +283,15 @@ const AnnotationSidebar = ({
 const AnchoredProjectionContent = ({
   annotation,
   editor,
+  entry,
   onAddAnnotation,
   onClearAnnotation,
-  store,
 }: {
   annotation: Anchor<Range> | null;
   editor: ReturnType<typeof createEditor>;
+  entry: ResolvedAnchorEntry | null;
   onAddAnnotation: (annotation: Anchor<Range>) => void;
   onClearAnnotation: () => void;
-  store: AnnotationStore<AnnotationData>;
 }) => {
   const alphaRow = useEditorSelector(
     (innerEditor) =>
@@ -440,12 +427,12 @@ const AnchoredProjectionContent = ({
 
       <Outline />
       {alphaRow ? (
-        <ProjectionRow row={alphaRow} slot="left" store={store} />
+        <ProjectionRow entry={entry} row={alphaRow} slot="left" />
       ) : null}
       {betaRow ? (
-        <ProjectionRow row={betaRow} slot="right" store={store} />
+        <ProjectionRow entry={entry} row={betaRow} slot="right" />
       ) : null}
-      <AnnotationSidebar store={store} />
+      <AnnotationSidebar entry={entry} />
     </div>
   );
 };
@@ -460,32 +447,31 @@ const MountedPersistentAnnotationAnchors = ({
   onClearAnnotation: () => void;
 }) => {
   const editor = useEditorContext();
-  const annotations = useMemo(
-    () =>
-      annotation
-        ? [
-            {
-              anchor: annotation,
-              data: {
-                kind: 'annotation',
-                label: 'Comment anchor',
-                tone: 'persistent',
-              },
-              id: 'comment-anchor',
-            },
-          ]
-        : [],
-    [annotation]
+  const range = useEditorSelector(
+    (currentEditor) => annotation?.resolve(currentEditor) ?? null,
+    {
+      equalityFn: (left, right) => RangeApi.equals(left, right),
+    }
   );
-  const annotationStore = useAnnotationStore(editor, annotations);
+  const entry: ResolvedAnchorEntry | null = annotation
+    ? {
+        data: {
+          kind: 'annotation',
+          label: 'Comment anchor',
+          tone: 'persistent',
+        },
+        id: 'comment-anchor',
+        range,
+      }
+    : null;
 
   return (
     <AnchoredProjectionContent
       annotation={annotation}
       editor={editor}
+      entry={entry}
       onAddAnnotation={onAddAnnotation}
       onClearAnnotation={onClearAnnotation}
-      store={annotationStore}
     />
   );
 };

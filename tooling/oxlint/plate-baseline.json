@@ -303,9 +303,6 @@
     "packages/plitejs/src/dom/plugin/dom-geometry.ts": [
       "export const getPliteStringPlacementDOMPoint = getStringPlacementDOMPoint;"
     ],
-    "packages/plitejs/src/internal/view/mapped-view-store.ts": [
-      "export const areMappedViewDataEqual = areEditorJsonValuesEqual;"
-    ],
     "packages/plitejs/src/react/components/editable-text-blocks.tsx": [
       "export type EditableDOMCoverageBoundaryMaterializePayload ="
     ],

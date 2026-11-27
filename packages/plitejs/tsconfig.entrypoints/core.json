@@ -31,10 +31,6 @@
     "../src/**/__tests__/**"
   ],
   "extends": "../tsconfig.json",
-  "include": [
-    "../src/annotations/**/*",
-    "../src/internal/index.*",
-    "../src/**/*"
-  ],
+  "include": ["../src/internal/index.*", "../src/**/*"],
   "references": []
 }

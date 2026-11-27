@@ -12,7 +12,7 @@ so a paint update does not force an editor-wide React render.
 | Need | API | Owner |
 | --- | --- | --- |
 | Paint a transient range | `DecorationSource` and `<EditorRoot decorations>` | `plitejs/react` |
-| Track a durable range id | `useAnnotationStore`, `useAnnotation`, and `useAnnotations` | `plitejs/react` |
+| Track a durable range id | `editor.anchor`, `commit.changed.anchors()`, and a feature-owned view index | `plitejs` and feature |
 | Place UI against a node, selection, or annotation | App UI; `useSelectionGeometry` for selection geometry | App and `plitejs/react` |
 | Add text paint from a Plate feature | `plugin.decorate` | `platejs/react` |
 
@@ -99,37 +99,26 @@ do not rerun decoration sources.
 
 ## Annotations
 
-Annotations attach stable ids and app data to anchors. The store resolves each
-anchor against editor commits and exposes targeted subscriptions for sidebars,
-widgets, and other UI.
+Annotations attach stable ids and app data to retained anchors (`editor.anchor`).
+Features subscribe to `editor.subscribeCommit`, inspect `commit.changed.anchors()`,
+and resolve each anchor in its target view (`anchor.resolve(view)`).
 
 ```tsx
-import { useAnnotationStore } from "plitejs/react";
+const anchor = editor.anchor(range, {
+  association: "inward",
+  deletion: "nearest",
+});
 
-const annotations = comments.map((comment) => ({
-  anchor: comment.anchor,
-  data: comment,
-  id: comment.id,
-}));
-
-const annotationStore = useAnnotationStore(editor, annotations);
-
-return (
-  <EditorRoot decorations={[commentDecorations]} editor={editor}>
-    <Editable />
-    <CommentsSidebar store={annotationStore} />
-  </EditorRoot>
-);
+const stop = editor.subscribeCommit((commit) => {
+  if (commit.changed.anchors().includes(anchor)) {
+    // Re-resolve anchor.resolve(editor) and refresh affected node keys.
+  }
+});
 ```
 
-Pass the annotation store explicitly to reader hooks and app components.
-Inline annotation paint is a separate decoration source owned by the
+Inline annotation paint is a separate `DecorationSource` owned by the
 feature that knows its visual states. This keeps comment data, text paint, and
 editor rendering independently replaceable.
-
-Use `annotationStore.refresh({ ids })` when an external channel names changed
-annotations. `useAnnotation(annotationStore, id)` subscribes to one id;
-`useAnnotations(annotationStore)` is the deliberate aggregate reader.
 
 ## Widgets
 
@@ -145,9 +134,9 @@ const editableRef = useRef<HTMLDivElement>(null);
 const geometry = useSelectionGeometry({ editableRef });
 ```
 
-For annotation-anchored UI, read the resolved range with
-`useAnnotation(annotationStore, id)` and let app UI measure and position the
-widget in the intended mounted view.
+For annotation-anchored UI, resolve the anchor in the target view (for example,
+via `useEditorSelector((view) => anchor.resolve(view))`) and let app UI measure
+and position the widget in the intended mounted view.
 
 ## Performance rules
 
@@ -155,10 +144,10 @@ widget in the intended mounted view.
 | --- | --- |
 | Keep source objects stable | A changed `read` function recompiles that source. |
 | Refresh exact node keys | Unaffected inputs are not reread. |
-| Use targeted annotation hooks | One changed item wakes only its consumers. |
+| Filter with `commit.changed.anchors()` | Edits re-resolve only anchors that moved. |
 | Keep decoration attributes small | They are compared and rendered on text segments. |
 | Prove visible behavior in a browser | Selection, focus, and follow-up typing are DOM behavior. |
 
 Use [Improving Performance](../walkthroughs/09-performance) for large-document
-measurement and [Annotations](../libraries/plite-react/annotations) for the
-annotation store API.
+measurement and [Annotations](../libraries/plite-react/annotations) for anchor
+patterns.

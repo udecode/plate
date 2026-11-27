@@ -1,6 +1,5 @@
 export const PLITE_TO_PLATE_MODULE_MAP: Readonly<Record<string, string>> = {
   plitejs: 'platejs',
-  'plitejs/annotations': 'platejs/react',
   'plitejs/authored': 'platejs/authored',
   'plitejs/dom': 'platejs/dom',
   'plitejs/history': 'platejs/history',
@@ -76,21 +75,6 @@ export const PLITE_TO_PLATE_SYMBOL_RENAMES: Readonly<
     targetName: 'VirtualizedEditorContentProps',
   },
 };
-
-/**
- * Plite `plitejs/annotations` types moved directly onto `platejs/react`.
- */
-export const PLITE_ANNOTATION_TYPES = new Set([
-  'Annotation',
-  'AnnotationAnchor',
-  'AnnotationChange',
-  'AnnotationRefreshOptions',
-  'AnnotationSnapshot',
-  'AnnotationStore',
-  'AnnotationStoreOptions',
-  'OwnedAnnotationStore',
-  'ResolvedAnnotation',
-]);
 
 /**
  * Verified 1:1 `DOMEditor.<method>(editor, ...args)` -> `editor.api.dom.<method>(...args)` allowlist.
@@ -176,8 +160,6 @@ export const AST_REWRITTEN_SYMBOLS: Readonly<
  * Key format: `${sourceModule}#${importedName}`.
  */
 export const PLITE_ONLY_DIAGNOSTICS: Readonly<Record<string, string>> = {
-  'plitejs/annotations#createAnnotationStore':
-    'Use useAnnotationStore from platejs/react inside components or keep plitejs/annotations for headless annotation stores.',
   'plitejs/authored#AuthoredPlugin':
     'AuthoredPlugin in platejs/authored is a runtime plugin value; use typeof AuthoredPlugin for its type.',
   'plitejs/authored#AuthoredTestOptions':
@@ -381,12 +363,55 @@ export const LEGACY_PLITE_SHELL_EXPORTS = new Set([
   'EditorText',
 ]);
 
+/**
+ * Removed `plitejs/react` annotation and unused `ViewSource*` exports that no longer exist in `plitejs/react` or `platejs/react`.
+ */
+export const REMOVED_PLITE_REACT_DIAGNOSTICS: Readonly<Record<string, string>> =
+  {
+    Annotation:
+      'Annotation was removed with plitejs/annotations; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+    AnnotationAnchor:
+      'AnnotationAnchor was removed with plitejs/annotations; use Anchor<Range> directly.',
+    AnnotationChange:
+      'AnnotationChange was removed with plitejs/annotations; use CommentAttachmentChange from platejs/comments for CommentsPlugin.api.subscribeAttachments, or define a feature-local change type.',
+    AnnotationRefreshOptions:
+      'AnnotationRefreshOptions was removed with plitejs/annotations; use DecorationRefresh on DecorationSource.',
+    AnnotationSnapshot:
+      'AnnotationSnapshot was removed with plitejs/annotations; manage feature-local snapshots with editor.anchor and commit.changed.anchors().',
+    AnnotationStore:
+      'AnnotationStore was removed with plitejs/annotations; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+    AnnotationStoreOptions:
+      'AnnotationStoreOptions was removed with plitejs/annotations; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+    OwnedAnnotationStore:
+      'OwnedAnnotationStore was removed with plitejs/annotations; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+    ResolvedAnnotation:
+      'ResolvedAnnotation was removed with plitejs/annotations; resolve Anchor<Range> handles directly against the view.',
+    UseAnnotationStoreOptions:
+      'UseAnnotationStoreOptions was removed with useAnnotationStore; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+    ViewSourceError:
+      'ViewSourceError was removed from plitejs/react and platejs/react because DecorationSource has no public error callback.',
+    ViewSourceErrorSink:
+      'ViewSourceErrorSink was removed from plitejs/react and platejs/react because DecorationSource has no public error callback.',
+    ViewSourceOptions:
+      'ViewSourceOptions was removed from plitejs/react and platejs/react as unused.',
+    ViewSourcePhase:
+      'ViewSourcePhase was removed from plitejs/react and platejs/react as unused.',
+    ViewSourceStatus:
+      'ViewSourceStatus was removed from plitejs/react and platejs/react as unused.',
+    useAnnotation:
+      'useAnnotation was removed from plitejs/react and platejs/react; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+    useAnnotations:
+      'useAnnotations was removed from plitejs/react and platejs/react; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+    useAnnotationStore:
+      'useAnnotationStore was removed from plitejs/react and platejs/react; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.',
+  };
+
 export const PLITE_TO_PLATE_CLASSIFICATION = Object.freeze({
-  annotationTypes: PLITE_ANNOTATION_TYPES,
   astRewrittenSymbols: AST_REWRITTEN_SYMBOLS,
   legacyShellExports: LEGACY_PLITE_SHELL_EXPORTS,
   moduleMap: PLITE_TO_PLATE_MODULE_MAP,
   pliteOnlyDiagnostics: PLITE_ONLY_DIAGNOSTICS,
+  removedReactDiagnostics: REMOVED_PLITE_REACT_DIAGNOSTICS,
   safeDomClipboardMethods: SAFE_DOM_EDITOR_CLIPBOARD_METHODS,
   safeDomEditorMethods: SAFE_DOM_EDITOR_METHODS,
   symbolRenames: PLITE_TO_PLATE_SYMBOL_RENAMES,

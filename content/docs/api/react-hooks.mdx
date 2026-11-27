@@ -1,18 +1,17 @@
 ---
 title: "Plate React Hooks"
-description: "Read editor state, root state, annotations, selection geometry, and DOM-aware facts from React."
+description: "Read editor state, root state, selection geometry, and DOM-aware facts from React."
 ---
 
 Import these hooks from `platejs/react`. Use them inside an `EditorRoot` provider when React UI needs editor facts. Prefer the
 narrowest hook that matches the UI: editor-wide hooks for toolbars, element
-hooks for rendered nodes, and targeted hooks for annotations and geometry.
+hooks for rendered nodes, and geometry hooks for anchored floating UI.
 
 ## On this page
 
 - [Editor Hooks](/docs/api/react-hooks#editor-hooks)
 - [Runtime And Root Hooks](/docs/api/react-hooks#runtime-and-root-hooks)
 - [Element And Node Hooks](/docs/api/react-hooks#element-and-node-hooks)
-- [Annotation Hooks](/docs/api/react-hooks#annotation-hooks)
 - [Geometry Hooks](/docs/api/react-hooks#geometry-hooks)
 - [Selector Results](/docs/api/react-hooks#selector-results)
 
@@ -517,44 +516,6 @@ const depth = usePath((path) => path.length);
 Without a selector, the hook compares paths with `PathApi.equals`. With one,
 it compares results as [Selector results](/docs/api/react-hooks#selector-results)
 describes, and `options.equalityFn` replaces that comparison.
-
-## Annotation hooks
-
-Use annotation hooks for durable anchored ranges such as comments, diagnostics,
-and external review markers.
-
-#### `useAnnotationStore<TData>(editor, annotations, options?): AnnotationStore<TData>`
-
-Create an annotation store for durable anchored ranges such as comments,
-diagnostics, or external review markers. Call it under `EditorRoot` with the
-mounted view's editor from `useEditor()`.
-
-Pass the current annotation array directly. A new array identity refreshes the
-store automatically. Use `revision` only for an external mutable source that
-changes without producing a new array.
-
-```tsx
-const annotations = comments.map((comment) => ({
-  anchor: comment.anchor,
-  data: comment,
-  id: comment.id,
-}));
-
-const view = useEditor();
-const annotationStore = useAnnotationStore(view, annotations);
-
-const externalStore = useAnnotationStore(view, mutableAnnotations, {
-  revision: mutableAnnotationsRevision,
-});
-```
-
-#### `useAnnotations<TData>(store): AnnotationSnapshot<TData>`
-
-Read the current annotation snapshot from an explicit store.
-
-#### `useAnnotation<TData>(store, id): ResolvedAnnotation<TData> | null`
-
-Read one annotation by id.
 
 ## Geometry hooks
 

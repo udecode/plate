@@ -92,7 +92,6 @@
       "platejs/yjs": ["../platejs/src/yjs/index.tsx"],
       "platejs/yjs/react": ["../platejs/src/yjs/react/index.tsx"],
       "plitejs": ["./src/index.ts"],
-      "plitejs/annotations": ["./src/annotations/index.ts"],
       "plitejs/authored": ["./src/authored/index.ts"],
       "plitejs/diff": ["./src/diff/index.ts"],
       "plitejs/dom": ["./src/dom/index.ts"],

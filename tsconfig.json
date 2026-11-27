@@ -118,7 +118,6 @@
       "platejs/yjs": ["./packages/platejs/src/yjs/index.tsx"],
       "platejs/yjs/react": ["./packages/platejs/src/yjs/react/index.tsx"],
       "plitejs": ["./packages/plitejs/src/index.ts"],
-      "plitejs/annotations": ["./packages/plitejs/src/annotations/index.ts"],
       "plitejs/authored": ["./packages/plitejs/src/authored/index.ts"],
       "plitejs/diff": ["./packages/plitejs/src/diff/index.ts"],
       "plitejs/dom": ["./packages/plitejs/src/dom/index.ts"],

@@ -196,7 +196,7 @@ const publicFeatureEntrypoints = Object.fromEntries([
       directory(
         `features/${name}`,
         ['core', ...dependencies],
-        name === 'comments' ? ['plitejs/annotations'] : [],
+        [],
         name === 'combobox'
           ? {}
           : {
@@ -426,7 +426,7 @@ export const entrypointDags = {
         privateDirectory(
           'react',
           ['core', 'dom', 'history', 'static'],
-          ['plitejs/annotations', 'plitejs/react'],
+          ['plitejs/react'],
           { peerDependencies: ['react', 'react-dom'] }
         )
       ),
@@ -543,7 +543,6 @@ export const entrypointDags = {
   },
   plitejs: {
     entrypoints: {
-      annotations: headless(directory('annotations', ['root'])),
       authored: headless(directory('authored', ['root', 'diff'])),
       diff: headless(
         directory('diff', ['root'], [], {
@@ -565,7 +564,7 @@ export const entrypointDags = {
         })
       ),
       react: client(
-        directory('react', ['root', 'dom', 'annotations'], [], {
+        directory('react', ['root', 'dom'], [], {
           peerDependencies: ['react', 'react-dom'],
         })
       ),
@@ -601,7 +600,7 @@ export const entrypointDags = {
     sourceMarker: '/packages/plitejs/src/',
     taskPartitions: {
       authored: ['authored'],
-      core: ['annotations', 'internal', 'root'],
+      core: ['internal', 'root'],
       diff: ['diff'],
       dom: ['dom'],
       history: ['history'],

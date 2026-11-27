@@ -7,8 +7,6 @@ import {
   HistoryPlugin,
   nanoid,
   NodeApi,
-  PathApi,
-  PointApi,
   RangeApi,
   SelectionApi,
   TextApi,
@@ -17,34 +15,28 @@ import {
   type EditorDocumentRange,
   type EditorEffectHistoryReplayResult,
   type Location,
-  type NodeKey,
   type Range,
   type Value,
 } from '../../core';
 import {
   type AnchorValue,
-  type EditorCommit,
   type EditorUpdateTransaction,
   getAnchorRuntimeId,
-  getAuthoredViewCommit,
-  getViewCommitSource,
-  isDocumentView,
   notifyObservers,
   type ReadonlyAnchor,
   readDocumentRange,
-  readShownPreview,
   recordEditorHistoryEffect,
   restoreAnchor,
   runEditorObserver,
-  subscribeEditorViewState,
   withStoredAuthoredRead,
 } from '../../facade';
 import { readEditorAuthor } from '../../lib/editor/editorUser.internal';
 import {
-  createAnnotationStore,
-  type AnnotationAnchor,
-  type AnnotationChange,
-} from './plite-comments.internal';
+  type CommentAttachmentChange,
+  createCommentThreadIndex,
+} from './comment-thread-index.internal';
+
+export type { CommentAttachmentChange };
 
 export type CommentUser = Readonly<{
   id: string;
@@ -480,7 +472,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const unsettledDrafts = new Set<string>();
   let sourcesByRoot = new Map<
     Anchor<Range>['root'],
-    Array<{ id: string; anchor: AnnotationAnchor }>
+    Array<{ id: string; anchor: Anchor<Range> }>
   >();
   let anchorIds = new Map<ReadonlyAnchor<AnchorValue>, string>();
   let sourceOrder = new Map<string, number>();
@@ -493,46 +485,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     threadIds: Object.freeze([]),
     visibleThreadIds: Object.freeze([]),
   });
-  type ViewIndex = {
-    annotations: ReturnType<typeof createAnnotationStore>;
-    refreshers: Set<(input: { nodeKeys: readonly NodeKey[] }) => void>;
-    unsubscribe: () => void;
-  };
-  type ThreadEntry = {
-    keys: readonly NodeKey[];
-    range: Range | null;
-    root: Anchor<Range>['root'];
-  };
-  type ThreadIndex = {
-    byKey: Map<NodeKey, Set<string>>;
-    entries: Map<string, ThreadEntry>;
-    unplacedByRoot: Map<Anchor<Range>['root'], Set<string>>;
-  };
-  type StoredChange = {
-    keys: readonly NodeKey[];
-    roots: Set<Anchor<Range>['root']>;
-  };
-  type AttachmentViewState = {
-    listeners: Set<(change: AnnotationChange) => void>;
-    preview: 'accepted' | 'proposed' | undefined;
-    projected: Map<string, ThreadEntry> | null;
-    rootTops: Map<string, string | null> | null;
-    stopViewState: () => void;
-  };
-  const viewIndexes = new Map<Editor, ViewIndex>();
-  const attachmentViews = new Map<Editor, AttachmentViewState>();
-  const createThreadIndex = (): ThreadIndex => ({
-    byKey: new Map(),
-    entries: new Map(),
-    unplacedByRoot: new Map(),
-  });
-  const storedIndex = createThreadIndex();
-  let indexSchema: unknown;
-  let stopIndexCommit: (() => void) | null = null;
-  let passiveIndexes = new WeakMap<
-    Editor,
-    ReturnType<typeof createAnnotationStore>
-  >();
   let destroyed = false;
   const queues = new Map<string, Promise<void>>();
   const generations = new Map<string, number>();
@@ -579,7 +531,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   let loadIssues: readonly CommentsLoadIssue[] = [];
   let snapshotOrphanIds: readonly string[] = [];
   let announcedOrphanIds: readonly string[] = [];
-  let heldChanges: Array<() => void> | null = null;
   const deliver = <TArgs extends unknown[]>(
     listeners: ReadonlySet<(...args: TArgs) => void>,
     phase: 'commit-listener' | 'snapshot-listener',
@@ -595,557 +546,30 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   };
 
   const isPageView = (view: Editor) => view.read.view.root() === undefined;
-  const getAnnotations = (view: Editor) => {
-    const observed = viewIndexes.get(view);
-    if (observed) return observed.annotations;
-    let annotations = passiveIndexes.get(view);
-    if (!annotations) {
-      annotations = createAnnotationStore(
-        view,
-        () => sourcesByRoot.get(view.read.view.root()) ?? [],
-        { hideEmpty: true, id: 'comments' }
-      );
-      passiveIndexes.set(view, annotations);
-    }
-    return annotations;
-  };
-  const observeView = (view: Editor) => {
-    let index = viewIndexes.get(view);
-    if (!index) {
-      const annotations = getAnnotations(view);
-      passiveIndexes.delete(view);
-      const refreshers = new Set<
-        (input: { nodeKeys: readonly NodeKey[] }) => void
-      >();
-      const unsubscribe = annotations.subscribeChanges((change) =>
-        queueChange(() => {
-          if (change.reason !== 'editor' && change.nodeKeys.length) {
-            deliver(refreshers, 'commit-listener', {
-              nodeKeys: change.nodeKeys,
-            });
-          }
-        })
-      );
-      index = {
-        annotations,
-        refreshers,
-        unsubscribe,
-      };
-      viewIndexes.set(view, index);
-    }
-    return index;
-  };
-  const clearThreadIndex = (index: ThreadIndex) => {
-    index.byKey.clear();
-    index.entries.clear();
-    index.unplacedByRoot.clear();
-  };
-  const detachThreadEntry = (
-    index: ThreadIndex,
-    id: string,
-    entry: ThreadEntry
-  ) => {
-    for (const key of entry.keys) {
-      const ids = index.byKey.get(key);
-      ids?.delete(id);
-      if (ids?.size === 0) index.byKey.delete(key);
-    }
-    if (!entry.keys.length) {
-      const unplaced = index.unplacedByRoot.get(entry.root);
-      unplaced?.delete(id);
-      if (unplaced?.size === 0) index.unplacedByRoot.delete(entry.root);
-    }
-  };
-  const updateThreadEntry = (
-    index: ThreadIndex,
-    id: string,
-    reader: Editor,
-    resolve: (anchor: Anchor<Range>) => Range | null
-  ) => {
-    const previous = index.entries.get(id);
-    if (previous) detachThreadEntry(index, id, previous);
-    const anchor = anchors.get(id);
-    if (!anchor) {
-      index.entries.delete(id);
-      return {
-        changed: previous !== undefined,
-        keys: previous?.keys ?? [],
-        previousRoot: previous?.root,
-        root: undefined,
-      };
-    }
-    const resolved = resolve(anchor);
-    const nextRange = textIn(reader, resolved);
-    const nextKeys = resolved ? nodeKeysAt(reader, resolved) : [];
-    index.entries.set(id, {
-      keys: nextKeys,
-      range: nextRange,
-      root: anchor.root,
-    });
-    if (nextKeys.length) {
-      for (const key of nextKeys) {
-        const ids = index.byKey.get(key) ?? new Set<string>();
-        ids.add(id);
-        index.byKey.set(key, ids);
-      }
-    } else {
-      const unplaced =
-        index.unplacedByRoot.get(anchor.root) ?? new Set<string>();
-      unplaced.add(id);
-      index.unplacedByRoot.set(anchor.root, unplaced);
-    }
-    return {
-      changed: !previous || !RangeApi.equals(previous.range, nextRange),
-      keys: [...(previous?.keys ?? []), ...nextKeys],
-      previousRoot: previous?.root,
-      root: anchor.root,
-    };
-  };
-  const threadMatchesView = (
-    viewRoot: Anchor<Range>['root'],
-    root: Anchor<Range>['root']
-  ) => viewRoot === undefined || root === viewRoot;
-  const hasNamedThreads = () =>
-    sourcesByRoot.size > (sourcesByRoot.has(undefined) ? 1 : 0);
-  const readNamedRootTops = (view: Editor) => {
-    const tops = new Map<string, string | null>();
-    if (!hasNamedThreads()) return tops;
-    const byRoot = new Map(
-      view.read.roots().map((entry) => [entry.root, entry.top])
-    );
-    for (const root of sourcesByRoot.keys()) {
-      if (root === undefined) continue;
-      const top = byRoot.get(root);
-      tops.set(root, top ? `${top.join('.')}:${view.key(top)}` : null);
-    }
-    return tops;
-  };
-  const placementChangedIn = (commit: EditorCommit) =>
-    commit.changed.hasAny('structure') ||
-    commit.changed.hasAny('properties') ||
-    commit.changed.hasAny('replace');
-  const placementThreadIds = (commit: EditorCommit, force = false) => {
-    if (!hasNamedThreads() || (!force && !placementChangedIn(commit))) {
-      return [];
-    }
-    const ids: string[] = [];
-    for (const root of commit.changed.rootPlacements()) {
-      for (const { id } of sourcesByRoot.get(root) ?? []) ids.push(id);
-    }
-    return ids;
-  };
-  const hasPageAttachmentView = () => {
-    for (const view of attachmentViews.keys()) {
-      if (!isDocumentView(view) && view.read.view.root() === undefined) {
-        return true;
-      }
-    }
-    return false;
-  };
-  const updateProjectedEntry = (
-    projected: Map<string, ThreadEntry>,
-    id: string,
-    view: Editor
-  ) => {
-    const previous = projected.get(id);
-    const anchor = anchors.get(id);
-    if (!anchor || !threadMatchesView(view.read.view.root(), anchor.root)) {
-      projected.delete(id);
-      return {
-        changed: previous !== undefined,
-        keys: previous?.keys ?? [],
-      };
-    }
-    const resolved = rangeIn(view, anchor);
-    const nextRange = textIn(view, resolved);
-    const nextKeys = resolved ? nodeKeysAt(view, resolved) : [];
-    projected.set(id, {
-      keys: nextKeys,
-      range: nextRange,
-      root: anchor.root,
-    });
-    return {
-      changed: !previous || !RangeApi.equals(previous.range, nextRange),
-      keys: [...(previous?.keys ?? []), ...nextKeys],
-    };
-  };
-  const populateProjectedIndex = (
-    view: Editor,
-    projected: Map<string, ThreadEntry>
-  ) => {
-    projected.clear();
-    const viewRoot = view.read.view.root();
-    anchors.forEach((anchor, id) => {
-      if (!threadMatchesView(viewRoot, anchor.root)) return;
-      const resolved = rangeIn(view, anchor);
-      projected.set(id, {
-        keys: resolved ? nodeKeysAt(view, resolved) : [],
-        range: textIn(view, resolved),
-        root: anchor.root,
-      });
-    });
-  };
-  const announceAttachments = (
-    view: Editor,
-    state: AttachmentViewState,
-    ids: Iterable<string>,
-    reason: AnnotationChange['reason'],
-    keys: Iterable<NodeKey> = []
-  ) => {
-    const uniqueIds = [...new Set(ids)];
-    if (!uniqueIds.length) return;
-    const uniqueKeys = [...new Set(keys)];
-    queueChange(() => {
-      if (attachmentViews.get(view) !== state) return;
-      const liveIds =
-        reason === 'editor'
-          ? uniqueIds.filter((id) => anchors.has(id))
-          : uniqueIds;
-      if (!liveIds.length) return;
-      const change = Object.freeze({
-        ids: Object.freeze(liveIds),
-        nodeKeys: Object.freeze(uniqueKeys),
-        reason,
-      });
-      deliver(state.listeners, 'commit-listener', change);
-    });
-  };
-  const reindexStored = (ids?: readonly string[]) => {
-    const changed = new Map<string, StoredChange>();
-    const targetIds =
-      ids ?? new Set([...storedIndex.entries.keys(), ...anchors.keys()]);
-    withStoredAuthoredRead(editor, () => {
-      targetIds.forEach((id) => {
-        const result = updateThreadEntry(storedIndex, id, editor, (anchor) =>
-          anchor.resolve()
-        );
-        if (!result.changed) return;
-        const roots = new Set<Anchor<Range>['root']>();
-        if (result.previousRoot !== undefined || !anchors.has(id)) {
-          roots.add(result.previousRoot);
-        }
-        if (anchors.has(id)) roots.add(result.root);
-        changed.set(id, { keys: result.keys, roots });
-      });
-    });
-    return changed;
-  };
-  const snapshotViewState = (view: Editor, state: AttachmentViewState) => {
-    const viewRoot = view.read.view.root();
-    const previousEntries = state.projected ?? storedIndex.entries;
-    const ranges = new Map<string, ThreadEntry>();
-    previousEntries.forEach((entry, id) => {
-      if (threadMatchesView(viewRoot, entry.root)) ranges.set(id, entry);
-    });
-    const tops =
-      viewRoot === undefined && hasNamedThreads()
-        ? (state.rootTops ??
-          withStoredAuthoredRead(editor, () => readNamedRootTops(editor)))
-        : null;
-    return { ranges, tops };
-  };
-  const syncViewProjection = (
-    view: Editor,
-    state: AttachmentViewState,
-    previous = snapshotViewState(view, state),
-    extraIds: readonly string[] = []
-  ) => {
-    const viewRoot = view.read.view.root();
-    const nextPreview = readShownPreview(view);
-    state.preview = nextPreview;
-    if (nextPreview || isDocumentView(view)) {
-      state.projected ??= new Map();
-      populateProjectedIndex(view, state.projected);
-    } else {
-      state.projected = null;
-    }
-    const nextEntries = state.projected ?? storedIndex.entries;
-    const ids = new Set<string>(extraIds);
-    const keys = new Set<NodeKey>();
-    const seen = new Set([...previous.ranges.keys(), ...nextEntries.keys()]);
-    seen.forEach((id) => {
-      const prev = previous.ranges.get(id);
-      const next = nextEntries.get(id);
-      if (next && !threadMatchesView(viewRoot, next.root)) return;
-      if (
-        Boolean(prev) !== Boolean(next) ||
-        !RangeApi.equals(prev?.range ?? null, next?.range ?? null)
-      ) {
-        ids.add(id);
-        for (const key of prev?.keys ?? []) keys.add(key);
-        for (const key of next?.keys ?? []) keys.add(key);
-      }
-    });
-    if (viewRoot === undefined && hasNamedThreads()) {
-      const afterTops = state.projected
-        ? readNamedRootTops(view)
-        : withStoredAuthoredRead(editor, () => readNamedRootTops(editor));
-      if (previous.tops) {
-        for (const [root, group] of sourcesByRoot) {
-          if (root === undefined) continue;
-          if (previous.tops.get(root) !== afterTops.get(root)) {
-            for (const { id } of group) ids.add(id);
-          }
-        }
-      }
-      state.rootTops = state.projected ? afterTops : null;
-    } else {
-      state.rootTops = null;
-    }
-    announceAttachments(view, state, ids, 'editor', keys);
-  };
-  const updateProjectedView = (
-    view: Editor,
-    projected: Map<string, ThreadEntry>,
-    targetIds?: Iterable<string>
-  ) => {
-    const ids: string[] = [];
-    const keys: NodeKey[] = [];
-    const checkIds =
-      targetIds ?? new Set([...projected.keys(), ...anchors.keys()]);
-    for (const id of checkIds) {
-      const result = updateProjectedEntry(projected, id, view);
-      if (result.changed) {
-        ids.push(id);
-        keys.push(...result.keys);
-      }
-    }
-    return { ids, keys };
-  };
-  const storedChangedForView = (
-    storedChanged: Map<string, StoredChange>,
-    viewRoot: Anchor<Range>['root']
-  ) => {
-    const ids: string[] = [];
-    const keys: NodeKey[] = [];
-    storedChanged.forEach((change, id) => {
-      if (viewRoot === undefined || change.roots.has(viewRoot)) {
-        ids.push(id);
-        keys.push(...change.keys);
-      }
-    });
-    return { ids, keys };
-  };
-  const syncAttachmentViews = (
-    storedChanged: Map<string, StoredChange>,
-    reason: AnnotationChange['reason'],
-    ids?: readonly string[],
-    baseCommit?: EditorCommit
-  ) => {
-    const basePlacements =
-      baseCommit && hasPageAttachmentView()
-        ? placementThreadIds(baseCommit, true)
-        : [];
-    for (const [view, state] of [...attachmentViews]) {
-      if (
-        !attachmentViews.has(view) ||
-        (reason === 'editor' && isDocumentView(view))
-      ) {
-        continue;
-      }
-      const viewRoot = view.read.view.root();
-      const pageView = viewRoot === undefined;
-      const changed = state.projected
-        ? updateProjectedView(view, state.projected, ids)
-        : storedChangedForView(storedChanged, viewRoot);
-      const changedIds = new Set(changed.ids);
-      if (pageView && baseCommit) {
-        const placements = state.projected
-          ? placementThreadIds(getAuthoredViewCommit(view, baseCommit), true)
-          : basePlacements;
-        for (const id of placements) changedIds.add(id);
-        if (state.projected && hasNamedThreads()) {
-          state.rootTops = readNamedRootTops(view);
-        }
-      } else if (pageView && state.projected && hasNamedThreads()) {
-        state.rootTops = readNamedRootTops(view);
-      }
-      announceAttachments(view, state, changedIds, reason, changed.keys);
-    }
-  };
-  const runHeld = (work: () => void) => {
-    if (heldChanges) {
-      work();
-      return () => {};
-    }
-    const changes: Array<() => void> = [];
-    heldChanges = changes;
-    try {
-      work();
-    } finally {
-      heldChanges = null;
-    }
-    return () => changes.forEach((announce) => announce());
-  };
-  const onIndexCommit = (commit?: EditorCommit) => {
-    if (destroyed || !attachmentViews.size) return;
-    const baseCommit = commit && getViewCommitSource(commit);
-    const nextSchema = editor.read.schema.identity();
-    const reconfigured = nextSchema !== indexSchema;
-    indexSchema = nextSchema;
-
-    const pendingSwitches = new Map<
-      Editor,
-      ReturnType<typeof snapshotViewState>
-    >();
-    for (const [view, state] of attachmentViews) {
-      if (!isDocumentView(view) && readShownPreview(view) !== state.preview) {
-        pendingSwitches.set(view, snapshotViewState(view, state));
-      }
-    }
-
-    if (
-      baseCommit &&
-      !reconfigured &&
-      !pendingSwitches.size &&
-      !baseCommit.changed.hasAny('document') &&
-      !baseCommit.changed.hasAny('marks') &&
-      !baseCommit.changed.hasAny('replace')
-    ) {
-      return;
-    }
-
-    const flush = runHeld(() => {
-      if (!baseCommit || reconfigured) {
-        syncAttachmentViews(reindexStored(), 'editor', undefined, baseCommit);
-        return;
-      }
-
-      const storedCandidates = new Set<string>();
-      for (const anchor of baseCommit.changed.anchors()) {
-        const id = anchorIds.get(anchor);
-        if (id !== undefined) storedCandidates.add(id);
-      }
-      for (const key of baseCommit.changed.nodeKeysAll('decoration')) {
-        for (const id of storedIndex.byKey.get(key) ?? []) {
-          const root = storedIndex.entries.get(id)?.root;
-          if (
-            baseCommit.changed.has('document', root) ||
-            baseCommit.changed.has('marks', root)
-          ) {
-            storedCandidates.add(id);
-          }
-        }
-      }
-      for (const [root, ids] of storedIndex.unplacedByRoot) {
-        if (baseCommit.changed.has('document', root)) {
-          for (const id of ids) storedCandidates.add(id);
-        }
-      }
-      const storedChanged = storedCandidates.size
-        ? reindexStored([...storedCandidates])
-        : new Map<string, StoredChange>();
-
-      const placementIds = hasPageAttachmentView()
-        ? placementThreadIds(baseCommit)
-        : [];
-
-      for (const [view, state] of [...attachmentViews]) {
-        if (attachmentViews.get(view) !== state || isDocumentView(view)) {
-          continue;
-        }
-        const viewRoot = view.read.view.root();
-        const pageView = viewRoot === undefined;
-        const switched = pendingSwitches.get(view);
-        if (switched) {
-          const extra = pageView
-            ? readShownPreview(view)
-              ? placementThreadIds(getAuthoredViewCommit(view, baseCommit))
-              : placementIds
-            : [];
-          syncViewProjection(view, state, switched, extra);
-          continue;
-        }
-        const { projected } = state;
-        if (!projected) {
-          const changed = storedChangedForView(storedChanged, viewRoot);
-          const ids = new Set(changed.ids);
-          if (pageView) {
-            for (const id of placementIds) ids.add(id);
-          }
-          announceAttachments(view, state, ids, 'editor', changed.keys);
-          continue;
-        }
-
-        const viewCommit = getAuthoredViewCommit(view, baseCommit);
-        const viewCandidates = new Set<string>();
-        for (const [root, group] of sourcesByRoot) {
-          if (!threadMatchesView(viewRoot, root)) continue;
-          if (
-            viewCommit.changed.has('structure', root) ||
-            viewCommit.changed.has('replace', root)
-          ) {
-            for (const { id } of group) viewCandidates.add(id);
-          } else if (
-            viewCommit.changed.has('document', root) ||
-            viewCommit.changed.has('marks', root)
-          ) {
-            const decorationKeys = new Set(
-              viewCommit.changed.nodeKeys('decoration', root)
-            );
-            for (const { id } of group) {
-              const entry = projected.get(id);
-              if (
-                !entry ||
-                !entry.keys.length ||
-                entry.keys.some((key) => decorationKeys.has(key))
-              ) {
-                viewCandidates.add(id);
-              }
-            }
-          }
-        }
-        for (const anchor of viewCommit.changed.anchors()) {
-          const id = anchorIds.get(anchor);
-          if (id !== undefined && threadMatchesView(viewRoot, anchor.root)) {
-            viewCandidates.add(id);
-          }
-        }
-        const changed = updateProjectedView(view, projected, viewCandidates);
-        const ids = new Set(changed.ids);
-        if (pageView) {
-          const viewPlacements = placementThreadIds(viewCommit);
-          for (const id of viewPlacements) ids.add(id);
-          if (viewPlacements.length) state.rootTops = readNamedRootTops(view);
-        }
-        announceAttachments(view, state, ids, 'editor', changed.keys);
-      }
-    });
-    flush();
-  };
-  const ensureThreadIndex = () => {
-    if (stopIndexCommit) return;
-    indexSchema = editor.read.schema.identity();
-    clearThreadIndex(storedIndex);
-    reindexStored();
-    stopIndexCommit = editor.subscribeCommit(onIndexCommit);
-  };
-  const teardownThreadIndex = () => {
-    if (attachmentViews.size > 0) return;
-    stopIndexCommit?.();
-    stopIndexCommit = null;
-    clearThreadIndex(storedIndex);
-  };
-  const queueChange = (announce: () => void) => {
-    if (heldChanges) heldChanges.push(announce);
-    else announce();
-  };
+  const textIn = (
+    view: { read: { ranges: { isEmpty: (range: Range) => boolean } } },
+    range: Range | null
+  ) => (range && !view.read.ranges.isEmpty(range) ? range : null);
+  const rangeIn = (view: Editor, anchor: Anchor<Range>) =>
+    anchor.root === view.read.view.root() || isPageView(view)
+      ? anchor.resolve(view)
+      : null;
+  const resolveIn = (view: Editor, anchor: Anchor<Range>) =>
+    textIn(view, rangeIn(view, anchor));
+  const threadIndex = createCommentThreadIndex({
+    anchors,
+    editor,
+    getAnchorIds: () => anchorIds,
+    getSourceOrder: () => sourceOrder,
+    getSourcesByRoot: () => sourcesByRoot,
+    isDestroyed: () => destroyed,
+    isResolved: (id) => Boolean(threads.get(id)?.resolution),
+    rangeIn,
+    textIn,
+  });
   const refreshViews = (ids?: readonly string[]) =>
-    runHeld(() => {
-      viewIndexes.forEach(({ annotations }) => {
-        annotations.refresh(ids && { ids, reason: 'external' });
-      });
-      if (attachmentViews.size > 0) {
-        syncAttachmentViews(reindexStored(ids), 'external', ids);
-      }
-    });
-  const releaseView = (view: Editor) => {
-    const index = viewIndexes.get(view);
-    if (!index || index.refreshers.size) return;
-    viewIndexes.delete(view);
-    index.unsubscribe();
-    passiveIndexes.set(view, index.annotations);
-  };
+    threadIndex.refreshViews(ids);
+  const refreshIds = (ids: readonly string[]) => threadIndex.refreshIds(ids);
 
   const notifyThreads = (ids: readonly string[]) => {
     ids.forEach((id) => {
@@ -1210,28 +634,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     if (changes.threads) notifyThreads(changes.threads);
     announceRanges();
   };
-  const nodeKeysAt = (view: Editor, location: Location) => {
-    const keys = new Set<NodeKey>();
-    for (const [node] of view.read.nodes.entries({
-      at: location,
-      match: TextApi.isText,
-    })) {
-      keys.add(view.key(node));
-    }
-    return [...keys];
-  };
-  const refreshIds = (ids: readonly string[]) => {
-    for (const [view, { annotations, refreshers }] of [...viewIndexes]) {
-      const nodeKeys = new Set<NodeKey>();
-      ids.forEach((id) => {
-        const range = annotations.getAnnotation(id)?.range;
-        if (range) nodeKeysAt(view, range).forEach((key) => nodeKeys.add(key));
-      });
-      if (nodeKeys.size) {
-        deliver(refreshers, 'commit-listener', { nodeKeys: [...nodeKeys] });
-      }
-    }
-  };
   let active: readonly string[] = [];
   let unsubscribeActive: (() => void) | null = null;
   const repaintActive = () => {
@@ -1245,10 +647,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     if (destroyed) return;
     store.set({ activeIds: Object.freeze([...new Set(ids)]) });
   };
-  const textIn = (
-    view: { read: { ranges: { isEmpty: (range: Range) => boolean } } },
-    range: Range | null
-  ) => (range && !view.read.ranges.isEmpty(range) ? range : null);
   const storedText = (anchor: Anchor<Range>) =>
     withStoredAuthoredRead(editor, () => textIn(editor, anchor.resolve()));
   const syncSource = () => {
@@ -1261,7 +659,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       sourcesByRoot.set(anchor.root, group);
     });
     sourceOrder = new Map([...anchors.keys()].map((id, index) => [id, index]));
-    passiveIndexes = new WeakMap();
+    threadIndex.invalidateSources();
   };
   const retainIds = (previous: readonly string[], next: string[]) =>
     previous.length === next.length &&
@@ -1308,18 +706,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       view,
       readDocumentRange(value, { view: view.read.view.root() })
     );
-  const rangeIn = (view: Editor, anchor: Anchor<Range>) =>
-    anchor.root === view.read.view.root() || isPageView(view)
-      ? anchor.resolve(view)
-      : null;
-  const resolveIn = (view: Editor, anchor: Anchor<Range>) =>
-    textIn(view, rangeIn(view, anchor));
-  const locationRoot = (location: Location) => {
-    if (PathApi.isPath(location)) return undefined;
-    return PointApi.isPoint(location)
-      ? location.root
-      : SelectionApi.root(location);
-  };
   const anchorAt = (range: Range) =>
     editor.anchor(range, { association: 'inward', deletion: 'nearest' });
   const admitRanges = (
@@ -1834,22 +1220,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       COMMENT_CREATION_HISTORY_REPLAYERS.delete(runtimeOwner);
     }
     unsubscribeActive?.();
-    stopIndexCommit?.();
-    stopIndexCommit = null;
-    clearThreadIndex(storedIndex);
-    attachmentViews.forEach(({ listeners, projected, stopViewState }) => {
-      stopViewState();
-      listeners.clear();
-      projected?.clear();
-    });
-    attachmentViews.clear();
-    viewIndexes.forEach(({ annotations, refreshers, unsubscribe }) => {
-      unsubscribe();
-      annotations.destroy();
-      refreshers.clear();
-    });
-    viewIndexes.clear();
-    passiveIndexes = new WeakMap();
+    threadIndex.destroy();
     new Set([
       ...(composer ? [composer.anchor] : []),
       ...anchors.values(),
@@ -2310,79 +1681,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             pendingListeners.delete(listener);
           };
         },
-        idsAt: (location: Location) => {
-          if (destroyed) return Object.freeze([]);
-          const viewRoot = commandEditor.read.view.root();
-          const root = locationRoot(location) ?? viewRoot;
-          const annotations =
-            root === viewRoot
-              ? viewIndexes.get(commandEditor)?.annotations
-              : undefined;
-          if (!annotations) {
-            if (
-              attachmentViews.size > 0 &&
-              !readShownPreview(commandEditor) &&
-              !isDocumentView(commandEditor)
-            ) {
-              const matched = new Set<string>();
-              for (const key of nodeKeysAt(commandEditor, location)) {
-                for (const id of storedIndex.byKey.get(key) ?? []) {
-                  const entry = storedIndex.entries.get(id);
-                  if (
-                    entry &&
-                    entry.root === root &&
-                    !threads.get(id)?.resolution &&
-                    entry.range &&
-                    RangeApi.includes(entry.range, location)
-                  ) {
-                    matched.add(id);
-                  }
-                }
-              }
-              return Object.freeze(
-                [...matched].sort(
-                  (left, right) =>
-                    (sourceOrder.get(left) ?? 0) - (sourceOrder.get(right) ?? 0)
-                )
-              );
-            }
-            return Object.freeze(
-              (sourcesByRoot.get(root) ?? []).flatMap(({ id }) => {
-                const anchor = anchors.get(id);
-                if (!anchor || threads.get(id)?.resolution) return [];
-                const range = rangeIn(commandEditor, anchor);
-                return range &&
-                  RangeApi.includes(range, location) &&
-                  textIn(commandEditor, range)
-                  ? [id]
-                  : [];
-              })
-            );
-          }
-          return Object.freeze(
-            [
-              ...new Map(
-                nodeKeysAt(commandEditor, location).flatMap((key) =>
-                  annotations
-                    .getAnnotationsAt(key)
-                    .map((annotation) => [annotation.id, annotation] as const)
-                )
-              ).values(),
-            ]
-              .filter(
-                ({ id, range }) =>
-                  !threads.get(id)?.resolution &&
-                  range &&
-                  RangeApi.includes(range, location)
-              )
-              .sort(
-                (left, right) =>
-                  (sourceOrder.get(left.id) ?? 0) -
-                  (sourceOrder.get(right.id) ?? 0)
-              )
-              .map(({ id }) => id)
-          );
-        },
+        idsAt: (location: Location) =>
+          threadIndex.idsAt(commandEditor, location),
         /** Resolve a live attachment without copying it into the conversation. */
         attachment: (id: string): CommentAttachment | null => {
           const thread = threads.get(id);
@@ -2401,79 +1701,25 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         setActive,
         /** Observe mapped attachments without rewriting semantic thread records. */
         subscribeAttachments: (
-          listener: (change: AnnotationChange) => void
-        ) => {
-          if (destroyed) return () => {};
-          ensureThreadIndex();
-          let state = attachmentViews.get(commandEditor);
-          if (!state) {
-            const documentView = isDocumentView(commandEditor);
-            const preview = readShownPreview(commandEditor);
-            const projected =
-              preview || documentView ? new Map<string, ThreadEntry>() : null;
-            if (projected) populateProjectedIndex(commandEditor, projected);
-            const created: AttachmentViewState = {
-              listeners: new Set(),
-              preview,
-              projected,
-              rootTops:
-                projected && commandEditor.read.view.root() === undefined
-                  ? readNamedRootTops(commandEditor)
-                  : null,
-              stopViewState: documentView
-                ? () => {}
-                : subscribeEditorViewState(commandEditor, (change) => {
-                    if (destroyed || change !== 'authored') return;
-                    syncViewProjection(commandEditor, created);
-                  }),
-            };
-            state = created;
-            attachmentViews.set(commandEditor, state);
-          }
-          state.listeners.add(listener);
-          let subscribed = true;
-          return () => {
-            if (!subscribed) return;
-            subscribed = false;
-            state.listeners.delete(listener);
-            if (
-              !state.listeners.size &&
-              attachmentViews.get(commandEditor) === state
-            ) {
-              state.stopViewState();
-              state.projected?.clear();
-              attachmentViews.delete(commandEditor);
-              teardownThreadIndex();
-            }
-          };
-        },
+          listener: (change: CommentAttachmentChange) => void
+        ) => threadIndex.subscribeAttachments(commandEditor, listener),
       };
     },
     decorate: {
-      observe: ({ editor: view, refresh }) => {
-        if (destroyed) return () => {};
-        const index = observeView(view);
-        index.refreshers.add(refresh);
-        return () => {
-          index.refreshers.delete(refresh);
-          releaseView(view);
-        };
-      },
+      observe: ({ editor: view, refresh }) =>
+        threadIndex.observePaint(view, refresh),
       read: ({ editor: view, entry: [node, path] }) => {
         if (destroyed || !TextApi.isText(node)) return [];
         const key = view.key(path);
         if (!key) return [];
-        const annotations = getAnnotations(view).getAnnotationsAt(key);
-        const textRange = annotations.length
+        const entries = threadIndex.readPaintEntriesAt(view, key);
+        const textRange = entries.length
           ? view.read.ranges.get(path)
           : undefined;
         if (!textRange) return [];
         const activeIds = store.get('activeIds');
-        return annotations.flatMap(({ id, range }) => {
-          if (threads.get(id)?.resolution) return [];
-          const intersection = range
-            ? RangeApi.intersection(range, textRange)
-            : null;
+        return entries.flatMap(({ id, range }) => {
+          const intersection = RangeApi.intersection(range, textRange);
           return !intersection || RangeApi.isCollapsed(intersection)
             ? []
             : [

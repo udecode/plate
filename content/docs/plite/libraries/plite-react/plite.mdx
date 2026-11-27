@@ -241,27 +241,21 @@ Pass `{ nodeKeys: "all" }` only when the source cannot identify affected
 inputs. The provider subscribes once per source; rendered text subscribes by
 node key.
 
-### Annotation providers
+### Anchored annotations
 
-Pass the annotation store directly to `useAnnotation(store, id)` and
-`useAnnotations(store)` in sidebars and other consumers. Add a decoration source
-only when an annotation also needs inline paint.
-
-`CommentsSidebar` is an application component that accepts the store and calls
-`useAnnotations(store)` to read it.
+Keep durable range identities on `editor.anchor`, subscribe to
+`editor.subscribeCommit` for `commit.changed.anchors()`, and pass resolved
+ranges to sidebars or a `DecorationSource` when inline paint is needed.
 
 ```tsx
-const annotations = comments.map((comment) => ({
-  anchor: comment.anchor,
-  data: comment,
-  id: comment.id,
-}));
-
-const annotationStore = useAnnotationStore(editor, annotations);
+const anchor = editor.anchor(range, {
+  association: "inward",
+  deletion: "nearest",
+});
 
 <EditorRoot decorations={[commentDecorations]} editor={editor}>
   <Editable />
-  <CommentsSidebar store={annotationStore} />
+  <CommentsSidebar comments={comments} />
 </EditorRoot>;
 ```
 

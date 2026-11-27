@@ -54,9 +54,7 @@ Whole-element paint uses `render.useViewElementAttributes`. It runs once per ena
 
 ## Annotations
 
-Annotations attach IDs and application data to anchors. `useAnnotationStore`
-resolves them in one exact mounted view. Pass its store explicitly to
-`useAnnotation(store, id)` or `useAnnotations(store)`.
+Annotations attach IDs and application data to retained anchors (`editor.anchor`) and resolve them against each mounted view. Track moved anchors with `commit.changed.anchors()` in `editor.subscribeCommit`, or use the [Comments plugin](/docs/comment) for managed threads and attachments.
 
 Annotation data does not paint text by itself. The feature that knows the visual states supplies its plugin's decoration reader. Keep comment bodies, permissions, and audit events in their application store.
 
@@ -64,5 +62,6 @@ See [Annotations](/docs/annotations) for local anchors, external stores, channel
 
 Document content stays in nodes, named roots, and document metadata. Decoration
 ranges and selection geometry are view data. Keep annotations in their
-application-owned store, and read them with `useAnnotation` or `useAnnotations`.
+application-owned store, and resolve their ranges through each anchor in the
+exact mounted view.
 See [React Hooks](/docs/api/react-hooks) for exact hook contracts.

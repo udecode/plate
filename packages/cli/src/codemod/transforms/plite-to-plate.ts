@@ -12,10 +12,10 @@ import type {
 } from '../types';
 import {
   LEGACY_PLITE_SHELL_EXPORTS,
-  PLITE_ANNOTATION_TYPES,
   PLITE_ONLY_DIAGNOSTICS,
   PLITE_TO_PLATE_MODULE_MAP,
   PLITE_TO_PLATE_SYMBOL_RENAMES,
+  REMOVED_PLITE_REACT_DIAGNOSTICS,
   SAFE_DOM_EDITOR_CLIPBOARD_METHODS,
   SAFE_DOM_EDITOR_METHODS,
 } from './plite-to-plate-classification';
@@ -1603,21 +1603,30 @@ const runPass3 = (
       }
 
       if (mod === 'plitejs/annotations') {
-        if (PLITE_ANNOTATION_TYPES.has(importedName)) {
-          addLocalGroup('platejs/react', {
-            importKind: 'type',
-            importedName,
-            localName,
-          });
-          continue;
-        }
         ctx.diagnostics.push(
           makeDiagnostic(
             ctx.filePath,
             spec,
             'manual',
             'plite-only-export',
-            `Kept "${importedName}" from "plitejs/annotations" for manual migration.`
+            `Kept "${importedName}" from "plitejs/annotations" for manual migration: plitejs/annotations was removed; build anchored overlays directly on editor.anchor, commit.changed.anchors(), and DecorationSource.`
+          )
+        );
+        keptPliteSpecs.push({ importKind, importedName, localName });
+        continue;
+      }
+
+      if (
+        mod === 'plitejs/react' &&
+        Object.hasOwn(REMOVED_PLITE_REACT_DIAGNOSTICS, importedName)
+      ) {
+        ctx.diagnostics.push(
+          makeDiagnostic(
+            ctx.filePath,
+            spec,
+            'manual',
+            'removed-plite-export',
+            REMOVED_PLITE_REACT_DIAGNOSTICS[importedName]
           )
         );
         keptPliteSpecs.push({ importKind, importedName, localName });

@@ -1,18 +1,17 @@
 ---
 title: "Plite React Hooks"
-description: "Read editor state, root state, annotations, and DOM-aware facts from React."
+description: "Read editor state, root state, selection geometry, and DOM-aware facts from React."
 ---
 
 Use hooks inside an `EditorRoot` provider when React UI needs editor facts. Prefer the
 narrowest hook that matches the UI: editor-wide hooks for toolbars, element
-hooks for rendered nodes, and targeted hooks for annotations.
+hooks for rendered nodes, and geometry hooks for anchored widgets.
 
 ## On this page
 
 - [Editor Hooks](hooks#editor-hooks)
 - [Runtime And Root Hooks](hooks#runtime-and-root-hooks)
 - [Element And Node Hooks](hooks#element-and-node-hooks)
-- [Annotation Hooks](hooks#annotation-hooks)
 - [Widget Hooks](hooks#widget-hooks)
 - [Selector Results](hooks#selector-results)
 
@@ -528,44 +527,6 @@ Subscribe to a value derived from one mounted text node.
 Pass `options.nodeKey` to target a specific text node, or call it inside an
 editor text renderer to use that renderer's runtime target. Its second
 argument, `equalityFn`, works as it does on `useNodeSelector`.
-
-## Annotation hooks
-
-Use annotation hooks for durable anchored ranges such as comments, diagnostics,
-and external review markers.
-
-#### `useAnnotationStore<TData>(editor, annotations, options?): AnnotationStore<TData>`
-
-Create an annotation store for durable anchored ranges such as comments,
-diagnostics, or external review markers.
-
-Pass the store explicitly to annotation reader hooks.
-
-Pass the current annotation array directly. A new array identity refreshes the
-store automatically. Use `revision` only for an external mutable source that
-changes without producing a new array.
-
-```tsx
-const annotations = comments.map((comment) => ({
-  anchor: comment.anchor,
-  data: comment,
-  id: comment.id,
-}));
-
-const annotationStore = useAnnotationStore(editor, annotations);
-
-const externalStore = useAnnotationStore(editor, mutableAnnotations, {
-  revision: mutableAnnotationsRevision,
-});
-```
-
-#### `useAnnotations<TData>(store): AnnotationSnapshot<TData>`
-
-Read the current annotation snapshot from an explicit store.
-
-#### `useAnnotation<TData>(store, id): ResolvedAnnotation<TData> | null`
-
-Read one annotation by id.
 
 ## Widget hooks
 

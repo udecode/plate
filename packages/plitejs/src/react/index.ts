@@ -4,17 +4,6 @@ export * from '..';
 
 // Utils
 export type {
-  Annotation,
-  AnnotationAnchor,
-  AnnotationChange,
-  AnnotationRefreshOptions,
-  AnnotationSnapshot,
-  AnnotationStore,
-  AnnotationStoreOptions,
-  OwnedAnnotationStore,
-  ResolvedAnnotation,
-} from '../annotations';
-export type {
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
   EditableHandlerContext,
@@ -120,11 +109,6 @@ export {
   useNodeSelector,
   useTextSelector,
 } from './hooks/use-node-selector';
-export {
-  type UseAnnotationStoreOptions,
-  useAnnotationStore,
-} from './hooks/use-plite-annotation-store';
-export { useAnnotation, useAnnotations } from './hooks/use-plite-annotations';
 export { useChildRoot } from './hooks/use-plite-child-root';
 export {
   type ContentRootController,
@@ -188,10 +172,3 @@ export {
 export type { TypedText, TypedTextListener } from './editable/typed-text';
 export { ReactUpdatePolicy } from './update-policy';
 export type { RangeGeometry, RangeRects, ViewportRect } from './range-geometry';
-export type {
-  ViewSourceError,
-  ViewSourceErrorSink,
-  ViewSourceOptions,
-  ViewSourcePhase,
-  ViewSourceStatus,
-} from '../internal/view/view-source';

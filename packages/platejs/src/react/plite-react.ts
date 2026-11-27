@@ -1,13 +1,4 @@
 export type {
-  Annotation,
-  AnnotationAnchor,
-  AnnotationChange,
-  AnnotationRefreshOptions,
-  AnnotationSnapshot,
-  AnnotationStore,
-  AnnotationStoreOptions,
-  OwnedAnnotationStore,
-  ResolvedAnnotation,
   EditableHandlerResult,
   EditableHistoryReplayEvent,
   EditableHistoryReplayResult,
@@ -51,7 +42,6 @@ export type {
   EditorSelectorDependency,
   EditorTextSelectorContext,
   EditorViewStateDependency,
-  UseAnnotationStoreOptions,
   ContentRootController,
   UseContentRootOptions,
   UseEditorHistoryOptions,
@@ -73,11 +63,6 @@ export type {
   ViewportRect,
   UseEditableClipOptions,
   UseSelectionGeometryOptions,
-  ViewSourceError,
-  ViewSourceErrorSink,
-  ViewSourceOptions,
-  ViewSourcePhase,
-  ViewSourceStatus,
 } from 'plitejs/react';
 
 export {
@@ -95,9 +80,6 @@ export {
   useElementSelected,
   useNodeSelector,
   useTextSelector,
-  useAnnotationStore,
-  useAnnotation,
-  useAnnotations,
   useChildRoot,
   useContentRoot,
   useDropIndicator,

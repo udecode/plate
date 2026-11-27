@@ -19,8 +19,6 @@ import { getEditorCommitSnapshot, getEditorCommitValue } from '../core/commit';
 import { getEditorRuntimeRoot } from '../core/editor-runtime';
 import { toPublicRoot } from '../core/public-root';
 import { getReaderRange } from '../internal/root-location';
-import { createViewSourceFaultBoundary } from '../internal/view/mapped-view-store';
-import type { ViewSourceErrorSink } from '../internal/view/view-source';
 import {
   getSnapshot as editorGetSnapshot,
   projectRangeInSnapshot,
@@ -135,10 +133,45 @@ type CompiledDecorationSourceSnapshot = {
   version: number;
 };
 
+type DecorationSourceFaultBoundary = {
+  activate: () => void;
+  run: <T>(
+    phase: 'project' | 'read' | 'resolve',
+    read: () => T
+  ) => Readonly<{ ok: true; value: T }> | Readonly<{ ok: false }>;
+};
+
+const createDecorationSourceFaultBoundary = (
+  options: Readonly<{ id: string }>
+): DecorationSourceFaultBoundary => {
+  let active = true;
+
+  return {
+    activate() {
+      active = true;
+    },
+    run(phase, read) {
+      if (!active) return { ok: false };
+
+      try {
+        return { ok: true, value: read() };
+      } catch (error) {
+        active = false;
+        console.error(
+          `Decoration source "${options.id}" failed during ${phase}.`,
+          error
+        );
+
+        return { ok: false };
+      }
+    },
+  };
+};
+
 type DecorationSourceState<E> = {
   cleanup: (() => void) | null;
   definition: DecorationSource<E>;
-  faultBoundary: ReturnType<typeof createViewSourceFaultBoundary>;
+  faultBoundary: ReturnType<typeof createDecorationSourceFaultBoundary>;
   generation: number;
   observationGeneration: number;
   snapshot: CompiledDecorationSourceSnapshot;
@@ -408,7 +441,8 @@ export const getNativeMappedDecorationInsertion = (
 
 const recordDecorationPaintChange = (
   previous: readonly DecorationSlice[],
-  next: readonly DecorationSlice[]
+  next: readonly DecorationSlice[],
+  insertion?: NativeTextInsertion
 ) => {
   if (previous === next || next.length === 0) return;
   let prefix = 0;
@@ -446,7 +480,7 @@ const recordDecorationPaintChange = (
 
   decorationBucketChanges.set(next, {
     identity: existing?.identity ?? {},
-    insertion: existing?.insertion,
+    insertion,
     paint: start === Infinity ? undefined : { start, end },
     previous: getDecorationBucketIdentity(previous),
   });
@@ -625,8 +659,7 @@ const freezeSourceBucket = (
 
 export const createPliteDecorationManager = <E>(
   editor: E,
-  initialSources: ReadonlyArray<DecorationSource<E>>,
-  options: Readonly<{ onError?: ViewSourceErrorSink }> = {}
+  initialSources: ReadonlyArray<DecorationSource<E>>
 ): PliteDecorationManager<E> => {
   validateDecorationSources(initialSources);
 
@@ -647,6 +680,7 @@ export const createPliteDecorationManager = <E>(
   let providerSources = initialSources;
   const registeredSources = new Map<symbol, ExactSource>();
   let sourceStates: Array<DecorationSourceState<E>> = [];
+  let activeBatchAffectedNodeKeys: Set<NodeKey> | null = null;
   const metrics = {
     bucketReadCount: 0,
     changedBucketCount: 0,
@@ -1186,7 +1220,18 @@ export const createPliteDecorationManager = <E>(
     nodeListenersToNotify.forEach((listener) => listener());
   };
 
-  const publishMergedBuckets = (nodeKeys: Iterable<NodeKey>) => {
+  const publishMergedBuckets = (
+    nodeKeys: Iterable<NodeKey>,
+    insertionByNodeKey?: ReadonlyMap<NodeKey, NativeTextInsertion>
+  ) => {
+    if (activeBatchAffectedNodeKeys) {
+      for (const nodeKey of nodeKeys) {
+        activeBatchAffectedNodeKeys.add(nodeKey);
+      }
+
+      return;
+    }
+
     const changed: NodeKey[] = [];
     const uniqueNodeKeys =
       nodeKeys instanceof Set ? nodeKeys : new Set(nodeKeys);
@@ -1207,7 +1252,13 @@ export const createPliteDecorationManager = <E>(
         : candidate;
 
       if (next === previous) continue;
-      recordDecorationPaintChange(previous, next);
+      const candidateInsertion = insertionByNodeKey?.get(nodeKey);
+      const insertion =
+        candidateInsertion && previous.length === next.length
+          ? candidateInsertion
+          : undefined;
+
+      recordDecorationPaintChange(previous, next, insertion);
       if (next.length === 0) mergedByNodeKey.delete(nodeKey);
       else mergedByNodeKey.set(nodeKey, next);
       changed.push(nodeKey);
@@ -1216,97 +1267,28 @@ export const createPliteDecorationManager = <E>(
     notifyChangedBuckets(changed);
   };
 
-  const publishSourceBucketChanges = (
-    state: DecorationSourceState<E>,
-    changes: readonly DecorationSourceBucketChange[]
-  ) => {
-    if (changes.length === 0) return;
-
-    const sourceIndex = sourceStates.indexOf(state);
-
-    if (sourceIndex === -1) {
-      publishMergedBuckets(changes.map(({ nodeKey }) => nodeKey));
-
-      return;
-    }
-    if (sourceStates.length === 1) {
-      const changed: NodeKey[] = [];
-
-      for (const { next, nodeKey } of changes) {
-        const previousMerged =
-          mergedByNodeKey.get(nodeKey) ?? EMPTY_DECORATION_SLICES;
-        recordDecorationPaintChange(previousMerged, next);
-        if (next.length === 0) mergedByNodeKey.delete(nodeKey);
-        else mergedByNodeKey.set(nodeKey, next);
-        changed.push(nodeKey);
-      }
-      notifyChangedBuckets(changed);
-
-      return;
-    }
-
-    const changed: NodeKey[] = [];
-
-    for (const change of changes) {
-      const previousMerged =
-        mergedByNodeKey.get(change.nodeKey) ?? EMPTY_DECORATION_SLICES;
-      let offset = 0;
-
-      for (let index = 0; index < sourceIndex; index++) {
-        offset +=
-          sourceStates[index].snapshot.bucketsByOutputKey.get(change.nodeKey)
-            ?.length ?? 0;
-      }
-      const suffixStart = offset + change.previous.length;
-      let candidate: DecorationSlice[];
-
-      if (change.previous.length === change.next.length) {
-        candidate = previousMerged.slice();
-        for (let index = 0; index < change.next.length; index++) {
-          candidate[offset + index] = change.next[index];
-        }
-      } else {
-        candidate = new Array<DecorationSlice>(
-          previousMerged.length - change.previous.length + change.next.length
-        );
-        let cursor = 0;
-
-        for (let index = 0; index < offset; index++) {
-          candidate[cursor] = previousMerged[index];
-          cursor += 1;
-        }
-        for (const slice of change.next) {
-          candidate[cursor] = slice;
-          cursor += 1;
-        }
-        for (let index = suffixStart; index < previousMerged.length; index++) {
-          candidate[cursor] = previousMerged[index];
-          cursor += 1;
-        }
-      }
-      const next =
-        candidate.length === 0
-          ? EMPTY_DECORATION_SLICES
-          : Object.freeze(candidate);
-
-      recordDecorationPaintChange(previousMerged, next);
-      if (next.length === 0) mergedByNodeKey.delete(change.nodeKey);
-      else mergedByNodeKey.set(change.nodeKey, next);
-      changed.push(change.nodeKey);
-    }
-
-    notifyChangedBuckets(changed);
-  };
+  const areAllPopulatedSourcesMapped = (
+    nodeKey: NodeKey,
+    mappedSources: ReadonlySet<DecorationSourceState<E>>
+  ) =>
+    sourceStates.every(
+      (state) =>
+        mappedSources.has(state) ||
+        (state.snapshot.bucketsByOutputKey.get(nodeKey)?.length ?? 0) === 0
+    );
 
   const mapNativeTextChanges = (
     snapshot: EditorSnapshot,
     changesByNodeKey: ReadonlyMap<NodeKey, readonly NativeTextChange[]>
   ) => {
+    if (editorGetSnapshot(runtimeEditor).version !== snapshot.version) return;
+    const affectedNodeKeys = new Set<NodeKey>();
+    const mappedSources = new Set<DecorationSourceState<E>>();
+
     for (const state of sourceStates) {
-      if (editorGetSnapshot(runtimeEditor).version !== snapshot.version) return;
       if (!pendingRefresh?.sources.has(state)) continue;
       if (state.snapshot.version === snapshot.version) continue;
-      const changes: DecorationSourceBucketChange[] = [];
+      mappedSources.add(state);
 
       for (const [nodeKey, textChanges] of changesByNodeKey) {
         const previousParts = state.snapshot.partsByOutputKey.get(nodeKey);
@@ -1324,18 +1306,7 @@ export const createPliteDecorationManager = <E>(
         if (nextParts.every((part, index) => part === previousParts[index])) {
           continue;
         }
-        const previous =
-          state.snapshot.bucketsByOutputKey.get(nodeKey) ??
-          EMPTY_DECORATION_SLICES;
         const next = freezeSourceBucket(nextParts, snapshot);
-
-        if (next !== previous) {
-          decorationBucketChanges.set(next, {
-            identity: getDecorationBucketIdentity(next),
-            insertion: getNativeTextInsertion(textChanges),
-            previous: getDecorationBucketIdentity(previous),
-          });
-        }
 
         state.snapshot.partsByOutputKey.set(nodeKey, nextParts);
         if (next.length === 0) {
@@ -1343,12 +1314,28 @@ export const createPliteDecorationManager = <E>(
         } else {
           state.snapshot.bucketsByOutputKey.set(nodeKey, next);
         }
-        changes.push({ next, nodeKey, previous });
+        affectedNodeKeys.add(nodeKey);
       }
 
-      publishSourceBucketChanges(state, changes);
       state.snapshot.version = snapshot.version;
     }
+
+    if (destroyed || affectedNodeKeys.size === 0) return;
+
+    const insertionByNodeKey = new Map<NodeKey, NativeTextInsertion>();
+
+    for (const nodeKey of affectedNodeKeys) {
+      const textChanges = changesByNodeKey.get(nodeKey);
+      const insertion = textChanges
+        ? getNativeTextInsertion(textChanges)
+        : undefined;
+
+      if (insertion && areAllPopulatedSourcesMapped(nodeKey, mappedSources)) {
+        insertionByNodeKey.set(nodeKey, insertion);
+      }
+    }
+
+    publishMergedBuckets(affectedNodeKeys, insertionByNodeKey);
   };
 
   const refreshState = (
@@ -1364,7 +1351,8 @@ export const createPliteDecorationManager = <E>(
 
     const result = refreshInputs(state, snapshot, input.nodeKeys);
 
-    publishSourceBucketChanges(state, result.changes);
+    if (result.changes.length === 0) return;
+    publishMergedBuckets(result.changes.map(({ nodeKey }) => nodeKey));
   };
 
   const startObservation = (state: DecorationSourceState<E>) => {
@@ -1429,11 +1417,10 @@ export const createPliteDecorationManager = <E>(
     try {
       cleanup();
     } catch (error) {
-      options.onError?.({
-        cause: error,
-        phase: 'resolve',
-        sourceId: state.definition.id,
-      });
+      console.error(
+        `Decoration source "${state.definition.id}" failed during cleanup.`,
+        error
+      );
     }
   };
 
@@ -1446,9 +1433,8 @@ export const createPliteDecorationManager = <E>(
     const state: DecorationSourceState<E> = {
       cleanup: null,
       definition,
-      faultBoundary: createViewSourceFaultBoundary({
+      faultBoundary: createDecorationSourceFaultBoundary({
         id: definition.id,
-        onError: options.onError,
       }),
       generation: 0,
       observationGeneration: 0,
@@ -1630,20 +1616,39 @@ export const createPliteDecorationManager = <E>(
 
     clearPendingRefresh();
     if (!pending || destroyed || !mounted) return;
-    for (const [state, request] of pending.sources) {
-      if (
-        destroyed ||
-        !mounted ||
-        pending.snapshot.version !== editorGetSnapshot(runtimeEditor).version
-      ) {
-        return;
+    const affectedNodeKeys = new Set<NodeKey>();
+    const previousBatch = activeBatchAffectedNodeKeys;
+
+    activeBatchAffectedNodeKeys = affectedNodeKeys;
+    try {
+      for (const [state, request] of pending.sources) {
+        if (
+          destroyed ||
+          !mounted ||
+          pending.snapshot.version !== editorGetSnapshot(runtimeEditor).version
+        ) {
+          return;
+        }
+        if (state.generation !== request.generation) continue;
+        if (request.inputKeys === null) {
+          for (const nodeKey of refreshAll(state, pending.snapshot)) {
+            affectedNodeKeys.add(nodeKey);
+          }
+        } else {
+          const result = refreshInputs(state, pending.snapshot, [
+            ...request.inputKeys,
+          ]);
+
+          for (const change of result.changes) {
+            affectedNodeKeys.add(change.nodeKey);
+          }
+        }
       }
-      if (state.generation !== request.generation) continue;
-      refreshState(
-        state,
-        { nodeKeys: request.inputKeys ? [...request.inputKeys] : 'all' },
-        pending.snapshot
-      );
+    } finally {
+      activeBatchAffectedNodeKeys = previousBatch;
+      if (!destroyed && affectedNodeKeys.size > 0) {
+        publishMergedBuckets(affectedNodeKeys);
+      }
     }
   };
 

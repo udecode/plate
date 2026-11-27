@@ -209,9 +209,9 @@ The fork treats overlays as separate lanes.
 Decorations and annotations share stable identities and change facts but keep separate owners and storage.
 
 Pass transient paint sources to `<EditorRoot decorations={...}>`. Each source reads
-attribute-only ranges and may observe its own store. Keep durable anchors in an
-annotation store and pass it explicitly to `useAnnotation(store, id)` or
-`useAnnotations(store)`.
+attribute-only ranges and may observe its own store. Keep durable anchors on
+`editor.anchor`, track moved anchors through `commit.changed.anchors()`, and
+resolve each anchor in the exact mounted view.
 
 ## Browser proof
 
@@ -239,9 +239,8 @@ The packages are split by responsibility.
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `plitejs`             | editor runtime, document model, canonical changes, transactions, state fields, schema, pure helper APIs       |
 | `plitejs/dom`         | DOM bridge, clipboard helpers, selection conversion, hotkeys, DOM coverage helpers                           |
-| `plitejs/react`       | React editor setup, `<EditorRoot>`, `<Editable>`, render primitives, hooks, overlays, annotations, DOM strategies |
+| `plitejs/react`       | React editor setup, `<EditorRoot>`, `<Editable>`, render primitives, hooks, overlays, DOM strategies         |
 | `plitejs/history`     | history plugin and undo/redo runtime                                                                      |
-| `plitejs/annotations` | `createAnnotationStore` and the durable, id-bearing anchors it keeps                                         |
 | `plitejs/authored`    | attributed suggestions: review marks, review contexts and decisions, accepted and proposed previews          |
 | `plitejs/diff`        | `compare`, which compares two or three immutable documents without editor state                             |
 | `plitejs/hyperscript` | JSX fixtures for tests                                                                                       |
@@ -281,12 +280,12 @@ This table covers every area of the runtime, so readers and agents have one plac
 | Roots              | rootless primary document, named extra roots, content roots, root-aware React hooks and chrome                                                                                                                                                                                                |
 | State fields       | versioned persistent/shared fields, local fields, history policy, effects, React state-field hooks                                                                                                                                                                                             |
 | React setup        | `useCreateEditor`, `createEditor`, `<EditorRoot>`, `<Editable>`, render primitives                                                                                                                                                                                                             |
-| React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration and annotation hooks                                                                                                                                                                                          |
+| React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration hooks                                                                                                                                                                                                    |
 | Browser editing    | DOM repair, native selection sync, beforeinput/input/paste/cut/drop authority, generated proof scenarios                                                                                                                                                                                      |
 | DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |
 | Authored changes   | attributed suggestions in `plitejs/authored`, with review marks, review decisions, and accepted and proposed previews |
 | Comparison         | two-way and three-way comparison of immutable documents through `compare` in `plitejs/diff` |
-| Overlays           | decoration manager, annotation stores, source-scoped invalidation                                                                                                                                                                                                                |
+| Overlays           | decoration manager, source-scoped invalidation                                                                                                                                                                                                                                  |
 | Large documents    | complete DOM rendering, explicit virtualized rendering, bounded editing proof, huge-document smoke lanes                                                                                                                                                                                        |
 | History            | `history()` plugin, `state.history`, `editor.api.history`, transaction grouping controls, semantic `editor.update({ history })` policies, and history stack validation                                                                                                                                                |
 | Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                                                                                                          |

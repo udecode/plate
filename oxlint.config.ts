@@ -146,7 +146,6 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/dom/index.ts',
   'packages/platejs/src/dom/plite-dom.internal.ts',
   'packages/platejs/src/facade.ts',
-  'packages/platejs/src/features/comments/plite-comments.internal.ts',
   'packages/platejs/src/history/index.ts',
   'packages/platejs/src/history/plite-history.internal.ts',
   'packages/platejs/src/hyperscript/index.ts',

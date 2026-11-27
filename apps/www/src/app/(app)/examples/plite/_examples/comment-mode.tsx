@@ -2,19 +2,18 @@ import { cva } from 'class-variance-authority';
 import {
   type Anchor,
   NodeApi,
+  type NodeKey,
   RangeApi,
   type Range,
+  TextApi,
   type Value,
 } from 'plitejs';
-import type { AnnotationStore } from 'plitejs/annotations';
 import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
   type DecorationSource,
   type Editor,
-  useAnnotationStore,
-  useAnnotations,
   useCreateEditor,
   useEditorContext,
   useEditorFocused,
@@ -26,15 +25,16 @@ import {
   type SetStateAction,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/utils/cn';
 
-import { failInvariant } from '../../../../../lib/failInvariant';
 import { Instruction } from './components';
 
 type CommentStatus = 'open' | 'resolved';
@@ -49,11 +49,152 @@ type CommentThread = {
   tone: CommentTone;
 };
 
-type CommentData = {
+type ResolvedComment = Readonly<{
   body: string;
+  id: string;
   label: string;
+  nodeKeys: readonly NodeKey[];
+  range: Range | null;
   status: CommentStatus;
   tone: CommentTone;
+}>;
+
+type CommentViewStore = Readonly<{
+  getSnapshot: () => readonly ResolvedComment[];
+  setComments: (next: readonly CommentThread[]) => void;
+  setEditor: (next: CommentEditor) => void;
+  subscribe: (listener: () => void) => () => void;
+  subscribePaint: (
+    listener: (nodeKeys: readonly NodeKey[]) => void
+  ) => () => void;
+  syncMovedAnchors: (movedAnchors: readonly unknown[]) => void;
+}>;
+
+const textNodeKeysInRange = (
+  editor: CommentEditor,
+  range: Range | null
+): readonly NodeKey[] => {
+  if (!range) return [];
+  const keys = new Set<NodeKey>();
+  for (const [node] of editor.read.nodes.entries({
+    at: range,
+    match: TextApi.isText,
+  })) {
+    const key = editor.key(node);
+    if (key) keys.add(key);
+  }
+  return [...keys];
+};
+
+const resolveCommentEntry = (
+  editor: CommentEditor,
+  comment: CommentThread
+): ResolvedComment => {
+  const range = comment.anchor.resolve(editor);
+  return {
+    body: comment.body,
+    id: comment.id,
+    label: comment.label,
+    nodeKeys: textNodeKeysInRange(editor, range),
+    range,
+    status: comment.status,
+    tone: comment.tone,
+  };
+};
+
+const createCommentViewStore = (
+  initialEditor: CommentEditor,
+  initialComments: readonly CommentThread[]
+): CommentViewStore => {
+  let currentEditor = initialEditor;
+  let currentComments = initialComments;
+  let snapshot = initialComments.map((comment) =>
+    resolveCommentEntry(currentEditor, comment)
+  );
+  const listeners = new Set<() => void>();
+  const paintListeners = new Set<(nodeKeys: readonly NodeKey[]) => void>();
+  const notify = (
+    nextSnapshot: readonly ResolvedComment[],
+    paintKeys: Set<NodeKey>
+  ) => {
+    snapshot = nextSnapshot;
+    listeners.forEach((listener) => listener());
+    if (paintKeys.size > 0) {
+      const keys = [...paintKeys];
+      paintListeners.forEach((listener) => listener(keys));
+    }
+  };
+  const rebuildAll = () => {
+    const previousById = new Map(snapshot.map((entry) => [entry.id, entry]));
+    const nextSnapshot = currentComments.map((comment) =>
+      resolveCommentEntry(currentEditor, comment)
+    );
+    const nextIds = new Set(nextSnapshot.map((entry) => entry.id));
+    const paintKeys = new Set<NodeKey>();
+    for (const next of nextSnapshot) {
+      const prev = previousById.get(next.id);
+      if (
+        !prev ||
+        prev.status !== next.status ||
+        prev.tone !== next.tone ||
+        !RangeApi.equals(prev.range, next.range)
+      ) {
+        for (const key of prev?.nodeKeys ?? []) paintKeys.add(key);
+        for (const key of next.nodeKeys) paintKeys.add(key);
+      }
+    }
+    for (const [id, prev] of previousById) {
+      if (!nextIds.has(id)) {
+        for (const key of prev.nodeKeys) paintKeys.add(key);
+      }
+    }
+    notify(nextSnapshot, paintKeys);
+  };
+
+  return {
+    getSnapshot: () => snapshot,
+    setComments: (next) => {
+      if (next === currentComments) return;
+      currentComments = next;
+      rebuildAll();
+    },
+    setEditor: (next) => {
+      if (next === currentEditor) return;
+      currentEditor = next;
+      rebuildAll();
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    subscribePaint: (listener) => {
+      paintListeners.add(listener);
+      return () => {
+        paintListeners.delete(listener);
+      };
+    },
+    syncMovedAnchors: (movedAnchors) => {
+      const movedSet = new Set<unknown>(movedAnchors);
+      const paintKeys = new Set<NodeKey>();
+      let changed = false;
+      const nextSnapshot = currentComments.map((comment, index) => {
+        const prev = snapshot[index];
+        if (prev && prev.id === comment.id && !movedSet.has(comment.anchor)) {
+          return prev;
+        }
+        const next = resolveCommentEntry(currentEditor, comment);
+        if (!prev || !RangeApi.equals(prev.range, next.range)) {
+          changed = true;
+          for (const key of prev?.nodeKeys ?? []) paintKeys.add(key);
+          for (const key of next.nodeKeys) paintKeys.add(key);
+        }
+        return next;
+      });
+      if (changed) notify(nextSnapshot, paintKeys);
+    },
+  };
 };
 
 type CommentVisualState = 'question' | 'resolved' | 'review';
@@ -125,43 +266,26 @@ const commentAnchorOptions = {
   deletion: 'nearest',
 } as const;
 
-const createCommentAnnotations = (comments: readonly CommentThread[]) =>
-  comments.map((comment) => ({
-    anchor: comment.anchor,
-    data: {
-      body: comment.body,
-      label: comment.label,
-      status: comment.status,
-      tone: comment.tone,
-    },
-    id: comment.id,
-  }));
-
 const createCommentDecorationSource = (
-  store: AnnotationStore<CommentData>
+  store: CommentViewStore
 ): DecorationSource<CommentEditor> => ({
   id: 'comments',
   observe: ({ refresh }) =>
-    store.subscribeChanges(({ nodeKeys }) => {
-      if (nodeKeys.length > 0) refresh({ nodeKeys });
+    store.subscribePaint((nodeKeys) => {
+      refresh({ nodeKeys });
     }),
-  read: ({ editor, entry: [node, path] }) => {
+  read: ({ entry: [node, path] }) => {
     if (!NodeApi.isText(node)) return [];
-
-    const nodeKey = editor.key(path);
-
-    if (!nodeKey) return [];
 
     const textRange: Range = {
       anchor: { offset: 0, path },
       focus: { offset: node.text.length, path },
     };
-    const annotations = store
-      .getAnnotationsAt(nodeKey)
-      .flatMap((annotation) => {
-        const { id } = annotation;
-        const intersection = annotation.range
-          ? RangeApi.intersection(annotation.range, textRange)
+    const resolved = store
+      .getSnapshot()
+      .flatMap((comment) => {
+        const intersection = comment.range
+          ? RangeApi.intersection(comment.range, textRange)
           : null;
 
         if (!intersection) return [];
@@ -172,40 +296,38 @@ const createCommentDecorationSource = (
           ? []
           : [
               {
-                data: annotation.data,
                 end: end.offset,
-                id,
+                id: comment.id,
                 start: start.offset,
+                status: comment.status,
+                tone: comment.tone,
               },
             ];
       })
       .sort((left, right) => left.id.localeCompare(right.id));
     const boundaries = [
-      ...new Set(annotations.flatMap(({ end, start }) => [start, end])),
+      ...new Set(resolved.flatMap(({ end, start }) => [start, end])),
     ].sort((left, right) => left - right);
 
     return boundaries.slice(0, -1).flatMap((start, index) => {
       const end = boundaries[index + 1];
-      const active = annotations.filter(
-        (annotation) => annotation.start < end && annotation.end > start
+      const active = resolved.filter(
+        (comment) => comment.start < end && comment.end > start
       );
       const first = active[0];
 
       if (!first || start === end) return [];
-
-      const status = first.data?.status ?? 'open';
-      const tone = first.data?.tone ?? 'review';
 
       return [
         {
           attributes: {
             className: commentHighlightVariants({
               overlap: active.length > 1,
-              state: commentVisualState(tone, status),
+              state: commentVisualState(first.tone, first.status),
             }),
             'data-comment-count': active.length,
-            'data-comment-status': status,
-            'data-comment-tone': tone,
+            'data-comment-status': first.status,
+            'data-comment-tone': first.tone,
           },
           key: `comments:${path.join('.')}:${start}:${end}:${active
             .map(({ id }) => id)
@@ -239,22 +361,23 @@ const WriterPane = ({
   store,
 }: {
   editor: CommentEditor;
-  store: AnnotationStore<CommentData>;
+  store: CommentViewStore;
 }) => {
   const modelSelection = useEditorSelection();
   const selection = useEditorFocused() ? modelSelection : null;
-  const annotationSnapshot = useAnnotations(store);
-  const firstAnnotation =
-    annotationSnapshot.allIds[0] == null
-      ? null
-      : (annotationSnapshot.byId.get(annotationSnapshot.allIds[0]) ?? null);
+  const resolvedComments = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot
+  );
+  const firstComment = resolvedComments[0] ?? null;
 
   const insertPrefixBeforeFirstComment = () => {
-    if (!firstAnnotation?.range) {
+    if (!firstComment?.range) {
       return;
     }
 
-    const { path } = firstAnnotation.range.anchor;
+    const { path } = firstComment.range.anchor;
 
     editor.update.text.insert('>', {
       at: {
@@ -265,13 +388,13 @@ const WriterPane = ({
   };
 
   const insertParagraphBeforeFirstComment = () => {
-    if (!firstAnnotation?.range) {
+    if (!firstComment?.range) {
       return;
     }
 
     const at = {
       offset: 0,
-      path: firstAnnotation.range.anchor.path,
+      path: firstComment.range.anchor.path,
     };
 
     editor.update((tx) => {
@@ -304,7 +427,7 @@ const WriterPane = ({
       <CommentedEditable id="comment-mode-document" />
       <div className="editor-comment-mode-controls">
         <Button
-          disabled={!firstAnnotation?.range}
+          disabled={!firstComment?.range}
           onClick={insertPrefixBeforeFirstComment}
           type="button"
           variant="outline"
@@ -312,7 +435,7 @@ const WriterPane = ({
           Insert prefix before first comment
         </Button>
         <Button
-          disabled={!firstAnnotation?.range}
+          disabled={!firstComment?.range}
           onClick={insertParagraphBeforeFirstComment}
           type="button"
           variant="outline"
@@ -338,14 +461,18 @@ const CommentModePane = ({
   editor: CommentEditor;
   onCommentWrite: () => void;
   setComments: Dispatch<SetStateAction<CommentThread[]>>;
-  store: AnnotationStore<CommentData>;
+  store: CommentViewStore;
 }) => {
   const nextCommentId = useRef(1);
   const paneRef = useRef<HTMLDivElement>(null);
   const [ownsSelection, setOwnsSelection] = useState(false);
   const modelSelection = useEditorSelection();
   const selection = ownsSelection ? modelSelection : null;
-  const annotationSnapshot = useAnnotations(store);
+  const resolvedComments = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot
+  );
 
   useEffect(() => {
     const document = paneRef.current?.ownerDocument;
@@ -539,69 +666,53 @@ const CommentModePane = ({
         </span>
       </div>
       <div className="editor-comment-mode-sidebar">
-        {annotationSnapshot.allIds.length === 0 ? (
+        {resolvedComments.length === 0 ? (
           <span className="editor-comment-mode-code" id="comments-empty">
             comments:none
           </span>
         ) : (
-          annotationSnapshot.allIds.map((id) => {
-            const annotation =
-              annotationSnapshot.byId.get(id) ??
-              failInvariant('Expected value to be defined');
-
-            return (
-              <div
-                className="editor-comment-mode-comment-card"
-                id={`comment-card-${annotation.id}`}
-                key={annotation.id}
+          resolvedComments.map((comment) => (
+            <div
+              className="editor-comment-mode-comment-card"
+              id={`comment-card-${comment.id}`}
+              key={comment.id}
+            >
+              <span
+                className={cn(
+                  commentToneBadgeVariants({
+                    state: commentVisualState(comment.tone, comment.status),
+                  })
+                )}
               >
-                <span
-                  className={cn(
-                    commentToneBadgeVariants({
-                      state: commentVisualState(
-                        annotation.data?.tone ?? 'review',
-                        annotation.data?.status ?? 'open'
-                      ),
-                    })
-                  )}
-                >
-                  {annotation.data?.label ?? annotation.id} -{' '}
-                  {annotation.data?.status ?? 'open'}
-                </span>
-                <strong>{annotation.data?.body}</strong>
-                <span className="editor-comment-mode-code">
-                  range:{formatRange(annotation.range)}
-                </span>
-                <Button
-                  onClick={() => {
-                    removeComment(annotation.id);
-                  }}
-                  type="button"
-                  variant="outline"
-                >
-                  Remove comment
-                </Button>
-              </div>
-            );
-          })
+                {comment.label} - {comment.status}
+              </span>
+              <strong>{comment.body}</strong>
+              <span className="editor-comment-mode-code">
+                range:{formatRange(comment.range)}
+              </span>
+              <Button
+                onClick={() => {
+                  removeComment(comment.id);
+                }}
+                type="button"
+                variant="outline"
+              >
+                Remove comment
+              </Button>
+            </div>
+          ))
         )}
         <div className="editor-comment-mode-annotation-row">
-          {annotationSnapshot.allIds.length === 0 ? (
+          {resolvedComments.length === 0 ? (
             <span className="editor-comment-mode-code" id="annotations-empty">
               annotations:none
             </span>
           ) : (
-            annotationSnapshot.allIds.map((id) => {
-              const annotation =
-                annotationSnapshot.byId.get(id) ??
-                failInvariant('Expected value to be defined');
-
-              return (
-                <span className="editor-comment-mode-code" key={annotation.id}>
-                  {annotation.id}:{annotation.data?.label ?? 'none'}
-                </span>
-              );
-            })
+            resolvedComments.map((comment) => (
+              <span className="editor-comment-mode-code" key={comment.id}>
+                {comment.id}:{comment.label}
+              </span>
+            ))
           )}
         </div>
       </div>
@@ -614,11 +725,27 @@ const useCommentView = (
   onDecorationSource: (source: DecorationSource<CommentEditor> | null) => void
 ) => {
   const editor = useEditorContext();
-  const annotations = useMemo(
-    () => createCommentAnnotations(comments),
-    [comments]
+  const [store] = useState(() => createCommentViewStore(editor, comments));
+
+  useLayoutEffect(() => {
+    store.setEditor(editor);
+  }, [editor, store]);
+
+  useLayoutEffect(() => {
+    store.setComments(comments);
+  }, [comments, store]);
+
+  useEffect(
+    () =>
+      editor.subscribeCommit((commit) => {
+        const moved = commit.changed.anchors();
+        if (moved.length > 0) {
+          store.syncMovedAnchors(moved);
+        }
+      }),
+    [editor, store]
   );
-  const store = useAnnotationStore<CommentData>(editor, annotations);
+
   const decorationSource = useMemo(
     () => createCommentDecorationSource(store),
     [store]

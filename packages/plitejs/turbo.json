@@ -82,7 +82,6 @@
       "dependsOn": [],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "src/internal/index.*",
         "src/**",
         "!src/authored/**",
         "!src/diff/**",
@@ -97,9 +96,6 @@
         "!src/testing/**",
         "!src/yjs/**",
         "!src/yjs/react/**",
-        "test/annotations/**",
-        "test/annotations.*",
-        "test/annotations-*",
         "test/internal/index/**",
         "test/internal/index.*",
         "test/internal/index-*",
@@ -437,7 +433,6 @@
       "cache": true,
       "dependsOn": [],
       "inputs": [
-        "src/annotations/**",
         "src/internal/index.*",
         "src/**",
         "!src/authored/**",
@@ -690,7 +685,6 @@
         "source-hash:partition:yjs"
       ],
       "inputs": [
-        "src/annotations/**",
         "src/internal/index.*",
         "src/**",
         "!src/authored/**",
@@ -706,9 +700,6 @@
         "!src/testing/**",
         "!src/yjs/**",
         "!src/yjs/react/**",
-        "test/annotations/**",
-        "test/annotations.*",
-        "test/annotations-*",
         "test/internal/index/**",
         "test/internal/index.*",
         "test/internal/index-*",

@@ -81,11 +81,6 @@
       "import": "./dist/react/virtualized.js",
       "default": "./dist/react/virtualized.js"
     },
-    "./annotations": {
-      "types": "./dist/annotations/index.d.ts",
-      "import": "./dist/annotations/index.js",
-      "default": "./dist/annotations/index.js"
-    },
     "./diff": {
       "types": "./dist/diff/index.d.ts",
       "import": "./dist/diff/index.js",

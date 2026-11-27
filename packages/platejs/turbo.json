@@ -3366,10 +3366,7 @@
     },
     "source-hash:partition:comments": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#source-hash:partition:core",
-        "source-hash:partition:core"
-      ],
+      "dependsOn": ["source-hash:partition:core"],
       "inputs": [
         "src/features/comments/**",
         "!src/**/*.spec.*",
@@ -5270,6 +5267,7 @@
         "source-hash:partition:comments-react",
         "source-hash:partition:core",
         "source-hash:partition:react-core",
+        "source-hash:partition:static",
         "source-hash:partition:table",
         "source-hash:partition:table-react"
       ],
