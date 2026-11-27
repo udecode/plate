@@ -39,6 +39,7 @@ const PopoverContentWithPlaced =
 const FloatingPopoverRefsContext = React.createContext<{
   anchor: FloatingAnchorTarget;
   insideElement?: Element | null;
+  onBeforeClose?: () => boolean;
   open: boolean;
   /**
    * The caller owns `open` and hears no change, so nothing can dismiss the
@@ -66,6 +67,7 @@ export function FloatingPopover({
   children,
   defaultOpen = false,
   insideElement,
+  onBeforeClose,
   onOpenChange,
   onOpenChangeComplete,
   open,
@@ -75,6 +77,8 @@ export function FloatingPopover({
   /** Presses on this element, and focus moving into it, never dismiss the popover. */
   insideElement?: Element | null;
   modal?: boolean;
+  /** Return false to refuse a close from Escape or an outside press. */
+  onBeforeClose?: () => boolean;
   onOpenChange?: (open: boolean) => void;
   onOpenChangeComplete?: (open: boolean) => void;
   open?: boolean;
@@ -92,15 +96,18 @@ export function FloatingPopover({
     () => ({
       anchor,
       insideElement,
+      onBeforeClose,
       open: resolvedOpen,
       pinned,
       scrollDismissedRef,
       setAnchor,
       setHost,
     }),
-    [anchor, insideElement, pinned, resolvedOpen, setHost]
+    [anchor, insideElement, onBeforeClose, pinned, resolvedOpen, setHost]
   );
   const setOpen = (next: boolean) => {
+    if (!next && onBeforeClose?.() === false) return;
+
     setUncontrolledOpen(next);
     onOpenChange?.(next);
     requestAnimationFrame(() => onOpenChangeComplete?.(next));
@@ -277,7 +284,10 @@ export function FloatingPopoverContent({
         }}
         onEscapeKeyDown={onEscapeKeyDown}
         onInteractOutside={(event) => {
-          if (isInside(refs?.insideElement, event.target)) {
+          if (
+            isInside(refs?.insideElement, event.target) ||
+            refs?.onBeforeClose?.() === false
+          ) {
             event.preventDefault();
           }
         }}

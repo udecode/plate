@@ -38,10 +38,10 @@ import {
   NativeSelectOption,
 } from '@/components/ui/native-select';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  FloatingPopover,
+  FloatingPopoverContent,
+  FloatingPopoverTrigger,
+} from '@/registry/components/editor/floating-popover';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 // Dimmed text on a suggestion's tint falls below 4.5:1, so it stays opaque there.
@@ -420,35 +420,33 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
       }}
     >
       {form ? (
-        <Popover
+        <FloatingPopover
           open={open}
+          onBeforeClose={() => beforeClose.current?.() !== 'refused'}
           onOpenChange={(nextOpen) => {
-            if (!nextOpen && beforeClose.current?.() === 'refused') return;
-
             setOpenAs(nextOpen ? { role: fillRole } : null);
           }}
         >
-          <PopoverTrigger {...chip} type="button">
-            {chipContent}
-          </PopoverTrigger>
-          <PopoverContent
+          <FloatingPopoverTrigger>
+            <button {...chip} type="button">
+              {chipContent}
+            </button>
+          </FloatingPopoverTrigger>
+          <FloatingPopoverContent
             className={cn(
-              'max-h-[min(80vh,var(--radix-popover-content-available-height,80vh))] max-w-[calc(100vw-2rem)] overflow-y-auto',
+              'max-h-[min(80vh,var(--floating-popover-available-height,80vh))] max-w-[calc(100vw-2rem)] overflow-y-auto',
               filling ? 'w-64' : 'w-[26rem]'
             )}
-            onCloseAutoFocus={(event) => {
+            onFinalFocus={(event) => {
               if (!suppressCloseFocusRef.current) return;
 
               suppressCloseFocusRef.current = false;
               event.preventDefault();
             }}
-            onInteractOutside={(event) => {
-              if (beforeClose.current?.() === 'refused') event.preventDefault();
-            }}
           >
             {form}
-          </PopoverContent>
-        </Popover>
+          </FloatingPopoverContent>
+        </FloatingPopover>
       ) : (
         <button {...chip} type="button">
           {chipContent}

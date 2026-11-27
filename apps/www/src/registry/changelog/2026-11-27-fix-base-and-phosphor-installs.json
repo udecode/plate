@@ -38,6 +38,15 @@
       "diagnostics": []
     },
     {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
       "name": "block-list-static",
       "files": [
         "apps/www/src/registry/components/editor/block-list-static.tsx"
@@ -93,10 +102,10 @@
     {
       "id": "2026-11-27-date-field-single-button-trigger",
       "kind": "fix",
-      "summary": "Pass trigger props directly onto `PopoverTrigger` without `asChild` so Base UI and Radix both render a single native button.",
+      "summary": "Pass trigger props directly onto `PopoverTrigger` without `asChild` in `date`, add `onBeforeClose` to `FloatingPopover`, and move `field` onto `FloatingPopover` so Base UI and Radix both render a single native button and compile cleanly without Radix-only popover props.",
       "details": [],
       "migrationNotes": [],
-      "targets": ["date", "field"],
+      "targets": ["date", "field", "floating-popover"],
       "source": {
         "line": 18,
         "row": 2,

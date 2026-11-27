@@ -3501,13 +3501,13 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/field-toolbar-button.json",
+        "https://platejs.org/r/floating-popover.json",
         "https://platejs.org/r/suggestion-style.json",
         "button",
         "checkbox",
         "input",
         "label",
-        "native-select",
-        "popover"
+        "native-select"
       ],
       "files": [
         {

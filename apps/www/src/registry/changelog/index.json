@@ -317,6 +317,7 @@
         "comment-toolbar-button",
         "date",
         "field",
+        "floating-popover",
         "block-list-static",
         "math-static",
         "media-file-static",

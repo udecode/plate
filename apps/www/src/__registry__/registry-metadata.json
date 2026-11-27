@@ -1,5 +1,5 @@
 {
-  "generation": "db9cf37c5110df440d164714614dc630f5a7b68fe91712d0d77cad7e212ee866",
+  "generation": "8b862d39d36811719a43cb3af0719d35f01453c93f7c442987a6a3658d2a9e4f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3569,13 +3569,13 @@
           },
           "registryDependencies": [
             "@plate/field-toolbar-button",
+            "@plate/floating-popover",
             "@plate/suggestion-style",
             "button",
             "checkbox",
             "input",
             "label",
-            "native-select",
-            "popover"
+            "native-select"
           ]
         },
         {
@@ -11531,13 +11531,13 @@
           },
           "registryDependencies": [
             "@plate/field-toolbar-button",
+            "@plate/floating-popover",
             "@plate/suggestion-style",
             "button",
             "checkbox",
             "input",
             "label",
-            "native-select",
-            "popover"
+            "native-select"
           ]
         },
         {

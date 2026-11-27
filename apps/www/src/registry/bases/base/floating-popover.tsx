@@ -78,6 +78,7 @@ export function FloatingPopover({
   children,
   defaultOpen = false,
   insideElement,
+  onBeforeClose,
   onOpenChange,
   open,
   ...props
@@ -86,6 +87,8 @@ export function FloatingPopover({
   /** Presses on this element or with the pointer over it, and focus moving into it, never dismiss the popover. */
   insideElement?: Element | null;
   modal?: boolean;
+  /** Return false to refuse a close from Escape or an outside press. */
+  onBeforeClose?: () => boolean;
   onOpenChange?: (open: boolean) => void;
   onOpenChangeComplete?: (open: boolean) => void;
   open?: boolean;
@@ -149,6 +152,11 @@ export function FloatingPopover({
               'relatedTarget' in details.event &&
               isInside(insideElement, details.event.relatedTarget))
           ) {
+            details.cancel();
+
+            return;
+          }
+          if (!nextOpen && onBeforeClose?.() === false) {
             details.cancel();
 
             return;

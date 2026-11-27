@@ -286,6 +286,20 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
+    "floating-popover": [
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-26-floating-popover-escape",
+      "2026-11-19-popovers-hide-with-text",
+      "2026-11-18-radix-ui-package",
+      "2026-11-17-cn-package",
+      "2026-11-10-discussion-safari-taps",
+      "2026-11-07-toolbar-overlays-close-on-scroll",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-07-provider-lifetimes",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-31-inline-component-props",
+      "2026-08-25-base-first-registry"
+    ],
     "block-list-static": [
       "2026-11-27-fix-base-and-phosphor-installs",
       "2026-11-27-render-prop-type-imports",
@@ -538,19 +552,6 @@
       "2026-08-24-react-compiler-owned-editor-state",
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
-    ],
-    "floating-popover": [
-      "2026-11-26-floating-popover-escape",
-      "2026-11-19-popovers-hide-with-text",
-      "2026-11-18-radix-ui-package",
-      "2026-11-17-cn-package",
-      "2026-11-10-discussion-safari-taps",
-      "2026-11-07-toolbar-overlays-close-on-scroll",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-07-provider-lifetimes",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-31-inline-component-props",
-      "2026-08-25-base-first-registry"
     ],
     "suggestion-colors": ["2026-11-26-suggestion-colors"],
     "suggestion-style": [

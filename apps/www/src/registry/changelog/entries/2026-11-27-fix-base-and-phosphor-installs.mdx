@@ -15,7 +15,7 @@ diagnostics: []
 
 <!-- entry: {"id":"2026-11-27-date-field-single-button-trigger","kind":"fix","migrationNotes":[]} -->
 
-- **`date`, `field`**: Pass trigger props directly onto `PopoverTrigger` without `asChild` so Base UI and Radix both render a single native button.
+- **`date`, `field`, `floating-popover`**: Pass trigger props directly onto `PopoverTrigger` without `asChild` in `date`, add `onBeforeClose` to `FloatingPopover`, and move `field` onto `FloatingPopover` so Base UI and Radix both render a single native button and compile cleanly without Radix-only popover props.
 
 <!-- entry: {"id":"2026-11-27-static-icons-phosphor-rsc","kind":"fix","migrationNotes":[]} -->
 
