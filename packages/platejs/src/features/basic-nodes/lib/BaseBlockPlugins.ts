@@ -249,11 +249,7 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
             }),
           mode: 'lowest',
         }),
-      ].sort(
-        (a, b) =>
-          b[1].length - a[1].length ||
-          b[1].join('.').localeCompare(a[1].join('.'))
-      );
+      ].sort((a, b) => PathApi.compare(b[1], a[1]));
 
       if (blocks.length === 0) return false;
 
