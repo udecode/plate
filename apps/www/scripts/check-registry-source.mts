@@ -387,12 +387,19 @@ function getInstalledPackages(itemName: string) {
 }
 
 const duplicateDependencies: string[] = [];
+const invalidPackageDependencies: string[] = [];
 const missingPackageDependencies: string[] = [];
 const unresolvedCopiedImports: string[] = [];
 
 for (const item of normalizedRegistry.items) {
   const dependencies = item.dependencies ?? [];
   const registryDependencies = item.registryDependencies ?? [];
+
+  for (const dependency of dependencies) {
+    if (/^[^@][^/]*\//.test(dependency)) {
+      invalidPackageDependencies.push(`${item.name}: ${dependency}`);
+    }
+  }
 
   if (new Set(dependencies).size !== dependencies.length) {
     duplicateDependencies.push(`${item.name}: dependencies`);
@@ -443,11 +450,15 @@ for (const item of normalizedRegistry.items) {
 
 assert(
   duplicateDependencies.length === 0 &&
+    invalidPackageDependencies.length === 0 &&
     missingPackageDependencies.length === 0 &&
     unresolvedCopiedImports.length === 0,
   [
     'Expected every published registry source import to resolve to a copied file and an installable package closure.',
     ...duplicateDependencies,
+    ...invalidPackageDependencies.map(
+      (entry) => `invalid subpath package dependency: ${entry}`
+    ),
     ...missingPackageDependencies,
     ...unresolvedCopiedImports,
   ].join('\n')

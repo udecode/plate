@@ -1,4 +1,3 @@
-import { CheckIcon } from 'lucide-react';
 import { BaseFieldPlugin, fillsField } from 'platejs/field';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
@@ -40,7 +39,20 @@ export function FieldElementStatic(
         className="inline-flex size-3.5 items-center justify-center rounded-[3px] border border-current align-middle"
         role="img"
       >
-        {value === true && <CheckIcon className="size-3" />}
+        {value === true && (
+          <svg
+            aria-hidden="true"
+            className="size-3"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        )}
       </span>
     );
   } else if (fillsField(element, value)) {

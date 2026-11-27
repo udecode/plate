@@ -5645,7 +5645,6 @@
     {
       "name": "version-history-demo",
       "dependencies": [
-        "platejs/authored",
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],

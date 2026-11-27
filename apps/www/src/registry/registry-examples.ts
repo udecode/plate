@@ -303,7 +303,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['platejs/authored', 'platejs'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'examples/version-history-demo.tsx',

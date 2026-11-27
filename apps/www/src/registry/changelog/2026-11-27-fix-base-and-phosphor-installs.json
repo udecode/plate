@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-fix-base-and-phosphor-installs",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-fix-base-and-phosphor-installs.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix Base UI editor-ai TypeScript and nested-button errors, Phosphor RSC build crash, and version-history-demo dependency",
+  "targets": [
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date",
+      "files": ["apps/www/src/registry/components/editor/date.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-static",
+      "files": ["apps/www/src/registry/components/editor/math-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file-static",
+      "files": [
+        "apps/www/src/registry/components/editor/media-file-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-static",
+      "files": ["apps/www/src/registry/components/editor/field-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "version-history-demo",
+      "files": ["apps/www/src/registry/examples/version-history-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-comment-toolbar-button-base-dialog",
+      "kind": "fix",
+      "summary": "Remove the Radix-only `onCloseAutoFocus` prop from `DialogContent` and restore editor focus after close in `RevealSelection` so Base UI `editor-ai` installs type-check cleanly.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-fix-base-and-phosphor-installs",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-date-field-single-button-trigger",
+      "kind": "fix",
+      "summary": "Pass trigger props directly onto `PopoverTrigger` without `asChild` so Base UI and Radix both render a single native button.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["date", "field"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-fix-base-and-phosphor-installs",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-static-icons-phosphor-rsc",
+      "kind": "fix",
+      "summary": "Render inline SVGs instead of client icon-library imports so `BaseEditorKit` builds cleanly in Next.js Route Handlers and Server Components with Phosphor Icons.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "block-list-static",
+        "math-static",
+        "media-file-static",
+        "field-static"
+      ],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-fix-base-and-phosphor-installs",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-version-history-demo-dep",
+      "kind": "fix",
+      "summary": "Remove the invalid `platejs/authored` subpath dependency.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["version-history-demo"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-fix-base-and-phosphor-installs",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

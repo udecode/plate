@@ -2,7 +2,6 @@ import { cn } from 'cn';
 
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
-import { RadicalIcon } from 'lucide-react';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
@@ -42,7 +41,18 @@ export function EquationElementStatic(
           />
         ) : (
           <div className="flex h-7 w-full items-center gap-2 text-sm whitespace-nowrap text-muted-foreground">
-            <RadicalIcon className="size-6 text-muted-foreground/80" />
+            <svg
+              aria-hidden="true"
+              className="size-6 text-muted-foreground/80"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path d="M3 12h3.28a1 1 0 0 1 .948.684l2.298 7.934a.5.5 0 0 0 .96-.044L13.82 4.771A1 1 0 0 1 14.792 4H21" />
+            </svg>
             <div>Add a Tex equation</div>
           </div>
         )}

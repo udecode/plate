@@ -131,7 +131,6 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
   const [blocked, setBlocked] = React.useState(false);
   const [message, setMessage] = React.useState<string | null>(null);
   const [revealing, setRevealing] = React.useState(false);
-  const navigatingRef = React.useRef(false);
   const navigate = React.useCallback(
     (id: string) => {
       const target = readCommentTarget(editor, id);
@@ -140,13 +139,11 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
         return;
       }
       setMessage(null);
-      navigatingRef.current = true;
       setOpen(false);
       requestAnimationFrame(() => {
         const current = readCommentTarget(editor, id);
         const range = readStoredRange(editor, id, current);
         if (!range) {
-          navigatingRef.current = false;
           setMessage(
             TARGET_LABELS[
               current.status === 'attached' ? 'unavailable' : current.status
@@ -188,13 +185,6 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
             editor={editor}
             message={message}
             onBlockedChange={setBlocked}
-            onCloseAutoFocus={(event) => {
-              const navigating = navigatingRef.current;
-              navigatingRef.current = false;
-              if (navigating && document.activeElement !== document.body) {
-                event.preventDefault();
-              }
-            }}
             onNavigate={navigate}
           />
         )}
@@ -223,13 +213,11 @@ function AllCommentsDialog({
   editor,
   message,
   onBlockedChange,
-  onCloseAutoFocus,
   onNavigate,
 }: {
   editor: Editor;
   message: string | null;
   onBlockedChange: (blocked: boolean) => void;
-  onCloseAutoFocus: (event: Event) => void;
   onNavigate: (id: string) => void;
 }) {
   const { api: comments } = editor.plugin(CommentsPlugin);
@@ -295,7 +283,6 @@ function AllCommentsDialog({
     <DialogContent
       className="max-h-[min(760px,calc(100dvh-2rem))] gap-0 overflow-hidden p-0 sm:max-w-xl"
       data-all-comments=""
-      onCloseAutoFocus={onCloseAutoFocus}
     >
       <DialogHeader className="border-b p-5 pe-12">
         <DialogTitle>All comments</DialogTitle>

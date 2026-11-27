@@ -1,5 +1,4 @@
 import { cn } from 'cn';
-import { CheckIcon } from 'lucide-react';
 import {
   BaseListPlugin,
   type Editor,
@@ -131,7 +130,20 @@ function TodoMarkerStatic(
       type="button"
     >
       <div className="cn-checkbox-indicator grid place-content-center text-current">
-        {checked && <CheckIcon />}
+        {checked && (
+          <svg
+            aria-hidden="true"
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        )}
       </div>
     </button>
   );

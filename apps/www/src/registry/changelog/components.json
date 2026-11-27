@@ -111,6 +111,7 @@
     ],
     "version-history-demo": [
       "2026-11-27-diff-and-cursor-colors",
+      "2026-11-27-fix-base-and-phosphor-installs",
       "2026-10-13-suggestions-review-tree",
       "2026-10-07-editor-user",
       "2026-09-15-structural-diff",
@@ -169,6 +170,7 @@
       "2026-11-27-field-condition-targets",
       "2026-11-27-field-multiple-choice-ui",
       "2026-11-27-field-remove-default",
+      "2026-11-27-fix-base-and-phosphor-installs",
       "2026-11-27-selector-depends-on",
       "2026-11-26-suggestion-colors",
       "2026-11-25-field-name-conflicts",
@@ -196,8 +198,73 @@
     ],
     "field-static": [
       "2026-11-27-field-remove-default",
+      "2026-11-27-fix-base-and-phosphor-installs",
       "2026-11-24-field-static-answers",
       "2026-11-21-add-field"
+    ],
+    "comment-toolbar-button": [
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-20-drop-editor-selection-view",
+      "2026-11-19-all-comments-from-note",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-comment-suggestion-outcome",
+      "2026-11-18-comments-on-board-note-text",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-27-fix-all-comments-target-status",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-18-comment-discovery",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies"
+    ],
+    "date": [
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-17-cn-package",
+      "2026-11-17-fix-date-picker-month",
+      "2026-10-20-date-copied-labels",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-08-30-fix-date-calendar-single-click",
+      "2026-08-25-base-first-registry",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "block-list-static": [
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-27-render-prop-type-imports",
+      "2026-11-23-board-export",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-12-fix-list-import-export",
+      "2026-10-10-fix-static-list-indent",
+      "2026-10-10-list-restart-continue",
+      "2026-10-09-export-static-presentation",
+      "2026-09-30-static-list-table-known-paths",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "math-static": [
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-24-editor-primary-color",
+      "2026-11-22-create-base-color-tw-prefix",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-19-math-inline-mode",
+      "2026-10-18-math-katex-import",
+      "2026-10-08-registry-install-dependencies",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-file-static": [
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-19-rtl-media-align",
+      "2026-11-18-registry-icon-library",
+      "2026-08-17-flat-editor-registry"
     ],
     "ink": ["2026-11-27-ink-digitize"],
     "ink-digitize-bar": ["2026-11-27-ink-digitize"],
@@ -218,23 +285,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families",
       "2026-07-23-rich-media-caption-children"
-    ],
-    "block-list-static": [
-      "2026-11-27-render-prop-type-imports",
-      "2026-11-23-board-export",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-12-fix-list-import-export",
-      "2026-10-10-fix-static-list-indent",
-      "2026-10-10-list-restart-continue",
-      "2026-10-09-export-static-presentation",
-      "2026-09-30-static-list-table-known-paths",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "code-block-diagram": [
       "2026-11-27-selector-depends-on",
@@ -497,18 +547,6 @@
       "2026-08-28-canonical-editor-api-names",
       "2026-08-25-base-first-registry",
       "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "math-static": [
-      "2026-11-24-editor-primary-color",
-      "2026-11-22-create-base-color-tw-prefix",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-19-math-inline-mode",
-      "2026-10-18-math-katex-import",
-      "2026-10-08-registry-install-dependencies",
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
@@ -851,21 +889,6 @@
       "2026-09-01-plugin-render-contract",
       "2026-08-17-flat-editor-registry"
     ],
-    "comment-toolbar-button": [
-      "2026-11-20-drop-editor-selection-view",
-      "2026-11-19-all-comments-from-note",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-comment-suggestion-outcome",
-      "2026-11-18-comments-on-board-note-text",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-27-fix-all-comments-target-status",
-      "2026-10-12-toolbar-button-names",
-      "2026-09-18-comment-discovery",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies"
-    ],
     "markdown-to-editor-demo": [
       "2026-11-20-markdown-cjk-emphasis",
       "2026-09-28-markdown-registered-tags"
@@ -1091,11 +1114,6 @@
       "2026-10-13-media-caption-preview",
       "2026-08-17-flat-editor-registry"
     ],
-    "media-file-static": [
-      "2026-11-19-rtl-media-align",
-      "2026-11-18-registry-icon-library",
-      "2026-08-17-flat-editor-registry"
-    ],
     "use-floating-rect": ["2026-11-18-floating-rect-hides-clipped-text"],
     "import-toolbar-button": [
       "2026-11-18-html-markdown-import-keeps-the-rest",
@@ -1281,16 +1299,6 @@
       "2026-09-07-playground-details",
       "2026-08-14-author-editor-runtime",
       "2026-07-23-explicit-editor-kit-composition"
-    ],
-    "date": [
-      "2026-11-17-cn-package",
-      "2026-11-17-fix-date-picker-month",
-      "2026-10-20-date-copied-labels",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-08-30-fix-date-calendar-single-click",
-      "2026-08-25-base-first-registry",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
     ],
     "details-static": [
       "2026-11-17-cn-package",

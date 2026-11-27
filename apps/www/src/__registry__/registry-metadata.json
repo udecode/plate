@@ -1,5 +1,5 @@
 {
-  "generation": "51d7fc1c2fe1c891458e8914103b8a3c048bf65628a2e2e904f876810c0fe67b",
+  "generation": "315b6a07d010d7c37928979f6378c40511fdda83b297c871cc39b7010d203c86",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1574,8 +1574,7 @@
           "dependencies": [
             "platejs",
             "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2186,8 +2185,7 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2424,8 +2422,7 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -2558,8 +2555,7 @@
             "platejs",
             "katex@0.16.22",
             "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -5705,7 +5701,6 @@
         },
         {
           "dependencies": [
-            "platejs/authored",
             "platejs",
             "diff-match-patch-ts@^0.6.0"
           ],
@@ -9441,8 +9436,7 @@
           "dependencies": [
             "platejs",
             "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -10053,8 +10047,7 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -10291,8 +10284,7 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -10425,8 +10417,7 @@
             "platejs",
             "katex@0.16.22",
             "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -13572,7 +13563,6 @@
         },
         {
           "dependencies": [
-            "platejs/authored",
             "platejs",
             "diff-match-patch-ts@^0.6.0"
           ],

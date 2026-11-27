@@ -50,31 +50,28 @@ export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
     setOpen(nextOpen);
   }, []);
 
-  const trigger = (
-    <button
-      className={cn(
-        'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground',
-        inlineSuggestionVariants({ on: 'parent' })
-      )}
-      contentEditable={false}
-      draggable
-      onClick={(event) => {
-        const beganOpen =
-          event.detail === 0 ? openRef.current : openAtPointerDownRef.current;
+  const triggerProps = {
+    className: cn(
+      'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground',
+      inlineSuggestionVariants({ on: 'parent' })
+    ),
+    contentEditable: false as const,
+    draggable: true,
+    onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+      const beganOpen =
+        event.detail === 0 ? openRef.current : openAtPointerDownRef.current;
 
-        if (readOnly || beganOpen) return;
+      if (readOnly || beganOpen) return;
 
-        event.preventDefault();
-        setOpenState(true);
-      }}
-      onPointerDown={() => {
-        openAtPointerDownRef.current = openRef.current;
-      }}
-      type="button"
-    >
-      {getDateLabel(element.value)}
-    </button>
-  );
+      event.preventDefault();
+      setOpenState(true);
+    },
+    onPointerDown: () => {
+      openAtPointerDownRef.current = openRef.current;
+    },
+    type: 'button' as const,
+  };
+  const label = getDateLabel(element.value);
 
   return (
     <EditorElement
@@ -86,10 +83,14 @@ export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
       }}
     >
       {readOnly ? (
-        trigger
+        <button {...triggerProps} type="button">
+          {label}
+        </button>
       ) : (
         <Popover open={open} onOpenChange={setOpenState}>
-          <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+          <PopoverTrigger {...triggerProps} type="button">
+            {label}
+          </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar
               defaultMonth={selectedDate}

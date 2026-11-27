@@ -428,10 +428,8 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
             setOpenAs(nextOpen ? { role: fillRole } : null);
           }}
         >
-          <PopoverTrigger asChild>
-            <button {...chip} type="button">
-              {chipContent}
-            </button>
+          <PopoverTrigger {...chip} type="button">
+            {chipContent}
           </PopoverTrigger>
           <PopoverContent
             className={cn(

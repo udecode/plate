@@ -187,6 +187,33 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-fix-base-and-phosphor-installs",
+      "href": "/registry/changelog/2026-11-27-fix-base-and-phosphor-installs.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix Base UI editor-ai TypeScript and nested-button errors, Phosphor RSC build crash, and version-history-demo dependency",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "comment-toolbar-button",
+        "date",
+        "field",
+        "block-list-static",
+        "math-static",
+        "media-file-static",
+        "field-static",
+        "version-history-demo"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-ink-digitize",
       "href": "/registry/changelog/2026-11-27-ink-digitize.json",
       "status": "draft",
