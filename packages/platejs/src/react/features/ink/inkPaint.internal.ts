@@ -24,6 +24,21 @@ export const inkOutlinePoints = ({ brush, samples }: InkMark) =>
     true
   );
 
+export const inkStrokeOutlinesPoints = (
+  brush: InkBrush,
+  strokes: ReadonlyArray<readonly InkSample[]>
+): ReadonlyArray<ReadonlyArray<readonly [number, number]>> => {
+  const shape = shapeOf(brush);
+
+  return strokes.map((samples) =>
+    strokePolygonPoints(
+      samples.map(([x, y, pressure]) => [x, y, pressure] as const),
+      shape,
+      true
+    )
+  );
+};
+
 /**
  * The SVG outline of a mark's samples in `brush`, moved by `dx` and `dy`.
  * `last` closes the line's end, for a finished mark.
@@ -39,10 +54,16 @@ export const inkOutline = (
     last
   );
 
+export const inkStrokesOutline = (
+  strokes: ReadonlyArray<readonly InkSample[]>,
+  brush: InkBrush
+) => strokes.map((samples) => inkOutline(samples, brush)).join(' ');
+
 type InkPath = Readonly<{
   digitized: boolean;
   dx: number;
   dy: number;
+  geometry: object;
   halo: boolean;
   mark: InkMark;
   path: SVGPathElement;
@@ -52,18 +73,24 @@ const DIGITIZED_OPACITY = 0.3;
 const HALO = ['data-picked', 'stroke', 'stroke-opacity', 'stroke-width'];
 
 export const createInkSurface = (into: SVGGElement) => {
-  const outlines = new Map<InkMark, string>();
+  const outlines = new WeakMap<object, string>();
   const paths = new Map<string, InkPath>();
   let hidden = false;
   let ink: InkPlaced['ink'] = [];
   let picked: readonly string[] = [];
 
-  const outlineOf = (mark: InkMark) => {
-    let outline = outlines.get(mark);
+  const outlineOf = (
+    mark: InkMark,
+    strokes: ReadonlyArray<readonly InkSample[]> | undefined
+  ) => {
+    const key: object = strokes ?? mark;
+    let outline = outlines.get(key);
 
     if (outline === undefined) {
-      outline = inkOutline(mark.samples, mark.brush);
-      outlines.set(mark, outline);
+      outline = strokes
+        ? inkStrokesOutline(strokes, mark.brush)
+        : inkOutline(mark.samples, mark.brush);
+      outlines.set(key, outline);
     }
 
     return outline;
@@ -73,11 +100,14 @@ export const createInkSurface = (into: SVGGElement) => {
     const shown: SVGPathElement[] = [];
     const left = new Set(paths.keys());
 
-    for (const { digitized = false, dx, dy, mark } of hidden ? [] : ink) {
+    for (const { digitized = false, dx, dy, mark, strokes } of hidden
+      ? []
+      : ink) {
       const { color, opacity, size } = mark.brush;
+      const geometry: object = strokes ?? mark;
       const halo = picked.includes(mark.id);
       const kept = paths.get(mark.id);
-      const inked = kept?.mark !== mark;
+      const inked = kept?.mark !== mark || kept?.geometry !== geometry;
       const fadedChanged = kept?.digitized !== digitized;
       const moved = kept?.dx !== dx || kept?.dy !== dy;
       const path =
@@ -89,7 +119,7 @@ export const createInkSurface = (into: SVGGElement) => {
 
       if (!kept) path.setAttribute('data-ink-mark', mark.id);
       if (inked) {
-        path.setAttribute('d', outlineOf(mark));
+        path.setAttribute('d', outlineOf(mark, strokes));
         path.setAttribute('fill', color);
       }
       if (inked || fadedChanged) {
@@ -110,7 +140,7 @@ export const createInkSurface = (into: SVGGElement) => {
       }
       if (moved) path.setAttribute('transform', `translate(${dx} ${dy})`);
       if (inked || fadedChanged || moved || kept?.halo !== halo) {
-        paths.set(mark.id, { digitized, dx, dy, halo, mark, path });
+        paths.set(mark.id, { digitized, dx, dy, geometry, halo, mark, path });
       }
       left.delete(mark.id);
       shown.push(path);
@@ -132,10 +162,8 @@ export const createInkSurface = (into: SVGGElement) => {
   };
 
   return {
-    keep: (holds: (mark: InkMark) => boolean) => {
-      for (const mark of outlines.keys()) {
-        if (!holds(mark)) outlines.delete(mark);
-      }
+    keep: (_holds: (mark: InkMark) => boolean) => {
+      // WeakMap entries collect automatically once marks or strokes drop.
     },
     painted: () => ink,
     paint: (placed: InkPlaced['ink']) => {

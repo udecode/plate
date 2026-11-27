@@ -1,12 +1,13 @@
 import {
   BaseInkPlugin,
   type InkMark,
+  type InkSample,
   type InkTool,
 } from '../../../features/ink/lib';
 import { segmentGap, windsAround } from '../../../internal/penStroke.internal';
 import { type Editor, HistoryPlugin } from '../../core';
 import { inkDraws, inkSamplesOf } from './inkInput.internal';
-import { inkOutlinePoints } from './inkPaint.internal';
+import { inkOutlinePoints, inkStrokeOutlinesPoints } from './inkPaint.internal';
 import type { InkPlaced } from './inkPlacement.internal';
 import { InkPlugin } from './InkPlugin';
 
@@ -34,7 +35,10 @@ type Box = Readonly<{
   top: number;
 }>;
 
-type Outline = Readonly<{ box: Box; points: readonly Point[] }>;
+type Outline = Readonly<{
+  box: Box;
+  polygons: ReadonlyArray<readonly Point[]>;
+}>;
 
 const metrics = { boxChecks: 0, sampleTests: 0, segmentTests: 0 };
 
@@ -64,7 +68,12 @@ const boxOf = (points: readonly Point[]): Box => {
   return { bottom, left, right, top };
 };
 
-const touches = ({ points }: Outline, a: Point, b: Point, radius: number) => {
+const touchesPolygon = (
+  points: readonly Point[],
+  a: Point,
+  b: Point,
+  radius: number
+) => {
   metrics.segmentTests += 1;
   if (windsAround(points, a)) return true;
 
@@ -72,6 +81,49 @@ const touches = ({ points }: Outline, a: Point, b: Point, radius: number) => {
     (corner, at) =>
       segmentGap(a, b, corner, points[(at + 1) % points.length]) <= radius
   );
+};
+
+const touches = ({ polygons }: Outline, a: Point, b: Point, radius: number) =>
+  polygons.some((points) => touchesPolygon(points, a, b, radius));
+
+const strokesMostlyInside = (
+  loop: readonly Point[],
+  strokes: ReadonlyArray<readonly InkSample[]>,
+  dx: number,
+  dy: number
+) => {
+  let totalLen = 0;
+  let insideLen = 0;
+
+  for (const stroke of strokes) {
+    for (let i = 1; i < stroke.length; i += 1) {
+      const a = stroke[i - 1];
+      const b = stroke[i];
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+
+      totalLen += len;
+      metrics.sampleTests += 1;
+      if (
+        windsAround(loop, {
+          x: (a[0] + b[0]) / 2 + dx,
+          y: (a[1] + b[1]) / 2 + dy,
+        })
+      ) {
+        insideLen += len;
+      }
+    }
+  }
+
+  if (totalLen > 0) return insideLen > totalLen / 2;
+
+  const points = strokes.flat();
+  const inside = points.filter(([x, y]) => {
+    metrics.sampleTests += 1;
+
+    return windsAround(loop, { x: x + dx, y: y + dy });
+  });
+
+  return inside.length > points.length / 2;
 };
 
 export const attachInkPick = ({
@@ -93,21 +145,30 @@ export const attachInkPick = ({
   tool: () => InkTool | null;
   view: Editor;
 }>) => {
-  const outlines = new Map<InkMark, Outline>();
+  const outlines = new WeakMap<object, Outline>();
   let commits = 0;
   let contact: Erasing | Lassoing | null = null;
   const unsubscribe = editor.subscribeCommit(() => {
     commits += 1;
   });
 
-  const outlineOf = (mark: InkMark) => {
-    let outline = outlines.get(mark);
+  const outlineOf = (
+    mark: InkMark,
+    strokes: ReadonlyArray<readonly InkSample[]> | undefined
+  ) => {
+    const key: object = strokes ?? mark;
+    let outline = outlines.get(key);
 
     if (!outline) {
-      const points = inkOutlinePoints(mark).map(([x, y]) => ({ x, y }));
+      const rawPolys = strokes
+        ? inkStrokeOutlinesPoints(mark.brush, strokes)
+        : [inkOutlinePoints(mark)];
+      const polygons = rawPolys.map((poly) =>
+        poly.map(([x, y]): Point => ({ x, y }))
+      );
 
-      outline = { box: boxOf(points), points };
-      outlines.set(mark, outline);
+      outline = { box: boxOf(polygons.flat()), polygons };
+      outlines.set(key, outline);
     }
 
     return outline;
@@ -122,7 +183,7 @@ export const attachInkPick = ({
   const erase = (erasing: Erasing, to: Point) => {
     const { last: from, radius } = erasing;
     const hit = painted()
-      .filter(({ digitized, dx, dy, mark }) => {
+      .filter(({ digitized, dx, dy, mark, strokes }) => {
         metrics.boxChecks += 1;
         if (
           digitized ||
@@ -132,7 +193,7 @@ export const attachInkPick = ({
           return false;
         }
 
-        const outline = outlineOf(mark);
+        const outline = outlineOf(mark, strokes);
         const { box } = outline;
         const a = { x: from.x - dx, y: from.y - dy };
         const b = { x: to.x - dx, y: to.y - dy };
@@ -181,11 +242,11 @@ export const attachInkPick = ({
 
   const pick = (loop: readonly Point[]) => {
     const { bottom, left, right, top } = boxOf(loop);
-    const picks = painted().filter(({ dx, dy, mark }) => {
+    const picks = painted().filter(({ dx, dy, mark, strokes }) => {
       metrics.boxChecks += 1;
       if (!(mark.brush.size > 0 && mark.brush.opacity > 0)) return false;
 
-      const { box } = outlineOf(mark);
+      const { box } = outlineOf(mark, strokes);
 
       if (
         box.left + dx > right ||
@@ -194,6 +255,10 @@ export const attachInkPick = ({
         box.bottom + dy < top
       ) {
         return false;
+      }
+
+      if (strokes) {
+        return strokesMostlyInside(loop, strokes, dx, dy) && holds(mark);
       }
 
       const inside = mark.samples.filter(([x, y]) => {
@@ -322,10 +387,8 @@ export const attachInkPick = ({
         layer.removeEventListener(type, listener);
       }
     },
-    keep: (holding: (mark: InkMark) => boolean) => {
-      for (const mark of outlines.keys()) {
-        if (!holding(mark)) outlines.delete(mark);
-      }
+    keep: (_holding: (mark: InkMark) => boolean) => {
+      // WeakMap entries collect automatically once marks or strokes drop.
     },
   };
 };

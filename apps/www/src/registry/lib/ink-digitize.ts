@@ -66,6 +66,7 @@ export type PreparedPassageMeta = Readonly<{
 
 export type PreparedInkDigitize = Readonly<{
   blockOrder: readonly string[];
+  blockSnapshots: ReadonlyMap<string, string>;
   extraMarkIds: readonly string[];
   lassoedMarkIds: readonly string[];
   markIdByKey: ReadonlyMap<string, string>;
@@ -126,6 +127,49 @@ const blockIdsBetween = (
   return allBlocks.slice(first, last + 1).map((entry) => entry.id);
 };
 
+const liveBlockInkText = (view: Editor, blockId: string): string | null => {
+  const entry = view.read.nodes.byId(blockId);
+
+  if (!entry) return null;
+
+  const { schema } = view.read;
+  let text = '';
+  const walk = (node: unknown) => {
+    if (TextApi.isText(node)) {
+      text += node.text;
+
+      return;
+    }
+    if (!ElementApi.isElement(node)) return;
+    for (const child of node.children) {
+      if (
+        ElementApi.isElement(child) &&
+        schema.isInline(child) &&
+        schema.isVoid(child)
+      ) {
+        text += VOID_CHAR;
+      } else {
+        walk(child);
+      }
+    }
+  };
+
+  walk(entry.node);
+
+  return text;
+};
+
+const passageTextForEdit = (
+  view: Editor,
+  read: Readonly<{
+    copy: (id: string) => Readonly<{ text: string }> | undefined;
+  }>,
+  meta: PreparedPassageMeta
+): string | null =>
+  meta.passage.block
+    ? liveBlockInkText(view, meta.passage.block)
+    : (read.copy(meta.copy)?.text ?? null);
+
 const shownMarkIdsByBlock = (
   view: Editor,
   blockIds: ReadonlySet<string>
@@ -134,7 +178,7 @@ const shownMarkIdsByBlock = (
   const byBlock = new Map<string, string[]>();
 
   for (const blockId of blockIds) byBlock.set(blockId, []);
-  for (const mark of read.shownMarks()) {
+  for (const mark of read.liveMarks()) {
     if (isUnanchoredMark(mark)) continue;
     const seen = new Set<string>();
 
@@ -174,10 +218,10 @@ export const prepareInkDigitizeRequest = async (
   const maxSide = options.maxSide ?? INK_DIGITIZE_MAX_SIDE;
   const maxWords = options.maxWords ?? INK_DIGITIZE_MAX_WORDS;
   const ink = view.plugin(InkPlugin);
-  const shown = ink.read.shownMarks();
-  const shownById = new Map(shown.map((mark) => [mark.id, mark]));
+  const liveMarks = ink.read.liveMarks();
+  const liveById = new Map(liveMarks.map((mark) => [mark.id, mark]));
   const pickedMarks = [...new Set(pickedIds)]
-    .map((id) => shownById.get(id))
+    .map((id) => liveById.get(id))
     .filter((mark): mark is InkMark => mark !== undefined);
 
   if (pickedMarks.length === 0) {
@@ -201,7 +245,7 @@ export const prepareInkDigitizeRequest = async (
     }
   }
 
-  const widenedMarks = shown.filter(
+  const widenedMarks = liveMarks.filter(
     (mark) =>
       !isUnanchoredMark(mark) &&
       mark.blocks.some((block) => {
@@ -241,6 +285,28 @@ export const prepareInkDigitizeRequest = async (
     };
   }
 
+  // Reserve the request ID and snapshot live block state BEFORE asynchronous
+  // image rendering so mid-capture edits cannot pass stale checks at confirm.
+  const requestId = nextInkDigitizeRequestId(view);
+  const passageBlocks = new Set<string>();
+
+  for (const passage of passages) {
+    const blockId = passage.block ?? ink.read.copy(passage.copy)?.block;
+
+    if (blockId) passageBlocks.add(blockId);
+  }
+
+  const blockOrder = blockIdsBetween(view, passageBlocks);
+  const shownByBlock = shownMarkIdsByBlock(view, passageBlocks);
+  const blockSnapshots = new Map<string, string>();
+
+  for (const blockId of passageBlocks) {
+    blockSnapshots.set(
+      blockId,
+      canonicalBlocksSnapshot(view.read.nodes, [blockId])
+    );
+  }
+
   const pictures = await (options.renderImages
     ? options.renderImages(passages, { maxSide })
     : ink.api.images(passages, { maxSide }));
@@ -269,14 +335,12 @@ export const prepareInkDigitizeRequest = async (
 
   const passageMetas: PreparedPassageMeta[] = [];
   const requestPassages: InkDigitizeRequest['passages'] = [];
-  const passageBlocks = new Set<string>();
 
   for (const [index, passage] of passages.entries()) {
     const pic = pictures[index] as InkPassageImages;
-    const copy = ink.read.copy(passage.copy);
+    const blockId = passage.block ?? ink.read.copy(passage.copy)?.block;
 
-    if (!copy) continue;
-    passageBlocks.add(copy.block);
+    if (!blockId) continue;
 
     const id = `p${index}`;
     const words = passage.words.map(({ end, start }) => {
@@ -289,7 +353,7 @@ export const prepareInkDigitizeRequest = async (
     });
 
     passageMetas.push({
-      blockId: copy.block,
+      blockId,
       copy: passage.copy,
       id,
       passage,
@@ -317,12 +381,11 @@ export const prepareInkDigitizeRequest = async (
     });
   }
 
-  const requestId = nextInkDigitizeRequestId(view);
-
   return {
     kind: 'ready',
     prepared: {
-      blockOrder: blockIdsBetween(view, passageBlocks),
+      blockOrder,
+      blockSnapshots,
       extraMarkIds: options.lassoOnly ? [] : extraMarkIds,
       lassoedMarkIds: [...lassoedSet],
       markIdByKey,
@@ -332,7 +395,7 @@ export const prepareInkDigitizeRequest = async (
         passages: requestPassages,
         request: requestId,
       },
-      shownByBlock: shownMarkIdsByBlock(view, passageBlocks),
+      shownByBlock,
     },
   };
 };
@@ -648,6 +711,29 @@ export const validateInkDigitizeReading = (
   };
 };
 
+const markTouchedByTextEdit = (
+  mark: InkPassage['marks'][number],
+  edit: Exclude<InkDigitizeEdit, { kind: 'answer' | 'comment' | 'highlight' }>
+): boolean => {
+  if (mark.margin !== undefined) return true;
+  if (edit.kind === 'insert') {
+    if (mark.gaps.includes(edit.gap)) return true;
+    if (mark.words.length === 0) return false;
+
+    const minWord = Math.min(...mark.words);
+    const maxWord = Math.max(...mark.words);
+
+    return edit.gap > minWord && edit.gap <= maxWord;
+  }
+
+  const [start, end] = edit.words;
+
+  return (
+    mark.words.some((w) => w >= start && w <= end) ||
+    mark.gaps.some((g) => g >= start && g <= end + 1)
+  );
+};
+
 export const marksTurningIntoSigns = (
   prepared: PreparedInkDigitize,
   corrections: readonly ValidatedCorrection[],
@@ -655,7 +741,21 @@ export const marksTurningIntoSigns = (
   meaningIndices?: ReadonlyMap<number, number>
 ): readonly string[] => {
   const metaById = new Map(prepared.passages.map((meta) => [meta.id, meta]));
-  const changedBlocks = new Set<string>();
+  const keptMarks = new Set<string>();
+
+  for (const [index, correction] of corrections.entries()) {
+    if (keptIndices.has(index)) {
+      for (const id of correction.markIds) keptMarks.add(id);
+    }
+  }
+
+  const passageMarkIds = new Set<string>();
+
+  for (const meta of prepared.passages) {
+    for (const mark of meta.passage.marks) passageMarkIds.add(mark.id);
+  }
+
+  const affected = new Set<string>();
 
   for (const [index, correction] of corrections.entries()) {
     if (!keptIndices.has(index)) continue;
@@ -672,25 +772,17 @@ export const marksTurningIntoSigns = (
       }
       const meta = metaById.get(edit.passage);
 
-      if (meta) changedBlocks.add(meta.blockId);
-    }
-  }
-
-  if (changedBlocks.size === 0) return [];
-
-  const keptMarks = new Set<string>();
-
-  for (const [index, correction] of corrections.entries()) {
-    if (keptIndices.has(index)) {
-      for (const id of correction.markIds) keptMarks.add(id);
-    }
-  }
-
-  const affected = new Set<string>();
-
-  for (const blockId of changedBlocks) {
-    for (const markId of prepared.shownByBlock.get(blockId) ?? []) {
-      if (!keptMarks.has(markId)) affected.add(markId);
+      if (!meta) continue;
+      for (const mark of meta.passage.marks) {
+        if (!keptMarks.has(mark.id) && markTouchedByTextEdit(mark, edit)) {
+          affected.add(mark.id);
+        }
+      }
+      for (const markId of prepared.shownByBlock.get(meta.blockId) ?? []) {
+        if (!keptMarks.has(markId) && !passageMarkIds.has(markId)) {
+          affected.add(markId);
+        }
+      }
     }
   }
 
@@ -917,10 +1009,23 @@ const canonicalBlocksSnapshot = (
 const isStalePick = (view: Editor, prepared: PreparedInkDigitize): boolean => {
   const { read } = view.plugin(BaseInkPlugin);
   const blockIds = new Set<string>();
+  const liveIds = new Set(read.liveMarks().map((mark) => mark.id));
 
   for (const meta of prepared.passages) {
-    if (read.place(meta.copy)?.kind !== 'live') return true;
+    if (meta.passage.block) {
+      if (meta.passage.marks.some((mark) => !liveIds.has(mark.id))) {
+        return true;
+      }
+    } else if (read.place(meta.copy)?.kind !== 'live') {
+      return true;
+    }
     blockIds.add(meta.blockId);
+  }
+
+  for (const [blockId, snapshot] of prepared.blockSnapshots) {
+    if (canonicalBlocksSnapshot(view.read.nodes, [blockId]) !== snapshot) {
+      return true;
+    }
   }
 
   const currentOrder = blockIdsBetween(view, blockIds);
@@ -946,6 +1051,38 @@ const isStalePick = (view: Editor, prepared: PreparedInkDigitize): boolean => {
   }
 
   return false;
+};
+
+const liveRangesOverlap = (a: Range, b: Range): boolean => {
+  const [aStart, aEnd] = RangeApi.edges(a);
+  const [bStart, bEnd] = RangeApi.edges(b);
+  const aCollapsed = PointApi.equals(aStart, aEnd);
+  const bCollapsed = PointApi.equals(bStart, bEnd);
+
+  if (aCollapsed && bCollapsed) return PointApi.equals(aStart, bStart);
+  if (aCollapsed) {
+    return (
+      PointApi.compare(aStart, bStart) >= 0 &&
+      PointApi.compare(aStart, bEnd) <= 0
+    );
+  }
+  if (bCollapsed) {
+    return (
+      PointApi.compare(bStart, aStart) >= 0 &&
+      PointApi.compare(bStart, aEnd) <= 0
+    );
+  }
+
+  return (
+    PointApi.compare(aStart, bEnd) < 0 && PointApi.compare(bStart, aEnd) < 0
+  );
+};
+
+const compareRangesReverse = (a: Range, b: Range): number => {
+  const [aStart, aEnd] = RangeApi.edges(a);
+  const [bStart, bEnd] = RangeApi.edges(b);
+
+  return PointApi.compare(bEnd, aEnd) || PointApi.compare(bStart, aStart);
 };
 
 export const confirmInkDigitize = (
@@ -983,12 +1120,8 @@ export const confirmInkDigitize = (
   type PlannedCorrection = {
     correctionIndex: number;
     edits: ResolvedEdit[];
+    headRange: Range;
     markIds: readonly string[];
-    sortKey: readonly [
-      passageIndex: number,
-      charEnd: number,
-      charStart: number,
-    ];
   };
 
   const planned: PlannedCorrection[] = [];
@@ -1007,16 +1140,24 @@ export const confirmInkDigitize = (
 
       if (!entry) return { status: 'stale' };
 
-      const savedCopy = read.copy(entry.meta.copy);
+      const baseText = passageTextForEdit(view, read, entry.meta);
 
-      if (!savedCopy) return { status: 'stale' };
+      if (baseText === null) return { status: 'stale' };
 
-      const span = resolveEditSpan(savedCopy.text, entry.meta, edit);
-      const range = read.range({
-        copy: entry.meta.copy,
-        end: span.charEnd,
-        start: span.charStart,
-      });
+      const span = resolveEditSpan(baseText, entry.meta, edit);
+      const range = read.range(
+        entry.meta.passage.block
+          ? {
+              block: entry.meta.passage.block,
+              end: span.charEnd,
+              start: span.charStart,
+            }
+          : {
+              copy: entry.meta.copy,
+              end: span.charEnd,
+              start: span.charStart,
+            }
+      );
 
       if (!range) return { status: 'stale' };
 
@@ -1033,29 +1174,16 @@ export const confirmInkDigitize = (
 
     if (resolvedEdits.length === 0) continue;
 
-    resolvedEdits.sort(
-      (a, b) =>
-        b.passageIndex - a.passageIndex ||
-        b.charEnd - a.charEnd ||
-        b.charStart - a.charStart
-    );
-
-    const head = resolvedEdits[0];
-
+    resolvedEdits.sort((a, b) => compareRangesReverse(a.range, b.range));
     planned.push({
       correctionIndex: choice.correctionIndex,
       edits: resolvedEdits,
+      headRange: resolvedEdits[0].range,
       markIds: correction.markIds,
-      sortKey: [head.passageIndex, head.charEnd, head.charStart],
     });
   }
 
-  planned.sort(
-    (a, b) =>
-      b.sortKey[0] - a.sortKey[0] ||
-      b.sortKey[1] - a.sortKey[1] ||
-      b.sortKey[2] - a.sortKey[2]
-  );
+  planned.sort((a, b) => compareRangesReverse(a.headRange, b.headRange));
 
   const applied: Array<{
     correctionIndex: number;
@@ -1067,8 +1195,23 @@ export const confirmInkDigitize = (
     reason: ConfirmSkipReason;
   }> = [];
   let committedCount = 0;
+  const claimedLiveRanges: Range[] = [];
 
   for (const item of planned) {
+    if (
+      item.edits.some((resolved) =>
+        claimedLiveRanges.some((claimed) =>
+          liveRangesOverlap(resolved.range, claimed)
+        )
+      )
+    ) {
+      skipped.push({
+        correctionIndex: item.correctionIndex,
+        markIds: item.markIds,
+        reason: 'refused',
+      });
+      continue;
+    }
     if (
       item.edits.some((resolved) =>
         rangesOverlapPending(resolved.range, pendingRanges)
@@ -1087,10 +1230,11 @@ export const confirmInkDigitize = (
         return (resolved.insertText ?? '').length === 0;
       }
       if (resolved.edit.kind === 'replace') {
-        const copy = read.copy(resolved.copy);
+        const meta = prepared.passages[resolved.passageIndex];
+        const baseText = passageTextForEdit(view, read, meta);
 
         return (
-          copy?.text.slice(resolved.charStart, resolved.charEnd) ===
+          baseText?.slice(resolved.charStart, resolved.charEnd) ===
           resolved.edit.text
         );
       }
@@ -1185,6 +1329,7 @@ export const confirmInkDigitize = (
       });
     } else {
       committedCount += 1;
+      for (const resolved of item.edits) claimedLiveRanges.push(resolved.range);
       applied.push({
         correctionIndex: item.correctionIndex,
         markIds: item.markIds,
@@ -1285,19 +1430,27 @@ export const confirmInkDigitizeWithComments = async (
 
           return { status: 'stale' };
         }
-        const savedCopy = read.copy(meta.copy);
+        const baseText = passageTextForEdit(view, read, meta);
 
-        if (!savedCopy) {
+        if (baseText === null) {
           releaseAllAnchors();
 
           return { status: 'stale' };
         }
-        const span = resolveEditSpan(savedCopy.text, meta, edit);
-        const range = read.range({
-          copy: meta.copy,
-          end: span.charEnd,
-          start: span.charStart,
-        });
+        const span = resolveEditSpan(baseText, meta, edit);
+        const range = read.range(
+          meta.passage.block
+            ? {
+                block: meta.passage.block,
+                end: span.charEnd,
+                start: span.charStart,
+              }
+            : {
+                copy: meta.copy,
+                end: span.charEnd,
+                start: span.charStart,
+              }
+        );
 
         if (!range) {
           releaseAllAnchors();
@@ -1313,7 +1466,7 @@ export const confirmInkDigitizeWithComments = async (
         pinnedEdits.push({
           anchor,
           edit,
-          excerpt: savedCopy.text.slice(span.charStart, span.charEnd),
+          excerpt: baseText.slice(span.charStart, span.charEnd),
         });
       }
 
@@ -1560,28 +1713,36 @@ export const groupInkMarksByDistanceAndTime = (
   };
 
   const bounds = marks.map(markBounds);
-  const copies = marks.map((mark) => new Set(mark.blocks.map((b) => b.copy)));
+  const byCopy = new Map<string, number[]>();
 
-  for (let i = 0; i < marks.length; i += 1) {
-    for (let j = i + 1; j < marks.length; j += 1) {
-      let sharedCopy = false;
+  for (const [index, mark] of marks.entries()) {
+    const seen = new Set<string>();
 
-      for (const copyId of copies[i]) {
-        if (copies[j].has(copyId)) {
-          sharedCopy = true;
-          break;
+    for (const block of mark.blocks) {
+      if (seen.has(block.copy)) continue;
+      seen.add(block.copy);
+      const bucket = byCopy.get(block.copy) ?? [];
+
+      bucket.push(index);
+      byCopy.set(block.copy, bucket);
+    }
+  }
+
+  for (const indices of byCopy.values()) {
+    for (let a = 0; a < indices.length; a += 1) {
+      const i = indices[a];
+
+      for (let b = a + 1; b < indices.length; b += 1) {
+        const j = indices[b];
+        const closeInTime = Math.abs(marks[i].at - marks[j].at) <= maxGapMs;
+        const bi = bounds[i];
+        const bj = bounds[j];
+        const closeInSpace =
+          bi !== null && bj !== null && boxesWithin(bi, bj, maxDistancePx);
+
+        if (closeInTime || closeInSpace) {
+          unite(i, j);
         }
-      }
-      if (!sharedCopy) continue;
-
-      const closeInTime = Math.abs(marks[i].at - marks[j].at) <= maxGapMs;
-      const bi = bounds[i];
-      const bj = bounds[j];
-      const closeInSpace =
-        bi !== null && bj !== null && boxesWithin(bi, bj, maxDistancePx);
-
-      if (closeInTime || closeInSpace) {
-        unite(i, j);
       }
     }
   }
@@ -1599,19 +1760,11 @@ export const groupInkMarksByDistanceAndTime = (
   return [...buckets.values()];
 };
 
-export const liveShownInkMarkIds = (view: Editor): readonly string[] => {
-  const { read } = view.plugin(BaseInkPlugin);
-  const ids: string[] = [];
-
-  for (const mark of read.shownMarks()) {
-    if (isUnanchoredMark(mark)) continue;
-    if (mark.blocks.some((block) => read.place(block.copy)?.kind === 'live')) {
-      ids.push(mark.id);
-    }
-  }
-
-  return ids;
-};
+export const liveShownInkMarkIds = (view: Editor): readonly string[] =>
+  view
+    .plugin(BaseInkPlugin)
+    .read.liveMarks()
+    .map((mark) => mark.id);
 
 export const planInkDigitizeAllBatches = (
   view: Editor,
@@ -1619,13 +1772,7 @@ export const planInkDigitizeAllBatches = (
 ): ReadonlyArray<readonly string[]> => {
   const { read } = view.plugin(BaseInkPlugin);
   const maxWords = options.maxWords ?? INK_DIGITIZE_MAX_WORDS;
-  const liveMarks = read
-    .shownMarks()
-    .filter(
-      (mark) =>
-        !isUnanchoredMark(mark) &&
-        mark.blocks.some((block) => read.place(block.copy)?.kind === 'live')
-    );
+  const liveMarks = read.liveMarks();
 
   if (liveMarks.length === 0) return [];
 

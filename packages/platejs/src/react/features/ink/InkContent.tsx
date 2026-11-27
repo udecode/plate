@@ -224,11 +224,18 @@ function InkLayer({
       tool: live,
       view,
     });
-    const isShownMark = (mark: { id: string }) =>
-      view
-        .plugin(InkPlugin)
-        .read.shownMarks()
-        .some((shownMark) => shownMark === mark);
+    let cachedShownList: ReadonlyArray<{ id: string }> | undefined;
+    let cachedShownSet = new Set<object>();
+    const isShownMark = (mark: { id: string }) => {
+      const list = view.plugin(InkPlugin).read.shownMarks();
+
+      if (list !== cachedShownList) {
+        cachedShownList = list;
+        cachedShownSet = new Set(list);
+      }
+
+      return cachedShownSet.has(mark);
+    };
     const picker = attachInkPick({
       canErase: isShownMark,
       editor,
@@ -260,6 +267,17 @@ function InkLayer({
       painted = next;
       surface.paint(ink);
       if (!sameSigns(next, shown.get())) shown.set({ bottom, signs });
+
+      const currentPicked = tools.get('picked');
+
+      if (currentPicked.length > 0 && signs.length > 0) {
+        const signedIds = new Set(signs.flatMap(({ sign }) => sign.marks));
+        const keptPicked = currentPicked.filter((id) => !signedIds.has(id));
+
+        if (keptPicked.length !== currentPicked.length) {
+          view.plugin(InkPlugin).api.setPicked(keptPicked);
+        }
+      }
     };
     const stopArriving = () => {
       stopArrival?.();

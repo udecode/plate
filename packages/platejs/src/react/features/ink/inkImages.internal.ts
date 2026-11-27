@@ -7,10 +7,11 @@ import {
   inkHolds,
   inkText,
   lineStart,
+  placeMark,
 } from '../../../features/ink/lib/inkMatch.internal';
 import type { Editor } from '../../core';
-import { inkElementSpans } from './inkMeasure.internal';
-import { inkOutlinePoints } from './inkPaint.internal';
+import { inkElementSpans, measureInkBlock } from './inkMeasure.internal';
+import { inkOutlinePoints, inkStrokeOutlinesPoints } from './inkPaint.internal';
 import type { InkImagesOptions, InkPassageImages } from './InkPlugin';
 
 const CROP_PADDING = 8;
@@ -32,7 +33,7 @@ type DrawableMark = Readonly<{
   dx: number;
   dy: number;
   mark: InkMark;
-  outline: ReadonlyArray<readonly [number, number]>;
+  outlines: ReadonlyArray<ReadonlyArray<readonly [number, number]>>;
 }>;
 
 type CapturedPassage = Readonly<{
@@ -69,12 +70,18 @@ const capturePassage = (
 
   const { read } = view.plugin(BaseInkPlugin);
   const saved = read.copy(passage.copy);
+  const blockId = passage.block ?? saved?.block;
 
-  if (!saved || saved.lines.length === 0) return null;
+  if (!blockId) return null;
+  if (!passage.block && (!saved || saved.lines.length === 0)) return null;
 
-  const holder = view.read((state) => state.nodes.byId(saved.block));
+  const holder = view.read((state) => state.nodes.byId(blockId));
 
-  if (!holder || !inkHolds(saved, inkText(view.read.schema, holder.node))) {
+  if (!holder) return null;
+
+  const now = inkText(view.read.schema, holder.node);
+
+  if (!passage.block && (!saved || !inkHolds(saved, now))) {
     return null;
   }
 
@@ -82,13 +89,24 @@ const capturePassage = (
 
   if (!element) return null;
 
-  const spans = inkElementSpans(element, saved.text);
+  const targetText = passage.block ? now.text : (saved?.text ?? '');
+  const spans = inkElementSpans(element, targetText);
 
   if (!spans) return null;
 
   const doc = element.ownerDocument;
   const win = doc.defaultView;
   const blockRect = element.getBoundingClientRect();
+  const measuredLive = passage.block
+    ? measureInkBlock(element, now.text, {
+        left: blockRect.left,
+        top: blockRect.top,
+      })
+    : undefined;
+  const liveLines = passage.block ? measuredLive?.lines : saved?.lines;
+
+  if (!liveLines || liveLines.length === 0) return null;
+
   const range = doc.createRange();
   const passageStart = passage.start;
   const passageEnd = passage.start + passage.text.length;
@@ -110,8 +128,8 @@ const capturePassage = (
     maxY = Math.max(maxY, top + height);
   };
 
-  for (const [index, line] of saved.lines.entries()) {
-    const lStart = lineStart(saved.lines, index);
+  for (const [index, line] of liveLines.entries()) {
+    const lStart = lineStart(liveLines, index);
 
     if (line.end <= passageStart || lStart >= passageEnd) continue;
     includeBox(line.left, line.top, line.width, line.height);
@@ -146,8 +164,8 @@ const capturePassage = (
     const { node } = span.piece;
     const font = fontOf(node.parentElement ?? element, win);
 
-    for (const [lineIndex, line] of saved.lines.entries()) {
-      const lStart = lineStart(saved.lines, lineIndex);
+    for (const [lineIndex, line] of liveLines.entries()) {
+      const lStart = lineStart(liveLines, lineIndex);
       const from = Math.max(span.start, passageStart, lStart);
       const to = Math.min(span.end, passageEnd, line.end);
 
@@ -184,29 +202,70 @@ const capturePassage = (
 
     if (!mark) continue;
 
-    const markBlock = mark.blocks.find((block) => block.copy === passage.copy);
+    let dx = 0;
+    let dy = 0;
+    let outlines: ReadonlyArray<ReadonlyArray<readonly [number, number]>> = [];
 
-    if (!markBlock) continue;
+    if (passage.block && measuredLive) {
+      const copies = mark.blocks.flatMap((block) => {
+        const copy = read.copy(block.copy);
 
-    const dx = -markBlock.left;
-    const dy = -markBlock.top;
-    const outline = inkOutlinePoints(mark);
+        return copy ? [copy] : [];
+      });
 
-    if (outline.length === 0) continue;
+      if (copies.length !== mark.blocks.length) continue;
+
+      const liveList = copies.map((copy) =>
+        copy.block === blockId
+          ? {
+              ...measuredLive,
+              ...(now.voids !== undefined ? { voids: now.voids } : {}),
+            }
+          : undefined
+      );
+      const placement = placeMark({
+        copies,
+        live: liveList,
+        margins: { left: 1e6, right: 1e6 },
+        mark,
+        nearby: [],
+      });
+
+      if (placement.type !== 'ink') continue;
+      ({ dx, dy } = placement);
+      outlines = placement.strokes
+        ? inkStrokeOutlinesPoints(mark.brush, placement.strokes)
+        : [inkOutlinePoints(mark)];
+    } else {
+      const markBlock = mark.blocks.find(
+        (block) => block.copy === passage.copy
+      );
+
+      if (!markBlock) continue;
+      dx = -markBlock.left;
+      dy = -markBlock.top;
+      outlines = [inkOutlinePoints(mark)];
+    }
+
+    const nonEmpty = outlines.filter((poly) => poly.length > 0);
+
+    if (nonEmpty.length === 0) continue;
 
     let mMinX = Number.POSITIVE_INFINITY;
     let mMinY = Number.POSITIVE_INFINITY;
     let mMaxX = Number.NEGATIVE_INFINITY;
     let mMaxY = Number.NEGATIVE_INFINITY;
 
-    for (const [x, y] of outline) {
-      const lx = x + dx;
-      const ly = y + dy;
+    for (const outline of nonEmpty) {
+      for (const [x, y] of outline) {
+        const lx = x + dx;
+        const ly = y + dy;
 
-      mMinX = Math.min(mMinX, lx);
-      mMinY = Math.min(mMinY, ly);
-      mMaxX = Math.max(mMaxX, lx);
-      mMaxY = Math.max(mMaxY, ly);
+        mMinX = Math.min(mMinX, lx);
+        mMinY = Math.min(mMinY, ly);
+        mMaxX = Math.max(mMaxX, lx);
+        mMaxY = Math.max(mMaxY, ly);
+      }
     }
 
     includeBox(mMinX, mMinY, mMaxX - mMinX, mMaxY - mMinY);
@@ -215,7 +274,7 @@ const capturePassage = (
       dx,
       dy,
       mark,
-      outline,
+      outlines: nonEmpty,
     });
   }
 
@@ -255,22 +314,23 @@ const paintMarks = (
   ctx: CanvasRenderingContext2D,
   captured: CapturedPassage
 ) => {
-  for (const { dx, dy, mark, outline } of captured.marks) {
-    if (outline.length === 0) continue;
-
+  for (const { dx, dy, mark, outlines } of captured.marks) {
     const shiftX = dx - captured.cropLeft;
     const shiftY = dy - captured.cropTop;
 
     ctx.save();
     ctx.fillStyle = mark.brush.color;
     ctx.globalAlpha = mark.brush.opacity;
-    ctx.beginPath();
-    ctx.moveTo(outline[0][0] + shiftX, outline[0][1] + shiftY);
-    for (let index = 1; index < outline.length; index += 1) {
-      ctx.lineTo(outline[index][0] + shiftX, outline[index][1] + shiftY);
+    for (const outline of outlines) {
+      if (outline.length === 0) continue;
+      ctx.beginPath();
+      ctx.moveTo(outline[0][0] + shiftX, outline[0][1] + shiftY);
+      for (let index = 1; index < outline.length; index += 1) {
+        ctx.lineTo(outline[index][0] + shiftX, outline[index][1] + shiftY);
+      }
+      ctx.closePath();
+      ctx.fill();
     }
-    ctx.closePath();
-    ctx.fill();
     ctx.restore();
   }
 };

@@ -1,10 +1,17 @@
 import type { NodeKey } from '../../../facade';
-import type { InkCopy, InkCopyPlace, InkMark } from '../../../features/ink/lib';
+import type {
+  InkCopy,
+  InkCopyPlace,
+  InkMark,
+  InkSample,
+} from '../../../features/ink/lib';
 import { blockAbove } from '../../../features/ink/lib/inkGone.internal';
 import {
   type InkBox,
   type InkPlacement,
   type InkText,
+  placedPolylinesOf,
+  placementClearsNearby,
   placeMark,
 } from '../../../features/ink/lib/inkMatch.internal';
 import {
@@ -43,6 +50,7 @@ export type InkPlaced = Readonly<{
       dy: number;
       mark: InkMark;
       pin?: InkPin;
+      strokes?: ReadonlyArray<readonly InkSample[]>;
     }>
   >;
   signs: ReadonlyArray<
@@ -82,6 +90,7 @@ type Held = Decided &
     crossing: number;
     entry: InkIndexedMark;
     firstKey: NodeKey;
+    firstLeft: number;
     firstTop: number;
     width: number;
     witnesses: readonly Witness[];
@@ -115,9 +124,8 @@ const isClippedByInnerAncestor = (
   element: Element,
   editable: HTMLElement,
   origin: InkLayerOrigin,
-  mark: InkMark,
-  dx: number,
-  dy: number
+  polylines: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
+  radius: number
 ) => {
   if (!element.parentElement || element.parentElement === editable) {
     return false;
@@ -127,14 +135,16 @@ const isClippedByInnerAncestor = (
   let maxX = Number.NEGATIVE_INFINITY;
   let minY = Number.POSITIVE_INFINITY;
   let maxY = Number.NEGATIVE_INFINITY;
-  const radius = mark.brush.size / 2;
 
-  for (const [x, y] of mark.samples) {
-    minX = Math.min(minX, x + dx - radius);
-    maxX = Math.max(maxX, x + dx + radius);
-    minY = Math.min(minY, y + dy - radius);
-    maxY = Math.max(maxY, y + dy + radius);
+  for (const points of polylines) {
+    for (const [x, y] of points) {
+      minX = Math.min(minX, x - radius);
+      maxX = Math.max(maxX, x + radius);
+      minY = Math.min(minY, y - radius);
+      maxY = Math.max(maxY, y + radius);
+    }
   }
+  if (!Number.isFinite(minX)) return false;
 
   for (
     let ancestor: HTMLElement | null = element.parentElement;
@@ -163,16 +173,34 @@ const isClippedByInnerAncestor = (
 const crosses = (box: InkBox, { from, to }: InkBand) =>
   box.top <= to && box.top + box.height >= from;
 
+const bandOfPolylines = (
+  polylines: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
+  reach: number
+): InkBand => {
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  for (const points of polylines) {
+    for (const [, y] of points) {
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+
+  return Number.isFinite(minY)
+    ? { from: minY - reach, to: maxY + reach }
+    : { from: 0, to: 0 };
+};
+
 const inkInputs = (
   mark: InkMark,
   copies: readonly InkCopy[],
   places: Places,
+  live: ReadonlyArray<InkMeasuredBlock | undefined>,
+  placement: InkPlacement,
   measure: (key: NodeKey) => InkMeasuredBlock | undefined,
   candidatesBetween: (from: number, to: number) => readonly NearBlock[]
 ): InkInputs => {
-  const live = places.map((place) =>
-    place && place.kind !== 'gone' ? measure(place.key) : undefined
-  );
   const at = live.findIndex((block) => block !== undefined);
   const first = live[at];
   const reach =
@@ -181,9 +209,15 @@ const inkInputs = (
       0,
       ...copies.flatMap((copy) => copy.lines.map((line) => line.height))
     );
-  const shift = first ? first.box.top - mark.blocks[at].top : 0;
-  const ys = mark.samples.map(([, y]) => y + shift);
-  const band = { from: Math.min(...ys) - reach, to: Math.max(...ys) + reach };
+  const band =
+    placement.type === 'ink'
+      ? bandOfPolylines(placedPolylinesOf(mark, placement), reach)
+      : (() => {
+          const shift = first ? first.box.top - mark.blocks[at].top : 0;
+          const ys = mark.samples.map(([, y]) => y + shift);
+
+          return { from: Math.min(...ys) - reach, to: Math.max(...ys) + reach };
+        })();
   const marked = new Set(
     places.flatMap((place) =>
       place && place.kind !== 'gone' ? [place.key] : []
@@ -205,6 +239,86 @@ const inkInputs = (
 };
 
 type DeletedEntry = InkDeletedSign & Readonly<{ digitized?: boolean }>;
+
+const MARGIN_BURST_MS = 4000;
+const MARGIN_BURST_LINE_GAP = 1.5;
+
+const markYRange = (mark: InkMark): readonly [number, number] => {
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  for (const [, y] of mark.samples) {
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+
+  return [minY, maxY];
+};
+
+const alignMarginBursts = (
+  ink: Array<InkPlaced['ink'][number]>,
+  entryOf: (mark: InkMark) => InkIndexedMark | undefined
+) => {
+  const groups = new Map<string, number[]>();
+
+  for (const [index, item] of ink.entries()) {
+    if (
+      !item.mark.margin ||
+      item.strokes !== undefined ||
+      item.mark.blocks.length !== 1
+    ) {
+      continue;
+    }
+
+    const blockId = entryOf(item.mark)?.copies[0]?.block;
+
+    if (!blockId) continue;
+
+    const key = `${blockId}|${item.mark.author}|${item.mark.margin.side}`;
+    const list = groups.get(key) ?? [];
+
+    list.push(index);
+    groups.set(key, list);
+  }
+
+  for (const indices of groups.values()) {
+    if (indices.length < 2) continue;
+
+    indices.sort((a, b) => byMark(ink[a].mark, ink[b].mark));
+
+    let leader = ink[indices[0]];
+    let prevAt = leader.mark.at;
+    let [burstTop, burstBottom] = markYRange(leader.mark);
+    const lines = entryOf(leader.mark)?.copies[0]?.lines ?? [];
+    const avgLh =
+      lines.length > 0
+        ? lines.reduce((sum, line) => sum + line.height, 0) / lines.length
+        : 24;
+
+    for (let i = 1; i < indices.length; i += 1) {
+      const idx = indices[i];
+      const item = ink[idx];
+      const [minY, maxY] = markYRange(item.mark);
+      const yGap = Math.max(0, minY - burstBottom, burstTop - maxY);
+
+      if (
+        item.mark.at - prevAt <= MARGIN_BURST_MS &&
+        yGap <= MARGIN_BURST_LINE_GAP * avgLh
+      ) {
+        burstTop = Math.min(burstTop, minY);
+        burstBottom = Math.max(burstBottom, maxY);
+        prevAt = item.mark.at;
+        if (item.dy !== leader.dy) {
+          ink[idx] = { ...item, dy: leader.dy };
+        }
+      } else {
+        leader = item;
+        prevAt = item.mark.at;
+        [burstTop, burstBottom] = [minY, maxY];
+      }
+    }
+  }
+};
 
 const placeInkMarks = (
   view: Editor,
@@ -322,6 +436,7 @@ const placeInkMarks = (
           dy: placement.dy,
           mark,
           ...(pin && { pin: pinAt(pin) }),
+          ...(placement.strokes && { strokes: placement.strokes }),
         });
       }
       state = placement.type === 'sign' ? placement.reason : placement.sign;
@@ -367,6 +482,8 @@ const placeInkMarks = (
       top: anchor.top,
     });
   }
+
+  alignMarginBursts(ink, entryOf);
 
   return {
     bottom: editable.offsetTop + editable.offsetHeight,
@@ -721,10 +838,11 @@ export const createInkPlacer = ({
         return undefined;
       }
 
-      const top = blockAt(kept.firstKey)?.box.top;
+      const firstBox = blockAt(kept.firstKey)?.box;
 
-      if (top === undefined) return undefined;
+      if (!firstBox) return undefined;
 
+      const { left, top } = firstBox;
       const band = {
         from: kept.bandFromFirst.from + top,
         to: kept.bandFromFirst.to + top,
@@ -742,7 +860,14 @@ export const createInkPlacer = ({
           return (
             now !== undefined &&
             layouts.lines(now.element) === lines &&
-            sameInkBox({ ...now.box, top: now.box.top - top }, boxFromFirst)
+            sameInkBox(
+              {
+                ...now.box,
+                left: now.box.left - left,
+                top: now.box.top - top,
+              },
+              boxFromFirst
+            )
           );
         })
       ) {
@@ -756,7 +881,11 @@ export const createInkPlacer = ({
         place,
         placement:
           placement.type === 'ink'
-            ? { ...placement, dy: placement.dy + top - kept.firstTop }
+            ? {
+                ...placement,
+                dx: placement.dx + left - kept.firstLeft,
+                dy: placement.dy + top - kept.firstTop,
+              }
             : placement,
       };
     };
@@ -773,27 +902,40 @@ export const createInkPlacer = ({
       );
       const anchor = start === undefined ? undefined : blockAt(start)?.element;
       const pin = anchor && pinOf(anchor);
+      const measuredLive = places.map((place) =>
+        place && place.kind !== 'gone' ? measure(place.key) : undefined
+      );
+      const firstMeasured = measuredLive.find((block) => block !== undefined);
+      const candidate = placeMark({
+        copies,
+        live: measuredLive,
+        margins: firstMeasured
+          ? {
+              left: firstMeasured.box.left,
+              right:
+                rect.width - firstMeasured.box.left - firstMeasured.box.width,
+            }
+          : { left: 0, right: 0 },
+        mark,
+        nearby: [],
+      });
       const { band, crossing, first, keys, live, near } = inkInputs(
         mark,
         copies,
         places,
+        measuredLive,
+        candidate,
         measure,
         candidatesMovingWith(pin)
       );
-      const rawPlacement = placeMark({
-        copies,
-        live,
-        margins: first
-          ? {
-              left: first.box.left,
-              right: rect.width - first.box.left - first.box.width,
-            }
-          : { left: 0, right: 0 },
-        mark,
-        nearby: near.flatMap((block) => inkWordBoxes(block, band)),
-      });
+      const nearby = near.flatMap((block) => inkWordBoxes(block, band));
+      const cleared =
+        candidate.type === 'ink' &&
+        !placementClearsNearby(mark, candidate, nearby)
+          ? ({ reason: 'changed', type: 'sign' } as const)
+          : candidate;
       const placement: InkPlacement =
-        rawPlacement.type === 'ink' &&
+        cleared.type === 'ink' &&
         !mark.margin &&
         places.some((at) => {
           if (!at || at.kind === 'gone') return false;
@@ -806,15 +948,15 @@ export const createInkPlacer = ({
               element,
               editable,
               origin,
-              mark,
-              rawPlacement.dx,
-              rawPlacement.dy
+              placedPolylinesOf(mark, cleared),
+              mark.brush.size / 2
             )
           );
         })
           ? { reason: 'changed', type: 'sign' }
-          : rawPlacement;
+          : cleared;
       const place = places.find((at) => at?.kind !== 'live') ?? places[0];
+      const firstLeft = first?.box.left ?? 0;
       const firstTop = first?.box.top ?? 0;
       const witnesses = keys.flatMap((key): Witness[] => {
         const block = blockAt(key);
@@ -823,7 +965,11 @@ export const createInkPlacer = ({
         return block && lines
           ? [
               {
-                boxFromFirst: { ...block.box, top: block.box.top - firstTop },
+                boxFromFirst: {
+                  ...block.box,
+                  left: block.box.left - firstLeft,
+                  top: block.box.top - firstTop,
+                },
                 key,
                 lines,
               },
@@ -840,6 +986,7 @@ export const createInkPlacer = ({
           crossing,
           entry,
           firstKey: keys[0],
+          firstLeft,
           firstTop,
           pin,
           place,
