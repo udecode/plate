@@ -141,7 +141,8 @@ export const sameContent = (
   aRoots: JsonValue['roots'],
   b: Descendant,
   bRoots: JsonValue['roots'],
-  dropped: DroppedKeys = noDroppedKeys
+  dropped: DroppedKeys = noDroppedKeys,
+  held: ReadonlySet<string> = NO_KEYS
 ): boolean => {
   if (NodeApi.isText(a) || NodeApi.isText(b)) {
     return (
@@ -174,13 +175,18 @@ export const sameContent = (
   if (aRootNames.join(',') !== bRootNames.join(',')) return false;
 
   for (const slot of aRootNames) {
-    const aRoot = aRoots?.[aChildRoots?.[slot] as string] ?? [];
-    const bRoot = bRoots?.[bChildRoots?.[slot] as string] ?? [];
+    const aName = aChildRoots?.[slot] as string;
+    const bName = bChildRoots?.[slot] as string;
+
+    if (aName === bName && held.has(aName)) continue;
+
+    const aRoot = aRoots?.[aName] ?? [];
+    const bRoot = bRoots?.[bName] ?? [];
 
     if (
       aRoot.length !== bRoot.length ||
       aRoot.some(
-        (node, i) => !sameContent(node, aRoots, bRoot[i], bRoots, dropped)
+        (node, i) => !sameContent(node, aRoots, bRoot[i], bRoots, dropped, held)
       )
     ) {
       return false;
@@ -188,7 +194,7 @@ export const sameContent = (
   }
 
   return aChildren.every((child, i) =>
-    sameContent(child, aRoots, bChildren[i], bRoots, dropped)
+    sameContent(child, aRoots, bChildren[i], bRoots, dropped, held)
   );
 };
 
@@ -513,16 +519,21 @@ export const trackedRange = (
 /** What a transfer's landing must still hold once commands and corrections wrote it. */
 export type LandingExpectation =
   | Readonly<{
+      aliased: ReadonlySet<string>;
       content: readonly Descendant[];
+      independent: boolean;
       kind: 'nodes';
       roots: JsonValue['roots'];
     }>
   | Readonly<{
+      aliased: ReadonlySet<string>;
       closed: ClosedEdges;
       content: readonly Descendant[];
+      independent: boolean;
       kind: 'range-copy';
       landedKind: LandedKind;
       roots: JsonValue['roots'];
+      sourceRoots: JsonValue['roots'];
     }>
   | Readonly<{ kind: 'range-move'; moved: MovedPayload }>;
 
@@ -541,6 +552,8 @@ export type CopyNormalizer = (
   nodes: readonly Descendant[],
   roots: JsonValue['roots'],
   of?: Readonly<{
+    /** Numbered last: the expected side lacks their content and the landed side holds the target's. */
+    aliased?: ReadonlySet<string>;
     closed?: ClosedEdges;
     nearestAncestorsOf?: (index: number) => readonly Element[];
   }>
@@ -579,10 +592,19 @@ export const copyNormalizer = (
     )
   );
 
-  return (nodes, roots, { closed, nearestAncestorsOf = () => [] } = {}) => {
+  return (
+    nodes,
+    roots,
+    { aliased, closed, nearestAncestorsOf = () => [] } = {}
+  ) => {
     const places = new Map<string, Map<string, string>>();
     const walked = new Set<string>();
+    const deferred: string[] = [];
     const inputs = new WeakMap<object, object>();
+    const walkRoot = (name: string) => {
+      walked.add(name);
+      placeHolders(roots?.[name] ?? [], `${PLACE_MARK}${walked.size}`);
+    };
     const placeHolders = (
       list: readonly Descendant[],
       rootPlace: string,
@@ -616,8 +638,8 @@ export const copyNormalizer = (
           visit(node.children, atStart, atEnd);
           for (const name of childRootNames(node)) {
             if (walked.has(name)) continue;
-            walked.add(name);
-            placeHolders(roots?.[name] ?? [], `${PLACE_MARK}${walked.size}`);
+            if (aliased?.has(name)) deferred.push(name);
+            else walkRoot(name);
           }
         });
       };
@@ -626,6 +648,9 @@ export const copyNormalizer = (
     };
 
     placeHolders(nodes, `${PLACE_MARK}0`, closed);
+    for (const name of deferred) {
+      if (!walked.has(name)) walkRoot(name);
+    }
 
     const nameByPlace = (
       list: readonly Descendant[],
@@ -718,6 +743,28 @@ export const copyNormalizer = (
   };
 };
 
+const rootsNamedBy = (
+  nodes: readonly Descendant[],
+  roots: JsonValue['roots']
+) => {
+  const named = new Set<string>();
+  const visit = (list: readonly Descendant[]) => {
+    for (const node of list) {
+      if (!ElementApi.isElement(node)) continue;
+      for (const name of childRootNames(node)) {
+        if (named.has(name)) continue;
+        named.add(name);
+        visit(roots?.[name] ?? []);
+      }
+      visit(node.children);
+    }
+  };
+
+  visit(nodes);
+
+  return named;
+};
+
 const fragmentOf = (children: readonly Descendant[], range: Range) =>
   NodeApi.fragment({ children, type: '' }, range);
 
@@ -763,6 +810,7 @@ export const landingHolds = (
     }
 
     const of = {
+      aliased: expected.aliased,
       nearestAncestorsOf: (at: number) =>
         ancestorsAt(children, paths[at] as Path),
     };
@@ -770,8 +818,13 @@ export const landingHolds = (
     const landed = asCopied(nodes as Descendant[], roots, of);
 
     return landed.nodes.every((node, i) =>
-      sameContent(want.nodes[i], want.roots, node, landed.roots, (source) =>
-        dropped(want.inputOf(source))
+      sameContent(
+        want.nodes[i],
+        want.roots,
+        node,
+        landed.roots,
+        (source) => dropped(want.inputOf(source)),
+        expected.independent ? NO_KEYS : expected.aliased
       )
     );
   }
@@ -787,20 +840,36 @@ export const landingHolds = (
     return landsMoved(landed, expected.moved, dropped);
   }
 
-  const { closed, landedKind } = expected;
-
-  return (
-    textTokens(
-      asCopied(landed, roots, { closed }).nodes,
-      closed,
-      landedKind
-    ) ===
-    textTokens(
-      asCopied(expected.content, expected.roots, { closed }).nodes,
-      closed,
-      landedKind
-    )
+  const { aliased, closed, independent, landedKind, sourceRoots } = expected;
+  const got = asCopied(landed, roots, { aliased, closed });
+  const want = asCopied(
+    expected.content,
+    { ...roots, ...expected.roots },
+    { aliased, closed }
   );
+  const keepsSource = (name: string) => {
+    const source = asCopied(sourceRoots?.[name] ?? [], sourceRoots);
+    const target = asCopied(roots?.[name] ?? [], roots);
+
+    return (
+      source.nodes.length === target.nodes.length &&
+      source.nodes.every((node, i) =>
+        sameContent(node, source.roots, target.nodes[i], target.roots)
+      )
+    );
+  };
+
+  if (
+    textTokens(got.nodes, closed, landedKind) !==
+    textTokens(want.nodes, closed, landedKind)
+  ) {
+    return false;
+  }
+  if (!independent) return true;
+
+  const named = rootsNamedBy(landed, roots);
+
+  return [...aliased].every((name) => !named.has(name) || keepsSource(name));
 };
 
 /**
@@ -830,7 +899,7 @@ export const rebaseLanding = (
       content.push(node);
     }
 
-    return { content, kind: 'nodes', roots: value.roots };
+    return { ...expected, content, roots: value.roots };
   }
 
   const [span] = start.spans;

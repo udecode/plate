@@ -464,7 +464,11 @@ import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
 import type { InternalSlicePlacementFit } from './slice-fit/compiled-slice-fitter';
 import { replacesEmptyBlockHead } from './slice-fit/edge-plan';
 import { isFittingMove } from './slice-fit/provenance';
-import { renewContentSlice } from './slice-identities';
+import {
+  aliasedRoots,
+  type RenewedContentSlice,
+  renewContentSlice,
+} from './slice-identities';
 import { readSliceLanding } from './slice-landing';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
@@ -1413,6 +1417,17 @@ export const getTransactionSnapshot = (editor: Editor) =>
 
 export const getUpdateStartSnapshot = (editor: Editor) =>
   TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(0)?.snapshot;
+
+export const getUpdateStartValue = (
+  editor: Editor
+): EditorDocumentValue | undefined => {
+  const snapshot = getUpdateStartSnapshot(editor);
+
+  return (
+    snapshot &&
+    (getChangeValue(snapshot.roots, snapshot.records) as EditorDocumentValue)
+  );
+};
 
 /**
  * Final semantic tags visible to the active command layer.
@@ -5579,8 +5594,16 @@ type SliceFitInternal = Readonly<{
   boundary?: boolean;
   childrenAt?: NodeKey | Path;
   drop?: true;
+  renewed?: (renewal: RenewedContentSlice) => void;
   rootsPrepared?: boolean;
 }>;
+
+const NO_ALIASED_ROOTS: ReadonlySet<string> = new Set();
+
+const sliceFitRoot = (editor: Editor, place: SliceFitPlace) =>
+  place.kind === 'blocks'
+    ? place.root
+    : (place.range.anchor.root ?? place.root ?? getEditorUpdateRoot(editor));
 
 const withSliceFitTarget = <V extends Value, T>(
   editor: Editor<V>,
@@ -6093,7 +6116,8 @@ const createCheckedSliceSpec = (
 const namesUncopiedRoot = (
   state: EditorStateView,
   node: Element,
-  slice: import('../interfaces/editor').ContentSlice
+  slice: import('../interfaces/editor').ContentSlice,
+  aliased: ReadonlySet<string>
 ) => {
   const slots = state.schema.element(node.type)?.contentRoots;
   const roots = state.schema.getElementContentRoots(node);
@@ -6105,7 +6129,8 @@ const namesUncopiedRoot = (
 
       return (
         typeof childRoot !== 'string' ||
-        !Object.hasOwn(slice.roots ?? {}, childRoot)
+        (!Object.hasOwn(slice.roots ?? {}, childRoot) &&
+          !aliased.has(childRoot))
       );
     })
   );
@@ -6113,7 +6138,8 @@ const namesUncopiedRoot = (
 
 const getDefaultChildContent = (
   state: EditorStateView,
-  slice: import('../interfaces/editor').ContentSlice
+  slice: import('../interfaces/editor').ContentSlice,
+  aliased: ReadonlySet<string>
 ) => {
   const [head] = slice.content;
 
@@ -6123,7 +6149,7 @@ const getDefaultChildContent = (
     slice.content.length === 1 &&
     NodeApi.isElement(head) &&
     (Object.keys(state.schema.getElementContentRoots(head)).length === 0 ||
-      namesUncopiedRoot(state, head, slice))
+      namesUncopiedRoot(state, head, slice, aliased))
   ) {
     return head.children;
   }
@@ -6141,9 +6167,10 @@ const getWholeBlockReplacements = (
   state: EditorStateView,
   slice: import('../interfaces/editor').ContentSlice,
   at: Path,
-  root: string
+  root: string,
+  aliased: ReadonlySet<string>
 ) => {
-  const inline = getDefaultChildContent(state, slice);
+  const inline = getDefaultChildContent(state, slice, aliased);
   const defaultChild =
     inline && state.schema.createDefaultChild({ at, root: toPublicRoot(root) });
   const schema = getInternalEditorSchemaFromApi(state.schema);
@@ -6180,6 +6207,7 @@ const replaceBlocksAtSite = (
   transaction: EditorTransactionSpecBuilder,
   place: Extract<SliceFitPlace, { kind: 'blocks' }>,
   slice: import('../interfaces/editor').ContentSlice,
+  aliased: ReadonlySet<string>,
   landed?: (track: DraftTrack) => void
 ) => {
   const state = getStateView(editor);
@@ -6200,7 +6228,8 @@ const replaceBlocksAtSite = (
     state,
     slice,
     firstPath,
-    place.root
+    place.root,
+    aliased
   );
   const replacement =
     planned &&
@@ -6239,6 +6268,7 @@ const landSlice = (
   place: SliceFitPlace,
   slice: import('../interfaces/editor').ContentSlice,
   options: Readonly<{
+    aliased?: ReadonlySet<string>;
     drop?: true;
     landed?: (track: DraftTrack) => void;
     replaceEmptyBlock?: true;
@@ -6256,6 +6286,7 @@ const landSlice = (
         transaction,
         target,
         content,
+        options.aliased ?? NO_ALIASED_ROOTS,
         options.landed
       );
     }
@@ -6398,12 +6429,18 @@ export const fitSliceAtSite = (
   const owner = getEditorRuntimeOwner(editor);
   const place = readSliceFitPlace(site);
   const landings: DraftTrack[] = [];
+  let renewal: RenewedContentSlice | undefined;
   const fit = (transaction: EditorTransactionSpecBuilder) =>
     runWithMutationRoot(owner, place.root, () => {
-      const remapped = renewContentSlice(owner, ContentSlice.fromJSON(slice));
+      renewal = renewContentSlice(
+        owner,
+        ContentSlice.fromJSON(slice),
+        sliceFitRoot(owner, place)
+      );
 
-      materializeContentSliceRoots(owner, remapped);
-      return landSlice(owner, transaction, place, remapped, {
+      materializeContentSliceRoots(owner, renewal.slice);
+      return landSlice(owner, transaction, place, renewal.slice, {
+        aliased: aliasedRoots(renewal),
         ...(options.drop ? { drop: true } : {}),
         ...(options.replaceEmptyBlock ? { replaceEmptyBlock: true } : {}),
         ...(options.landing
@@ -6423,13 +6460,22 @@ export const fitSliceAtSite = (
     () => {
       const dropped = options.copy && restoreDroppedNames(owner, options.copy);
 
-      if (dropped) written = renameSlice(owner, slice, dropped);
+      if (dropped) {
+        const { bySliceKey, slice: renewedSlice } = getDefined(renewal);
+
+        written = renameSlice(owner, slice, dropped);
+        renewal = {
+          bySliceKey,
+          slice: renameSlice(owner, renewedSlice, dropped),
+        };
+      }
     }
   );
 
-  if (spec) recordSpecLanding(spec, landings[0]);
+  if (!spec) return false;
+  recordSpecLanding(spec, landings[0]);
 
-  return spec && { spec, written };
+  return { renewed: getDefined(renewal), spec, written };
 };
 
 const resolveRawSliceFitPlace = (
@@ -6499,9 +6545,12 @@ const fitSliceIntoActiveDraft = <V extends Value>(
       if (!place) return false;
       const copy = renewCopy(editor, slice);
       const sourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
-      const inputSlice = internal?.rootsPrepared
-        ? sourceSlice
-        : renewContentSlice(editor, sourceSlice);
+      const renewal = internal?.rootsPrepared
+        ? null
+        : renewContentSlice(editor, sourceSlice, sliceFitRoot(editor, place));
+      const inputSlice = renewal?.slice ?? sourceSlice;
+
+      if (renewal) internal?.renewed?.(renewal);
       const limitedSlice = limitSliceToLength(
         internal?.drop
           ? inputSlice
@@ -6524,6 +6573,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
         place,
         limitedSlice,
         {
+          ...(renewal ? { aliased: aliasedRoots(renewal) } : {}),
           ...(internal?.drop ? { drop: true } : {}),
           rootsPrepared: internal?.rootsPrepared,
         }
@@ -6992,7 +7042,10 @@ export const replaceSliceAtBlockBoundary = <V extends Value>(
   editor: Editor<V>,
   slice: import('../interfaces/editor').ContentSlice,
   boundary: Path,
-  internal: Readonly<{ drop?: true }> = {}
+  internal: Readonly<{
+    drop?: true;
+    renewed?: (renewal: RenewedContentSlice) => void;
+  }> = {}
 ): boolean => {
   let applicable = false;
   const spec = createTransactionSpec(editor, () => {
@@ -8994,9 +9047,10 @@ export const getUpdateView = <
       source: copy,
       target: { kind: 'beside', ...scope },
     });
-    const slice = renewContentSlice(
+    const { slice } = renewContentSlice(
       editor,
-      ContentSlice.fromJSON<V>(landed.slice)
+      ContentSlice.fromJSON<V>(landed.slice),
+      root
     );
 
     const parentPath = PathApi.parent(insertPath);

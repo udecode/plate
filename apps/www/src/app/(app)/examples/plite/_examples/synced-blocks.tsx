@@ -110,7 +110,10 @@ const syncedBlocks = () =>
         'synced-block': {
           content: schema.content.text({ default: 'text', min: 1 }),
           contentRoots: {
-            body: schema.content.not(schema.content.text()),
+            body: {
+              content: schema.content.not(schema.content.text()),
+              ownership: 'shared',
+            },
           },
         },
       },

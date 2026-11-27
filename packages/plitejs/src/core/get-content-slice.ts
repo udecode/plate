@@ -71,7 +71,7 @@ const omitOpenBoundaryRoots = (
 export const getContentSlice = <V extends Value>(
   editor: Editor<V>,
   selection: NodeSelection | Range | null,
-  sourceRoots?: ContentSliceValue['roots'],
+  readRoot?: (root: string) => readonly Descendant[] | undefined,
   lifecycle: 'copy' | 'move' = 'copy'
 ): ContentSliceValue<V> => {
   if (!selection) {
@@ -170,18 +170,11 @@ export const getContentSlice = <V extends Value>(
         editor.read.schema.getElementContentRoots(node)
       )) {
         if (visitedRoots.has(innerRoot)) continue;
-        const rootContent = (sourceRoots ?? getEditorDocumentRoots(editor))[
-          innerRoot
-        ];
+        const rootContent = readRoot
+          ? readRoot(innerRoot)
+          : getEditorDocumentRoots(editor)[innerRoot];
 
-        if (!rootContent) {
-          if (sourceRoots !== undefined) {
-            throw new Error(
-              `Missing content slice source root "${innerRoot}".`
-            );
-          }
-          continue;
-        }
+        if (!rootContent) continue;
         visitedRoots.add(innerRoot);
         roots[innerRoot] = rootContent;
         collect(rootContent);

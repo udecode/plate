@@ -423,6 +423,13 @@ export type SchemaContent<
 
 export type SchemaContentInput = SchemaContent | SchemaContentRule;
 
+/**
+ * `exclusive` allows one owner, and a copy of that owner gets a new key.
+ * `shared` lets several owners show the root, and a copy of an owner names the
+ * same key. The copy aliases the root when the document holds it and creates it
+ * under the key when it does not. A shared key must be unique across every
+ * document a copy can reach.
+ */
 export type SchemaContentRootOwnership = 'exclusive' | 'shared';
 
 /**
@@ -443,7 +450,7 @@ export type SchemaContentRoot<
   structure?: SchemaContentRootStructure;
 }>;
 
-/** Shared roots may use their grammar directly; ownership defaults to shared. */
+/** A one-owner root may use its grammar directly; ownership defaults to exclusive. */
 export type SchemaContentRootInput = SchemaContent | SchemaContentRoot;
 
 /** One set of keyed records the document keeps beside its children. */

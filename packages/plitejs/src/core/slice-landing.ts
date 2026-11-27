@@ -29,6 +29,7 @@ import {
 import { executeEditorRead } from './read-registry';
 import { dissolveOpenEndMatter } from './slice-end-matter';
 import { identityKeysOf, replacesEmptyBlockHead } from './slice-fit/edge-plan';
+import type { RenewedContentSlice } from './slice-identities';
 import type {
   SliceLanding,
   SliceLandingInput,
@@ -151,7 +152,12 @@ export const writePaste = (
   plan: PastePlan,
   requested: Readonly<{ landing?: true }> = {}
 ):
-  | Readonly<{ lossy: boolean; spec: TransactionSpec; written: ContentSlice }>
+  | Readonly<{
+      lossy: boolean;
+      renewed: RenewedContentSlice;
+      spec: TransactionSpec;
+      written: ContentSlice;
+    }>
   | false => {
   const options = TRACKED_PASTES.has(getEditorRuntimeOwner(editor))
     ? { landing: true as const }

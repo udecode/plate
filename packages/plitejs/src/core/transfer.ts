@@ -68,6 +68,7 @@ import {
   payloadKeyOf,
   withFitLanding,
 } from './slice-fit/provenance';
+import { aliasedRoots } from './slice-identities';
 import { planPaste, writePaste } from './slice-landing';
 import {
   carryMove,
@@ -533,7 +534,10 @@ const admit = (
                 source.entries.map(([, path]) => path) as [Path, ...Path[]],
                 { mode: 'block' }
               ),
-          undefined,
+          (root) =>
+            from.read.roots().some((entry) => entry.root === root)
+              ? from.read.root(root)
+              : undefined,
           intent
         ));
   const request = requestOf(from, intent, payload, relation, source, slice);
@@ -635,13 +639,18 @@ const runTransfer = (
     : null;
   const draft: { current: DraftLanding | null } = { current: null };
   const runtime = getEditorRuntimeOwner(editor);
-  const trackNodes = (paths: readonly Path[]): DraftLanding => {
+  const trackNodes = (
+    paths: readonly Path[],
+    aliased: ReadonlySet<string> = new Set()
+  ): DraftLanding => {
     const snapshot = getDefined(getTransactionSnapshot(runtime));
     const index = snapshot.builder.getIndex(targetRoot);
 
     return {
       expected: {
+        aliased,
         content,
+        independent: relation === 'independent',
         kind: 'nodes',
         roots: slice ? slice.roots : before.roots,
       },
@@ -900,11 +909,14 @@ const runTransfer = (
 
         const expected: LandingExpectation = copy
           ? {
-              closed: closedEdges(written.written),
-              content: written.written.content,
+              aliased: aliasedRoots(written.renewed),
+              closed: closedEdges(written.renewed.slice),
+              content: written.renewed.slice.content,
+              independent: relation === 'independent',
               kind: 'range-copy',
               landedKind,
-              roots: written.written.roots,
+              roots: written.renewed.slice.roots,
+              sourceRoots: copied.roots,
             }
           : {
               kind: 'range-move',
@@ -1008,6 +1020,7 @@ const runTransfer = (
 
       const [, targetPath] = target as NodeEntry;
       const boundary = insertionPath(targetPath, landing.edge.edge);
+      let aliased: ReadonlySet<string> = new Set();
 
       if (
         !asMove('landing', () =>
@@ -1015,7 +1028,12 @@ const runTransfer = (
             getEditorRuntimeOwner(editor),
             slice as never,
             boundary,
-            { drop: true }
+            {
+              drop: true,
+              renewed: (renewal) => {
+                aliased = aliasedRoots(renewal);
+              },
+            }
           )
         )
       ) {
@@ -1033,7 +1051,7 @@ const runTransfer = (
       });
 
       landed = nodes;
-      draft.current = trackNodes(paths);
+      draft.current = trackNodes(paths, aliased);
       if (moved) placeMovedAnchors(runtime, moved, draft.current.track);
       holdNodes(nodes);
       if (select) tx.selection.set(nodes);

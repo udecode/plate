@@ -547,6 +547,7 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     getElementContent: (type: string) => CompiledSchemaContentProgram | null;
     getElementOwnedRoots: (element: Element) => ReadonlyArray<
       Readonly<{
+        content: CompiledSchemaContentProgram;
         ownership: import('../interfaces/schema').SchemaContentRootOwnership;
         root: NamedRootKey;
         slot: string;
@@ -569,6 +570,16 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     readContentRootOwnerRoots: (
       value: EditorDocumentValue
     ) => ReadonlyMap<RootKey, readonly RootKey[]>;
+    /** The grammars the blocks of `value` that name `root` declare for it. */
+    readRootGrammars: (
+      root: RootKey,
+      value: EditorDocumentValue
+    ) => ReadonlyArray<
+      Readonly<{
+        content: CompiledSchemaContentProgram;
+        ownership: import('../interfaces/schema').SchemaContentRootOwnership;
+      }>
+    >;
     indexConstructedRoot: (
       input: Readonly<{
         after: DocumentIndex;
@@ -689,7 +700,7 @@ const nodePropertiesEqual = (
   return true;
 };
 
-const contentProgramsEqual = (
+export const contentProgramsEqual = (
   left: CompiledSchemaContentProgram | null,
   right: CompiledSchemaContentProgram | null
 ): boolean =>
@@ -1724,6 +1735,7 @@ export const createEditorSchema = <V extends Value = Value>(
           return typeof root === 'string' && root.length > 0 && root !== 'main'
             ? [
                 Object.freeze({
+                  content: declaration.content,
                   ownership: declaration.ownership,
                   root,
                   slot,
@@ -1864,6 +1876,19 @@ export const createEditorSchema = <V extends Value = Value>(
 
       return ownerRoots;
     };
+
+  const readRootGrammars: InternalEditorSchemaApi['readRootGrammars'] = (
+    root,
+    value
+  ) => {
+    const schema = getDeclarativeSchema();
+
+    return schema && hasContentRoots()
+      ? getDocumentOwnershipIndexes(schema, value).flatMap(({ index }) =>
+          getElementOwnedRootGrammarBindings(index, root)
+        )
+      : [];
+  };
 
   const getOrphanedElementOwnedRoots: InternalEditorSchemaApi['getOrphanedElementOwnedRoots'] =
     (input) => {
@@ -5928,6 +5953,7 @@ export const createEditorSchema = <V extends Value = Value>(
     declaresSetRoots,
     findRootOwner,
     readContentRootOwnerRoots,
+    readRootGrammars,
     getElementOwnedRoots,
     getProperty,
     getElementSlicePolicy,

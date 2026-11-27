@@ -4342,7 +4342,7 @@ const compileEditorSchemaInternal = (
                 value: Object.hasOwn(contentRoot, 'allowed')
                   ? Object.freeze({
                       content: contentRoot as SchemaContent,
-                      ownership: 'shared' as const,
+                      ownership: 'exclusive' as const,
                     })
                   : (contentRoot as SchemaContentRoot),
               },

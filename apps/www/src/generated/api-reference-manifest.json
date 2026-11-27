@@ -8237,7 +8237,7 @@
         },
         "platejs:SchemaContentRootInput": {
           "aliases": [],
-          "documentation": "Shared roots may use their grammar directly; ownership defaults to shared.",
+          "documentation": "A one-owner root may use its grammar directly; ownership defaults to exclusive.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "SchemaContentRootInput",
@@ -8248,7 +8248,7 @@
         },
         "platejs:SchemaContentRootOwnership": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "`exclusive` allows one owner, and a copy of that owner gets a new key.\n`shared` lets several owners show the root, and a copy of an owner names the\nsame key. The copy aliases the root when the document holds it and creates it\nunder the key when it does not. A shared key must be unique across every\ndocument a copy can reach.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "SchemaContentRootOwnership",
@@ -26194,7 +26194,7 @@
         },
         "platejs/react:SchemaContentRootInput": {
           "aliases": [],
-          "documentation": "Shared roots may use their grammar directly; ownership defaults to shared.",
+          "documentation": "A one-owner root may use its grammar directly; ownership defaults to exclusive.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "SchemaContentRootInput",
@@ -26205,7 +26205,7 @@
         },
         "platejs/react:SchemaContentRootOwnership": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "`exclusive` allows one owner, and a copy of that owner gets a new key.\n`shared` lets several owners show the root, and a copy of an owner names the\nsame key. The copy aliases the root when the document holds it and creates it\nunder the key when it does not. A shared key must be unique across every\ndocument a copy can reach.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "SchemaContentRootOwnership",
