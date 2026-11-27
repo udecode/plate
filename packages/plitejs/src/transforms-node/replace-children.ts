@@ -206,10 +206,25 @@ export const replaceChildren = <
         nodeKeyTransfers: preserveKeys
           ? children
               .slice(0, replacedChildren.length)
-              .map((_child, childIndex) => ({
-                path: [...at, index + childIndex],
-                source: replacedChildren[childIndex],
-              }))
+              .flatMap((child, childIndex) => {
+                const source = replacedChildren[childIndex];
+
+                if (
+                  NodeApi.isElement(source) &&
+                  Object.hasOwn(source, 'id') &&
+                  NodeApi.isElement(child) &&
+                  child.id !== source.id
+                ) {
+                  return [];
+                }
+
+                return [
+                  {
+                    path: [...at, index + childIndex],
+                    source,
+                  },
+                ];
+              })
           : undefined,
         storedCopies,
         ...(selectionAfter === undefined

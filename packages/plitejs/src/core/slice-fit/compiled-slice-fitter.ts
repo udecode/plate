@@ -22,6 +22,7 @@ import {
   ChangeDraft,
   type DocumentChangeStep,
   type DraftStep,
+  reconcileRootChangeWithoutIdMutation,
 } from '../change/builder';
 import {
   DocumentChange,
@@ -35,7 +36,6 @@ import type { Relocation } from '../change/lineage';
 import { historyFollowsAllFacts } from '../change/record';
 import {
   RootChange,
-  reconcileChildrenStep,
   type DocumentPropertyContext,
   type RootChangeSection,
 } from '../change/root-change';
@@ -4826,13 +4826,10 @@ export const compileSliceFitter = <V extends Value>(
         options.target.kind === 'root' &&
         candidate.from === 0 &&
         candidate.to === document.length
-          ? reconcileChildrenStep(
+          ? reconcileRootChangeWithoutIdMutation(
               document,
-              [],
-              0,
-              document.value.length,
               inputSlice.content as readonly JsonNode[]
-            ).change
+            )
           : RootChange.create(document, [
               ...plain.properties,
               ...plain.changes.map(({ from, insert, to }) => ({

@@ -213,6 +213,26 @@ export const setNodes = ((
       at = editorUnhangRange(editor, at, { voids });
     }
 
+    if (Object.hasOwn(props, 'id')) {
+      const nextId = (props as Record<string, unknown>).id;
+
+      for (const [node, path] of getNodes(editor, {
+        at,
+        match,
+        mode,
+        voids,
+      })) {
+        if (
+          path.length > 0 &&
+          NodeApi.isElement(node) &&
+          Object.hasOwn(node, 'id') &&
+          nextId !== node.id
+        ) {
+          throw new Error('Element property "id" cannot be changed.');
+        }
+      }
+    }
+
     if (split && RangeApi.isRange(at)) {
       if (
         RangeApi.isCollapsed(at) &&
@@ -316,6 +336,17 @@ export const setNodes = ((
           : undefined;
 
         const newValue: unknown = props[k as keyof Node];
+
+        if (
+          k === 'id' &&
+          NodeApi.isElement(node) &&
+          Object.hasOwn(node, 'id')
+        ) {
+          if (newValue === value) {
+            continue;
+          }
+          throw new Error('Element property "id" cannot be changed.');
+        }
 
         if (compare(newValue, value)) {
           hasChanges = true;

@@ -38,7 +38,7 @@ import {
   unwrapNodeChange,
   wrapChildrenChange,
 } from './enclosure';
-import type { JsonRecord } from './json';
+import { jsonEqual, type JsonRecord } from './json';
 import { visitRootNames } from './lazy-root';
 import type { CarriedDrop, Relocation } from './lineage';
 import {
@@ -288,6 +288,86 @@ const NO_RUNTIME_CANDIDATES: ReadonlyMap<
  *
  * @internal
  */
+const rootChangeWritesElementId = (change: RootChange) => {
+  for (let i = 0; i < change.sections.length; i += 2) {
+    if (change.sections[i + 1] !== -2) continue;
+    const mods = change.data[i >> 1] as
+      | ReadonlyArray<Readonly<{ key: string }>>
+      | undefined;
+
+    if (mods?.some((mod) => mod.key === 'id')) return true;
+  }
+
+  return false;
+};
+
+const replaceRootWindowChange = (
+  document: DocumentIndex,
+  children: readonly JsonNode[]
+) => {
+  const beforeNodes = document.value;
+
+  if (beforeNodes.length === children.length) {
+    const runs: ChildRun[] = [];
+
+    for (let i = 0; i < beforeNodes.length; i += 1) {
+      if (jsonEqual(beforeNodes[i], children[i])) continue;
+      runs.push({
+        children: [getDefined(children[i])],
+        index: i,
+        path: [],
+        removeCount: 1,
+      });
+    }
+
+    if (runs.length > 0) return replaceChildRunsChange(document, runs);
+  }
+
+  const shorter = Math.min(beforeNodes.length, children.length);
+  let prefix = 0;
+
+  while (prefix < shorter && jsonEqual(beforeNodes[prefix], children[prefix])) {
+    prefix += 1;
+  }
+
+  let suffix = 0;
+
+  while (
+    suffix < shorter - prefix &&
+    jsonEqual(
+      beforeNodes[beforeNodes.length - 1 - suffix],
+      children[children.length - 1 - suffix]
+    )
+  ) {
+    suffix += 1;
+  }
+
+  return replaceChildrenChange(
+    document,
+    [],
+    prefix,
+    beforeNodes.length - prefix - suffix,
+    children.slice(prefix, children.length - suffix)
+  );
+};
+
+export const reconcileRootChangeWithoutIdMutation = (
+  document: DocumentIndex,
+  children: readonly JsonNode[]
+): RootChange => {
+  const reconciled = reconcileChildrenStep(
+    document,
+    [],
+    0,
+    document.value.length,
+    children
+  ).change;
+
+  return rootChangeWritesElementId(reconciled)
+    ? replaceRootWindowChange(document, children)
+    : reconciled;
+};
+
 export type DraftStepSource = 'command' | 'correction';
 
 /** @internal */
@@ -2066,8 +2146,7 @@ export class ChangeDraft {
     return this.applyDiff(
       root,
       'replace',
-      reconcileChildrenStep(document, [], 0, document.value.length, children)
-        .change
+      reconcileRootChangeWithoutIdMutation(document, children)
     );
   }
 

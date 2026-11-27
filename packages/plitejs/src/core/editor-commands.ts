@@ -570,9 +570,9 @@ const writeWholeBlockLanding = (
   }
   if (!NodeApi.isElement(kept) || !NodeApi.isElement(landing.block)) return;
 
-  const { children: _children, ...props } = landing.block;
+  const { children: _children, id: _id, ...props } = landing.block;
   const stale = Object.keys(kept).filter(
-    (key) => key !== 'children' && !(key in props)
+    (key) => key !== 'children' && key !== 'id' && !(key in props)
   );
 
   tx.nodes.set(props, { at: keyAt(firstPath) });

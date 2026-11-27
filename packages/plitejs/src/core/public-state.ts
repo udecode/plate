@@ -242,7 +242,12 @@ import {
   UNKNOWN_FACTS,
 } from './change/record';
 import type { RootChange } from './change/root-change';
-import type { JsonEditorValue, JsonNode } from './change/tokens';
+import type {
+  JsonEditorValue,
+  JsonNode,
+  JsonToken,
+  OpenToken,
+} from './change/tokens';
 import type { PropertyModification } from './change/transform';
 import {
   cloneFrozen,
@@ -9641,7 +9646,10 @@ export const getUpdateView = <
     }),
     changes: Object.freeze({
       apply: (change: DocumentChange) => {
-        runActive(() => applyDocumentChange(editor, change));
+        runActive(() => {
+          assertChangeDoesNotMutateElementId(editor, change);
+          applyDocumentChange(editor, change);
+        });
       },
     }),
     effects: Object.freeze({
@@ -15164,6 +15172,131 @@ const applyRecordChange = (editor: Editor, change: DocumentChange) => {
     snapshot.builder.applyRecordChange(change),
     {}
   );
+};
+
+const onlyElementOpens = (tokens: readonly JsonToken[]) => {
+  const opens: OpenToken[] = [];
+
+  for (const token of tokens) {
+    if (token.kind !== 'open' || token.nodeKind !== 'element') return [];
+    opens.push(token);
+  }
+
+  return opens;
+};
+
+const assertChangeDoesNotMutateElementId = (
+  editor: Editor,
+  change: DocumentChange
+) => {
+  let before: JsonEditorValue | undefined;
+
+  for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+    let needsInspection = false;
+
+    for (let i = 0; i < rootChange.sections.length; i += 2) {
+      const length = getDefined(rootChange.sections[i]);
+      const inserted = getDefined(rootChange.sections[i + 1]);
+
+      if (inserted === -2 && length > 0) {
+        const mods = rootChange.data[i >> 1] as
+          | ReadonlyArray<
+              Readonly<{ key: string; type: string; value?: unknown }>
+            >
+          | undefined;
+
+        if (mods?.some((mod) => mod.key === 'id')) {
+          needsInspection = true;
+          break;
+        }
+      } else if (inserted > 0 && length > 0) {
+        const replacement = rootChange.data[i >> 1] as
+          | Readonly<{ tokens: readonly JsonToken[] }>
+          | undefined;
+
+        if (
+          replacement &&
+          onlyElementOpens(replacement.tokens).some((token) =>
+            Object.hasOwn(token.props, 'id')
+          )
+        ) {
+          needsInspection = true;
+          break;
+        }
+      }
+    }
+
+    if (!needsInspection) continue;
+
+    before ??= getTransactionSnapshot(editor)?.builder.value;
+    if (!before) return;
+    if (root !== 'main' && !Object.hasOwn(before.roots ?? {}, root)) continue;
+
+    const index = valueRootIndex(before, root);
+    let pos = 0;
+
+    for (let i = 0; i < rootChange.sections.length; i += 2) {
+      const length = getDefined(rootChange.sections[i]);
+      const inserted = getDefined(rootChange.sections[i + 1]);
+
+      if (inserted === -2 && length > 0) {
+        const mods = rootChange.data[i >> 1] as
+          | ReadonlyArray<
+              Readonly<{ key: string; type: string; value?: unknown }>
+            >
+          | undefined;
+        const idMods = mods?.filter((mod) => mod.key === 'id');
+
+        if (idMods && idMods.length > 0) {
+          for (const token of index.slice(pos, pos + length).tokens) {
+            if (
+              token.kind === 'open' &&
+              token.nodeKind === 'element' &&
+              Object.hasOwn(token.props, 'id')
+            ) {
+              const currentId = token.props.id;
+
+              for (const mod of idMods) {
+                if (mod.type !== 'set' || mod.value !== currentId) {
+                  throw new Error('Element property "id" cannot be changed.');
+                }
+              }
+            }
+          }
+        }
+      } else if (inserted > 0 && length > 0) {
+        const replacement = rootChange.data[i >> 1] as
+          | Readonly<{ tokens: readonly JsonToken[] }>
+          | undefined;
+
+        if (replacement) {
+          const insertedOpens = onlyElementOpens(replacement.tokens);
+
+          if (insertedOpens.length > 0) {
+            const deletedOpens = onlyElementOpens(
+              index.slice(pos, pos + length).tokens
+            );
+            const pairs = Math.min(deletedOpens.length, insertedOpens.length);
+
+            for (let k = 0; k < pairs; k += 1) {
+              const deletedOpen = getDefined(deletedOpens[k]);
+              const insertedOpen = getDefined(insertedOpens[k]);
+
+              if (
+                deletedOpen.props.type === insertedOpen.props.type &&
+                Object.hasOwn(deletedOpen.props, 'id') &&
+                Object.hasOwn(insertedOpen.props, 'id') &&
+                insertedOpen.props.id !== deletedOpen.props.id
+              ) {
+                throw new Error('Element property "id" cannot be changed.');
+              }
+            }
+          }
+        }
+      }
+      pos += length;
+    }
+  }
 };
 
 export const applyDocumentChange = (

@@ -1907,7 +1907,7 @@ export const createAuthoredPlugin = (
               settles: 'content',
             });
           } else {
-            tx.changes.apply(decided.change);
+            applyDocumentChange(getEditorRuntimeOwner(editor), decided.change);
           }
         } catch (error) {
           if (isRefusal(error)) {

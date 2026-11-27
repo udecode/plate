@@ -15,6 +15,7 @@ import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import {
   type AdmittedRepair,
+  applyDocumentChange,
   applyUnnamedDocumentChange,
   emitAnyEditorEffect,
   getCurrentSelection,
@@ -265,8 +266,9 @@ export const createYjsEditorAdapter = (
           if (records) tx.changes.apply(records);
           if (replacement) tx.value.replace(replacement);
           if (publishable && !publishable.empty) {
-            if (touchesNodes === undefined) tx.changes.apply(publishable);
-            else {
+            if (touchesNodes === undefined) {
+              applyDocumentChange(getEditorRuntimeOwner(editor), publishable);
+            } else {
               applyUnnamedDocumentChange(
                 getEditorRuntimeOwner(editor),
                 publishable,

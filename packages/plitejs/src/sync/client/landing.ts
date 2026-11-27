@@ -1,8 +1,12 @@
 import { withAuthoredUpdateView } from '../../core/authored-runtime';
 import type { DocumentChange } from '../../core/change/document-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
-import { getEditorRuntime } from '../../core/editor-runtime';
 import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+} from '../../core/editor-runtime';
+import {
+  applyDocumentChange,
   getActiveEditorUpdateId,
   registerEditorTransactionGuard,
 } from '../../core/public-state';
@@ -134,7 +138,10 @@ export const openLandingGate = ({
             (tx) => {
               state.id = getActiveEditorUpdateId(editor);
               tx.tags.add('history-skip');
-              tx.changes.apply(landing.change);
+              applyDocumentChange(
+                getEditorRuntimeOwner(editor),
+                landing.change
+              );
             },
             { onAdmission: admit, speculative: trial }
           )

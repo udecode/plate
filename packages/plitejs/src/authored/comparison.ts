@@ -296,6 +296,32 @@ const renewInsertedIds = (
     const record = value as Record<string, unknown>;
 
     if (
+      typeof record.length === 'number' &&
+      record.properties &&
+      typeof record.properties === 'object' &&
+      Array.isArray((record.properties as Record<string, unknown>).operations)
+    ) {
+      const properties = record.properties as Record<string, unknown>;
+      const operations = properties.operations as ReadonlyArray<
+        Record<string, unknown>
+      >;
+      const filtered = operations.filter((op) => op.key !== 'id');
+
+      if (filtered.length !== operations.length) {
+        changed = true;
+
+        return (
+          filtered.length === 0
+            ? { length: record.length }
+            : {
+                ...record,
+                properties: { ...properties, operations: filtered },
+              }
+        ) as T;
+      }
+    }
+
+    if (
       record.kind === 'open' &&
       record.nodeKind === 'element' &&
       record.props &&

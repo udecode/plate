@@ -8,7 +8,9 @@ import {
   viewOfChange,
 } from '../../core/change/effect-ledger';
 import type { JsonEditorValue } from '../../core/change/tokens';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
+import { applyDocumentChange } from '../../core/public-state';
 import { bindSharedRoom } from '../../core/shared-room';
 import type {
   AnyEditor,
@@ -299,8 +301,8 @@ export const createSyncServer = <
     const change = DocumentChange.between(valueOf(editor), value);
 
     if (!change.empty) {
-      editor.update(REMOTE, (tx) => {
-        tx.changes.apply(change);
+      editor.update(REMOTE, () => {
+        applyDocumentChange(getEditorRuntimeOwner(editor), change);
       });
     }
     room.serving = sameDocument(valueOf(editor), value);
@@ -616,8 +618,8 @@ export const createSyncServer = <
     });
 
     try {
-      room.editor.update(REMOTE, (tx) => {
-        tx.changes.apply(change);
+      room.editor.update(REMOTE, () => {
+        applyDocumentChange(getEditorRuntimeOwner(room.editor), change);
       });
     } catch {
       renewEditor(room);

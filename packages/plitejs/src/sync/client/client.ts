@@ -11,6 +11,7 @@ import { notifyObservers } from '../../core/lifecycle-error';
 import { suspendMovePlacement } from '../../core/moved-anchors';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import {
+  applyDocumentChange,
   applyUnnamedDocumentChange,
   createEditorDocumentChangeBuilder,
   forgetEditorHistoryStep,
@@ -116,9 +117,12 @@ const showsIn = (editor: AnyEditor) => {
     });
 
     try {
-      editor.update(REMOTE_UPDATE, (tx) => {
-        if (diffed) tx.changes.apply(change);
-        else applyUnnamedDocumentChange(getEditorRuntimeOwner(editor), change);
+      editor.update(REMOTE_UPDATE, () => {
+        if (diffed) {
+          applyDocumentChange(getEditorRuntimeOwner(editor), change);
+        } else {
+          applyUnnamedDocumentChange(getEditorRuntimeOwner(editor), change);
+        }
       });
     } finally {
       stop();
