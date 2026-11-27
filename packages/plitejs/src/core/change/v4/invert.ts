@@ -572,22 +572,14 @@ const invertV4StepsSparsely = (
         if (topId) {
           originalTopIndex.set(topId, topIndex);
           state.idMap.set(topId, {
-            ancestors: [],
             index: slot,
             node: topNode,
             parent: null,
-            path: [slot],
+            parentId: null,
             root: loc.root,
           });
         }
-        indexSubtree(
-          state.idMap,
-          loc.root,
-          topNode,
-          topNode.children,
-          [slot],
-          topId ? [topId] : []
-        );
+        indexSubtree(state.idMap, loc.root, topNode, topNode.children, topId);
       }
     }
 

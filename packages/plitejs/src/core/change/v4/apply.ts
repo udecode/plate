@@ -140,14 +140,13 @@ export const textOffsetAtChildPath = (
   return offset + innerOffset;
 };
 
-type LocatedElement = Readonly<{
-  ancestors: readonly string[];
+type LocatedElement = {
   index: number;
   node: JsonElementNode;
   parent: JsonElementNode | null;
-  path: readonly number[];
+  parentId: string | null;
   root: string;
-}>;
+};
 
 export type MutableV4State = {
   children: JsonNode[];
@@ -159,54 +158,125 @@ export type MutableV4State = {
   sourceRecords: RecordStore;
 };
 
+const elementIdOf = (node: JsonElementNode): string | null =>
+  typeof node.id === 'string' && node.id.length > 0 ? node.id : null;
+
+const indexNode = (
+  idMap: Map<string, LocatedElement>,
+  root: string,
+  parent: JsonElementNode | null,
+  parentId: string | null,
+  node: JsonElementNode,
+  index: number
+) => {
+  const id = elementIdOf(node);
+
+  if (id !== null) {
+    if (idMap.has(id)) {
+      throw new Error(`Duplicate element id "${id}" in v4 state.`);
+    }
+    idMap.set(id, {
+      index,
+      node,
+      parent,
+      parentId,
+      root,
+    });
+  }
+
+  const nextParentId = id ?? parentId;
+
+  for (let i = 0; i < node.children.length; i += 1) {
+    const child = node.children[i];
+
+    if (isElementNode(child)) {
+      indexNode(idMap, root, node, nextParentId, child, i);
+    }
+  }
+};
+
 export const indexSubtree = (
   idMap: Map<string, LocatedElement>,
   root: string,
   parent: JsonElementNode | null,
   nodes: readonly JsonNode[],
-  prefix: readonly number[],
-  ancestors: readonly string[]
+  parentId: string | null = null
 ) => {
   for (let i = 0; i < nodes.length; i += 1) {
     const child = nodes[i];
 
-    if (!isElementNode(child)) continue;
-
-    const path = [...prefix, i];
-
-    if (typeof child.id === 'string' && child.id.length > 0) {
-      if (idMap.has(child.id)) {
-        throw new Error(`Duplicate element id "${child.id}" in v4 state.`);
-      }
-      idMap.set(child.id, {
-        ancestors,
-        index: i,
-        node: child,
-        parent,
-        path,
-        root,
-      });
+    if (isElementNode(child)) {
+      indexNode(idMap, root, parent, parentId, child, i);
     }
-
-    const nextAncestors =
-      typeof child.id === 'string' && child.id.length > 0
-        ? [...ancestors, child.id]
-        : ancestors;
-
-    indexSubtree(idMap, root, child, child.children, path, nextAncestors);
   }
 };
 
-const rebuildRootIndex = (state: MutableV4State, root: string) => {
-  for (const [id, loc] of state.idMap) {
-    if (loc.root === root) state.idMap.delete(id);
+const unindexNode = (
+  idMap: Map<string, LocatedElement>,
+  node: JsonElementNode
+) => {
+  const id = elementIdOf(node);
+
+  if (id !== null) idMap.delete(id);
+  for (const child of node.children) {
+    if (isElementNode(child)) unindexNode(idMap, child);
+  }
+};
+
+const unindexSubtree = (
+  idMap: Map<string, LocatedElement>,
+  nodes: readonly JsonNode[]
+) => {
+  for (const child of nodes) {
+    if (isElementNode(child)) unindexNode(idMap, child);
+  }
+};
+
+const reindexChildren = (
+  idMap: Map<string, LocatedElement>,
+  root: string,
+  parent: JsonElementNode,
+  parentId: string | null,
+  prevChildren: readonly JsonNode[],
+  nextChildren: readonly JsonNode[]
+) => {
+  unindexSubtree(idMap, prevChildren);
+  indexSubtree(idMap, root, parent, nextChildren, parentId);
+};
+
+const syncSiblingIndices = (
+  idMap: Map<string, LocatedElement>,
+  list: readonly JsonNode[],
+  fromIndex: number
+) => {
+  for (let i = fromIndex; i < list.length; i += 1) {
+    const child = list[i];
+
+    if (!isElementNode(child)) continue;
+
+    const id = elementIdOf(child);
+
+    if (id !== null) {
+      const loc = idMap.get(id);
+
+      if (loc) loc.index = i;
+    }
+  }
+};
+
+const hasAncestorId = (
+  idMap: Map<string, LocatedElement>,
+  loc: LocatedElement,
+  ancestorId: string
+): boolean => {
+  let cursor = loc.parentId;
+
+  while (cursor !== null) {
+    if (cursor === ancestorId) return true;
+    cursor = idMap.get(cursor)?.parentId ?? null;
   }
 
-  const list = root === 'main' ? state.children : state.roots[root];
-
-  if (list) {
-    indexSubtree(state.idMap, root, null, list, [], []);
-  }
+  return false;
 };
 
 const collectSubtreeIds = (
@@ -243,9 +313,9 @@ export const createMutableV4State = (
   const sourceRecords = getValueRecords(value);
   const idMap = new Map<string, LocatedElement>();
 
-  indexSubtree(idMap, 'main', null, children, [], []);
+  indexSubtree(idMap, 'main', null, children);
   for (const root of Object.keys(roots)) {
-    indexSubtree(idMap, root, null, roots[root], [], []);
+    indexSubtree(idMap, root, null, roots[root]);
   }
 
   return {
@@ -296,7 +366,7 @@ const insertAtPlace = (
   state: MutableV4State,
   place: V4Place,
   node: JsonElementNode
-): string => {
+) => {
   if ('root' in place) {
     const list = getRootChildren(state, place.root);
 
@@ -306,7 +376,9 @@ const insertAtPlace = (
       );
     }
     list.splice(place.index, 0, node);
-    return place.root;
+    indexNode(state.idMap, place.root, null, null, node, place.index);
+    syncSiblingIndices(state.idMap, list, place.index + 1);
+    return;
   }
 
   const parentLoc = state.idMap.get(place.id);
@@ -316,7 +388,8 @@ const insertAtPlace = (
   }
 
   if ('offset' in place) {
-    const stream = toV4TextStream(parentLoc.node.children);
+    const prevChildren = parentLoc.node.children;
+    const stream = toV4TextStream(prevChildren);
 
     if (place.offset < 0 || place.offset > stream.units.length) {
       throw new RangeError(
@@ -328,7 +401,15 @@ const insertAtPlace = (
       stream.units,
       stream.emptyLeafMarks
     );
-    return parentLoc.root;
+    reindexChildren(
+      state.idMap,
+      parentLoc.root,
+      parentLoc.node,
+      place.id,
+      prevChildren,
+      parentLoc.node.children
+    );
+    return;
   }
 
   const list = parentLoc.node.children as JsonNode[];
@@ -339,17 +420,30 @@ const insertAtPlace = (
     );
   }
   list.splice(place.index, 0, node);
-  return parentLoc.root;
+  indexNode(
+    state.idMap,
+    parentLoc.root,
+    parentLoc.node,
+    place.id,
+    node,
+    place.index
+  );
+  syncSiblingIndices(state.idMap, list, place.index + 1);
 };
 
 const removeLocated = (state: MutableV4State, loc: LocatedElement) => {
   if (loc.parent === null) {
-    getRootChildren(state, loc.root).splice(loc.index, 1);
+    const list = getRootChildren(state, loc.root);
+
+    list.splice(loc.index, 1);
+    unindexNode(state.idMap, loc.node);
+    syncSiblingIndices(state.idMap, list, loc.index);
     return;
   }
 
   if (isTextBearingElement(loc.parent)) {
-    const stream = toV4TextStream(loc.parent.children);
+    const prevChildren = loc.parent.children;
+    const stream = toV4TextStream(prevChildren);
     const unitIndex = stream.units.findIndex(
       (unit) => unit.kind === 'inline' && unit.node.id === loc.node.id
     );
@@ -360,11 +454,23 @@ const removeLocated = (state: MutableV4State, loc: LocatedElement) => {
         stream.units,
         stream.emptyLeafMarks
       );
+      reindexChildren(
+        state.idMap,
+        loc.root,
+        loc.parent,
+        elementIdOf(loc.parent) ?? loc.parentId,
+        prevChildren,
+        loc.parent.children
+      );
       return;
     }
   }
 
-  (loc.parent.children as JsonNode[]).splice(loc.index, 1);
+  const list = loc.parent.children as JsonNode[];
+
+  list.splice(loc.index, 1);
+  unindexNode(state.idMap, loc.node);
+  syncSiblingIndices(state.idMap, list, loc.index);
 };
 
 export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
@@ -378,7 +484,8 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         throw new Error(`Missing v4 insert_text target "${step.target}".`);
       }
 
-      const stream = toV4TextStream(loc.node.children);
+      const prevChildren = loc.node.children;
+      const stream = toV4TextStream(prevChildren);
 
       if (step.offset > stream.units.length) {
         throw new RangeError(
@@ -401,7 +508,16 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         stream.units,
         stream.emptyLeafMarks
       );
-      if (stream.hasInlines) rebuildRootIndex(state, loc.root);
+      if (stream.hasInlines) {
+        reindexChildren(
+          state.idMap,
+          loc.root,
+          loc.node,
+          step.target,
+          prevChildren,
+          loc.node.children
+        );
+      }
       return;
     }
 
@@ -412,7 +528,8 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         throw new Error(`Missing v4 delete_text target "${step.target}".`);
       }
 
-      const stream = toV4TextStream(loc.node.children);
+      const prevChildren = loc.node.children;
+      const stream = toV4TextStream(prevChildren);
 
       if (step.offset + step.length > stream.units.length) {
         throw new RangeError(
@@ -427,7 +544,14 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         stream.units.length === 0 ? null : stream.emptyLeafMarks
       );
       if (stream.hasInlines || removed.some((u) => u.kind === 'inline')) {
-        rebuildRootIndex(state, loc.root);
+        reindexChildren(
+          state.idMap,
+          loc.root,
+          loc.node,
+          step.target,
+          prevChildren,
+          loc.node.children
+        );
       }
       return;
     }
@@ -439,7 +563,8 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         throw new Error(`Missing v4 format_text target "${step.target}".`);
       }
 
-      const stream = toV4TextStream(loc.node.children);
+      const prevChildren = loc.node.children;
+      const stream = toV4TextStream(prevChildren);
 
       if (step.length === 0) {
         if (step.offset !== 0 || stream.units.length > 0) {
@@ -482,7 +607,16 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         stream.units,
         stream.emptyLeafMarks
       );
-      if (stream.hasInlines) rebuildRootIndex(state, loc.root);
+      if (stream.hasInlines) {
+        reindexChildren(
+          state.idMap,
+          loc.root,
+          loc.node,
+          step.target,
+          prevChildren,
+          loc.node.children
+        );
+      }
       return;
     }
 
@@ -498,9 +632,7 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         }
       }
 
-      const targetRoot = insertAtPlace(state, step.to, node);
-
-      rebuildRootIndex(state, targetRoot);
+      insertAtPlace(state, step.to, node);
       return;
     }
 
@@ -511,7 +643,6 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         throw new Error(`Missing v4 remove_node target "${step.id}".`);
       }
       removeLocated(state, loc);
-      rebuildRootIndex(state, loc.root);
       return;
     }
 
@@ -533,22 +664,17 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         if (!dest) {
           throw new Error(`Missing v4 move_node destination "${step.to.id}".`);
         }
-        if (dest.ancestors.includes(step.id)) {
+        if (hasAncestorId(state.idMap, dest, step.id)) {
           throw new Error(
             `Cycle: cannot move element "${step.id}" into its descendant "${step.to.id}".`
           );
         }
       }
 
-      const sourceRoot = loc.root;
       const moved = loc.node;
 
       removeLocated(state, loc);
-      rebuildRootIndex(state, sourceRoot);
-
-      const destRoot = insertAtPlace(state, step.to, moved);
-
-      rebuildRootIndex(state, destRoot);
+      insertAtPlace(state, step.to, moved);
       return;
     }
 
@@ -579,7 +705,8 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
       let rightChildren: JsonNode[];
 
       if (isTextBearingElement(loc.node)) {
-        const stream = toV4TextStream(loc.node.children);
+        const prevChildren = loc.node.children;
+        const stream = toV4TextStream(prevChildren);
 
         if (step.at > stream.units.length) {
           throw new RangeError(
@@ -598,6 +725,14 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
           rightUnits,
           rightUnits.length === 0 ? stream.emptyLeafMarks : null
         );
+        reindexChildren(
+          state.idMap,
+          loc.root,
+          loc.node,
+          step.id,
+          prevChildren,
+          loc.node.children
+        );
       } else {
         const children = loc.node.children as JsonNode[];
 
@@ -607,6 +742,7 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
           );
         }
         rightChildren = children.splice(step.at);
+        unindexSubtree(state.idMap, rightChildren);
       }
 
       const sibling: JsonElementNode = {
@@ -614,14 +750,21 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         children: rightChildren,
         id: step.newId,
       };
+      const parentList =
+        loc.parent === null
+          ? getRootChildren(state, loc.root)
+          : (loc.parent.children as JsonNode[]);
 
-      if (loc.parent === null) {
-        getRootChildren(state, loc.root).splice(loc.index + 1, 0, sibling);
-      } else {
-        (loc.parent.children as JsonNode[]).splice(loc.index + 1, 0, sibling);
-      }
-
-      rebuildRootIndex(state, loc.root);
+      parentList.splice(loc.index + 1, 0, sibling);
+      indexNode(
+        state.idMap,
+        loc.root,
+        loc.parent,
+        loc.parentId,
+        sibling,
+        loc.index + 1
+      );
+      syncSiblingIndices(state.idMap, parentList, loc.index + 2);
       return;
     }
 
@@ -648,10 +791,12 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         isTextBearingElement(targetLoc.node) &&
         isTextBearingElement(sourceLoc.node)
       ) {
-        const left = toV4TextStream(targetLoc.node.children);
+        const prevTargetChildren = targetLoc.node.children;
+        const left = toV4TextStream(prevTargetChildren);
         const right = toV4TextStream(sourceLoc.node.children);
         const combined = [...left.units, ...right.units];
 
+        removeLocated(state, sourceLoc);
         (targetLoc.node as { children: JsonNode[] }).children =
           fromV4TextStream(
             combined,
@@ -659,15 +804,38 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
               ? (left.emptyLeafMarks ?? right.emptyLeafMarks)
               : null
           );
+        reindexChildren(
+          state.idMap,
+          targetLoc.root,
+          targetLoc.node,
+          step.target,
+          prevTargetChildren,
+          targetLoc.node.children
+        );
       } else {
+        const oldTargetLen = targetLoc.node.children.length;
+        const movedChildren = sourceLoc.node.children;
+
+        removeLocated(state, sourceLoc);
         (targetLoc.node as { children: JsonNode[] }).children = [
           ...targetLoc.node.children,
-          ...sourceLoc.node.children,
+          ...movedChildren,
         ];
-      }
+        for (let i = 0; i < movedChildren.length; i += 1) {
+          const child = movedChildren[i];
 
-      removeLocated(state, sourceLoc);
-      rebuildRootIndex(state, targetLoc.root);
+          if (isElementNode(child)) {
+            indexNode(
+              state.idMap,
+              targetLoc.root,
+              targetLoc.node,
+              step.target,
+              child,
+              oldTargetLen + i
+            );
+          }
+        }
+      }
       return;
     }
 
@@ -710,7 +878,8 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         );
       }
 
-      const stream = toV4TextStream(loc.node.children);
+      const prevChildren = loc.node.children;
+      const stream = toV4TextStream(prevChildren);
 
       if (step.offset + step.length > stream.units.length) {
         throw new RangeError(
@@ -732,7 +901,14 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         stream.units,
         stream.emptyLeafMarks
       );
-      rebuildRootIndex(state, loc.root);
+      reindexChildren(
+        state.idMap,
+        loc.root,
+        loc.node,
+        step.target,
+        prevChildren,
+        loc.node.children
+      );
       return;
     }
 
@@ -746,7 +922,8 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
         );
       }
 
-      const parentStream = toV4TextStream(parentLoc.node.children);
+      const prevChildren = parentLoc.node.children;
+      const parentStream = toV4TextStream(prevChildren);
       const inlineIndex = parentStream.units.findIndex(
         (unit) => unit.kind === 'inline' && unit.node.id === step.id
       );
@@ -766,7 +943,14 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
           ? (innerStream.emptyLeafMarks ?? parentStream.emptyLeafMarks)
           : null
       );
-      rebuildRootIndex(state, parentLoc.root);
+      reindexChildren(
+        state.idMap,
+        parentLoc.root,
+        parentLoc.node,
+        step.parent,
+        prevChildren,
+        parentLoc.node.children
+      );
       return;
     }
 
@@ -782,8 +966,10 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
       if (!Object.hasOwn(state.roots, step.root)) {
         throw new Error(`Missing v4 root "${step.root}".`);
       }
+      const removed = state.roots[step.root];
+
       delete state.roots[step.root];
-      rebuildRootIndex(state, step.root);
+      unindexSubtree(state.idMap, removed);
       return;
     }
 

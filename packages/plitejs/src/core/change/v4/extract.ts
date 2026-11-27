@@ -184,7 +184,7 @@ const collectAllIdsInValue = (value: JsonEditorValue): Set<string> => {
  */
 const stripLiveDescendants = (
   node: JsonElementNode,
-  liveIds: ReadonlySet<string>
+  liveIds: Readonly<{ has: (id: string) => boolean }>
 ): JsonElementNode => {
   const children: JsonNode[] = [];
 
@@ -857,8 +857,7 @@ const extractV4BetweenCore = (
       const existing = state.idMap.get(targetId);
 
       if (!existing) {
-        const liveIds = new Set(state.idMap.keys());
-        const stripped = stripLiveDescendants(targetNode, liveIds);
+        const stripped = stripLiveDescendants(targetNode, state.idMap);
 
         emit({
           node: stripped,

@@ -532,6 +532,7 @@ export class ChangeDraft {
   private readonly source: JsonEditorValue;
   private readonly sourceIndexes = new Map<string, DocumentIndex>();
   private readonly preparationAuthority: object;
+  private readonly recordV4: boolean;
   private readonly trackChanges: boolean;
   readonly tracksPlaces: boolean;
   /** Whether a collaboration binding reads which letters are new or moved. */
@@ -582,6 +583,7 @@ export class ChangeDraft {
       isSetValued?: DocumentSetPropertyResolver;
       preparationAuthority?: object;
       preparationRevision?: () => object;
+      recordV4?: boolean;
       trackChanges?: boolean;
       tracksPlaces?: boolean;
       tracksLetters?: boolean;
@@ -613,6 +615,8 @@ export class ChangeDraft {
     this.preparationAuthority =
       options.preparationAuthority ?? Object.freeze({});
     this.preparationRevision = options.preparationRevision;
+    this.recordV4 = options.recordV4 ?? true;
+    if (!this.recordV4) this.v4Recorder.invalidate();
     this.trackChanges = options.trackChanges ?? true;
     this.tracksPlaces = options.tracksPlaces ?? false;
     this.tracksLetters = options.tracksLetters ?? false;
@@ -1115,6 +1119,7 @@ export class ChangeDraft {
       isSetValued: this.isSetValued,
       preparationAuthority: this.preparationAuthority,
       preparationRevision: this.preparationRevision,
+      recordV4: this.recordV4,
       trackChanges: this.trackChanges,
       tracksPlaces: this.tracksPlaces,
       tracksLetters: this.tracksLetters,
@@ -1997,7 +2002,7 @@ export class ChangeDraft {
     if (accumulated.empty) {
       this.current = this.source;
       this.record = null;
-      this.v4Recorder.resetTo([]);
+      if (this.recordV4) this.v4Recorder.resetTo([]);
       this.indexes.clear();
       for (const [root, index] of this.sourceIndexes) {
         this.indexes.set(root, index);

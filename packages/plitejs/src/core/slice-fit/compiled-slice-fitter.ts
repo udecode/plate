@@ -1456,6 +1456,7 @@ export const compileSliceFitter = <V extends Value>(
       indexConstructedRoot,
       isSetValued: (node, key, context) =>
         isSetValuedProperty(node, key, context),
+      recordV4: false,
       validateConstructed: ({ after }) => {
         profileCoreDuration('slice-fit-content-validation', () => {
           const fittedParent = getDocumentRoot(
@@ -5515,6 +5516,7 @@ export const compileSliceFitter = <V extends Value>(
           isSetValuedProperty(node, key, context),
         preparationAuthority: api,
         preparationRevision: () => api,
+        recordV4: false,
       });
       const roots = new Map<string, readonly Descendant[]>([
         ['main', innerInput2.children],
@@ -5667,11 +5669,29 @@ export const compileSliceFitter = <V extends Value>(
         }
       };
 
-      for (const [root, children] of roots) fitRoot(root, children);
+      const firstPassProjectedContent = new Map<
+        string,
+        ReturnType<typeof getRootContent>
+      >();
+
+      for (const [root, children] of roots) {
+        if (root !== 'main' && !schema?.roots.has(root)) {
+          firstPassProjectedContent.set(
+            root,
+            getRootContent(root, builder.value as EditorDocumentValue)
+          );
+        }
+        fitRoot(root, children);
+      }
 
       // Only projected root grammar depends on owners installed by the first pass.
       for (const [root, children] of roots) {
-        if (root !== 'main' && !schema?.roots.has(root)) {
+        if (
+          root !== 'main' &&
+          !schema?.roots.has(root) &&
+          getRootContent(root, builder.value as EditorDocumentValue) !==
+            firstPassProjectedContent.get(root)
+        ) {
           fitRoot(root, children);
         }
       }
