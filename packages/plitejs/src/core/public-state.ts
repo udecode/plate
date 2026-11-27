@@ -188,6 +188,7 @@ import {
   type DraftStep,
   type DraftStepMove,
   type DraftStepSource,
+  reconcileRootChangeWithoutIdMutation,
 } from './change/builder';
 import {
   classifyDocumentChangeRoot,
@@ -16866,23 +16867,50 @@ export const replaceTransformedSnapshot = (
           : left.localeCompare(right)
     )) {
       if (replacedRoot !== undefined && root !== replacedRoot) continue;
-      const selectedSource =
-        root === selectedRoot && selectedInputChildren
-          ? selectedInputChildren
-          : fittedRoots[root];
+      const mapsSelection =
+        root === selectedRoot &&
+        !!selectedInputChildren &&
+        !!representationSelection;
 
-      applyTransactionSpec(
-        editor,
-        createRootFitTransactionSpec(
+      if (mapsSelection) {
+        applyTransactionSpec(
           editor,
-          root,
-          selectedSource,
-          root === selectedRoot
-            ? (representationSelection ?? undefined)
-            : undefined
+          createRootFitTransactionSpec(
+            editor,
+            root,
+            selectedInputChildren,
+            representationSelection
+          )
+        );
+        continue;
+      }
+
+      const builder = getActiveDocumentChangeBuilder(editor);
+      const nextChildren = fittedRoots[root] as readonly JsonNode[];
+
+      if (
+        root !== MAIN_ROOT_KEY &&
+        !Object.hasOwn(builder.value.roots ?? {}, root)
+      ) {
+        applyDocumentChangeStep(editor, builder.createRoot(root, nextChildren));
+        continue;
+      }
+
+      const rootChange = reconcileRootChangeWithoutIdMutation(
+        builder.getIndex(root),
+        nextChildren
+      );
+
+      if (rootChange.empty) continue;
+      applyDocumentChangeStep(
+        editor,
+        builder.apply(
+          createInternalDocumentChange(new Map([[root, rootChange]]))
         )
       );
     }
+
+    finalizeWithoutOrphanedRoots(editor);
 
     for (const root of Object.keys(currentRoots).sort()) {
       if (

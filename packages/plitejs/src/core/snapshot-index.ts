@@ -40,6 +40,7 @@ import {
   isDeferredPreparedDocumentSlice,
   type JsonNode,
 } from './change/tokens';
+import { isImmutable } from './clone';
 import {
   admitRoot,
   childrenOfNode,
@@ -52,6 +53,7 @@ import {
   topologyEntries,
   topologyHolding,
   topologyKeyAt,
+  topologyMatchesUniqueValues,
   topologyPathOf,
   topologyRetained,
   reorderRootOwners,
@@ -729,6 +731,15 @@ const assertMapMatchesWalk = (
   }
 };
 
+const VERIFIED_UNIQUE_MAPS = new WeakMap<Topology, WeakSet<object>>();
+const VERIFIED_ROOT_DIRECTORIES = new WeakMap<
+  RootDirectory,
+  Readonly<{
+    named: ReadonlyArray<readonly [root: string, list: object]>;
+    properties: readonly string[];
+  }>
+>();
+
 /**
  * Throws unless each key structure already built for this version of a root
  * maps exactly the unique values that a walk of its children finds.
@@ -744,10 +755,26 @@ export const assertBuiltUniqueMaps = (
   const topology = index && TOPOLOGIES.get(index);
 
   if (!topology) return;
+  const list = nodeListOf(children);
+  const cacheable = children instanceof DocumentIndex || isImmutable(list);
+
   withoutCountingWork(() => {
     for (const held of [topology, ...reindexesOf(topology, children)]) {
-      if (held.uniqueProperties.length) {
+      if (!held.uniqueProperties.length) continue;
+      if (cacheable && VERIFIED_UNIQUE_MAPS.get(held)?.has(list)) {
+        continue;
+      }
+      if (!topologyMatchesUniqueValues(held, list as NodeList<Descendant>)) {
         assertMapMatchesWalk(root, children, held);
+      }
+      if (cacheable) {
+        let verified = VERIFIED_UNIQUE_MAPS.get(held);
+
+        if (!verified) {
+          verified = new WeakSet();
+          VERIFIED_UNIQUE_MAPS.set(held, verified);
+        }
+        verified.add(list);
       }
     }
   });
@@ -904,6 +931,32 @@ export const assertRootDirectory = (
   const properties = internedUniquePropertiesOf(
     getCompiledEditorSchema(editor)
   );
+  const namedLists = directory
+    ? named.map(([root, children]) => [root, nodeListOf(children)] as const)
+    : null;
+  const cacheable =
+    directory !== undefined &&
+    namedLists !== null &&
+    named.every(
+      ([, children], at) =>
+        children instanceof DocumentIndex || isImmutable(namedLists[at][1])
+    );
+
+  if (cacheable && namedLists) {
+    const verified = VERIFIED_ROOT_DIRECTORIES.get(directory);
+
+    if (
+      verified &&
+      verified.properties === properties &&
+      verified.named.length === namedLists.length &&
+      verified.named.every(
+        ([root, list], at) =>
+          root === namedLists[at][0] && list === namedLists[at][1]
+      )
+    ) {
+      return;
+    }
+  }
   const membership = (property: string, key: string, root: string) =>
     `${property} ${JSON.stringify(key)} in root ${root}`;
 
@@ -940,6 +993,12 @@ export const assertRootDirectory = (
       failInvariant(
         `A walk finds ${unnamed}, which the root directory does not name.`
       );
+    }
+    if (cacheable && namedLists) {
+      VERIFIED_ROOT_DIRECTORIES.set(directory, {
+        named: namedLists.map(([root, list]) => [root, list]),
+        properties,
+      });
     }
   });
 };

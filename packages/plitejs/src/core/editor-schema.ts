@@ -1118,8 +1118,7 @@ const isDeepFrozenNode = (node: Descendant): boolean => {
   if (
     !Object.isFrozen(node) ||
     (!NodeApi.isText(node) &&
-      (!Object.isFrozen(node.children) ||
-        !node.children.every(isDeepFrozenNode)))
+      (!isImmutable(node.children) || !node.children.every(isDeepFrozenNode)))
   ) {
     return false;
   }
@@ -5984,7 +5983,7 @@ export const createEditorSchema = <V extends Value = Value>(
         );
 
         if (NodeApi.isText(node)) return;
-        if (!Object.isFrozen(node.children)) {
+        if (!isImmutable(node.children)) {
           throw new EditorSchemaValidationError(
             `Changed editor children at ${root}:[${path}] must be immutable.`
           );

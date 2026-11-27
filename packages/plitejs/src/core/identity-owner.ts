@@ -1453,6 +1453,130 @@ export const topologyUniqueEntries = (topology: Topology) => {
   return entries;
 };
 
+const VERIFIED_TOPOLOGY_HOLDERS = new WeakSet<Topology>();
+
+export const topologyMatchesUniqueValues = (
+  topology: Topology,
+  children: Readonly<{
+    at: (index: number) => Descendant | undefined;
+    length: number;
+  }>
+): boolean => {
+  const { holders, uniqueProperties } = topology;
+
+  if (uniqueProperties.length === 0) return true;
+  if (topology.top === NO_TREE) return children.length === 0;
+
+  const reader = readTopology(topology);
+  const holdersVerified = VERIFIED_TOPOLOGY_HOLDERS.has(topology);
+  let matched = 0;
+
+  const checkCell = (cell: number, node: Descendant): boolean => {
+    const row = dirGet(topology.cells, cell);
+
+    if (!row) return false;
+    const childNodes = childrenOfNode(node);
+
+    if (!childNodes) return row.children === NO_TREE;
+    const rowHeld = row.held;
+
+    for (let at = 0; at < uniqueProperties.length; at++) {
+      const value = node[uniqueProperties[at]];
+      const expected = rowHeld ? rowHeld[at] : null;
+
+      if (value === undefined) {
+        if (expected !== null) return false;
+        continue;
+      }
+
+      const key =
+        typeof value === 'string' && value.charCodeAt(0) !== 1
+          ? value
+          : uniqueLookupKeyOf(value);
+
+      if (key === null || key !== expected) return false;
+      if (!holdersVerified) {
+        const held = hashMapGet(holders[at], key);
+
+        if (held === cell) {
+          matched += 1;
+        } else if (
+          held !== undefined &&
+          typeof held !== 'number' &&
+          dirGet(held, cell) === true
+        ) {
+          matched += 1;
+        } else {
+          return false;
+        }
+      }
+    }
+    if (childNodes.length === 0) {
+      return row.children === NO_TREE || reader.count(row.children) === 0;
+    }
+
+    return row.children !== NO_TREE && checkList(row.children, childNodes);
+  };
+
+  const checkPage = (
+    pageAddress: number,
+    list: Readonly<{
+      at: (index: number) => Descendant | undefined;
+      length: number;
+    }>,
+    offset: number
+  ): number => {
+    const page = reader.page(pageAddress);
+
+    if (page.leaf) {
+      for (let i = 0; i < page.items.length; i++) {
+        const node = list.at(offset + i);
+
+        if (!node || !checkCell(page.items[i], node)) return -1;
+      }
+
+      return offset + page.items.length;
+    }
+
+    let cursor = offset;
+
+    for (const childPage of page.items) {
+      cursor = checkPage(childPage, list, cursor);
+      if (cursor < 0) return -1;
+    }
+
+    return cursor;
+  };
+
+  const checkList = (
+    tree: number,
+    list: Readonly<{
+      at: (index: number) => Descendant | undefined;
+      length: number;
+    }>
+  ): boolean => {
+    if (reader.count(tree) !== list.length) return false;
+
+    return checkPage(tree, list, 0) === list.length;
+  };
+
+  if (!checkList(topology.top, children)) return false;
+
+  if (!holdersVerified) {
+    let total = 0;
+
+    for (const map of holders) {
+      hashMapForEach(map, (_, held) => {
+        total += typeof held === 'number' ? 1 : held.size;
+      });
+    }
+    if (matched !== total) return false;
+    VERIFIED_TOPOLOGY_HOLDERS.add(topology);
+  }
+
+  return true;
+};
+
 /**
  * Calls `changed` for each value that one of two versions of a root's maps
  * holds and the other does not, with whether the later version holds it. It

@@ -5376,10 +5376,7 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   const ownDocument = (raw: EditorDocumentValue) => {
-    const { records, roots, ...value } = snapshotEditorJsonValue(
-      raw,
-      'Editor schema document'
-    );
+    const { records, roots, ...value } = raw;
     const named = Object.entries(roots ?? {});
     const owned = snapshotEditorJsonValue(
       {
@@ -5395,6 +5392,10 @@ export const compileSliceFitter = <V extends Value>(
       },
       'Editor schema document'
     );
+
+    if (records !== undefined) {
+      snapshotEditorJsonValue(records, 'Editor schema document');
+    }
 
     return (records === undefined
       ? owned
@@ -5444,6 +5445,93 @@ export const compileSliceFitter = <V extends Value>(
     }
   };
 
+  const fillMissingReservedElementIds = (
+    document: EditorDocumentValue
+  ): EditorDocumentValue | null => {
+    if (!schema?.everyElementHasId || !generateReservedElementId) {
+      return document;
+    }
+
+    const seen = new Set<string>();
+    let missing = false;
+    let duplicateOrInvalid = false;
+
+    const scan = (children: readonly Descendant[]): void => {
+      for (const node of children) {
+        if (!ElementApi.isElement(node)) continue;
+        const { id } = node as Element & { id?: unknown };
+
+        if (id === undefined) {
+          missing = true;
+        } else if (typeof id !== 'string' || id.length === 0 || seen.has(id)) {
+          duplicateOrInvalid = true;
+
+          return;
+        } else {
+          seen.add(id);
+        }
+        scan(node.children);
+        if (duplicateOrInvalid) return;
+      }
+    };
+
+    scan(document.children);
+    if (!duplicateOrInvalid && document.roots) {
+      for (const children of Object.values(document.roots)) {
+        scan(children);
+        if (duplicateOrInvalid) break;
+      }
+    }
+    if (duplicateOrInvalid) return null;
+    if (!missing) return document;
+
+    const mint = (): string => {
+      let fresh = generateReservedElementId();
+
+      while (fresh === undefined || seen.has(fresh)) {
+        if (fresh === undefined) return '';
+        fresh = generateReservedElementId();
+      }
+      seen.add(fresh);
+
+      return fresh;
+    };
+
+    const fillList = <T extends readonly Descendant[]>(children: T): T => {
+      let changed = false;
+      const next = children.map((node) => {
+        if (!ElementApi.isElement(node)) return node;
+        const nextChildren = fillList(node.children);
+        const hasId = (node as Element & { id?: unknown }).id !== undefined;
+
+        if (hasId && nextChildren === node.children) return node;
+        changed = true;
+
+        return hasId
+          ? { ...node, children: nextChildren }
+          : { ...node, children: nextChildren, id: mint() };
+      });
+
+      return (changed ? next : children) as unknown as T;
+    };
+
+    const children = fillList(document.children);
+    const roots = document.roots
+      ? Object.fromEntries(
+          Object.entries(document.roots).map(([root, list]) => [
+            root,
+            fillList(list),
+          ])
+        )
+      : undefined;
+
+    return {
+      ...document,
+      children,
+      ...(roots === undefined ? {} : { roots }),
+    };
+  };
+
   const fitDocumentInput = <TValue extends Value>(
     rawInput: EditorDocumentValue<TValue>,
     positions?: FitPositions,
@@ -5467,7 +5555,7 @@ export const compileSliceFitter = <V extends Value>(
       const candidate =
         (fillElementIds
           ? loadElementIds?.(innerInput2)?.fill(innerInput2)?.value
-          : undefined) ?? innerInput2;
+          : fillMissingReservedElementIds(innerInput2)) ?? innerInput2;
       const reused = reuseCanonicalDocument(candidate, positions);
 
       if (reused) return reused;

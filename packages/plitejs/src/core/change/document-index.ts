@@ -236,7 +236,7 @@ export const decodeNodes = (
       frame.kind === 'element'
         ? (Object.freeze({
             ...cloneFrozen(frame.props),
-            children: Object.freeze(frame.children),
+            children: freezeChildrenArray(frame.children),
           }) as JsonNode)
         : cloneFrozen(decodedNode);
     const sourceTokenCount = index - frame.openIndex + 1;
@@ -279,21 +279,40 @@ export const nodeAtPath = (
   return getDefined(node);
 };
 
+// JavaScriptCore takes O(length) to freeze or check Object.isFrozen on large
+// arrays; above a small threshold, track immutability in IMMUTABLE_ARRAYS.
+const LARGE_CHILDREN_FREEZE_THRESHOLD = 64;
+
+const freezeChildrenArray = (children: readonly JsonNode[]) => {
+  if (children.length > LARGE_CHILDREN_FREEZE_THRESHOLD) {
+    rememberImmutableArray(children);
+
+    return children;
+  }
+
+  return Object.freeze(children);
+};
+
 const freezeElementWithChildren = (
   node: JsonNode,
   children: readonly JsonNode[]
-) => Object.freeze({ ...node, children: Object.freeze(children) }) as JsonNode;
+) =>
+  Object.freeze({
+    ...node,
+    children: freezeChildrenArray(children),
+  }) as JsonNode;
 
 const elementWithChildren = (
   element: JsonNode,
-  children: TreeIndexChildren
+  children: TreeIndexChildren,
+  nextChildren?: readonly JsonNode[]
 ): TreeIndexNode => ({
   children,
   kind: 'element',
   length: children.totalLength + 2,
   node: freezeElementWithChildren(
     element,
-    children.map((child) => child.node)
+    nextChildren ?? children.map((child) => child.node)
   ),
 });
 
@@ -344,26 +363,46 @@ const updateIndexedNode = (
   tree: TreeIndexChildren,
   path: readonly number[],
   update: (node: JsonNode) => JsonNode
-) => {
+): TreeIndexChildren => {
   const index = path.at(-1);
 
   if (index === undefined) throw new Error('Cannot update the document root.');
 
-  return replaceIndexedChildren(tree, path.slice(0, -1), (children) => {
-    const entry = children.at(index);
+  const updateAt = (
+    current: TreeIndexChildren,
+    depth: number
+  ): Readonly<{ next: TreeIndexNode; tree: TreeIndexChildren }> => {
+    const childIndex = path[depth];
+    const entry = current.at(childIndex);
 
     if (!entry) throw new Error(`Cannot resolve node at [${path}].`);
+    if (depth === path.length - 1) {
+      const updatedNode = update(entry.node);
+      const nextNode = isElementNode(updatedNode)
+        ? (Object.freeze({
+            ...cloneFrozen(nodeProps(updatedNode)),
+            children: updatedNode.children,
+          }) as JsonNode)
+        : cloneFrozen(updatedNode);
+      const next = createTreeIndexNode(nextNode);
 
-    const updatedNode = update(entry.node);
-    const nextNode = isElementNode(updatedNode)
-      ? (Object.freeze({
-          ...cloneFrozen(nodeProps(updatedNode)),
-          children: updatedNode.children,
-        }) as JsonNode)
-      : cloneFrozen(updatedNode);
+      return { next, tree: current.set(childIndex, next) };
+    }
+    if (!entry.children || !isElementNode(entry.node)) {
+      throw new Error(
+        `Cannot resolve element at [${path.slice(0, depth + 1)}].`
+      );
+    }
+    const descended = updateAt(entry.children, depth + 1);
+    const nextChildren = entry.node.children.slice();
 
-    return children.set(index, createTreeIndexNode(nextNode));
-  });
+    nextChildren[path[depth + 1]] = descended.next.node;
+    const next = elementWithChildren(entry.node, descended.tree, nextChildren);
+
+    return { next, tree: current.set(childIndex, next) };
+  };
+
+  return updateAt(tree, 0).tree;
 };
 
 type IndexedNodeUpdate = Readonly<{
@@ -378,10 +417,13 @@ type IndexedNodeUpdateBranch = {
   text?: string;
 };
 
-const updateIndexedNodes = (
+const updateIndexedNodesWithMap = (
   tree: TreeIndexChildren,
   branch: IndexedNodeUpdateBranch
-): TreeIndexChildren => {
+): Readonly<{
+  tree: TreeIndexChildren;
+  updated: Map<number, TreeIndexNode>;
+}> => {
   const updated = new Map<number, TreeIndexNode>();
 
   for (const [index, update] of branch.children) {
@@ -397,10 +439,13 @@ const updateIndexedNodes = (
       if (!next.children || !isElementNode(next.node)) {
         throw new Error(`Cannot descend through text at child index ${index}.`);
       }
-      next = elementWithChildren(
-        next.node,
-        updateIndexedNodes(next.children, update)
-      );
+      const descended = updateIndexedNodesWithMap(next.children, update);
+      const nextChildren = next.node.children.slice();
+
+      for (const [childIndex, childEntry] of descended.updated) {
+        nextChildren[childIndex] = childEntry.node;
+      }
+      next = elementWithChildren(next.node, descended.tree, nextChildren);
     }
 
     if (update.props) {
@@ -431,8 +476,13 @@ const updateIndexedNodes = (
     updated.set(index, next);
   }
 
-  return tree.setAll(updated);
+  return { tree: tree.setAll(updated), updated };
 };
+
+const updateIndexedNodes = (
+  tree: TreeIndexChildren,
+  branch: IndexedNodeUpdateBranch
+): TreeIndexChildren => updateIndexedNodesWithMap(tree, branch).tree;
 
 /** @internal */
 export const rootIndexOf = <K extends string>(source: Roots<K>, key: K) =>
