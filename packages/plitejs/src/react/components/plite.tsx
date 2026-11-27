@@ -49,7 +49,10 @@ import {
   withMountedPresentation,
 } from '../../editor-runtime-view';
 import type { AnyEditor } from '../../interfaces/editor';
-import { PliteContentRootOwnerContext } from '../context';
+import {
+  PliteContentRootInstanceContext,
+  PliteContentRootOwnerContext,
+} from '../context';
 import {
   DecorationContext,
   DecorationRegistrationContext,
@@ -102,6 +105,7 @@ import type {
 } from '../plugin/with-react';
 import { profilePliteReactDuration } from '../render-profiler';
 import { toPublicRootOption } from '../root-key';
+import { createContentRootPaneKey } from '../slot-arrival';
 import { mountPliteViewSelection } from '../view-selection';
 import {
   createPliteViewSelectionDecorationSource,
@@ -334,11 +338,17 @@ export const EditorRuntimeView = <
   presentation,
 }: EditorRuntimeViewProps<E>) => {
   const runtimeContext = useRequiredPliteRuntimeContext();
-  const { getView, registerHistoryStepView, registerViewEditor } =
-    runtimeContext;
+  const {
+    getView,
+    registerHistoryStepView,
+    registerViewEditor,
+    updateViewInstance,
+  } = runtimeContext;
   const parentEditor = useOptionalEditorContext();
   const inheritedTextFlow = useContext(ImperativeTextFlowContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
+  const contentRootInstance = useContext(PliteContentRootInstanceContext);
+  const [paneKey] = useState(createContentRootPaneKey);
   const { selectorContext, onChange } = useEditorSelectorContext();
   const [lockScope] = useState(() => createViewLockScope(readOnly));
   const editor = useMemo(() => {
@@ -393,15 +403,41 @@ export const EditorRuntimeView = <
     [lockScope]
   );
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
+  const runtimeOwner = getEditorRuntimeOwner(reactEditor);
+  const ownSlotInstance =
+    contentRootInstance &&
+    contentRootInstance.runtimeOwner === runtimeOwner &&
+    contentRootInstance.childRoot === viewRoot &&
+    mountedIn !== undefined
+      ? contentRootInstance
+      : null;
+  const descendantInstanceContext = useMemo(
+    () =>
+      ownSlotInstance ?? {
+        childRoot: viewRoot,
+        hops: [],
+        instanceKey: `${paneKey}:${viewRoot}`,
+        paneKey,
+        runtimeOwner,
+      },
+    [ownSlotInstance, paneKey, runtimeOwner, viewRoot]
+  );
+  const viewInstanceRef = useRef(descendantInstanceContext);
+  useInsertionEffect(() => {
+    viewInstanceRef.current = descendantInstanceContext;
+  }, [descendantInstanceContext]);
   const { focused: isFocused } = useRuntimeFocusState(reactEditor);
   useInsertionEffect(
     () => registerHistoryStepView(reactEditor, viewRoot),
     [reactEditor, registerHistoryStepView, viewRoot]
   );
   useIsomorphicLayoutEffect(
-    () => registerViewEditor(reactEditor, viewRoot),
+    () => registerViewEditor(reactEditor, viewRoot, viewInstanceRef.current),
     [reactEditor, registerViewEditor, viewRoot]
   );
+  useIsomorphicLayoutEffect(() => {
+    updateViewInstance(reactEditor, descendantInstanceContext);
+  }, [descendantInstanceContext, reactEditor, updateViewInstance]);
   // An insertion effect may not schedule updates, so the lock's notice goes
   // out here, before the commit that wrote it ends.
   useIsomorphicLayoutEffect(() => {
@@ -467,9 +503,13 @@ export const EditorRuntimeView = <
                         mountedEditor={reactEditor}
                         presentation={viewPresentation}
                       >
-                        <ViewLockScopeContext value={lockScope}>
-                          {children}
-                        </ViewLockScopeContext>
+                        <PliteContentRootInstanceContext
+                          value={descendantInstanceContext}
+                        >
+                          <ViewLockScopeContext value={lockScope}>
+                            {children}
+                          </ViewLockScopeContext>
+                        </PliteContentRootInstanceContext>
                       </SurfaceRuntimeScope>
                     </TextRenderScopeContext>
                   </ImperativeTextFlowContext>

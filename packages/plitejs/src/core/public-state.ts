@@ -420,8 +420,11 @@ import { readRootEntries } from './root-entries';
 import { changedRootsOf } from './root-ownership';
 import {
   flushRootTargets,
+  hasSlotCarryHosts,
   querySlotCarryHosts,
+  recordCommitSlotForks,
   reportShownChange,
+  type SlotForkRecord,
 } from './root-target';
 import {
   areEditorSchemaIdentitiesEqual,
@@ -638,6 +641,7 @@ type TransactionSnapshot = {
   rootDirectory: StateRootDirectory;
   rootIndexes: Map<string, SnapshotIndex>;
   roots: Record<string, readonly Descendant[]>;
+  slotForks: SlotForkRecord[];
   tags: Set<EditorUpdateTag>;
   transactionChangeObservers: Set<
     import('../interfaces/editor').EditorTransactionChangeHandler<Editor>
@@ -10043,6 +10047,62 @@ export const getUpdateView = <
                 ])
               );
 
+              if (snapshot && elementKey && hasSlotCarryHosts(editor)) {
+                const keyRemap = new Map<string, string>();
+                const collectForkElementKeys = (
+                  fromRoot: string,
+                  toRoot: string,
+                  nodes: readonly Descendant[],
+                  prefix: readonly number[] = []
+                ) => {
+                  nodes.forEach((child, index) => {
+                    if (!NodeApi.isElement(child)) return;
+
+                    const childPath = [...prefix, index];
+
+                    if (schema.getElementOwnedRoots(child).length > 0) {
+                      const fromKey = withEditorRootChildren(
+                        editor,
+                        fromRoot,
+                        () => getNodeKey(editor, childPath)
+                      );
+                      const toKey = withEditorRootChildren(editor, toRoot, () =>
+                        getNodeKey(editor, childPath)
+                      );
+
+                      if (fromKey && toKey) {
+                        keyRemap.set(fromKey, toKey);
+                      }
+                    }
+
+                    collectForkElementKeys(
+                      fromRoot,
+                      toRoot,
+                      child.children,
+                      childPath
+                    );
+                  });
+                };
+
+                for (const [fromRoot, toRoot] of rootRemap) {
+                  const fromNodes = Object.hasOwn(documentRoots, fromRoot)
+                    ? documentRoots[fromRoot]
+                    : undefined;
+
+                  if (fromNodes) {
+                    collectForkElementKeys(fromRoot, toRoot, fromNodes);
+                  }
+                }
+
+                snapshot.slotForks.push({
+                  elementKey,
+                  keyRemap,
+                  newRoot: root,
+                  oldRoot: owned.root,
+                  slot: options.slot,
+                });
+              }
+
               if (!hasOtherHolder) {
                 applyDocumentChangeStep(
                   editor,
@@ -10660,6 +10720,7 @@ export const createTransactionSpecContext = (
     reason: null,
     reservedRoots: parentSnapshot?.reservedRoots ?? NO_RESERVED_ROOTS,
     selectionInDroppedRoot: parentSnapshot?.selectionInDroppedRoot ?? false,
+    slotForks: parentSnapshot ? [...parentSnapshot.slotForks] : [],
     records,
     rootDirectory: {
       initial: parentSnapshot
@@ -14731,6 +14792,7 @@ const createEditorUpdateDraftContext = (
     reason: null,
     reservedRoots: NO_RESERVED_ROOTS,
     selectionInDroppedRoot: false,
+    slotForks: [],
     records,
     rootDirectory: {
       initial: () => ROOT_DIRECTORIES.get(getEditorRuntimeOwner(editor)),
@@ -15250,6 +15312,13 @@ export const runEditorTransaction = <R>(
               draftContext.baseCaret,
               draftContext.caret
             );
+            if (snapshot.slotForks.length > 0) {
+              recordCommitSlotForks(change, {
+                caretPresentation:
+                  draftContext.baseCaret.owner?.presentation ?? null,
+                forks: snapshot.slotForks,
+              });
+            }
             anchorPublication = prepareAnchorPublication(editor, change, () => {
               profileCoreDuration('transaction-publish-anchors', () => {
                 beginAnchorTransaction(editor);

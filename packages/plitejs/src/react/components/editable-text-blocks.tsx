@@ -36,6 +36,7 @@ import {
 } from '../../dom/internal';
 import {
   ElementContext,
+  PliteContentRootInstanceContext,
   PliteContentRootOwnerContext,
   PliteEditableRootContext,
 } from '../context';
@@ -111,6 +112,10 @@ import {
   type ViewportRect,
   useRangeGeometryOwner,
 } from '../range-geometry';
+import {
+  buildContentRootInstanceKey,
+  createContentRootSlotKey,
+} from '../slot-arrival';
 import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
@@ -427,7 +432,7 @@ const createEditableElementSlots = <TElement extends ElementNode = ElementNode>(
           <EditableContentRootSlot
             element={props.element}
             options={options}
-            ownerKey={props.nodeKey}
+            ownerKey={props.elementKey}
             ownerPath={props.ownerPath}
             renderers={
               {
@@ -456,18 +461,27 @@ function EditableContentRootSlot({
 }: {
   element: ElementNode;
   options: EditableContentRootSlotOptions;
-  ownerKey: string;
+  ownerKey: NodeKey;
   ownerPath: Path;
   renderers: EditableContentRootSlotRenderers;
   slot: string;
 }) {
   const ownerEditor = useEditorContext();
+  const runtimeOwner = getEditorRuntimeOwner(ownerEditor);
   const ownerRoot = toInternalRoot(
     ownerEditor.read((state) => state.view.root())
   );
   const { root } = useContentRoot(element, { slot });
   const ownerSources = React.useContext(DecorationSourcesContext);
+  const rawParentInstance = React.useContext(PliteContentRootInstanceContext);
+  const parentInstance =
+    rawParentInstance &&
+    rawParentInstance.runtimeOwner === runtimeOwner &&
+    rawParentInstance.childRoot === ownerRoot
+      ? rawParentInstance
+      : null;
   const ownerReadOnly = useEditorReadOnly();
+  const [slotMountId] = React.useState(createContentRootSlotKey);
   const contentRootOwner = React.useMemo(
     () => ({
       childRoot: root,
@@ -476,28 +490,57 @@ function EditableContentRootSlot({
     }),
     [ownerPath, ownerRoot, root]
   );
+  const contentRootInstance = React.useMemo(() => {
+    const paneKey = parentInstance?.paneKey ?? ownerRoot;
+    const parentKey = parentInstance?.instanceKey ?? `${paneKey}:${ownerRoot}`;
+    const hop = {
+      ownerKey,
+      ownerRoot,
+      root,
+      slot,
+      slotMountId,
+    };
+
+    return {
+      childRoot: root,
+      hops: parentInstance ? [...parentInstance.hops, hop] : [hop],
+      instanceKey: buildContentRootInstanceKey(parentKey, ownerKey, slot, root),
+      paneKey,
+      runtimeOwner,
+    };
+  }, [
+    ownerKey,
+    ownerRoot,
+    parentInstance,
+    root,
+    runtimeOwner,
+    slot,
+    slotMountId,
+  ]);
 
   return (
     <PliteContentRootOwnerContext value={contentRootOwner}>
-      <SurfaceRoot
-        decorations={ownerSources}
-        editor={ownerEditor}
-        nested
-        readOnly={Boolean(options.readOnly)}
-        root={root}
-      >
-        <EditableContentRootView
-          options={options}
-          ownerEditor={ownerEditor}
-          ownerKey={ownerKey}
-          ownerPath={ownerPath}
-          ownerReadOnly={ownerReadOnly}
-          ownerRoot={ownerRoot}
-          renderers={renderers}
+      <PliteContentRootInstanceContext value={contentRootInstance}>
+        <SurfaceRoot
+          decorations={ownerSources}
+          editor={ownerEditor}
+          nested
+          readOnly={Boolean(options.readOnly)}
           root={root}
-          slot={slot}
-        />
-      </SurfaceRoot>
+        >
+          <EditableContentRootView
+            options={options}
+            ownerEditor={ownerEditor}
+            ownerKey={ownerKey}
+            ownerPath={ownerPath}
+            ownerReadOnly={ownerReadOnly}
+            ownerRoot={ownerRoot}
+            renderers={renderers}
+            root={root}
+            slot={slot}
+          />
+        </SurfaceRoot>
+      </PliteContentRootInstanceContext>
     </PliteContentRootOwnerContext>
   );
 }

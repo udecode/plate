@@ -1,5 +1,5 @@
 import { getViewPresentation } from '../editor-runtime-view';
-import type { Editor, RootKey } from '../interfaces/editor';
+import type { Editor, EditorCommit, RootKey } from '../interfaces/editor';
 import {
   type EditorRuntimeCarrier,
   getEditorRuntime,
@@ -19,6 +19,19 @@ export type SlotCarryQuery = Readonly<{
   oldRoot: RootKey;
   selectionRoot: RootKey;
   slot: string;
+}>;
+
+export type SlotForkRecord = Readonly<{
+  elementKey: string;
+  keyRemap: ReadonlyMap<string, string>;
+  newRoot: RootKey;
+  oldRoot: RootKey;
+  slot: string;
+}>;
+
+export type CommitSlotForks = Readonly<{
+  caretPresentation: ViewPresentation | null;
+  forks: readonly SlotForkRecord[];
 }>;
 
 export type SlotCarryHost = Readonly<{
@@ -96,6 +109,25 @@ export const registerSlotCarryHost = (
     }
   };
 };
+
+const COMMIT_SLOT_FORKS = new WeakMap<EditorCommit, CommitSlotForks>();
+
+export const hasSlotCarryHosts = (editor: EditorRuntimeCarrier): boolean => {
+  const hosts = SLOT_CARRY_HOSTS.get(getEditorRuntimeOwner(editor));
+
+  return Boolean(hosts && hosts.size > 0);
+};
+
+export const recordCommitSlotForks = (
+  commit: EditorCommit,
+  data: CommitSlotForks
+): void => {
+  COMMIT_SLOT_FORKS.set(commit, data);
+};
+
+export const readCommitSlotForks = (
+  commit: EditorCommit
+): CommitSlotForks | null => COMMIT_SLOT_FORKS.get(commit) ?? null;
 
 export const querySlotCarryHosts = (
   editor: EditorRuntimeCarrier,

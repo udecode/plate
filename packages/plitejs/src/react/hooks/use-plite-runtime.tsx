@@ -52,6 +52,7 @@ import {
   readRootTarget,
   readRootViewContentUse,
   readRootViewUse,
+  registerSlotCarryHost,
   subscribeRootTarget,
   subscribeRootViewPresentation,
 } from '../../core/root-target';
@@ -69,7 +70,10 @@ import {
 } from '../../editor-runtime-view';
 import type { Editor } from '../../interfaces/editor';
 import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
-import { PliteEditableRootContext } from '../context';
+import {
+  PliteContentRootInstanceContext,
+  PliteEditableRootContext,
+} from '../context';
 import {
   type EditableDOMRuntime,
   type EditableHistoryReplay,
@@ -99,6 +103,7 @@ import {
 } from '../plugin/react-editor';
 import type { Editor as ReactEditorType, ReactApi } from '../plugin/with-react';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
+import { createSlotArrivalHost, type ViewInstanceInfo } from '../slot-arrival';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { focusPliteEditable } from './focus-plite-editable';
 import {
@@ -195,11 +200,19 @@ type PliteRuntimeContextValue = {
     slot: HistoryStepSlot
   ) => void;
   registerHistoryStepView: (editor: MountedViewEditor, root: RootKey) => void;
-  registerViewEditor: (editor: MountedViewEditor, root: RootKey) => () => void;
+  registerViewEditor: (
+    editor: MountedViewEditor,
+    root: RootKey,
+    instance: ViewInstanceInfo | null
+  ) => () => void;
   rootEditor: (root?: NamedRootKey, readOnly?: boolean) => ReactEditorType;
   runtime: ReactEditorType;
   selectorContext: EditorSelectorContextValue;
   subscribeRootTarget: (root: RootKey, listener: () => void) => () => void;
+  updateViewInstance: (
+    editor: MountedViewEditor,
+    instance: ViewInstanceInfo | null
+  ) => void;
 };
 
 type PresentationLookups = {
@@ -557,6 +570,7 @@ export function EditorRuntimeProvider({
   );
   const reactEditor = toReactRuntimeEditor(runtime);
   const [historyStepViews] = useState(() => createHistoryStepViews(runtime));
+  const [slotArrivalHost] = useState(() => createSlotArrivalHost(runtime));
   const completeHistoryReplay = useCallback(
     (replay: EditableHistoryReplay) =>
       completeHistoryFocus(replay, historyStepViews),
@@ -623,7 +637,11 @@ export function EditorRuntimeProvider({
     [runtime]
   );
   const registerViewEditor = useCallback(
-    (editor: typeof reactEditor, root: RootKey) => {
+    (
+      editor: typeof reactEditor,
+      root: RootKey,
+      instance: ViewInstanceInfo | null
+    ) => {
       const presentation = getViewPresentation(editor);
       const rootViewEditors =
         EDITOR_TO_ROOT_VIEW_EDITORS.get(runtime) ?? new Set();
@@ -636,8 +654,14 @@ export function EditorRuntimeProvider({
         root,
         editor
       );
+      const unmountArrivalView = slotArrivalHost.onViewMounted(
+        editor,
+        root,
+        instance
+      );
 
       return () => {
+        unmountArrivalView();
         unmountRootView();
         releaseEditorViewLifetime(editor);
         rootViewEditors.delete(editor);
@@ -662,7 +686,7 @@ export function EditorRuntimeProvider({
         }
       };
     },
-    [runtime]
+    [runtime, slotArrivalHost]
   );
   const registerContentRootOwner = useCallback(
     (
@@ -701,8 +725,19 @@ export function EditorRuntimeProvider({
     []
   );
   // Insertion effects survive StrictMode replays and Activity hides, so the
-  // recorder stays subscribed until the provider unmounts.
-  useInsertionEffect(() => historyStepViews.subscribe(), [historyStepViews]);
+  // recorder and slot arrival host stay subscribed until the provider unmounts.
+  useInsertionEffect(() => {
+    const stopHistory = historyStepViews.subscribe();
+    const stopCarryHost = registerSlotCarryHost(runtime, slotArrivalHost);
+    const stopCommit = runtime.subscribeCommit(slotArrivalHost.onCommit);
+
+    return () => {
+      stopCommit();
+      stopCarryHost();
+      slotArrivalHost.clear();
+      stopHistory();
+    };
+  }, [historyStepViews, runtime, slotArrivalHost]);
   const getContentRootOwnerViewEditor = useCallback(
     (owner: PliteContentRootOwner, presentation: ViewPresentation | null) => {
       const key = getContentRootOwnerKey(owner);
@@ -799,6 +834,7 @@ export function EditorRuntimeProvider({
       runtime,
       selectorContext,
       subscribeRootTarget: subscribeProviderRootTarget,
+      updateViewInstance: slotArrivalHost.updateViewInstance,
     }),
     [
       completeHistoryReplay,
@@ -813,17 +849,20 @@ export function EditorRuntimeProvider({
       registerViewEditor,
       runtime,
       selectorContext,
+      slotArrivalHost,
       subscribeProviderRootTarget,
     ]
   );
 
   return (
-    <ProviderContext value={provider}>
-      <SurfaceRuntimeScope mountedEditor={null} presentation={null}>
-        <EditorAnnouncementLiveRegion editor={runtime} />
-        {children}
-      </SurfaceRuntimeScope>
-    </ProviderContext>
+    <PliteContentRootInstanceContext value={null}>
+      <ProviderContext value={provider}>
+        <SurfaceRuntimeScope mountedEditor={null} presentation={null}>
+          <EditorAnnouncementLiveRegion editor={runtime} />
+          {children}
+        </SurfaceRuntimeScope>
+      </ProviderContext>
+    </PliteContentRootInstanceContext>
   );
 }
 
