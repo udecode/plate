@@ -1208,6 +1208,66 @@ export const BaseInkPlugin = definePlugin('ink', {
 
       return id;
     }),
+    /**
+     * Permanently drop digitized marks, their digitized records, and every
+     * saved copy no remaining mark references, skipping undo history so purged
+     * copies are never left dangling behind a restored mark. Omit `ids` to drop
+     * every digitized mark; non-digitized and missing ids are skipped. Returns
+     * the dropped mark ids.
+     */
+    dropDigitized: txLocate(false, (ids?: readonly string[]) => {
+      const store = getValueRecords(tx.value());
+      const marks = getRecordSetVersion(store, MARKS);
+      const digitized = getRecordSetVersion(store, DIGITIZED);
+      const copies = getRecordSetVersion(store, COPIES);
+      const candidates =
+        ids === undefined ? recordSetIds(digitized) : [...new Set(ids)];
+      const toDrop = candidates.filter(
+        (id) =>
+          readRecord(marks, id) !== undefined &&
+          readRecord(digitized, id) !== undefined
+      );
+
+      if (toDrop.length === 0) return [];
+
+      tx.history.skip();
+
+      const dropSet = new Set(toDrop);
+      const usedCopies = new Set<string>();
+
+      for (const id of recordSetIds(marks)) {
+        if (dropSet.has(id)) continue;
+        const record = readRecord(marks, id);
+
+        if (!record) continue;
+        for (const copyId of copiesOf(record) ?? []) {
+          usedCopies.add(copyId);
+        }
+      }
+
+      const staleCopies = new Set<string>();
+
+      for (const id of toDrop) {
+        const record = readRecord(marks, id);
+
+        if (!record) continue;
+        for (const copyId of copiesOf(record) ?? []) {
+          if (!usedCopies.has(copyId) && readRecord(copies, copyId)) {
+            staleCopies.add(copyId);
+          }
+        }
+      }
+
+      for (const id of toDrop) {
+        tx.records.drop(MARKS, id);
+        tx.records.drop(DIGITIZED, id);
+      }
+      for (const copyId of staleCopies) {
+        tx.records.drop(COPIES, copyId);
+      }
+
+      return toDrop;
+    }),
     /** Drop the marks `ids` names and their digitized records. Their copies stay. */
     remove: txLocate(false, (ids: readonly string[]) => {
       const digitized = getRecordSetVersion(
