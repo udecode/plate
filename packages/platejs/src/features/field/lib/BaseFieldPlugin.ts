@@ -49,6 +49,8 @@ import {
   isFieldName,
   isFieldOptions,
   isFieldValue,
+  isMaxCount,
+  isMinCount,
   nameProblems,
   sharedFieldLinks,
   sharedFieldNames,
@@ -60,10 +62,13 @@ export { FIELD_TESTS, fillsField, fitsField } from './fieldRules.internal';
 /** What a field collects, which fixes the shape of its value. */
 export type FieldKind = (typeof FIELD_KINDS)[number];
 
-/** A value a field stores: a string, a finite number or a boolean. */
-export type FieldValue = boolean | number | string;
+/**
+ * A value a field stores: a string, a finite number, a boolean or an array of
+ * option values.
+ */
+export type FieldValue = boolean | number | readonly string[] | string;
 
-/** One answer a `choice` field offers. A choice stores the `value`. */
+/** One answer a `choice` or `multiple` field offers. The field stores `value`. */
 export type FieldOption = Readonly<{ label: string; value: string }>;
 
 /** How a condition judges the value of the field it names. */
@@ -73,7 +78,9 @@ export type FieldTest =
   | 'blank'
   | 'equals'
   | 'filled'
-  | 'not-equals';
+  | 'includes'
+  | 'not-equals'
+  | 'not-includes';
 
 /**
  * One test on another field's answer: the field whose `fieldId` is `ref`
@@ -97,15 +104,16 @@ export type FieldCondition =
 /**
  * What a read finds wrong with a field. `missing-target`: no field holds the
  * id its condition names. `unsupported-test`: the target's kind does not take
- * the condition's test. `invalid-value`: its value, default or options do not
- * fit its kind, or its condition's value does not fit its test or the
- * target's kind. `condition-loop`: its condition names a field whose chain of
- * conditions leads back to it. `name-conflict`: the fields of its role that
- * share its `name` differ in kind, in their options' values, or in condition,
- * or their conditions match only through a name that has this problem or
- * leads back to theirs. `answer-conflict`: the fields of its role that share
- * its `name` hold different stored values, so an empty text and no value
- * differ.
+ * the condition's test. `invalid-value`: its value, options, `min` or `max` do
+ * not fit its kind, `min` exceeds its option count or `max`, or its condition's
+ * value does not fit its test or the target's kind. `condition-loop`: its
+ * condition names a field whose chain of conditions leads back to it.
+ * `name-conflict`: the fields of its role that share its `name` differ in kind,
+ * in their options' values, in `min` or `max`, or in condition, or their
+ * conditions match only through a name that has this problem or leads back to
+ * theirs. `answer-conflict`: the fields of its role that share its `name` hold
+ * different stored values, so an empty text and no value differ, while
+ * multiple-choice selections compare without regard to order.
  */
 export type FieldProblem =
   | 'answer-conflict'
@@ -124,9 +132,15 @@ const fieldText = ({
     value?: FieldValue;
   }>;
 }>) => {
-  const answer =
-    options?.find((option) => option.value === value)?.label ??
-    String(value ?? '');
+  const answer = Array.isArray(value)
+    ? value
+        .map(
+          (entry) =>
+            options?.find((option) => option.value === entry)?.label ?? entry
+        )
+        .join(', ')
+    : (options?.find((option) => option.value === value)?.label ??
+      String(value ?? ''));
 
   return answer || `[${label ?? ''}]`;
 };
@@ -181,14 +195,29 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
 
             return value;
           };
+          const isJsonOne = (raw: string | null) => {
+            if (raw === null) return false;
+
+            try {
+              return JSON.parse(raw) === 1;
+            } catch {
+              return false;
+            }
+          };
           const condition = claimIfValid(
             'data-field-condition',
             isFieldCondition
           );
-          const defaultValue = claimIfValid(
-            'data-field-default-value',
-            isFieldValue
-          );
+          const max = claimIfValid('data-field-max', isMaxCount);
+          const minOne =
+            kind === 'multiple' &&
+            isJsonOne(element.getAttribute('data-field-min'));
+
+          if (minOne) preserve('data-field-min');
+
+          const min = minOne
+            ? undefined
+            : claimIfValid('data-field-min', isMinCount);
           const options = claimIfValid('data-field-options', isFieldOptions);
           const required = claimIfValid(
             'data-field-required',
@@ -208,13 +237,18 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
           return {
             children: [{ text: '' }],
             ...(condition === undefined ? {} : { condition }),
-            ...(defaultValue === undefined ? {} : { defaultValue }),
             ...(fieldId === null ? {} : { fieldId }),
             kind,
             label,
+            ...(max === undefined ? {} : { max }),
+            ...(min === undefined ? {} : { min }),
             ...(named ? { name } : {}),
             ...(options === undefined ? {} : { options }),
-            ...(required === undefined ? {} : { required }),
+            ...(minOne
+              ? { required: true }
+              : required === undefined
+                ? {}
+                : { required }),
             role,
             ...(value === undefined ? {} : { value }),
           };
@@ -225,10 +259,11 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
 
           preserve(
             'condition',
-            'defaultValue',
             'fieldId',
             'kind',
             'label',
+            'max',
+            'min',
             'name',
             'options',
             'required',
@@ -239,10 +274,11 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
           return {
             attributes: {
               'data-field-condition': json(node.condition),
-              'data-field-default-value': json(node.defaultValue),
               'data-field-id': node.fieldId,
               'data-field-kind': node.kind,
               'data-field-label': node.label,
+              'data-field-max': json(node.max),
+              'data-field-min': json(node.min),
               'data-field-name': node.name,
               'data-field-options': json(node.options),
               'data-field-required': json(node.required),
@@ -257,8 +293,75 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
       },
       markdown: {
         tag: type,
-        decode: ({ readTagAttributes, refuse }) => {
-          const { attributes, properties } = readTagAttributes();
+        decode: ({ node, readTagAttributes, refuse }) => {
+          const rawAttrs =
+            'attributes' in node && Array.isArray(node.attributes)
+              ? node.attributes
+              : [];
+          const readAttrRaw = (attr: (typeof rawAttrs)[number]) => {
+            if (attr.type !== 'mdxJsxAttribute') return undefined;
+            if (typeof attr.value === 'string') return attr.value;
+            if (
+              typeof attr.value === 'object' &&
+              attr.value !== null &&
+              'value' in attr.value &&
+              typeof attr.value.value === 'string'
+            ) {
+              return attr.value.value;
+            }
+
+            return undefined;
+          };
+          const parseAttrString = (raw: string | undefined) => {
+            if (raw === undefined) return undefined;
+            const trimmed = raw.trim();
+
+            if (trimmed === 'multiple') return 'multiple';
+
+            try {
+              const parsed: unknown = JSON.parse(trimmed);
+
+              return typeof parsed === 'string' ? parsed : undefined;
+            } catch {
+              return trimmed;
+            }
+          };
+          const parseAttrNumber = (raw: string | undefined) => {
+            if (raw === undefined) return undefined;
+
+            try {
+              const parsed: unknown = JSON.parse(raw.trim());
+
+              return typeof parsed === 'number' ? parsed : undefined;
+            } catch {
+              return undefined;
+            }
+          };
+
+          let lastKind: string | undefined;
+          let lastMin: number | undefined;
+
+          for (const attr of rawAttrs) {
+            if (attr.type !== 'mdxJsxAttribute') continue;
+            if (attr.name === 'kind') {
+              lastKind = parseAttrString(readAttrRaw(attr));
+            } else if (attr.name === 'min') {
+              lastMin = parseAttrNumber(readAttrRaw(attr));
+            }
+          }
+
+          const hasMinOne = lastKind === 'multiple' && lastMin === 1;
+          const { attributes, properties } = readTagAttributes(
+            hasMinOne && 'attributes' in node
+              ? {
+                  ...node,
+                  attributes: rawAttrs.filter(
+                    (attr) =>
+                      !(attr.type === 'mdxJsxAttribute' && attr.name === 'min')
+                  ),
+                }
+              : undefined
+          );
 
           if (
             !(
@@ -272,6 +375,7 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
 
           return {
             ...properties,
+            ...(hasMinOne ? { required: true } : {}),
             ...(typeof attributes.fieldId === 'string'
               ? { fieldId: attributes.fieldId }
               : {}),
@@ -295,26 +399,24 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
   schema: {
     element: {
       properties: {
-        defaultValue: property.json({
-          validate: isFieldValue,
-          validationVersion: 1,
-        }),
         kind: property.enum(FIELD_KINDS, { required: true }),
         label: property.string({ required: true }),
+        max: property.number({ validate: isMaxCount, validationVersion: 1 }),
+        min: property.number({ validate: isMinCount, validationVersion: 1 }),
         name: property.string({ validate: isFieldName, validationVersion: 1 }),
         options: property.json({
           validate: isFieldOptions,
-          validationVersion: 1,
+          validationVersion: 2,
         }),
         required: property.boolean(),
         role: property.string({ required: true }),
-        value: property.json({ validate: isFieldValue, validationVersion: 1 }),
+        value: property.json({ validate: isFieldValue, validationVersion: 2 }),
       },
       void: 'inline',
     },
     properties: {
       condition: schema.elementProperty(
-        property.json({ validate: isFieldCondition, validationVersion: 2 }),
+        property.json({ validate: isFieldCondition, validationVersion: 3 }),
         {
           references: {
             key: 'fieldId',
@@ -794,11 +896,11 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
         return {
           /**
            * Insert a field and return its new `fieldId`. Throws when a value,
-           * default or options do not fit `kind`, or the condition names no
-           * field, or a test or value the named field's kind does not take,
-           * or the settings name a `fieldId`, or a `name` that is empty, has
-           * whitespace at either end, or holds a control character, a line or
-           * paragraph separator or a lone surrogate.
+           * options, `min` or `max` do not fit `kind`, `min` exceeds `max`, or
+           * the condition names no field, or a test or value the named field's
+           * kind does not take, or the settings name a `fieldId`, or a `name`
+           * that is empty, has whitespace at either end, or holds a control
+           * character, a line or paragraph separator or a lone surrogate.
            */
           insert: txLocate(
             locateAt(1),
@@ -831,12 +933,13 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           ),
           /**
            * Change the settings or value of the field whose `fieldId` is
-           * `fieldId`. A new kind or new options drop each value, default or
-           * options the patch leaves out and the field no longer fits. A
-           * `value`, a cleared one included, also goes to every other field of
-           * the same role and name, unless the field has the `name-conflict`
-           * problem; no other setting does. Throws,
-           * and changes nothing, when no field holds `fieldId`, a setting the
+           * `fieldId`. Changing `kind` drops every value, options, `min` or
+           * `max` the patch leaves out that the new kind no longer fits.
+           * Editing `options` or `max` drops only an unfit `value` and keeps
+           * `min` and `max`. A `value`, a cleared one included, also goes to
+           * every other field of the same role and name, unless the field has
+           * the `name-conflict` problem; no other setting does. Throws, and
+           * changes nothing, when no field holds `fieldId`, a setting the
            * patch names does not fit the field's kind, the patch removes `kind`,
            * `role` or `label`, names `fieldId` or gives a `name` that `insert`
            * refuses, or its condition has a test with a problem that the same
@@ -872,7 +975,8 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                 `${named} does not fit a ${next.kind} field`
               );
             }
-            const reshaped = 'kind' in patch || 'options' in patch;
+            const reshaped =
+              'kind' in patch || 'max' in patch || 'options' in patch;
 
             if (
               patch.condition !== undefined &&
@@ -912,12 +1016,18 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                 ? undefined
                 : namesOfUntouchedDraft(writer, () => document.listed().nodes);
 
+            const dropped = unfit.filter((setting) =>
+              next.kind !== field.kind
+                ? true
+                : setting === 'value' && ('max' in patch || 'options' in patch)
+            );
+
             tx.nodes.set(
               {
                 ...patch,
-                ...(reshaped
+                ...(dropped.length > 0
                   ? Object.fromEntries(
-                      unfit.map((setting) => [setting, undefined])
+                      dropped.map((setting) => [setting, undefined])
                     )
                   : {}),
               },

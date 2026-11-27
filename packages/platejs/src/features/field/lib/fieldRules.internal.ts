@@ -22,13 +22,14 @@ import type {
 
 export type FieldShape = Pick<
   FieldSettings,
-  'defaultValue' | 'kind' | 'options' | 'value'
+  'kind' | 'max' | 'min' | 'options' | 'value'
 >;
 
 export const FIELD_KINDS = [
   'checkbox',
   'choice',
   'date',
+  'multiple',
   'number',
   'signature',
   'text',
@@ -42,25 +43,83 @@ export const FIELD_TESTS: Readonly<Record<FieldKind, readonly FieldTest[]>> = {
   checkbox: ['equals', 'not-equals'],
   choice: ['filled', 'blank', 'equals', 'not-equals'],
   date: ['filled', 'blank', 'equals', 'not-equals', 'above', 'below'],
+  multiple: ['filled', 'blank', 'includes', 'not-includes'],
   number: ['filled', 'blank', 'equals', 'not-equals', 'above', 'below'],
   signature: ['filled', 'blank'],
   text: ['filled', 'blank', 'equals', 'not-equals'],
 };
 
-export const isFieldValue = (value: unknown): value is FieldValue =>
+const isScalarFieldValue = (
+  value: unknown
+): value is boolean | number | string =>
   typeof value === 'string' ||
   typeof value === 'boolean' ||
   (typeof value === 'number' && Number.isFinite(value));
 
+const isStringArray = (value: unknown): value is readonly string[] => {
+  if (!Array.isArray(value)) return false;
+
+  for (const entry of value) {
+    if (typeof entry !== 'string') return false;
+  }
+
+  return true;
+};
+
+export const isFieldValue = (value: unknown): value is FieldValue =>
+  isScalarFieldValue(value) || isStringArray(value);
+
+export const isMinCount = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 2;
+
+export const isMaxCount = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 1;
+
+export const sameFieldValue = (
+  left: FieldValue | undefined,
+  right: FieldValue | undefined
+): boolean => {
+  if (Array.isArray(left) && Array.isArray(right)) {
+    if (left.length !== right.length) return false;
+
+    const counts = new Map<string, number>();
+
+    for (const entry of left) {
+      counts.set(entry, (counts.get(entry) ?? 0) + 1);
+    }
+    for (const entry of right) {
+      const count = counts.get(entry) ?? 0;
+
+      if (count === 0) return false;
+      counts.set(entry, count - 1);
+    }
+
+    return true;
+  }
+
+  return Object.is(left, right);
+};
+
 export const isFieldOptions = (
   value: unknown
-): value is readonly FieldOption[] =>
-  Array.isArray(value) &&
-  value.every(
-    (option) =>
-      typeof option?.label === 'string' && typeof option.value === 'string'
-  ) &&
-  new Set(value.map((option) => option.value)).size === value.length;
+): value is readonly FieldOption[] => {
+  if (!Array.isArray(value)) return false;
+
+  const seen = new Set<string>();
+
+  for (const option of value) {
+    if (
+      typeof option?.label !== 'string' ||
+      typeof option.value !== 'string' ||
+      seen.has(option.value)
+    ) {
+      return false;
+    }
+    seen.add(option.value);
+  }
+
+  return true;
+};
 
 const isConditionRecord = (
   value: unknown
@@ -78,7 +137,7 @@ const isFieldConditionTest = (value: unknown): value is FieldConditionTest => {
     Object.values(FIELD_TESTS).some((tests) =>
       tests.some((known) => known === test)
     ) &&
-    (compared === undefined || isFieldValue(compared))
+    (compared === undefined || isScalarFieldValue(compared))
   );
 };
 
@@ -159,12 +218,13 @@ const isIsoDate = (value: string) => {
 
 /**
  * Whether a value fits a field's kind: a boolean for a checkbox, one of its
- * options' values for a choice, an ISO date string for a date, a finite number
- * other than -0 for a number, a string with no line break for a text field,
- * and a string for a signature field.
+ * options' values for a choice, an array of distinct option values no longer
+ * than `max` for a multiple-choice field, an ISO date string for a date, a
+ * finite number other than -0 for a number, a string with no line break for a
+ * text field, and a string for a signature field.
  */
 export const fitsField = (
-  { kind, options = [] }: FieldShape,
+  { kind, max, options = [] }: FieldShape,
   value: unknown
 ): value is FieldValue => {
   switch (kind) {
@@ -176,6 +236,22 @@ export const fitsField = (
     }
     case 'date': {
       return typeof value === 'string' && isIsoDate(value);
+    }
+    case 'multiple': {
+      if (!isStringArray(value)) return false;
+      if (max !== undefined && isMaxCount(max) && value.length > max) {
+        return false;
+      }
+
+      const known = new Set(options.map((option) => option.value));
+      const seen = new Set<string>();
+
+      for (const entry of value) {
+        if (!known.has(entry) || seen.has(entry)) return false;
+        seen.add(entry);
+      }
+
+      return true;
     }
     case 'number': {
       return (
@@ -203,22 +279,32 @@ export const conditionProblem = (
   const fits =
     test === 'filled' || test === 'blank'
       ? value === undefined
-      : fitsField(named, value);
+      : test === 'includes' || test === 'not-includes'
+        ? typeof value === 'string' &&
+          (named.options ?? []).some((option) => option.value === value)
+        : fitsField(named, value);
 
   return fits ? undefined : 'invalid-value';
 };
 
 /**
- * Whether a value is a filled answer for a field: a ticked checkbox, or for
- * any other field a value that fits its kind and, for a text or signature
- * field, holds a character that `\s` does not match.
+ * Whether a value is a filled answer for a field: a ticked checkbox, a
+ * non-empty fitting selection for a multiple-choice field, or for any other
+ * field a value that fits its kind and, for a text or signature field, holds a
+ * character that `\s` does not match.
  */
-export const fillsField = (field: FieldShape, value: unknown): boolean =>
-  field.kind === 'checkbox'
-    ? value === true
-    : fitsField(field, value) &&
-      ((field.kind !== 'text' && field.kind !== 'signature') ||
-        /\S/.test(String(value)));
+export const fillsField = (field: FieldShape, value: unknown): boolean => {
+  if (field.kind === 'checkbox') return value === true;
+  if (!fitsField(field, value)) return false;
+  if (field.kind === 'multiple') {
+    return Array.isArray(value) && value.length > 0;
+  }
+
+  return (
+    (field.kind !== 'text' && field.kind !== 'signature') ||
+    /\S/.test(String(value))
+  );
+};
 
 const holds = (
   { test, value }: FieldConditionTest,
@@ -243,6 +329,20 @@ const holds = (
     }
     case 'filled': {
       return fillsField(target, answer);
+    }
+    case 'includes': {
+      return (
+        Array.isArray(answer) &&
+        typeof value === 'string' &&
+        answer.includes(value)
+      );
+    }
+    case 'not-includes': {
+      return (
+        !Array.isArray(answer) ||
+        typeof value !== 'string' ||
+        !answer.includes(value)
+      );
     }
     default: {
       return answer !== value;
@@ -270,16 +370,41 @@ const verdictOf = (applies: boolean) => (applies ? APPLIES : SKIPS);
 
 export type FieldLink = Chain & Verdict;
 
-const SHAPED_SETTINGS = ['defaultValue', 'options', 'value'] as const;
+const SHAPED_SETTINGS = ['max', 'min', 'options', 'value'] as const;
 
 const fitsSetting = (
   field: FieldShape,
   setting: (typeof SHAPED_SETTINGS)[number]
-) =>
-  field[setting] === undefined ||
-  (setting === 'options'
-    ? field.kind === 'choice'
-    : fitsField(field, field[setting]));
+) => {
+  if (field[setting] === undefined) return true;
+
+  switch (setting) {
+    case 'max': {
+      return (
+        field.kind === 'multiple' &&
+        isMaxCount(field.max) &&
+        (field.min === undefined ||
+          !isMinCount(field.min) ||
+          field.min <= field.max)
+      );
+    }
+    case 'min': {
+      return (
+        field.kind === 'multiple' &&
+        isMinCount(field.min) &&
+        (field.max === undefined ||
+          !isMaxCount(field.max) ||
+          field.min <= field.max)
+      );
+    }
+    case 'options': {
+      return field.kind === 'choice' || field.kind === 'multiple';
+    }
+    default: {
+      return fitsField(field, field.value);
+    }
+  }
+};
 
 export const unfitSettings = (field: FieldShape) =>
   SHAPED_SETTINGS.filter((setting) => !fitsSetting(field, setting));
@@ -288,8 +413,14 @@ export const fieldProblems = (
   field: FieldElement,
   link: Chain
 ): FieldProblem[] => {
+  const minExceedsOptions =
+    field.kind === 'multiple' &&
+    field.min !== undefined &&
+    field.min > (field.options?.length ?? 0);
   const problems: FieldProblem[] =
-    unfitSettings(field).length === 0 ? [] : ['invalid-value'];
+    unfitSettings(field).length === 0 && !minExceedsOptions
+      ? []
+      : ['invalid-value'];
 
   for (const { target, test } of link.edges) {
     const problem = conditionProblem(test, target);
@@ -955,7 +1086,11 @@ export const nameProblems = (
     const deps = new Map<string, NameGroup>();
 
     for (const other of rest) {
-      if (first.kind !== other.kind) {
+      if (
+        first.kind !== other.kind ||
+        first.min !== other.min ||
+        first.max !== other.max
+      ) {
         return { deps: [], intrinsic: true };
       }
 
@@ -1083,7 +1218,7 @@ export const nameProblems = (
   const problems: FieldProblem[] = [];
 
   if (conflicts(field.role, field.name)) problems.push('name-conflict');
-  if (own.some(({ value }) => !Object.is(value, own[0].value))) {
+  if (own.some(({ value }) => !sameFieldValue(value, own[0].value))) {
     problems.push('answer-conflict');
   }
 

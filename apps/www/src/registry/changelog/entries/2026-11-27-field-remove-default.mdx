@@ -1,0 +1,18 @@
+---
+id: 2026-11-27-field-remove-default
+date: 2026-11-27
+status: draft
+kind: breaking
+summary: 'Remove the Default input from field settings and render multiple-choice answers as comma-joined labels'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-field-remove-default","kind":"breaking","migrationNotes":["Update `platejs` with the copied `field` component, because `defaultValue` is removed from the field schema."]} -->
+
+- **`field`**: Removes the Default row from `FieldSettingsForm`, supports `includes` and `not-includes` rules in Show when, and displays `multiple` answers on chips as comma-joined option labels.
+
+<!-- entry: {"id":"2026-11-27-field-static-multiple","kind":"new","migrationNotes":["Refresh `field-static` when rendering `multiple` fields statically so answers display as comma-joined option labels."]} -->
+
+- **`field-static`**: Renders `multiple` field answers as comma-joined option labels instead of raw values.

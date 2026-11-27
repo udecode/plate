@@ -135,6 +135,7 @@
       "2026-11-27-field-condition-lists-read",
       "2026-11-27-field-condition-lists-ui",
       "2026-11-27-field-condition-targets",
+      "2026-11-27-field-remove-default",
       "2026-11-26-suggestion-colors",
       "2026-11-25-field-name-conflicts",
       "2026-11-25-field-name-input",
@@ -150,6 +151,11 @@
       "2026-11-25-field-name-input",
       "2026-11-24-field-static-answers",
       "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
+    "field-static": [
+      "2026-11-27-field-remove-default",
+      "2026-11-24-field-static-answers",
       "2026-11-21-add-field"
     ],
     "caption": [
@@ -500,7 +506,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-07-26-plugin-store-state"
     ],
-    "field-static": ["2026-11-24-field-static-answers", "2026-11-21-add-field"],
     "media": [
       "2026-11-24-media-paste-embed",
       "2026-09-19-files-sdk-upload-kit",

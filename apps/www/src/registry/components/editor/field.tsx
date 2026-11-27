@@ -51,6 +51,7 @@ const KINDS: Record<FieldKind, string> = {
   checkbox: 'Checkbox',
   choice: 'Choice',
   date: 'Date',
+  multiple: 'Multiple choice',
   number: 'Number',
   signature: 'Signature',
   text: 'Text',
@@ -61,7 +62,9 @@ const TEST_LABELS: Record<FieldTest, string> = {
   blank: 'is blank',
   equals: 'is',
   filled: 'is filled',
+  includes: 'includes',
   'not-equals': 'is not',
+  'not-includes': 'does not include',
 };
 const PROBLEMS: Record<FieldProblem, string> = {
   'answer-conflict': 'The fields of its name hold different answers.',
@@ -69,7 +72,7 @@ const PROBLEMS: Record<FieldProblem, string> = {
   'invalid-value': 'A value does not fit this kind of field.',
   'missing-target': 'The field its condition names is gone.',
   'name-conflict':
-    'The fields of its name differ in kind, options or condition.',
+    'The fields of its name differ in kind, options, counts or condition.',
   'unsupported-test': 'Its condition does not fit the field it names.',
 };
 const RULE_PROBLEMS: Record<
@@ -86,11 +89,17 @@ const isKind = (value: string): value is FieldKind =>
 const isTest = (value: string): value is FieldTest =>
   Object.hasOwn(TEST_LABELS, value);
 const needsValue = (test: FieldTest) => test !== 'filled' && test !== 'blank';
-const firstValue = ({ kind, options }: FieldSettings) =>
+type ScalarFieldValue = boolean | number | string;
+
+const firstValue = ({
+  kind,
+  options,
+}: FieldSettings): ScalarFieldValue | undefined =>
   ({
     checkbox: true,
     choice: options?.[0]?.value,
     date: new Date().toISOString().slice(0, 10),
+    multiple: options?.[0]?.value,
     number: 0,
     signature: undefined,
     text: '',
@@ -99,6 +108,16 @@ const fillableTests = (target: FieldSettings) =>
   FIELD_TESTS[target.kind].filter(
     (test) => !needsValue(test) || firstValue(target) !== undefined
   );
+const fitsRuleValue = (
+  target: FieldSettings,
+  test: FieldTest,
+  value: ScalarFieldValue | undefined
+) =>
+  test === 'includes' || test === 'not-includes'
+    ? typeof value === 'string' &&
+      (target.options ?? []).some((option) => option.value === value)
+    : fitsField(target, value);
+
 const isConditionList = (
   condition: FieldCondition
 ): condition is
@@ -110,7 +129,7 @@ const conditionOn = (
   ref: string,
   target: FieldSettings,
   test = fillableTests(target)[0],
-  value?: FieldValue
+  value?: ScalarFieldValue
 ): FieldConditionTest => ({
   ref,
   test,
@@ -194,18 +213,29 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
     setRefusedToggle(null);
   }
 
-  const answer = String(
-    element.options?.find((option) => option.value === element.value)?.label ??
-      element.value ??
-      ''
-  );
+  const answer = Array.isArray(element.value)
+    ? element.value
+        .map(
+          (entry) =>
+            element.options?.find((option) => option.value === entry)?.label ??
+            entry
+        )
+        .join(', ')
+    : String(
+        element.options?.find((option) => option.value === element.value)
+          ?.label ??
+          element.value ??
+          ''
+      );
   const writeName = React.useRef<() => 'refused' | 'written'>(null);
   let form: React.ReactNode = null;
 
   if (!filling && !readOnly) {
     form = <FieldSettingsForm element={element} writeName={writeName} />;
   }
-  if (fills && !toggles) form = <FieldAnswerForm element={element} />;
+  if (fills && !toggles && element.kind !== 'multiple') {
+    form = <FieldAnswerForm element={element} />;
+  }
 
   const openAtPointerDownRef = React.useRef(false);
   const [openAs, setOpenAs] = React.useState<{ role: string | null } | null>(
@@ -350,7 +380,7 @@ function FieldAnswerForm({ element }: { element: FieldNode }) {
           kind={kind}
           label={label}
           options={options}
-          value={value}
+          value={typeof value === 'object' ? undefined : value}
           onChange={setValue}
         />
         <Button size="sm" variant="ghost" onClick={() => setValue()}>
@@ -514,11 +544,13 @@ function FieldSettingsForm({
           if (isKind(event.target.value)) update({ kind: event.target.value });
         }}
       >
-        {Object.entries(KINDS).map(([value, label]) => (
-          <NativeSelectOption key={value} value={value}>
-            {label}
-          </NativeSelectOption>
-        ))}
+        {Object.entries(KINDS)
+          .filter(([value]) => value !== 'multiple' || kind === 'multiple')
+          .map(([value, label]) => (
+            <NativeSelectOption key={value} value={value}>
+              {label}
+            </NativeSelectOption>
+          ))}
       </NativeSelect>
       <Label htmlFor={`${fieldId}-role`}>Role</Label>
       <Input
@@ -597,18 +629,6 @@ function FieldSettingsForm({
           </div>
         </>
       )}
-      {kind !== 'signature' && (
-        <>
-          <Label>Default</Label>
-          <FieldValueInput
-            kind={kind}
-            label="Default"
-            options={options}
-            value={element.defaultValue}
-            onChange={(defaultValue) => update({ defaultValue })}
-          />
-        </>
-      )}
       <Label
         className="self-start pt-1.5"
         htmlFor={listed ? undefined : `${fieldId}-condition`}
@@ -641,7 +661,7 @@ function FieldSettingsForm({
               ? 'unsupported-test'
               : (
                     needsValue(rule.test)
-                      ? !fitsField(target, rule.value)
+                      ? !fitsRuleValue(target, rule.test, rule.value)
                       : rule.value !== undefined
                   )
                 ? 'invalid-value'
@@ -688,7 +708,9 @@ function FieldSettingsForm({
                         rule.ref,
                         target,
                         event.target.value,
-                        fitsField(target, rule.value) ? rule.value : undefined
+                        fitsRuleValue(target, event.target.value, rule.value)
+                          ? rule.value
+                          : undefined
                       )
                     );
                   }}
@@ -823,7 +845,7 @@ const entryOf = (
   kind: FieldKind,
   input: HTMLInputElement,
   clearable: boolean
-): { value?: FieldValue } | null => {
+): { value?: ScalarFieldValue } | null => {
   // The browser reports a number or date typed in part as bad input.
   if (input.validity.badInput) return null;
   if (input.value === '') {
@@ -848,13 +870,13 @@ function FieldValueInput({
   clearable?: boolean;
   kind: FieldKind;
   label: string;
-  onChange: (value: FieldValue | undefined) => void;
+  onChange: (value: ScalarFieldValue | undefined) => void;
   options?: readonly FieldOption[];
-  value?: FieldValue;
+  value?: ScalarFieldValue;
 }) {
   const [draft, setDraft] = React.useState<{
     kind: FieldKind;
-    stored?: FieldValue;
+    stored?: ScalarFieldValue;
     text: string;
   } | null>(null);
   const [resets, setResets] = React.useState(0);
@@ -872,7 +894,7 @@ function FieldValueInput({
       />
     );
   }
-  if (kind === 'choice') {
+  if (kind === 'choice' || kind === 'multiple') {
     const picked = options?.find((option) => option.value === value);
 
     return (

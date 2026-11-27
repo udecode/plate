@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-field-remove-default",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-field-remove-default.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "breaking",
+  "summary": "Remove the Default input from field settings and render multiple-choice answers as comma-joined labels",
+  "targets": [
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-static",
+      "files": ["apps/www/src/registry/components/editor/field-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-field-remove-default",
+      "kind": "breaking",
+      "summary": "Removes the Default row from `FieldSettingsForm`, supports `includes` and `not-includes` rules in Show when, and displays `multiple` answers on chips as comma-joined option labels.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with the copied `field` component, because `defaultValue` is removed from the field schema."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-remove-default",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-field-static-multiple",
+      "kind": "new",
+      "summary": "Renders `multiple` field answers as comma-joined option labels instead of raw values.",
+      "details": [],
+      "migrationNotes": [
+        "Refresh `field-static` when rendering `multiple` fields statically so answers display as comma-joined option labels."
+      ],
+      "targets": ["field-static"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-remove-default",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

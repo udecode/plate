@@ -18,7 +18,10 @@ import {
   isFieldName,
   isFieldOptions,
   isFieldValue,
+  isMaxCount,
+  isMinCount,
   nameProblems,
+  sameFieldValue,
 } from './fieldRules.internal';
 
 /**
@@ -102,6 +105,7 @@ export type FieldAnswer =
       kind: 'choice' | 'date' | 'signature' | 'text';
       value?: string;
     }>
+  | Readonly<{ kind: 'multiple'; value?: readonly string[] }>
   | Readonly<{ kind: 'number'; value?: number }>
   | Readonly<{ kind: FieldKind; problem: 'answer-conflict' }>
   | Readonly<{ problem: 'name-conflict' }>;
@@ -148,6 +152,7 @@ const isWellFormed = (
   node: Readonly<Record<string, unknown>>
 ): node is FieldElement =>
   !('text' in node) &&
+  !('defaultValue' in node) &&
   Array.isArray(node.children) &&
   node.children.length === 1 &&
   isText(node.children[0]) &&
@@ -158,7 +163,8 @@ const isWellFormed = (
   typeof node.role === 'string' &&
   (node.required === undefined || typeof node.required === 'boolean') &&
   (node.condition === undefined || isFieldCondition(node.condition)) &&
-  (node.defaultValue === undefined || isFieldValue(node.defaultValue)) &&
+  (node.max === undefined || isMaxCount(node.max)) &&
+  (node.min === undefined || isMinCount(node.min)) &&
   (node.options === undefined || isFieldOptions(node.options)) &&
   (node.value === undefined || isFieldValue(node.value));
 
@@ -191,7 +197,9 @@ const fillNode = (
         ? held.get(node.fieldId)?.value
         : undefined;
 
-    return answer === undefined ? node : { ...node, value: answer };
+    return answer === undefined
+      ? node
+      : { ...node, value: Array.isArray(answer) ? [...answer] : answer };
   }
 
   const children = fillNodes(node.children, type, held);
@@ -237,6 +245,11 @@ const answerOf = (field: FieldElement): FieldAnswer => {
   switch (kind) {
     case 'checkbox': {
       return valid && typeof value === 'boolean' ? { kind, value } : { kind };
+    }
+    case 'multiple': {
+      return valid && Array.isArray(value)
+        ? { kind, value: [...value] }
+        : { kind };
     }
     case 'number': {
       return valid && typeof value === 'number' ? { kind, value } : { kind };
@@ -304,7 +317,10 @@ const checkSubmissionValues = (
       refusals.push({ code: 'wrong-role', fieldId, ...nameOf(field), role });
       refusedIds.add(fieldId);
     } else if (fitsField(field, value)) {
-      accepted.set(fieldId, { ...field, value });
+      accepted.set(fieldId, {
+        ...field,
+        value: Array.isArray(value) ? [...value] : value,
+      });
     } else {
       refusals.push({
         code: 'invalid-value',
@@ -415,7 +431,8 @@ const replaySubmissions = (
       }
       if (refusedIds.has(fieldId)) continue;
 
-      const filled = fillsField(field, held.get(fieldId)?.value);
+      const stored = held.get(fieldId)?.value;
+      const filled = fillsField(field, stored);
 
       if (!verdict.applies && filled) {
         refusals.push({ code: 'skipped', fieldId, ...nameOf(field), role });
@@ -427,6 +444,21 @@ const replaySubmissions = (
           ...nameOf(field),
           role,
         });
+      } else if (
+        verdict.applies &&
+        filled &&
+        field.kind === 'multiple' &&
+        field.min !== undefined &&
+        Array.isArray(stored) &&
+        stored.length < field.min
+      ) {
+        refusals.push({
+          code: 'invalid-value',
+          fieldId,
+          ...nameOf(field),
+          role,
+        });
+        refusedIds.add(fieldId);
       }
     }
 
@@ -558,10 +590,10 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
  * gives it, mirrored to every other field of that role and name. Conditions
  * read the submitted answers and `start`'s values as if `start.role` had
  * submitted. A value on a field that skips or waits on another role is dropped
- * without a refusal, and a field `start` gives no value gets none, even with a
- * `defaultValue`. `pending` comes from `submissions` alone, so `start` never
- * takes its role off it. `type` names the field element's type when the app
- * renamed it with `schema.override`.
+ * without a refusal, and a field `start` gives no value gets none. `pending`
+ * comes from `submissions` alone, so `start` never takes its role off it.
+ * `type` names the field element's type when the app renamed it with
+ * `schema.override`.
  *
  * Refuses first what `applyFieldValues` refuses. Then refuses `start` alone
  * when it is malformed, with `index` equal to `submissions.length`, or when its
@@ -622,7 +654,7 @@ export function startFieldValues<D extends EditorDocumentValue | Value>(
 
     const [{ value }] = given;
 
-    if (given.some((other) => !Object.is(other.value, value))) {
+    if (given.some((other) => !sameFieldValue(other.value, value))) {
       refusals.push({ code: 'answer-conflict', fieldIds, name, role });
       continue;
     }
@@ -690,7 +722,7 @@ export function fieldSubmission(
     const value = values[field.name];
 
     if (value !== null && value !== undefined) {
-      mapped[field.fieldId] = value;
+      mapped[field.fieldId] = Array.isArray(value) ? [...value] : value;
     }
   }
 

@@ -27,8 +27,14 @@ export function FieldElementStatic(
       </span>
     );
   } else if (fillsField(element, value)) {
-    shown =
-      kind === 'choice'
+    shown = Array.isArray(value)
+      ? value
+          .map(
+            (entry) =>
+              options?.find((option) => option.value === entry)?.label ?? entry
+          )
+          .join(', ')
+      : kind === 'choice'
         ? options?.find((option) => option.value === value)?.label
         : String(value);
   }
