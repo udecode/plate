@@ -20,6 +20,7 @@ import {
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import { getInkBrushPrefs } from '@/registry/components/editor/draw-toolbar-button';
 import { useLintFindings } from '@/registry/components/editor/lint';
 
 import type { CreateSinkKit, SinkEmojiPick } from './create-sink-types';
@@ -472,36 +473,14 @@ function InkMarkupInner({ kit }: { kit: CreateSinkKit }) {
   const tool = useViewStore(InkPlugin, (state) => state.tool);
 
   React.useEffect(() => {
+    editor
+      .plugin(InkPlugin)
+      .api.setTool({ brush: getInkBrushPrefs(editor).pen, type: 'draw' });
+
     const frame = window.requestAnimationFrame(() => seedDemoInkMarks(editor));
 
     return () => window.cancelAnimationFrame(frame);
   }, [editor]);
-
-  const activeKind =
-    tool?.type === 'erase'
-      ? 'eraser'
-      : tool?.type === 'draw'
-        ? tool.brush.opacity < 1
-          ? 'highlighter'
-          : 'pen'
-        : null;
-
-  const toggleTool = (kind: 'eraser' | 'highlighter' | 'pen') => {
-    const ink = editor.plugin(InkPlugin).api;
-
-    if (activeKind === kind) {
-      ink.setTool(null);
-      return;
-    }
-
-    if (kind === 'eraser') {
-      ink.setTool({ size: 16, type: 'erase' });
-    } else if (kind === 'highlighter') {
-      ink.setTool({ brush: HIGHLIGHTER_BRUSH, type: 'draw' });
-    } else {
-      ink.setTool({ brush: PEN_BRUSH, type: 'draw' });
-    }
-  };
 
   const resetMarks = () => {
     const ink = editor.plugin(InkPlugin);
@@ -513,45 +492,36 @@ function InkMarkupInner({ kit }: { kit: CreateSinkKit }) {
 
   return (
     <section
-      className="cn-card flex flex-col gap-2.5 overflow-hidden bg-card p-4 text-card-foreground"
+      className="cn-card flex flex-col gap-2.5 overflow-hidden bg-card p-3 text-card-foreground"
       data-slot="sink-ink-markup"
     >
-      <div className="flex items-center justify-between gap-2 text-xs">
+      <div className="flex items-center justify-between gap-2 px-1 text-xs">
         <span className="font-medium">Pen markup</span>
         <div className="flex items-center gap-1">
-          <Button
-            onClick={() => toggleTool('pen')}
-            size="xs"
-            type="button"
-            variant={activeKind === 'pen' ? 'default' : 'ghost'}
-          >
-            Pen
-          </Button>
-          <Button
-            onClick={() => toggleTool('highlighter')}
-            size="xs"
-            type="button"
-            variant={activeKind === 'highlighter' ? 'default' : 'ghost'}
-          >
-            Highlight
-          </Button>
-          <Button
-            onClick={() => toggleTool('eraser')}
-            size="xs"
-            type="button"
-            variant={activeKind === 'eraser' ? 'default' : 'ghost'}
-          >
-            Eraser
-          </Button>
+          {!tool && (
+            <Button
+              onClick={() =>
+                editor.plugin(InkPlugin).api.setTool({
+                  brush: getInkBrushPrefs(editor).pen,
+                  type: 'draw',
+                })
+              }
+              size="xs"
+              type="button"
+              variant="secondary"
+            >
+              Draw
+            </Button>
+          )}
           <Button onClick={resetMarks} size="xs" type="button" variant="ghost">
             Reset
           </Button>
         </div>
       </div>
 
-      <div className="relative rounded-lg border bg-background/60 px-3.5 py-3">
+      <div className="relative flex min-h-40 flex-col justify-between rounded-lg border bg-background/60 px-1.5 pt-3 pb-2 [&_[data-ink-digitize-ui]]:static [&_[data-ink-digitize-ui]]:mt-3 [&_[data-ink-digitize-ui]]:h-auto [&_[data-ink-digitize-ui]]:px-0 [&_[data-ink-dock]]:gap-0.5 [&_[data-ink-dock]]:px-1.5 [&_[data-ink-dock]_.gap-1\.5]:gap-1 [&_[data-ink-dock]_.size-5]:size-4 [&_[data-ink-dock]_.size-8]:size-7 [&_[data-ink-dock]_.sm\:w-\[13\.5rem\]]:w-auto">
         <Editor
-          className="min-h-0 px-0 py-0 text-sm leading-relaxed"
+          className="min-h-0 px-2 py-0 text-sm leading-relaxed"
           variant="none"
         />
       </div>
