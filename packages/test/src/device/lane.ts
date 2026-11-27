@@ -1362,6 +1362,7 @@ type DeviceWorkerFixtures = {
   browser: never;
   deviceConnection: AndroidConnection | IosConnection;
   deviceSerial: string;
+  deviceSerials: string[];
 };
 
 /* oxlint-disable no-empty-pattern, react-hooks/rules-of-hooks -- [P0 framework-conflict] Playwright reads a fixture's dependencies from its destructured first parameter, so a fixture with none spells `{}`, and `use` is Playwright's fixture callback, not a React hook. */
@@ -1433,11 +1434,20 @@ export const deviceLaneTest = base.extend<DeviceFixtures, DeviceWorkerFixtures>(
       }
     },
     deviceConnection: [
-      async ({ deviceSerial }, use, workerInfo) => {
+      async ({ deviceSerial, deviceSerials }, use, workerInfo) => {
         const configDir = dirname(
           workerInfo.config.configFile ?? process.cwd()
         );
-        const state = readDeviceRunState(deviceSerial, configDir);
+        const serial =
+          deviceSerial || deviceSerials[workerInfo.parallelIndex] || '';
+
+        if (!serial) {
+          throw new Error(
+            `Worker ${workerInfo.parallelIndex} has no device serial (${deviceSerials.length} configured).`
+          );
+        }
+
+        const state = readDeviceRunState(serial, configDir);
 
         if (state.platform === 'android') {
           const connection = await connectAndroid(state);
@@ -1469,6 +1479,7 @@ export const deviceLaneTest = base.extend<DeviceFixtures, DeviceWorkerFixtures>(
       { scope: 'worker' },
     ],
     deviceSerial: ['', { option: true, scope: 'worker' }],
+    deviceSerials: [[], { option: true, scope: 'worker' }],
     page: refusal('page'),
     request: refusal('request'),
   }
