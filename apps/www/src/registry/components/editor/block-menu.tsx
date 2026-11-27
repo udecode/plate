@@ -11,6 +11,7 @@ import {
   type Element,
 } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
+import { BaseLockPlugin } from 'platejs/lock';
 import {
   definePlugin,
   type WrapContentProps,
@@ -95,6 +96,28 @@ export function BlockContextMenu({ children }: WrapContentProps) {
       )
     );
   });
+  const lockInstalled = editor.plugin(BaseLockPlugin).installed;
+  const selectionLock = useEditorSelector(
+    (current) => {
+      const lock = current.plugin(BaseLockPlugin);
+
+      if (!lock.installed || readBlocks(current).length === 0) {
+        return { isSelectionLocked: false, isSelectionOwnLocked: false };
+      }
+
+      return {
+        isSelectionLocked: lock.read.isLocked(),
+        isSelectionOwnLocked: lock.read.isOwnLocked(),
+      };
+    },
+    {
+      equalityFn: (a, b) =>
+        a.isSelectionLocked === b.isSelectionLocked &&
+        a.isSelectionOwnLocked === b.isSelectionOwnLocked,
+    }
+  );
+  const { isSelectionLocked, isSelectionOwnLocked } = selectionLock;
+  const editable = hasSelection && !isSelectionLocked;
   const aiInstalled = editor.plugin(AIChatPlugin).installed;
   const headingInstalled = editor.plugin(BaseHeadingPlugin).installed;
   const quoteInstalled = editor.plugin(BaseBlockquotePlugin).installed;
@@ -239,7 +262,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             </ContextMenuItem>
           )}
           <ContextMenuItem
-            disabled={!hasSelection}
+            disabled={!editable}
             onClick={() => {
               if (editor.read.view.isReadOnly()) return;
 
@@ -261,7 +284,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             Duplicate
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={!hasSelection}
+            disabled={!editable}
             onClick={() => {
               editor.api.transfer.move({
                 announce: 'Moved up',
@@ -272,7 +295,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             Move up
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={!hasSelection}
+            disabled={!editable}
             onClick={() => {
               editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
             }}
@@ -280,7 +303,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             Move down
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={!hasSelection}
+            disabled={!editable}
             onClick={() => {
               if (editor.read.view.isReadOnly()) return;
 
@@ -290,7 +313,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             Cut
           </ContextMenuItem>
           <ContextMenuSub>
-            <ContextMenuSubTrigger disabled={!hasSelection}>
+            <ContextMenuSubTrigger disabled={!editable}>
               Turn into
             </ContextMenuSubTrigger>
             <ContextMenuSubContent className="w-48">
@@ -340,6 +363,29 @@ export function BlockContextMenu({ children }: WrapContentProps) {
               )}
             </ContextMenuSubContent>
           </ContextMenuSub>
+          {lockInstalled && (
+            <ContextMenuItem
+              disabled={
+                !hasSelection || (isSelectionLocked && !isSelectionOwnLocked)
+              }
+              onClick={() => {
+                if (editor.read.view.isReadOnly()) return;
+
+                editor.update((tx) => {
+                  const lock = tx.plugin(BaseLockPlugin);
+
+                  if (isSelectionOwnLocked) lock.unlock();
+                  else lock.lock();
+                });
+              }}
+            >
+              {isSelectionOwnLocked
+                ? 'Unlock block'
+                : isSelectionLocked
+                  ? 'Locked by parent'
+                  : 'Lock block'}
+            </ContextMenuItem>
+          )}
         </ContextMenuGroup>
 
         {(indentInstalled || alignInstalled) && (
@@ -347,7 +393,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             {indentInstalled && (
               <>
                 <ContextMenuItem
-                  disabled={!hasSelection}
+                  disabled={!editable}
                   onClick={() => {
                     const indent = editor.plugin(BaseIndentPlugin);
 
@@ -365,7 +411,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
                   Indent
                 </ContextMenuItem>
                 <ContextMenuItem
-                  disabled={!hasSelection}
+                  disabled={!editable}
                   onClick={() => {
                     const indent = editor.plugin(BaseIndentPlugin);
 
@@ -387,7 +433,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
 
             {alignInstalled && (
               <ContextMenuSub>
-                <ContextMenuSubTrigger disabled={!hasSelection}>
+                <ContextMenuSubTrigger disabled={!editable}>
                   Align
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">

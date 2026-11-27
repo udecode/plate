@@ -150,6 +150,20 @@ export const registryStaticFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
+        path: 'components/editor/lock-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/lock', title: 'Lock' }],
+    },
+    name: 'lock-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
         path: 'components/editor/list-static.tsx',
         type: 'registry:component',
       },
@@ -938,6 +952,23 @@ export const registryFeatures: Registry['items'] = [
     ],
     name: 'line-height',
     type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/lock.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'lock',
+    type: 'registry:component',
+    description:
+      'Per-block locking that keeps chosen blocks selectable and copyable but not editable.',
+    title: 'Lock',
+    meta: {
+      docs: [{ route: '/docs/lock', title: 'Lock' }],
+    },
   },
   {
     dependencies: ['platejs'],

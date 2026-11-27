@@ -210,6 +210,7 @@ export function AIMenu() {
 
   const chat = usePluginStore(AIChatPlugin, 'chat');
   const previewValue = usePluginStore(AIChatPlugin, 'previewValue');
+  const refusalMessage = usePluginStore(AIChatPlugin, 'refusalMessage');
 
   const messages = chat?.messages;
   const status = chat?.status ?? 'ready';
@@ -347,6 +348,16 @@ export function AIMenu() {
           onValueChange={setValue}
         >
           {mode === 'chat' && previewValue.length > 0 && <AIChatEditor />}
+
+          {refusalMessage && (
+            <p
+              className="border-b px-3 py-2 text-sm text-destructive"
+              data-slot="ai-refusal"
+              role="alert"
+            >
+              {refusalMessage}
+            </p>
+          )}
 
           {isLoading ? (
             <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">

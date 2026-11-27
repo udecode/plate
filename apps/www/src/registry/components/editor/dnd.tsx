@@ -6,9 +6,12 @@ import {
   ArrowUpIcon,
   Columns2Icon,
   GripVertical,
+  LockIcon,
   ScissorsIcon,
+  LockOpenIcon,
 } from 'lucide-react';
 import { type Element, type NodeKey, PathApi } from 'platejs';
+import { BaseLockPlugin } from 'platejs/lock';
 import {
   definePlugin,
   type Editor,
@@ -45,6 +48,15 @@ export const startBlockDrag = (
   event: React.DragEvent,
   element: Element
 ) => {
+  const lock = editor.plugin(BaseLockPlugin);
+  const key = editor.key(element);
+
+  if (lock.installed && key && lock.read.isLocked(key)) {
+    event.preventDefault();
+
+    return;
+  }
+
   const drag = editor.api.dom.drag.start(event.nativeEvent, { node: element });
 
   if (!drag) {
@@ -72,6 +84,11 @@ export const startBlockDrag = (
  */
 export const cutBlocks = async (editor: Editor, keys: readonly NodeKey[]) => {
   if (keys.length === 0) return;
+
+  const lock = editor.plugin(BaseLockPlugin);
+
+  // A locked block refuses its removal, so cutting it would only copy it.
+  if (lock.installed && keys.some((key) => lock.read.isLocked(key))) return;
 
   editor.update.selection.setNodes(keys);
 
@@ -110,7 +127,12 @@ export const cutBlocks = async (editor: Editor, keys: readonly NodeKey[]) => {
   });
 };
 
-type HandleAction = { icon: React.ReactNode; label: string; run: () => void };
+type HandleAction = {
+  disabled?: boolean;
+  icon: React.ReactNode;
+  label: string;
+  run: () => void;
+};
 
 /**
  * A drag handle's actions. The handle opens it on click, which a drag never
@@ -150,9 +172,10 @@ export function HandleActionsMenu({
           editor.api.dom.focus();
         }}
       >
-        {actions.map(({ icon, label, run }) => (
+        {actions.map(({ disabled, icon, label, run }) => (
           <DropdownMenuItem
             key={label}
+            disabled={disabled}
             finalFocus={() => editor.api.dom.focus()}
             onSelect={run}
           >
@@ -174,6 +197,12 @@ function Draggable(props: RenderNodeWrapperProps) {
   const [actionsRtl, setActionsRtl] = React.useState(false);
   const [tooltipOpen, setTooltipOpen] = React.useState(false);
   const [besideActions, setBesideActions] = React.useState<HandleAction[]>([]);
+  const [lockState, setLockState] = React.useState<
+    'inherited' | 'none' | 'own'
+  >('none');
+  // Read from the element itself: a selector per block would subscribe every
+  // handle in a large document to lock changes.
+  const ownLocked = element.locked === true;
   const selected = useElementSelected();
   // A drag node-selects the handle's blocks, so their gutter stays laid out.
   // Mode 'node' matches those blocks only, so with hover the blocks nested
@@ -249,10 +278,55 @@ function Draggable(props: RenderNodeWrapperProps) {
   };
   const openActions = (event: React.MouseEvent<HTMLElement>) => {
     const keys = selectBlocks();
+    const lock = editor.plugin(BaseLockPlugin);
+    const nextLockState = !lock.installed
+      ? 'none'
+      : ownLocked
+        ? 'own'
+        : keys.some((key) => lock.read.isLocked(key))
+          ? 'inherited'
+          : 'none';
+
     setActionsRtl(getComputedStyle(event.currentTarget).direction === 'rtl');
-    setBesideActions(besideOf(keys));
+    setLockState(nextLockState);
+    setBesideActions(nextLockState === 'none' ? besideOf(keys) : []);
     setActionsOpen(true);
   };
+  const setLocked = (locked: boolean) => {
+    const keys = nodes();
+
+    editor.update((tx) => {
+      const lock = tx.plugin(BaseLockPlugin);
+
+      for (const key of keys) {
+        if (locked) lock.lock({ at: key });
+        else lock.unlock({ at: key });
+      }
+    });
+  };
+  const locked = lockState !== 'none';
+  const lockAction: HandleAction[] = editor.plugin(BaseLockPlugin).installed
+    ? [
+        lockState === 'own'
+          ? {
+              icon: <LockOpenIcon />,
+              label: 'Unlock block',
+              run: () => setLocked(false),
+            }
+          : lockState === 'inherited'
+            ? {
+                disabled: true,
+                icon: <LockIcon />,
+                label: 'Locked by parent',
+                run: () => {},
+              }
+            : {
+                icon: <LockIcon />,
+                label: 'Lock block',
+                run: () => setLocked(true),
+              },
+      ]
+    : [];
   const setHovered = (draggable: HTMLElement, hovered: boolean) => {
     draggable.toggleAttribute('data-hovered', hovered);
 
@@ -279,6 +353,7 @@ function Draggable(props: RenderNodeWrapperProps) {
           !isTable &&
           'not-data-hovered:[&>.editor-gutterLeft]:hidden'
       )}
+      data-locked={ownLocked ? 'true' : undefined}
       onMouseEnter={() => setButtonTop(calcDragButtonTop(editor, element))}
       onPointerLeave={(event) => setHovered(event.currentTarget, false)}
       onPointerOver={(event) =>
@@ -297,7 +372,9 @@ function Draggable(props: RenderNodeWrapperProps) {
             // every block the selection touches keeps its gutter.
             selected &&
               '[@media(hover:none)]:flex! [@media(hover:none)]:opacity-100',
-            (nodeSelected || actionsOpen) && 'flex!'
+            (nodeSelected || actionsOpen) && 'flex!',
+            // A locked block keeps its lock handle shown as a lasting cue.
+            ownLocked && 'flex! opacity-100'
           )}
         >
           <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
@@ -305,45 +382,55 @@ function Draggable(props: RenderNodeWrapperProps) {
               <button
                 aria-expanded={actionsOpen}
                 aria-haspopup="menu"
-                aria-label="Drag block"
-                className="pointer-events-auto absolute start-0 flex h-6 w-4.5 cursor-grab items-center justify-center p-0 text-muted-foreground [:is(td,th)_&]:w-3"
+                aria-label={ownLocked ? 'Locked block actions' : 'Drag block'}
+                className={cn(
+                  'pointer-events-auto absolute start-0 flex h-6 w-4.5 cursor-grab items-center justify-center p-0 text-muted-foreground [:is(td,th)_&]:w-3',
+                  ownLocked &&
+                    'cursor-pointer text-muted-foreground/70 [&_svg]:size-3.5'
+                )}
                 data-editor-prevent-deselect
                 data-editor-selectable
-                draggable
+                draggable={!ownLocked}
                 style={{ top: `${buttonTop + 3}px` }}
                 type="button"
                 onClick={openActions}
                 onContextMenu={selectBlocks}
                 onDragStart={(event) => startBlockDrag(editor, event, element)}
               >
-                <GripVertical />
+                {ownLocked ? <LockIcon /> : <GripVertical />}
               </button>
             </TooltipTrigger>
             <TooltipContent className={hiddenWhenClosed}>
-              Drag to move, click for actions
+              {ownLocked
+                ? 'Locked block, click for actions'
+                : 'Drag to move, click for actions'}
             </TooltipContent>
           </Tooltip>
           {actionsOpen && (
             <HandleActionsMenu
               actions={[
                 {
+                  disabled: locked,
                   icon: <ArrowUpIcon />,
                   label: 'Move up',
                   run: () => move('previous', 'Moved up'),
                 },
                 {
+                  disabled: locked,
                   icon: <ArrowDownIcon />,
                   label: 'Move down',
                   run: () => move('next', 'Moved down'),
                 },
                 ...besideActions,
                 {
+                  disabled: locked,
                   icon: <ScissorsIcon />,
                   label: 'Cut',
                   run: () => {
                     void cutBlocks(editor, nodes());
                   },
                 },
+                ...lockAction,
               ]}
               className="start-0 h-6 w-4.5"
               open

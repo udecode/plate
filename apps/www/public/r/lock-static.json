@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "lock-static",
+  "dependencies": [
+    "platejs"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/lock-static.tsx",
+      "content": "import { BaseLockPlugin } from 'platejs/lock';\n\nexport const BaseLockKit = [BaseLockPlugin];\n",
+      "type": "registry:component",
+      "target": "@components/editor/lock-static.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/lock",
+        "title": "Lock"
+      }
+    ]
+  },
+  "type": "registry:component"
+}

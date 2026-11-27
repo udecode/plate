@@ -28,6 +28,7 @@ import type {
 } from 'platejs/authored';
 import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
+import { BaseLockPlugin } from 'platejs/lock';
 import {
   type EditableSiblingProps,
   type RenderNodeWrapperDescriptor,
@@ -924,7 +925,7 @@ function SuggestionDiscussionCard({
   const groupKey = `${group.id}:${group.revision}`;
   const [outcomeState, setOutcomeState] = React.useState<{
     groupKey: string;
-    result: AuthoredResult;
+    result: AuthoredResult | { status: 'locked' };
   } | null>(null);
   const outcome =
     outcomeState?.groupKey === groupKey ? outcomeState.result : null;
@@ -951,8 +952,31 @@ function SuggestionDiscussionCard({
     equalityFn: sameLines,
     dependsOn: 'document',
   });
-  const setOutcome = (result: AuthoredResult) =>
+  const setOutcome = (result: AuthoredResult | { status: 'locked' }) =>
     setOutcomeState({ groupKey, result });
+  const touchesLockedBlock = (related: readonly AuthoredChange[]) => {
+    const lock = editor.plugin(BaseLockPlugin);
+
+    if (!lock.installed) return false;
+
+    const changes = [...related];
+
+    for (let cursor: string | undefined; ;) {
+      const page = authored.read.changes({
+        cursor,
+        group: group.id,
+        limit: 200,
+      });
+
+      changes.push(...page.items);
+      if (!page.cursor) break;
+      ({ cursor } = page);
+    }
+
+    return changes.some((change) =>
+      change.ranges.some((range) => lock.read.isLocked(range))
+    );
+  };
 
   const decide = (
     action: 'accept' | 'reject',
@@ -962,6 +986,12 @@ function SuggestionDiscussionCard({
       const change = authored.read.change(id);
       return change ? [change] : [];
     });
+
+    if (touchesLockedBlock(relatedChanges)) {
+      setOutcome({ status: 'locked' });
+      return;
+    }
+
     const result = authored.update.decide([
       { action, groups: [group] },
       ...(relatedChanges.length > 0
@@ -994,6 +1024,9 @@ function SuggestionDiscussionCard({
       }
       case 'invalid': {
         return 'This decision would leave the document invalid.';
+      }
+      case 'locked': {
+        return 'This suggestion is inside a locked block. Unlock the block to accept or reject it.';
       }
       case 'stale': {
         return 'This suggestion changed. Review it again before deciding.';

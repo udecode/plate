@@ -1,5 +1,5 @@
 {
-  "generation": "53ad00bb2652653c62afeb1263447b298934685647b013fde8d9a7bf1146b0ad",
+  "generation": "c6924c4ded6b79533e7f0dcfac8d177870ba73099a51862b63b39cc2367acbf3",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2539,6 +2539,28 @@
         },
         {
           "dependencies": [
+            "platejs"
+          ],
+          "files": [
+            {
+              "path": "components/editor/lock-static.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/lock-static.tsx"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lock",
+                "title": "Lock"
+              }
+            ]
+          },
+          "name": "lock-static",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0"
           ],
@@ -3956,6 +3978,31 @@
           ],
           "name": "line-height",
           "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/lock.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/lock.tsx"
+            }
+          ],
+          "name": "lock",
+          "type": "registry:component",
+          "description": "Per-block locking that keeps chosen blocks selectable and copyable but not editable.",
+          "title": "Lock",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lock",
+                "title": "Lock"
+              }
+            ]
+          }
         },
         {
           "dependencies": [
@@ -10504,6 +10551,28 @@
         },
         {
           "dependencies": [
+            "platejs"
+          ],
+          "files": [
+            {
+              "path": "components/editor/lock-static.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/lock-static.tsx"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lock",
+                "title": "Lock"
+              }
+            ]
+          },
+          "name": "lock-static",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0"
           ],
@@ -11921,6 +11990,31 @@
           ],
           "name": "line-height",
           "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/lock.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/lock.tsx"
+            }
+          ],
+          "name": "lock",
+          "type": "registry:component",
+          "description": "Per-block locking that keeps chosen blocks selectable and copyable but not editable.",
+          "title": "Lock",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lock",
+                "title": "Lock"
+              }
+            ]
+          }
         },
         {
           "dependencies": [

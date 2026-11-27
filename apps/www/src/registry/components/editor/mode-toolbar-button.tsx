@@ -13,6 +13,7 @@ import {
   AuthoredPlugin,
   type AuthoredView,
 } from 'platejs/authored';
+import { BaseLockPlugin } from 'platejs/lock';
 import { useEditor, useEditorSelector } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
@@ -178,10 +179,43 @@ function DecideAllItems({ readOnly }: { readOnly: boolean }) {
       ({ cursor } = page);
     }
 
-    // Deciding every pending change together is never blocked.
-    if (authored.update.decide({ action, changes }).status === 'invalid') {
+    const lock = editor.plugin(BaseLockPlugin);
+    const decidable = lock.installed
+      ? changes.filter(
+          (change) => !change.ranges.some((range) => lock.read.isLocked(range))
+        )
+      : changes;
+    const skipped = changes.length - decidable.length;
+    const verb = action === 'accept' ? 'Accepting' : 'Rejecting';
+
+    if (decidable.length === 0) {
+      toast.info(
+        'Every suggestion is inside a locked block. Unlock the blocks to accept or reject them.'
+      );
+
+      return;
+    }
+    const { status } = authored.update.decide({ action, changes: decidable });
+
+    if (status === 'invalid') {
       toast.error(
-        `${action === 'accept' ? 'Accepting' : 'Rejecting'} every suggestion would leave the document invalid, so nothing changed.`
+        `${verb} every suggestion would leave the document invalid, so nothing changed.`
+      );
+
+      return;
+    }
+    // Deciding every pending change together is never blocked, so only the
+    // locked changes left out can block the rest.
+    if (status === 'blocked') {
+      toast.info(
+        'The unlocked suggestions depend on suggestions inside locked blocks, so nothing changed.'
+      );
+
+      return;
+    }
+    if (skipped > 0) {
+      toast.info(
+        `Skipped ${skipped} suggestion${skipped === 1 ? '' : 's'} inside locked blocks.`
       );
     }
   };
