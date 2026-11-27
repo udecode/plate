@@ -363,7 +363,10 @@ export const createBoardIndex = ({
   let arrows = new Map<NodeKey, ArrowRecord>();
   let arrowsTo = new Map<string, ReadonlySet<NodeKey>>();
   let previewed = new Map<NodeKey, BoardArrowPath>();
-  let previewedBoxes = new Map<string, BoardBox>();
+  let previewedBoxes = new Map<
+    string,
+    Readonly<{ drawn: BoardBox; placed: BoardBox }>
+  >();
   const shownLayouts = new WeakMap<BoardShapeLayout, BoardShapeLayout>();
   let placements = new Map<string, BoardShapePlacement>();
   const previewPlacements = new WeakMap<BoardBox, BoardShapePlacement>();
@@ -797,21 +800,18 @@ export const createBoardIndex = ({
     byId: (id: string) => byId.get(id),
     clearPreview: () => {
       const cleared = previewedBoxes.size > 0 ? [...previewedBoxes.keys()] : [];
-
-      if (cleared.length > 0) {
-        previewedBoxes = new Map();
-        previewCleared(cleared);
-      }
-      if (previewed.size === 0) return;
-
       const changed: NodeKey[] = [];
 
-      for (const [key, drawn] of previewed) {
-        if (!sameArrowDrawing(drawn, arrows.get(key)?.drawn)) {
-          changed.push(key);
+      if (cleared.length > 0) previewedBoxes = new Map();
+      if (previewed.size > 0) {
+        for (const [key, drawn] of previewed) {
+          if (!sameArrowDrawing(drawn, arrows.get(key)?.drawn)) {
+            changed.push(key);
+          }
         }
+        previewed = new Map();
       }
-      previewed = new Map();
+      if (cleared.length > 0) previewCleared(cleared);
       if (changed.length > 0) notifyArrows(changed);
     },
     clearStamp: (id: string) => {
@@ -855,7 +855,7 @@ export const createBoardIndex = ({
     membersOf: (id: string) => membersOf.get(id),
     placementOf: (id: string) => {
       const placement = placements.get(id);
-      const box = previewedBoxes.get(id);
+      const box = previewedBoxes.get(id)?.placed;
 
       if (!placement || !box) return placement;
 
@@ -952,8 +952,8 @@ export const createBoardIndex = ({
       previewed = next;
       if (changed.length > 0) notifyArrows(changed);
     },
-    previewShape: (id: string, box: BoardBox) => {
-      previewedBoxes.set(id, box);
+    previewShape: (id: string, placed: BoardBox, drawn: BoardBox = placed) => {
+      previewedBoxes.set(id, { drawn, placed });
     },
     resolveArrow: (ends: ArrowEnds) =>
       resolveBoardArrow(ends, (id) => targets.get(id)),
@@ -1015,7 +1015,7 @@ export const createBoardIndex = ({
     },
     shownLayout: (id: string) => {
       const layout = byId.get(id);
-      const box = previewedBoxes.get(id);
+      const box = previewedBoxes.get(id)?.drawn;
 
       if (!layout || !box) return layout;
 

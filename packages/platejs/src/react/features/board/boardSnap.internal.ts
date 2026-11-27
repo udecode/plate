@@ -114,11 +114,12 @@ const nearest = (
 const guidesAt = (
   landed: BoardBox,
   targets: Targets,
-  valuesFor: (axis: Axis) => readonly number[]
+  valuesFor: (axis: Axis) => readonly number[],
+  axes: readonly Axis[] = AXES
 ) => {
   const guides: BoardGuide[] = [];
 
-  for (const axis of AXES) {
+  for (const axis of axes) {
     const across = acrossOf(axis);
 
     for (const at of valuesFor(axis)) {
@@ -332,8 +333,14 @@ export const snapResize = (
   corner: BoardCorner,
   offset: BoardPlace,
   modifiers: BoardBoxModifiers,
-  field: SnapField
+  field: SnapField,
+  options?: Readonly<{
+    drawnBox?: (rect: BoardBox) => BoardBox;
+    lockY?: boolean;
+  }>
 ) => {
+  const lockY = options?.lockY ?? false;
+  const axes: readonly Axis[] = lockY ? ['x'] : AXES;
   const reach = SNAP_PX / field.zoom;
   const raw = resized(start, corner, offset.x, offset.y, modifiers);
   const targets = targetsAround(raw, reach, field);
@@ -357,26 +364,30 @@ export const snapResize = (
   let rect = raw;
 
   if (!modifiers.keepRatio) {
-    const found = { x: match('x'), y: match('y') };
+    const found = {
+      x: match('x'),
+      y: lockY ? undefined : match('y'),
+    };
     const fixed = { ...offset };
 
-    for (const axis of AXES) {
+    for (const axis of axes) {
       const best = found[axis];
 
       if (best) fixed[axis] = corrected(axis, best);
     }
     rect = resized(start, corner, fixed.x, fixed.y, modifiers);
 
-    for (const axis of AXES) {
+    for (const axis of axes) {
       const best = found[axis];
 
       if (best && !lands(rect, axis, best)) fixed[axis] = offset[axis];
     }
     rect = resized(start, corner, fixed.x, fixed.y, modifiers);
   } else if (raw.width > MIN_SHAPE_SIZE && raw.height > MIN_SHAPE_SIZE) {
+    const drawnRaw = options?.drawnBox ? options.drawnBox(raw) : raw;
     let chosen: { box: BoardBox; gap: number } | undefined;
 
-    for (const axis of AXES) {
+    for (const axis of axes) {
       const best = match(axis);
 
       if (!best) continue;
@@ -398,11 +409,13 @@ export const snapResize = (
         (modifiers.center ? 2 : 1);
 
       const box = resized(start, corner, aligned.x, aligned.y, modifiers);
+      const drawnCandidate = options?.drawnBox ? options.drawnBox(box) : box;
 
       if (
         lands(box, axis, best) &&
         Math.abs(
-          movingEdgesOf(box, across)[0] - movingEdgesOf(raw, across)[0]
+          movingEdgesOf(drawnCandidate, across)[0] -
+            movingEdgesOf(drawnRaw, across)[0]
         ) <= reach &&
         closer(best.gap, chosen)
       ) {
@@ -412,8 +425,15 @@ export const snapResize = (
     rect = chosen?.box ?? raw;
   }
 
+  const landed = options?.drawnBox ? options.drawnBox(rect) : rect;
+
   return {
-    guides: guidesAt(rect, targets, (axis) => movingEdgesOf(rect, axis)),
+    guides: guidesAt(
+      landed,
+      targets,
+      (axis) => movingEdgesOf(landed, axis),
+      axes
+    ),
     rect,
   };
 };

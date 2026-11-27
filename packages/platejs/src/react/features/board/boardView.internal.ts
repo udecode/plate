@@ -61,6 +61,7 @@ import {
 import { attachBoardKeys, takeTextTab } from './boardKeys.internal';
 import { BOARD_PLACE_SIZE } from './boardPick.internal';
 import { createPendingPictures } from './boardPictures.internal';
+import { measuredNoteHeight } from './boardPreview.internal';
 import {
   type BoardMessages,
   type BoardVoice,
@@ -328,6 +329,7 @@ export type BoardViewCore = Readonly<{
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
   styleFor: (type: string | undefined, style: BoardStyle) => BoardStyle;
+  syncNoteHeight: (id: string) => void;
   takesPictureFiles: () => boolean;
   toggleSelected: (key: NodeKey) => void;
   undo: () => void;
@@ -858,30 +860,56 @@ export const createBoardView = (
       return ElementApi.isElement(node) ? node : undefined;
     },
     previewCleared: (cleared) => {
-      notifyShapes();
-
       const measured = new Map<string, number>();
+      const confirmed: string[] = [];
 
       for (const id of cleared) {
         const target = mountedText.get(id);
 
         if (!target) continue;
 
-        const height = target.offsetHeight;
+        const { zoom } = state.camera;
+        const storedHeight = index.storedBoxOf(id)?.height ?? 0;
+        const nextHeight = measuredNoteHeight(target, storedHeight, zoom);
         const current = index.byId(id)?.box.height;
 
-        if (
-          height > 0 &&
-          (current === undefined || Math.abs(height - current) >= 1)
-        ) {
+        if (nextHeight !== null) {
+          const height =
+            current !== undefined && Math.abs(nextHeight - current) <= 1e-6
+              ? current
+              : nextHeight;
+
           measured.set(id, height);
+        } else {
+          const height = target.offsetHeight;
+
+          if (
+            height > 0 &&
+            (current === undefined || Math.abs(height - current) >= 1)
+          ) {
+            measured.set(id, height);
+          } else if (height > 0) {
+            confirmed.push(id);
+          }
         }
         if (textObserver && observedText.has(target)) {
           textObserver.unobserve(target);
           textObserver.observe(target, { box: 'border-box' });
         }
       }
-      if (measured.size > 0) layOutText(measured);
+      if (confirmed.length > 0) index.confirmMountedHeights(confirmed);
+
+      const changed = measured.size > 0 ? index.measure(measured) : undefined;
+      const relaidOut =
+        !!changed && (changed.moved.size > 0 || changed.redrawn.size > 0);
+
+      if (relaidOut) shownVersion = index.version();
+      notifyShapes();
+      if (relaidOut) {
+        refresh();
+        interaction?.follow?.();
+        gestures?.follow();
+      }
     },
   });
   let shownVersion = 0;
@@ -1810,6 +1838,22 @@ export const createBoardView = (
     slice: (ids) => boards.read.slice(ids),
     state: () => state,
     styleFor,
+    syncNoteHeight: (id) => {
+      const target = mountedText.get(id);
+
+      if (!target) return;
+
+      const storedHeight = index.storedBoxOf(id)?.height;
+      const current = index.byId(id)?.box.height;
+
+      if (storedHeight === undefined || current === undefined) return;
+
+      const next = measuredNoteHeight(target, storedHeight, state.camera.zoom);
+
+      if (next !== null && Math.abs(next - current) > 1e-6) {
+        layOutText(new Map([[id, next]]));
+      }
+    },
     takesPictureFiles,
     toggleSelected: (key) => {
       const keys = selectedShapes().map((shape) => shape.key);

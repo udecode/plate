@@ -28,10 +28,12 @@ import {
 import { arrowEndOn, BOARD_PLACE_SIZE } from './boardPick.internal';
 import {
   drawGuides,
+  drawnNoteHeight,
   elementOf,
   hostOf,
   placeElement,
   placeShape,
+  placedAndDrawn,
   previewArrowLine,
   previewCopy,
   previewGuides,
@@ -39,7 +41,7 @@ import {
   previewSelectBox,
   previewStroke,
 } from './boardPreview.internal';
-import { snapMove, snapResize } from './boardSnap.internal';
+import { type BoardGuide, snapMove, snapResize } from './boardSnap.internal';
 import {
   type BoardPlaceTool,
   type BoardStyle,
@@ -115,16 +117,19 @@ type Gesture = Readonly<{ pointerId: number }> &
         guides: SVGSVGElement;
         id: string;
         keepsRatio: boolean;
+        lastAt: BoardPlace;
         left: boolean;
         modifiers: BoardBoxModifiers;
+        note: boolean;
+        placed: BoardBox;
         pointer: BoardPlace;
         press: BoardPlace;
-        rect: BoardBox;
         start: BoardBox;
       }
   );
 
 const CLICK_SLOP_PX = 8;
+const MOVED_EPS = 1e-6;
 
 const MODIFIER_KEYS: ReadonlySet<string> = new Set([
   'Alt',
@@ -355,7 +360,7 @@ export const attachBoardGestures = (
         );
       }
     } else {
-      const { corner, element, id, keepsRatio, start } = gesture;
+      const { corner, element, id, keepsRatio, note, start } = gesture;
       const modifiers = keepsRatio
         ? { ...gesture.modifiers, keepRatio: true }
         : gesture.modifiers;
@@ -363,32 +368,110 @@ export const attachBoardGestures = (
       gesture.left ||= dragged(gesture.press, gesture.pointer);
 
       const { zoom } = core.state().camera;
-      const moved = gesture.left && (dx !== 0 || dy !== 0);
-      const snapped =
-        moved && !gesture.free
-          ? snapResize(start, corner, { x: dx, y: dy }, modifiers, {
-              boxesIn: (area) => index.snapTargets(area, new Set([id])),
-              view: core.viewBox(),
-              zoom,
-            })
-          : null;
-      const rect =
-        snapped?.rect ??
-        (moved ? resized(start, corner, dx, dy, modifiers) : start);
+      const moved =
+        gesture.left && (Math.abs(dx) > MOVED_EPS || Math.abs(dy) > MOVED_EPS);
 
-      gesture.rect = rect;
-      drawGuides(gesture.guides, snapped?.guides ?? [], zoom);
-      if (sameBox(rect, start)) {
+      gesture.lastAt = at;
+      if (!moved) {
+        gesture.placed = start;
+        drawGuides(gesture.guides, [], zoom);
         placeAtModel(element, id);
         index.clearPreview();
 
         return;
       }
-      index.previewShape(id, rect);
-      placeShape(gesture.element, rect);
+
+      const field = {
+        boxesIn: (area: BoardBox) => index.snapTargets(area, new Set([id])),
+        view: core.viewBox(),
+        zoom,
+      };
+      let placed: BoardBox;
+      let drawn: BoardBox;
+      let guides: readonly BoardGuide[] = [];
+
+      if (note) {
+        const anchor = {
+          bottom: start.y + start.height,
+          centerY: start.y + start.height / 2,
+        };
+        let lastRect: BoardBox | null = null;
+        let lastBoxes: Readonly<{ drawn: BoardBox; placed: BoardBox }> | null =
+          null;
+        const measureNote = (box: BoardBox) => {
+          if (lastRect && lastBoxes && sameBox(box, lastRect)) {
+            return lastBoxes;
+          }
+          placeShape(element, box);
+          lastRect = box;
+          lastBoxes = placedAndDrawn(
+            box,
+            anchor,
+            corner,
+            modifiers.center,
+            drawnNoteHeight(element, box.height, zoom)
+          );
+
+          return lastBoxes;
+        };
+        let boxes = measureNote(resized(start, corner, dx, dy, modifiers));
+
+        if (!gesture.free) {
+          const drawnBox = (rect: BoardBox) => measureNote(rect).drawn;
+          const snap = (lockY: boolean) => {
+            const result = snapResize(
+              start,
+              corner,
+              { x: dx, y: dy },
+              modifiers,
+              field,
+              { drawnBox, lockY }
+            );
+
+            return { boxes: measureNote(result.rect), guides: result.guides };
+          };
+          const locked = boxes.drawn.height > boxes.placed.height;
+          const first = snap(locked);
+          const firstLocked =
+            first.boxes.drawn.height > first.boxes.placed.height;
+
+          if (firstLocked === locked) {
+            ({ boxes, guides } = first);
+          } else if (firstLocked) {
+            ({ boxes, guides } = snap(true));
+          } else {
+            const unlocked = snap(false);
+
+            ({ boxes, guides } =
+              unlocked.boxes.drawn.height > unlocked.boxes.placed.height
+                ? first
+                : unlocked);
+          }
+        }
+        ({ drawn, placed } = boxes);
+      } else {
+        const snapped = gesture.free
+          ? null
+          : snapResize(start, corner, { x: dx, y: dy }, modifiers, field);
+
+        placed = snapped?.rect ?? resized(start, corner, dx, dy, modifiers);
+        drawn = placed;
+        guides = snapped?.guides ?? [];
+      }
+
+      gesture.placed = placed;
+      drawGuides(gesture.guides, guides, zoom);
+      if (sameBox(placed, start)) {
+        placeAtModel(element, id);
+        index.clearPreview();
+
+        return;
+      }
+      index.previewShape(id, placed, drawn);
+      placeShape(element, placed);
       index.previewArrows(
         [id],
-        (target) => (target === id ? rect : undefined),
+        (target) => (target === id ? drawn : undefined),
         {
           x: 0,
           y: 0,
@@ -440,12 +523,12 @@ export const attachBoardGestures = (
       return;
     }
 
-    if (done.kind === 'resize' && !sameBox(done.rect, done.start)) {
+    if (done.kind === 'resize' && !sameBox(done.placed, done.start)) {
       gesture = null;
       free?.();
       core.voice.release();
       done.guides.remove();
-      core.commit({ id: done.id, kind: 'resize', rect: done.rect });
+      core.commit({ id: done.id, kind: 'resize', rect: done.placed });
       placeAtModel(done.element, done.id);
       index.clearPreview();
 
@@ -604,6 +687,13 @@ export const attachBoardGestures = (
     } else if (selecting && shapeElement && shape && handle) {
       if (!core.writable()) return;
       core.focusBoard();
+
+      const note = index.placementOf(shape.id)?.note ?? false;
+
+      if (note) core.syncNoteHeight(shape.id);
+
+      const start = index.byId(shape.id)?.box ?? shape.box;
+
       gesture = {
         corner: handle,
         element: shapeElement,
@@ -613,13 +703,15 @@ export const attachBoardGestures = (
         id: shape.id,
         keepsRatio: shape.keepsRatio,
         kind: 'resize',
+        lastAt: at,
         left: false,
         modifiers: modifiersOf(event),
+        note,
+        placed: start,
         pointer,
         pointerId,
         press: pointer,
-        rect: shape.box,
-        start: shape.box,
+        start,
       };
     } else if (selecting && shapeElement && shape) {
       pressed = shape;
@@ -837,6 +929,27 @@ export const attachBoardGestures = (
 
       gesture.pointer = { x: event.clientX, y: event.clientY };
       erase(previous, gesture.pointer);
+    } else if (gesture?.kind === 'resize') {
+      const nextPointer = { x: event.clientX, y: event.clientY };
+
+      core.measure();
+
+      const after = core.boardPointAt(nextPointer);
+      const modifiersChanged =
+        gesture.free !== (event.ctrlKey || event.metaKey) ||
+        gesture.modifiers.center !== event.altKey ||
+        gesture.modifiers.keepRatio !== event.shiftKey;
+
+      if (
+        modifiersChanged ||
+        after.x !== gesture.lastAt.x ||
+        after.y !== gesture.lastAt.y ||
+        (gesture.note && gesture.left)
+      ) {
+        takeModifiers(event);
+        gesture.pointer = nextPointer;
+        follow();
+      }
     }
     release();
   };

@@ -1,6 +1,6 @@
 import type { BoardGeo, BoardPlace } from '../../../features/board/lib';
 import { BOARD_GEO_DEFAULT } from '../../../features/board/lib/boardShape.internal';
-import type { BoardBox } from './boardIndex.internal';
+import type { BoardBox, BoardCorner } from './boardIndex.internal';
 import type { BoardGuide } from './boardSnap.internal';
 import type { BoardPlaceTool } from './boardView.internal';
 
@@ -20,6 +20,72 @@ export const hostOf = (shape: HTMLElement) => shape.parentElement ?? shape;
 
 export const placeShape = (shape: HTMLElement, box: BoardBox) =>
   placeElement(hostOf(shape), box);
+
+export const noteHeightTolerance = (zoom: number) =>
+  Math.max(1 / 32, 1 / (32 * zoom));
+
+export const measuredNoteHeight = (
+  shape: HTMLElement,
+  placedHeight: number,
+  zoom: number
+): number | null => {
+  const rootHeight = shape.getBoundingClientRect().height;
+
+  if (rootHeight <= 0) return null;
+
+  const host = hostOf(shape);
+  const hostHeight = host !== shape ? host.getBoundingClientRect().height : 0;
+
+  if (hostHeight > 0 && placedHeight > 0) {
+    return rootHeight > hostHeight + 1e-6
+      ? (placedHeight * rootHeight) / hostHeight
+      : placedHeight;
+  }
+
+  const height = rootHeight / zoom;
+
+  return height - placedHeight > noteHeightTolerance(zoom)
+    ? height
+    : placedHeight;
+};
+
+export const drawnNoteHeight = (
+  shape: HTMLElement,
+  placedHeight: number,
+  zoom: number
+) => measuredNoteHeight(shape, placedHeight, zoom) ?? placedHeight;
+
+export const placedAndDrawn = (
+  dragged: BoardBox,
+  anchor: Readonly<{ bottom: number; centerY: number }>,
+  corner: BoardCorner,
+  center: boolean,
+  drawnHeight: number
+): Readonly<{ drawn: BoardBox; placed: BoardBox }> => {
+  const height = Math.max(dragged.height, drawnHeight);
+  const top = corner === 'topLeft' || corner === 'topRight';
+  const y =
+    height > dragged.height
+      ? center
+        ? anchor.centerY - height / 2
+        : top
+          ? anchor.bottom - height
+          : dragged.y
+      : top && !center && Math.abs(dragged.y + height - anchor.bottom) > 1e-9
+        ? anchor.bottom - height
+        : dragged.y;
+  const placed: BoardBox = {
+    height: dragged.height,
+    width: dragged.width,
+    x: dragged.x,
+    y,
+  };
+
+  return {
+    drawn: height > dragged.height ? { ...placed, height } : placed,
+    placed,
+  };
+};
 
 export const previewCopy = (
   shape: HTMLElement,

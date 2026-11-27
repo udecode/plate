@@ -7,7 +7,12 @@ import {
   resized,
   sameBox,
 } from './boardIndex.internal';
-import { elementOf, placeShape } from './boardPreview.internal';
+import {
+  drawnNoteHeight,
+  elementOf,
+  placeShape,
+  placedAndDrawn,
+} from './boardPreview.internal';
 import type { BoardViewCore } from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
 
@@ -19,6 +24,7 @@ type EdgeOffsets = Readonly<{
 }>;
 
 type Resize = {
+  bottomOffset: number;
   corner: BoardCorner;
   edges: EdgeOffsets;
   element: HTMLElement | null;
@@ -92,6 +98,53 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
     if (element && box) placeShape(element, box);
   };
 
+  const measure = (
+    layout: BoardShapeLayout,
+    placed: BoardBox,
+    corner: BoardCorner,
+    bottomOffset: number,
+    element: HTMLElement | null
+  ) => {
+    if (!element || !index.placementOf(layout.id)?.note) {
+      return { drawn: placed, placed };
+    }
+    placeShape(element, placed);
+
+    return placedAndDrawn(
+      placed,
+      {
+        bottom: layout.box.y + layout.box.height + bottomOffset,
+        centerY: layout.box.y + layout.box.height / 2,
+      },
+      corner,
+      false,
+      drawnNoteHeight(element, placed.height, core.state().camera.zoom)
+    );
+  };
+
+  const applyPreview = (
+    shownResize: Resize,
+    placed: BoardBox,
+    drawn: BoardBox,
+    element: HTMLElement | null
+  ) => {
+    const { id } = shownResize;
+
+    index.previewShape(id, placed, drawn);
+    if (element) placeShape(element, placed);
+    index.previewArrows([id], (target) => (target === id ? drawn : undefined), {
+      x: 0,
+      y: 0,
+    });
+  };
+
+  const clearToModel = (active: Resize) => {
+    active.edges = UNMOVED;
+    active.bottomOffset = 0;
+    placeAtModel(active);
+    if (index.isPreviewing(active.id)) index.clearPreview();
+  };
+
   const show = () => {
     const shown = held();
 
@@ -99,19 +152,32 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
 
     const { box, layout, resize: shownResize } = shown;
 
-    if (sameBox(box, layout.box)) return shown;
+    if (sameBox(box, layout.box)) {
+      if (index.isPreviewing(shownResize.id)) clearToModel(shownResize);
 
-    const { id } = shownResize;
+      return { ...shown, drawn: box, placed: box };
+    }
+
     const element = elementFor(shownResize);
+    const { drawn, placed } = measure(
+      layout,
+      box,
+      shownResize.corner,
+      shownResize.bottomOffset,
+      element
+    );
 
-    index.previewShape(id, box);
-    if (element) placeShape(element, box);
-    index.previewArrows([id], (target) => (target === id ? box : undefined), {
-      x: 0,
-      y: 0,
-    });
+    if (sameBox(placed, layout.box)) {
+      clearToModel(shownResize);
 
-    return shown;
+      return { ...shown, drawn: layout.box, placed: layout.box };
+    }
+    if (!sameBox(placed, box)) {
+      shownResize.edges = edgesBetween(layout.box, placed);
+    }
+    applyPreview(shownResize, placed, drawn, element);
+
+    return { ...shown, drawn, placed };
   };
 
   const say = (corner: BoardCorner, { height, width }: BoardBox) =>
@@ -153,9 +219,18 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
       if (!done) return;
       if (!sameBox(done.box, done.layout.box)) {
         const committed = done.resize;
+        const { placed } = measure(
+          done.layout,
+          done.box,
+          committed.corner,
+          committed.bottomOffset,
+          elementFor(committed)
+        );
 
-        resize = null;
-        core.commit({ id: committed.id, kind: 'resize', rect: done.box });
+        if (!sameBox(placed, done.layout.box)) {
+          resize = null;
+          core.commit({ id: committed.id, kind: 'resize', rect: placed });
+        }
       }
       core.cancelInteraction();
     },
@@ -163,20 +238,45 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
       const moving = held();
 
       if (!moving) return;
-      moving.resize.edges = edgesBetween(
-        moving.layout.box,
-        resized(moving.box, moving.resize.corner, by.x, by.y, {
-          center: false,
-          keepRatio: moving.layout.keepsRatio,
-        })
+
+      const { layout, resize: active } = moving;
+      const dragged = resized(moving.box, active.corner, by.x, by.y, {
+        center: false,
+        keepRatio: layout.keepsRatio,
+      });
+
+      if (sameBox(dragged, moving.box)) {
+        say(active.corner, moving.box);
+
+        return;
+      }
+
+      const element = elementFor(active);
+      const { drawn, placed } = measure(
+        layout,
+        dragged,
+        active.corner,
+        active.bottomOffset,
+        element
       );
 
-      const shown = show();
+      if (sameBox(placed, layout.box)) {
+        clearToModel(active);
+        say(active.corner, layout.box);
 
-      if (shown) say(shown.resize.corner, shown.box);
+        return;
+      }
+
+      active.edges = edgesBetween(layout.box, placed);
+      applyPreview(active, placed, drawn, element);
+      say(active.corner, placed);
     },
     start: (shape: BoardShapeLayout) => {
+      if (index.placementOf(shape.id)?.note) core.syncNoteHeight(shape.id);
+
+      const startBox = index.byId(shape.id)?.box ?? shape.box;
       const next: Resize = {
+        bottomOffset: 0,
         corner: 'bottomRight',
         edges: UNMOVED,
         element: elementOf(host, shape.id),
@@ -196,8 +296,8 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
       resize = next;
       core.voice.resizing(shape.key, {
         corner: next.corner,
-        height: shape.box.height,
-        width: shape.box.width,
+        height: startBox.height,
+        width: startBox.width,
       });
     },
     turn: (backward: boolean) => {
@@ -207,11 +307,34 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
 
       const { length } = CORNERS_CLOCKWISE;
       const at = CORNERS_CLOCKWISE.indexOf(turning.resize.corner);
+      const element = elementFor(turning.resize);
+      const unmoved = sameBox(turning.box, turning.layout.box);
+      const { drawn, placed } = unmoved
+        ? { drawn: turning.layout.box, placed: turning.layout.box }
+        : measure(
+            turning.layout,
+            turning.box,
+            turning.resize.corner,
+            turning.resize.bottomOffset,
+            element
+          );
 
-      turning.resize.edges = edgesBetween(turning.layout.box, turning.box);
       turning.resize.corner =
         CORNERS_CLOCKWISE[(at + (backward ? length - 1 : 1)) % length];
-      say(turning.resize.corner, turning.box);
+      if (!unmoved && sameBox(placed, turning.layout.box)) {
+        clearToModel(turning.resize);
+        say(turning.resize.corner, turning.layout.box);
+
+        return;
+      }
+      turning.resize.bottomOffset = withoutFloatDrift(
+        drawn.y +
+          drawn.height -
+          (turning.layout.box.y + turning.layout.box.height)
+      );
+      turning.resize.edges = edgesBetween(turning.layout.box, placed);
+      if (!unmoved) applyPreview(turning.resize, placed, drawn, element);
+      say(turning.resize.corner, placed);
     },
   };
 };
