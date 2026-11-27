@@ -1,4 +1,8 @@
-import type { BoardGeo, BoardPlace } from '../../../features/board/lib';
+import type {
+  BoardGeo,
+  BoardPlace,
+  BoardSize,
+} from '../../../features/board/lib';
 import { BOARD_GEO_DEFAULT } from '../../../features/board/lib/boardShape.internal';
 import type { BoardBox, BoardCorner } from './boardIndex.internal';
 import type { BoardGuide } from './boardSnap.internal';
@@ -24,29 +28,75 @@ export const placeShape = (shape: HTMLElement, box: BoardBox) =>
 export const noteHeightTolerance = (zoom: number) =>
   Math.max(1 / 32, 1 / (32 * zoom));
 
+const measuredAxis = (
+  rootExtent: number,
+  hostExtent: number,
+  placedExtent: number,
+  zoom: number
+): number | null => {
+  if (rootExtent <= 0) return null;
+  if (hostExtent > 0 && placedExtent > 0) {
+    return rootExtent > hostExtent + 1e-6
+      ? (placedExtent * rootExtent) / hostExtent
+      : placedExtent;
+  }
+
+  const extent = rootExtent / zoom;
+
+  return extent - placedExtent > noteHeightTolerance(zoom)
+    ? extent
+    : placedExtent;
+};
+
 export const measuredNoteHeight = (
   shape: HTMLElement,
   placedHeight: number,
   zoom: number
 ): number | null => {
-  const rootHeight = shape.getBoundingClientRect().height;
-
-  if (rootHeight <= 0) return null;
-
+  const rootRect = shape.getBoundingClientRect();
   const host = hostOf(shape);
   const hostHeight = host !== shape ? host.getBoundingClientRect().height : 0;
 
-  if (hostHeight > 0 && placedHeight > 0) {
-    return rootHeight > hostHeight + 1e-6
-      ? (placedHeight * rootHeight) / hostHeight
-      : placedHeight;
-  }
+  return measuredAxis(rootRect.height, hostHeight, placedHeight, zoom);
+};
 
-  const height = rootHeight / zoom;
+export const measuredTextSize = (
+  shape: HTMLElement,
+  placedSize: BoardSize,
+  zoom: number,
+  autoWidth: boolean
+): Readonly<{ height: number; width?: number }> | null => {
+  const rootRect = shape.getBoundingClientRect();
+  const host = hostOf(shape);
+  const hostRect = host !== shape ? host.getBoundingClientRect() : null;
+  const height = measuredAxis(
+    rootRect.height,
+    hostRect?.height ?? 0,
+    placedSize.height,
+    zoom
+  );
 
-  return height - placedHeight > noteHeightTolerance(zoom)
-    ? height
-    : placedHeight;
+  if (height === null) return null;
+  if (!autoWidth) return { height };
+
+  const width = measuredAxis(
+    rootRect.width,
+    hostRect?.width ?? 0,
+    placedSize.width,
+    zoom
+  );
+
+  return width === null ? { height } : { height, width };
+};
+
+export const setResizeTextWrap = (
+  shape: HTMLElement,
+  wrapping: boolean,
+  autoWidth: boolean
+) => {
+  if (!autoWidth) return;
+  shape.style.width = wrapping ? '100%' : 'max-content';
+  shape.style.justifySelf = wrapping ? 'stretch' : 'left';
 };
 
 export const drawnNoteHeight = (
@@ -219,7 +269,7 @@ const previewShapeOutline = (
   layer: HTMLElement | null,
   from: BoardPlace,
   rank: number,
-  kind: BoardGeo | 'note'
+  kind: BoardGeo | 'note' | 'text'
 ) => {
   const outline = previewOutline(
     layer,
@@ -231,7 +281,7 @@ const previewShapeOutline = (
   const { ownerDocument } = outline;
   const svg = ownerDocument.createElementNS(SVG_NS, 'svg');
   const [tag, attributes] =
-    SHAPE_OUTLINES[kind === 'note' ? 'rectangle' : kind];
+    SHAPE_OUTLINES[kind === 'note' || kind === 'text' ? 'rectangle' : kind];
   const shape = ownerDocument.createElementNS(SVG_NS, tag);
 
   for (const [name, value] of [
@@ -270,7 +320,12 @@ export const previewPlaceOutline = (
     });
   }
 
-  return previewShapeOutline(layer, from, rank, tool === 'note' ? tool : geo);
+  return previewShapeOutline(
+    layer,
+    from,
+    rank,
+    tool === 'note' || tool === 'text' ? tool : geo
+  );
 };
 
 /** The box a selection drag shows in `layer` from board point `from`. */

@@ -12,6 +12,7 @@ import {
   elementOf,
   placeShape,
   placedAndDrawn,
+  setResizeTextWrap,
 } from './boardPreview.internal';
 import type { BoardViewCore } from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
@@ -95,7 +96,14 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
     const element = elementFor(placed);
     const box = index.storedBoxOf(placed.id);
 
-    if (element && box) placeShape(element, box);
+    if (element) {
+      setResizeTextWrap(
+        element,
+        false,
+        index.placementOf(placed.id)?.grow === 'both'
+      );
+      if (box) placeShape(element, box);
+    }
   };
 
   const measure = (
@@ -105,9 +113,12 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
     bottomOffset: number,
     element: HTMLElement | null
   ) => {
-    if (!element || !index.placementOf(layout.id)?.note) {
+    const grow = index.placementOf(layout.id)?.grow ?? 'none';
+
+    if (!element || grow === 'none') {
       return { drawn: placed, placed };
     }
+    setResizeTextWrap(element, true, grow === 'both');
     placeShape(element, placed);
 
     return placedAndDrawn(
@@ -230,6 +241,8 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
         if (!sameBox(placed, done.layout.box)) {
           resize = null;
           core.commit({ id: committed.id, kind: 'resize', rect: placed });
+          placeAtModel(committed);
+          if (index.isPreviewing(committed.id)) index.clearPreview();
         }
       }
       core.cancelInteraction();
@@ -272,7 +285,9 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
       say(active.corner, placed);
     },
     start: (shape: BoardShapeLayout) => {
-      if (index.placementOf(shape.id)?.note) core.syncNoteHeight(shape.id);
+      if ((index.placementOf(shape.id)?.grow ?? 'none') !== 'none') {
+        core.syncTextSize(shape.id);
+      }
 
       const startBox = index.byId(shape.id)?.box ?? shape.box;
       const next: Resize = {

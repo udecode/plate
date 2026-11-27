@@ -26,6 +26,7 @@ import {
   type BoardLentHeight,
   type BoardNoteHeightStamp,
   boardNoteStampMatches,
+  isAutoSizeBoardText,
 } from '../../../features/board/lib/boardHeights.internal';
 import {
   MIN_SHAPE_SIZE,
@@ -58,12 +59,14 @@ export type BoardShapeLayout = Readonly<{
   rank: number;
 }>;
 
+export type BoardShapeGrow = 'both' | 'height' | 'none';
+
 export type BoardShapePlacement = Readonly<{
   box: BoardBox;
+  grow: BoardShapeGrow;
   id: string;
   key: NodeKey;
   kind: BoardMemberEntry['kind'];
-  note: boolean;
   rank: number;
 }>;
 
@@ -113,12 +116,12 @@ const sameTarget = (a: BoardArrowTarget, b: BoardArrowTarget) =>
 
 const memberTarget = (
   entry: BoardFrameEntry | BoardShapeEntry,
-  height: number
+  size: BoardSize
 ) =>
   boardArrowTargetOf({
     geo: entry.node.geo,
     place: entry.place,
-    size: { height, width: entry.size.width },
+    size,
   });
 
 const cullBoxOf = ({ box, key }: BoardShapeLayout): CullBox => ({
@@ -368,7 +371,10 @@ export const createBoardIndex = ({
   const previewPlacements = new WeakMap<BoardBox, BoardShapePlacement>();
   const arrowListeners = new Map<NodeKey, Set<() => void>>();
   const strokePaths = new WeakMap<BoardStrokePoints, BoardStrokePath>();
-  const heights = new Map<string, number>();
+  const measuredSizes = new Map<
+    string,
+    Readonly<{ height: number; width?: number }>
+  >();
   const measuredStamps = new Map<string, BoardNoteHeightStamp>();
   const stamps = new Map<string, BoardNoteHeightStamp>();
   let shapeEntries = new Map<string, BoardFrameEntry | BoardShapeEntry>();
@@ -394,16 +400,41 @@ export const createBoardIndex = ({
     node: Element = nodeOf(entry.key) ?? entry.node
   ) => boardNoteStampMatches(stamp, entry, node);
 
-  const laidOutHeight = (entry: BoardFrameEntry | BoardShapeEntry) => {
-    const measured = heights.get(entry.id);
+  const growOf = (
+    node: Element,
+    noteType: string | undefined,
+    textType: string | undefined
+  ): BoardShapeGrow => {
+    if (isAutoSizeBoardText(node, textType)) return 'both';
+    if (
+      (noteType !== undefined && node.type === noteType) ||
+      (textType !== undefined && node.type === textType)
+    ) {
+      return 'height';
+    }
 
-    return measured === undefined
-      ? entry.size.height
-      : Math.max(entry.size.height, measured);
+    return 'none';
+  };
+
+  const laidOutSize = (entry: BoardFrameEntry | BoardShapeEntry): BoardSize => {
+    const measured = measuredSizes.get(entry.id);
+
+    if (measured === undefined) return entry.size;
+
+    const height = Math.max(entry.size.height, measured.height);
+    const width =
+      isAutoSizeBoardText(entry.node, types.text()) &&
+      measured.width !== undefined
+        ? Math.max(entry.size.width, measured.width)
+        : entry.size.width;
+
+    return width === entry.size.width && height === entry.size.height
+      ? entry.size
+      : { height, width };
   };
 
   const targetOf = (entry: BoardFrameEntry | BoardShapeEntry) =>
-    memberTarget(entry, laidOutHeight(entry));
+    memberTarget(entry, laidOutSize(entry));
 
   const relayout = (layout: BoardShapeLayout, box: BoardBox) => {
     const next = { ...layout, box };
@@ -448,6 +479,8 @@ export const createBoardIndex = ({
 
     return (
       entry.node.type === previous.node.type &&
+      growOf(entry.node, types.note(), types.text()) ===
+        growOf(previous.node, types.note(), types.text()) &&
       (!isStroke(entry) || entry.node.points === previous.node.points) &&
       (entry.kind === 'frame' ||
         (previous.kind === 'shape' && previous.frame === entry.frame)) &&
@@ -477,13 +510,14 @@ export const createBoardIndex = ({
     const nextShapes = new Map<string, BoardFrameEntry | BoardShapeEntry>();
     const changed = new Set<string>();
     const noteType = types.note();
+    const textType = types.text();
 
     for (const entry of read) {
       if (entry.kind === 'arrow') continue;
 
       nextShapes.set(entry.id, entry);
-      if (entry.node.type !== noteType) {
-        heights.delete(entry.id);
+      if (growOf(entry.node, noteType, textType) === 'none') {
+        measuredSizes.delete(entry.id);
         measuredStamps.delete(entry.id);
         stamps.delete(entry.id);
       } else {
@@ -494,9 +528,39 @@ export const createBoardIndex = ({
           (measured && measured.key !== entry.key) ||
           (stamp && !stampMatches(stamp, entry))
         ) {
-          heights.delete(entry.id);
+          measuredSizes.delete(entry.id);
           measuredStamps.delete(entry.id);
           stamps.delete(entry.id);
+        } else if (
+          measured &&
+          (measured.autoSize !== false) !== (entry.node.autoSize !== false)
+        ) {
+          const currentSize = measuredSizes.get(entry.id);
+          const sameContent =
+            currentSize !== undefined &&
+            measured.type === entry.node.type &&
+            measured.textSize === entry.node.textSize &&
+            measured.children === entry.node.children;
+          const expectedWidth = isAutoSizeBoardText(entry.node, textType)
+            ? measured.sizeWidth
+            : Math.max(
+                measured.sizeWidth,
+                currentSize?.width ?? measured.sizeWidth
+              );
+
+          if (
+            sameContent &&
+            entry.size.width === expectedWidth &&
+            (entry.size.height >= measured.sizeHeight ||
+              currentSize.height > measured.sizeHeight)
+          ) {
+            measuredSizes.set(entry.id, { height: currentSize.height });
+            measuredStamps.set(entry.id, stampOf(entry));
+          } else {
+            measuredSizes.delete(entry.id);
+            measuredStamps.delete(entry.id);
+            stamps.delete(entry.id);
+          }
         }
       }
 
@@ -513,9 +577,9 @@ export const createBoardIndex = ({
     for (const id of targets.keys()) {
       if (!nextTargets.has(id)) changed.add(id);
     }
-    for (const id of heights.keys()) {
+    for (const id of measuredSizes.keys()) {
       if (!nextTargets.has(id)) {
-        heights.delete(id);
+        measuredSizes.delete(id);
         measuredStamps.delete(id);
         stamps.delete(id);
       }
@@ -583,8 +647,7 @@ export const createBoardIndex = ({
           ? null
           : {
               ...entry.place,
-              height: laidOutHeight(entry),
-              width: entry.size.width,
+              ...laidOutSize(entry),
             };
       const rank = ranks.get(entry.key) ?? 0;
       const previous = layouts.get(entry.key);
@@ -608,25 +671,28 @@ export const createBoardIndex = ({
               height: entry.size.height,
               width: entry.size.width,
             };
-      const note = entry.node.type === noteType;
+      const grow =
+        entry.kind === 'arrow'
+          ? ('none' as const)
+          : growOf(entry.node, noteType, textType);
       const placement = placements.get(entry.id);
 
       nextPlacements.set(
         entry.id,
         placement &&
+          placement.grow === grow &&
           placement.id === entry.id &&
           placement.key === entry.key &&
           placement.kind === entry.kind &&
-          placement.note === note &&
           placement.rank === rank &&
           sameBox(placement.box, placed)
           ? placement
           : {
               box: placed,
+              grow,
               id: entry.id,
               key: entry.key,
               kind: entry.kind,
-              note,
               rank,
             }
       );
@@ -679,7 +745,10 @@ export const createBoardIndex = ({
   };
 
   const measure = (
-    measured: ReadonlyMap<string, number | null>
+    measured: ReadonlyMap<
+      string,
+      Readonly<{ height: number; width?: number }> | null
+    >
   ): Readonly<{
     moved: ReadonlySet<string>;
     redrawn: ReadonlySet<NodeKey>;
@@ -687,22 +756,22 @@ export const createBoardIndex = ({
     const moved = new Set<string>();
     const redrawn = new Set<NodeKey>();
 
-    for (const [id, height] of measured) {
+    for (const [id, nextSize] of measured) {
       const entry = shapeEntries.get(id);
       const layout = byId.get(id);
 
-      if (height === null) {
-        heights.delete(id);
+      if (nextSize === null) {
+        measuredSizes.delete(id);
         measuredStamps.delete(id);
       } else {
-        heights.set(id, height);
+        measuredSizes.set(id, nextSize);
         if (entry) measuredStamps.set(id, stampOf(entry));
       }
       stamps.delete(id);
 
       if (!entry || !layout) continue;
 
-      const box = { ...layout.box, height: laidOutHeight(entry) };
+      const box = { ...layout.box, ...laidOutSize(entry) };
 
       if (sameBox(box, layout.box)) continue;
       targets.set(id, targetOf(entry));
@@ -810,7 +879,7 @@ export const createBoardIndex = ({
     },
     confirmMountedHeights: (ids: Iterable<string>) => {
       for (const id of ids) {
-        if (!heights.has(id) || previewedBoxes.has(id)) continue;
+        if (!measuredSizes.has(id) || previewedBoxes.has(id)) continue;
 
         const entry = shapeEntries.get(id);
 
@@ -821,7 +890,7 @@ export const createBoardIndex = ({
     dropUnmountedHeights: () => {
       if (stamps.size === 0) return false;
       for (const id of stamps.keys()) {
-        heights.delete(id);
+        measuredSizes.delete(id);
         measuredStamps.delete(id);
       }
       stamps.clear();
@@ -830,8 +899,8 @@ export const createBoardIndex = ({
       return true;
     },
     entries: () => entries,
-    hasHeight: (id: string) => heights.has(id),
-    hasHeights: () => heights.size > 0,
+    hasHeight: (id: string) => measuredSizes.has(id),
+    hasHeights: () => measuredSizes.size > 0,
     hasUnmountedHeights: () => stamps.size > 0,
     isPreviewing: (id: string) => previewedBoxes.has(id),
     isStaleStamp: (id: string) => {
@@ -843,10 +912,16 @@ export const createBoardIndex = ({
     layout: (key: NodeKey) => layouts.get(key),
     layouts: () => layouts.values(),
     lentHeightOf: (id: string): BoardLentHeight | undefined => {
-      const height = heights.get(id);
+      const measured = measuredSizes.get(id);
       const stamp = stamps.get(id) ?? measuredStamps.get(id);
 
-      return height !== undefined && stamp ? { height, stamp } : undefined;
+      return measured !== undefined && stamp
+        ? {
+            height: measured.height,
+            stamp,
+            ...(measured.width !== undefined ? { width: measured.width } : {}),
+          }
+        : undefined;
     },
     measure,
     membersOf: (id: string) => membersOf.get(id),
@@ -859,10 +934,10 @@ export const createBoardIndex = ({
       const cached = previewPlacements.get(box);
 
       if (
-        cached?.id === placement.id &&
+        cached?.grow === placement.grow &&
+        cached.id === placement.id &&
         cached.key === placement.key &&
         cached.kind === placement.kind &&
-        cached.note === placement.note &&
         cached.rank === placement.rank
       ) {
         return cached;
@@ -1050,7 +1125,7 @@ export const createBoardIndex = ({
       return boxes;
     },
     stampHeight: (id: string) => {
-      if (!heights.has(id)) return true;
+      if (!measuredSizes.has(id)) return true;
 
       const entry = shapeEntries.get(id);
       const measured = measuredStamps.get(id);

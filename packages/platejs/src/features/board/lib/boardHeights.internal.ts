@@ -36,7 +36,7 @@ export const boardNoteStampMatches = (
 ) =>
   stamp.key === entry.key &&
   stamp.type === node.type &&
-  stamp.autoSize === node.autoSize &&
+  (stamp.autoSize !== false) === (node.autoSize !== false) &&
   stamp.sizeWidth === entry.size.width &&
   stamp.sizeHeight === entry.size.height &&
   stamp.textSize === node.textSize &&

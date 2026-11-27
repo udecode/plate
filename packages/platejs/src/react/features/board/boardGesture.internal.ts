@@ -40,6 +40,7 @@ import {
   previewPlaceOutline,
   previewSelectBox,
   previewStroke,
+  setResizeTextWrap,
 } from './boardPreview.internal';
 import { type BoardGuide, snapMove, snapResize } from './boardSnap.internal';
 import {
@@ -120,7 +121,7 @@ type Gesture = Readonly<{ pointerId: number }> &
         lastAt: BoardPlace;
         left: boolean;
         modifiers: BoardBoxModifiers;
-        note: boolean;
+        textFit: boolean;
         placed: BoardBox;
         pointer: BoardPlace;
         press: BoardPlace;
@@ -175,7 +176,12 @@ const placedBox = (
 
   const { height, width } = BOARD_PLACE_SIZE[tool];
 
-  return { height, width, x: at.x - width / 2, y: at.y - height / 2 };
+  return {
+    height,
+    width,
+    x: tool === 'text' ? at.x : at.x - width / 2,
+    y: at.y - height / 2,
+  };
 };
 
 const holds = (outer: BoardBox, inner: BoardBox) =>
@@ -224,6 +230,7 @@ export const attachBoardGestures = (
   let swallowClick = false;
   let clicker: number | undefined;
   let pressed: BoardShapeLayout | undefined;
+  let lastPress: 'blocked' | 'empty' | 'shape' | undefined;
 
   const drawPen = ({ path, points }: Extract<Gesture, { kind: 'pen' }>) => {
     path.setAttribute('d', strokeOutline(points, BOARD_PEN, false));
@@ -360,7 +367,8 @@ export const attachBoardGestures = (
         );
       }
     } else {
-      const { corner, element, id, keepsRatio, note, start } = gesture;
+      const { corner, element, id, keepsRatio, start, textFit } = gesture;
+      const autoWidth = index.placementOf(id)?.grow === 'both';
       const modifiers = keepsRatio
         ? { ...gesture.modifiers, keepRatio: true }
         : gesture.modifiers;
@@ -375,6 +383,7 @@ export const attachBoardGestures = (
       if (!moved) {
         gesture.placed = start;
         drawGuides(gesture.guides, [], zoom);
+        setResizeTextWrap(element, false, autoWidth);
         placeAtModel(element, id);
         index.clearPreview();
 
@@ -390,7 +399,8 @@ export const attachBoardGestures = (
       let drawn: BoardBox;
       let guides: readonly BoardGuide[] = [];
 
-      if (note) {
+      if (textFit) {
+        setResizeTextWrap(element, true, autoWidth);
         const anchor = {
           bottom: start.y + start.height,
           centerY: start.y + start.height / 2,
@@ -462,6 +472,7 @@ export const attachBoardGestures = (
       gesture.placed = placed;
       drawGuides(gesture.guides, guides, zoom);
       if (sameBox(placed, start)) {
+        setResizeTextWrap(element, false, autoWidth);
         placeAtModel(element, id);
         index.clearPreview();
 
@@ -495,6 +506,11 @@ export const attachBoardGestures = (
       }
     } else if (done.kind === 'resize') {
       done.guides.remove();
+      setResizeTextWrap(
+        done.element,
+        false,
+        index.placementOf(done.id)?.grow === 'both'
+      );
       placeAtModel(done.element, done.id);
     } else if (done.kind === 'arrow') {
       done.line.ownerSVGElement?.remove();
@@ -529,6 +545,11 @@ export const attachBoardGestures = (
       core.voice.release();
       done.guides.remove();
       core.commit({ id: done.id, kind: 'resize', rect: done.placed });
+      setResizeTextWrap(
+        done.element,
+        false,
+        index.placementOf(done.id)?.grow === 'both'
+      );
       placeAtModel(done.element, done.id);
       index.clearPreview();
 
@@ -579,7 +600,12 @@ export const attachBoardGestures = (
         );
       }
     } else if (done.kind === 'place') {
+      const wasDragged = dragged(done.press, done.pointer);
+
       core.place(done.tool, placedBox(done, core.boardPointAt(done.pointer)), {
+        ...(done.tool === 'text'
+          ? { autoSize: !wasDragged, ephemeral: !wasDragged }
+          : {}),
         style: done.style,
       });
     } else if (done.kind === 'move') {
@@ -649,6 +675,7 @@ export const attachBoardGestures = (
   const onPointerDown = (event: PointerEvent) => {
     if (gesture) return;
     pressed = undefined;
+    lastPress = 'blocked';
     swallowClick = false;
     if (event.button > 1 || !(event.target instanceof Element)) return;
     if (event.target.closest('[data-board-toolbar]')) return;
@@ -679,6 +706,19 @@ export const attachBoardGestures = (
     ) {
       return;
     }
+    if (
+      event.button === 0 &&
+      !spacePan &&
+      !handle &&
+      (selecting || tool === 'text') &&
+      shape &&
+      core.editedShape()?.key === shape.key
+    ) {
+      pressed = shape;
+      lastPress = 'shape';
+
+      return;
+    }
     if (event.button === 1 || tool === 'hand' || spacePan) {
       if (tool === 'hand' && !inOwnText(activeElementOf(host))) {
         core.focusBoard();
@@ -688,9 +728,10 @@ export const attachBoardGestures = (
       if (!core.writable()) return;
       core.focusBoard();
 
-      const note = index.placementOf(shape.id)?.note ?? false;
+      const grow = index.placementOf(shape.id)?.grow ?? 'none';
+      const textFit = grow !== 'none';
 
-      if (note) core.syncNoteHeight(shape.id);
+      if (textFit) core.syncTextSize(shape.id);
 
       const start = index.byId(shape.id)?.box ?? shape.box;
 
@@ -706,15 +747,16 @@ export const attachBoardGestures = (
         lastAt: at,
         left: false,
         modifiers: modifiersOf(event),
-        note,
         placed: start,
         pointer,
         pointerId,
         press: pointer,
         start,
+        textFit,
       };
     } else if (selecting && shapeElement && shape) {
       pressed = shape;
+      lastPress = 'shape';
       if (core.editedShape()?.key === shape.key) return;
 
       const selected = core.selectedShapes();
@@ -793,7 +835,8 @@ export const attachBoardGestures = (
         }
         case 'frame':
         case 'geo':
-        case 'note': {
+        case 'note':
+        case 'text': {
           if (!core.writable()) return;
 
           const style = core.state().nextStyle;
@@ -836,6 +879,7 @@ export const attachBoardGestures = (
           break;
         }
         case 'select': {
+          if (!handle) lastPress = 'empty';
           if (event.pointerType === 'touch') {
             core.deselectOnBoard();
             gesture = pan(pointer, pointerId);
@@ -929,6 +973,10 @@ export const attachBoardGestures = (
 
       gesture.pointer = { x: event.clientX, y: event.clientY };
       erase(previous, gesture.pointer);
+    } else if (gesture?.kind === 'place') {
+      takeModifiers(event);
+      gesture.pointer = { x: event.clientX, y: event.clientY };
+      follow();
     } else if (gesture?.kind === 'resize') {
       const nextPointer = { x: event.clientX, y: event.clientY };
 
@@ -944,7 +992,7 @@ export const attachBoardGestures = (
         modifiersChanged ||
         after.x !== gesture.lastAt.x ||
         after.y !== gesture.lastAt.y ||
-        (gesture.note && gesture.left)
+        (gesture.textFit && gesture.left)
       ) {
         takeModifiers(event);
         gesture.pointer = nextPointer;
@@ -977,18 +1025,61 @@ export const attachBoardGestures = (
   // Pointer capture sends the double click to the board, not the shape the
   // pointer is over, so it edits the shape the last press went down on.
   const onDoubleClick = (event: MouseEvent) => {
-    if (!(event.target instanceof Node) || !host.contains(event.target)) {
+    const rawTarget = event.composedPath?.()[0] ?? event.target;
+
+    if (
+      event.button !== 0 ||
+      !(rawTarget instanceof Element) ||
+      !host.contains(rawTarget)
+    ) {
+      return;
+    }
+    if (rawTarget.closest('[data-board-toolbar], [data-board-handle]')) {
       return;
     }
 
     const shape = pressed;
 
-    if (!shape?.takesText || core.editedShape()?.key === shape.key) {
+    if (shape) {
+      if (!shape.takesText || core.editedShape()?.key === shape.key) return;
+      event.preventDefault();
+      event.stopPropagation();
+      core.edit(shape.key);
+
+      return;
+    }
+
+    if (
+      !core.writable() ||
+      lastPress === 'blocked' ||
+      spaceHeld() ||
+      core.state().tool !== 'select' ||
+      core.editedShape() !== null ||
+      boardTypesOf(core.editor).text() === undefined
+    ) {
+      return;
+    }
+
+    core.measure();
+
+    const at = core.boardPointAt({ x: event.clientX, y: event.clientY });
+
+    if (
+      buttonOwnsPress(rawTarget) ||
+      pressTargetAt(rawTarget, at, false).shape
+    ) {
       return;
     }
     event.preventDefault();
     event.stopPropagation();
-    core.edit(shape.key);
+
+    const { height, width } = BOARD_PLACE_SIZE.text;
+
+    core.place(
+      'text',
+      { height, width, x: at.x, y: at.y - height / 2 },
+      { autoSize: true, ephemeral: true, style: core.state().nextStyle }
+    );
   };
   const onModifierKey = (event: KeyboardEvent) => {
     if (MODIFIER_KEYS.has(event.key) && takeModifiers(event)) follow();

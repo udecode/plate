@@ -8,8 +8,15 @@ import {
   isBoundArrowEnd,
 } from '../../../features/board/lib/boardArrow.internal';
 import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
-import { bindBoardPictureHeights } from '../../../features/board/lib/boardHeights.internal';
-import { isBoardSize } from '../../../features/board/lib/boardShape.internal';
+import {
+  type BoardPictureMeasuredSize,
+  bindBoardPictureHeights,
+  isAutoSizeBoardText,
+} from '../../../features/board/lib/boardHeights.internal';
+import {
+  type BoardSize,
+  isBoardSize,
+} from '../../../features/board/lib/boardShape.internal';
 import { boardTypesOf } from '../../../features/board/lib/boardTypes.internal';
 import {
   type BasePluginInput,
@@ -147,12 +154,24 @@ const backgroundOf = (host: Element, srgb: (value: string) => string) => {
   return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)})`;
 };
 
-const paintedIn = (drawing: Element, origin: DOMRect): BoardBox[] =>
+const paintedIn = (
+  drawing: Element,
+  origin: DOMRect,
+  scaleX: number,
+  scaleY: number
+): BoardBox[] =>
   [drawing, ...drawing.querySelectorAll('*')].flatMap((node) => {
     const { height, left, top, width } = node.getBoundingClientRect();
 
     return width > 0 || height > 0
-      ? [{ height, width, x: left - origin.left, y: top - origin.top }]
+      ? [
+          {
+            height: height / scaleY,
+            width: width / scaleX,
+            x: (left - origin.left) / scaleX,
+            y: (top - origin.top) / scaleY,
+          },
+        ]
       : [];
   });
 
@@ -227,7 +246,7 @@ const dataUrlOf = (blob: Blob) =>
 const decodedDataUrl = async (
   document: Document,
   blob: Blob,
-  size: DOMRect,
+  size: BoardSize,
   scale: number | null
 ) => {
   const url = URL.createObjectURL(blob);
@@ -363,7 +382,7 @@ const pin = (document: Document, object: Element) => {
 const groupOf = (
   document: Document,
   { box, drawing, id }: Drawing,
-  labels: ReadonlyMap<Element, DOMRect>,
+  labels: ReadonlyMap<Element, BoardSize>,
   offsets: ReadonlyMap<Element, Readonly<{ left: number; top: number }>>
 ) => {
   const group = document.createElementNS(SVG_NS, 'g');
@@ -503,7 +522,7 @@ const scaleProbeOf = (document: Document) => {
 
   probe.setAttribute(
     'style',
-    `position: absolute; left: 0px; top: 0px; box-sizing: border-box; border: 0px; margin: 0px; padding: 0px; width: 1px; height: ${SCALE_PROBE_PX}px; pointer-events: none; visibility: hidden;`
+    `position: absolute; left: 0px; top: 0px; box-sizing: border-box; border: 0px; margin: 0px; padding: 0px; width: ${SCALE_PROBE_PX}px; height: ${SCALE_PROBE_PX}px; pointer-events: none; visibility: hidden;`
   );
 
   return probe;
@@ -524,30 +543,44 @@ const ownTextOf = (drawing: Element, root: string): Element | null => {
   return null;
 };
 
-const measuredNoteHeight = (
+const measuredTextSize = (
   drawing: Element,
   root: string,
+  scaleX: number,
   scaleY: number
-): number | null => {
+): BoardSize | null => {
   const text = ownTextOf(drawing, root);
 
   if (!text) return null;
 
-  const content = text.getBoundingClientRect().height / scaleY;
+  const rect = text.getBoundingClientRect();
+  const contentHeight = rect.height / scaleY;
+  const contentWidth = rect.width / scaleX;
 
-  if (!Number.isFinite(content)) return null;
+  if (!Number.isFinite(contentHeight) || !Number.isFinite(contentWidth)) {
+    return null;
+  }
 
   const card = text.parentElement;
   const viewWindow = card?.ownerDocument.defaultView ?? globalThis;
   const style = card ? viewWindow.getComputedStyle(card) : null;
-  const chrome = style
+  const verticalChrome = style
     ? pixelsOf(style.paddingTop) +
       pixelsOf(style.paddingBottom) +
       pixelsOf(style.borderTopWidth) +
       pixelsOf(style.borderBottomWidth)
     : 0;
+  const horizontalChrome = style
+    ? pixelsOf(style.paddingLeft) +
+      pixelsOf(style.paddingRight) +
+      pixelsOf(style.borderLeftWidth) +
+      pixelsOf(style.borderRightWidth)
+    : 0;
 
-  return content + chrome;
+  return {
+    height: contentHeight + verticalChrome,
+    width: contentWidth + horizontalChrome,
+  };
 };
 
 export const drawBoardPicture = async (
@@ -568,7 +601,9 @@ export const drawBoardPicture = async (
   });
   const missing = bindStaticPresentation(picture, { plugins: kit });
   const shapes = getStaticRootView(picture, root);
-  const noteType = boardTypesOf(picture).note();
+  const types = boardTypesOf(picture);
+  const noteType = types.note();
+  const textType = types.text();
   const document = host.ownerDocument;
   const { baseURI } = document;
   const nodesById = new Map<string, EditorElement>();
@@ -660,21 +695,32 @@ export const drawBoardPicture = async (
   const drawnIds = new Set(drawings.map(({ id }) => id));
   const measureCandidates = new Map<
     string,
-    Readonly<{ drawing: Element; storedHeight: number }>
+    Readonly<{ autoWidth: boolean; drawing: Element; storedSize: BoardSize }>
   >();
   const extraTargets: Element[] = [];
-  const considerNote = (id: string, drawing: Element, extra: boolean) => {
+  const considerText = (id: string, drawing: Element, extra: boolean) => {
     if (measureCandidates.has(id)) return;
 
     const node = nodesById.get(id);
 
-    if (!node || node.type !== noteType) return;
+    if (
+      !node ||
+      (node.type !== noteType &&
+        (textType === undefined || node.type !== textType))
+    ) {
+      return;
+    }
 
-    const storedHeight = isBoardSize(node.size)
-      ? node.size.height
-      : boxIn(drawing).height;
+    const box = boxIn(drawing);
+    const storedSize = isBoardSize(node.size)
+      ? node.size
+      : { height: box.height, width: box.width };
 
-    measureCandidates.set(id, { drawing, storedHeight });
+    measureCandidates.set(id, {
+      autoWidth: isAutoSizeBoardText(node, textType),
+      drawing,
+      storedSize,
+    });
     if (extra) extraTargets.push(drawing);
   };
 
@@ -693,10 +739,10 @@ export const drawBoardPicture = async (
 
         const targetDrawing = shown.get(end.shape);
 
-        if (targetDrawing) considerNote(end.shape, targetDrawing, true);
+        if (targetDrawing) considerText(end.shape, targetDrawing, true);
       }
     } else {
-      considerNote(id, drawing, false);
+      considerText(id, drawing, false);
     }
   }
 
@@ -707,9 +753,15 @@ export const drawBoardPicture = async (
 
     try {
       host.append(probe);
-      const probed = probe.getBoundingClientRect().height;
+      const probed = probe.getBoundingClientRect();
+      const scaleX =
+        Number.isFinite(probed.width) && probed.width > 0
+          ? probed.width / SCALE_PROBE_PX
+          : 1;
       const scaleY =
-        Number.isFinite(probed) && probed > 0 ? probed / SCALE_PROBE_PX : 1;
+        Number.isFinite(probed.height) && probed.height > 0
+          ? probed.height / SCALE_PROBE_PX
+          : 1;
 
       probe.remove();
       host.append(
@@ -718,19 +770,34 @@ export const drawBoardPicture = async (
         ...extraTargets
       );
 
-      const grownHeights = new Map<string, number>();
+      const grownSizes = new Map<string, BoardPictureMeasuredSize>();
 
-      for (const [id, { drawing, storedHeight }] of measureCandidates) {
-        const measured = measuredNoteHeight(drawing, root, scaleY);
+      for (const [
+        id,
+        { autoWidth, drawing, storedSize },
+      ] of measureCandidates) {
+        const measured = measuredTextSize(drawing, root, scaleX, scaleY);
 
-        if (measured !== null && measured > storedHeight) {
-          grownHeights.set(id, measured);
+        if (!measured) continue;
+
+        const height =
+          measured.height > storedSize.height ? measured.height : undefined;
+        const width =
+          autoWidth && measured.width > storedSize.width
+            ? Math.ceil(measured.width)
+            : undefined;
+
+        if (height !== undefined || width !== undefined) {
+          grownSizes.set(id, {
+            ...(height !== undefined ? { height } : {}),
+            ...(width !== undefined ? { width } : {}),
+          });
         }
       }
 
-      if (grownHeights.size > 0) {
+      if (grownSizes.size > 0) {
         host.replaceChildren();
-        bindBoardPictureHeights(shapes, grownHeights);
+        bindBoardPictureHeights(shapes, grownSizes);
         ({ drawings, warnings } = renderPass());
         frame = pictureFrameOf(document);
         host.append(...drawings.flatMap(({ drawing }) => drawing ?? []), frame);
@@ -763,25 +830,39 @@ export const drawBoardPicture = async (
         edges: edgesOf(
           drawings.flatMap(({ box, drawing }) => [
             box,
-            ...(drawing ? paintedIn(drawing, origin) : []),
+            ...(drawing ? paintedIn(drawing, origin, scaleX, scaleY) : []),
           ])
         ),
         images: elements.flatMap((drawn) =>
           [...drawn.querySelectorAll<HTMLElement | SVGElement>('image, img')]
             .filter((image) => image.getAttribute(sourceOf(image)))
-            .map((image) => ({
-              id:
-                image
-                  .closest('[data-board-picture]')
-                  ?.getAttribute('data-board-picture') ?? '',
-              image,
-              size: image.getBoundingClientRect(),
-            }))
+            .map((image) => {
+              const rect = image.getBoundingClientRect();
+
+              return {
+                id:
+                  image
+                    .closest('[data-board-picture]')
+                    ?.getAttribute('data-board-picture') ?? '',
+                image,
+                size: {
+                  height: rect.height / scaleY,
+                  width: rect.width / scaleX,
+                },
+              };
+            })
         ),
         labels: new Map(
           elements
             .filter((element) => element.hasAttribute('data-board-arrow-label'))
-            .map((label) => [label, label.getBoundingClientRect()])
+            .map((label) => {
+              const rect = label.getBoundingClientRect();
+
+              return [
+                label,
+                { height: rect.height / scaleY, width: rect.width / scaleX },
+              ] as const;
+            })
         ),
         placed: elements,
         styles: readPictureStyles(frame, host, elements),

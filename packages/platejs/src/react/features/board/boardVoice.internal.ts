@@ -37,7 +37,7 @@ export type BoardShapeDescription =
       }>;
     }>
   | Readonly<{
-      kind: 'frame' | 'geo' | 'note' | 'shape' | 'stroke';
+      kind: 'frame' | 'geo' | 'note' | 'shape' | 'stroke' | 'text';
       text: string;
     }>;
 
@@ -283,6 +283,7 @@ export const createBoardVoice = ({
     if (type === types.geo()) return 'geo';
     if (type === types.note()) return 'note';
     if (type === types.stroke()) return 'stroke';
+    if (type === types.text()) return 'text';
 
     return 'shape';
   };

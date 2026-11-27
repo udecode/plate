@@ -27,6 +27,7 @@ import {
   BaseBoardImagePlugin,
   BaseBoardNotePlugin,
   BaseBoardPlugin,
+  BaseBoardTextPlugin,
   type BoardGeo,
   type BoardMemberEntry,
   type BoardPlace,
@@ -63,7 +64,7 @@ import {
 import { attachBoardKeys, takeTextTab } from './boardKeys.internal';
 import { BOARD_PLACE_SIZE } from './boardPick.internal';
 import { createPendingPictures } from './boardPictures.internal';
-import { measuredNoteHeight } from './boardPreview.internal';
+import { elementOf, measuredTextSize } from './boardPreview.internal';
 import {
   type BoardMessages,
   type BoardVoice,
@@ -84,13 +85,17 @@ export type BoardCamera = Readonly<{ x: number; y: number; zoom: number }>;
  * dot at a click, and stays the tool after it draws. `eraser` marks every note,
  * shape, arrow and pen line a click or drag passes over, but never a frame, and
  * removes them as one undo step on release, and stays the tool. A marked shape
- * shows `data-erasing`. `frame`, `geo` and `note` draw a frame, a shape of the
- * next style's geo kind or a note over a drag, or add one of the tool's
- * default size centered at a click, over empty board or over other shapes.
- * During the drag Shift keeps the sides equal and Alt centers the box on the
- * press point. `select` acts on an empty part of the board, which includes the
- * inside of a frame: it selects the shapes a mouse or pen drag's box holds
+ * shows `data-erasing`. `frame`, `geo`, `note` and `text` draw a frame, a
+ * shape of the next style's geo kind, a note or free text over a drag, or add
+ * one of the tool's default size at a click, over empty board or over other
+ * shapes. Clicking with `text` adds auto-sized free text and begins editing
+ * it, while dragging with `text` adds fixed-width free text and begins editing
+ * it. During the drag Shift keeps the sides equal and Alt centers the box on
+ * the press point. `select` acts on an empty part of the board, which includes
+ * the inside of a frame: it selects the shapes a mouse or pen drag's box holds
  * wholly, adding them to the selection with Shift, and pans on a touch drag.
+ * Double-clicking empty board with `select` adds auto-sized free text at that
+ * point and begins editing it.
  */
 export type BoardTool =
   | 'arrow'
@@ -100,9 +105,13 @@ export type BoardTool =
   | 'hand'
   | 'note'
   | 'pen'
-  | 'select';
+  | 'select'
+  | 'text';
 
-export type BoardPlaceTool = Extract<BoardTool, 'frame' | 'geo' | 'note'>;
+export type BoardPlaceTool = Extract<
+  BoardTool,
+  'frame' | 'geo' | 'note' | 'text'
+>;
 
 /**
  * Board styles by name, as a pick sets them or as the next shape a board view
@@ -150,9 +159,9 @@ export type BoardViewState = Readonly<{
   takesPictureFiles: boolean;
   tool: BoardTool;
   /**
-   * Whether the note, shape, frame and arrow tools stay picked after they add
-   * a shape. Off when the view mounts, kept per view and never stored. The
-   * pen and eraser stay picked either way.
+   * Whether the note, text, shape, frame and arrow tools stay picked after
+   * they add a shape. Off when the view mounts, kept per view and never
+   * stored. The pen and eraser stay picked either way.
    */
   toolLocked: boolean;
   /** Whether the view can write: false when it is read-only or a preview. */
@@ -312,7 +321,12 @@ export type BoardViewCore = Readonly<{
   place: (
     tool: BoardPlaceTool,
     box: BoardBox,
-    options: Readonly<{ style: BoardStyle; takesShapes?: boolean }>
+    options: Readonly<{
+      autoSize?: boolean;
+      ephemeral?: boolean;
+      style: BoardStyle;
+      takesShapes?: boolean;
+    }>
   ) => boolean;
   redo: () => void;
   resetZoom: () => void;
@@ -331,7 +345,7 @@ export type BoardViewCore = Readonly<{
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
   styleFor: (type: string | undefined, style: BoardStyle) => BoardStyle;
-  syncNoteHeight: (id: string) => void;
+  syncTextSize: (id: string) => void;
   takesPictureFiles: () => boolean;
   toggleSelected: (key: NodeKey) => void;
   undo: () => void;
@@ -366,6 +380,7 @@ const MAX_ZOOM = 8;
 const ZOOM_STEPS = [MIN_ZOOM, 0.25, 0.5, 1, 2, 4, MAX_ZOOM];
 const WHEEL_STEP_ZOOM = 100;
 const FIT_PADDING = 32;
+const CARET_INSET = 24;
 const PICTURE_GAP = 16;
 const FILE_DRAG_EVENTS = ['dragenter', 'dragover', 'drop'] as const;
 
@@ -613,6 +628,12 @@ export const createBoardView = (
     );
   };
 
+  const suggesting = () => {
+    const authored = readAuthoredView(shapes);
+
+    return !!authored && 'intent' in authored && authored.intent === 'propose';
+  };
+
   const takesPictureFiles = () => {
     const image = editor.plugin(BaseBoardImagePlugin);
     const holds =
@@ -692,6 +713,7 @@ export const createBoardView = (
     geo: types.geo,
     note: types.note,
     pen: types.stroke,
+    text: types.text,
   };
 
   const takes = (type: string, key: keyof BoardStyle) =>
@@ -862,7 +884,10 @@ export const createBoardView = (
       return ElementApi.isElement(node) ? node : undefined;
     },
     previewCleared: (cleared) => {
-      const measured = new Map<string, number>();
+      const measured = new Map<
+        string,
+        Readonly<{ height: number; width?: number }>
+      >();
       const confirmed: string[] = [];
 
       for (const id of cleared) {
@@ -871,25 +896,47 @@ export const createBoardView = (
         if (!target) continue;
 
         const { zoom } = state.camera;
-        const storedHeight = index.storedBoxOf(id)?.height ?? 0;
-        const nextHeight = measuredNoteHeight(target, storedHeight, zoom);
-        const current = index.byId(id)?.box.height;
+        const storedBox = index.storedBoxOf(id);
+        const autoWidth = index.placementOf(id)?.grow === 'both';
+        const nextSize = storedBox
+          ? measuredTextSize(target, storedBox, zoom, autoWidth)
+          : null;
+        const current = index.byId(id)?.box;
 
-        if (nextHeight !== null) {
+        if (nextSize !== null) {
           const height =
-            current !== undefined && Math.abs(nextHeight - current) <= 1e-6
-              ? current
-              : nextHeight;
+            current !== undefined &&
+            Math.abs(nextSize.height - current.height) <= 1e-6
+              ? current.height
+              : nextSize.height;
+          const width =
+            nextSize.width === undefined
+              ? undefined
+              : current !== undefined &&
+                  Math.abs(nextSize.width - current.width) <= 1e-6
+                ? current.width
+                : nextSize.width;
 
-          measured.set(id, height);
+          measured.set(id, {
+            height,
+            ...(width !== undefined ? { width } : {}),
+          });
         } else {
           const height = target.offsetHeight;
+          const width = autoWidth ? target.offsetWidth : undefined;
 
           if (
             height > 0 &&
-            (current === undefined || Math.abs(height - current) >= 1)
+            (current === undefined ||
+              Math.abs(height - current.height) >= 1 ||
+              (width !== undefined &&
+                width > 0 &&
+                Math.abs(width - current.width) >= 1))
           ) {
-            measured.set(id, height);
+            measured.set(id, {
+              height,
+              ...(width !== undefined && width > 0 ? { width } : {}),
+            });
           } else if (height > 0) {
             confirmed.push(id);
           }
@@ -1013,6 +1060,13 @@ export const createBoardView = (
   let textObserver: ResizeObserver | null = null;
   let settleFrame = 0;
   let settleTimer: ReturnType<typeof setTimeout> | null = null;
+  let caretPanFrame = 0;
+  let connected = false;
+  let ephemeralText: {
+    id: string;
+    node: Element;
+    scheduled: boolean;
+  } | null = null;
 
   const cancelSettle = () => {
     if (settleFrame !== 0) {
@@ -1023,6 +1077,189 @@ export const createBoardView = (
       clearTimeout(settleTimer);
       settleTimer = null;
     }
+  };
+
+  const cancelCaretPan = () => {
+    if (caretPanFrame !== 0) {
+      cancelAnimationFrame(caretPanFrame);
+      caretPanFrame = 0;
+    }
+  };
+
+  const keepCaretInView = () => {
+    cancelCaretPan();
+    if (!surface || interaction) return;
+    measure();
+    if (size.width <= 0 || size.height <= 0) return;
+
+    const edited = editedShape();
+
+    if (!edited) return;
+
+    const shapeElement = elementOf(surface, edited.id);
+
+    if (!shapeElement) return;
+
+    const selection = surface.ownerDocument.getSelection();
+
+    if (!selection || selection.rangeCount === 0) return;
+
+    const { focusNode, focusOffset } = selection;
+
+    if (!focusNode || !shapeElement.contains(focusNode)) return;
+
+    const focusElement =
+      focusNode instanceof globalThis.Element
+        ? focusNode
+        : focusNode.parentElement;
+
+    if (focusElement?.closest('[data-board]') !== surface) return;
+
+    const caretRange = surface.ownerDocument.createRange();
+
+    try {
+      caretRange.setStart(focusNode, focusOffset);
+      caretRange.collapse(true);
+    } catch {
+      return;
+    }
+
+    let rect =
+      caretRange.getClientRects()[0] ?? caretRange.getBoundingClientRect();
+
+    if (
+      rect.width === 0 &&
+      rect.height === 0 &&
+      rect.left === 0 &&
+      rect.top === 0
+    ) {
+      const block =
+        focusElement?.closest('[data-editor-node="element"]') ?? focusElement;
+      const marker =
+        focusElement?.closest('[data-editor-zero-width]') ??
+        focusElement?.querySelector('[data-editor-zero-width]') ??
+        block?.querySelector('[data-editor-zero-width]');
+      const markerRect = marker?.getBoundingClientRect();
+
+      if (markerRect && (markerRect.width > 0 || markerRect.height > 0)) {
+        rect = markerRect;
+      } else {
+        if (!block) return;
+
+        const blockRect = block.getBoundingClientRect();
+
+        if (blockRect.width === 0 && blockRect.height === 0) return;
+
+        const direction =
+          block.ownerDocument.defaultView?.getComputedStyle(block).direction;
+        const x = direction === 'rtl' ? blockRect.right : blockRect.left;
+
+        rect = new DOMRect(x, blockRect.top, 0, blockRect.height);
+      }
+    }
+
+    const hostRect = surface.getBoundingClientRect();
+    const originX = hostRect.left + surface.clientLeft;
+    const originY = hostRect.top + surface.clientTop;
+    const clear = clearOfToolbar();
+    const clearWidth = clear.right - clear.left;
+    const clearHeight = clear.bottom - clear.top;
+    const insetX = Math.min(CARET_INSET, Math.max(0, clearWidth / 4));
+    const insetY = Math.min(CARET_INSET, Math.max(0, clearHeight / 4));
+    const safeLeft = originX + clear.left + insetX;
+    const safeRight = originX + clear.right - insetX;
+    const safeTop = originY + clear.top + insetY;
+    const safeBottom = originY + clear.bottom - insetY;
+
+    if (safeLeft >= safeRight || safeTop >= safeBottom) return;
+
+    let dx = 0;
+    let dy = 0;
+
+    if (rect.right > safeRight) dx = rect.right - safeRight;
+    else if (rect.left < safeLeft) dx = rect.left - safeLeft;
+
+    if (rect.bottom > safeBottom) dy = rect.bottom - safeBottom;
+    else if (rect.top < safeTop) dy = rect.top - safeTop;
+
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+
+    const { camera } = state;
+
+    setCamera({
+      ...camera,
+      x: camera.x + dx / camera.zoom,
+      y: camera.y + dy / camera.zoom,
+    });
+  };
+
+  const scheduleCaretPan = () => {
+    if (
+      !surface ||
+      !editedShape() ||
+      typeof requestAnimationFrame !== 'function'
+    ) {
+      return;
+    }
+    if (caretPanFrame !== 0) return;
+    caretPanFrame = requestAnimationFrame(() => {
+      caretPanFrame = 0;
+      keepCaretInView();
+    });
+  };
+
+  const removeEphemeralText = (
+    pending: NonNullable<typeof ephemeralText>,
+    keepSelection: boolean
+  ) => {
+    if (!connected || !writable() || suggesting()) return;
+
+    const latest = boards.read.shape(pending.id);
+
+    if (!latest || latest.kind !== 'shape' || latest.node !== pending.node) {
+      return;
+    }
+
+    const selected = selectedShapes();
+    const onlySelf =
+      keepSelection && selected.length === 1 && selected[0]?.id === pending.id;
+
+    mounted.update((tx) => {
+      tx.history.skip();
+      tx.plugin(BaseBoardPlugin).remove([pending.id]);
+      if (onlySelf) tx.selection.set(null);
+    });
+    if (onlySelf) deselectOnBoard();
+  };
+
+  const syncEphemeralText = () => {
+    const pending = ephemeralText;
+
+    if (!pending) return;
+
+    const entry = boards.read.shape(pending.id);
+
+    if (!entry || entry.kind !== 'shape' || entry.node !== pending.node) {
+      ephemeralText = null;
+
+      return;
+    }
+
+    if (editedShape()?.id === pending.id || pending.scheduled) return;
+    if (!writable() || suggesting()) {
+      ephemeralText = null;
+
+      return;
+    }
+
+    pending.scheduled = true;
+    queueMicrotask(() => {
+      pending.scheduled = false;
+      if (ephemeralText !== pending) return;
+      if (editedShape()?.id === pending.id) return;
+      ephemeralText = null;
+      removeEphemeralText(pending, true);
+    });
   };
 
   const queueConfirm = (ids: Iterable<string>) => {
@@ -1064,7 +1301,12 @@ export const createBoardView = (
     return mode.startsWith('vertical') || mode.startsWith('sideways');
   };
 
-  const layOutText = (measured: ReadonlyMap<string, number | null>) => {
+  const layOutText = (
+    measured: ReadonlyMap<
+      string,
+      Readonly<{ height: number; width?: number }> | null
+    >
+  ) => {
     const { moved: relaidOut, redrawn } = index.measure(measured);
 
     if (relaidOut.size === 0 && redrawn.size === 0) return;
@@ -1073,10 +1315,16 @@ export const createBoardView = (
     refresh();
     interaction?.follow?.();
     gestures?.follow();
+    const edited = editedShape();
+
+    if (edited && relaidOut.has(edited.id)) keepCaretInView();
   };
 
   const deliverText = (records: readonly ResizeObserverEntry[]) => {
-    const measured = new Map<string, number>();
+    const measured = new Map<
+      string,
+      Readonly<{ height: number; width?: number }>
+    >();
 
     for (const record of records) {
       const target = record.target as HTMLElement;
@@ -1086,13 +1334,22 @@ export const createBoardView = (
       pendingConfirm.delete(id);
 
       const box = record.borderBoxSize?.[0];
+      const vertical = box ? verticalWriting(target) : false;
       const height = box
-        ? verticalWriting(target)
+        ? vertical
           ? box.inlineSize
           : box.blockSize
         : target.offsetHeight;
+      const width = box
+        ? vertical
+          ? box.blockSize
+          : box.inlineSize
+        : target.offsetWidth;
 
-      measured.set(id, height);
+      measured.set(id, {
+        height,
+        ...(index.placementOf(id)?.grow === 'both' ? { width } : {}),
+      });
     }
     if (measured.size > 0) layOutText(measured);
   };
@@ -1515,8 +1772,42 @@ export const createBoardView = (
   const placeShape: BoardViewCore['place'] = (
     tool,
     box,
-    { style, takesShapes = false }
+    { autoSize, ephemeral = false, style, takesShapes = false }
   ) => {
+    if (tool === 'text') {
+      if (!writable() || types.text() === undefined) return false;
+
+      if (ephemeralText) {
+        const previous = ephemeralText;
+
+        ephemeralText = null;
+        removeEphemeralText(previous, false);
+      }
+
+      const trackEphemeral = ephemeral && !suggesting();
+      const id = write((tx) =>
+        tx.plugin(BaseBoardTextPlugin).insert(
+          {
+            ...box,
+            ...(autoSize !== undefined ? { autoSize } : {}),
+            ...styleFor(types.text(), style),
+          },
+          { board }
+        )
+      );
+      const created = id ? boards.read.shape(id) : undefined;
+
+      if (!id || !created || created.kind !== 'shape') return false;
+      if (!state.toolLocked) setState({ tool: 'select' });
+      index.update();
+      core.edit(created.key);
+      ephemeralText = trackEphemeral
+        ? { id, node: created.node, scheduled: false }
+        : null;
+
+      return true;
+    }
+
     if (tool === 'frame' && takesShapes) {
       const at = {
         place: { x: box.x, y: box.y },
@@ -1850,19 +2141,30 @@ export const createBoardView = (
     slice: (ids) => boards.read.slice(ids),
     state: () => state,
     styleFor,
-    syncNoteHeight: (id) => {
+    syncTextSize: (id) => {
       const target = mountedText.get(id);
 
       if (!target) return;
 
-      const storedHeight = index.storedBoxOf(id)?.height;
-      const current = index.byId(id)?.box.height;
+      const storedBox = index.storedBoxOf(id);
+      const current = index.byId(id)?.box;
 
-      if (storedHeight === undefined || current === undefined) return;
+      if (!storedBox || !current) return;
 
-      const next = measuredNoteHeight(target, storedHeight, state.camera.zoom);
+      const autoWidth = index.placementOf(id)?.grow === 'both';
+      const next = measuredTextSize(
+        target,
+        storedBox,
+        state.camera.zoom,
+        autoWidth
+      );
 
-      if (next !== null && Math.abs(next - current) > 1e-6) {
+      if (
+        next !== null &&
+        (Math.abs(next.height - current.height) > 1e-6 ||
+          (next.width !== undefined &&
+            Math.abs(next.width - current.width) > 1e-6))
+      ) {
         layOutText(new Map([[id, next]]));
       }
     },
@@ -1957,6 +2259,9 @@ export const createBoardView = (
       );
     };
 
+    const onSelectionChange = () => {
+      if (editedShape()) scheduleCaretPan();
+    };
     const keys = attachBoardKeys(host, core);
 
     gestures = attachBoardGestures(host, core, keys.spaceHeld);
@@ -1964,6 +2269,7 @@ export const createBoardView = (
     const detachClipboard = attachBoardClipboard(host, core);
 
     host.addEventListener('wheel', onWheel, { passive: false });
+    host.ownerDocument.addEventListener('selectionchange', onSelectionChange);
     for (const type of FILE_DRAG_EVENTS) {
       host.addEventListener(type, onFileDrag);
     }
@@ -1974,6 +2280,7 @@ export const createBoardView = (
       cancelAnimationFrame(frame);
       frame = 0;
       cancelSettle();
+      cancelCaretPan();
       pendingConfirm.clear();
       identityAnimation?.cancel();
       identityAnimation = null;
@@ -1987,6 +2294,10 @@ export const createBoardView = (
       observedText.clear();
       mountedText.clear();
       host.removeEventListener('wheel', onWheel);
+      host.ownerDocument.removeEventListener(
+        'selectionchange',
+        onSelectionChange
+      );
       for (const type of FILE_DRAG_EVENTS) {
         host.removeEventListener(type, onFileDrag);
       }
@@ -2068,6 +2379,7 @@ export const createBoardView = (
     },
     attach,
     connect: () => {
+      connected = true;
       let schema = editor.read.schema.identity();
       const unsubscribe = editor.subscribeCommit(({ changed }) => {
         const reshaped =
@@ -2087,7 +2399,11 @@ export const createBoardView = (
         ) {
           showSelection();
         }
-        if (changed.hasAny('selection')) voice.selectionChanged();
+        if (changed.hasAny('selection')) {
+          voice.selectionChanged();
+          syncEphemeralText();
+          if (editedShape()) scheduleCaretPan();
+        }
       });
 
       const subscribeRootText = () =>
@@ -2097,6 +2413,10 @@ export const createBoardView = (
             changed.hasAny('structure') ||
             changed.hasAny('replace');
 
+          if (changed.has('text', root)) {
+            syncEphemeralText();
+            if (editedShape()) scheduleCaretPan();
+          }
           if (
             (!reshaped && !changed.has('text', root)) ||
             !index.hasHeights()
@@ -2180,9 +2500,12 @@ export const createBoardView = (
       showSelection();
 
       return () => {
+        connected = false;
+        ephemeralText = null;
         unlendMounted?.();
         unlendEditor?.();
         cancelSettle();
+        cancelCaretPan();
         pendingConfirm.clear();
         unsubscribe();
         unsubscribeRootText();

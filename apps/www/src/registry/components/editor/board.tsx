@@ -231,6 +231,7 @@ const KINDS: Readonly<Record<BoardShapeDescription['kind'], string>> = {
   note: 'Note',
   shape: 'Shape',
   stroke: 'Line',
+  text: 'Text',
 };
 
 const TOOL_NAMES: Readonly<Record<BoardTool, string>> = {
@@ -242,6 +243,7 @@ const TOOL_NAMES: Readonly<Record<BoardTool, string>> = {
   note: 'Note tool',
   pen: 'Pen tool',
   select: 'Select tool',
+  text: 'Text tool',
 };
 
 const CORNERS: Readonly<Record<BoardCorner, string>> = {

@@ -32,6 +32,7 @@ const TOOL_KEYS: Readonly<Record<string, BoardTool>> = {
   n: 'note',
   p: 'pen',
   r: 'geo',
+  t: 'text',
   v: 'select',
 };
 
@@ -307,7 +308,14 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
     return (
       !!point &&
-      core.place(tool, { ...point, ...size }, { style: core.state().nextStyle })
+      core.place(
+        tool,
+        { ...point, ...size },
+        {
+          ...(tool === 'text' ? { ephemeral: true } : {}),
+          style: core.state().nextStyle,
+        }
+      )
     );
   };
 
@@ -340,7 +348,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       return;
     }
 
-    const [shape] = core.selectedShapes();
+    const shape = core.selectedShapes()[0] ?? core.editedShape();
 
     if (shape && !core.inView(shape)) {
       core.reveal([index.entries().findIndex(({ key }) => key === shape.key)]);
@@ -354,7 +362,10 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       event.key !== 'Enter' ||
       event.shiftKey ||
       !plainKey(event) ||
-      (tool !== 'frame' && tool !== 'geo' && tool !== 'note') ||
+      (tool !== 'frame' &&
+        tool !== 'geo' &&
+        tool !== 'note' &&
+        tool !== 'text') ||
       !core.writable()
     ) {
       return false;

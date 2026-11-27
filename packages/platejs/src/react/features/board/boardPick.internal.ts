@@ -12,6 +12,7 @@ import {
 import {
   BOARD_GEO_SIZE,
   BOARD_NOTE_SIZE,
+  BOARD_TEXT_SIZE,
 } from '../../../features/board/lib/boardShape.internal';
 import type { BoardBox, BoardShapeLayout } from './boardIndex.internal';
 import type { BoardPlaceTool } from './boardView.internal';
@@ -20,6 +21,7 @@ export const BOARD_PLACE_SIZE: Readonly<Record<BoardPlaceTool, BoardSize>> = {
   frame: BOARD_FRAME_SIZE,
   geo: BOARD_GEO_SIZE,
   note: BOARD_NOTE_SIZE,
+  text: BOARD_TEXT_SIZE,
 };
 
 type BoardPlacedEnd =

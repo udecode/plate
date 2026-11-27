@@ -6,6 +6,7 @@ import {
   BaseBoardNotePlugin,
   BaseBoardPlugin,
   BaseBoardStrokePlugin,
+  BaseBoardTextPlugin,
 } from '../../../features/board/lib';
 import { toReactPlugin } from '../../core';
 
@@ -20,6 +21,12 @@ export const BoardArrowPlugin = toReactPlugin(BaseBoardArrowPlugin);
 export const BoardFramePlugin = toReactPlugin(BaseBoardFramePlugin);
 
 export const BoardStrokePlugin = toReactPlugin(BaseBoardStrokePlugin);
+
+/**
+ * Free text on a board, growing with its content while `autoSize` is true
+ * until resized.
+ */
+export const BoardTextPlugin = toReactPlugin(BaseBoardTextPlugin);
 
 /**
  * A picture on a board, holding at most one image element or upload draft. The

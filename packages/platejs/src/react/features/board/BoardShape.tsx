@@ -12,7 +12,7 @@ import {
   useElementSelected,
 } from '../../core';
 import { useClaimEditableDOMCommit } from '../../plite-react';
-import type { BoardCorner } from './boardIndex.internal';
+import type { BoardCorner, BoardShapeGrow } from './boardIndex.internal';
 import type {
   BoardArrowPlugin,
   BoardFramePlugin,
@@ -20,6 +20,7 @@ import type {
   BoardImagePlugin,
   BoardNotePlugin,
   BoardStrokePlugin,
+  BoardTextPlugin,
 } from './BoardPlugin';
 import { useBoardView } from './BoardSurface';
 import {
@@ -115,6 +116,14 @@ const NOTE_FIXED_STYLE_KEYS: ReadonlySet<string> = new Set([
   'minHeight',
 ]);
 
+const TEXT_AUTO_FIXED_STYLE_KEYS: ReadonlySet<string> = new Set([
+  ...NOTE_FIXED_STYLE_KEYS,
+  'maxInlineSize',
+  'maxWidth',
+  'minInlineSize',
+  'minWidth',
+]);
+
 const ROOT_FIXED_STYLE: React.CSSProperties = {
   alignSelf: 'start',
   bottom: 0,
@@ -142,6 +151,15 @@ const ROOT_NOTE_FIXED_STYLE: React.CSSProperties = {
   minHeight: '100%',
 };
 
+const ROOT_TEXT_AUTO_FIXED_STYLE: React.CSSProperties = {
+  ...ROOT_NOTE_FIXED_STYLE,
+  justifySelf: 'left',
+  maxInlineSize: 'none',
+  maxWidth: 'none',
+  minWidth: '100%',
+  width: 'max-content',
+};
+
 const WRAPPER_STYLE: React.CSSProperties = {
   alignItems: 'start',
   contain: 'size layout',
@@ -155,9 +173,14 @@ const WRAPPER_STYLE: React.CSSProperties = {
 const rootStyle = (
   attrStyle: React.CSSProperties | undefined,
   propStyle: React.CSSProperties | undefined,
-  note: boolean
+  grow: BoardShapeGrow
 ): React.CSSProperties => {
-  const fixed = note ? ROOT_NOTE_FIXED_STYLE : ROOT_FIXED_STYLE;
+  const fixed =
+    grow === 'both'
+      ? ROOT_TEXT_AUTO_FIXED_STYLE
+      : grow === 'height'
+        ? ROOT_NOTE_FIXED_STYLE
+        : ROOT_FIXED_STYLE;
 
   if (!attrStyle && !propStyle) return fixed;
 
@@ -168,7 +191,12 @@ const rootStyle = (
 
   if (!merged) return fixed;
 
-  const blocked = note ? NOTE_FIXED_STYLE_KEYS : FIXED_STYLE_KEYS;
+  const blocked =
+    grow === 'both'
+      ? TEXT_AUTO_FIXED_STYLE_KEYS
+      : grow === 'height'
+        ? NOTE_FIXED_STYLE_KEYS
+        : FIXED_STYLE_KEYS;
 
   if (!Object.keys(merged).some((key) => blocked.has(key))) {
     return { ...merged, ...fixed };
@@ -199,16 +227,19 @@ const rootStyle = (
  * carries the member's box, paint rank and drag `translate` (read inline
  * `left`, `top`, `width`, `height`, `z-index`, `translate`, `offsetLeft` and
  * `offsetTop` on `root.parentElement`). A note's root grows down past its
- * stored height when its text needs the room, and the board view lays the
- * note out at that height without changing its stored size. A private
+ * stored height when its text needs the room, and a free-text shape's root
+ * grows in both width and height while `autoSize` is true (or down past its
+ * stored height once resized), without changing stored size. A private
  * `@layer board-shapes` style rule makes the wrapper take no press and
  * restores `pointer-events: auto` on the root so host CSS layers and classes
  * still override `pointer-events`; to disable pointer input on an ancestor of
  * a board, set `inert`. The root's `position` is `relative`, so its absolute
  * children place against it, and `style` cannot change its `all`,
  * `boxSizing`, `height`, `inset`, `margin`, `position`, `width`, their sides
- * or logical forms, its grid placement and self-alignment properties, or
- * `minHeight`, `minBlockSize`, `maxHeight` and `maxBlockSize` on a note.
+ * or logical forms, its grid placement and self-alignment properties,
+ * `minHeight`, `minBlockSize`, `maxHeight` and `maxBlockSize` on a note or
+ * free-text shape, or `minWidth`, `minInlineSize`, `maxWidth` and
+ * `maxInlineSize` on auto-sized free text.
  */
 export function BoardShape({
   className,
@@ -222,6 +253,7 @@ export function BoardShape({
   | typeof BoardImagePlugin
   | typeof BoardNotePlugin
   | typeof BoardStrokePlugin
+  | typeof BoardTextPlugin
 > & {
   className?: string;
   style?: React.CSSProperties;
@@ -252,11 +284,12 @@ export function BoardShape({
   const [cursor] = React.useState(() => view.isCursor(id));
   const selected = useElementSelected({ mode: 'node' });
   const arrow = props.element.type === BOARD_ARROW_TYPE;
-  const note = placement?.note === true;
+  const grow: BoardShapeGrow = placement?.grow ?? 'none';
   const rootRef = React.useRef<HTMLDivElement>(null);
   const composedRef = useComposedRef(rootRef, ref);
   const observedRef = React.useRef<{
     element: HTMLElement;
+    grow: BoardShapeGrow;
     id: string;
     stop: () => void;
     view: ReturnType<typeof useBoardViewContext>;
@@ -267,15 +300,20 @@ export function BoardShape({
   );
 
   React.useLayoutEffect(() => {
-    const target = note ? rootRef.current : null;
+    const target = grow !== 'none' ? rootRef.current : null;
     const held = observedRef.current;
 
-    if (target === held?.element && id === held?.id && view === held?.view) {
+    if (
+      target === held?.element &&
+      grow === held?.grow &&
+      id === held?.id &&
+      view === held?.view
+    ) {
       return;
     }
     held?.stop();
     observedRef.current = target
-      ? { element: target, id, stop: view.observeText(id, target), view }
+      ? { element: target, grow, id, stop: view.observeText(id, target), view }
       : null;
     if (held && !target) held.view.dropText(held.id);
   });
@@ -317,7 +355,7 @@ export function BoardShape({
           style: undefined,
         }}
         className={className}
-        style={rootStyle(props.attributes.style, style, note)}
+        style={rootStyle(props.attributes.style, style, grow)}
       >
         {arrowChannel ? (
           <ArrowContext value={arrowChannel}>{props.children}</ArrowContext>
