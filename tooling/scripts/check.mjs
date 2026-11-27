@@ -515,11 +515,11 @@ export const steps = [
   },
   {
     // tsc reads the route types in the ignored apps/plite/.next/types, so the
-    // step writes them from the app's source first.
+    // step clears stale route types and writes them from the app's source first.
     name: 'plite-app-typecheck',
     quick: true,
     holds: ['apps/plite/.next'],
-    run: 'pnpm --filter plite exec next typegen && pnpm --filter plite typecheck',
+    run: 'pnpm exec rimraf apps/plite/.next/types && pnpm --filter plite exec next typegen && pnpm --filter plite typecheck',
     affected: source,
     key: [],
     filesOnly: true,
