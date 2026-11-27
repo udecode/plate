@@ -23,6 +23,7 @@ import {
   withStoredAuthoredRead,
 } from '../../../facade';
 import type { InkCopy, InkCopyPlace, InkMark } from './BaseInkPlugin';
+import { matchMarkBlock } from './inkAnchor.internal';
 import {
   besideAt,
   COPIES,
@@ -35,7 +36,7 @@ import {
   reachGone,
   walkGone,
 } from './inkGone.internal';
-import { inkHolds, inkText } from './inkMatch.internal';
+import { type InkText, inkHolds, inkText } from './inkMatch.internal';
 
 type Side = 'next' | 'previous';
 
@@ -81,6 +82,7 @@ type InkPlaces = {
       group?: DeletedGroup;
       holder: BlockHolder | null;
       signed: Set<string>;
+      text?: InkText;
     }
   >;
   blockOfKey: Map<NodeKey, string>;
@@ -92,6 +94,8 @@ type InkPlaces = {
   changed: Set<DeletedGroup>;
   deleted?: readonly InkDeletedSign[];
   listed?: readonly InkMark[];
+  liveMarks?: readonly InkMark[];
+  liveMarksListed?: readonly InkMark[];
   stale: Map<string, InkMark>;
 };
 
@@ -199,6 +203,7 @@ const pend = (places: InkPlaces, kept: KeptSign, joins = true) => {
 const dropSign = (places: InkPlaces, mark: string) => {
   const kept = places.signs.get(mark);
 
+  places.liveMarks = undefined;
   for (const { block } of kept?.copies ?? []) {
     places.blocks.get(block)?.signed.delete(mark);
   }
@@ -298,8 +303,11 @@ const resolveBlock = (
   }
 
   const now = at && inkText(places.schema, at.node);
-  let moved = false;
+  const textChanged =
+    block.text?.text !== now?.text || block.text?.voids !== now?.voids;
+  let moved = textChanged;
 
+  block.text = now;
   for (const [copyId, copy] of block.copies) {
     const was = places.held.get(copyId);
     const kind = now && inkHolds(copy, now) ? 'live' : 'changed';
@@ -311,7 +319,10 @@ const resolveBlock = (
   }
   if (at) block.group?.blocks.delete(id);
   if (at) block.group = undefined;
-  if (moved) for (const mark of block.signed) dropSign(places, mark);
+  if (moved) {
+    places.liveMarks = undefined;
+    for (const mark of block.signed) dropSign(places, mark);
+  }
 };
 
 const trackCopy = (places: InkPlaces, read: InkPlaceRead, id: string) => {
@@ -344,6 +355,7 @@ const untrackCopy = (places: InkPlaces, id: string) => {
   const block = copy && places.blocks.get(copy.block);
 
   if (!copy || !block) return;
+  places.liveMarks = undefined;
   for (const mark of block.signed) dropSign(places, mark);
   places.copies.delete(id);
   places.held.delete(id);
@@ -454,7 +466,25 @@ const keepSign = (places: InkPlaces, read: InkPlaceRead, mark: InkMark) => {
       : goneGroupOf(places, read, copies[shown].block);
     pend(places, kept);
   } else if (!mark.margin && place?.kind === 'changed') {
-    kept.changed = { place, state: 'changed' };
+    let failedPlace: InkCopyPlace | undefined;
+
+    for (let index = 0; index < copies.length; index += 1) {
+      if (held[index]?.kind === 'live') continue;
+
+      const copy = copies[index];
+      const now = places.blocks.get(copy.block)?.text;
+
+      if (
+        !now ||
+        matchMarkBlock(copy, mark.blocks[index], now).kind === 'changed'
+      ) {
+        failedPlace = held[index];
+        break;
+      }
+    }
+    if (failedPlace) {
+      kept.changed = { place: failedPlace, state: 'changed' };
+    }
   }
 
   places.signs.set(mark.id, kept);
@@ -561,6 +591,32 @@ export const readInkSign = (
   const kept = indexedMark(placesOf(read), read, mark);
 
   return kept?.group?.sign ?? kept?.changed;
+};
+
+export const readInkLiveMarks = (
+  read: InkPlaceRead & Readonly<{ marks: () => readonly InkMark[] }>
+): readonly InkMark[] => {
+  const places = placesOf(read);
+  const shown = read.marks();
+
+  if (places.liveMarks && places.liveMarksListed === shown) {
+    return places.liveMarks;
+  }
+
+  const live = Object.freeze(
+    shown.filter((mark) => {
+      if (mark.blocks.length === 0) return false;
+
+      const kept = indexedMark(places, read, mark);
+
+      return kept !== undefined && !kept.group && !kept.changed;
+    })
+  );
+
+  places.liveMarks = live;
+  places.liveMarksListed = shown;
+
+  return live;
 };
 
 type Cut = Readonly<{ at: number; mark?: InkMark }>;
@@ -873,9 +929,19 @@ export const advanceInkPlaces = (
   if (changedIn(GONE).some((id) => places.walked.has(id))) {
     startEpoch(places);
   }
-  for (const id of changedIn(COPIES)) untrackCopy(places, id);
-  for (const id of changedIn(MARKS)) dropSign(places, id);
+  const copiesChanged = changedIn(COPIES);
+  const marksChanged = changedIn(MARKS);
   const digitizedChanged = changedIn(DIGITIZED);
+
+  if (
+    copiesChanged.length > 0 ||
+    marksChanged.length > 0 ||
+    digitizedChanged.length > 0
+  ) {
+    places.liveMarks = undefined;
+  }
+  for (const id of copiesChanged) untrackCopy(places, id);
+  for (const id of marksChanged) dropSign(places, id);
   if (digitizedChanged.length > 0) places.listed = undefined;
   for (const id of digitizedChanged) dropSign(places, id);
 
