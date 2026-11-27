@@ -21,6 +21,7 @@ import type { EditorStaticProps } from '../../../static/components/PlateStatic';
 import { renderStaticHtmlWithOverrides } from '../../../static/internal/renderStaticHtmlWithOverrides';
 import type { StaticHtmlResult } from '../../../static/renderStaticHtml';
 import { throwIfDocxAborted } from '../../internal/abort';
+import { parseDocxHtml } from '../../internal/domParser';
 import {
   acquireDocxSource,
   docxSourceSchemaMatches,
@@ -31,6 +32,7 @@ import type { DocxComment, DocxDiagnostic } from '../../internal/types';
 import {
   addDocxComments,
   anchorDocxComments,
+  EMPTY_PREPARED_DOCX_COMMENTS,
   joinDocxCommentBodies,
 } from './comments';
 import {
@@ -38,6 +40,7 @@ import {
   docxStaticOverrides,
 } from './docxStaticComponents';
 import { exportHtmlToDocx } from './exportHtmlToDocx.internal';
+import { indexDocxHosts } from './hostIndex';
 import { toWordLevelRules } from './internal/docx-document';
 import type { Margins, PageSize } from './internal/types';
 import { checkDocxOutput, prepareDocxOutput } from './outputSafety';
@@ -248,35 +251,38 @@ const captureExport = (
   });
 };
 
-const nativeOnlyDiagnostics = (
+const metadataDiagnostics = (
   document: EditorDocumentValue
 ): readonly DocxDiagnostic[] => {
-  const diagnostics: DocxDiagnostic[] = [];
-
-  for (const root of Object.keys(document.roots ?? {})) {
-    diagnostics.push({
-      code: 'lossy-content',
-      feature: 'named-root',
-      message: `Named root ${root} is omitted from DOCX output.`,
-      root,
-      severity: 'warning',
-    });
-  }
   const nativeMeta = Object.keys(document.meta ?? {}).filter(
     (key) => key !== 'authored'
   );
 
-  if (nativeMeta.length > 0) {
-    diagnostics.push({
-      code: 'lossy-content',
-      feature: 'document-metadata',
-      message: 'Plate document metadata is omitted from DOCX output.',
-      severity: 'warning',
-    });
-  }
-
-  return diagnostics;
+  return nativeMeta.length > 0
+    ? [
+        {
+          code: 'lossy-content',
+          feature: 'document-metadata',
+          message: 'Plate document metadata is omitted from DOCX output.',
+          severity: 'warning',
+        },
+      ]
+    : [];
 };
+
+const namedRootDiagnostics = (
+  document: EditorDocumentValue,
+  renderedRoots: ReadonlySet<string>
+): readonly DocxDiagnostic[] =>
+  Object.keys(document.roots ?? {})
+    .filter((root) => !renderedRoots.has(root))
+    .map((root) => ({
+      code: 'lossy-content' as const,
+      feature: 'named-root' as const,
+      message: `Named root ${root} is omitted from DOCX output.`,
+      root,
+      severity: 'warning' as const,
+    }));
 
 const docxTextFormatsOf = (editor: Editor): readonly DocxTextFormat[] =>
   getPlateNodeMappingContributions(editor, 'docx').map(
@@ -758,12 +764,13 @@ export async function exportDocx(
   );
 
   const { snapshot } = capture;
-  const nativeOnly = nativeOnlyDiagnostics(snapshot.stored);
+  const metadata = metadataDiagnostics(snapshot.stored);
 
   if (sourceResolution.kind === 'exact') {
     throwIfDocxAborted(options.signal);
     const exactDiagnostics = [
-      ...nativeOnly,
+      ...namedRootDiagnostics(snapshot.stored, new Set()),
+      ...metadata,
       ...(capture.review?.diagnostics ?? []),
     ];
     const rejected = rejectedLoss(exactDiagnostics, options);
@@ -779,7 +786,7 @@ export async function exportDocx(
   const textFormats = docxTextFormatsOf(editor);
   const diagnostics: DocxDiagnostic[] = [
     ...sourceResolution.diagnostics,
-    ...nativeOnly,
+    ...metadata,
     ...textFormatDiagnostics(textFormats, capture.document),
     ...listDiagnostics(capture.document),
     ...quoteDiagnostics(editor, capture.document.children),
@@ -808,31 +815,57 @@ export async function exportDocx(
     ]);
 
     throwIfDocxAborted(options.signal);
-    const anchored = anchorDocxComments(main.data, capture.comments);
-    const review = capture.review
-      ? applyReviewProjection(anchored.html, capture.review)
+    const hasStoredNamedRoots =
+      Object.keys(snapshot.stored.roots ?? {}).length > 0;
+    const needsMainDocument =
+      capture.comments.length > 0 ||
+      capture.review !== undefined ||
+      hasStoredNamedRoots;
+    const mainDocument = needsMainDocument
+      ? parseDocxHtml(main.data)
       : undefined;
+    const hostIndex = mainDocument ? indexDocxHosts(mainDocument) : undefined;
+
+    if (hasStoredNamedRoots && hostIndex) {
+      diagnostics.push(
+        ...namedRootDiagnostics(snapshot.stored, hostIndex.renderedRoots)
+      );
+    }
+    const anchored =
+      mainDocument && hostIndex && capture.comments.length > 0
+        ? anchorDocxComments(mainDocument, hostIndex, capture.comments)
+        : EMPTY_PREPARED_DOCX_COMMENTS;
+    const review =
+      mainDocument && hostIndex && capture.review
+        ? applyReviewProjection(mainDocument, hostIndex, capture.review)
+        : undefined;
 
     diagnostics.push(
       ...(review?.diagnostics ?? []),
       ...missingDrawings([main, ...commentRenders])
     );
-    const preparedComments = joinDocxCommentBodies(
-      review?.html ?? anchored.html,
-      anchored,
-      new Map(commentRenders.map(({ data, id }) => [id, data]))
-    );
+    if (mainDocument && anchored.comments.length > 0) {
+      joinDocxCommentBodies(
+        mainDocument,
+        anchored,
+        new Map(commentRenders.map(({ data, id }) => [id, data]))
+      );
+    }
 
-    diagnostics.push(...preparedComments.diagnostics);
+    diagnostics.push(...anchored.diagnostics);
     throwIfDocxAborted(options.signal);
+    const mainHtml =
+      mainDocument && (anchored.comments.length > 0 || review !== undefined)
+        ? mainDocument.body.innerHTML
+        : main.data;
     const { signal } = options;
-    const output = await prepareDocxOutput(preparedComments.html, options);
+    const output = await prepareDocxOutput(mainHtml, options);
 
     diagnostics.push(...output.diagnostics);
     let blob = await generateDocx(output.html, options);
 
     throwIfDocxAborted(signal);
-    blob = await addDocxComments(blob, preparedComments, signal);
+    blob = await addDocxComments(blob, anchored, signal);
     throwIfDocxAborted(signal);
     if (review) {
       const written = await addDocxReview(blob, review, signal);

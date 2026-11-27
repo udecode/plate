@@ -9,6 +9,11 @@ import {
   createTextTokenReplacer,
   nextRelationshipId,
 } from './generatedParts';
+import {
+  type DocxHostIndex,
+  getDocxHosts,
+  readDocxElementRoot,
+} from './hostIndex';
 
 const WORD_NAMESPACE =
   'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
@@ -33,17 +38,134 @@ type PreparedComment = Readonly<{
 export type PreparedDocxComments = Readonly<{
   comments: readonly PreparedComment[];
   diagnostics: readonly DocxDiagnostic[];
-  html: string;
 }>;
 
-const textHost = (document: Document, point: Point) =>
-  Array.from(
-    document.querySelectorAll<HTMLElement>('[data-editor-node="text"]')
-  ).find(
-    (element) =>
-      (element.dataset.editorRoot ?? 'main') === (point.root ?? 'main') &&
-      element.dataset.editorPath === point.path.join(',')
-  );
+export const EMPTY_PREPARED_DOCX_COMMENTS: PreparedDocxComments = Object.freeze(
+  {
+    comments: Object.freeze([]),
+    diagnostics: Object.freeze([]),
+  }
+);
+
+type HostOffsetGroup = {
+  collapsed: string[];
+  ends: string[];
+  starts: string[];
+};
+
+const outermostRootElement = (element: HTMLElement, root: string): Element => {
+  let top: Element = element;
+  let current = element.parentElement;
+
+  while (current) {
+    const ancestorRoot = readDocxElementRoot(current);
+
+    if (ancestorRoot === root) {
+      top = current;
+    } else if (ancestorRoot !== undefined) {
+      break;
+    }
+    current = current.parentElement;
+  }
+
+  return top;
+};
+
+const isOwnedByRoot = (node: Node, root: string): boolean => {
+  if (node.nodeType === 3) {
+    return (node.nodeValue ?? '').trim().length === 0;
+  }
+  if (node.nodeType !== 1) return true;
+
+  const element = node as Element;
+  const elementRoot = readDocxElementRoot(element);
+
+  if (elementRoot === root) return true;
+  if (elementRoot !== undefined) return false;
+
+  let hasOwnedChild = false;
+
+  for (const child of element.childNodes) {
+    if (child.nodeType === 3 && (child.nodeValue ?? '').trim().length === 0) {
+      continue;
+    }
+    if (!isOwnedByRoot(child, root)) return false;
+    hasOwnedChild = true;
+  }
+
+  return hasOwnedChild;
+};
+
+const hasUnownedContentBetween = (
+  first: HTMLElement,
+  last: HTMLElement,
+  root: string
+): boolean => {
+  const firstTop = outermostRootElement(first, root);
+  const lastTop = outermostRootElement(last, root);
+
+  if (
+    firstTop === lastTop ||
+    firstTop.contains(lastTop) ||
+    lastTop.contains(firstTop)
+  ) {
+    return false;
+  }
+
+  let current: Node | null = firstTop;
+
+  while (current && current !== lastTop) {
+    if (current.nextSibling) {
+      current = current.nextSibling;
+      while (current && current !== lastTop && current.contains(lastTop)) {
+        current = current.firstChild;
+      }
+      if (!current || current === lastTop) break;
+      if (!isOwnedByRoot(current, root)) return true;
+    } else {
+      current = current.parentNode;
+    }
+  }
+
+  return false;
+};
+
+const resolveCommentHosts = (
+  hosts: DocxHostIndex,
+  start: Point,
+  end: Point
+): readonly [HTMLElement, HTMLElement] | null => {
+  const startRoot = start.root ?? 'main';
+  const endRoot = end.root ?? 'main';
+  const startPath = start.path.join(',');
+  const endPath = end.path.join(',');
+  const startHosts = getDocxHosts(hosts, startRoot, 'text', startPath);
+
+  if (startHosts.length === 0) return null;
+  if (startRoot === endRoot && startPath === endPath) {
+    return [startHosts[0], startHosts[0]];
+  }
+
+  const endHosts = getDocxHosts(hosts, endRoot, 'text', endPath);
+
+  for (const startHost of startHosts) {
+    const startOcc = hosts.occurrenceOf.get(startHost);
+    const startOrder = hosts.orderOf.get(startHost) ?? -1;
+    const endHost = endHosts.find(
+      (candidate) =>
+        hosts.occurrenceOf.get(candidate) === startOcc &&
+        (hosts.orderOf.get(candidate) ?? -1) > startOrder &&
+        (startRoot === 'main' ||
+          !hasUnownedContentBetween(startHost, candidate, startRoot))
+    );
+
+    if (endHost) {
+      return [startHost, endHost];
+    }
+  }
+
+  return null;
+};
 
 const insertTextToken = (
   document: Document,
@@ -69,8 +191,9 @@ const insertTextToken = (
 
     return true;
   }
-  if (remaining === 0 && last) {
-    last.after(document.createTextNode(token));
+  if (remaining === 0) {
+    if (last) last.after(document.createTextNode(token));
+    else host.append(document.createTextNode(token));
 
     return true;
   }
@@ -93,22 +216,45 @@ const textLength = (host: HTMLElement) => {
 };
 
 export const anchorDocxComments = (
-  html: string,
+  document: Document,
+  hosts: DocxHostIndex,
   comments: readonly DocxComment[] | undefined
 ): PreparedDocxComments => {
-  if (!comments?.length) {
-    return Object.freeze({
-      comments: Object.freeze([]),
-      diagnostics: Object.freeze([]),
-      html,
-    });
-  }
-  const document = parseDocxHtml(html);
+  if (!comments?.length) return EMPTY_PREPARED_DOCX_COMMENTS;
+
   const nonce =
     globalThis.crypto?.randomUUID?.().replaceAll('-', '') ??
     `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
   const diagnostics: DocxDiagnostic[] = [];
   const prepared: PreparedComment[] = [];
+  const hostLengths = new Map<HTMLElement, number>();
+  const insertionsByHost = new Map<HTMLElement, Map<number, HostOffsetGroup>>();
+  const lengthOf = (host: HTMLElement) => {
+    let length = hostLengths.get(host);
+
+    if (length === undefined) {
+      length = textLength(host);
+      hostLengths.set(host, length);
+    }
+
+    return length;
+  };
+  const groupAt = (host: HTMLElement, offset: number): HostOffsetGroup => {
+    let byOffset = insertionsByHost.get(host);
+
+    if (!byOffset) {
+      byOffset = new Map();
+      insertionsByHost.set(host, byOffset);
+    }
+    let group = byOffset.get(offset);
+
+    if (!group) {
+      group = { collapsed: [], ends: [], starts: [] };
+      byOffset.set(offset, group);
+    }
+
+    return group;
+  };
 
   comments.forEach((comment, index) => {
     if (!comment.target) {
@@ -123,14 +269,37 @@ export const anchorDocxComments = (
     }
     const start = RangeApi.start(comment.target.range);
     const end = RangeApi.end(comment.target.range);
-    const startHost = textHost(document, start);
-    const endHost = textHost(document, end);
+    const endpoints = resolveCommentHosts(hosts, start, end);
 
-    if (!startHost || !endHost) {
+    if (!endpoints) {
       diagnostics.push({
         code: 'lossy-content',
         feature: 'comment-range',
         message: `Comment ${comment.id} addresses content outside the selected DOCX projection.`,
+        severity: 'warning',
+        sourceId: comment.id,
+      });
+      return;
+    }
+    const [startHost, endHost] = endpoints;
+    const validStart =
+      Number.isSafeInteger(start.offset) &&
+      start.offset >= 0 &&
+      start.offset <= lengthOf(startHost);
+    const validEnd =
+      Number.isSafeInteger(end.offset) &&
+      end.offset >= 0 &&
+      end.offset <= lengthOf(endHost);
+
+    if (
+      !validStart ||
+      !validEnd ||
+      (startHost === endHost && start.offset > end.offset)
+    ) {
+      diagnostics.push({
+        code: 'lossy-content',
+        feature: 'comment-range',
+        message: `Comment ${comment.id} has an invalid text offset.`,
         severity: 'warning',
         sourceId: comment.id,
       });
@@ -146,53 +315,44 @@ export const anchorDocxComments = (
       paragraphId: (prepared.length + 1).toString(16).padStart(8, '0'),
       start: `${prefix}start\uE001`,
     };
-    const insertions = [
-      { host: endHost, offset: end.offset, token: record.end },
-      { host: startHost, offset: start.offset, token: record.start },
-    ].sort((left, right) =>
-      left.host === right.host ? right.offset - left.offset : 0
-    );
 
-    if (
-      insertions.some(
-        ({ host, offset }) =>
-          !Number.isSafeInteger(offset) ||
-          offset < 0 ||
-          offset > textLength(host)
-      ) ||
-      !insertions.every(({ host, offset, token }) =>
-        insertTextToken(document, host, offset, token)
-      )
-    ) {
-      diagnostics.push({
-        code: 'lossy-content',
-        feature: 'comment-range',
-        message: `Comment ${comment.id} has an invalid text offset.`,
-        severity: 'warning',
-        sourceId: comment.id,
-      });
-      return;
+    if (startHost === endHost && start.offset === end.offset) {
+      groupAt(startHost, start.offset).collapsed.push(record.start, record.end);
+    } else {
+      groupAt(endHost, end.offset).ends.push(record.end);
+      groupAt(startHost, start.offset).starts.push(record.start);
     }
     prepared.push(record);
   });
 
+  for (const [host, byOffset] of insertionsByHost) {
+    const orderedOffsets = [...byOffset.entries()].sort(
+      ([left], [right]) => right - left
+    );
+
+    for (const [offset, group] of orderedOffsets) {
+      insertTextToken(
+        document,
+        host,
+        offset,
+        [...group.ends, ...group.collapsed, ...group.starts].join('')
+      );
+    }
+  }
+
   return Object.freeze({
     comments: Object.freeze(prepared),
     diagnostics: Object.freeze(diagnostics),
-    html: document.body.innerHTML,
   });
 };
 
 export const joinDocxCommentBodies = (
-  html: string,
+  document: Document,
   anchored: PreparedDocxComments,
   bodyHtmlById: ReadonlyMap<string, string>
-): PreparedDocxComments => {
-  if (anchored.comments.length === 0) {
-    return Object.freeze({ ...anchored, html });
-  }
+): void => {
+  if (anchored.comments.length === 0) return;
 
-  const document = parseDocxHtml(html);
   const paragraph = (text: string) => {
     const element = document.createElement('p');
 
@@ -217,8 +377,6 @@ export const joinDocxCommentBodies = (
     }
     paragraph(bodyEnd);
   }
-
-  return Object.freeze({ ...anchored, html: document.body.innerHTML });
 };
 
 const invalidGeneratedXml = () => new Error('Generated DOCX XML is invalid.');

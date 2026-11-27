@@ -281,6 +281,26 @@ const splitStaticText = (
   });
 };
 
+const needsJsonRootAttribute = (root: string): boolean => {
+  for (let index = 0; index < root.length; index += 1) {
+    const code = root.charCodeAt(index);
+
+    if (code === 0 || code === 13 || (code >= 0xd8_00 && code <= 0xdf_ff)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const staticRootAttributes = (root: string) =>
+  needsJsonRootAttribute(root)
+    ? {
+        'data-editor-root': root,
+        'data-editor-root-json': JSON.stringify(root),
+      }
+    : { 'data-editor-root': root };
+
 function BaseElementStatic({
   block,
   sources,
@@ -309,7 +329,7 @@ function BaseElementStatic({
   const attributes: RenderElementProps['attributes'] = {
     'data-editor-node': 'element',
     'data-editor-path': path.join(','),
-    'data-editor-root': rootStack.at(-1) ?? MAIN_ROOT_KEY,
+    ...staticRootAttributes(rootStack.at(-1) ?? MAIN_ROOT_KEY),
   };
 
   const renderChildren = (range: { from?: number; to?: number } = {}) => (
@@ -565,7 +585,7 @@ function BaseLeafStatic({
       attributes: {
         'data-editor-node': 'text' as const,
         'data-editor-path': path.join(','),
-        'data-editor-root': rootStack.at(-1) ?? MAIN_ROOT_KEY,
+        ...staticRootAttributes(rootStack.at(-1) ?? MAIN_ROOT_KEY),
         ref: null,
       },
       children: leafElements,
