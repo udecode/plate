@@ -593,16 +593,9 @@ function* framedSections(changes: readonly RootChange[]) {
   }
 }
 
-const emptiesRunThatShowed = (
-  changes: readonly RootChange[],
-  toProjected: (
-    position: number,
-    association: 'backward' | 'forward'
-  ) => number,
-  index: DocumentIndex,
-  run: Readonly<{ from: number; to: number }>,
-  isInline: RecorderOptions['isInline']
-) => {
+const firstFrameRemovals = (
+  changes: readonly RootChange[]
+): readonly Span[] => {
   const removed: Array<{ from: number; to: number }> = [];
 
   for (const { back, inserted, length, position } of framedSections(changes)) {
@@ -624,6 +617,19 @@ const emptiesRunThatShowed = (
     else merged.push({ ...range });
   }
 
+  return merged;
+};
+
+const emptiesRunThatShowed = (
+  merged: readonly Span[],
+  toProjected: (
+    position: number,
+    association: 'backward' | 'forward'
+  ) => number,
+  index: DocumentIndex,
+  run: Readonly<{ from: number; to: number }>,
+  isInline: RecorderOptions['isInline']
+) => {
   let covering = 0;
   let at = run.from;
   let shows = false;
@@ -2012,6 +2018,9 @@ const recordSteps = (
 
       const frame = getDefined(indexes.get(root));
 
+      let removed: readonly Span[] | undefined;
+      const removedInFrame = () =>
+        (removed ??= firstFrameRemovals(rootChanges));
       let caretRunEmptied: boolean | undefined;
       const emptiesCaretRun = (at: number) => {
         if (caretRunEmptied === undefined) {
@@ -2020,7 +2029,7 @@ const recordSteps = (
           caretRunEmptied =
             line !== undefined &&
             emptiesRunThatShowed(
-              rootChanges,
+              removedInFrame(),
               toProjected,
               storedIndex,
               inlineRunAt(storedIndex, line, at, input.isInline),
@@ -2029,6 +2038,33 @@ const recordSteps = (
         }
 
         return caretRunEmptied;
+      };
+      const emptiedUpToHiddenEdges = (
+        at: number,
+        position: number,
+        before: number,
+        other: number
+      ) => {
+        const from = toProjected(at);
+        const [low, high] =
+          from < position ? [from, position] : [position, from];
+
+        if (
+          low === high ||
+          !removedInFrame().some(
+            (range) => range.from <= low && high <= range.to
+          )
+        ) {
+          return false;
+        }
+
+        const between = map.projectRange(
+          root,
+          Math.min(before, other),
+          Math.max(before, other)
+        );
+
+        return between?.kind === 'placed' && between.from === between.to;
       };
 
       fold.frameIndex = frame;
@@ -2071,7 +2107,18 @@ const recordSteps = (
           other === caretAt &&
           !(caret === true && emptiesCaretRun(caretAt));
 
-        return keepsCaretEdge ? caretAt : before;
+        if (keepsCaretEdge) return caretAt;
+
+        const cameFromPastOther =
+          caret === true &&
+          caretAt !== null &&
+          before !== other &&
+          (before < other ? caretAt > other : caretAt < other);
+
+        return cameFromPastOther &&
+          emptiedUpToHiddenEdges(caretAt, position, before, other)
+          ? other
+          : before;
       };
     }
   }
