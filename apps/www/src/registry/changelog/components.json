@@ -338,6 +338,16 @@
       "2026-08-17-flat-editor-registry"
     ],
     "ink-digitize": ["2026-11-27-ink-attached-digitize"],
+    "ink-digitize-api": [
+      "2026-11-27-ink-closing-fixes",
+      "2026-11-27-ink-toolbar-and-digitize"
+    ],
+    "draw-toolbar-button": [
+      "2026-11-27-ink-closing-fixes",
+      "2026-11-27-ink-dock",
+      "2026-11-25-ink-tools"
+    ],
+    "ink-dock": ["2026-11-27-ink-closing-fixes", "2026-11-27-ink-dock"],
     "ink": ["2026-11-27-ink-digitize", "2026-11-27-ink-dock"],
     "ink-digitize-bar": [
       "2026-11-27-ink-digitize",
@@ -355,10 +365,7 @@
       "2026-11-27-ink-toolbar-and-digitize",
       "2026-11-25-ink-tools"
     ],
-    "ink-dock": ["2026-11-27-ink-dock"],
-    "draw-toolbar-button": ["2026-11-27-ink-dock", "2026-11-25-ink-tools"],
     "ink-sign-button": ["2026-11-27-ink-dock", "2026-11-19-rtl-editor-ui"],
-    "ink-digitize-api": ["2026-11-27-ink-toolbar-and-digitize"],
     "table": [
       "2026-11-27-merge-derived-read-hooks",
       "2026-11-27-use-no-scrollbar",

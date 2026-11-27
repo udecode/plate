@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-ink-closing-fixes",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-ink-closing-fixes.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Allow multi-block marks in ink-digitize requests, auto-unhide ink when pressing Draw, and disable Digitize all while ink is hidden",
+  "targets": [
+    {
+      "name": "ink-digitize-api",
+      "files": [
+        "apps/www/src/registry/app/api/ai/ink-digitize/ink-digitize-route.ts",
+        "apps/www/src/registry/app/api/ai/ink-digitize/route.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "draw-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/draw-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-dock",
+      "files": ["apps/www/src/registry/components/editor/ink-dock.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-ink-closing-fixes-multiblock",
+      "kind": "fix",
+      "summary": "Validates duplicate mark ids per passage instead of across the whole request so a single stroke crossing a paragraph break no longer fails Digitize with HTTP 400.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-digitize-api"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-closing-fixes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-closing-fixes-hidden",
+      "kind": "fix",
+      "summary": "Clicking Draw while ink is hidden unhides ink and activates the last tool instead of leaving Draw pressed and inactive, and `DigitizeAllToolbarButton` stays disabled while ink is hidden.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["draw-toolbar-button", "ink-dock"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-closing-fixes",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

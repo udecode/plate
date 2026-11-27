@@ -243,6 +243,7 @@ const editorContainerOf = (editable: HTMLElement | null) =>
  */
 export function DigitizeAllToolbarButton() {
   const editor = useEditor();
+  const hidden = useViewStore(InkPlugin, (state) => state.hidden);
   const disabled = useEditorSelector(
     (current) => {
       if (current.read.view.isReadOnly()) return true;
@@ -261,7 +262,7 @@ export function DigitizeAllToolbarButton() {
   return (
     <ToolbarButton
       aria-label="Digitize all ink"
-      disabled={disabled || locked || !hasLiveMarks}
+      disabled={disabled || hidden || locked || !hasLiveMarks}
       onClick={() => {
         const editable = editor.api.dom.editable();
         const trigger =

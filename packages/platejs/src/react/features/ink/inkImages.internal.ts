@@ -214,14 +214,41 @@ const capturePassage = (
 
       if (copies.length !== mark.blocks.length) continue;
 
-      const liveList = copies.map((copy) =>
-        copy.block === blockId
-          ? {
-              ...measuredLive,
-              ...(now.voids !== undefined ? { voids: now.voids } : {}),
-            }
-          : undefined
-      );
+      const liveList = copies.map((copy) => {
+        if (copy.block === blockId) {
+          return {
+            ...measuredLive,
+            ...(now.voids !== undefined ? { voids: now.voids } : {}),
+          };
+        }
+
+        const sibling = view.read((state) => state.nodes.byId(copy.block));
+
+        if (!sibling) return undefined;
+
+        const siblingElement = view.api.dom.resolveDOMNode(sibling.key);
+
+        if (!siblingElement) return undefined;
+
+        const siblingNow = inkText(view.read.schema, sibling.node);
+        const siblingMeasured = measureInkBlock(
+          siblingElement,
+          siblingNow.text,
+          {
+            left: blockRect.left,
+            top: blockRect.top,
+          }
+        );
+
+        return (
+          siblingMeasured && {
+            ...siblingMeasured,
+            ...(siblingNow.voids !== undefined
+              ? { voids: siblingNow.voids }
+              : {}),
+          }
+        );
+      });
       const placement = placeMark({
         copies,
         live: liveList,

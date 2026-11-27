@@ -30,6 +30,7 @@ import {
   type InkTextBlock,
   inkBoxOf,
   inkTextBlocks,
+  inkVoidBlockElements,
   inkWordBoxes,
   measureInkBlock,
   sameInkBox,
@@ -197,6 +198,7 @@ export const attachInkCapture = ({
   let blocks: Array<
     Readonly<{ block: InkTextBlock; box: ReturnType<typeof inkBoxOf> }>
   > | null = null;
+  let voidBoxes: Array<ReturnType<typeof inkBoxOf>> | null = null;
   let changedSinceCut = new Map<NodeKey, number>();
   let dropBefore = Number.NEGATIVE_INFINITY;
   let savedAt: number | undefined;
@@ -215,6 +217,23 @@ export const attachInkCapture = ({
 
     return blocks;
   };
+
+  const voidBoxesAt = (origin: InkLayerOrigin) => {
+    voidBoxes ??= inkVoidBlockElements(view).map((element) =>
+      inkBoxOf(element, origin)
+    );
+
+    return voidBoxes;
+  };
+
+  const hitsVoidBox = ([x, y]: Point, origin: InkLayerOrigin) =>
+    voidBoxesAt(origin).some(
+      (box) =>
+        x >= box.left &&
+        x <= box.left + box.width &&
+        y >= box.top &&
+        y <= box.top + box.height
+    );
 
   const enter = (
     block: InkTextBlock,
@@ -278,6 +297,14 @@ export const attachInkCapture = ({
       done.blocks.length === 0
         ? marginOf(first.live, points, radius)
         : undefined;
+
+    if (
+      done.blocks.length === 0 &&
+      !margin &&
+      points.some((point) => hitsVoidBox(point, originOf()))
+    ) {
+      return undefined;
+    }
 
     return {
       at: done.at,
@@ -472,6 +499,17 @@ export const attachInkCapture = ({
     ) {
       return;
     }
+
+    const origin = originOf();
+
+    if (
+      hitsVoidBox(
+        [event.clientX - origin.left, event.clientY - origin.top],
+        origin
+      )
+    ) {
+      return;
+    }
     event.preventDefault();
     contact = {
       brush: current.brush,
@@ -482,7 +520,7 @@ export const attachInkCapture = ({
     changedSinceCut = new Map();
     dropBefore = Number.NEGATIVE_INFINITY;
     layer.setPointerCapture(event.pointerId);
-    take(event, originOf());
+    take(event, origin);
     draw();
   };
   const holdOrEnd = (event: PointerEvent) => {
@@ -499,6 +537,7 @@ export const attachInkCapture = ({
 
     if (epoch && heldMoved(epoch, origin, 'boxes')) {
       blocks = null;
+      voidBoxes = null;
       sealOnChange();
     }
     for (const sample of inkSamplesOf(event)) {
@@ -522,6 +561,7 @@ export const attachInkCapture = ({
 
   const unsubscribe = editor.subscribeCommit(({ changed }) => {
     blocks = null;
+    voidBoxes = null;
     if (!contact) return;
     if (tool() !== contact.tool) {
       cancel();
@@ -574,6 +614,7 @@ export const attachInkCapture = ({
     },
     layoutChanged: (change: InkLayoutChange) => {
       blocks = null;
+      voidBoxes = null;
       if (!epoch || heldMoved(epoch, originOf(), change)) sealOnChange();
     },
   };

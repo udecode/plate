@@ -67,15 +67,17 @@ export const inkDigitizeRequestSchema = z
       passageIds.add(passage.id);
 
       const wordCount = passage.words.length;
+      const passageMarkIds = new Set<string>();
 
       for (const [markIndex, mark] of passage.marks.entries()) {
-        if (markIds.has(mark.id)) {
+        if (passageMarkIds.has(mark.id)) {
           ctx.addIssue({
             code: 'custom',
             message: `Duplicate mark id "${mark.id}".`,
             path: ['passages', passageIndex, 'marks', markIndex, 'id'],
           });
         }
+        passageMarkIds.add(mark.id);
         markIds.add(mark.id);
 
         for (const word of mark.words ?? []) {

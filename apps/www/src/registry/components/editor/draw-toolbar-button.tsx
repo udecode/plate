@@ -187,6 +187,7 @@ export function DrawToolbarButton() {
   const editor = useEditor();
   const prefs = useInkBrushPrefs();
   const tool = useViewStore(InkPlugin, (state) => state.tool);
+  const hidden = useViewStore(InkPlugin, (state) => state.hidden);
   const disabled = useEditorSelector(
     (current) => {
       if (current.read.view.isReadOnly()) return true;
@@ -197,18 +198,25 @@ export function DrawToolbarButton() {
     },
     { dependsOn: ['readOnly', 'authored'] }
   );
-  const on = tool !== null;
+  const on = tool !== null && !hidden;
 
   return (
     <ToolbarButton
       aria-label="Draw"
       disabled={disabled}
       onClick={() => {
+        const ink = editor.plugin(InkPlugin).api;
+
+        if (on) {
+          ink.setTool(null);
+
+          return;
+        }
+
         const latest = getInkBrushPrefs(editor);
 
-        editor
-          .plugin(InkPlugin)
-          .api.setTool(on ? null : toolForInkKind(latest, latest.lastKind));
+        if (hidden) ink.setHidden(false);
+        ink.setTool(toolForInkKind(latest, latest.lastKind));
       }}
       pressed={on}
       tooltip="Draw"

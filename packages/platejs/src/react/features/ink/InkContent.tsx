@@ -125,7 +125,7 @@ export function InkContent({
   style,
 }: WrapContentProps & {
   className?: string;
-  sign: React.ComponentType<{ sign: InkSign }>;
+  sign?: React.ComponentType<{ sign: InkSign }>;
   style?: React.CSSProperties;
 }) {
   return (
@@ -142,7 +142,7 @@ function InkLayer({
   style,
 }: {
   className?: string;
-  sign: React.ComponentType<{ sign: InkSign }>;
+  sign?: React.ComponentType<{ sign: InkSign }>;
   style?: React.CSSProperties;
 }) {
   const editableRef = useEditableRef();
@@ -443,7 +443,7 @@ function InkLayer({
   }, [hidden, picked, surface]);
 
   React.useLayoutEffect(() =>
-    layer && !hidden ? stackInkSigns(layer, placed.signs) : undefined
+    layer && !hidden && Sign ? stackInkSigns(layer, placed.signs) : undefined
   );
 
   const activeTool = tool && !readOnly && !hidden ? tool : null;
@@ -481,6 +481,7 @@ function InkLayer({
         <path data-ink-stroke="" ref={preview} />
       </svg>
       {!hidden &&
+        Sign &&
         placed.signs.map(({ id, left, sign }) => (
           <div
             data-ink-sign={sign.state}

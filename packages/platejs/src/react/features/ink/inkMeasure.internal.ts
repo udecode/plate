@@ -65,6 +65,20 @@ export const inkTextBlocks = (view: Editor): InkTextBlock[] => {
     });
 };
 
+export const inkVoidBlockElements = (view: Editor): HTMLElement[] => {
+  const { schema } = view.read;
+
+  return view.read.nodes
+    .blocks({ at: [], mode: 'lowest' })
+    .flatMap(([node]) => {
+      if (!ElementApi.isElement(node) || !schema.isVoid(node)) return [];
+
+      const element = view.api.dom.resolveDOMNode(view.key(node));
+
+      return element ? [element] : [];
+    });
+};
+
 const boxIn = (rect: DOMRectReadOnly, origin: InkLayerOrigin): InkBox => ({
   height: rect.height,
   left: rect.left - origin.left,

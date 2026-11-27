@@ -346,6 +346,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-ink-closing-fixes",
+      "href": "/registry/changelog/2026-11-27-ink-closing-fixes.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Allow multi-block marks in ink-digitize requests, auto-unhide ink when pressing Draw, and disable Digitize all while ink is hidden",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ink-digitize-api", "draw-toolbar-button", "ink-dock"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-ink-digitize",
       "href": "/registry/changelog/2026-11-27-ink-digitize.json",
       "status": "draft",

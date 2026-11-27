@@ -1,0 +1,18 @@
+---
+id: 2026-11-27-ink-closing-fixes
+date: 2026-11-27
+status: draft
+kind: fix
+summary: 'Allow multi-block marks in ink-digitize requests, auto-unhide ink when pressing Draw, and disable Digitize all while ink is hidden'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-ink-closing-fixes-multiblock","kind":"fix","migrationNotes":[]} -->
+
+- **`ink-digitize-api`**: Validates duplicate mark ids per passage instead of across the whole request so a single stroke crossing a paragraph break no longer fails Digitize with HTTP 400.
+
+<!-- entry: {"id":"2026-11-27-ink-closing-fixes-hidden","kind":"fix","migrationNotes":[]} -->
+
+- **`draw-toolbar-button`, `ink-dock`**: Clicking Draw while ink is hidden unhides ink and activates the last tool instead of leaving Draw pressed and inactive, and `DigitizeAllToolbarButton` stays disabled while ink is hidden.
