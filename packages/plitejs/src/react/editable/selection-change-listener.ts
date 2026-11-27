@@ -1,5 +1,6 @@
 import { getSelection } from '../../dom';
 import { findDOMRootRuntime } from '../../dom/internal';
+import { containsShadowAware } from '../../dom/utils/dom';
 import type { EditableInputController } from './input-controller';
 
 type SelectionChangeRegistration = {
@@ -165,7 +166,14 @@ export const attachEditableSelectionChangeListener = ({
         return;
       }
 
-      state.pendingDOMSelectionImport = true;
+      const domSelection = getSelection(
+        root.getRootNode() as Document | ShadowRoot
+      );
+
+      state.pendingDOMSelectionImport =
+        !!domSelection &&
+        containsShadowAware(root, domSelection.anchorNode) &&
+        containsShadowAware(root, domSelection.focusNode);
       scheduleOnDOMSelectionChange();
     },
   });

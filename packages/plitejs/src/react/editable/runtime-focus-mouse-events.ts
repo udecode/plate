@@ -26,6 +26,7 @@ import {
 } from './input-router';
 import {
   type EditableInputController,
+  endSelectionImport,
   isSelectionHeldForPendingImport,
 } from './input-state';
 import { findSelectionNestedEditable } from './interaction-owner';
@@ -170,6 +171,9 @@ export const useRuntimeFocusMouseEvents = ({
         ReactEditor.hasEditableTarget(editor, event.target) &&
         !movingWithinEditor
       ) {
+        if (!ReactEditor.isFocused(editor)) {
+          endSelectionImport(inputController);
+        }
         setEditableModelSelectionPreference({
           inputController,
           preferModelSelection: true,
