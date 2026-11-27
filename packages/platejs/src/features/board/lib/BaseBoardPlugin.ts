@@ -25,6 +25,7 @@ import {
   txLocate,
 } from '../../../core';
 import {
+  getInstalledPlugin,
   getStateViewPresentation,
   getViewPresentation,
   withEditorUpdateRootScope,
@@ -306,11 +307,13 @@ export const BaseBoardPlugin = definePlugin('board', {
     ) =>
       intent === 'move' &&
       payload.kind === 'nodes' &&
-      (holdsShape(view, targetPath) ||
-        payload.nodes.some(isShape) ||
-        payload.parentKeys.some(
-          (key) => key !== null && holdsShape(from, from.read.nodes.path(key))
-        ));
+      (payload.nodes.some(isShape) ||
+        (Boolean(getInstalledPlugin(view, 'yjs')) &&
+          (holdsShape(view, targetPath) ||
+            payload.parentKeys.some(
+              (key) =>
+                key !== null && holdsShape(from, from.read.nodes.path(key))
+            ))));
 
     return {
       formats: defineFormats(BaseBoardNotePlugin, {
