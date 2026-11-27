@@ -1,7 +1,8 @@
 'use client';
 
 import type { EditorReference } from 'platejs';
-import { EditorRoot } from 'platejs/react';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { EditorRoot, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -889,37 +890,61 @@ export function ReviewCard({
   );
 }
 
-export function CalendarCard({ kit }: { kit: CreateSinkKit }) {
-  const { Calendar } = kit;
-  const [date, setDate] = React.useState<Date | undefined>(
-    () => new Date(2026, 10, 27)
+export function MarkdownOutputCard({ kit }: { kit: CreateSinkKit }) {
+  const { Button } = kit;
+  const [copied, setCopied] = React.useState(false);
+  const { blockCount, markdown } = useEditorSelector(
+    (editor) => {
+      const result = editor.plugin(MarkdownPlugin).api.serialize();
+
+      return {
+        blockCount: editor.read.children().length,
+        markdown: result.ok ? result.data : '',
+      };
+    },
+    {
+      dependsOn: 'document',
+      equalityFn: (prev, next) =>
+        prev.blockCount === next.blockCount && prev.markdown === next.markdown,
+    }
   );
+
+  const handleCopy = () => {
+    void navigator.clipboard?.writeText(markdown);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
+  };
 
   return (
     <section
-      className="cn-card flex flex-col gap-2 bg-card p-3 text-card-foreground"
+      className="cn-card flex flex-col gap-2.5 bg-card p-4 text-card-foreground"
       data-slot="card"
     >
-      <div className="flex items-center justify-between px-1 text-xs">
-        <span className="font-medium">Inline date picker</span>
-        <span className="font-mono text-xs text-muted-foreground">
-          {date
-            ? date.toLocaleDateString('en-US', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })
-            : 'Pick a date'}
-        </span>
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">Live Markdown</span>
+          <span className="cn-badge cn-badge-variant-secondary">
+            {blockCount} blocks
+          </span>
+        </div>
+        <Button onClick={handleCopy} size="xs" type="button" variant="ghost">
+          <IconPlaceholder
+            className="size-3.5"
+            hugeicons={copied ? 'Tick02Icon' : 'Copy01Icon'}
+            lucide={copied ? 'Check' : 'CopyIcon'}
+            phosphor={copied ? 'CheckIcon' : 'CopyIcon'}
+            remixicon={copied ? 'RiCheckLine' : 'RiFileCopyLine'}
+            tabler={copied ? 'IconCheck' : 'IconCopy'}
+          />
+          {copied ? 'Copied' : 'Copy'}
+        </Button>
       </div>
-      <div className="flex justify-center">
-        <Calendar
-          className="rounded-lg border-0 bg-transparent p-1"
-          mode="single"
-          onSelect={setDate}
-          selected={date}
-        />
-      </div>
+      <pre
+        className="max-h-56 overflow-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground"
+        data-slot="sink-markdown"
+      >
+        {markdown}
+      </pre>
     </section>
   );
 }

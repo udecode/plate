@@ -60,7 +60,6 @@ import {
   AvatarGroup,
 } from '@/__registry__/create-preview/base/editor-ai/components/ui/avatar';
 import { Button } from '@/__registry__/create-preview/base/editor-ai/components/ui/button';
-import { Calendar } from '@/__registry__/create-preview/base/editor-ai/components/ui/calendar';
 import { Checkbox } from '@/__registry__/create-preview/base/editor-ai/components/ui/checkbox';
 import {
   Command,
@@ -110,7 +109,6 @@ const BASE_SINK_KIT: CreateSinkKit = {
   AvatarGroup,
   BulletedListToolbarButton,
   Button,
-  Calendar,
   calloutDetailsPlugins: [...BasicMarksKit, ...CalloutKit, ...DetailsKit],
   Checkbox,
   codePlugins: [...CodeBlockKit],

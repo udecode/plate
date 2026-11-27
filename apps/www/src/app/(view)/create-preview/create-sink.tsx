@@ -19,10 +19,10 @@ import * as React from 'react';
 import {
   AIAssistantCard,
   BlockMenuCard,
-  CalendarCard,
   CollaboratorsCard,
   ColorPaletteCard,
   IconPreviewGridCard,
+  MarkdownOutputCard,
   ReviewCard,
   SelectEditorCard,
   ShortcutsCard,
@@ -597,7 +597,7 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                   </EditorRoot>
                 </section>
 
-                <CalendarCard kit={kit} />
+                <MarkdownOutputCard kit={kit} />
 
                 <SelectEditorCard kit={kit} />
 

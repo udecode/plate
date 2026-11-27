@@ -110,12 +110,6 @@ export type CreateSinkKit = {
       | 'outline'
       | 'secondary';
   }>;
-  Calendar: React.ComponentType<{
-    className?: string;
-    mode: 'single';
-    onSelect?: (date: Date | undefined) => void;
-    selected?: Date;
-  }>;
   calloutDetailsPlugins: readonly PluginReference[];
   Checkbox: React.ComponentType<{
     className?: string;
