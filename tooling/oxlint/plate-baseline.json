@@ -130,7 +130,6 @@
     "packages/plitejs/src/react/editable/selection-reconciler.ts": [
       "const el = ReactEditor.editable(editor);",
       "const el = ReactEditor.editable(editor);",
-      "const el = ReactEditor.editable(editor);",
       "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
       "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
       "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
