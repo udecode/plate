@@ -1,6 +1,7 @@
 'use client';
 
 import { CommentsPlugin } from 'platejs/comments/react';
+import { InkContent, InkPlugin } from 'platejs/ink/react';
 
 import { AIToolbarButton } from '@/__registry__/create-preview/radix/editor-ai/components/editor/ai-toolbar-button';
 import { AlignToolbarButton } from '@/__registry__/create-preview/radix/editor-ai/components/editor/align-toolbar-button';
@@ -68,6 +69,8 @@ import {
   useEmojiSearch,
 } from '@/__registry__/create-preview/radix/editor-ai/lib/emoji-data';
 import { SelectEditor } from '@/__registry__/create-preview/radix/editor-select/components/editor/select-editor';
+import { BoardKit } from '@/registry/components/editor/board';
+import { LintKit } from '@/registry/components/editor/lint';
 
 import { CreateSink, type CreateSinkKit } from './create-sink';
 
@@ -77,6 +80,7 @@ const RADIX_SINK_KIT: CreateSinkKit = {
   Avatar,
   AvatarFallback,
   AvatarGroup,
+  boardPlugins: [...BasicBlocksKit, ...BasicMarksKit, ...BoardKit],
   BulletedListToolbarButton,
   Button,
   calloutDetailsPlugins: [...BasicMarksKit, ...CalloutKit, ...DetailsKit],
@@ -109,8 +113,13 @@ const RADIX_SINK_KIT: CreateSinkKit = {
   FontColorToolbarButton,
   FontSizeToolbarButton,
   footnotePlugins: [...BasicMarksKit, ...FootnoteKit],
+  inkPlugins: [
+    ...BasicMarksKit,
+    InkPlugin.configure({ slots: { wrapContent: InkContent } }),
+  ],
   Input,
   InsertToolbarButton,
+  lintPlugins: [...BasicMarksKit, ...LintKit],
   LinkToolbarButton,
   MarkToolbarButton,
   mathPlugins: [...BasicMarksKit, ...MathKit],

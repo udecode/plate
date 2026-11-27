@@ -55,6 +55,7 @@ export type CreateSinkKit = {
     children?: React.ReactNode;
     className?: string;
   }>;
+  boardPlugins: readonly PluginReference[];
   BulletedListToolbarButton: React.ComponentType;
   Button: React.ComponentType<{
     'aria-label'?: string;
@@ -132,6 +133,7 @@ export type CreateSinkKit = {
   }>;
   FontSizeToolbarButton: React.ComponentType;
   footnotePlugins: readonly PluginReference[];
+  inkPlugins: readonly PluginReference[];
   Input: React.ComponentType<{
     'aria-label'?: string;
     className?: string;
@@ -143,6 +145,7 @@ export type CreateSinkKit = {
     value?: string;
   }>;
   InsertToolbarButton: React.ComponentType;
+  lintPlugins: readonly PluginReference[];
   LinkToolbarButton: React.ComponentType;
   MarkToolbarButton: React.ComponentType<{
     children?: React.ReactNode;

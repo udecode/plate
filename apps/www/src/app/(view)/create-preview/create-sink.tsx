@@ -20,24 +20,28 @@ import * as React from 'react';
 import {
   AIAssistantCard,
   BlockMenuCard,
+  BoardCard,
   EmojiPickerCard,
   FindReplaceCard,
-  IconPreviewGridCard,
+  InkMarkupCard,
   LinkFloatingCard,
+  LintCard,
   MarkdownOutputCard,
   ReviewCard,
   SelectEditorCard,
-  ShortcutsCard,
   SlashCommandCard,
   TablePickerCard,
 } from './create-sink-cards';
 import type { CreateSinkKit, SinkEmojiPick } from './create-sink-types';
 import {
+  BOARD_VALUE,
   CALLOUT_DETAILS_VALUE,
   CODE_VALUE,
   COLUMN_TOC_VALUE,
   DOC_VALUE,
   FOOTNOTE_VALUE,
+  INK_VALUE,
+  LINT_VALUE,
   MATH_VALUE,
   MEDIA_VALUE,
   SUGGESTION_VALUE,
@@ -305,6 +309,7 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
     Avatar,
     AvatarFallback,
     AvatarGroup,
+    boardPlugins,
     Button,
     calloutDetailsPlugins,
     codePlugins,
@@ -313,6 +318,8 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
     Editor,
     FixedToolbar,
     footnotePlugins,
+    inkPlugins,
+    lintPlugins,
     mathPlugins,
     mediaPlugins,
     suggestionPlugins,
@@ -343,6 +350,19 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
   const footnoteEditor = useCreateEditor({
     initialValue: FOOTNOTE_VALUE,
     plugins: [...footnotePlugins],
+  });
+  const inkEditor = useCreateEditor({
+    initialValue: INK_VALUE,
+    plugins: [...inkPlugins],
+    userId: 'alice',
+  });
+  const lintEditor = useCreateEditor({
+    initialValue: LINT_VALUE,
+    plugins: [...lintPlugins],
+  });
+  const boardEditor = useCreateEditor({
+    initialValue: BOARD_VALUE,
+    plugins: [...boardPlugins],
   });
   const suggestionEditor = useCreateEditor({
     initialValue: SUGGESTION_VALUE,
@@ -564,6 +584,8 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                     />
                   </EditorRoot>
                 </section>
+
+                <LintCard kit={kit} lintEditor={lintEditor} />
               </div>
 
               <div className="flex flex-col gap-4">
@@ -572,18 +594,6 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                     <SinkFloatingToolbarButtons kit={kit} />
                   </Toolbar>
                 </div>
-
-                <IconPreviewGridCard />
-
-                <AIAssistantCard kit={kit} onInsert={appendParagraph} />
-
-                <SlashCommandCard kit={kit} onPickCommand={handlePickCommand} />
-
-                <EmojiPickerCard kit={kit} onPickEmoji={handlePickEmoji} />
-
-                <FindReplaceCard kit={kit} />
-
-                <ShortcutsCard />
 
                 <section
                   className="cn-card flex flex-col gap-2 bg-card p-4 text-card-foreground"
@@ -597,10 +607,24 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                     />
                   </EditorRoot>
                 </section>
+
+                <InkMarkupCard inkEditor={inkEditor} kit={kit} />
+
+                <AIAssistantCard kit={kit} onInsert={appendParagraph} />
+
+                <SlashCommandCard kit={kit} onPickCommand={handlePickCommand} />
+
+                <EmojiPickerCard kit={kit} onPickEmoji={handlePickEmoji} />
+
+                <FindReplaceCard kit={kit} />
+
+                <TablePickerCard onInsertTable={handleInsertTable} />
               </div>
 
               <div className="flex flex-col gap-4 md:col-span-2 lg:col-span-1">
                 <ReviewCard kit={kit} suggestionEditor={suggestionEditor} />
+
+                <BoardCard boardEditor={boardEditor} kit={kit} />
 
                 <BlockMenuCard />
 
@@ -617,8 +641,6 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                     />
                   </EditorRoot>
                 </section>
-
-                <TablePickerCard onInsertTable={handleInsertTable} />
 
                 <section
                   className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-4 text-card-foreground"

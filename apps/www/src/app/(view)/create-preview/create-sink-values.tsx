@@ -429,120 +429,83 @@ export const MEDIA_VALUE: Value = [
   },
 ];
 
-export const PREVIEW_ICONS = [
-  {
-    hugeicons: 'TextBoldIcon',
-    lucide: 'BoldIcon',
-    phosphor: 'TextBIcon',
-    remixicon: 'RiBold',
-    tabler: 'IconBold',
+export const BOARD_VALUE = {
+  children: [
+    {
+      childRoots: { shapes: 'board:sink' },
+      children: [{ text: '' }],
+      height: 290,
+      type: 'board',
+    },
+  ],
+  roots: {
+    'board:sink': [
+      {
+        children: [
+          { children: [{ text: 'Design tokens' }], type: 'paragraph' },
+        ],
+        fill: 'yellow',
+        place: { x: 20, y: 22 },
+        shapeId: 'note-1',
+        size: { height: 100, width: 146 },
+        type: 'boardNote',
+        zIndex: 'a0',
+      },
+      {
+        children: [{ children: [{ text: 'Ship kits' }], type: 'paragraph' }],
+        fill: 'none',
+        geo: 'rectangle',
+        place: { x: 236, y: 36 },
+        shapeId: 'geo-1',
+        size: { height: 72, width: 136 },
+        type: 'boardGeo',
+        zIndex: 'a1',
+      },
+      {
+        children: [{ children: [{ text: 'sync' }], type: 'paragraph' }],
+        end: { anchor: [0, 0.5], shape: 'geo-1', x: 236, y: 72 },
+        shapeId: 'arrow-1',
+        start: { anchor: [1, 0.5], shape: 'note-1', x: 166, y: 72 },
+        type: 'boardArrow',
+        zIndex: 'a2',
+      },
+      {
+        children: [{ text: '' }],
+        place: { x: 232, y: 132 },
+        points: [0, 0.6, 0.5, 0.3, 0.1, 0.6, 0.6, 0.9, 0.6, 1, 0.2, 0.5],
+        shapeId: 'stroke-1',
+        size: { height: 42, width: 136 },
+        type: 'boardStroke',
+        zIndex: 'a3',
+      },
+    ],
   },
+};
+
+export const INK_BLOCK_ID = 'sink-ink-1';
+
+export const INK_VALUE: Value = [
   {
-    hugeicons: 'TextItalicIcon',
-    lucide: 'ItalicIcon',
-    phosphor: 'TextItalicIcon',
-    remixicon: 'RiItalic',
-    tabler: 'IconItalic',
+    children: [
+      {
+        text: 'Circle key words, highlight a phrase, or underline text that stays attached as you edit.',
+      },
+    ],
+    id: INK_BLOCK_ID,
+    type: 'paragraph',
   },
+];
+
+export const LINT_VALUE: Value = [
   {
-    hugeicons: 'SparklesIcon',
-    lucide: 'SparklesIcon',
-    phosphor: 'SparkleIcon',
-    remixicon: 'RiSparklingLine',
-    tabler: 'IconSparkles',
+    children: [
+      {
+        text: 'Plate is really composable , and basically validates every edit against your schema.',
+      },
+    ],
+    type: 'paragraph',
   },
-  {
-    hugeicons: 'TableIcon',
-    lucide: 'TableIcon',
-    phosphor: 'TableIcon',
-    remixicon: 'RiTableLine',
-    tabler: 'IconTable',
-  },
-  {
-    hugeicons: 'SourceCodeIcon',
-    lucide: 'Code2Icon',
-    phosphor: 'CodeIcon',
-    remixicon: 'RiCodeSSlashLine',
-    tabler: 'IconCode',
-  },
-  {
-    hugeicons: 'LinkIcon',
-    lucide: 'LinkIcon',
-    phosphor: 'LinkIcon',
-    remixicon: 'RiLinksLine',
-    tabler: 'IconLink',
-  },
-  {
-    hugeicons: 'Comment01Icon',
-    lucide: 'MessageSquareTextIcon',
-    phosphor: 'ChatTextIcon',
-    remixicon: 'RiMessage2Line',
-    tabler: 'IconMessage',
-  },
-  {
-    hugeicons: 'CheckListIcon',
-    lucide: 'ListTodoIcon',
-    phosphor: 'ListChecksIcon',
-    remixicon: 'RiListCheck3',
-    tabler: 'IconListCheck',
-  },
-  {
-    hugeicons: 'TextAlignLeftIcon',
-    lucide: 'AlignLeftIcon',
-    phosphor: 'TextAlignLeftIcon',
-    remixicon: 'RiAlignLeft',
-    tabler: 'IconAlignLeft',
-  },
-  {
-    hugeicons: 'Image01Icon',
-    lucide: 'ImageIcon',
-    phosphor: 'ImageIcon',
-    remixicon: 'RiImageLine',
-    tabler: 'IconPhoto',
-  },
-  {
-    hugeicons: 'SquareRootSquareIcon',
-    lucide: 'RadicalIcon',
-    phosphor: 'RadicalIcon',
-    remixicon: 'RiSquareRoot',
-    tabler: 'IconSquareRoot',
-  },
-  {
-    hugeicons: 'SmileIcon',
-    lucide: 'SmileIcon',
-    phosphor: 'SmileyIcon',
-    remixicon: 'RiEmotionLine',
-    tabler: 'IconMoodSmile',
-  },
-  {
-    hugeicons: 'Calendar03Icon',
-    lucide: 'CalendarIcon',
-    phosphor: 'CalendarIcon',
-    remixicon: 'RiCalendarLine',
-    tabler: 'IconCalendar',
-  },
-  {
-    hugeicons: 'Layout2ColumnIcon',
-    lucide: 'Columns2Icon',
-    phosphor: 'ColumnsIcon',
-    remixicon: 'RiLayoutColumnLine',
-    tabler: 'IconColumns2',
-  },
-  {
-    hugeicons: 'Copy01Icon',
-    lucide: 'CopyIcon',
-    phosphor: 'CopyIcon',
-    remixicon: 'RiFileCopyLine',
-    tabler: 'IconCopy',
-  },
-  {
-    hugeicons: 'Delete02Icon',
-    lucide: 'Trash2Icon',
-    phosphor: 'TrashIcon',
-    remixicon: 'RiDeleteBinLine',
-    tabler: 'IconTrash',
-  },
-] as const;
+];
 
 export const SLASH_COMMANDS = [
   {
@@ -691,15 +654,6 @@ export const TURN_INTO_OPTIONS = [
     ),
     label: 'Code block',
   },
-] as const;
-
-export const EDITOR_SHORTCUTS = [
-  { keys: ['⌘', 'J'], label: 'Ask AI' },
-  { keys: ['⌘', 'B'], label: 'Bold' },
-  { keys: ['⌘', 'K'], label: 'Insert link' },
-  { keys: ['⌘', '⇧', 'M'], label: 'Add comment' },
-  { keys: ['/'], label: 'Slash commands' },
-  { keys: ['⌘', 'Z'], label: 'Undo change' },
 ] as const;
 
 export const SELECT_LABELS: readonly SinkSelectItem[] = [

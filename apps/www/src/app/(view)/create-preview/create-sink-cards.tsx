@@ -7,19 +7,26 @@ import {
   EmojiPicker as EmojiPickerPrimitive,
 } from 'frimousse';
 import { type EditorReference, NodeApi } from 'platejs';
+import type { InkLine, InkSample } from 'platejs/ink';
+import { InkPlugin } from 'platejs/ink/react';
+import { BaseLintPlugin } from 'platejs/lint';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { EditorRoot, useEditorSelector } from 'platejs/react';
+import {
+  EditorRoot,
+  useEditor,
+  useEditorSelector,
+  useViewStore,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import { useLintFindings } from '@/registry/components/editor/lint';
 
-import { useCreatePreviewConfig } from './create-preview-context';
 import type { CreateSinkKit, SinkEmojiPick } from './create-sink-types';
 import {
   AI_QUICK_PROMPTS,
-  EDITOR_SHORTCUTS,
   INITIAL_AI_DRAFT,
-  PREVIEW_ICONS,
+  INK_BLOCK_ID,
   SELECT_DEFAULT_ITEMS,
   SELECT_LABELS,
   SLASH_COMMANDS,
@@ -229,36 +236,421 @@ export function EmojiPickerCard({
   );
 }
 
-export function IconPreviewGridCard() {
-  const config = useCreatePreviewConfig();
+const PEN_BRUSH = { color: '#dc2626', opacity: 1, size: 2.5 } as const;
+const HIGHLIGHTER_BRUSH = {
+  color: '#facc15',
+  opacity: 0.42,
+  size: 16,
+} as const;
+const UNDERLINE_BRUSH = { color: '#2563eb', opacity: 1, size: 2.5 } as const;
+
+function findTextNodeAt(root: HTMLElement, offset: number) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let seen = 0;
+
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const length = node.textContent?.length ?? 0;
+
+    if (offset <= seen + length) {
+      return { node, offset: offset - seen };
+    }
+    seen += length;
+  }
+
+  return null;
+}
+
+function measurePhraseRect(
+  root: HTMLElement,
+  blockRect: DOMRect,
+  start: number,
+  end: number
+) {
+  const from = findTextNodeAt(root, start);
+  const to = findTextNodeAt(root, end);
+
+  if (!from || !to) return null;
+
+  const range = document.createRange();
+
+  range.setStart(from.node, from.offset);
+  range.setEnd(to.node, to.offset);
+  const rects = Array.from(range.getClientRects()).filter(
+    (rect) => rect.width > 0 && rect.height > 0
+  );
+
+  if (rects.length === 0) return null;
+
+  const first = rects[0];
+
+  return {
+    height: first.height,
+    left: first.left - blockRect.left,
+    top: first.top - blockRect.top,
+    width: first.width,
+  };
+}
+
+function measureTextLines(
+  root: HTMLElement,
+  blockRect: DOMRect,
+  text: string
+): InkLine[] {
+  const lines: InkLine[] = [];
+  let current: {
+    bottom: number;
+    end: number;
+    left: number;
+    right: number;
+    top: number;
+  } | null = null;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const box = measurePhraseRect(root, blockRect, i, i + 1);
+
+    if (!box) continue;
+
+    if (current && Math.abs(box.top - current.top) <= 4) {
+      current.end = i + 1;
+      current.left = Math.min(current.left, box.left);
+      current.right = Math.max(current.right, box.left + box.width);
+      current.top = Math.min(current.top, box.top);
+      current.bottom = Math.max(current.bottom, box.top + box.height);
+    } else {
+      if (current) {
+        lines.push({
+          end: current.end,
+          height: current.bottom - current.top,
+          left: current.left,
+          top: current.top,
+          width: current.right - current.left,
+        });
+      }
+      current = {
+        bottom: box.top + box.height,
+        end: i + 1,
+        left: box.left,
+        right: box.left + box.width,
+        top: box.top,
+      };
+    }
+  }
+
+  if (current) {
+    lines.push({
+      end: text.length,
+      height: current.bottom - current.top,
+      left: current.left,
+      top: current.top,
+      width: current.right - current.left,
+    });
+  }
+
+  return lines;
+}
+
+function seedDemoInkMarks(editor: EditorReference) {
+  const ink = editor.plugin(InkPlugin);
+
+  if (ink.read.marks().length > 0) return;
+
+  const firstBlock = editor.read.children()[0];
+
+  if (!firstBlock) return;
+
+  const key = editor.key(firstBlock);
+
+  if (key === undefined) return;
+
+  const blockEl = editor.api.dom.resolveDOMNode(key);
+
+  if (!(blockEl instanceof HTMLElement)) return;
+
+  const blockRect = blockEl.getBoundingClientRect();
+
+  if (blockRect.width <= 0 || blockRect.height <= 0) return;
+
+  const text = NodeApi.string(firstBlock);
+  const lines = measureTextLines(blockEl, blockRect, text);
+
+  if (lines.length === 0) return;
+
+  const addStroke = (
+    phrase: string,
+    brush: { color: string; opacity: number; size: number },
+    makeSamples: (box: {
+      height: number;
+      left: number;
+      top: number;
+      width: number;
+    }) => InkSample[]
+  ) => {
+    const start = text.indexOf(phrase);
+
+    if (start === -1) return;
+
+    const end = start + phrase.length;
+    const box = measurePhraseRect(blockEl, blockRect, start, end);
+
+    if (!box) return;
+
+    ink.update.add({
+      at: Date.now(),
+      blocks: [
+        {
+          block: INK_BLOCK_ID,
+          height: blockRect.height,
+          left: 0,
+          lines,
+          runs: [{ end, left: box.left, start, width: box.width }],
+          text,
+          top: 0,
+          width: blockRect.width,
+        },
+      ],
+      brush,
+      direction: 'ltr',
+      samples: makeSamples(box),
+    });
+  };
+
+  addStroke('key words', PEN_BRUSH, (box) => {
+    const cx = box.left + box.width / 2;
+    const cy = box.top + box.height / 2;
+    const rx = box.width / 2 + 3;
+    const ry = box.height / 2 + 2;
+    const steps = 20;
+
+    return Array.from({ length: steps + 1 }, (_, i) => {
+      const angle = (i / steps) * Math.PI * 2.08 - 0.35;
+
+      return [
+        cx + Math.cos(angle) * rx,
+        cy + Math.sin(angle) * ry,
+        0.55,
+        i * 12,
+      ] as InkSample;
+    });
+  });
+
+  addStroke('highlight a phrase', HIGHLIGHTER_BRUSH, (box) => {
+    const y = box.top + box.height * 0.54;
+    const steps = 8;
+
+    return Array.from({ length: steps + 1 }, (_, i) => {
+      const t = i / steps;
+
+      return [
+        box.left - 2 + t * (box.width + 4),
+        y + Math.sin(t * Math.PI) * 0.8,
+        0.7,
+        i * 16,
+      ] as InkSample;
+    });
+  });
+
+  addStroke('stays attached', UNDERLINE_BRUSH, (box) => {
+    const y = box.top + box.height + 1.5;
+    const steps = 10;
+
+    return Array.from({ length: steps + 1 }, (_, i) => {
+      const t = i / steps;
+
+      return [
+        box.left + t * box.width,
+        y + Math.sin(t * Math.PI) * 1.4,
+        0.6,
+        i * 14,
+      ] as InkSample;
+    });
+  });
+}
+
+function InkMarkupInner({ kit }: { kit: CreateSinkKit }) {
+  const { Button, Editor } = kit;
+  const editor = useEditor();
+  const tool = useViewStore(InkPlugin, (state) => state.tool);
+
+  React.useEffect(() => {
+    const frame = window.requestAnimationFrame(() => seedDemoInkMarks(editor));
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [editor]);
+
+  const activeKind =
+    tool?.type === 'erase'
+      ? 'eraser'
+      : tool?.type === 'draw'
+        ? tool.brush.opacity < 1
+          ? 'highlighter'
+          : 'pen'
+        : null;
+
+  const toggleTool = (kind: 'eraser' | 'highlighter' | 'pen') => {
+    const ink = editor.plugin(InkPlugin).api;
+
+    if (activeKind === kind) {
+      ink.setTool(null);
+      return;
+    }
+
+    if (kind === 'eraser') {
+      ink.setTool({ size: 16, type: 'erase' });
+    } else if (kind === 'highlighter') {
+      ink.setTool({ brush: HIGHLIGHTER_BRUSH, type: 'draw' });
+    } else {
+      ink.setTool({ brush: PEN_BRUSH, type: 'draw' });
+    }
+  };
+
+  const resetMarks = () => {
+    const ink = editor.plugin(InkPlugin);
+    const ids = ink.read.marks().map((mark) => mark.id);
+
+    if (ids.length > 0) ink.update.remove(ids);
+    window.requestAnimationFrame(() => seedDemoInkMarks(editor));
+  };
 
   return (
     <section
-      className="cn-card flex flex-col gap-3 bg-card p-4 text-card-foreground"
-      data-slot="card"
+      className="cn-card flex flex-col gap-2.5 overflow-hidden bg-card p-4 text-card-foreground"
+      data-slot="sink-ink-markup"
     >
-      <div className="flex items-center justify-between text-xs">
-        <span className="font-medium">Editor icons</span>
-        <span className="font-mono text-xs text-muted-foreground">
-          {config.iconLibrary}
-        </span>
-      </div>
-      <div className="grid grid-cols-8 place-items-center gap-2">
-        {PREVIEW_ICONS.map((icon) => (
-          <div
-            key={icon.lucide}
-            className="style-sera:rounded-none flex size-8 items-center justify-center rounded-md ring-1 ring-border *:[svg]:size-4"
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="font-medium">Pen markup</span>
+        <div className="flex items-center gap-1">
+          <Button
+            onClick={() => toggleTool('pen')}
+            size="xs"
+            type="button"
+            variant={activeKind === 'pen' ? 'default' : 'ghost'}
           >
-            <IconPlaceholder
-              hugeicons={icon.hugeicons}
-              lucide={icon.lucide}
-              phosphor={icon.phosphor}
-              remixicon={icon.remixicon}
-              tabler={icon.tabler}
-            />
-          </div>
-        ))}
+            Pen
+          </Button>
+          <Button
+            onClick={() => toggleTool('highlighter')}
+            size="xs"
+            type="button"
+            variant={activeKind === 'highlighter' ? 'default' : 'ghost'}
+          >
+            Highlight
+          </Button>
+          <Button
+            onClick={() => toggleTool('eraser')}
+            size="xs"
+            type="button"
+            variant={activeKind === 'eraser' ? 'default' : 'ghost'}
+          >
+            Eraser
+          </Button>
+          <Button onClick={resetMarks} size="xs" type="button" variant="ghost">
+            Reset
+          </Button>
+        </div>
       </div>
+
+      <div className="relative rounded-lg border bg-background/60 px-3.5 py-3">
+        <Editor
+          className="min-h-0 px-0 py-0 text-sm leading-relaxed"
+          variant="none"
+        />
+      </div>
+    </section>
+  );
+}
+
+export function InkMarkupCard({
+  inkEditor,
+  kit,
+}: {
+  inkEditor: EditorReference;
+  kit: CreateSinkKit;
+}) {
+  return (
+    <EditorRoot editor={inkEditor}>
+      <InkMarkupInner kit={kit} />
+    </EditorRoot>
+  );
+}
+
+function LintCardInner({ kit }: { kit: CreateSinkKit }) {
+  const { Button, Editor } = kit;
+  const editor = useEditor();
+  const findings = useLintFindings();
+  const firstFixable = findings.find((finding) => finding.fixes.length > 0);
+
+  return (
+    <section
+      className="cn-card flex flex-col gap-2.5 overflow-hidden bg-card p-4 text-card-foreground"
+      data-slot="sink-lint"
+    >
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">Prose linter</span>
+          <span className="cn-badge cn-badge-variant-secondary">
+            {findings.length === 1 ? '1 issue' : `${findings.length} issues`}
+          </span>
+        </div>
+        <Button
+          disabled={!firstFixable}
+          onClick={() => {
+            if (firstFixable) {
+              editor.plugin(BaseLintPlugin).update.fix(firstFixable.id);
+            }
+          }}
+          size="xs"
+          type="button"
+          variant="secondary"
+        >
+          Fix next
+        </Button>
+      </div>
+      <Editor
+        className="min-h-0 px-0 py-0 text-sm leading-relaxed"
+        variant="none"
+      />
+    </section>
+  );
+}
+
+export function LintCard({
+  kit,
+  lintEditor,
+}: {
+  kit: CreateSinkKit;
+  lintEditor: EditorReference;
+}) {
+  return (
+    <EditorRoot editor={lintEditor}>
+      <LintCardInner kit={kit} />
+    </EditorRoot>
+  );
+}
+
+export function BoardCard({
+  boardEditor,
+  kit,
+}: {
+  boardEditor: EditorReference;
+  kit: CreateSinkKit;
+}) {
+  const { Editor } = kit;
+
+  return (
+    <section
+      className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-3 text-card-foreground"
+      data-slot="sink-board"
+    >
+      <div className="flex items-center justify-between px-1 text-xs">
+        <span className="font-medium">Whiteboard</span>
+        <span className="text-muted-foreground">BoardKit</span>
+      </div>
+      <EditorRoot editor={boardEditor}>
+        <Editor
+          className="min-h-0 px-0 py-0 text-sm [&_.my-4]:my-0"
+          variant="none"
+        />
+      </EditorRoot>
     </section>
   );
 }
@@ -733,37 +1125,6 @@ export function TablePickerCard({
                 );
               }
             )}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export function ShortcutsCard() {
-  return (
-    <section
-      className="cn-card flex flex-col gap-2.5 bg-card p-4 text-card-foreground"
-      data-slot="card"
-    >
-      <div className="text-xs font-medium">Keyboard shortcuts</div>
-      <div className="flex flex-col divide-y divide-border/60">
-        {EDITOR_SHORTCUTS.map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center justify-between py-1.5 text-xs first:pt-0 last:pb-0"
-          >
-            <span className="text-muted-foreground">{item.label}</span>
-            <div className="flex items-center gap-1">
-              {item.keys.map((key) => (
-                <kbd
-                  key={key}
-                  className="inline-flex h-5 min-w-5 items-center justify-center rounded border bg-muted px-1 font-mono text-xs font-medium text-muted-foreground"
-                >
-                  {key}
-                </kbd>
-              ))}
-            </div>
           </div>
         ))}
       </div>
