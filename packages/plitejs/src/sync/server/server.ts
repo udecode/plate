@@ -7,10 +7,15 @@ import {
   judgeSpan,
   viewOfChange,
 } from '../../core/change/effect-ledger';
-import type { JsonEditorValue } from '../../core/change/tokens';
+import {
+  isElementNode,
+  type JsonEditorValue,
+  type JsonNode,
+} from '../../core/change/tokens';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { applyDocumentChange } from '../../core/public-state';
+import { parseScopedElementId } from '../../core/reserved-element-id';
 import { bindSharedRoom } from '../../core/shared-room';
 import type {
   AnyEditor,
@@ -53,7 +58,9 @@ import { ownersToBind, seedOwnersOf } from './owners';
 import type {
   ChangeOwner,
   Checkpoint,
+  ScopeRecord,
   StoredEntry,
+  StoredRoom,
   SyncStorage,
 } from './storage';
 import {
@@ -76,6 +83,41 @@ const MAX_WAITING_BYTES =
   SYNC_MAX_MESSAGE_BYTES + SYNC_MAX_BEFORE_WELCOME_BYTES;
 
 const REMOTE = { tags: ['collaboration', 'history-skip'] } as const;
+const SERVER_WRITER = 'server';
+
+const seedScopesOf = (document: JsonEditorValue): readonly ScopeRecord[] => {
+  const seen = new Map<string, number>();
+  const visit = (nodes: readonly JsonNode[]) => {
+    for (const node of nodes) {
+      if (!isElementNode(node)) continue;
+      if (typeof node.id === 'string') {
+        const parsed = parseScopedElementId(node.id);
+
+        if (parsed) {
+          const prior = seen.get(parsed.scope);
+
+          if (prior === undefined || parsed.counter > prior) {
+            seen.set(parsed.scope, parsed.counter);
+          }
+        }
+      }
+      visit(node.children);
+    }
+  };
+
+  visit(document.children);
+  if (document.roots) {
+    for (const nodes of Object.values(document.roots)) {
+      visit(nodes);
+    }
+  }
+
+  return [...seen.entries()].map(([scope, maxCounter]) => ({
+    maxCounter,
+    scope,
+    writer: null,
+  }));
+};
 
 export type { SyncGrant } from './grant';
 
@@ -267,6 +309,7 @@ export const createSyncServer = <
       owners: () =>
         seedOwnersOf(authored.claimsIn(document), authored.decidedIn(document)),
       schema,
+      scopes: () => seedScopesOf(document),
     });
     const room: LoadedRoom = {
       checkpointed: stored.floor,
@@ -337,20 +380,25 @@ export const createSyncServer = <
     return { baseValue, gap };
   };
 
-  const storedHistory = async (name: string, base: number) => {
-    const [at] = await storage.checkpoints(name, base);
-
-    if (at === undefined || at < (await storage.reach(name, READ_BYTES))) {
+  const storedHistory = async (room: LoadedRoom, base: number) => {
+    if (
+      base < room.floor ||
+      base < (await storage.reach(room.name, READ_BYTES))
+    ) {
       return null;
     }
 
-    return replay(name, await checkpointAt(name, at), base);
+    const [at] = await storage.checkpoints(room.name, base);
+
+    if (at === undefined) return null;
+
+    return replay(room.name, await checkpointAt(room.name, at), base);
   };
 
   const historyOf = (room: LoadedRoom, base: number) =>
     base === room.head
       ? { baseValue: room.value, gap: [] }
-      : storedHistory(room.name, base);
+      : storedHistory(room, base);
 
   const unload = (name: string, slot: Slot) => {
     slot.room = null;
@@ -659,7 +707,8 @@ export const createSyncServer = <
   const settleIn = async (
     room: LoadedRoom,
     member: Member,
-    submit: SyncSubmit
+    submit: SyncSubmit,
+    source: 'peer' | 'server' = 'peer'
   ): Promise<SyncReceipt> => {
     const { base, seq, writer } = submit;
     const refuse = (reason: SyncSubmitRefusal) =>
@@ -682,9 +731,13 @@ export const createSyncServer = <
 
     if (digest !== submit.digest) return refuse('digest');
 
+    if (source === 'peer' && writer === SERVER_WRITER) return refuse('writer');
+
     const bound = await storage.mark(room.name, writer);
 
-    if (bound && bound.actor !== member.grant.actor) return refuse('writer');
+    if (source === 'peer' && bound && bound.actor !== member.grant.actor) {
+      return refuse('writer');
+    }
 
     const key = { epoch: room.epoch, seq, writer };
     const prior = await storage.receipt(room.name, key);
@@ -785,7 +838,10 @@ export const createSyncServer = <
     }
 
     const logged = covered.change;
-    const mark = { actor: member.grant.actor, writer };
+    const mark =
+      source === 'server'
+        ? { actor: SERVER_WRITER, writer: SERVER_WRITER }
+        : { actor: member.grant.actor, writer };
     const judge = () =>
       judgeSpan({
         accepted: accepted.map(viewOfChange),
@@ -1101,10 +1157,11 @@ export const createSyncServer = <
     fn: (tx: EditorUpdateTransaction<V, TPlugins>) => void
   ) =>
     writeTurn(name, async (room): Promise<SyncReceipt | null> => {
-      const writer = `server:${crypto.randomUUID()}`;
+      const writer = SERVER_WRITER;
+      const seq = (await storage.lastSeq(room.name, writer)) + 1;
 
       if (!room.serving) {
-        return refusal({ seq: 1, writer }, 'schema', room.head);
+        return refusal({ seq, writer }, 'schema', room.head);
       }
 
       const editor: Editor<V, TPlugins> = room.editor;
@@ -1126,15 +1183,78 @@ export const createSyncServer = <
       const submit = {
         base: room.head,
         change: changes.toJSON(),
-        seq: 1,
+        seq,
         writer,
       };
       return settleIn(
         room,
         { epoch: room.epoch, grant, schema: room.schema },
-        { ...submit, digest: await digestOf(submit), type: 'submit' }
+        { ...submit, digest: await digestOf(submit), type: 'submit' },
+        'server'
       );
     });
 
-  return { connect, update };
+  /**
+   * Atomically resets a room's stored epoch and history to the current
+   * schema's initial document, refusing any peers still attached to the prior
+   * epoch so they reconnect cleanly.
+   */
+  const resetEpoch = (name: string): Promise<StoredRoom> => {
+    const slot = slotOf(name);
+
+    touch(name, slot);
+    slot.pendingTurns += 1;
+
+    const run = slot.turn.then(async () => {
+      try {
+        const editor = createRoomEditor();
+        const schema = await schemaFingerprintOf(editor);
+        const document = valueOf(editor);
+        const stored = await storage.reset(name, {
+          checkpoint: { at: Date.now(), document, version: 0 },
+          owners: () =>
+            seedOwnersOf(
+              authored.claimsIn(document),
+              authored.decidedIn(document)
+            ),
+          schema,
+          scopes: () => seedScopesOf(document),
+        });
+        const room: LoadedRoom = {
+          checkpointed: stored.floor,
+          editor,
+          epoch: stored.epoch,
+          floor: stored.floor,
+          head: stored.head,
+          headEntry: null,
+          isSetValued: setValuedIn(editor),
+          logged: 0,
+          name,
+          schema,
+          serving: false,
+          value: document,
+        };
+
+        serveFromHead(room);
+        slot.room = room;
+        refuseOtherEpochs(room, slot);
+
+        return stored;
+      } catch (error) {
+        slot.room = null;
+        throw error;
+      } finally {
+        slot.pendingTurns -= 1;
+        if (slot.pendingTurns === 0 && !slot.room && slot.peers.size === 0) {
+          unload(name, slot);
+        }
+      }
+    });
+
+    slot.turn = run.catch(() => {});
+
+    return run;
+  };
+
+  return { connect, resetEpoch, update };
 };

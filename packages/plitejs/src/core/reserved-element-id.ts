@@ -72,6 +72,34 @@ export const createElementIdMint = (): ElementIdMint => {
   });
 };
 
+export type ScopedElementId = Readonly<{
+  counter: number;
+  scope: string;
+}>;
+
+export const parseScopedElementId = (id: string): ScopedElementId | null => {
+  const dot = id.lastIndexOf('.');
+
+  if (dot <= 0 || dot === id.length - 1) return null;
+
+  const scope = id.slice(0, dot);
+  const rawCounter = id.slice(dot + 1);
+
+  if (rawCounter.length > 1 && rawCounter.charCodeAt(0) === 48) return null;
+
+  for (let index = 0; index < rawCounter.length; index += 1) {
+    const code = rawCounter.charCodeAt(index);
+
+    if (code < 48 || code > 57) return null;
+  }
+
+  const counter = Number(rawCounter);
+
+  if (!Number.isSafeInteger(counter) || counter < 0) return null;
+
+  return { counter, scope };
+};
+
 export const isValidElementId = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0;
 
