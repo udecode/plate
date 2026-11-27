@@ -2,6 +2,33 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-27-add-lock-kit",
+      "href": "/registry/changelog/2026-11-27-add-lock-kit.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add block lock kits, interactive demo, and lock-aware editor menus",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "lock",
+        "lock-static",
+        "dnd",
+        "block-menu",
+        "ai-menu",
+        "mode-toolbar-button",
+        "discussion",
+        "lock-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-align-menu-item-padding",
       "href": "/registry/changelog/2026-11-27-align-menu-item-padding.json",
       "status": "draft",

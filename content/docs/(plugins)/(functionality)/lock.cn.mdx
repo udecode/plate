@@ -1,0 +1,211 @@
+---
+title: 区块锁定
+description: 锁定选定区块以防止编辑、删除和拖拽，同时保持文本可选中且行内字段可填写。
+---
+
+<ComponentPreview name="lock-demo" height="480px" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 通过 `locked: true` 锁定或解锁任意区块元素，不影响文档中其他区块的正常编辑。
+- 锁定区块内的文本保持可选中、可复制和可搜索，同时拒绝输入、删除、原生剪切、输入法提交、包裹、解包、合并和拖拽移动。
+- 锁定状态会沿嵌套子区块和所属内容根向下继承。
+- 未锁定区块可以正常编辑并在锁定区块之间拖拽；在锁定区块的开头或结尾按 `Enter` 会在其前后插入新的未锁定段落。
+- 通过 `lockWriteExemption`，锁定区块内的行内[字段](/docs/field)在作者模式、建议模式和 `fillRole` 模式下仍可填写。
+- 复制、粘贴、复刻和拆分区块时会自动移除 `locked`，编程式 HTML 序列化会保留 `data-locked="true"`，DOCX 和 Markdown 导出会报告 `property-dropped` / `markdown-property-omitted` 警告。
+- 单独的锁定切换不会写入撤销历史，且会拦截试图修改当前锁定区块的本地撤销回放；在建议模式下锁定切换会直接生效，不产生格式建议。
+- 锁定区块上的编辑被拒绝时，会以节流方式向屏幕阅读器播报提示。
+
+</PackageInfo>
+
+客户端区块锁定用于防止模板、合同和共享草稿中的误编辑，不提供服务端鉴权或按用户区分的权限控制。
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+`LockKit` 安装 `LockPlugin`。搭配 `DndKit` 和 `BlockMenuKit` 可在拖拽手柄上显示常驻锁定图标，并在手柄菜单和右键菜单中提供**锁定区块**与**解锁区块**操作。
+
+<ComponentSource name="lock" />
+
+### 添加套件
+
+```tsx
+import { useCreateEditor } from 'platejs/react';
+
+import { BlockMenuKit } from '@/components/editor/block-menu';
+import { DndKit } from '@/components/editor/dnd';
+import { LockKit } from '@/components/editor/lock';
+
+const editor = useCreateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...DndKit,
+    ...BlockMenuKit,
+    ...LockKit,
+  ],
+});
+```
+
+### 静态渲染
+
+`BaseLockKit` 注册 `BaseLockPlugin`，用于静态 HTML 渲染和 DOCX 导出诊断，不引入 React 客户端 Hook。
+
+<ComponentSource name="lock-static" />
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+在 React 编辑器中从 `platejs/lock/react` 导入 `LockPlugin`，在无头环境中从 `platejs/lock` 导入 `BaseLockPlugin`。
+
+```tsx
+import { LockPlugin } from 'platejs/lock/react';
+import { useCreateEditor } from 'platejs/react';
+
+const editor = useCreateEditor({
+  plugins: [
+    // ...otherPlugins,
+    LockPlugin,
+  ],
+});
+```
+
+</Steps>
+
+## 用法
+
+### 锁定、解锁和切换区块
+
+在 `editor.update` 中调用 `lock`、`unlock` 或 `toggle`。省略 `at` 时作用于当前选区，也可以传入位置或 `NodeKey`。
+
+```tsx
+import { BaseLockPlugin } from 'platejs/lock';
+
+editor.update((tx) => {
+  tx.plugin(BaseLockPlugin).lock();
+  tx.plugin(BaseLockPlugin).unlock({ at: [0] });
+  tx.plugin(BaseLockPlugin).toggle({ at: blockKey });
+});
+```
+
+直接通过 `tx.nodes.set({ locked: true })` 或 `tx.nodes.unset('locked')` 修改已有区块会被拒绝，锁定状态只能通过插件命令、整篇文档替换或远端协作同步变更。
+
+### 读取生效锁定与自身锁定
+
+判断某个操作是否允许修改区块时使用 `isLocked`（包含祖先和父级内容根的锁定）。渲染切换按钮和自身锁定徽章时使用 `isOwnLocked`，以便锁定容器内的子区块显示**已被父级锁定**，而不是提供无效的解锁按钮。
+
+```tsx
+import { BaseLockPlugin } from 'platejs/lock';
+import { useIsLocked, useIsOwnLocked } from 'platejs/lock/react';
+
+// 命令式读取
+const effective = editor.plugin(BaseLockPlugin).read.isLocked();
+const own = editor.plugin(BaseLockPlugin).read.isOwnLocked([0]);
+
+// React Hook（传入 NodeKey 可将重渲染限定在单个节点）
+const isSelectionLocked = useIsLocked();
+const isBlockOwnLocked = useIsOwnLocked(elementKey);
+```
+
+### 自定义写入豁免
+
+如果插件在锁定区块内提供经过校验的交互组件，可以通过 `lockWriteExemption` 声明允许的属性写入。`BaseFieldPlugin` 通过该扩展点允许在锁定条款内填写合法的 `field.value`。
+
+```tsx
+import { definePlugin } from 'platejs';
+import { lockWriteExemption } from 'platejs/lock';
+
+export const ChecklistWidgetPlugin = definePlugin('checklistWidget', {
+  contributions: [
+    lockWriteExemption.of(
+      ({ element, modifications }) =>
+        element.type === 'checklistWidget' &&
+        modifications.every((modification) => modification.key === 'checked')
+    ),
+  ],
+});
+```
+
+## 行为说明
+
+- **选区、复制与剪切：** 用户可以在锁定区块内选择、搜索和复制（`Mod+C`）文本。粘贴出的副本会丢弃 `locked`，因此在目标位置可编辑。原生剪切（`Mod+X`）和手柄剪切会在写入剪贴板或移除区块前拒绝执行。
+- **区块边缘按 Enter：** 在锁定区块中间按 `Enter` 会被拒绝；在锁定区块的最开头或最末尾按 `Enter` 会在其前后插入新的未锁定段落。
+- **撤销历史与建议模式：** 单独的 `.lock()`、`.unlock()` 和 `.toggle()` 不会进入撤销栈，并在建议模式下直接生效而不生成格式建议。如果本地撤销或重做步骤会修改当前锁定的区块，该回放会被拦截且保留撤销栈。
+- **HTML、Markdown 与 DOCX：** 编程式 `editor.api.html.serialize()` 与 `editor.api.html.parse()` 会往返保留 `data-locked="true"`，剪贴板粘贴会移除 `locked`。Markdown 序列化会输出 `markdown-property-omitted` 警告，`exportDocx` 会输出 `property-dropped` 警告。
+
+## 插件
+
+### `BaseLockPlugin`
+
+来自 `platejs/lock` 的无头插件，声明区块元素的可选布尔属性 `locked`，提供按变更区间的提交保护、结构与拖拽拦截、边缘 `Enter` 插入、HTML/DOCX 格式映射以及屏幕阅读器节流播报。
+
+### `LockPlugin`
+
+来自 `platejs/lock/react` 的 React 插件，在客户端编辑器中包装 `BaseLockPlugin`。
+
+## API 参考
+
+### `tx.plugin(BaseLockPlugin).lock(options?)`
+
+锁定目标区块或当前选区。
+
+<APIParameters>
+  <APIItem name="options" type="LockTargetOptions" optional>
+    目标区块位置或 `NodeKey`（`{ at?: Location | NodeKey }`），默认作用于当前选区。
+  </APIItem>
+</APIParameters>
+
+### `tx.plugin(BaseLockPlugin).unlock(options?)`
+
+解锁目标区块或当前选区。
+
+<APIParameters>
+  <APIItem name="options" type="LockTargetOptions" optional>
+    目标区块位置或 `NodeKey`（`{ at?: Location | NodeKey }`），默认作用于当前选区。
+  </APIItem>
+</APIParameters>
+
+### `tx.plugin(BaseLockPlugin).toggle(options?)`
+
+切换目标区块或当前选区的锁定状态。
+
+<APIParameters>
+  <APIItem name="options" type="LockTargetOptions" optional>
+    目标区块位置或 `NodeKey`（`{ at?: Location | NodeKey }`），默认作用于当前选区。
+  </APIItem>
+</APIParameters>
+
+### `editor.plugin(BaseLockPlugin).read.isLocked(at?)`
+
+当 `at`（或当前选区）自身带有 `locked: true`、位于锁定祖先内或属于锁定的内容根时返回 `true`。
+
+### `editor.plugin(BaseLockPlugin).read.isOwnLocked(at?)`
+
+仅当目标区块自身带有 `locked: true` 时返回 `true`。
+
+### `useIsLocked(at?)`
+
+来自 `platejs/lock/react` 的 React Hook，返回 `at` 或当前选区的生效锁定状态。
+
+### `useIsOwnLocked(at?)`
+
+来自 `platejs/lock/react` 的 React Hook，返回 `at` 或当前选区的自身锁定状态；传入 `NodeKey` 时仅订阅该节点。
+
+### `lockWriteExemption`
+
+来自 `platejs/lock` 的插件扩展点，接收 `(input: LockWriteExemptionInput) => boolean` 谓词以批准锁定区块内经过校验的元素属性写入。

@@ -155,7 +155,8 @@ export const registryStaticFeatures: Registry['items'] = [
       },
     ],
     meta: {
-      docs: [{ route: '/docs/lock', title: 'Lock' }],
+      docs: [{ route: '/docs/lock', title: 'Block Lock' }],
+      examples: ['lock-demo'],
     },
     name: 'lock-static',
     type: 'registry:component',
@@ -967,7 +968,8 @@ export const registryFeatures: Registry['items'] = [
       'Per-block locking that keeps chosen blocks selectable and copyable but not editable.',
     title: 'Lock',
     meta: {
-      docs: [{ route: '/docs/lock', title: 'Lock' }],
+      docs: [{ route: '/docs/lock', title: 'Block Lock' }],
+      examples: ['lock-demo'],
     },
   },
   {

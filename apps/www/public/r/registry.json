@@ -2516,8 +2516,11 @@
         "docs": [
           {
             "route": "/docs/lock",
-            "title": "Lock"
+            "title": "Block Lock"
           }
+        ],
+        "examples": [
+          "lock-demo"
         ]
       },
       "type": "registry:component"
@@ -3950,8 +3953,11 @@
         "docs": [
           {
             "route": "/docs/lock",
-            "title": "Lock"
+            "title": "Block Lock"
           }
+        ],
+        "examples": [
+          "lock-demo"
         ]
       },
       "type": "registry:component"

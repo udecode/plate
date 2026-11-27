@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-add-lock-kit",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-add-lock-kit.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add block lock kits, interactive demo, and lock-aware editor menus",
+  "targets": [
+    {
+      "name": "lock",
+      "files": ["apps/www/src/registry/components/editor/lock.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "lock-static",
+      "files": ["apps/www/src/registry/components/editor/lock-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "lock-demo",
+      "files": [
+        "apps/www/src/registry/examples/lock-demo.tsx",
+        "apps/www/src/registry/examples/values/lock-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-lock-block-kits-interactive-demo-7599fa00",
+      "kind": "new",
+      "summary": "Add block lock kits, interactive demo, and lock-aware editor menus",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "lock",
+        "lock-static",
+        "dnd",
+        "block-menu",
+        "ai-menu",
+        "mode-toolbar-button",
+        "discussion",
+        "lock-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-add-lock-kit",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

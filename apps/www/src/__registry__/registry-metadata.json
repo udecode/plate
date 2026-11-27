@@ -1,5 +1,5 @@
 {
-  "generation": "c6924c4ded6b79533e7f0dcfac8d177870ba73099a51862b63b39cc2367acbf3",
+  "generation": "f962d9b6fb2c09ea9a1d8c2f327de5eb1d049d4651d6153edfdb4f4b6c3c8ab2",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2552,8 +2552,11 @@
             "docs": [
               {
                 "route": "/docs/lock",
-                "title": "Lock"
+                "title": "Block Lock"
               }
+            ],
+            "examples": [
+              "lock-demo"
             ]
           },
           "name": "lock-static",
@@ -3999,8 +4002,11 @@
             "docs": [
               {
                 "route": "/docs/lock",
-                "title": "Lock"
+                "title": "Block Lock"
               }
+            ],
+            "examples": [
+              "lock-demo"
             ]
           }
         },
@@ -7019,6 +7025,40 @@
             "@plate/ai"
           ],
           "title": "Drag & Drop",
+          "type": "registry:example"
+        },
+        {
+          "description": "Lock individual clauses against edits, deletion, and drag while keeping text selectable and inline fields fillable.",
+          "files": [
+            {
+              "path": "examples/lock-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/lock-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lock",
+                "title": "Block Lock"
+              }
+            ],
+            "registry": false
+          },
+          "name": "lock-demo",
+          "registryDependencies": [
+            "@plate/basic-nodes",
+            "@plate/block-menu",
+            "@plate/dnd",
+            "@plate/editor",
+            "@plate/field",
+            "@plate/lock",
+            "@plate/toolbar"
+          ],
+          "title": "Block Lock",
           "type": "registry:example"
         },
         {
@@ -10564,8 +10604,11 @@
             "docs": [
               {
                 "route": "/docs/lock",
-                "title": "Lock"
+                "title": "Block Lock"
               }
+            ],
+            "examples": [
+              "lock-demo"
             ]
           },
           "name": "lock-static",
@@ -12011,8 +12054,11 @@
             "docs": [
               {
                 "route": "/docs/lock",
-                "title": "Lock"
+                "title": "Block Lock"
               }
+            ],
+            "examples": [
+              "lock-demo"
             ]
           }
         },
@@ -15031,6 +15077,40 @@
             "@plate/ai"
           ],
           "title": "Drag & Drop",
+          "type": "registry:example"
+        },
+        {
+          "description": "Lock individual clauses against edits, deletion, and drag while keeping text selectable and inline fields fillable.",
+          "files": [
+            {
+              "path": "examples/lock-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/lock-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lock",
+                "title": "Block Lock"
+              }
+            ],
+            "registry": false
+          },
+          "name": "lock-demo",
+          "registryDependencies": [
+            "@plate/basic-nodes",
+            "@plate/block-menu",
+            "@plate/dnd",
+            "@plate/editor",
+            "@plate/field",
+            "@plate/lock",
+            "@plate/toolbar"
+          ],
+          "title": "Block Lock",
           "type": "registry:example"
         },
         {

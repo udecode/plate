@@ -1,0 +1,211 @@
+---
+title: Block Lock
+description: Lock chosen blocks against edits, deletion, and drag while keeping text selectable and inline fields fillable.
+---
+
+<ComponentPreview name="lock-demo" height="480px" />
+
+<PackageInfo>
+
+## Features
+
+- Lock or unlock any block element via `locked: true` without disabling the rest of the document.
+- Keep text inside locked blocks selectable, copyable, and searchable, while refusing typing, deletion, native Cut, IME commits, wrapping, unwrapping, merging, and drag moves.
+- Inherit locks down through nested child blocks and owned content roots.
+- Allow unlocked blocks to edit and drag around locked blocks normally, and insert a new sibling paragraph when pressing `Enter` at the very start or end of a locked block.
+- Keep inline [Field](/docs/field) values fillable inside locked blocks in Author, Suggesting, and `fillRole` modes via `lockWriteExemption`.
+- Drop `locked` on copy, paste, duplicate, and block splits while preserving `data-locked="true"` on programmatic HTML serialization and reporting `property-dropped` / `markdown-property-omitted` warnings on DOCX and Markdown export.
+- Skip standalone lock toggles in undo history while blocking local undo replays that would mutate a currently locked block, and commit lock toggles directly in Suggesting mode without recording a formatting suggestion.
+- Announce refused edits on locked blocks to screen readers with cooldown throttling.
+
+</PackageInfo>
+
+Client-side block locks prevent accidental edits in templates, contracts, and shared drafts. They do not enforce server authorization or per-user access control.
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+`LockKit` installs `LockPlugin`. Pair it with `DndKit` and `BlockMenuKit` to get persistent lock handle indicators and **Lock block** / **Unlock block** menu controls.
+
+<ComponentSource name="lock" />
+
+### Add kit
+
+```tsx
+import { useCreateEditor } from 'platejs/react';
+
+import { BlockMenuKit } from '@/components/editor/block-menu';
+import { DndKit } from '@/components/editor/dnd';
+import { LockKit } from '@/components/editor/lock';
+
+const editor = useCreateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...DndKit,
+    ...BlockMenuKit,
+    ...LockKit,
+  ],
+});
+```
+
+### Add static rendering
+
+`BaseLockKit` registers `BaseLockPlugin` for static HTML rendering and DOCX export diagnostics without React client hooks.
+
+<ComponentSource name="lock-static" />
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add plugin
+
+Import `LockPlugin` from `platejs/lock/react` in React editors, or `BaseLockPlugin` from `platejs/lock` in headless code.
+
+```tsx
+import { LockPlugin } from 'platejs/lock/react';
+import { useCreateEditor } from 'platejs/react';
+
+const editor = useCreateEditor({
+  plugins: [
+    // ...otherPlugins,
+    LockPlugin,
+  ],
+});
+```
+
+</Steps>
+
+## Usage
+
+### Lock, unlock, and toggle blocks
+
+Call `lock`, `unlock`, or `toggle` inside `editor.update`. Omit `at` to target the current selection, or pass a location or `NodeKey`.
+
+```tsx
+import { BaseLockPlugin } from 'platejs/lock';
+
+editor.update((tx) => {
+  tx.plugin(BaseLockPlugin).lock();
+  tx.plugin(BaseLockPlugin).unlock({ at: [0] });
+  tx.plugin(BaseLockPlugin).toggle({ at: blockKey });
+});
+```
+
+Direct property writes such as `tx.nodes.set({ locked: true })` or `tx.nodes.unset('locked')` on existing blocks are refused so locks only change through the plugin commands, whole-document replacement, or remote collaboration sync.
+
+### Read effective vs own lock state
+
+Use `isLocked` when deciding whether an action can mutate a block (it includes ancestor and parent-root locks). Use `isOwnLocked` for toggle buttons and own-lock badges so a child inside a locked container shows **Locked by parent** instead of offering an unlock toggle that cannot clear the parent's flag.
+
+```tsx
+import { BaseLockPlugin } from 'platejs/lock';
+import { useIsLocked, useIsOwnLocked } from 'platejs/lock/react';
+
+// Imperative reads
+const effective = editor.plugin(BaseLockPlugin).read.isLocked();
+const own = editor.plugin(BaseLockPlugin).read.isOwnLocked([0]);
+
+// React hooks (pass a NodeKey to scope re-renders to that block)
+const isSelectionLocked = useIsLocked();
+const isBlockOwnLocked = useIsOwnLocked(elementKey);
+```
+
+### Custom write exemptions
+
+Plugins that own validated interactive widgets inside locked blocks can contribute to `lockWriteExemption`. `BaseFieldPlugin` uses this plugin point to allow validated `field.value` writes inside locked clauses.
+
+```tsx
+import { definePlugin } from 'platejs';
+import { lockWriteExemption } from 'platejs/lock';
+
+export const ChecklistWidgetPlugin = definePlugin('checklistWidget', {
+  contributions: [
+    lockWriteExemption.of(
+      ({ element, modifications }) =>
+        element.type === 'checklistWidget' &&
+        modifications.every((modification) => modification.key === 'checked')
+    ),
+  ],
+});
+```
+
+## Behavior
+
+- **Selection, copy, and Cut:** Users can select, search, and copy (`Mod+C`) text inside locked blocks. Pasted copies drop `locked` so copied clauses become editable at the destination. Native Cut (`Mod+X`) and drag-handle Cut refuse before modifying the clipboard or removing blocks.
+- **Enter at block edges:** Pressing `Enter` inside a locked block is refused. Pressing `Enter` at the exact start or end of a locked block inserts a new unlocked paragraph before or after it.
+- **History and Suggesting mode:** Standalone `.lock()`, `.unlock()`, and `.toggle()` updates skip undo history and commit directly in Suggesting mode without creating a formatting suggestion. Local undo or redo steps that would edit a currently locked block are refused without dropping the undo stack.
+- **HTML, Markdown, and DOCX:** Programmatic `editor.api.html.serialize()` and `editor.api.html.parse()` round-trip `data-locked="true"`. Clipboard paste drops `locked`. Markdown serialization reports a `markdown-property-omitted` warning, and `exportDocx` reports a `property-dropped` warning for locked blocks.
+
+## Plugins
+
+### `BaseLockPlugin`
+
+Headless plugin from `platejs/lock`. Declares the optional boolean `locked` property on block elements, enforces per-section commit protection and structural/transfer vetoes, handles edge `Enter` insertion, maps HTML/DOCX formats, and announces throttled refusal messages to screen readers.
+
+### `LockPlugin`
+
+React plugin from `platejs/lock/react` wrapping `BaseLockPlugin` for client editors.
+
+## API Reference
+
+### `tx.plugin(BaseLockPlugin).lock(options?)`
+
+Lock the targeted block or current selection.
+
+<APIParameters>
+  <APIItem name="options" type="LockTargetOptions" optional>
+    Target block location or `NodeKey` (`{ at?: Location | NodeKey }`). Defaults to the current selection.
+  </APIItem>
+</APIParameters>
+
+### `tx.plugin(BaseLockPlugin).unlock(options?)`
+
+Unlock the targeted block or current selection.
+
+<APIParameters>
+  <APIItem name="options" type="LockTargetOptions" optional>
+    Target block location or `NodeKey` (`{ at?: Location | NodeKey }`). Defaults to the current selection.
+  </APIItem>
+</APIParameters>
+
+### `tx.plugin(BaseLockPlugin).toggle(options?)`
+
+Toggle `locked` on the targeted block or current selection.
+
+<APIParameters>
+  <APIItem name="options" type="LockTargetOptions" optional>
+    Target block location or `NodeKey` (`{ at?: Location | NodeKey }`). Defaults to the current selection.
+  </APIItem>
+</APIParameters>
+
+### `editor.plugin(BaseLockPlugin).read.isLocked(at?)`
+
+Return `true` when the block at `at` (or the current selection) owns `locked: true`, sits inside a locked ancestor, or belongs to a locked content root.
+
+### `editor.plugin(BaseLockPlugin).read.isOwnLocked(at?)`
+
+Return `true` only when the targeted block itself owns `locked: true`.
+
+### `useIsLocked(at?)`
+
+React hook from `platejs/lock/react` returning the effective lock state for `at` or the current selection.
+
+### `useIsOwnLocked(at?)`
+
+React hook from `platejs/lock/react` returning the own-lock state for `at` or the current selection. Passing a `NodeKey` subscribes only to that node.
+
+### `lockWriteExemption`
+
+Plugin point from `platejs/lock` accepting `(input: LockWriteExemptionInput) => boolean` predicates that approve validated element-property writes inside locked blocks.

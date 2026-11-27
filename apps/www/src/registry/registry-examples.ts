@@ -1308,6 +1308,40 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description:
+        'Lock individual clauses against edits, deletion, and drag while keeping text selectable and inline fields fillable.',
+      files: [
+        {
+          path: 'examples/lock-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/lock-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/lock',
+            title: 'Block Lock',
+          },
+        ],
+      },
+      name: 'lock-demo',
+      registryDependencies: [
+        '@plate/basic-nodes',
+        '@plate/block-menu',
+        '@plate/dnd',
+        '@plate/editor',
+        '@plate/field',
+        '@plate/lock',
+        '@plate/toolbar',
+      ],
+      title: 'Block Lock',
+      type: 'registry:example',
+    },
+    {
       dependencies: ['@platejs/test'],
       description:
         'Drags blocks between two views of one document, where they move, and into another editor, where they copy.',
