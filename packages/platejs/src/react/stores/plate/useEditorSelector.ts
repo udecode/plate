@@ -223,6 +223,10 @@ export const useEditorSelector = <T>(
           editor = next;
           if (!next) return true;
           stopCommits = next.subscribeCommit((change) => {
+            if (scope.getSnapshot()?.editor !== next) {
+              if (follow()) listener();
+              return;
+            }
             selection.recordVersion(change.version);
             if (selection.wants(next, change)) {
               selection.invalidate();
@@ -230,6 +234,10 @@ export const useEditorSelector = <T>(
             }
           });
           stopView = subscribeAuthoredViewState(next, () => {
+            if (scope.getSnapshot()?.editor !== next) {
+              if (follow()) listener();
+              return;
+            }
             if (selection.previewChanged(next)) {
               selection.invalidate();
               listener();
