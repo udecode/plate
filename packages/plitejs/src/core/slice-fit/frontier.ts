@@ -1,5 +1,6 @@
 import type { ContentSlice, Element } from '../../interfaces';
 import { getDefined } from '../../internal/get-defined';
+import type { RootChangeSection } from '../change/root-change';
 import type { PreparedTokenSlice } from '../change/tokens';
 import { prepareContentSliceVariant } from '../content-slice';
 import { profileCoreDuration } from '../profiling';
@@ -53,11 +54,13 @@ export type MaterializedSliceFitCandidate = SliceFitCandidateBase &
     insert: PreparedTokenSlice;
     origins: FitOrigins;
     runtimeCandidatePaths?: ReadonlyArray<readonly number[]>;
-    semanticChange?: Readonly<{
-      from: number;
-      insert: PreparedTokenSlice;
-      to: number;
-    }>;
+    semanticChange?:
+      | Readonly<{
+          from: number;
+          insert: PreparedTokenSlice;
+          to: number;
+        }>
+      | readonly RootChangeSection[];
     selectionOffset: number;
     trustedCanonical?: true;
   }>;

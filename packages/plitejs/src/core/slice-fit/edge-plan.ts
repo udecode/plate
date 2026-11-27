@@ -29,8 +29,14 @@ import {
   uniquePropertiesOf,
 } from '../schema-compiler';
 import { countCoreWork } from '../work';
-import type { SliceFitCandidate } from './frontier';
-import { type FitSection, markFit } from './origin';
+import {
+  type FitOrigins,
+  FitOriginLog,
+  type FitSection,
+  type FitSource,
+  fitSections,
+  markFit,
+} from './origin';
 import { getTextEdge, pointsEqual } from './provenance';
 
 declare const nonIdentityBlockPropertiesBrand: unique symbol;
@@ -64,8 +70,10 @@ export type TailEdgePlan =
 
 export type HeadEdgePlan =
   | Readonly<{
+      blockDepth: number;
       blockPath: readonly number[];
       blockRange: Readonly<{ from: number; to: number }>;
+      closeAt: 'head-end' | 'tail-end';
       kind: 'keep';
       propertyWrite: KeptBlockPropertyWrite | null;
     }>
@@ -243,6 +251,7 @@ export const planPasteEdges = (
   let blockPath: readonly number[];
   let dest: Descendant | null;
   let rewrite: Element | null = null;
+  let closeAt: 'head-end' | 'tail-end' = 'tail-end';
 
   if (input.replaceEmpty && emptyPath) {
     dest = document.node(emptyPath) as Descendant;
@@ -252,6 +261,7 @@ export const planPasteEdges = (
     }
     blockPath = emptyPath;
     rewrite = first as Element;
+    closeAt = 'head-end';
   } else {
     if (input.callerBounds) return replace;
     const [start, end] = RangeApi.edges(input.at);
@@ -264,14 +274,19 @@ export const planPasteEdges = (
     dest =
       blockPath.length > 0 ? (document.node(blockPath) as Descendant) : null;
     if (!ElementApi.isElement(dest)) return replace;
+    const sameBlock =
+      end.path.length > blockPath.length &&
+      blockPath.every((p, i) => p === end.path[i]);
+    if (sameBlock && blockPath.length - 1 >= receiving) {
+      closeAt = 'head-end';
+    }
     const sEdge = getTextEdge(dest, blockPath, 'start');
     const eEdge = getTextEdge(dest, blockPath, 'end');
     const coversBlock =
       (emptyPath?.length === blockPath.length &&
         emptyPath.every((p, i) => p === blockPath[i])) ||
       (!input.collapsed &&
-        end.path.length > blockPath.length &&
-        blockPath.every((p, i) => p === end.path[i]) &&
+        sameBlock &&
         Boolean(
           sEdge && eEdge && pointsEqual(start, sEdge) && pointsEqual(end, eEdge)
         ));
@@ -296,21 +311,39 @@ export const planPasteEdges = (
       )
     : null;
   return {
-    head: { blockPath, blockRange, kind: 'keep', propertyWrite },
+    head: {
+      blockDepth: blockPath.length - 1,
+      blockPath,
+      blockRange,
+      closeAt,
+      kind: 'keep',
+      propertyWrite,
+    },
     receiving,
     tail,
   };
 };
 
-export const applyTailEdgePlan = (
+export type EdgeAppliedCandidate<T> = Readonly<{
+  candidate: T;
+  edgeOnlySections: readonly FitSection[] | null;
+  propertyWrites: readonly KeptBlockPropertyWrite[];
+}>;
+
+const rewriteTailSplit = <
+  T extends Readonly<{
+    from: number;
+    insert: PreparedTokenSlice;
+    origins: FitOrigins;
+    to: number;
+  }>,
+>(
   document: DocumentIndex,
-  edgePlan: PasteEdgePlan | null,
-  candidate: SliceFitCandidate,
+  edgePlan: PasteEdgePlan,
+  candidate: T,
   exactTo: number
-): SliceFitCandidate => {
-  if (!('insert' in candidate) || !edgePlan || edgePlan.tail.kind !== 'split') {
-    return candidate;
-  }
+): T => {
+  if (edgePlan.tail.kind !== 'split') return candidate;
   const { from, insert, origins, to } = candidate;
   const { destination, levels, receiving } = edgePlan.tail;
   let tailAt = to === exactTo ? insert.length : null;
@@ -377,93 +410,294 @@ export const applyTailEdgePlan = (
   });
 };
 
-export const applyPasteEdgePlan = (
-  document: DocumentIndex,
-  edgePlan: PasteEdgePlan | null,
-  changes: readonly FitSection[],
-  declarative: CompiledEditorSchema | null,
-  splitAtKeptCloses: (
-    change: FitSection,
-    replaced: PreparedTokenSlice,
-    kept: number
-  ) => readonly FitSection[]
-) => {
-  if (!edgePlan || edgePlan.head.kind === 'replace') {
+export const applyPasteEdgePlan = <
+  T extends Readonly<{
+    from: number;
+    insert: PreparedTokenSlice;
+    origins: FitOrigins;
+    to: number;
+  }>,
+>(
+  input: Readonly<{
+    candidate: T;
+    declarative: CompiledEditorSchema | null;
+    document: DocumentIndex;
+    edgePlan: PasteEdgePlan;
+    exactTo: number;
+  }>
+): EdgeAppliedCandidate<T> => {
+  const { declarative, document, edgePlan, exactTo } = input;
+  const candidate = rewriteTailSplit(
+    document,
+    edgePlan,
+    input.candidate,
+    exactTo
+  );
+  let { insert } = candidate;
+  const { from, origins, to } = candidate;
+  const { head, receiving } = edgePlan;
+
+  if (head.kind === 'replace') {
     return {
-      changes,
-      properties: [] as RootChangeSection[],
-      sections: changes as readonly RootChangeSection[],
+      candidate,
+      edgeOnlySections: null,
+      propertyWrites: [],
     };
   }
-  const headFrom = edgePlan.head.blockRange.from;
-  const headTo = edgePlan.head.blockRange.to;
-  const outChanges: FitSection[] = [];
-  const outProperties: RootChangeSection[] = [];
-  const outSections: RootChangeSection[] = [];
-  let headCovered = false;
 
-  for (const change of changes) {
-    const { from, insert, to } = change;
-    const coversHead = from <= headFrom;
-    const closesHead = to >= headTo;
-    const replaced =
-      (coversHead || closesHead) && to !== from && insert.length > 0
-        ? document.slice(from, to)
-        : null;
-    const ownKeys =
-      coversHead && replaced ? getDocumentSliceNodeKeys(insert) : null;
-    const props: RootChangeSection[] = [];
-    let head = 0;
-    if (replaced && ownKeys) {
-      for (const t of replaced.tokens) {
-        countCoreWork('pasteEdgeTokens');
-        const l = insert.tokens[head];
-        if (
-          t.kind !== 'open' ||
-          t.nodeKind !== 'element' ||
-          l?.kind !== 'open' ||
-          l.nodeKind !== 'element' ||
-          t.props.type !== l.props.type ||
-          ownKeys.has(head)
-        ) {
+  const propertyWrites: KeptBlockPropertyWrite[] = [];
+  const docOrigins = new Map<number, number>();
+  const keptHeadEntries: Array<
+    Readonly<{
+      depth: number;
+      docFrom: number;
+      docTo: number;
+      isKeptHead: true;
+      nodeKind: 'element' | 'text';
+    }>
+  > = [];
+  const baseContext = openContextAt(document, from);
+  let headKeptCount = 0;
+
+  if (from < to && insert.length > 0 && from <= head.blockRange.from) {
+    const replaced = document.slice(from, to);
+    const ownKeys = getDocumentSliceNodeKeys(insert);
+
+    for (let i = 0; i < replaced.tokens.length; i += 1) {
+      countCoreWork('pasteEdgeTokens');
+      const before = replaced.tokens[i];
+      const after = insert.tokens[i];
+      const docPos = from + i;
+
+      if (
+        before.kind !== 'open' ||
+        before.nodeKind !== 'element' ||
+        after?.kind !== 'open' ||
+        after.nodeKind !== 'element' ||
+        before.props.type !== after.props.type ||
+        ownKeys.has(i)
+      ) {
+        break;
+      }
+      const write = createKeptBlockPropertyWrite(
+        docPos,
+        before.props,
+        after.props,
+        declarative
+      );
+
+      if (write) propertyWrites.push(write);
+      docOrigins.set(i, docPos);
+      const entry = document.nodeStartingAt(docPos);
+
+      if (entry) {
+        keptHeadEntries.push({
+          depth: baseContext.length + i,
+          docFrom: entry.from,
+          docTo: entry.to,
+          isKeptHead: true,
+          nodeKind: 'element',
+        });
+      }
+      headKeptCount += 1;
+    }
+  } else if (from > head.blockRange.from && head.propertyWrite) {
+    propertyWrites.push(head.propertyWrite);
+  }
+
+  const headSurvived =
+    from > head.blockRange.from ||
+    keptHeadEntries.some((entry) => entry.docFrom === head.blockRange.from);
+  let maxClaimedClose = -1;
+  let extendedTo = to;
+
+  if (
+    headSurvived &&
+    (head.closeAt === 'head-end' || keptHeadEntries.length > 0)
+  ) {
+    let firstTailDocOffset = Number.POSITIVE_INFINITY;
+
+    if (head.closeAt !== 'head-end') {
+      let runAt = 0;
+
+      for (const { length, source } of origins.runs) {
+        if (source.kind === 'document' && source.at >= exactTo) {
+          firstTailDocOffset = runAt;
           break;
         }
-        if (from + head === headFrom) headCovered = true;
-        const w = createKeptBlockPropertyWrite(
-          from + head,
-          t.props,
-          l.props,
-          declarative
-        );
-        if (w) props.push({ from: w.from, properties: w.properties });
-        head += 1;
+        runAt += length;
       }
     }
-    const split =
-      replaced && (head > 0 || closesHead)
-        ? splitAtKeptCloses(change, replaced, head)
-        : [];
-    if (split.length === 0) {
-      outChanges.push(change);
-      outSections.push(change);
-    } else {
-      outProperties.push(...props);
-      outChanges.push(...split);
-      outSections.push(...props, ...split);
+    const stack: Array<Readonly<{
+      depth: number;
+      docFrom: number;
+      docTo: number;
+      isKeptHead?: true;
+      nodeKind: 'element' | 'text';
+    }> | null> = [
+      ...baseContext.map((entry, depth) => ({
+        depth,
+        docFrom: entry.from,
+        docTo: entry.to,
+        nodeKind: entry.kind,
+      })),
+      ...keptHeadEntries,
+    ];
+    let offset = headKeptCount;
+    const minStackLength =
+      head.closeAt === 'head-end' ? receiving : baseContext.length;
+
+    for (
+      let i = headKeptCount;
+      i < insert.tokens.length && stack.length > minStackLength;
+      i += 1
+    ) {
+      const token = insert.tokens[i];
+
+      if (token.kind === 'open') {
+        stack.push(null);
+      } else if (token.kind === 'close') {
+        const popped = stack.pop();
+        const closePos = popped ? popped.docTo - 1 : -1;
+        const canClaim =
+          popped &&
+          popped.nodeKind === token.nodeKind &&
+          closePos > maxClaimedClose &&
+          (head.closeAt === 'head-end'
+            ? (popped.nodeKind === 'element' ||
+                insert.tokens[i + 1]?.kind === 'close') &&
+              popped.depth >= receiving &&
+              closePos >= exactTo &&
+              (closePos < to ||
+                (to === exactTo && popped.docTo <= document.length))
+            : Boolean(popped.isKeptHead) &&
+              closePos < exactTo &&
+              closePos < to &&
+              offset < firstTailDocOffset);
+
+        if (canClaim && popped) {
+          docOrigins.set(offset, closePos);
+          maxClaimedClose = closePos;
+          if (popped.docTo > extendedTo) extendedTo = popped.docTo;
+        }
+      }
+      offset += tokenLength(token);
     }
   }
-  if (
-    !headCovered &&
-    edgePlan.head.propertyWrite &&
-    !outChanges.some((c) => c.from <= headFrom && headFrom < c.to)
-  ) {
-    const { from, properties } = edgePlan.head.propertyWrite;
-    outProperties.unshift({ from, properties });
-    outSections.unshift({ from, properties });
+
+  let nextTo = to;
+
+  if (extendedTo > to) {
+    const trailingCloses = document.slice(to, extendedTo);
+
+    if (trailingCloses.tokens.every((token) => token.kind === 'close')) {
+      insert = PreparedTokenSlice.concat([insert, trailingCloses]);
+      nextTo = extendedTo;
+    } else {
+      for (const [k, v] of [...docOrigins]) {
+        if (v >= to) docOrigins.delete(k);
+      }
+      maxClaimedClose = Math.max(
+        -1,
+        ...[...docOrigins.values()].filter((v) => v >= exactTo)
+      );
+    }
   }
+
+  if (docOrigins.size === 0) {
+    return {
+      candidate:
+        insert === candidate.insert && origins === candidate.origins
+          ? candidate
+          : Object.freeze({ ...candidate, insert, origins }),
+      edgeOnlySections: null,
+      propertyWrites,
+    };
+  }
+
+  const sortedClaims = [...docOrigins.entries()].sort(([a], [b]) => a - b);
+  const rebuildOrigins = (keepNonEdgeRuns: boolean) => {
+    const log = new FitOriginLog();
+    let runAt = 0;
+    let claimIdx = 0;
+    const emit = (
+      segStart: number,
+      segLen: number,
+      source: FitSource,
+      runOriginAt: number
+    ) => {
+      if (segLen <= 0) return;
+      if (source.kind !== 'document') {
+        log.add(segLen, keepNonEdgeRuns ? source.kind : 'slice');
+        return;
+      }
+      const docStart = source.at + (segStart - runOriginAt);
+
+      if (!keepNonEdgeRuns && maxClaimedClose === -1) {
+        log.add(segLen, 'slice');
+        return;
+      }
+      if (maxClaimedClose === -1 || docStart > maxClaimedClose) {
+        log.add(segLen, 'document', docStart);
+      } else if (docStart + segLen <= maxClaimedClose + 1) {
+        log.add(segLen, 'slice');
+      } else {
+        const cleared = maxClaimedClose + 1 - docStart;
+
+        log.add(cleared, 'slice');
+        log.add(segLen - cleared, 'document', maxClaimedClose + 1);
+      }
+    };
+
+    for (const { length, source } of origins.runs) {
+      const runEnd = runAt + length;
+      let cursor = runAt;
+
+      while (
+        claimIdx < sortedClaims.length &&
+        sortedClaims[claimIdx][0] < runEnd
+      ) {
+        const [claimPos, docPos] = sortedClaims[claimIdx];
+
+        claimIdx += 1;
+        emit(cursor, claimPos - cursor, source, runAt);
+        log.add(1, 'document', docPos);
+        cursor = claimPos + 1;
+      }
+      emit(cursor, runEnd - cursor, source, runAt);
+      runAt = runEnd;
+    }
+    if (nextTo > to) log.add(nextTo - to, 'slice');
+
+    return log.seal(insert);
+  };
+
+  const nextOrigins = rebuildOrigins(true);
+  const edgeSections = fitSections({
+    from,
+    insert,
+    origins: rebuildOrigins(false),
+    to: nextTo,
+  }).filter(
+    (section) => section.from !== section.to || section.insert.length > 0
+  );
+
   return {
-    changes: outChanges,
-    properties: outProperties,
-    sections: outSections,
+    candidate: Object.freeze({
+      ...candidate,
+      insert,
+      origins: nextOrigins,
+      to: nextTo,
+    }),
+    edgeOnlySections:
+      edgeSections.length > 0 || propertyWrites.length > 0
+        ? edgeSections
+        : null,
+    propertyWrites,
   };
 };
+
+export const keptPropertySections = (
+  writes: readonly KeptBlockPropertyWrite[]
+): readonly RootChangeSection[] =>
+  writes.map(({ from, properties }) => ({ from, properties }));

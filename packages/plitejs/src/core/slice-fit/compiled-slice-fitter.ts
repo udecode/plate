@@ -37,6 +37,7 @@ import {
   RootChange,
   reconcileChildrenStep,
   type DocumentPropertyContext,
+  type RootChangeSection,
 } from '../change/root-change';
 import { sliceFacts } from '../change/slice-facts';
 import {
@@ -88,7 +89,7 @@ import { withoutStoredElementId } from '../stored-element-id';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from '../value-codec';
 import {
   applyPasteEdgePlan,
-  applyTailEdgePlan,
+  keptPropertySections,
   planPasteEdges,
 } from './edge-plan';
 import {
@@ -396,11 +397,14 @@ const trimsEverything = (
   }: Readonly<{ from: number; insert: PreparedTokenSlice; to: number }>
 ) => trimmed === insert.length && trimmed === to - from;
 
-const withoutUnchangedTail = (
+const withoutUnchangedTail = <T extends FitSection>(
   document: DocumentIndex,
-  candidate: MaterializedSliceFitCandidate
-): MaterializedSliceFitCandidate => {
-  if (candidate.semanticChange || candidate.to === candidate.from) {
+  candidate: T
+): T => {
+  if (
+    ('semanticChange' in candidate && candidate.semanticChange) ||
+    candidate.to === candidate.from
+  ) {
     return candidate;
   }
 
@@ -491,119 +495,26 @@ const withoutUnchangedTail = (
       });
 };
 
-const unmatchedCloses = (slice: PreparedTokenSlice, start: number) => {
-  const closes: Array<
-    Readonly<{ nodeKind: 'element' | 'text'; offset: number }>
-  > = [];
-  const { offsets, tokens } = slice;
-  let depth = 0;
-  let minDepth = 0;
-
-  for (let index = start; index < tokens.length; index += 1) {
-    const token = tokens[index];
-
-    if (token.kind === 'open') {
-      depth += 1;
-    } else if (token.kind === 'close') {
-      depth -= 1;
-      if (depth < minDepth) {
-        minDepth = depth;
-        closes.push({ nodeKind: token.nodeKind, offset: offsets[index] });
-      }
-    }
-  }
-
-  return closes;
-};
-
-const closesWhatItOpens = ({ tokens }: PreparedTokenSlice) => {
-  let depth = 0;
-
-  for (const { kind } of tokens) {
-    if (kind === 'open') {
-      depth += 1;
-    } else if (kind === 'close') {
-      depth -= 1;
-      if (depth < 0) return false;
-    }
-  }
-
-  return depth === 0;
-};
-
-const splitAtKeptCloses = (
-  change: FitSection,
-  replaced: PreparedTokenSlice,
-  kept: number
-) => {
-  const { from, insert, to } = change;
-  const replacedCloses = unmatchedCloses(replaced, kept);
-  const insertCloses = unmatchedCloses(insert, kept);
-
-  if (
-    kept === 0 &&
-    (replacedCloses.length === 0 || insertCloses.length === 0)
-  ) {
-    return [change];
-  }
-  const changes: FitSection[] = [];
-  let replacedFrom = kept;
-  let insertFrom = kept;
-  const replace = (replacedTo: number, insertTo: number) => {
-    if (replacedFrom === replacedTo && insertFrom === insertTo) return;
-    changes.push(
-      Object.freeze({
-        from: from + replacedFrom,
-        insert: insert.slice(insertFrom, insertTo),
-        to: from + replacedTo,
-      })
-    );
-  };
-
-  for (
-    let level = 0;
-    level < replacedCloses.length && level < insertCloses.length;
-    level += 1
-  ) {
-    const replacedClose = replacedCloses[level];
-    const insertClose = insertCloses[level];
-
-    if (replacedClose.nodeKind !== insertClose.nodeKind) break;
-    replace(replacedClose.offset, insertClose.offset);
-    replacedFrom = replacedClose.offset + 1;
-    insertFrom = insertClose.offset + 1;
-  }
-
-  if (
-    !closesWhatItOpens(replaced.slice(replacedFrom, to - from)) ||
-    !closesWhatItOpens(insert.slice(insertFrom))
-  ) {
-    return [
-      kept === 0
-        ? change
-        : Object.freeze({ from: from + kept, insert: insert.slice(kept), to }),
-    ];
-  }
-  replace(to - from, insert.length);
-
-  return changes;
-};
-
 const lookAlikeChange = (
   document: DocumentIndex,
-  candidate: MaterializedSliceFitCandidate
-) => {
-  const trimmed = withoutUnchangedTail(document, candidate);
-
-  return RootChange.create(
-    document,
-    trimmed.semanticChange ?? {
-      from: trimmed.from,
-      insert: trimmed.insert,
-      to: trimmed.to,
-    }
-  );
-};
+  candidate: MaterializedSliceFitCandidate,
+  plain: Readonly<{
+    changes: ReadonlyArray<
+      Readonly<{ from: number; insert: PreparedTokenSlice; to: number }>
+    >;
+    properties: readonly RootChangeSection[];
+  }>
+) =>
+  candidate.semanticChange
+    ? RootChange.create(document, candidate.semanticChange)
+    : RootChange.create(document, [
+        ...plain.properties,
+        ...plain.changes.map(({ from, insert, to }) => ({
+          from,
+          insert,
+          to,
+        })),
+      ]);
 
 /**
  * A move's raw landing, with the relocations that tie each landed text to
@@ -4044,11 +3955,56 @@ export const compileSliceFitter = <V extends Value>(
         from: prefix.length + textBlockEdge,
         to: selectionOffset,
       };
+      const closeAtHead =
+        edgePlan?.head.kind === 'keep' &&
+        edgePlan.head.closeAt === 'head-end' &&
+        sourceBlocks.length > 1;
       const origins = new FitOriginLog();
+      let semanticChange: MaterializedSliceFitCandidate['semanticChange'];
 
-      origins.add(content.from, 'document', base.from);
-      origins.add(content.to - content.from, 'slice');
-      origins.add(insert.length - content.to, 'document', exactTo);
+      if (closeAtHead) {
+        const firstEnd = content.from + firstText.text.length;
+        const afterHeadClose = firstEnd + textBlockEdge;
+
+        origins.add(content.from, 'document', base.from);
+        origins.add(firstText.text.length, 'slice');
+        origins.add(textBlockEdge, 'document', exactTo);
+        origins.add(insert.length - afterHeadClose, 'slice');
+
+        const semanticSections: RootChangeSection[] = [];
+
+        if (exactFrom !== exactTo || firstText.text.length > 0) {
+          semanticSections.push(
+            Object.freeze({
+              from: exactFrom,
+              insert:
+                firstText.text.length > 0
+                  ? PreparedTokenSlice.fromJSON([
+                      { kind: 'text', text: firstText.text },
+                    ])
+                  : PreparedTokenSlice.empty,
+              to: exactTo,
+            })
+          );
+        }
+        semanticSections.push(
+          Object.freeze({
+            from: base.to,
+            insert: insert.slice(afterHeadClose),
+            to: base.to,
+          })
+        );
+        semanticChange = Object.freeze(semanticSections);
+      } else {
+        origins.add(content.from, 'document', base.from);
+        origins.add(content.to - content.from, 'slice');
+        origins.add(insert.length - content.to, 'document', exactTo);
+        semanticChange = Object.freeze({
+          from: exactFrom,
+          insert: semanticInsert,
+          to: exactTo,
+        });
+      }
 
       const hasElementIds = getDeclarativeSchema()?.everyElementHasId === true;
 
@@ -4058,11 +4014,7 @@ export const compileSliceFitter = <V extends Value>(
         insert,
         origins: origins.seal(insert),
         runtimeCandidatePaths,
-        semanticChange: Object.freeze({
-          from: exactFrom,
-          insert: semanticInsert,
-          to: exactTo,
-        }),
+        semanticChange,
         selectionOffset,
         ...(hasElementIds ? {} : { trustedCanonical: true }),
       });
@@ -4620,12 +4572,32 @@ export const compileSliceFitter = <V extends Value>(
               })));
 
     if (!selectedCandidate) return false;
-    const fittedCandidate = profileCoreDuration(
+    const isPreparedCandidate = 'preparedOpenBlock' in selectedCandidate;
+    const edgeApplied = profileCoreDuration(
       'slice-fit-candidate-materialize',
-      () =>
-        materializeCandidate(
-          applyTailEdgePlan(document, edgePlan, selectedCandidate, exactTo)
-        )
+      () => {
+        const materialized = materializeCandidate(selectedCandidate);
+
+        if (isPreparedCandidate || !edgePlan) {
+          return {
+            candidate: materialized,
+            edgeOnlySections: null,
+            propertyWrites: [],
+          };
+        }
+
+        return applyPasteEdgePlan({
+          candidate: materialized,
+          declarative: getDeclarativeSchema(),
+          document,
+          edgePlan,
+          exactTo,
+        });
+      }
+    );
+    const fittedCandidate = edgeApplied.candidate;
+    const edgePropertySections = keptPropertySections(
+      edgeApplied.propertyWrites
     );
     const allowKeptHead =
       Boolean(edgePlan) &&
@@ -4633,25 +4605,31 @@ export const compileSliceFitter = <V extends Value>(
         Boolean(
           rangeTarget?.replaceEmptyBlock && edgePlan?.head.kind === 'keep'
         ));
-    const applyEdge = (cs: readonly FitSection[]) =>
-      applyPasteEdgePlan(
-        document,
-        edgePlan,
-        cs,
-        getDeclarativeSchema(),
-        splitAtKeptCloses
-      );
     const sections =
       allowKeptHead && rangeTarget?.byLook !== 'commit'
-        ? applyEdge(fitSections(fittedCandidate)).sections
+        ? [
+            ...edgePropertySections,
+            ...fitSections(fittedCandidate).filter(
+              (section) =>
+                section.from !== section.to || section.insert.length > 0
+            ),
+          ]
         : null;
-    const materializedCandidate =
-      allowKeptHead && !sections
-        ? withoutUnchangedTail(document, fittedCandidate)
-        : fittedCandidate;
+    const trimSection = <T extends FitSection>(section: T) =>
+      options.target.kind === 'range' && !exactBounds
+        ? withoutUnchangedTail(document, section)
+        : section;
+    const materializedCandidate = !edgeApplied.edgeOnlySections
+      ? trimSection(fittedCandidate)
+      : fittedCandidate;
     const plain =
-      allowKeptHead && !sections && !materializedCandidate.semanticChange
-        ? applyEdge([materializedCandidate])
+      allowKeptHead && !materializedCandidate.semanticChange
+        ? {
+            changes: edgeApplied.edgeOnlySections
+              ? edgeApplied.edgeOnlySections.map(trimSection)
+              : [materializedCandidate],
+            properties: edgePropertySections,
+          }
         : { changes: [materializedCandidate], properties: [] };
     const candidate = materializedCandidate.preparation
       ? Object.freeze({
@@ -4696,7 +4674,7 @@ export const compileSliceFitter = <V extends Value>(
       options.target.kind === 'range' && options.target.byLook === 'carry'
         ? Object.freeze({
             ...(sections
-              ? { lookAlike: lookAlikeChange(document, fittedCandidate) }
+              ? { lookAlike: lookAlikeChange(document, fittedCandidate, plain) }
               : {}),
             paste: options.target.paste ?? {},
           })
