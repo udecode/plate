@@ -154,7 +154,7 @@ authored.api.setView({ preview: "proposed" });
 | `{ preview: 'proposed' }` | 接受全部待处理 change 后的内容   | 普通编辑会抛出错误，见下文     |
 | `{ preview: 'accepted' }` | 拒绝全部待处理 change 后的内容   | 普通编辑会抛出错误，见下文     |
 
-Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改存储文档，例如带决定的 update、撤销和重做，以及远程协作变更。显示 preview 的 `Editable` 保留光标和选区，但会忽略输入、删除、粘贴、剪切和拖放。撤销和重做仍然可用。
+Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改存储文档，例如带决定的 update、撤销和重做，以及远程协作变更。显示 preview 的 `EditorContent` 保留光标和选区，但会忽略输入、删除、粘贴、剪切和拖放。撤销和重做仍然可用。
 
 在被划掉的文本中输入，或用输入法确认一个词时，新文本落在光标处，并把待处理删除拆到它的两侧。在被划掉的文本中粘贴时，新文本落在待处理删除之后；在整行被删除的行中输入时，新文本落在上一行末尾。`edit` view 按原样应用新文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如移动表格行，或在内容只有一个 text 的元素内的部分编辑，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
 

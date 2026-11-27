@@ -41,13 +41,13 @@ Plite gives you a document model, an explicit runtime, and React rendering hooks
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | Document model | nested JSON nodes, paths, points, ranges, immutable snapshots, primary `children`, extra `roots`, persistent `meta`, and keyed `records`          |
 | Runtime        | `editor.read.<group>.<method>()`, `editor.update.<group>.<method>()`, grouped read/update callbacks, transactions, canonical changes, commits, correction, anchors, history integration, and plugin groups |
-| React          | `<EditorRoot>`, `<Editable>`, render functions, editor hooks, DOM repair, selection sync, overlays, and root-aware chrome            |
+| React          | `<EditorRoot>`, `<EditorContent>`, render functions, editor hooks, DOM repair, selection sync, overlays, and root-aware chrome            |
 | Proof          | browser tests that check model state, rendered DOM, native selection where observable, focus, replay, and follow-up typing      |
 
 The first editor usually looks like this:
 
 ```tsx
-import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
+import { EditorContent, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const initialValue = [
   {
@@ -61,7 +61,7 @@ export function Editor() {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable placeholder="Start typing..." />
+      <EditorContent placeholder="Start typing..." />
     </EditorRoot>
   );
 }
@@ -122,7 +122,7 @@ Use examples for behavior shape. Use the docs pages for the API contract.
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | [`plitejs`](/docs/plite/libraries/plite)                         | You need the editor runtime, document model, helper APIs, transactions, plugins, or state fields. |
 | [`plitejs/dom`](/docs/plite/libraries/plite-dom)                 | You need DOM conversion, clipboard helpers, hotkeys, or browser environment helpers.                 |
-| [`plitejs/react`](/docs/plite/libraries/plite-react)             | You render editors with React, use `<Editable>`, read editor state in components, or build overlays. |
+| [`plitejs/react`](/docs/plite/libraries/plite-react)             | You render editors with React, use `<EditorContent>`, read editor state in components, or build overlays. |
 | [`plitejs/history`](/docs/plite/libraries/plite-history)         | You need undo/redo and history state.                                                                |
 | [`plitejs/hyperscript`](/docs/plite/libraries/plite-hyperscript) | You write JSX editor fixtures for tests.                                                             |
 | [`plitejs/yjs`](/docs/plite/libraries/plite-yjs)                       | You connect a Plite editor to Yjs document meta and awareness.                                      |
@@ -149,7 +149,7 @@ Read [Why This Fork](/docs/plite/why-this-fork) for the maintenance philosophy a
 - [Why This Fork](/docs/plite/why-this-fork)
 - [Migration](/docs/plite/migration)
 - [React Editor Setup](/docs/plite/libraries/plite-react/react-editor-setup)
-- [Editable Component](/docs/plite/libraries/plite-react/editable)
+- [EditorContent](/docs/plite/libraries/plite-react/editable)
 - [Plugins](/docs/plite/concepts/08-plugins)
 - [Clipboard And Paste](/docs/plite/concepts/17-clipboard-and-paste)
 - [Decorations and annotations](/docs/plite/concepts/18-decorations-annotations-widgets)

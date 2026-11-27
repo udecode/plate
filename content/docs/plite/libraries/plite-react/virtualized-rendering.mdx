@@ -3,9 +3,9 @@ title: "Virtualized Rendering"
 description: "Explicitly omit offscreen top-level blocks from a large editor's DOM."
 ---
 
-`VirtualizedEditable` mounts a measured window of top-level blocks. Use it when
+`VirtualizedEditorContent` mounts a measured window of top-level blocks. Use it when
 a complete document DOM exceeds the product's tested interaction or memory
-budget. Ordinary `Editable` always mounts the complete document.
+budget. Ordinary `EditorContent` always mounts the complete document.
 
 ## Usage
 
@@ -15,18 +15,18 @@ Install the virtualizer with React:
 npm install plitejs @tanstack/react-virtual react react-dom
 ```
 
-Render `VirtualizedEditable` from its dedicated entrypoint. Give it a bounded
+Render `VirtualizedEditorContent` from its dedicated entrypoint. Give it a bounded
 scroll surface, either on the editable itself or on an ancestor.
 
 ```tsx
 import { EditorRoot, useCreateEditor } from "plitejs/react";
-import { VirtualizedEditable } from "plitejs/react/virtualized";
+import { VirtualizedEditorContent } from "plitejs/react/virtualized";
 
 const editor = useCreateEditor({ initialValue });
 
 return (
   <EditorRoot editor={editor}>
-    <VirtualizedEditable
+    <VirtualizedEditorContent
       estimatedBlockSize={32}
       overscan={4}
       style={{ height: 480, overflowY: "auto" }}
@@ -59,7 +59,7 @@ applies to server rendering, detached roots, hidden roots, and zero-size roots,
 so the first client render agrees with the server markup.
 
 Measured viewport changes and option changes retain mounted rows by node key.
-Switching between `Editable` and `VirtualizedEditable` creates a different
+Switching between `EditorContent` and `VirtualizedEditorContent` creates a different
 mounted view. Remount deliberately and restore any app-owned view state when a
 product changes that choice.
 
@@ -79,14 +79,14 @@ target before scrolling or editing it.
 | Print and export | DOM-based output includes mounted blocks only.                                         |
 | Copy             | Plite serializes selected model content to plain text, HTML, and its fragment format. |
 
-Use `Editable` when the product requires complete native find, accessibility
+Use `EditorContent` when the product requires complete native find, accessibility
 traversal, print output, or third-party DOM access. Virtualized mobile selection
 and IME behavior need browser and device proof for the product's supported
 matrix.
 
-For paginated editors, use `PagedEditable virtualize`. Pagination owns live
+For paginated editors, use `PagedEditorContent virtualize`. Pagination owns live
 measurement, page surfaces, fragment placement, selection projection, and
-canvas coordinates. `VirtualizedEditable` remains the top-level block option
+canvas coordinates. `VirtualizedEditorContent` remains the top-level block option
 for a continuous editor.
 
 See [DOM Coverage Boundaries](./dom-coverage-boundaries) for selection, copy,

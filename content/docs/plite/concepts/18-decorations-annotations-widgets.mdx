@@ -28,7 +28,7 @@ overlapping sources, and renders the attributes as nested `span` elements.
 ```tsx
 import { NodeApi } from "plitejs";
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type DecorationSource,
   useCreateEditor,
@@ -68,14 +68,14 @@ const Editor = ({ query }: { query: string }) => {
 
   return (
     <EditorRoot decorations={[searchDecorations]} editor={editor}>
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };
 ```
 
 `attributes` accepts `className`, `style`, `aria-*`, and `data-*`. Keep each
-`key` stable and unique within its source. Rendering is automatic; `Editable`
+`key` stable and unique within its source. Rendering is automatic; `EditorContent`
 does not need a decoration callback.
 
 ## External refresh
@@ -124,7 +124,7 @@ editor rendering independently replaceable.
 
 App widgets render UI anchored to a node, selection, or annotation. Use
 `useSelectionGeometry({ editableRef })` inside `<EditorRoot>` for selection
-geometry in one mounted editable. Attach that ref to the target `<Editable>`.
+geometry in one mounted editable. Attach that ref to the target `<EditorContent>`.
 
 ```tsx
 import { useSelectionGeometry } from "plitejs/react";

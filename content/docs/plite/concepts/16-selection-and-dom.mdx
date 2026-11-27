@@ -79,7 +79,7 @@ Use [Locations](03-locations) for `Path`, `Point`, `Range`, and anchors. Use [Tr
 
 The browser can move native selection through mouse, keyboard, touch, composition, spellcheck, selection handles, and platform editing commands. Plite React observes those moves and imports them when they should become model state.
 
-Application code should not patch the browser `Selection` directly for normal editor behavior. Use model transactions, `Editable` handlers, or DOM-aware React APIs that preserve Plite's repair path.
+Application code should not patch the browser `Selection` directly for normal editor behavior. Use model transactions, `EditorContent` handlers, or DOM-aware React APIs that preserve Plite's repair path.
 
 Use [React Editor](../libraries/plite-react/react-editor) for DOM translation helpers and [Plite React Event Handling](../libraries/plite-react/event-handling) for browser event hooks.
 
@@ -97,7 +97,7 @@ const next = editor.api.dom.resolveVisualPoint(point, {
 ```
 
 This low-level API is useful for renderer integrations. Normal editors should
-let `<Editable>` own keyboard movement.
+let `<EditorContent>` own keyboard movement.
 
 ## Object elements with editable children
 
@@ -140,7 +140,7 @@ children copies open child content without recreating the owner on paste.
 
 ## DOM phase order
 
-Each mounted `Editable` owns one bounded scheduler for post-model browser work.
+Each mounted `EditorContent` owns one bounded scheduler for post-model browser work.
 It runs queued tasks in this order:
 
 1. model work
@@ -214,7 +214,7 @@ const media = definePlugin("media", {
 
 Install this feature contribution beside the editor's complete schema.
 
-Keep visible void UI inside the void renderer. Let Plite render the shell and text anchor. Use [Editable Component](../libraries/plite-react/editable#rendervoid) for void rendering rules.
+Keep visible void UI inside the void renderer. Let Plite render the shell and text anchor. Use [EditorContent](../libraries/plite-react/editable#rendervoid) for void rendering rules.
 
 Keep editable document text in an ordinary element. Use a named content root
 when a void's rich body needs independently addressed content with the same
@@ -222,7 +222,7 @@ editor runtime and history.
 
 ## Large documents
 
-`Editable` mounts the complete document DOM. `VirtualizedEditable` from
+`EditorContent` mounts the complete document DOM. `VirtualizedEditorContent` from
 `plitejs/react/virtualized` explicitly omits offscreen top-level blocks when a
 large document exceeds the product's tested DOM budget.
 
@@ -231,7 +231,7 @@ mounted DOM covers the measured window, selected endpoints, and requested
 targets. Native browser selection and find can prove facts only about mounted
 content.
 
-Use [Editable Component](../libraries/plite-react/editable#dom-rendering) for the
+Use [EditorContent](../libraries/plite-react/editable#dom-rendering) for the
 complete surface and [Virtualized Rendering](../libraries/plite-react/virtualized-rendering)
 for explicit omission.
 

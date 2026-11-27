@@ -5,7 +5,7 @@ description: "Route copy, paste, drop, and fitted slice replacement through Plit
 
 Clipboard work crosses browser events, Plite fragments, transactions, DOM
 coverage, and browser proof. Use this page to decide whether a paste, copy, or
-drop policy belongs in `Editable`, a plugin, `editor.api.dom.clipboard`, or a
+drop policy belongs in `EditorContent`, a plugin, `editor.api.dom.clipboard`, or a
 fragment transform.
 
 ## Choose the right surface
@@ -15,7 +15,7 @@ insertion ownership.
 
 | Need                                                 | Start with                                                 | Owner                                               |
 | ---------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
-| One editor instance needs a local paste/drop hook    | `Editable` `onPaste` or `onDrop`                           | `plitejs/react`                              |
+| One editor instance needs a local paste/drop hook    | `EditorContent` `onPaste` or `onDrop`                           | `plitejs/react`                              |
 | A reusable package owns paste/drop import policy     | `domCommands.insertData` interceptor in plugin `commands` | `plitejs/dom`                                |
 | A browser MIME representation needs decoding or encoding | Register a `DataTransferFormat` with `dataTransferFormats`                         | `plitejs/dom`                                |
 | Framework code needs to import a `DataTransfer`      | `editor.api.dom.clipboard.insertData(data)`                    | `plitejs/dom` through `plitejs/react` |
@@ -24,7 +24,7 @@ insertion ownership.
 | Copy or drag must include hidden model content       | DOM coverage `copyPolicy` plus model-backed clipboard data | `plitejs/dom` and `plitejs/react`     |
 | The claim depends on real browser clipboard behavior | `@platejs/test` clipboard helpers                       | `@platejs/test`                                  |
 
-Use `Editable` for local event interception. Use the DOM insert-data command when
+Use `EditorContent` for local event interception. Use the DOM insert-data command when
 the behavior should apply to native paste, drop, browser tests, and every React
 surface that installs the plugin.
 
@@ -130,7 +130,7 @@ Callback exceptions are reported to the editor's `lifecycleErrorSink` as
 `data-transfer-format` errors with the format `key`, `mimeType`, and `phase`,
 and cannot block a later format. During `accept` or `decode`, call
 `context.report({ impact: "lossy", message })` to describe conversion loss.
-Mounted paste delivers conversion diagnostics through `Editable.onPasteResult`.
+Mounted paste delivers conversion diagnostics through `EditorContent.onPasteResult`.
 Add a mapping or format for content the current formats cannot represent. See
 [Plite DOM](../libraries/plite-dom#datatransfer-formats) for the format
 contract.
@@ -213,7 +213,7 @@ Use clipboard helpers for browser proof and
 
 ## Related docs
 
-- [Editable Component](../libraries/plite-react/editable)
+- [EditorContent](../libraries/plite-react/editable)
 - [React Editor](../libraries/plite-react/react-editor)
 - [Plite DOM](../libraries/plite-dom)
 - [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries)

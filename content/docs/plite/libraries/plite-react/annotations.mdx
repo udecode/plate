@@ -57,7 +57,7 @@ visual states converts resolved ranges into keyed decoration attributes.
 
 ```tsx
 <EditorRoot decorations={[commentDecorations]} editor={editor}>
-  <Editable />
+  <EditorContent />
   <CommentsSidebar />
 </EditorRoot>;
 ```
@@ -112,7 +112,7 @@ document.
 Render app-owned UI from resolved anchor ranges in the target view (for example,
 via `useEditorSelector((view) => anchor.resolve(view))`).
 Use `useSelectionGeometry({ editableRef })` for selection-positioned UI in one
-exact Editable.
+exact `EditorContent`.
 
 ## External anchor adapter
 

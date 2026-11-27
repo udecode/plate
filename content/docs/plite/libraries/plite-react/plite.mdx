@@ -1,9 +1,9 @@
 ---
 title: "Plite Component"
-description: "Provide one editor to Editable, toolbars, sidebars, decorations, and change callbacks."
+description: "Provide one editor to EditorContent, toolbars, sidebars, decorations, and change callbacks."
 ---
 
-`EditorRoot` provides a React context for one editor. Render it above `Editable`,
+`EditorRoot` provides a React context for one editor. Render it above `EditorContent`,
 toolbars, sidebars, and any component that needs editor state.
 
 ## Minimal usage
@@ -13,7 +13,7 @@ toolbars, sidebars, and any component that needs editor state.
 ```tsx
 <EditorRoot editor={editor} onCommit={handleCommit}>
   <Toolbar />
-  <Editable />
+  <EditorContent />
 </EditorRoot>
 ```
 
@@ -82,12 +82,12 @@ controlled value prop.
 
 ### `children`
 
-Render `Editable` and any editor UI inside the provider.
+Render `EditorContent` and any editor UI inside the provider.
 
 ```tsx
 <EditorRoot editor={editor}>
   <Toolbar />
-  <Editable />
+  <EditorContent />
 </EditorRoot>
 ```
 
@@ -95,7 +95,7 @@ Render `Editable` and any editor UI inside the provider.
 
 Use `onCommit` when React UI needs every published commit. The provider owns
 the subscription for its full lifetime, so the callback works even when no
-`Editable` is mounted beneath it.
+`EditorContent` is mounted beneath it.
 
 ```tsx
 <EditorRoot
@@ -111,7 +111,7 @@ the subscription for its full lifetime, so the callback works even when no
     reportCommit(commit, snapshot.version);
   }}
 >
-  <Editable />
+  <EditorContent />
 </EditorRoot>
 ```
 
@@ -126,7 +126,7 @@ state changes.
   editor={editor}
   onValueChange={({ value }) => saveDocument(value)}
 >
-  <Editable />
+  <EditorContent />
 </EditorRoot>
 ```
 
@@ -143,7 +143,7 @@ commit, including primary `children`, extra `roots`, `records`, and persisted
     localStorage.setItem("plite.document", JSON.stringify(value));
   }}
 >
-  <Editable />
+  <EditorContent />
 </EditorRoot>
 ```
 
@@ -182,7 +182,7 @@ Use `onSelectionChange` when React UI only cares about model selection changes.
   editor={editor}
   onSelectionChange={({ selection }) => updateToolbar(selection)}
 >
-  <Editable />
+  <EditorContent />
 </EditorRoot>
 ```
 
@@ -217,7 +217,7 @@ const searchDecorations = useMemo(
 );
 
 <EditorRoot decorations={[searchDecorations]} editor={editor}>
-  <Editable />
+  <EditorContent />
 </EditorRoot>;
 ```
 
@@ -254,7 +254,7 @@ const anchor = editor.anchor(range, {
 });
 
 <EditorRoot decorations={[commentDecorations]} editor={editor}>
-  <Editable />
+  <EditorContent />
   <CommentsSidebar comments={comments} />
 </EditorRoot>;
 ```

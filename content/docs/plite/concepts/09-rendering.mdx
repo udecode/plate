@@ -5,13 +5,13 @@ description: "Render elements, leaves, text, overlays, voids, and hidden content
 
 Plite React renders your document with normal React components. You provide the
 components for product-specific elements, text nodes, leaves, toolbars, menus,
-and overlays. Pass stable render props to `Editable` so React does not receive
+and overlays. Pass stable render props to `EditorContent` so React does not receive
 a fresh renderer on every render.
 
 ## Elements
 
 ```tsx
-import { EditorRoot, Editable, useCreateEditor } from "plitejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "plitejs/react";
 
 const ParagraphElement = ({ attributes, children }) => {
   return <p {...attributes}>{children}</p>;
@@ -45,7 +45,7 @@ const MyEditor = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable renderElement={renderElement} />
+      <EditorContent renderElement={renderElement} />
     </EditorRoot>
   );
 };
@@ -120,7 +120,7 @@ const TextNode = ({ attributes, children, text }) => {
   );
 };
 
-<Editable renderText={TextNode} />;
+<EditorContent renderText={TextNode} />;
 ```
 
 **When to use `renderLeaf` vs `renderText`:**
@@ -159,7 +159,7 @@ missing or has `isLast`.
 
 Decorations are transient range attributes. Configure ordered sources on
 `<EditorRoot decorations={sources}>`; each source returns keyed ranges with
-`className`, `style`, `aria-*`, or `data-*` attributes. `Editable` applies those
+`className`, `style`, `aria-*`, or `data-*` attributes. `EditorContent` applies those
 attributes automatically. Decorations never become text properties or leaf
 renderer inputs.
 
@@ -170,7 +170,7 @@ for source observation and refresh.
 
 ## Toolbars, menus, overlays, and more!
 
-In addition to controlling the rendering of nodes inside Plite, descendants can retrieve the active editor with `useEditor()`, or the nearest mounted view's editor with `useEditorContext()`.
+In addition to controlling the rendering of nodes inside Plite, descendants can retrieve the active editor with `useEditor()`, or the nearest mounted view's editor with `useEditor()`.
 
 Use editor-level hooks for shell UI such as toolbars. Keep broad editor subscriptions out of rendered document nodes.
 
@@ -183,7 +183,7 @@ const MyEditor = () => {
   return (
     <EditorRoot editor={editor}>
       <Toolbar />
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };
@@ -208,7 +208,7 @@ Because the toolbar draws editor-level state, `useEditorSelector` is the right l
 
 ## Editor styling
 
-Custom styles can be applied to the editor itself by using the `style` prop on the `<Editable>` component.
+Custom styles can be applied to the editor itself by using the `style` prop on the `<EditorContent>` component.
 
 ```tsx
 const MyEditor = () => {
@@ -216,7 +216,7 @@ const MyEditor = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable style={{ minHeight: "200px", backgroundColor: "lime" }} />
+      <EditorContent style={{ minHeight: "200px", backgroundColor: "lime" }} />
     </EditorRoot>
   );
 };
@@ -225,7 +225,7 @@ const MyEditor = () => {
 It is also possible to apply custom styles with a stylesheet and `className`. However, Plite uses inline styles to provide some default styles for the editor. Because inline styles take precedence over stylesheets, styles you provide using stylesheets will not override the default styles. If you are trying to use a stylesheet and your rules are not taking effect, do one of the following:
 
 - Provide your styles using the `style` prop instead of a stylesheet, which overrides the default inline styles.
-- Pass the `disableDefaultStyles` prop to the `<Editable>` component.
+- Pass the `disableDefaultStyles` prop to the `<EditorContent>` component.
 - Use `!important` in your stylesheet declarations to make them override the inline styles.
 
 ## Performance

@@ -52,17 +52,17 @@ functions that receive an editor.
 
 ## Using commands from editor events
 
-Use `Editable onKeyDown` for keyboard shortcuts that belong to one editor UI:
+Use `EditorContent onKeyDown` for keyboard shortcuts that belong to one editor UI:
 
 ```tsx
-import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
+import { EditorContent, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const App = () => {
   const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         onKeyDown={(event, { editor }) => {
           if (event.key === "`" && event.ctrlKey) {
             event.preventDefault();
@@ -165,7 +165,7 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable renderElement={renderElement} renderLeaf={renderLeaf} />
+      <EditorContent renderElement={renderElement} renderLeaf={renderLeaf} />
     </EditorRoot>
   );
 };

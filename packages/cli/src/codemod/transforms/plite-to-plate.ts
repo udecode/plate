@@ -63,12 +63,15 @@ const SCOPE_NODE_TYPES = new Set([
   'BlockStatement',
   'CatchClause',
   'ClassMethod',
+  'ClassPrivateMethod',
   'ForInStatement',
   'ForOfStatement',
   'ForStatement',
   'FunctionDeclaration',
   'FunctionExpression',
   'ObjectMethod',
+  'SwitchCase',
+  'SwitchStatement',
 ]);
 
 const STATEMENT_NODE_TYPES = new Set([
@@ -209,8 +212,30 @@ const collectPatternNames = (
       collectPatternNames(node.argument as AstNode, out);
       break;
     }
+    case 'TSParameterProperty': {
+      collectPatternNames(node.parameter as AstNode, out);
+      break;
+    }
     default: {
       break;
+    }
+  }
+};
+
+const collectStatementDeclNames = (stmts: AstNode[], names: Set<string>) => {
+  for (const stmt of stmts) {
+    if (stmt.type === 'VariableDeclaration') {
+      const declarations = stmt.declarations as AstNode[] | undefined;
+      for (const decl of declarations ?? []) {
+        collectPatternNames(decl.id as AstNode, names);
+      }
+    } else if (
+      (stmt.type === 'FunctionDeclaration' ||
+        stmt.type === 'ClassDeclaration') &&
+      isAstNode(stmt.id) &&
+      typeof stmt.id.name === 'string'
+    ) {
+      names.add(stmt.id.name);
     }
   }
 };
@@ -221,6 +246,7 @@ const collectLocalScopeDeclarations = (node: AstNode): Set<string> => {
   if (
     node.type === 'ArrowFunctionExpression' ||
     node.type === 'ClassMethod' ||
+    node.type === 'ClassPrivateMethod' ||
     node.type === 'FunctionDeclaration' ||
     node.type === 'FunctionExpression' ||
     node.type === 'ObjectMethod'
@@ -237,21 +263,21 @@ const collectLocalScopeDeclarations = (node: AstNode): Set<string> => {
   } else if (node.type === 'CatchClause') {
     collectPatternNames(node.param as AstNode | null, names);
   } else if (node.type === 'BlockStatement') {
-    const body = node.body as AstNode[] | undefined;
-    for (const stmt of body ?? []) {
-      if (stmt.type === 'VariableDeclaration') {
-        const declarations = stmt.declarations as AstNode[] | undefined;
-        for (const decl of declarations ?? []) {
-          collectPatternNames(decl.id as AstNode, names);
-        }
-      } else if (
-        (stmt.type === 'FunctionDeclaration' ||
-          stmt.type === 'ClassDeclaration') &&
-        isAstNode(stmt.id) &&
-        typeof stmt.id.name === 'string'
-      ) {
-        names.add(stmt.id.name);
-      }
+    collectStatementDeclNames(
+      (node.body as AstNode[] | undefined) ?? [],
+      names
+    );
+  } else if (node.type === 'SwitchCase') {
+    collectStatementDeclNames(
+      (node.consequent as AstNode[] | undefined) ?? [],
+      names
+    );
+  } else if (node.type === 'SwitchStatement') {
+    for (const switchCase of (node.cases as AstNode[] | undefined) ?? []) {
+      collectStatementDeclNames(
+        (switchCase.consequent as AstNode[] | undefined) ?? [],
+        names
+      );
     }
   } else if (
     node.type === 'ForStatement' ||
@@ -470,6 +496,9 @@ const isReferenceIdentifier = (
   if (parent.type === 'LabeledStatement' && parentKey === 'label') {
     return false;
   }
+  if (parent.type === 'ExportSpecifier' && parentKey === 'exported') {
+    return false;
+  }
 
   return true;
 };
@@ -511,6 +540,120 @@ type PassContext = {
   addedImports: AddedImportRequest[];
   diagnostics: CodemodDiagnostic[];
   filePath: string;
+  migratedPliteLocalNames: Set<string>;
+};
+
+const collectDeclaredAndImportedNames = (ast: AstNode) => {
+  const nonImportDeclared = new Set<string>();
+  const importedSpecs = new Map<
+    string,
+    Array<{
+      importedName: string | null;
+      mergeablePlateStmt: boolean;
+      sourceModule: string;
+    }>
+  >();
+
+  const recordImport = (
+    localName: string,
+    sourceModule: string,
+    importedName: string | null,
+    mergeablePlateStmt: boolean
+  ) => {
+    const list = importedSpecs.get(localName) ?? [];
+    list.push({ importedName, mergeablePlateStmt, sourceModule });
+    importedSpecs.set(localName, list);
+  };
+
+  const program = ast.program as AstNode | undefined;
+  const body = (program?.body as AstNode[] | undefined) ?? [];
+  const plateImportStmtCount = new Map<string, number>();
+
+  for (const stmt of body) {
+    if (stmt.type !== 'ImportDeclaration') continue;
+    const mod = (stmt.source as AstNode | undefined)?.value;
+    if (typeof mod !== 'string') continue;
+    const specs = (stmt.specifiers as AstNode[] | undefined) ?? [];
+    const mergeablePlateStmt =
+      (mod === 'platejs' || mod.startsWith('platejs/')) &&
+      specs.length > 0 &&
+      specs.every((s) => s.type === 'ImportSpecifier');
+    if (mod === 'platejs' || mod.startsWith('platejs/')) {
+      plateImportStmtCount.set(mod, (plateImportStmtCount.get(mod) ?? 0) + 1);
+    }
+    for (const spec of specs) {
+      const local = spec.local as AstNode | undefined;
+      if (!local || typeof local.name !== 'string') continue;
+      if (spec.type === 'ImportSpecifier') {
+        const imported = spec.imported as AstNode;
+        const importedName =
+          imported.type === 'Identifier'
+            ? String(imported.name)
+            : String(imported.value);
+        recordImport(local.name, mod, importedName, mergeablePlateStmt);
+      } else {
+        recordImport(local.name, mod, null, false);
+      }
+    }
+  }
+
+  walkAst(ast, (node) => {
+    if (node.type === 'VariableDeclarator' && isAstNode(node.id)) {
+      collectPatternNames(node.id, nonImportDeclared);
+    }
+    if (
+      (node.type === 'FunctionDeclaration' ||
+        node.type === 'FunctionExpression' ||
+        node.type === 'ClassDeclaration' ||
+        node.type === 'ClassExpression' ||
+        node.type === 'TSDeclareFunction' ||
+        node.type === 'TSImportEqualsDeclaration' ||
+        node.type === 'TSTypeAliasDeclaration' ||
+        node.type === 'TSInterfaceDeclaration' ||
+        node.type === 'TSEnumDeclaration' ||
+        node.type === 'TSModuleDeclaration') &&
+      isAstNode(node.id) &&
+      typeof node.id.name === 'string'
+    ) {
+      nonImportDeclared.add(node.id.name);
+    }
+    if (node.type === 'TSTypeParameter' && typeof node.name === 'string') {
+      nonImportDeclared.add(node.name);
+    }
+    if (
+      node.type === 'FunctionDeclaration' ||
+      node.type === 'FunctionExpression' ||
+      node.type === 'ArrowFunctionExpression' ||
+      node.type === 'ObjectMethod' ||
+      node.type === 'ClassMethod' ||
+      node.type === 'ClassPrivateMethod'
+    ) {
+      for (const param of (node.params as AstNode[] | undefined) ?? []) {
+        collectPatternNames(param, nonImportDeclared);
+      }
+    }
+    if (node.type === 'CatchClause') {
+      collectPatternNames(node.param as AstNode | null, nonImportDeclared);
+    }
+  });
+
+  const isTargetOccupied = (
+    targetModule: string,
+    targetName: string
+  ): boolean => {
+    if (nonImportDeclared.has(targetName)) return true;
+    const specs = importedSpecs.get(targetName);
+    if (!specs || specs.length === 0) return false;
+    if ((plateImportStmtCount.get(targetModule) ?? 0) > 1) return true;
+    return !specs.every(
+      (s) =>
+        s.mergeablePlateStmt &&
+        s.sourceModule === targetModule &&
+        s.importedName === targetName
+    );
+  };
+
+  return { isTargetOccupied };
 };
 
 const runPass1 = (
@@ -735,6 +878,7 @@ const runPass2 = (
 ): { code: string; editsCount: number } => {
   const ast = parseSource(source, ctx.filePath);
   const bindings = collectPliteImports(ast);
+  const pass2Scope = collectDeclaredAndImportedNames(ast);
   const edits: CodemodEdit[] = [];
 
   walkAst(ast, (node, walk) => {
@@ -1230,7 +1374,8 @@ const runPass2 = (
               ? (childOpening.name as AstNode)
               : null;
             const childBinding =
-              childNameNode?.type === 'JSXIdentifier'
+              childNameNode?.type === 'JSXIdentifier' &&
+              !walk.isShadowed(String(childNameNode.name))
                 ? bindings.get(String(childNameNode.name))
                 : undefined;
             const isEditableChild =
@@ -1245,6 +1390,9 @@ const runPass2 = (
                 (a.name as AstNode).type === 'JSXIdentifier' &&
                 (a.name as AstNode).name === 'root'
             );
+            const childHasSpread = childAttrs.some(
+              (a) => a.type === 'JSXSpreadAttribute'
+            );
 
             if (
               !hasSpread &&
@@ -1253,7 +1401,8 @@ const runPass2 = (
               childOpening &&
               childNameNode &&
               isEditableChild &&
-              !childHasRoot
+              !childHasRoot &&
+              !childHasSpread
             ) {
               const rootAttrText = source.slice(
                 getNodeStart(rootAttr),
@@ -1271,7 +1420,9 @@ const runPass2 = (
                 replacement: '',
                 start: removeStart,
               });
-              const insertAt = getNodeEnd(childNameNode);
+              const insertAt = isAstNode(childOpening.typeParameters)
+                ? getNodeEnd(childOpening.typeParameters)
+                : getNodeEnd(childNameNode);
               edits.push({
                 end: insertAt,
                 replacement: ` ${rootAttrText}`,
@@ -1291,10 +1442,20 @@ const runPass2 = (
           }
         }
 
+        const renameRule = binding
+          ? PLITE_TO_PLATE_SYMBOL_RENAMES[
+              `${binding.sourceModule}#${binding.importedName}`
+            ]
+          : undefined;
         const nextName =
           binding &&
           !walk.isShadowed(tagName) &&
-          binding.localName === binding.importedName
+          binding.localName === binding.importedName &&
+          renameRule &&
+          !pass2Scope.isTargetOccupied(
+            renameRule.targetModule,
+            renameRule.targetName
+          )
             ? JSX_COMPONENT_RENAMES[binding.importedName]
             : undefined;
         if (nextName) {
@@ -1376,6 +1537,7 @@ const runPass3 = (
 ): { code: string; editsCount: number } => {
   const ast = parseSource(source, ctx.filePath);
   const bindings = collectPliteImports(ast);
+  const pass3Scope = collectDeclaredAndImportedNames(ast);
 
   const remainingRefCount = new Map<string, number>();
   walkAst(ast, (node, walk) => {
@@ -1633,10 +1795,26 @@ const runPass3 = (
           );
         }
         const isUnaliased = localName === importedName;
-        const nextLocalName = isUnaliased ? rename.targetName : localName;
-        if (isUnaliased && nextLocalName !== localName) {
+        const collides =
+          isUnaliased &&
+          rename.targetName !== localName &&
+          pass3Scope.isTargetOccupied(rename.targetModule, rename.targetName);
+        const nextLocalName =
+          isUnaliased && !collides ? rename.targetName : localName;
+        if (collides) {
+          ctx.diagnostics.push(
+            makeDiagnostic(
+              ctx.filePath,
+              spec,
+              'warning',
+              'rename-target-collision',
+              `"${rename.targetName}" is already declared or imported in this file; kept local alias "${localName}" via "${rename.targetName} as ${localName}".`
+            )
+          );
+        } else if (isUnaliased && nextLocalName !== localName) {
           identifierRenames.set(localName, nextLocalName);
         }
+        ctx.migratedPliteLocalNames.add(nextLocalName);
         addLocalGroup(rename.targetModule, {
           importKind: rename.isTypeOnly ? 'type' : importKind,
           importedName: rename.targetName,
@@ -1691,6 +1869,7 @@ const runPass3 = (
         continue;
       }
 
+      ctx.migratedPliteLocalNames.add(localName);
       addLocalGroup(targetModule, { importKind, importedName, localName });
     }
 
@@ -1781,11 +1960,20 @@ const runPass3 = (
         isReferenceIdentifier(node, walk.parent, walk.parentKey) &&
         !walk.isShadowed(String(node.name))
       ) {
-        const nextName = identifierRenames.get(String(node.name));
+        const oldName = String(node.name);
+        const nextName = identifierRenames.get(oldName);
         if (nextName) {
+          const isShorthandExport =
+            walk.parent?.type === 'ExportSpecifier' &&
+            walk.parentKey === 'local' &&
+            isAstNode(walk.parent.exported) &&
+            getNodeStart(walk.parent.exported) === getNodeStart(node) &&
+            getNodeEnd(walk.parent.exported) === getNodeEnd(node);
           edits.push({
             end: getNodeEnd(node),
-            replacement: nextName,
+            replacement: isShorthandExport
+              ? `${nextName} as ${oldName}`
+              : nextName,
             start: getNodeStart(node),
           });
         }
@@ -1823,12 +2011,104 @@ const runPass3 = (
   };
 };
 
+const unwrapTsExpr = (expr: AstNode | undefined): AstNode | undefined => {
+  let current = expr;
+  while (
+    current &&
+    (current.type === 'TSAsExpression' ||
+      current.type === 'TSSatisfiesExpression' ||
+      current.type === 'ParenthesizedExpression')
+  ) {
+    current = current.expression as AstNode | undefined;
+  }
+  return current;
+};
+
 const isBooleanLiteralAttr = (attr: AstNode, expected: boolean): boolean => {
   const value = attr.value as AstNode | null | undefined;
   if (!value) return expected;
   if (value.type !== 'JSXExpressionContainer') return false;
-  const expr = value.expression as AstNode | undefined;
+  const expr = unwrapTsExpr(value.expression as AstNode | undefined);
   return expr?.type === 'BooleanLiteral' && expr.value === expected;
+};
+
+const isUndefinedExprAttr = (attr: AstNode, walk: WalkContext): boolean => {
+  const value = attr.value as AstNode | null | undefined;
+  if (!value || value.type !== 'JSXExpressionContainer') return false;
+  const expr = unwrapTsExpr(value.expression as AstNode | undefined);
+  return (
+    (expr?.type === 'Identifier' &&
+      expr.name === 'undefined' &&
+      !walk.isShadowed('undefined')) ||
+    (expr?.type === 'UnaryExpression' && expr.operator === 'void')
+  );
+};
+
+const findConstInitInStmts = (
+  stmts: AstNode[],
+  name: string
+): { found: boolean; init: AstNode | null } => {
+  for (const stmt of stmts) {
+    const declStmt =
+      stmt.type === 'ExportNamedDeclaration' && isAstNode(stmt.declaration)
+        ? stmt.declaration
+        : stmt;
+    if (declStmt.type !== 'VariableDeclaration') continue;
+    const isConst = declStmt.kind === 'const';
+    for (const decl of (declStmt.declarations as AstNode[] | undefined) ?? []) {
+      const boundNames = new Set<string>();
+      collectPatternNames(decl.id as AstNode, boundNames);
+      if (!boundNames.has(name)) continue;
+      if (
+        isConst &&
+        isAstNode(decl.id) &&
+        decl.id.type === 'Identifier' &&
+        isAstNode(decl.init)
+      ) {
+        const unwrapped = unwrapTsExpr(decl.init);
+        if (
+          unwrapped?.type === 'ObjectExpression' ||
+          unwrapped?.type === 'Identifier'
+        ) {
+          return { found: true, init: unwrapped };
+        }
+      }
+      return { found: true, init: null };
+    }
+  }
+  return { found: false, init: null };
+};
+
+const resolveConstObjectInScope = (
+  name: string,
+  ancestors: AstNode[]
+): AstNode | null => {
+  for (let i = ancestors.length - 1; i >= 0; i -= 1) {
+    const scope = ancestors[i];
+    if (!scope) continue;
+    if (
+      scope.type === 'Program' ||
+      scope.type === 'BlockStatement' ||
+      scope.type === 'SwitchCase'
+    ) {
+      const stmts =
+        scope.type === 'SwitchCase'
+          ? ((scope.consequent as AstNode[] | undefined) ?? [])
+          : ((scope.body as AstNode[] | undefined) ?? []);
+      const lookup = findConstInitInStmts(stmts, name);
+      if (lookup.found) return lookup.init;
+    } else if (scope.type === 'SwitchStatement') {
+      const stmts = ((scope.cases as AstNode[] | undefined) ?? []).flatMap(
+        (c) => (c.consequent as AstNode[] | undefined) ?? []
+      );
+      const lookup = findConstInitInStmts(stmts, name);
+      if (lookup.found) return lookup.init;
+    } else if (SCOPE_NODE_TYPES.has(scope.type)) {
+      const localNames = collectLocalScopeDeclarations(scope);
+      if (localNames.has(name)) return null;
+    }
+  }
+  return null;
 };
 
 const runPass4 = (
@@ -1840,8 +2120,61 @@ const runPass4 = (
   const edits: CodemodEdit[] = [];
   const emittedTodoKeys = new Set<string>();
 
-  const resolveBinding = (name: string, walk: WalkContext) =>
-    walk.isShadowed(name) ? undefined : bindings.get(name);
+  const findDeferredProp = (
+    expr: AstNode | undefined,
+    ancestors: AstNode[],
+    seen = new Set<string>()
+  ): AstNode | null => {
+    const unwrapped = unwrapTsExpr(expr);
+    if (!unwrapped) return null;
+    if (unwrapped.type === 'ObjectExpression') {
+      for (const prop of (unwrapped.properties as AstNode[]) ?? []) {
+        if (
+          prop.type === 'ObjectProperty' &&
+          getPropertyName(prop) === 'deferred'
+        ) {
+          return prop;
+        }
+        if (
+          prop.type === 'SpreadElement' &&
+          findDeferredProp(
+            prop.argument as AstNode | undefined,
+            ancestors,
+            seen
+          )
+        ) {
+          return prop;
+        }
+      }
+      return null;
+    }
+    if (
+      unwrapped.type === 'Identifier' &&
+      typeof unwrapped.name === 'string' &&
+      !seen.has(unwrapped.name)
+    ) {
+      seen.add(unwrapped.name);
+      return findDeferredProp(
+        resolveConstObjectInScope(unwrapped.name, ancestors) ?? undefined,
+        ancestors,
+        seen
+      );
+    }
+    return null;
+  };
+
+  const resolveBinding = (name: string, walk: WalkContext) => {
+    if (walk.isShadowed(name)) return undefined;
+    const binding = bindings.get(name);
+    if (!binding) return undefined;
+    if (
+      !isPliteModule(binding.sourceModule) &&
+      !ctx.migratedPliteLocalNames.has(name)
+    ) {
+      return undefined;
+    }
+    return binding;
+  };
 
   const isContentTag = (tagName: string, walk: WalkContext): boolean => {
     const binding = resolveBinding(tagName, walk);
@@ -1852,7 +2185,10 @@ const runPass4 = (
     );
   };
 
-  const isEditorRootTag = (tagName: string, walk: WalkContext): boolean => {
+  const isMigratedEditorRootTag = (
+    tagName: string,
+    walk: WalkContext
+  ): boolean => {
     const binding = resolveBinding(tagName, walk);
     return (
       !!binding &&
@@ -1860,6 +2196,30 @@ const runPass4 = (
         binding.sourceModule === 'plitejs/react') &&
       binding.importedName === 'EditorRoot'
     );
+  };
+
+  const isEditorRootTag = (
+    tagName: string,
+    ancestorsAtRoot: AstNode[]
+  ): boolean => {
+    const binding = bindings.get(tagName);
+    if (
+      !binding ||
+      (binding.sourceModule !== 'platejs/react' &&
+        binding.sourceModule !== 'plitejs/react') ||
+      binding.importedName !== 'EditorRoot'
+    ) {
+      return false;
+    }
+    for (const scope of ancestorsAtRoot) {
+      if (
+        SCOPE_NODE_TYPES.has(scope.type) &&
+        collectLocalScopeDeclarations(scope).has(tagName)
+      ) {
+        return false;
+      }
+    }
+    return true;
   };
 
   const scheduleTodo = (
@@ -1921,27 +2281,42 @@ const runPass4 = (
         );
         if (
           contentReadOnlyAttr &&
-          !isBooleanLiteralAttr(contentReadOnlyAttr, true)
+          !isBooleanLiteralAttr(contentReadOnlyAttr, true) &&
+          !isUndefinedExprAttr(contentReadOnlyAttr, walk)
         ) {
-          const hasReadOnlyRootAncestor = walk.ancestors.some((ancestor) => {
-            if (ancestor.type !== 'JSXElement') return false;
-            const ancestorOpening = ancestor.openingElement as AstNode;
-            const ancestorName = ancestorOpening.name as AstNode;
-            if (ancestorName.type !== 'JSXIdentifier') return false;
-            if (!isEditorRootTag(String(ancestorName.name), walk)) return false;
-            const ancestorAttrs =
-              (ancestorOpening.attributes as AstNode[]) ?? [];
-            const ancestorReadOnly = ancestorAttrs.find(
-              (a) =>
-                a.type === 'JSXAttribute' &&
-                (a.name as AstNode).type === 'JSXIdentifier' &&
-                (a.name as AstNode).name === 'readOnly'
-            );
-            return (
-              !!ancestorReadOnly &&
-              !isBooleanLiteralAttr(ancestorReadOnly, false)
-            );
-          });
+          const hasReadOnlyRootAncestor = walk.ancestors.some(
+            (ancestor, index) => {
+              if (ancestor.type !== 'JSXElement') return false;
+              const ancestorOpening = ancestor.openingElement as AstNode;
+              const ancestorName = ancestorOpening.name as AstNode;
+              if (ancestorName.type !== 'JSXIdentifier') return false;
+              if (
+                !isEditorRootTag(
+                  String(ancestorName.name),
+                  walk.ancestors.slice(0, index)
+                )
+              ) {
+                return false;
+              }
+              const ancestorAttrs =
+                (ancestorOpening.attributes as AstNode[]) ?? [];
+              let rootMayBeReadOnly = false;
+              for (const attr of ancestorAttrs) {
+                if (attr.type === 'JSXSpreadAttribute') {
+                  rootMayBeReadOnly = true;
+                } else if (
+                  attr.type === 'JSXAttribute' &&
+                  (attr.name as AstNode).type === 'JSXIdentifier' &&
+                  (attr.name as AstNode).name === 'readOnly'
+                ) {
+                  rootMayBeReadOnly =
+                    !isBooleanLiteralAttr(attr, false) &&
+                    !isUndefinedExprAttr(attr, walk);
+                }
+              }
+              return rootMayBeReadOnly;
+            }
+          );
           if (hasReadOnlyRootAncestor) {
             scheduleTodo(
               contentReadOnlyAttr,
@@ -1982,7 +2357,7 @@ const runPass4 = (
       if (
         attrName === 'decorations' &&
         tagName &&
-        isEditorRootTag(tagName, walk)
+        isMigratedEditorRootTag(tagName, walk)
       ) {
         scheduleTodo(
           node,
@@ -1996,7 +2371,7 @@ const runPass4 = (
       if (
         attrName === 'onValueChange' &&
         tagName &&
-        isEditorRootTag(tagName, walk)
+        isMigratedEditorRootTag(tagName, walk)
       ) {
         const valueExpr = (node.value as AstNode | null)?.expression as
           | AstNode
@@ -2108,22 +2483,24 @@ const runPass4 = (
         if (
           calleeBinding &&
           (calleeBinding.importedName === 'useEditorSelector' ||
-            calleeBinding.importedName === 'useStateFieldValue')
+            calleeBinding.importedName === 'useStateFieldValue' ||
+            calleeBinding.importedName === 'useNodeSelector')
         ) {
           for (const optArg of [args[1], args[2]]) {
-            if (optArg?.type !== 'ObjectExpression') continue;
-            const deferredProp = ((optArg.properties as AstNode[]) ?? []).find(
-              (p) =>
-                p.type === 'ObjectProperty' && getPropertyName(p) === 'deferred'
-            );
+            const deferredProp = findDeferredProp(optArg, walk.ancestors);
             if (deferredProp) {
+              const message =
+                calleeBinding.importedName === 'useNodeSelector'
+                  ? 'Plite useNodeSelector no longer accepts `deferred` (and Plate drops useNodeSelector in favor of useElementSelector); remove `deferred` and wrap the result with React useDeferredValue if needed.'
+                  : `Plate ${calleeBinding.importedName} does not accept \`deferred\`; wrap the selector output with React useDeferredValue instead.`;
               scheduleTodo(
-                deferredProp,
+                optArg ?? deferredProp,
                 walk.ancestors,
                 'manual',
                 'selector-deferred-option',
-                `Plate ${calleeBinding.importedName} does not accept \`deferred\`; wrap the selector output with React useDeferredValue instead.`
+                message
               );
+              break;
             }
           }
         }
@@ -2226,6 +2603,7 @@ export const transformPliteToPlate = ({
     addedImports: [],
     diagnostics: [],
     filePath,
+    migratedPliteLocalNames: new Set<string>(),
   };
 
   let current = source;

@@ -43,7 +43,7 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         renderElement={renderElement}
         onKeyDown={(event) => {
           if (!event.ctrlKey) {
@@ -129,7 +129,7 @@ const renderLeaf = ({ attributes, children, leaf }: RenderLeafProps) => {
 };
 ```
 
-Pass both renderers to `Editable`:
+Pass both renderers to `EditorContent`:
 
 ```tsx
 const App = () => {
@@ -137,7 +137,7 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         renderElement={renderElement}
         renderLeaf={renderLeaf}
         onKeyDown={(event) => {

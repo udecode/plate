@@ -340,11 +340,11 @@ const SyncedBlock = ({ attributes, element, slots }) => (
 ```
 
 Undo and redo keys pressed in an editable move focus to the view that made the
-step, when that view shows another root inside the same `<Editable>`. Type in
+step, when that view shows another root inside the same `<EditorContent>`. Type in
 the second of two copies of a synced block, click the page and press Mod+Z.
 Focus goes to the second copy, and the caret goes back to where it was before
 that typing. Focus stays where the key was pressed when the view that made the
-step is gone, hidden or read-only, when that view is outside the `<Editable>`,
+step is gone, hidden or read-only, when that view is outside the `<EditorContent>`,
 or when the step's selection ran from one view into another. It also stays for
 a step whose plugin history effect settles after the replay, such as creating a
 comment thread. A history control from `useEditorHistory`, an external control

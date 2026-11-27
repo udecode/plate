@@ -27,7 +27,7 @@ unmounts or the editor is replaced.
 #### `useEditor(): Editor`
 
 Get the active editor for UI inside an `EditorRoot` provider. Inside an
-`Editable`, `useEditor()` returns that editing area's editor without subscribing
+`EditorContent`, `useEditor()` returns that editing area's editor without subscribing
 to caret root changes. Outside every editing area, such as in a toolbar, it
 returns the editor of the root that holds the caret, or the `EditorRoot`'s own
 root editor while nothing is selected. Throws outside an `EditorRoot` provider
@@ -55,7 +55,7 @@ composition session.
 
 Get whether the active editor (from `useEditor()`) is focused. Use this for
 toolbar UI, not for every rendered node in a large document. A read-only
-`Editable` renders as static text and never takes focus, so this is `false` for
+`EditorContent` renders as static text and never takes focus, so this is `false` for
 it.
 
 #### `useEditorReadOnly(): boolean`
@@ -202,28 +202,28 @@ UI and DOM focus should stay outside the editor.
 With `options.root`, the controls follow the view that `useRootEditor` follows
 for that root, and `history.undo()` and `history.redo()` run in that view
 wherever DOM focus is. Each reads its root and that root's view when it runs.
-While no `Editable` shows that root, they are off and do nothing.
+While no `EditorContent` shows that root, they are off and do nothing.
 
 Without `options.editor` and `options.root`, the controls follow the change
 their next undo or redo takes back. History is document-wide, so an undo takes
 back the document's latest change in whichever root that change is, through the
-writable `Editable` the user used most recently. `canUndo` and `canRedo` each
+writable `EditorContent` the user used most recently. `canUndo` and `canRedo` each
 answer for their own direction, so undo can be on while redo is off because its
-change edits a root no `Editable` shows. `editor.read.history.hasUndo()` and
+change edits a root no `EditorContent` shows. `editor.read.history.hasUndo()` and
 `hasRedo()` read the whole document's history, so they tell an empty history
 from a change the control cannot reach.
 
 A control without `options.editor` and `options.root` is off while no shown,
-writable `Editable` reaches a root its next undo or redo changes. That happens
-when no `Editable` shows the root or every one that shows it is read-only. While
+writable `EditorContent` reaches a root its next undo or redo changes. That happens
+when no `EditorContent` shows the root or every one that shows it is read-only. While
 the control is off, its commands do nothing. A content root that an element
-owns, such as a footnote's body, counts through its own `Editable` while one is
+owns, such as a footnote's body, counts through its own `EditorContent` while one is
 shown, and otherwise through a root that holds its owner, because a windowed
 page unmounts the body with its owner. The undo and redo shortcuts inside an
-`Editable` follow the same rule. A control with `options.editor` or
+`EditorContent` follow the same rule. A control with `options.editor` or
 `options.root` skips the rule and takes back the next change wherever it is, as
 `editor.api.history.undo()` does. With `options.editor`, it can stay on while no
-`Editable` runs that editor, and its commands then do nothing. While any
+`EditorContent` runs that editor, and its commands then do nothing. While any
 control's view is read-only or composes text, `canUndo` and `canRedo` are
 `false`.
 
@@ -250,10 +250,10 @@ const outcome = result.status === "pending" ? await result.settled : result;
 
 Mounted controls deliver every final outcome to the exact initiating editor
 surface. Handle expected outcomes such as `blocked`, `busy`, `empty`,
-`failed`, and `unavailable` on `Editable`:
+`failed`, and `unavailable` on `EditorContent`:
 
 ```tsx
-<Editable
+<EditorContent
   onHistoryReplay={({ direction, result }) => {
     if (result.status === "blocked") {
       showHistoryConflict(direction, result);
@@ -267,7 +267,7 @@ surface. Handle expected outcomes such as `blocked`, `busy`, `empty`,
 
 When the rule above refuses the undo shortcut or a native history input, the
 outcome is `unavailable` with the `root` that stopped it, `undefined` for the
-primary document. Its reason is `hidden` when no `Editable` reaches that root
+primary document. Its reason is `hidden` when no `EditorContent` reaches that root
 and `read-only` when only read-only ones do. A refused shortcut stays consumed,
 so the browser's own undo does not run. A click on a control that is off runs
 nothing and reports no outcome.
@@ -317,30 +317,30 @@ true }` when the editor should only read state.
 Omit `root` for the primary document.
 
 The editor follows the view that shows its root inside the `EditorRoot` around
-the hook. An `Editable` without `root` shows the `EditorRoot`'s own root
-through the `EditorRoot`, and an `Editable` with `root` is a view of its own.
+the hook. An `EditorContent` without `root` shows the `EditorRoot`'s own root
+through the `EditorRoot`, and an `EditorContent` with `root` is a view of its own.
 When several views show the root, the editor follows the one the user last
 focused or pressed. Until the user has focused or pressed one, it follows the
 first one mounted. Once the view it follows unmounts, it follows the one the
 user focused or pressed before that, or the first one mounted when the user has
 focused or pressed no other. While every view of the root there is hidden, as
 under an `Activity`, it follows a hidden one. While no view of the root is
-mounted there, it follows the `EditorRoot`, or the `Editable` around the hook
+mounted there, it follows the `EditorRoot`, or the `EditorContent` around the hook
 when the hook renders inside one. An `EditorRoot`'s `readOnly` holds for every
-write of the render that sets it. That includes writes through each `Editable`
+write of the render that sets it. That includes writes through each `EditorContent`
 with `root` inside it that the render keeps, mounts, removes, hides or
 suspends. An `EditorReadOnlyProvider` that sets `readOnly` gives each
-`Editable` inside it that value as its own `readOnly` instead. The lock
+`EditorContent` inside it that value as its own `readOnly` instead. The lock
 covers a control's unmount code and a custom element's connect. It does not
 cover the first `attributeChangedCallback` of a custom element that React
 creates in that render with an observed attribute, because React runs that
 callback while it renders. When `readOnly` turns off, writes stay refused until
 React has removed and inserted the nodes of that render. A preview takes hold
-in the `EditorRoot`'s layout effect. An `Editable`'s own `readOnly` takes hold
-in that `Editable`'s layout effect when the `Editable` has no `root` or mounts
+in the `EditorRoot`'s layout effect. An `EditorContent`'s own `readOnly` takes hold
+in that `EditorContent`'s layout effect when the `EditorContent` has no `root` or mounts
 in that render. In such a render, a write from code that runs before that
 layout effect can still land, such as a control's mount or unmount code or an
-earlier layout effect. An `Editable` with `root` that the render keeps applies
+earlier layout effect. An `EditorContent` with `root` that the render keeps applies
 its own `readOnly` where it sits in the tree. So a class component's
 `getSnapshotBeforeUpdate` placed before it can still write, and a render that
 hides or suspends it applies the lock only once it shows again.
@@ -349,7 +349,7 @@ hides or suspends it applies the lock only once it shows again.
 before that render to refuse those writes too. A preview set while the user
 composes text takes hold when the composition ends.
 
-The editor never acts in another `EditorRoot`, even while an `Editable` there
+The editor never acts in another `EditorRoot`, even while an `EditorContent` there
 holds the caret in the hook's root, and that `EditorRoot`'s lock and authored
 mode never apply to it. So a press in a writable `EditorRoot` writes plain text
 into a root that another `EditorRoot` shows read-only or in suggesting mode.
@@ -357,13 +357,13 @@ A write through it that places the caret
 moves the caret into its own `EditorRoot`. Under an `EditorRoot` that shows a
 preview, its content edits throw and its selection changes go through.
 
-Hooks that render in the same `EditorRoot` or `Editable` and ask for the same
+Hooks that render in the same `EditorRoot` or `EditorContent` and ask for the same
 root and `readOnly` option share one editor, so a lock or unlock set through
 it with `setEditorReadOnly` reaches each of them.
 
 While that view is read-only, every update through the editor throws, and
 `{ readOnly: false }` does not make the editor writable. An `EditorRoot` is
-read-only while it has `readOnly`, or while every `Editable` that shows its own
+read-only while it has `readOnly`, or while every `EditorContent` that shows its own
 root is read-only and at least one does. The editor also takes the view's
 authored view, so it records its edits as proposals while the view is in
 suggesting mode.
@@ -374,8 +374,8 @@ it never acts in it.
 Its `editor.api.dom` calls run in the view it follows, so a toolbar button can
 focus or measure the view its commands edit. A call given a DOM node, an
 event or pointer coordinates runs instead in the view of the root that holds
-them, when that view belongs to the same `EditorRoot`. While no `Editable` in
-its `EditorRoot` shows the root, the calls find no `Editable`, even when one in
+them, when that view belongs to the same `EditorRoot`. While no `EditorContent` in
+its `EditorRoot` shows the root, the calls find no `EditorContent`, even when one in
 another `EditorRoot` holds the caret, and `focus()` does nothing.
 `resolveNode` and `resolvePoint` still resolve a text node that any view of the editor renders, because they
 read the document's text before they look for a view.
@@ -445,14 +445,14 @@ Pass `focus: 'restore-root'` when the command should move focus back to the
 editor root before running, so it runs at the caret that focus gives the root.
 Pass `focus: 'none'` to leave focus alone. The default is `focus: 'preserve'`.
 Pass `root` when the command should target a known root instead of the editable
-or active root. An `EditorRoot` does not hide the `Editable` around it, so a
-hook in an `EditorRoot` nested inside an `Editable` takes that `Editable`'s root
+or active root. An `EditorRoot` does not hide the `EditorContent` around it, so a
+hook in an `EditorRoot` nested inside an `EditorContent` takes that `EditorContent`'s root
 name, whether the nested `EditorRoot` shows the same editor or another.
 
-With no `root` and outside an `Editable`, the command runs in the root the
+With no `root` and outside an `EditorContent`, the command runs in the root the
 caret is in when the dispatcher is called. A focus that no press started puts
-back the caret an `Editable` last held before the focus handlers passed to that
-`Editable` run, so a call from such a handler runs in its root. A handler of a
+back the caret an `EditorContent` last held before the focus handlers passed to that
+`EditorContent` run, so a call from such a handler runs in its root. A handler of a
 press, of a first focus or a capture handler on a wrapper element runs while
 the caret is still in the root it left, so pass `root` when a handler must
 write in its own root.
@@ -462,7 +462,7 @@ the target root. While that view is read-only, a command that updates the
 editor throws, as an update through a read-only editor does, and the
 dispatcher moves no focus. When `focus: 'restore-root'` focuses a view whose
 focus handler makes it read-only, the command throws and focus stays in that
-view. When `restore-root` finds an `Editable` of the target root, it moves
+view. When `restore-root` finds an `EditorContent` of the target root, it moves
 focus there before a preview or a plugin can refuse the command.
 
 The dispatcher throws inside `editor.read` and `editor.update`, before it moves
@@ -536,9 +536,9 @@ Render app-owned UI from node, selection, or annotation state.
 
 Read the current editor selection geometry.
 Use this direct domain hook for toolbars, link controls, and retained carets.
-Pass the exact Editable ref received by the render slot.
+Pass the exact `EditorContent` ref received by the render slot.
 
-`clipRect` is the part of the Editable anyone can see, cut by every box that
+`clipRect` is the part of the `EditorContent` anyone can see, cut by every box that
 clips it, and `visible` holds the selection's boxes cut to it. Both are `null`
 when nothing shows. Hide a popup or caret while `visible` is `null`. Cut a
 caret's paint to `clipRect` with `clip-path`, or place it with
@@ -548,7 +548,7 @@ caret's paint to `clipRect` with `clip-path`, or place it with
 #### `useEditableClip({ editableRef }): (rects) => readonly ViewportRect[]`
 
 Cut boxes your UI measured itself, such as the lines a popover anchors to, to
-the Editable's `clipRect` by the rule of `visible`. The function returns `[]`
+the `EditorContent`'s `clipRect` by the rule of `visible`. The function returns `[]`
 when no part of the boxes shows, and stays the same across renders. Call it
 while measuring. Cuts made before the next `await` share one read of the
 visible area.

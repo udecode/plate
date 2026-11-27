@@ -18,7 +18,7 @@ after committed document or state-field changes.
 ```tsx
 import { useState } from "react";
 import { defineStateField, valueCodecs } from "plitejs";
-import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
+import { EditorContent, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const STORAGE_KEY = "plite.document";
 
@@ -58,7 +58,7 @@ const App = () => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
       }}
     >
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };
@@ -87,7 +87,7 @@ or persistent meta fields, save `value.children`.
     localStorage.setItem("plite.children", JSON.stringify(value.children));
   }}
 >
-  <Editable />
+  <EditorContent />
 </EditorRoot>
 ```
 
@@ -111,13 +111,13 @@ const editor = useCreateEditor({
 });
 ```
 
-Render each root with `Editable root`.
+Render each root with `EditorContent root`.
 
 ```tsx
 <EditorRoot editor={editor}>
-  <Editable aria-label="Header" root="header" />
-  <Editable aria-label="Body" />
-  <Editable aria-label="Footer" root="footer" />
+  <EditorContent aria-label="Header" root="header" />
+  <EditorContent aria-label="Body" />
+  <EditorContent aria-label="Footer" root="footer" />
 </EditorRoot>
 ```
 

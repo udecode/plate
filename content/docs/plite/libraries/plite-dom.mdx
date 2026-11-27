@@ -216,7 +216,7 @@ format cannot block paste or copy. A decoded value that is not a valid
 reported the same way. During `accept` or `decode`, call
 `report({ impact: "lossy", message: "Unsupported content was omitted." })`
 to report conversion loss. `impact` accepts `"lossless"` or `"lossy"`.
-Mounted paste delivers conversion diagnostics through `Editable.onPasteResult`.
+Mounted paste delivers conversion diagnostics through `EditorContent.onPasteResult`.
 It also adds one `lossy` report when a format's content does not fit and a
 later format inserts, or when `maxLength` cuts the paste.
 Add a mapping or a format for content the current formats cannot represent.
@@ -265,7 +265,7 @@ to explicit policies instead of assuming every document node is mounted.
 
 React applications configure coverage through
 [`slots.contentBoundary`](./plite-react/dom-coverage-boundaries) or
-[`slots.externalText`](./plite-react/external-text). Each `Editable` owns its
+[`slots.externalText`](./plite-react/external-text). Each `EditorContent` owns its
 session and releases it on unmount.
 
 Framework integrations create one session per mounted view:
@@ -307,7 +307,7 @@ workspace should use the root `plitejs/dom` export.
 ## Related docs
 
 - [React Editor](./plite-react/react-editor)
-- [Editable Component](./plite-react/editable)
+- [EditorContent](./plite-react/editable)
 - [Clipboard And Paste](../concepts/17-clipboard-and-paste)
 - [DOM Coverage Boundaries](./plite-react/dom-coverage-boundaries)
 - [Event Handling](./plite-react/event-handling)

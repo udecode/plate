@@ -1606,6 +1606,8 @@ const pliteExampleHistory = {
   create(context) {
     const factories = new Set();
     const reactNamespaces = new Set();
+    const paginationNamespaces = new Set();
+    const virtualizedNamespaces = new Set();
     const historyNamespaces = new Set();
     const editables = new Set();
     const created = [];
@@ -1665,6 +1667,12 @@ const pliteExampleHistory = {
             if (node.source.value === 'plitejs/react') {
               reactNamespaces.add(specifier.local.name);
             }
+            if (node.source.value === 'plitejs/pagination/react') {
+              paginationNamespaces.add(specifier.local.name);
+            }
+            if (node.source.value === 'plitejs/react/virtualized') {
+              virtualizedNamespaces.add(specifier.local.name);
+            }
             if (node.source.value === 'plitejs/history') {
               historyNamespaces.add(specifier.local.name);
             }
@@ -1699,10 +1707,19 @@ const pliteExampleHistory = {
         }
       },
       JSXOpeningElement(node) {
-        if (
-          node.name.type !== 'JSXIdentifier' ||
-          !editables.has(node.name.name)
-        ) {
+        const isEditableElement =
+          (node.name.type === 'JSXIdentifier' &&
+            editables.has(node.name.name)) ||
+          (node.name.type === 'JSXMemberExpression' &&
+            node.name.object.type === 'JSXIdentifier' &&
+            node.name.property.type === 'JSXIdentifier' &&
+            ((reactNamespaces.has(node.name.object.name) &&
+              node.name.property.name === 'EditorContent') ||
+              (paginationNamespaces.has(node.name.object.name) &&
+                node.name.property.name === 'PagedEditorContent') ||
+              (virtualizedNamespaces.has(node.name.object.name) &&
+                node.name.property.name === 'VirtualizedEditorContent')));
+        if (!isEditableElement) {
           return;
         }
         if (node.attributes.some(isReadOnlyAttribute)) readOnlyOnly = true;

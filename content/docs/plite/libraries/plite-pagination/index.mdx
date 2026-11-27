@@ -4,7 +4,7 @@ description: "Measure a Plite document and render one owned paged editor surface
 ---
 
 `plitejs/pagination` derives immutable page geometry from a Plite editor.
-`PagedEditable` owns the live paged surface: measurement, page arrangement,
+`PagedEditorContent` owns the live paged surface: measurement, page arrangement,
 document placement, and optional page-level DOM omission.
 
 ## Installation
@@ -18,7 +18,7 @@ npm install plitejs @chenglou/pretext react react-dom
 ```tsx
 import { createPretextPageLayoutEngine } from "plitejs/pagination";
 import {
-  PagedEditable,
+  PagedEditorContent,
   usePageLayout,
 } from "plitejs/pagination/react";
 import { EditorRoot, useCreateEditor } from "plitejs/react";
@@ -33,7 +33,7 @@ const DocumentEditor = () => {
   return (
     <EditorRoot editor={editor}>
       <output>{layout?.pages.length ?? 0} pages</output>
-      <PagedEditable
+      <PagedEditorContent
         ref={editableRef}
         engine={engine}
         page={{ margins: 72, preset: "letter" }}
@@ -47,7 +47,7 @@ const DocumentEditor = () => {
 };
 ```
 
-`PagedEditable` accepts ordinary `Editable` props, including element and leaf
+`PagedEditorContent` accepts ordinary `EditorContent` props, including element and leaf
 renderers and event handlers. `renderPage` receives page attributes and page
 geometry. It renders page chrome without document children; the paged surface
 places editable content on the shared canvas.
@@ -75,7 +75,7 @@ Inline-flow text is the default. Non-text block structures describe their
 fragmentation through one provider:
 
 ```tsx
-<PagedEditable
+<PagedEditorContent
   page={{ margins: 72, preset: "letter" }}
   fragmentation={({ element }) => {
     if (element.type === "image") {
@@ -145,7 +145,7 @@ keep it across renders, since an engine keeps only one last measurement.
 
 ## Roots and page settings
 
-Pass a named `root` to `PagedEditable` or `measurePages` to measure and render
+Pass a named `root` to `PagedEditorContent` or `measurePages` to measure and render
 that root. Omit `root` for the primary document. `"main"` is an internal root
 spelling and is rejected at the public boundary.
 
@@ -154,7 +154,7 @@ field. The built-in presets are `"a4"` and `"letter"`.
 
 ## DOM coverage
 
-`PagedEditable` mounts the complete paged DOM by default. Set `virtualize` when
+`PagedEditorContent` mounts the complete paged DOM by default. Set `virtualize` when
 the complete surface exceeds the product's measured interaction or memory
 budget. Pagination keeps visible, selected, and explicitly materialized page
 content mounted in one coordinate system.

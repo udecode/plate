@@ -74,13 +74,13 @@ Mutate the primary document with normal node and text transforms instead of
 
 ## Rendering roots
 
-Pass `root` to `Editable` when one React tree renders a named root.
+Pass `root` to `EditorContent` when one React tree renders a named root.
 
 ```tsx
 <EditorRoot editor={editor}>
-  <Editable aria-label="Header" root="header" />
-  <Editable aria-label="Body" />
-  <Editable aria-label="Footer" root="footer" />
+  <EditorContent aria-label="Header" root="header" />
+  <EditorContent aria-label="Body" />
+  <EditorContent aria-label="Footer" root="footer" />
 </EditorRoot>
 ```
 
@@ -92,7 +92,7 @@ const chrome = useRootChrome("header");
 
 return (
   <section {...chrome.props}>
-    <Editable root="header" />
+    <EditorContent root="header" />
   </section>
 );
 ```
@@ -101,11 +101,11 @@ Pair `useRootEditor(root)` with `useEditorSelector(rootEditor, selector, options
 for UI that reads one root without subscribing to every editor change. Use
 `useRootEditor(root)` for commands that must run against a specific root.
 
-A content root's view, such as a board note's text, is an `Editable` of its
-own inside the page's `Editable`. UI outside every `Editable`, such as a page
+A content root's view, such as a board note's text, is an `EditorContent` of its
+own inside the page's `EditorContent`. UI outside every `EditorContent`, such as a page
 toolbar, gets the editor of the root that holds the caret from
 `useEditor()`, or the `EditorRoot`'s own root editor while nothing is selected.
-Inside an `Editable`, `useEditor()` returns that editing area's editor.
+Inside an `EditorContent`, `useEditor()` returns that editing area's editor.
 Plate's `useEditor()` gives the same editor, as
 [Toolbar](/docs/toolbar#act-where-the-caret-is) describes.
 
@@ -290,7 +290,7 @@ Each owner gives its `path` and `slot`, and its `root` when the owner sits in
 another named root rather than on the page. A shared root lists every owner.
 `top` is the path of the page block that holds the root through its first
 owners. A root that no chain of owners reaches from the page, such as a
-`header` root the page renders with `<Editable root="header" />`, comes last,
+`header` root the page renders with `<EditorContent root="header" />`, comes last,
 with `top: null`.
 
 ### Set roots

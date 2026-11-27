@@ -22,12 +22,12 @@ npx @platejs/cli@beta codemod plite-to-plate ./src
 在 Plate v2 处于 `beta` 阶段期间，请使用 `@platejs/cli@beta`。该 codemod 会：
 
 - 将 `plitejs` 和 `plitejs/*` 导入重写为 `platejs` 和 `platejs/*`，合并到已有的 `platejs` 导入并保留类型导入与别名。
-- 重命名 `Editable`、`PagedEditable`、`VirtualizedEditable`、`useEditorContext`、`useOptionalEditorContext`、`ReactPlugin` 以及选择器选项类型。
-- 将安全的 `DOMEditor.*` 和 `DOMEditor.clipboard.*` 调用重写为 `editor.api.dom.*` 和 `editor.api.dom.clipboard.*`。
+- 重命名 `useEditorContext`、`useOptionalEditorContext`、`ReactPlugin`，以及较早 Plite beta 名称（`Editable`、`PagedEditable`、`VirtualizedEditable`、`EditorSelectorOptions` 及其配套属性类型）。
+- 将安全的较早 `DOMEditor.*` 和 `DOMEditor.clipboard.*` 调用重写为 `editor.api.dom.*` 和 `editor.api.dom.clipboard.*`。
 - 将无参 `history()`、静态 `history({ enabled, maxDepth, newBatchDelay })`、React 中的 `dom({ clipboardFormatKey })`、静态 `authored({ authorId })` 以及 `authoredRecords` 转换为 Plate 选项和插件。
-- 当 `<EditorRoot>` 没有观察者或展开属性时，将 `root` 移动到唯一直接子元素 `<EditorContent>` 上。
+- 当 `<EditorRoot>` 没有观察者或展开属性且 `<EditorContent>` 没有展开属性时，将 `root` 移动到唯一直接子元素 `<EditorContent>` 上。
 - 向 `package.json` 添加 `platejs`，并在整个包内不再存在任何 `plitejs` 导入后移除 `plitejs`。
-- 对 `renderElement`、`renderLeaf`、`defineEditorSchema`、`<EditorRoot decorations>` 和 Plite 专用 hook 等手动步骤插入 `TODO(plate-codemod:...)` 注释并输出诊断信息。
+- 对 `renderElement`、`renderLeaf`、`<EditorContent>` 上的 `readOnly` 覆盖、`defineEditorSchema` 和 `<EditorRoot decorations>` 等手动步骤插入 `TODO(plate-codemod:...)` 注释，并对 Plite 专用 hook、未上移的 `root` 属性、`<EditorContent>` 上的展开属性与多根下的 `useEditorContext` 输出控制台诊断或迁移警告。
 
 常用参数：`--dry`、`--print`、`--force`（跳过 git 工作区干净检查）、`--no-install` 和 `--no-package-json`。将自定义 schema 转为 Plate 插件后，运行 `npx @platejs/cli@beta generate` 生成精确的编辑器类型。
 
@@ -45,7 +45,7 @@ npm install platejs
 
 ```ts
 // 之前
-import { EditorRoot, Editable, useCreateEditor } from 'plitejs/react';
+import { EditorRoot, EditorContent, useCreateEditor } from 'plitejs/react';
 ```
 
 ```ts
@@ -78,14 +78,14 @@ const editor = useCreateEditor({
 
 有关编辑器配置的更多详情，请查看[编辑器配置指南](/docs/editor)。
 
-## 4. 替换 Plite 和 Editable 组件
+## 4. 切换到 Plate 的 EditorRoot 和 EditorContent
 
-将 `EditorRoot` 和 `Editable` 组件替换为 Plate 的 `EditorRoot` 组件：
+Plite 和 Plate 都使用 `EditorRoot` 和 `EditorContent`；在 Plate 中移除渲染属性，改为在插件中注册组件：
 
 ```tsx
 // 之前
 <EditorRoot editor={editor}>
-  <Editable className="p-4" />
+  <EditorContent className="p-4" renderElement={renderElement} />
 </EditorRoot>
 
 // 之后
@@ -281,7 +281,7 @@ const editor = useCreateEditor({
 | `useCreateEditor(options, deps)` | `useCreateEditor(options, deps)` | 接受 Plate 插件和选项，与 `platejs/react` 的 `createEditor` 一样支持 `clipboardFormatKey`。 |
 | `useEditor()` | `useEditor()` | 返回当前编辑区域或光标所在根的 Plate React `Editor`，传入任何参数都会抛出错误。 |
 | `useOptionalEditor()` | `useOptionalEditor()` | 在提供者之外返回 `null`，否则返回 Plate React `Editor`，传入任何参数都会抛出错误。 |
-| `useEditorContext()` | `useEditor()` | Plate 移除了 `useEditorContext()`。 |
+| `useEditorContext()` | `useEditor()` 或 `useRootEditor(root)` | Plate 移除了 `useEditorContext()`。需要当前编辑区域或光标所在根时使用 `useEditor()`；在多根树中绑定到固定根时使用 `useRootEditor(root)`。 |
 | `useOptionalEditorContext()` | `useOptionalEditor()` | Plate 移除了 `useOptionalEditorContext()`。 |
 | `createEditor(options)` | 来自 `platejs` 的 `createEditor(options)`，React 中来自 `platejs/react` | 来自 `platejs/react` 的 `createEditor` 和 `useCreateEditor` 接受 `clipboardFormatKey`；根入口 `platejs` 的 `createEditor` 拒绝该选项，与 Plite 一致。 |
 | `definePlugin(name, definition)` | 来自 `platejs` 的 `definePlugin(name, definition)`，React 中来自 `platejs/react` | 定义字段相同，且 `PluginDefinitionInput` 不含 `name`。结果是带 `.configure()` 和 `.extend()` 的 Plate 插件；定义中的 `name` 键会抛出错误。每个 Plate 插件声明单个节点，因此需把多元素的 `schema.elements` 拆分为每个节点一个插件并使用 `schema.element`；除 `contentRoots`、`element`、`mark` 和 `properties` 之外的 `schema` 键在编译期和运行期都会被拒绝。Plate 插件应传给 `createEditor({ plugins })`，运行时标志通过 `store.set({ readOnly: false })` 切换，不要把 Plate 插件传给 `editor.install`、`tx.plugins.reconfigure` 或 `definePluginSlot().of()`。Plate 在解析插件的 `.extend()` 阶段时运行 `api` 工厂，因此该工厂拿不到 `getContributions`。请在 `validate` 中读取 contributions。 |
@@ -291,9 +291,9 @@ const editor = useCreateEditor({
 
 | Plite | Plate | 说明 |
 | --- | --- | --- |
-| `Editable` | `EditorContent` | 把 `renderElement`、`renderLeaf`、`renderText`、`renderPlaceholder` 和 `renderVoid` 移到插件组件中，其余属性不变。 |
-| 来自 `plitejs/pagination/react` 的 `PagedEditable` | 来自 `platejs/pagination/react` 的 `PagedEditorContent` | 渲染属性移到插件组件中，与 `EditorContent` 相同。 |
-| 来自 `plitejs/react/virtualized` 的 `VirtualizedEditable` | 来自 `platejs/react/virtualized` 的 `VirtualizedEditorContent` | 渲染属性移到插件组件中，与 `EditorContent` 相同。 |
+| `EditorContent` | `EditorContent` | 把 `renderElement`、`renderLeaf`、`renderText`、`renderPlaceholder` 和 `renderVoid` 移到插件组件中。Plate 允许 `<EditorContent readOnly={false}>` 覆盖 `<EditorRoot readOnly>`，而 Plite 保持根只读锁定；当 `children.length === 0` 时 Plate 返回 `null`。 |
+| 来自 `plitejs/pagination/react` 的 `PagedEditorContent` | 来自 `platejs/pagination/react` 的 `PagedEditorContent` | 渲染属性移到插件组件中，适用与 `EditorContent` 相同的 `readOnly` 和空文档规则。 |
+| 来自 `plitejs/react/virtualized` 的 `VirtualizedEditorContent` | 来自 `platejs/react/virtualized` 的 `VirtualizedEditorContent` | 渲染属性移到插件组件中，适用与 `EditorContent` 相同的 `readOnly` 和空文档规则。 |
 | `EditorPlaceholder` | `EditorContent` 的 `placeholder`，空块使用 `BlockPlaceholderPlugin` | Plate 没有 `renderPlaceholder`。 |
 | `EditorRoot` | `EditorRoot` | Plate 的 `EditorRoot` 没有 `decorations` 或 `root` 属性。请通过插件的 `decorate` 添加装饰，并在 `EditorContent` 上设置 `root`。 |
 | `EditorReadOnlyProvider` | `EditorRoot` 或 `EditorContent` 上的 `readOnly` | |
@@ -303,30 +303,26 @@ const editor = useCreateEditor({
 
 | Plite | Plate | 说明 |
 | --- | --- | --- |
-| `useEditorSelector(selector, options)` / `useEditorSelector(editor, selector, options)` | 同名重载 | 选项只有 `dependsOn` 和 `equalityFn`（省略 `deferred`）。上下文模式跟随光标所在根的编辑器。 |
+| `useEditorSelector(selector, options)` / `useEditorSelector(editor, selector, options)` | 同名重载 | 两个包都接受 `dependsOn` 和 `equalityFn`。上下文模式跟随光标所在根的编辑器。 |
 | `useModelEditor()` | `useModelEditor()` | 返回最近 `EditorRoot` 拥有的完整文档 Plate React `Editor`。 |
 | `useEditorSelection`、`useEditorFocused`、`useEditorComposing`、`useEditorReadOnly` | 同名 | 调用方式相同。Plate 读取当前选中的编辑区域。 |
 | `useStateFieldValue(field, options)`、`useSetStateField(field)` | 同名 | 绑定到 Plate 的 `useEditor()`，支持被动 `EditorProvider` 目标。 |
-| `useOptionalEditorReadOnly()` | `useEditorReadOnly()` | Plate 总是返回布尔值。 |
 | `useEditorHistory(options)` | `useEditorHistory(options)` | 选项相同。 |
 | `useElement<MyElement>()` | `useElement(MyPlugin)` | 不带参数的 `useElement()` 仍返回最近的元素，在元素组件之外会抛出错误。 |
 | `useOptionalElement()` | 无 | 在元素插件的组件中调用 `useElement()`。 |
 | `useNodeSelector(selector)` | 在元素组件中使用 `useElementSelector(selector)` | 选择器收到元素。Plate 没有按 key 选择节点的 hook。 |
 | `useTextSelector(selector)` | 无 | 文本插件组件从属性中收到 `text`。 |
-| `useEditorEditableElement()` | `useEditableRef()` | 挂载前 ref 为 `null`，元素挂载时不会重新渲染。`useEditorMounted()` 返回布尔值。 |
-| `useRootEditor(options)` | `useRootEditor(options)` | 返回该根对应的 Plate React `Editor`。 |
+| `useEditorEditableElement(editor)` | `useEditorEditableElement(editor)` | 由 `platejs/react` 原样重新导出。Plate 还提供 `useEditableRef()`（挂载时不重新渲染）和 `useEditorMounted()`。 |
+| `useRootEditor(root, options)` | `useRootEditor(root, options)` | 返回该根对应的 Plate React `Editor`。 |
 
 ### 类型
 
 | Plite | Plate | 说明 |
 | --- | --- | --- |
-| `EditableProps` | `EditorContentProps` | Plate 不导出 `EditableProps`。 |
+| `EditorContentProps`、`PagedEditorContentProps`、`VirtualizedEditorContentProps` | 同名类型 | Plate 版本省略 Plite 的渲染属性，并将事件处理器中的 `context.editor` 类型绑定为 Plate 的 React `Editor`。 |
 | `RenderElementProps`、`RenderLeafProps`、`RenderTextProps`、`RenderTextHostProps`、`RenderTextPieceProps` | 来自 `platejs/react` 的同名类型 | 根入口 `platejs` 不再导出渲染属性类型。`StaticRenderLeafProps` 和 `RenderStaticNodeWrapper*` 请从 `platejs/static` 导入。 |
 | `EditableHandlerContext`、`EditableInputEventContext`、`EditableDOMBeforeInputContext`、`EditableDOMBeforeInputHandler`、`EditableKeyDownHandler`、`EditablePointerSelectionEndHandler` | 来自 `platejs/react` 的同名类型 | `context.editor` 为 Plate 的 React `Editor`。 |
-| `PagedEditableProps`、`VirtualizedEditableProps` | `PagedEditorContentProps`、`VirtualizedEditorContentProps` | |
 | `CreateEditorOptions` | 来自 `platejs` 或 `platejs/react` 的 `CreateEditorOptions` | 接受 Plate 插件与选项；`platejs/react` 的版本额外支持 `clipboardFormatKey`。 |
-| `EditorSelectorOptions` | `UseEditorSelectorOptions` | Plate 的 `UseEditorSelectorOptions` 省略了 Plite 的 `deferred` 选项。 |
-| `UseStateFieldValueOptions` | 来自 `platejs/react` 的 `UseStateFieldValueOptions` | Plate 的 `UseStateFieldValueOptions` 省略了 Plite 的 `deferred` 选项。 |
 | `EditorRootProps`、`CommitContext`、`SelectionChangeContext`、`ValueChangeContext` | 同名 | `CommitContext`、`SelectionChangeContext` 和 `ValueChangeContext` 中的 `editor` 为 Plate 的 `Editor`。 |
 | `Editor`、`Plugin`、`DefinitionOf`、`PluginPortal`、`PluginReference`、`BlockInsertOptions` | 同名 | Plate 的版本使用 Plate 的插件和编辑器类型参数；Plite 的状态字段或原生 Plite 插件可传入 `createEditor({ plugins })`，但不满足 Plate 自身的 `PluginReference` 或 `PluginPortal`。 |
 | `TransferPlugin` 类型 | `typeof TransferPlugin` | Plate 的 `TransferPlugin` 是核心插件值。 |
@@ -335,11 +331,10 @@ const editor = useCreateEditor({
 
 ### DOM
 
-`platejs/dom` 保留 `ariaKeyShortcuts`、`dataTransferFormats`、`domCommands`、`DOMResolutionError`、`isHotkey`、`usesAppleDOMHotkeys`、`writeDataTransferFragment`，以及 `DOMApi` 和 `useDropIndicator` 使用的拖拽与几何类型。其他 `plitejs/dom` 导出对应如下。
+`platejs/dom` 保留 `ariaKeyShortcuts`、`dataTransferFormats`、`domCommands`、`DOMResolutionError`、`isHotkey`、`usesAppleDOMHotkeys`、`writeDataTransferFragment`，以及 `DOMApi` 和 `useDropIndicator` 使用的拖拽与几何类型。两个包都通过 `editor.api.dom.*` 调用 DOM 查询、焦点和剪贴板方法。其他 `plitejs/dom` 导出对应如下。
 
 | Plite | Plate | 说明 |
 | --- | --- | --- |
-| `DOMEditor.focus(editor)` 和其他 `DOMEditor` 方法 | `editor.api.dom.focus()` 和其他 `editor.api.dom` 方法 | 去掉编辑器参数。 |
 | `getEditorDOMRoot(editor)` | `editor.api.dom.root()` | |
 | `dom`、`DOMEditorOptions`、`DOMPlugin`、`DOMPluginTypes` | 无 | Plate 会自动安装核心 DOM 插件；在来自 `platejs/react` 的 `createEditor` 或 `useCreateEditor` 中配置 `clipboardFormatKey`。 |
 | `getDOMClipboardFormatKey`、`writeDOMFragmentData`、`writeDOMRangeData`、`cleanDOMClipboardContents`、`DOMClipboardInsertDataHandler`、`DOMEditorClipboardCapability`、`DOMFragmentDataHtml`、`DOMFragmentDataPayload` | `editor.api.dom.clipboard` 和插件的 `dataTransferFormats` | |

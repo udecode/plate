@@ -17,7 +17,7 @@ npm install plitejs react react-dom
 | --- | --- |
 | `plitejs` | editor runtime, document model, transactions, helper APIs |
 | `plitejs/dom` | DOM conversion, clipboard helpers, browser environment helpers |
-| `plitejs/react` | `<EditorRoot>`, `<Editable>`, React hooks, editor setup |
+| `plitejs/react` | `<EditorRoot>`, `<EditorContent>`, React hooks, editor setup |
 | `react`, `react-dom` | React peer packages |
 
 ## Usage
@@ -26,7 +26,7 @@ Import the React editor pieces from `plitejs/react`.
 
 ```tsx
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type ValueChangeContext,
   useCreateEditor,
@@ -55,7 +55,7 @@ editor API.
 Call `useCreateEditor` inside the component so React keeps the same editor
 object for the component lifetime.
 
-Render the editor with `<EditorRoot>` and `<Editable>`.
+Render the editor with `<EditorRoot>` and `<EditorContent>`.
 
 ```tsx
 const App = () => {
@@ -63,14 +63,14 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };
 ```
 
 `useCreateEditor({ initialValue })` seeds the editor. `<EditorRoot>`
-provides that existing editor to everything underneath it, and `<Editable>`
+provides that existing editor to everything underneath it, and `<EditorContent>`
 renders the editable document surface.
 
 This is the smallest useful Plite editor. If you render `App`, you should see a paragraph with the text `A line of text in a paragraph.` When you type, Plite updates the document through the editor runtime.
@@ -93,7 +93,7 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor} onValueChange={handleValueChange}>
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };

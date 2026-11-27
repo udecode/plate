@@ -1,18 +1,18 @@
 ---
 title: "Plite React Event Handling"
-description: "Customize Editable browser events without replacing Plite's default editing runtime."
+description: "Customize EditorContent browser events without replacing Plite's default editing runtime."
 ---
 
-`Editable` owns the default browser event handlers for rich-text editing,
+`EditorContent` owns the default browser event handlers for rich-text editing,
 including copy, paste, drop, keyboard, native input, selection, focus, and drag
 events.
 
-Pass event handlers to `Editable` when app UI needs to run before Plite's
+Pass event handlers to `EditorContent` when app UI needs to run before Plite's
 default behavior.
 
 Use [Editing Behavior](../../concepts/15-editing-behavior) when the behavior
 belongs in transactions or a typed plugin command handler instead of one
-`Editable` event prop.
+`EditorContent` event prop.
 
 ## Handler return values
 
@@ -25,7 +25,7 @@ Handler return values control whether Plite continues with its own handling:
 
 ```tsx
 import type { DragEvent, MouseEvent } from "react";
-import { Editable } from "plitejs/react";
+import { EditorContent } from "plitejs/react";
 
 const MyEditor = () => {
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -50,7 +50,7 @@ const MyEditor = () => {
   };
 
   return (
-    <Editable onClick={onClick} onDrop={onDrop} onDragStart={onDragStart} />
+    <EditorContent onClick={onClick} onDrop={onDrop} onDragStart={onDragStart} />
   );
 };
 ```
@@ -63,7 +63,7 @@ is the view whose editable runs it, such as a content root's. The context of
 `selection`:
 
 ```tsx
-<Editable
+<EditorContent
   onDOMBeforeInput={(event, { editor, inputType }) => {
     if (inputType !== "formatBold") return false;
 

@@ -54,7 +54,7 @@ to the text children of void elements.
 Void elements still contain a text child in the Plite document model so
 selection and marks have a stable model location. The React runtime renders the
 hidden anchor and browser shell for you. App renderers should use
-`Editable`'s `renderVoid` prop and return visible content only.
+`EditorContent`'s `renderVoid` prop and return visible content only.
 
 Typical rendering code will resemble this image element:
 
@@ -71,7 +71,7 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
   return <img alt="" src={element.url} />;
 };
 
-<Editable<ImageElement>
+<EditorContent<ImageElement>
   renderVoid={(props) => {
     switch (props.element.type) {
       case "image":

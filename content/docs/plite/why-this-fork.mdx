@@ -167,10 +167,10 @@ This keeps method-style ergonomics while making ownership visible. App commands 
 
 ## React runtime
 
-React editors start with `useCreateEditor`, `<EditorRoot>`, and `<Editable>`.
+React editors start with `useCreateEditor`, `<EditorRoot>`, and `<EditorContent>`.
 
 ```tsx
-import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
+import { EditorContent, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const Editor = () => {
   const editor = useCreateEditor({
@@ -179,7 +179,7 @@ const Editor = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable placeholder="Start typing..." />
+      <EditorContent placeholder="Start typing..." />
     </EditorRoot>
   );
 };
@@ -239,13 +239,13 @@ The packages are split by responsibility.
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `plitejs`             | editor runtime, document model, canonical changes, transactions, state fields, schema, pure helper APIs       |
 | `plitejs/dom`         | DOM bridge, clipboard helpers, selection conversion, hotkeys, DOM coverage helpers                           |
-| `plitejs/react`       | React editor setup, `<EditorRoot>`, `<Editable>`, render primitives, hooks, overlays, DOM strategies         |
+| `plitejs/react`       | React editor setup, `<EditorRoot>`, `<EditorContent>`, render primitives, hooks, overlays, DOM strategies         |
 | `plitejs/history`     | history plugin and undo/redo runtime                                                                      |
 | `plitejs/authored`    | attributed suggestions: review marks, review contexts and decisions, accepted and proposed previews          |
 | `plitejs/diff`        | `compare`, which compares two or three immutable documents without editor state                             |
 | `plitejs/hyperscript` | JSX fixtures for tests                                                                                       |
 | `plitejs/yjs`               | Yjs collaboration adapter, awareness bridge, remote cursor hooks                                             |
-| `plitejs/pagination`      | immutable page measurement and the view-owned `PagedEditable` surface                                        |
+| `plitejs/pagination`      | immutable page measurement and the view-owned `PagedEditorContent` surface                                        |
 | `@platejs/test`           | Node-safe fixtures plus React, DOM, Playwright, and proof helpers behind explicit subpaths                   |
 
 Apps import public package exports and use `@platejs/test` in tests. `plitejs/internal` and `plitejs/testing` are for sibling packages in this repo.
@@ -279,7 +279,7 @@ This table covers every area of the runtime, so readers and agents have one plac
 | Document values    | primary `children`, optional extra `roots`, optional persistent `meta`, optional keyed `records`                                                                                                                                                                                                                       |
 | Roots              | rootless primary document, named extra roots, content roots, root-aware React hooks and chrome                                                                                                                                                                                                |
 | State fields       | versioned persistent/shared fields, local fields, history policy, effects, React state-field hooks                                                                                                                                                                                             |
-| React setup        | `useCreateEditor`, `createEditor`, `<EditorRoot>`, `<Editable>`, render primitives                                                                                                                                                                                                             |
+| React setup        | `useCreateEditor`, `createEditor`, `<EditorRoot>`, `<EditorContent>`, render primitives                                                                                                                                                                                                             |
 | React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration hooks                                                                                                                                                                                                    |
 | Browser editing    | DOM repair, native selection sync, beforeinput/input/paste/cut/drop authority, generated proof scenarios                                                                                                                                                                                      |
 | DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |
@@ -289,7 +289,7 @@ This table covers every area of the runtime, so readers and agents have one plac
 | Large documents    | complete DOM rendering, explicit virtualized rendering, bounded editing proof, huge-document smoke lanes                                                                                                                                                                                        |
 | History            | `history()` plugin, `state.history`, `editor.api.history`, transaction grouping controls, semantic `editor.update({ history })` policies, and history stack validation                                                                                                                                                |
 | Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                                                                                                          |
-| Layout             | `measurePages`, `PagedEditable`, explicit node fragmentation, page mount plans, and current-element fragment hooks                                                                                                                                                                             |
+| Layout             | `measurePages`, `PagedEditorContent`, explicit node fragmentation, page mount plans, and current-element fragment hooks                                                                                                                                                                             |
 | Browser proof      | `@platejs/test/proof`, `@platejs/test/browser`, `@platejs/test/playwright`, feature contracts, screenshots, traces, replay, and explicit non-replayable imperative runs                                                                                                                 |
 | Docs               | migration guide, walkthroughs, API reference, roots/meta docs, React setup docs, DOM coverage docs, layout docs                                                                                                                                                                               |
 | Examples           | plaintext, richtext, checklists, markdown, inlines, mentions, images, embeds, tables, paste HTML, placeholder, read-only, iframe/shadow DOM, styling, document meta, hidden content, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs examples |

@@ -156,7 +156,7 @@ authored.api.setView({ preview: "proposed" });
 | `{ preview: 'proposed' }` | Every pending change accepted                        | Plain edits throw; see below                 |
 | `{ preview: 'accepted' }` | Every pending change rejected                        | Plain edits throw; see below                 |
 
-A preview throws on a plain edit, but some other writes still change the stored document, such as an update that makes a decision, undo and redo, and remote collaboration changes. An `Editable` that shows a preview keeps its caret and selection, and drops typing, deleting, pasting, cutting and dropping. Undo and redo still work there.
+A preview throws on a plain edit, but some other writes still change the stored document, such as an update that makes a decision, undo and redo, and remote collaboration changes. An `EditorContent` that shows a preview keeps its caret and selection, and drops typing, deleting, pasting, cutting and dropping. Undo and redo still work there.
 
 Typing inside struck text, or confirming a word with an input method there, lands at the caret and splits the pending deletion around it. Pasting inside struck text lands after the pending deletion, and typing in a line deleted whole lands at the end of the line before. An `edit` view applies the new text as written, and a `propose` view records it as an insertion. A `propose` view refuses a write it cannot record as a proposal, such as moving a table row or a partial edit inside an element whose content holds one text, and rolls it back; `api.subscribeRefusals(listener)` reports each refusal.
 

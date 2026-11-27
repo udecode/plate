@@ -40,7 +40,7 @@ Keep each correction focused on its `entry` and direct children. Use `query: "ro
 
 Plite can synchronize changed text directly to the DOM. Custom subscriptions and unstable props can still cause extra element renders, so profile the components that render.
 
-Prefer stable renderer functions passed through `Editable` props. Define
+Prefer stable renderer functions passed through `EditorContent` props. Define
 `renderElement`, `renderLeaf`, and `renderText` at module scope, or memoize them
 once when they need editor-local data. Avoid creating renderer functions inside
 the editor component during render.
@@ -49,7 +49,7 @@ If unmodified elements are being re-rendered, check to see if they are subscribi
 
 Hot editor UI should subscribe to the narrowest source it needs. Use
 `useEditor()` to access the active editor without subscribing to document
-commits (outside an `Editable`, it re-renders only when the caret moves to
+commits (outside an `EditorContent`, it re-renders only when the caret moves to
 another root), `useEditorSelection()` for
 selection-aware toolbar UI, and `useEditorSelector()` for derived editor-level
 toolbar state. Inside rendered editor content, prefer target-scoped hooks such
@@ -98,9 +98,9 @@ const LogButton = () => {
 
 ### DOM mounting
 
-`Editable` mounts the complete document. Start there and measure the actual
+`EditorContent` mounts the complete document. Start there and measure the actual
 interaction and memory budget. When DOM size is the proven limit, use
-[`VirtualizedEditable`](../libraries/plite-react/virtualized-rendering)
+[`VirtualizedEditorContent`](../libraries/plite-react/virtualized-rendering)
 from `plitejs/react/virtualized` to opt into top-level viewport mounting.
 
 Virtualization removes offscreen content from native browser find,
@@ -108,7 +108,7 @@ accessibility traversal, print output, and third-party DOM integrations. Keep a
 complete surface when those jobs matter more than the DOM budget.
 
 For paginated documents, set `virtualize` on
-[`PagedEditable`](../libraries/plite-pagination). The paged view owns
+[`PagedEditorContent`](../libraries/plite-pagination). The paged view owns
 measurement, element placement, and omission at the page boundary while
 keeping one canvas coordinate system. The complete paged DOM remains the
 default.

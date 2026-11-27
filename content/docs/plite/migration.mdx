@@ -40,7 +40,7 @@ Port the thinnest useful editor before touching every command or reusable
 feature:
 
 1. Create one Plite editor with the same representative document value.
-2. Render one `<Editable>` with the existing element and leaf renderers.
+2. Render one `<EditorContent>` with the existing element and leaf renderers.
 3. Save the primary value in `<EditorRoot onValueChange>`.
 4. Port one toolbar or shortcut command to `editor.read(...)` and
    `editor.update(...)`.
@@ -71,7 +71,7 @@ into archaeology.
 | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `createEditor()` plus `withReact(editor)`         | `useCreateEditor({ initialValue })` in React, or `createEditor({ initialValue })` outside a component          |
 | `withHistory(editor)`                             | `history()` in the editor's `plugins` array           |
-| `<Slate editor={editor} initialValue={value}>`    | `const editor = useCreateEditor({ initialValue }); <EditorRoot editor={editor}>`                                    |
+| `<Slate editor={editor} initialValue={value}>` + `<Editable>` | `const editor = useCreateEditor({ initialValue }); <EditorRoot editor={editor}><EditorContent /></EditorRoot>` |
 | Slate 0.x transform helper calls                  | `editor.update.<group>.<method>()` for one write, or `editor.update((tx) => tx.*...)` for grouped writes |
 | `Editor.*` reads that inspect the current editor  | `editor.read.<group>.<method>()` for one read, or `editor.read((state) => state.*...)` for grouped reads |
 | Pure node, point, path, range, and text helpers   | `NodeApi`, `ElementApi`, `PointApi`, `PathApi`, `RangeApi`, and `TextApi` from `plitejs`                 |
@@ -103,7 +103,7 @@ Package ownership is split deliberately:
   and pure helper APIs.
 - `plitejs/dom` owns DOM resolution, clipboard helpers, hotkeys, and browser
   environment helpers.
-- `plitejs/react` owns `<EditorRoot>`, `<Editable>`, render primitives, React hooks,
+- `plitejs/react` owns `<EditorRoot>`, `<EditorContent>`, render primitives, React hooks,
   DOM repair, and the React editor plugin.
 - `plitejs/history` owns the history plugin and history API.
 - `plitejs/hyperscript` owns JSX fixtures for tests.
@@ -143,14 +143,14 @@ const App = () => {
 Plite runtime:
 
 ```tsx
-import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
+import { EditorContent, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const App = () => {
   const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };
@@ -269,7 +269,7 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable renderElement={renderElement} />
+      <EditorContent renderElement={renderElement} />
     </EditorRoot>
   );
 };
@@ -299,7 +299,7 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable placeholder="Write something..." renderLeaf={renderLeaf} />
+      <EditorContent placeholder="Write something..." renderLeaf={renderLeaf} />
     </EditorRoot>
   );
 };
@@ -311,7 +311,7 @@ Spread the provided `attributes` onto your own elements in `renderElement`,
 
 ## Step 6: migrate event handlers
 
-`Editable` owns the default browser behavior. App handlers can run before Plite
+`EditorContent` owns the default browser behavior. App handlers can run before Plite
 and decide whether Plite continues.
 
 - Return `true` when your handler handled the event and Plite should stop.
@@ -325,7 +325,7 @@ through the editor runtime.
 Plite runtime:
 
 ```tsx
-<Editable
+<EditorContent
   onKeyDown={(event, { editor }) => {
     if (!(event.metaKey && event.key === "b")) return false;
 
@@ -339,7 +339,7 @@ Plite runtime:
 Use `onDOMBeforeInput` for browser input types that need editor context.
 
 ```tsx
-<Editable
+<EditorContent
   onDOMBeforeInput={(event, { editor, inputType }) => {
     if (inputType !== "formatBold") return false;
 
@@ -490,7 +490,7 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };
@@ -504,7 +504,7 @@ fields, and skips ephemeral state writes.
 
 ```tsx
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   useCreateEditor,
   type ValueChangeContext,
@@ -519,7 +519,7 @@ const App = () => {
 
   return (
     <EditorRoot editor={editor} onValueChange={handleChange}>
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };
@@ -572,8 +572,8 @@ the title metadata. Omit `root` for the primary editable. Pass `root` only for e
 
 ```tsx
 <EditorRoot editor={editor}>
-  <Editable aria-label="Body" />
-  <Editable aria-label="Header" root="header" />
+  <EditorContent aria-label="Body" />
+  <EditorContent aria-label="Header" root="header" />
 </EditorRoot>
 ```
 
@@ -586,7 +586,7 @@ collaboration-owned state.
 ```tsx
 import { defineStateField, valueCodecs } from "plitejs";
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   useSetStateField,
   useCreateEditor,
@@ -617,7 +617,7 @@ const App = () => {
   return (
     <EditorRoot editor={editor}>
       <TitleInput />
-      <Editable />
+      <EditorContent />
     </EditorRoot>
   );
 };
@@ -655,9 +655,9 @@ Render the primary document without a `root` prop. Render extra roots by key.
 
 ```tsx
 <EditorRoot editor={editor}>
-  <Editable aria-label="Header" root="header" />
-  <Editable aria-label="Body" />
-  <Editable aria-label="Footer" root="footer" />
+  <EditorContent aria-label="Header" root="header" />
+  <EditorContent aria-label="Body" />
+  <EditorContent aria-label="Footer" root="footer" />
 </EditorRoot>
 ```
 
@@ -729,7 +729,7 @@ import {
 } from "plitejs";
 import { DOMCoverage, dom, Hotkeys, isHotkey } from "plitejs/dom";
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   createEditor,
   useCreateEditor,
@@ -767,7 +767,7 @@ has proven the runtime integration.
 Run the migration in behavior order:
 
 1. Render the smallest editor with `useCreateEditor`, `<EditorRoot>`, and
-   `<Editable>`.
+   `<EditorContent>`.
 2. Type normal text and save the primary value in `<EditorRoot onValueChange>`.
 3. Port one command to `editor.read(...)` plus `editor.update(...)`.
 4. Port custom element and leaf renderers.
