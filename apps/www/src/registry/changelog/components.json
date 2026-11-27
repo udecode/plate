@@ -119,12 +119,22 @@
     ],
     "field": [
       "2026-11-27-field-condition-lists-read",
+      "2026-11-27-field-condition-lists-ui",
       "2026-11-27-field-condition-targets",
       "2026-11-26-suggestion-colors",
       "2026-11-25-field-name-conflicts",
       "2026-11-25-field-name-input",
       "2026-11-24-field-static-answers",
       "2026-11-23-field-condition-loop",
+      "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
+    "field-demo": [
+      "2026-11-27-field-condition-lists-ui",
+      "2026-11-26-field-demo-app-data",
+      "2026-11-25-field-demo-answer-conflict",
+      "2026-11-25-field-name-input",
+      "2026-11-24-field-static-answers",
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
@@ -183,14 +193,6 @@
       "2026-08-24-react-compiler-owned-editor-state",
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
-    ],
-    "field-demo": [
-      "2026-11-26-field-demo-app-data",
-      "2026-11-25-field-demo-answer-conflict",
-      "2026-11-25-field-name-input",
-      "2026-11-24-field-static-answers",
-      "2026-11-23-field-fill-view",
-      "2026-11-21-add-field"
     ],
     "floating-popover": [
       "2026-11-26-floating-popover-escape",

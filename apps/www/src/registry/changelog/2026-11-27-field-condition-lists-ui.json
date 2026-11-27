@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-field-condition-lists-ui",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-field-condition-lists-ui.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Edit several rules in a field condition from Show when",
+  "targets": [
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-demo",
+      "files": [
+        "apps/www/src/registry/examples/field-demo.tsx",
+        "apps/www/src/registry/examples/values/cn/field-value.tsx",
+        "apps/www/src/registry/examples/values/field-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-field-condition-lists-ui",
+      "kind": "new",
+      "summary": "Show when gets an Add rule button, a Match all or Match any select and a remove button per rule, and saves a single test once one rule is left. A rule whose field belongs to another role shows that role after the field's name, and a broken rule shows its problem.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with the copied `field` component, because Show when now writes `all` and `any` `FieldCondition` lists."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-condition-lists-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-field-demo-has-pet",
+      "kind": "behavior",
+      "summary": "The lease asks the tenant whether they have a pet, and asks for a pet name only once the landlord allows pets and the tenant ticks I have a pet.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with `field-demo`, because the lease now stores an `all` condition list on Pet name."
+      ],
+      "targets": ["field-demo"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-condition-lists-ui",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

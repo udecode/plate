@@ -61,6 +61,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-field-condition-lists-ui",
+      "href": "/registry/changelog/2026-11-27-field-condition-lists-ui.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Edit several rules in a field condition from Show when",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field", "field-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-field-condition-targets",
       "href": "/registry/changelog/2026-11-27-field-condition-targets.json",
       "status": "draft",

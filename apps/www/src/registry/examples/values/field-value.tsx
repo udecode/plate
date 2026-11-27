@@ -101,9 +101,17 @@ export const fieldValue: Value = (
         ],
         required: true,
       })}{' '}
+      {field('has-pet', 'checkbox', 'I have a pet', 'tenant', {
+        name: 'has_pet',
+      })}{' '}
       Pet name:{' '}
       {field('pet-name', 'text', 'Pet name', 'tenant', {
-        condition: { ref: 'pets', test: 'equals', value: 'yes' },
+        condition: {
+          all: [
+            { ref: 'pets', test: 'equals', value: 'yes' },
+            { ref: 'has-pet', test: 'equals', value: true },
+          ],
+        },
         name: 'pet_name',
         required: true,
       })}

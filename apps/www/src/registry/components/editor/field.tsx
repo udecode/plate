@@ -72,9 +72,19 @@ const PROBLEMS: Record<FieldProblem, string> = {
     'The fields of its name differ in kind, options or condition.',
   'unsupported-test': 'Its condition does not fit the field it names.',
 };
+const RULE_PROBLEMS: Record<
+  'invalid-value' | 'missing-target' | 'unsupported-test',
+  string
+> = {
+  'invalid-value': 'This value does not fit the field it names.',
+  'missing-target': 'The field this rule names is gone.',
+  'unsupported-test': 'This test does not fit the field it names.',
+};
 
-const isKind = (value: string): value is FieldKind => value in KINDS;
-const isTest = (value: string): value is FieldTest => value in TEST_LABELS;
+const isKind = (value: string): value is FieldKind =>
+  Object.hasOwn(KINDS, value);
+const isTest = (value: string): value is FieldTest =>
+  Object.hasOwn(TEST_LABELS, value);
 const needsValue = (test: FieldTest) => test !== 'filled' && test !== 'blank';
 const firstValue = ({ kind, options }: FieldSettings) =>
   ({
@@ -99,13 +109,29 @@ const isConditionList = (
 const conditionOn = (
   ref: string,
   target: FieldSettings,
-  test: FieldTest,
+  test = fillableTests(target)[0],
   value?: FieldValue
 ): FieldConditionTest => ({
   ref,
   test,
   ...(needsValue(test) ? { value: value ?? firstValue(target) } : {}),
 });
+
+const keepExtra = (
+  kept: FieldConditionTest | undefined,
+  next: FieldConditionTest
+): FieldConditionTest => {
+  if (!kept) return next;
+
+  return {
+    ...Object.fromEntries(
+      Object.entries(kept).filter(
+        ([key]) => key !== 'ref' && key !== 'test' && key !== 'value'
+      )
+    ),
+    ...next,
+  };
+};
 
 type FieldNode = EditorElementProps<typeof FieldPlugin>['element'];
 
@@ -280,7 +306,13 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
               {chipContent}
             </button>
           </PopoverTrigger>
-          <PopoverContent className={filling ? 'w-64' : 'w-80'}>
+          <PopoverContent
+            className={
+              filling
+                ? 'w-64'
+                : 'max-h-[min(80vh,var(--radix-popover-content-available-height,80vh))] w-[26rem] max-w-[calc(100vw-2rem)] overflow-y-auto'
+            }
+          >
             {form}
           </PopoverContent>
         </Popover>
@@ -367,47 +399,101 @@ function FieldSettingsForm({
 
   const choices = targetIds.flatMap((id) => byId.get(id) ?? []);
   const targets = fields.filter((entry) => entry.fieldId !== fieldId);
-  const singleCondition =
-    condition && !isConditionList(condition) ? condition : undefined;
-  const listCondition =
-    condition && isConditionList(condition) ? condition : undefined;
-  const listRules = listCondition
-    ? Object.hasOwn(listCondition, 'all')
-      ? (listCondition as Readonly<{ all: readonly FieldConditionTest[] }>).all
-      : (listCondition as Readonly<{ any: readonly FieldConditionTest[] }>).any
+  const rules = condition
+    ? isConditionList(condition)
+      ? Object.hasOwn(condition, 'all')
+        ? (condition as Readonly<{ all: readonly FieldConditionTest[] }>).all
+        : (condition as Readonly<{ any: readonly FieldConditionTest[] }>).any
+      : [condition]
     : [];
-  const listRows = (() => {
-    const seen = new Map<string, number>();
+  const listed = rules.length > 1;
+  const match = condition && Object.hasOwn(condition, 'any') ? 'any' : 'all';
+  const writeRules = (next: readonly FieldConditionTest[], form = match) => {
+    const rest =
+      condition && isConditionList(condition)
+        ? Object.fromEntries(
+            Object.entries(condition).filter(
+              ([key]) => key !== 'all' && key !== 'any'
+            )
+          )
+        : {};
 
-    return listRules.map((rule) => {
-      const ruleTarget = byId.get(rule.ref)?.node;
-      const targetLabel = ruleTarget
-        ? ruleTarget.name === undefined
-          ? ruleTarget.label
-          : `${ruleTarget.label} (${ruleTarget.name})`
-        : 'Missing field';
-      const formattedValue =
-        ruleTarget?.options?.find((option) => option.value === rule.value)
-          ?.label ?? (rule.value === '' ? '""' : String(rule.value));
-      const valueLabel =
-        needsValue(rule.test) && rule.value !== undefined
-          ? ` ${formattedValue}`
-          : '';
-      const baseKey = `${rule.ref}:${rule.test}:${String(rule.value ?? '')}`;
-      const occurrence = (seen.get(baseKey) ?? 0) + 1;
-
-      seen.set(baseKey, occurrence);
-
-      return {
-        key: `${baseKey}#${occurrence}`,
-        text: `${targetLabel} ${TEST_LABELS[rule.test]}${valueLabel}`,
-      };
+    update({
+      condition:
+        next.length > 1
+          ? form === 'all'
+            ? { ...rest, all: next }
+            : { ...rest, any: next }
+          : next[0],
     });
-  })();
-  const target = fields.find(
-    (entry) => entry.fieldId === singleCondition?.ref
-  )?.node;
-  const tests = target ? fillableTests(target) : [];
+  };
+  const addable = choices.filter((entry) => entry.fieldId !== fieldId);
+  const unusedTarget = addable.find(
+    (entry) => !rules.some((rule) => rule.ref === entry.fieldId)
+  );
+  const nextAddedRule = (): FieldConditionTest | undefined => {
+    if (unusedTarget) {
+      return conditionOn(unusedTarget.fieldId, unusedTarget.node);
+    }
+
+    const copied = rules.find(
+      (rule) => rule.ref !== fieldId && byId.has(rule.ref)
+    );
+
+    if (copied) return copied;
+    if (addable[0]) return conditionOn(addable[0].fieldId, addable[0].node);
+
+    return undefined;
+  };
+  const canAddRule = addable.length > 0;
+  const rows: ReadonlyArray<FieldConditionTest | undefined> =
+    rules.length > 0 ? rules : [undefined];
+  const targetSelect = (index: number, rule?: FieldConditionTest) => (
+    <NativeSelect
+      {...(listed
+        ? { 'aria-label': `Rule ${index + 1} field` }
+        : { id: `${fieldId}-condition` })}
+      size="sm"
+      value={rule ? `#${rule.ref}` : ''}
+      onChange={(event) => {
+        const entry = choices.find(
+          (choice) => `#${choice.fieldId}` === event.target.value
+        );
+        const next = entry && conditionOn(entry.fieldId, entry.node);
+
+        if (!listed) {
+          update({ condition: next ? keepExtra(rule, next) : undefined });
+        } else if (next) {
+          writeRules(
+            rules.map((kept, at) =>
+              at === index ? keepExtra(kept, next) : kept
+            )
+          );
+        }
+      }}
+    >
+      {!listed && <NativeSelectOption value="">Always</NativeSelectOption>}
+      {rule && !byId.has(rule.ref) && (
+        <NativeSelectOption value={`#${rule.ref}`}>
+          Missing field
+        </NativeSelectOption>
+      )}
+      {choices.map((entry) => {
+        const named =
+          entry.node.name === undefined
+            ? entry.node.label
+            : `${entry.node.label} (${entry.node.name})`;
+
+        return (
+          <NativeSelectOption key={entry.fieldId} value={`#${entry.fieldId}`}>
+            {entry.node.role === element.role
+              ? named
+              : `${named} · ${entry.node.role}`}
+          </NativeSelectOption>
+        );
+      })}
+    </NativeSelect>
+  );
 
   return (
     <div className="grid grid-cols-[5rem_1fr] items-center gap-2 text-sm">
@@ -523,110 +609,135 @@ function FieldSettingsForm({
           />
         </>
       )}
-      {listCondition ? (
-        <>
-          <Label className="self-start pt-1">Show when</Label>
-          <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">
-              {'all' in listCondition ? 'Match all' : 'Match any'}
-            </span>
-            <ul className="flex flex-col gap-1">
-              {listRows.map((row) => (
-                <li key={row.key}>{row.text}</li>
-              ))}
-            </ul>
-          </div>
-        </>
-      ) : (
-        <>
-          <Label htmlFor={`${fieldId}-condition`}>Show when</Label>
-          <NativeSelect
-            id={`${fieldId}-condition`}
-            size="sm"
-            value={singleCondition ? `#${singleCondition.ref}` : ''}
-            onChange={(event) => {
-              const next = choices.find(
-                (entry) => `#${entry.fieldId}` === event.target.value
-              );
+      <Label
+        className="self-start pt-1.5"
+        htmlFor={listed ? undefined : `${fieldId}-condition`}
+      >
+        Show when
+      </Label>
+      {listed && (
+        <NativeSelect
+          aria-label="Match"
+          size="sm"
+          value={match}
+          onChange={(event) => {
+            const form = event.target.value;
 
-              update({
-                condition:
-                  next &&
-                  conditionOn(
-                    next.fieldId,
-                    next.node,
-                    fillableTests(next.node)[0]
-                  ),
-              });
-            }}
+            if (form === 'all' || form === 'any') writeRules(rules, form);
+          }}
+        >
+          <NativeSelectOption value="all">Match all</NativeSelectOption>
+          <NativeSelectOption value="any">Match any</NativeSelectOption>
+        </NativeSelect>
+      )}
+      {rows.map((rule, index) => {
+        const target = rule ? byId.get(rule.ref)?.node : undefined;
+        const tests = target ? fillableTests(target) : [];
+        const problem = !rule
+          ? undefined
+          : !target
+            ? 'missing-target'
+            : !FIELD_TESTS[target.kind].includes(rule.test)
+              ? 'unsupported-test'
+              : (
+                    needsValue(rule.test)
+                      ? !fitsField(target, rule.value)
+                      : rule.value !== undefined
+                  )
+                ? 'invalid-value'
+                : undefined;
+        const setRule = (next: FieldConditionTest) =>
+          writeRules(
+            rules.map((kept, at) =>
+              at === index ? keepExtra(kept, next) : kept
+            )
+          );
+
+        return (
+          <div
+            // oxlint-disable-next-line react-doctor/no-array-index-as-key -- Rules may repeat, and an edited rule keeps its row so its input keeps focus.
+            key={index}
+            className="col-start-2 flex min-w-0 flex-col gap-1"
           >
-            <NativeSelectOption value="">Always</NativeSelectOption>
-            {singleCondition && !target && (
-              <NativeSelectOption value={`#${singleCondition.ref}`}>
-                Missing field
-              </NativeSelectOption>
-            )}
-            {choices.map((entry) => (
-              <NativeSelectOption
-                key={entry.fieldId}
-                value={`#${entry.fieldId}`}
-              >
-                {entry.node.name === undefined
-                  ? entry.node.label
-                  : `${entry.node.label} (${entry.node.name})`}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-          {singleCondition && target && (
-            <div className="col-start-2 flex gap-1">
-              <NativeSelect
-                aria-label="Test"
-                size="sm"
-                value={singleCondition.test}
-                onChange={(event) => {
-                  if (!isTest(event.target.value)) return;
+            <div className="flex gap-1 *:data-[slot=native-select-wrapper]:min-w-0 *:data-[slot=native-select-wrapper]:flex-1">
+              {targetSelect(index, rule)}
+              {listed && (
+                <Button
+                  aria-label={`Remove rule ${index + 1}`}
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() =>
+                    writeRules(rules.filter((_, at) => at !== index))
+                  }
+                >
+                  <XIcon />
+                </Button>
+              )}
+            </div>
+            {rule && target && (
+              <div className="flex items-center gap-1">
+                <NativeSelect
+                  aria-label={listed ? `Rule ${index + 1} test` : 'Test'}
+                  size="sm"
+                  value={rule.test}
+                  onChange={(event) => {
+                    if (!isTest(event.target.value)) return;
 
-                  update({
-                    condition: conditionOn(
-                      singleCondition.ref,
-                      target,
-                      event.target.value,
-                      fitsField(target, singleCondition.value)
-                        ? singleCondition.value
-                        : undefined
-                    ),
-                  });
-                }}
-              >
-                {[...new Set([...tests, singleCondition.test])].map((test) => (
-                  <NativeSelectOption key={test} value={test}>
-                    {TEST_LABELS[test]}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-              {needsValue(singleCondition.test) &&
-                tests.includes(singleCondition.test) && (
+                    setRule(
+                      conditionOn(
+                        rule.ref,
+                        target,
+                        event.target.value,
+                        fitsField(target, rule.value) ? rule.value : undefined
+                      )
+                    );
+                  }}
+                >
+                  {[...new Set([...tests, rule.test])].map((test) => (
+                    <NativeSelectOption key={test} value={test}>
+                      {TEST_LABELS[test]}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+                {needsValue(rule.test) && tests.includes(rule.test) && (
                   <FieldValueInput
+                    key={`${rule.ref}:${rules.length}`}
                     clearable={false}
                     kind={target.kind}
-                    label="Compared value"
+                    label={
+                      listed ? `Rule ${index + 1} value` : 'Compared value'
+                    }
                     options={target.options}
-                    value={singleCondition.value}
+                    value={rule.value}
                     onChange={(value) =>
-                      update({
-                        condition: conditionOn(
-                          singleCondition.ref,
-                          target,
-                          singleCondition.test,
-                          value
-                        ),
-                      })
+                      setRule(conditionOn(rule.ref, target, rule.test, value))
                     }
                   />
                 )}
-            </div>
-          )}
-        </>
+              </div>
+            )}
+            {problem && (
+              <p className="text-xs text-destructive">
+                {RULE_PROBLEMS[problem]}
+              </p>
+            )}
+          </div>
+        );
+      })}
+      {rules.length > 0 && canAddRule && (
+        <Button
+          className="col-start-2 w-fit"
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            const nextRule = nextAddedRule();
+
+            if (nextRule) writeRules([...rules, nextRule]);
+          }}
+        >
+          <PlusIcon />
+          Add rule
+        </Button>
       )}
     </div>
   );

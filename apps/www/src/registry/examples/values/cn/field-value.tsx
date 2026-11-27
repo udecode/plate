@@ -83,9 +83,15 @@ export const fieldValue: Value = (
         ],
         required: true,
       })}{' '}
+      {field('has-pet', 'checkbox', '我有宠物', '租客', { name: 'has_pet' })}{' '}
       宠物名字：
       {field('pet-name', 'text', '宠物名字', '租客', {
-        condition: { ref: 'pets', test: 'equals', value: 'yes' },
+        condition: {
+          all: [
+            { ref: 'pets', test: 'equals', value: 'yes' },
+            { ref: 'has-pet', test: 'equals', value: true },
+          ],
+        },
         name: 'pet_name',
         required: true,
       })}

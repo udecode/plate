@@ -1,0 +1,18 @@
+---
+id: 2026-11-27-field-condition-lists-ui
+date: 2026-11-27
+status: draft
+kind: new
+summary: 'Edit several rules in a field condition from Show when'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-field-condition-lists-ui","kind":"new","migrationNotes":["Update `platejs` with the copied `field` component, because Show when now writes `all` and `any` `FieldCondition` lists."]} -->
+
+- **`field`**: Show when gets an Add rule button, a Match all or Match any select and a remove button per rule, and saves a single test once one rule is left. A rule whose field belongs to another role shows that role after the field's name, and a broken rule shows its problem.
+
+<!-- entry: {"id":"2026-11-27-field-demo-has-pet","kind":"behavior","migrationNotes":["Update `platejs` with `field-demo`, because the lease now stores an `all` condition list on Pet name."]} -->
+
+- **`field-demo`**: The lease asks the tenant whether they have a pet, and asks for a pet name only once the landlord allows pets and the tenant ticks I have a pet.
