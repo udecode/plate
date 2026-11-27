@@ -196,22 +196,65 @@ const parseSourceModule = (path) =>
     sourceType: 'module',
   });
 
-const readOptionKeys = (path, exportName) => {
-  const file = toPosixPath(relative(repoRoot, path));
+const findTopLevelConstDeclarator = (ast, name, { requireExport }) =>
+  ast.program.body
+    .flatMap((statement) => {
+      if (
+        statement.type === 'ExportNamedDeclaration' &&
+        statement.declaration?.type === 'VariableDeclaration' &&
+        statement.declaration.kind === 'const'
+      ) {
+        return statement.declaration.declarations;
+      }
+      if (
+        !requireExport &&
+        statement.type === 'VariableDeclaration' &&
+        statement.kind === 'const'
+      ) {
+        return statement.declarations;
+      }
+
+      return [];
+    })
+    .find(
+      (candidate) =>
+        candidate.id?.type === 'Identifier' && candidate.id.name === name
+    );
+
+const readOptionKeys = (
+  path,
+  exportName,
+  { ast, requireExport = true, seen = new Set() } = {}
+) => {
+  const resolvedPath = resolve(path);
+  const file = toPosixPath(relative(repoRoot, resolvedPath));
   const fail = (reason) => {
     throw new Error(
       `cannot read editor option keys ${exportName} from ${file}: ${reason}`
     );
   };
-  const ast = parseSourceModule(path);
-  const declarator = ast.program.body
-    .filter((statement) => statement.type === 'ExportNamedDeclaration')
-    .flatMap((statement) => statement.declaration?.declarations ?? [])
-    .find((candidate) => candidate.id?.name === exportName);
+  const visitKey = `${resolvedPath}#${exportName}`;
+
+  if (seen.has(visitKey)) {
+    fail(`circular spread of ${exportName}`);
+  }
+
+  const nextSeen = new Set(seen);
+
+  nextSeen.add(visitKey);
+
+  const moduleAst = ast ?? parseSourceModule(resolvedPath);
+  const declarator = findTopLevelConstDeclarator(moduleAst, exportName, {
+    requireExport,
+  });
   const keys = unwrapTypedExpression(declarator?.init);
 
   if (keys?.type !== 'ObjectExpression') {
-    fail('no exported object literal by that name');
+    fail(
+      requireExport
+        ? 'no exported object literal by that name'
+        : 'no const object literal by that name'
+    );
   }
 
   return keys.properties.flatMap((property) => {
@@ -221,8 +264,23 @@ const readOptionKeys = (path, exportName) => {
       return key ?? fail('a key is not a plain name');
     }
 
+    if (property.argument?.type !== 'Identifier') {
+      fail('a spread is not a plain identifier');
+    }
+
     const { name } = property.argument;
-    const imported = ast.program.body
+
+    if (
+      findTopLevelConstDeclarator(moduleAst, name, { requireExport: false })
+    ) {
+      return readOptionKeys(resolvedPath, name, {
+        ast: moduleAst,
+        requireExport: false,
+        seen: nextSeen,
+      });
+    }
+
+    const imported = moduleAst.program.body
       .filter((statement) => statement.type === 'ImportDeclaration')
       .flatMap((statement) =>
         statement.specifiers.map((specifier) => ({ specifier, statement }))
@@ -233,17 +291,28 @@ const readOptionKeys = (path, exportName) => {
       );
 
     if (!imported?.statement.source.value.startsWith('.')) {
-      fail(`its spread of ${name} is not a relative import`);
+      fail(
+        `its spread of ${name} is neither a same-file const nor a relative import`
+      );
     }
 
-    const base = resolve(dirname(path), imported.statement.source.value);
+    const base = resolve(
+      dirname(resolvedPath),
+      imported.statement.source.value
+    );
     const target = sourceModuleExtensions
       .map((extension) => base + extension)
       .find(existsSync);
 
     if (!target) fail(`cannot find the module ${name} comes from`);
 
-    return readOptionKeys(target, getPropertyName(imported.specifier.imported));
+    return readOptionKeys(
+      target,
+      getPropertyName(imported.specifier.imported),
+      {
+        seen: nextSeen,
+      }
+    );
   });
 };
 
