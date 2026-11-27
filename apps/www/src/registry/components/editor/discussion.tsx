@@ -457,7 +457,9 @@ const useDiscussionController = () => {
   const authoredView = useEditorSelector(readAuthoredViewMode, {
     dependsOn: 'authored',
   });
-  const viewRoot = editor.read.view.root();
+  const viewRoot = useEditorSelector((current) => current.read.view.root(), {
+    dependsOn: 'readOnly',
+  });
   const presentationView = React.useMemo(
     () =>
       viewRoot === undefined
@@ -1122,7 +1124,9 @@ function NewComment({
   pendingRoot: NamedRootKey | undefined;
 }) {
   const editor = useEditor();
-  const viewRoot = editor.read.view.root();
+  const viewRoot = useEditorSelector((current) => current.read.view.root(), {
+    dependsOn: 'readOnly',
+  });
   const submitEditor = React.useMemo(
     () =>
       pendingRoot === viewRoot
@@ -1298,7 +1302,9 @@ function DiscussionPopover({
   const model = useModelEditor();
   const { isPrimaryForRoot, nestedView, standaloneRoots } =
     useEditorRootAreas(editor);
-  const viewRoot = editor.read.view.root();
+  const viewRoot = useEditorSelector((current) => current.read.view.root(), {
+    dependsOn: 'readOnly',
+  });
   const presentationView = React.useMemo(
     () =>
       viewRoot === undefined

@@ -420,7 +420,6 @@ export {
   selectorDependenciesWantShownPreview,
   selectorDependenciesWantViewKind,
   type EditorViewStateBucket,
-  type EditorViewStateDependency,
   type NormalizedSelectorDependencies,
 } from '../core/selector-dependencies';
 export { withPliteReactPreservedSelection } from './update-policy';
