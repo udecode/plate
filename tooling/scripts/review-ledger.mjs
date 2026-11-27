@@ -1138,12 +1138,58 @@ function unresolvedCandidates(ledger, scope) {
   );
 }
 
+const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function incomingOpenWorkByScope(root, ledger) {
+  const topicsDir = join(root, 'docs/plans/topics');
+  const byScope = new Map([...ledger.scopes.keys()].map((id) => [id, []]));
+  if (!existsSync(topicsDir)) return byScope;
+  const patterns = [...ledger.scopes.keys()].map((id) => {
+    const escaped = escapeRegex(id);
+    return [
+      id,
+      new RegExp(
+        `(?:^\\s*\`?${escaped}\`?(?:'s\\b|\\s*(?:[.,;]|$))|` +
+          `\\b(?:verdict|topics/)\\s*\`?${escaped}\`?(?![a-z0-9-])|` +
+          `\\b${escaped}\\.md\\b|` +
+          `(?<![a-z0-9-])\`?${escaped}\`?(?:'s)?\\s+(?:and\\s+\`?[a-z0-9-]+\`?\\s+)?(?:scope|subject|review|verdict)s?\\b|` +
+          `\\band\\s+\`?${escaped}\`?\\s+(?:scope|subject|review|verdict)s?\\b)`,
+        'i'
+      ),
+    ];
+  });
+  for (const file of readdirSync(topicsDir)
+    .filter((name) => name.endsWith('.md'))
+    .sort()) {
+    const fromId = file.slice(0, -3);
+    const open = sectionOf(
+      readFileSync(join(topicsDir, file), 'utf-8'),
+      'Open work'
+    );
+    if (!open) continue;
+    const from = `docs/plans/topics/${file}`;
+    for (const raw of open.split(/\r?\n/)) {
+      const line = raw.trim();
+      if (!/^(?:[-*]|\d+\.)\s+/.test(line)) continue;
+      const match = /\bowner:\s*(.+?)(?=\s+\bstop:|$)/i.exec(line);
+      if (!match) continue;
+      const owner = match[1];
+      const text = line.replace(/^(?:[-*]|\d+\.)\s+/, '');
+      for (const [id, pattern] of patterns) {
+        if (id === fromId) continue;
+        if (pattern.test(owner)) byScope.get(id).push({ from, text });
+      }
+    }
+  }
+  return byScope;
+}
+
 function compact(
   ledger,
   tree,
   plans,
   scope,
-  { freshness: withFreshness = true } = {}
+  { freshness: withFreshness = true, incoming } = {}
 ) {
   const state = openState(ledger, scope.id, plans);
   const dependents = dependentsOf(ledger, scope);
@@ -1154,6 +1200,7 @@ function compact(
     (document) =>
       document.scopes.includes(scope.id) && document.disposition !== 'rejected'
   );
+  const incomingItems = incoming?.get(scope.id) ?? [];
   return {
     id: scope.id,
     title: scope.title,
@@ -1197,6 +1244,7 @@ function compact(
       3
     ),
     candidates: bounded(unresolvedCandidates(ledger, scope), 5),
+    incomingOpenWork: bounded(incomingItems, 10),
     related: (scope.relatedScopes ?? []).map((id) => ({
       id,
       verdict: latest(headsOf(ledger, id))?.verdict ?? null,
@@ -1218,13 +1266,13 @@ function compact(
   };
 }
 
-function detailed(ledger, tree, plans, scope) {
+function detailed(ledger, tree, plans, scope, incoming) {
   const history = [
     ...(ledger.reviews.get(scope.id) ?? []),
     ...(ledger.executions.get(scope.id) ?? []),
   ].sort((a, b) => a.date.localeCompare(b.date) || byId(a, b));
   return {
-    ...compact(ledger, tree, plans, scope),
+    ...compact(ledger, tree, plans, scope, { incoming }),
     scope,
     history: history.map((record) => ({
       ...record.raw,
@@ -1240,6 +1288,7 @@ function detailed(ledger, tree, plans, scope) {
       document.scopes.includes(scope.id)
     ),
     candidates: unresolvedCandidates(ledger, scope),
+    incomingOpenWork: incoming?.get(scope.id) ?? [],
     executionsTotal: (ledger.executions.get(scope.id) ?? []).length,
   };
 }
@@ -1249,14 +1298,19 @@ const lookupLimit = 10;
 /** The ledger, tree and plans one or more lookups read. */
 export function lookupContext(root) {
   const ledger = loadLedger(root);
-  return { ledger, tree: observe(root), plans: plansOf(root, ledger) };
+  return {
+    ledger,
+    tree: observe(root),
+    plans: plansOf(root, ledger),
+    incoming: incomingOpenWorkByScope(root, ledger),
+  };
 }
 
 export const lookup = (root, query, options) =>
   lookupIn(lookupContext(root), query, options);
 
 export function lookupIn(
-  { ledger, tree, plans },
+  { ledger, tree, plans, incoming },
   query,
   { detail = false, freshness: withFreshness = true } = {}
 ) {
@@ -1317,13 +1371,14 @@ export function lookupIn(
     );
   }
   assert.ok(matched.length, `No scope, group or path matches: ${query}`);
-  const shown = matched
-    .slice(0, lookupLimit)
-    .map((scope) =>
-      detail
-        ? detailed(ledger, tree, plans, scope)
-        : compact(ledger, tree, plans, scope, { freshness: withFreshness })
-    );
+  const shown = matched.slice(0, lookupLimit).map((scope) =>
+    detail
+      ? detailed(ledger, tree, plans, scope, incoming)
+      : compact(ledger, tree, plans, scope, {
+          freshness: withFreshness,
+          incoming,
+        })
+  );
   return matched.length > lookupLimit
     ? [
         ...shown,
