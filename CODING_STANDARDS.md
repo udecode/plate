@@ -23,7 +23,7 @@ Read this file in full before you write, review or deslop any source, test or to
 
 ## Tests
 
-- Before writing or changing a test, invoke the `verify` skill and read the shared Tests rule in `.agents/pstack/rules/tests.md` and `verify`'s [testing reference](.agents/rules/verify/references/testing.md); it holds Plate's test shape, runners, type-test and assertion rules. Beyond the pstack block's Tests rule, do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior. The block's `.skip` ban does not cover a runtime capability gate, a skip that runs only when the browser, platform or engine lacks what the test needs; an unconditional `.skip` or `.only` stays banned.
+- Before writing or changing a test, invoke the `verify` skill, whose Drive section names the test runners, and read the shared Tests rule in `.agents/pstack/rules/tests.md`. Beyond the pstack block's Tests rule, do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior. The block's `.skip` ban does not cover a runtime capability gate, a skip that runs only when the browser, platform or engine lacks what the test needs; an unconditional `.skip` or `.only` stays banned.
 - **Library bar.** A test earns its place only when it guards one of these at an entry a user or another Plate package imports:
   - the call, return, type, error or documented default of a public or cross-package export
   - an editor-behavior rule, tagged as the last bullet of this section says
