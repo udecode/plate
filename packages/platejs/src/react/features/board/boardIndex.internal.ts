@@ -23,6 +23,11 @@ import {
   paintOrder,
 } from '../../../features/board/lib/boardCopy.internal';
 import {
+  type BoardLentHeight,
+  type BoardNoteHeightStamp,
+  boardNoteStampMatches,
+} from '../../../features/board/lib/boardHeights.internal';
+import {
   MIN_SHAPE_SIZE,
   flooredSizeKeepingRatio,
 } from '../../../features/board/lib/boardRatio.internal';
@@ -60,15 +65,6 @@ export type BoardShapePlacement = Readonly<{
   kind: BoardMemberEntry['kind'];
   note: boolean;
   rank: number;
-}>;
-
-type NoteHeightStamp = Readonly<{
-  children: Element['children'];
-  key: NodeKey;
-  sizeHeight: number;
-  sizeWidth: number;
-  textSize: unknown;
-  type: string;
 }>;
 
 const NO_BOX: BoardBox = { height: 0, width: 0, x: 0, y: 0 };
@@ -373,8 +369,8 @@ export const createBoardIndex = ({
   const arrowListeners = new Map<NodeKey, Set<() => void>>();
   const strokePaths = new WeakMap<BoardStrokePoints, BoardStrokePath>();
   const heights = new Map<string, number>();
-  const measuredStamps = new Map<string, NoteHeightStamp>();
-  const stamps = new Map<string, NoteHeightStamp>();
+  const measuredStamps = new Map<string, BoardNoteHeightStamp>();
+  const stamps = new Map<string, BoardNoteHeightStamp>();
   let shapeEntries = new Map<string, BoardFrameEntry | BoardShapeEntry>();
   let cull = new Map<NodeKey, CullBox>();
   let version = 0;
@@ -382,7 +378,7 @@ export const createBoardIndex = ({
   const stampOf = (
     entry: BoardFrameEntry | BoardShapeEntry,
     node: Element = nodeOf(entry.key) ?? entry.node
-  ): NoteHeightStamp => ({
+  ): BoardNoteHeightStamp => ({
     children: node.children,
     key: entry.key,
     sizeHeight: entry.size.height,
@@ -392,16 +388,10 @@ export const createBoardIndex = ({
   });
 
   const stampMatches = (
-    stamp: NoteHeightStamp,
+    stamp: BoardNoteHeightStamp,
     entry: BoardFrameEntry | BoardShapeEntry,
     node: Element = nodeOf(entry.key) ?? entry.node
-  ) =>
-    stamp.key === entry.key &&
-    stamp.type === node.type &&
-    stamp.sizeWidth === entry.size.width &&
-    stamp.sizeHeight === entry.size.height &&
-    stamp.textSize === node.textSize &&
-    stamp.children === node.children;
+  ) => boardNoteStampMatches(stamp, entry, node);
 
   const laidOutHeight = (entry: BoardFrameEntry | BoardShapeEntry) => {
     const measured = heights.get(entry.id);
@@ -851,6 +841,12 @@ export const createBoardIndex = ({
     },
     layout: (key: NodeKey) => layouts.get(key),
     layouts: () => layouts.values(),
+    lentHeightOf: (id: string): BoardLentHeight | undefined => {
+      const height = heights.get(id);
+      const stamp = stamps.get(id) ?? measuredStamps.get(id);
+
+      return height !== undefined && stamp ? { height, stamp } : undefined;
+    },
     measure,
     membersOf: (id: string) => membersOf.get(id),
     placementOf: (id: string) => {

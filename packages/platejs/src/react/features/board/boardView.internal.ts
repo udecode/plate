@@ -14,6 +14,7 @@ import {
   SelectionApi,
 } from '../../../core';
 import {
+  getViewPresentation,
   isDocumentView,
   readAuthoredView,
   type Editor as RuntimeEditor,
@@ -34,6 +35,7 @@ import {
 } from '../../../features/board/lib';
 import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
 import { frameTakes } from '../../../features/board/lib/boardFrame.internal';
+import { lendBoardHeights } from '../../../features/board/lib/boardHeights.internal';
 import { keepsBoardRatio } from '../../../features/board/lib/boardRatio.internal';
 import {
   BOARD_SHAPES_SLOT,
@@ -1456,6 +1458,16 @@ export const createBoardView = (
     ) {
       cancelInteraction();
     }
+    if (
+      (change.kind === 'remove' || change.kind === 'removeFrame') &&
+      pendingConfirm.size > 0
+    ) {
+      const pending = [...pendingConfirm];
+
+      pendingConfirm.clear();
+      cancelSettle();
+      index.confirmMountedHeights(pending);
+    }
 
     const written = write((tx) => {
       const commands = tx.plugin(BaseBoardPlugin);
@@ -2116,12 +2128,43 @@ export const createBoardView = (
 
       let unsubscribeRootText = subscribeRootText();
 
+      let unlendMounted: (() => void) | undefined;
+      let unlendEditor: (() => void) | undefined;
+      const syncLending = () => {
+        if (writable()) {
+          if (!unlendMounted) {
+            const mountedPresentation = getViewPresentation(mounted);
+            const editorPresentation = getViewPresentation(editor);
+
+            unlendMounted = lendBoardHeights(
+              mountedPresentation,
+              root,
+              index.lentHeightOf
+            );
+            if (editorPresentation !== mountedPresentation) {
+              unlendEditor = lendBoardHeights(
+                editorPresentation,
+                root,
+                index.lentHeightOf,
+                true
+              );
+            }
+          }
+        } else {
+          unlendMounted?.();
+          unlendEditor?.();
+          unlendMounted = undefined;
+          unlendEditor = undefined;
+        }
+      };
+
       const unsubscribeViewState = subscribeEditorViewState(
         shapes,
         (change) => {
           if (change !== 'readOnly' && change !== 'authored') return;
 
           gestures?.refuseWrites();
+          syncLending();
           unsubscribeRootText();
           shownView = createEditorView(mounted, { root });
           unsubscribeRootText = subscribeRootText();
@@ -2132,10 +2175,13 @@ export const createBoardView = (
         }
       );
 
+      syncLending();
       follow();
       showSelection();
 
       return () => {
+        unlendMounted?.();
+        unlendEditor?.();
         cancelSettle();
         pendingConfirm.clear();
         unsubscribe();

@@ -1,5 +1,9 @@
 import { ElementApi, type Node } from '../../../core';
-import type { BoardMemberEntry } from './boardMember.internal';
+import type {
+  BoardFrameEntry,
+  BoardMemberEntry,
+  BoardShapeEntry,
+} from './boardMember.internal';
 import {
   type BoardPlace,
   type BoardSize,
@@ -98,7 +102,11 @@ export const boardArrowTargetOf = ({
  * that root that `memberOf` finds, never an arrow.
  */
 export const boardTargetsOn =
-  (memberOf: (id: string) => BoardMemberEntry | null, root: string) =>
+  (
+    memberOf: (id: string) => BoardMemberEntry | null,
+    root: string,
+    heightOf?: (member: BoardFrameEntry | BoardShapeEntry) => number
+  ) =>
   (id: string): BoardArrowTarget | undefined => {
     const member = memberOf(id);
 
@@ -106,7 +114,9 @@ export const boardTargetsOn =
       ? boardArrowTargetOf({
           geo: member.node.geo,
           place: member.place,
-          size: member.size,
+          size: heightOf
+            ? { height: heightOf(member), width: member.size.width }
+            : member.size,
         })
       : undefined;
   };

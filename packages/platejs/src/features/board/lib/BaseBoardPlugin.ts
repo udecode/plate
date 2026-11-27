@@ -24,9 +24,14 @@ import {
   type TransferVetoInput,
   txLocate,
 } from '../../../core';
-import { withEditorUpdateRootScope } from '../../../facade';
+import {
+  getStateViewPresentation,
+  getViewPresentation,
+  withEditorUpdateRootScope,
+} from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { getResolvedPluginTargetBinding } from '../../../internal/plugin/compilePlateModel';
+import { getPlateRuntimeOwner } from '../../../internal/plugin/plateRuntime';
 import { BaseBoardArrowPlugin } from './BaseBoardArrowPlugin';
 import { BaseBoardFramePlugin } from './BaseBoardFramePlugin';
 import { BaseBoardGeoPlugin } from './BaseBoardGeoPlugin';
@@ -38,6 +43,7 @@ import {
   BOARD_ARROW_TYPE,
   boardTargetsOn,
   isBoundArrowEnd,
+  resolveBoardArrow,
 } from './boardArrow.internal';
 import {
   moveShapesTo,
@@ -57,6 +63,7 @@ import {
   isBoardShapePlace,
   placeAmong,
 } from './boardFrame.internal';
+import { lentBoardHeightFor } from './boardHeights.internal';
 import {
   BOARD_ARROW_ATTRIBUTES,
   BOARD_FRAME_ATTRIBUTES,
@@ -644,8 +651,17 @@ export const BaseBoardPlugin = definePlugin('board', {
             );
         const removeEntries = (removed: readonly BoardMemberEntry[]) => {
           const gone = new Set(removed.map(({ id }) => id));
+          const presentation =
+            getStateViewPresentation(tx) ??
+            getViewPresentation(getPlateRuntimeOwner(editor));
 
           for (const root of new Set(removed.map((entry) => entry.root))) {
+            const targetOnBoard = boardTargetsOn(
+              members.member,
+              root,
+              (member) => lentBoardHeightFor(presentation, root, member)
+            );
+
             for (const arrow of members.membersIn(root)) {
               if (arrow.kind !== 'arrow' || gone.has(arrow.id)) continue;
 
@@ -655,7 +671,9 @@ export const BaseBoardPlugin = definePlugin('board', {
                 return isBoundArrowEnd(end) && gone.has(end.shape);
               });
               const drawn =
-                loose.length > 0 ? members.arrowEnds(arrow.id) : null;
+                loose.length > 0
+                  ? resolveBoardArrow(arrow, targetOnBoard)
+                  : null;
 
               if (!drawn) continue;
               tx.nodes.set(
