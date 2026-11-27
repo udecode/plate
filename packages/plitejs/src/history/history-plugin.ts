@@ -40,6 +40,7 @@ import {
 } from '../core/change/carried-run';
 import {
   collapseDocumentElementPropertyWrites,
+  createInternalDocumentChange,
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys,
   getInternalDocumentRootChange,
@@ -80,6 +81,7 @@ import {
   applyDocumentChange,
   documentReplacement,
   getCurrentSelectionRoot,
+  getEditorDocumentValue,
   getEditorUpdateRoot,
   isBuildingTransactionSpec,
   isInTransaction,
@@ -92,6 +94,7 @@ import {
   registerEditorTransactionGuard,
   setTypedMarks,
 } from '../core/public-state';
+import { getRecordText, getValueRecords } from '../core/record-store';
 import {
   EditorNoncanonicalChangeError,
   EditorSchemaValidationError,
@@ -490,6 +493,57 @@ const createHistoryControl = <V extends Value>(
     );
   });
 
+const isRecordOnlyChange = (change: DocumentChange) =>
+  change.createRoots.size === 0 &&
+  change.deleteRoots.size === 0 &&
+  getInternalDocumentChangeRootKeys(change).length === 0;
+
+const survivingSessionRecordChange = <V extends Value>(
+  base: EditorDocumentValue<V>,
+  current: EditorDocumentValue<V>,
+  outside: DocumentChange | null,
+  change: DocumentChange
+): DocumentChange => {
+  if (change.empty) return DocumentChange.empty;
+
+  const ops = getInternalDocumentChangeRecords(change);
+
+  if (ops.size === 0) return DocumentChange.empty;
+
+  const baseRecords = getValueRecords(base);
+  const currentRecords = getValueRecords(current);
+  const outsideOps = outside ? getInternalDocumentChangeRecords(outside) : null;
+  const kept = new Map<string, Map<string, string | null>>();
+
+  for (const [set, writes] of ops) {
+    const outsideSet = outsideOps?.get(set);
+
+    for (const [id, op] of writes) {
+      if (outsideSet?.has(id)) continue;
+      if (
+        getRecordText(baseRecords, set, id) !==
+        getRecordText(currentRecords, set, id)
+      ) {
+        continue;
+      }
+
+      let setOps = kept.get(set);
+
+      if (!setOps) {
+        setOps = new Map();
+        kept.set(set, setOps);
+      }
+      setOps.set(id, op);
+    }
+  }
+
+  return kept.size === 0
+    ? DocumentChange.empty
+    : createInternalDocumentChange(new Map(), {
+        records: kept,
+      });
+};
+
 const runHistoricUpdate = <V extends Value>(
   editor: Editor<V>,
   root: string,
@@ -497,7 +551,8 @@ const runHistoricUpdate = <V extends Value>(
   batch: Batch<V>,
   fn: () => void
 ) => {
-  const stateOnly = batch.change.empty && batch.effects.length > 0;
+  const stateOnly =
+    isRecordOnlyChange(batch.change) && batch.effects.length > 0;
   const preserveSelection =
     stateOnly || shouldPreserveHistoricDOMSelection(root, batch);
 
@@ -900,7 +955,7 @@ const createHistoryPlugin = <
       const claimVersion = readPendingHistoryReplay(editor)?.claimVersion;
       const identity = settlePendingHistoryReplay(editor, {
         ...(replaySettlement.status === 'applied'
-          ? { change: inverse, effects }
+          ? { after, change: inverse, effects, forward: changes }
           : {}),
         request: replaySettlement.request,
         status: replaySettlement.status,
@@ -1092,10 +1147,12 @@ const createHistoryPlugin = <
 
     if (
       sessionEffects.length > 0 &&
-      (!changes.empty || effects.length !== 1 || sessionEffects.length !== 1)
+      (!isRecordOnlyChange(changes) ||
+        effects.length !== 1 ||
+        sessionEffects.length !== 1)
     ) {
       throw new Error(
-        'A session history effect must own one effect-only history batch.'
+        'A session history effect must own one effect-only or record-only history batch.'
       );
     }
 
@@ -1558,9 +1615,18 @@ const createHistoryPlugin = <
               sessionEffect.type,
               ownerResult.value
             );
+            const companionChange = survivingSessionRecordChange(
+              entry.base,
+              getEditorDocumentValue(owner),
+              entry.origin?.outside ?? null,
+              keptHistoryChange(editor, entry.batch.change)
+            );
             getEditorRuntime(owner).update(
               (tx) => {
                 runHistoricUpdate(editor, root, tx, entry.batch, () => {
+                  if (!companionChange.empty) {
+                    applyDocumentChange(owner, companionChange);
+                  }
                   tx.effects.emit(replayedEffect.type, replayedEffect.value);
                 });
                 tx.annotations.set(historyReplaySettlement, {

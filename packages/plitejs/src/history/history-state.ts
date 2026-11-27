@@ -4,7 +4,6 @@ import {
   mapEffect,
   type Editor,
   type EditorDocumentValue,
-  type EditorEffect,
   type EditorSchemaIdentity,
   type Value,
 } from '..';
@@ -65,6 +64,13 @@ import {
   type HistoryReplay,
   type ReplayRules,
 } from './history-replay';
+import {
+  mapSessionReplayEffects,
+  placeSettledSessionEntry,
+  resolveSessionSettlementBase,
+  type SessionReplaySettlementInput,
+  settleSessionBranches,
+} from './history-session-replay';
 import {
   additionalRoot,
   cloneFrozen,
@@ -1425,12 +1431,7 @@ export const markPendingHistoryReplayEdited = <V extends Value>(
 
 export const settlePendingHistoryReplay = <V extends Value>(
   editor: Editor<V>,
-  input: Readonly<{
-    change?: DocumentChange;
-    effects?: readonly EditorEffect[];
-    request: number;
-    status: 'applied' | 'blocked';
-  }>
+  input: SessionReplaySettlementInput<V>
 ) => {
   const store = getStore(editor);
   const pending = store.pendingReplay;
@@ -1465,54 +1466,40 @@ export const settlePendingHistoryReplay = <V extends Value>(
     return null;
   }
 
+  const forward = input.forward ?? DocumentChange.empty;
   let nextUndos = [...undos.entries];
   let nextRedos = [...redos.entries];
   let insertionIndex: number | null = null;
-  let replayBase = claimed.base;
-  let replayEffects = pending.replayMappings
-    ? journalEntries(pending.replayMappings).reduce(
-        (mapped, mapping) =>
-          mapped.flatMap((effect) => {
-            const next = mapEffect(effect, mapping.change);
-
-            return next ? [next] : [];
-          }),
-        [...input.effects]
-      )
-    : [...input.effects];
+  let replayBase = !forward.empty && input.after ? input.after : claimed.base;
+  let replayEffects = mapSessionReplayEffects(
+    input.effects,
+    pending.replayMappings
+      ? journalEntries(pending.replayMappings).map((m) => m.change)
+      : []
+  );
 
   if (pending.direction === 'undo') {
-    nextUndos = nextUndos.filter(
-      (candidate) => candidate.identity !== pending.identity
-    );
+    nextUndos = nextUndos.filter((c) => c.identity !== pending.identity);
   } else {
-    nextRedos = nextRedos.filter(
-      (candidate) => candidate.identity !== pending.identity
-    );
+    nextRedos = nextRedos.filter((c) => c.identity !== pending.identity);
     if (pending.edited) {
       insertionIndex = pending.undoAnchor
-        ? nextUndos.findIndex(
-            (candidate) => candidate.identity === pending.undoAnchor
-          )
+        ? nextUndos.findIndex((c) => c.identity === pending.undoAnchor)
         : nextUndos.length;
 
       if (insertionIndex >= 0 && insertionIndex < store.maxDepth) {
         const latestUndo = nextUndos.at(-1);
-
-        replayBase =
+        const anchorBase =
           nextUndos[insertionIndex]?.base ??
           (latestUndo
             ? latestUndo.batch.change.apply(latestUndo.base)
             : claimed.base);
-        const correction = DocumentChange.between(claimed.base, replayBase);
-
-        if (!correction.empty) {
-          replayEffects = replayEffects.flatMap((effect) => {
-            const mapped = mapEffect(effect, correction);
-
-            return mapped ? [mapped] : [];
-          });
-        }
+        ({ replayBase, replayEffects } = resolveSessionSettlementBase({
+          anchorBase,
+          claimedBase: claimed.base,
+          forward,
+          replayEffects,
+        }));
       }
     }
   }
@@ -1545,23 +1532,27 @@ export const settlePendingHistoryReplay = <V extends Value>(
     }),
   });
 
-  if (pending.direction === 'undo') {
-    if (!pending.edited) nextRedos.unshift(replayed);
-  } else if (!pending.edited) {
-    nextUndos.unshift(replayed);
-  } else if (
-    insertionIndex !== null &&
-    insertionIndex >= 0 &&
-    insertionIndex < store.maxDepth
-  ) {
-    nextUndos.splice(insertionIndex, 0, replayed);
-  }
+  placeSettledSessionEntry({
+    direction: pending.direction,
+    edited: pending.edited,
+    insertionIndex,
+    maxDepth: store.maxDepth,
+    nextRedos,
+    nextUndos,
+    replayed,
+  });
 
-  publish(editor, withDrops(store, drops), {
-    pendingReplay: null,
+  const settled = settleSessionBranches({
+    addMapping,
+    after: input.after,
+    direction: pending.direction,
+    edited: pending.edited,
+    forward,
+    rebaseOnto: (b, current) => rebaseOnto(editor, drops, b, current),
     redos: rebuildBranch(nextRedos, store.maxDepth),
     undos: rebuildBranch(nextUndos, store.maxDepth),
   });
+  publish(editor, withDrops(store, drops), { pendingReplay: null, ...settled });
 
   return claimed.identity;
 };
