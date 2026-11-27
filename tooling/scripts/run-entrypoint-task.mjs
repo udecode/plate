@@ -56,6 +56,32 @@ const runProcess = (executable, args, cwd = packageRoot, env = process.env) => {
   return result.status ?? 1;
 };
 
+const writeStream = (stream, chunks) =>
+  chunks.length === 0
+    ? Promise.resolve()
+    : new Promise((resolve, reject) => {
+        stream.write(Buffer.concat(chunks), (error) => {
+          if (error) {
+            reject(error instanceof Error ? error : new Error(String(error)));
+          } else {
+            resolve();
+          }
+        });
+      });
+
+let flushQueue = Promise.resolve();
+
+const flushBufferedOutput = (stdout, stderr) => {
+  const flush = flushQueue.then(async () => {
+    await writeStream(process.stdout, stdout);
+    await writeStream(process.stderr, stderr);
+  });
+
+  flushQueue = flush.catch(() => {});
+
+  return flush;
+};
+
 const runProcessAsync = (
   executable,
   args,
@@ -78,13 +104,23 @@ const runProcessAsync = (
     }
 
     child.once('error', reject);
-    child.once('exit', (code) => {
-      if (buffered) {
-        if (stdout.length > 0) process.stdout.write(Buffer.concat(stdout));
-        if (stderr.length > 0) process.stderr.write(Buffer.concat(stderr));
+    child.once('close', (code, signal) => {
+      if (code === null && signal) {
+        const message = `${executable} terminated by signal ${signal}\n`;
+
+        if (buffered) stderr.push(Buffer.from(message));
+        else process.stderr.write(message);
       }
 
-      resolve(code ?? 1);
+      if (!buffered) {
+        resolve(code ?? 1);
+        return;
+      }
+
+      flushBufferedOutput(stdout, stderr).then(
+        () => resolve(code ?? 1),
+        reject
+      );
     });
   });
 

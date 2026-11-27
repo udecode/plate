@@ -346,10 +346,8 @@ const branch = <V extends Value>(
     outside: null,
     track: null,
   })
-): HistoryBranch<V> => {
-  countCoreWork('historyBranchRebuilds');
-
-  return Object.freeze({
+): HistoryBranch<V> =>
+  Object.freeze({
     anchorCeiling,
     base,
     batch: withHistoryStep(
@@ -375,7 +373,6 @@ const branch = <V extends Value>(
     origin,
     recovery,
   });
-};
 
 const withKeptBranch = <V extends Value>(
   kept: KeptRedo<V> | null,
@@ -385,12 +382,20 @@ const withKeptBranch = <V extends Value>(
   if (kept.kind === 'fallback') {
     const plain = change(kept.plain);
 
-    return plain ? Object.freeze({ ...kept, plain }) : null;
+    return plain === kept.plain
+      ? kept
+      : plain
+        ? Object.freeze({ ...kept, plain })
+        : null;
   }
 
   const mapped = change(kept.branch);
 
-  return mapped ? Object.freeze({ ...kept, branch: mapped }) : null;
+  return mapped === kept.branch
+    ? kept
+    : mapped
+      ? Object.freeze({ ...kept, branch: mapped })
+      : null;
 };
 
 const clipBranch = <V extends Value>(
@@ -786,6 +791,8 @@ const mapHead = <V extends Value>(
 
   if (empty) {
     for (const mapping of later) next = addMapping(next, mapping);
+  } else {
+    countCoreWork('historyBranchRebuilds');
   }
 
   return {
@@ -861,6 +868,7 @@ const resolveProgramHead = <V extends Value>(
   }
 
   const fallbackDrops: DropSink = [];
+  countCoreWork('historyBranchRebuilds');
   const { head: fallback } = mapHead(
     editor,
     fallbackDrops,
@@ -1113,6 +1121,8 @@ const resolveCanonicalTop = <V extends Value>(
       root ?? MAIN_ROOT_KEY
     );
 
+  countCoreWork('historyBranchRebuilds');
+
   return branch<V>(
     freezeBatch<V>(
       undo
@@ -1261,25 +1271,7 @@ export const resolveAll = <V extends Value>(
     current = current.next;
   }
 
-  let resolved: HistoryBranch<V> | null = null;
-  for (let index = newest.length - 1; index >= 0; index--) {
-    const entry = newest[index];
-
-    resolved = branch(
-      entry.batch,
-      entry.base,
-      entry.replay,
-      resolved,
-      null,
-      entry.group,
-      entry.recovery,
-      entry.anchorCeiling,
-      entry.identity,
-      entry.carets,
-      entry.kept,
-      entry.origin
-    );
-  }
+  const resolved = rebuildBranch(newest, Number.POSITIVE_INFINITY);
 
   return {
     batches: shownBatches(editor, drops, resolved),
@@ -1302,6 +1294,7 @@ export const rebuildBranch = <V extends Value>(
   ) {
     const entry = entries[index];
 
+    countCoreWork('historyBranchRebuilds');
     value = branch(
       entry.batch,
       entry.base,
