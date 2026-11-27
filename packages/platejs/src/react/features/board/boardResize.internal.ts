@@ -7,7 +7,7 @@ import {
   resized,
   sameBox,
 } from './boardIndex.internal';
-import { elementOf, placeElement } from './boardPreview.internal';
+import { elementOf, placeShape } from './boardPreview.internal';
 import type { BoardViewCore } from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
 
@@ -87,9 +87,9 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
 
   const placeAtModel = (placed: Resize) => {
     const element = elementFor(placed);
-    const layout = index.byId(placed.id);
+    const box = index.storedBoxOf(placed.id);
 
-    if (element && layout) placeElement(element, layout.box);
+    if (element && box) placeShape(element, box);
   };
 
   const show = () => {
@@ -102,7 +102,7 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
     const element = elementFor(shownResize);
 
     index.previewShape(id, box);
-    if (element) placeElement(element, box);
+    if (element) placeShape(element, box);
     index.previewArrows([id], (target) => (target === id ? box : undefined), {
       x: 0,
       y: 0,

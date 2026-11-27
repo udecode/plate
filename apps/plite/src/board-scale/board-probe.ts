@@ -670,12 +670,12 @@ export const installBoardProbe = (
   const boxText = (width: number, height: number) => `${width}x${height}`;
   const k2Read = (done: K2Done) => {
     if (done.kind === 'boxPreviewed') {
-      const element = shapeElement(done.id);
+      const placed = shapeElement(done.id)?.parentElement;
 
-      return element
+      return placed
         ? boxText(
-            Number.parseFloat(element.style.width),
-            Number.parseFloat(element.style.height)
+            Number.parseFloat(placed.style.width),
+            Number.parseFloat(placed.style.height)
           )
         : null;
     }

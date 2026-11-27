@@ -16,16 +16,17 @@ export const placeElement = (element: HTMLElement, box: BoardBox) => {
   element.style.height = `${box.height}px`;
 };
 
-/**
- * A copy of `shape` that a copy drag shows in `layer` at paint rank `rank`:
- * no handles, no editor attributes, and no input.
- */
+export const hostOf = (shape: HTMLElement) => shape.parentElement ?? shape;
+
+export const placeShape = (shape: HTMLElement, box: BoardBox) =>
+  placeElement(hostOf(shape), box);
+
 export const previewCopy = (
   shape: HTMLElement,
   layer: HTMLElement | null,
   rank: number
 ) => {
-  const preview = shape.cloneNode(true) as HTMLElement;
+  const preview = hostOf(shape).cloneNode(true) as HTMLElement;
 
   for (const handle of preview.querySelectorAll('[data-board-handle]')) {
     handle.remove();

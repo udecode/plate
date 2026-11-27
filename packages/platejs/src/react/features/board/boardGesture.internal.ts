@@ -29,7 +29,9 @@ import { arrowEndOn, BOARD_PLACE_SIZE } from './boardPick.internal';
 import {
   drawGuides,
   elementOf,
+  hostOf,
   placeElement,
+  placeShape,
   previewArrowLine,
   previewCopy,
   previewGuides,
@@ -237,17 +239,17 @@ export const attachBoardGestures = (
   });
 
   const placeAtModel = (element: HTMLElement, id: string) => {
-    const layout = index.byId(id);
+    const box = index.storedBoxOf(id);
 
-    if (layout) placeElement(element, layout.box);
+    if (box) placeShape(element, box);
   };
 
   const heldBox = (ids: Iterable<string>) =>
     unionOf(
       [...ids].flatMap((id) => {
-        const layout = index.byId(id);
+        const box = index.storedBoxOf(id);
 
-        return layout && layout.kind !== 'arrow' ? [layout.box] : [];
+        return box ? [box] : [];
       })
     );
 
@@ -382,7 +384,7 @@ export const attachBoardGestures = (
         return;
       }
       index.previewShape(id, rect);
-      placeElement(gesture.element, rect);
+      placeShape(gesture.element, rect);
       index.previewArrows(
         [id],
         (target) => (target === id ? rect : undefined),
@@ -652,7 +654,7 @@ export const attachBoardGestures = (
             ? elements.map((element) =>
                 previewCopy(element, core.zoomLayer(), previewRank())
               )
-            : elements.filter(boxesOnly),
+            : elements.filter(boxesOnly).map(hostOf),
           free: event.ctrlKey || event.metaKey,
           grab: at,
           guides: previewGuides(core.zoomLayer(), previewRank()),

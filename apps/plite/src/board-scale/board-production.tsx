@@ -372,7 +372,10 @@ export const createProductionRenderer = (config: ProductionConfig) => {
         for (const member of host.querySelectorAll<HTMLElement>(
           `[data-frame="${id}"]`
         )) {
-          member.style.translate = '';
+          const placed = member.parentElement;
+
+          if (!placed) continue;
+          placed.style.translate = '';
           plantWork.stillMembers += 1;
         }
       }

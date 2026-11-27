@@ -742,6 +742,11 @@ export const createBoardIndex = ({
 
       return boxes;
     },
+    storedBoxOf: (id: string) => {
+      const layout = byId.get(id);
+
+      return layout && layout.kind !== 'arrow' ? layout.box : undefined;
+    },
     /**
      * Where the stroke `key` draws its line within its box. The path is
      * computed once per points and size, so a write that keeps both, such as

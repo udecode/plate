@@ -504,6 +504,67 @@ const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
 
 export const SHAPES_EDITABLE = `[data-editor-content-root-slot="${BOARD_SHAPES_SLOT}"] [data-editor="true"][contenteditable="true"]`;
 
+// Prepending a private layer keeps both rules below every host CSS layer and
+// unlayered stylesheet, and keeps them paired so a strict style-src-elem CSP
+// that blocks the sheet still leaves visible shapes and handles clickable.
+const SHAPE_POINTER_EVENTS_RULE = `@layer board-shapes { :where([data-editor-content-root-slot="${BOARD_SHAPES_SLOT}"] > [data-editor="true"] > div) { pointer-events: none; } :where([data-board-shape]) { pointer-events: auto; } }`;
+
+const mountedPointerStyles = new WeakMap<
+  Document | ShadowRoot,
+  { count: number; style: HTMLStyleElement }
+>();
+
+const isDocumentRoot = (node: globalThis.Node): node is Document =>
+  node.nodeType === 9;
+
+const isShadowRootNode = (node: globalThis.Node): node is ShadowRoot =>
+  node.nodeType === 11 && 'host' in node;
+
+const mountPointerStyle = (host: HTMLElement) => {
+  const root = host.getRootNode();
+  const target = isDocumentRoot(root)
+    ? root.head
+    : isShadowRootNode(root)
+      ? root
+      : null;
+  const key = isDocumentRoot(root) || isShadowRootNode(root) ? root : null;
+
+  if (!target || !key) {
+    const style = host.ownerDocument.createElement('style');
+
+    style.setAttribute('data-board-pointer-events', '');
+    style.textContent = SHAPE_POINTER_EVENTS_RULE;
+    host.prepend(style);
+
+    return () => {
+      style.remove();
+    };
+  }
+
+  let entry = mountedPointerStyles.get(key);
+
+  if (!entry) {
+    const style = host.ownerDocument.createElement('style');
+
+    style.setAttribute('data-board-pointer-events', '');
+    style.textContent = SHAPE_POINTER_EVENTS_RULE;
+    target.prepend(style);
+    entry = { count: 0, style };
+    mountedPointerStyles.set(key, entry);
+  } else if (!entry.style.isConnected) {
+    target.prepend(entry.style);
+  }
+  entry.count += 1;
+
+  return () => {
+    entry.count -= 1;
+    if (entry.count === 0) {
+      entry.style.remove();
+      mountedPointerStyles.delete(key);
+    }
+  };
+};
+
 const setShapeSelection = (tx: PluginTransaction, keys: readonly NodeKey[]) =>
   tx.selection.setNodes(keys, {
     mode: shapeSelectionMode(
@@ -1636,6 +1697,7 @@ export const createBoardView = (
     surface = host;
     paintCamera();
 
+    const unmountPointerStyle = mountPointerStyle(host);
     const resizeObserver = new ResizeObserver(measure);
 
     measure();
@@ -1714,6 +1776,7 @@ export const createBoardView = (
       layer = null;
       zoomLayer = null;
       surface = null;
+      unmountPointerStyle();
       resizeObserver.disconnect();
       host.removeEventListener('wheel', onWheel);
       for (const type of FILE_DRAG_EVENTS) {

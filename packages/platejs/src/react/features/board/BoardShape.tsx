@@ -65,6 +65,101 @@ function AloneHandles() {
   return alone && <Handles />;
 }
 
+const FIXED_STYLE_KEYS: ReadonlySet<string> = new Set([
+  'alignSelf',
+  'all',
+  'blockSize',
+  'bottom',
+  'boxSizing',
+  'gridArea',
+  'gridColumn',
+  'gridColumnEnd',
+  'gridColumnStart',
+  'gridRow',
+  'gridRowEnd',
+  'gridRowStart',
+  'height',
+  'inlineSize',
+  'inset',
+  'insetBlock',
+  'insetBlockEnd',
+  'insetBlockStart',
+  'insetInline',
+  'insetInlineEnd',
+  'insetInlineStart',
+  'justifySelf',
+  'left',
+  'margin',
+  'marginBlock',
+  'marginBlockEnd',
+  'marginBlockStart',
+  'marginBottom',
+  'marginInline',
+  'marginInlineEnd',
+  'marginInlineStart',
+  'marginLeft',
+  'marginRight',
+  'marginTop',
+  'placeSelf',
+  'position',
+  'right',
+  'top',
+  'width',
+]);
+
+const ROOT_FIXED_STYLE: React.CSSProperties = {
+  alignSelf: 'start',
+  bottom: 0,
+  boxSizing: 'border-box',
+  gridColumn: '1 / 2',
+  gridRow: '1 / 2',
+  height: '100%',
+  justifySelf: 'stretch',
+  left: 0,
+  marginBottom: 0,
+  marginLeft: 0,
+  marginRight: 0,
+  marginTop: 0,
+  position: 'relative',
+  right: 0,
+  top: 0,
+  width: '100%',
+};
+
+const WRAPPER_STYLE: React.CSSProperties = {
+  alignItems: 'start',
+  contain: 'size layout',
+  display: 'grid',
+  gridTemplateColumns: '100%',
+  gridTemplateRows: '100%',
+  margin: 0,
+  position: 'absolute',
+};
+
+const rootStyle = (
+  attrStyle: React.CSSProperties | undefined,
+  propStyle: React.CSSProperties | undefined
+): React.CSSProperties => {
+  if (!attrStyle && !propStyle) return ROOT_FIXED_STYLE;
+
+  const merged =
+    attrStyle && propStyle
+      ? { ...attrStyle, ...propStyle }
+      : (propStyle ?? attrStyle);
+
+  if (!merged) return ROOT_FIXED_STYLE;
+  if (!Object.keys(merged).some((key) => FIXED_STYLE_KEYS.has(key))) {
+    return { ...merged, ...ROOT_FIXED_STYLE };
+  }
+
+  return {
+    ...Object.fromEntries(
+      Object.entries(merged).filter(([key]) => !FIXED_STYLE_KEYS.has(key))
+    ),
+    ...ROOT_FIXED_STYLE,
+  };
+};
+
 /**
  * One member of a board, painted at its stacking rank while the DOM keeps the
  * board's stored order. A shape, frame or stroke sits at its box and,
@@ -77,7 +172,18 @@ function AloneHandles() {
  * such as its name, and a stroke only on its line, which its component draws
  * from `useStrokePath`. A selected member shows `data-selected`, one the
  * eraser will remove on release shows `data-erasing`, and the one under the
- * picking cursor that Space starts shows `data-board-cursor`.
+ * picking cursor that Space starts shows `data-board-cursor`. Those marks,
+ * `className` and `style` go on the member's root, which fills a `div` that
+ * carries the member's box, paint rank and drag `translate` (read inline
+ * `left`, `top`, `width`, `height`, `z-index`, `translate`, `offsetLeft` and
+ * `offsetTop` on `root.parentElement`). A private `@layer board-shapes` style
+ * rule makes the wrapper take no press and restores `pointer-events: auto` on
+ * the root so host CSS layers and classes still override `pointer-events`; to
+ * disable pointer input on an ancestor of a board, set `inert`. The root's
+ * `position` is `relative`, so its absolute children place against it, and
+ * `style` cannot change its `all`, `boxSizing`, `height`, `inset`, `margin`,
+ * `position`, `width`, their sides or logical forms, or its grid placement and
+ * self-alignment properties.
  */
 export function BoardShape({
   className,
@@ -132,34 +238,37 @@ export function BoardShape({
   }, [arrowChannel, layout?.key, id, view]);
 
   return (
-    <EditorElement
-      {...props}
-      attributes={{
-        ...props.attributes,
-        'data-board-cursor': cursor ? '' : undefined,
-        'data-board-shape': layout?.id,
-        'data-erasing': erasing || undefined,
-        'data-selected': selected || undefined,
-      }}
-      className={className}
+    <div
       style={{
-        ...style,
+        ...WRAPPER_STYLE,
         height: arrow ? 0 : layout?.box.height,
         left: arrow ? 0 : layout?.box.x,
-        margin: 0,
-        position: 'absolute',
         top: arrow ? 0 : layout?.box.y,
         width: arrow ? 0 : layout?.box.width,
         zIndex: layout?.rank,
       }}
     >
-      {arrowChannel ? (
-        <ArrowContext value={arrowChannel}>{props.children}</ArrowContext>
-      ) : (
-        props.children
-      )}
-      {selected && !arrow && <AloneHandles />}
-    </EditorElement>
+      <EditorElement
+        {...props}
+        attributes={{
+          ...props.attributes,
+          'data-board-cursor': cursor ? '' : undefined,
+          'data-board-shape': layout?.id,
+          'data-erasing': erasing || undefined,
+          'data-selected': selected || undefined,
+          style: undefined,
+        }}
+        className={className}
+        style={rootStyle(props.attributes.style, style)}
+      >
+        {arrowChannel ? (
+          <ArrowContext value={arrowChannel}>{props.children}</ArrowContext>
+        ) : (
+          props.children
+        )}
+        {selected && !arrow && <AloneHandles />}
+      </EditorElement>
+    </div>
   );
 }
 
