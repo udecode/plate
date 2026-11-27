@@ -26,11 +26,15 @@ const markRequestSchema = z
     box: z.tuple([z.number(), z.number(), z.number(), z.number()]),
     gaps: z.array(z.number().int().nonnegative()).optional(),
     id: markIdSchema,
+    margin: z.enum(['left', 'right']).optional(),
     words: z.array(z.number().int().nonnegative()).optional(),
   })
   .refine(
-    (mark) => (mark.words?.length ?? 0) > 0 || (mark.gaps?.length ?? 0) > 0,
-    { message: 'Each mark must name at least one word or gap.' }
+    (mark) =>
+      (mark.words?.length ?? 0) > 0 ||
+      (mark.gaps?.length ?? 0) > 0 ||
+      mark.margin !== undefined,
+    { message: 'Each mark must name at least one word, gap, or margin side.' }
   );
 
 const passageRequestSchema = z.strictObject({
@@ -164,11 +168,36 @@ const highlightEditSchema = z.strictObject({
   ]),
 });
 
+const commentEditSchema = z.strictObject({
+  kind: z.literal('comment'),
+  passage: passageIdSchema,
+  quote: z.string(),
+  text: z.string().trim().min(1),
+  words: z.tuple([
+    z.number().int().nonnegative(),
+    z.number().int().nonnegative(),
+  ]),
+});
+
+const answerEditSchema = z.strictObject({
+  kind: z.literal('answer'),
+  passage: passageIdSchema,
+  question: z.string().trim().min(1),
+  quote: z.string(),
+  text: z.string().trim().min(1),
+  words: z.tuple([
+    z.number().int().nonnegative(),
+    z.number().int().nonnegative(),
+  ]),
+});
+
 export const inkDigitizeEditSchema = z.discriminatedUnion('kind', [
   deleteEditSchema,
   replaceEditSchema,
   insertEditSchema,
   highlightEditSchema,
+  commentEditSchema,
+  answerEditSchema,
 ]);
 
 export const inkDigitizeMeaningSchema = z.strictObject({
@@ -198,14 +227,16 @@ const SYSTEM_PROMPT = [
   'Each passage provides two PNG images (inkAlone, inkOnText), numbered words (0-based), and each mark with its pixel box and touched word or gap indices.',
   'Group related marks (such as a caret and the handwritten word written beside it, or multi-stroke letters of one handwritten word) into a single correction. Each mark may appear in at most one correction.',
   'For each correction, return 1 to 4 distinct candidate meanings ordered from most likely to least likely. When a caret sits beside a short word or a mark could plausibly mean two different edits or adjacent positions, include the next most plausible alternative as a second meaning.',
-  'Each edit must be delete, replace, insert, or highlight within one passage.',
+  'Each edit must be delete, replace, insert, highlight, comment, or answer within one passage.',
   'How to read proofreading marks:',
   '- Strikethrough (delete): a thin opaque pen stroke drawn horizontally through the middle of one or more words, or a scribble crossing out words, is a delete (not a highlight).',
   '- Highlight: a wide translucent marker band over words, or a circle/box/underline emphasizing words without crossing through them, is a highlight.',
   '- Caret insertion (insert): a caret (^ or v) pointing to a space between two words with handwritten text written above or below it inserts that handwritten text at the exact space the caret tip points to. Check both the visual caret apex in inkOnText and which gap makes the resulting sentence grammatical.',
   '- Replacement (replace): words crossed out or circled with handwritten replacement text written above/beside them.',
+  '- Handwritten note (comment): a handwritten note in the margin (marked margin=left or margin=right) or beside words becomes a comment anchored on the words it refers to, with text set to the transcribed note.',
+  '- Question on a marked passage (answer): a circled, underlined, or bracketed passage paired with a handwritten question (such as "Why?" or "What does this mean?") sets question to the transcribed question and text to a concise answer anchored on the marked words. When a handwritten question could also be saved literally as a note, include a comment meaning as a second option.',
   'Indexing rules:',
-  '- For delete, replace, and highlight: set words to [startWord, endWord] (inclusive) and quote to the exact words joined by spaces.',
+  '- For delete, replace, highlight, comment, and answer: set words to [startWord, endWord] (inclusive) and quote to the exact words joined by spaces.',
   '- For insert: gap index i is the space immediately BEFORE word i (between word i-1 and word i), and gap words.length is after the last word. Set between to [wordBeforeOrEmpty, wordAfterOrEmpty] and gap to the index of the word immediately AFTER the insertion point. Double-check that between[0] is words[gap - 1] (or "" if gap is 0) and between[1] is words[gap] (or "" if gap is words.length).',
 ].join('\n');
 
@@ -229,6 +260,9 @@ export const buildInkDigitizeMessages = (
       }
       if (mark.gaps && mark.gaps.length > 0) {
         segments.push(`gaps=[${mark.gaps.join(',')}]`);
+      }
+      if (mark.margin) {
+        segments.push(`margin=${mark.margin}`);
       }
 
       return segments.join(' ');
@@ -324,16 +358,31 @@ export const DEFAULT_INK_DIGITIZE_MODEL = 'google/gemini-3.8-flash';
 // Keep `kind`, `text`/`quote`, and `between` ahead of numeric indices so autoregressive
 // decoding commits to the gesture and surrounding words before computing `gap` or `words`.
 const inkDigitizeProviderEditSchema = z.object({
-  kind: z.enum(['delete', 'replace', 'insert', 'highlight']),
+  kind: z.enum([
+    'delete',
+    'replace',
+    'insert',
+    'highlight',
+    'comment',
+    'answer',
+  ]),
   passage: passageIdSchema,
+  question: z
+    .string()
+    .optional()
+    .describe('For answer: the transcribed handwritten question.'),
   text: z
     .string()
     .optional()
-    .describe('For insert or replace: new text to write.'),
+    .describe(
+      'For insert, replace, comment, or answer: text to write or answer body.'
+    ),
   quote: z
     .string()
     .optional()
-    .describe('For delete, replace, highlight: exact quoted words.'),
+    .describe(
+      'For delete, replace, highlight, comment, answer: exact quoted words.'
+    ),
   between: z
     .array(z.string())
     .min(2)
@@ -352,7 +401,7 @@ const inkDigitizeProviderEditSchema = z.object({
     .max(2)
     .optional()
     .describe(
-      'For delete, replace, highlight: [startWord, endWord] inclusive.'
+      'For delete, replace, highlight, comment, answer: [startWord, endWord] inclusive.'
     ),
 });
 
@@ -410,6 +459,25 @@ const normalizeProviderEdit = (
       return {
         kind: 'replace',
         passage: edit.passage,
+        quote: edit.quote,
+        text: edit.text,
+        words: edit.words,
+      };
+    }
+    case 'comment': {
+      return {
+        kind: 'comment',
+        passage: edit.passage,
+        quote: edit.quote,
+        text: edit.text,
+        words: edit.words,
+      };
+    }
+    case 'answer': {
+      return {
+        kind: 'answer',
+        passage: edit.passage,
+        question: edit.question,
         quote: edit.quote,
         text: edit.text,
         words: edit.words,

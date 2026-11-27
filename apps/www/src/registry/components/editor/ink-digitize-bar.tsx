@@ -26,6 +26,7 @@ import { AIChatTransportPlugin } from '@/registry/components/editor/use-chat';
 import {
   canDigitizeInk,
   confirmInkDigitize,
+  type ConfirmSkipReason,
   latestInkDigitizeRequestId,
   marksTurningIntoSigns,
   type PreparedInkDigitize,
@@ -73,6 +74,12 @@ const describeEdit = (edit: InkDigitizeEdit): string => {
   if (edit.kind === 'replace') {
     return `Replace "${edit.quote}" with "${edit.text}"`;
   }
+  if (edit.kind === 'comment') {
+    return `Comment on "${edit.quote}": "${edit.text}"`;
+  }
+  if (edit.kind === 'answer') {
+    return `Answer "${edit.question}" on "${edit.quote}": "${edit.text}"`;
+  }
 
   const [before, after] = edit.between;
 
@@ -88,11 +95,12 @@ const describeEdit = (edit: InkDigitizeEdit): string => {
 const describeMeaning = (meaning: InkDigitizeMeaning): string =>
   meaning.edits.map(describeEdit).join('; ');
 
-const skipReasonLabel = (
-  reason: 'no-op' | 'pending-suggestion' | 'refused'
-) => {
+const skipReasonLabel = (reason: ConfirmSkipReason) => {
   if (reason === 'pending-suggestion') return 'overlaps a pending suggestion';
   if (reason === 'refused') return 'refused in Suggesting mode';
+  if (reason === 'save-rejected') return 'comment save was rejected';
+  if (reason === 'save-failed') return 'comment save failed';
+  if (reason === 'no-comments-plugin') return 'comments are not enabled';
 
   return 'would not change the document';
 };

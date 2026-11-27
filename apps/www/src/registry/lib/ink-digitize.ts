@@ -1,4 +1,5 @@
 import {
+  type Anchor,
   type Editor,
   type EditorDocumentValue,
   ElementApi,
@@ -9,6 +10,7 @@ import {
   TextApi,
 } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
+import { BaseCommentsPlugin, type CommentData } from 'platejs/comments';
 import { BaseInkPlugin, type InkMark, type InkPassage } from 'platejs/ink';
 import { type InkPassageImages, InkPlugin } from 'platejs/ink/react';
 
@@ -101,8 +103,8 @@ export type PrepareInkDigitizeResult =
       prepared: PreparedInkDigitize;
     }>;
 
-const isMarginMark = (mark: InkMark) =>
-  mark.margin !== undefined || mark.blocks.every((b) => b.runs.length === 0);
+const isUnanchoredMark = (mark: InkMark) =>
+  mark.margin === undefined && mark.blocks.every((b) => b.runs.length === 0);
 
 const blockIdsBetween = (
   view: Editor,
@@ -142,7 +144,7 @@ const shownMarkIdsByBlock = (
 
   for (const blockId of blockIds) byBlock.set(blockId, []);
   for (const mark of read.shownMarks()) {
-    if (isMarginMark(mark)) continue;
+    if (isUnanchoredMark(mark)) continue;
     const seen = new Set<string>();
 
     for (const block of mark.blocks) {
@@ -191,17 +193,17 @@ export const prepareInkDigitizeRequest = async (
     return { kind: 'blocked', reason: 'no-marks' };
   }
 
-  const marginNoteIds = pickedMarks.filter(isMarginMark).map((mark) => mark.id);
-  const textPicked = pickedMarks.filter((mark) => !isMarginMark(mark));
+  const marginNoteIds: string[] = [];
+  const readablePicked = pickedMarks.filter((mark) => !isUnanchoredMark(mark));
 
-  if (textPicked.length === 0) {
-    return { kind: 'margin-only', marginNoteIds };
+  if (readablePicked.length === 0) {
+    return { kind: 'blocked', reason: 'no-marks' };
   }
 
-  const lassoedSet = new Set(textPicked.map((mark) => mark.id));
+  const lassoedSet = new Set(readablePicked.map((mark) => mark.id));
   const touchedBlocks = new Set<string>();
 
-  for (const mark of textPicked) {
+  for (const mark of readablePicked) {
     for (const block of mark.blocks) {
       const copy = ink.read.copy(block.copy);
 
@@ -211,7 +213,7 @@ export const prepareInkDigitizeRequest = async (
 
   const widenedMarks = shown.filter(
     (mark) =>
-      !isMarginMark(mark) &&
+      !isUnanchoredMark(mark) &&
       mark.blocks.some((block) => {
         const copy = ink.read.copy(block.copy);
 
@@ -222,7 +224,7 @@ export const prepareInkDigitizeRequest = async (
     .filter((mark) => !lassoedSet.has(mark.id))
     .map((mark) => mark.id);
   const targetIds = options.lassoOnly
-    ? textPicked.map((mark) => mark.id)
+    ? readablePicked.map((mark) => mark.id)
     : widenedMarks.map((mark) => mark.id);
 
   const passages = ink.read.passages(targetIds);
@@ -236,7 +238,7 @@ export const prepareInkDigitizeRequest = async (
   if (wordCount > maxWords) {
     const lassoOnlyWords = options.lassoOnly
       ? wordCount
-      : totalWordsOf(ink.read.passages(textPicked.map((mark) => mark.id)));
+      : totalWordsOf(ink.read.passages(readablePicked.map((mark) => mark.id)));
 
     return {
       canRetryLassoOnly:
@@ -320,6 +322,7 @@ export const prepareInkDigitizeRequest = async (
         ],
         ...(mark.gaps.length > 0 ? { gaps: [...mark.gaps] } : {}),
         id: keyOf(mark.id),
+        ...(mark.margin ? { margin: mark.margin } : {}),
         ...(mark.words.length > 0 ? { words: [...mark.words] } : {}),
       })),
       words,
@@ -444,6 +447,13 @@ const editTouchesCorrectionMarks = (
   }
 
   const [start, end] = edit.words;
+
+  if (
+    (edit.kind === 'comment' || edit.kind === 'answer') &&
+    relevantMarks.some((mark) => mark.margin !== undefined)
+  ) {
+    return true;
+  }
 
   return relevantMarks.some(
     (mark) =>
@@ -655,7 +665,13 @@ export const marksTurningIntoSigns = (
 
     if (!meaning) continue;
     for (const edit of meaning.edits) {
-      if (edit.kind === 'highlight') continue;
+      if (
+        edit.kind === 'highlight' ||
+        edit.kind === 'comment' ||
+        edit.kind === 'answer'
+      ) {
+        continue;
+      }
       const meta = metaById.get(edit.passage);
 
       if (meta) changedBlocks.add(meta.blockId);
@@ -809,13 +825,20 @@ export type ConfirmChoice = Readonly<{
   meaningIndex: number;
 }>;
 
-export type ConfirmSkipReason = 'no-op' | 'pending-suggestion' | 'refused';
+export type ConfirmSkipReason =
+  | 'no-comments-plugin'
+  | 'no-op'
+  | 'pending-suggestion'
+  | 'refused'
+  | 'save-failed'
+  | 'save-rejected';
 
 export type ConfirmInkDigitizeResult =
   | Readonly<{
       applied: ReadonlyArray<{
         correctionIndex: number;
         markIds: readonly string[];
+        threadIds?: readonly string[];
       }>;
       skipped: ReadonlyArray<{
         correctionIndex: number;
@@ -1155,4 +1178,271 @@ export const confirmInkDigitize = (
     skipped,
     status: 'applied',
   };
+};
+
+const isCommentEdit = (
+  edit: InkDigitizeEdit
+): edit is Extract<InkDigitizeEdit, { kind: 'answer' | 'comment' }> =>
+  edit.kind === 'comment' || edit.kind === 'answer';
+
+export const confirmInkDigitizeWithComments = async (
+  view: Editor,
+  prepared: PreparedInkDigitize,
+  validated: Extract<ValidatedDigitizeReading, { ok: true }>,
+  choices: readonly ConfirmChoice[],
+  latestRequestId: string | undefined = latestInkDigitizeRequestId(view)
+): Promise<ConfirmInkDigitizeResult> => {
+  if (!canDigitizeInk(view)) {
+    return { reason: 'read-only-or-preview', status: 'blocked' };
+  }
+  if (
+    validated.request !== prepared.request.request ||
+    (latestRequestId !== undefined && validated.request !== latestRequestId)
+  ) {
+    return { reason: 'stale-request', status: 'blocked' };
+  }
+  if (isStalePick(view, prepared)) {
+    return { status: 'stale' };
+  }
+
+  const textChoices: ConfirmChoice[] = [];
+  const commentChoices: ConfirmChoice[] = [];
+
+  for (const choice of choices) {
+    const correction = validated.corrections[choice.correctionIndex];
+    const meaning = correction?.meanings[choice.meaningIndex];
+
+    if (!correction || !meaning) continue;
+    if (meaning.edits.some(isCommentEdit)) {
+      commentChoices.push(choice);
+    } else {
+      textChoices.push(choice);
+    }
+  }
+
+  if (commentChoices.length === 0) {
+    return confirmInkDigitize(
+      view,
+      prepared,
+      validated,
+      textChoices,
+      latestRequestId
+    );
+  }
+
+  const { read } = view.plugin(BaseInkPlugin);
+  const metaById = new Map(prepared.passages.map((meta) => [meta.id, meta]));
+
+  type PinnedCommentEdit = Readonly<{
+    anchor: Anchor<Range>;
+    edit: Extract<InkDigitizeEdit, { kind: 'answer' | 'comment' }>;
+    excerpt: string;
+  }>;
+  type PlannedCommentCorrection = Readonly<{
+    correctionIndex: number;
+    edits: readonly PinnedCommentEdit[];
+    markIds: readonly string[];
+  }>;
+
+  const pinnedCorrections: PlannedCommentCorrection[] = [];
+  const allAnchors: Array<Anchor<Range>> = [];
+
+  const releaseAllAnchors = () => {
+    for (const anchor of allAnchors) anchor.release();
+    allAnchors.length = 0;
+  };
+
+  try {
+    for (const choice of commentChoices) {
+      const correction = validated.corrections[choice.correctionIndex];
+      const meaning = correction.meanings[choice.meaningIndex];
+      const pinnedEdits: PinnedCommentEdit[] = [];
+
+      for (const edit of meaning.edits) {
+        if (!isCommentEdit(edit)) continue;
+        const meta = metaById.get(edit.passage);
+
+        if (!meta) {
+          releaseAllAnchors();
+
+          return { status: 'stale' };
+        }
+        const savedCopy = read.copy(meta.copy);
+
+        if (!savedCopy) {
+          releaseAllAnchors();
+
+          return { status: 'stale' };
+        }
+        const span = resolveEditSpan(savedCopy.text, meta, edit);
+        const range = read.range({
+          copy: meta.copy,
+          end: span.charEnd,
+          start: span.charStart,
+        });
+
+        if (!range) {
+          releaseAllAnchors();
+
+          return { status: 'stale' };
+        }
+        const anchor = view.anchor(range, {
+          association: 'inward',
+          deletion: 'nearest',
+        });
+
+        allAnchors.push(anchor);
+        pinnedEdits.push({
+          anchor,
+          edit,
+          excerpt: savedCopy.text.slice(span.charStart, span.charEnd),
+        });
+      }
+
+      if (pinnedEdits.length > 0) {
+        pinnedCorrections.push({
+          correctionIndex: choice.correctionIndex,
+          edits: pinnedEdits,
+          markIds: correction.markIds,
+        });
+      }
+    }
+
+    const applied: Array<{
+      correctionIndex: number;
+      markIds: readonly string[];
+      threadIds?: readonly string[];
+    }> = [];
+    const skipped: Array<{
+      correctionIndex: number;
+      markIds: readonly string[];
+      reason: ConfirmSkipReason;
+    }> = [];
+
+    if (textChoices.length > 0) {
+      const textResult = confirmInkDigitize(
+        view,
+        prepared,
+        validated,
+        textChoices,
+        latestRequestId
+      );
+
+      if (textResult.status !== 'applied') {
+        return textResult;
+      }
+      applied.push(...textResult.applied);
+      skipped.push(...textResult.skipped);
+    }
+
+    const commentsPlugin = view.plugin(BaseCommentsPlugin);
+
+    if (!commentsPlugin.installed) {
+      for (const item of pinnedCorrections) {
+        skipped.push({
+          correctionIndex: item.correctionIndex,
+          markIds: item.markIds,
+          reason: 'no-comments-plugin',
+        });
+      }
+
+      return { applied, skipped, status: 'applied' };
+    }
+
+    for (const item of pinnedCorrections) {
+      const threadIds: string[] = [];
+      let failureReason: ConfirmSkipReason | null = null;
+
+      for (const [editIndex, pinned] of item.edits.entries()) {
+        const range = pinned.anchor.resolve(view);
+
+        if (!range || view.read.ranges.isEmpty(range)) {
+          failureReason = 'refused';
+          break;
+        }
+        const isLastEdit = editIndex === item.edits.length - 1;
+        const body = [
+          {
+            children: [{ text: pinned.edit.text }],
+            type: 'paragraph',
+          },
+        ];
+        const data: CommentData =
+          pinned.edit.kind === 'answer'
+            ? { kind: 'answer', question: pinned.edit.question }
+            : { kind: 'comment' };
+
+        try {
+          const created = await commentsPlugin.api.createThread({
+            body,
+            data,
+            excerpt: pinned.excerpt,
+            target: { range, type: 'range' },
+            ...(isLastEdit
+              ? {
+                  withHistory: (tx) => {
+                    const shownNow = new Set(
+                      view
+                        .plugin(BaseInkPlugin)
+                        .read.shownMarks()
+                        .map((mark) => mark.id)
+                    );
+                    const stillShown = item.markIds.filter((id) =>
+                      shownNow.has(id)
+                    );
+
+                    if (stillShown.length > 0) {
+                      tx.plugin(BaseInkPlugin).setDigitized(stillShown, true);
+                    }
+                  },
+                }
+              : {}),
+          });
+
+          if (created.status === 'applied') {
+            threadIds.push(created.value);
+          } else {
+            failureReason =
+              created.status === 'rejected' ? 'save-rejected' : 'refused';
+            break;
+          }
+        } catch {
+          failureReason = 'save-failed';
+          break;
+        }
+      }
+
+      if (failureReason) {
+        skipped.push({
+          correctionIndex: item.correctionIndex,
+          markIds: item.markIds,
+          reason: failureReason,
+        });
+      } else {
+        applied.push({
+          correctionIndex: item.correctionIndex,
+          markIds: item.markIds,
+          threadIds,
+        });
+      }
+    }
+
+    if (view.plugin(InkPlugin).installed) {
+      if (skipped.length === 0) {
+        view.plugin(InkPlugin).api.setPicked([]);
+      } else {
+        const digitizedSet = new Set(applied.flatMap((entry) => entry.markIds));
+        const remaining = view
+          .plugin(InkPlugin)
+          .viewStore.get()
+          .picked.filter((id) => !digitizedSet.has(id));
+
+        view.plugin(InkPlugin).api.setPicked(remaining);
+      }
+    }
+
+    return { applied, skipped, status: 'applied' };
+  } finally {
+    releaseAllAnchors();
+  }
 };
