@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-dark-highlight-token",
+      "href": "/registry/changelog/2026-11-27-dark-highlight-token.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Use a dark-mode amber value for the --highlight token",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["highlight-style"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-dark-mode-editor-chrome",
       "href": "/registry/changelog/2026-11-27-dark-mode-editor-chrome.json",
       "status": "draft",

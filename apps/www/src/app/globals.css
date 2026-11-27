@@ -207,7 +207,7 @@
   --selection: oklch(0.922 0 0);
   --selection-foreground: oklch(0.205 0 0);
 
-  --highlight: oklch(0.852 0.199 91.936); /* Yellow 400 */
+  --highlight: oklch(0.769 0.188 70.08); /* Amber 500 */
 
   --editor-insert: oklch(0.765 0.177 163.223);
 

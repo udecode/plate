@@ -569,6 +569,20 @@ export const steps = [
     optIn: '--browser',
   },
   {
+    name: 'www-tokens-browser',
+    holds: ['apps/www/.source'],
+    run: 'pnpm --filter www test:www-browser:chromium tests/browser/suggestion-colors.spec.ts tests/browser/diff-and-cursor-colors.spec.ts tests/browser/dark-mode-chrome-contrast.spec.ts',
+    optIn: '--browser',
+    affected: touches(
+      'apps/www/src/app/globals.css',
+      'apps/www/src/registry/registry-styles.ts',
+      'apps/www/src/registry/components/editor/',
+      'apps/www/tests/browser/suggestion-colors.spec.ts',
+      'apps/www/tests/browser/diff-and-cursor-colors.spec.ts',
+      'apps/www/tests/browser/dark-mode-chrome-contrast.spec.ts'
+    ),
+  },
+  {
     name: 'plite-test',
     cores: 4,
     private: true,

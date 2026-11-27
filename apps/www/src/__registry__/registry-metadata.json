@@ -1,5 +1,5 @@
 {
-  "generation": "25ed9d1eb37fdf3d1be2d7d5866671262c0493b433234731d8e2579ad42f09bd",
+  "generation": "ca1a8cb8f951bcb2d4102bfe508b04a5f7a5d18685570fff5ce1868b0175c7e2",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -4949,7 +4949,7 @@
         {
           "cssVars": {
             "dark": {
-              "highlight": "oklch(0.852 0.199 91.936)"
+              "highlight": "oklch(0.769 0.188 70.08)"
             },
             "light": {
               "highlight": "oklch(0.852 0.199 91.936)"
@@ -12918,7 +12918,7 @@
         {
           "cssVars": {
             "dark": {
-              "highlight": "oklch(0.852 0.199 91.936)"
+              "highlight": "oklch(0.769 0.188 70.08)"
             },
             "light": {
               "highlight": "oklch(0.852 0.199 91.936)"

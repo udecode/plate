@@ -4,7 +4,7 @@ export const registryStyles: RegistryItem[] = [
   {
     cssVars: {
       dark: {
-        highlight: 'oklch(0.852 0.199 91.936)',
+        highlight: 'oklch(0.769 0.188 70.08)',
       },
       light: {
         highlight: 'oklch(0.852 0.199 91.936)',

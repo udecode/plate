@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-dark-highlight-token",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-dark-highlight-token.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Use a dark-mode amber value for the --highlight token",
+  "targets": [
+    {
+      "name": "highlight-style",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-styles.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for highlight-style."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-highlight-style-dark-mode-amber-value-abdf7118",
+      "kind": "behavior",
+      "summary": "Use a dark-mode amber value for the --highlight token",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["highlight-style"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-dark-highlight-token",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

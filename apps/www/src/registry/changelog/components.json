@@ -17,6 +17,7 @@
       "2026-11-17-cn-package",
       "2026-11-12-add-board"
     ],
+    "highlight-style": ["2026-11-27-dark-highlight-token"],
     "find": [
       "2026-11-27-dark-mode-editor-chrome",
       "2026-11-22-find-bar-clears-matches",
