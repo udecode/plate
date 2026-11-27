@@ -39,6 +39,7 @@ import {
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRanges,
   getInternalDocumentRootChange,
+  isInternalTextOnlyDocumentChange,
   transformInternalDocumentChange,
   valueRootIndex,
   withInternalDocumentRootChange,
@@ -832,21 +833,12 @@ const recordReplay = <T extends JsonEditorValue>(
   const { carried } = known;
   const after = known.after ?? change.apply(base);
   const format = new Map<string, TextFormatSpan[]>();
-  const classifications = [
-    ...getInternalDocumentChangeClassificationEntries(change),
-  ];
   const unformatted = () => {
     const runs = exactRunsOf(carried, change, base, after);
 
     return { structure: change, format, after, ...(runs ? { runs } : {}) };
   };
-  if (
-    change.empty ||
-    (classifications.length > 0 &&
-      classifications.every(
-        ([, kind]) => kind.text && !kind.properties && !kind.structure
-      ))
-  ) {
+  if (change.empty || isInternalTextOnlyDocumentChange(change)) {
     return unformatted();
   }
   const reset = new Map<CharacterSpan, JsonRecord>();
@@ -1320,20 +1312,14 @@ const replayedStructure = <T extends JsonEditorValue>(
   recorded: RecordedHistoryReplay<T>,
   base: T,
   mapping: HistoryMapping<T>
-) => {
-  const kinds = [
-    ...getInternalDocumentChangeClassificationEntries(replay.change),
-  ];
-
-  return !replay.exact &&
-    !replay.carried &&
-    mapping.textOnly &&
-    recorded.format.size === 0 &&
-    kinds.length > 0 &&
-    kinds.every(([, kind]) => kind.text && !kind.properties && !kind.structure)
+) =>
+  !replay.exact &&
+  !replay.carried &&
+  mapping.textOnly &&
+  recorded.format.size === 0 &&
+  isInternalTextOnlyDocumentChange(replay.change)
     ? DocumentChange.between(base, recorded.after)
     : recorded.structure;
-};
 
 const rangesApart = (step: DocumentChange, delivered: DocumentChange) =>
   step.createRoots.size === 0 &&

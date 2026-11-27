@@ -4,7 +4,7 @@ import {
   type DocumentChange,
   freezeReadonlyMap,
   getInternalDocumentRootChange,
-  rootComposeRebuilds,
+  rootsComposeRebuilds,
   valueRootIndex,
 } from './document-change';
 import type { DocumentIndex } from './document-index';
@@ -453,10 +453,20 @@ export const composeRoot = (
   return sortedRootFacts({ carries, cuts, heirs, mends, merges });
 };
 
+/** @internal */
+export const factsWithout = (
+  facts: ChangeFacts,
+  roots: ReadonlySet<string>
+): ChangeFacts =>
+  facts.kind === 'unknown' || ![...roots].some((root) => facts.roots.has(root))
+    ? facts
+    : recorded([...facts.roots].filter(([root]) => !roots.has(root)));
+
 /**
  * The facts of `a` then `b`. Each position maps through the other change, a
- * fact whose token one change wrote fresh or dropped loses that part, and a
- * carry splits where its pieces map differently.
+ * fact whose token one change wrote fresh or dropped loses that part, a carry
+ * splits where its pieces map differently, and roots whose lifecycle compose
+ * rebuilds are omitted.
  *
  * @internal
  */
@@ -466,18 +476,17 @@ export const composeFacts = (
   b: DocumentChange,
   bFacts: ChangeFacts
 ): ChangeFacts => {
-  if (
-    aFacts.kind === 'unknown' ||
-    bFacts.kind === 'unknown' ||
-    rootComposeRebuilds(a, b) !== undefined
-  ) {
+  if (aFacts.kind === 'unknown' || bFacts.kind === 'unknown') {
     return UNKNOWN_FACTS;
   }
 
+  const rebuilt = rootsComposeRebuilds(a, b);
   const roots = new Set([...aFacts.roots.keys(), ...bFacts.roots.keys()]);
 
   return recorded(
     [...roots].flatMap((root): Array<readonly [string, RootFacts]> => {
+      if (rebuilt.has(root)) return [];
+
       const first = getInternalDocumentRootChange(a, root);
       const second = getInternalDocumentRootChange(b, root);
       const firstFacts = aFacts.roots.get(root);

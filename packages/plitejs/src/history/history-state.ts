@@ -22,8 +22,8 @@ import {
   stepRejection,
 } from '../core/change/cross-rule';
 import {
-  getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeRootKeys,
+  isInternalTextOnlyDocumentChange,
   transformInternalDocumentChange,
   valueRoot,
   valueRootIndex,
@@ -2376,24 +2376,10 @@ export const clearHistoryStack = <V extends Value>(
   publish(editor, store, { [stack]: null });
 };
 
-const isTextOnlyMapping = (change: DocumentChange) => {
-  const classifications = [
-    ...getInternalDocumentChangeClassificationEntries(change),
-  ];
-
-  return (
-    change.createRoots.size === 0 &&
-    change.deleteRoots.size === 0 &&
-    getInternalDocumentChangeRootKeys(change).length > 0 &&
-    classifications.length > 0 &&
-    classifications.every(
-      ([, classification]) =>
-        classification.text &&
-        !classification.properties &&
-        !classification.structure
-    )
-  );
-};
+const isTextOnlyMapping = (change: DocumentChange) =>
+  change.createRoots.size === 0 &&
+  change.deleteRoots.size === 0 &&
+  isInternalTextOnlyDocumentChange(change);
 
 const ELEMENT_SCHEMAS = new WeakMap<object, ElementSchema>();
 

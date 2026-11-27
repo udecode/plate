@@ -814,6 +814,22 @@ export function* getInternalDocumentChangeClassificationEntries(
   yield* change.rootClassifications;
 }
 
+/** @internal */
+export const isInternalTextOnlyDocumentChange = (change: DocumentChange) => {
+  const roots = getInternalDocumentChangeRootKeys(change);
+  const classifications = [
+    ...getInternalDocumentChangeClassificationEntries(change),
+  ];
+
+  return (
+    roots.length > 0 &&
+    classifications.length === roots.length &&
+    classifications.every(
+      ([, kind]) => kind.text && !kind.properties && !kind.structure
+    )
+  );
+};
+
 /**
  * Construct from an internal sentinel-keyed root map.
  *
@@ -1234,25 +1250,27 @@ const touchedRootsOf = (change: DocumentChange) =>
   ]);
 
 /**
- * A root that one change creates or deletes while the other touches it.
- * `compose` rebuilds that root from the source value instead of composing
- * positions.
+ * Roots that one change creates or deletes while the other touches them.
+ * `compose` rebuilds only those roots from the source value instead of
+ * composing positions.
  *
  * @internal
  */
-export const rootComposeRebuilds = (
+export const rootsComposeRebuilds = (
   first: DocumentChange,
   second: DocumentChange
-) => {
+): ReadonlySet<string> => {
   const secondRoots = touchedRootsOf(second);
 
-  return [...touchedRootsOf(first)].find(
-    (root) =>
-      secondRoots.has(root) &&
-      (first.createRoots.has(root) ||
-        first.deleteRoots.has(root) ||
-        second.createRoots.has(root) ||
-        second.deleteRoots.has(root))
+  return new Set(
+    [...touchedRootsOf(first)].filter(
+      (root) =>
+        secondRoots.has(root) &&
+        (first.createRoots.has(root) ||
+          first.deleteRoots.has(root) ||
+          second.createRoots.has(root) ||
+          second.deleteRoots.has(root))
+    )
   );
 };
 
@@ -1528,36 +1546,71 @@ export class DocumentChange {
    * value-free change algebra can recover.
    */
   compose(other: DocumentChange, value?: JsonEditorValue) {
-    const rebuiltRoot = rootComposeRebuilds(this, other);
+    const rebuilt = rootsComposeRebuilds(this, other);
     const records = composeRecordOps(
       getInternalDocumentChangeRecords(this),
       getInternalDocumentChangeRecords(other)
     );
+    const changes = new Map<string, RootChange>();
+    const classifications = new Map<string, DocumentChangeRootClassification>();
+    const createRoots = new Set(
+      [...this.createRoots, ...other.createRoots].filter(
+        (root) => !rebuilt.has(root)
+      )
+    );
+    const deleteRoots = new Set(
+      [...this.deleteRoots, ...other.deleteRoots].filter(
+        (root) => !rebuilt.has(root)
+      )
+    );
 
-    if (rebuiltRoot) {
-      if (!value) {
-        throw new Error(
-          `Composing overlapping lifecycle changes for root ${rebuiltRoot} requires the source value.`
-        );
-      }
-
-      return withDocumentChangeRecords(
-        DocumentChange.between(
-          value,
-          applyDocumentChangeValue(other, applyDocumentChangeValue(this, value))
-        ),
-        records
+    if (rebuilt.size > 0 && !value) {
+      throw new Error(
+        `Composing overlapping lifecycle changes for root ${[...rebuilt][0]} requires the source value.`
       );
     }
+
+    const rebuiltState =
+      rebuilt.size > 0 && value
+        ? {
+            after: applyDocumentChangeValue(
+              other,
+              applyDocumentChangeValue(this, value)
+            ),
+            before: value,
+          }
+        : null;
 
     const roots = new Set([
       ...[...getInternalDocumentChangeEntries(this)].map(([root]) => root),
       ...[...getInternalDocumentChangeEntries(other)].map(([root]) => root),
+      ...rebuilt,
     ]);
-    const changes = new Map<string, RootChange>();
-    const classifications = new Map<string, DocumentChangeRootClassification>();
 
     for (const root of roots) {
+      if (rebuiltState && rebuilt.has(root)) {
+        const beforeDocument = valueRootIndex(rebuiltState.before, root);
+        const afterDocument = valueRootIndex(rebuiltState.after, root);
+        const change = RootChange.betweenChangedBlocks(
+          beforeDocument,
+          afterDocument,
+          { root }
+        );
+        const existed = Object.hasOwn(rebuiltState.before.roots ?? {}, root);
+        const exists = Object.hasOwn(rebuiltState.after.roots ?? {}, root);
+
+        if (!change.empty) {
+          changes.set(root, change);
+          classifications.set(
+            root,
+            classifyRootChange(change, beforeDocument, afterDocument)
+          );
+        }
+        if (!existed && exists) createRoots.add(root);
+        if (existed && !exists) deleteRoots.add(root);
+        continue;
+      }
+
       const first = getInternalDocumentRootChange(this, root);
       const second = getInternalDocumentRootChange(other, root);
       const change =
@@ -1577,10 +1630,16 @@ export class DocumentChange {
         // RootChange or classify once against the transaction snapshots.
         if (classification) classifications.set(root, classification);
       }
-    }
 
-    const createRoots = new Set([...this.createRoots, ...other.createRoots]);
-    const deleteRoots = new Set([...this.deleteRoots, ...other.deleteRoots]);
+      if (
+        rebuiltState &&
+        root !== 'main' &&
+        !Object.hasOwn(rebuiltState.before.roots ?? {}, root) &&
+        !deleteRoots.has(root)
+      ) {
+        createRoots.add(root);
+      }
+    }
 
     return createInternalDocumentChange(changes, {
       classifications,

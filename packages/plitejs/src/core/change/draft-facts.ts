@@ -413,6 +413,7 @@ const startsEachRoot = (
 export class DraftFacts {
   private known = true;
   private readonly roots = new Map<string, RootRuns>();
+  private readonly dropped = new Set<string>();
   private composed: ChangeFacts | null = NO_FACTS;
   private first: Readonly<{
     change: DocumentChange;
@@ -433,6 +434,7 @@ export class DraftFacts {
     copy.known = this.known;
     copy.composed = this.composed;
     copy.first = this.first;
+    for (const root of this.dropped) copy.dropped.add(root);
     for (const [root, record] of this.roots) {
       copy.roots.set(root, record.clone());
     }
@@ -443,8 +445,19 @@ export class DraftFacts {
   forget() {
     this.known = false;
     this.roots.clear();
+    this.dropped.clear();
     this.composed = UNKNOWN_FACTS;
     this.first = null;
+  }
+
+  drop(roots: ReadonlySet<string>) {
+    if (!this.known) return;
+    this.foldFirst();
+    for (const root of roots) {
+      this.roots.delete(root);
+      this.dropped.add(root);
+    }
+    this.composed = null;
   }
 
   add(
@@ -459,6 +472,7 @@ export class DraftFacts {
     }
     if (
       this.roots.size === 0 &&
+      this.dropped.size === 0 &&
       !this.first &&
       startsEachRoot(change, prefixOf)
     ) {
@@ -466,13 +480,17 @@ export class DraftFacts {
       this.composed = facts;
       return;
     }
-    if (this.first) {
-      const { first } = this;
-
-      this.first = null;
-      this.fold(first.change, first.facts, () => undefined);
-    }
+    this.foldFirst();
     this.fold(change, facts, prefixOf);
+  }
+
+  private foldFirst() {
+    if (!this.first) return;
+
+    const { first } = this;
+
+    this.first = null;
+    this.fold(first.change, first.facts, () => undefined);
   }
 
   private fold(
@@ -481,6 +499,8 @@ export class DraftFacts {
     prefixOf: (root: string) => RootChange | undefined
   ) {
     for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+      if (this.dropped.has(root)) continue;
+
       const rootFacts = facts.roots.get(root);
       let record = this.roots.get(root);
 

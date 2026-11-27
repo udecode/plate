@@ -28,7 +28,7 @@ import {
   getInternalDocumentChangeRootKeys,
   getInternalDocumentRootChange,
   isInternalRecordsOnlyChange,
-  rootComposeRebuilds,
+  rootsComposeRebuilds,
   valueRootIndex,
 } from './document-change';
 import { DocumentIndex, rootNodesOf } from './document-index';
@@ -52,6 +52,7 @@ import {
   type Carry,
   type ChangeFacts,
   type Cut,
+  factsWithout,
   type Heir,
   historyFollowsAllFacts,
   type Mend,
@@ -737,18 +738,21 @@ export class ChangeDraft {
     if (!this.record && facts.roots.size === 0 && !lifecycle) return;
 
     const prefix = getPrefix();
+    const rebuilt = hasRootLifecycle(prefix, change)
+      ? rootsComposeRebuilds(prefix, change)
+      : new Set<string>();
 
-    if (
-      hasRootLifecycle(prefix, change) &&
-      rootComposeRebuilds(prefix, change) !== undefined
-    ) {
+    if (rebuilt.size > 0 && historyFollowsAllFacts()) {
       (this.record ??= new DraftFacts()).forget();
       return;
     }
+    if (rebuilt.size > 0) (this.record ??= new DraftFacts()).drop(rebuilt);
     if (!this.record && facts.roots.size === 0) return;
 
-    (this.record ??= new DraftFacts()).add(change, facts, (root) =>
-      getInternalDocumentRootChange(prefix, root)
+    (this.record ??= new DraftFacts()).add(
+      change,
+      factsWithout(facts, rebuilt),
+      (root) => getInternalDocumentRootChange(prefix, root)
     );
   }
 
