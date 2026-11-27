@@ -1,0 +1,14 @@
+---
+id: 2026-11-27-files-gateway-auth-before-body
+date: 2026-11-27
+status: draft
+kind: fix
+summary: 'Authenticate POST requests before reading JSON bodies in the Files gateway'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-files-api-authenticate-post-requests-before-3d304bee","kind":"fix","migrationNotes":[]} -->
+
+- **`files-api`**: Authenticate `POST` requests before reading JSON bodies in `createFilesGateway`, and rely on `files-sdk` to cap JSON body reads at 1 MiB.

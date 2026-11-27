@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-files-gateway-auth-before-body",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-files-gateway-auth-before-body.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Authenticate POST requests before reading JSON bodies in the Files gateway",
+  "targets": [
+    {
+      "name": "files-api",
+      "files": ["apps/www/src/registry/lib/files.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-files-api-authenticate-post-requests-before-3d304bee",
+      "kind": "fix",
+      "summary": "Authenticate `POST` requests before reading JSON bodies in `createFilesGateway`, and rely on `files-sdk` to cap JSON body reads at 1 MiB.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["files-api"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-files-gateway-auth-before-body",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

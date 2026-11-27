@@ -312,6 +312,12 @@
       "2026-11-24-field-static-answers",
       "2026-11-21-add-field"
     ],
+    "files-api": [
+      "2026-11-27-files-gateway-auth-before-body",
+      "2026-11-17-files-sdk-3",
+      "2026-09-21-upload-provider-items",
+      "2026-09-19-files-sdk-upload-kit"
+    ],
     "board-demo": [
       "2026-11-27-find-nested-roots",
       "2026-11-20-board-demo-browser-uploads",
@@ -1476,11 +1482,6 @@
     ],
     "upload-r2": ["2026-11-17-files-sdk-3", "2026-09-21-upload-provider-items"],
     "upload-s3": ["2026-11-17-files-sdk-3", "2026-09-21-upload-provider-items"],
-    "files-api": [
-      "2026-11-17-files-sdk-3",
-      "2026-09-21-upload-provider-items",
-      "2026-09-19-files-sdk-upload-kit"
-    ],
     "format-painter": ["2026-11-17-format-painter"],
     "editor-plugins": [
       "2026-11-17-format-painter",

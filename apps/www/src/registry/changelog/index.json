@@ -327,6 +327,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-files-gateway-auth-before-body",
+      "href": "/registry/changelog/2026-11-27-files-gateway-auth-before-body.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Authenticate POST requests before reading JSON bodies in the Files gateway",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["files-api"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-find-nested-roots",
       "href": "/registry/changelog/2026-11-27-find-nested-roots.json",
       "status": "draft",

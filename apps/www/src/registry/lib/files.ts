@@ -119,7 +119,7 @@ export const createFilesGateway = (options: FilesGatewayOptions) => {
         throw new FilesGatewayError(400, 'A valid documentId is required');
       }
 
-      let operation: 'download' | 'upload' | 'capabilities';
+      let operation: 'download' | 'upload' | 'post';
       let key: string | null = null;
       if (req.method === 'GET' && url.searchParams.get('op') === 'download') {
         operation = 'download';
@@ -135,21 +135,7 @@ export const createFilesGateway = (options: FilesGatewayOptions) => {
       ) {
         throw new FilesGatewayError(403, 'Explicit-key uploads are disabled');
       } else if (req.method === 'POST') {
-        const body: unknown = await req
-          .clone()
-          .json()
-          .catch(() => null);
-        const op =
-          body && typeof body === 'object' && 'op' in body
-            ? body.op
-            : undefined;
-        if (op === 'presign' || op === 'complete') {
-          operation = 'upload';
-        } else if (op === 'capabilities') {
-          operation = 'capabilities';
-        } else {
-          throw new FilesGatewayError(403, 'Operation is not allowed');
-        }
+        operation = 'post';
       } else {
         throw new FilesGatewayError(403, 'Operation is not allowed');
       }
@@ -163,6 +149,9 @@ export const createFilesGateway = (options: FilesGatewayOptions) => {
         !access.namespace.endsWith(`/${documentId}`)
       ) {
         throw new Error('Files access returned an invalid namespace');
+      }
+      if (!access.canRead && !access.canWrite) {
+        throw new FilesGatewayError(403, 'Document access required');
       }
       if (operation === 'upload' && !access.canWrite) {
         throw new FilesGatewayError(403, 'Document write access required');
@@ -190,11 +179,22 @@ export const createFilesGateway = (options: FilesGatewayOptions) => {
         defaultExpiresIn: 300,
         forceDownloadDisposition: true,
         authorize: ({ key: requestedKey, operation: authorizedOperation }) => {
-          if (authorizedOperation === 'upload' && requestedKey !== undefined) {
-            throw new FilesGatewayError(
-              403,
-              'Explicit-key uploads are disabled'
-            );
+          if (authorizedOperation === 'upload') {
+            if (requestedKey !== undefined) {
+              throw new FilesError(
+                'ReadOnly',
+                'Explicit-key uploads are disabled'
+              );
+            }
+            if (!access.canWrite) {
+              throw new FilesError(
+                'ReadOnly',
+                'Document write access required'
+              );
+            }
+          }
+          if (authorizedOperation === 'download' && !access.canRead) {
+            throw new FilesError('ReadOnly', 'Document read access required');
           }
 
           return {
