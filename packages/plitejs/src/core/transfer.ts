@@ -915,6 +915,12 @@ const runTransfer = (
               independent: relation === 'independent',
               kind: 'range-copy',
               landedKind,
+              landedNameBySource: new Map(
+                [...written.renewed.bySliceKey].map(([root, { landsAs }]) => [
+                  root,
+                  landsAs,
+                ])
+              ),
               roots: written.renewed.slice.roots,
               sourceRoots: copied.roots,
             }

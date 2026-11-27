@@ -136,66 +136,86 @@ const withoutDropped = <T extends object>(
         )
       ) as T);
 
-export const sameContent = (
-  a: Descendant,
+type RootPairs = Readonly<{
+  back: Map<string, string>;
+  forth: Map<string, string>;
+}>;
+
+const rootPairs = (): RootPairs => ({ back: new Map(), forth: new Map() });
+
+const pairRoots = (pairs: RootPairs, aName: string, bName: string) => {
+  if (pairs.forth.has(aName) || pairs.back.has(bName)) {
+    return pairs.forth.get(aName) === bName ? 'seen' : 'clash';
+  }
+  pairs.forth.set(aName, bName);
+  pairs.back.set(bName, aName);
+
+  return 'new';
+};
+
+const sameContents = (
+  a: readonly Descendant[],
   aRoots: JsonValue['roots'],
-  b: Descendant,
+  b: readonly Descendant[],
   bRoots: JsonValue['roots'],
   dropped: DroppedKeys = noDroppedKeys,
-  held: ReadonlySet<string> = NO_KEYS
+  held: ReadonlySet<string> = NO_KEYS,
+  pairs: RootPairs = rootPairs()
 ): boolean => {
-  if (NodeApi.isText(a) || NodeApi.isText(b)) {
-    return (
-      canonicalJsonKey(withoutDropped(a, b, dropped(a))) === canonicalJsonKey(b)
-    );
-  }
+  const sameList = (
+    aList: readonly Descendant[],
+    bList: readonly Descendant[]
+  ): boolean =>
+    aList.length === bList.length &&
+    aList.every((node, i) => same(node, bList[i]));
+  const same = (aNode: Descendant, bNode: Descendant): boolean => {
+    if (NodeApi.isText(aNode) || NodeApi.isText(bNode)) {
+      return (
+        canonicalJsonKey(withoutDropped(aNode, bNode, dropped(aNode))) ===
+        canonicalJsonKey(bNode)
+      );
+    }
 
-  const {
-    children: aChildren,
-    childRoots: aChildRoots,
-    ...aProps
-  } = a as Element & { childRoots?: Record<string, string> };
-  const {
-    children: bChildren,
-    childRoots: bChildRoots,
-    ...bProps
-  } = b as Element & { childRoots?: Record<string, string> };
-
-  if (
-    canonicalJsonKey(withoutDropped(aProps, bProps, dropped(a))) !==
-    canonicalJsonKey(bProps)
-  ) {
-    return false;
-  }
-  if (aChildren.length !== bChildren.length) return false;
-
-  const aRootNames = Object.keys(aChildRoots ?? {}).sort();
-  const bRootNames = Object.keys(bChildRoots ?? {}).sort();
-
-  if (aRootNames.join(',') !== bRootNames.join(',')) return false;
-
-  for (const slot of aRootNames) {
-    const aName = aChildRoots?.[slot] as string;
-    const bName = bChildRoots?.[slot] as string;
-
-    if (aName === bName && held.has(aName)) continue;
-
-    const aRoot = aRoots?.[aName] ?? [];
-    const bRoot = bRoots?.[bName] ?? [];
+    const {
+      children: aChildren,
+      childRoots: aChildRoots,
+      ...aProps
+    } = aNode as Element & { childRoots?: Record<string, string> };
+    const {
+      children: bChildren,
+      childRoots: bChildRoots,
+      ...bProps
+    } = bNode as Element & { childRoots?: Record<string, string> };
 
     if (
-      aRoot.length !== bRoot.length ||
-      aRoot.some(
-        (node, i) => !sameContent(node, aRoots, bRoot[i], bRoots, dropped, held)
-      )
+      canonicalJsonKey(withoutDropped(aProps, bProps, dropped(aNode))) !==
+      canonicalJsonKey(bProps)
     ) {
       return false;
     }
-  }
 
-  return aChildren.every((child, i) =>
-    sameContent(child, aRoots, bChildren[i], bRoots, dropped, held)
-  );
+    const aRootNames = Object.keys(aChildRoots ?? {}).sort();
+    const bRootNames = Object.keys(bChildRoots ?? {}).sort();
+
+    if (aRootNames.join(',') !== bRootNames.join(',')) return false;
+
+    for (const slot of aRootNames) {
+      const aName = aChildRoots?.[slot] as string;
+      const bName = bChildRoots?.[slot] as string;
+
+      const pairing = pairRoots(pairs, aName, bName);
+
+      if (pairing === 'clash') return false;
+      if (pairing === 'seen' || (aName === bName && held.has(aName))) continue;
+      if (!sameList(aRoots?.[aName] ?? [], bRoots?.[bName] ?? [])) {
+        return false;
+      }
+    }
+
+    return sameList(aChildren, bChildren);
+  };
+
+  return sameList(a, b);
 };
 
 export type ClosedEdges = Readonly<{ end: number; start: number }>;
@@ -532,6 +552,7 @@ export type LandingExpectation =
       independent: boolean;
       kind: 'range-copy';
       landedKind: LandedKind;
+      landedNameBySource: ReadonlyMap<string, string>;
       roots: JsonValue['roots'];
       sourceRoots: JsonValue['roots'];
     }>
@@ -817,15 +838,13 @@ export const landingHolds = (
     const want = asCopied(expected.content, expected.roots, of);
     const landed = asCopied(nodes as Descendant[], roots, of);
 
-    return landed.nodes.every((node, i) =>
-      sameContent(
-        want.nodes[i],
-        want.roots,
-        node,
-        landed.roots,
-        (source) => dropped(want.inputOf(source)),
-        expected.independent ? NO_KEYS : expected.aliased
-      )
+    return sameContents(
+      want.nodes,
+      want.roots,
+      landed.nodes,
+      landed.roots,
+      (source) => dropped(want.inputOf(source)),
+      expected.independent ? NO_KEYS : expected.aliased
     );
   }
 
@@ -840,22 +859,33 @@ export const landingHolds = (
     return landsMoved(landed, expected.moved, dropped);
   }
 
-  const { aliased, closed, independent, landedKind, sourceRoots } = expected;
+  const {
+    aliased,
+    closed,
+    independent,
+    landedKind,
+    landedNameBySource,
+    sourceRoots,
+  } = expected;
   const got = asCopied(landed, roots, { aliased, closed });
   const want = asCopied(
     expected.content,
     { ...roots, ...expected.roots },
     { aliased, closed }
   );
+  const pairs = rootPairs();
   const keepsSource = (name: string) => {
     const source = asCopied(sourceRoots?.[name] ?? [], sourceRoots);
     const target = asCopied(roots?.[name] ?? [], roots);
 
-    return (
-      source.nodes.length === target.nodes.length &&
-      source.nodes.every((node, i) =>
-        sameContent(node, source.roots, target.nodes[i], target.roots)
-      )
+    return sameContents(
+      source.nodes,
+      source.roots,
+      target.nodes,
+      target.roots,
+      noDroppedKeys,
+      NO_KEYS,
+      pairs
     );
   };
 
@@ -866,7 +896,9 @@ export const landingHolds = (
     return false;
   }
   if (!independent) return true;
-
+  for (const [source, name] of landedNameBySource) {
+    pairRoots(pairs, source, name);
+  }
   const named = rootsNamedBy(landed, roots);
 
   return [...aliased].every((name) => !named.has(name) || keepsSource(name));

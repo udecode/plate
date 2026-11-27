@@ -1,4 +1,4 @@
-import { definePlugin, schema } from 'plitejs';
+import { definePlugin, property, schema, target } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
@@ -21,7 +21,6 @@ import type {
 } from './custom-types.d';
 
 let syncedBlockCopyId = 0;
-let syncedBlockRootId = 0;
 
 const paragraph = (text: string): ParagraphElementType => ({
   type: 'paragraph',
@@ -34,11 +33,7 @@ const nextSyncedBlockCopyId = () => {
   return `synced-copy:${syncedBlockCopyId}`;
 };
 
-const nextSyncedBlockRoot = () => {
-  syncedBlockRootId += 1;
-
-  return `synced-block:${syncedBlockRootId}:body`;
-};
+const nextSyncedBlockRoot = () => `synced-block:${crypto.randomUUID()}:body`;
 
 const createSyncedBlock = (
   bodyRoot: string,
@@ -117,6 +112,18 @@ const syncedBlocks = () =>
           },
         },
       },
+      properties: [
+        schema.elementProperty(
+          'copyId',
+          property.string({ generate: nextSyncedBlockCopyId }),
+          {
+            copy: 'drop',
+            role: 'metadata',
+            target: target.types(['synced-block']),
+            typeChange: 'preserve-if-allowed',
+          }
+        ),
+      ],
     },
   });
 

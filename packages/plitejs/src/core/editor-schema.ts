@@ -592,6 +592,11 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root?: RootKey,
       value?: EditorDocumentValue
     ) => CompiledSchemaContentProgram | null;
+    holdsRootContent: (
+      root: RootKey,
+      children: readonly Descendant[],
+      content: CompiledSchemaContentProgram
+    ) => boolean;
     getTextPropertyAt: (
       key: string,
       path: Path,
@@ -2125,6 +2130,26 @@ export const createEditorSchema = <V extends Value = Value>(
     }
 
     return parent ? canContain(parent, child) : canContainAtRoot(child, root);
+  };
+
+  const holdsRootContent: InternalEditorSchemaApi<V>['holdsRootContent'] = (
+    root,
+    children,
+    content
+  ) => {
+    const schema = getDeclarativeSchema();
+
+    if (!schema) return true;
+    if (
+      children.length < content.min ||
+      (content.max !== null && children.length > content.max)
+    ) {
+      return false;
+    }
+
+    return children.every((child, index) =>
+      contentAllowsAt(schema, content, child, index, { root })
+    );
   };
 
   const canWrap: InternalEditorSchemaApi<V>['canWrap'] = (
@@ -5958,6 +5983,7 @@ export const createEditorSchema = <V extends Value = Value>(
     getProperty,
     getElementSlicePolicy,
     getRootContent,
+    holdsRootContent,
     indexConstructedRoot,
     getTextPropertyAt,
     getVocabulary,

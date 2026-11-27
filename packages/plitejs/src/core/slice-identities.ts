@@ -105,13 +105,13 @@ const rootAndEnclosingRoots = <V extends Value>(
 
 const residentGrammars = <V extends Value>(
   editor: Editor<V>,
-  draft: EditorDocumentValue
+  draft: EditorDocumentValue,
+  start: () => EditorDocumentValue | undefined
 ) => {
   const schema = getEditorSchema(editor);
-  let updateStart: EditorDocumentValue | undefined;
 
   return (root: string) => {
-    updateStart ??= getUpdateStartValue(editor);
+    const updateStart = start();
 
     return [
       ...schema.readRootGrammars(root, draft),
@@ -133,22 +133,34 @@ const keptRoots = <V extends Value>(
     .value as EditorDocumentValue;
   const reserved = getTransactionSnapshot(editor)?.reservedRoots;
   const declared = sliceGrammars(editor, slice);
-  const resident = residentGrammars(editor, draft);
+  let updateStart: EditorDocumentValue | undefined;
+  const start = () => (updateStart ??= getUpdateStartValue(editor));
+  const resident = residentGrammars(editor, draft, start);
 
   for (const root of Object.keys(slice.roots ?? {})) {
     const owners = declared.get(root) ?? [];
 
     if (!isDocumentRootKey(root) || !agree(owners)) continue;
-    if (!Object.hasOwn(draft.roots ?? {}, root)) {
-      if (!reserved?.has(root) && schema.getRootContent(root, draft) === null) {
-        kept.set(root, 'created');
-      }
+    const held =
+      draft.roots && Object.hasOwn(draft.roots, root)
+        ? draft.roots[root]
+        : undefined;
+    const residents = held ? resident(root) : [];
+
+    if (residents.length > 0) {
+      if (agree([...owners, ...residents])) kept.set(root, 'aliased');
       continue;
     }
-
-    const residents = resident(root);
-
-    if (residents.length > 0 && agree([...owners, ...residents])) {
+    if (schema.getRootContent(root, draft) !== null) continue;
+    if (!held) {
+      if (!reserved?.has(root)) kept.set(root, 'created');
+    } else if (
+      [held, start()?.roots?.[root]].every(
+        (children) =>
+          !children ||
+          schema.holdsRootContent(root, children, getDefined(owners[0]).content)
+      )
+    ) {
       kept.set(root, 'aliased');
     }
   }
