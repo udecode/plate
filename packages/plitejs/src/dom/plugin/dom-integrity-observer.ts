@@ -1,5 +1,5 @@
 import { isSoftLineEnd } from '../dom-soft-line-end';
-import { writeDOMSelection } from '../utils/selection-writes';
+import type { DOMSelectionPoints } from '../utils/selection-writes';
 import {
   markDOMTextFlowMutation,
   observeDOMTextFlowRoot,
@@ -44,7 +44,6 @@ export type DOMIntegrityCompositionLine = Readonly<{
 }>;
 
 export type DOMIntegrityObserverOptions = {
-  canWriteSelection?: (root: HTMLElement) => boolean;
   compositionLine?: DOMIntegrityCompositionLine;
   consumeOwnedMutation: (mutation: MutationRecord) => boolean;
   getAndroidMutationHandler: () =>
@@ -59,6 +58,7 @@ export type DOMIntegrityObserverOptions = {
   onRepair: (evidence: DOMIntegrityRepairEvidence) => void;
   resolvePath: (mutation: MutationRecord) => string | null;
   schedule: ScheduleDOMIntegrityTask;
+  writeSelection?: (root: HTMLElement, points: DOMSelectionPoints) => boolean;
 };
 
 type MutableDiagnostics = {
@@ -231,17 +231,19 @@ const maxOffset = (node: Node) =>
 
 const restoreSelection = (
   root: HTMLElement,
-  snapshot: ReturnType<typeof captureSelection>
+  snapshot: ReturnType<typeof captureSelection>,
+  writeSelection?: (root: HTMLElement, points: DOMSelectionPoints) => boolean
 ) => {
   if (
     !snapshot ||
+    !writeSelection ||
     !root.contains(snapshot.anchorNode) ||
     !root.contains(snapshot.focusNode)
   ) {
     return;
   }
 
-  writeDOMSelection(root.getRootNode() as Document | ShadowRoot, {
+  writeSelection(root, {
     anchor: [
       snapshot.anchorNode,
       Math.min(snapshot.anchorOffset, maxOffset(snapshot.anchorNode)),
@@ -694,9 +696,7 @@ export class DOMIntegrityObserver {
 
     for (const mutation of mutations.reverse()) restoreMutation(mutation);
 
-    if (this.options.canWriteSelection?.(root) ?? true) {
-      restoreSelection(root, selection);
-    }
+    restoreSelection(root, selection, this.options.writeSelection);
     this.repairPassesInFrame += 1;
     this.scheduleRepairPassReset();
     this.diagnosticsValue.repairPasses += 1;

@@ -27,13 +27,19 @@ import {
 } from '../../core/view-carets';
 import { getSelection, isDOMNode } from '../../dom';
 import {
+  canWriteEditableDOMSelection,
+  clearEditableDOMSelection,
   type DOMGeometryPoint,
   type DOMPhase,
   type DOMPhaseScheduler,
   type DOMPhaseTiming,
   caretShowsPointOffTextFlowCharacters,
+  findDOMRootRuntime,
   getTextFlowPointAtCoordinates,
+  hasMountedDOMRoot,
+  isSelectionOwnedByEditable,
   resolveDOMTargetView,
+  writeEditableDOMSelection,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
@@ -49,8 +55,6 @@ import {
 import {
   readDOMSelectionPoints,
   sameDOMSelectionPoints,
-  writeDOMSelection,
-  writeUserDOMSelection,
 } from '../../dom/utils/selection-writes';
 import { PliteContentRootOwnerContext } from '../context';
 import {
@@ -244,6 +248,7 @@ type PendingProjectedDrag = {
   browserOwned: boolean;
   clientX: number;
   clientY: number;
+  editableElement: HTMLElement | null;
   editor: RootInteractionEditor;
   endpoint: RootInteractionDragEndpoint;
   finish: () => void;
@@ -1126,11 +1131,95 @@ const canApplyCoordinateDragSelection = (
   (pendingInteraction.action.type === 'place-native-editable' ||
     pendingInteraction.coordinateDragSelection);
 
-const clearDOMSelectionFromEvent = (event: MouseEvent<HTMLElement>) => {
-  writeDOMSelection(
-    event.currentTarget.getRootNode() as Document | ShadowRoot,
-    null
+const belongsToInteractionEditor = (
+  editor: RootInteractionEditor,
+  candidate: HTMLElement
+) => {
+  const runtimeEditor = findDOMRootRuntime(candidate)?.editor;
+
+  if (!runtimeEditor) return false;
+  if (runtimeEditor === editor) return true;
+
+  return (
+    !hasMountedDOMRoot(editor) &&
+    resolveDOMTargetView(editor, candidate) === runtimeEditor
   );
+};
+
+const resolveInteractionEditable = (
+  event: MouseEvent<HTMLElement>,
+  editor: RootInteractionEditor,
+  fallbackEditable?: HTMLElement | null
+): HTMLElement | null => {
+  if (
+    fallbackEditable?.matches('[data-editor="true"]') &&
+    belongsToInteractionEditor(editor, fallbackEditable)
+  ) {
+    return fallbackEditable;
+  }
+
+  const current = event.currentTarget;
+
+  if (
+    current.matches('[data-editor="true"]') &&
+    belongsToInteractionEditor(editor, current)
+  ) {
+    return current;
+  }
+
+  const targetElement = mouseEventTargetToElement(event.target);
+  const targetEditable = targetElement?.closest('[data-editor="true"]');
+
+  if (
+    isDOMHTMLElement(targetEditable) &&
+    current.contains(targetEditable) &&
+    belongsToInteractionEditor(editor, targetEditable)
+  ) {
+    return targetEditable;
+  }
+
+  if (!current.matches('[data-editor="true"]')) {
+    const ownedDescendants = [
+      ...current.querySelectorAll<HTMLElement>('[data-editor="true"]'),
+    ].filter(
+      (candidate) =>
+        isDOMHTMLElement(candidate) &&
+        belongsToInteractionEditor(editor, candidate)
+    );
+
+    if (ownedDescendants.length === 1) {
+      return ownedDescendants[0];
+    }
+
+    if (ownedDescendants.length > 1) {
+      return (
+        ownedDescendants.find((candidate) =>
+          isSelectionOwnedByEditable(
+            candidate,
+            getSelection(candidate.getRootNode() as Document | ShadowRoot),
+            findDOMRootRuntime(candidate)?.nodeSelectionFocus()
+          )
+        ) ?? ownedDescendants[0]
+      );
+    }
+  }
+
+  return null;
+};
+
+const clearEditableDOMSelectionForEvent = (
+  event: MouseEvent<HTMLElement>,
+  editor: RootInteractionEditor,
+  fallbackEditable?: HTMLElement | null
+) => {
+  const editable = resolveInteractionEditable(event, editor, fallbackEditable);
+
+  if (!editable) return;
+
+  clearEditableDOMSelection(editable, {
+    editor: findDOMRootRuntime(editable)?.editor ?? editor,
+    policy: 'owned',
+  });
 };
 
 const shouldIgnoreDragTarget = (event: MouseEvent<HTMLElement>) => {
@@ -1240,7 +1329,11 @@ const applyProjectedDragSelectionFromEvent = ({
   ) {
     selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true });
   } else {
-    clearDOMSelectionFromEvent(event);
+    clearEditableDOMSelectionForEvent(
+      event,
+      projectedDrag.editor,
+      projectedDrag.editableElement
+    );
   }
 
   return true;
@@ -2558,6 +2651,10 @@ export const useRootInteractionController = ({
             clientX: event.clientX,
             clientY: event.clientY,
             browserOwned: nativeSelectionOwnsInteraction,
+            editableElement: resolveInteractionEditable(
+              event,
+              projectedDragEditor
+            ),
             editor: projectedDragEditor,
             endpoint: projectedDragEndpoint,
             ownsSettledSelection: false,
@@ -2650,7 +2747,7 @@ export const useRootInteractionController = ({
           action.type === 'place-editable-root' &&
           rootEdgeCoordinatePlacement
         ) {
-          clearDOMSelectionFromEvent(event);
+          clearEditableDOMSelectionForEvent(event, editor);
         }
 
         if (action.type === 'place-editable-root') {
@@ -2683,11 +2780,21 @@ export const useRootInteractionController = ({
               if (!isElementFocused(nativeShiftWrite.editable)) {
                 nativeShiftWrite.editable.focus({ preventScroll: true });
               }
-              if (!domMatches) {
-                writeUserDOMSelection(selectionTree, {
-                  anchor: nativeShiftWrite.pivot,
-                  focus: nativeShiftWrite.focus,
-                });
+              const accepted = domMatches
+                ? canWriteEditableDOMSelection(nativeShiftWrite.editable, {
+                    editor: focusEditor,
+                  })
+                : writeEditableDOMSelection(
+                    nativeShiftWrite.editable,
+                    {
+                      anchor: nativeShiftWrite.pivot,
+                      focus: nativeShiftWrite.focus,
+                    },
+                    { editor: focusEditor, record: 'user' }
+                  );
+
+              if (!accepted) {
+                return;
               }
 
               const mountedRuntime = findMountedEditableDOMRuntime(

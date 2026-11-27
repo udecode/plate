@@ -847,22 +847,23 @@ export class EditableDOMRuntime {
     if (!target) return true;
 
     const root = this.rootElement;
-    const tree = root?.getRootNode() as Document | ShadowRoot | undefined;
 
     // Chrome and Firefox keep the editable's caret after focus leaves it.
-    if (tree && containsShadowAware(root, getSelection(tree)?.anchorNode)) {
+    if (root) {
       const { state } = this.inputController;
 
-      exportEditableDOMSelection(state, tree, null, () =>
-        this.domPhaseScheduler.schedule(
-          'selection-repair',
-          'clear-node-selection-focus-update',
-          () => {
-            state.isUpdatingSelection = false;
-          },
-          { timing: 'timeout' }
-        )
-      );
+      exportEditableDOMSelection(state, root, null, {
+        editor,
+        onExport: () =>
+          this.domPhaseScheduler.schedule(
+            'selection-repair',
+            'clear-node-selection-focus-update',
+            () => {
+              state.isUpdatingSelection = false;
+            },
+            { timing: 'timeout' }
+          ),
+      });
     }
     if (target.parked) setSelectionAsView(editor, target.parked);
 

@@ -127,40 +127,35 @@ export const writeDOMSelection = (
   changeDOMSelection(tree, points);
 };
 
-/**
- * Write `points` as `tree`'s selection on the user's behalf and keep no
- * record, so the selection claim reads them as the user's own selection, as
- * it reads a native Shift-click.
- */
-export const writeUserDOMSelection = (
-  tree: Document | ShadowRoot,
-  points: DOMSelectionPoints
-) => {
-  changeDOMSelection(tree, points);
-  forgetDOMSelectionRecord(tree);
-};
-
 export const changeDOMSelection = (
   tree: Document | ShadowRoot,
   points: DOMSelectionPoints | null,
-  beforeChange?: () => void
-) => {
+  beforeChange?: () => void,
+  canCommit?: () => boolean
+): boolean => {
   const selection = getSelection(tree);
 
-  if (!selection) return;
+  if (!selection) return false;
 
   const rewritesUnplaced =
     points !== null &&
     sameDOMSelectionPoints(UNPLACED_WRITES.get(tree) ?? null, points);
 
   if (!rewritesUnplaced) UNPLACED_WRITES.delete(tree);
+  const preserveShadowClear =
+    points === null &&
+    tree.nodeType === tree.DOCUMENT_FRAGMENT_NODE &&
+    !!canCommit;
+
   if (
+    !preserveShadowClear &&
     sameDOMSelectionPoints(readDOMSelectionPoints(selection), points) &&
     !(rewritesUnplaced && hasLayoutBox(points.anchor))
   ) {
-    return;
+    return true;
   }
   beforeChange?.();
+  if (canCommit && !canCommit()) return false;
   if (points) {
     selection.setBaseAndExtent(
       points.anchor[0],
@@ -188,6 +183,8 @@ export const changeDOMSelection = (
       : readDOMSelectionPoints(selection),
     source: 'write',
   });
+
+  return true;
 };
 
 /** A copy of `selection`'s range at `index`, safe to keep or change. */

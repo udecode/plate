@@ -4,10 +4,9 @@ import { resolveLiveCaret } from '../../core/view-carets';
 import { isDOMElement, isDOMNode, isDOMText } from '../../dom';
 import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
 import {
+  clearEditableDOMSelection,
   focusedElementOnPage,
-  isElementFocused,
 } from '../../dom/plugin/dom-root-runtime';
-import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
@@ -366,12 +365,8 @@ export const selectEditableSelectableOwnerPath = ({
     dispatchCommand(editor, editorCommands.select, { target: selection })
   );
 
-  if (
-    editable &&
-    isElementFocused(editable) &&
-    SelectionApi.equals(resolveLiveCaret(editor), selection)
-  ) {
-    writeDOMSelection(editable.getRootNode() as Document | ShadowRoot, null);
+  if (editable && SelectionApi.equals(resolveLiveCaret(editor), selection)) {
+    clearEditableDOMSelection(editable, { editor, policy: 'focused' });
   }
 
   return path;

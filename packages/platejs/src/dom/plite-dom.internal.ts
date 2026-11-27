@@ -1,5 +1,6 @@
 export {
   cleanDOMClipboardContents,
+  containsShadowAware,
   domCommands,
   createCompiledHotkeyMatcher,
   dom,

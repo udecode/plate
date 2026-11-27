@@ -9,12 +9,7 @@ import {
   TextApi,
 } from '../..';
 import { withCompositionStamp } from '../../core/composition-stamp';
-import {
-  getSelection,
-  isDOMElement,
-  isDOMText,
-  writeDOMSelection,
-} from '../../dom';
+import { getSelection, isDOMElement, isDOMText } from '../../dom';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
@@ -23,7 +18,7 @@ import {
   isAndroidDOMHost,
   isWebKitDOMHost,
 } from '../../dom/internal';
-import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
+import { writeEditableDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import { isDOMInputOrTextArea } from '../../dom/utils/dom';
 import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -209,14 +204,15 @@ const keepCaretAfterFirstPreedit = (
   root.addEventListener(
     'input',
     () => {
-      if (
-        isElementFocused(root) &&
-        insertion.data.slice(start, end) === preedit
-      ) {
-        writeDOMSelection(tree, {
-          anchor: [insertion, end],
-          focus: [insertion, end],
-        });
+      if (insertion.data.slice(start, end) === preedit) {
+        writeEditableDOMSelection(
+          root,
+          {
+            anchor: [insertion, end],
+            focus: [insertion, end],
+          },
+          { policy: 'focused' }
+        );
       }
     },
     { once: true }

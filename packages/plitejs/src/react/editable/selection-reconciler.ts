@@ -45,6 +45,8 @@ import {
 import { resolvePliteNodePath } from '../../dom/plugin/dom-node-path';
 import {
   canWriteDOMSelection,
+  canWriteEditableDOMSelection,
+  clearEditableDOMSelection,
   isElementFocused,
 } from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
@@ -52,7 +54,6 @@ import {
   type DOMSelectionPoints,
   readDOMSelectionPoints,
   readDOMSelectionRange,
-  writeDOMSelection,
 } from '../../dom/utils/selection-writes';
 import { readOnlyInlineAt } from '../../editor/element-read-only';
 import { readTextEdge } from '../../editor/point';
@@ -285,7 +286,7 @@ export const applyEditableBlur = ({
   }
 
   if (isWebKitDOMHost(root)) {
-    writeDOMSelection(root, null);
+    clearEditableDOMSelection(el, { editor, policy: 'owned' });
   }
 
   IS_FOCUSED.delete(editor);
@@ -1335,7 +1336,7 @@ export const useEditableSelectionReconciler = ({
       ) {
         return undefined;
       }
-      writeDOMSelection(root, null);
+      clearEditableDOMSelection(editorElementForActiveTarget, { editor });
       return undefined;
     }
 
@@ -1490,14 +1491,41 @@ export const useEditableSelectionReconciler = ({
           coverage: runtime.domCoverage,
           editor,
           exportSelection: (points, modelOwned) => {
+            const policy = skipFocus ? 'focused' : 'editable';
+
             if (
-              skipFocus
-                ? !isElementFocused(editorElement)
-                : !canWriteDOMSelection(editorElement, editor)
+              !canWriteEditableDOMSelection(editorElement, { editor, policy })
             ) {
               return;
             }
-            if (modelOwned) {
+
+            if (points) {
+              const exported = exportEditableDOMSelection(
+                state,
+                editorElement,
+                points,
+                {
+                  editor,
+                  onExport: clearUpdatingSelection,
+                  writePolicy: policy,
+                }
+              );
+
+              if (!exported) return;
+            } else {
+              runtime.inputController.state.parkedExport = null;
+              exportEditableDOMSelection(state, editorElement, null, {
+                clearPolicy: policy,
+                editor,
+                onExport: clearUpdatingSelection,
+                writePolicy: policy,
+              });
+            }
+
+            if (
+              modelOwned &&
+              canWriteEditableDOMSelection(editorElement, { editor, policy })
+            ) {
               setEditableModelSelectionPreference({
                 inputController: runtime.inputController,
                 preferModelSelection: true,
@@ -1505,12 +1533,6 @@ export const useEditableSelectionReconciler = ({
                 selectionSource: 'model-owned',
               });
             }
-            exportEditableDOMSelection(
-              state,
-              root,
-              points,
-              clearUpdatingSelection
-            );
           },
           inputController: runtime.inputController,
           selection: projectedSelection,
@@ -1519,7 +1541,6 @@ export const useEditableSelectionReconciler = ({
         return undefined;
       }
 
-      // Otherwise the DOM selection is out of sync, so update it.
       const mismatchDetail =
         resolvedDOMSelection && projectedSelection
           ? `:${resolvedDOMSelection.anchor.path.join('.')}:${
@@ -1543,7 +1564,10 @@ export const useEditableSelectionReconciler = ({
         kind: 'runtime-time',
       });
       const exportSelection = (points: DOMSelectionPoints | null) =>
-        exportEditableDOMSelection(state, root, points);
+        exportEditableDOMSelection(state, editorElement, points, {
+          editor,
+          writePolicy: skipFocus ? 'focused' : 'editable',
+        });
       const newDomRange = projectedSelection
         ? (readModelSelectionDOMPreference({
             editor,

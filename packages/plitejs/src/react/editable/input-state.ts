@@ -5,13 +5,18 @@ import { setEditorCompositionPending } from '../../core/public-state';
 import { placedSince } from '../../core/view-carets';
 import { containsShadowAware, type DOMElement, getSelection } from '../../dom';
 import {
+  canWriteEditableDOMSelection,
+  clearEditableDOMSelection,
   DOMRootRuntime,
   type DOMPhaseScheduler,
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
+  type EditableDOMSelectionClearPolicy,
+  type EditableDOMSelectionWritePolicy,
+  writeEditableDOMSelection,
 } from '../../dom/internal';
+import { shouldClearEditableDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import {
-  changeDOMSelection,
   type DOMSelectionPoints,
   isDOMSelectionWriteEcho,
   readDOMSelectionPoints,
@@ -19,6 +24,7 @@ import {
 import type { OpenedInput } from '../../dom/utils/weak-maps';
 import { createNativeGroupingId } from './input-history';
 import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
+import { claimPageSelection } from './unread-press';
 
 type DOMInputRuntime = DOMRootRuntime['domInputRuntime'];
 
@@ -739,16 +745,112 @@ export const exportEditableDOMSelection = (
     parkedExport?: ParkedExport | null;
     selectionChangeOrigin?: SelectionChangeOrigin | null;
   },
-  tree: Document | ShadowRoot,
+  editable: Element,
   points: DOMSelectionPoints | null,
-  onExport?: () => void
+  options?: {
+    clearPolicy?: EditableDOMSelectionClearPolicy;
+    editor?: object;
+    onExport?: () => void;
+    writePolicy?: EditableDOMSelectionWritePolicy;
+  }
 ) => {
-  state.parkedExport = null;
-  changeDOMSelection(tree, points, () => {
+  const previousUpdating = state.isUpdatingSelection;
+  const previousOrigin = state.selectionChangeOrigin;
+  const clearPolicy = options?.clearPolicy ?? options?.writePolicy;
+  let mutatedFlags = false;
+  const beforeChange = () => {
+    mutatedFlags = true;
     state.isUpdatingSelection = true;
     state.selectionChangeOrigin = 'programmatic-export';
-    onExport?.();
-  });
+    options?.onExport?.();
+  };
+  const exported = points
+    ? writeEditableDOMSelection(editable, points, {
+        beforeChange,
+        editor: options?.editor,
+        policy: options?.writePolicy,
+      })
+    : clearEditableDOMSelection(editable, {
+        beforeChange,
+        editor: options?.editor,
+        policy: clearPolicy,
+      });
+
+  if (!exported && mutatedFlags) {
+    state.isUpdatingSelection = previousUpdating;
+    state.selectionChangeOrigin = previousOrigin;
+  }
+
+  if (
+    exported ||
+    (points === null &&
+      canWriteEditableDOMSelection(editable, {
+        editor: options?.editor,
+        policy: clearPolicy === 'focused' ? 'focused' : 'editable',
+      }))
+  ) {
+    state.parkedExport = null;
+  }
+
+  return exported;
+};
+
+export const scheduleEditableDOMSelectionClear = ({
+  clear,
+  domPhaseScheduler,
+  editable,
+  editor,
+  immediate = 'claimed',
+  label,
+  shouldRun,
+  shouldRunDeferred,
+}: {
+  clear?: () => void;
+  domPhaseScheduler?: DOMPhaseScheduler | null;
+  editable: Element;
+  editor: object;
+  immediate?: 'claimed' | 'direct';
+  label: string;
+  shouldRun?: () => boolean;
+  shouldRunDeferred?: () => boolean;
+}) => {
+  const doClear = () => {
+    if (clear) {
+      clear();
+    } else {
+      clearEditableDOMSelection(editable, { editor });
+    }
+  };
+  const runDeferred = () => {
+    if (shouldRun && !shouldRun()) return;
+    if (!shouldClearEditableDOMSelection(editable, editor)) return;
+    if (!claimPageSelection()) return;
+    if (shouldRunDeferred && !shouldRunDeferred()) return;
+    doClear();
+  };
+
+  if (immediate === 'direct') {
+    if (shouldClearEditableDOMSelection(editable, editor)) {
+      doClear();
+    }
+  } else {
+    runDeferred();
+  }
+
+  if (!domPhaseScheduler) return;
+
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    `${label}-microtask`,
+    runDeferred,
+    { timing: 'microtask' }
+  );
+  domPhaseScheduler.schedule(
+    'selection-repair',
+    `${label}-frame`,
+    runDeferred,
+    { timing: 'animation-frame' }
+  );
 };
 
 export const beginEditableNativeSelectionImport = (

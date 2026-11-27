@@ -7,15 +7,16 @@ import {
   RangeApi,
 } from '../..';
 import { getSelection } from '../../dom';
-import { type DOMPhaseScheduler, EDITOR_TO_ELEMENT } from '../../dom/internal';
-import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
-import { canWriteDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import {
-  getDOMRangeSelectionPoints,
-  writeDOMSelection,
-} from '../../dom/utils/selection-writes';
+  canWriteEditableDOMSelection,
+  type DOMPhaseScheduler,
+  EDITOR_TO_ELEMENT,
+} from '../../dom/internal';
+import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
+import { getDOMRangeSelectionPoints } from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
+import { exportEditableDOMSelection } from './input-state';
 import { getInnerLineRange } from './line-boundary';
 import {
   above as editorAbove,
@@ -60,7 +61,7 @@ export const exportTripleClickSelectionToDOM = ({
 }) => {
   const editorElement = EDITOR_TO_ELEMENT.get(editor);
 
-  if (!editorElement || !canWriteDOMSelection(editorElement, editor)) {
+  if (!editorElement) {
     return;
   }
 
@@ -76,13 +77,28 @@ export const exportTripleClickSelectionToDOM = ({
     return;
   }
 
+  if (!canWriteEditableDOMSelection(editorElement, { editor })) {
+    return;
+  }
+
+  const previousUpdating = inputController.state.isUpdatingSelection;
+  const previousOrigin = inputController.state.selectionChangeOrigin;
+
   inputController.state.isUpdatingSelection = true;
   inputController.state.selectionChangeOrigin = 'programmatic-export';
 
-  writeDOMSelection(
-    root,
-    getDOMRangeSelectionPoints(domRange, RangeApi.isBackward(range))
+  const exported = exportEditableDOMSelection(
+    inputController.state,
+    editorElement,
+    getDOMRangeSelectionPoints(domRange, RangeApi.isBackward(range)),
+    { editor }
   );
+
+  if (!exported) {
+    inputController.state.isUpdatingSelection = previousUpdating;
+    inputController.state.selectionChangeOrigin = previousOrigin;
+    return;
+  }
 
   editorElement.ownerDocument.dispatchEvent(
     new Event('selectionchange', { bubbles: true })

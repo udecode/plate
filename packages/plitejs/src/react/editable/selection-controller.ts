@@ -40,16 +40,13 @@ import {
 } from '../../dom/plugin/dom-editor';
 import {
   canWriteDOMSelection,
+  canWriteEditableDOMSelection,
+  clearEditableDOMSelection,
   isElementFocused,
-  isSelectionOwnedByEditable,
-  shouldClearEditableDOMSelection,
 } from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
-import {
-  getDOMRangeSelectionPoints,
-  writeDOMSelection,
-} from '../../dom/utils/selection-writes';
+import { getDOMRangeSelectionPoints } from '../../dom/utils/selection-writes';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { isPliteInactiveSelectionVisible } from '../inactive-selection';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -97,6 +94,7 @@ import {
   isEditableOutsideFocusBoundarySettling,
   isSelectionHeldForNativeMove,
   isSelectionHeldForPendingImport,
+  scheduleEditableDOMSelectionClear,
 } from './input-state';
 import {
   findNestedEditable,
@@ -516,13 +514,11 @@ const importProjectedDOMSelection = ({
   editor,
   editorElement,
   inputController,
-  tree,
 }: {
   domSelection: globalThis.Selection;
   editor: ReactRuntimeEditor;
   editorElement: HTMLElement;
   inputController: EditableInputController;
-  tree: Document | ShadowRoot;
 }) => {
   if (inputController.state.isNativeSelectionDragActive) return false;
 
@@ -567,11 +563,9 @@ const importProjectedDOMSelection = ({
   });
   if (
     !isPliteViewSelectionCollapsed(projectedSelection) &&
-    !canUseNativeViewSelection(editor, projectedSelection) &&
-    canWriteDOMSelection(editorElement, editor) &&
-    isSelectionOwnedByEditable(editorElement, domSelection)
+    !canUseNativeViewSelection(editor, projectedSelection)
   ) {
-    writeDOMSelection(tree, null);
+    clearEditableDOMSelection(editorElement, { editor });
   }
   return true;
 };
@@ -636,7 +630,6 @@ export const syncEditorSelectionFromDOM = ({
       editor,
       editorElement,
       inputController,
-      root,
     });
   });
 };
@@ -693,13 +686,11 @@ const importDOMSelection = ({
   editor,
   editorElement,
   inputController,
-  root,
 }: {
   domSelection: globalThis.Selection;
   editor: ReactRuntimeEditor;
   editorElement: HTMLElement;
   inputController: EditableInputController;
-  root: Document | ShadowRoot;
 }) => {
   if (
     importProjectedDOMSelection({
@@ -707,7 +698,6 @@ const importDOMSelection = ({
       editor,
       editorElement,
       inputController,
-      tree: root,
     })
   ) {
     return;
@@ -1349,7 +1339,6 @@ export const applyEditableDOMSelectionChange = ({
       editorElement,
       inputController,
       readOnly,
-      root,
       selectionChangeOrigin: claimed
         ? 'native-user'
         : (state.selectionChangeOrigin ?? 'native-user'),
@@ -1368,7 +1357,6 @@ const importDOMSelectionChange = ({
   editorElement,
   inputController,
   readOnly,
-  root,
   selectionChangeOrigin,
 }: {
   activeElement: Element | null;
@@ -1381,7 +1369,6 @@ const importDOMSelectionChange = ({
   editorElement: HTMLElement;
   inputController: EditableInputController;
   readOnly: boolean;
-  root: Document | ShadowRoot;
   selectionChangeOrigin: SelectionChangeOrigin;
 }) => {
   const { state } = inputController;
@@ -1400,7 +1387,6 @@ const importDOMSelectionChange = ({
       editor,
       editorElement,
       inputController,
-      tree: root,
     })
   ) {
     return;
@@ -1824,12 +1810,11 @@ export const syncEditableDOMSelectionToEditor = ({
         viewSelection.segments.backward
       );
       const writeSelection = () =>
-        exportEditableDOMSelection(
-          state,
-          root,
-          points,
-          clearAfter('clear-exported-view-range-update')
-        );
+        exportEditableDOMSelection(state, editorElement, points, {
+          editor,
+          onExport: clearAfter('clear-exported-view-range-update'),
+          writePolicy: requireFocused ? 'focused' : 'editable',
+        });
 
       if (preserveScroll) {
         preserveScrollAround(editorElement, writeSelection);
@@ -1848,9 +1833,13 @@ export const syncEditableDOMSelectionToEditor = ({
       if (!point) return;
       exportEditableDOMSelection(
         state,
-        root,
+        editorElement,
         { anchor: point, focus: point },
-        clearAfter('clear-exported-view-caret-update')
+        {
+          editor,
+          onExport: clearAfter('clear-exported-view-caret-update'),
+          writePolicy: requireFocused ? 'focused' : 'editable',
+        }
       );
       return;
     }
@@ -1861,10 +1850,6 @@ export const syncEditableDOMSelectionToEditor = ({
           ? 'node-selection'
           : 'model-only-selection';
       const clearUpdate = clearAfter(`clear-${label}-update`);
-
-      if (shouldClearEditableDOMSelection(editorElement, editor)) {
-        exportEditableDOMSelection(state, root, null, clearUpdate);
-      }
       const isSuperseded = () =>
         !SelectionApi.equals(
           resolveNextKeyCaret(
@@ -1873,42 +1858,43 @@ export const syncEditableDOMSelectionToEditor = ({
           ),
           selection
         );
-      const clearNativeSelection = () => {
-        if (!shouldClearEditableDOMSelection(editorElement, editor)) return;
-        if (!claimPageSelection()) return;
-        if (isSuperseded()) return;
-        if (
-          isSelectionHeldForPendingImport(
-            runtime.inputController,
-            editor,
-            editorElement
-          )
-        ) {
-          return;
-        }
-        const current = readPliteViewSelection(editor);
-        if (current && canUseNativeViewSelection(editor, current)) return;
-        if (
-          viewSelection &&
-          (!current || isPliteViewSelectionCollapsed(current))
-        ) {
-          return;
-        }
-        exportEditableDOMSelection(state, root, null, clearUpdate);
-      };
 
-      domPhaseScheduler.schedule(
-        'selection-repair',
-        `clear-${label}-microtask`,
-        clearNativeSelection,
-        { timing: 'microtask' }
-      );
-      domPhaseScheduler.schedule(
-        'selection-repair',
-        `clear-${label}-frame`,
-        clearNativeSelection,
-        { timing: 'animation-frame' }
-      );
+      scheduleEditableDOMSelectionClear({
+        clear: () =>
+          exportEditableDOMSelection(state, editorElement, null, {
+            editor,
+            onExport: clearUpdate,
+          }),
+        domPhaseScheduler,
+        editable: editorElement,
+        editor,
+        immediate: 'direct',
+        label: `clear-${label}`,
+        shouldRunDeferred: () => {
+          if (isSuperseded()) return false;
+          if (
+            isSelectionHeldForPendingImport(
+              runtime.inputController,
+              editor,
+              editorElement
+            )
+          ) {
+            return false;
+          }
+          const current = readPliteViewSelection(editor);
+          if (current && canUseNativeViewSelection(editor, current)) {
+            return false;
+          }
+          if (
+            viewSelection &&
+            (!current || isPliteViewSelectionCollapsed(current))
+          ) {
+            return false;
+          }
+
+          return true;
+        },
+      });
       return;
     }
 
@@ -1929,14 +1915,41 @@ export const syncEditableDOMSelectionToEditor = ({
         coverage: runtime.domCoverage,
         editor,
         exportSelection: (points, modelOwned) => {
+          const policy = requireFocused ? 'focused' : 'editable';
+
           if (
-            requireFocused
-              ? !isElementFocused(editorElement)
-              : !canWriteDOMSelection(editorElement, editor)
+            !canWriteEditableDOMSelection(editorElement, { editor, policy })
           ) {
             return;
           }
-          if (modelOwned) {
+
+          if (points) {
+            const exported = exportEditableDOMSelection(
+              state,
+              editorElement,
+              points,
+              {
+                editor,
+                onExport: clearAfter('clear-dom-coverage-selection-update'),
+                writePolicy: policy,
+              }
+            );
+
+            if (!exported) return;
+          } else {
+            runtime.inputController.state.parkedExport = null;
+            exportEditableDOMSelection(state, editorElement, null, {
+              clearPolicy: policy,
+              editor,
+              onExport: clearAfter('clear-dom-coverage-selection-update'),
+              writePolicy: policy,
+            });
+          }
+
+          if (
+            modelOwned &&
+            canWriteEditableDOMSelection(editorElement, { editor, policy })
+          ) {
             setEditableModelSelectionPreference({
               inputController: runtime.inputController,
               preferModelSelection: true,
@@ -1944,12 +1957,6 @@ export const syncEditableDOMSelectionToEditor = ({
               selectionSource: 'model-owned',
             });
           }
-          exportEditableDOMSelection(
-            state,
-            root,
-            points,
-            clearAfter('clear-dom-coverage-selection-update')
-          );
         },
         inputController: runtime.inputController,
         selection: projectedSelection,
@@ -1980,12 +1987,16 @@ export const syncEditableDOMSelectionToEditor = ({
     const writeSelection = () =>
       exportEditableDOMSelection(
         state,
-        root,
+        editorElement,
         getDOMRangeSelectionPoints(
           domRange,
           RangeApi.isBackward(projectedSelection)
         ),
-        clearAfter('clear-exported-selection-update', 80)
+        {
+          editor,
+          onExport: clearAfter('clear-exported-selection-update', 80),
+          writePolicy: requireFocused ? 'focused' : 'editable',
+        }
       );
 
     if (preserveScroll) {

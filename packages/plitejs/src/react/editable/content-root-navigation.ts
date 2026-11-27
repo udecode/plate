@@ -13,8 +13,6 @@ import {
 } from '../..';
 import { asSelectionMotion } from '../../core/public-state';
 import { setShownSelectionAsView } from '../../core/view-carets';
-import { shouldClearEditableDOMSelection } from '../../dom/plugin/dom-root-runtime';
-import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { EditorSelectionTarget } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readRootChildren } from '../root-key';
@@ -85,6 +83,7 @@ import {
   findMountedEditableDOMRuntime,
   getMountedEditableDOMRuntime,
 } from './editable-dom-runtime';
+import { scheduleEditableDOMSelectionClear } from './input-state';
 import { getLineBoundaryPoint } from './line-boundary';
 import {
   after as editorAfter,
@@ -196,7 +195,7 @@ const toViewBoundaryPoint = ({
   point: rootPlitePoint(point, root),
 });
 
-const collapseNativeSelectionForProjectedSelection = (
+const clearNativeSelectionForProjectedSelection = (
   editor: ReactRuntimeEditor,
   selection: Range | null,
   element: HTMLElement | null
@@ -205,33 +204,19 @@ const collapseNativeSelectionForProjectedSelection = (
     return;
   }
 
-  const clear = () => {
-    if (!element.isConnected) return;
-    const current = readPliteViewSelection(editor);
-    if (!current || isPliteViewSelectionCollapsed(current)) return;
-    if (!shouldClearEditableDOMSelection(element, editor)) return;
-    if (!claimPageSelection()) return;
-    writeDOMSelection(element.getRootNode() as Document | ShadowRoot, null);
-  };
+  scheduleEditableDOMSelectionClear({
+    domPhaseScheduler:
+      findMountedEditableDOMRuntime(element)?.domPhaseScheduler,
+    editable: element,
+    editor,
+    label: 'clear-projected-selection',
+    shouldRun: () => {
+      if (!element.isConnected) return false;
+      const current = readPliteViewSelection(editor);
 
-  clear();
-  const domPhaseScheduler =
-    findMountedEditableDOMRuntime(element)?.domPhaseScheduler;
-
-  if (!domPhaseScheduler) return;
-
-  domPhaseScheduler.schedule(
-    'selection-repair',
-    'clear-projected-selection-microtask',
-    clear,
-    { timing: 'microtask' }
-  );
-  domPhaseScheduler.schedule(
-    'selection-repair',
-    'clear-projected-selection-frame',
-    clear,
-    { timing: 'animation-frame' }
-  );
+      return !!current && !isPliteViewSelectionCollapsed(current);
+    },
+  });
 };
 
 const collapseModelSelectionForProjectedSelection = (
@@ -268,7 +253,7 @@ const showProjectedSelection = (
         collapseModelSelectionForProjectedSelection(editor, selection),
     });
 
-  collapseNativeSelectionForProjectedSelection(editor, selection, element);
+  clearNativeSelectionForProjectedSelection(editor, selection, element);
 
   return shown;
 };

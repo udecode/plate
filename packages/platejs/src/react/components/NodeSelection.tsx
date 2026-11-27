@@ -3,7 +3,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { writeDOMSelection } from '../../dom/plite-dom.internal';
+import {
+  containsShadowAware,
+  getSelection,
+  writeDOMSelection,
+} from '../../dom/plite-dom.internal';
 import {
   ElementApi,
   PathApi,
@@ -21,6 +25,162 @@ import { useEditorSelector } from '../stores/plate/useEditorSelector';
 const EDITOR_ELEMENT_SELECTOR = '[data-editor-node="element"]';
 const START_ATTRIBUTE = 'data-node-selection-start';
 const DRAG_START_DISTANCE = 4;
+
+const isEditableElementFocused = (element: globalThis.Element) => {
+  const frameDocument =
+    'contentDocument' in element
+      ? (element as HTMLIFrameElement).contentDocument
+      : null;
+  const inner = element.shadowRoot ?? frameDocument;
+
+  if (inner?.activeElement && inner.activeElement !== frameDocument?.body) {
+    return false;
+  }
+
+  let node: globalThis.Element = element;
+
+  for (;;) {
+    const tree = node.getRootNode() as Document | ShadowRoot;
+
+    if (tree.activeElement !== node) return false;
+    if ('host' in tree) {
+      node = tree.host;
+      continue;
+    }
+
+    const frame = tree.defaultView?.frameElement;
+
+    if (!frame) return true;
+    node = frame;
+  }
+};
+
+const shadowRootsAbove = (element: globalThis.Element) => {
+  const roots: ShadowRoot[] = [];
+  let current: globalThis.Element | null = element;
+
+  while (current) {
+    const rootNode = current.getRootNode();
+
+    if ('host' in rootNode) {
+      const shadowRoot = rootNode as ShadowRoot;
+
+      roots.push(shadowRoot);
+      current = shadowRoot.host;
+    } else {
+      break;
+    }
+  }
+
+  return roots;
+};
+
+const isNestedEditableOrInput = (
+  root: globalThis.Element,
+  node: globalThis.Node | null
+) => {
+  const startNode =
+    node?.nodeType === 1
+      ? (node as globalThis.Element)
+      : (node?.parentElement ??
+        (node?.parentNode && 'host' in node.parentNode
+          ? (node.parentNode as ShadowRoot).host
+          : null));
+  let current = startNode;
+
+  while (current && current !== root) {
+    const tag = current.tagName;
+    const ce = current.getAttribute('contenteditable');
+
+    if (
+      tag === 'INPUT' ||
+      tag === 'TEXTAREA' ||
+      current.hasAttribute('data-editor') ||
+      (ce !== null && ce.toLowerCase() !== 'false')
+    ) {
+      return true;
+    }
+
+    const rootNode = current.getRootNode();
+    current =
+      current.parentElement ??
+      ('host' in rootNode ? (rootNode.host as globalThis.Element) : null);
+  }
+
+  return false;
+};
+
+const isSelectionOwnedByRoot = (
+  root: globalThis.Element,
+  selection: globalThis.Selection | null
+) => {
+  if (!selection) return false;
+
+  const owns = (node: globalThis.Node | null) =>
+    !!node &&
+    containsShadowAware(root, node) &&
+    !isNestedEditableOrInput(root, node);
+
+  if (owns(selection.anchorNode) || owns(selection.focusNode)) {
+    return true;
+  }
+
+  const rootNode = root.getRootNode();
+
+  if (!('host' in rootNode)) {
+    return false;
+  }
+
+  const composedSelection = selection as globalThis.Selection & {
+    getComposedRanges?: (
+      ...args: ReadonlyArray<
+        ShadowRoot | { shadowRoots?: readonly ShadowRoot[] }
+      >
+    ) => readonly AbstractRange[];
+  };
+
+  if (typeof composedSelection.getComposedRanges !== 'function') {
+    return false;
+  }
+
+  const shadowRoots = shadowRootsAbove(root);
+  let composedRanges: readonly AbstractRange[] = [];
+
+  try {
+    composedRanges = composedSelection.getComposedRanges({ shadowRoots });
+  } catch {
+    try {
+      composedRanges = composedSelection.getComposedRanges(...shadowRoots);
+    } catch {
+      composedRanges = [];
+    }
+  }
+
+  const composed = composedRanges[0];
+
+  return (
+    !!composed && (owns(composed.startContainer) || owns(composed.endContainer))
+  );
+};
+
+const clearNodeSelectionDOMSelection = (
+  editable: HTMLElement,
+  extraOwnedRoot?: globalThis.Element | null
+) => {
+  if (!isEditableElementFocused(editable)) return;
+
+  const tree = editable.getRootNode() as Document | ShadowRoot;
+  const selection = getSelection(tree);
+
+  if (
+    !isSelectionOwnedByRoot(editable, selection) &&
+    !(extraOwnedRoot && isSelectionOwnedByRoot(extraOwnedRoot, selection))
+  ) {
+    return;
+  }
+
+  writeDOMSelection(tree, null);
+};
 
 const isSelectionCandidate = (editor: Editor, element: Element) =>
   editor.read.schema.isBlockContent(element) &&
@@ -721,6 +881,7 @@ export function NodeSelectionDrag({
             })
           : null;
       const committedChange = editor.read.lastCommit();
+      const clearOwnedRoot = areaPress ? container : null;
 
       clearGesture();
       suppressClick = true;
@@ -739,10 +900,7 @@ export function NodeSelectionDrag({
         finishFrame = undefined;
         if (editor.read.lastCommit() !== committedChange) return;
         editable.focus({ preventScroll: true });
-        writeDOMSelection(
-          editable.getRootNode() as Document | ShadowRoot,
-          null
-        );
+        clearNodeSelectionDOMSelection(editable, clearOwnedRoot);
 
         if (
           committedPaths.length > 0 &&
@@ -872,10 +1030,7 @@ export function NodeSelectionDrag({
     // its own selection drag and would extend a caret in the editable.
     const clearNativeDrag = () => {
       if (areaPress) {
-        writeDOMSelection(
-          editable.getRootNode() as Document | ShadowRoot,
-          null
-        );
+        clearNodeSelectionDOMSelection(editable, container);
       }
     };
     const onPointerMove = (event: PointerEvent) => {
@@ -1011,7 +1166,7 @@ export function NodeSelectionDrag({
       event.preventDefault();
       event.stopPropagation();
       // A focused contenteditable can recreate its native caret before keyup.
-      writeDOMSelection(editable.getRootNode() as Document | ShadowRoot, null);
+      clearNodeSelectionDOMSelection(editable);
       if (event.type === 'keyup' || event.key === 'Shift') return;
       const step = event.key === 'ArrowUp' ? -1 : 1;
       let next = focus + step;

@@ -18,13 +18,15 @@ import {
   getPliteTextHostBounds,
   getPliteTextHostStrings,
 } from '../../dom/plugin/dom-geometry';
-import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
+import {
+  isElementFocused,
+  writeEditableDOMSelection,
+} from '../../dom/plugin/dom-root-runtime';
 import {
   type DOMSelectionPoints,
   readDOMSelectionPoints,
   readDOMSelectionRange,
   sameDOMSelectionPoints,
-  writeDOMSelection,
 } from '../../dom/utils/selection-writes';
 import {
   getPliteNodeElementByPath,
@@ -1039,10 +1041,14 @@ export const createDOMRepairQueue = ({
             if (!selectionMatches) {
               armRepairInducedSelectionOriginGuard();
               profileDOMRepairDuration('set-dom-selection', () => {
-                writeDOMSelection(root, {
-                  anchor: [domNode, domOffset],
-                  focus: [domNode, domOffset],
-                });
+                writeEditableDOMSelection(
+                  editable,
+                  {
+                    anchor: [domNode, domOffset],
+                    focus: [domNode, domOffset],
+                  },
+                  { editor, policy: 'focused' }
+                );
               });
             }
             if (

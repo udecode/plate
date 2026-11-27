@@ -13,16 +13,14 @@ import {
   watchFocusSuperseded,
 } from '../../dom/plugin/dom-editor';
 import {
+  clearEditableDOMSelection,
   focusedElementOnPage,
   isElementFocused,
   movedFocusElsewhere,
-  shouldClearEditableDOMSelection,
+  writeEditableDOMSelection,
 } from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
-import {
-  getDOMRangeSelectionPoints,
-  writeDOMSelection,
-} from '../../dom/utils/selection-writes';
+import { getDOMRangeSelectionPoints } from '../../dom/utils/selection-writes';
 import {
   findMountedEditableDOMRuntime,
   getMountedEditableDOMRuntime,
@@ -101,8 +99,6 @@ const syncPreferredModelSelectionToDOM = <
     );
 
     if (!projectedSelection) {
-      const root = element.getRootNode() as Document | ShadowRoot;
-
       if (
         focusEditableElement(editor as unknown as Editor, element) &&
         !superseded() &&
@@ -116,11 +112,8 @@ const syncPreferredModelSelectionToDOM = <
           currentSelection &&
           getSelectionDOMRange(editor as unknown as Editor, currentSelection);
 
-        if (
-          !currentProjected &&
-          shouldClearEditableDOMSelection(element, editor)
-        ) {
-          writeDOMSelection(root, null);
+        if (!currentProjected) {
+          clearEditableDOMSelection(element, { editor });
         }
       }
       return true;
@@ -166,11 +159,8 @@ const syncPreferredModelSelectionToDOM = <
         getSelectionDOMRange(editor as unknown as Editor, currentSelection);
 
     if (!currentProjected) {
-      if (
-        currentSelection &&
-        shouldClearEditableDOMSelection(element, editor)
-      ) {
-        writeDOMSelection(root, null);
+      if (currentSelection) {
+        clearEditableDOMSelection(element, { editor });
       }
       return true;
     }
@@ -190,12 +180,13 @@ const syncPreferredModelSelectionToDOM = <
       return true;
     }
 
-    writeDOMSelection(
-      root,
+    writeEditableDOMSelection(
+      element,
       getDOMRangeSelectionPoints(
         currentRange,
         RangeApi.isBackward(currentProjected)
-      )
+      ),
+      { editor, policy: 'focused' }
     );
 
     return true;

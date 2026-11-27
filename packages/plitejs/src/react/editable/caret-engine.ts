@@ -22,8 +22,6 @@ import {
   type DOMPhaseScheduler,
   getLineBoundaryKeyboardMove,
 } from '../../dom/internal';
-import { shouldClearEditableDOMSelection } from '../../dom/plugin/dom-root-runtime';
-import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import {
@@ -55,6 +53,7 @@ import {
   getDocumentBoundaryKeyboardMove,
   isPlainVerticalDocumentBoundary,
 } from './input-controller';
+import { scheduleEditableDOMSelectionClear } from './input-state';
 import { getLineBoundarySelection } from './line-boundary';
 import type { EditableRepairRequest } from './mutation-controller';
 import {
@@ -73,7 +72,6 @@ import {
 } from './selection-void-target';
 import { isSetHolderPoint, isSetRootOf } from './set-root-endpoints';
 import { RTL_SCRIPT_MATCHER } from './text-direction';
-import { claimPageSelection } from './unread-press';
 
 export type EditableCaretMovementResult = {
   handled: boolean;
@@ -177,26 +175,13 @@ const clearNativeSelectionForViewSelection = (
     return;
   }
 
-  const clearWhileShown = () => {
-    if (readPliteViewSelection(editor) !== viewSelection) return;
-    if (!shouldClearEditableDOMSelection(rootElement, editor)) return;
-    if (!claimPageSelection()) return;
-    writeDOMSelection(rootElement.getRootNode() as Document | ShadowRoot, null);
-  };
-
-  clearWhileShown();
-  domPhaseScheduler.schedule(
-    'selection-repair',
-    'clear-caret-view-selection-microtask',
-    clearWhileShown,
-    { timing: 'microtask' }
-  );
-  domPhaseScheduler.schedule(
-    'selection-repair',
-    'clear-caret-view-selection-frame',
-    clearWhileShown,
-    { timing: 'animation-frame' }
-  );
+  scheduleEditableDOMSelectionClear({
+    domPhaseScheduler,
+    editable: rootElement,
+    editor,
+    label: 'clear-caret-view-selection',
+    shouldRun: () => readPliteViewSelection(editor) === viewSelection,
+  });
 };
 
 const getOwnerlessViewSelectionRange = (

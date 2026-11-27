@@ -25,6 +25,14 @@ import {
   resolveDOMRootFacts,
 } from '../utils/environment';
 import {
+  changeDOMSelection,
+  type DOMSelectionPoints,
+  forgetDOMSelectionRecord,
+  readDOMSelectionRange,
+  readDOMSelectionRecord,
+  readsSelectionAsHost,
+} from '../utils/selection-writes';
+import {
   EDITOR_TO_DOM_SCOPE_LISTENERS,
   IS_FOCUSED,
   IS_READ_ONLY,
@@ -69,7 +77,7 @@ type DOMRootRuntimeLifecycle<TRoot extends HTMLElement> = {
 
 export type DOMRootRuntimeOptions<TRoot extends HTMLElement> = Omit<
   DOMIntegrityObserverOptions,
-  'consumeOwnedMutation' | 'onDOMChange' | 'schedule'
+  'consumeOwnedMutation' | 'onDOMChange' | 'schedule' | 'writeSelection'
 > &
   DOMRootRuntimeLifecycle<TRoot> & {
     adapter: object;
@@ -298,6 +306,7 @@ const isNestedEditableOrInput = (root: Element, node: Node | null) => {
     if (
       tag === 'INPUT' ||
       tag === 'TEXTAREA' ||
+      current.hasAttribute('data-editor') ||
       (ce !== null && ce.toLowerCase() !== 'false')
     ) {
       return true;
@@ -426,6 +435,26 @@ export const canWriteDOMSelection = (editable: Element, editor?: object) => {
   );
 };
 
+const shadowRootsAbove = (element: Element) => {
+  const roots: ShadowRoot[] = [];
+  let current: Element | null = element;
+
+  while (current) {
+    const rootNode = current.getRootNode();
+
+    if ('host' in rootNode) {
+      const shadowRoot = rootNode as ShadowRoot;
+
+      roots.push(shadowRoot);
+      current = shadowRoot.host;
+    } else {
+      break;
+    }
+  }
+
+  return roots;
+};
+
 export const isSelectionOwnedByEditable = (
   editable: Element,
   selection: Selection | null,
@@ -439,7 +468,80 @@ export const isSelectionOwnedByEditable = (
     !(exclude && exclude !== editable && containsShadowAware(exclude, node)) &&
     !isNestedEditableOrInput(editable, node);
 
-  return owns(selection.anchorNode) || owns(selection.focusNode);
+  if (owns(selection.anchorNode) || owns(selection.focusNode)) {
+    return true;
+  }
+
+  const tree = editable.getRootNode() as Document | ShadowRoot;
+
+  if (tree.nodeType !== tree.DOCUMENT_FRAGMENT_NODE) {
+    return false;
+  }
+
+  const shadowRoots = shadowRootsAbove(editable);
+  const composedSelection = selection as Selection & {
+    getComposedRanges?: (
+      ...args: ReadonlyArray<
+        ShadowRoot | { shadowRoots?: readonly ShadowRoot[] }
+      >
+    ) => readonly AbstractRange[];
+  };
+
+  if (typeof composedSelection.getComposedRanges === 'function') {
+    let composedRanges: readonly AbstractRange[] = [];
+
+    try {
+      composedRanges = composedSelection.getComposedRanges({ shadowRoots });
+    } catch {
+      try {
+        composedRanges = composedSelection.getComposedRanges(...shadowRoots);
+      } catch {
+        composedRanges = [];
+      }
+    }
+
+    const composed = composedRanges[0];
+
+    return (
+      !!composed &&
+      (owns(composed.startContainer) || owns(composed.endContainer))
+    );
+  }
+
+  if (!readsSelectionAsHost(tree)) {
+    return false;
+  }
+
+  const isRetargetedToHost = shadowRoots.some(
+    (shadowRoot) =>
+      selection.anchorNode === shadowRoot.host ||
+      selection.focusNode === shadowRoot.host
+  );
+
+  if (!isRetargetedToHost) {
+    return false;
+  }
+
+  if (selection.rangeCount > 0) {
+    try {
+      const range = readDOMSelectionRange(selection);
+      const isHostRange = shadowRoots.some(
+        (shadowRoot) =>
+          range.startContainer === shadowRoot.host &&
+          range.endContainer === shadowRoot.host
+      );
+
+      if (!isHostRange) {
+        return owns(range.startContainer) || owns(range.endContainer);
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  const recorded = readDOMSelectionRecord(tree)?.points;
+
+  return !!recorded && (owns(recorded.anchor[0]) || owns(recorded.focus[0]));
 };
 
 export const shouldClearEditableDOMSelection = (
@@ -460,6 +562,90 @@ export const shouldClearEditableDOMSelection = (
     getSelection(editable.getRootNode() as Document | ShadowRoot),
     focusElement
   );
+};
+
+export type EditableDOMSelectionWritePolicy = 'editable' | 'focused';
+
+export type EditableDOMSelectionClearPolicy = 'editable' | 'focused' | 'owned';
+
+export type WriteEditableDOMSelectionOptions = Readonly<{
+  beforeChange?: () => void;
+  editor?: object;
+  policy?: EditableDOMSelectionWritePolicy;
+  record?: 'user' | 'write';
+}>;
+
+export type ClearEditableDOMSelectionOptions = Readonly<{
+  beforeChange?: () => void;
+  editor?: object;
+  policy?: EditableDOMSelectionClearPolicy;
+}>;
+
+export const canWriteEditableDOMSelection = (
+  editable: Element,
+  {
+    editor,
+    policy = 'editable',
+  }: Readonly<{
+    editor?: object;
+    policy?: EditableDOMSelectionWritePolicy;
+  }> = {}
+): boolean =>
+  policy === 'focused'
+    ? isElementFocused(editable)
+    : canWriteDOMSelection(editable, editor);
+
+export const writeEditableDOMSelection = (
+  editable: Element,
+  points: DOMSelectionPoints,
+  {
+    beforeChange,
+    editor,
+    policy = 'editable',
+    record = 'write',
+  }: WriteEditableDOMSelectionOptions = {}
+): boolean => {
+  const tree = editable.getRootNode() as Document | ShadowRoot;
+  const isAllowed = () =>
+    editable.getRootNode() === tree &&
+    canWriteEditableDOMSelection(editable, { editor, policy });
+
+  if (!isAllowed()) return false;
+
+  const changed = changeDOMSelection(tree, points, beforeChange, isAllowed);
+
+  if (!changed) return false;
+  if (record === 'user') forgetDOMSelectionRecord(tree);
+
+  return true;
+};
+
+export const clearEditableDOMSelection = (
+  editable: Element,
+  {
+    beforeChange,
+    editor,
+    policy = 'editable',
+  }: ClearEditableDOMSelectionOptions = {}
+): boolean => {
+  const tree = editable.getRootNode() as Document | ShadowRoot;
+  const isAllowed = () => {
+    if (editable.getRootNode() !== tree) return false;
+
+    const focusElement = findDOMRootRuntime(editable)?.nodeSelectionFocus();
+    const selection = getSelection(tree);
+
+    return policy === 'owned'
+      ? isSelectionOwnedByEditable(editable, selection, focusElement)
+      : policy === 'focused'
+        ? isElementFocused(editable) &&
+          isSelectionOwnedByEditable(editable, selection, focusElement)
+        : shouldClearEditableDOMSelection(editable, editor);
+  };
+
+  if (!isAllowed()) return false;
+
+  return changeDOMSelection(tree, null, beforeChange, isAllowed);
 };
 
 export const resolveInnermostElementAtPoint = (
@@ -852,7 +1038,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
         ) ?? (() => {})
     );
     this.domIntegrityObserver = new DOMIntegrityObserver({
-      canWriteSelection: (root) => canWriteDOMSelection(root, this.editor),
+      writeSelection: (root, points) =>
+        writeEditableDOMSelection(root, points, { editor: this.editor }),
       getAndroidMutationHandler: options.getAndroidMutationHandler,
       isAndroidMutationOwned: options.isAndroidMutationOwned,
       isCanonicalTextMutation: options.isCanonicalTextMutation,

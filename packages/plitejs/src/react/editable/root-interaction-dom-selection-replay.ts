@@ -1,10 +1,9 @@
 import { getSelection } from '../../dom';
 import { isGeckoDOMHost } from '../../dom/internal';
-import { canWriteDOMSelection } from '../../dom/plugin/dom-root-runtime';
+import { writeEditableDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import {
   type DOMSelectionPoints,
   readDOMSelectionRange,
-  writeDOMSelection,
 } from '../../dom/utils/selection-writes';
 
 export const hasExpandedDOMSelectionInTarget = (target: HTMLElement) => {
@@ -62,13 +61,11 @@ export const restoreDOMSelectionInTarget = (
 
   const rootNode = target.getRootNode() as Document | ShadowRoot;
 
-  if (!getSelection(rootNode) || !canWriteDOMSelection(target)) {
+  if (!getSelection(rootNode)) {
     return false;
   }
 
-  writeDOMSelection(rootNode, points);
-
-  return true;
+  return writeEditableDOMSelection(target, points);
 };
 
 export const isPointInsideDOMSelection = ({

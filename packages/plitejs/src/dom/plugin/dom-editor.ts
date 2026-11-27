@@ -85,7 +85,6 @@ import {
   getDOMRangeSelectionPoints,
   readDOMSelectionPoints,
   readDOMSelectionRange,
-  writeDOMSelection,
 } from '../utils/selection-writes';
 import {
   EDITOR_TO_ELEMENT,
@@ -150,13 +149,13 @@ import {
   scheduleEditorDOMPhase,
 } from './dom-phase-scheduler';
 import {
+  clearEditableDOMSelection,
   documentOf,
   findDOMRootRuntime,
   focusedElementOnPage,
   hasMountedDOMRoot,
   hasMountedDocumentView,
   isElementFocused,
-  isSelectionOwnedByEditable,
   listenEditorDOMScope,
   movedFocusElsewhere,
   notifyEditorDOMScopeListeners,
@@ -165,6 +164,7 @@ import {
   resolveInnermostElementAtPoint,
   resolveMountedEditorDOMRoot,
   subscribeDOMReach,
+  writeEditableDOMSelection,
 } from './dom-root-runtime';
 import {
   isUsableScrollRect,
@@ -1719,11 +1719,9 @@ const DOMEditorImpl: DOMEditorInterface = {
   deselect: (editor) => {
     const selection = editor.read((state) => state.selection());
     const el = DOMEditor.editable(editor);
-    const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
-    const domSelection = root ? getSelection(root) : null;
 
-    if (root && el && isSelectionOwnedByEditable(el, domSelection)) {
-      writeDOMSelection(root, null);
+    if (el) {
+      clearEditableDOMSelection(el, { editor, policy: 'owned' });
     }
 
     if (selection) {
@@ -1957,7 +1955,7 @@ const DOMEditorImpl: DOMEditorInterface = {
         const projectedSelection = getSelectionDOMRange(editor, innerSelection);
 
         if (!projectedSelection) {
-          writeDOMSelection(root, null);
+          clearEditableDOMSelection(el, { editor });
           return;
         }
         const view = reachAt(editor, projectedSelection);
@@ -1969,12 +1967,16 @@ const DOMEditorImpl: DOMEditorInterface = {
           });
 
         if (domRange) {
-          writeDOMSelection(
-            root,
+          const targetEditable =
+            (view && view !== editor ? DOMEditor.editable(view) : null) ?? el;
+
+          writeEditableDOMSelection(
+            targetEditable,
             getDOMRangeSelectionPoints(
               domRange,
               RangeApi.isBackward(projectedSelection)
-            )
+            ),
+            { editor: view ?? editor, policy: 'focused' }
           );
         }
       }

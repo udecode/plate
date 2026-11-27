@@ -74,12 +74,21 @@ export {
   type DOMInputDefaultActionPhaseInput,
 } from '../plugin/dom-input-runtime';
 export {
+  canWriteEditableDOMSelection,
+  clearEditableDOMSelection,
+  type ClearEditableDOMSelectionOptions,
   DOMRootRuntime,
   type DOMRootRuntimeOptions,
+  type EditableDOMSelectionClearPolicy,
+  type EditableDOMSelectionWritePolicy,
   findEditorDOMRootRuntime,
   findDOMRootRuntime,
+  hasMountedDOMRoot,
+  isSelectionOwnedByEditable,
   resolveDOMReach,
   resolveDOMTargetView,
+  writeEditableDOMSelection,
+  type WriteEditableDOMSelectionOptions,
 } from '../plugin/dom-root-runtime';
 export {
   isUsableScrollRect,

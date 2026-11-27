@@ -5,8 +5,11 @@ import {
   mayClearCaret,
 } from '../../core/view-carets';
 import { containsShadowAware, getSelection, isDOMNode } from '../../dom';
-import { type DOMPhaseScheduler, IS_FOCUSED } from '../../dom/internal';
-import { writeDOMSelection } from '../../dom/utils/selection-writes';
+import {
+  clearEditableDOMSelection,
+  type DOMPhaseScheduler,
+  IS_FOCUSED,
+} from '../../dom/internal';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -95,7 +98,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     if (selectionInRoot) {
       hadRootOwnedNativeState = true;
       if (readOnly) {
-        writeDOMSelection(root, null);
+        clearEditableDOMSelection(rootElement, { editor, policy: 'owned' });
       }
     }
 
