@@ -14,6 +14,9 @@ import {
   detachComparisonDocument,
   detachComparisonEnvelope,
   disjointSets,
+  fillComparisonElementIds,
+  needsComparisonElementIds,
+  stripComparisonElementIds,
   yieldComparisonWork,
 } from './comparison-internal';
 import { matchComparison } from './comparison-matcher';
@@ -344,6 +347,37 @@ const buildConflicts = (
   );
 };
 
+const rekeyComparedChanges = (
+  changes: readonly ComparedChange[],
+  fromPrefix: string,
+  toPrefix: string
+): readonly ComparedChange[] => {
+  const rekey = (value: string) =>
+    value.startsWith(fromPrefix)
+      ? `${toPrefix}${value.slice(fromPrefix.length)}`
+      : value;
+
+  return Object.freeze(
+    changes.map((group) =>
+      Object.freeze({
+        ...group,
+        correspondence: Object.freeze(
+          group.correspondence.map((item) =>
+            Object.freeze({ ...item, id: rekey(item.id) })
+          )
+        ),
+        effects: Object.freeze(
+          group.effects.map((effect) =>
+            Object.freeze({ ...effect, id: rekey(effect.id) })
+          )
+        ),
+        id: rekey(group.id),
+        requiredChangeIds: Object.freeze(group.requiredChangeIds.map(rekey)),
+      })
+    )
+  );
+};
+
 const compareTwoWay = async <V extends Value>(
   input: TwoWayInput<V>
 ): Promise<TwoWayComparison<V>> => {
@@ -351,44 +385,97 @@ const compareTwoWay = async <V extends Value>(
   const beforeEnvelopeFingerprint = detachComparisonEnvelope(input.before);
   const afterEnvelopeFingerprint = detachComparisonEnvelope(input.after);
   const beforeDocument = detachComparisonDocument(input.before, input.schema);
-  const afterDocument = detachComparisonDocument(input.after, input.schema);
+  const rawAfterDocument = detachComparisonDocument(input.after, input.schema);
+  const fillsIds = needsComparisonElementIds(beforeDocument, rawAfterDocument);
   const before = createComparisonSnapshot(
     beforeDocument,
     input.schema,
     input.projection?.before ?? 'accepted',
     beforeEnvelopeFingerprint
   );
-  const after = createComparisonSnapshot(
-    afterDocument,
-    input.schema,
-    input.projection?.after ?? 'accepted',
-    afterEnvelopeFingerprint
-  );
-
-  await yieldComparisonWork(input.signal);
-  const id = `comparison:${comparisonHash({
-    after: after.fingerprint,
-    before: before.fingerprint,
-    policy: COMPARISON_POLICY,
-  })}`;
-  const beforeIndex = createComparisonIndex(beforeDocument, input.schema);
-  const afterIndex = createComparisonIndex(afterDocument, input.schema);
   const beforeRoots = beforeDocument.roots ?? {};
-  const afterRoots = afterDocument.roots ?? {};
-  const matched = await matchComparison(beforeIndex, afterIndex, id, {
+  const rawAfterRoots = rawAfterDocument.roots ?? {};
+  const matchOptions = {
     createdRoots: new Set(
-      Object.keys(afterRoots).filter(
+      Object.keys(rawAfterRoots).filter(
         (root) => !Object.hasOwn(beforeRoots, root)
       )
     ),
     deletedRoots: new Set(
       Object.keys(beforeRoots).filter(
-        (root) => !Object.hasOwn(afterRoots, root)
+        (root) => !Object.hasOwn(rawAfterRoots, root)
       )
     ),
     signal: input.signal,
-  });
-  let { changes: matchedChanges, diagnostics } = matched;
+  };
+
+  let afterDocument = rawAfterDocument;
+  let after: ReturnType<typeof createComparisonSnapshot<V>>;
+  let id: string;
+  let beforeIndex: ReturnType<typeof createComparisonIndex>;
+  let afterIndex: ReturnType<typeof createComparisonIndex>;
+  let matched: Awaited<ReturnType<typeof matchComparison>>;
+  let matchedChanges: readonly ComparedChange[];
+  let diagnostics: readonly ComparisonDiagnostic[];
+
+  if (fillsIds) {
+    await yieldComparisonWork(input.signal);
+    const matchPrefix = 'comparison:pending';
+    const beforeMatchIndex = createComparisonIndex(
+      stripComparisonElementIds(beforeDocument),
+      input.schema
+    );
+    const afterMatchIndex = createComparisonIndex(
+      stripComparisonElementIds(rawAfterDocument),
+      input.schema
+    );
+
+    matched = await matchComparison(
+      beforeMatchIndex,
+      afterMatchIndex,
+      matchPrefix,
+      matchOptions
+    );
+    afterDocument = fillComparisonElementIds(
+      beforeDocument,
+      rawAfterDocument,
+      beforeMatchIndex,
+      afterMatchIndex,
+      matched.inPlaceMatches
+    );
+    after = createComparisonSnapshot(
+      afterDocument,
+      input.schema,
+      input.projection?.after ?? 'accepted',
+      afterEnvelopeFingerprint
+    );
+    id = `comparison:${comparisonHash({
+      after: after.fingerprint,
+      before: before.fingerprint,
+      policy: COMPARISON_POLICY,
+    })}`;
+    beforeIndex = createComparisonIndex(beforeDocument, input.schema);
+    afterIndex = createComparisonIndex(afterDocument, input.schema);
+    matchedChanges = rekeyComparedChanges(matched.changes, matchPrefix, id);
+    ({ diagnostics } = matched);
+  } else {
+    after = createComparisonSnapshot(
+      afterDocument,
+      input.schema,
+      input.projection?.after ?? 'accepted',
+      afterEnvelopeFingerprint
+    );
+    await yieldComparisonWork(input.signal);
+    id = `comparison:${comparisonHash({
+      after: after.fingerprint,
+      before: before.fingerprint,
+      policy: COMPARISON_POLICY,
+    })}`;
+    beforeIndex = createComparisonIndex(beforeDocument, input.schema);
+    afterIndex = createComparisonIndex(afterDocument, input.schema);
+    matched = await matchComparison(beforeIndex, afterIndex, id, matchOptions);
+    ({ changes: matchedChanges, diagnostics } = matched);
+  }
 
   if (
     matchedChanges.length === 0 &&
@@ -445,20 +532,54 @@ const compareTwoWay = async <V extends Value>(
   });
 };
 
+const alignThreeWayBase = async <V extends Value>(
+  input: ThreeWayInput<V>
+): Promise<unknown> => {
+  const rawBase = detachComparisonDocument(input.base, input.schema);
+  const rawRemote = detachComparisonDocument(input.remote, input.schema);
+
+  if (needsComparisonElementIds(rawRemote, rawBase)) {
+    const compared = await compareTwoWay({
+      after: input.base,
+      before: input.remote,
+      schema: input.schema,
+      signal: input.signal,
+    });
+
+    return compared.after.document;
+  }
+
+  const rawLocal = detachComparisonDocument(input.local, input.schema);
+
+  if (needsComparisonElementIds(rawLocal, rawBase)) {
+    const compared = await compareTwoWay({
+      after: input.base,
+      before: input.local,
+      schema: input.schema,
+      signal: input.signal,
+    });
+
+    return compared.after.document;
+  }
+
+  return input.base;
+};
+
 const compareThreeWay = async <V extends Value>(
   input: ThreeWayInput<V>
 ): Promise<ThreeWayComparison<V>> => {
   assertComparisonActive(input.signal);
+  const alignedBase = await alignThreeWayBase(input);
   const [local, remote] = await Promise.all([
     compareTwoWay({
       after: input.local,
-      before: input.base,
+      before: alignedBase,
       schema: input.schema,
       signal: input.signal,
     }),
     compareTwoWay({
       after: input.remote,
-      before: input.base,
+      before: alignedBase,
       schema: input.schema,
       signal: input.signal,
     }),

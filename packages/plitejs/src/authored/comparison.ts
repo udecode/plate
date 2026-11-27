@@ -5,9 +5,11 @@ import { registerEditorDraftGuard } from '../core/document-recorder';
 import { getEditorRuntime } from '../core/editor-runtime';
 import { ownedRootsOf } from '../core/element-owned-root-index';
 import { fingerprintEditorJson } from '../core/json-fingerprint';
+import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { getValueRecords, withValueRecords } from '../core/record-store';
 import { publishEditorRefusal } from '../core/refusal';
 import type { CompiledEditorSchema } from '../core/schema-compiler';
+import { alike } from '../core/stored-element-id';
 import type { SpeculativeUpdate } from '../core/update-policy';
 import { COMPARISON_POLICY } from '../diff/lib/comparison-internal';
 import {
@@ -237,7 +239,7 @@ export const proposeAuthoredComparison = <V extends Value>(
   const tried: unknown[] = [];
 
   for (const form of forms) {
-    const write = form();
+    const write = renewInsertedIds(editor, comparison.before.document, form());
     const json = write.toJSON();
     if (tried.some((other) => jsonEqual(other, json))) continue;
     tried.push(json);
@@ -263,6 +265,66 @@ export const proposeAuthoredComparison = <V extends Value>(
   if (refusal) publishEditorRefusal(editor, refusal.value);
 
   return { reason: 'dependency', status: 'blocked' };
+};
+
+const renewInsertedIds = (
+  editor: AnyEditor,
+  before: JsonEditorValue,
+  change: DocumentChange
+): DocumentChange => {
+  const compiled = getCompiledEditorSchema(editor);
+
+  if (!compiled.reservedElementId) return change;
+
+  const beforeIds = new Set<string>();
+  const collect = (nodes: readonly JsonNode[]) => {
+    for (const node of nodes) {
+      if (typeof node.id === 'string') beforeIds.add(node.id);
+      if (node.children) collect(node.children);
+    }
+  };
+
+  collect(before.children);
+  for (const nodes of Object.values(before.roots ?? {})) collect(nodes);
+
+  const renamed = new Map<string, string>();
+  let changed = false;
+  const rewrite = <T>(value: T): T => {
+    if (Array.isArray(value)) return value.map(rewrite) as T;
+    if (!value || typeof value !== 'object') return value;
+
+    const record = value as Record<string, unknown>;
+
+    if (
+      record.kind === 'open' &&
+      record.nodeKind === 'element' &&
+      record.props &&
+      typeof record.props === 'object'
+    ) {
+      const props = record.props as Record<string, unknown>;
+
+      if (typeof props.id === 'string' && !beforeIds.has(props.id)) {
+        let next = renamed.get(props.id);
+
+        if (!next) {
+          next = compiled.elementIdMint.next();
+          renamed.set(props.id, next);
+        }
+        changed = true;
+
+        return { ...record, props: { ...props, id: next } } as T;
+      }
+    }
+
+    const out: Record<string, unknown> = {};
+
+    for (const [k, v] of Object.entries(record)) out[k] = rewrite(v);
+
+    return out as T;
+  };
+  const rewritten = rewrite(change.toJSON());
+
+  return changed ? DocumentChange.fromJSON(rewritten) : change;
 };
 
 const changesMarkedIn = (value: JsonEditorValue, facts: ReviewFacts) => {
@@ -415,7 +477,7 @@ const compareDecided = (
 
     return {
       acceptGivesTarget: (mine: (change: string) => boolean) =>
-        jsonEqual(
+        alike(
           decided(mine, 'accept'),
           read(target, dropped.target, liveRecords, keep)
         ),

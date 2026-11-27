@@ -29,6 +29,8 @@ import {
   type CompiledEditorSchema,
   uniquePropertiesOf,
 } from '../../core/schema-compiler';
+import { storedElementIdOf } from '../../core/stored-element-id';
+import { gridHoldersOf } from '../../core/survival';
 import {
   type AnyEditor as Editor,
   isEmpty as editorIsEmpty,
@@ -322,9 +324,8 @@ export const completeProposed = (
   const insertMark: AuthoredMark = { ...input.mark, kind: 'insert' };
   const isOwn = (mark: Readonly<{ change: string }>) =>
     mark.change === input.mark.change;
-  // Under a schema that stores spares, a kept shell would keep the removed
-  // element's generated values, so every fill is inserted.
   const keepsShells = !storesSpares(compiled);
+  const gridHolder = gridHoldersOf(compiled);
   const deferred: DeferredBuild[] = [];
 
   for (const [root, index] of input.indexes) {
@@ -537,19 +538,51 @@ export const completeProposed = (
           complete(proposedWith([{ node, path: shell.path }])).children
         ) === shapeOf(completion.children);
       let inserted = 0;
+      const liveChildren = Array.from(
+        { length: hostChildren.length },
+        (_, at) => getDefined(hostChildren.at(at))
+      );
 
       for (const built of completion.built) {
         const node = built.node as JsonNode;
         const prefix = 'prefix' in built.slot;
         const rests = prefix ? reshapes : [...reshapes, ...deletions];
-        // A kept element cannot depend on another change, so a fill that
-        // rests on one is inserted.
-        const shell =
-          rests.length === 0 && keepsShells
-            ? struckNow.find(
-                (item) => !used.has(item.node) && item.node.type === node.type
-              )
-            : undefined;
+        const path = insertionPath(
+          completion.sources,
+          built.index,
+          entryOf,
+          hostPath,
+          hostChildren.length,
+          prefix && ((at) => pastFolds(afterChildren, keptJoins, at, compiled))
+        );
+        const insertAt = getDefined(path.at(-1));
+        const canInsert =
+          !prefix ||
+          !content.prefix ||
+          (schema.canContainAt(
+            (host ?? null) as Element | null,
+            node as Descendant,
+            insertAt,
+            root
+          ) &&
+            liveChildren
+              .slice(insertAt, content.prefix.length)
+              .every((shifted, offset) =>
+                schema.canContainAt(
+                  (host ?? null) as Element | null,
+                  shifted as Descendant,
+                  insertAt + offset + 1,
+                  root
+                )
+              ));
+        const keepsStruckShell =
+          rests.length === 0 &&
+          (keepsShells || !canInsert || (host != null && gridHolder(host)));
+        const shell = keepsStruckShell
+          ? struckNow.find(
+              (item) => !used.has(item.node) && item.node.type === node.type
+            )
+          : undefined;
         if (shell && keeps(shell, built.node)) {
           used.add(shell.node);
           // A fill placed after this one goes after the kept element.
@@ -557,11 +590,17 @@ export const completeProposed = (
             node: shell.node,
             path: shell.path,
           });
+          const shellId = !keepsShells
+            ? storedElementIdOf(shell.node)
+            : undefined;
+          const nextProps = propsOf(node);
+
           edits.push({
             kind: 'keep',
             node: shell.node,
             path: shell.path,
-            props: propsOf(node),
+            props:
+              shellId !== undefined ? { ...nextProps, id: shellId } : nextProps,
           });
           continue;
         }
@@ -590,21 +629,14 @@ export const completeProposed = (
         );
 
         inserted += 1;
+        liveChildren.splice(insertAt, 0, node);
         edits.push({
           kind: 'insert',
           node: input.dependencies.throughout(withoutMarks(node), [
             ...others,
             getDefined(own),
           ]),
-          path: insertionPath(
-            completion.sources,
-            built.index,
-            entryOf,
-            hostPath,
-            hostChildren.length,
-            prefix &&
-              ((path) => pastFolds(afterChildren, keptJoins, path, compiled))
-          ),
+          path,
         });
       }
     }

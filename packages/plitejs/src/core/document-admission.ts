@@ -71,6 +71,7 @@ export type DocumentAdmission = Readonly<{
     schema: CompiledEditorSchema
   ) => Readonly<{
     lines: ReadonlyArray<Readonly<{ built: boolean; node: JsonNode }>>;
+    sharedIds?: ReadonlySet<string>;
     write: (nodes: readonly JsonNode[]) => Repaired &
       Readonly<{
         containers?: ReadonlyArray<Readonly<{ path: Path; root: string }>>;

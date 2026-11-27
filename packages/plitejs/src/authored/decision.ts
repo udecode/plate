@@ -201,9 +201,51 @@ export const spareGuardOver = (
 ): SpareGuard | null =>
   storesSpares(compiled)
     ? {
+        nodeBuildsGenerated: (node) => {
+          if (typeof node.type !== 'string') return false;
+
+          const content = schema.getElementContent(node.type);
+
+          if (!content || !completionBuilds(compiled, content)) return false;
+          const nodeMarks = readAuthoredMarks(node);
+
+          if (
+            nodeMarks.some(
+              (mark) => mark.kind === 'format' && mark.key === 'type'
+            )
+          ) {
+            return true;
+          }
+          if (content.prefix?.length) return true;
+
+          const nodeFates = new Set(
+            nodeMarks.flatMap((mark) =>
+              mark.kind === 'insert' || mark.kind === 'delete'
+                ? [`${mark.kind}\u0000${incarnationOf(mark)}`]
+                : []
+            )
+          );
+          let standing = 0;
+
+          for (const child of node.children ?? []) {
+            const marks = readAuthoredMarks(child);
+
+            if (
+              marks.every(
+                (mark) =>
+                  (mark.kind === 'format' && mark.key !== 'type') ||
+                  ((mark.kind === 'insert' || mark.kind === 'delete') &&
+                    nodeFates.has(`${mark.kind}\u0000${incarnationOf(mark)}`))
+              )
+            ) {
+              standing += 1;
+              if (standing >= content.min) return false;
+            }
+          }
+
+          return true;
+        },
         stored: reserveNodesIn(getValueRecords(value)).length > 0,
-        typeBuildsGenerated: (type) =>
-          completionBuilds(compiled, schema.getElementContent(type)),
         windowBuildsGenerated: (window) =>
           completionBuilds(
             compiled,
@@ -770,12 +812,7 @@ export const decide = (
   const inDroppedRoots = windowed
     ? new Set<string>()
     : insertionsInDroppedRoots(value, decidedValue, rootsTaken);
-  const losesText = ({
-    mark,
-    node,
-    path,
-    root,
-  }: ReturnType<typeof book.occurrences>[number]) =>
+  const losesText = ({ mark, node, path, root }: Occurrence) =>
     mark.kind === 'insert' &&
     typeof node.text === 'string' &&
     node.text !== '' &&

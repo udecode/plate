@@ -33,7 +33,11 @@ import { cloneFrozen } from './clone';
 import { readSchemaIdentity } from './document-shape';
 import type { ContentRootSlots } from './identity-owner';
 import { profileCoreDuration } from './profiling';
-import { createElementIdMint, type ElementIdMint } from './reserved-element-id';
+import {
+  createElementIdMint,
+  createReservedElementIdProperty,
+  type ElementIdMint,
+} from './reserved-element-id';
 import { countCoreWork } from './work';
 
 const BUILT_IN_GROUPS = [
@@ -399,6 +403,7 @@ export type CompiledEditorSchema = Readonly<{
   }>;
   /** Record sets stay out of the identity, so declaring one never changes it. */
   recordSets: ReadonlyMap<string, CompiledSchemaRecordSet>;
+  reservedElementId: CompiledSchemaProperty | null;
   revision: number;
   roots: ReadonlyMap<string, CompiledSchemaRoot>;
   unknown: EditorSchemaUnknownPolicy;
@@ -428,7 +433,7 @@ export type StructuralCompiledSchemaProperty = Omit<
 /** Structural cache payload with no live validator closure. */
 export type StructuralCompiledEditorSchema = Omit<
   CompiledEditorSchema,
-  'elementIdMint' | 'properties'
+  'elementIdMint' | 'properties' | 'reservedElementId'
 > &
   Readonly<{
     properties: Omit<CompiledEditorSchema['properties'], 'byId'> &
@@ -3746,12 +3751,31 @@ const compilePropertyLookup = (
   });
 };
 
+const hasDeclaredElementId = (
+  properties: Iterable<{
+    key: SchemaPropertyKey;
+    placement: 'element' | 'text';
+  }>
+) => {
+  for (const property of properties) {
+    if (property.placement === 'element' && property.key === 'id') return true;
+  }
+
+  return false;
+};
+
 export const resolveCompiledSchemaProperty = (
-  schema: Pick<CompiledEditorSchema, 'elements' | 'properties'>,
+  schema: Pick<CompiledEditorSchema, 'elements' | 'properties'> & {
+    reservedElementId?: CompiledSchemaProperty | null;
+  },
   placement: 'element' | 'text',
   key: string,
   context: CompiledSchemaTargetContext
 ): CompiledSchemaProperty | null => {
+  if (placement === 'element' && key === 'id' && schema.reservedElementId) {
+    return schema.reservedElementId;
+  }
+
   const lookup = schema.properties.lookup[placement];
   for (const id of lookup.exact.get(key) ?? []) {
     const property = schema.properties.byId.get(id);
@@ -3791,10 +3815,16 @@ export const getCompiledPropertyMergeStrategy = (
   resolveCompiledSchemaProperty(schema, placement, key, context)?.merge ?? null;
 
 export const getCompiledPropertyCandidates = (
-  schema: Pick<CompiledEditorSchema, 'properties'>,
+  schema: Pick<CompiledEditorSchema, 'properties'> & {
+    reservedElementId?: CompiledSchemaProperty | null;
+  },
   placement: 'element' | 'text',
   key: string
 ) => {
+  if (placement === 'element' && key === 'id' && schema.reservedElementId) {
+    return [schema.reservedElementId];
+  }
+
   const lookup = schema.properties.lookup[placement];
   const ids = [
     ...(lookup.exact.get(key) ?? []),
@@ -5332,7 +5362,11 @@ const compileEditorSchemaInternal = (
     if (Object.hasOwn(descriptor, 'default')) {
       return 'references elements, so it cannot have a default value';
     }
+    const usesReservedId =
+      references.key === 'id' && !hasDeclaredElementId(mutableProperties);
+
     if (
+      !usesReservedId &&
       !mutableProperties.some(
         (property) =>
           property.key === references.key &&
@@ -5926,7 +5960,7 @@ const compileEditorSchemaInternal = (
       ...canonicalContentProgram(root.content),
       name,
     })),
-    ...storageRevisionOf(compiledProperties),
+    storageRevision: 3,
     unknown: unknownPolicy,
   };
   const fingerprint = `fnv1a64:${hashSchemaIdentityString(
@@ -5969,24 +6003,29 @@ const compileEditorSchemaInternal = (
     }
   }
 
+  const mint = elementIdMint ?? createElementIdMint();
+  const reservedElementId = hasDeclaredElementId(mutableProperties)
+    ? null
+    : createReservedElementIdProperty(mint);
   const idProperty = mutableProperties.find(
     (property) => property.key === 'id' && property.lifecycle.unique
   );
   const everyElementHasId =
-    idProperty?.descriptor.kind === 'string' &&
-    [...frozenPrograms.values()].every(
-      (program) => !program.allowsUnknownElements
-    ) &&
-    [...compiledElements.keys()].every((type) =>
-      matchesCompiledSchemaTarget({ elements }, idProperty.target, {
-        root: null,
-        type,
-      })
-    );
+    reservedElementId !== null ||
+    (idProperty?.descriptor.kind === 'string' &&
+      [...frozenPrograms.values()].every(
+        (program) => !program.allowsUnknownElements
+      ) &&
+      [...compiledElements.keys()].every((type) =>
+        matchesCompiledSchemaTarget({ elements }, idProperty.target, {
+          root: null,
+          type,
+        })
+      ));
 
   return Object.freeze({
     diagnostics: Object.freeze([]),
-    elementIdMint: elementIdMint ?? createElementIdMint(),
+    elementIdMint: mint,
     elements,
     everyElementHasId,
     identity: derived
@@ -6019,6 +6058,7 @@ const compileEditorSchemaInternal = (
         )
       )
     ),
+    reservedElementId,
     revision,
     roots: freezeMap(roots),
     unknown: unknownPolicy,
@@ -6178,17 +6218,20 @@ const replaceCompiledPropertyDescriptors = (
     );
   }
 
+  const mint =
+    elementIdMint ??
+    ('elementIdMint' in schema ? schema.elementIdMint : createElementIdMint());
+  const reservedElementId = hasDeclaredElementId(byId.values())
+    ? null
+    : createReservedElementIdProperty(mint);
   const compiled: CompiledEditorSchema = Object.freeze({
     ...schema,
-    elementIdMint:
-      elementIdMint ??
-      ('elementIdMint' in schema
-        ? schema.elementIdMint
-        : createElementIdMint()),
+    elementIdMint: mint,
     properties: Object.freeze({
       ...schema.properties,
       byId: freezeMap(byId),
     }),
+    reservedElementId,
     revision,
   });
 
@@ -6240,7 +6283,11 @@ const toStructuralPropertyDescriptor = (
 export const stripCompiledEditorSchemaRuntimeValidations = (
   schema: CompiledEditorSchema
 ): StructuralCompiledEditorSchema => {
-  const { elementIdMint, ...rest } = schema;
+  const {
+    elementIdMint: _elementIdMint,
+    reservedElementId: _reservedElementId,
+    ...rest
+  } = schema;
   const byId = new Map<string, StructuralCompiledSchemaProperty>();
 
   for (const [id, property] of rest.properties.byId) {
@@ -6454,14 +6501,13 @@ export type EditorSchemaContract = Readonly<{
   revision: number;
   roots: readonly EditorSchemaContractRoot[];
   /**
-   * Present when a property leaves its default out of storage, or a write
-   * stores the generated element values its pending changes can need.
-   * Revision 1 stores every written value, even one equal to its default, so
-   * a contract without it describes an editor that dropped such writes.
-   * Revision 2 also stores spare blocks, which an older editor would build
-   * with values of its own making.
+   * Storage wire revision of the compiled schema. Revision 1 stores every
+   * written value, even one equal to its default, so a contract without it
+   * describes an editor that dropped such writes. Revision 2 also stores spare
+   * blocks, which an older editor would build with values of its own making.
+   * Revision 3 stores a reserved element id on every element.
    */
-  storageRevision?: 1 | 2;
+  storageRevision?: 1 | 2 | 3;
   unknown: EditorSchemaUnknownPolicy;
   vocabulary: CompiledSchemaVocabulary;
 }>;
@@ -6635,6 +6681,9 @@ const splitKeysOf = (schema: CompiledEditorSchema) => {
         property,
       ]);
     }
+    if (schema.reservedElementId) {
+      declarations.set('id', [schema.reservedElementId]);
+    }
 
     const dropped = [...declarations].filter(([, properties]) =>
       properties.every(
@@ -6686,13 +6735,16 @@ export const uniquePropertiesOf = (schema: CompiledEditorSchema) => {
   let byKey = UNIQUE_PROPERTIES.get(schema);
 
   if (!byKey) {
-    byKey = new Map(
-      [...schema.properties.byId.values()].flatMap((property) =>
+    byKey = new Map([
+      ...[...schema.properties.byId.values()].flatMap((property) =>
         property.lifecycle.unique && typeof property.key === 'string'
           ? [[property.key, property] as const]
           : []
-      )
-    );
+      ),
+      ...(schema.reservedElementId
+        ? [['id', schema.reservedElementId] as const]
+        : []),
+    ]);
     UNIQUE_PROPERTIES.set(schema, byKey);
   }
 
@@ -6782,6 +6834,7 @@ export const crossesUniqueTarget = (
   if (crosses === undefined) {
     crosses = false;
     for (const property of uniquePropertiesOf(schema).values()) {
+      if (property === schema.reservedElementId) continue;
       countCoreWork('uniqueCrossingChecks');
       if (
         matchesCompiledSchemaTarget(schema, property.target, {
@@ -6814,23 +6867,6 @@ export const holdsUniqueKey = (
     property !== undefined &&
     matchesCompiledSchemaTarget(schema, property.target, { root: null, type })
   );
-};
-
-const storageRevisionOf = (
-  properties: Iterable<
-    CompiledSchemaProperty | StructuralCompiledSchemaProperty
-  >
-) => {
-  let revision: 1 | 2 | undefined;
-
-  for (const property of properties) {
-    if (isSupportedGeneratedElementProperty(property)) {
-      return { storageRevision: 2 } as const;
-    }
-    if (property.descriptor.omitDefault) revision = 1;
-  }
-
-  return revision === undefined ? {} : { storageRevision: revision };
 };
 
 export type EditorSchemaContractChangeKind =
@@ -7018,7 +7054,7 @@ export const createEditorSchemaContract = (
       ),
     }),
     revision: structural.revision,
-    ...storageRevisionOf(structural.properties.byId.values()),
+    storageRevision: 3,
     roots: Object.freeze(
       [...structural.roots.values()]
         .sort((left, right) =>
@@ -7380,7 +7416,8 @@ const isEditorSchemaContractShape = (value: Record<string, unknown>) => {
     value.roots.every(isContractRoot) &&
     (value.storageRevision === undefined ||
       value.storageRevision === 1 ||
-      value.storageRevision === 2) &&
+      value.storageRevision === 2 ||
+      value.storageRevision === 3) &&
     isContractVocabulary(value.vocabulary)
   );
 };

@@ -62,6 +62,7 @@ export type ComparisonMatchResult = Readonly<{
   candidateEdges: number;
   changes: readonly ComparedChange[];
   diagnostics: readonly ComparisonDiagnostic[];
+  inPlaceMatches: ReadonlyArray<readonly [number, number]>;
   localAlignmentCells: number;
   visibleEquivalent: boolean;
 }>;
@@ -2548,6 +2549,78 @@ export const matchComparison = async (
       );
     });
 
+  const pairByAfter = new Map(pairs.map((pair) => [pair.after, pair.before]));
+  const inPlaceCache = new Map<number, boolean>();
+  const isInPlace = (afterIndex: number): boolean => {
+    const cached = inPlaceCache.get(afterIndex);
+
+    if (cached !== undefined) return cached;
+    const beforeIndex = pairByAfter.get(afterIndex);
+
+    if (
+      beforeIndex === undefined ||
+      moved.has(pairKey(beforeIndex, afterIndex))
+    ) {
+      inPlaceCache.set(afterIndex, false);
+
+      return false;
+    }
+    const beforeNode = before.nodes[beforeIndex];
+    const afterNode = after.nodes[afterIndex];
+
+    if (beforeNode.root !== afterNode.root) {
+      inPlaceCache.set(afterIndex, false);
+
+      return false;
+    }
+    const result =
+      beforeNode.parentIndex === null && afterNode.parentIndex === null
+        ? true
+        : beforeNode.parentIndex !== null &&
+          afterNode.parentIndex !== null &&
+          pairByAfter.get(afterNode.parentIndex) === beforeNode.parentIndex &&
+          isInPlace(afterNode.parentIndex);
+
+    inPlaceCache.set(afterIndex, result);
+
+    return result;
+  };
+  const splitJoinHeads = relations.flatMap((relation) =>
+    (relation.kind === 'split' || relation.kind === 'join') &&
+    relation.before.length > 0 &&
+    relation.after.length > 0
+      ? [[relation.before[0], relation.after[0]] as const]
+      : []
+  );
+  const isInPlaceParent = (
+    beforeIndex: number,
+    afterIndex: number
+  ): boolean => {
+    const beforeNode = before.nodes[beforeIndex];
+    const afterNode = after.nodes[afterIndex];
+
+    if (beforeNode.root !== afterNode.root) return false;
+
+    return beforeNode.parentIndex === null && afterNode.parentIndex === null
+      ? true
+      : beforeNode.parentIndex !== null &&
+          afterNode.parentIndex !== null &&
+          pairByAfter.get(afterNode.parentIndex) === beforeNode.parentIndex &&
+          isInPlace(afterNode.parentIndex);
+  };
+  const inPlaceMatches = Object.freeze([
+    ...pairs
+      .filter((pair) => isInPlace(pair.after))
+      .map((pair) => Object.freeze([pair.before, pair.after] as const)),
+    ...splitJoinHeads
+      .filter(
+        ([beforeIndex, afterIndex]) =>
+          !pairByAfter.has(afterIndex) &&
+          isInPlaceParent(beforeIndex, afterIndex)
+      )
+      .map((pair) => Object.freeze(pair)),
+  ]);
+
   return Object.freeze({
     candidateEdges,
     changes: composeSetMemberGroups(
@@ -2557,6 +2630,7 @@ export const matchComparison = async (
       after
     ),
     diagnostics: Object.freeze(diagnostics),
+    inPlaceMatches,
     localAlignmentCells,
     visibleEquivalent,
   });

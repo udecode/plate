@@ -51,6 +51,7 @@ import { getEditorLifetime, setEditorLifetime } from './editor-lifetime';
 import {
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
+  getEditorSchema,
   type InternalCompiledPluginPublicationEntry,
   type InternalPluginPublicationEntry,
   type StagedPluginInstall,
@@ -2263,7 +2264,7 @@ const fitCandidatePublicationDocument = (
     editor,
     schema,
     current,
-    schema.fitDocument(input)
+    schema.fitDocumentRaw(input)
   );
 
 const buildConfiguredRegistry = <TEditor extends Editor>(
@@ -2548,10 +2549,23 @@ const createNoopPublication = (
 
   if (loadsInitialValue(options) && options.validateDocument !== false) {
     loadOpenedRecords(editor, schema);
-    documentChange = constructLoadedDocumentChange(
-      editor,
-      getEditorDocumentValue(editor)
+    const loaded = getEditorDocumentValue(editor);
+
+    const editorSchema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+    editorSchema.assertDocument(loaded);
+    const repair = repairLoadedDocument(
+      null,
+      loaded,
+      schema,
+      loadElementIds(schema, loaded, null)
     );
+
+    documentChange = repair
+      ? repair.change.compose(
+          constructLoadedDocumentChange(editor, repair.value)
+        )
+      : constructLoadedDocumentChange(editor, loaded);
   }
 
   return Object.freeze({

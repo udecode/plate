@@ -792,7 +792,7 @@ const createCommitChanged = ({
       root
     );
 
-    if (classification && !classification.structure) {
+    if (!replace && classification && !classification.structure) {
       const afterRoot = valueRootNodes(after, root) as NodeList<Descendant>;
       const touchedChangedNodeKeys = new Set<NodeKey>();
       const changedNodeKeys = new Set<NodeKey>();

@@ -6974,6 +6974,7 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
     getTransactionSnapshot(editor)?.contentSliceRoots.delete(rootName);
   }
 
+  validateContentSliceRoots(editor);
   finalizeTransactionRepresentation(editor);
   if (copy) restoreDroppedNames(editor, copy);
   if (parents.some((parent) => !verifyParent(parent))) return false;
@@ -7011,6 +7012,9 @@ export const fitSlicePlacements = <V extends Value>(
   let fitted = false;
 
   try {
+    if (getTransactionSnapshot(editor)) {
+      finalizeTransactionRepresentation(editor);
+    }
     const spec = createTransactionSpec(editor, () => {
       fitted = runWithMutationRoot(editor, getDefined([...roots][0]), () =>
         fitSlicePlacementsIntoActiveDraft(
@@ -10908,8 +10912,21 @@ const dropOrphanedRoots = (
   return orphaned.length > 0;
 };
 
+const validateContentSliceRoots = (editor: Editor) => {
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (!snapshot || snapshot.contentSliceRoots.size === 0) return;
+  const schema = getEditorSchema(editor);
+  const value = snapshot.builder.value as EditorDocumentValue;
+
+  for (const root of snapshot.contentSliceRoots) {
+    schema.assertContentRoot(value, root);
+  }
+};
+
 export const finalizeWithoutOrphanedRoots = (editor: Editor) => {
   dropOrphanedRoots(editor);
+  validateContentSliceRoots(editor);
   finalizeTransactionRepresentation(editor);
   if (dropOrphanedRoots(editor)) finalizeTransactionRepresentation(editor);
 };
@@ -15742,7 +15759,13 @@ const keepSnapshotIds = (
   const [children, ...roots] = keepElementIds(editor, [
     [current.children, input.children],
     ...inputRoots.map(
-      ([root, nodes]) => [valueRoot(current, root), nodes] as const
+      ([root, nodes]) =>
+        [
+          current.roots && Object.hasOwn(current.roots, root)
+            ? current.roots[root]
+            : [],
+          nodes,
+        ] as const
     ),
   ]);
 
@@ -15781,7 +15804,7 @@ export const replaceTransformedSnapshot = (
       (explicitSelection
         ? (SelectionApi.root(explicitSelection) ?? MAIN_ROOT_KEY)
         : MAIN_ROOT_KEY);
-    const fitted = getEditorSchema(editor).fitDocument({
+    const fitted = getEditorSchema(editor).fitDocumentRaw({
       children: children as Value,
       ...(snapshotInput.meta === undefined ? {} : { meta: snapshotInput.meta }),
       ...(roots === undefined
@@ -16211,9 +16234,10 @@ export const loadOpenedRecords = (
 export const initializeEditorSchemaDocument = (
   editor: Editor,
   value: AdmittedDocument,
-  schema: CompiledEditorSchema
+  schema: CompiledEditorSchema,
+  preserveState = false
 ) => {
-  adoptEditorSchemaDocument(editor, value, schema);
+  adoptEditorSchemaDocument(editor, value, schema, preserveState);
 };
 
 export const saveEditorSchemaDocument = (editor: Editor) => {
@@ -16231,7 +16255,8 @@ export const saveEditorSchemaDocument = (editor: Editor) => {
 const adoptEditorSchemaDocument = (
   editor: Editor,
   value: EditorDocumentValue,
-  schema: CompiledEditorSchema
+  schema: CompiledEditorSchema,
+  preserveState = false
 ) => {
   const records = getValueRecords(value);
   const document = withValueRecords(cloneFrozenEditorJsonValue(value), records);
@@ -16247,8 +16272,10 @@ const adoptEditorSchemaDocument = (
   ROOTS.set(editor, roots);
   RECORDS.set(editor, records);
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
-  if (document.meta === undefined) DOCUMENT_STATE.delete(editor);
-  else DOCUMENT_STATE.set(editor, document.meta);
+  if (!preserveState) {
+    if (document.meta === undefined) DOCUMENT_STATE.delete(editor);
+    else DOCUMENT_STATE.set(editor, document.meta);
+  }
   for (const children of Object.values(roots)) {
     seedSnapshotIndex(getEditorRuntimeOwner(editor), children, schema);
   }

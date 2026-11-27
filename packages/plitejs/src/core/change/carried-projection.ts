@@ -1,3 +1,4 @@
+import { alike, tokenAlike } from '../stored-element-id';
 import { countCoreWork } from '../work';
 import type { CarriedRun, ExactRun } from './carried-run';
 import {
@@ -678,7 +679,7 @@ export const relocatesCarriedBlock = (input: CarriedProjectionInput) => {
     try {
       const { nodes } = decodeNodes(slice);
 
-      return nodes.length === 1 && jsonEqual(nodes[0], node);
+      return nodes.length === 1 && alike(nodes[0], node);
     } catch {
       return false;
     }
@@ -1030,8 +1031,8 @@ const directLettersOf = (list: readonly Unit[], open: Unit) => {
 const elementOf = (list: readonly Unit[], unit: Unit) =>
   unit.token.kind === 'open' ? unit : enclosingOf(list, list.indexOf(unit));
 
-const sameUnit = (left: Unit, right: Unit) =>
-  sameToken(left.token, right.token) &&
+const sameUnit = (left: Unit, right: Unit, tokens = sameToken) =>
+  tokens(left.token, right.token) &&
   (left.props === null
     ? right.props === null
     : right.props !== null && jsonEqual(left.props, right.props));
@@ -1413,14 +1414,14 @@ const inLineOf = (
       return (
         !kept ||
         (holder !== undefined &&
-          (holder.at === original || sameUnit(holder, beforeOpen)))
+          (holder.at === original || sameUnit(holder, beforeOpen, tokenAlike)))
       );
     });
   const isSplitCopy = (beforeOpen: Unit, editedOpen: Unit) => {
     const original = editMap.target(beforeOpen.at);
 
     return (
-      sameUnit(beforeOpen, editedOpen) &&
+      sameUnit(beforeOpen, editedOpen, tokenAlike) &&
       !insideOriginal(editedOpen, original) &&
       restStayedTogether(beforeOpen, original)
     );
@@ -1461,12 +1462,12 @@ const inLineOf = (
     if (
       crossed.length === 1 &&
       near &&
-      sameUnit(near, edge) &&
+      sameUnit(near, edge, tokenAlike) &&
       isEdgeElement(elementOf(units, near))
     ) {
       anchorAt = near.at;
     } else if (
-      (crossed.length === 1 && far && sameUnit(far, edge)) ||
+      (crossed.length === 1 && far && sameUnit(far, edge, tokenAlike)) ||
       (edgeGone && crossed.every((unit) => editMap.target(unit.at) === null))
     ) {
       return keepRegion();

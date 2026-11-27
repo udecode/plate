@@ -27,6 +27,7 @@ const RESOLVE_SCHEMAS = new WeakMap<
 >();
 
 type ResolveSchemaOptions = Readonly<{
+  donateReservedId?: boolean;
   generates?: boolean;
 }>;
 
@@ -34,7 +35,7 @@ const resolveSchemaOver = (
   editor: Editor,
   schema: InternalEditorSchemaApi,
   compiled: CompiledEditorSchema,
-  { generates = false }: ResolveSchemaOptions = {}
+  { donateReservedId = false, generates = false }: ResolveSchemaOptions = {}
 ): AuthoredResolveSchema => ({
   canonicalizeTextProperties: (props, types, root, key) =>
     schema.canonicalizeTextPropertiesIn(props, types, root, key),
@@ -49,9 +50,14 @@ const resolveSchemaOver = (
         part,
         take as ConstructionTake | undefined
       );
-    const completion = generates
-      ? build()
-      : withoutGenerationOf(sparePropertiesOf(compiled), build);
+    const spare = sparePropertiesOf(compiled);
+    const masked =
+      donateReservedId && compiled.reservedElementId !== null
+        ? new Set(
+            [...spare].filter((prop) => prop !== compiled.reservedElementId)
+          )
+        : spare;
+    const completion = generates ? build() : withoutGenerationOf(masked, build);
 
     return {
       built: completion.built.map(({ node, slot }) => ({
@@ -105,7 +111,7 @@ export const authoredResolveSchemaOf = (
 ): AuthoredResolveSchema => {
   const compiled = getCompiledEditorSchema(editor);
 
-  if (options.generates) {
+  if (options.generates || options.donateReservedId) {
     return resolveSchemaOver(
       editor,
       getEditorSchema(editor),

@@ -1,7 +1,7 @@
 import type { NodeKey } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import { profileCoreDuration } from '../profiling';
-import { alike, misreadsIds, storedElementIdOf } from '../stored-element-id';
+import * as storedIds from '../stored-element-id';
 import { assertEditorJsonValue } from '../value-codec';
 import { countCoreWork } from '../work';
 import {
@@ -790,7 +790,7 @@ const opensEnclosure = (slice: PreparedTokenSlice | null) => {
 
 const tokenKey = (token: JsonToken) =>
   token.kind === 'open'
-    ? ['open', token.nodeKind, token.props]
+    ? ['open', token.nodeKind, storedIds.openTokenProps(token)]
     : token.kind === 'close'
       ? ['close', token.nodeKind]
       : ['text', token.text];
@@ -855,28 +855,8 @@ const removesElement = (
     });
   });
 
-const sameSlice = (left: PreparedTokenSlice, right: PreparedTokenSlice) =>
-  left.length === right.length &&
-  left.tokens.every((token, index) => tokensEqual(token, right.tokens[index]));
-
 const netDepth = (tokens: readonly JsonToken[]) =>
   tokens.reduce((depth, token) => depth + depthChange(token), 0);
-
-const editedRanges = (change: RootChange, side: 'from' | 'to') => {
-  const ranges: Array<readonly [number, number]> = [];
-  let position = 0;
-
-  for (let index = 0; index < change.sections.length; index += 2) {
-    const length = change.sections[index];
-    const inserted = change.sections[index + 1];
-    const size = side === 'to' && inserted >= 0 ? inserted : length;
-
-    if (inserted !== -1) ranges.push([position, position + size]);
-    position += size;
-  }
-
-  return ranges;
-};
 
 /** Whether every edit `change` made to give `result` is still in `later`. */
 const keptIn = (
@@ -884,11 +864,13 @@ const keptIn = (
   result: DocumentIndex,
   later: DocumentIndex
 ) => {
-  const written = editedRanges(change, 'to');
+  const written = storedIds.changeEditedRanges(change, 'to');
 
-  return editedRanges(RootChange.betweenWhole(result, later), 'from').every(
-    ([from, to]) => written.every(([start, end]) => to < start || end < from)
-  );
+  return storedIds
+    .changeEditedRanges(RootChange.betweenWhole(result, later), 'from', true)
+    .every(([from, to]) =>
+      written.every(([start, end]) => to < start || end < from)
+    );
 };
 
 /**
@@ -943,7 +925,7 @@ const sharedPlaceEdits = (
 
     if (!keys || !otherKeys || !placesBlocks(document, from)) {
       if (
-        sameSlice(insert, other.insert) &&
+        storedIds.tokensAlike(insert.tokens, other.insert.tokens) &&
         netDepth(insert.tokens) === netDepth(document.slice(from, to).tokens)
       ) {
         equalEdits.push({ from, kind: 'same', merged: insert, to });
@@ -1932,7 +1914,10 @@ export const createStructurallyAlignedChanges = (
     const overlap = boundaryOverlap(getBoundary(source), getBoundary(target));
 
     if (overlap === 0) {
-      return propertiesEqual && storedElementIdOf(source) !== undefined ? 1 : 0;
+      return propertiesEqual &&
+        storedIds.storedElementIdOf(source) !== undefined
+        ? 1
+        : 0;
     }
 
     return (propertiesEqual ? 1024 : 512) + overlap * 16;
@@ -2245,19 +2230,27 @@ export const createStructurallyAlignedChanges = (
 };
 
 const changedRangesAreSeparated = (a: RootChange, b: RootChange) => {
-  const bRanges: Array<readonly [number, number]> = [];
-  let separated = true;
-  let bIndex = 0;
+  const rangesOf = ({ sections }: RootChange) => {
+    const out: Array<readonly [number, number, boolean]> = [];
 
-  b.iterChangedRanges((from, to) => {
-    bRanges.push([from, to]);
-  });
-  a.iterChangedRanges((from, to) => {
-    while (bIndex < bRanges.length && bRanges[bIndex][1] < from) bIndex += 1;
-    if (bIndex < bRanges.length && bRanges[bIndex][0] <= to) separated = false;
-  });
+    for (let i = 0, pos = 0; i < sections.length; pos += sections[i], i += 2) {
+      if (sections[i + 1] !== -1) {
+        out.push([pos, pos + sections[i], sections[i + 1] === -2]);
+      }
+    }
 
-  return separated;
+    return out;
+  };
+  const bRanges = rangesOf(b);
+
+  return rangesOf(a).every(([from, to, prop]) =>
+    bRanges.every(
+      ([bFrom, bTo, bProp]) =>
+        bTo < from ||
+        to < bFrom ||
+        (prop && bProp && (bTo <= from || to <= bFrom))
+    )
+  );
 };
 
 const sameNodeStructure = (left: JsonNode, right: JsonNode): boolean => {
@@ -2506,12 +2499,10 @@ const wrapsInsideReplacement = (
     wrap.every(({ from }) => range.from < from && from < range.to)
   ) &&
   !other.some(({ insert }) =>
-    JSON.stringify(insert.toJSON()).includes(
-      JSON.stringify(
-        document
-          .slice(getDefined(wrap[0]).from, getDefined(wrap.at(-1)).from)
-          .toJSON()
-      ).slice(1, -1)
+    storedIds.containsTokenRun(
+      insert.tokens,
+      document.slice(getDefined(wrap[0]).from, getDefined(wrap.at(-1)).from)
+        .tokens
     )
   );
 
@@ -2681,7 +2672,7 @@ const insertsWithin = (
     .every((element) =>
       written.some(
         (other) =>
-          jsonEqual(other.props, element.props) &&
+          storedIds.alike(other.props, element.props) &&
           touches(other.open, element.open.from) &&
           touches(other.close, element.close.from)
       )
@@ -3044,8 +3035,8 @@ const mergeStructuralRunByPosition = (
 
 const SIBLING_RANGE_READS = [
   { head: jsonEqual, tail: jsonEqual },
-  { head: jsonEqual, tail: alike },
-  { head: alike, tail: alike },
+  { head: jsonEqual, tail: storedIds.alike },
+  { head: storedIds.alike, tail: storedIds.alike },
 ] as const;
 
 const mergeStructuralChangeAtStableSiblingRange = (
@@ -3096,12 +3087,13 @@ const mergeStructuralChangeAtStableSiblingRange = (
         );
   }
 
-  const paired = afterConcurrent.value.slice(match, match + source.length);
   const merged = [...afterConcurrent.value];
 
   merged.splice(match, source.length, ...replacement);
 
-  if (tail === alike && misreadsIds(merged, paired, left)) return null;
+  if (tail === storedIds.alike && storedIds.hasDuplicateStoredIds(merged)) {
+    return null;
+  }
 
   const document = DocumentIndex.fromValue(merged);
 
@@ -3178,9 +3170,15 @@ const mergeNestedChangeThroughStructuralRelocation = (
       continue;
     }
 
-    const targets = afterNodes.filter(({ node }) =>
-      jsonEqual(node, candidate.node)
-    );
+    const match = (eq: (a: unknown, b: unknown) => boolean) =>
+      afterNodes.filter(({ node }) => eq(node, candidate.node));
+    let equal = jsonEqual;
+    let targets = match(equal);
+
+    if (targets.length === 0) {
+      equal = storedIds.alike;
+      targets = match(equal);
+    }
 
     if (targets.length !== 1) continue;
 
@@ -3227,7 +3225,7 @@ const mergeNestedChangeThroughStructuralRelocation = (
     if (
       edited.length === 0 ||
       (at !== end && index < siblings.length) ||
-      edited.some((node) => jsonEqual(node, candidate.node))
+      edited.some((node) => equal(node, candidate.node))
     ) {
       continue;
     }
@@ -3240,7 +3238,13 @@ const mergeNestedChangeThroughStructuralRelocation = (
       targetPath.slice(0, -1),
       targetIndex,
       1,
-      edited
+      equal === storedIds.alike
+        ? storedIds.remapAlikeElementIds(
+            candidate.node,
+            targets[0].node,
+            edited
+          )
+        : edited
     );
 
     if (at === end) return merged;
@@ -4718,8 +4722,6 @@ export class RootChange {
 
     const aPropertyChanges = a.propertyChanges();
     const bPropertyChanges = b.propertyChanges();
-    const [aReplacement] = aReplacements;
-    const [bReplacement] = bReplacements;
     const contains = (
       outer: Replacement | undefined,
       inner: Replacement | undefined
@@ -4997,8 +4999,8 @@ export class RootChange {
     // neighboring letters, can give one shape over different letters.
     const sameEdit = () =>
       onlyAddsStructure(aReplacements) && onlyAddsStructure(bReplacements)
-        ? jsonEqual(afterA.value, afterB.value)
-        : sameDocumentStructure(afterA.value, afterB.value);
+        ? sameChangedChildren(afterA, afterB, storedIds.alike)
+        : sameChangedChildren(afterA, afterB, sameNodeStructure);
 
     const oneEdit =
       !keepEqualInserts &&
@@ -5048,24 +5050,20 @@ export class RootChange {
       return transformed;
     }
 
-    const sideA = {
-      after: afterA,
-      change: a,
-      move: aMove,
-      props: aPropertyChanges,
-      rep: aReplacement,
-      reps: aReplacements,
-      structural: aChangesStructure,
-    };
-    const sideB = {
-      after: afterB,
-      change: b,
-      move: bMove,
-      props: bPropertyChanges,
-      rep: bReplacement,
-      reps: bReplacements,
-      structural: bChangesStructure,
-    };
+    const [sideA, sideB] = (
+      [
+        [a, afterA, aMove, aPropertyChanges, aReplacements, aChangesStructure],
+        [b, afterB, bMove, bPropertyChanges, bReplacements, bChangesStructure],
+      ] as const
+    ).map(([change, after, move, props, reps, structural]) => ({
+      after,
+      change,
+      move,
+      props,
+      rep: reps[0],
+      reps,
+      structural,
+    }));
     const pairs = [
       [sideB, sideA, false],
       [sideA, sideB, true],
