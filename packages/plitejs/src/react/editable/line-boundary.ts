@@ -26,22 +26,16 @@ const blockAbove = (editor: RuntimeEditor, at: Point) =>
     match: (node) => isBlockElement(editor, node),
   });
 
-const getInnerLineEdge = (
-  editor: RuntimeEditor,
+const getLineBreakPoint = (
   [block, blockPath]: NodeEntry,
   point: Point,
   reverse: boolean
 ): Point | null => {
-  let runEdge: Point = point;
-
   for (const [{ text }, relativePath] of NodeApi.texts(block, { reverse })) {
     const path = [...blockPath, ...relativePath];
     const order = PathApi.compare(path, point.path);
 
     if (reverse ? order > 0 : order < 0) continue;
-    if (isBlockElement(editor, NodeApi.get(block, relativePath.slice(0, 1)))) {
-      return runEdge;
-    }
 
     const index = reverse
       ? text.slice(0, order === 0 ? point.offset : undefined).lastIndexOf('\n')
@@ -50,8 +44,6 @@ const getInnerLineEdge = (
     if (index !== -1) {
       return { offset: reverse ? index + 1 : index, path };
     }
-
-    runEdge = { offset: reverse ? 0 : text.length, path };
   }
 
   return null;
@@ -66,8 +58,8 @@ export const getInnerLineRange = (
 
   if (!pointBlock || !PathApi.equals(pointBlock[1], block[1])) return null;
 
-  const start = getInnerLineEdge(editor, block, point, true);
-  const end = getInnerLineEdge(editor, block, point, false);
+  const start = getLineBreakPoint(block, point, true);
+  const end = getLineBreakPoint(block, point, false);
 
   if (!start && !end) return null;
 
@@ -88,20 +80,16 @@ export const getLineBoundaryPoint = (
 
   if (!block) return point;
 
-  const lineEdge = getInnerLineEdge(editor, block, point, reverse);
+  const lineBreak = getLineBreakPoint(block, point, reverse);
 
-  if (lineEdge) return lineEdge;
+  if (lineBreak) return lineBreak;
 
   const target = reverse
     ? editorBefore(editor, point, { unit: 'line' })
     : editorAfter(editor, point, { unit: 'line' });
-  const targetBlock = target && blockAbove(editor, target);
 
-  // From the line's edge, a `unit: 'line'` step lands in the next block, or in
-  // a block nested in this one.
-  return target && targetBlock && PathApi.equals(targetBlock[1], block[1])
-    ? target
-    : point;
+  // From the block's edge, a `unit: 'line'` step lands in the next block.
+  return target && PathApi.isAncestor(block[1], target.path) ? target : point;
 };
 
 const isOnLine = (rect: DOMRect | null, line: DOMRect) => {

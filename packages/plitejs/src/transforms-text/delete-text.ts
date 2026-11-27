@@ -1179,12 +1179,7 @@ const normalizeFinalDeletePoint = (
       ) {
         const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
-        if (
-          NodeApi.isElement(nextSibling) &&
-          (getEditorSchema(editor).isInline(nextSibling)
-            ? getEditorSchema(editor).isVoid(nextSibling)
-            : !options.removedContent)
-        ) {
+        if (isInlineVoid(editor, nextSibling)) {
           return editorPoint(editor, nextSiblingPath, { edge: 'start' });
         }
       }

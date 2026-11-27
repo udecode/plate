@@ -46,7 +46,6 @@ import {
   completeContent,
   contentKindOf,
   holdsContent,
-  mixedContentWindow,
   type PrefixOccupantFate,
 } from './content-completion';
 import {
@@ -1415,30 +1414,42 @@ const replaceCanonicalChildWindow = (
   };
   const kind =
     ElementApi.isElement(parent) && contentSpec
-      ? contentKindOf(contentSpec, schema)
+      ? contentKindOf(contentSpec)
       : null;
   const inlineContent =
     ElementApi.isElement(parent) &&
     (kind === null
       ? inlineContentWithoutProgram(editor, parent, parent.children, schema)
-      : kind === 'inline');
+      : kind === 'text');
   // The changed range plus two unchanged children on each side contains each
   // radius-one representation dependency. Inline content's edge context below
   // prevents the local window from behaving like the start or end of its parent.
   let from = Math.max(0, Math.min(source.length, window.from) - 2);
   let to = Math.min(source.length, Math.max(window.to, window.from) + 2);
-  let program = contentSpec;
 
-  if (kind === 'mixed' && contentSpec && ElementApi.isElement(parent)) {
-    ({ from, program, to } = mixedContentWindow(
-      parent.children,
-      contentSpec,
-      schema,
-      {
-        from,
-        to,
-      }
-    ));
+  if (
+    ElementApi.isElement(parent) &&
+    !contentSpec &&
+    from === 0 &&
+    to < source.length
+  ) {
+    const previousParent =
+      beforeDocument && path.length > 0
+        ? getDescendant(beforeDocument.nodes as NodeList<Descendant>, path)
+        : null;
+    const previousInline =
+      previousParent && ElementApi.isElement(previousParent)
+        ? inlineContentWithoutProgram(
+            editor,
+            previousParent,
+            previousParent.children,
+            schema
+          )
+        : null;
+
+    if (previousInline === null || previousInline !== inlineContent) {
+      to = source.length;
+    }
   }
 
   if (inlineContent) {
@@ -1539,23 +1550,16 @@ const replaceCanonicalChildWindow = (
           preserveInlineSpacersAdjacentTo,
           schema,
         })
-      : kind === 'mixed' && program
-        ? canonicalizeContentChildren(propertyCanonical, program, {
-            dropsFromEmptyText,
+      : contentSpec
+        ? propertyCanonical
+        : canonicalizeDirectChildren(
             editor,
-            preserveInlineSpacersAdjacentTo,
-            schema,
-          })
-        : contentSpec
-          ? propertyCanonical
-          : canonicalizeDirectChildren(
-              editor,
-              parent,
-              propertyCanonical,
-              root,
-              { schema },
-              ancestors.slice(1)
-            )
+            parent,
+            propertyCanonical,
+            root,
+            { schema },
+            ancestors.slice(1)
+          )
     : contentSpec
       ? propertyCanonical.filter((child): child is Element =>
           ElementApi.isElement(child)

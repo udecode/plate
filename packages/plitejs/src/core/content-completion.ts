@@ -17,7 +17,7 @@ import { textPropertiesEqual } from './value-codec';
 type Text = Extract<Descendant, { text: string }>;
 type InlineSchema = Readonly<{ isInline: (node: Node) => boolean }>;
 
-type ContentKind = 'block' | 'inline' | 'mixed';
+type ContentKind = 'blocks' | 'text';
 
 /**
  * Where completion builds an element: prefix slot `prefix`, or the `min`th
@@ -272,7 +272,6 @@ export const canonicalizeInlineChildren = (
     editor,
     fillsEmpty = true,
     flattenInto,
-    lineAnchor = true,
     preserveInlineSpacersAdjacentTo,
     report,
     schema,
@@ -283,8 +282,6 @@ export const canonicalizeInlineChildren = (
     editor?: Editor;
     fillsEmpty?: boolean;
     flattenInto?: Element;
-    /** False for a run between blocks, which a block already anchors. */
-    lineAnchor?: boolean;
     preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
     report?: RepresentationRepairSink;
     schema: InlineSchema;
@@ -317,10 +314,7 @@ export const canonicalizeInlineChildren = (
   const { inlines, runs } = splitAtInlines(flattened, before, after);
   const site = {
     anchorsLine:
-      lineAnchor &&
-      inlines.length === 0 &&
-      before === undefined &&
-      after === undefined,
+      inlines.length === 0 && before === undefined && after === undefined,
     dropsFromEmptyText,
     editor,
     fillsEmpty,
@@ -356,162 +350,30 @@ export const canonicalizeInlineChildren = (
   return sameChildren(canonical, children) ? children : canonical;
 };
 
-const CONTENT_KINDS = new WeakMap<CompiledSchemaContentProgram, ContentKind>();
-
-/** Prefix slots are blocks, so text after a prefix makes the content mixed. */
 export const contentKindOf = (
-  content: CompiledSchemaContentProgram,
-  schema: InlineSchema
-): ContentKind => {
-  const cached = CONTENT_KINDS.get(content);
-
-  if (cached) return cached;
-
-  let inline = content.allowsText;
-  let block = content.allowsUnknownElements;
-
-  for (const type of content.allowedElementTypes) {
-    if (schema.isInline({ children: [], type } as Element)) inline = true;
-    else block = true;
-  }
-
-  const kind = inline ? (block ? 'mixed' : 'inline') : 'block';
-
-  CONTENT_KINDS.set(content, kind);
-
-  return kind;
-};
-
-const isBlock = (child: Descendant | undefined, schema: InlineSchema) =>
-  child !== undefined && ElementApi.isElement(child) && !schema.isInline(child);
-
-const prefixHead = (
-  children: readonly Descendant[],
-  content: CompiledSchemaContentProgram,
-  schema: InlineSchema
-) => {
-  let head = 0;
-
-  while (
-    head < (content.prefix?.length ?? 0) &&
-    head < children.length &&
-    isBlock(children[head], schema)
-  ) {
-    head += 1;
-  }
-
-  return head;
-};
+  content: CompiledSchemaContentProgram
+): ContentKind => (content.allowsText ? 'text' : 'blocks');
 
 type RunOptions = Readonly<{
   dropsFromEmptyText?: (key: string, value: unknown) => boolean;
   editor?: Editor;
-  fillsEmpty?: boolean;
   flattenInto?: Element;
   preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
   report?: RepresentationRepairSink;
   schema: InlineSchema;
 }>;
 
-/**
- * An empty remainder after a prefix stays empty for completion to fill,
- * and mixed content drops a run that is only an empty text once a block
- * holds the line.
- */
 export const canonicalizeContentChildren = (
   children: readonly Descendant[],
   content: CompiledSchemaContentProgram,
   options: RunOptions
 ): readonly Descendant[] => {
-  const kind = contentKindOf(content, options.schema);
+  if (contentKindOf(content) === 'blocks') return children;
 
-  if (kind === 'block') return children;
-
-  const runOptions = { ...options, fillsEmpty: admitsEmptyText(content) };
-
-  if (kind === 'inline') {
-    return canonicalizeInlineChildren(children, runOptions);
-  }
-  if (content.prefix && content.remainder) {
-    const head = prefixHead(children, content, options.schema);
-    const tail = children.slice(head);
-    const tailCanonical =
-      tail.length === 0
-        ? tail
-        : canonicalizeContentChildren(tail, content.remainder, options);
-
-    return tailCanonical === tail
-      ? children
-      : [...children.slice(0, head), ...tailCanonical];
-  }
-
-  return canonicalizeRuns(children, runOptions);
-};
-
-/**
- * Mixed content canonicalizes each inline run between blocks on its own, so a
- * window over it grows to the blocks around the change. A window past the
- * prefix reads by the remainder's program, as the whole tail does, since the
- * full program would take the window's leading blocks for prefix slots.
- */
-export const mixedContentWindow = (
-  children: readonly Descendant[],
-  content: CompiledSchemaContentProgram,
-  schema: InlineSchema,
-  window: Readonly<{ from: number; to: number }>
-) => {
-  const head = prefixHead(children, content, schema);
-  let { from, to } = window;
-
-  while (from > head && !isBlock(children[from], schema)) from -= 1;
-  while (to > 0 && to < children.length && !isBlock(children[to - 1], schema)) {
-    to += 1;
-  }
-  if (from < head) return { from: 0, program: content, to };
-
-  return {
-    from,
-    program:
-      from > 0 && content.prefix && content.remainder
-        ? content.remainder
-        : content,
-    to,
-  };
-};
-
-const canonicalizeRuns = (
-  children: readonly Descendant[],
-  options: RunOptions
-): readonly Descendant[] => {
-  const blocks = children.filter(
-    (child) => ElementApi.isElement(child) && !options.schema.isInline(child)
-  );
-
-  if (blocks.length === 0) {
-    return canonicalizeInlineChildren(children, options);
-  }
-
-  const canonical: Descendant[] = [];
-  const runOptions = { ...options, fillsEmpty: false, lineAnchor: false };
-  let run: Descendant[] = [];
-  const flush = () => {
-    if (run.length > 0) {
-      canonical.push(...canonicalizeInlineChildren(run, runOptions));
-      run = [];
-    }
-  };
-
-  for (const child of children) {
-    if (ElementApi.isElement(child) && !options.schema.isInline(child)) {
-      flush();
-      canonical.push(child);
-    } else {
-      run.push(child);
-    }
-  }
-  flush();
-
-  return sameChildren(canonical, children) ? children : canonical;
+  return canonicalizeInlineChildren(children, {
+    ...options,
+    fillsEmpty: admitsEmptyText(content),
+  });
 };
 
 export type PrefixOccupantFate = 'displaced' | 'joined' | 'kept';
