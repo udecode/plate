@@ -125,6 +125,11 @@ function MountedMarkToolbarButton({
     disabled ? undefined : portal.shortcuts[shortcutName]?.keys
   );
   const pressed = useEditorSelector((innerEditor) => {
+    if (value === undefined) {
+      const innerPortal = innerEditor.plugin(plugin);
+      return innerPortal.installed && innerPortal.read.isActive();
+    }
+
     const innerPortal = innerEditor.plugin(plugin);
     return innerPortal.installed && innerPortal.read.isActive(value);
   });
