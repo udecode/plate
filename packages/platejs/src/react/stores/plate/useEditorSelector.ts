@@ -16,7 +16,9 @@ import {
 } from '../../internal/plate-context';
 import type { EditorRuntimeStateSelectorOptions } from '../../plite-react';
 
-export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<T>;
+/** Options for Plate's `useEditorSelector` hook. */
+export type UseEditorSelectorOptions<T = unknown> =
+  EditorRuntimeStateSelectorOptions<T>;
 
 const useIsomorphicLayoutEffect =
   typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect;

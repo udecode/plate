@@ -1,4 +1,3 @@
-import isEqual from 'lodash/isEqual.js';
 import React from 'react';
 
 import type {
@@ -9,7 +8,14 @@ import type {
   EditorViewOptions,
   Selection,
 } from '../../facade';
-import { runEditorObserver } from '../../facade';
+import {
+  createEditorCommitPublicationQueue,
+  didCommitChangePersistedValue,
+  getCommitDocumentValue,
+  publishEditorCommitInVersionOrder,
+  resetEditorCommitPublicationQueue,
+  runEditorObserver,
+} from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
@@ -107,19 +113,21 @@ function PlateInner({
     () => ({ editor: currentEditor, containerRef }),
     [containerRef, currentEditor]
   );
-  const observerBaselineVersion = React.useMemo(
-    () => editor?.read.lastCommit()?.version ?? 0,
+  const observerBaseline = React.useMemo(
+    () => ({ version: editor?.read.lastCommit()?.version ?? 0 }),
     [editor]
   );
-  const lastObservedCommitVersion = React.useRef(observerBaselineVersion);
+  const [commitPublicationQueue] = React.useState(() =>
+    createEditorCommitPublicationQueue(observerBaseline.version)
+  );
+  const observerBaselineRef = React.useRef<typeof observerBaseline | null>(
+    null
+  );
   const observersRef = React.useRef({
     onCommit,
     onSelectionChange,
     onValueChange,
   });
-  const lastDocumentValueRef = React.useRef<EditorDocumentValue | undefined>(
-    undefined
-  );
 
   React.useInsertionEffect(() => {
     observersRef.current = {
@@ -144,14 +152,17 @@ function PlateInner({
   React.useLayoutEffect(() => {
     const observedEditor =
       editor ?? failInvariant('Expected value to be defined');
-    lastObservedCommitVersion.current = observerBaselineVersion;
-    lastDocumentValueRef.current = observedEditor.read.value();
+    if (observerBaselineRef.current !== observerBaseline) {
+      observerBaselineRef.current = observerBaseline;
+      resetEditorCommitPublicationQueue(
+        commitPublicationQueue,
+        observerBaseline.version
+      );
+    }
 
     const observeCommit: Parameters<
       typeof observedEditor.subscribeCommit
     >[0] = (commit, snapshot) => {
-      lastObservedCommitVersion.current = commit.version;
-
       const {
         onCommit: innerOnCommit,
         onSelectionChange: innerOnSelectionChange,
@@ -161,22 +172,10 @@ function PlateInner({
         return;
       }
 
-      const documentChanged = commit.changed.hasAny('document');
-      const stateChanged = commit.dirtyStateKeys.length > 0;
-      const value = innerOnValueChange
-        ? documentChanged || stateChanged
-          ? observedEditor.read.value()
-          : (lastDocumentValueRef.current ?? observedEditor.read.value())
-        : null;
-      const persistedMetaChanged =
-        !!value &&
-        stateChanged &&
-        !isEqual(lastDocumentValueRef.current?.meta, value.meta);
-
-      if (value && (documentChanged || stateChanged)) {
-        lastDocumentValueRef.current = value;
-      }
-
+      const valueChanged = didCommitChangePersistedValue(
+        observedEditor,
+        commit
+      );
       const context = { commit, editor: observedEditor, snapshot };
 
       runEditorObserver(
@@ -188,12 +187,15 @@ function PlateInner({
         'EditorRoot'
       );
 
-      if (value && (documentChanged || persistedMetaChanged)) {
+      if (valueChanged && innerOnValueChange) {
+        const value =
+          getCommitDocumentValue(commit) ?? observedEditor.read.value();
+
         runEditorObserver(
           observedEditor,
           'commit-listener',
           () => {
-            innerOnValueChange?.({
+            innerOnValueChange({
               ...context,
               value,
             });
@@ -221,21 +223,32 @@ function PlateInner({
       }
     };
 
-    const unsubscribe = observedEditor.subscribeCommit(observeCommit);
+    const unsubscribe = observedEditor.subscribeCommit((commit, snapshot) => {
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        commit,
+        snapshot,
+        observeCommit,
+        { allowVersionGap: false }
+      );
+    });
     const latestCommit = observedEditor.read.lastCommit();
 
     if (
       latestCommit &&
-      latestCommit.version > lastObservedCommitVersion.current
+      latestCommit.version > commitPublicationQueue.lastVersion
     ) {
-      observeCommit(
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
         latestCommit,
-        observedEditor.read((state) => state.runtime.snapshot())
+        observedEditor.read((state) => state.runtime.snapshot()),
+        observeCommit,
+        { allowVersionGap: true }
       );
     }
 
     return unsubscribe;
-  }, [editor, observerBaselineVersion]);
+  }, [commitPublicationQueue, editor, observerBaseline]);
 
   return (
     <RuntimeEditorRoot

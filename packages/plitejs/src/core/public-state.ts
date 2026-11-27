@@ -4775,6 +4775,43 @@ const getEditorRootChildren = (
   );
 };
 
+type CommitDocumentValueSource = Readonly<{
+  editor: Editor;
+  fields: ReadonlyMap<string, Pick<EditorStateField, 'persist' | 'serialize'>>;
+  meta: Record<string, unknown> | undefined;
+  records: RecordStore;
+  roots: Readonly<Record<string, readonly Descendant[]>>;
+}>;
+
+const COMMIT_DOCUMENT_VALUE_SOURCES = new WeakMap<
+  EditorCommit,
+  CommitDocumentValueSource
+>();
+
+/** @internal */
+export const getCommitDocumentValue = <V extends Value = Value>(
+  commit: EditorCommit<V>
+): EditorDocumentValue<V> | undefined => {
+  const source = COMMIT_DOCUMENT_VALUE_SOURCES.get(commit);
+
+  if (!source) return undefined;
+
+  return createEditorDocumentValue<V>(source);
+};
+
+/** @internal */
+export const didCommitChangePersistedValue = (
+  editor: Editor,
+  commit: EditorCommit
+): boolean => {
+  if (commit.changed.hasAny('document')) return true;
+  if (commit.dirtyStateKeys.length === 0) return false;
+
+  const fields = getStateFieldIdentityMap(getEditorRuntimeOwner(editor));
+
+  return commit.dirtyStateKeys.some((key) => savesStateKey(fields, key));
+};
+
 export const getEditorDocumentValue = <V extends Value>(
   editor: Editor<V>
 ): EditorDocumentValue<V> =>
@@ -15838,6 +15875,13 @@ export const runEditorTransaction = <R>(
           });
 
           committed = change;
+          COMMIT_DOCUMENT_VALUE_SOURCES.set(change, {
+            editor,
+            fields: new Map(getStateFieldIdentityMap(editor)),
+            meta: getDocumentState(editor),
+            records: getEditorDocumentRecords(editor),
+            roots: getEditorDocumentRoots(editor),
+          });
           const owner = getEditorRuntimeOwner(editor);
 
           advanceStoredRootDirectory(

@@ -1652,8 +1652,6 @@
       "UpsertLinkOptions",
       "useComposedRef",
       "useEditorPluginStore",
-      "UseEditorSelectorOptions",
-      "UseEditorStateOptions",
       "useElement",
       "useIsomorphicLayoutEffect",
       "useSelectionFragmentProp",

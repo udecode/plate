@@ -124,7 +124,7 @@ const AsyncDecorationsExample = () => {
         decorations={[decorationSource]}
         editor={editor}
         onValueChange={({ value }) => {
-          scheduleAsyncDecorations(value);
+          scheduleAsyncDecorations(value.children);
         }}
       >
         <Editable

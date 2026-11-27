@@ -134,7 +134,9 @@ export const useEditorHasSelection = (): boolean =>
     dependsOn: 'selection',
   });
 
-export type UseEditorStateOptions<T> = EditorRuntimeStateSelectorOptions<T>;
+/** Options for Plate's `useEditorState` selector hook. */
+export type UseEditorStateOptions<T = unknown> =
+  EditorRuntimeStateSelectorOptions<T>;
 
 /** Subscribe to a value derived from the selected editor's immutable state. */
 export const useEditorState = <T>(

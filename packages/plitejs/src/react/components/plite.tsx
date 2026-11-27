@@ -11,6 +11,7 @@ import React, {
 import {
   type EditorCommit,
   type EditorCommitContext,
+  type EditorDocumentValue,
   type EditorViewOptions,
   type EditorSnapshot,
   isEditor,
@@ -19,21 +20,24 @@ import {
   type RootKey,
   type Selection,
   SelectionApi,
-  type Value,
   type ValueOf,
 } from '../..';
 import {
   readAuthoredView,
   requestAuthoredView,
 } from '../../core/authored-runtime';
-import { rootNodesOf } from '../../core/change/document-index';
 import {
   createEditorCommitPublicationQueue,
   resetEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
 } from '../../core/commit-publication';
 import { startOwnedEditor } from '../../core/editor-owner';
-import { flushEditorViewState } from '../../core/public-state';
+import { runEditorObserver } from '../../core/lifecycle-error';
+import {
+  didCommitChangePersistedValue,
+  flushEditorViewState,
+  getCommitDocumentValue,
+} from '../../core/public-state';
 import {
   retainPresentation,
   type ViewPresentation,
@@ -117,9 +121,6 @@ import {
 import { ImperativeTextFlowContext } from './editable-text-flow';
 import { TextRenderScopeContext } from './editable-text-pieces';
 
-const isRootValueChanged = (root: RootKey, commit: EditorCommit) =>
-  commit.changed.has('document', toPublicRootOption(root));
-
 const selectionIsInRoot = (
   selection: Selection,
   selectionRoot: RootKey | undefined,
@@ -136,15 +137,9 @@ const isRootSelectionChanged = (root: RootKey, commit: EditorCommit) =>
     selectionIsInRoot(commit.selectionAfter, commit.selectionAfterRoot, root));
 
 type PliteChangeCallbacks<E extends ReactEditorType<any, any>> = {
-  onCommit?: (context: EditorCommitContext<E>) => void;
-  onSelectionChange?: (
-    context: EditorCommitContext<E> & {
-      selection: EditorCommitContext<E>['snapshot']['selection'];
-    }
-  ) => void;
-  onValueChange?: (
-    context: EditorCommitContext<E> & { value: ReadValue<ValueOf<E>> }
-  ) => void;
+  onCommit?: (context: CommitContext<E>) => void;
+  onSelectionChange?: (context: SelectionChangeContext<E>) => void;
+  onValueChange?: (context: ValueChangeContext<E>) => void;
 };
 
 const useCommittedChangeCallbackCell = <E extends ReactEditorType<any, any>>(
@@ -161,31 +156,28 @@ const useCommittedChangeCallbackCell = <E extends ReactEditorType<any, any>>(
 
 /** Canonical commit payload observed by a Plite React provider. */
 export type CommitContext<
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly unknown[],
-> = EditorCommitContext<ReactEditorType<V, TPlugins>>;
+  E extends ReactEditorType<any, any> = ReactEditorType<any, any>,
+> = EditorCommitContext<E>;
 
 /** Value-change payload derived independently from a canonical commit. */
 export type ValueChangeContext<
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly unknown[],
-> = CommitContext<V, TPlugins> & {
-  value: ReadValue<V>;
+  E extends ReactEditorType<any, any> = ReactEditorType<any, any>,
+> = CommitContext<E> & {
+  value: EditorDocumentValue<ReadValue<ValueOf<E>>>;
 };
 
 /** Selection-change payload derived independently from a canonical commit. */
 export type SelectionChangeContext<
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly unknown[],
-> = CommitContext<V, TPlugins> & {
-  selection: EditorSnapshot<V>['selection'];
+  E extends ReactEditorType<any, any> = ReactEditorType<any, any>,
+> = CommitContext<E> & {
+  selection: EditorCommitContext<E>['snapshot']['selection'];
 };
 
 /** Props for the Plite React provider around editable roots and callbacks. */
 export type EditorRootProps<
   E extends ReactEditorType<any, any> = ReactEditorType<any, any>,
   TRoot extends RootKey = RootKey,
-> = EditorViewOptions<TRoot> &
+> = Pick<EditorViewOptions<TRoot>, 'authored' | 'readOnly' | 'root'> &
   (NoInfer<E> extends { read: { authored: unknown } }
     ? unknown
     : { authored?: never }) & {
@@ -193,17 +185,9 @@ export type EditorRootProps<
     editor: E;
     children: React.ReactNode;
     decorations?: ReadonlyArray<DecorationSource<NoInfer<E>>> | null;
-    onCommit?: (context: EditorCommitContext<NoInfer<E>>) => void;
-    onSelectionChange?: (
-      context: EditorCommitContext<NoInfer<E>> & {
-        selection: EditorCommitContext<NoInfer<E>>['snapshot']['selection'];
-      }
-    ) => void;
-    onValueChange?: (
-      context: EditorCommitContext<NoInfer<E>> & {
-        value: ReadValue<ValueOf<E>>;
-      }
-    ) => void;
+    onCommit?: (context: CommitContext<NoInfer<E>>) => void;
+    onSelectionChange?: (context: SelectionChangeContext<NoInfer<E>>) => void;
+    onValueChange?: (context: ValueChangeContext<NoInfer<E>>) => void;
   };
 
 type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
@@ -213,15 +197,9 @@ type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
   directEditor?: E;
   lifetime?: object;
   lockLink?: ViewLockScope;
-  onCommit?: (context: EditorCommitContext<E>) => void;
-  onSelectionChange?: (
-    context: EditorCommitContext<E> & {
-      selection: EditorCommitContext<E>['snapshot']['selection'];
-    }
-  ) => void;
-  onValueChange?: (
-    context: EditorCommitContext<E> & { value: ReadValue<ValueOf<E>> }
-  ) => void;
+  onCommit?: (context: CommitContext<E>) => void;
+  onSelectionChange?: (context: SelectionChangeContext<E>) => void;
+  onValueChange?: (context: ValueChangeContext<E>) => void;
   mountedIn?: AnyEditor;
   presentation?: ViewPresentation;
   preserveReadOnlyOverride?: boolean;
@@ -590,15 +568,9 @@ class ViewReadOnlyLock extends Component<{
 type ChangeCallbacksInput<E extends ReactEditorType<any, any>> = {
   editor: E;
   onChange: ReturnType<typeof useEditorSelectorContext>['onChange'];
-  onCommit?: (context: EditorCommitContext<E>) => void;
-  onSelectionChange?: (
-    context: EditorCommitContext<E> & {
-      selection: EditorCommitContext<E>['snapshot']['selection'];
-    }
-  ) => void;
-  onValueChange?: (
-    context: EditorCommitContext<E> & { value: ReadValue<ValueOf<E>> }
-  ) => void;
+  onCommit?: (context: CommitContext<E>) => void;
+  onSelectionChange?: (context: SelectionChangeContext<E>) => void;
+  onValueChange?: (context: ValueChangeContext<E>) => void;
   root: RootKey;
 };
 
@@ -678,10 +650,7 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
         publicRoot
       );
       const previousSnapshot = lastSnapshotRef.current;
-      const valueChanged =
-        isRootValueChanged(root, commit) &&
-        rootNodesOf(previousSnapshot, 'children') !==
-          rootNodesOf(snapshot, 'children');
+      const valueChanged = didCommitChangePersistedValue(editor, commit);
       const selectionChanged =
         isRootSelectionChanged(root, commit) &&
         !SelectionApi.equals(previousSnapshot.selection, snapshot.selection);
@@ -691,27 +660,53 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
         commit,
         editor,
         snapshot,
-      } as EditorCommitContext<E>;
+      } as CommitContext<E>;
       const {
         onCommit: innerOnCommit,
         onSelectionChange: innerOnSelectionChange,
         onValueChange: innerOnValueChange,
       } = changeCallbacksCell.current;
 
-      innerOnCommit?.(context);
-
-      if (valueChanged) {
-        innerOnValueChange?.({
-          ...context,
-          value: snapshot.children,
-        });
+      if (innerOnCommit) {
+        runEditorObserver(
+          editor,
+          'commit-listener',
+          () => {
+            innerOnCommit(context);
+          },
+          'EditorRoot'
+        );
       }
 
-      if (selectionChanged) {
-        innerOnSelectionChange?.({
-          ...context,
-          selection: snapshot.selection,
-        });
+      if (valueChanged && innerOnValueChange) {
+        const value = (getCommitDocumentValue(commit) ??
+          editor.read.value()) as EditorDocumentValue<ReadValue<ValueOf<E>>>;
+
+        runEditorObserver(
+          editor,
+          'commit-listener',
+          () => {
+            innerOnValueChange({
+              ...context,
+              value,
+            });
+          },
+          'EditorRoot'
+        );
+      }
+
+      if (selectionChanged && innerOnSelectionChange) {
+        runEditorObserver(
+          editor,
+          'commit-listener',
+          () => {
+            innerOnSelectionChange({
+              ...context,
+              selection: snapshot.selection,
+            });
+          },
+          'EditorRoot'
+        );
       }
     };
     const unsubscribe = getEditorRuntime(editor).subscribe((snapshot, commit) =>

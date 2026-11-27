@@ -28971,15 +28971,15 @@
         },
         "platejs/react:UseEditorSelectorOptions": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Options for Plate's `useEditorSelector` hook.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "UseEditorSelectorOptions",
           "runtime": false,
-          "signature": "type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<T>;",
+          "signature": "type UseEditorSelectorOptions<T = unknown> = EditorRuntimeStateSelectorOptions<T>;",
           "source": null,
           "typeParameters": [
-            "T"
+            "T = unknown"
           ]
         },
         "platejs/react:useEditorState": {
@@ -28995,15 +28995,15 @@
         },
         "platejs/react:UseEditorStateOptions": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Options for Plate's `useEditorState` selector hook.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "UseEditorStateOptions",
           "runtime": false,
-          "signature": "type UseEditorStateOptions<T> = EditorRuntimeStateSelectorOptions<T>;",
+          "signature": "type UseEditorStateOptions<T = unknown> = EditorRuntimeStateSelectorOptions<T>;",
           "source": null,
           "typeParameters": [
-            "T"
+            "T = unknown"
           ]
         },
         "platejs/react:useEditorValue": {
@@ -29300,6 +29300,19 @@
           "source": null,
           "typeParameters": [
             "TValue"
+          ]
+        },
+        "platejs/react:UseStateFieldValueOptions": {
+          "aliases": [],
+          "documentation": "Options for Plate's `useStateFieldValue` selector hook.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "UseStateFieldValueOptions",
+          "runtime": false,
+          "signature": "type UseStateFieldValueOptions<TValue = unknown> = Pick<UseEditorStateOptions<TValue>, 'equalityFn'>;",
+          "source": null,
+          "typeParameters": [
+            "TValue = unknown"
           ]
         },
         "platejs/react:UseViewElementAttributes": {

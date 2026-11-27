@@ -30,6 +30,11 @@ export {
   getEditorCommitSnapshot,
   getEditorCommitValue,
 } from '../core/commit';
+export {
+  createEditorCommitPublicationQueue,
+  publishEditorCommitInVersionOrder,
+  resetEditorCommitPublicationQueue,
+} from '../core/commit-publication';
 export { readingCovered } from '../core/property-validity';
 export {
   observeAnchorStateWork,
@@ -303,10 +308,12 @@ export {
   afterActiveTransactionEnds,
   applyBuiltDocumentChange,
   attachTransactionSpecAfterCommit,
+  didCommitChangePersistedValue,
   getActiveEditorUpdateId,
   getActiveEditorUpdateTags,
   getActiveEditorTransaction,
   getCollabEffectTypes,
+  getCommitDocumentValue,
   getCurrentMarks as getEditorCurrentMarks,
   getCurrentSelectionRoot as getEditorSelectionRoot,
   getEditorMaxLength,

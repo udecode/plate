@@ -19,6 +19,19 @@ import {
 } from '../plugin/with-react';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
+const withCapturedId = <TOptions extends Record<string, unknown>>(
+  options: TOptions,
+  id: unknown
+): TOptions => {
+  const copy: Record<string, unknown> = {};
+
+  for (const key of Object.keys(options)) {
+    copy[key] = key === 'id' ? id : options[key];
+  }
+
+  return copy as TOptions;
+};
+
 /**
  * Creates one React editor instance for the component lifetime.
  *
@@ -65,10 +78,17 @@ export function useCreateEditor<
 ): Editor<V, TPlugins> {
   // Later renders skip createEditor, so check each render's options here.
   assertEditorOptions(options, REACT_EDITOR_OPTION_KEYS);
+  const hasId = Object.hasOwn(options, 'id');
+  const editorId = hasId ? options.id : undefined;
   const owner = useMemo(
-    () => createEditorOwner(() => createDormantReactEditor(options)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Caller-supplied deps own the editor lifetime.
-    deps
+    () =>
+      createEditorOwner(() =>
+        createDormantReactEditor(
+          hasId ? withCapturedId(options, editorId) : options
+        )
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Caller-supplied deps and options.id own the editor lifetime.
+    [editorId, ...deps]
   );
 
   useEditorOwner(owner);
