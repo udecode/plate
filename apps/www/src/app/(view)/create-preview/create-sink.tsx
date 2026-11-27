@@ -686,174 +686,184 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
         className="min-h-screen bg-muted/60 p-4 pb-16 sm:p-6 sm:pb-16 dark:bg-background"
         data-slot="create-sink"
       >
-        <div className="mx-auto grid max-w-[1440px] grid-cols-1 items-start gap-4 lg:grid-cols-2 xl:grid-cols-3">
-          <div className="flex flex-col gap-4">
-            <EditorRoot editor={docEditor}>
-              <SinkCard
-                description="Fixed and floating toolbars bound to the live editor below."
-                title="Toolbars"
-              >
-                <div className="overflow-hidden rounded-lg border bg-background">
-                  <FixedToolbar className="rounded-none border-b-0">
-                    <FixedToolbarButtons />
-                  </FixedToolbar>
-                </div>
-                <div className="flex justify-center">
-                  <Toolbar className="no-scrollbar max-w-full overflow-x-auto rounded-md border bg-popover p-1 whitespace-nowrap shadow-sm">
-                    <FloatingToolbarButtons />
-                  </Toolbar>
-                </div>
-              </SinkCard>
-
-              <SinkCard
-                description="Live interactive editor for headings, body text, marks, and blocks."
-                title="Document & typography"
-              >
-                <div className="rounded-lg border bg-background px-4 py-3">
-                  <Editor
-                    className="min-h-0 px-0 py-0 text-sm [&_h1]:mt-0"
-                    variant="none"
-                  />
-                </div>
-              </SinkCard>
-            </EditorRoot>
-
+        <EditorRoot editor={docEditor}>
+          <div className="mx-auto flex max-w-[1440px] flex-col gap-4">
             <SinkCard
-              description="Lowlight syntax tokens and mono font."
-              title="Code block"
+              description="Fixed and floating toolbars bound to the live editor below."
+              title="Toolbars"
             >
-              <EditorRoot editor={codeEditor} readOnly>
-                <Editor className="min-h-0 px-0 py-0 text-xs" variant="none" />
-              </EditorRoot>
-            </SinkCard>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <SlashMenuCard />
-            <BlockMenuCard />
-            <AIAssistantCard />
-          </div>
-
-          <div className="flex flex-col gap-4 lg:col-span-2 xl:col-span-1">
-            <SinkCard
-              description="Multi-author suggestion slots and review thread."
-              title="Suggestions & discussion"
-            >
-              <div className="rounded-lg border bg-background px-3 py-2">
-                <EditorRoot editor={suggestionEditor} readOnly>
-                  <Editor
-                    className="min-h-0 px-0 py-0 text-sm"
-                    variant="none"
-                  />
-                </EditorRoot>
+              <div className="overflow-hidden rounded-lg border bg-background">
+                <FixedToolbar className="rounded-none border-b-0">
+                  <FixedToolbarButtons />
+                </FixedToolbar>
               </div>
-              <div className="flex flex-col gap-2.5 rounded-lg border bg-background p-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-medium text-primary">
-                    B
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <span className="font-medium text-foreground">Bob</span>
-                      <span className="text-muted-foreground">2m ago</span>
+              <div className="flex justify-center">
+                <Toolbar className="no-scrollbar max-w-full overflow-x-auto rounded-md border bg-popover p-1 whitespace-nowrap shadow-sm">
+                  <FloatingToolbarButtons />
+                </Toolbar>
+              </div>
+            </SinkCard>
+
+            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <div className="flex flex-col gap-4">
+                <SinkCard
+                  description="Live interactive editor for headings, body text, marks, and blocks."
+                  title="Document & typography"
+                >
+                  <div className="rounded-lg border bg-background px-4 py-3">
+                    <Editor
+                      className="min-h-0 px-0 py-0 text-sm [&_h1]:mt-0"
+                      variant="none"
+                    />
+                  </div>
+                </SinkCard>
+
+                <SinkCard
+                  description="Lowlight syntax tokens and mono font."
+                  title="Code block"
+                >
+                  <EditorRoot editor={codeEditor} readOnly>
+                    <Editor
+                      className="min-h-0 px-0 py-0 text-xs"
+                      variant="none"
+                    />
+                  </EditorRoot>
+                </SinkCard>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <SlashMenuCard />
+                <BlockMenuCard />
+                <AIAssistantCard />
+              </div>
+
+              <div className="flex flex-col gap-4 lg:col-span-2 xl:col-span-1">
+                <SinkCard
+                  description="Multi-author suggestion slots and review thread."
+                  title="Suggestions & discussion"
+                >
+                  <div className="rounded-lg border bg-background px-3 py-2">
+                    <EditorRoot editor={suggestionEditor} readOnly>
+                      <Editor
+                        className="min-h-0 px-0 py-0 text-sm"
+                        variant="none"
+                      />
+                    </EditorRoot>
+                  </div>
+                  <div className="flex flex-col gap-2.5 rounded-lg border bg-background p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-medium text-primary">
+                        B
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <span className="font-medium text-foreground">
+                            Bob
+                          </span>
+                          <span className="text-muted-foreground">2m ago</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          aria-label="Accept suggestion"
+                          className="cn-button cn-button-variant-ghost cn-button-size-icon-xs inline-flex items-center justify-center"
+                          type="button"
+                        >
+                          <IconPlaceholder
+                            className="size-3.5"
+                            hugeicons="Tick02Icon"
+                            lucide="Check"
+                            phosphor="CheckIcon"
+                            remixicon="RiCheckLine"
+                            tabler="IconCheck"
+                          />
+                        </button>
+                        <button
+                          aria-label="Reject suggestion"
+                          className="cn-button cn-button-variant-ghost cn-button-size-icon-xs inline-flex items-center justify-center"
+                          type="button"
+                        >
+                          <IconPlaceholder
+                            className="size-3.5"
+                            hugeicons="Cancel01Icon"
+                            lucide="X"
+                            phosphor="XIcon"
+                            remixicon="RiCloseLine"
+                            tabler="IconX"
+                          />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                      <span className="rounded-sm bg-editor-delete/15 px-1.5 py-0.5 text-editor-delete line-through">
+                        widgets
+                      </span>
+                      <span className="text-muted-foreground">to</span>
+                      <span className="rounded-sm bg-editor-insert/15 px-1.5 py-0.5 text-editor-insert">
+                        editors
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        aria-label="Reply to thread"
+                        className="cn-input h-8 min-w-0 flex-1 bg-transparent px-2.5 text-xs outline-none"
+                        defaultValue=""
+                        placeholder="Reply..."
+                        readOnly
+                        type="text"
+                      />
+                      <button
+                        className="cn-button cn-button-variant-default cn-button-size-xs shrink-0"
+                        type="button"
+                      >
+                        Reply
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      aria-label="Accept suggestion"
-                      className="cn-button cn-button-variant-ghost cn-button-size-icon-xs inline-flex items-center justify-center"
-                      type="button"
-                    >
+                </SinkCard>
+
+                <DiffCard />
+
+                <SinkCard
+                  description="Table borders plus inline mention, date, and field chips."
+                  title="Table & inline nodes"
+                >
+                  <EditorRoot editor={tableEditor} readOnly>
+                    <Editor
+                      className="min-h-0 px-0 py-0 text-xs"
+                      variant="none"
+                    />
+                  </EditorRoot>
+                  <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 font-medium text-foreground">
+                      @Alice
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-muted-foreground">
                       <IconPlaceholder
-                        className="size-3.5"
-                        hugeicons="Tick02Icon"
-                        lucide="Check"
-                        phosphor="CheckIcon"
-                        remixicon="RiCheckLine"
-                        tabler="IconCheck"
+                        className="size-3"
+                        hugeicons="Calendar03Icon"
+                        lucide="CalendarIcon"
+                        phosphor="CalendarIcon"
+                        remixicon="RiCalendarLine"
+                        tabler="IconCalendar"
                       />
-                    </button>
-                    <button
-                      aria-label="Reject suggestion"
-                      className="cn-button cn-button-variant-ghost cn-button-size-icon-xs inline-flex items-center justify-center"
-                      type="button"
-                    >
-                      <IconPlaceholder
-                        className="size-3.5"
-                        hugeicons="Cancel01Icon"
-                        lucide="X"
-                        phosphor="XIcon"
-                        remixicon="RiCloseLine"
-                        tabler="IconX"
-                      />
-                    </button>
+                      Nov 27, 2026
+                    </span>
+                    <span className="inline-flex items-center rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                      Company name
+                    </span>
+                    <span className="cn-badge cn-badge-variant-default inline-flex items-center">
+                      Ready
+                    </span>
+                    <span className="cn-badge cn-badge-variant-outline inline-flex items-center">
+                      v2 beta
+                    </span>
                   </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                  <span className="rounded-sm bg-editor-delete/15 px-1.5 py-0.5 text-editor-delete line-through">
-                    widgets
-                  </span>
-                  <span className="text-muted-foreground">to</span>
-                  <span className="rounded-sm bg-editor-insert/15 px-1.5 py-0.5 text-editor-insert">
-                    editors
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    aria-label="Reply to thread"
-                    className="cn-input h-8 min-w-0 flex-1 bg-transparent px-2.5 text-xs outline-none"
-                    defaultValue=""
-                    placeholder="Reply..."
-                    readOnly
-                    type="text"
-                  />
-                  <button
-                    className="cn-button cn-button-variant-default cn-button-size-xs shrink-0"
-                    type="button"
-                  >
-                    Reply
-                  </button>
-                </div>
+                </SinkCard>
               </div>
-            </SinkCard>
-
-            <DiffCard />
-
-            <SinkCard
-              description="Table borders plus inline mention, date, and field chips."
-              title="Table & inline nodes"
-            >
-              <EditorRoot editor={tableEditor} readOnly>
-                <Editor className="min-h-0 px-0 py-0 text-xs" variant="none" />
-              </EditorRoot>
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 font-medium text-foreground">
-                  @Alice
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-muted-foreground">
-                  <IconPlaceholder
-                    className="size-3"
-                    hugeicons="Calendar03Icon"
-                    lucide="CalendarIcon"
-                    phosphor="CalendarIcon"
-                    remixicon="RiCalendarLine"
-                    tabler="IconCalendar"
-                  />
-                  Nov 27, 2026
-                </span>
-                <span className="inline-flex items-center rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 font-medium text-primary">
-                  Company name
-                </span>
-                <span className="cn-badge cn-badge-variant-default inline-flex items-center">
-                  Ready
-                </span>
-                <span className="cn-badge cn-badge-variant-outline inline-flex items-center">
-                  v2 beta
-                </span>
-              </div>
-            </SinkCard>
+            </div>
           </div>
-        </div>
+        </EditorRoot>
       </div>
     </TooltipProvider>
   );
