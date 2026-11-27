@@ -79,8 +79,11 @@ component pages:
   access modes only where they affect this feature. Do not require every
   category, a demo per API method or a fixed number of previews.
 - Let each additional example teach a distinct task, behavior or useful visual
-  variant. Reuse registered demos and link composition to its owning page
-  instead of reproducing the same mixed-feature preview across sibling pages.
+  variant. When a feature grows a distinct user flow (such as a fill mode,
+  server submission, or persistence view), add a focused preview under
+  `## Examples` instead of bolting another panel onto the primary demo. Reuse
+  registered demos and link composition to its owning page instead of
+  reproducing the same mixed-feature preview across sibling pages.
 - Keep integration requirements next to the example that needs them. Show
   minimum prerequisites in setup; put detailed ownership and lifecycle
   explanations after working examples or in a linked concept guide.

@@ -48,8 +48,8 @@ Runs on `verdict|review <scope>`, plain scope next-step asks, `/loop verdict <sc
 
 1. Run `pnpm kb <scope>`; read listed `docs/research/sources/` pages, topic file and public docs (add missing scope to `docs/research/areas.tsv`).
 2. Write `### Jobs` under Evidence (job, strongest external alternative, better/as-well/worse, grounded source; never model memory, checked by `review-ledger.mjs check`). Run a `research` discovery shard (`pnpm kb discover <area>` + live GitHub/web search, promoted to `docs/research/sources/` + `repos.tsv`) when a top job is ungraded, the area's research is stale against the question, or the verdict proposes a redesign or new subsystem (skip live discovery for pure Intake, narrow internal `decide` chips, or pure dead-code cuts). Max one outside-scope `decide` chip (`via: verdict`, `session: none`).
-3. Collect candidates (worse jobs, open work, strongest cut/merge, Redesign from First Principles, rule-is-wrong) into `### Lanes` ranked by user gain/cost (ties: cut/merge > redesign > addition).
-4. Top lane = Pursue (else Stop); a disjoint worthy lane may become a `via: verdict` chip.
+3. Collect candidates (worse jobs, open work, strongest cut/merge, Redesign from First Principles, rule-is-wrong, and for user-facing scopes with a page in `content/docs/`, any clear `plate-docs` gap such as a single kitchen-sink demo or missing focused examples for major shipped modes) into `### Lanes` ranked by user gain/cost (ties: cut/merge > redesign > addition).
+4. Top lane = Pursue (else Stop); a disjoint worthy lane (such as a `plate-docs` polish alongside an engine Stop) may become a `via: verdict` chip.
 
 ### Audit pass
 
