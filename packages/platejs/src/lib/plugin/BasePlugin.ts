@@ -1766,6 +1766,11 @@ type BasePluginStageContribution<
     ? Readonly<{ shortcuts: true }>
     : Readonly<Record<never, never>>);
 
+type MergeBasePluginStageContribution<
+  C extends AnyBasePluginDefinition,
+  TContribution,
+> = MergePluginDefinitions<C, TContribution, TContribution>;
+
 type BasePluginStageDefinition<
   C extends AnyBasePluginDefinition,
   TKeys extends PropertyKey,
@@ -1777,43 +1782,37 @@ type BasePluginStageDefinition<
   TConflictNames extends readonly string[] = readonly [],
   TEnabled extends boolean = boolean,
   TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly [],
-> = MergePluginDefinitions<
-  C,
-  BasePluginStageContribution<
-    TKeys,
-    S,
-    TApi,
-    TRead,
-    NormalizePluginSelectors<
-      NormalizePluginState<
-        Extract<InferPluginStoreState<C>, object> &
-          Omit<S, keyof Extract<InferPluginStoreState<C>, object>>
-      >,
-      PluginSelectorMethods<TSelectors>
-    >,
-    TUpdate,
-    TConflictNames,
-    TEnabled,
-    TTargetPlugins
-  >,
-  BasePluginStageContribution<
-    TKeys,
-    S,
-    TApi,
-    TRead,
-    NormalizePluginSelectors<
-      NormalizePluginState<
-        Extract<InferPluginStoreState<C>, object> &
-          Omit<S, keyof Extract<InferPluginStoreState<C>, object>>
-      >,
-      PluginSelectorMethods<TSelectors>
-    >,
-    TUpdate,
-    TConflictNames,
-    TEnabled,
-    TTargetPlugins
-  >
->;
+> = [Extract<TKeys, BasePluginStageSpecialKey>] extends [never]
+  ? [Exclude<TKeys, keyof C>] extends [never]
+    ? C
+    : MergeBasePluginStageContribution<
+        C,
+        Readonly<{
+          [TKey in Exclude<TKeys, BasePluginStageSpecialKey>]: true;
+        }>
+      >
+  : MergeBasePluginStageContribution<
+      C,
+      BasePluginStageContribution<
+        TKeys,
+        S,
+        TApi,
+        TRead,
+        'selectors' extends TKeys
+          ? NormalizePluginSelectors<
+              NormalizePluginState<
+                Extract<InferPluginStoreState<C>, object> &
+                  Omit<S, keyof Extract<InferPluginStoreState<C>, object>>
+              >,
+              PluginSelectorMethods<TSelectors>
+            >
+          : {},
+        TUpdate,
+        TConflictNames,
+        TEnabled,
+        TTargetPlugins
+      >
+    >;
 
 export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   BasePluginInputFields<C>,

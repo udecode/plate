@@ -886,6 +886,11 @@ type PluginStageContribution<
     ? Readonly<{ shortcuts: true }>
     : Readonly<Record<never, never>>);
 
+type MergePluginStageContribution<
+  C extends AnyBasePluginDefinition,
+  TContribution,
+> = MergePluginDefinitions<C, TContribution, TContribution>;
+
 type PluginStageDefinition<
   C extends AnyBasePluginDefinition,
   TKeys extends PropertyKey,
@@ -897,43 +902,37 @@ type PluginStageDefinition<
   TConflictNames extends readonly string[] = readonly [],
   TEnabled extends boolean = boolean,
   TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly [],
-> = MergePluginDefinitions<
-  C,
-  PluginStageContribution<
-    TKeys,
-    S,
-    TApi,
-    TRead,
-    NormalizePluginSelectors<
-      NormalizePluginState<
-        (InferPluginStoreState<C> & object) &
-          Omit<S, keyof (InferPluginStoreState<C> & object)>
-      >,
-      PluginSelectorMethods<TSelectors>
-    >,
-    TUpdate,
-    TConflictNames,
-    TEnabled,
-    TTargetPlugins
-  >,
-  PluginStageContribution<
-    TKeys,
-    S,
-    TApi,
-    TRead,
-    NormalizePluginSelectors<
-      NormalizePluginState<
-        (InferPluginStoreState<C> & object) &
-          Omit<S, keyof (InferPluginStoreState<C> & object)>
-      >,
-      PluginSelectorMethods<TSelectors>
-    >,
-    TUpdate,
-    TConflictNames,
-    TEnabled,
-    TTargetPlugins
-  >
->;
+> = [Extract<TKeys, PluginStageSpecialKey>] extends [never]
+  ? [Exclude<TKeys, keyof C>] extends [never]
+    ? C
+    : MergePluginStageContribution<
+        C,
+        Readonly<{
+          [TKey in Exclude<TKeys, PluginStageSpecialKey>]: true;
+        }>
+      >
+  : MergePluginStageContribution<
+      C,
+      PluginStageContribution<
+        TKeys,
+        S,
+        TApi,
+        TRead,
+        'selectors' extends TKeys
+          ? NormalizePluginSelectors<
+              NormalizePluginState<
+                (InferPluginStoreState<C> & object) &
+                  Omit<S, keyof (InferPluginStoreState<C> & object)>
+              >,
+              PluginSelectorMethods<TSelectors>
+            >
+          : {},
+        TUpdate,
+        TConflictNames,
+        TEnabled,
+        TTargetPlugins
+      >
+    >;
 
 /**
  * Keys accepted by one inferred Plate author stage.

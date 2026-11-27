@@ -3,8 +3,6 @@ import type { NormalizeBasePluginInput } from './basePluginCompiler.internal';
 import type {
   AnyBasePluginDefinition,
   InferApi,
-  InferConflicts,
-  InferEnabled,
   InferPluginStoreState,
   InferRead,
   InferSelectors,
@@ -69,13 +67,30 @@ type Materialize<TObject extends object> = Readonly<{
   [TKey in keyof TObject]: TObject[TKey];
 }>;
 
-type DefinitionField<
+type MergePluginFieldKey =
+  | 'api'
+  | 'conflicts'
+  | 'enabled'
+  | 'initialState'
+  | 'read'
+  | 'selectors'
+  | 'targetPlugins'
+  | 'update';
+
+type MergedObjectField<
   C,
   TContribution,
   TKey extends PropertyKey,
-  TValue,
-> = TKey extends keyof C | keyof TContribution
-  ? Readonly<Record<TKey, TValue>>
+  TCurrent,
+> = TKey extends keyof TContribution
+  ? Readonly<
+      Record<
+        TKey,
+        TKey extends keyof C
+          ? TCurrent & ObjectField<TContribution, TKey>
+          : ObjectField<TContribution, TKey>
+      >
+    >
   : {};
 
 type ObjectField<TContribution, TKey extends PropertyKey> =
@@ -118,84 +133,36 @@ export type MergePluginDefinitions<
   TContribution,
   TNormalized = NormalizeBasePluginInput<TContribution, C['name']>,
 > = Materialize<
-  Omit<
-    C,
-    | 'api'
-    | 'conflicts'
-    | 'enabled'
-    | 'initialState'
-    | 'name'
-    | 'read'
-    | 'selectors'
-    | 'targetPlugins'
-    | 'update'
-  > &
+  Omit<C, 'name' | Extract<keyof TNormalized, MergePluginFieldKey>> &
     Omit<
       TNormalized,
-      | 'api'
-      | 'conflicts'
-      | 'dependencies'
-      | 'enabled'
-      | 'initialState'
-      | 'name'
-      | 'read'
-      | 'schema'
-      | 'selectors'
-      | 'targetPlugins'
-      | 'update'
+      'dependencies' | 'name' | 'schema' | MergePluginFieldKey
     > &
     Readonly<{ name: C['name'] }> &
-    DefinitionField<
-      C,
-      TNormalized,
-      'api',
-      InferApi<C> & ObjectField<TNormalized, 'api'>
-    > &
-    DefinitionField<
-      C,
-      TNormalized,
-      'read',
-      InferRead<C> & ObjectField<TNormalized, 'read'>
-    > &
-    DefinitionField<
-      C,
-      TNormalized,
-      'update',
-      InferUpdate<C> & ObjectField<TNormalized, 'update'>
-    > &
-    DefinitionField<
-      C,
-      TNormalized,
-      'initialState',
-      NormalizePluginState<
-        InferPluginStoreState<C> &
-          Omit<
-            ObjectField<TNormalized, 'initialState'>,
-            keyof InferPluginStoreState<C>
-          >
-      >
-    > &
-    DefinitionField<
-      C,
-      TNormalized,
-      'selectors',
-      InferSelectors<C> & ObjectField<TNormalized, 'selectors'>
-    > &
+    MergedObjectField<C, TNormalized, 'api', InferApi<C>> &
+    MergedObjectField<C, TNormalized, 'read', InferRead<C>> &
+    MergedObjectField<C, TNormalized, 'update', InferUpdate<C>> &
+    ('initialState' extends keyof TNormalized
+      ? Readonly<{
+          initialState: NormalizePluginState<
+            InferPluginStoreState<C> &
+              Omit<
+                ObjectField<TNormalized, 'initialState'>,
+                keyof InferPluginStoreState<C>
+              >
+          >;
+        }>
+      : {}) &
+    MergedObjectField<C, TNormalized, 'selectors', InferSelectors<C>> &
     ('conflicts' extends keyof TNormalized
       ? Readonly<{ conflicts: Conflicts<TNormalized> }>
-      : 'conflicts' extends keyof C
-        ? Readonly<{ conflicts: InferConflicts<C> }>
-        : {}) &
+      : {}) &
     ('enabled' extends keyof TNormalized
       ? Readonly<{ enabled: Enabled<TNormalized> }>
-      : 'enabled' extends keyof C
-        ? Readonly<{ enabled: InferEnabled<C> }>
-        : {}) &
+      : {}) &
     ('targetPlugins' extends keyof TNormalized
       ? Readonly<{
           targetPlugins: TargetPlugins<TNormalized>;
         }>
-      : 'targetPlugins' extends keyof C
-        ? Pick<C, 'targetPlugins'>
-        : {})
+      : {})
 >;
