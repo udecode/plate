@@ -1002,9 +1002,11 @@ export const registerPluginContributionInRegistry = <TEditor extends Editor>(
 };
 
 const DEFINED_STATE_FIELDS = new WeakSet<EditorStateField<any>>();
+const DEFINED_STATE_FIELD_EFFECTS = new WeakSet<EditorEffectType>();
 
 export const markDefinedStateField = (field: EditorStateField<any>) => {
   DEFINED_STATE_FIELDS.add(field);
+  DEFINED_STATE_FIELD_EFFECTS.add(field.effect);
 };
 
 export const isDefinedStateField = (
@@ -1013,6 +1015,9 @@ export const isDefinedStateField = (
   typeof value === 'object' &&
   value !== null &&
   DEFINED_STATE_FIELDS.has(value as EditorStateField<any>);
+
+export const isStateFieldEffect = (type: EditorEffectType) =>
+  DEFINED_STATE_FIELD_EFFECTS.has(type);
 
 export const registerStateFieldDescriptorInRegistry = <TEditor extends Editor>(
   registry: PluginRegistry<TEditor>,

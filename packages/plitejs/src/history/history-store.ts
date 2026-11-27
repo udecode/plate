@@ -1,8 +1,9 @@
 import type { Editor, EditorSchemaIdentity, Value } from '..';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
+import { countCoreWork } from '../core/work';
 import type { AnyEditor } from '../interfaces/editor';
-import type { History } from './history';
+import type { Batch, History } from './history';
 
 export type CrossingDrop = Readonly<{
   cause: unknown;
@@ -248,4 +249,50 @@ export const publishStore = <
   setStore(editor, next);
 
   return next;
+};
+
+export const DROPPED_HISTORY_CAUSES = new WeakMap<AnyEditor, unknown[]>();
+
+export const recordDroppedCause = (editor: AnyEditor, cause: unknown) => {
+  const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
+
+  causes.push(cause);
+  DROPPED_HISTORY_CAUSES.set(editor, causes);
+  countCoreWork('carriedFallbacks');
+};
+
+export const takeDroppedHistoryCauses = (editor: AnyEditor) => {
+  const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
+
+  DROPPED_HISTORY_CAUSES.delete(editor);
+
+  return causes;
+};
+
+export const HISTORY_FALLBACKS = new WeakMap<
+  Batch,
+  Batch | null | (() => Batch | null)
+>();
+
+export const withHistoryFallback = <B extends Batch>(
+  batch: B,
+  fallback: Batch | null
+): B => {
+  HISTORY_FALLBACKS.set(batch, fallback);
+
+  return batch;
+};
+
+export const historyFallbackOf = <V extends Value>(
+  batch: Batch<V>
+): Batch<V> | null => {
+  const fallback = HISTORY_FALLBACKS.get(batch) ?? null;
+
+  if (typeof fallback !== 'function') return fallback;
+
+  const mapped = fallback();
+
+  HISTORY_FALLBACKS.set(batch, mapped);
+
+  return mapped;
 };

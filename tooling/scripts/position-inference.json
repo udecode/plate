@@ -42,6 +42,7 @@
     "packages/plitejs/src/history/history-origin.ts": "It records each history entry's start document, change, written records, and active window-track state by delegating to core/change/window.ts. It works out no move, split, join, wrap or restored letter from positions.",
     "packages/plitejs/src/history/history-session-replay.ts": "It settles session history replay bases and branch mappings for record-only companion changes, and places a waiting redo by the identities of the undo steps it saw at claim time. It works out no move, split, join, wrap or restored letter from positions.",
     "packages/plitejs/src/history/history-step-id.ts": "It attaches step ids, facts and carry programs to history batches and freezes snapshots. It works out no move, split, join, wrap or restored letter from positions.",
-    "packages/plitejs/src/history/history-store.ts": "It stores and publishes per-editor history stacks and transaction drafts. It works out no move, split, join, wrap or restored letter from positions."
+    "packages/plitejs/src/history/history-store.ts": "It stores and publishes per-editor history stacks and transaction drafts. It works out no move, split, join, wrap or restored letter from positions.",
+    "packages/plitejs/src/history/history-superseded-effects.ts": "It tracks, coalesces, forwards and filters history effect keys superseded by skipped or remote state-field commits. It works out no move, split, join, wrap or restored letter from positions."
   }
 }

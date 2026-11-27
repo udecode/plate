@@ -79,7 +79,11 @@ import {
   type NativeGroupingInput,
   nativeGroupingInput,
 } from '../core/native-grouping-input';
-import { getCompiledEditorSchema } from '../core/plugin-registry';
+import {
+  getCompiledEditorSchema,
+  getPluginRegistry,
+  isStateFieldEffect,
+} from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   applyDocumentChange,
@@ -1073,6 +1077,41 @@ const recordHistoryStep = (
   throw new Error('History did not record the session step.');
 };
 
+const collectSupersededEffectKeys = (
+  editor: Editor,
+  commit: EditorCommit
+): ReadonlySet<string> | undefined => {
+  let keys: Set<string> | undefined;
+  const add = (key: string) => {
+    keys ??= new Set();
+    keys.add(key);
+  };
+
+  if (commit.dirtyStateKeys.length > 0) {
+    const { stateFields } = getPluginRegistry(editor);
+
+    for (const fieldKey of commit.dirtyStateKeys) {
+      const registration = stateFields.get(fieldKey);
+
+      if (registration && registration.field.effect.history !== 'skip') {
+        add(registration.field.effect.key);
+      }
+    }
+  }
+
+  for (const effect of commit.effects) {
+    if (effect.type.history === 'skip') continue;
+    if (
+      isStateFieldEffect(effect.type) ||
+      effect.type.collabReplay === 'latest'
+    ) {
+      add(effect.type.key);
+    }
+  }
+
+  return keys;
+};
+
 const shouldSaveCommit = (
   editor: Editor,
   before: EditorDocumentValue,
@@ -1242,21 +1281,20 @@ const createHistoryPlugin = <
         after
       );
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      return undefined;
     }
 
     if (commit.annotations[documentReplacement.key]) {
       dropPendingHistoryReplayEntry(editor);
-      if (!restoredHistoryJSON) {
-        replaceHistoryState(
-          editor,
-          {
-            redos: [],
-            schema: captureHistoryState(editor)?.schema ?? schema,
-            undos: [],
-          },
-          after
-        );
-      }
+      replaceHistoryState(
+        editor,
+        {
+          redos: [],
+          schema: captureHistoryState(editor)?.schema ?? schema,
+          undos: [],
+        },
+        after
+      );
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
       return undefined;
     }
@@ -1386,13 +1424,23 @@ const createHistoryPlugin = <
         LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
       }
 
-      if (!commit.tags.includes('historic') && !changes.empty) {
-        queuePendingHistoryReplayMapping(editor, changes, after);
-        queueHistoryMapping(editor, changes, after, {
-          before,
-          facts,
-          otherWriter: commit.tags.includes('collaboration'),
-        });
+      if (!commit.tags.includes('historic')) {
+        const supersededEffectKeys = collectSupersededEffectKeys(
+          editor,
+          commit
+        );
+
+        if (!changes.empty) {
+          queuePendingHistoryReplayMapping(editor, changes, after);
+        }
+        if (!changes.empty || supersededEffectKeys) {
+          queueHistoryMapping(editor, changes, after, {
+            before,
+            facts,
+            otherWriter: commit.tags.includes('collaboration'),
+            supersededEffectKeys,
+          });
+        }
       }
       return undefined;
     }
@@ -1402,6 +1450,21 @@ const createHistoryPlugin = <
       !anchorCapture?.recovery &&
       isInternalDocumentChangeNoop(changes, before)
     ) {
+      if (!commit.tags.includes('historic')) {
+        const supersededEffectKeys = collectSupersededEffectKeys(
+          editor,
+          commit
+        );
+
+        if (supersededEffectKeys) {
+          queueHistoryMapping(editor, DocumentChange.empty, after, {
+            before,
+            facts,
+            otherWriter: commit.tags.includes('collaboration'),
+            supersededEffectKeys,
+          });
+        }
+      }
       return undefined;
     }
 

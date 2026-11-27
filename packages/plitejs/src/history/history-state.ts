@@ -1,7 +1,6 @@
 import {
   DocumentChange,
   invertEffect,
-  mapEffect,
   type Editor,
   type EditorDocumentValue,
   type EditorSchemaIdentity,
@@ -94,27 +93,51 @@ import {
   captureHistoryState as captureStore,
   type CrossingDrop,
   deleteHistoryStore,
+  DROPPED_HISTORY_CAUSES,
   type DropSink,
   getStore as readHistoryStore,
+  HISTORY_FALLBACKS,
+  historyFallbackOf,
   type HistoryStoreBase,
   NO_DROPS,
   publishStore,
+  recordDroppedCause,
   restoreHistoryState,
   setStore as writeHistoryStore,
+  takeDroppedHistoryCauses,
   withDrops,
+  withHistoryFallback,
   withHistoryStateDraft,
   withPublishedHistoryState,
 } from './history-store';
+import {
+  appendPendingMapping,
+  applyEmptyChangeMapping,
+  buildDropMapping,
+  buildPropagatedMapping,
+  buildQueuedHistoryMapping,
+  collectSupersededEffectKeys,
+  forwardedSupersededMapping,
+  journalEntries,
+  mapBatchEffects,
+  type SupersededMappingJournal as MappingJournal,
+  type SupersededPendingMapping as PendingMapping,
+} from './history-superseded-effects';
 
 export {
   captureHistoryState,
   historyBatchStepId,
   historyFactsOf,
+  historyFallbackOf,
   historyProgramOf,
   historyStepId,
+  journalEntries,
   knownHistoryStepId,
+  recordDroppedCause,
   restoreHistoryState,
+  takeDroppedHistoryCauses,
   withHistoryFacts,
+  withHistoryFallback,
   withHistoryProgram,
   withHistoryStateDraft,
   withHistoryStepId,
@@ -123,20 +146,6 @@ export {
 export type { HistoryCommitSlice, HistoryReplayOrigin };
 
 export type HistoryStack = 'redos' | 'undos';
-
-type PendingMapping<V extends Value> = Readonly<{
-  /** The value `change` produced, so replay need not apply it again. */
-  after: EditorDocumentValue<V>;
-  change: DocumentChange;
-  textOnly: boolean;
-  anchors?: true;
-  crossing?: ChangeFacts;
-}>;
-
-type MappingJournal<V extends Value> = Readonly<{
-  entry: PendingMapping<V>;
-  previous: MappingJournal<V> | null;
-}>;
 
 const stepBranchTracks = <V extends Value>(
   value: HistoryBranch<V> | null,
@@ -235,34 +244,6 @@ export const publish = <V extends Value>(
   store: HistoryStore<V>,
   patch: Partial<Omit<HistoryStore<V>, 'revision' | 'snapshot'>>
 ) => publishStore(editor, store, { ...patch, ...trimmedRedoOf(store, patch) });
-
-const HISTORY_FALLBACKS = new WeakMap<
-  Batch,
-  Batch | null | (() => Batch | null)
->();
-
-export const withHistoryFallback = <B extends Batch>(
-  batch: B,
-  fallback: Batch | null
-): B => {
-  HISTORY_FALLBACKS.set(batch, fallback);
-
-  return batch;
-};
-
-export const historyFallbackOf = <V extends Value>(
-  batch: Batch<V>
-): Batch<V> | null => {
-  const fallback = HISTORY_FALLBACKS.get(batch) ?? null;
-
-  if (typeof fallback !== 'function') return fallback;
-
-  const mapped = fallback();
-
-  HISTORY_FALLBACKS.set(batch, mapped);
-
-  return mapped;
-};
 
 const outsideFallbackCount = <T>(run: () => T) => {
   const fallbacks = readCoreWork().carriedFallbacks;
@@ -473,40 +454,11 @@ export const addMapping = <V extends Value>(
   if (!value) return null;
   countCoreWork('historyMappingNodes');
 
-  const previous = value.mappings;
-  const mappings =
-    !value.carries && previous?.entry.textOnly && entry.textOnly
-      ? Object.freeze({
-          entry: Object.freeze({
-            after: entry.after,
-            change: previous.entry.change.compose(entry.change),
-            textOnly: true,
-          }),
-          previous: previous.previous,
-        })
-      : Object.freeze({ entry, previous });
-
   return Object.freeze({
     ...value,
     kept: withKeptBranch(value.kept, (other) => addMapping(other, entry)),
-    mappings,
+    mappings: appendPendingMapping(value.mappings, entry, value.carries),
   });
-};
-
-export const journalEntries = <V extends Value>(
-  journal: MappingJournal<V>
-): ReadonlyArray<PendingMapping<V>> => {
-  const entries: Array<PendingMapping<V>> = [];
-
-  for (
-    let item: MappingJournal<V> | null = journal;
-    item;
-    item = item.previous
-  ) {
-    entries.push(item.entry);
-  }
-
-  return entries.reverse();
 };
 
 const retainMappedCompositionGroup = (
@@ -614,7 +566,8 @@ const crossOrDrop = <V extends Value>(
 const headAfterDrop = <V extends Value>(
   editor: Editor<V>,
   value: HistoryBranch<V>,
-  target: EditorDocumentValue<V>
+  target: EditorDocumentValue<V>,
+  supersededEffectKeys?: ReadonlySet<string>
 ) => {
   const { next } = value;
   const from = next?.mappings?.entry.after ?? next?.base;
@@ -625,14 +578,15 @@ const headAfterDrop = <V extends Value>(
         })
       : DocumentChange.empty;
 
+  const dropMapping = buildDropMapping(
+    target,
+    correction,
+    supersededEffectKeys,
+    isTextOnlyMapping(correction)
+  );
+
   return {
-    head: correction.empty
-      ? next
-      : addMapping(next, {
-          after: target,
-          change: correction,
-          textOnly: isTextOnlyMapping(correction),
-        }),
+    head: dropMapping ? addMapping(next, dropMapping) : next,
     keptWrap: null,
     projected: false,
     projectedAfterReadBack: false,
@@ -658,6 +612,7 @@ const mapHead = <V extends Value>(
   }
 
   let keptWrap: KeptWrap | null = null;
+  let mappedDocument = false;
   let readBack = false;
   let projected = false;
   let projectedAfterReadBack = false;
@@ -669,9 +624,26 @@ const mapHead = <V extends Value>(
   let { carets, recovery } = value;
   let batchFacts = historyFactsOf(value.batch);
   const entries = journalEntries(value.mappings);
+  const limit = Math.min(entries.length, count);
 
-  for (const mapping of entries.slice(0, count)) {
+  for (let index = 0; index < limit; index += 1) {
+    const mapping = entries[index];
     const nextBase = replay.record().after;
+
+    if (mapping.change.empty) {
+      ({ batchValue, next } = applyEmptyChangeMapping(
+        batchValue,
+        next,
+        nextBase,
+        mapping,
+        freezeBatch,
+        addMapping
+      ));
+      continue;
+    }
+
+    mappedDocument = true;
+
     const crossed = mapping.crossing
       ? crossOrDrop(
           editor,
@@ -685,7 +657,12 @@ const mapHead = <V extends Value>(
       : null;
 
     if (crossed?.kind === 'dropped') {
-      return headAfterDrop(editor, value, (entries.at(-1) ?? mapping).after);
+      return headAfterDrop(
+        editor,
+        value,
+        (entries.at(-1) ?? mapping).after,
+        collectSupersededEffectKeys(entries.slice(index))
+      );
     }
 
     const mapped =
@@ -750,11 +727,7 @@ const mapHead = <V extends Value>(
       ...(parts ?? (unsettle && !unsettle.empty ? { unsettle } : {})),
       ...(replay.carried ? { carried: replay.carried } : {}),
       change: replay.change,
-      effects: batchValue.effects.flatMap((effect) => {
-        const mappedEffect = mapEffect(effect, mapping.change);
-
-        return mappedEffect ? [mappedEffect] : [];
-      }),
+      effects: mapBatchEffects(batchValue.effects, mapping),
       selectionAfter: mapHistorySelection(
         editor,
         batchValue.selectionAfter,
@@ -772,14 +745,14 @@ const mapHead = <V extends Value>(
         batchValue.selectionBeforeRoot ?? MAIN_ROOT_KEY
       ),
     });
-    if (!mapped.rest.empty) {
-      next = addMapping<V>(next, {
-        after: mappedNextBase,
-        change: mapped.rest,
-        textOnly: false,
-        ...(crossed ? { crossing: crossed.restFacts } : {}),
-      });
-    }
+    const propagated = buildPropagatedMapping(
+      mappedNextBase,
+      mapped.rest,
+      mapping.supersededEffectKeys,
+      crossed?.restFacts
+    );
+
+    if (propagated) next = addMapping<V>(next, propagated);
     if (value.origin) {
       outside = outside
         ? outside.compose(mapping.change, value.origin.base)
@@ -809,7 +782,9 @@ const mapHead = <V extends Value>(
             (previous, entry) => Object.freeze({ entry, previous }),
             null
           ),
-          retainMappedCompositionGroup(value.group),
+          mappedDocument
+            ? retainMappedCompositionGroup(value.group)
+            : value.group,
           recovery,
           value.anchorCeiling,
           value.identity,
@@ -1786,6 +1761,7 @@ const topJoinsNothingOnceMapped = <V extends Value>(editor: Editor<V>) => {
     !!mapping &&
     !mapping.previous &&
     !mapping.entry.crossing &&
+    !mapping.entry.supersededEffectKeys &&
     !head.kept &&
     !retainMappedCompositionGroup(head.group) &&
     keepsUndoThrough(
@@ -2093,7 +2069,7 @@ export const resolveDownTo = <V extends Value>(
       causes.push(error);
       onto =
         above.at(-1)?.replay.record().after ?? getEditorDocumentValue(editor);
-      entry = entry.next;
+      entry = forwardSupersededEffectKeys(entry, entry.next);
       continue;
     }
     if (!current) break;
@@ -2178,22 +2154,13 @@ export const replaceUndoStep = <V extends Value>(
   return true;
 };
 
-const DROPPED_HISTORY_CAUSES = new WeakMap<AnyEditor, unknown[]>();
+const forwardSupersededEffectKeys = <V extends Value>(
+  from: HistoryBranch<V>,
+  next: HistoryBranch<V> | null
+) => {
+  const entry = forwardedSupersededMapping(from, next);
 
-export const recordDroppedCause = (editor: AnyEditor, cause: unknown) => {
-  const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
-
-  causes.push(cause);
-  DROPPED_HISTORY_CAUSES.set(editor, causes);
-  countCoreWork('carriedFallbacks');
-};
-
-export const takeDroppedHistoryCauses = (editor: AnyEditor) => {
-  const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
-
-  DROPPED_HISTORY_CAUSES.delete(editor);
-
-  return causes;
+  return entry ? addMapping(next, entry) : next;
 };
 
 const resolveSurvivingTop = <V extends Value>(
@@ -2201,7 +2168,7 @@ const resolveSurvivingTop = <V extends Value>(
   drops: DropSink,
   value: HistoryBranch<V> | null
 ) => {
-  for (let entry = value; entry; entry = entry.next) {
+  for (let entry = value; entry;) {
     const attemptDrops: DropSink = [];
 
     try {
@@ -2212,6 +2179,7 @@ const resolveSurvivingTop = <V extends Value>(
       return head;
     } catch (error) {
       recordDroppedCause(editor, error);
+      entry = forwardSupersededEffectKeys(entry, entry.next);
     }
   }
 
@@ -2261,7 +2229,12 @@ export const dropHistoryHead = <V extends Value>(
   if (!value) return;
 
   const drops: DropSink = [];
-  const result = rebaseOnto(editor, drops, value.next, current);
+  const result = rebaseOnto(
+    editor,
+    drops,
+    forwardSupersededEffectKeys(value, value.next),
+    current
+  );
 
   publish(editor, withDrops(store, drops), { [stack]: result });
 };
@@ -2436,35 +2409,46 @@ export const queueHistoryMapping = <V extends Value>(
     before: EditorDocumentValue<V>;
     facts: ChangeFacts;
     otherWriter?: boolean;
+    supersededEffectKeys?: ReadonlySet<string>;
   }>
 ) => {
-  if (change.empty) return;
+  const supersededEffectKeys =
+    skipped.supersededEffectKeys && skipped.supersededEffectKeys.size > 0
+      ? skipped.supersededEffectKeys
+      : undefined;
+
+  if (change.empty && !supersededEffectKeys) return;
 
   const store = getStore(editor);
-  const crosses = admits(
-    editor,
-    store,
-    { change, facts: skipped.facts },
-    skipped.before
-  );
+
+  if (change.empty && !store.redos && !store.undos) return;
+
+  const crosses =
+    !change.empty &&
+    admits(editor, store, { change, facts: skipped.facts }, skipped.before);
 
   if (crosses) countCoreWork('admittedChanges');
 
-  const mapping = Object.freeze({
+  const mapping = buildQueuedHistoryMapping(
     after,
-    anchors: true as const,
     change,
-    textOnly: isTextOnlyMapping(change),
-    ...(crosses ? { crossing: skipped.facts } : {}),
-  });
+    crosses,
+    skipped.facts,
+    supersededEffectKeys,
+    isTextOnlyMapping(change)
+  );
   const commit: HistoryCommitSlice<V> = {
     after,
     before: skipped.before,
     change,
   };
   const otherWriter = skipped.otherWriter ?? true;
-  const walkedRedos = stepBranchTracks(store.redos, commit, otherWriter);
-  const walkedUndos = stepBranchTracks(store.undos, commit, otherWriter);
+  const walkedRedos = change.empty
+    ? store.redos
+    : stepBranchTracks(store.redos, commit, otherWriter);
+  const walkedUndos = change.empty
+    ? store.undos
+    : stepBranchTracks(store.undos, commit, otherWriter);
 
   publish(editor, store, {
     redos: addMapping(walkedRedos, mapping),
