@@ -277,9 +277,7 @@ export const finalizeMutableV4State = (
     }
   } else {
     withValueRecords(out, state.records);
-    if (state.showRecords) {
-      showValueRecords(out, state.records);
-    }
+    showValueRecords(out, state.records);
   }
 
   return out as JsonEditorValue;

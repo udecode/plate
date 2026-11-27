@@ -665,6 +665,17 @@ export const steps = [
     key: [],
   },
   {
+    name: 'v4-intent-oracle',
+    cores: 2,
+    run: 'pnpm check:v4-intent-oracle',
+    light: 'pnpm check:v4-intent-oracle --light',
+    affected: runsScript(
+      'packages/plitejs/scripts/v4-intent-oracle.ts',
+      'packages/plitejs/src/core/change/v4/'
+    ),
+    key: [],
+  },
+  {
     name: 'sync-simulation',
     cores: 4,
     private: true,
