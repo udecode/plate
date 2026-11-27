@@ -55,7 +55,6 @@ import {
   previous as editorPrevious,
   shouldMergeNodesRemovePrevNode as editorShouldMergeNodesRemovePrevNode,
   string as editorString,
-  unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
 import { getDefined } from '../internal/get-defined';
@@ -397,6 +396,58 @@ const resolveMergePoint = (
   );
 };
 
+const unhangDeleteRange = (
+  editor: Editor,
+  range: Range,
+  voids: boolean
+): Range => {
+  const [start, end] = RangeApi.edges(range);
+
+  if (start.offset !== 0 || end.offset !== 0 || PathApi.hasPrevious(end.path)) {
+    return range;
+  }
+
+  const endOfDocument = editorPoint(editor, [], { edge: 'end' });
+  const endHolder = voids ? undefined : getHighestNonEditable(editor, end);
+  const schema = getEditorSchema(editor);
+  const endsInsideVoid = !!endHolder && schema.isVoid(endHolder[0]);
+
+  if (PointApi.equals(end, endOfDocument) || endsInsideVoid) {
+    return range;
+  }
+
+  const endBlock = editorAbove(editor, {
+    at: end,
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
+    voids: true,
+  });
+  const blockPath = endBlock ? endBlock[1] : [];
+  let skip = true;
+
+  for (const [node, path] of getNodes(editor, {
+    at: { anchor: start, focus: end },
+    match: NodeApi.isText,
+    pass: ([candidate]) =>
+      !voids &&
+      NodeApi.isElement(candidate) &&
+      !schema.isVoid(candidate) &&
+      schema.isReadOnly(candidate),
+    reverse: true,
+    voids: true,
+  })) {
+    if (skip) {
+      skip = false;
+      continue;
+    }
+
+    if (node.text !== '' || PathApi.isBefore(path, blockPath)) {
+      return { anchor: start, focus: { offset: node.text.length, path } };
+    }
+  }
+
+  return range;
+};
+
 const resolveDeleteTarget = (
   editor: Editor,
   options: DeleteOptions = {},
@@ -536,15 +587,7 @@ const resolveDeleteTarget = (
   }
 
   if (!hanging) {
-    const [, end] = RangeApi.edges(at);
-    const endOfDocument = editorPoint(editor, [], { edge: 'end' });
-    const endHolder = voids ? undefined : getHighestNonEditable(editor, end);
-    const endsInsideInlineVoid =
-      !!endHolder && isInlineVoid(editor, endHolder[0]);
-
-    if (!PointApi.equals(end, endOfDocument) && !endsInsideInlineVoid) {
-      at = editorUnhangRange(editor, at, { voids });
-    }
+    at = unhangDeleteRange(editor, at, voids);
   }
 
   let [start, end] = RangeApi.edges(at);

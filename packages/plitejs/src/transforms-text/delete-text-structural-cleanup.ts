@@ -305,7 +305,7 @@ export const removeEmptyStructuralArtifacts = (
     if (
       NodeApi.isElement(node) &&
       NodeApi.string(node) === '' &&
-      hasSingleChildNest(editor, node)
+      (node.children.length === 0 || hasSingleChildNest(editor, node))
     ) {
       const parentPath = path.slice(0, -1) as Path;
       const parent =
