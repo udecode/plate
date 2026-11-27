@@ -10,10 +10,10 @@ import {
   RangeApi,
   type NodeKey,
   type Selection as EditorSelection,
-  type Value,
 } from '../..';
 import { getEditorSchema } from '../../core/editor-runtime';
 import { keepElementIds } from '../../core/element-id';
+import { deriveValue } from '../../core/record-store';
 import {
   getPlacementGeneration,
   setShownSelectionAsView,
@@ -517,18 +517,16 @@ export const attachPliteBrowserHandle = ({
             ] as const
         ),
       ]);
-      const { children: _children, roots: _roots, ...restValue } = value;
-      const paired: EditorDocumentValue = {
-        ...restValue,
-        children: children as Value,
+      const paired = deriveValue(value, {
+        children,
         ...(value.roots === undefined
           ? {}
           : {
               roots: Object.fromEntries(
                 inputRoots.map(([root], at) => [root, roots[at]])
-              ) as EditorDocumentValue['roots'],
+              ),
             }),
-      };
+      }) as EditorDocumentValue;
       const fitted = getEditorSchema(editor).fitDocumentRaw(paired);
       const documentChange = DocumentChange.between(current, fitted);
 
