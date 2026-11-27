@@ -90,12 +90,12 @@
       "title": "Diff",
       "description": "Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.",
       "dependencies": [
-        "platejs/diff",
+        "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "platejs"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/diff-colors.json",
         "button"
       ],
       "files": [
@@ -4778,6 +4778,23 @@
           "editor-suggestion-5": "oklch(0.837 0.128 66.29)",
           "editor-suggestion-6": "oklch(0.865 0.127 207.078)",
           "editor-suggestion-7": "oklch(0.81 0.117 11.638)"
+        }
+      },
+      "type": "registry:lib"
+    },
+    {
+      "name": "diff-colors",
+      "files": [],
+      "cssVars": {
+        "theme": {
+          "color-editor-delete": "var(--editor-delete, var(--destructive))",
+          "color-editor-insert": "var(--editor-insert)"
+        },
+        "light": {
+          "editor-insert": "oklch(0.508 0.118 165.612)"
+        },
+        "dark": {
+          "editor-insert": "oklch(0.765 0.177 163.223)"
         }
       },
       "type": "registry:lib"

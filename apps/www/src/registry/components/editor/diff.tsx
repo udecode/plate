@@ -80,17 +80,19 @@ const closeOverRequired = (
 const textSides = {
   after: {
     label: 'After',
-    mark: 'bg-emerald-200/70',
-    panel: 'border-emerald-200 bg-emerald-50/70',
-    text: 'text-emerald-950',
-    title: 'text-emerald-700',
+    mark: 'bg-editor-insert/22',
+    panel: 'border-editor-insert/25 bg-editor-insert/10',
+    text: 'text-foreground',
+    title:
+      'text-[color-mix(in_oklab,var(--editor-insert)_85%,var(--foreground))]',
   },
   before: {
     label: 'Before',
-    mark: 'bg-red-200/70',
-    panel: 'border-red-200 bg-red-50/70',
-    text: 'text-red-950',
-    title: 'text-red-700',
+    mark: 'bg-editor-delete/22',
+    panel: 'border-editor-delete/25 bg-editor-delete/10',
+    text: 'text-foreground',
+    title:
+      'text-[color-mix(in_oklab,var(--editor-delete,_var(--destructive))_85%,var(--foreground))]',
   },
 };
 
@@ -185,10 +187,10 @@ function EffectDetails({
   if (effect.kind === 'property') {
     return (
       <div className="grid gap-2 text-xs sm:grid-cols-2">
-        <pre className="overflow-x-auto rounded-md bg-red-50 p-2 text-red-950">
+        <pre className="overflow-x-auto rounded-md border border-editor-delete/25 bg-editor-delete/10 p-2 text-foreground">
           {JSON.stringify(effect.beforeProperties, null, 2)}
         </pre>
-        <pre className="overflow-x-auto rounded-md bg-emerald-50 p-2 text-emerald-950">
+        <pre className="overflow-x-auto rounded-md border border-editor-insert/25 bg-editor-insert/10 p-2 text-foreground">
           {JSON.stringify(effect.afterProperties, null, 2)}
         </pre>
       </div>
@@ -484,7 +486,7 @@ export function Diff({
               className={cn(
                 'rounded-md border px-2 py-1 text-xs',
                 diagnostic.severity === 'warning'
-                  ? 'border-amber-300 bg-amber-50 text-amber-950'
+                  ? 'border-amber-500/40 bg-amber-500/12 text-foreground'
                   : 'bg-muted text-muted-foreground'
               )}
               data-diagnostic={diagnostic.code}
@@ -503,7 +505,7 @@ export function Diff({
             return (
               <article
                 key={conflict.id}
-                className="space-y-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-950"
+                className="space-y-2 rounded-md border border-amber-500/40 bg-amber-500/12 p-3 text-foreground"
                 data-comparison-conflict={conflict.id}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">

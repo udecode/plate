@@ -19,11 +19,36 @@ type CursorEditor = Parameters<typeof useYjsRemoteCursor>[0];
 
 const FALLBACK_COLORS = ['#7C3AED', '#0891B2', '#DB2777', '#4F46E5'];
 const HEX_COLOR = /^#[\dA-Fa-f]{6}$/;
+const LABEL_LUMINANCE_THRESHOLD = Math.sqrt(1.05 * 0.05) - 0.05;
 
-const cursorColor = (clientId: number, data: CursorData | undefined) =>
-  typeof data?.color === 'string' && HEX_COLOR.test(data.color)
-    ? data.color
-    : FALLBACK_COLORS[Math.abs(clientId) % FALLBACK_COLORS.length];
+const srgbToLinear = (channel: number) => {
+  const value = channel / 255;
+
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+};
+
+const resolveRemoteCursorStyle = (
+  clientId: number,
+  data: CursorData | undefined
+) => {
+  const color =
+    typeof data?.color === 'string' && HEX_COLOR.test(data.color)
+      ? data.color
+      : FALLBACK_COLORS[Math.abs(clientId) % FALLBACK_COLORS.length];
+  const r = Number.parseInt(color.slice(1, 3), 16);
+  const g = Number.parseInt(color.slice(3, 5), 16);
+  const b = Number.parseInt(color.slice(5, 7), 16);
+  const luminance =
+    0.2126 * srgbToLinear(r) +
+    0.7152 * srgbToLinear(g) +
+    0.0722 * srgbToLinear(b);
+
+  return {
+    color,
+    labelColor: luminance > LABEL_LUMINANCE_THRESHOLD ? '#000000' : '#FFFFFF',
+    selectionBackground: `rgba(${r}, ${g}, ${b}, 0.2)`,
+  };
+};
 
 const cursorName = (clientId: number, data: CursorData | undefined) =>
   typeof data?.name === 'string' && data.name.trim().length > 0
@@ -40,7 +65,8 @@ export const CollaborationPlugin = YjsPlugin.require('awareness').map(
 
         return {
           style: {
-            backgroundColor: `${cursorColor(clientId, cursor?.data)}33`,
+            backgroundColor: resolveRemoteCursorStyle(clientId, cursor?.data)
+              .selectionBackground,
           },
         };
       },
@@ -92,7 +118,7 @@ function RemoteCursor({
   if (!cursor || !clipRect || !geometry?.focusRect) return null;
 
   const { focusRect } = geometry;
-  const color = cursorColor(clientId, cursor.data);
+  const { color, labelColor } = resolveRemoteCursorStyle(clientId, cursor.data);
   const caretTop = focusRect.top - clipRect.top;
   const caretLeft = focusRect.left - clipRect.left;
   const caretHeight = Math.max(focusRect.height, 16);
@@ -127,7 +153,7 @@ function RemoteCursor({
       <span
         ref={labelRef}
         className={cn(
-          'absolute truncate px-1.5 py-0.5 text-xs text-white',
+          'absolute truncate px-1.5 py-0.5 text-xs',
           labelAbove
             ? 'rounded-t-sm [border-bottom-right-radius:var(--radius-sm)]'
             : 'rounded-b-sm [border-top-right-radius:var(--radius-sm)]'
@@ -135,6 +161,7 @@ function RemoteCursor({
         data-remote-cursor-label=""
         style={{
           backgroundColor: color,
+          color: labelColor,
           left: labelLeft,
           maxWidth: clipRect.width - 2 * LABEL_INSET,
           top: labelAbove

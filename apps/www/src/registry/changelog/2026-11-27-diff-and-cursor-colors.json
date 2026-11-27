@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-diff-and-cursor-colors",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-diff-and-cursor-colors.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Give diffs theme-aware dark-mode tokens and pick readable remote cursor labels",
+  "targets": [
+    {
+      "name": "diff-colors",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-styles.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for diff-colors."
+        }
+      ]
+    },
+    {
+      "name": "diff",
+      "files": ["apps/www/src/registry/components/editor/diff.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "version-history-demo",
+      "files": ["apps/www/src/registry/examples/version-history-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-diff-colors-item",
+      "kind": "new",
+      "summary": "Add `--editor-insert` with light and dark values and Tailwind colors `editor-insert` and `editor-delete` (falling back to `--destructive`).",
+      "details": [],
+      "migrationNotes": [
+        "To customize insert colors, edit `--editor-insert` in `:root` and `.dark`. Delete colors follow `--destructive` unless you set `--editor-delete`. Re-adding `@plate/diff` or `@plate/diff-colors` alone keeps your edits."
+      ],
+      "targets": ["diff-colors"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-diff-and-cursor-colors",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-diff-dark-mode",
+      "kind": "behavior",
+      "summary": "Paint insert and delete panels, marks, titles, and property cards with `editor-insert` and `editor-delete` tokens, add dark-mode styling to warning and conflict cards, and remove the invalid `platejs/diff` package dependency.",
+      "details": [],
+      "migrationNotes": [
+        "A `diff` component copied before this change keeps fixed emerald and red classes. Add `diff` again with `shadcn add --overwrite`, which replaces local edits to that file."
+      ],
+      "targets": ["diff"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-diff-and-cursor-colors",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-version-history-demo-error",
+      "kind": "fix",
+      "summary": "Style the comparison error banner with `destructive` and `foreground` tokens so it stays readable in dark mode.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["version-history-demo"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-diff-and-cursor-colors",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-remote-cursor-contrast",
+      "kind": "behavior",
+      "summary": "Pick black or white cursor label text for whichever has higher contrast against each peer's color while keeping remote selections at 20 % opacity.",
+      "details": [],
+      "migrationNotes": [
+        "A `remote-cursor-overlay` copied before this change always uses white label text. Add `remote-cursor-overlay` again with `shadcn add --overwrite`, which replaces local edits to that file."
+      ],
+      "targets": ["remote-cursor-overlay"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-diff-and-cursor-colors",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

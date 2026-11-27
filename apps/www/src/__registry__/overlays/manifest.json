@@ -166,8 +166,8 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "9a453010c55949766972a8e8782c93f43707c39837de8ee6043dda13127cc956",
-  "itemCount": 194,
+  "generation": "9465ddeca35f609de22ac14ef0946ea604658f241ee25fcfc624ed63aa66066b",
+  "itemCount": 195,
   "payloads": {
     "overlays/base-luma/block-list-static.json": "34010fc3dd13d2d1c10c1dc64fad96dc1c310b9a1dd66c9542a895772a506287",
     "overlays/base-luma/floating-popover.json": "ebe2e2e6c1df6a1291a43e572b8632766c80130b5809d8d2bb52b3a649650b19",
@@ -312,7 +312,8 @@
     "r/details-static.json": "ea72cf419b636edc11f034f83ae345d37ea06754505a71fe30d24c1245670007",
     "r/details-toolbar-button.json": "51776ed02d0dac11e49244996e80e84d9696af0c90e4f9448e2c3dd7d807fc78",
     "r/details.json": "423852fb4aefa1cc575bcfd37eb18d41770e6d3dbbc77a56987a675ab85e6380",
-    "r/diff.json": "ee88acaa35acac874ac6c13df9d88f9d896d59c53a51e0586f99a8447008ff71",
+    "r/diff-colors.json": "8055ffa3c3f7e78bb32f31d5c642fd1759832349dfaa273fdfbb7e351ac71229",
+    "r/diff.json": "6db2e670a86dcf7a0fe3865345b8be2e6779fb99051c9d40ad4b2df604b02e60",
     "r/discussion.json": "3d034400f4419892c3b09b51e40f2a3b4360f37303c1fc0299dd6e531068b890",
     "r/dnd.json": "5d24a81d994829fa4afa258606904f8a3f172bcbae8ae265df66fc8d8f5178fb",
     "r/docx-export.json": "0d78ded46706a1b8f378a3190718d23890ad8f101cbadd253a2faa9afa1f7c82",
@@ -414,8 +415,8 @@
     "r/preview-markdown-demo.json": "f17e68c77c0751153cafff724c4a7516a3085f24e7fbef482eb6a84273ee1bb5",
     "r/prompt-editor-demo.json": "04f61b2386aa51b1f115dabc42cab79161a77c92538c443e2cbd59629bfa6cfa",
     "r/prompt-editor.json": "48270c30d8388815a04f699a6f8fa50ef7f661cb0b1e17283e0cf7a0a3e0bb19",
-    "r/registry.json": "a171cdf281ec72674854f0fc2b0471b618f9ed02463b45eb58d4cf29e8ac4c93",
-    "r/remote-cursor-overlay.json": "504de875366a46a4a39853983084691393fbab04e121cefe102ab60bda2c923f",
+    "r/registry.json": "cd07648bbb641f1d2afd2a97e52fdb12a95d418430dff7b72e494c0e51bb98fd",
+    "r/remote-cursor-overlay.json": "962afc57226f90c40fbf22c82120feb5a8174c24643814d986da33dd98030459",
     "r/resize-handle.json": "3eaa0af0ae458283d8b5ea22560692668a9bfafbc0b5b1254081310e82b0e7e3",
     "r/select-editor-demo.json": "633e04f23d8a5b3005edd6b94ce11fb03e2fb40f47d411276d56048ec7aa031f",
     "r/select-editor.json": "aab0eb5588c5ceff4a5844c3c056ab689aa8362245bc20e21236b0da9870c321",
@@ -452,7 +453,7 @@
     "r/use-mounted.json": "be95a23d5c78e90277cecc10c6ae626001ade3386ae360451fe7941a3cf1755a",
     "r/use-object-url.json": "4e14a2a767649ed8d68f2c397fb9335edeeeee1556aab45942bf5e80436804b6",
     "r/use-visible-anchor.json": "6a1fc3d43c6bea1aff70bbb8d33ba4d6efc1570d7caa9a6148b826a6f0300382",
-    "r/version-history-demo.json": "a40b7b7c9ea23940894a4ffcfa6e64f20c89895191f0e01db3d78cdd49f2a9d1",
+    "r/version-history-demo.json": "dd20c3e0f9ffe0f323abc937445691e6d261f1a217da28ee75876b49591eaebe",
     "rd/ai-api.json": "762e140fd0177f169d707edf73ee97e64bfc990f0f168a2cf70f80e76cd00cf3",
     "rd/ai-menu.json": "832e74422ed79ce8109c4ddca4f7da500ef0c7fc10f10c04e12ec1f0120d9ff6",
     "rd/ai-toolbar-button.json": "afb9ae5aa45a3710414704747250f5b808317155a51ac923b4d86a47e5cfdaed",
@@ -507,7 +508,8 @@
     "rd/details-static.json": "ce4c4e8629f71f8d81a1ca322ea76fafbb6c49803d854c3bd2d12ee799fa2e7d",
     "rd/details-toolbar-button.json": "8e0423b2672337b40e962748c015e4f578a0398e634cf9d34fca3208a0e5c81f",
     "rd/details.json": "de1baf30c933bec9831a912be0936d5c75164a7b1f6a9505b25159515146e895",
-    "rd/diff.json": "ee88acaa35acac874ac6c13df9d88f9d896d59c53a51e0586f99a8447008ff71",
+    "rd/diff-colors.json": "8055ffa3c3f7e78bb32f31d5c642fd1759832349dfaa273fdfbb7e351ac71229",
+    "rd/diff.json": "46a00d20ef3f8db4e294c284a38817b9496083fc99ad8b6f95da7bf959be27f5",
     "rd/discussion.json": "1cf5beb593b7a7405169ad3a9255284280542ab1f39d3af89f3a7c0137708af6",
     "rd/dnd.json": "f6eadff998e5d3386bb758c9c0930c126f272b9a2558610c65ee3c0168f75ac7",
     "rd/docx-export.json": "0d78ded46706a1b8f378a3190718d23890ad8f101cbadd253a2faa9afa1f7c82",
@@ -609,8 +611,8 @@
     "rd/preview-markdown-demo.json": "a16913bdbbac993e1ed9eeff5ce1f00290fe05c5515b845cd1931b8d228e6d8a",
     "rd/prompt-editor-demo.json": "29a4c922b532ec5d5368bde40b2c7fccee1377c9a8a1173705a1b36567e67db6",
     "rd/prompt-editor.json": "189c4ef6570bc2c51fafe5a8540756434eb6f5c7c0e5d3022565b0c24b80e07e",
-    "rd/registry.json": "ddee42d69c6232a485e6c4467f4c02d6d8a220b88047437e81bef228af6124f4",
-    "rd/remote-cursor-overlay.json": "504de875366a46a4a39853983084691393fbab04e121cefe102ab60bda2c923f",
+    "rd/registry.json": "c7980a0d50b46047385d361d54494ca0569fc015144d92997e9b73a72e888eb3",
+    "rd/remote-cursor-overlay.json": "962afc57226f90c40fbf22c82120feb5a8174c24643814d986da33dd98030459",
     "rd/resize-handle.json": "3eaa0af0ae458283d8b5ea22560692668a9bfafbc0b5b1254081310e82b0e7e3",
     "rd/select-editor-demo.json": "4abada5830b42a7429033a7cfa1c60f598628a71fc70e395cc725a847c56a406",
     "rd/select-editor.json": "dee05a27cf41f8109387e81796b92aa729e2062bb0fbeea04beeebfc0c5b510b",
@@ -647,7 +649,7 @@
     "rd/use-mounted.json": "be95a23d5c78e90277cecc10c6ae626001ade3386ae360451fe7941a3cf1755a",
     "rd/use-object-url.json": "4e14a2a767649ed8d68f2c397fb9335edeeeee1556aab45942bf5e80436804b6",
     "rd/use-visible-anchor.json": "6a1fc3d43c6bea1aff70bbb8d33ba4d6efc1570d7caa9a6148b826a6f0300382",
-    "rd/version-history-demo.json": "c9799a0f61ee29963171968b907a306b799a411b18151650291c1168f74f2f89"
+    "rd/version-history-demo.json": "1ada4d618a98beb55164f545f062d78a8f854364b5f5bccc6788faac6bcb3bcc"
   },
   "shadcnStyleCommit": "bfa64ff4d1cb7317d2403ecb176df6826d4caffc"
 }

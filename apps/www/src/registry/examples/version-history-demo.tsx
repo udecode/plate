@@ -72,7 +72,7 @@ function VersionDiff({
 
   if (result && result.after === after && result.error) {
     return (
-      <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-950">
+      <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-foreground">
         {result.error}
       </p>
     );

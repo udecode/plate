@@ -1,5 +1,5 @@
 {
-  "generation": "9a453010c55949766972a8e8782c93f43707c39837de8ee6043dda13127cc956",
+  "generation": "9465ddeca35f609de22ac14ef0946ea604658f241ee25fcfc624ed63aa66066b",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -89,10 +89,9 @@
         },
         {
           "dependencies": [
-            "platejs/diff",
+            "platejs",
             "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.",
           "files": [
@@ -111,6 +110,7 @@
           "title": "Diff",
           "type": "registry:component",
           "registryDependencies": [
+            "@plate/diff-colors",
             "button"
           ]
         },
@@ -4926,6 +4926,23 @@
           "type": "registry:lib"
         },
         {
+          "cssVars": {
+            "dark": {
+              "editor-insert": "oklch(0.765 0.177 163.223)"
+            },
+            "light": {
+              "editor-insert": "oklch(0.508 0.118 165.612)"
+            },
+            "theme": {
+              "color-editor-delete": "var(--editor-delete, var(--destructive))",
+              "color-editor-insert": "var(--editor-insert)"
+            }
+          },
+          "files": [],
+          "name": "diff-colors",
+          "type": "registry:lib"
+        },
+        {
           "dependencies": [
             "@floating-ui/react",
             "platejs",
@@ -7777,10 +7794,9 @@
         },
         {
           "dependencies": [
-            "platejs/diff",
+            "platejs",
             "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.",
           "files": [
@@ -7799,6 +7815,7 @@
           "title": "Diff",
           "type": "registry:component",
           "registryDependencies": [
+            "@plate/diff-colors",
             "button"
           ]
         },
@@ -12608,6 +12625,23 @@
           },
           "files": [],
           "name": "suggestion-colors",
+          "type": "registry:lib"
+        },
+        {
+          "cssVars": {
+            "dark": {
+              "editor-insert": "oklch(0.765 0.177 163.223)"
+            },
+            "light": {
+              "editor-insert": "oklch(0.508 0.118 165.612)"
+            },
+            "theme": {
+              "color-editor-delete": "var(--editor-delete, var(--destructive))",
+              "color-editor-insert": "var(--editor-insert)"
+            }
+          },
+          "files": [],
+          "name": "diff-colors",
           "type": "registry:lib"
         },
         {

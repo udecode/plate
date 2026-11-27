@@ -2,6 +2,29 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-27-diff-and-cursor-colors",
+      "href": "/registry/changelog/2026-11-27-diff-and-cursor-colors.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Give diffs theme-aware dark-mode tokens and pick readable remote cursor labels",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "diff-colors",
+        "diff",
+        "version-history-demo",
+        "remote-cursor-overlay"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-field-condition-targets",
       "href": "/registry/changelog/2026-11-27-field-condition-targets.json",
       "status": "draft",

@@ -97,13 +97,13 @@ for (const item of REGISTRY_COLOR_ITEMS) {
   for (const [key, value] of Object.entries(theme)) {
     readTheme[key] = value;
     const token = key.startsWith('color-') ? key.slice(6) : null;
-    const [read, extra] = varReads(value);
+    const [read] = varReads(value);
     if (
       token &&
       !(token in light) &&
       !(token in dark) &&
-      !extra &&
-      read?.name === `--${token}` &&
+      read?.text === value.trim() &&
+      read.name === `--${token}` &&
       read.fallback !== undefined
     ) {
       FALLBACK_TOKENS.set(token, { expected: value, fallback: read.fallback });

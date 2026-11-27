@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "diff-colors",
+  "files": [],
+  "cssVars": {
+    "theme": {
+      "color-editor-delete": "var(--editor-delete, var(--destructive))",
+      "color-editor-insert": "var(--editor-insert)"
+    },
+    "light": {
+      "editor-insert": "oklch(0.508 0.118 165.612)"
+    },
+    "dark": {
+      "editor-insert": "oklch(0.765 0.177 163.223)"
+    }
+  },
+  "type": "registry:lib"
+}

@@ -1,0 +1,26 @@
+---
+id: 2026-11-27-diff-and-cursor-colors
+date: 2026-11-27
+status: draft
+kind: new
+summary: 'Give diffs theme-aware dark-mode tokens and pick readable remote cursor labels'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-diff-colors-item","kind":"new","migrationNotes":["To customize insert colors, edit `--editor-insert` in `:root` and `.dark`. Delete colors follow `--destructive` unless you set `--editor-delete`. Re-adding `@plate/diff` or `@plate/diff-colors` alone keeps your edits."]} -->
+
+- **`diff-colors`**: Add `--editor-insert` with light and dark values and Tailwind colors `editor-insert` and `editor-delete` (falling back to `--destructive`).
+
+<!-- entry: {"id":"2026-11-27-diff-dark-mode","kind":"behavior","migrationNotes":["A `diff` component copied before this change keeps fixed emerald and red classes. Add `diff` again with `shadcn add --overwrite`, which replaces local edits to that file."]} -->
+
+- **`diff`**: Paint insert and delete panels, marks, titles, and property cards with `editor-insert` and `editor-delete` tokens, add dark-mode styling to warning and conflict cards, and remove the invalid `platejs/diff` package dependency.
+
+<!-- entry: {"id":"2026-11-27-version-history-demo-error","kind":"fix","migrationNotes":[]} -->
+
+- **`version-history-demo`**: Style the comparison error banner with `destructive` and `foreground` tokens so it stays readable in dark mode.
+
+<!-- entry: {"id":"2026-11-27-remote-cursor-contrast","kind":"behavior","migrationNotes":["A `remote-cursor-overlay` copied before this change always uses white label text. Add `remote-cursor-overlay` again with `shadcn add --overwrite`, which replaces local edits to that file."]} -->
+
+- **`remote-cursor-overlay`**: Pick black or white cursor label text for whichever has higher contrast against each peer's color while keeping remote selections at 20 % opacity.

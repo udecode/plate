@@ -40,7 +40,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs/diff'],
+    dependencies: ['platejs'],
     description:
       'Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.',
     files: [{ path: 'components/editor/diff.tsx', type: 'registry:component' }],

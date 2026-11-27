@@ -96,4 +96,21 @@ export const registryStyles: RegistryItem[] = [
     name: 'suggestion-colors',
     type: 'registry:lib',
   },
+  {
+    cssVars: {
+      dark: {
+        'editor-insert': 'oklch(0.765 0.177 163.223)',
+      },
+      light: {
+        'editor-insert': 'oklch(0.508 0.118 165.612)',
+      },
+      theme: {
+        'color-editor-delete': 'var(--editor-delete, var(--destructive))',
+        'color-editor-insert': 'var(--editor-insert)',
+      },
+    },
+    files: [],
+    name: 'diff-colors',
+    type: 'registry:lib',
+  },
 ];

@@ -1,6 +1,39 @@
 {
   "schemaVersion": 1,
   "components": {
+    "diff-colors": ["2026-11-27-diff-and-cursor-colors"],
+    "diff": [
+      "2026-11-27-diff-and-cursor-colors",
+      "2026-11-23-fix-diff-paragraph-text",
+      "2026-11-20-fix-reduced-motion-scroll",
+      "2026-11-17-cn-package",
+      "2026-09-15-structural-diff"
+    ],
+    "version-history-demo": [
+      "2026-11-27-diff-and-cursor-colors",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-07-editor-user",
+      "2026-09-15-structural-diff",
+      "2026-08-31-inline-component-props",
+      "2026-08-20-format-version-history-values",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite"
+    ],
+    "remote-cursor-overlay": [
+      "2026-11-27-diff-and-cursor-colors",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-floating-rect-hides-clipped-text",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-14-collaboration-plugin-factory",
+      "2026-09-04-yjs-cursor-presentation",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-24-collaboration-runtime",
+      "2025-11-20-biome-ultracite"
+    ],
     "field": [
       "2026-11-27-field-condition-targets",
       "2026-11-26-suggestion-colors",
@@ -427,12 +460,6 @@
     "field-toolbar-button": [
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
-    ],
-    "diff": [
-      "2026-11-23-fix-diff-paragraph-text",
-      "2026-11-20-fix-reduced-motion-scroll",
-      "2026-11-17-cn-package",
-      "2026-09-15-structural-diff"
     ],
     "turn-into-toolbar-button": [
       "2026-11-23-fix-toolbar-menu-checks",
@@ -924,19 +951,6 @@
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
-    ],
-    "remote-cursor-overlay": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-floating-rect-hides-clipped-text",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-14-collaboration-plugin-factory",
-      "2026-09-04-yjs-cursor-presentation",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-24-collaboration-runtime",
-      "2025-11-20-biome-ultracite"
     ],
     "settings-dialog": [
       "2026-11-19-rtl-editor-ui",
@@ -1611,16 +1625,6 @@
       "2026-09-13-suggestion-examples"
     ],
     "lint-demo": ["2026-10-13-lint"],
-    "version-history-demo": [
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-07-editor-user",
-      "2026-09-15-structural-diff",
-      "2026-08-31-inline-component-props",
-      "2026-08-20-format-version-history-values",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-12-canonical-node-props",
-      "2025-11-20-biome-ultracite"
-    ],
     "list-static": [
       "2026-10-12-fix-list-import-export",
       "2026-10-11-fix-bullet-list-style",

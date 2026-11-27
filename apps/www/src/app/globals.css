@@ -64,6 +64,8 @@
   --color-selection-foreground: var(--selection-foreground);
 
   --color-editor-primary: var(--editor-primary, var(--primary));
+  --color-editor-insert: var(--editor-insert);
+  --color-editor-delete: var(--editor-delete, var(--destructive));
   --color-editor-suggestion-1: var(--editor-suggestion-1);
   --color-editor-suggestion-2: var(--editor-suggestion-2);
   --color-editor-suggestion-3: var(--editor-suggestion-3);
@@ -139,6 +141,8 @@
 
   --highlight: oklch(0.852 0.199 91.936); /* Yellow 400 */
 
+  --editor-insert: oklch(0.508 0.118 165.612);
+
   --editor-suggestion-1: oklch(0.432 0.095 166.913);
   --editor-suggestion-2: oklch(0.432 0.232 292.759);
   --editor-suggestion-3: oklch(0.443 0.11 240.79);
@@ -204,6 +208,8 @@
   --selection-foreground: oklch(0.205 0 0);
 
   --highlight: oklch(0.852 0.199 91.936); /* Yellow 400 */
+
+  --editor-insert: oklch(0.765 0.177 163.223);
 
   --editor-suggestion-1: oklch(0.845 0.143 164.978);
   --editor-suggestion-2: oklch(0.811 0.111 293.571);
