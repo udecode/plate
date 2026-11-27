@@ -2975,8 +2975,14 @@ export const createEditorSchema = <V extends Value = Value>(
     openAncestorBoundary = false,
     validationLocation?: EditorSchemaValidationLocation,
     carried?: (key: string) => boolean,
-    requireReservedId = true
+    validationOptions?: Readonly<{
+      requireCanonicalDefaults?: boolean;
+      requireReservedId?: boolean;
+    }>
   ) => {
+    const requireCanonicalDefaults =
+      validationOptions?.requireCanonicalDefaults ?? true;
+    const requireReservedId = validationOptions?.requireReservedId ?? true;
     const output: Record<string, unknown> = {};
     const canonicalizeProperty = (
       key: string,
@@ -3095,36 +3101,38 @@ export const createEditorSchema = <V extends Value = Value>(
       }
     }
 
-    fillDefaultedProperties(
-      schema,
-      placement,
-      context,
-      output,
-      (property, key) => {
-        if (validationLocation) {
-          throw createEditorSchemaValidationError(
-            'missing-property',
-            `Editor ${placement} requires canonical property "${key}".`,
-            validationLocation,
-            {
-              property: {
-                candidates: [property],
-                key,
-                placement,
-              },
-            }
-          );
-        }
+    if (!validationLocation || requireCanonicalDefaults) {
+      fillDefaultedProperties(
+        schema,
+        placement,
+        context,
+        output,
+        (property, key) => {
+          if (validationLocation) {
+            throw createEditorSchemaValidationError(
+              'missing-property',
+              `Editor ${placement} requires canonical property "${key}".`,
+              validationLocation,
+              {
+                property: {
+                  candidates: [property],
+                  key,
+                  placement,
+                },
+              }
+            );
+          }
 
-        return property.descriptor.generate
-          ? canonicalizeProperty(
-              key,
-              property,
-              generatePropertyValue(property, placement)
-            )
-          : property.descriptor.default;
-      }
-    );
+          return property.descriptor.generate
+            ? canonicalizeProperty(
+                key,
+                property,
+                generatePropertyValue(property, placement)
+              )
+            : property.descriptor.default;
+        }
+      );
+    }
 
     if (reservedId && !Object.hasOwn(output, 'id')) {
       if (validationLocation) {
@@ -4485,8 +4493,11 @@ export const createEditorSchema = <V extends Value = Value>(
       [],
       'text',
       parent ? [parent, ...(options.ancestors ?? [])] : options.ancestors
-    )
+    ),
+    validationOptions?: Readonly<{ requireCanonicalDefaults?: boolean }>
   ) => {
+    const requireCanonicalDefaults =
+      validationOptions?.requireCanonicalDefaults ?? true;
     const schema = getDeclarativeSchema();
 
     if (!schema) return;
@@ -4567,9 +4578,10 @@ export const createEditorSchema = <V extends Value = Value>(
           continue;
         }
         const hasCanonicalDefault =
-          typeof property.descriptor.generate === 'function' ||
-          (Object.hasOwn(property.descriptor, 'default') &&
-            !property.descriptor.omitDefault);
+          requireCanonicalDefaults &&
+          (typeof property.descriptor.generate === 'function' ||
+            (Object.hasOwn(property.descriptor, 'default') &&
+              !property.descriptor.omitDefault));
 
         if (!property.descriptor.required && !hasCanonicalDefault) continue;
 
@@ -4634,8 +4646,12 @@ export const createEditorSchema = <V extends Value = Value>(
     ancestors: readonly Element[],
     path: readonly number[],
     openAncestorBoundary = false,
-    requireReservedId = true
+    validationOptions?: Readonly<{
+      requireCanonicalDefaults?: boolean;
+      requireReservedId?: boolean;
+    }>
   ) => {
+    const requireReservedId = validationOptions?.requireReservedId ?? true;
     const location = toSchemaValidationLocation(
       root,
       path,
@@ -4651,7 +4667,8 @@ export const createEditorSchema = <V extends Value = Value>(
           ancestors: ancestors.slice(1),
           root,
         },
-        location
+        location,
+        validationOptions
       );
 
       return null;
@@ -4706,7 +4723,7 @@ export const createEditorSchema = <V extends Value = Value>(
       openAncestorBoundary,
       location,
       undefined,
-      requireReservedId
+      validationOptions
     );
 
     return element;
@@ -4791,7 +4808,10 @@ export const createEditorSchema = <V extends Value = Value>(
     parentPath: readonly number[],
     openAncestorBoundary = false,
     validated?: (node: Descendant) => boolean,
-    requireReservedId = true
+    validationOptions?: Readonly<{
+      requireCanonicalDefaults?: boolean;
+      requireReservedId?: boolean;
+    }>
   ): void => {
     children.forEach((node, index) => {
       if (validated?.(node)) return;
@@ -4804,7 +4824,7 @@ export const createEditorSchema = <V extends Value = Value>(
         ancestors,
         path,
         openAncestorBoundary,
-        requireReservedId
+        validationOptions
       );
 
       if (NodeApi.isText(node)) return;
@@ -4877,7 +4897,7 @@ export const createEditorSchema = <V extends Value = Value>(
         path,
         openAncestorBoundary,
         undefined,
-        requireReservedId
+        validationOptions
       );
     });
   };
@@ -4897,7 +4917,7 @@ export const createEditorSchema = <V extends Value = Value>(
         [],
         true,
         undefined,
-        false
+        { requireReservedId: false }
       );
     }
   };
@@ -5393,7 +5413,7 @@ export const createEditorSchema = <V extends Value = Value>(
         [],
         false,
         validated ? (node) => validated.get(node) === root : undefined,
-        false
+        { requireReservedId: false }
       );
       if (content) {
         validateDeclarativeRootContent(root, children, content, schema);
@@ -6163,7 +6183,7 @@ export const createEditorSchema = <V extends Value = Value>(
         [],
         false,
         undefined,
-        false
+        { requireCanonicalDefaults: false, requireReservedId: false }
       );
       if (content) {
         validateDeclarativeRootContent(root, children, content, declarative);
