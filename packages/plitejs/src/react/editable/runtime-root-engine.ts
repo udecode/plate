@@ -6,7 +6,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 
-import { readLatestShownWritableRootView } from '../../core/root-target';
+import { getLastCommit } from '../../core/public-state';
 import type { DOMRange } from '../../dom';
 import { IS_READ_ONLY } from '../../dom/internal';
 import type {
@@ -20,7 +20,10 @@ import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { usePendingInsertionMarksEffect } from './composition-state';
 import { useDecorationDOMRepairBridge } from './decoration-repair-bridge';
-import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
+import {
+  getMountedEditableDOMRuntimes,
+  isHistoryReplayInFlight,
+} from './editable-dom-runtime';
 import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
@@ -28,7 +31,6 @@ import type {
   EditablePointerSelectionEndHandler,
   NodeSelectionFocus,
 } from './editable-dom-runtime';
-import { getModelOwnedHistoryFocusRepair } from './history-focus';
 import { useEditableRootRef } from './input-router';
 import {
   beginEditableNativeSelectionImport,
@@ -38,8 +40,11 @@ import {
 import { useEditableRootCommitWakeup } from './root-selector-sources';
 import { useRuntimeAndroidEngine } from './runtime-android-engine';
 import {
+  getEditorRuntimeOwner,
+  getInternalDocumentChangeRootKeys,
   registerEditorSurface,
   subscribeEditorViewState,
+  toInternalRoot,
 } from './runtime-editor-api';
 import { useEditableEventRuntime } from './runtime-event-engine';
 import { useRuntimeKernelTraceEngine } from './runtime-kernel-trace';
@@ -50,6 +55,7 @@ import { useEditableRootSelectionImport } from './runtime-root-selection-import'
 import { useEditableRootRuntimeState } from './runtime-root-state';
 import { setEditableModelSelectionPreference } from './selection-controller';
 import { useEditableSelectionReconciler } from './selection-reconciler';
+import { shouldSkipDOMSelection } from './selection-side-effect-policy';
 
 type EditableRootCallbackProps = Pick<
   ComponentPropsWithRef<'div'>,
@@ -184,7 +190,18 @@ export const useEditableRootRuntime = ({
     const root = rootRef.current;
 
     if (!root || !autoFocus || (!readOnlyProp && readOnly)) return;
+    const lastCommit = getLastCommit(getEditorRuntimeOwner(editor));
+    const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
+    const changedRoots = lastCommit
+      ? getInternalDocumentChangeRootKeys(lastCommit.changes)
+      : [];
+    const replayCausedMount =
+      !!lastCommit &&
+      lastCommit.tags.includes('historic') &&
+      (changedRoots.length === 0 || changedRoots.includes(viewRoot));
+
     if (!runtime.claimAutoFocus()) return;
+    if (replayCausedMount) return;
 
     if (readOnlyProp) {
       root.focus();
@@ -224,6 +241,10 @@ export const useEditableRootRuntime = ({
       activeElement !== root &&
       !(activeElement && root.contains(activeElement))
     ) {
+      if (isHistoryReplayInFlight(editor) || shouldSkipDOMSelection(editor)) {
+        return;
+      }
+
       // A read-only root takes no focus unless given a tabIndex, so its
       // pointer selection is the only sign it owns the page selection. Its
       // root is not contenteditable, so writing that selection back cannot
@@ -254,38 +275,6 @@ export const useEditableRootRuntime = ({
     runtime,
     scrollSelectionIntoView,
     syncDOMSelectionToEditor,
-  });
-  runtime.updateSelectionFocusHandler((policy, replayChanges) => {
-    if (policy !== 'restore-root') return;
-
-    const next = getModelOwnedHistoryFocusRepair({
-      editor,
-      getActiveContentRootOwner: pliteRuntimeContext?.getActiveContentRootOwner,
-      getContentRootOwnerViewEditor:
-        pliteRuntimeContext?.getContentRootOwnerViewEditor,
-      getMountedViewEditor: pliteRuntimeContext?.getMountedContentViewEditor,
-      getWritableViewEditor: (root) =>
-        runtime.historyScope
-          ? (readLatestShownWritableRootView(
-              runtime.historyScope.owner,
-              runtime.historyScope.presentation,
-              root
-            ) as ReactRuntimeEditor | null)
-          : null,
-      replayChanges,
-    });
-    if (!next.repair) return;
-    if (next.focusEditor) {
-      repairRuntime.requestEditableRepair(next.repair, {
-        focusEditor: next.focusEditor,
-      });
-    } else if (
-      !runtime.focusNodeSelectionElement() &&
-      !runtime.externalText.focusSelection()
-    ) {
-      runtime.rootElement?.focus({ preventScroll: true });
-      runtime.requestSelectionExportAfterDOMCommit();
-    }
   });
   useDecorationDOMRepairBridge({
     requestEditableRepair: repairRuntime.requestEditableRepair,

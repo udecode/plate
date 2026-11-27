@@ -102,6 +102,7 @@ type HistoryStepViews = Readonly<{
   records: WeakMap<object, HistoryStepSites>;
   roots: WeakMap<ViewKey, RootKey>;
   slots: WeakMap<ViewKey, HistoryStepSlot>;
+  unmounted: Map<symbol, Map<string, number>>;
 }>;
 
 // Core credits an update to the view inside the React view editor a provider
@@ -553,6 +554,79 @@ const pageRootOf = (
   return undefined;
 };
 
+const followSlot = (
+  views: HistoryStepViews,
+  runtime: Editor,
+  site: HistoryStepSite,
+  commit: EditorCommit | null,
+  targetRoot: RootKey
+): HistoryStepSite | null => {
+  if (site.hops.length === 0) return null;
+
+  const pageRoot = pageRootOf(views, site.page);
+
+  if (pageRoot === undefined) return null;
+
+  const owner = getEditorRuntimeOwner(runtime);
+  let oldRoot = pageRoot;
+  let currentRoot = pageRoot;
+  const nextHops: HistoryStepHop[] = [];
+  let matchedHops: HistoryStepHop[] | null = null;
+
+  for (const hop of site.hops) {
+    let nextHop: HistoryStepHop | null = null;
+    const direct = readNodeEntryInRoot(
+      owner,
+      currentRoot,
+      hop.owner as NodeKey
+    );
+    const directRoot = direct ? readChildRoot(direct.node, hop.slot) : null;
+
+    if (direct && directRoot) {
+      nextHop = { owner: direct.key, root: directRoot, slot: hop.slot };
+    } else if (currentRoot !== oldRoot && commit) {
+      const oldEntry = readBeforeNodeInRoot(
+        commit,
+        oldRoot,
+        hop.owner as NodeKey
+      );
+      const afterChildren = getEditorDocumentRoots(owner)[currentRoot];
+      const byPath =
+        oldEntry &&
+        afterChildren &&
+        samePathSiblingShape(oldEntry.children, afterChildren, oldEntry.path)
+          ? readNodeEntryInRoot(owner, currentRoot, oldEntry.path)
+          : null;
+      const byPathRoot =
+        byPath && byPath.node.type === oldEntry?.node.type
+          ? readChildRoot(byPath.node, hop.slot)
+          : null;
+
+      if (byPath && byPathRoot) {
+        nextHop = { owner: byPath.key, root: byPathRoot, slot: hop.slot };
+      }
+    }
+
+    if (!nextHop) break;
+    nextHops.push(nextHop);
+    if (nextHop.root === targetRoot) matchedHops = [...nextHops];
+    oldRoot = hop.root;
+    currentRoot = nextHop.root;
+  }
+
+  const finalHops = currentRoot === targetRoot ? nextHops : matchedHops;
+
+  if (!finalHops || finalHops.length === 0) return null;
+
+  const followed: HistoryStepSite = {
+    hops: finalHops,
+    page: site.page,
+    root: targetRoot,
+  };
+
+  return rendersAtMostOnce(views, followed) ? followed : null;
+};
+
 const followSiteAfterCommit = (
   runtime: Editor,
   commit: EditorCommit,
@@ -794,9 +868,26 @@ export const createHistoryStepViews = (runtime: Editor) => {
     records: new WeakMap(),
     roots: new WeakMap(),
     slots: new WeakMap(),
+    unmounted: new Map(),
   };
+  const owner = getEditorRuntimeOwner(runtime);
+  const slotKey = (ownerId: string, slot: string) => `${ownerId}\u0000${slot}`;
 
   return Object.freeze({
+    didUnmountAtVersion: (site: HistoryStepSite, version: number) => {
+      const pageRecords = views.unmounted.get(site.page);
+
+      if (!pageRecords || site.hops.length === 0) return false;
+
+      return site.hops.some(
+        (hop) => pageRecords.get(slotKey(hop.owner, hop.slot)) === version
+      );
+    },
+    followSlot: (
+      site: HistoryStepSite,
+      commit: EditorCommit | null,
+      targetRoot: RootKey
+    ) => followSlot(views, runtime, site, commit, targetRoot),
     isSiteBound: (site: HistoryStepSite) => isSiteBound(views, runtime, site),
     placeOf: (pane: EditableDOMRuntime) => placeOf(views, pane.editor, pane),
     registerPane: (pane: EditableDOMRuntime) => {
@@ -808,6 +899,22 @@ export const createHistoryStepViews = (runtime: Editor) => {
       schedulePaneNotify(views);
 
       return () => {
+        const place = placeOf(views, pane.editor, pane);
+
+        if (place && place.site.hops.length > 0 && !place.focusOwned) {
+          const lastHop = place.site.hops.at(-1);
+
+          if (lastHop) {
+            const pageRecords =
+              views.unmounted.get(place.site.page) ?? new Map<string, number>();
+
+            pageRecords.set(
+              slotKey(lastHop.owner, lastHop.slot),
+              owner.read.runtime.snapshot().version
+            );
+            views.unmounted.set(place.site.page, pageRecords);
+          }
+        }
         panes.delete(pane);
         if (panes.size === 0 && views.panes.get(key) === panes) {
           views.panes.delete(key);
@@ -816,7 +923,13 @@ export const createHistoryStepViews = (runtime: Editor) => {
       };
     },
     registerSlot: (view: Editor, slot: HistoryStepSlot) => {
-      views.slots.set(keyOf(view), slot);
+      const key = keyOf(view);
+      const previous = views.slots.get(key);
+
+      views.slots.set(key, slot);
+      if (previous && previous.nodeSelectionFocus !== slot.nodeSelectionFocus) {
+        schedulePaneNotify(views);
+      }
     },
     registerView: (view: Editor, root: RootKey) => {
       const key = keyOf(view);

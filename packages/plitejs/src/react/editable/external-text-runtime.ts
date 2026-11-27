@@ -52,10 +52,12 @@ import {
   dispatchCommand,
   editorCommands,
   getEditorRuntimeOwner,
+  getEditorSelectionRoot,
   getSnapshot,
   setEditorFocused,
   toInternalRoot,
 } from './runtime-editor-api';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 type Binding = NonNullable<ReturnType<typeof readExternalTextBinding>>;
 type Entry = {
@@ -616,7 +618,7 @@ export class ExternalTextRuntime {
     return [...this.entries.values()].some((entry) => holdsFocusIn(entry.host));
   }
 
-  focusSelection() {
+  focusSelection({ allowFocus = true }: { allowFocus?: boolean } = {}) {
     const snapshot = getSnapshot(this.runtime.editor);
     if (
       !RangeApi.isRange(snapshot.selection) ||
@@ -636,11 +638,11 @@ export class ExternalTextRuntime {
     const { view } = entry;
     const active = focusedElementOnPage(entry.host);
     if (!containsShadowAware(this.runtime.rootElement, active)) return false;
-    if (
-      !containsShadowAware(entry.host, active) &&
-      !this.call(entry, 'focus', () => view.focus())
-    ) {
-      return false;
+    if (!containsShadowAware(entry.host, active)) {
+      if (!allowFocus) return true;
+      if (!this.call(entry, 'focus', () => view.focus())) {
+        return false;
+      }
     }
     if (!holdsFocusIn(entry.host)) {
       return false;
@@ -766,7 +768,13 @@ export class ExternalTextRuntime {
         return;
       }
       try {
-        this.runtime.restoreSelectionFocus();
+        if (!this.runtime.connected) return;
+        const owner = getEditorRuntimeOwner(this.runtime.editor);
+        const targetRoot = readRuntimeSelection(owner)
+          ? getEditorSelectionRoot(this.runtime.editor)
+          : toInternalRoot(this.runtime.editor.read.view.root());
+
+        this.runtime.resolveRootRuntime(targetRoot)?.focusTarget();
       } catch (error) {
         reportEditorLifecycleError({
           cause: error,

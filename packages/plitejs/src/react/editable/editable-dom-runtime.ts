@@ -19,9 +19,15 @@ import { reportEditorLifecycleError } from '../../core/lifecycle-error';
 import { getInstalledPlugin } from '../../core/plugin';
 import {
   type EditorHistoryReplayReceipt,
+  getMutationVersion,
   readEditorHistoryReplayReceipt,
   withUpdateTagContext,
 } from '../../core/public-state';
+import {
+  markRootViewUsed,
+  readLatestShownWritableRootView,
+  readRootContentTarget,
+} from '../../core/root-target';
 import {
   getPlacementGeneration,
   placedSince,
@@ -55,7 +61,10 @@ import {
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
-import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
+import {
+  focusEditableElement,
+  watchFocusSuperseded,
+} from '../../dom/plugin/dom-editor';
 import {
   focusedElementOnPage,
   isElementFocused,
@@ -88,6 +97,7 @@ import {
   type AndroidCompositionEndReason,
   finishAndroidComposition,
 } from './android-composition';
+import { isElementDrawn } from './caret-engine';
 import { CompositionLease } from './composition-lease';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
@@ -112,12 +122,17 @@ import {
 } from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
 import type { DeferredMutation } from './model-input-strategy';
-import { type HistoryGateScope, readHistoryGate } from './mutation-history';
+import {
+  type HistoryGateScope,
+  readHistoryGate,
+  shouldForceRenderAfterModelOwnedHistory,
+} from './mutation-history';
 import { PressFence } from './press-fence';
 import { RenderContractMonitor } from './render-contract-monitor';
 import {
   getEditorRuntimeOwner,
   setEditorComposing,
+  toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { importUnreadPressCaret } from './runtime-selection-engine';
@@ -143,15 +158,11 @@ export type HistoryRootCheck = 'check' | 'skip';
 
 export type NodeSelectionFocus = RefObject<HTMLElement | null>;
 
-type SelectionFocusHandler = (
-  policy: EditorHistoryFocusPolicy,
-  replayChanges: EditorCommit['changes'] | null
-) => void;
-
 export type HistoryReplayOrigin = 'control' | 'view';
 
 export type EditableHistoryReplay = Readonly<{
   changes: EditorCommit['changes'] | null;
+  commit: EditorCommit | null;
   direction: 'redo' | 'undo';
   focusPolicy: EditorHistoryFocusPolicy;
   focusedView: EditableDOMRuntime;
@@ -221,6 +232,10 @@ const EDITABLE_FOCUS_SUBSCRIBERS_BY_RUNTIME = new WeakMap<
   object,
   Set<() => void>
 >();
+const ACTIVE_HISTORY_REPLAYS = new WeakMap<object, number>();
+
+export const isHistoryReplayInFlight = (editor: ReactRuntimeEditor) =>
+  (ACTIVE_HISTORY_REPLAYS.get(getEditorRuntimeOwner(editor)) ?? 0) > 0;
 const MODEL_SELECTION_DOM_PREFERENCE_TTL_MS = 5000;
 const MODIFIER_KEYS: ReadonlySet<string> = new Set([
   'Alt',
@@ -394,16 +409,22 @@ export const subscribeEditableRuntimeFocus = <
   };
 };
 
+const isRuntimeShown = (element: HTMLElement) =>
+  !element.closest('[hidden], [inert]') &&
+  (typeof element.checkVisibility !== 'function' ||
+    element.checkVisibility()) &&
+  isElementDrawn(element);
+
 const watchReplay = (editor: ReactRuntimeEditor, targetDocument: Document) => {
   const stopPlacements = watchFirstPlacement(editor);
-  const snapshotCommits = new Map<number, EditorCommit['changes']>();
+  const snapshotCommits = new Map<number, EditorCommit>();
   let interacted = false;
   const interact = () => {
     interacted = true;
   };
   const stopCommits = editor.subscribeCommit((commit) => {
     if (commit.changed.hasAny('snapshot')) {
-      snapshotCommits.set(commit.version, commit.changes);
+      snapshotCommits.set(commit.version, commit);
     }
   });
 
@@ -419,6 +440,8 @@ const watchReplay = (editor: ReactRuntimeEditor, targetDocument: Document) => {
 
     return {
       changes: (receipt: EditorHistoryReplayReceipt) =>
+        snapshotCommits.get(receipt.version)?.changes ?? null,
+      commit: (receipt: EditorHistoryReplayReceipt) =>
         snapshotCommits.get(receipt.version) ?? null,
       interrupted: (receipt: EditorHistoryReplayReceipt) =>
         interacted ||
@@ -498,7 +521,6 @@ export class EditableDOMRuntime {
     globalThis.Node,
     () => void
   >();
-  private selectionFocusHandler: SelectionFocusHandler = () => {};
 
   private providerHistoryFocus:
     | ((replay: EditableHistoryReplay) => void)
@@ -800,17 +822,25 @@ export class EditableDOMRuntime {
 
     if (!element?.isConnected || !readNodeSelectionFocus(editor)) return false;
 
+    const before = focusedElementOnPage(element);
     const superseded = watchFocusSuperseded(editor, element);
     const receipt = getPlacementGeneration(editor);
+    let receivedFocus = false;
+    const onFocus = () => {
+      receivedFocus = true;
+    };
 
-    element.focus({ preventScroll: true });
+    element.addEventListener('focus', onFocus, true);
+    try {
+      element.focus({ preventScroll: true });
+    } finally {
+      element.removeEventListener('focus', onFocus, true);
+    }
 
-    const focusHandlerTookOver =
-      superseded() ||
-      placedSince(editor, receipt) ||
-      !isElementFocused(element);
+    const after = focusedElementOnPage(element);
 
-    if (focusHandlerTookOver) return true;
+    if (superseded() || placedSince(editor, receipt)) return true;
+    if (!isElementFocused(element)) return receivedFocus || after !== before;
 
     const target = readNodeSelectionFocus(editor);
 
@@ -1412,15 +1442,173 @@ export class EditableDOMRuntime {
     this.selectionExportAfterDOMCommitHandler = handler;
   }
 
-  updateSelectionFocusHandler(handler: SelectionFocusHandler) {
-    this.selectionFocusHandler = handler;
+  get isHistoryReplayInFlight() {
+    return isHistoryReplayInFlight(this.editorValue);
   }
 
-  restoreSelectionFocus(
-    policy: EditorHistoryFocusPolicy = 'restore-root',
-    replayChanges: EditorCommit['changes'] | null = null
-  ) {
-    if (this.connected) this.selectionFocusHandler(policy, replayChanges);
+  get presentation() {
+    return this.historyScope?.presentation ?? null;
+  }
+
+  resolveRootRuntime(targetRoot: RootKey): EditableDOMRuntime | null {
+    if (!this.connected) return null;
+
+    const currentRoot = toInternalRoot(
+      this.editorValue.read((state) => state.view.root())
+    );
+
+    if (
+      currentRoot === targetRoot &&
+      !this.readOnly &&
+      !this.editorValue.read.view.isReadOnly() &&
+      !!this.rootElement &&
+      isRuntimeShown(this.rootElement)
+    ) {
+      return this;
+    }
+
+    const scope = this.historyScope;
+
+    if (scope) {
+      const pickShownRuntime = (
+        view: ReactRuntimeEditor | null | undefined
+      ) => {
+        if (!view || view.read.view.isReadOnly()) return null;
+
+        return (
+          getMountedEditableDOMRuntimes(view).find(
+            (item) =>
+              Object.is(item.editor, view) &&
+              item.connected &&
+              !item.readOnly &&
+              !!item.rootElement &&
+              isRuntimeShown(item.rootElement)
+          ) ?? null
+        );
+      };
+      const candidate = readRootContentTarget(
+        scope.owner,
+        scope.presentation,
+        targetRoot
+      )?.view as ReactRuntimeEditor | undefined;
+      const latest = readLatestShownWritableRootView(
+        scope.owner,
+        scope.presentation,
+        targetRoot
+      ) as ReactRuntimeEditor | null;
+      const shown =
+        pickShownRuntime(candidate) ??
+        pickShownRuntime(latest) ??
+        getMountedEditableDOMRuntimes(scope.owner as ReactRuntimeEditor).find(
+          (item) =>
+            item.connected &&
+            !item.readOnly &&
+            !item.editor.read.view.isReadOnly() &&
+            (!item.presentation || item.presentation === scope.presentation) &&
+            toInternalRoot(item.editor.read((state) => state.view.root())) ===
+              targetRoot &&
+            !!item.rootElement &&
+            isRuntimeShown(item.rootElement)
+        ) ??
+        null;
+
+      if (shown) return shown;
+
+      const fallbackView =
+        (candidate && !candidate.read.view.isReadOnly() ? candidate : null) ??
+        latest;
+      const fallback = fallbackView
+        ? (getMountedEditableDOMRuntimes(fallbackView).find(
+            (item) =>
+              Object.is(item.editor, fallbackView) &&
+              item.connected &&
+              !item.readOnly
+          ) ?? null)
+        : null;
+
+      if (fallback) return fallback;
+    }
+
+    return !this.readOnly &&
+      !this.editorValue.read.view.isReadOnly() &&
+      !!this.rootElement &&
+      isRuntimeShown(this.rootElement)
+      ? this
+      : null;
+  }
+
+  focusTarget(): boolean {
+    if (!this.connected) return false;
+
+    const root = this.rootElement;
+
+    if (!root) return false;
+
+    const before = focusedElementOnPage(root);
+    const owner = getEditorRuntimeOwner(this.editorValue);
+    const version = getMutationVersion(owner);
+
+    if (this.focusNodeSelectionElement()) {
+      const nodeElement = this.nodeSelectionFocus?.current;
+
+      if (nodeElement && isElementFocused(nodeElement)) {
+        markRootViewUsed(this.editorValue);
+      }
+      return true;
+    }
+
+    const preserveExpandedViewSelection =
+      hasExpandedViewSelection(this.editorValue) &&
+      !shouldForceRenderAfterModelOwnedHistory(this.editorValue);
+
+    if (!preserveExpandedViewSelection) {
+      if (this.externalText.focusSelection()) {
+        markRootViewUsed(this.editorValue);
+        return true;
+      }
+      if (focusedElementOnPage(root) !== before) {
+        return true;
+      }
+    }
+
+    let receivedFocus = false;
+
+    if (before !== root) {
+      const onFocus = () => {
+        receivedFocus = true;
+      };
+
+      root.addEventListener('focus', onFocus, true);
+      try {
+        focusEditableElement(this.editorValue, root);
+      } finally {
+        root.removeEventListener('focus', onFocus, true);
+      }
+    }
+
+    const focused = focusedElementOnPage(root);
+
+    if (focused !== root) {
+      return receivedFocus || focused !== before;
+    }
+
+    markRootViewUsed(this.editorValue);
+
+    if (getMutationVersion(owner) !== version) {
+      return true;
+    }
+    if (!preserveExpandedViewSelection && this.externalText.focusSelection()) {
+      return true;
+    }
+    if (!preserveExpandedViewSelection && focusedElementOnPage(root) !== root) {
+      return true;
+    }
+
+    if (!preserveExpandedViewSelection) {
+      this.requestSelectionExportAfterDOMCommit();
+    }
+
+    return true;
   }
 
   updateProviderHistoryFocus(
@@ -1520,16 +1708,22 @@ export class EditableDOMRuntime {
       };
     }
 
+    const owner = getEditorRuntimeOwner(this.editorValue);
     const run = () => history[direction]();
     const finishWatch = watchReplay(this.editorValue, root.ownerDocument);
     let watched: ReturnType<typeof finishWatch>;
     let result: HistoryOutcome;
 
+    ACTIVE_HISTORY_REPLAYS.set(
+      owner,
+      (ACTIVE_HISTORY_REPLAYS.get(owner) ?? 0) + 1
+    );
+
     try {
       const replayed =
         focusPolicy === 'preserve'
           ? withUpdateTagContext(
-              this.editorValue,
+              owner,
               PLITE_REACT_PRESERVE_SELECTION_TAGS,
               run
             )
@@ -1540,6 +1734,13 @@ export class EditableDOMRuntime {
         ? replayed.settled
         : Promise.resolve(replayed));
     } finally {
+      const remaining = (ACTIVE_HISTORY_REPLAYS.get(owner) ?? 1) - 1;
+
+      if (remaining > 0) {
+        ACTIVE_HISTORY_REPLAYS.set(owner, remaining);
+      } else {
+        ACTIVE_HISTORY_REPLAYS.delete(owner);
+      }
       watched = finishWatch();
     }
 
@@ -1584,6 +1785,7 @@ export class EditableDOMRuntime {
 
     const replay: EditableHistoryReplay = {
       changes: watched.changes(receipt),
+      commit: watched.commit(receipt),
       direction,
       focusPolicy,
       focusedView,
@@ -1595,8 +1797,24 @@ export class EditableDOMRuntime {
     this.observeHistoryReplay(direction, () => {
       if (this.providerHistoryFocus) {
         this.providerHistoryFocus(replay);
-      } else {
-        this.restoreSelectionFocus(focusPolicy, replay.changes);
+      } else if (focusPolicy === 'restore-root') {
+        const externalHolder =
+          origin === 'control'
+            ? (getMountedEditableDOMRuntimes(owner as ReactRuntimeEditor).find(
+                (item) =>
+                  item.connected &&
+                  (!this.presentation ||
+                    !item.presentation ||
+                    item.presentation === this.presentation) &&
+                  item.externalText.holdsFocus()
+              ) ?? null)
+            : null;
+
+        if (externalHolder) {
+          externalHolder.externalText.focusSelection({ allowFocus: false });
+        } else {
+          this.focusTarget();
+        }
       }
     });
     return result;

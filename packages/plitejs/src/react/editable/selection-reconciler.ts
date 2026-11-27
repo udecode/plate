@@ -1269,7 +1269,11 @@ export const useEditableSelectionReconciler = ({
       return undefined;
     }
 
-    if (runtime.externalText.focusSelection()) return undefined;
+    const skipFocus = shouldSkipSelectionFocus(editor);
+
+    if (runtime.externalText.focusSelection({ allowFocus: !skipFocus })) {
+      return undefined;
+    }
 
     if (runtime.shouldDeferCompositionSelectionExport()) {
       return undefined;
@@ -1290,7 +1294,9 @@ export const useEditableSelectionReconciler = ({
     const editorElementForActiveTarget = rootRef.current;
     if (
       !editorElementForActiveTarget ||
-      !canWriteDOMSelection(editorElementForActiveTarget, editor)
+      (skipFocus
+        ? !isElementFocused(editorElementForActiveTarget)
+        : !canWriteDOMSelection(editorElementForActiveTarget, editor))
     ) {
       return undefined;
     }
@@ -1484,7 +1490,11 @@ export const useEditableSelectionReconciler = ({
           coverage: runtime.domCoverage,
           editor,
           exportSelection: (points, modelOwned) => {
-            if (!canWriteDOMSelection(editorElement, editor)) {
+            if (
+              skipFocus
+                ? !isElementFocused(editorElement)
+                : !canWriteDOMSelection(editorElement, editor)
+            ) {
               return;
             }
             if (modelOwned) {
@@ -1642,10 +1652,13 @@ export const useEditableSelectionReconciler = ({
             }
 
             try {
-              const el = ReactEditor.editable(editor);
+              const el = rootRef.current;
 
-              if (!el) return;
-              if (!shouldSkipSelectionFocus(editor)) {
+              if (!el || el !== editable) return;
+              if (shouldSkipSelectionFocus(editor)) {
+                if (!isElementFocused(el)) return;
+              } else {
+                if (!isElementFocused(el)) return;
                 el.focus();
               }
 

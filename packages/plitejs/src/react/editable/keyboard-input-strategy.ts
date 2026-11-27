@@ -56,6 +56,7 @@ import {
   isContentRootKeyAnswered,
   readContentRootAwareSelection,
 } from './content-root-navigation';
+import type { ContentRootOwner } from './content-root-owners';
 import { shouldModelOwnPlainVerticalLargeDocumentPlugin } from './dom-coverage-vertical-selection';
 import {
   type EditableDOMRuntime,
@@ -71,7 +72,6 @@ import {
   type EditableCommand,
   getEditableCommandFromKeyDown,
 } from './editing-kernel';
-import type { HistoryFocusOwnerApi } from './history-focus';
 import {
   type EditableCompositionStateSetter,
   type EditableInputController,
@@ -116,6 +116,14 @@ const keyDownHandled = (
 });
 const keyDownUnhandled = (): EditableKeyDownResult => ({ handled: false });
 
+type SelectionFocusOwnerApi = {
+  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  getContentRootOwnerViewEditor?: (
+    owner: ContentRootOwner
+  ) => ReactRuntimeEditor | null;
+  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
+};
+
 const getSelectionFocusEditor = ({
   editor,
   getActiveContentRootOwner,
@@ -123,7 +131,7 @@ const getSelectionFocusEditor = ({
   getMountedViewEditor,
 }: {
   editor: ReactRuntimeEditor;
-} & HistoryFocusOwnerApi) => {
+} & SelectionFocusOwnerApi) => {
   const selection = readRuntimeSelection(getEditorRuntimeOwner(editor));
   const root = selection
     ? (SelectionApi.root(selection) ?? MAIN_ROOT_KEY)

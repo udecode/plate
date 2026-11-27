@@ -126,6 +126,7 @@ import {
 } from './selection-projected-dom';
 import {
   shouldSkipDOMSelection,
+  shouldSkipSelectionFocus,
   shouldSkipSelectionScroll,
 } from './selection-side-effect-policy';
 import { claimPageSelection } from './unread-press';
@@ -1720,7 +1721,9 @@ export const syncEditableDOMSelectionToEditor = ({
 
   if (!runtime) return;
   if (!claimPageSelection()) return;
-  if (runtime.externalText.focusSelection()) return;
+  const skipFocus = shouldSkipSelectionFocus(editor);
+
+  if (runtime.externalText.focusSelection({ allowFocus: !skipFocus })) return;
   if (runtime.shouldDeferCompositionSelectionExport()) return;
   if (runtime.androidInputManagerRef.current?.hasPendingAction()) return;
   if (
@@ -1792,7 +1795,17 @@ export const syncEditableDOMSelectionToEditor = ({
       return;
     }
 
-    if (!canWriteDOMSelection(editorElement, editor)) {
+    const requireFocused =
+      skipFocus &&
+      (!options?.forceModelExport ||
+        runtime.isHistoryReplayInFlight ||
+        shouldSkipDOMSelection(editor));
+
+    if (
+      requireFocused
+        ? !isElementFocused(editorElement)
+        : !canWriteDOMSelection(editorElement, editor)
+    ) {
       return;
     }
 
@@ -1916,7 +1929,11 @@ export const syncEditableDOMSelectionToEditor = ({
         coverage: runtime.domCoverage,
         editor,
         exportSelection: (points, modelOwned) => {
-          if (!canWriteDOMSelection(editorElement, editor)) {
+          if (
+            requireFocused
+              ? !isElementFocused(editorElement)
+              : !canWriteDOMSelection(editorElement, editor)
+          ) {
             return;
           }
           if (modelOwned) {

@@ -509,6 +509,8 @@ const runHistoricUpdate = <V extends Value>(
     tx.tags.add('skip-dom-selection');
     tx.tags.add('skip-selection-focus');
     tx.tags.add('skip-scroll-into-view');
+  } else {
+    tx.tags.add('skip-selection-focus');
   }
 
   fn();

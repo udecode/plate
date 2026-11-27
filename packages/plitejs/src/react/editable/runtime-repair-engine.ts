@@ -6,7 +6,10 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { createDOMRepairQueue } from './dom-repair-queue';
-import type { EditableDOMRuntime } from './editable-dom-runtime';
+import {
+  type EditableDOMRuntime,
+  isHistoryReplayInFlight,
+} from './editable-dom-runtime';
 import {
   applyEditableRepairRequest,
   type EditableRepairOptions,
@@ -83,6 +86,7 @@ export const useRuntimeRepairEngine = ({
     if (!focusEditor) return;
 
     pendingFocusEditorAfterRenderRef.current = null;
+    if (isHistoryReplayInFlight(focusEditor)) return;
     focusEditableRepairTarget(focusEditor);
   });
 
