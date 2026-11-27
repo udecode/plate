@@ -120,22 +120,30 @@ const firstElementAfter = (element: Element) => {
  */
 export function InkContent({
   children,
+  className,
   sign,
+  style,
 }: WrapContentProps & {
+  className?: string;
   sign: React.ComponentType<{ sign: InkSign }>;
+  style?: React.CSSProperties;
 }) {
   return (
     <>
       {children}
-      <InkLayer sign={sign} />
+      <InkLayer className={className} sign={sign} style={style} />
     </>
   );
 }
 
 function InkLayer({
+  className,
   sign: Sign,
+  style,
 }: {
+  className?: string;
   sign: React.ComponentType<{ sign: InkSign }>;
+  style?: React.CSSProperties;
 }) {
   const editableRef = useEditableRef();
   const view = useEditor();
@@ -438,15 +446,20 @@ function InkLayer({
     layer && !hidden ? stackInkSigns(layer, placed.signs) : undefined
   );
 
+  const activeTool = tool && !readOnly && !hidden ? tool : null;
+
   return (
     <div
+      className={className}
       data-ink-layer=""
+      data-ink-tool={activeTool?.type}
       ref={setLayer}
       style={{
-        cursor: tool ? 'crosshair' : undefined,
+        ...style,
+        cursor: activeTool ? 'var(--ink-cursor, crosshair)' : undefined,
         inset: 0,
         minHeight: placed.bottom,
-        pointerEvents: tool && !readOnly && !hidden ? 'auto' : 'none',
+        pointerEvents: activeTool ? 'auto' : 'none',
         position: 'absolute',
         touchAction: INK_TOUCH_ACTION,
         zIndex: 50,

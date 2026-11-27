@@ -14536,7 +14536,7 @@
           "kind": "function",
           "name": "InkContent",
           "runtime": true,
-          "signature": "declare function InkContent({ children, sign }: WrapContentProps & {\n  sign: React.ComponentType<{\n    sign: InkSign;\n  }>;\n}): React.JSX.Element;",
+          "signature": "declare function InkContent({ children, className, sign, style }: WrapContentProps & {\n  className?: string;\n  sign: React.ComponentType<{\n    sign: InkSign;\n  }>;\n  style?: React.CSSProperties;\n}): React.JSX.Element;",
           "source": null,
           "typeParameters": []
         },
