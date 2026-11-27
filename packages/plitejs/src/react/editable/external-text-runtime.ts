@@ -254,6 +254,8 @@ export class ExternalTextRuntime {
   private decorations: PliteDecorationStore | null = null;
   private focused: Entry | null = null;
   private tabbingBackward: Entry | null = null;
+  private backwardExitedToRoot: Entry | null = null;
+  private disposeBackwardExit: (() => void) | null = null;
   private readonly counters = {
     validationVisits: 0,
     callbackFailures: 0,
@@ -383,8 +385,11 @@ export class ExternalTextRuntime {
             this.runtime.editor,
             entry.elementKey
           );
-          if (current) {
-            this.placeOutside(entry, current, { direction: 'backward' });
+          if (
+            current &&
+            !this.placeOutside(entry, current, { direction: 'backward' })
+          ) {
+            this.holdRootAfterBackwardTab(entry);
           }
         }
         this.tabbingBackward = null;
@@ -646,7 +651,13 @@ export class ExternalTextRuntime {
     const active = focusedElementOnPage(entry.host);
     if (!containsShadowAware(this.runtime.rootElement, active)) return false;
     if (!containsShadowAware(entry.host, active)) {
-      if (!allowFocus) return true;
+      if (
+        !allowFocus ||
+        (this.backwardExitedToRoot === entry &&
+          active === this.runtime.rootElement)
+      ) {
+        return true;
+      }
       if (!this.call(entry, 'focus', () => view.focus())) {
         return false;
       }
@@ -660,7 +671,26 @@ export class ExternalTextRuntime {
 
   destroy() {
     this.invalidateProjections();
+    this.clearBackwardExit();
     for (const entry of [...this.entries.values()]) this.remove(entry);
+  }
+
+  private clearBackwardExit() {
+    this.backwardExitedToRoot = null;
+    this.disposeBackwardExit?.();
+    this.disposeBackwardExit = null;
+  }
+
+  private holdRootAfterBackwardTab(entry: Entry) {
+    this.clearBackwardExit();
+    const root = this.runtime.rootElement;
+    if (!root) return;
+    this.backwardExitedToRoot = entry;
+    const release = () => this.clearBackwardExit();
+    root.addEventListener('blur', release);
+    this.disposeBackwardExit = () => {
+      root.removeEventListener('blur', release);
+    };
   }
 
   private reportQueryError(cause: unknown) {
@@ -983,6 +1013,8 @@ export class ExternalTextRuntime {
     this.counters.canonicalCodeUnits -= entry.state.text.length;
     this.counters.destroyedViews += 1;
     if (this.focused === entry) this.focused = null;
+    if (this.tabbingBackward === entry) this.tabbingBackward = null;
+    if (this.backwardExitedToRoot === entry) this.clearBackwardExit();
     this.endComposition(entry);
     if (entry.disposeHost) this.call(entry, 'destroy', entry.disposeHost);
     if (entry.disposeCoverage) {
@@ -997,6 +1029,7 @@ export class ExternalTextRuntime {
 
   private focusChanged(entry: Entry, focused: boolean) {
     if (!entry.active) return;
+    if (focused) this.clearBackwardExit();
     const previous = this.focused;
     this.focused = focused
       ? entry

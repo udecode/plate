@@ -2,7 +2,9 @@
 
 import {
   defineEditorSchema,
+  definePlugin,
   type DecorationSource,
+  editorCommands,
   schema,
   TextApi,
 } from 'plitejs';
@@ -36,6 +38,25 @@ const textSchema = defineEditorSchema('externalTextExampleSchema', {
     }),
   },
   version: 1,
+});
+
+const externalTextLines = definePlugin('externalTextExampleLines', {
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) => {
+      const selection = state.selection();
+
+      if (
+        !selection ||
+        !state.nodes.above({ at: selection, type: 'external-text' })
+      ) {
+        return false;
+      }
+
+      return state.transaction((tx) => {
+        tx.text.insert('\n', { at: selection });
+      });
+    }),
+  ],
 });
 
 const readSelection = (input: HTMLTextAreaElement): ExternalTextSelection =>
@@ -394,7 +415,7 @@ const Status = () => {
 
 const ExternalTextExample = () => {
   const editor = useCreateEditor({
-    plugins: [textSchema, history()],
+    plugins: [textSchema, externalTextLines, history()],
     initialValue: {
       children: [
         {
@@ -440,7 +461,10 @@ const ExternalTextExample = () => {
                       attributes: {
                         'data-example-decoration': index,
                         style: {
-                          backgroundColor: index ? '#bbf7d0' : '#fef08a',
+                          backgroundColor: index
+                            ? 'color-mix(in srgb, #22c55e 30%, var(--background))'
+                            : 'color-mix(in srgb, #facc15 35%, var(--background))',
+                          color: 'var(--foreground)',
                         },
                       },
                       range: {
