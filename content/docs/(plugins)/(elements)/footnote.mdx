@@ -211,10 +211,15 @@ a back link to its first reference:
 </div>
 ```
 
-The first reference to a ref gets the id `fnref-<ref>`, and the nth gets
-`fnref-<ref>:<n>`. The note gets `fn-<ref>`, and a later duplicate gets
-`fn-<ref>:<n>` with no back link. Each id percent-encodes the ref. Pasting the
-HTML back gives the same references and definitions without the back link.
+The first main-root reference to a ref gets the id `fnref-<ref>`, and the nth
+gets `fnref-<ref>:<n>`. The main-root note gets `fn-<ref>`, and a later
+duplicate gets `fn-<ref>:<n>` with no back link. Inside a named content root,
+each id scopes by root as `fnref@<root>@<ref>` and `fn@<root>@<ref>` (with
+`:<n>` for duplicates), percent-encoding both root and ref. A named-root
+reference without a definition and a named-root definition without a reference
+omit `href` while keeping `data-editor-footnote-ref` so HTML decode round-trips.
+Pasting the HTML back gives the same references and definitions without the back
+link.
 
 Footnotes copied from a page GitHub rendered, such as a README or a comment,
 paste as references and root definitions with the numbers GitHub shows. A
@@ -224,9 +229,10 @@ citation pasted without its note becomes an unresolved reference.
 
 The `BaseFootnoteKit` static components draw each reference as a link to its
 note and give each canonical note a back link to its first reference, with the
-ids `editor.read.footnote.anchor` returns. A reference without a note links to
-the id its note would have. Word export writes the label and the note text
-without links.
+ids `editor.read.footnote.anchor` returns. On the main root, a reference without
+a note links to the id its note would have. Inside a named content root, an
+unresolved reference or unreferenced definition omits `target` and `href`. Word
+export writes the label and the note text without links.
 
 ### Customize rendering
 
@@ -403,7 +409,7 @@ id it links to. Static components and the HTML encoders use the same ids.
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="FootnoteAnchor | undefined">
-    `{ id, target? }`, or `undefined` when no footnote is at `path`. A reference targets its note's id, even when the note is missing. A canonical definition targets its first reference, and a later duplicate has no `target`.
+    `{ id, target? }`, or `undefined` when no footnote is at `path`. On the main root, a reference targets its note's id even when the note is missing, and a canonical definition targets its first reference. Inside a named root, ids are scoped as `fn@<root>@<ref>` and `fnref@<root>@<ref>`, and `target` is omitted when the matching definition or reference is missing. A later duplicate has no `target`.
   </APIItem>
 </APIReturns>
 </API>

@@ -248,7 +248,7 @@ export async function downloadEditorDocx() {
 
 Choose `accepted` to omit pending changes, `proposed` to apply them, or `review` to write Word tracked-change markup. Accepted and proposed exports warn about the pending changes they decided.
 
-A review file contains what Word displays: text, comments, and tracked revisions with their authors. It also stores each top-level block that holds a pending change, with the document's review records, in a custom XML part, and binds each block to its Word paragraphs with a bookmark. Importing the file restores the blocks Word left unchanged, as [Import tracked revisions](#import-tracked-revisions) describes. Export does not write named roots or document metadata to the file. To keep them, save `editor.read.value()` as JSON beside the file, as [Serializing](/docs/serializing) describes.
+A review file contains what Word displays: text, comments, and tracked revisions with their authors. It also stores each main-root top-level block that holds a pending change, with the document's review records, in a custom XML part, and binds each block to its Word paragraphs with a bookmark when that block renders once on its own without sharing an enclosing table or container with a foreign root or another main block (blocks that cannot bind safely fall back to Word tracked revisions). Importing the file restores the bound blocks Word left unchanged, as [Import tracked revisions](#import-tracked-revisions) describes. Named roots rendered by a static component (such as `slots.contentRoot`) export their text, comments, and tracked revisions to Word, while unrendered named roots and document metadata are omitted. To keep named roots and document metadata intact for round-trip, save `editor.read.value()` as JSON beside the file, as [Serializing](/docs/serializing) describes.
 
 ### Content loss
 
@@ -262,7 +262,7 @@ const result = await exportDocx(editor, {
 });
 ```
 
-Named roots, document metadata, removed link destinations, and other properties DOCX cannot represent are warnings under both policies. An `accepted` export omits a comment whose annotated content that projection excludes, and reports a warning, as Word does when the annotated suggestion is rejected.
+Unrendered named roots (stored roots absent from rendered static HTML), document metadata, removed link destinations, and other properties DOCX cannot represent are warnings under both policies. Named roots rendered into static HTML export without a `named-root` warning. An `accepted` export omits a comment whose annotated content that projection excludes, and reports a warning, as Word does when the annotated suggestion is rejected.
 
 A `review` export whose table holds a pending row, column, or table format change reports a `lossy-content` diagnostic with the table's path, including when `source` would otherwise return the retained file unchanged, because Word revisions cannot represent those table changes. Default `lossPolicy: "reject"` refuses the export (`ok: false`), and `lossPolicy: "allow"` exports with the warning.
 
@@ -311,7 +311,7 @@ const result = await exportDocx(editor, {
 });
 ```
 
-The same configured static renderer handles the main document and rich comment bodies. Under the default `lossPolicy`, a comment without a complete range fails the export; with `lossPolicy: "allow"` the export omits it with a warning.
+The same configured static renderer handles the main document and rich comment bodies. Comments may target ranges in the main document or in any rendered named root, and multiple comments sharing one text host preserve their exact ranges. Under the default `lossPolicy`, a comment without a complete range in a single rendered occurrence fails the export; with `lossPolicy: "allow"` the export omits it with a warning.
 
 ### Static rendering and styles
 
@@ -387,7 +387,7 @@ diagnostic, which counts as lost content under `lossPolicy`.
 | Single-section headers and footers                                | Keep safe closed source subgraphs during source-aware export; do not map them into the editor document. Import reports one that holds content as dropped |
 | Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics. Import reports them as dropped content, except a part that draws nothing, such as one that holds only Word's separator notes or an empty styled paragraph |
 | Fields, text boxes, shapes, charts, SmartArt, and embedded objects | Keep reachable plain text when conversion exposes it; report unsupported or omitted content                 |
-| Plate named roots and metadata                                     | Omit from Word output with a `lossy-content` warning; keep them in authored JSON                            |
+| Plate named roots and metadata                                     | Rendered named roots export text, comments, and tracked revisions without a `named-root` warning (without review-part bookmark round-trip); unrendered named roots and document metadata are omitted with a `lossy-content` warning and kept in authored JSON |
 | Equations                                                          | Export as Word math, or as TeX inside a Word equation when the converter does not cover the notation. Import reads Word math into `equation` and `inlineEquation` nodes, with TeX rebuilt from the equation's structure, or into TeX text when those plugins are not installed. A display equation that shares its paragraph with a comment, tracked change or text, or sits in a list item or an indented paragraph, imports inline |
 | Task lists                                                         | Give a to-do item a ☑ or ☐ list marker from its `checked` value; import a bullet level drawn as ☐, ☑ or ☒ as a task item with its checked state |
 | Custom Plate, emoji, and media nodes                               | Use their configured static serializers; unsupported output produces diagnostics                            |

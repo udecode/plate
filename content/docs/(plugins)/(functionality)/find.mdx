@@ -14,17 +14,23 @@ docs:
 
 ## Features
 
-- Opens from its Find button or with `Mod+F`, and seeds the query from an
-  expanded editor selection.
-- Highlights every match without writing marks into the document or history.
+- Opens from its Find button or with `Mod+F` in the main editor or a nested
+  Editable (such as a board note), and seeds the query from the active view's
+  expanded selection.
+- Searches the main document and every named content root in document reading
+  order.
+- Highlights every match per mounted view without writing marks into the
+  document or history.
 - Finds a match that runs across text leaves and inline elements within one
   block.
-- Moves between results with `Enter`, `Shift+Enter`, or the arrow buttons.
+- Moves between results with `Enter`, `Shift+Enter`, or the arrow buttons,
+  revealing culled targets such as off-camera board notes.
 - Updates the results after each document change. Typing or formatting inside a
-  block searches only that block again, and only text whose highlights changed
-  repaints.
+  block searches only that root's changed block again, and only text whose
+  highlights changed repaints.
 - Keeps the active result on its match through edits.
-- Opens independently in each mounted editor view, with `useFind` for custom controls.
+- Opens independently in each mounted editor presentation, with `useFind` for
+  custom controls.
 
 </PackageInfo>
 
@@ -81,22 +87,24 @@ find.store.get('activeMatch');
 find.update.select();
 ```
 
-`api.search(query)` applies a case-insensitive literal query. An empty query
-clears the results. `api.move(1 | -1)` wraps through the current results without
-searching again. Every commit that changes the main document updates the
-results, including when no view is mounted. It searches again only the smallest
-part of the document that holds its changes, such as the paragraph the user
-types in. Adding or removing a top-level block, or changing two top-level blocks in
-one update, searches the whole document. A commit that leaves the main document
-unchanged, such as a selection change or an edit in a named root, searches only
-when the results went stale: after a schema change, after the app writes
-`matches` to the store, or after a search inside an update that threw. The
-query changes only through `api.search`; a `query` written to the store starts
-no search. `api.search` searches the main document, even inside the `update` of
-a named root's view. `update.select()` selects the current range in the main
-document and returns whether it did. It returns `false` when no result exists or
-when a named root's view calls it, because matches are main-document ranges.
-View focus remains the caller's responsibility.
+`api.search(query)` applies a case-insensitive literal query across the main
+document and every named content root in document reading order (merging each
+named root at its first owner's position). An empty query clears the results.
+Main-root matches keep rootless `Range` coordinates, and named-root matches
+carry `root` on both `anchor` and `focus`. `api.move(1 | -1)` wraps through the
+current results without searching again. Every commit that changes the main
+document or any named root updates the results, including when no view is
+mounted. It searches again only the edited root's smallest changed block, such
+as the paragraph the user types in, and refreshes decoration observers only for
+affected roots. A commit that leaves every root's content unchanged, such as a
+selection change, searches only when the results went stale: after a schema
+change, after the app writes `matches` to the store, or after a search inside
+an update that threw. The query changes only through `api.search`; a `query`
+written to the store starts no search. `api.search` searches every root even
+when called on a named root's view. `update.select()` selects the active match
+in its root from any view and returns whether it did; it returns `false` when
+no match exists or the active match is stale. View focus remains the caller's
+responsibility.
 
 The active result follows its match through edits. It stays on that match while
 the search still finds the same text there. When an edit breaks the match, the
@@ -172,10 +180,10 @@ const selectMatch = () => {
 
 | Key | Behavior |
 | --- | --- |
-| `Mod+F` | Open Find. An expanded selection becomes the initial query. |
-| `Enter` | Move to the next result. |
-| `Shift+Enter` | Move to the previous result. |
-| `Escape` | Close Find and return focus to the editor. |
+| `Mod+F` | Open Find from the main editor or a nested Editable. The active view's expanded selection becomes the initial query. |
+| `Enter` | Move to the next result in reading order and scroll within the focused presentation. |
+| `Shift+Enter` | Move to the previous result in reading order and scroll within the focused presentation. |
+| `Escape` | Close Find and return focus to the originating editable when connected. |
 
 Find searches text. Document replacement belongs to an app command with its own
 selection, history, and collaboration policy.

@@ -246,7 +246,7 @@ export async function downloadEditorDocx() {
 
 `accepted` 忽略待定变更，`proposed` 应用待定变更，`review` 写入 Word tracked-change 标记。Accepted 与 proposed 导出会警告它们决定的待处理 change。
 
-Review 文件包含 Word 显示的内容：文本、批注，以及带作者信息的修订。它还会在 custom XML part 中保存每个含有待处理 change 的顶层 block 以及文档的审阅记录，并用书签把每个 block 绑定到其 Word 段落。导入该文件时，Word 未修改的 block 会被恢复，详见[导入修订](#导入修订)。命名根和文档元数据不会写入文件。需要保留它们时，按 [Serializing](/docs/serializing) 所述，把 `editor.read.value()` 以 JSON 形式与文件一起保存。
+Review 文件包含 Word 显示的内容：文本、批注，以及带作者信息的修订。它还会在 custom XML part 中保存每个含有待处理 change 的主根顶层 block 以及文档的审阅记录，并在该 block 单独渲染一次、且未与其他主根 block 或外部根共用外层表格或容器时，用书签把它绑定到 Word 段落（无法安全绑定的 block 回退为 Word 修订）。导入该文件时，Word 未修改的已绑定 block 会被恢复，详见[导入修订](#导入修订)。由静态组件（例如 `slots.contentRoot`）渲染的命名根会将其文本、批注和修订导出到 Word；未渲染的命名根和文档元数据会被省略。需要完整保留命名根和文档元数据以供往返时，按 [Serializing](/docs/serializing) 所述，把 `editor.read.value()` 以 JSON 形式与文件一起保存。
 
 ### 内容损失
 
@@ -260,7 +260,7 @@ const result = await exportDocx(editor, {
 });
 ```
 
-命名根、文档元数据、被移除的链接目标，以及 DOCX 无法表示的其他属性，在两种策略下都只返回警告。`accepted` 导出会省略所标注内容全部被该投影排除的批注，并返回警告；这与 Word 拒绝被批注的修订建议时的行为一致。
+未渲染的命名根（未出现在静态 HTML 中的存储根）、文档元数据、被移除的链接目标，以及 DOCX 无法表示的其他属性，在两种策略下都只返回警告；已渲染的命名根不会产生 `named-root` 警告。`accepted` 导出会省略所标注内容全部被该投影排除的批注，并返回警告；这与 Word 拒绝被批注的修订建议时的行为一致。
 
 当 `review` 导出包含持有待处理行、列或表格格式变更的表格时，导出器会以该表格的路径报告 `lossy-content` 诊断，即使在 `source` 本会原样返回已保留文件时也是如此，因为 Word 修订无法表示这些表格变更。默认的 `lossPolicy: "reject"` 会拒绝导出（`ok: false`），`lossPolicy: "allow"` 会带着该警告导出。
 
@@ -309,7 +309,7 @@ const result = await exportDocx(editor, {
 });
 ```
 
-主文档和富文本批注正文使用同一套静态渲染器。在默认 `lossPolicy` 下，范围不完整的批注会使导出失败；设置 `lossPolicy: "allow"` 时，导出会省略该批注并返回警告。
+主文档和富文本批注正文使用同一套静态渲染器。批注可以指向主文档或任意已渲染命名根中的范围，共享同一文本宿主的多个批注会保留各自的精确范围。在默认 `lossPolicy` 下，单个渲染实例中范围不完整的批注会使导出失败；设置 `lossPolicy: "allow"` 时，导出会省略该批注并返回警告。
 
 ### Static rendering 与样式
 
@@ -362,7 +362,7 @@ live editor 的组件是编辑 UI。把应用的 static kit 作为 `presentation
 | 单节文档的页眉和页脚                          | 使用 source 导出时保留安全且闭合的子图，但不映射到编辑器文档。导入时把含有内容的页眉或页脚报告为丢失的内容 |
 | 多节页眉和页脚、脚注和尾注                    | 检查并限制对应包部件；编辑 source 后省略并返回 diagnostic。导入时报告为丢失的内容，不绘制任何内容的部件除外，例如只含 Word 分隔线注释或只含一个空的带样式段落的部件 |
 | 字段、文本框、形状、图表、SmartArt 和嵌入对象 | 转换可访问时保留纯文本，否则报告不支持或省略的内容                         |
-| Plate 命名根和元数据                          | Word 输出会省略并返回 `lossy-content` 警告；保存在 authored JSON 中 |
+| Plate 命名根和元数据                          | 已渲染的命名根会导出文本、批注和修订且不报 `named-root` 警告（不做审阅部件书签往返）；未渲染的命名根和文档元数据会被省略并返回 `lossy-content` 警告，保存在 authored JSON 中 |
 | 公式                                          | 导出为 Word 公式；转换器不支持该写法时，把 TeX 放进 Word 公式。导入时把 Word 公式读成 `equation` 和 `inlineEquation` 节点，TeX 由公式结构重建；未安装这两个插件时读成 TeX 文本。与批注、修订或文字同处一段，或位于列表项、缩进段落中的行间公式读成行内公式 |
 | 任务列表                                      | 待办项按其 `checked` 值导出时带 ☑ 或 ☐ 列表符号；导入时把以 ☐、☑ 或 ☒ 绘制的项目符号层级读成任务项并保留勾选状态 |
 | 自定义 Plate、emoji 和媒体节点                | 使用已配置的静态序列化器；不支持的输出返回 diagnostic                      |
