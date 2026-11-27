@@ -11,7 +11,7 @@ import { history } from 'plitejs/history';
 import {
   EditorRoot,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
   useEditorSelector,
 } from 'plitejs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -446,7 +446,7 @@ const MountedPersistentAnnotationAnchors = ({
   onAddAnnotation: (annotation: Anchor<Range>) => void;
   onClearAnnotation: () => void;
 }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const range = useEditorSelector(
     (currentEditor) => annotation?.resolve(currentEditor) ?? null,
     {

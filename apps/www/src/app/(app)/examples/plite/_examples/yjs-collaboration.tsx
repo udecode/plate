@@ -25,7 +25,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
   useEditorHistory,
   useEditorSelector,
 } from 'plitejs/react';
@@ -1256,7 +1256,7 @@ const PeerPanelContent = ({
   version: number;
   onRemount: () => void;
 }) => {
-  const editor = useEditorContext() as YjsEditor;
+  const editor = useEditor() as YjsEditor;
   const [incompatibleJoin, setIncompatibleJoin] =
     useState<IncompatibleJoinResult | null>(null);
   const [reconfigureError, setReconfigureError] = useState<string | null>(null);

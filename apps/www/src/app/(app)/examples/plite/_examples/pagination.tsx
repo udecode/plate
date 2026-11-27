@@ -32,7 +32,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
   useEditorSelector,
   useSetStateField,
 } from 'plitejs/react';
@@ -243,7 +243,7 @@ const getPaginationLeafStyle = (marks: Partial<CustomText>): CSSProperties => ({
 });
 
 const handlePaginationKeyDown = (
-  editor: CustomEditor,
+  editor: ReturnType<typeof useEditor>,
   event: KeyboardEvent<HTMLDivElement>
 ) => {
   for (const [hotkey, format] of paginationBlockHotkeys) {
@@ -749,7 +749,7 @@ const PaginationSurface = ({
   controls: PaginationControls;
   setControls: SetPaginationControls;
 }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const setSettings = useSetStateField(pageSettings);
   const [viewportRef, viewportSize] = useLayoutSize<HTMLDivElement>();
   const [editableRef, editableSize] = useLayoutSize<HTMLDivElement>();

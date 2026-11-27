@@ -23,13 +23,11 @@ import {
   ReactUpdatePolicy,
   type StateFieldSetter,
   type UseRootEditorOptions,
+  type UseStateFieldValueOptions,
   useEditorRootElement,
   useRootEditor as usePliteRootEditor,
 } from '../../plite-react';
-import {
-  type UseEditorSelectorOptions,
-  useEditorSelector,
-} from './useEditorSelector';
+import { useEditorSelector } from './useEditorSelector';
 
 /** Get the editor selected by the nearest Plate, PlateController, or EditorProvider. */
 export function useEditor(): Editor {
@@ -139,12 +137,6 @@ export const useEditorValue = () =>
     dependsOn: 'document',
     equalityFn: Object.is,
   });
-
-/** Options for Plate's `useStateFieldValue` selector hook. */
-export type UseStateFieldValueOptions<TValue = unknown> = Pick<
-  UseEditorSelectorOptions<TValue>,
-  'equalityFn'
->;
 
 /** Subscribe to one `defineStateField` value on the selected Plate editor. */
 export function useStateFieldValue<TValue>(

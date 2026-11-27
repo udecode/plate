@@ -249,12 +249,3 @@ export function dom(
 
   return plugin as unknown as DOMPlugin<boolean>;
 }
-
-/** Editor with the DOM capability installed over its exact plugin set. */
-export type DOMEditor<
-  V extends import('../..').Value = import('../..').Value,
-  TPlugins extends readonly unknown[] = readonly [],
-> = Omit<EditorType<V, TPlugins>, 'api' | 'update'> & {
-  readonly api: EditorType<V, TPlugins>['api'] & DOMPluginTypes['api'];
-  update: EditorType<V, TPlugins>['update'] & DOMPluginTypes['update'];
-};

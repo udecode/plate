@@ -60,10 +60,9 @@ export const EditorReadOnlyProvider = ({
 };
 
 /**
- * Return the nearest editor read-only state, or `undefined` when no provider is
- * active yet.
+ * Get the current `readOnly` state of the active editor.
  */
-export const useOptionalEditorReadOnly = (): boolean | undefined => {
+export const useEditorReadOnly = (): boolean => {
   const explicitOverride = useContext(ExplicitReadOnlyOverrideContext);
   const insideEditingArea = useContext(PliteEditingAreaContext);
   const inheritedReadOnly = useContext(ReadOnlyContext);
@@ -80,11 +79,5 @@ export const useOptionalEditorReadOnly = (): boolean | undefined => {
   if (insideEditingArea) return inheritedReadOnly ?? false;
   if (target !== null) return viewReadOnly;
 
-  return inheritedReadOnly;
+  return inheritedReadOnly ?? false;
 };
-
-/**
- * Get the current `readOnly` state of the active editor.
- */
-export const useEditorReadOnly = (): boolean =>
-  useOptionalEditorReadOnly() ?? false;

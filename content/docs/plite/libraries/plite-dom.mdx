@@ -45,10 +45,9 @@ the key types that digit, so Option, Alt or AltGr with a digit still types its
 character. To bind a key by its position whatever it types, write its code,
 such as `alt+digit5`.
 
-Framework adapters can use `DOMEditor`, `getEditorDOMRoot`,
-`createCompiledHotkeyMatcher`, `isGeckoDOMHost`, and
-`usesAppleDOMHotkeys` for explicit host integration without importing private
-runtime modules.
+Framework adapters can use `getEditorDOMRoot`, `createCompiledHotkeyMatcher`,
+`isGeckoDOMHost`, and `usesAppleDOMHotkeys` for explicit host integration
+without importing private runtime modules.
 
 `ariaKeyShortcuts(hotkey, { platform })` turns a hotkey into the value of the
 `aria-keyshortcuts` attribute. It names only combos the matcher matches on a

@@ -32,7 +32,6 @@ export type EditorTextSelectorContext = EditorNodeSelectorContext & {
 
 /** Update-scoping options for selectors tied to a rendered node key. */
 export type EditorRuntimeSelectorOptions = {
-  deferred?: boolean;
   includeRootOrderChanges?: boolean;
   nodeKey?: NodeKey | null;
 };
@@ -158,7 +157,6 @@ function useRuntimeNodeSelector<T>(
   selector: (context: EditorNodeSelectorContext) => T,
   equalityFn: ((a: T, b: T) => boolean) | undefined,
   {
-    deferred = false,
     includeRootOrderChanges = false,
     nodeKey: nodeKeyProp,
     observeEmptyTextParentStructure = false,
@@ -202,7 +200,6 @@ function useRuntimeNodeSelector<T>(
   );
 
   return useInternalEditorSelector(nodeSelector, {
-    deferred,
     equalityFn,
     includeRootOrderChanges,
     profileId: nodeKey ? 'runtime-node' : 'runtime-node-missing-id',
@@ -224,10 +221,9 @@ export function useNodeSelector<T>(
   equalityFn?: (a: T, b: T) => boolean,
   options: EditorRuntimeSelectorOptions = {}
 ): T {
-  const { deferred, includeRootOrderChanges, nodeKey } = options;
+  const { includeRootOrderChanges, nodeKey } = options;
 
   return useRuntimeNodeSelector(selector, equalityFn, {
-    deferred,
     includeRootOrderChanges,
     nodeKey,
   });
@@ -238,10 +234,9 @@ export function useMountedNodeRenderSelector<T>(
   equalityFn: (a: T, b: T) => boolean = Object.is,
   options: EditorRuntimeSelectorOptions = {}
 ): T {
-  const { deferred, includeRootOrderChanges, nodeKey } = options;
+  const { includeRootOrderChanges, nodeKey } = options;
 
   return useRuntimeNodeSelector(selector, equalityFn, {
-    deferred,
     includeRootOrderChanges,
     nodeKey,
     observeEmptyTextParentStructure: true,

@@ -79,7 +79,6 @@ export {
   EditorReadOnlyProvider,
   type EditorReadOnlyProviderProps,
   useEditorReadOnly,
-  useOptionalEditorReadOnly,
 } from './hooks/use-editor-read-only';
 export { useEditorSelection } from './hooks/use-editor-selection';
 export {
@@ -88,7 +87,7 @@ export {
   type EditorViewStateDependency,
 } from '../core/selector-dependencies';
 export {
-  type EditorSelectorOptions,
+  type UseEditorSelectorOptions,
   useEditorSelector,
 } from './hooks/use-editor-selector';
 export {

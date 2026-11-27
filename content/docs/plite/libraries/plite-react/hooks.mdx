@@ -121,8 +121,8 @@ non-empty tuple of:
 Omitted `kind` on a node-key descriptor watches `'node'`, `'path'`, and
 `'presence'`. Passing a nullish `nodeKey` or an empty/nullish `nodeKeys` fails
 open and updates on every commit. Passing an empty array (`dependsOn: []`) or an
-invalid entry throws `TypeError` synchronously during render. Pass
-`options.deferred` when delayed delivery is an intentional product choice.
+invalid entry throws `TypeError` synchronously during render. Wrap the returned
+value with React's `useDeferredValue` when delayed UI rendering is desired.
 
 ```typescript
 // Include "document" when reading selection because a block

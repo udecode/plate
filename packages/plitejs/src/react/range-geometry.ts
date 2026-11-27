@@ -9,8 +9,8 @@ import {
 } from '..';
 import { getEditorRuntimeRoot } from '../core/editor-runtime';
 import { subscribeEditorViewState } from '../core/public-state';
-import { DOMEditor } from '../dom';
 import {
+  DOMEditor,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_ROOT_VIEW_EDITORS,
   hasUsableDOMRect,

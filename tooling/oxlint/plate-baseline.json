@@ -215,7 +215,6 @@
     "packages/platejs/src/markdown/lib/MarkdownPlugin.ts": [
       "export type MarkdownEditor<E = Editor, V extends Value = Value> = E & {"
     ],
-    "packages/plitejs/src/dom/plugin/with-dom.ts": ["export type DOMEditor<"],
     "packages/plitejs/src/interfaces/editor.ts": [
       "export interface BaseEditor<",
       "export type PluginCandidateEditor<"

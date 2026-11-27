@@ -5,7 +5,6 @@ import {
   commitMatchesSelectorDependencies,
   countCoreWork,
   type EditorCommit,
-  type EditorSelectorDependencies,
   type EditorViewStateBucket,
   type EditorViewStateFacts,
   type NormalizedSelectorDependencies,
@@ -21,12 +20,9 @@ import {
 } from '../../../facade';
 import type { Editor } from '../../editor';
 import { usePlateScope } from '../../internal/plate-context';
+import type { UseEditorSelectorOptions } from '../../plite-react';
 
-/** Subscription options for `useEditorSelector`. */
-export type UseEditorSelectorOptions<T = unknown> = {
-  dependsOn?: EditorSelectorDependencies;
-  equalityFn?: (prev: T, next: T) => boolean;
-};
+export type { UseEditorSelectorOptions } from '../../plite-react';
 
 const useIsomorphicLayoutEffect =
   typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect;

@@ -8,7 +8,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
 } from 'plitejs/react';
 
 import type { CustomElement, ParagraphElement } from './custom-types.d';
@@ -80,7 +80,7 @@ const renderLeaf = ({ attributes, children, leaf }: RenderLeafProps) => (
 );
 
 const Commands = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const command = (label: string, run: () => void) => (
     <button
       className="rounded border px-3 py-1"

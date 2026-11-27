@@ -29,7 +29,7 @@ const useEditorDOMScopeElement = (
     getServerSnapshot
   );
 
-/** Return the mounted editable element for a Plite root. */
+/** Return the mounted editable element for an editor root. */
 export const useEditorEditableElement = <const TRoot extends RootKey = RootKey>(
   editor: DOMScopeEditor,
   root?: NamedRootKey<TRoot>

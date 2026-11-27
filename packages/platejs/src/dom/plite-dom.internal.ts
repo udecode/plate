@@ -4,7 +4,6 @@ export {
   domCommands,
   createCompiledHotkeyMatcher,
   dom,
-  DOMEditor,
   getEditorDOMRoot,
   getSelection,
   dataTransferFormats,

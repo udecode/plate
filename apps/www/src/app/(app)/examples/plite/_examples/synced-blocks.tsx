@@ -6,9 +6,9 @@ import {
   type RenderLeafProps,
   EditorRoot,
   useEditor,
-  useEditorContext,
   useElementPath,
   useCreateEditor,
+  useRootEditor,
 } from 'plitejs/react';
 import type { PointerEvent } from 'react';
 
@@ -266,7 +266,7 @@ const SyncedBlock = ({
 };
 
 const InsertSyncedBlockButton = () => {
-  const editor = useEditorContext();
+  const editor = useRootEditor();
 
   return (
     <Button

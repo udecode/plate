@@ -82,11 +82,10 @@ export type EditorSelectorContextValue = {
 };
 
 /** Commit and view-state subscription options for `useEditorSelector`. */
-export interface EditorSelectorOptions<T = unknown> {
-  deferred?: boolean;
+export type UseEditorSelectorOptions<T = unknown> = {
   dependsOn?: EditorSelectorDependencies;
   equalityFn?: (a: T, b: T) => boolean;
-}
+};
 
 export const EditorSelectorContext =
   createContext<EditorSelectorContextValue | null>(null);
@@ -210,26 +209,25 @@ export function useInternalEditorSelector<T>(
  */
 export function useEditorSelector<T>(
   selector: (editor: ContextEditor) => T,
-  options?: EditorSelectorOptions<T>
+  options?: UseEditorSelectorOptions<T>
 ): T;
 export function useEditorSelector<T, TEditor extends AnyEditor = AnyEditor>(
   editor: TEditor,
   selector: (editor: TEditor) => T,
-  options?: EditorSelectorOptions<T>
+  options?: UseEditorSelectorOptions<T>
 ): T;
 export function useEditorSelector<T>(
   arg0: AnyEditor | ((editor: ContextEditor) => T),
-  arg1?: ((editor: AnyEditor) => T) | EditorSelectorOptions<T>,
-  arg2?: EditorSelectorOptions<T>
+  arg1?: ((editor: AnyEditor) => T) | UseEditorSelectorOptions<T>,
+  arg2?: UseEditorSelectorOptions<T>
 ): T {
   const hasExplicitEditor = typeof arg0 !== 'function';
   const explicitEditor = hasExplicitEditor ? arg0 : null;
   const selector = (hasExplicitEditor ? arg1 : arg0) as (
     editor: AnyEditor
   ) => T;
-  const { deferred, dependsOn, equalityFn } = ((hasExplicitEditor
-    ? arg2
-    : arg1) ?? {}) as EditorSelectorOptions<T>;
+  const { dependsOn, equalityFn } = ((hasExplicitEditor ? arg2 : arg1) ??
+    {}) as UseEditorSelectorOptions<T>;
   const normalizedDeps = normalizeSelectorDependencies(dependsOn);
   const subscriptionKey = selectorDependenciesSubscriptionKey(normalizedDeps);
   const selectorContext = useContext(EditorSelectorContext);
@@ -357,20 +355,9 @@ export function useEditorSelector<T>(
 
   useIsomorphicLayoutEffect(() => {
     let cancelled = false;
-    let scheduled = false;
     const scheduleUpdate = () => {
       if (cancelled) return;
-      if (!deferred) {
-        runUpdate();
-        return;
-      }
-      if (scheduled) return;
-      scheduled = true;
-      scheduleMicrotask(() => {
-        scheduled = false;
-        if (cancelled) return;
-        runUpdate();
-      });
+      runUpdate();
     };
     const activeDeps = depsRef.current;
     const wantsCommits = selectorDependenciesWantCommits(activeDeps);
@@ -413,7 +400,6 @@ export function useEditorSelector<T>(
           : readEditorViewStateFacts(contextEditor, activeDeps);
       if (wantsCommits) {
         unsubscribeCommit = addProviderListener(runUpdate, {
-          deferred,
           handlesViewState: true,
           shouldUpdate: matchesProviderCommit,
         });
@@ -528,7 +514,6 @@ export function useEditorSelector<T>(
     };
   }, [
     contextEditor,
-    deferred,
     hasExplicitEditor,
     matchesProviderCommit,
     owner,

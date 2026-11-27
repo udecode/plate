@@ -18,7 +18,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
 } from 'plitejs/react';
 import {
   yjs,
@@ -1012,7 +1012,7 @@ const ProviderBackedPeerContent = ({
   peer: PeerDefinition;
   provider: HocuspocusProvider;
 }) => {
-  const editor = useEditorContext() as YjsEditor;
+  const editor = useEditor() as unknown as YjsEditor;
   const [renderEpoch, setRenderEpoch] = useState(0);
   const [connectionEnabled, setConnectionEnabled] =
     useState(initiallyConnected);

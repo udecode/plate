@@ -39,11 +39,7 @@ export type {
   ScrollIntoViewTarget,
 } from './plugin/dom-editor';
 export type { DOMPlugin, DOMPluginTypes } from './plugin/with-dom';
-export {
-  DOMEditor,
-  isTrackedMutation,
-  DOMResolutionError,
-} from './plugin/dom-editor';
+export { isTrackedMutation, DOMResolutionError } from './plugin/dom-editor';
 export type { DOMEditorOptions } from './plugin/with-dom';
 export { dom } from './plugin/with-dom';
 export type {

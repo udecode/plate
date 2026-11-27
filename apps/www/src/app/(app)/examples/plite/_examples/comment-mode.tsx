@@ -15,7 +15,7 @@ import {
   type DecorationSource,
   type Editor,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
   useEditorFocused,
   useEditorSelection,
 } from 'plitejs/react';
@@ -724,7 +724,7 @@ const useCommentView = (
   comments: readonly CommentThread[],
   onDecorationSource: (source: DecorationSource<CommentEditor> | null) => void
 ) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const [store] = useState(() => createCommentViewStore(editor, comments));
 
   useLayoutEffect(() => {

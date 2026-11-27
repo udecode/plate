@@ -6,7 +6,6 @@ import {
   type RenderLeafProps,
   type RenderVoidProps,
   EditorRoot,
-  useEditorContext,
   useChildRoot,
   useCreateEditor,
   useRootChrome,
@@ -236,7 +235,7 @@ const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
 };
 
 const InsertEditableVoidButton = () => {
-  const editor = useEditorContext();
+  const editor = useRootEditor();
   return (
     <Button
       onClick={() => {

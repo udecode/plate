@@ -15,7 +15,7 @@ import {
   type RenderElementProps,
   EditorRoot,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
 } from 'plitejs/react';
 import React, {
   useCallback,
@@ -146,7 +146,7 @@ const PolicyControls = <T extends string>({
 );
 
 const HiddenContentBlocksContent = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const [
     { accordionOpen, activeTab, collapsibleOpen, copyPolicy, selectionPolicy },
     setHiddenContentControls,

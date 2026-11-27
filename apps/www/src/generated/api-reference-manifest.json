@@ -28731,6 +28731,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/react:useEditorEditableElement": {
+          "aliases": [],
+          "documentation": "Return the mounted editable element for an editor root.",
+          "entrypoint": "platejs/react",
+          "kind": "const",
+          "name": "useEditorEditableElement",
+          "runtime": true,
+          "signature": "useEditorEditableElement: <const TRoot extends RootKey = RootKey>(editor: DOMScopeEditor, root?: NamedRootKey<TRoot>) => HTMLElement | null",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/react:useEditorFocused": {
           "aliases": [],
           "documentation": "Whether the selected command view is currently focused.",
@@ -28898,12 +28909,12 @@
         },
         "platejs/react:UseEditorSelectorOptions": {
           "aliases": [],
-          "documentation": "Subscription options for `useEditorSelector`.",
+          "documentation": "Commit and view-state subscription options for `useEditorSelector`.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "UseEditorSelectorOptions",
           "runtime": false,
-          "signature": "type UseEditorSelectorOptions<T = unknown> = {\n  dependsOn?: EditorSelectorDependencies;\n  equalityFn?: (prev: T, next: T) => boolean;\n};",
+          "signature": "type UseEditorSelectorOptions<T = unknown> = {\n  dependsOn?: EditorSelectorDependencies;\n  equalityFn?: (a: T, b: T) => boolean;\n};",
           "source": null,
           "typeParameters": [
             "T = unknown"
@@ -29166,7 +29177,7 @@
         },
         "platejs/react:UseStateFieldValueOptions": {
           "aliases": [],
-          "documentation": "Options for Plate's `useStateFieldValue` selector hook.",
+          "documentation": "Selector options for subscribing to one editor state field.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "UseStateFieldValueOptions",

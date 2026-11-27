@@ -47,7 +47,9 @@ export type {
   RootChromeController,
   UseRootChromeOptions,
   UseRootEditorOptions,
+  UseEditorSelectorOptions,
   StateFieldSetter,
+  UseStateFieldValueOptions,
   ReactApi,
   ReactPluginOptions,
   ReactPlugin as RuntimeReactPlugin,
@@ -60,6 +62,7 @@ export type {
   UseSelectionGeometryOptions,
 } from './plite-react';
 export {
+  useEditorEditableElement,
   useEditorRootAreas,
   useEditorRootElement,
   useEditorScrollElement,
@@ -157,9 +160,8 @@ export {
   useSetStateField,
   useStateFieldValue,
 } from './stores/plate/useEditor';
-export type { UseStateFieldValueOptions } from './stores/plate/useEditor';
 export * from './stores/plate/useEditorHistory';
-export * from './stores/plate/useEditorSelector';
+export { useEditorSelector } from './stores/plate/useEditorSelector';
 export {
   usePluginStore,
   useEditorPluginStore,

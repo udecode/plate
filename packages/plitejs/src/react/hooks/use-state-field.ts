@@ -10,15 +10,15 @@ import {
   ReactUpdatePolicy,
 } from '../update-policy';
 import {
-  type EditorSelectorOptions,
+  type UseEditorSelectorOptions,
   useEditorSelector,
 } from './use-editor-selector';
 import { useEditor } from './use-plite-runtime';
 
 /** Selector options for subscribing to one editor state field. */
-export type UseStateFieldValueOptions<TValue> = Pick<
-  EditorSelectorOptions<TValue>,
-  'deferred' | 'equalityFn'
+export type UseStateFieldValueOptions<TValue = unknown> = Pick<
+  UseEditorSelectorOptions<TValue>,
+  'equalityFn'
 >;
 
 /** Setter returned by `useSetStateField` for one editor state field. */
