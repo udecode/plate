@@ -51,6 +51,7 @@ import { getEditorLifetime, setEditorLifetime } from './editor-lifetime';
 import {
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
+  getEditorSchema,
   type InternalCompiledPluginPublicationEntry,
   type InternalPluginPublicationEntry,
   type StagedPluginInstall,
@@ -2263,7 +2264,7 @@ const fitCandidatePublicationDocument = (
     editor,
     schema,
     current,
-    schema.fitDocument(input)
+    schema.fitDocumentRaw(input)
   );
 
 const buildConfiguredRegistry = <TEditor extends Editor>(
@@ -2409,51 +2410,63 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
       const ids = options.initializeDocument
         ? loadElementIds(compiled, inputDocument, admission)
         : null;
-      const fit = () =>
-        fitCandidatePublicationDocument(
+
+      if (options.initializeDocument && !options.migrate) {
+        const fittedDocument = ids
+          ? ids.withStandInIds(() => schema.fitDocumentRaw(inputDocument))
+          : schema.fitDocumentRaw(inputDocument);
+        const repair = repairLoadedDocument(
+          admission,
+          fittedDocument,
+          compiled,
+          ids
+        );
+
+        documentChange = classifyCandidatePublicationDocument(
           editor,
           schema,
           currentDocument,
-          inputDocument
-        );
-      const fitted = options.migrate
-        ? classifyCandidatePublicationDocument(
-            editor,
-            schema,
-            currentDocument,
-            inputDocument
-          )
-        : ids
-          ? ids.withStandInIds(fit)
-          : fit();
+          repair ? repair.value : fittedDocument
+        ).change;
+      } else {
+        const fitted = options.migrate
+          ? classifyCandidatePublicationDocument(
+              editor,
+              schema,
+              currentDocument,
+              inputDocument
+            )
+          : fitCandidatePublicationDocument(
+              editor,
+              schema,
+              currentDocument,
+              inputDocument
+            );
 
-      if (
-        !options.initializeDocument &&
-        !options.migrate &&
-        !fitted.change.empty
-      ) {
-        throw new EditorSchemaValidationError(
-          'Editor schema reconfiguration requires an explicit migration when the current document is not canonical under the candidate schema.'
+        if (!options.migrate && !fitted.change.empty) {
+          throw new EditorSchemaValidationError(
+            'Editor schema reconfiguration requires an explicit migration when the current document is not canonical under the candidate schema.'
+          );
+        }
+
+        // A new schema can make the document's pending changes need what a
+        // load repairs, such as spare blocks, even when its bytes still fit.
+        const repair = repairLoadedDocument(
+          admission,
+          fitted.document,
+          compiled,
+          null
         );
+
+        documentChange = repair
+          ? classifyCandidatePublicationDocument(
+              editor,
+              schema,
+              currentDocument,
+              repair.value
+            ).change
+          : fitted.change;
       }
-
-      // A new schema can make the document's pending changes need what a
-      // load repairs, such as spare blocks, even when its bytes still fit.
-      const repair = repairLoadedDocument(
-        admission,
-        fitted.document,
-        compiled,
-        ids
-      );
-
-      documentChange = repair
-        ? classifyCandidatePublicationDocument(
-            editor,
-            schema,
-            currentDocument,
-            repair.value
-          ).change
-        : fitted.change;
     }
   }
 
@@ -2548,10 +2561,23 @@ const createNoopPublication = (
 
   if (loadsInitialValue(options) && options.validateDocument !== false) {
     loadOpenedRecords(editor, schema);
-    documentChange = constructLoadedDocumentChange(
-      editor,
-      getEditorDocumentValue(editor)
+    const loaded = getEditorDocumentValue(editor);
+
+    const editorSchema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+    editorSchema.assertDocument(loaded);
+    const repair = repairLoadedDocument(
+      null,
+      loaded,
+      schema,
+      loadElementIds(schema, loaded, null)
     );
+
+    documentChange = repair
+      ? repair.change.compose(
+          constructLoadedDocumentChange(editor, repair.value)
+        )
+      : constructLoadedDocumentChange(editor, loaded);
   }
 
   return Object.freeze({

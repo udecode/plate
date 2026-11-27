@@ -3745,10 +3745,13 @@ export const compilePlateHtmlFormat = (
     plugins.map((plugin) => [plugin.name, plugin] as const)
   );
   const schemaApi = editor.read((state) => state.schema);
-  const defaultBlock = schemaApi.createDefaultChild({ at: [0] });
-  const defaultBlockType = ElementApi.isElement(defaultBlock)
-    ? defaultBlock.type
-    : null;
+  const rootContent =
+    getCompiledEditorSchemaFromApi(schemaApi)?.primaryRoot?.content;
+  const defaultBlockType =
+    rootContent?.prefix?.[0]?.type ??
+    (rootContent?.defaultPlan?.kind === 'element'
+      ? rootContent.defaultPlan.type
+      : null);
   const rules = Object.freeze(
     plugins
       .flatMap((plugin) =>

@@ -42,6 +42,7 @@ import {
   withEditorUpdateRootScope,
 } from './public-state';
 import type { SettledCaret } from './set-root';
+import { changeEditedRanges } from './stored-element-id';
 import {
   isViewPresentationRetained,
   onPresentationRelease,
@@ -644,6 +645,7 @@ export const mapBookThroughStep = (
 
   for (const [root, change] of step.roots) {
     if (!book.nodes.has(root)) continue;
+    if (changeEditedRanges(change, 'from', true).length === 0) continue;
 
     const before = step.before(root);
     const keys = step.keys(root);

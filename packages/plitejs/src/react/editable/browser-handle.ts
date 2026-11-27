@@ -1,6 +1,7 @@
 import {
   type Anchor,
   DocumentChange,
+  type EditorDocumentValue,
   type EditorUpdatePolicyFor,
   type JsonEditorValue,
   type Path,
@@ -9,7 +10,10 @@ import {
   RangeApi,
   type NodeKey,
   type Selection as EditorSelection,
+  type Value,
 } from '../..';
+import { getEditorSchema } from '../../core/editor-runtime';
+import { keepElementIds } from '../../core/element-id';
 import {
   getPlacementGeneration,
   setShownSelectionAsView,
@@ -410,7 +414,123 @@ export const attachPliteBrowserHandle = ({
       forceRender();
     },
     applyValueChange: (value, policy) => {
-      const documentChange = DocumentChange.between(editor.read.value(), value);
+      const current = editor.read.value();
+      const stripKey = (node: unknown): unknown => {
+        if (Array.isArray(node)) return node.map(stripKey);
+        if (node && typeof node === 'object') {
+          if ('text' in node) return node;
+          const entries = Object.entries(node as Record<string, unknown>)
+            .filter(([key]) => key !== 'id')
+            .sort(([left], [right]) =>
+              left < right ? -1 : left > right ? 1 : 0
+            )
+            .map(([key, entry]) => [
+              key,
+              key === 'children' ? stripKey(entry) : entry,
+            ]);
+
+          return Object.fromEntries(entries);
+        }
+
+        return node;
+      };
+      const usedIds = new Set<string>();
+      const collectUsed = (nodes: readonly unknown[]) => {
+        for (const node of nodes) {
+          if (!node || typeof node !== 'object' || 'text' in node) continue;
+          const record = node as Record<string, unknown>;
+
+          if (typeof record.id === 'string') usedIds.add(record.id);
+          if (Array.isArray(record.children)) collectUsed(record.children);
+        }
+      };
+
+      collectUsed(value.children);
+      if (value.roots) {
+        for (const nodes of Object.values(value.roots)) collectUsed(nodes);
+      }
+
+      const byContent = new Map<string, string[]>();
+      const indexCurrent = (nodes: readonly unknown[]) => {
+        for (const node of nodes) {
+          if (!node || typeof node !== 'object' || 'text' in node) continue;
+          const record = node as Record<string, unknown>;
+
+          if (typeof record.id === 'string' && !usedIds.has(record.id)) {
+            const key = JSON.stringify(stripKey(record));
+            const ids = byContent.get(key);
+
+            if (ids) ids.push(record.id);
+            else byContent.set(key, [record.id]);
+          }
+          if (Array.isArray(record.children)) indexCurrent(record.children);
+        }
+      };
+
+      indexCurrent(current.children);
+      if (current.roots) {
+        for (const nodes of Object.values(current.roots)) indexCurrent(nodes);
+      }
+
+      const matchExact = (nodes: readonly unknown[]): unknown[] =>
+        nodes.map((node) => {
+          if (!node || typeof node !== 'object' || 'text' in node) return node;
+          const record = node as Record<string, unknown>;
+          const matchedChildren = Array.isArray(record.children)
+            ? matchExact(record.children)
+            : undefined;
+
+          if (typeof record.id === 'string') {
+            return matchedChildren
+              ? { ...record, children: matchedChildren }
+              : record;
+          }
+          const ids = byContent.get(JSON.stringify(stripKey(record)));
+          const id = ids?.shift();
+
+          if (id) usedIds.add(id);
+
+          return {
+            ...record,
+            ...(id ? { id } : {}),
+            ...(matchedChildren ? { children: matchedChildren } : {}),
+          };
+        });
+
+      const exactChildren = matchExact(
+        value.children
+      ) as JsonEditorValue['children'];
+      const inputRoots = value.roots
+        ? Object.entries(value.roots).map(
+            ([root, nodes]) => [root, matchExact(nodes)] as const
+          )
+        : [];
+      const [children, ...roots] = keepElementIds(editor, [
+        [current.children, exactChildren],
+        ...inputRoots.map(
+          ([root, nodes]) =>
+            [
+              current.roots && Object.hasOwn(current.roots, root)
+                ? current.roots[root]
+                : [],
+              nodes as JsonEditorValue['children'],
+            ] as const
+        ),
+      ]);
+      const { children: _children, roots: _roots, ...restValue } = value;
+      const paired: EditorDocumentValue = {
+        ...restValue,
+        children: children as Value,
+        ...(value.roots === undefined
+          ? {}
+          : {
+              roots: Object.fromEntries(
+                inputRoots.map(([root], at) => [root, roots[at]])
+              ) as EditorDocumentValue['roots'],
+            }),
+      };
+      const fitted = getEditorSchema(editor).fitDocumentRaw(paired);
+      const documentChange = DocumentChange.between(current, fitted);
 
       if (policy) {
         editor.update(policy, (tx) => {

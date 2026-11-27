@@ -691,8 +691,12 @@ export const authoredAdmission: DocumentAdmission = {
 
     const schema = getCompiledEditorSchema(editor);
     const settleOptions = {
+      donateReservedId: !loads,
       resolveSchema: () =>
-        authoredResolveSchemaOf(editor, { generates: loads }),
+        authoredResolveSchemaOf(editor, {
+          donateReservedId: !loads,
+          generates: loads,
+        }),
       returnsHeld: true,
       restoreMissingFormats,
       schema,
@@ -721,7 +725,7 @@ export const authoredAdmission: DocumentAdmission = {
     // or hold storage the schema no longer reads.
     const readable = loads ? withReadableStorage(admitted, schema) : admitted;
     const spares = loads
-      ? sparesFor(readable, schema, claimSitesOf(readable))
+      ? sparesFor(readable, schema, claimSitesOf(readable, schema))
       : NO_SPARE_WRITES;
     const drops = reserveDropsOf(getValueRecords(readable), change.deleteRoots);
     const spared = withSpareWrites(
@@ -778,7 +782,7 @@ export const authoredAdmission: DocumentAdmission = {
     const readable = withReadableStorage(base, schema);
     const spared = withSpareWrites(
       readable,
-      sparesFor(readable, schema, claimSitesOf(readable))
+      sparesFor(readable, schema, claimSitesOf(readable, schema))
     );
 
     if (spared === base) return settled;

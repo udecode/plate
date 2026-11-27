@@ -99,9 +99,10 @@ export const loadElementIds = (
   return {
     fill: (document: EditorDocumentValue) => {
       const held = new Set<string>();
+      const spareHeld = new Set<string>();
       const lacks = (
         node: JsonNode,
-        countsAsHolder: boolean,
+        holders: Set<string> | null,
         root: string | null,
         path: readonly number[]
       ) => {
@@ -110,8 +111,8 @@ export const loadElementIds = (
 
         if (id === undefined) return true;
         assertValidElementId(id, idAt(node, root, path));
-        if (!standIns.has(id) && !(countsAsHolder && held.has(id))) {
-          if (countsAsHolder) held.add(id);
+        if (!standIns.has(id) && !holders?.has(id)) {
+          holders?.add(id);
           reserved.add(id);
 
           return false;
@@ -123,36 +124,51 @@ export const loadElementIds = (
         while (reserved.has(`fill.${next}`)) next += 1;
         const value = `fill.${next}`;
 
+        next += 1;
         reserved.add(value);
 
         return value;
       };
       const lacking: Array<{ path: readonly number[]; root: string }> = [];
       const spares = sparesOf(document);
+      const sharedIds = spares?.sharedIds;
       const hidden: Array<{ line: number; path: readonly number[] }> = [];
 
       visitRootElements(document, (node, root, path) => {
-        if (lacks(node, true, root, path)) lacking.push({ path, root });
+        if (lacks(node, held, root, path)) lacking.push({ path, root });
       });
       spares?.lines.forEach(({ built, node }, line) =>
         visitElements([node], (element, path) => {
-          if (lacks(element, !built, null, path)) hidden.push({ line, path });
+          const elementId = storedElementIdOf(element);
+          const holders = built
+            ? null
+            : elementId !== undefined && sharedIds?.has(elementId)
+              ? spareHeld
+              : held;
+
+          if (lacks(element, holders, null, path)) {
+            hidden.push({ line, path });
+          }
         })
       );
 
       const renames = lacking.map((place) => ({ ...place, value: fillId() }));
-      const lines = spares?.lines.map(({ node }) => node) ?? [];
-
-      for (const { line, path } of hidden) {
-        lines[line] = withIdAt(
-          getDefined(lines[line]),
-          path.slice(1),
-          fillId()
-        );
-      }
-
       const spareRepair =
-        hidden.length > 0 ? getDefined(spares).write(lines) : null;
+        hidden.length > 0
+          ? (() => {
+              const lines = getDefined(spares).lines.map(({ node }) => node);
+
+              for (const { line, path } of hidden) {
+                lines[line] = withIdAt(
+                  getDefined(lines[line]),
+                  path.slice(1),
+                  fillId()
+                );
+              }
+
+              return getDefined(spares).write(lines);
+            })()
+          : null;
       const containers = spareRepair?.containers ?? [];
       let repaired: Readonly<{
         change: ReturnType<typeof renameChange>;
@@ -161,7 +177,17 @@ export const loadElementIds = (
 
       if (renames.length > 0) {
         const spared = repaired?.value ?? document;
-        const indexOf = (root: string) => valueRootIndex(spared, root);
+        const indexes = new Map<string, ReturnType<typeof valueRootIndex>>();
+        const indexOf = (root: string) => {
+          let index = indexes.get(root);
+
+          if (!index) {
+            index = valueRootIndex(spared, root);
+            indexes.set(root, index);
+          }
+
+          return index;
+        };
         const change = renameChange(
           renames.map(({ path, root, value }) => ({
             from: indexOf(root).nodeRange(path).from,
@@ -230,16 +256,11 @@ const longestRising = (pairs: Pairs): Pairs => {
   return rising.reverse();
 };
 
-export const keepElementIds = <N extends JsonNode>(
-  editor: Editor,
+export const keepElementIdsInLists = <N extends JsonNode>(
   lists: ReadonlyArray<
     readonly [old: readonly JsonNode[], incoming: readonly N[]]
   >
 ): Array<readonly N[]> => {
-  if (!getCompiledEditorSchema(editor).everyElementHasId) {
-    return lists.map(([, incoming]) => incoming);
-  }
-
   const reserved = new Set<string>();
   const reserve = (node: JsonNode) => {
     const id = storedElementIdOf(node);
@@ -401,3 +422,13 @@ export const keepElementIds = <N extends JsonNode>(
     ([old, incoming]) => keepListIds(old, incoming) as readonly N[]
   );
 };
+
+export const keepElementIds = <N extends JsonNode>(
+  editor: Editor,
+  lists: ReadonlyArray<
+    readonly [old: readonly JsonNode[], incoming: readonly N[]]
+  >
+): Array<readonly N[]> =>
+  getCompiledEditorSchema(editor).everyElementHasId
+    ? keepElementIdsInLists(lists)
+    : lists.map(([, incoming]) => incoming);

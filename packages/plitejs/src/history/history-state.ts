@@ -39,6 +39,7 @@ import {
   areEditorSchemaIdentitiesEqual,
   propertyTargetsReadParents,
 } from '../core/schema-compiler';
+import { alike } from '../core/stored-element-id';
 import { countCoreWork, readCoreWork } from '../core/work';
 import type { AnyEditor } from '../interfaces/editor';
 import { ElementApi } from '../interfaces/element';
@@ -1804,7 +1805,7 @@ const unwrapsTo = (
     ...Object.keys(before.roots ?? {}),
   ]);
   const changed = [...roots].filter(
-    (root) => !jsonEqual(valueRoot(after, root), valueRoot(before, root))
+    (root) => !alike(valueRoot(after, root), valueRoot(before, root))
   );
 
   if (changed.length !== 1) return false;
@@ -1819,14 +1820,14 @@ const unwrapsTo = (
     left.length - from === right.length - from - shift &&
     left
       .slice(from)
-      .every((node, index) => jsonEqual(node, right[from + shift + index]));
+      .every((node, index) => alike(node, right[from + shift + index]));
   let left: readonly JsonNode[] = valueRoot(after, root);
   let right: readonly JsonNode[] = valueRoot(before, root);
 
   while (true) {
     let at = 0;
 
-    while (at < left.length && jsonEqual(left[at], right[at])) at += 1;
+    while (at < left.length && alike(left[at], right[at])) at += 1;
 
     const element = left[at];
     const other = right[at];
@@ -1836,9 +1837,9 @@ const unwrapsTo = (
     const held = element.children.length;
 
     if (
-      jsonEqual(nodeProps(element), props) &&
+      alike(nodeProps(element), props) &&
       element.children.every((child, index) =>
-        jsonEqual(child, right[at + index])
+        alike(child, right[at + index])
       ) &&
       equalFrom(left, right, at + 1, held - 1)
     ) {
@@ -1847,7 +1848,7 @@ const unwrapsTo = (
     if (
       !other ||
       !isElementNode(other) ||
-      !jsonEqual(nodeProps(element), nodeProps(other)) ||
+      !alike(nodeProps(element), nodeProps(other)) ||
       !equalFrom(left, right, at + 1, 0)
     ) {
       return false;

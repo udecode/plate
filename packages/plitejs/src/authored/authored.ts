@@ -117,6 +117,7 @@ import {
   uniquePropertiesOf,
 } from '../core/schema-compiler';
 import { isBoundToSharedRoom } from '../core/shared-room';
+import * as storedIds from '../core/stored-element-id';
 import { gridHoldersOf, gridRolesOf } from '../core/survival';
 import {
   type TxDeclaredMethod,
@@ -168,7 +169,7 @@ import {
   authoredAdmission,
   createDocumentMarksValidator,
 } from './facts/admission';
-import { carriedIn } from './facts/compact';
+import { carriedIn, compactClaims } from './facts/compact';
 import { createDependencies, type Dependencies } from './facts/dependencies';
 import { editingChangeOf, isEditingChange } from './facts/editing';
 import {
@@ -618,12 +619,17 @@ const isEmptiedGrid = (
 const listAcceptsTo = (
   acceptedList: readonly JsonNode[],
   wroteList: readonly JsonNode[],
-  holdsParts: (node: object) => boolean
+  holdsParts: (node: object) => boolean,
+  reservedId: boolean
 ): boolean => {
   const withoutEmptiedGrids = (list: readonly JsonNode[]) =>
     list.filter((node) => !isEmptiedGrid(node, holdsParts));
   const accepted = withoutEmptiedGrids(acceptedList);
   const wrote = withoutEmptiedGrids(wroteList);
+  const propsMatch = (left: JsonNode, right: JsonNode) =>
+    reservedId
+      ? storedIds.alike(nodePropsOf(left), nodePropsOf(right))
+      : jsonEqual(nodePropsOf(left), nodePropsOf(right));
   let end = wrote.length;
 
   while (end > accepted.length && isBuilt(getDefined(wrote[end - 1]))) {
@@ -639,8 +645,8 @@ const listAcceptsTo = (
         jsonEqual(node, other) ||
         (!!node.children &&
           !!other.children &&
-          jsonEqual(nodePropsOf(node), nodePropsOf(other)) &&
-          listAcceptsTo(node.children, other.children, holdsParts))
+          propsMatch(node, other) &&
+          listAcceptsTo(node.children, other.children, holdsParts, reservedId))
       );
     })
   );
@@ -649,7 +655,8 @@ const listAcceptsTo = (
 const acceptsTo = (
   accepted: JsonEditorValue,
   wrote: JsonEditorValue,
-  holdsParts: (node: object) => boolean
+  holdsParts: (node: object) => boolean,
+  reservedId: boolean
 ) => {
   const { children, records: _records, roots = {}, ...fields } = accepted;
   const {
@@ -662,13 +669,14 @@ const acceptsTo = (
 
   return (
     jsonEqual(fields, wroteFields) &&
-    listAcceptsTo(children, wroteChildren, holdsParts) &&
+    listAcceptsTo(children, wroteChildren, holdsParts, reservedId) &&
     jsonEqual(names.toSorted(), Object.keys(wroteRoots).toSorted()) &&
     names.every((name) =>
       listAcceptsTo(
         getDefined(roots[name]),
         getDefined(wroteRoots[name]),
-        holdsParts
+        holdsParts,
+        reservedId
       )
     )
   );
@@ -690,7 +698,8 @@ const assertFramedLaw = (
     !acceptsTo(
       accepted,
       contentOf(frame.value),
-      gridHoldersOf(schema.ownership)
+      gridHoldersOf(schema.ownership),
+      schema.ownership.reservedElementId !== null
     )
   ) {
     throw new Error(
@@ -2125,6 +2134,7 @@ export const createAuthoredPlugin = (
         const value = editor.read.value();
 
         ({ framed } = ledger.prepare(value));
+        compactClaims(value);
         if (storesSpares(getCompiledEditorSchema(editor))) {
           const { indexes, marked } = spareBlocksOf(value);
 
@@ -2903,22 +2913,29 @@ export const createAuthoredPlugin = (
               ? sparesFor(
                   recordedValue as EditorDocumentValue,
                   compiled,
-                  changedSitesOf(recordedLater, recordedIndexes, before),
+                  changedSitesOf(
+                    recordedLater,
+                    recordedIndexes,
+                    before,
+                    compiled
+                  ),
                   deferred.map(({ index, ...build }) => ({
                     ...build,
                     node:
-                      framedChild(
-                        valueRootIndex(after, build.root),
-                        build.path.length === 0
-                          ? null
-                          : getDefined(
-                              recordedIndexes.get(build.root)
-                            ).nodeRange(build.path).from,
-                        index,
-                        String(build.node.type),
-                        (position, assoc) =>
-                          mapPosition(build.root, position, assoc)
-                      ) ?? build.node,
+                      (projection
+                        ? framedChild(
+                            valueRootIndex(after, build.root),
+                            build.path.length === 0
+                              ? null
+                              : getDefined(
+                                  recordedIndexes.get(build.root)
+                                ).nodeRange(build.path).from,
+                            index,
+                            String(build.node.type),
+                            (position, assoc) =>
+                              mapPosition(build.root, position, assoc)
+                          )
+                        : null) ?? build.node,
                     writer: owned ? null : mark,
                   })),
                   spareBlocksOf(recordedValue),

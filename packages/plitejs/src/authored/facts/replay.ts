@@ -480,7 +480,8 @@ export const keepingGapSpares = (
       );
 };
 
-const isReserveMember = (member: AuthoredMember) => member.kind === 'reserve';
+const isBookkeepingMember = (member: AuthoredMember) =>
+  member.kind === 'reserve' || member.kind === 'as';
 
 const withoutSpareMods = (
   modifications: readonly PropertyModification[],
@@ -510,12 +511,14 @@ const withoutSpareMods = (
     )
   );
 
-  if (jsonEqual(was.filter(isReserveMember), now.filter(isReserveMember))) {
+  if (
+    jsonEqual(was.filter(isBookkeepingMember), now.filter(isBookkeepingMember))
+  ) {
     return modifications;
   }
 
-  const keptWas = was.filter((member) => !isReserveMember(member));
-  const keptNow = now.filter((member) => !isReserveMember(member));
+  const keptWas = was.filter((member) => !isBookkeepingMember(member));
+  const keptNow = now.filter((member) => !isBookkeepingMember(member));
   const removed = keptWas.filter(
     (member) => !keptNow.some((kept) => jsonEqual(member, kept))
   );

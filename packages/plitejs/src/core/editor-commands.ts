@@ -1073,7 +1073,8 @@ export const editorCommands: EditorCommands = Object.freeze({
         const typing = typesAtSelection(getActiveCommandEditor(), {
           marks: input.options?.marks,
         });
-        const replacement = blockReplacing(
+        const firstBlock = getDefined(nodeBlocks[0])[0];
+        const rawReplacement = blockReplacing(
           state,
           getDefined(nodeBlocks[0])[1],
           root,
@@ -1084,6 +1085,13 @@ export const editorCommands: EditorCommands = Object.freeze({
               nodeBlocks.map(([block]) => state.key(block))
             )
         );
+        const replacement =
+          rawReplacement &&
+          NodeApi.isElement(rawReplacement) &&
+          rawReplacement.type === firstBlock.type &&
+          typeof firstBlock.id === 'string'
+            ? { ...rawReplacement, id: firstBlock.id }
+            : rawReplacement;
         const nodeReplacement =
           replacement &&
           getNodeSelectionReplacement(state, nodeBlocks, root, [replacement]);

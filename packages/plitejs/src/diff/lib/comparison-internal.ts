@@ -1,7 +1,10 @@
 import type { EditorDocumentValue, EditorStateSchemaApi, Value } from '../..';
 import { jsonEqual } from '../../core/change/json';
+import { isElementNode, type JsonNode } from '../../core/change/tokens';
 import { fingerprintEditorJson } from '../../core/json-fingerprint';
+import { storedElementIdOf } from '../../core/stored-element-id';
 import { snapshotEditorJsonValue } from '../../core/value-codec';
+import type { ComparisonDocumentIndex } from './comparison-index';
 import type {
   ComparedChange,
   ComparisonSnapshot,
@@ -72,6 +75,197 @@ export const detachComparisonDocument = <V extends Value>(
   ) as ComparisonDocument<V>;
 
   return document;
+};
+
+const scanIds = (
+  nodes: readonly JsonNode[],
+  onElement: (id: string | undefined) => void
+) => {
+  for (const node of nodes) {
+    if (!isElementNode(node)) continue;
+    onElement(storedElementIdOf(node));
+    scanIds(node.children, onElement);
+  }
+};
+
+const scanDocumentIds = (
+  document: ComparisonDocument,
+  onElement: (id: string | undefined) => void
+) => {
+  scanIds(document.children, onElement);
+  const { roots } = document;
+
+  if (!roots) return;
+  for (const root of Object.keys(roots).sort()) {
+    scanIds(roots[root], onElement);
+  }
+};
+
+const pathKey = (root: string | null, path: readonly number[]) =>
+  `${root ?? ''}:${path.join(',')}`;
+
+const stripElementIdsFromNodes = (
+  nodes: readonly JsonNode[]
+): readonly JsonNode[] =>
+  nodes.map((node) => {
+    if (!isElementNode(node)) return node;
+    const children = stripElementIdsFromNodes(node.children);
+
+    if (storedElementIdOf(node) === undefined && children === node.children) {
+      return node;
+    }
+    const { id: _id, ...rest } = node as Record<string, unknown>;
+
+    return Object.freeze({ ...rest, children });
+  });
+
+export const needsComparisonElementIds = <V extends Value>(
+  before: ComparisonDocument<V>,
+  after: ComparisonDocument<V>
+): boolean => {
+  let beforeHasId = false;
+
+  scanDocumentIds(before, (id) => {
+    if (id !== undefined) beforeHasId = true;
+  });
+  if (!beforeHasId) return false;
+
+  let afterMissingId = false;
+
+  scanDocumentIds(after, (id) => {
+    if (id === undefined) afterMissingId = true;
+  });
+
+  return afterMissingId;
+};
+
+export const stripComparisonElementIds = <V extends Value>(
+  document: ComparisonDocument<V>
+): ComparisonDocument<V> => {
+  const { roots } = document;
+
+  return Object.freeze({
+    children: stripElementIdsFromNodes(document.children) as V,
+    ...(roots
+      ? {
+          roots: Object.freeze(
+            Object.fromEntries(
+              Object.keys(roots)
+                .sort()
+                .map((root) => [
+                  root,
+                  stripElementIdsFromNodes(roots[root]) as V,
+                ])
+            )
+          ),
+        }
+      : {}),
+  });
+};
+
+const nodeAtPath = (
+  document: ComparisonDocument,
+  root: string | null,
+  path: readonly number[]
+): JsonNode | undefined => {
+  let list: readonly JsonNode[] | undefined =
+    root === null ? document.children : document.roots?.[root];
+  let current: JsonNode | undefined;
+
+  for (const index of path) {
+    current = list?.[index];
+    if (!current || !isElementNode(current)) return undefined;
+    list = current.children;
+  }
+
+  return current;
+};
+
+export const fillComparisonElementIds = <V extends Value>(
+  before: ComparisonDocument<V>,
+  after: ComparisonDocument<V>,
+  beforeIndex: ComparisonDocumentIndex,
+  afterIndex: ComparisonDocumentIndex,
+  inPlaceMatches: ReadonlyArray<readonly [number, number]>
+): ComparisonDocument<V> => {
+  const used = new Set<string>();
+
+  scanDocumentIds(before, (id) => {
+    if (id !== undefined) used.add(id);
+  });
+  scanDocumentIds(after, (id) => {
+    if (id !== undefined) used.add(id);
+  });
+
+  const matchedIds = new Map<string, string>();
+  const claimed = new Set<string>();
+
+  scanDocumentIds(after, (id) => {
+    if (id !== undefined) claimed.add(id);
+  });
+
+  for (const [bIndex, aIndex] of inPlaceMatches) {
+    const bMeta = beforeIndex.nodes[bIndex];
+    const aMeta = afterIndex.nodes[aIndex];
+    const bNode = nodeAtPath(before, bMeta.root, bMeta.path);
+    const id = bNode ? storedElementIdOf(bNode) : undefined;
+
+    if (id !== undefined && !claimed.has(id)) {
+      claimed.add(id);
+      matchedIds.set(pathKey(aMeta.root, aMeta.path), id);
+    }
+  }
+
+  let next = 0;
+  const draw = () => {
+    while (used.has(`fill.${next}`)) next += 1;
+    const id = `fill.${next}`;
+
+    used.add(id);
+    next += 1;
+
+    return id;
+  };
+  const fillNodes = (
+    nodes: readonly JsonNode[],
+    root: string | null,
+    prefix: readonly number[]
+  ): readonly JsonNode[] =>
+    nodes.map((node, index) => {
+      if (!isElementNode(node)) return node;
+      const path = [...prefix, index];
+      const children = fillNodes(node.children, root, path);
+      const existing = storedElementIdOf(node);
+      const id = existing ?? matchedIds.get(pathKey(root, path)) ?? draw();
+
+      if (existing !== undefined && children === node.children) return node;
+
+      return Object.freeze({
+        ...node,
+        ...(existing === undefined ? { id } : {}),
+        children,
+      });
+    });
+
+  const afterRoots = after.roots;
+  const afterRootKeys = Object.keys(afterRoots ?? {}).sort();
+  const children = fillNodes(after.children, null, []) as V;
+  const roots =
+    afterRoots && afterRootKeys.length > 0
+      ? Object.freeze(
+          Object.fromEntries(
+            afterRootKeys.map((root) => [
+              root,
+              fillNodes(afterRoots[root], root, []) as V,
+            ])
+          )
+        )
+      : undefined;
+
+  return Object.freeze({
+    children,
+    ...(roots ? { roots } : {}),
+  });
 };
 
 export const createComparisonSnapshot = <V extends Value>(

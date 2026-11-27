@@ -104,6 +104,9 @@ export const generatedOf = (schema: CompiledEditorSchema) => {
         found.set(property.key, [...(found.get(property.key) ?? []), property]);
       }
     }
+    if (schema.reservedElementId) {
+      found.set('id', [...(found.get('id') ?? []), schema.reservedElementId]);
+    }
     byKey = found;
     GENERATED.set(schema, byKey);
   }
@@ -234,7 +237,11 @@ export const closeCommandValues = (
 
   if (generated.size === 0) return null;
 
-  type Touched = Readonly<{ inserted: boolean; range: IndexedNodeRange }>;
+  type Touched = Readonly<{
+    before: JsonNode | null;
+    inserted: boolean;
+    range: IndexedNodeRange;
+  }>;
   const touchedByRoot = new Map<string, Touched[]>();
 
   for (const [root, index] of input.indexes) {
@@ -249,7 +256,7 @@ export const closeCommandValues = (
       root === 'main' || Object.hasOwn(input.before.roots ?? {}, root)
         ? valueRootIndex(input.before, root)
         : null;
-    const kept = new Set<number>();
+    const kept = new Map<number, JsonNode>();
     const touched = new Map<number, IndexedNodeRange>();
 
     rootChange.iterChangedRanges((fromA, toA, fromB, toB) => {
@@ -263,7 +270,7 @@ export const closeCommandValues = (
         if (range.kind !== 'text' && range.from >= fromA && range.from < toA) {
           const at = rootChange.mapPos(range.from, 1, 'after');
 
-          if (at !== null) kept.add(at);
+          if (at !== null) kept.set(at, beforeIndex.node(range.path));
         }
       }
     });
@@ -271,6 +278,7 @@ export const closeCommandValues = (
       touchedByRoot.set(
         root,
         [...touched.values()].map((range) => ({
+          before: kept.get(range.from) ?? null,
           // A suggestion claims each element it builds, wherever the change
           // aligns it; a write that lands claims nothing, so its change says.
           inserted: input.editing
@@ -300,11 +308,12 @@ export const closeCommandValues = (
   // fresh one, as the canonical pass would give it, so the proposed view
   // builds it as it stands.
   const filled = new Map(input.indexes);
+  let needsClosing = false;
 
   for (const [root, touched] of touchedByRoot) {
     let index = getDefined(input.indexes.get(root));
 
-    for (const { range } of touched) {
+    for (const { before, inserted, range } of touched) {
       const node = index.node(range.path);
       const type = String(node.type);
       const materialized =
@@ -315,20 +324,38 @@ export const closeCommandValues = (
 
         return node[key] === undefined &&
           property &&
-          materialized?.has(property.id)
+          (property === input.compiled.reservedElementId ||
+            materialized?.has(property.id))
           ? [[key, generateElementPropertyValue(property)] as const]
           : [];
       });
 
       if (fills.length > 0) {
+        needsClosing = true;
         index = index.withExactNodeProperties(range.path, {
           ...ownProps(node),
           ...Object.fromEntries(fills),
         });
+      } else if (inserted || !before || before.type !== node.type) {
+        needsClosing = true;
+      } else if (!needsClosing) {
+        const shownBefore = shownOf(before);
+        const shownAfter = shownOf(node);
+
+        for (const key of generated.keys()) {
+          if (
+            !jsonEqual(before[key], node[key]) ||
+            !jsonEqual(shownBefore?.[key], shownAfter?.[key])
+          ) {
+            needsClosing = true;
+            break;
+          }
+        }
       }
     }
     filled.set(root, index);
   }
+  if (!needsClosing) return null;
 
   const stored = input.storedOf(filled);
   const storedRoots = contentRootsOf(stored);
