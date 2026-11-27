@@ -1,4 +1,5 @@
 import { type Path, PathApi, RangeApi } from '../..';
+import { hasNonWritableAt } from '../../core/non-writable';
 import {
   capturePlacement,
   getPlacementGeneration,
@@ -273,12 +274,16 @@ export const createDOMRepairQueue = ({
   // The browser already typed the refused text, and the integrity observer
   // accepts typing in a text-flow host, so nothing else takes it back.
   const giveBackRefusedTextInsert = ({
+    editorText,
     insert,
     path,
+    restoreFullText = false,
     textHost,
   }: {
+    editorText?: string;
     insert: { offset: number; text: string };
     path: Path;
+    restoreFullText?: boolean;
     textHost: Element | null | undefined;
   }) => {
     clearEditablePendingNativeTextInputRepair(inputController);
@@ -290,27 +295,50 @@ export const createDOMRepairQueue = ({
     const start = end - insert.text.length;
 
     if (
-      !textHost ||
-      !isDOMText(node) ||
-      !textHost.contains(node) ||
-      start < 0 ||
-      node.data.slice(start, end) !== insert.text
+      !restoreFullText &&
+      textHost &&
+      isDOMText(node) &&
+      textHost.contains(node) &&
+      start >= 0 &&
+      node.data.slice(start, end) === insert.text
     ) {
-      return;
+      const flowEntry = resolveDOMTextFlowEntry(node, start);
+      const offset = flowEntry
+        ? PathApi.equals(flowEntry.path, path)
+          ? flowEntry.offset
+          : null
+        : getTextHostSelectionOffset({
+            anchorNode: node,
+            anchorOffset: start,
+            textHost,
+          });
+
+      if (offset === insert.offset) {
+        node.deleteData(start, insert.text.length);
+        return;
+      }
     }
 
-    const flowEntry = resolveDOMTextFlowEntry(node, start);
-    const offset = flowEntry
-      ? PathApi.equals(flowEntry.path, path)
-        ? flowEntry.offset
-        : null
-      : getTextHostSelectionOffset({
-          anchorNode: node,
-          anchorOffset: start,
-          textHost,
-        });
+    if (textHost && editorText !== undefined) {
+      const currentText = textHost.textContent?.replace(/\uFEFF/g, '') ?? '';
 
-    if (offset === insert.offset) node.deleteData(start, insert.text.length);
+      if (currentText !== editorText) {
+        if (isDOMText(node) && textHost.contains(node)) {
+          node.data = editorText === '' ? '\uFEFF' : editorText;
+        } else {
+          const textNode = textHost.querySelector(
+            '[data-editor-string="true"]'
+          );
+          const firstChild = textNode?.firstChild;
+
+          if (isDOMText(firstChild)) {
+            firstChild.data = editorText === '' ? '\uFEFF' : editorText;
+          } else if (textNode) {
+            textNode.textContent = editorText === '' ? '\uFEFF' : editorText;
+          }
+        }
+      }
+    }
   };
 
   const armRepairInducedSelectionOriginGuard = () => {
@@ -359,7 +387,7 @@ export const createDOMRepairQueue = ({
       !RangeApi.isCollapsed(selection) ||
       !PathApi.equals(selection.anchor.path, target.path) ||
       selection.anchor.offset !== insert.offset ||
-      editor.read.nodes.elementReadOnly({ at: selection })
+      hasNonWritableAt(editor, selection)
     ) {
       return false;
     }
@@ -661,11 +689,20 @@ export const createDOMRepairQueue = ({
           return;
         }
         if (
-          editor.read.nodes.elementReadOnly({
-            at: { path, offset: insert.offset },
-          })
+          hasNonWritableAt(
+            editor,
+            currentSelection ?? { path, offset: insert.offset }
+          )
         ) {
-          giveBackRefusedTextInsert({ insert, path, textHost });
+          giveBackRefusedTextInsert({
+            editorText: editorNode.text,
+            insert,
+            path,
+            restoreFullText: Boolean(
+              currentSelection && RangeApi.isExpanded(currentSelection)
+            ),
+            textHost,
+          });
           return;
         }
         const nextOffset = insert.offset + insert.text.length;
@@ -797,7 +834,13 @@ export const createDOMRepairQueue = ({
             )
         );
         if (!committed) {
-          giveBackRefusedTextInsert({ insert, path, textHost });
+          giveBackRefusedTextInsert({
+            editorText: editorNode.text,
+            insert,
+            path,
+            restoreFullText: shouldReplaceExpandedSelection,
+            textHost,
+          });
         }
         if (textHost && !isInsideVirtualizedDOM(textHost)) {
           setEditableModelSelectionPreference({

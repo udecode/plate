@@ -1,5 +1,6 @@
 import { authoredDocumentCapabilityPoint } from '../core/authored-document-capability';
 import {
+  authoredDirectProperties,
   getAuthoredUpdateView,
   registerAuthoredRuntime,
 } from '../core/authored-runtime';
@@ -2657,6 +2658,16 @@ export const createAuthoredPlugin = (
                       root: input.selectionBeforeRoot,
                     },
               schema: tracksPlaces(compiled) ? compiled : null,
+              direct: (() => {
+                const contributed = getPluginContributions(
+                  editor,
+                  authoredDirectProperties
+                );
+
+                return contributed.length > 0
+                  ? new Set(contributed.flat())
+                  : undefined;
+              })(),
               unique: uniquePropertiesOf(compiled),
               standing,
               steps,

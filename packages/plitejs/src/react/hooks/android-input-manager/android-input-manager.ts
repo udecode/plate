@@ -12,6 +12,7 @@ import {
   RangeApi,
   TextApi,
 } from '../../..';
+import { hasNonWritableAt } from '../../../core/non-writable';
 import { setShownSelectionAsView } from '../../../core/view-carets';
 import {
   applyStringDiff,
@@ -252,7 +253,7 @@ export function createAndroidInputManager({
     if (
       action.deletes &&
       at &&
-      hasEdgeInReadOnlyInline(editor, at) &&
+      (hasEdgeInReadOnlyInline(editor, at) || hasNonWritableAt(editor, at)) &&
       editor.read((state) => state.lastCommit()?.version) === version
     ) {
       EDITOR_TO_PENDING_SELECTION.delete(editor);
@@ -425,13 +426,17 @@ export function createAndroidInputManager({
         ) ?? []
       );
 
-      const deleteRefused =
-        !diff.diff.text &&
+      const editRefused =
+        (Boolean(diff.diff.text) || diff.diff.end > diff.diff.start) &&
         editor.read((state) => state.lastCommit()?.version) === version;
 
-      if (deleteRefused) {
+      if (editRefused) {
+        if (diff.diff.text) {
+          EDITOR_TO_PENDING_ACTION.delete(editor);
+        }
         const pendingSelection = EDITOR_TO_PENDING_SELECTION.get(editor);
         const keepsPendingCaret =
+          !diff.diff.text &&
           !!pendingSelection &&
           !RangeApi.edges(pendingSelection).some((point) =>
             PathApi.equals(point.path, diff.path)

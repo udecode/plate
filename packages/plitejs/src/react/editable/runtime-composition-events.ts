@@ -52,6 +52,7 @@ export const useEditableCompositionLease = ({
 
     return {
       flushRender: flushCompositionRender,
+      rebuildLine,
       grant: (selection) => {
         const root = runtime.rootElement;
 

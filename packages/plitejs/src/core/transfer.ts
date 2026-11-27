@@ -61,6 +61,7 @@ import {
   withEditorUpdateRootScope,
 } from './public-state';
 import { executeEditorRead } from './read-registry';
+import { publishEditorRefusal } from './refusal';
 import { EditorSchemaValidationError } from './schema-validation';
 import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
 import {
@@ -605,6 +606,14 @@ const runTransfer = (
     admission = admit(editor, input, method);
   } catch (error) {
     if (error instanceof TransferRefusalError) {
+      if (error.veto) {
+        publishEditorRefusal(editor, {
+          path: error.veto.path,
+          reason: 'transfer-veto',
+          root: error.veto.root,
+          transferReason: error.reason,
+        });
+      }
       return { reason: error.reason, status: 'refused' };
     }
     throw error;
@@ -1069,6 +1078,14 @@ const runTransfer = (
   } catch (error) {
     releaseHeld(held);
     if (error instanceof TransferRefusalError) {
+      if (error.veto) {
+        publishEditorRefusal(editor, {
+          path: error.veto.path,
+          reason: 'transfer-veto',
+          root: error.veto.root,
+          transferReason: error.reason,
+        });
+      }
       return { reason: error.reason, status: 'refused' };
     }
     if (error instanceof EditorSchemaValidationError) {

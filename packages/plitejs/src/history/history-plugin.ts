@@ -73,6 +73,7 @@ import {
   getEditorRuntime,
   getEditorRuntimeOwner,
 } from '../core/editor-runtime';
+import { shouldSkipHistoryForOnlyProperties } from '../core/history-skip';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
 import {
   type NativeGroupingInput,
@@ -1073,12 +1074,22 @@ const recordHistoryStep = (
 };
 
 const shouldSaveCommit = (
+  editor: Editor,
+  before: EditorDocumentValue,
   commit: EditorCommit,
-  effects: readonly EditorEffect[]
+  effects: readonly EditorEffect[],
+  hasRecovery = false
 ) =>
   !commit.tags.includes('history-skip') &&
   !commit.tags.includes('historic') &&
   !commit.annotations[documentReplacement.key] &&
+  !shouldSkipHistoryForOnlyProperties(
+    editor,
+    before,
+    commit,
+    effects,
+    hasRecovery
+  ) &&
   (!commit.changes.empty || effects.length > 0);
 
 const createHistoryPlugin = <
@@ -1362,7 +1373,15 @@ const createHistoryPlugin = <
       });
     }
 
-    if (!shouldSaveCommit(commit, effects)) {
+    if (
+      !shouldSaveCommit(
+        editor,
+        before,
+        commit,
+        effects,
+        Boolean(anchorCapture?.recovery)
+      )
+    ) {
       if (commit.changed.hasAny('snapshot')) {
         LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
       }

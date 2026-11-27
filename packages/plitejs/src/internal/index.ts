@@ -360,7 +360,29 @@ export type {
   SharedViewStateSubscription,
 } from '../core/public-state';
 export { projectRangeInSnapshot } from '../range-projection';
-export { EditorRefusalError } from '../core/refusal';
+export {
+  EditorRefusalError,
+  publishEditorRefusal,
+  subscribeEditorRefusals,
+} from '../core/refusal';
+export {
+  hasNonWritableAt,
+  hasNonWritableContributors,
+  isElementNonWritable,
+  nonWritableContent,
+  nonWritableRoot,
+  type NonWritableContentPredicate,
+  type NonWritableRootPredicate,
+} from '../core/non-writable';
+export {
+  readCommitRootIndex,
+  visitDocumentChangeSections,
+  type DocumentChangeSection,
+} from '../core/change-sections';
+export {
+  shouldSkipHistoryForOnlyProperties,
+  skipHistoryIfOnlyProperties,
+} from '../core/history-skip';
 export { mapSemanticUpdateMethodArguments } from '../core/semantic-update-method';
 export {
   assertSelectionSupported,
@@ -391,6 +413,7 @@ export {
   encodeVersionedValue,
 } from '../core/value-codec';
 export {
+  authoredDirectProperties,
   configureAuthoredView,
   getAuthoredUpdateView,
   getAuthoredViewCommit,

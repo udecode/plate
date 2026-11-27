@@ -18,6 +18,7 @@ import {
   collectMovedAnchors,
   endCutSession,
 } from '../../core/moved-anchors';
+import { hasNonWritableAt } from '../../core/non-writable';
 import { toInternalRoot } from '../../core/public-root';
 import {
   isDOMElement,
@@ -458,6 +459,12 @@ export const applyEditableCut = ({
       if (resolution.kind === 'stale') {
         writePliteViewSelection(editor, null);
       } else if (
+        hasNonWritableAt(editor, readRuntimeSelection(editor), {
+          includeReadOnly: false,
+        })
+      ) {
+        return clipboardResult({ command: null });
+      } else if (
         writeProjectedViewSelectionClipboardData(editor, clipboardData)
       ) {
         const command: EditableCommand = { kind: 'delete-fragment' };
@@ -478,8 +485,16 @@ export const applyEditableCut = ({
       }
     }
 
-    writeViewSelectionPart(editor, clipboardData, readCutDeletedRange);
     const selection = readRuntimeSelection(editor);
+
+    if (
+      selection &&
+      hasNonWritableAt(editor, selection, { includeReadOnly: false })
+    ) {
+      return clipboardResult({ command: null });
+    }
+
+    writeViewSelectionPart(editor, clipboardData, readCutDeletedRange);
 
     if (selection) {
       if (SelectionApi.isNode(selection)) {

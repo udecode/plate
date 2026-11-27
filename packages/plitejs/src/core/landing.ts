@@ -27,16 +27,24 @@ export const transferVeto = definePluginPoint<TransferVeto>('transfer.veto');
 
 export class TransferRefusalError extends Error {
   readonly reason: TransferRefusalReason;
+  readonly veto?: Readonly<{ path: Path; root: RootKey }>;
 
-  constructor(reason: TransferRefusalReason) {
+  constructor(
+    reason: TransferRefusalReason,
+    veto?: Readonly<{ path: Path; root: RootKey }>
+  ) {
     super(`Transfer refused: ${reason}`);
     this.name = 'TransferRefusalError';
     this.reason = reason;
+    this.veto = veto;
   }
 }
 
-export const refuse = (reason: TransferRefusalReason): never => {
-  throw new TransferRefusalError(reason);
+export const refuse = (
+  reason: TransferRefusalReason,
+  veto?: Readonly<{ path: Path; root: RootKey }>
+): never => {
+  throw new TransferRefusalError(reason, veto);
 };
 
 export type JsonValue = Readonly<{
@@ -197,7 +205,12 @@ const checkPlacement = (
 
 const runVetoes = (editor: AnyEditor, input: TransferVetoInput) => {
   for (const veto of getPluginContributions(editor, transferVeto)) {
-    if (veto(input, editor)) refuse('policy');
+    if (veto(input, editor)) {
+      refuse('policy', {
+        path: input.target[1],
+        root: getEditorRuntimeRoot(editor),
+      });
+    }
   }
 };
 

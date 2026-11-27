@@ -9,6 +9,7 @@ import {
   type Selection,
   SelectionApi,
 } from '../..';
+import { isElementNonWritable } from '../../core/non-writable';
 import { getSelection, Hotkeys, isDOMElement, isDOMText } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import {
@@ -91,7 +92,6 @@ import {
   getEditorRuntimeOwner,
   hasPath as editorHasPath,
   isBlock as editorIsBlock,
-  isElementReadOnly as editorIsElementReadOnly,
   isInline as editorIsInline,
   isVoid as editorIsVoid,
   toInternalRoot,
@@ -197,7 +197,7 @@ const selectionSpansNativeTextInputBoundary = ({
         NodeApi.isElement(node) &&
         (editorIsInline(editor, node) ||
           editorIsVoid(editor, node) ||
-          editorIsElementReadOnly(editor, node)),
+          isElementNonWritable(editor, node)),
       voids: true,
     })
   );

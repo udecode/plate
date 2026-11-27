@@ -179,6 +179,10 @@ export type AuthoredRecordInput = Readonly<{
    */
   unique?: ReadonlyMap<string, unknown>;
   /**
+   * Non-unique policy properties whose writes land in place with no format tag.
+   */
+  direct?: ReadonlySet<string>;
+  /**
    * The caret's position in the before document, and its root: a collapsed
    * caret, or the start of the selection a composition commit replaces.
    */
@@ -2369,6 +2373,7 @@ const recordSteps = (
             source: step.source,
             storesMoves,
             holdsUnique: input.holdsUnique,
+            direct: input.direct,
             unique: input.unique,
           }).record(groups);
 
@@ -2729,6 +2734,7 @@ type RecorderOptions = Readonly<{
   holds: (parent: Props | null, child: JsonNode) => boolean;
   holdsGridParts: (node: JsonNode) => boolean;
   holdsUnique: (type: string, key: string) => boolean;
+  direct?: ReadonlySet<string>;
   holdsWithdrawal: (props: Props) => boolean;
   isInline: (props: Props) => boolean;
   isOwn: (mark: AuthoredMark) => boolean;
@@ -4218,8 +4224,11 @@ class RootRecorder {
 
     if (keys.length === 0) return null;
 
-    const { unique } = this.options;
-    const formatted = unique ? keys.filter((key) => !unique.has(key)) : keys;
+    const { direct, unique } = this.options;
+    const isDirectKey = (key: string) =>
+      Boolean(unique?.has(key) || direct?.has(key));
+    const formatted =
+      unique || direct ? keys.filter((key) => !isDirectKey(key)) : keys;
     const marks = this.marks(previous);
 
     if (
@@ -4235,10 +4244,15 @@ class RootRecorder {
         this.options.holdsUnique(props.type, key);
 
       for (const key of keys) {
-        if (!unique?.has(key)) continue;
+        if (!isDirectKey(key)) continue;
+        const directOnly = Boolean(direct?.has(key) && !unique?.has(key));
         if (Object.hasOwn(next, key)) {
-          if (!retyped || typeHolds(previous, key)) inPlace[key] = next[key];
-        } else if (!retyped || typeHolds(next, key)) delete inPlace[key];
+          if (directOnly || !retyped || typeHolds(previous, key)) {
+            inPlace[key] = next[key];
+          }
+        } else if (directOnly || !retyped || typeHolds(next, key)) {
+          delete inPlace[key];
+        }
       }
 
       return this.withMarks(inPlace, marks);

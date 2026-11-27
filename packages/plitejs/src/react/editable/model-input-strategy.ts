@@ -1,6 +1,7 @@
 import type { InputEvent as ReactInputEvent, RefObject } from 'react';
 
 import { type Range, RangeApi, type Selection } from '../..';
+import { hasNonWritableAt } from '../../core/non-writable';
 import { getSelection, isDOMElement, isDOMText } from '../../dom';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
@@ -108,7 +109,9 @@ export const applyEditableInput = ({
   }
 
   const dropsEdits =
-    dropsNativeEdits(editor, readOnly) || openInputTarget(editor) === 'sealed';
+    dropsNativeEdits(editor, readOnly) ||
+    openInputTarget(editor) === 'sealed' ||
+    hasNonWritableAt(editor, readRuntimeSelection(editor));
 
   if (
     skipNativeTextInputRepair &&

@@ -10,7 +10,18 @@ import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import { isDocumentView } from './document-view-read';
 import { getEditorRuntimeOwner } from './editor-runtime';
+import { definePluginPoint } from './plugin-point';
 import { toInternalRoot } from './public-root';
+
+/**
+ * Contribute element property keys that apply directly in place during
+ * Suggesting mode without recording format suggestion tags.
+ *
+ * @internal
+ */
+export const authoredDirectProperties = definePluginPoint<readonly string[]>(
+  'authored.direct-properties'
+);
 
 type AuthoredView = NonNullable<EditorViewOptions['authored']>;
 

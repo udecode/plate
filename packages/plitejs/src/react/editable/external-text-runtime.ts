@@ -19,6 +19,7 @@ import { projectEditorTextSplices } from '../../core/change/text-splices';
 import { PreparedTokenSlice } from '../../core/change/tokens';
 import { reportEditorLifecycleError } from '../../core/lifecycle-error';
 import { nativeGroupingInput } from '../../core/native-grouping-input';
+import { hasNonWritableContributors } from '../../core/non-writable';
 import { setShownSelectionAsView } from '../../core/view-carets';
 import { containsShadowAware } from '../../dom';
 import { IS_FOCUSED } from '../../dom/internal';
@@ -481,7 +482,13 @@ export class ExternalTextRuntime {
         if (entry) affected.add(entry);
       }
     }
-    if (commit.changed.hasAny('state')) {
+    if (
+      commit.changed.hasAny('state') ||
+      (hasNonWritableContributors(editor) &&
+        (commit.changed.hasAny('properties') ||
+          commit.changed.hasAny('structure') ||
+          commit.changed.hasAny('root-order')))
+    ) {
       for (const entry of this.entries.values()) affected.add(entry);
     }
     if (affected.size === 0) return;

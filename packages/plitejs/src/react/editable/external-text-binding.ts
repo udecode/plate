@@ -7,6 +7,10 @@ import {
   type Text,
   TextApi,
 } from '../..';
+import {
+  hasNonWritableAt,
+  hasNonWritableContributors,
+} from '../../core/non-writable';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { getSnapshot } from './runtime-editor-api';
 
@@ -63,7 +67,8 @@ export const readExternalTextBinding = (
   elementKey: NodeKey
 ) => {
   const snapshot = getSnapshot(editor);
-  const bindings = BINDINGS.get(snapshot);
+  const dynamicReadOnly = hasNonWritableContributors(editor);
+  const bindings = dynamicReadOnly ? undefined : BINDINGS.get(snapshot);
   const cached = bindings?.get(elementKey);
   if (cached) return cached;
   const path = snapshot.index.pathOf(elementKey);
@@ -79,13 +84,17 @@ export const readExternalTextBinding = (
   const binding = {
     element,
     path,
-    readOnly: !!editor.read.nodes.elementReadOnly({ at: textPath }),
+    readOnly: dynamicReadOnly
+      ? hasNonWritableAt(editor, textPath)
+      : !!editor.read.nodes.elementReadOnly({ at: textPath }),
     snapshot,
     text,
     textKey,
     textPath,
   };
-  if (bindings) bindings.set(elementKey, binding);
-  else BINDINGS.set(snapshot, new Map([[elementKey, binding]]));
+  if (!dynamicReadOnly) {
+    if (bindings) bindings.set(elementKey, binding);
+    else BINDINGS.set(snapshot, new Map([[elementKey, binding]]));
+  }
   return binding;
 };

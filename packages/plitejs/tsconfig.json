@@ -58,6 +58,8 @@
       "platejs/layout": ["../platejs/src/features/layout/index.ts"],
       "platejs/layout/react": ["../platejs/src/react/features/layout/index.ts"],
       "platejs/lint": ["../platejs/src/features/lint/index.ts"],
+      "platejs/lock": ["../platejs/src/features/lock/index.ts"],
+      "platejs/lock/react": ["../platejs/src/react/features/lock/index.ts"],
       "platejs/markdown": ["../platejs/src/markdown/index.ts"],
       "platejs/math": ["../platejs/src/math/index.ts"],
       "platejs/math/react": ["../platejs/src/math/react/index.ts"],

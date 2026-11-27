@@ -937,6 +937,7 @@ type PluginSelfHtmlMappingMapForRule<
   C extends AnyBasePluginDefinition,
   TRule,
 > = Readonly<{
+  docx?: DocxNodeMapping<C>;
   html:
     | PluginHtmlMappingInput<C, TRule>
     | readonly [

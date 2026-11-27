@@ -1561,6 +1561,7 @@ const MUTATION_VERSION = new WeakMap<Editor, number>();
 const READ_DEPTH = new WeakMap<Editor, number>();
 const SNAPSHOT_VERSION = new WeakMap<Editor, number>();
 const TRANSACTION_DEPTH = new WeakMap<Editor, number>();
+const IN_DOCUMENT_REPLACEMENT = new WeakSet<Editor>();
 const COMMIT_NOTIFICATION_DEPTH = new WeakMap<Editor, number>();
 const POST_COMMIT_NOTIFICATION_QUEUE = new WeakMap<Editor, Array<() => void>>();
 const TRANSACTION_SPEC_BASE = new WeakMap<
@@ -15042,6 +15043,14 @@ const applyTransactionSpecDocumentChangeStep = (
     throw new Error('Missing transaction-spec builder state.');
   }
 
+  if (
+    !IN_DOCUMENT_REPLACEMENT.has(getEditorRuntimeOwner(editor)) &&
+    !step.change.empty &&
+    snapshot.annotations.has(documentReplacement.key)
+  ) {
+    snapshot.annotations.delete(documentReplacement.key);
+  }
+
   snapshot.settlementSplit = advanceSettlementSplit(
     snapshot,
     step,
@@ -16937,9 +16946,22 @@ export const replaceTransformedSnapshot = (
       );
     });
   };
-  runEditorTransaction(editor, () => apply(), {
-    authority: 'replace',
-  });
+  runEditorTransaction(
+    editor,
+    () => {
+      const owner = getEditorRuntimeOwner(editor);
+
+      IN_DOCUMENT_REPLACEMENT.add(owner);
+      try {
+        apply();
+      } finally {
+        IN_DOCUMENT_REPLACEMENT.delete(owner);
+      }
+    },
+    {
+      authority: 'replace',
+    }
+  );
 };
 
 export const replaceSnapshot = (editor: Editor, input: SnapshotInput) => {

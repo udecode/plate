@@ -2,6 +2,7 @@ import { type CompositionEvent, useEffect } from 'react';
 
 import {
   type EditorMarks,
+  type NodeKey,
   PathApi,
   type Range,
   RangeApi,
@@ -9,6 +10,7 @@ import {
   TextApi,
 } from '../..';
 import { withCompositionStamp } from '../../core/composition-stamp';
+import { hasNonWritableAt } from '../../core/non-writable';
 import { getSelection, isDOMElement, isDOMText } from '../../dom';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
@@ -60,12 +62,16 @@ import { dispatchUserText, getUserTextLanding } from './mutation-controller';
 import {
   type Editor,
   editorCommands,
+  getNodeKey as editorGetNodeKey,
   getRestorableMarks,
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { writeRuntimeMarks } from './runtime-mutation-state';
-import { readRuntimeSelectionRange } from './runtime-selection-state';
+import {
+  readRuntimeSelection,
+  readRuntimeSelectionRange,
+} from './runtime-selection-state';
 import {
   armModelOwnedTextInputGuard,
   setEditableModelSelectionPreference,
@@ -81,6 +87,7 @@ type CompositionFinalInputType = 'insertFromComposition' | 'insertText';
 export type EditableCompositionLeaseBinding = Readonly<{
   flushRender: () => void;
   grant: (selection: Range | null) => void;
+  rebuildLine?: (blockKey: NodeKey) => void;
   reenterLine: () => void;
   settleAndFlushRender: () => void;
   settle: () => void;
@@ -288,11 +295,15 @@ const preventNoneditableComposition = ({
   readOnly: boolean;
   setComposing?: EditableCompositionStateSetter;
 }) => {
+  const selection = readRuntimeSelection(editor);
+  const nonWritable = hasNonWritableAt(editor, selection);
+
   if (
     !ReactEditor.hasEditableTarget(editor, event.target) ||
     !(
       dropsNativeEdits(editor, readOnly) ||
-      sealsComposition(editor, inputController, phase)
+      sealsComposition(editor, inputController, phase) ||
+      nonWritable
     )
   ) {
     return false;
@@ -349,6 +360,19 @@ const preventNoneditableComposition = ({
     failures.attempt(() => {
       clearEditableCompositionRuntimeState(editor);
     });
+  }
+  if (phase === 'end' && nonWritable && lease && selection) {
+    const startPath = RangeApi.isRange(selection)
+      ? RangeApi.start(selection).path
+      : selection.paths[0];
+    const blockPath = startPath && startPath.length > 0 ? [startPath[0]] : null;
+    const blockKey = blockPath ? editorGetNodeKey(editor, blockPath) : null;
+
+    if (blockKey) {
+      failures.attempt(() => {
+        lease.rebuildLine?.(blockKey);
+      });
+    }
   }
   failures.throwIfAny();
 

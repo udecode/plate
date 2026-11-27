@@ -1,4 +1,5 @@
 import { NodeApi, type Range, RangeApi } from '../..';
+import { hasNonWritableAt } from '../../core/non-writable';
 import type { DOMText } from '../../dom';
 import {
   IS_NODE_MAP_DIRTY,
@@ -51,6 +52,7 @@ export const getNativeSingleCharacterInputDecision = ({
 
   if (!selection) return blocked('missing-selection');
   if (!RangeApi.isCollapsed(selection)) return blocked('expanded-selection');
+  if (hasNonWritableAt(editor, selection)) return blocked('non-writable');
   if (!eventData || eventData.length !== 1) return blocked('non-character');
   // Native character insertion is limited to printable ASCII. Long-press
   // character pickers such as hold-a-then-4 for `ä` can otherwise duplicate
