@@ -26,28 +26,6 @@
       "apps/www/src/registry/styles/preview-style-classes.*"
     ]
   },
-  "planBoxes": {
-    "2026-10-08-authored-review.md": {
-      "max": 32,
-      "owner": "zbeyens"
-    },
-    "2026-11-06-native-sync.md": {
-      "max": 21,
-      "owner": "zbeyens"
-    },
-    "2026-11-10-undo-restore-names.md": {
-      "max": 10,
-      "owner": "zbeyens"
-    },
-    "2026-11-17-editor-options-next-step.md": {
-      "max": 11,
-      "owner": "zbeyens"
-    }
-  },
-  "sourceless": [
-    "zbeyens",
-    "felixfeng33"
-  ],
   "reviewPaths": {
     "skip": [
       "docs/**",
@@ -207,6 +185,7 @@
     "best-api-review",
     "chips",
     "clawsweeper",
+    "contributor-setup",
     "cross-review",
     "deep-check",
     "editor-audit",
@@ -238,8 +217,8 @@
     "walkthrough"
   ],
   "synced": {
-    "source": "37f98087076521ede23c114a766389aa86856ea1",
-    "config": "37abddf34c5dd0f7"
+    "source": "a306dde036555e9789cb23e94c5003bffa73e569",
+    "config": "1c857f571512ad00"
   },
   "pageTopic": {
     "field": "review_scopes",

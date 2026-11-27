@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=\"$(git rev-parse --show-toplevel)/.agents/skills/contributor-setup/scripts/doctor.mjs\"; [ ! -f \"$f\" ] || node \"$f\" --hook",
+            "command": "f=\"$(git rev-parse --show-toplevel)/tooling/scripts/setup-doctor.mjs\"; [ ! -f \"$f\" ] || node \"$f\" --hook",
             "timeout": 30
           },
           {

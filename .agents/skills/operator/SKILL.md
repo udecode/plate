@@ -21,7 +21,7 @@ Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/ne
 - Failures rerun failing test files (or the step) to separate flakes from reds, then bisect within 1h (`PLITE_BROWSER_KEEP_GOING=1`). Flakes stay defects until timing/load dependence is gone.
 - Each red/flake wakes `operator` for the 3-step green-convergence loop (never cut Yjs tests, park, retry, or raise limits).
 - Three starts of one failure in 7d record a `recurrence` event (`red-recurrence.mjs`) for a `/pstack:correct` guard.
-- `beta-release.mjs wake` emits `release` after green when a daily beta is due. Local CI runs and fix, release, and friction subagents skip team channel posts (`Send no team message.` stays on those briefs); `operator` may notify teammates via `notify` when workflow, pstack, setup, or team-facing changes warrant it (owner's word, 2026-11-27).
+- `beta-release.mjs wake` emits `release` after green when a daily beta is due. Fix, release, and friction workers skip team posts (`Send no team message.` stays on those briefs); `operator` may notify teammates via `notify` when workflow, pstack, setup, or team-facing changes warrant it.
 
 Run from `<main>` (`.claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` for CI; `<main>/tooling/scripts/local-ci.mjs` for `friction`). `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skip due check); `status`, `rerun`, `install`, `uninstall` -> below.
 
@@ -49,7 +49,7 @@ Keep one pinned `operator` T3 Code thread (own worktree, commands prefixed `cd <
 
 ## watch
 
-Never edit or land directly. `operator` runs at `medium`. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `light` step), 1 release, 1 friction judge; subagents (`invoke_subagent`/`delegate_task`) are unlimited. Spawn workers via `invoke_subagent` (or `delegate_task` for isolation/effort): routine fixers (lint, typecheck, stale tests, simple flakes) at `medium` where supported, complex root-cause bugs at `high`, escalate a failed 1st fix once to Neon `@xhigh`. Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
+Never edit or land directly. `operator` runs at `medium`. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `light` step), 1 release, 1 friction judge; subagents (`invoke_subagent`/`delegate_task`) are unlimited. Spawn via `invoke_subagent` (`delegate_task` for isolation/effort): routine fixers at `medium`, complex bugs at `high`, escalate a failed 1st fix once to Neon `@xhigh`. Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
 
 Read effective `maxAutoStart` from `readProjectConfig()` in `.agents/pstack/lead.mjs` (merges `.agents/pstack.json` with main checkout's gitignored `.agents/pstack.local.json`, default `0`).
 
@@ -63,11 +63,12 @@ Read effective `maxAutoStart` from `readProjectConfig()` in `.agents/pstack/lead
    - `release`: main CI only (drop if `config.json` exists or release runs); spawn **Release brief**.
    - `friction`: continue to step 3.
    - **Agent friction (`FRICTION [tooling|skill|pstack|t3]`):** deduplicate by signature (file/command/error); if a fix runs, append new `blocking: yes` `threadId`s to its wakeup list. For `plate`/`ustack` fixes, spawn **Agent friction fix brief**, land on `origin/next` (or push `ustack` `main`), and wake paused reporters via `t3_thread_send` (`"Fixed in <sha>, pull origin/next and resume"`). For external T3 bugs, log once in `<main>/docs/plans/artifacts/local-ci/<day>/t3-friction.md` and reply to `blocking: yes` reporters with a fallback or clean stop.
+   - **`SLOT_FREE`:** immediately check active non-pinned Plate threads against `maxAutoStart` and fill open slots via step 3 (Local CI events remain the fallback safety net for crashes/missed pings).
 3. Dispatch:
    - **P0 Local CI reds (exempt from `maxAutoStart`):** fill up to 3 fix agents from the red queue (1 per step, max 1 heavy) using **Fix brief**.
    - **Friction:** if 0 fixes run and red queue is empty, run `<friction> next`; if `item`, run `<friction> start --item <id>` and spawn **Friction fix brief**. If no judge runs and `<friction> next` shows `unjudged`/`stuck`, spawn **Friction brief**.
-   - **Opt-in auto-start (`maxAutoStart > 0` only):** launch zero threads when `maxAutoStart === 0`, and pause P1 to P3 launches while `>= 2` Local CI steps are red. Count active non-pinned top-level `🥔` threads (`active`); while `active < maxAutoStart` and red steps `< 2`, launch via `t3_thread_launch` (`workspaceStrategy: { type: "worktree", baseRef: "origin/next", startFromOrigin: true }`) at `gemini-4-neon @high` (reserve `@xhigh` for `arena`, stuck debugging after `high` fails, or deep pivots) in priority order:
-     1. **P1 Team sweep (`plate-private`/Beta):** run `pnpm triage claim --next --repo plate-private` first (atomic `refs/triage/claims` + GitHub assignee; skips claimed work, zero claim commits on `origin/next`), then launch `triage fix <domain>`.
+   - **Opt-in auto-start (`maxAutoStart > 0` only):** launch zero threads when `maxAutoStart === 0`, and pause P1 to P3 launches while `>= 2` Local CI steps are red. Count active non-pinned top-level `🥔` threads (`active`); while `active < maxAutoStart` and red steps `< 2`, launch via `t3_thread_launch` (`workspaceStrategy: { type: "worktree", baseRef: "origin/next", startFromOrigin: true }`) at `gemini-4-neon @high` in priority order:
+     1. **P1 Team sweep (`plate-private`/Beta):** run `pnpm triage claim --next --repo plate-private` first (atomic claim; skips claimed work), then launch `triage fix <domain>`.
      2. **P2 Active roadmaps:** manual `/start` threads by the owner (counted in `active`).
      3. **P3 Background fill:** check live T3 threads first to avoid duplicates, then pick: `node tooling/scripts/relapse.mjs` (`card` scopes) -> `<main>/docs/plans/artifacts/queue.tsv` (P0 then P1, ignore rows >14d old) -> `node tooling/scripts/review-ledger.mjs due` (max 2 concurrent verdicts; large new roadmaps stop at `🟠`).
 4. Repeat from step 1 with newest handled event's `at`.

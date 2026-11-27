@@ -14,7 +14,6 @@ import { fileURLToPath } from 'node:url';
 
 const CONFIG = new URL('../pstack.json', import.meta.url);
 const HERE_DIR = dirname(fileURLToPath(import.meta.url));
-const BASE_SYNC = /(?:^|__)sync_with_base_branch$/u;
 const EDIT_TOOLS = new Set(['Edit', 'MultiEdit', 'Write', 'NotebookEdit']);
 const GIT_VAL = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--config-env']);
 const PUSH_VAL = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
@@ -267,9 +266,6 @@ if (EDIT_TOOLS.has(input.tool_name)) {
     if (reason) deny(reason);
   }
   allow();
-}
-if (BASE_SYNC.test(input.tool_name ?? '')) {
-  deny(`base-branch sync fails on .claude files; run \`git fetch origin ${config.branch} && git rebase origin/${config.branch}\` in this worktree instead.`);
 }
 const command = input.tool_input?.command;
 if (typeof command !== 'string') allow();

@@ -1,14 +1,13 @@
 ---
 extends: bug-fix
 when: Use it for a Plate or Plite bug report, a regression, a screenshot or recording of wrong behavior, or "diagnose <report>".
-redesign-runs: on
 ---
 
 # Bug fix
 
 - **Before** "Reproduce it yourself on the matching surface via the driver skill": `udecode/plate` and `udecode/plate-private` issues run via `triage fix #<N>` / `triage fix plate-private#<N>` (`triage.md` Fix) unless already invoked by Triage Fix. Unfiled reports run directly only when failing on `next` (non-Beta `udecode/plate` issues report `main` and exit 1 in `triage claim`). Slate issues -> `maintainer slate-issue`; issue PRs -> `babysit.md` Issue PRs.
 - **In** "Reproduce it yourself on the matching surface via the driver skill": transcribe recordings via `video-transcripts`, keeping exact route, input and expected result. Read failed browser spec results before rerunning (`verify` Drive). "Regression vs main" reproduces on `main` in a detached worktree first, then here, naming the breaking commit.
-- **In** "Binary-search the cause": read matching `docs/research/sources/plate-notes/` pages first. Tighten to seconds (pinned time, seeded randomness) and test one falsifiable hypothesis per probe. Find the introducing commit (`git log -L`, `blame`, `bisect`), verify against its parent, and cite `Introduced-by: <sha>` (or `none` only for external/pre-history causes) for `land.mjs`.
+- **In** "Binary-search the cause": read matching `docs/research/sources/plate-notes/` pages first. Tighten to seconds (pinned time, seeded randomness) and test one falsifiable hypothesis per probe. Find the introducing commit (`git log -L`, `blame`, `bisect`), verify against its parent, and cite optional `Introduced-by: <sha>` when known.
 - **After** "Binary-search the cause": `diagnose` stops here with cause, evidence and introducing commit.
 - **In** "Plan the fix": fix at the owning layer (Plite substrate vs Plate policy), never caller workarounds (`best-api` if required inputs force dummy callers). Widen any covering formal check until it fails before fixing (or build an M6 check per `triage.md`). Sweep finds (`verify` sweep) get the lowest-layer test tagged `[plate#N]` / `[plate-private#N]` (+ `[EDIT-...]`) covering the full issue/repro (Plate browser tests in `apps/www/tests/browser/regressions/`) and `covered-by:` (path, title, `pnpm kb <tag>` hash) in the sweep plan.
 - **After** "Verify on the same surface":
@@ -20,7 +19,7 @@ redesign-runs: on
 
 ## Redesign runs
 
-Multiple failure kinds on one owner (from generated checks, repros or 2 verified distinct-cause critical diff findings) trigger `pstack:recall` + `verdict` immediately and start a redesign run (owner's word, 2026-10-21). Log `redesign run:` (`verdict`/`owner` phase) or `separate owners:` (semicolon-separated) for distinct owners; plan reviews log `plan round:`. Frontmatter `redesign-runs: on` enforces this via `decisions-check.mjs`.
+Multiple failure kinds on one owner (from generated checks, repros or 2 verified distinct-cause critical diff findings) trigger `pstack:recall` + `verdict` immediately and start a redesign run (owner's word, 2026-10-21). Log `redesign run:` (`verdict`/`owner` phase) or `separate owners:` (semicolon-separated) for distinct owners; plan reviews log `plan round:`.
 
 1. **Expected-results table first:** starting doc, ordered ops (retype, move, reload, later edit) and expected doc, ranked P0/P1/P2 (`triage fix` claimed kinds >= P1; unruled cases use `look` Defaults; removals follow `architecture.md` Hard cut). Reconcile editor-behavior rows into `docs/editor-behavior/markdown-editing-spec.md` at close.
 2. **Test against the table:** assert in the area's generated check (outside blocking suite; parallel fresh-seed rounds up to `time.md` 1h cap, logging `inconclusive` + next range if capped); add one suite test per fixed mode.

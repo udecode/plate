@@ -89,4 +89,4 @@ Record with `--repo discussions`: `answered` (`--why`), `outdated` (`--why`, sta
 - **Replace** "Produce the output": saved records, synced GitHub fields, posted comments, and `pnpm triage status` summary.
 - **After** "Produce the output": `triage fix` -> Fix step 3; others hand back here.
 
-**Reply:** record counts per outcome, remaining queue per repo, posted comments, and `triage status` counts.
+**Reply:** record counts per outcome, remaining queue per repo, posted comments (linking every issue, discussion, and PR inline per `writing.md`), and `triage status` counts.

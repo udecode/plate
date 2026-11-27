@@ -42,14 +42,11 @@ jobs:
             const body = (pr.body ?? '').replace(/\r\n/g, '\n');
             const uncommented = body.replace(/<!--[\s\S]*?-->/gu, '');
             const filled = (name) => {
-              const section = uncommented.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |^(?:Beyond the ask|Picks|Not checked):|(?![\\s\\S]))`, 'mu'));
+              const section = uncommented.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'mu'));
               return Boolean(section) && section[1].trim() !== '';
             };
-            const missing = [
-              ...['Why', 'Verification'].filter((name) => !filled(name)).map((name) => `a \`## ${name}\` section with text`),
-              ...(/^Beyond the ask: \S/mu.test(body) ? [] : ['a `Beyond the ask:` line']),
-            ];
-            const passed = body.includes('<!-- plan-page:start -->') || missing.length === 0;
+            const missing = ['Why', 'Verification'].filter((name) => !filled(name)).map((name) => `a \`## ${name}\` section with text`);
+            const passed = missing.length === 0 || /^Status:/mu.test(uncommented);
 
             const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: number, per_page: 100 });
             const mine = comments.find((comment) => comment.user?.login === 'github-actions[bot]' && comment.body?.includes(MARKER));
@@ -64,16 +61,15 @@ jobs:
             };
 
             if (passed) {
-              core.info('The PR body has its plan page, or its Why and Verification sections and a `Beyond the ask:` line.');
-              if (mine) await post('### PR body check passes\n\nThe body now has its plan page, or its Why and Verification sections and a `Beyond the ask:` line.');
+              core.info('The PR body has its plan Markdown, or its Why and Verification sections.');
+              if (mine) await post('### PR body check passes\n\nThe body now has its plan Markdown, or its Why and Verification sections.');
               return;
             }
 
-            const skill = `https://github.com/${owner}/${repo}/blob/next/.agents/skills/contributor-setup/SKILL.md`;
             const text = [
               '### PR body check fails',
               '',
-              `This body lacks ${new Intl.ListFormat('en').format(missing)}. The current \`land.mjs\` refuses to open a PR with such a body, so the agent that opened this PR likely runs an old setup. Pull \`next\`, then ask your agent to run the [contributor-setup](${skill}) skill once. It updates the setup and fixes this body, and the check runs again on the edit.`,
+              `This body lacks ${new Intl.ListFormat('en').format(missing)}. Add those sections to the PR description (or open the PR with \`node .agents/pstack/land.mjs\`), and the check runs again on the edit.`,
             ].join('\n');
             await post(text);
             core.setFailed(text);

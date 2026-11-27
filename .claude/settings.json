@@ -61,7 +61,7 @@
           },
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/skills/contributor-setup/scripts/doctor.mjs ] || node .agents/skills/contributor-setup/scripts/doctor.mjs --hook; }",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f tooling/scripts/setup-doctor.mjs ] || node tooling/scripts/setup-doctor.mjs --hook; }",
             "timeout": 30
           },
           {
@@ -74,7 +74,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash|Edit|MultiEdit|Write|NotebookEdit|mcp__ccd_host__sync_with_base_branch",
+        "matcher": "Bash|Edit|MultiEdit|Write|NotebookEdit",
         "hooks": [
           {
             "type": "command",

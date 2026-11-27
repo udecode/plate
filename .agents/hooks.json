@@ -18,7 +18,7 @@
       },
       {
         "type": "command",
-        "command": "cd .. && { [ ! -f .agents/skills/contributor-setup/scripts/doctor.mjs ] || node .agents/skills/contributor-setup/scripts/doctor.mjs --hook; }",
+        "command": "cd .. && { [ ! -f tooling/scripts/setup-doctor.mjs ] || node tooling/scripts/setup-doctor.mjs --hook; }",
         "timeout": 30
       },
       {

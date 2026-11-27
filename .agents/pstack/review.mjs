@@ -283,7 +283,7 @@ const noun = tier === 'all' ? '' : ` with ${tier} changes or weakened tests`;
 console.log(listed.length === 0 ? `No commits${noun} to review on origin/${branch} ${since}.` : `${listed.length} commit(s)${noun} to review on origin/${branch} ${since}:`);
 const defaultTier = reviewPaths ? 'public' : 'all';
 for (const [session, entries] of groups) {
-  const heading = session === 'none' ? 'No Session: line (--done none)' : session.startsWith('local_') ? `Session ${session} (claude://claude.ai/epitaxy/${session})` : `Session ${session}`;
+  const heading = session === 'none' ? 'No Session: line (--done none)' : `Session ${session}`;
   const net = entries.length > 1 ? `\n  Net: node .agents/pstack/review.mjs --net ${session}${tier === defaultTier ? '' : ` --tier ${tier}`}` : '';
   console.log(`\n${heading}\n${entries.join('\n')}${net}`);
 }

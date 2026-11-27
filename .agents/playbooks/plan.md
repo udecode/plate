@@ -1,10 +1,6 @@
 ---
 extends: multi-phase-plan
 when: Use it for a Pursue verdict, which continues into it, for "plan", `plan <goal>`, "design plan", or an architecture or API adoption plan.
-page-lead: What other editors do, Document shape, Layer and owner, Hard cuts and app migration, Native behavior and proof
-page-pairs: Document shape
-page-require: What other editors do
-page-pr: What other editors do, Document shape, Hard cuts and app migration
 ---
 
 # Plan

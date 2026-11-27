@@ -18,7 +18,7 @@ One concept-level table per plan: `| Surface | Current | Target | Owner | Reason
 
 ## Page sections
 
-Delta sections (`plan-page.mjs --pr` renders after Public API via Plan's `page-lead`): `## What other editors do` (always; revisions read + ProseMirror/Lexical/Slate/Tiptap table; cite external files `<owner>/<repo>@<commit>:<path>[:line]`, never bare `packages/...`; pivots add finding column + Google Docs/Word web/CKEditor 5 rows with browser/date or `not run` + reason); `## Document shape` (`json before`/`after` + readers); `## Layer and owner` (`Change | Layer | Package | Why`, DAG-checked); `## Hard cuts and app migration` (deleted surface, `pstack:blast-radius` callers, before/after app/registry); `## Native behavior and proof` (behavior, change, proof surface or `unproven`).
+Delta sections: `## What other editors do` (always; revisions read + ProseMirror/Lexical/Slate/Tiptap table; cite external files `<owner>/<repo>@<commit>:<path>[:line]`, never bare `packages/...`; pivots add finding column + Google Docs/Word web/CKEditor 5 rows with browser/date or `not run` + reason); `## Document shape` (`json before`/`after` + readers); `## Layer and owner` (`Change | Layer | Package | Why`, DAG-checked); `## Hard cuts and app migration` (deleted surface, `pstack:blast-radius` callers, before/after app/registry); `## Native behavior and proof` (behavior, change, proof surface or `unproven`).
 
 ## Ready
 

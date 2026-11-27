@@ -10,15 +10,13 @@
 // and opens a PR into <branch> with gh. In PR mode the canonical repository is
 // the `upstream` remote when the clone has one, so a contributor whose origin
 // is a fork rebases onto upstream and opens the PR there from the fork. The PR
-// body is the page `plan-page.mjs <plan> --pr` renders, with each frame it
-// prints attached, when the task changes exactly one dated plan, and the
-// commit body otherwise; a refused render stops before the push. It then
-// arms GitHub auto-merge on the PR with a merge method <branch>'s rules allow,
-// so the PR merges once its required checks and reviews pass.
+// body is the changed dated plan's Markdown when the task changes exactly one
+// dated plan, and the commit body otherwise. It then arms GitHub auto-merge on
+// the PR with a merge method <branch>'s rules allow, so the PR merges once its
+// required checks and reviews pass.
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is. With --dry it checks
-// the message, its source and the Defaults table of each open dated plan the
-// task changes, runs each of the config's `landChecks` on the working tree and
+// the message, runs each of the config's `landChecks` on the working tree and
 // names every one that fails, then exits without committing. Those checks run
 // without PSTACK_LAND_CHECK, and one that reads commit messages sees only the
 // commits already made. A --dry check stopped at 55 minutes exits 1, not 75.
@@ -53,10 +51,7 @@
 // `companion.list` existed on <branch> stops with `companion.migrate`.
 // Each commit ends with a `Lead:` line naming the model and effort lead.mjs
 // reads for the agent session running this land, or `unknown`, replacing any
-// such line in the message. When <branch>'s config lists `sourceless` GitHub
-// logins, a commit lands only for them unless it names a source: an issue of
-// this repository or its companion, or a dated plan in the plans directory
-// that exists.
+// such line in the message.
 // A landing takes one core of the machine's core pool the first time it
 // rebuilds or checks, and holds it until it exits. It never waits for it, so
 // the pool only counts the landing's workers against the proofs that queue.
@@ -80,25 +75,17 @@ import { devNull, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { effectiveModelsSheet, findLead, leadLabel, maxEffort, pluginLag, runtimeFromEnv, sheetMisses } from './lead.mjs';
-import { defaultsRefusal } from './plan-page.mjs';
 import { LAND_CHECK, reserve } from './proof.mjs';
 import { remoteWorkingBranch } from './working-branch.mjs';
 import { findings } from './writing-check.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
-const REQUIRED = [
-  ['Beyond the ask', 'name every change the request did not ask for'],
-  ['Picks', 'name each call the owner would notice, with the word that reverses it'],
-  ['Not checked', 'name what the proof did not check'],
-];
-const REQUIRED_LABELS = REQUIRED.map(([label]) => label).join('|');
 const withoutHtmlComments = (text) => text.replace(/<!--[\s\S]*?-->/gu, '');
 const SESSION = /^Session: \S/mu;
 const PLAN = /^Plan: \S/mu;
 const TRAILER = /^(?:Session|Plan|Lands-With): \S/u;
 const STAMP_LINES = /^(?:Session|Plan|Lead|Lands-With): .*$/gmu;
-const ISSUE = /(?<![\w#/.-])(?:([\w.-]+)\/)?([\w.-]+)#\d+\b|https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/issues\/\d+/gu;
 const INTRODUCED = /^Introduced-by:(.*)$/gmu;
 const CLOSING = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?::\s*|\s+)(?:[\w.-]+\/([\w.-]+)#\d+|#\d+|GH-\d+|https?:\/\/github\.com\/[^/\s]+\/([^/\s]+)\/(?:issues|pull)\/\d+)(?!\w)/giu;
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
@@ -529,9 +516,6 @@ function validate(text) {
   }
   if (after.length > 0 && after[0] !== '') problems.push('a blank line must separate the subject from the body');
   const body = after.join('\n');
-  for (const [label, what] of REQUIRED) {
-    if (!new RegExp(`^${label}: \\S`, 'mu').test(withoutHtmlComments(body))) problems.push(`the body has no \`${label}:\` line; ${what}, or write \`${label}: none\``);
-  }
   const broken = findings(text.replace(STAMP_LINES, ''));
   if (broken.length > 0) {
     problems.push(`the message breaks the Writing rule, as writing-check.mjs reads it; reword each line, or put literal text in backticks:\n${broken.map(({ line, rule, match, text: shown }) => `  line ${line}, ${rule} "${match}": ${shown}`).join('\n')}`);
@@ -546,16 +530,15 @@ function validate(text) {
 }
 
 function introduced(body) {
+  const lines = [...body.matchAll(INTRODUCED)].map((match) => match[1]);
+  if (lines.length === 0) return [];
   const trace =
     `Trace the cause with \`git log -L <start>,<end>:<file> ${target}\`, \`git blame ${target} -- <file>\` or \`git bisect\`. ` +
     '`none` fits only a cause older than the history or outside the repository, such as a dependency or the platform; code that was broken when it landed names the commit that landed it.';
-  const lines = [...body.matchAll(INTRODUCED)].map((match) => match[1]);
   const problems = [];
   if (lines.some((rest) => rest.trim() !== '' && !rest.startsWith(' '))) problems.push('write each line as `Introduced-by: <value>`, with a space after the colon');
   const values = lines.map((rest) => rest.trim());
-  if (values.length === 0) {
-    problems.push(`the fix names no commit that introduced its bug; add an \`Introduced-by: <sha>\` line for each commit on ${target} that did, or one \`Introduced-by: none\``);
-  } else if (values.includes('none')) {
+  if (values.includes('none')) {
     if (values.length > 1) problems.push('`Introduced-by: none` cannot stand beside another `Introduced-by:` line; keep the commits or write `none` alone');
   } else {
     for (const value of values) {
@@ -600,77 +583,34 @@ function trailers(body, plan, lead) {
   return `${kept}${block ? '\n' : '\n\n'}${lines.join('\n')}`;
 }
 
-// The owner and name of this repository and of its companion, from their remotes' URLs.
-function homes() {
-  return [git('remote', 'get-url', canonical), ...(pair ? [cgit('remote', 'get-url', 'origin')] : [])].flatMap((run) => {
-    const match = run.stdout.trim().toLowerCase().match(/([^/:]+)\/([^/]+?)(?:\.git)?\/?$/u);
-    return match ? [{ owner: match[1], name: match[2] }] : [];
-  });
-}
+const hasPlan = (plan) => Boolean(plan && existsSync(plan));
 
-function sourced(text, plan) {
-  if (plan || [...text.matchAll(/^Plan: (\S+)$/gmu)].some(([, path]) => isPlan(path))) return true;
-  const ours = homes();
-  const issue = ([, refOwner, refName, urlOwner, urlName]) => {
-    const owner = (refOwner ?? urlOwner)?.toLowerCase();
-    const name = (refName ?? urlName).toLowerCase();
-    return ours.some((home) => home.name === name && (owner === undefined || home.owner === owner));
-  };
-  return [...text.matchAll(ISSUE)].some(issue);
-}
-
-function sourceRefusal(subject, body, plan) {
-  if (!sourceless || sourced(`${subject}\n${body}`, plan)) return null;
-  const login = spawnSync('gh', ['api', 'user', '--jq', '.login'], { encoding: 'utf8' });
-  const who = login.status === 0 ? login.stdout.trim() : '';
-  if (sourceless.includes(who)) return null;
-  const why = who ? `, not ${who}` : `; gh api user failed: ${login.error?.message ?? (login.stderr.trim() || 'it printed no login')}`;
-  return (
-    `the message names no source, and only ${sourceless.join(', ')} land without one${why}. ` +
-    `A source is an issue of ${homes().map((home) => home.name).join(' or ')} written as \`<repo>#<N>\` or its URL, or a \`Plan:\` line naming a dated plan in ${plans}/ that exists. ` +
-    'Add one to the message and run land.mjs again with --message'
-  );
-}
-
-const paged = (plan) => plan && existsSync(plan) && existsSync('.agents/pstack/plan-page.mjs');
-
-const sectionUntilNextHeadingOrRequiredLine = (body, name) =>
-  body.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |^(?:${REQUIRED_LABELS}):|(?![\\s\\S]))`, 'mu'))?.[1] ?? '';
+const sectionUntilNextHeading = (body, name) =>
+  body.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'mu'))?.[1] ?? '';
 function missingSections(body) {
-  return PR_SECTIONS.filter((name) => sectionUntilNextHeadingOrRequiredLine(withoutHtmlComments(body), name).trim() === '');
+  return PR_SECTIONS.filter((name) => sectionUntilNextHeading(withoutHtmlComments(body), name).trim() === '');
 }
 
-// The PR body file and its --attach arguments: the plan's page when the task changes one plan, else the commit body.
+// The PR body file: the changed dated plan's Markdown (minus YAML frontmatter) when one plan changed, else the commit body.
 function prBody(plan, body) {
-  if (paged(plan)) {
-    const render = spawnSync(process.execPath, ['.agents/pstack/plan-page.mjs', plan, '--pr'], { encoding: 'utf8' });
-    if (render.status !== 0) {
-      fail(`plan-page.mjs refused ${plan}, so nothing was pushed:\n${`${render.stderr}${render.stdout}`.trim()}\nFix the plan, then run land.mjs again without --message.`);
-    }
-    const [file, ...rest] = render.stdout.trim().split('\n');
-    return { file, attach: rest.flatMap((line) => (/^--attach ./u.test(line) ? ['--attach', line.slice('--attach '.length)] : [])) };
-  }
   const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'body');
+  if (hasPlan(plan)) {
+    const markdown = readFileSync(plan, 'utf8').replace(/^---\n[\s\S]*?\n---\n?/u, '').trim();
+    writeFileSync(file, `${markdown}\n`);
+    return { file, attach: [] };
+  }
   writeFileSync(file, `${body}\n`);
   return { file, attach: [] };
 }
 
-function refuseEarly({ subject, body }, paths, plan) {
-  const missing = mode === 'pr' && !paged(plan) ? missingSections(body) : [];
+function refuseEarly({ body }, plan) {
+  const missing = mode === 'pr' && !hasPlan(plan) ? missingSections(body) : [];
   if (missing.length > 0) {
     fail(
       `a PR whose body is the commit body needs ${missing.map((name) => `a \`## ${name}\` section`).join(' and ')} with text; ` +
-        'add the missing text to the message and run land.mjs again with --message, or change exactly one dated plan so its page becomes the body'
+        'add the missing text to the message and run land.mjs again with --message, or change exactly one dated plan so its Markdown becomes the body'
     );
   }
-  const loose = sourceRefusal(subject, body, plan);
-  if (loose) fail(loose);
-  refuseDefaults(paths);
-}
-
-function refuseDefaults(paths) {
-  const defaults = paths.filter(isPlan).map(defaultsRefusal).filter(Boolean);
-  if (defaults.length > 0) fail(`${defaults.join('\n')}\nFix each plan's Defaults table, then run land.mjs again.`);
 }
 
 // Squashes the task into one commit in each repository that it changes; a companion-only task leaves HEAD at its base here.
@@ -691,7 +631,7 @@ function squash({ subject, body }) {
   }
   if (own.length === 0 && theirs.length === 0) fail(`nothing to land: the task changes nothing against ${target}`);
   const plan = planOf([...own, ...theirs]);
-  refuseEarly({ subject, body }, [...own, ...theirs], plan);
+  refuseEarly({ body }, plan);
   const lead = leadOf();
   must('reset', '--quiet', '--soft', base);
   if (pair) cmust('reset', '--quiet', '--soft', sideBase);
@@ -711,9 +651,8 @@ function squash({ subject, body }) {
 }
 
 await fetchCompanionFirst('This run committed nothing, so run land.mjs again with the same options.');
-// <branch>'s config, because a task could loosen its own copy, and a branch cut before the split still carries the config from before it.
+// <branch>'s config, because a branch cut before the split still carries the config from before it.
 const settled = JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}');
-const { sourceless } = settled;
 const ahead = Number(must('rev-list', '--count', `${upstream}..HEAD`));
 const sideAhead = pair ? Number(cmust('rev-list', '--count', `${cupstream}..HEAD`)) : 0;
 if (messageText === null && ahead === 0 && sideAhead === 0) fail(`HEAD has no task commit to take a message from; pass --message <file>\n${USAGE}`);
@@ -737,7 +676,7 @@ if (dry) {
     ]),
   ];
   if (paths.length === 0) fail(`nothing to land: the task changes nothing against ${target}`);
-  refuseEarly(message, paths, planOf(paths));
+  refuseEarly(message, planOf(paths));
   const failed = [];
   for (const command of landChecks) {
     const run = await runCheck(command, { asLanding: false });
@@ -745,7 +684,7 @@ if (dry) {
     if (run.status !== 0) failed.push(command);
   }
   if (failed.length > 0) fail(`land checks failed on the working tree, and nothing was committed:\n${failed.map((command) => `  ${command}`).join('\n')}`);
-  console.log("land.mjs --dry: the message, its source, the Defaults of each open plan it changes and the config's landChecks pass; nothing was committed.");
+  console.log("land.mjs --dry: the message and the config's landChecks pass; nothing was committed.");
   process.exit(0);
 }
 const landing = squash(message);
@@ -811,7 +750,6 @@ async function check(rebased = false) {
     ...nul(must('diff', '-z', '--name-only', '--diff-filter=d', fetched.own, 'HEAD')),
     ...(landing.theirs ? nul(cmust('diff', '-z', '--name-only', '--diff-filter=d', fetched.theirs, 'HEAD')) : []),
   ];
-  refuseDefaults(changed);
   if (lintFix && changed.length > 0) {
     const run = spawnSync(`${lintFix} ${changed.map(quote).join(' ')}`, { shell: true, stdio: 'inherit' });
     if (run.status !== 0) fail(`${lintFix} failed on the changed files; fix them and run land.mjs again`);
