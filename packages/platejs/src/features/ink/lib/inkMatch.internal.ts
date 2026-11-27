@@ -1,5 +1,19 @@
-import { type Element, ElementApi, type Node, TextApi } from '../../../facade';
-import type { InkCopy, InkLine, InkMark, InkMarkBlock } from './BaseInkPlugin';
+import {
+  type Point as EditorPoint,
+  type Element,
+  ElementApi,
+  type Node,
+  type Path,
+  type Range,
+  TextApi,
+} from '../../../facade';
+import type {
+  InkCopy,
+  InkLine,
+  InkMark,
+  InkMarkBlock,
+  InkPassageWord,
+} from './BaseInkPlugin';
 import { digest } from './inkCodec.internal';
 
 export type InkBox = Readonly<{
@@ -151,6 +165,132 @@ export const inkWords = (text: string) => {
   return words;
 };
 
+export const inkPassageWords = (
+  text: string,
+  baseOffset: number
+): readonly InkPassageWord[] => {
+  segmenter ??= new Intl.Segmenter('und', { granularity: 'word' });
+
+  const words: InkPassageWord[] = [];
+
+  for (const { index, segment } of segmenter.segment(text)) {
+    if (/^\s+$/u.test(segment)) continue;
+    words.push({
+      end: baseOffset + index + segment.length,
+      start: baseOffset + index,
+    });
+  }
+
+  return words;
+};
+
+type BlockSegment =
+  | Readonly<{ end: number; kind: 'text'; path: Path; start: number }>
+  | Readonly<{ end: number; kind: 'void'; path: Path; start: number }>;
+
+export const inkBlockRange = (
+  schema: InkSchema,
+  block: Node,
+  blockPath: Path,
+  start: number,
+  end: number
+): Range | null => {
+  const segments: BlockSegment[] = [];
+  let offset = 0;
+  const walk = (node: Node, path: Path) => {
+    if (TextApi.isText(node)) {
+      segments.push({
+        end: offset + node.text.length,
+        kind: 'text',
+        path,
+        start: offset,
+      });
+      offset += node.text.length;
+
+      return;
+    }
+    if (!ElementApi.isElement(node)) return;
+    for (const [index, child] of node.children.entries()) {
+      const childPath = [...path, index];
+
+      if (
+        ElementApi.isElement(child) &&
+        schema.isInline(child) &&
+        schema.isVoid(child)
+      ) {
+        segments.push({
+          end: offset + 1,
+          kind: 'void',
+          path: childPath,
+          start: offset,
+        });
+        offset += 1;
+      } else {
+        walk(child, childPath);
+      }
+    }
+  };
+
+  walk(block, blockPath);
+  if (
+    !Number.isInteger(start) ||
+    !Number.isInteger(end) ||
+    start < 0 ||
+    end < start ||
+    end > offset
+  ) {
+    return null;
+  }
+
+  const pointAt = (
+    at: number,
+    side: 'collapsed' | 'end' | 'start'
+  ): EditorPoint | null => {
+    if (side === 'collapsed') {
+      for (const seg of segments) {
+        if (seg.kind === 'text' && seg.start <= at && at <= seg.end) {
+          return { offset: at - seg.start, path: seg.path };
+        }
+      }
+    } else if (side === 'start') {
+      for (const seg of segments) {
+        if (seg.kind === 'text' && seg.start <= at && at < seg.end) {
+          return { offset: at - seg.start, path: seg.path };
+        }
+      }
+      for (let i = segments.length - 1; i >= 0; i -= 1) {
+        const seg = segments[i];
+
+        if (seg.kind === 'text' && seg.end === at) {
+          return { offset: seg.end - seg.start, path: seg.path };
+        }
+      }
+    } else {
+      for (const seg of segments) {
+        if (seg.kind === 'text' && seg.start < at && at <= seg.end) {
+          return { offset: at - seg.start, path: seg.path };
+        }
+      }
+      for (const seg of segments) {
+        if (seg.kind === 'text' && seg.start === at) {
+          return { offset: 0, path: seg.path };
+        }
+      }
+    }
+
+    const fallback = segments.find(
+      (seg) => seg.kind === 'void' && seg.start <= at && at <= seg.end
+    );
+
+    return fallback ? { offset: 0, path: [...fallback.path, 0] } : null;
+  };
+
+  const anchor = pointAt(start, start === end ? 'collapsed' : 'start');
+  const focus = start === end ? anchor : pointAt(end, 'end');
+
+  return anchor && focus ? { anchor, focus } : null;
+};
+
 const pointToBox = ([x, y]: Point, box: InkBox) =>
   Math.hypot(
     Math.max(box.left - x, 0, x - box.left - box.width),
@@ -269,10 +409,10 @@ export const inkTouchedWords = (
   return touched;
 };
 
-const lineStart = (lines: readonly InkLine[], index: number) =>
+export const lineStart = (lines: readonly InkLine[], index: number) =>
   index === 0 ? 0 : lines[index - 1].end;
 
-const lineOf = (lines: readonly InkLine[], offset: number) => {
+export const lineOf = (lines: readonly InkLine[], offset: number) => {
   const index = lines.findIndex((line) => offset < line.end);
 
   return index === -1 ? lines.length - 1 : index;

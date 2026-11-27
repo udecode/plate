@@ -7,6 +7,8 @@ import {
   getRecordSetVersion,
   getValueRecords,
   type NodeKey,
+  PathApi,
+  type Range,
   type RecordSetVersion,
   readElementById,
   readRecord,
@@ -36,7 +38,15 @@ import {
   isInkMarkShown,
   MARKS,
 } from './inkGone.internal';
-import { INK_VOID, inkText } from './inkMatch.internal';
+import {
+  INK_VOID,
+  inkBlockRange,
+  inkHolds,
+  inkPassageWords,
+  inkText,
+  lineOf,
+  lineStart,
+} from './inkMatch.internal';
 import {
   advanceInkPlaces,
   byMark,
@@ -210,6 +220,38 @@ export type InkSignPlace =
 export type InkCopyPlace =
   | Readonly<{ key: NodeKey; kind: 'changed' | 'live' }>
   | Readonly<{ beside: InkSignPlace; kind: 'gone' }>;
+
+/** A word's character offsets in its saved copy's text. */
+export type InkPassageWord = Readonly<{
+  end: number;
+  start: number;
+}>;
+
+/** One mark's touched words and point gaps inside an `InkPassage`. */
+export type InkPassageMark = Readonly<{
+  gaps: readonly number[];
+  id: string;
+  words: readonly number[];
+}>;
+
+/**
+ * One run of marked lines on a saved copy, with its text, word offsets in
+ * the copy's text, and the words and gaps each mark touches.
+ */
+export type InkPassage = Readonly<{
+  copy: string;
+  marks: readonly InkPassageMark[];
+  start: number;
+  text: string;
+  words: readonly InkPassageWord[];
+}>;
+
+/** Character offsets in one saved copy's text to resolve to a live range. */
+export type InkRangeInput = Readonly<{
+  copy: string;
+  end: number;
+  start: number;
+}>;
 
 const copiesOf = ({ copies }: Readonly<Record<string, unknown>>) => {
   const ids =
@@ -834,6 +876,168 @@ export const BaseInkPlugin = definePlugin('ink', {
         return marks;
       },
       /**
+       * One passage per run of marked lines for the marks `ids` names, in
+       * document order. Each run covers the lines its marks touch plus one line
+       * on each side, joining runs that touch or overlap on one copy.
+       */
+      passages: (ids: readonly string[]): readonly InkPassage[] => {
+        const spansByCopy = new Map<
+          string,
+          {
+            copy: InkCopy;
+            entries: Array<{
+              hi: number;
+              lo: number;
+              mark: InkMark;
+              run: InkRun;
+            }>;
+          }
+        >();
+
+        for (const id of new Set(ids)) {
+          const mark = read.mark(id);
+
+          if (!mark) continue;
+          for (const block of mark.blocks) {
+            if (block.runs.length === 0) continue;
+
+            const saved = copy(block.copy);
+
+            if (!saved || saved.lines.length === 0) continue;
+
+            let bucket = spansByCopy.get(saved.id);
+
+            if (!bucket) {
+              bucket = { copy: saved, entries: [] };
+              spansByCopy.set(saved.id, bucket);
+            }
+            for (const run of block.runs) {
+              const from = lineOf(saved.lines, run.start);
+              const to =
+                run.end > run.start ? lineOf(saved.lines, run.end - 1) : from;
+
+              bucket.entries.push({
+                hi: Math.min(saved.lines.length - 1, to + 1),
+                lo: Math.max(0, from - 1),
+                mark,
+                run,
+              });
+            }
+          }
+        }
+
+        const out: Array<{
+          path: readonly number[] | undefined;
+          passage: InkPassage;
+        }> = [];
+
+        for (const { copy: saved, entries } of spansByCopy.values()) {
+          entries.sort((a, b) => a.lo - b.lo || a.hi - b.hi);
+
+          const groups: Array<{
+            entries: typeof entries;
+            hi: number;
+            lo: number;
+          }> = [];
+
+          for (const entry of entries) {
+            const last = groups.at(-1);
+
+            if (last && entry.lo <= last.hi + 1) {
+              last.hi = Math.max(last.hi, entry.hi);
+              last.entries.push(entry);
+            } else {
+              groups.push({
+                entries: [entry],
+                hi: entry.hi,
+                lo: entry.lo,
+              });
+            }
+          }
+
+          const path = readElementById(state.nodes, saved.block)?.path;
+
+          for (const group of groups) {
+            const start = lineStart(saved.lines, group.lo);
+            const { end } = saved.lines[group.hi];
+            const text = saved.text.slice(start, end);
+            const words = inkPassageWords(text, start);
+            const byId = new Map<
+              string,
+              { gaps: Set<number>; mark: InkMark; words: Set<number> }
+            >();
+
+            for (const { mark, run } of group.entries) {
+              let item = byId.get(mark.id);
+
+              if (!item) {
+                item = { gaps: new Set(), mark, words: new Set() };
+                byId.set(mark.id, item);
+              }
+              if (run.end > run.start) {
+                let touched = false;
+
+                for (const [index, word] of words.entries()) {
+                  if (word.start < run.end && word.end > run.start) {
+                    item.words.add(index);
+                    touched = true;
+                  }
+                }
+                if (!touched) {
+                  const gap = words.findIndex((word) => run.start < word.end);
+
+                  item.gaps.add(gap === -1 ? words.length : gap);
+                }
+              } else {
+                const gap = words.findIndex((word) => run.start < word.end);
+
+                item.gaps.add(gap === -1 ? words.length : gap);
+              }
+            }
+
+            const marks = [...byId.values()]
+              .sort((a, b) => byMark(a.mark, b.mark))
+              .map(({ gaps, mark, words: markWords }): InkPassageMark => ({
+                gaps: [...gaps].sort((a, b) => a - b),
+                id: mark.id,
+                words: [...markWords].sort((a, b) => a - b),
+              }));
+
+            out.push({
+              passage: {
+                copy: saved.id,
+                marks,
+                start,
+                text,
+                words,
+              },
+              path,
+            });
+          }
+        }
+
+        out.sort((a, b) => {
+          if (a.path && b.path) {
+            const cmp = PathApi.compare(a.path, b.path);
+
+            if (cmp !== 0) return cmp;
+          } else if (a.path || b.path) {
+            return a.path ? -1 : 1;
+          }
+          if (a.passage.start !== b.passage.start) {
+            return a.passage.start - b.passage.start;
+          }
+
+          return a.passage.copy < b.passage.copy
+            ? -1
+            : a.passage.copy > b.passage.copy
+              ? 1
+              : 0;
+        });
+
+        return out.map(({ passage }) => passage);
+      },
+      /**
        * Where the block of the copy saved under `copyId` stands now, or
        * `undefined` for a copy that is not saved. A deleted block's place
        * follows the saved places of deleted blocks to the nearest block left
@@ -841,6 +1045,30 @@ export const BaseInkPlugin = definePlugin('ink', {
        */
       place: (copyId: string): InkCopyPlace | undefined =>
         readInkPlace({ copy, editor, state }, copyId),
+      /**
+       * The live range for character offsets `[start, end]` in one saved copy's
+       * text, or `null` once the block is gone or its text or inline voids
+       * differ from the copy.
+       */
+      range: ({ copy: copyId, end, start }: InkRangeInput): Range | null => {
+        const saved = copy(copyId);
+
+        if (!saved) return null;
+
+        const holder = readElementById(state.nodes, saved.block);
+
+        if (!holder || !inkHolds(saved, inkText(state.schema, holder.node))) {
+          return null;
+        }
+
+        return inkBlockRange(
+          state.schema,
+          holder.node,
+          holder.path,
+          start,
+          end
+        );
+      },
       /** Every saved mark with no digitized record, oldest first, frozen. */
       shownMarks: () => {
         const digitized = version(DIGITIZED);
