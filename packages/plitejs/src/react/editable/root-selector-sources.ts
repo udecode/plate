@@ -1,7 +1,22 @@
-import { type ReactNode, useCallback } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 
 import type { EditorCommit, NodeKey, Path } from '../..';
 import { NodeApi, SelectionApi } from '../..';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
+import { subscribeCommit } from '../../core/listener-state';
+import {
+  getActiveCaretRoot,
+  subscribeActiveCaretRoot,
+  subscribeCaretTarget,
+} from '../../core/public-state';
+import { readRootEntries } from '../../core/root-entries';
+import { getCaretOwner } from '../../core/view-carets';
+import { getOwnViewPresentation } from '../../editor-runtime-view';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useInternalEditorSelector } from '../hooks/use-editor-selector';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -195,6 +210,107 @@ export const useSelectionPaths = (enabled: boolean) => {
     profileId: 'selection-paths',
     shouldUpdate,
   });
+};
+
+const EMPTY_PATHS: readonly Path[] = Object.freeze([]);
+
+const readDescendantCaretOwnerPaths = (
+  editor: ReactRuntimeEditor,
+  viewRoot: string
+): readonly Path[] => {
+  const owner = getEditorRuntimeOwner(editor);
+  const caretOwner = getCaretOwner(owner);
+  const presentation = getOwnViewPresentation(editor);
+  let caretRoot: string | null = null;
+
+  if (caretOwner) {
+    if (presentation && caretOwner.presentation !== presentation) {
+      return EMPTY_PATHS;
+    }
+    caretRoot = toInternalRoot(caretOwner.root);
+  } else {
+    caretRoot = getActiveCaretRoot(owner);
+  }
+
+  if (!caretRoot || caretRoot === viewRoot) return EMPTY_PATHS;
+
+  const entryByRoot = new Map(
+    readRootEntries(owner).map((entry) => [entry.root, entry] as const)
+  );
+  const visited = new Set<string>([caretRoot]);
+  const queue: string[] = [caretRoot];
+  const seenKeys = new Set<string>();
+  const ownerPaths: Path[] = [];
+
+  for (const currentRoot of queue) {
+    const entry = entryByRoot.get(currentRoot);
+
+    if (!entry) continue;
+
+    for (const edge of entry.owners) {
+      const edgeRoot = toInternalRoot(edge.root);
+
+      if (edgeRoot === viewRoot) {
+        const key = edge.path.join('.');
+
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          ownerPaths.push(edge.path);
+        }
+      } else if (!visited.has(edgeRoot)) {
+        visited.add(edgeRoot);
+        queue.push(edgeRoot);
+      }
+    }
+  }
+
+  return ownerPaths.length > 0 ? ownerPaths : EMPTY_PATHS;
+};
+
+export const useDescendantCaretOwnerPaths = (
+  enabled: boolean
+): readonly Path[] => {
+  const editor = useEditorContext();
+  const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
+  const cachedRef = useRef<readonly Path[]>(EMPTY_PATHS);
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      if (!enabled) return () => {};
+
+      const owner = getEditorRuntimeOwner(editor);
+      const publicRoot = toPublicRootOption(viewRoot);
+      const stopTarget = subscribeCaretTarget(owner, listener);
+      const stopActiveRoot = subscribeActiveCaretRoot(owner, listener);
+      const stopCommit = subscribeCommit(owner, (commit) => {
+        if (
+          commit.changed.rootPlacements().length > 0 ||
+          commit.changed.has('root-order', publicRoot)
+        ) {
+          listener();
+        }
+      });
+
+      return () => {
+        stopTarget();
+        stopActiveRoot();
+        stopCommit();
+      };
+    },
+    [editor, enabled, viewRoot]
+  );
+  const getSnapshot = useCallback(() => {
+    const next = enabled
+      ? readDescendantCaretOwnerPaths(editor, viewRoot)
+      : EMPTY_PATHS;
+
+    if (!sameSelectionPaths(cachedRef.current, next)) {
+      cachedRef.current = next;
+    }
+
+    return cachedRef.current;
+  }, [editor, enabled, viewRoot]);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 };
 
 export const usePlaceholderValue = (placeholder?: ReactNode) => {

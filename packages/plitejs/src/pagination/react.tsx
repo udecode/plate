@@ -41,6 +41,7 @@ import {
   type EditableElementLayout,
   getElementPlacementBox,
   pathKey,
+  useEditableElementLayouts,
 } from '../react/components/editable-element-placement';
 import {
   SOFT_LINE_END_SELECTOR,
@@ -64,6 +65,7 @@ import {
   createContainerDecorationSlice,
   type DecorationSlice,
 } from '../react/decoration-source';
+import { useDescendantCaretOwnerPaths } from '../react/editable/root-selector-sources';
 import { toInternalRoot } from '../react/editable/runtime-editor-api';
 import {
   getPliteStringDirectPlacement,
@@ -74,6 +76,7 @@ import {
   type ViewLines,
 } from '../react/editable/view-lines';
 import { useEditableLayoutPass } from '../react/hooks/use-editable-layout-pass';
+import { useOptionalEditorContext } from '../react/hooks/use-editor-context';
 import { useInheritedReadOnly } from '../react/hooks/use-editor-read-only';
 import { useInternalEditorSelector } from '../react/hooks/use-editor-selector';
 import { useOptionalEditorViewState } from '../react/hooks/use-editor-view-state';
@@ -352,6 +355,8 @@ export const usePageLayout = (
 
 type MountedFragment = Readonly<{ pageIndex: number; rect: PageRect }>;
 type FragmentContextValue = Readonly<{
+  editor: Editor;
+  layouts: ReadonlyMap<string, EditableElementLayout> | undefined;
   placementsByPath: ReadonlyMap<string, readonly MountedFragment[]>;
 }>;
 
@@ -359,14 +364,20 @@ const FragmentContext = createContext<FragmentContextValue | null>(null);
 
 export const usePageLayoutFragments = (): readonly MountedFragment[] => {
   const context = useContext(FragmentContext);
+  const editor = useOptionalEditorContext();
+  const layouts = useEditableElementLayouts();
   const path = useElementPath();
 
   return useMemo(
     () =>
-      context && path
+      context &&
+      path &&
+      context.editor === editor &&
+      context.layouts != null &&
+      layouts === context.layouts
         ? (context.placementsByPath.get(pathKey(path)) ?? [])
         : [],
-    [context, path]
+    [context, editor, layouts, path]
   );
 };
 
@@ -1496,25 +1507,34 @@ const PagedEditableInner = <TElement extends Element = Element>({
   );
   // Promoting a requested path changes which page content is mounted.
   const [promotedPath, setPromotedPath] = useState<Path | null>(null);
+  const descendantCaretOwnerPaths = useDescendantCaretOwnerPaths(virtualize);
   const windowedItems = useMemo(() => {
     const requiredItemIndexes = new Set(visibleItems.map((item) => item.index));
 
-    [...selectedPaths, promotedPath].forEach((path) => {
-      if (!path) return;
-      let ownerPath = path;
-      let itemIndexes: readonly number[] | undefined;
+    [...selectedPaths, ...descendantCaretOwnerPaths, promotedPath].forEach(
+      (path) => {
+        if (!path) return;
+        let ownerPath = path;
+        let itemIndexes: readonly number[] | undefined;
 
-      while (ownerPath.length > 0 && !itemIndexes) {
-        itemIndexes = pageMountPlan.itemIndexesByPath.get(pathKey(ownerPath));
-        ownerPath = ownerPath.slice(0, -1);
+        while (ownerPath.length > 0 && !itemIndexes) {
+          itemIndexes = pageMountPlan.itemIndexesByPath.get(pathKey(ownerPath));
+          ownerPath = ownerPath.slice(0, -1);
+        }
+        itemIndexes?.forEach((itemIndex) => requiredItemIndexes.add(itemIndex));
       }
-      itemIndexes?.forEach((itemIndex) => requiredItemIndexes.add(itemIndex));
-    });
+    );
 
     return pageMountPlan.items.filter((item) =>
       requiredItemIndexes.has(item.index)
     );
-  }, [pageMountPlan, promotedPath, selectedPaths, visibleItems]);
+  }, [
+    descendantCaretOwnerPaths,
+    pageMountPlan,
+    promotedPath,
+    selectedPaths,
+    visibleItems,
+  ]);
   const visiblePageIndexes = useMemo(
     () => new Set(windowedItems.flatMap((item) => item.pageIndexes)),
     [windowedItems]
@@ -1609,8 +1629,8 @@ const PagedEditableInner = <TElement extends Element = Element>({
     readRunOriginWrite
   );
   const fragmentContext = useMemo(
-    () => ({ placementsByPath }),
-    [placementsByPath]
+    () => ({ editor, layouts: elementLayouts, placementsByPath }),
+    [editor, elementLayouts, placementsByPath]
   );
 
   useLayoutEffect(() => {
@@ -1640,11 +1660,18 @@ const PagedEditableInner = <TElement extends Element = Element>({
   ]);
   const scrollToPath = useCallback(
     (path: Path, align: 'auto' | 'center' | 'end' | 'start' = 'auto') => {
-      const index = path[0];
-      const itemIndex =
-        typeof index === 'number'
-          ? pageMountPlan.itemIndexesByTopLevelIndex.get(index)?.[0]
-          : undefined;
+      let ownerPath = path;
+      let itemIndex: number | undefined;
+
+      while (ownerPath.length > 0 && itemIndex === undefined) {
+        itemIndex = pageMountPlan.itemIndexesByPath.get(
+          pathKey(ownerPath)
+        )?.[0];
+        ownerPath = ownerPath.slice(0, -1);
+      }
+      if (itemIndex === undefined && typeof path[0] === 'number') {
+        itemIndex = pageMountPlan.itemIndexesByTopLevelIndex.get(path[0])?.[0];
+      }
       const item =
         itemIndex === undefined ? undefined : pageMountPlan.items[itemIndex];
       const scrollRoot = getScrollRoot(rootRef.current);

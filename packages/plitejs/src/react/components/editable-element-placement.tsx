@@ -24,6 +24,10 @@ const EditableElementLayoutsContext = React.createContext<ReadonlyMap<
   EditableElementLayout
 > | null>(null);
 
+/** @internal */
+export const useEditableElementLayouts = () =>
+  React.useContext(EditableElementLayoutsContext);
+
 const holdsAnotherEditorNode = (parent: Element, box: Element) =>
   Array.from(parent.children).some(
     (child) =>

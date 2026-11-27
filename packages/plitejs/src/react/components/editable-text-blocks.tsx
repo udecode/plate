@@ -63,6 +63,7 @@ import {
 } from '../editable/interaction-owner';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import {
+  useDescendantCaretOwnerPaths,
   usePlaceholderValue,
   useRootNodeKeys,
   useSelectionPaths,
@@ -755,6 +756,7 @@ function EditableContentRootWindow({
 }) {
   const topLevelNodeKeys = useRootNodeKeys();
   const selectionPaths = useSelectionPaths(true);
+  const descendantCaretOwnerPaths = useDescendantCaretOwnerPaths(true);
   const viewportPlan = React.useMemo(
     () => ({
       ...createEditableViewportPlan({
@@ -764,6 +766,7 @@ function EditableContentRootWindow({
             mountedKeys.has(key) ? [index] : []
           ),
           ...(selectionPaths?.flatMap((path) => path.slice(0, 1)) ?? []),
+          ...descendantCaretOwnerPaths.flatMap((path) => path.slice(0, 1)),
         ],
         scrollToPath: reveal,
         sizeAtIndex: () => 0,
@@ -774,7 +777,13 @@ function EditableContentRootWindow({
       revealMounted: reveal,
       shownTopLevelNodeKeys: mountedKeys,
     }),
-    [mountedKeys, reveal, selectionPaths, topLevelNodeKeys]
+    [
+      descendantCaretOwnerPaths,
+      mountedKeys,
+      reveal,
+      selectionPaths,
+      topLevelNodeKeys,
+    ]
   );
 
   return <EditableInner {...props} viewportPlan={viewportPlan} />;
@@ -1495,12 +1504,14 @@ const EditableInner = <TElement extends ElementNode>({
   const scrollViewportPathIntoView = React.useCallback(
     (path: Path, align: 'auto' | 'center' | 'end' | 'start' = 'center') => {
       const targetIndex = path[0];
+      let requested = false;
 
-      if (typeof targetIndex === 'number') {
-        viewportPlan?.requestMount?.(targetIndex, path);
+      if (typeof targetIndex === 'number' && viewportPlan?.requestMount) {
+        viewportPlan.requestMount(targetIndex, path);
+        requested = true;
       }
 
-      return viewportPlan?.scrollToPath(path, align) ?? false;
+      return (viewportPlan?.scrollToPath(path, align) ?? false) || requested;
     },
     [viewportPlan]
   );

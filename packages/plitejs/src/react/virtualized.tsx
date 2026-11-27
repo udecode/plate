@@ -9,6 +9,7 @@ import {
 } from './components/editable-text-blocks';
 import { SurfaceRoot } from './components/plite';
 import {
+  useDescendantCaretOwnerPaths,
   useRootNodeKeys,
   useSelectionPaths,
   useTopLevelSelectionIndex,
@@ -61,6 +62,7 @@ const VirtualizedEditorContentInner = <TElement extends Element>({
   >(null);
   const topLevelNodeKeys = useRootNodeKeys();
   const selectionPaths = useSelectionPaths(true);
+  const descendantCaretOwnerPaths = useDescendantCaretOwnerPaths(true);
   const selectedTopLevelIndex = useTopLevelSelectionIndex(true);
   const hostScrollElement = useEditorHostScrollElement(useEditorContext());
   const scrollElement = React.useMemo(
@@ -74,6 +76,7 @@ const VirtualizedEditorContentInner = <TElement extends Element>({
   const plan = useVirtualizedRootPlan({
     options,
     promotedTopLevelIndex,
+    retainedPaths: descendantCaretOwnerPaths,
     rootElement,
     scrollElement,
     selectedTopLevelIndex,

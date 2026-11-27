@@ -115,6 +115,7 @@ const createRetainedRangeExtractor =
 export const useVirtualizedRootPlan = ({
   options,
   promotedTopLevelIndex,
+  retainedPaths,
   rootElement,
   scrollElement,
   selectionPaths,
@@ -123,6 +124,7 @@ export const useVirtualizedRootPlan = ({
 }: {
   options: VirtualizedEditableOptions;
   promotedTopLevelIndex: number | null;
+  retainedPaths?: readonly Path[];
   rootElement: HTMLElement | null;
   scrollElement: HTMLElement | null;
   selectionPaths: readonly Path[] | null;
@@ -138,13 +140,26 @@ export const useVirtualizedRootPlan = ({
         .filter((index): index is number => typeof index === 'number') ?? [],
     [selectionPaths]
   );
+  const retainedPathIndexes = React.useMemo(
+    () =>
+      retainedPaths
+        ?.map((path) => path[0])
+        .filter((index): index is number => typeof index === 'number') ?? [],
+    [retainedPaths]
+  );
   const retainedIndexes = React.useMemo(
     () => [
       ...selectedEndpointIndexes,
+      ...retainedPathIndexes,
       selectedTopLevelIndex,
       promotedTopLevelIndex,
     ],
-    [promotedTopLevelIndex, selectedEndpointIndexes, selectedTopLevelIndex]
+    [
+      promotedTopLevelIndex,
+      retainedPathIndexes,
+      selectedEndpointIndexes,
+      selectedTopLevelIndex,
+    ]
   );
   const [nativeScrollbarDrag, setNativeScrollbarDrag] = React.useState(false);
 
