@@ -21,7 +21,7 @@ Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/ne
 - Failures rerun failing test files (or the step) to separate flakes from reds, then bisect within 1h (`PLITE_BROWSER_KEEP_GOING=1`). Flakes stay defects until timing/load dependence is gone.
 - Each red/flake wakes `operator` for the 3-step green-convergence loop (never cut Yjs tests, park, retry, or raise limits).
 - Three starts of one failure in 7d record a `recurrence` event (`red-recurrence.mjs`) for a `/pstack:correct` guard.
-- `beta-release.mjs wake` emits `release` after green when a daily beta is due. Nothing here posts to Discord.
+- `beta-release.mjs wake` emits `release` after green when a daily beta is due. Local CI runs and automated fix, release, and friction subagents skip team channel posts (`Send no team message.` stays on those briefs), while `operator` itself may notify teammates via the `notify` skill when workflow, pstack, setup, or team-facing changes warrant it (owner's word, 2026-11-27).
 
 Run from `<main>` (`.claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` for CI; `<main>/tooling/scripts/local-ci.mjs` for `friction`). `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skip due check); `status`, `rerun`, `install`, `uninstall` -> below.
 
