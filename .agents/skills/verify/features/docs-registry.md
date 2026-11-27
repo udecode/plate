@@ -16,7 +16,7 @@ English and Chinese docs routes, live editor previews, API reference manifests, 
 
 ## Driving it with www-drive and page-health
 
-Preconditions: `www-drive` (port 3519) is running from this checkout or `--base <url>` is reachable.
+Preconditions: `www-drive` (port 3519) from `.claude/launch.json` is running from this checkout or `--base <url>` is reachable. If port 3519 is held by another checkout (check `lsof -nP -iTCP:3519-3522 -sTCP:LISTEN`), start a `.claude/launch.json` spare (`www-drive-spare` 3520, `www-drive-spare-2` 3521, `www-drive-spare-3` 3522) or launch `next dev --port <free-port>` from `apps/www` with the `www-drive` env vars, and pass that port in URLs and `--base`.
 
 - **List interactive routes:** `node tooling/scripts/page-health.mjs --list [--base <url>]` prints tiered interactive demo routes (`Slate`, `Plate`, `New Slate`, `New Plate`) and issues live `HEAD` requests to `https://platejs.org` (it does not list `/docs/components/*`, non-preview docs, `/cn/docs/*`, or `/docs/releases/*`).
 - **Render check:** open `http://localhost:3519/docs/<slug>`, wait past `Loading…` for `[data-editor-node="value"]` to mount, verify zero console/page errors, and inspect a screenshot. Verify `/cn/docs/<slug>` renders translated Chinese or shows `[data-docs-untranslated]` on English fallback.
