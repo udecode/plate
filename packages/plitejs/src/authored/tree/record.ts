@@ -1785,6 +1785,11 @@ const recordSteps = (
 
     return inserted !== undefined && isOwn(inserted);
   };
+  const sameUpdateInsertion = (node: JsonNode) => {
+    const inserted = innermostInsert(input.dependencies.marks(node));
+
+    return inserted !== undefined && incarnationOf(inserted) === own;
+  };
   const base = {
     at: input.now,
     author: input.writer,
@@ -2185,12 +2190,14 @@ const recordSteps = (
         writesOther ||= writes === 'other';
         if (!isEditingChange(changeId)) {
           refuseUnrecordableGridStep({
+            changeId,
             claims: input.dependencies.marks,
             frame,
             frameAfter: applyReusingStep(step, root, frame, written),
             gridRoles: input.gridRoles,
             moves,
             ownInsertion,
+            sameUpdateInsertion,
             stored: fold.index,
             toStored: map,
             written,

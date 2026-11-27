@@ -1,6 +1,5 @@
 import { AuthoredPlugin } from '../../../authored';
 import {
-  authoredVeto,
   BaseParagraphPlugin,
   ContentSlice,
   DebugPlugin,
@@ -162,28 +161,218 @@ const clampTableSelection = (
     : selection;
 };
 
+type LiveTableEntry = Readonly<{ node: Element; path: Path }>;
+
+const stripAuthoredMarks = <T extends Descendant>(node: T): T => {
+  if (!ElementApi.isElement(node)) {
+    if (!('authored' in node)) return node;
+    const { authored: _authored, ...plain } = node as Record<string, unknown>;
+
+    return plain as T;
+  }
+
+  let changed = 'authored' in node;
+  const children = node.children.map((child) => {
+    const next = stripAuthoredMarks(child);
+
+    if (next !== child) changed = true;
+
+    return next;
+  });
+
+  if (!changed) return node;
+  const { authored: _authored, ...plain } = node as Record<string, unknown>;
+
+  return { ...plain, children } as unknown as T;
+};
+
+const restoreLiveNestedTableWidths = <T extends Descendant>(
+  editor: Editor,
+  tableType: string,
+  node: T
+): T => {
+  if (!ElementApi.isElement(node)) return node;
+  let changed = false;
+  const children = node.children.map((child) => {
+    const next = restoreLiveNestedTableWidths(editor, tableType, child);
+
+    if (next !== child) changed = true;
+
+    return next;
+  });
+  const shownWidths =
+    node.type === tableType && getColumnWidthsWrite(editor, node)
+      ? getShownColumnSizes(editor, node)
+      : undefined;
+
+  if (!changed && !shownWidths) return node;
+
+  return {
+    ...node,
+    ...(shownWidths ? { columnWidths: [...shownWidths] } : {}),
+    children,
+  };
+};
+
+const getNodeAtPath = (
+  children: readonly Descendant[],
+  path: Path
+): Node | undefined => {
+  let current: Node | undefined = children[path[0] ?? -1];
+
+  for (let depth = 1; depth < path.length; depth += 1) {
+    if (!current || !ElementApi.isElement(current)) return undefined;
+    current = current.children[path[depth] ?? -1];
+  }
+
+  return current;
+};
+
+const collectLiveTables = (
+  node: Node,
+  path: Path,
+  tableType: string,
+  out: LiveTableEntry[]
+) => {
+  if (!ElementApi.isElement(node)) return;
+  if (node.type === tableType) out.push({ node, path });
+  node.children.forEach((child, index) => {
+    collectLiveTables(child, path.concat(index), tableType, out);
+  });
+};
+
+const sliceShownWidthsForFragment = (
+  exportedTable: Element,
+  live: LiveTableEntry,
+  shownWidths: ReadonlyArray<number | null>,
+  range: Range | null
+): Array<number | null> | undefined => {
+  const exportedWidth = compileTableGrid(exportedTable).width;
+
+  if (exportedWidth === shownWidths.length) return [...shownWidths];
+  if (!range || exportedWidth === 0) return undefined;
+
+  const [start, end] = RangeApi.edges(range);
+
+  if (PathApi.isAncestor(live.path, start.path)) {
+    const rowIndex = start.path[live.path.length];
+    const cellIndex = start.path[live.path.length + 1];
+
+    if (rowIndex !== undefined && cellIndex !== undefined) {
+      const anchor = compileTableGrid(live.node).anchors.find(
+        (candidate) =>
+          candidate.path[0] === rowIndex && candidate.path[1] === cellIndex
+      );
+
+      if (anchor) {
+        const sliced = shownWidths.slice(
+          anchor.col,
+          anchor.col + exportedWidth
+        );
+
+        return sliced.length > 0 ? [...sliced] : undefined;
+      }
+    }
+  }
+  if (PathApi.isAncestor(live.path, end.path)) {
+    const sliced = shownWidths.slice(0, exportedWidth);
+
+    return sliced.length > 0 ? [...sliced] : undefined;
+  }
+
+  return undefined;
+};
+
+const restoreShownTableColumnWidths = (
+  editor: Editor,
+  tableType: string,
+  nodes: readonly Descendant[],
+  liveTables: readonly LiveTableEntry[],
+  range: Range | null,
+  cursor: { index: number } = { index: 0 }
+): readonly Descendant[] => {
+  let changed = false;
+  const next = nodes.map((node) => {
+    if (!ElementApi.isElement(node)) return node;
+    let live: LiveTableEntry | null = null;
+
+    if (node.type === tableType) {
+      live = liveTables[cursor.index] ?? null;
+      cursor.index += 1;
+    }
+    const children = restoreShownTableColumnWidths(
+      editor,
+      tableType,
+      node.children,
+      liveTables,
+      range,
+      cursor
+    );
+    const shownWidths =
+      live && getColumnWidthsWrite(editor, live.node)
+        ? getShownColumnSizes(editor, live.node)
+        : undefined;
+    const restoredWidths =
+      live && shownWidths
+        ? sliceShownWidthsForFragment(node, live, shownWidths, range)
+        : undefined;
+
+    if (children === node.children && !restoredWidths) return node;
+    changed = true;
+
+    return {
+      ...node,
+      ...(restoredWidths ? { columnWidths: restoredWidths } : {}),
+      children,
+    };
+  });
+
+  return changed ? next : nodes;
+};
+
 const projectTableSelectionSlice = (
   editor: Editor,
   slice: ContentSlice,
   view: TableSelectionView
 ) => {
   const projection = projectTableSelection(view);
+  const restoredChildren = projection.children.map((child) =>
+    restoreLiveNestedTableWidths(editor, view.table.type, child)
+  );
+  const shownSizes = getShownColumnSizes(editor, view.table);
+  const slicedSizes = shownSizes?.slice(
+    view.bounds.minCol,
+    view.bounds.maxCol + 1
+  );
+  const columnWidths =
+    slicedSizes && slicedSizes.length > 0 ? [...slicedSizes] : undefined;
   const exportedTable =
     slice.content.length === 1 &&
     ElementApi.isElement(slice.content[0]) &&
     slice.content[0].type === view.table.type
       ? slice.content[0]
       : null;
+  const merged = exportedTable
+    ? { ...projection, ...exportedTable, children: restoredChildren }
+    : { ...projection, children: restoredChildren };
+  const cleaned = stripAuthoredMarks(merged);
+  const withWidths = (() => {
+    if (columnWidths) return { ...cleaned, columnWidths };
+    if (shownSizes && 'columnWidths' in cleaned) {
+      const { columnWidths: _widths, ...rest } = cleaned as Record<
+        string,
+        unknown
+      >;
 
-  const projected = ContentSlice.withContent(
-    slice,
-    [
-      exportedTable
-        ? { ...projection, ...exportedTable, children: projection.children }
-        : projection,
-    ],
-    { open: 'closed' }
-  );
+      return rest as unknown as Element;
+    }
+
+    return cleaned;
+  })();
+
+  const projected = ContentSlice.withContent(slice, [withWidths], {
+    open: 'closed',
+  });
 
   if (!projected.roots) return projected;
   const roots: Record<string, readonly Descendant[]> = {};
@@ -1275,22 +1464,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
   }),
 }))
   .extend(({ editor, schema: { type }, store }) => ({
-    contributions: [
-      authoredVeto.of((element, touch) => {
-        const part =
-          element.type === editor.plugin(BaseTableRowPlugin).schema.type ||
-          element.type === editor.plugin(BaseTableCellPlugin).schema.type;
-
-        if (element.type !== type && !part) return null;
-
-        return touch === 'properties' ||
-          touch === 'boundary' ||
-          (touch === 'whole' && part) ||
-          (touch === 'inside' && !part)
-          ? 'table'
-          : null;
-      }),
-    ],
     read: ({ state }) => {
       const cellType = () => editor.plugin(BaseTableCellPlugin).schema.type;
       const selectionView = (options: TableTargetOptions = {}) =>
@@ -2365,30 +2538,97 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             (input.options.at === undefined &&
               state.selection.nodes().length > 0);
 
-          if (!view || hasNodeSelection) return slice;
-          if (view.anchors.length > 1) {
+          if (view && view.anchors.length > 1) {
             return projectTableSelectionSlice(context.editor, slice, view);
           }
 
-          const table =
-            slice.content.length === 1 &&
-            ElementApi.isElement(slice.content[0]) &&
-            slice.content[0].type === context.schema.type
-              ? slice.content[0]
-              : null;
-          const row =
-            table?.children.length === 1 &&
-            ElementApi.isElement(table.children[0])
-              ? table.children[0]
-              : null;
-          const cell =
-            row?.children.length === 1 && ElementApi.isElement(row.children[0])
-              ? row.children[0]
-              : null;
+          let baseSlice = slice;
+          let unwrapped = false;
 
-          return cell
-            ? ContentSlice.withContent(slice, cell.children, { open: 'closed' })
-            : slice;
+          if (view && !hasNodeSelection) {
+            const table =
+              slice.content.length === 1 &&
+              ElementApi.isElement(slice.content[0]) &&
+              slice.content[0].type === context.schema.type
+                ? slice.content[0]
+                : null;
+            const row =
+              table?.children.length === 1 &&
+              ElementApi.isElement(table.children[0])
+                ? table.children[0]
+                : null;
+            const cell =
+              row?.children.length === 1 &&
+              ElementApi.isElement(row.children[0])
+                ? row.children[0]
+                : null;
+
+            if (cell) {
+              baseSlice = ContentSlice.withContent(slice, cell.children, {
+                open: 'closed',
+              });
+              unwrapped = true;
+            }
+          }
+
+          const target = input.options.at ?? state.selection();
+          const range = target && RangeApi.isRange(target) ? target : null;
+          const liveTables: LiveTableEntry[] = [];
+
+          if (target && SelectionApi.isNode(target)) {
+            const targetRoot = SelectionApi.root(target);
+            const rootChildren =
+              targetRoot === undefined
+                ? null
+                : context.editor.read.value().roots?.[targetRoot];
+
+            for (const path of target.paths) {
+              const node = rootChildren
+                ? getNodeAtPath(rootChildren, path)
+                : state.nodes.get(path)?.[0];
+
+              if (node) {
+                collectLiveTables(node, path, context.schema.type, liveTables);
+              }
+            }
+          } else if (range) {
+            const [start, end] = RangeApi.edges(range);
+
+            for (const [node, path] of state.nodes.entries({
+              at: range,
+              type: context.schema.type,
+            })) {
+              if (
+                PathApi.isAncestor(path, start.path) &&
+                PathApi.isAncestor(path, end.path)
+              ) {
+                continue;
+              }
+              liveTables.push({ node, path });
+            }
+          }
+
+          if (
+            !liveTables.some(({ node }) =>
+              getColumnWidthsWrite(context.editor, node)
+            )
+          ) {
+            return baseSlice;
+          }
+
+          const restored = restoreShownTableColumnWidths(
+            context.editor,
+            context.schema.type,
+            baseSlice.content,
+            liveTables,
+            range
+          );
+
+          return restored === baseSlice.content
+            ? baseSlice
+            : ContentSlice.withContent(baseSlice, restored, {
+                open: unwrapped ? 'closed' : 'preserve',
+              });
         }),
       ],
     };

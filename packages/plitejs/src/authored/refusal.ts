@@ -37,11 +37,11 @@ import { getDefined } from '../internal/get-defined';
  * saved result would show the edited blocks in another order once everything
  * is accepted. `diverged`: it would show other content than the edit wrote.
  * `unaligned`: the preview there has no map to the saved content. `grid`: the
- * edit acts inside a table or row whose deletion is pending, or joins two
- * lines across one, or a suggestion would add or remove single cells, change
- * a span, split or join a table part, add a row beside a pending column
- * change, or move a block out of a table or row another author's suggestion
- * adds.
+ * edit acts inside a table, row or column whose deletion is pending, or joins
+ * two lines across one, or a suggestion would add or remove single cells, move
+ * a row, change a span, split or join a table part, add a row beside a pending
+ * column change, change a container that holds a table, or move a block out of
+ * a table or row another author's suggestion adds.
  */
 export type UnrepresentableReason =
   | 'crosses'
@@ -69,7 +69,7 @@ export type AuthoredRefusal = Readonly<{
   code: 'generated-values' | 'unrepresentable' | 'veto';
   message: string;
   /**
-   * Each veto reason the change met, such as `'table'`, or the
+   * Each veto reason the change met, such as `'code-block'`, or the
    * {@link UnrepresentableReason} an unrepresentable edit met.
    */
   reasons: readonly string[];
@@ -442,7 +442,7 @@ const REASON_MESSAGES: Readonly<Record<UnrepresentableReason, string>> = {
     'This edit would cover content a pending join shows elsewhere; decide the join first.',
   diverged:
     'This edit would save something other than what it wrote; decide the pending join first.',
-  grid: 'This edit is inside or across a table or row whose deletion is pending; decide that table or row first.',
+  grid: 'This edit is inside or across a table, row or column whose deletion is pending; decide that table, row or column first.',
   reordered:
     'This edit would show in another order once everything is accepted; decide the pending join first.',
   unaligned:

@@ -115,6 +115,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-suggestion-table-rows-columns",
+      "href": "/registry/changelog/2026-11-27-suggestion-table-rows-columns.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Drop the blanket table veto toast in Suggesting, narrow the code-block table toast, and show specific Plite refusal messages.",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-26-board-arrow-components",
       "href": "/registry/changelog/2026-11-26-board-arrow-components.json",
       "status": "draft",

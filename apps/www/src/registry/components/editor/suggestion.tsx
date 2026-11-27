@@ -98,11 +98,7 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
 const REFUSED = new Map([
   [
     'code-block',
-    "Suggesting can't change a code block yet, or a table that holds one. Switch to Editing to change them.",
-  ],
-  [
-    'table',
-    "Suggesting can add or delete a whole table, but can't yet change its rows, columns, cells or sizes, or add or delete a block that holds a table. Switch to Editing to make those changes.",
+    "Suggesting can't change a code block yet, or a row, column or table that holds one. Switch to Editing to change them.",
   ],
 ]);
 const refusedPlaces = new Intl.ListFormat('en');
@@ -130,14 +126,11 @@ function SuggestionRefusals() {
 
     return authored.api.subscribeRefusals((refusal) => {
       const view = authored.read.view();
-      // A reason names content a pending join moves, which Editing refuses
-      // too, so a Suggesting writer reads why instead of a hint to switch.
       const unrecorded =
         'intent' in view && view.intent === 'edit'
           ? 'Editing cannot record this change next to a pending suggestion yet. Accept or reject that suggestion first.'
-          : refusal.reasons.length > 0
-            ? refusal.message
-            : 'Suggesting cannot record this change yet. Switch to Editing to make it.';
+          : refusal.message ||
+            'Suggesting cannot record this change yet. Switch to Editing to make it.';
 
       toast.error(
         refusal.code === 'veto'

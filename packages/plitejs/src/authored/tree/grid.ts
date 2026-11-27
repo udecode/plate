@@ -56,29 +56,51 @@ const partsOf = (node: JsonNode, gridRoles: GridRoles): JsonNode[] =>
       })
     : [];
 
-const unplacedInGrid = () =>
+const unplacedPendingGrid = () =>
   unrepresentable(
-    'Review cannot hold this table change: a table takes one row, column or format suggestion at a time, over whole rows or whole columns, with no merged cell, merge or split. Decide its pending change first.',
+    'Review cannot hold this table change: a table takes one row, column or format suggestion at a time. Decide its pending change first.',
+    'grid'
+  );
+
+const unplacedUnsupportedGrid = () =>
+  unrepresentable(
+    'Review cannot hold this table change: Suggesting cannot move a row, add or remove a single cell, merge or split cells, or edit a table with merged cells yet. Switch to Editing to make it.',
+    'grid'
+  );
+
+const unplacedReplayGrid = () =>
+  unrepresentable(
+    'Review cannot hold this table undo or redo because another edit or decision changed the table since that step.',
+    'grid'
+  );
+
+const unplacedContainerAroundGrid = () =>
+  unrepresentable(
+    'Review cannot hold adding, deleting, wrapping or unwrapping a block that holds a table. Switch to Editing to change it.',
     'grid'
   );
 
 export const refuseUnrecordableGridStep = ({
+  changeId,
   claims,
   frame,
   frameAfter,
   gridRoles,
   moves,
   ownInsertion,
+  sameUpdateInsertion,
   stored,
   toStored,
   written,
 }: Readonly<{
+  changeId: string;
   claims: Claims;
   frame: DocumentIndex;
   frameAfter: DocumentIndex;
   gridRoles: GridRoles;
   moves: boolean;
   ownInsertion: (node: JsonNode) => boolean;
+  sameUpdateInsertion: (node: JsonNode) => boolean;
   stored: DocumentIndex;
   toStored: (position: number, assoc: -1 | 1) => number;
   written: RootChange;
@@ -96,11 +118,13 @@ export const refuseUnrecordableGridStep = ({
 
   for (const { at, props, propsAfter, touch } of touches) {
     const role = gridRoles.roleOf(props);
+    const changesSpan =
+      propsAfter !== undefined &&
+      !jsonEqual(gridRoles.spansOf(props), gridRoles.spansOf(propsAfter));
     const reshapes =
       touch === 'boundary' ||
-      (propsAfter !== undefined &&
-        (gridRoles.roleOf(propsAfter) !== role ||
-          !jsonEqual(gridRoles.spansOf(props), gridRoles.spansOf(propsAfter))));
+      (propsAfter !== undefined && gridRoles.roleOf(propsAfter) !== role) ||
+      changesSpan;
 
     if ((role === null && touch === 'boundary') || !reshapes) continue;
 
@@ -108,7 +132,21 @@ export const refuseUnrecordableGridStep = ({
       .map((range) => stored.node(range.path))
       .findLast((node) => gridRoles.roleOf(node) === 'grid');
 
-    if (!table || !ownInsertion(table)) throw unplacedInGrid();
+    if (
+      !table ||
+      (changesSpan ? !sameUpdateInsertion(table) : !ownInsertion(table))
+    ) {
+      const hasPending =
+        table !== undefined &&
+        ([...gridChangesOf(table, gridRoles, claims)].some(
+          (change) => change !== changeId
+        ) ||
+          claims(table).some(
+            (mark) => mark.kind === 'delete' && mark.change !== changeId
+          ));
+
+      throw hasPending ? unplacedPendingGrid() : unplacedUnsupportedGrid();
+    }
   }
   if (!moves) return;
 
@@ -135,7 +173,7 @@ export const refuseUnrecordableGridStep = ({
       source &&
       !landings.some((place) => source.from < place && place < source.to)
     ) {
-      throw unplacedInGrid();
+      throw unplacedPendingGrid();
     }
   }
 };
@@ -183,7 +221,7 @@ const marksIn = (value: JsonEditorValue) => {
     );
 };
 
-type Marks = ReturnType<typeof marksIn>;
+type Marks = Claims;
 
 const struck = (node: JsonNode, marks: Marks) =>
   marks(node).some((mark) => mark.kind === 'delete');
@@ -719,7 +757,7 @@ const judgeNonReplayGrid = (
     (added.length > 0 || !struck(before, sides.before));
 
   if ((added.length > 0 && was.size > 0) || strikesGridChange) {
-    throw unplacedInGrid();
+    throw unplacedPendingGrid();
   }
 
   const placesBefore = partMarksOf(before, gridRoles, sides.before);
@@ -734,9 +772,12 @@ const judgeNonReplayGrid = (
       sides.after,
       kindsByChange.get(change)
     );
+    const resizesMarked = resizesMarkedRow(net, change, sides.before);
 
-    if (!kinds || resizesMarkedRow(net, change, sides.before)) {
-      throw unplacedInGrid();
+    if (!kinds || resizesMarked) {
+      throw was.size > 0 || resizesMarked
+        ? unplacedPendingGrid()
+        : unplacedUnsupportedGrid();
     }
     kindsByChange.set(change, kinds);
   }
@@ -755,9 +796,13 @@ const judgeNonReplayGrid = (
     (intent === 'edit' || editsHeld) &&
     leavesNewPendingDeletion(before, after, gridRoles, sides)
   ) {
-    throw unplacedInGrid();
+    throw unplacedPendingGrid();
   }
-  if (net.reshaped && (added.length > 0 || editsHeld)) throw unplacedInGrid();
+  if (net.reshaped && (added.length > 0 || editsHeld)) {
+    throw was.size > 0 || editsHeld
+      ? unplacedPendingGrid()
+      : unplacedUnsupportedGrid();
+  }
   if (!editsHeld) return;
 
   const width = Math.max(
@@ -778,7 +823,7 @@ const judgeNonReplayGrid = (
     net.addsRow ||
     mayMoveRow
   ) {
-    throw unplacedInGrid();
+    throw unplacedPendingGrid();
   }
 };
 
@@ -1079,7 +1124,7 @@ const judgeReplayGrid = (
     if (
       !leavesWholeGridChange(afterTable, gridRoles, marksAfter, kindsByChange)
     ) {
-      throw unplacedInGrid();
+      throw unplacedPendingGrid();
     }
 
     return;
@@ -1096,13 +1141,13 @@ const judgeReplayGrid = (
   }
 
   if (beforeTable && hasAnyPendingMark(beforeTable, marksBefore)) {
-    throw unplacedInGrid();
+    throw unplacedPendingGrid();
   }
   if (afterTable && hasAnyPendingMark(afterTable, marksAfter)) {
-    throw unplacedInGrid();
+    throw unplacedPendingGrid();
   }
   if (!replayOrigin) {
-    if (holdsAuthored()) throw unplacedInGrid();
+    if (holdsAuthored()) throw unplacedReplayGrid();
 
     return;
   }
@@ -1115,14 +1160,14 @@ const judgeReplayGrid = (
     oMarksBefore &&
     hasAnyPendingMark(originBeforeTable, oMarksBefore)
   ) {
-    throw unplacedInGrid();
+    throw unplacedReplayGrid();
   }
   if (
     originAfterTable &&
     oMarksAfter &&
     hasAnyPendingMark(originAfterTable, oMarksAfter)
   ) {
-    throw unplacedInGrid();
+    throw unplacedReplayGrid();
   }
   if (
     !originBeforeTable &&
@@ -1135,7 +1180,7 @@ const judgeReplayGrid = (
       oMarksAfter
     )
   ) {
-    throw unplacedInGrid();
+    throw unplacedReplayGrid();
   }
 };
 
@@ -1351,10 +1396,10 @@ export const refuseGridUpdate = ({
     };
 
     const refuseContainer = (node: JsonNode, was: JsonNode | null) => {
+      if (intent === 'replay') return;
       const had = was ? marksBefore(was) : [];
 
       if (
-        !gridRoles.isPart(node) &&
         marksAfter(node).some(
           (mark) =>
             decidesElement(mark) &&
@@ -1364,7 +1409,7 @@ export const refuseGridUpdate = ({
         ) &&
         holdsGrid(node, gridRoles)
       ) {
-        throw unplacedInGrid();
+        throw unplacedContainerAroundGrid();
       }
     };
 
@@ -1387,7 +1432,7 @@ export const refuseGridUpdate = ({
 
           if (range.kind !== 'element' || now.kind !== 'element') {
             if (intent === 'replay' && hasStruckGridAncestor(at)) {
-              throw unplacedInGrid();
+              throw unplacedPendingGrid();
             }
             continue;
           }
@@ -1400,7 +1445,7 @@ export const refuseGridUpdate = ({
           refuseContainer(changed, node);
           if (role === null) {
             if (intent === 'replay' && hasStruckGridAncestor(at)) {
-              throw unplacedInGrid();
+              throw unplacedPendingGrid();
             }
             continue;
           }
@@ -1573,7 +1618,7 @@ export const refuseGridUpdate = ({
         !touchesGridInSection &&
         hasStruckGridAncestor(from)
       ) {
-        throw unplacedInGrid();
+        throw unplacedPendingGrid();
       }
 
       from = end;

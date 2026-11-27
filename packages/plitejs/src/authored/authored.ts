@@ -387,9 +387,9 @@ export type AuthoredTestOptions = AuthoredOptions &
     intent?: 'edit' | 'propose';
     now?: () => number;
     /**
-     * Record what a feature's veto refuses in Suggesting, such as a new table
-     * row, as content loaded from elsewhere can hold it. A write review cannot
-     * show in a table, such as a lone new cell, still refuses.
+     * Record what a feature's veto refuses in Suggesting, such as a code block,
+     * as content loaded from elsewhere can hold it. A write review cannot show
+     * in a table, such as a lone new cell, still refuses.
      */
     vetoes?: false;
   }>;
