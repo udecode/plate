@@ -4,9 +4,12 @@ An agent tests a page by hand on the Android emulator or the iPhone simulator th
 
 ## Session
 
-- `node tooling/device/device.mjs boot android` or `boot ios` starts the pinned emulator or the plate_ios_27 simulator. Simulator.app stays closed.
-- `node tooling/device/device.mjs drive <android|ios> start --www <port> --dir <run-dir>` starts the session against a running www server, such as `www-drive` on 3519. The session loads the drive code when it starts, so restart it after changing that code.
-- `drive <platform> stop` ends it. A session started outside a sandbox serves an agent inside one, such as Codex CLI's `workspace-write` with network access.
+- `node tooling/device/device.mjs boot android [--count <n>]` starts one or more read-only instances of the pinned emulator from its clean snapshot on even ports starting at 5554. `node tooling/device/device.mjs install ios --count <n>` creates numbered clones (`plate_ios_27_2` and up) of `plate_ios_27`, and `boot ios [--count <n>] [--erase]` boots them without opening Simulator.app. By default `boot ios` keeps each simulator's cached system assets and only rewrites the keyboard and locale plists, so iOS does not re-download MobileAssets on every boot; pass `--erase` only when you need a factory wipe.
+- `node tooling/device/device.mjs stop android` and `stop ios` shut down every running lane emulator or lane simulator without touching other emulators or simulators such as `iPhone 17` or Sweep simulators.
+- `node tooling/device/device.mjs drive <android|ios> start --www <port> --dir <run-dir>` leases the first booted device that has no live drive session or live lock, prints its `serial`, and starts the session against a running www server, such as `www-drive` on 3519. The session loads the drive code when it starts, so restart it after changing that code.
+- `drive <platform> stop [--serial <serial>]` ends the session and releases the device. Killing a session process frees its device and stale lock on the next `drive start`. When two or more sessions run on one platform, pass `--serial <serial>` on every drive command. A session started outside a sandbox serves an agent inside one, such as Codex CLI's `workspace-write` with network access.
+- Playwright device tests in `apps/plite/playwright.device.config.ts` run one `device` project with one worker per booted serial, splitting cases and repeats across all booted phones instead of repeating every case on every phone. Set `PLATE_DEVICE_SERIALS` to pin specific serials.
+- Memory budget for choosing `--count` on a 64 GB Apple silicon Mac: one Android emulator uses about 5.8 to 7.4 GB of available memory, or about 11.7 GB for two active instances with qemu RSS 3.2 to 4.9 GB each; one iPhone simulator with its XCUITest runner uses about 6.5 to 7.3 GB of available memory, or about 14.6 GB for two active instances; each drive session adds about 0.1 GB.
 
 ## Commands
 
