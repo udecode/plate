@@ -1,8 +1,14 @@
 'use client';
 
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Trash2Icon } from 'lucide-react';
+import { BaseInkPlugin } from 'platejs/ink';
 import { InkPlugin } from 'platejs/ink/react';
-import { useEditor, useViewStore } from 'platejs/react';
+import {
+  useEditor,
+  useEditorSelector,
+  useEditorViewState,
+  useViewStore,
+} from 'platejs/react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
@@ -35,6 +41,31 @@ export function ShowDigitizedToolbarButton() {
       tooltip="Show digitized ink"
     >
       <EyeIcon />
+    </ToolbarButton>
+  );
+}
+
+export function DropDigitizedToolbarButton() {
+  const editor = useEditor();
+  const readOnly = useEditorViewState(editor, (state) => state.isReadOnly());
+  const hasDigitized = useEditorSelector((current) => {
+    const ink = current.plugin(BaseInkPlugin);
+
+    return ink.read.marks().length > ink.read.shownMarks().length;
+  });
+
+  return (
+    <ToolbarButton
+      aria-label="Drop digitized ink"
+      disabled={readOnly || !hasDigitized}
+      onClick={() => {
+        editor.update((tx) => {
+          tx.plugin(BaseInkPlugin).dropDigitized();
+        });
+      }}
+      tooltip="Drop digitized ink"
+    >
+      <Trash2Icon />
     </ToolbarButton>
   );
 }

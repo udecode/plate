@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, RotateCcw, SparklesIcon, X } from 'lucide-react';
+import { getEditorRuntimeOwner } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import { InkPlugin } from 'platejs/ink/react';
 import {
@@ -22,13 +23,18 @@ import type {
   InkDigitizeReading,
 } from '@/registry/app/api/ai/ink-digitize/ink-digitize-route';
 import { AI_SETTINGS_OPEN_EVENT } from '@/registry/components/editor/settings-dialog';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 import { AIChatTransportPlugin } from '@/registry/components/editor/use-chat';
 import {
   canDigitizeInk,
   confirmInkDigitizeWithComments,
   type ConfirmSkipReason,
+  correctionPrimaryKind,
+  INK_DIGITIZE_KIND_LABELS,
   latestInkDigitizeRequestId,
+  liveShownInkMarkIds,
   marksTurningIntoSigns,
+  planInkDigitizeAllBatches,
   type PreparedInkDigitize,
   prepareInkDigitizeRequest,
   type ValidatedCorrection,
@@ -38,6 +44,15 @@ import {
 
 const DEFAULT_MODEL = 'google/gemini-3.8-flash';
 const DIGITIZE_ENDPOINT = '/api/ai/ink-digitize';
+const digitizeAllTriggers = new WeakMap<object, Set<() => void>>();
+
+type DigitizeKindFilter = InkDigitizeEdit['kind'] | 'all';
+
+type BatchContext = Readonly<{
+  index: number;
+  remaining: ReadonlyArray<readonly string[]>;
+  total: number;
+}>;
 
 type DigitizeNotice =
   | Readonly<{ kind: 'error'; message: string; needsKey?: boolean }>
@@ -51,6 +66,8 @@ type DigitizeNotice =
     }>;
 
 type ConfirmState = Readonly<{
+  activeKind: DigitizeKindFilter;
+  batch: BatchContext | null;
   encodeMs: number;
   keptIndices: ReadonlySet<number>;
   meaningIndices: ReadonlyMap<number, number>;
@@ -109,6 +126,36 @@ const skipReasonLabel = (reason: ConfirmSkipReason) => {
 const openAiSettings = () => {
   window.dispatchEvent(new CustomEvent(AI_SETTINGS_OPEN_EVENT));
 };
+
+export function DigitizeAllToolbarButton() {
+  const editor = useEditor();
+  const readOnly = useEditorViewState(editor, (state) => state.isReadOnly());
+  const authoredPreview = useEditorViewState(editor, () => {
+    const authored = editor.plugin(AuthoredPlugin);
+
+    return authored.installed && 'preview' in authored.read.view();
+  });
+  const hasLiveMarks = useEditorSelector(
+    (current) => liveShownInkMarkIds(current).length > 0
+  );
+
+  return (
+    <ToolbarButton
+      aria-label="Digitize all ink"
+      disabled={readOnly || authoredPreview || !hasLiveMarks}
+      onClick={() => {
+        const owner = getEditorRuntimeOwner(editor);
+        const triggers = digitizeAllTriggers.get(owner);
+        const first = triggers?.values().next().value;
+
+        first?.();
+      }}
+      tooltip="Digitize all ink"
+    >
+      <SparklesIcon />
+    </ToolbarButton>
+  );
+}
 
 export function InkDigitizeBar() {
   const editor = useEditor();
@@ -244,7 +291,10 @@ export function InkDigitizeBar() {
   }, [editor]);
 
   const runDigitize = React.useCallback(
-    async (ids: readonly string[], options?: { lassoOnly?: boolean }) => {
+    async (
+      ids: readonly string[],
+      options?: { batch?: BatchContext | null; lassoOnly?: boolean }
+    ) => {
       if (!canDigitizeInk(editor)) {
         closeSession();
 
@@ -374,6 +424,8 @@ export function InkDigitizeBar() {
         setSession({
           kind: 'confirm',
           state: {
+            activeKind: 'all',
+            batch: options?.batch ?? null,
             encodeMs,
             keptIndices,
             meaningIndices,
@@ -402,6 +454,36 @@ export function InkDigitizeBar() {
     },
     [closeSession, editor, readAiConfig]
   );
+
+  const runDigitizeAll = React.useCallback(() => {
+    const batches = planInkDigitizeAllBatches(editor);
+
+    if (batches.length === 0) return;
+
+    const [first, ...remaining] = batches;
+
+    void runDigitize(first, {
+      batch:
+        batches.length > 1
+          ? { index: 0, remaining, total: batches.length }
+          : null,
+    });
+  }, [editor, runDigitize]);
+
+  React.useEffect(() => {
+    const owner = getEditorRuntimeOwner(editor);
+    let triggers = digitizeAllTriggers.get(owner);
+
+    if (!triggers) {
+      triggers = new Set();
+      digitizeAllTriggers.set(owner, triggers);
+    }
+    triggers.add(runDigitizeAll);
+
+    return () => {
+      triggers.delete(runDigitizeAll);
+    };
+  }, [editor, runDigitizeAll]);
 
   const handleReask = React.useCallback(
     async (correctionIndex: number) => {
@@ -649,8 +731,22 @@ export function InkDigitizeBar() {
       return;
     }
 
+    if (state.batch && state.batch.remaining.length > 0) {
+      const [nextIds, ...rest] = state.batch.remaining;
+
+      void runDigitize(nextIds, {
+        batch: {
+          index: state.batch.index + 1,
+          remaining: rest,
+          total: state.batch.total,
+        },
+      });
+
+      return;
+    }
+
     closeSession();
-  }, [closeSession, editor, session]);
+  }, [closeSession, editor, runDigitize, session]);
 
   const handleBringBack = React.useCallback(() => {
     if (pickedDigitized.length === 0 || !canDigitize) return;
@@ -819,10 +915,47 @@ export function InkDigitizeBar() {
             void handleConfirm();
           }}
           onDigitizeAgain={() => {
-            void runDigitize(pickedShown);
+            if (session.state.batch) {
+              runDigitizeAll();
+            } else if (pickedShown.length > 0) {
+              void runDigitize(pickedShown);
+            } else {
+              runDigitizeAll();
+            }
           }}
           onReask={(index) => {
             void handleReask(index);
+          }}
+          onSelectKind={(kind) => {
+            setSession((prev) => {
+              if (prev.kind !== 'confirm') return prev;
+              const nextKept = new Set<number>();
+
+              for (const [
+                index,
+                correction,
+              ] of prev.state.validated.corrections.entries()) {
+                if (kind === 'all') {
+                  if (correction.defaultKept) nextKept.add(index);
+                } else {
+                  const primaryKind = correctionPrimaryKind(
+                    correction,
+                    prev.state.meaningIndices.get(index) ?? 0
+                  );
+
+                  if (primaryKind === kind) nextKept.add(index);
+                }
+              }
+
+              return {
+                kind: 'confirm',
+                state: {
+                  ...prev.state,
+                  activeKind: kind,
+                  keptIndices: nextKept,
+                },
+              };
+            });
           }}
           onSelectMeaning={(correctionIndex, meaningIndex) => {
             setSession((prev) => {
@@ -879,6 +1012,7 @@ function ConfirmDialog({
   onConfirm,
   onDigitizeAgain,
   onReask,
+  onSelectKind,
   onSelectMeaning,
   onToggleKeep,
   onTypedChange,
@@ -888,6 +1022,7 @@ function ConfirmDialog({
   onConfirm: () => void;
   onDigitizeAgain: () => void;
   onReask: (index: number) => void;
+  onSelectKind: (kind: DigitizeKindFilter) => void;
   onSelectMeaning: (correctionIndex: number, meaningIndex: number) => void;
   onToggleKeep: (correctionIndex: number, checked: boolean) => void;
   onTypedChange: (correctionIndex: number, value: string) => void;
@@ -899,6 +1034,17 @@ function ConfirmDialog({
     state.keptIndices,
     state.meaningIndices
   );
+  const kindCounts = new Map<InkDigitizeEdit['kind'], number>();
+
+  for (const [index, correction] of state.validated.corrections.entries()) {
+    const kind = correctionPrimaryKind(
+      correction,
+      state.meaningIndices.get(index) ?? 0
+    );
+
+    if (kind) kindCounts.set(kind, (kindCounts.get(kind) ?? 0) + 1);
+  }
+  const kindEntries = [...kindCounts.entries()];
 
   return (
     <dialog
@@ -909,7 +1055,14 @@ function ConfirmDialog({
       open
     >
       <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="font-medium">Confirm digitized edits</div>
+        <div className="flex items-center gap-2 font-medium">
+          <span>Confirm digitized edits</span>
+          {state.batch && state.batch.total > 1 && (
+            <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
+              Batch {state.batch.index + 1} of {state.batch.total}
+            </span>
+          )}
+        </div>
         <Button
           aria-label="Close confirm"
           disabled={state.saving}
@@ -920,6 +1073,37 @@ function ConfirmDialog({
           <X className="size-4" />
         </Button>
       </div>
+
+      {kindEntries.length > 1 && (
+        <div
+          aria-label="Filter by kind"
+          className="mb-2 flex flex-wrap gap-1.5"
+          data-ink-digitize-kinds=""
+          role="group"
+        >
+          <Button
+            aria-pressed={state.activeKind === 'all'}
+            disabled={state.saving}
+            onClick={() => onSelectKind('all')}
+            size="xs"
+            variant={state.activeKind === 'all' ? 'secondary' : 'outline'}
+          >
+            All ({state.validated.corrections.length})
+          </Button>
+          {kindEntries.map(([kind, count]) => (
+            <Button
+              aria-pressed={state.activeKind === kind}
+              disabled={state.saving}
+              key={kind}
+              onClick={() => onSelectKind(kind)}
+              size="xs"
+              variant={state.activeKind === kind ? 'secondary' : 'outline'}
+            >
+              {INK_DIGITIZE_KIND_LABELS[kind]} ({count})
+            </Button>
+          ))}
+        </div>
+      )}
 
       {signMarks.length > 0 && (
         <p

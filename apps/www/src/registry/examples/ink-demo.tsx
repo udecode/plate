@@ -33,7 +33,9 @@ import {
   FixedToolbarPlugin,
 } from '@/registry/components/editor/fixed-toolbar';
 import { InkKit } from '@/registry/components/editor/ink';
+import { DigitizeAllToolbarButton } from '@/registry/components/editor/ink-digitize-bar';
 import {
+  DropDigitizedToolbarButton,
   InkSwitchToolbarButton,
   ShowDigitizedToolbarButton,
 } from '@/registry/components/editor/ink-switch-toolbar-button';
@@ -413,8 +415,10 @@ function InkEditor({
         <FixedToolbar className="justify-start rounded-none">
           <ToolbarGroup>
             <DrawToolbarButton />
+            <DigitizeAllToolbarButton />
             <InkSwitchToolbarButton />
             <ShowDigitizedToolbarButton />
+            <DropDigitizedToolbarButton />
             <ModeToolbarButton />
             <PreviewToolbarButton />
             <CommentToolbarButton />

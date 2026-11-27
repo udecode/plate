@@ -1451,3 +1451,210 @@ export const confirmInkDigitizeWithComments = async (
     releaseAllAnchors();
   }
 };
+
+export const INK_DIGITIZE_KIND_LABELS: Readonly<
+  Record<InkDigitizeEdit['kind'], string>
+> = {
+  answer: 'Answer',
+  comment: 'Comment',
+  delete: 'Delete',
+  highlight: 'Highlight',
+  insert: 'Insert',
+  replace: 'Replace',
+};
+
+export const correctionPrimaryKind = (
+  correction: ValidatedCorrection,
+  meaningIndex = 0
+): InkDigitizeEdit['kind'] | null => {
+  const meaning = correction.meanings[meaningIndex] ?? correction.meanings[0];
+
+  return meaning?.edits[0]?.kind ?? null;
+};
+
+type MarkBounds = Readonly<{
+  bottom: number;
+  left: number;
+  right: number;
+  top: number;
+}>;
+
+const markBounds = (mark: InkMark): MarkBounds | null => {
+  let left = Number.POSITIVE_INFINITY;
+  let top = Number.POSITIVE_INFINITY;
+  let right = Number.NEGATIVE_INFINITY;
+  let bottom = Number.NEGATIVE_INFINITY;
+
+  for (const sample of mark.samples) {
+    const [x, y] = sample;
+
+    if (x < left) left = x;
+    if (x > right) right = x;
+    if (y < top) top = y;
+    if (y > bottom) bottom = y;
+  }
+
+  return Number.isFinite(left) ? { bottom, left, right, top } : null;
+};
+
+const boxesWithin = (a: MarkBounds, b: MarkBounds, maxDistance: number) => {
+  const dx = Math.max(0, Math.max(a.left - b.right, b.left - a.right));
+  const dy = Math.max(0, Math.max(a.top - b.bottom, b.top - a.bottom));
+
+  return Math.hypot(dx, dy) <= maxDistance;
+};
+
+export type GroupInkMarksOptions = Readonly<{
+  maxDistancePx?: number;
+  maxGapMs?: number;
+}>;
+
+export const groupInkMarksByDistanceAndTime = (
+  marks: readonly InkMark[],
+  options: GroupInkMarksOptions = {}
+): ReadonlyArray<readonly InkMark[]> => {
+  if (marks.length === 0) return [];
+
+  const maxDistancePx = options.maxDistancePx ?? 48;
+  const maxGapMs = options.maxGapMs ?? 30_000;
+  const parent = marks.map((_, index) => index);
+  const find = (index: number): number => {
+    let cur = index;
+
+    while (parent[cur] !== cur) {
+      parent[cur] = parent[parent[cur]];
+      cur = parent[cur];
+    }
+
+    return cur;
+  };
+  const unite = (a: number, b: number) => {
+    const ra = find(a);
+    const rb = find(b);
+
+    if (ra !== rb) parent[Math.max(ra, rb)] = Math.min(ra, rb);
+  };
+
+  const bounds = marks.map(markBounds);
+  const copies = marks.map((mark) => new Set(mark.blocks.map((b) => b.copy)));
+
+  for (let i = 0; i < marks.length; i += 1) {
+    for (let j = i + 1; j < marks.length; j += 1) {
+      let sharedCopy = false;
+
+      for (const copyId of copies[i]) {
+        if (copies[j].has(copyId)) {
+          sharedCopy = true;
+          break;
+        }
+      }
+      if (!sharedCopy) continue;
+
+      const closeInTime = Math.abs(marks[i].at - marks[j].at) <= maxGapMs;
+      const bi = bounds[i];
+      const bj = bounds[j];
+      const closeInSpace =
+        bi !== null && bj !== null && boxesWithin(bi, bj, maxDistancePx);
+
+      if (closeInTime || closeInSpace) {
+        unite(i, j);
+      }
+    }
+  }
+
+  const buckets = new Map<number, InkMark[]>();
+
+  for (const [index, mark] of marks.entries()) {
+    const root = find(index);
+    const list = buckets.get(root) ?? [];
+
+    list.push(mark);
+    buckets.set(root, list);
+  }
+
+  return [...buckets.values()];
+};
+
+export const liveShownInkMarkIds = (view: Editor): readonly string[] => {
+  const { read } = view.plugin(BaseInkPlugin);
+  const ids: string[] = [];
+
+  for (const mark of read.shownMarks()) {
+    if (isUnanchoredMark(mark)) continue;
+    if (mark.blocks.some((block) => read.place(block.copy)?.kind === 'live')) {
+      ids.push(mark.id);
+    }
+  }
+
+  return ids;
+};
+
+export const planInkDigitizeAllBatches = (
+  view: Editor,
+  options: GroupInkMarksOptions & Readonly<{ maxWords?: number }> = {}
+): ReadonlyArray<readonly string[]> => {
+  const { read } = view.plugin(BaseInkPlugin);
+  const maxWords = options.maxWords ?? INK_DIGITIZE_MAX_WORDS;
+  const liveMarks = read
+    .shownMarks()
+    .filter(
+      (mark) =>
+        !isUnanchoredMark(mark) &&
+        mark.blocks.some((block) => read.place(block.copy)?.kind === 'live')
+    );
+
+  if (liveMarks.length === 0) return [];
+
+  const clusters = groupInkMarksByDistanceAndTime(liveMarks, options);
+  const clusterEntries = clusters
+    .map((cluster) => {
+      const ids = cluster.map((mark) => mark.id);
+      const passages = read.passages(ids);
+      const words = passages.reduce(
+        (sum, passage) => sum + passage.words.length,
+        0
+      );
+      const firstPassage = passages[0];
+      const blockId = firstPassage ? read.copy(firstPassage.copy)?.block : null;
+
+      return { blockId, ids, words };
+    })
+    .filter((entry) => entry.words > 0);
+
+  if (clusterEntries.length === 0) return [];
+
+  const blockRank = new Map<string, number>();
+  let rank = 0;
+
+  for (const [node] of view.read.nodes.blocks({ at: [], mode: 'lowest' })) {
+    if (ElementApi.isElement(node) && typeof node.id === 'string') {
+      blockRank.set(node.id, rank);
+      rank += 1;
+    }
+  }
+
+  clusterEntries.sort((a, b) => {
+    const ra = a.blockId ? (blockRank.get(a.blockId) ?? rank) : rank;
+    const rb = b.blockId ? (blockRank.get(b.blockId) ?? rank) : rank;
+
+    return ra - rb;
+  });
+
+  const batches: string[][] = [];
+  let current: string[] = [];
+  let currentWords = 0;
+
+  for (const entry of clusterEntries) {
+    if (current.length > 0 && currentWords + entry.words > maxWords) {
+      batches.push(current);
+      current = [...entry.ids];
+      currentWords = entry.words;
+    } else {
+      current.push(...entry.ids);
+      currentWords += entry.words;
+    }
+  }
+  if (current.length > 0) batches.push(current);
+
+  return batches;
+};
