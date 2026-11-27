@@ -1,7 +1,13 @@
 'use client';
 
 import type { Value } from 'platejs';
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { AuthoredPlugin } from 'platejs/authored';
+import {
+  EditorRoot,
+  useCreateEditor,
+  useEditor,
+  useEditorViewState,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -16,10 +22,17 @@ import {
   FixedToolbarPlugin,
 } from '@/registry/components/editor/fixed-toolbar';
 import { InkKit } from '@/registry/components/editor/ink';
-import { InkSwitchToolbarButton } from '@/registry/components/editor/ink-switch-toolbar-button';
+import {
+  InkSwitchToolbarButton,
+  ShowDigitizedToolbarButton,
+} from '@/registry/components/editor/ink-switch-toolbar-button';
 import { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-button';
 import { EditorKit } from '@/registry/components/editor/plugins';
-import { ToolbarGroup } from '@/registry/components/editor/toolbar';
+import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
+import {
+  ToolbarButton,
+  ToolbarGroup,
+} from '@/registry/components/editor/toolbar';
 
 const VALUE_KEY = 'ink-demo-value';
 const SECOND_USER_KEY = 'ink-demo-second-user';
@@ -160,6 +173,33 @@ export default function InkDemo() {
   );
 }
 
+function PreviewToolbarButton() {
+  const editor = useEditor();
+  const preview = useEditorViewState(editor, () => {
+    const authored = editor.plugin(AuthoredPlugin);
+
+    return authored.installed && 'preview' in authored.read.view();
+  });
+
+  return (
+    <ToolbarButton
+      aria-label="Preview accepted"
+      onClick={() => {
+        const authored = editor.plugin(AuthoredPlugin);
+
+        if (!authored.installed) return;
+        authored.api.setView(
+          preview ? { intent: 'edit' } : { preview: 'accepted' }
+        );
+      }}
+      pressed={preview}
+      tooltip="Preview accepted"
+    >
+      Preview
+    </ToolbarButton>
+  );
+}
+
 function InkEditor({
   label,
   secondView,
@@ -198,7 +238,9 @@ function InkEditor({
           <ToolbarGroup>
             <DrawToolbarButton />
             <InkSwitchToolbarButton />
+            <ShowDigitizedToolbarButton />
             <ModeToolbarButton />
+            <PreviewToolbarButton />
           </ToolbarGroup>
         </FixedToolbar>
         <EditorFrame className="min-h-0 flex-1">
@@ -211,6 +253,7 @@ function InkEditor({
             </EditorContainer>
           )}
         </EditorFrame>
+        {userId === 'alice' && <SettingsDialog />}
       </EditorRoot>
     </section>
   );

@@ -214,10 +214,15 @@ export const models: Model[] = [
   { label: 'GLM 4.5V', value: 'zai/glm-4.5v' },
 ];
 
+const DEFAULT_MODEL =
+  models.find((m) => m.value === 'google/gemini-2.5-flash') ?? models[7];
+
+export const AI_SETTINGS_OPEN_EVENT = 'editor-ai-settings-open';
+
 export function SettingsDialog() {
   const editor = useEditor();
 
-  const [tempModel, setTempModel] = React.useState(models[7]);
+  const [tempModel, setTempModel] = React.useState(DEFAULT_MODEL);
   const [tempKeys, setTempKeys] = React.useState<Record<string, string>>({
     aiGatewayApiKey: '',
   });
@@ -225,40 +230,55 @@ export function SettingsDialog() {
   const [open, setOpen] = React.useState(false);
   const [openModel, setOpenModel] = React.useState(false);
 
+  React.useEffect(() => {
+    const onOpen = () => setOpen(true);
+
+    window.addEventListener(AI_SETTINGS_OPEN_EVENT, onOpen);
+
+    return () => {
+      window.removeEventListener(AI_SETTINGS_OPEN_EVENT, onOpen);
+    };
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Update AI chat options
-    const chatStore = editor.plugin(AIChatTransportPlugin).store;
-    const chatOptions = chatStore.get().chatOptions ?? {};
+    const chatPlugin = editor.plugin(AIChatTransportPlugin);
 
-    chatStore.set({
-      chatOptions: {
-        ...chatOptions,
-        body: {
-          ...chatOptions.body,
-          apiKey: tempKeys.aiGatewayApiKey,
-          model: tempModel.value,
-        },
-      },
-    });
+    if (chatPlugin.installed) {
+      const chatOptions = chatPlugin.store.get().chatOptions ?? {};
 
-    setOpen(false);
-
-    // Update AI complete options
-    const { completeOptions } = editor.plugin(CopilotPlugin).store.get();
-
-    if (completeOptions) {
-      editor.plugin(CopilotPlugin).store.set({
-        completeOptions: {
-          ...completeOptions,
+      chatPlugin.store.set({
+        chatOptions: {
+          ...chatOptions,
           body: {
-            ...completeOptions.body,
+            ...chatOptions.body,
             apiKey: tempKeys.aiGatewayApiKey,
             model: tempModel.value,
           },
         },
       });
+    }
+
+    setOpen(false);
+
+    const copilotPlugin = editor.plugin(CopilotPlugin);
+
+    if (copilotPlugin.installed) {
+      const { completeOptions } = copilotPlugin.store.get();
+
+      if (completeOptions) {
+        copilotPlugin.store.set({
+          completeOptions: {
+            ...completeOptions,
+            body: {
+              ...completeOptions.body,
+              apiKey: tempKeys.aiGatewayApiKey,
+              model: tempModel.value,
+            },
+          },
+        });
+      }
     }
   };
 
@@ -329,6 +349,7 @@ export function SettingsDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
+          aria-label="AI Settings"
           size="icon"
           variant="default"
           className={cn(

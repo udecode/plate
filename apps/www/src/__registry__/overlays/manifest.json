@@ -166,7 +166,7 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "13a1c06fac60e155a5e11b0348bfaafe79876de0055c97bbd568fd6bdcef0f79",
+  "generation": "3e7befa897d1a2868cc284e44b9b74841da20744848fee5335b0972e3ff4779f",
   "itemCount": 195,
   "payloads": {
     "overlays/base-luma/block-list-static.json": "971ac6c3ae3404f45cba76379ea3062cac0adb5f651ca349c9f85cecc6e2a523",
@@ -420,7 +420,7 @@
     "r/resize-handle.json": "3eaa0af0ae458283d8b5ea22560692668a9bfafbc0b5b1254081310e82b0e7e3",
     "r/select-editor-demo.json": "633e04f23d8a5b3005edd6b94ce11fb03e2fb40f47d411276d56048ec7aa031f",
     "r/select-editor.json": "aab0eb5588c5ceff4a5844c3c056ab689aa8362245bc20e21236b0da9870c321",
-    "r/settings-dialog.json": "0a5f1e41a9a88b467df6cba4b6b26728548ec210a0c03803a2fd7e366c577da3",
+    "r/settings-dialog.json": "81248300b3d22963a39b390a48c8a2d10e5d98ff48f6dd53c5b71df5f710f30c",
     "r/slash.json": "41653001f220d4d68ba35a65cef45f803476e1ebf740fc71fb73e43b134381d4",
     "r/suggestion-colors.json": "83cf8c2529048b06d6dd21a3b13cbf6d86e01bab3406ebf538536011ea1708a2",
     "r/suggestion-demo.json": "de55e34bfe416ae0393cbc71782c0097fa6e926b56ada301a136aa77051ca02b",
@@ -616,7 +616,7 @@
     "rd/resize-handle.json": "3eaa0af0ae458283d8b5ea22560692668a9bfafbc0b5b1254081310e82b0e7e3",
     "rd/select-editor-demo.json": "4abada5830b42a7429033a7cfa1c60f598628a71fc70e395cc725a847c56a406",
     "rd/select-editor.json": "dee05a27cf41f8109387e81796b92aa729e2062bb0fbeea04beeebfc0c5b510b",
-    "rd/settings-dialog.json": "06af1c3f20e5657879643d8816ec4bf9def7faf13ddd512f5a57413645d12f2a",
+    "rd/settings-dialog.json": "d1c8b0f00c63a162d28636a9d393ec76a8481d21ff9e484f671b84f4cd755579",
     "rd/slash.json": "d6a6a5a3a61b6091e9d0d1ec0e40cb45de6c512884613f8d5f61d01c61e21c7b",
     "rd/suggestion-colors.json": "83cf8c2529048b06d6dd21a3b13cbf6d86e01bab3406ebf538536011ea1708a2",
     "rd/suggestion-demo.json": "bb21e5eee99607bff9d4a7cf9eab554e995589983a68cfec050ffaa38b796ae5",

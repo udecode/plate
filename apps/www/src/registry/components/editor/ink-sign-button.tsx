@@ -20,7 +20,9 @@ const SIGN_LABEL: Record<InkSign['state'], string> = {
 export function InkSignButton({ sign }: { sign: InkSign }) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const label = SIGN_LABEL[sign.state];
+  const label = sign.digitized
+    ? `Digitized ink (${SIGN_LABEL[sign.state].toLowerCase()})`
+    : SIGN_LABEL[sign.state];
 
   return (
     <FloatingPopover>
@@ -28,6 +30,7 @@ export function InkSignButton({ sign }: { sign: InkSign }) {
         <Button
           aria-label={`${label}: ${sign.marks.length}`}
           className="ms-1 text-muted-foreground"
+          data-ink-sign-digitized={sign.digitized ? 'true' : undefined}
           size="icon-xs"
           variant="outline"
         >
@@ -42,17 +45,33 @@ export function InkSignButton({ sign }: { sign: InkSign }) {
         <div className="min-h-0 flex-1 overflow-auto">
           <InkCopyView marks={sign.marks} />
         </div>
-        <Button
-          className="mt-3 self-start"
-          disabled={readOnly}
-          onClick={() =>
-            editor.update((tx) => tx.plugin(InkPlugin).remove(sign.marks))
-          }
-          size="sm"
-          variant="destructive"
-        >
-          Delete
-        </Button>
+        {sign.digitized ? (
+          <Button
+            className="mt-3 self-start"
+            disabled={readOnly}
+            onClick={() =>
+              editor.update((tx) =>
+                tx.plugin(InkPlugin).setDigitized(sign.marks, false)
+              )
+            }
+            size="sm"
+            variant="outline"
+          >
+            Bring back
+          </Button>
+        ) : (
+          <Button
+            className="mt-3 self-start"
+            disabled={readOnly}
+            onClick={() =>
+              editor.update((tx) => tx.plugin(InkPlugin).remove(sign.marks))
+            }
+            size="sm"
+            variant="destructive"
+          >
+            Delete
+          </Button>
+        )}
       </FloatingPopoverContent>
     </FloatingPopover>
   );
