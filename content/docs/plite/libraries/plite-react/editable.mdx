@@ -488,13 +488,18 @@ collapsed sections, or hidden element shells that still exist in the Plite
 value.
 
 ```tsx
-import { EditorElement, type RenderElementProps } from "plitejs/react";
+import type { RenderElementProps } from "plitejs/react";
 import * as React from "react";
 
-const renderElement = ({ children, element, slots }: RenderElementProps) => {
+const renderElement = ({
+  attributes,
+  children,
+  element,
+  slots,
+}: RenderElementProps) => {
   if (element.type === "section") {
     return (
-      <EditorElement style={{ position: 'relative' }}>
+      <div {...attributes} style={{ position: "relative" }}>
         {React.Children.toArray(children)[0]}
         {slots.contentBoundary({
           mounted: !element.collapsed,
@@ -508,13 +513,13 @@ const renderElement = ({ children, element, slots }: RenderElementProps) => {
           scope: { from: 1, type: "children" },
           selectionPolicy: "materialize",
         })}
-      </EditorElement>
+      </div>
     );
   }
 
   if (element.type === "hidden-header") {
     return (
-      <EditorElement style={{ position: 'relative' }}>
+      <div {...attributes} style={{ position: "relative" }}>
         {slots.contentBoundary({
           boundaryId: "hidden-header",
           children: <button type="button">Show header</button>,
@@ -524,11 +529,15 @@ const renderElement = ({ children, element, slots }: RenderElementProps) => {
           scope: { type: "self" },
           selectionPolicy: "skip",
         })}
-      </EditorElement>
+      </div>
     );
   }
 
-  return <EditorElement style={{ position: 'relative' }}>{children}</EditorElement>;
+  return (
+    <div {...attributes} style={{ position: "relative" }}>
+      {children}
+    </div>
+  );
 };
 ```
 

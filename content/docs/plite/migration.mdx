@@ -305,10 +305,9 @@ const App = () => {
 };
 ```
 
-Use `EditorElement`, `EditorText`, `EditorLeaf`, and `EditorPlaceholder` only when
-you replace Plite's rendering primitives and still need the required DOM
-attributes attached. Normal apps should start with `renderElement`, `renderLeaf`,
-and `placeholder`.
+Spread the provided `attributes` onto your own elements in `renderElement`,
+`renderLeaf`, and `renderText`. Use `EditorPlaceholder` only when a custom
+`renderPlaceholder` needs Plite's default placeholder markup.
 
 ## Step 6: migrate event handlers
 
@@ -499,7 +498,9 @@ const App = () => {
 
 ## Step 10: persist the right value
 
-For a single-root editor, save the `value` passed to `<EditorRoot onValueChange>`.
+Save the `EditorDocumentValue` passed to `<EditorRoot onValueChange>`. It
+includes primary `children`, extra `roots`, `records`, and persisted `meta`
+fields, and skips ephemeral state writes.
 
 ```tsx
 import {
@@ -512,7 +513,7 @@ import {
 const App = () => {
   const editor = useCreateEditor({ initialValue });
 
-  const handleChange = ({ value }: ValueChangeContext) => {
+  const handleChange = ({ value }: ValueChangeContext<typeof editor>) => {
     saveDocument(value);
   };
 
@@ -524,13 +525,13 @@ const App = () => {
 };
 ```
 
-For a document with extra roots or document meta, read the full document value.
+Read the full document value on demand with `editor.read.value()`.
 
 ```tsx
 const documentValue = editor.read.value();
 ```
 
-The short value is still a block array.
+`initialValue` still accepts a block array for a primary-only document.
 
 ```tsx
 const initialValue = [

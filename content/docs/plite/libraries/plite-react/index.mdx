@@ -47,9 +47,9 @@ const Editor = () => {
 
 - [React Editor](/docs/plite/libraries/plite-react/react-editor): DOM, focus, selection, clipboard, and
   React-specific editor APIs.
-- Rendering primitives `EditorElement`, `EditorText`, `EditorLeaf`, and
-  `EditorPlaceholder` carry Plite's DOM attributes when custom renderers need to
-  keep the native editing contract intact.
+- `renderElement`, `renderLeaf`, and `renderText` supply DOM `attributes` to
+  spread onto your own elements, and `EditorPlaceholder` renders Plite's default
+  placeholder markup when a custom `renderPlaceholder` needs it.
 - [DOM Coverage Boundaries](/docs/plite/libraries/plite-react/dom-coverage-boundaries): represent app-hidden
   DOM regions for selection, copy, find, and materialization.
 - [External Text Views](/docs/plite/libraries/plite-react/external-text): let an adapter own one Text's DOM and

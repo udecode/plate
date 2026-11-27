@@ -31,24 +31,26 @@ type EditorRootProps = {
   readOnly?: boolean;
 };
 
-type CommitContext = {
+type CommitContext<E = Editor> = {
   commit: EditorCommit;
-  editor: Editor;
+  editor: E;
   snapshot: EditorSnapshot;
 };
 
-type SelectionChangeContext = CommitContext & {
+type SelectionChangeContext<E = Editor> = CommitContext<E> & {
   selection: Selection;
 };
 
-type ValueChangeContext = CommitContext & {
-  value: Descendant[];
+type ValueChangeContext<E = Editor> = CommitContext<E> & {
+  value: EditorDocumentValue;
 };
 ```
 
 All three callbacks receive the same canonical commit context. `onValueChange`
-and `onSelectionChange` add the current provider-root value or selection only
-for commits that changed that fact.
+fires for commits that change any document root or any persisted state field and
+passes the commit-scoped `EditorDocumentValue` (`children`, optional `roots`,
+`meta`, and `records`). `onSelectionChange` adds the provider-root selection
+only for commits that changed selection in that root.
 
 Pass `editor` to every provider. Add `root` when the provider should bind its
 callbacks and context to a named secondary root; omit it for the primary root.
@@ -116,46 +118,48 @@ the subscription for its full lifetime, so the callback works even when no
 Use `editor.subscribeCommit(...)` for infrastructure outside React provider
 ownership, such as sync adapters, canonical change export, and instrumentation.
 
-Use `onValueChange` when a React component only cares about provider-root value
-changes.
+Use `onValueChange` when a React component needs committed document or persisted
+state changes.
 
 ```tsx
 <EditorRoot
   editor={editor}
-  onValueChange={({ value }) => updateCurrentRootPreview(value)}
+  onValueChange={({ value }) => saveDocument(value)}
 >
   <Editable />
 </EditorRoot>
 ```
 
-### Saving mounted root changes
+### Saving document changes
 
-Use `onValueChange` when you only need committed changes for the mounted root's
-block array. This is the single-root shortcut, not the full document
-persistence path.
+`onValueChange` receives the full serializable `EditorDocumentValue` for the
+commit, including primary `children`, extra `roots`, `records`, and persisted
+`meta` fields. Ephemeral state writes do not trigger it.
 
 ```tsx
 <EditorRoot
   editor={editor}
   onValueChange={({ value }) => {
-    localStorage.setItem("plite.children", JSON.stringify(value));
+    localStorage.setItem("plite.document", JSON.stringify(value));
   }}
 >
   <Editable />
 </EditorRoot>
 ```
 
-The `value` argument is a root value, not the full persisted document. Use
-`editor.subscribeCommit(...)` and `editor.read.value()` when
-you need named roots or persistent meta fields.
+Read `value.children` when an app only needs the primary root's block array. Use
+`editor.subscribeCommit(...)` and `editor.read.value()` when persistence runs
+outside a React provider.
 
 ```tsx
 import { useEffect } from "react";
 
 useEffect(() => {
   return editor.subscribeCommit((change) => {
-
-    if (!change.changed.has("document") && change.dirtyStateKeys.length === 0) {
+    if (
+      !change.changed.hasAny("document") &&
+      change.dirtyStateKeys.length === 0
+    ) {
       return;
     }
 

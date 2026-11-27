@@ -68,24 +68,15 @@ const documentValue = editor.read.value();
 await saveDocument(JSON.stringify(documentValue));
 ```
 
-The `value` in `<EditorRoot onValueChange>` is the mounted root's block array. That
-is enough for a simple single-root editor, but it drops extra roots and
-persistent meta fields. Use `onCommit` at the top-level provider for full
-document persistence so state-field-only commits and edits in other roots are
-observed.
+`<EditorRoot onValueChange>` receives the commit-scoped `EditorDocumentValue`
+whenever any document root or persisted state field changes, and skips ephemeral
+state writes.
 
 ```tsx
 <EditorRoot
   editor={editor}
-  onCommit={({ commit, editor }) => {
-    if (!commit.changed.has("document") && commit.dirtyStateKeys.length === 0) {
-      return;
-    }
-
-    localStorage.setItem(
-      "plite.document",
-      JSON.stringify(editor.read.value())
-    );
+  onValueChange={({ value }) => {
+    localStorage.setItem("plite.document", JSON.stringify(value));
   }}
 >
   <Editable />

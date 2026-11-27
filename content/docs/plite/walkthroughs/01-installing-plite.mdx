@@ -77,8 +77,9 @@ This is the smallest useful Plite editor. If you render `App`, you should see a 
 
 ## Listening for changes
 
-Most applications save the document value somewhere. Use `onValueChange` for
-a single-root document.
+Most applications save the document value somewhere. Use `onValueChange` to
+receive the full serializable `EditorDocumentValue` after each document or
+persisted-state commit.
 
 ```tsx
 const App = () => {
@@ -86,7 +87,7 @@ const App = () => {
 
   const handleValueChange = ({
     value,
-  }: ValueChangeContext<CustomValue>) => {
+  }: ValueChangeContext<typeof editor>) => {
     localStorage.setItem("content", JSON.stringify(value));
   };
 

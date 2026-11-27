@@ -54,18 +54,8 @@ const App = () => {
   return (
     <EditorRoot
       editor={editor}
-      onCommit={({ commit, editor }) => {
-        if (
-          !commit.changed.hasAny("document") &&
-          commit.dirtyStateKeys.length === 0
-        ) {
-          return;
-        }
-
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(editor.read.value())
-        );
+      onValueChange={({ value }) => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
       }}
     >
       <Editable />
@@ -74,33 +64,35 @@ const App = () => {
 };
 ```
 
-`editor.read.value()` returns the persisted document value:
+Both `onValueChange` and `editor.read.value()` return the persisted document
+value:
 
 ```ts
 import type { EditorDocumentValue } from "plitejs";
 ```
 
-That shape includes the primary document, every extra root, keyed records, and persistent meta
-from state fields. Fields without `persist` stay local to the runtime.
+That shape includes the primary document (`children`), every extra root
+(`roots`), keyed `records`, and persistent `meta` from state fields. Fields
+without `persist` stay local to the runtime and do not trigger `onValueChange`.
 
-## Single-root shortcut
+## Saving only primary children
 
-The `value` in `<EditorRoot onValueChange>` is the mounted root's block array. Save
-it directly for a tiny single-root editor with no persistent meta fields.
+If your app stores only the primary root's block array and uses no extra roots
+or persistent meta fields, save `value.children`.
 
 ```tsx
 <EditorRoot
   editor={editor}
   onValueChange={({ value }) => {
-    localStorage.setItem("plite.children", JSON.stringify(value));
+    localStorage.setItem("plite.children", JSON.stringify(value.children));
   }}
 >
   <Editable />
 </EditorRoot>
 ```
 
-Use the full document value once the editor owns extra roots, content roots, or
-state fields.
+Save the full `value` once the editor owns extra roots, content roots, or
+persisted state fields.
 
 ## Load extra roots
 
@@ -162,6 +154,7 @@ the comment store.
 Use [Annotations](../libraries/plite-react/annotations) to render comment
 anchors from that external store.
 
-Persistence uses `editor.read.value()` for the whole document. Use `value` from
-`onValueChange` only for single-root shortcuts, and keep external app data
-outside the Plite document unless it is part of the document model.
+Persistence uses `onValueChange` or `editor.read.value()` for the full document
+value. Save `value.children` only when you need just the primary block array,
+and keep external app data outside the Plite document unless it is part of the
+document model.
