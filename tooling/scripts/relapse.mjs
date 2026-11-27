@@ -6,6 +6,7 @@ import { parseArgs, promisify } from 'node:util';
 
 import { stateOf, waitsOnOwner } from '../../.agents/pstack/status.mjs';
 import { gitMerges } from '../../.agents/pstack/tasks.mjs';
+import { isSplit, pairedCommit, PRIVATE_DIR } from './private-files.mjs';
 import { adoptionOf, headsOf, loadLedger, plansOf } from './review-ledger.mjs';
 
 const DAY = 86_400_000;
@@ -22,10 +23,70 @@ const PRODUCT = /^(?:packages\/[^/]+\/src\/|apps\/[^/]+\/src\/)/;
 const NOT_PRODUCT =
   /\.(?:test|spec|slow)\.|\/__tests__\/|\/type-tests\/|\/__registry__\/|\/registry\/changelog\/|\/examples\/|\/generated\//;
 const BLANK_OR_IMPORT_LINE =
-  /^\s*(?:$|import\b(?!\s*\()|export\b[^=(]*\bfrom\s*['"]|\}\s*from\s*['"])/;
-const CACHE_KEY = [FIX, PRODUCT, NOT_PRODUCT, BLANK_OR_IMPORT_LINE]
+  /^\s*(?:$|import\b(?!\s*[.(])|export\b[^=(]*\bfrom\s*['"]|\}\s*from\s*['"])/;
+const IMPORT_START = /^\s*import\b(?!\s*[.(])/;
+const EXPORT_START = /^\s*export\s+(?:type\s+)?(?:\{|\*\s+as\b)/;
+const FROM_QUOTE = /\bfrom\s*['"]/;
+const TRAILING_FROM = /\bfrom\s*$/;
+const LEADING_QUOTE = /^\s*['"]/;
+const DISALLOWED_IN_SPECIFIER = /[=(]/;
+const DATED_PLAN = /^docs\/plans\/\d{4}-\d{2}-\d{2}-[^/]+\.md$/;
+const CACHE_KEY = [
+  FIX,
+  PRODUCT,
+  NOT_PRODUCT,
+  BLANK_OR_IMPORT_LINE,
+  IMPORT_START,
+  EXPORT_START,
+  FROM_QUOTE,
+]
   .map((re) => re.source)
   .join(' ');
+
+const stripComments = (line) =>
+  line.replace(/\/\*.*?\*\//g, '').replace(/\/\/.*$/, '');
+
+function importExportLines(source) {
+  const lines = source.split('\n');
+  const skipped = new Set();
+  for (let i = 0; i < lines.length; i++) {
+    const first = lines[i];
+    if (!IMPORT_START.test(first) && !EXPORT_START.test(first)) continue;
+    const head = stripComments(first);
+    if (
+      FROM_QUOTE.test(head) ||
+      /^\s*import\s+['"]/.test(head) ||
+      head.includes(';')
+    ) {
+      continue;
+    }
+    const bareImport = /^\s*import\s*$/.test(head);
+    let end = -1;
+    for (let j = i + 1; j < lines.length; j++) {
+      const clean = stripComments(lines[j]);
+      if (FROM_QUOTE.test(clean) || (bareImport && LEADING_QUOTE.test(clean))) {
+        end = j;
+        break;
+      }
+      if (
+        TRAILING_FROM.test(clean) &&
+        j + 1 < lines.length &&
+        LEADING_QUOTE.test(lines[j + 1])
+      ) {
+        end = j + 1;
+        break;
+      }
+      if (DISALLOWED_IN_SPECIFIER.test(clean) || clean.includes(';')) {
+        break;
+      }
+    }
+    if (end !== -1) {
+      for (let k = i; k <= end; k++) skipped.add(k + 1);
+      i = end;
+    }
+  }
+  return skipped;
+}
 
 const now = new Date();
 const { values } = parseArgs({
@@ -82,35 +143,97 @@ const recentStart = new Date(Date.parse(values.until) - (RECENT_DAYS - 1) * DAY)
   .toISOString()
   .slice(0, 10);
 
-const log = await git(
-  'log',
-  values.ref,
-  '--no-merges',
-  '--date=format-local:%Y-%m-%d',
-  '--format=%x1e%H%x1f%cd%x1f%s%x1f%B'
-);
+const split = isSplit(root);
+const companionRef = split ? pairedCommit(root, values.ref) : null;
+const [log, fixLog, companionLog] = await Promise.all([
+  git(
+    'log',
+    values.ref,
+    '--no-merges',
+    '--date=format-local:%Y-%m-%d',
+    split
+      ? '--format=%x1e%H%x1f%cd%x1f%s%x1f%B'
+      : '--format=%x1e%H%x1f%cd%x1f%s%x1f%B%x1f',
+    ...(split ? [] : ['--name-only'])
+  ),
+  git(
+    'log',
+    values.ref,
+    '--no-merges',
+    '--grep=^fix',
+    '--format=%x1e%H',
+    '--name-only'
+  ),
+  companionRef
+    ? git(
+        `--git-dir=${path.join(root, PRIVATE_DIR)}`,
+        'log',
+        companionRef,
+        '--no-merges',
+        '--date=format-local:%Y-%m-%d',
+        '--format=%x1e%H%x1f%cd%x1f%s%x1f%B%x1f',
+        '--name-only'
+      )
+    : Promise.resolve(''),
+]);
 const commits = new Map();
 const landedOn = new Map();
 const planLines = new Map();
+const recordLanded = (plan, date) => {
+  if (date <= values.until && date > (landedOn.get(plan) ?? '')) {
+    landedOn.set(plan, date);
+  }
+};
 for (const record of log.split('\u001E').filter(Boolean)) {
-  const [sha, date, subject, body] = record.split('\u001F');
+  const [sha, date, subject, body, filesBlock = ''] = record.split('\u001F');
   commits.set(sha, { sha, date, subject });
   const named = [...body.matchAll(/^Plan: (\S+)\s*$/gmu)].map(
     ([, plan]) => plan
   );
-  planLines.set(sha, named);
-  for (const plan of named) {
-    if (date <= values.until && !landedOn.has(plan)) landedOn.set(plan, date);
+  const files = split
+    ? []
+    : filesBlock
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+  const effective =
+    named.length > 0
+      ? named
+      : files.some((file) => !file.startsWith('docs/'))
+        ? files.filter((file) => DATED_PLAN.test(file))
+        : [];
+  planLines.set(sha, effective);
+  for (const plan of effective) recordLanded(plan, date);
+}
+for (const record of companionLog.split('\u001E').filter(Boolean)) {
+  const [, date, subject, body, filesBlock = ''] = record.split('\u001F');
+  const explicit = [...body.matchAll(/^Plan: (\S+)\s*$/gmu)].map(
+    ([, plan]) => plan
+  );
+  const landsWith = [
+    ...body.matchAll(/^Lands-With: ([0-9a-f]{7,40})\s*$/gmu),
+  ].map(([, sha]) => sha);
+  const pairedPublic = landsWith
+    .map((sha) => commits.get(sha))
+    .find((commit) => commit && commit.subject === subject);
+  if (pairedPublic) {
+    const combinedExplicit = [
+      ...new Set([...(planLines.get(pairedPublic.sha) ?? []), ...explicit]),
+    ];
+    const files = filesBlock
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const effective =
+      combinedExplicit.length > 0
+        ? combinedExplicit
+        : files.filter((file) => DATED_PLAN.test(file));
+    planLines.set(pairedPublic.sha, effective);
+    for (const plan of effective) recordLanded(plan, pairedPublic.date);
+  } else {
+    for (const plan of explicit) recordLanded(plan, date);
   }
 }
-const fixLog = await git(
-  'log',
-  values.ref,
-  '--no-merges',
-  '--grep=^fix',
-  '--format=%x1e%H',
-  '--name-only'
-);
 const touched = new Map(
   fixLog
     .split('\u001E')
@@ -180,11 +303,18 @@ async function reworkOf(fix) {
         '--',
         file
       );
-      for (const [, sha, text] of blame.matchAll(
-        /^([0-9a-f]{40}) \d+ \d+(?: \d+)?\n(?:[^\t\n][^\n]*\n)*\t([^\n]*)$/gm
+      const candidates = [];
+      for (const [, sha, lineNo, text] of blame.matchAll(
+        /^([0-9a-f]{40}) \d+ (\d+)(?: \d+)?\n(?:[^\t\n][^\n]*\n)*\t([^\n]*)$/gm
       )) {
         if (BLANK_OR_IMPORT_LINE.test(text)) continue;
         if (!FIX.test(commits.get(sha)?.subject ?? '')) continue;
+        candidates.push({ line: Number(lineNo), sha });
+      }
+      if (candidates.length === 0) continue;
+      const skipped = importExportLines(await git('show', `${parent}:${file}`));
+      for (const { line, sha } of candidates) {
+        if (skipped.has(line)) continue;
         reworked[sha] ??= [];
         if (!reworked[sha].includes(file)) reworked[sha].push(file);
       }
@@ -268,7 +398,7 @@ const startOf = (id) => {
       .map((plan) => ({ path: plan.path, date: landedOn.get(plan.path) }))
       .sort((a, b) => a.date.localeCompare(b.date))
       .at(-1);
-  if (landed && landed.date > start.date) {
+  if (landed && landed.date >= start.date) {
     start = {
       date: landed.date,
       label: `${landed.date} landed`,
