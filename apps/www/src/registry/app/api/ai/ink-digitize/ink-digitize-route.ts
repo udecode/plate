@@ -194,14 +194,19 @@ export type InkDigitizeReading = {
 };
 
 const SYSTEM_PROMPT = [
-  'You read hand-drawn pen and highlighter marks over plain-text passages into candidate edits.',
-  'Each passage provides two PNG images (inkAlone, inkOnText), numbered words, and each mark with its pixel box and touched word or gap indices.',
-  'A gap index i is the insertion point before word i, and gap words.length is after the last word.',
-  'Group marks into corrections. Each mark may appear in at most one correction.',
-  'For each correction, return 1 to 4 meanings ordered from most likely to least likely.',
+  'You read hand-drawn proofreading marks over plain-text passages into candidate document edits.',
+  'Each passage provides two PNG images (inkAlone, inkOnText), numbered words (0-based), and each mark with its pixel box and touched word or gap indices.',
+  'Group related marks (such as a caret and the handwritten word written beside it, or multi-stroke letters of one handwritten word) into a single correction. Each mark may appear in at most one correction.',
+  'For each correction, return 1 to 4 distinct candidate meanings ordered from most likely to least likely. When a caret sits beside a short word or a mark could plausibly mean two different edits or adjacent positions, include the next most plausible alternative as a second meaning.',
   'Each edit must be delete, replace, insert, or highlight within one passage.',
-  'For delete, replace, and highlight, set words to [startWord, endWord] (inclusive) and quote to the exact words joined by spaces.',
-  'For insert, set gap to the gap index, between to [wordBeforeOrEmpty, wordAfterOrEmpty], and text to the inserted text.',
+  'How to read proofreading marks:',
+  '- Strikethrough (delete): a thin opaque pen stroke drawn horizontally through the middle of one or more words, or a scribble crossing out words, is a delete (not a highlight).',
+  '- Highlight: a wide translucent marker band over words, or a circle/box/underline emphasizing words without crossing through them, is a highlight.',
+  '- Caret insertion (insert): a caret (^ or v) pointing to a space between two words with handwritten text written above or below it inserts that handwritten text at the exact space the caret tip points to. Check both the visual caret apex in inkOnText and which gap makes the resulting sentence grammatical.',
+  '- Replacement (replace): words crossed out or circled with handwritten replacement text written above/beside them.',
+  'Indexing rules:',
+  '- For delete, replace, and highlight: set words to [startWord, endWord] (inclusive) and quote to the exact words joined by spaces.',
+  '- For insert: gap index i is the space immediately BEFORE word i (between word i-1 and word i), and gap words.length is after the last word. Set between to [wordBeforeOrEmpty, wordAfterOrEmpty] and gap to the index of the word immediately AFTER the insertion point. Double-check that between[0] is words[gap - 1] (or "" if gap is 0) and between[1] is words[gap] (or "" if gap is words.length).',
 ].join('\n');
 
 export const buildInkDigitizeMessages = (
@@ -313,6 +318,109 @@ export const validateInkDigitizeReading = (
 
 export const DEFAULT_INK_DIGITIZE_MODEL = 'google/gemini-2.5-flash';
 
+// Gemini and Vertex response schemas reject JSON Schema tuple arrays (`items: [...]`)
+// and drop fields inside `oneOf` discriminated unions, so the provider output schema
+// stays flat with homogeneous arrays and is narrowed back through `inkDigitizeModelOutputSchema`.
+// Keep `kind`, `text`/`quote`, and `between` ahead of numeric indices so autoregressive
+// decoding commits to the gesture and surrounding words before computing `gap` or `words`.
+const inkDigitizeProviderEditSchema = z.object({
+  kind: z.enum(['delete', 'replace', 'insert', 'highlight']),
+  passage: passageIdSchema,
+  text: z
+    .string()
+    .optional()
+    .describe('For insert or replace: new text to write.'),
+  quote: z
+    .string()
+    .optional()
+    .describe('For delete, replace, highlight: exact quoted words.'),
+  between: z
+    .array(z.string())
+    .min(2)
+    .max(2)
+    .optional()
+    .describe('For insert: [wordBeforeOrEmpty, wordAfterOrEmpty] around gap.'),
+  gap: z
+    .number()
+    .int()
+    .nonnegative()
+    .optional()
+    .describe('For insert: index of the word immediately after the insertion.'),
+  words: z
+    .array(z.number().int().nonnegative())
+    .min(2)
+    .max(2)
+    .optional()
+    .describe(
+      'For delete, replace, highlight: [startWord, endWord] inclusive.'
+    ),
+});
+
+const inkDigitizeProviderOutputSchema = z.object({
+  corrections: z.array(
+    z.object({
+      marks: z.array(markIdSchema).min(1),
+      visual: z
+        .string()
+        .describe(
+          'Short visual note of the stroke gesture in inkOnText, naming the exact touched word(s) or the exact two words on the left and right of a caret tip and the resulting phrase.'
+        ),
+      meanings: z
+        .array(
+          z.object({
+            edits: z.array(inkDigitizeProviderEditSchema).min(1),
+          })
+        )
+        .min(1)
+        .max(4),
+    })
+  ),
+});
+
+const normalizeProviderEdit = (
+  edit: z.infer<typeof inkDigitizeProviderEditSchema>
+): unknown => {
+  switch (edit.kind) {
+    case 'delete': {
+      return {
+        kind: 'delete',
+        passage: edit.passage,
+        quote: edit.quote,
+        words: edit.words,
+      };
+    }
+    case 'highlight': {
+      return {
+        kind: 'highlight',
+        passage: edit.passage,
+        quote: edit.quote,
+        words: edit.words,
+      };
+    }
+    case 'insert': {
+      return {
+        between: edit.between,
+        gap: edit.gap,
+        kind: 'insert',
+        passage: edit.passage,
+        text: edit.text,
+      };
+    }
+    case 'replace': {
+      return {
+        kind: 'replace',
+        passage: edit.passage,
+        quote: edit.quote,
+        text: edit.text,
+        words: edit.words,
+      };
+    }
+    default: {
+      return edit;
+    }
+  }
+};
+
 export const runInkDigitize = async (
   input: InkDigitizeRequest,
   model: LanguageModel
@@ -322,10 +430,28 @@ export const runInkDigitize = async (
   const { output } = await generateText({
     messages: buildInkDigitizeMessages(input),
     model,
-    output: Output.object({ schema: inkDigitizeModelOutputSchema }),
+    output: Output.object({ schema: inkDigitizeProviderOutputSchema }),
   });
 
-  const error = validateInkDigitizeReading(input, output);
+  const normalized = {
+    corrections: output.corrections.map((correction) => ({
+      marks: correction.marks,
+      meanings: correction.meanings.map((meaning) => ({
+        edits: meaning.edits.map(normalizeProviderEdit),
+      })),
+    })),
+  };
+
+  const parsed = inkDigitizeModelOutputSchema.safeParse(normalized);
+
+  if (!parsed.success) {
+    return {
+      error: 'Reading returned malformed edits.',
+      ok: false,
+    };
+  }
+
+  const error = validateInkDigitizeReading(input, parsed.data);
 
   if (error) {
     return { error, ok: false };
@@ -334,7 +460,7 @@ export const runInkDigitize = async (
   return {
     ok: true,
     reading: {
-      corrections: output.corrections,
+      corrections: parsed.data.corrections,
       request: input.request,
     },
   };
