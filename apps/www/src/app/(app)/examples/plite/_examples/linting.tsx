@@ -12,7 +12,7 @@ import {
   EditorRoot,
   type Decoration,
   type DecorationSource,
-  useEditorContext,
+  useEditor,
   useEditorState,
   useCreateEditor,
 } from 'plitejs/react';
@@ -168,11 +168,11 @@ const LintingPanel = ({
   setSourceLabel: (label: string) => void;
   sourceLabel: string;
 }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const diagnostics = useEditorState((state) =>
     lintMode === 'off'
       ? NO_LINT_ISSUES
-      : collectLintIssues(state.value().children, {
+      : collectLintIssues(state.children(), {
           includeServerDiagnostics: lintMode === 'server',
         })
   );
@@ -180,7 +180,7 @@ const LintingPanel = ({
   const collectFromEditor = (mode: LintMode) =>
     mode === 'off'
       ? NO_LINT_ISSUES
-      : collectLintIssues(editor.read.value().children, {
+      : collectLintIssues(editor.read.children(), {
           includeServerDiagnostics: mode === 'server',
         });
 

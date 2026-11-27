@@ -12,10 +12,11 @@ import { history } from 'plitejs/history';
 import * as PliteReact from 'plitejs/react';
 import {
   Editable,
+  type Editor,
   type RenderElementProps,
   type RenderTextProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
   useEditorSelector,
   useElementSelected,
 } from 'plitejs/react';
@@ -348,13 +349,13 @@ const isLinkActive = (editor: CustomEditor): boolean =>
     match: (n) => NodeApi.isElement(n) && n.type === 'link',
   });
 
-const unwrapLink = (editor: CustomEditor) => {
+const unwrapLink = (editor: Editor) => {
   editor.update.nodes.unwrap({
     match: (n) => NodeApi.isElement(n) && n.type === 'link',
   });
 };
 
-const wrapLink = (editor: CustomEditor, url: string) => {
+const wrapLink = (editor: Editor, url: string) => {
   editor.update((tx) => {
     if (
       tx.nodes.some({
@@ -388,7 +389,7 @@ const wrapLink = (editor: CustomEditor, url: string) => {
   return true;
 };
 
-const wrapButton = (editor: CustomEditor) => {
+const wrapButton = (editor: Editor) => {
   editor.update((tx) => {
     if (
       tx.nodes.some({
@@ -530,7 +531,7 @@ const InlineText = (props: RenderTextProps) => {
 };
 
 const AddLinkButton = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const active = useEditorSelector((innerEditor) => isLinkActive(innerEditor));
   return (
     <Button
@@ -551,7 +552,7 @@ const AddLinkButton = () => {
 };
 
 const RemoveLinkButton = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const active = useEditorSelector((innerEditor2) =>
     isLinkActive(innerEditor2)
   );
@@ -572,7 +573,7 @@ const RemoveLinkButton = () => {
 };
 
 const ToggleEditableButtonButton = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   return (
     <Button
       active

@@ -474,11 +474,11 @@ The dispatcher throws inside `editor.read` and `editor.update`, before it moves
 focus. Inside an update, run the command with `tx.command` in an update of the
 root's `useRootEditor` editor, so it keeps that view's suggesting mode.
 
-For an imperative UI callback that is not a semantic command, use the provider
+For an imperative UI callback that is not a semantic command, use the active
 editor and React directly. This does not claim replayable command semantics.
 
 ```tsx
-const editor = useEditorContext();
+const editor = useEditor();
 const insertTitle = React.useCallback(() => {
   editor.update.text.insert("Title");
 }, [editor]);

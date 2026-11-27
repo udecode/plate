@@ -1,11 +1,11 @@
 import {
   defineEditorSchema,
   definePlugin,
+  type Editor,
   editorCommands,
   type EditorValueFromPlugins,
   NodeApi,
   PathApi,
-  type Element as EditorElement,
   type Text as EditorText,
   PointApi,
   property,
@@ -23,12 +23,11 @@ import { domCommands, isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
   Editable,
-  type Editor,
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
   useEditorSelector,
 } from 'plitejs/react';
 import type React from 'react';
@@ -120,7 +119,6 @@ const RichTextSchema = defineEditorSchema('richtextSchema', {
 });
 
 type RichTextValue = EditorValueFromPlugins<readonly [typeof RichTextPlugin]>;
-type RichTextEditor = Editor<RichTextValue>;
 type RichTextElement = SchemaElementFor<typeof RichTextSchema>;
 type RichTextElementType = SchemaElementTypes<typeof RichTextSchema>;
 type RichTextDescendant = SchemaDescendant<typeof RichTextSchema>;
@@ -214,7 +212,9 @@ const RichTextExample = () => {
       </Toolbar>
       <Editable
         autoFocus
-        onKeyDown={(event) => handleRichTextKeyDown(editor, event)}
+        onKeyDown={(event, { editor: viewEditor }) =>
+          handleRichTextKeyDown(viewEditor, event)
+        }
         placeholder="Enter some rich text…"
         renderElement={Element}
         renderLeaf={Leaf}
@@ -224,7 +224,7 @@ const RichTextExample = () => {
   );
 };
 
-const toggleBlock = (editor: RichTextEditor, format: RichTextElementFormat) => {
+const toggleBlock = (editor: Editor, format: RichTextElementFormat) => {
   const isActive = isBlockActive(
     editor,
     format,
@@ -263,8 +263,7 @@ const toggleBlock = (editor: RichTextEditor, format: RichTextElementFormat) => {
 
     tx.nodes.unwrap({
       match: (n) =>
-        NodeApi.isElement(n) &&
-        isListType((n as EditorElement).type as RichTextElementFormat),
+        NodeApi.isElement(n) && isListType(n.type as RichTextElementFormat),
       split: true,
     });
 
@@ -278,7 +277,7 @@ const toggleBlock = (editor: RichTextEditor, format: RichTextElementFormat) => {
   });
 };
 
-const clearRichTextFormatting = (editor: RichTextEditor) => {
+const clearRichTextFormatting = (editor: Editor) => {
   editor.update((tx) => {
     for (const mark of TEXT_MARK_TYPES) {
       tx.marks.remove(mark);
@@ -435,7 +434,7 @@ const RichTextPlugin = definePlugin('richtext', {
 });
 
 const handleRichTextKeyDown = (
-  editor: RichTextEditor,
+  editor: Editor,
   event: React.KeyboardEvent<HTMLDivElement>
 ) => {
   if (isHotkey(CLEAR_FORMATTING_HOTKEY, event)) {
@@ -461,7 +460,7 @@ const handleRichTextKeyDown = (
 };
 
 const isBlockActive = (
-  editor: RichTextEditor,
+  editor: Editor,
   format: RichTextElementFormat,
   blockType: 'type' | 'align' = 'type'
 ) => {
@@ -590,7 +589,7 @@ const BlockButton = ({
   format: RichTextElementFormat;
   icon: string;
 }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const active = useEditorSelector((innerEditor) =>
     isBlockActive(innerEditor, format, isAlignType(format) ? 'align' : 'type')
   );
@@ -616,7 +615,7 @@ const BlockButton = ({
 };
 
 const ClearFormattingButton = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const runCommand = () => {
     clearRichTextFormatting(editor);
   };
@@ -644,7 +643,7 @@ const MarkButton = ({
   format: RichTextTextKey;
   icon: string;
 }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const active = useEditorSelector(
     (innerEditor2) => innerEditor2.read.marks()?.[format] === true
   );

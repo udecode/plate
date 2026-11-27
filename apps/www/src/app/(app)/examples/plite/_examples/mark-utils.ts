@@ -1,18 +1,21 @@
-import type { BooleanMarksOf } from 'plitejs';
+import type { CustomTextKey } from './custom-types.d';
 
-import type { CustomEditor, CustomText, CustomTextKey } from './custom-types.d';
+type MarkReadableEditor = {
+  read: { marks: () => Partial<Record<CustomTextKey, unknown>> | null };
+};
 
-type ActiveMarks = BooleanMarksOf<CustomText>;
+type MarkToggleableEditor = {
+  update: { marks: { toggle: (format: CustomTextKey) => void } };
+};
 
-const getActiveMarks = (editor: CustomEditor): ActiveMarks | null =>
-  editor.read.marks();
-
-export const toggleMark = (editor: CustomEditor, format: CustomTextKey) => {
+export const toggleMark = (
+  editor: MarkToggleableEditor,
+  format: CustomTextKey
+) => {
   editor.update.marks.toggle(format);
 };
 
-export const isMarkActive = (editor: CustomEditor, format: CustomTextKey) => {
-  const marks = getActiveMarks(editor);
-
-  return marks ? marks[format] === true : false;
-};
+export const isMarkActive = (
+  editor: MarkReadableEditor,
+  format: CustomTextKey
+) => editor.read.marks()?.[format] === true;

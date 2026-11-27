@@ -6,7 +6,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
   useEditorSelector,
 } from 'plitejs/react';
 import type React from 'react';
@@ -143,7 +143,7 @@ const MarkButton = ({
   format: CustomTextKey;
   icon: string;
 }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const active = useEditorSelector((innerEditor) =>
     isMarkActive(innerEditor, format)
   );

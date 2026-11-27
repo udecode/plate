@@ -24,7 +24,7 @@ import {
   type RenderLeafProps,
   type RenderVoidProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
   useEditorReadOnly,
   useEditorSelector,
   useElementSelected,
@@ -399,7 +399,7 @@ const ReviewSurface = ({
   external?: 'codemirror' | 'textarea';
   label: string;
 }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const review = editor.plugin(authoring);
   const historyPortal = editor.plugin(historyPlugin);
   const readOnly = useEditorReadOnly();
@@ -471,7 +471,7 @@ const ReviewSurface = ({
 };
 
 const ReviewCards = ({ authoring }: { authoring: AuthoredPlugin }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const review = editor.plugin(authoring);
   const readOnly = useEditorReadOnly();
   const pending = useEditorSelector((currentEditor) =>

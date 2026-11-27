@@ -4,7 +4,7 @@ import {
   Editable,
   type RenderLeafProps,
   EditorRoot,
-  useEditorContext,
+  useEditor,
   useEditorFocused,
   useEditorSelection,
   useEditorSelector,
@@ -99,7 +99,7 @@ const Leaf = ({
 
 const HoveringToolbar = () => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const editor = useEditorContext();
+  const editor = useEditor();
   const inFocus = useEditorFocused();
   const selection = useEditorSelection();
 
@@ -177,7 +177,7 @@ const FormatButton = ({
   format: CustomTextKey;
   icon: string;
 }) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const active = useEditorSelector((innerEditor) =>
     isMarkActive(innerEditor, format)
   );

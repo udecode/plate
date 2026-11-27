@@ -12,7 +12,7 @@ import {
   Editable,
   type RenderElementProps,
   EditorRoot,
-  useEditorContext,
+  useEditor,
   useEditorReadOnly,
   useCreateEditor,
 } from 'plitejs/react';
@@ -204,7 +204,7 @@ const CheckListItemElement = ({
   element,
 }: RenderElementProps<CheckListItemType>) => {
   const { checked } = element;
-  const editor = useEditorContext();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   return (
     <div {...attributes} className="editor-check-lists-item">

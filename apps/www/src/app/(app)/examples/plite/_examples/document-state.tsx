@@ -9,7 +9,7 @@ import {
   Editable,
   EditorRoot,
   ReactUpdatePolicy,
-  useEditorContext,
+  useEditor,
   useEditorState,
   useSetStateField,
   useCreateEditor,
@@ -93,7 +93,7 @@ const getHistoryShortcut = (event: KeyboardEvent<HTMLInputElement>) => {
 };
 
 const DocumentStatePanel = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const historyPortal = editor.plugin(HistoryPlugin);
   const title = useStateFieldValue(documentTitle);
   const setTitle = useSetStateField(documentTitle);

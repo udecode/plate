@@ -6,10 +6,11 @@ import { domCommands } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
   Editable,
+  type Editor,
   type RenderElementProps,
   type RenderVoidProps,
   EditorRoot,
-  useEditorContext,
+  useEditor,
   useEditorFocused,
   useElementSelected,
   useCreateEditor,
@@ -21,7 +22,6 @@ import { cn } from '@/utils/cn';
 import { failInvariant } from '../../../../../lib/failInvariant';
 import { Button, Icon, Toolbar } from './components';
 import type {
-  CustomEditor,
   CustomElement,
   ImageElement,
   ParagraphElement,
@@ -242,7 +242,7 @@ const renderVoid = ({ element }: RenderVoidProps<CustomElement>) => {
   }
 };
 
-const insertImage = (editor: CustomEditor, url: string) => {
+const insertImage = (editor: Editor, url: string) => {
   editor.update((tx) => {
     tx.nodes.insert({ type: 'image', url, children: [{ text: '' }] });
     tx.nodes.insert({ type: 'paragraph', children: [{ text: '' }] });
@@ -255,7 +255,7 @@ const Paragraph = ({
 }: RenderElementProps<ParagraphElement>) => <p {...attributes}>{children}</p>;
 
 const Image = ({ element }: RenderVoidProps<ImageElement>) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'collapsed' });
 
@@ -298,7 +298,7 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
 };
 
 const InsertImageButton = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   return (
     <Button
       onClick={() => {

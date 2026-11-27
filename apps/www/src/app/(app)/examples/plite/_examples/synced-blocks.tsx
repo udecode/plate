@@ -5,6 +5,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   EditorRoot,
+  useEditor,
   useEditorContext,
   useElementPath,
   useCreateEditor,
@@ -191,7 +192,7 @@ const SyncedBlock = ({
   element,
   slots,
 }: RenderElementProps<SyncedBlockElement>) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const path = useElementPath();
   const bodyRoot = element.childRoots.body;
   const isOriginal = element.copyId === 'original';

@@ -5,7 +5,7 @@ import {
   type RenderElementProps,
   type RenderVoidProps,
   EditorRoot,
-  useEditorContext,
+  useEditor,
   useCreateEditor,
 } from 'plitejs/react';
 import React, { type ChangeEvent, useMemo } from 'react';
@@ -97,7 +97,7 @@ const ParagraphElement = ({
 const allowedSchemes = new Set(['http:', 'https:']);
 
 const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const { url } = element;
 
   const safeUrl = useMemo(() => {

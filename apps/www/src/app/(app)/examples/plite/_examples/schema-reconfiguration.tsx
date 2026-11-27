@@ -11,7 +11,7 @@ import {
   Editable,
   EditorRoot,
   type RenderElementProps,
-  useEditorContext,
+  useEditor,
   useEditorState,
   useCreateEditor,
 } from 'plitejs/react';
@@ -144,7 +144,7 @@ const renderVoid = () => (
 );
 
 const SchemaControls = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const status = useEditorState((state) => {
     const probe = state.nodes.get([0])?.[0];
     const guard = state.nodes.get([1, 1])?.[0];

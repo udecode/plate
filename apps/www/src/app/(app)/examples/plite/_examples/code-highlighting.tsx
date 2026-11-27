@@ -1,6 +1,7 @@
 import {
   type Descendant,
   definePlugin,
+  type Editor,
   type Element,
   NodeApi,
   type NodeEntry,
@@ -18,7 +19,7 @@ import {
   type DecorationSource,
   type RenderElementProps,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
 } from 'plitejs/react';
 import type React from 'react';
 import type { ChangeEvent, PointerEvent } from 'react';
@@ -85,14 +86,14 @@ const initialValue = [
 ]
 
 const App = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue,
   })
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   )
 }`),
     },
@@ -107,13 +108,21 @@ const App = () => {
       language: 'typescript',
       children: toChildren(`// TypeScript users only add this code
 import { Descendant } from 'plitejs'
-import { useEditor } from 'plitejs/react'
+import { useCreateEditor } from 'plitejs/react'
 
 type CustomElement = { type: 'paragraph'; children: CustomText[] }
 type CustomText = { text: string }
 type CustomValue = CustomElement[]
 
-const editor = useEditor<CustomValue>({ initialValue })`),
+const initialValue: CustomValue = [
+  { type: 'paragraph', children: [{ text: 'A line of text in a paragraph.' }] },
+]
+
+const App = () => {
+  const editor = useCreateEditor<CustomValue>({ initialValue })
+
+  return <EditorRoot editor={editor}><Editable /></EditorRoot>
+}`),
     },
     {
       type: ParagraphType,
@@ -132,9 +141,9 @@ const editor = useEditor<CustomValue>({ initialValue })`),
     <EditorRoot decorations={[codeHighlightingSource]} editor={editor}>
       <ExampleToolbar />
       <Editable
-        onKeyDown={(event) => {
+        onKeyDown={(event, { editor: viewEditor }) => {
           if (isHotkey(['mod+shift+c', 'mod+alt+c'], event)) {
-            convertSelectionToCodeBlock(editor);
+            convertSelectionToCodeBlock(viewEditor);
             return true;
           }
 
@@ -173,7 +182,7 @@ const editor = useEditor<CustomValue>({ initialValue })`),
 
 const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
   const { attributes, children, element } = props;
-  const editor = useEditorContext();
+  const editor = useEditor();
 
   if (element.type === CodeBlockType) {
     const setLanguage = (language: string) => {
@@ -212,7 +221,7 @@ const ExampleToolbar = () => (
 );
 
 const CodeBlockButton = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
 
   return (
     <Button
@@ -230,7 +239,7 @@ const CodeBlockButton = () => {
   );
 };
 
-const convertSelectionToCodeBlock = (editor: CustomEditor) => {
+const convertSelectionToCodeBlock = (editor: Editor) => {
   editor.update((tx) => {
     const selection = tx.selection();
 

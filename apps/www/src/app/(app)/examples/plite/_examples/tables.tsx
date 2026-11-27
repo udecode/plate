@@ -6,7 +6,7 @@ import {
   type RenderLeafProps,
   EditorRoot,
   useCreateEditor,
-  useEditorContext,
+  useEditor,
 } from 'plitejs/react';
 
 import { failInvariant } from '../../../../../lib/failInvariant';
@@ -100,7 +100,7 @@ const initialValue: CustomValue = [
 ];
 
 const TablesEditor = () => {
-  const editor = useEditorContext();
+  const editor = useEditor();
   const moveSelectionToAdjacentCell = (reverse: boolean) => {
     let moved = false;
 

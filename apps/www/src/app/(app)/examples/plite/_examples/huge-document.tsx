@@ -184,8 +184,6 @@ const fallbackInitialValue: Value = [
   },
 ];
 
-// The huge-document bench remounts editors from URL/config controls. Normal
-// React-owned examples should use `useEditor`.
 const createEditor = (_config: Config, initialValue: Value) =>
   createReactEditor({ plugins: [history()], initialValue });
 
