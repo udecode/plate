@@ -49,7 +49,7 @@ Keep one pinned `operator` T3 Code thread (own worktree, commands prefixed `cd <
 
 ## watch
 
-Never edit or land directly. Local CI caps: 3 fix agents (max 1 heavy: `plite-browser` or any `light` step), 1 release, 1 friction judge; subagents (`invoke_subagent`/`delegate_task`) are unlimited. Spawn workers via `invoke_subagent` (or `delegate_task` for isolation), inheriting lead model and effort (escalate a failed 1st fix once to Neon `@xhigh`). Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
+Never edit or land directly. `operator` itself runs well at `medium`. Local CI caps: 3 fix agents (max 1 heavy: `plite-browser` or any `light` step), 1 release, 1 friction judge; subagents (`invoke_subagent`/`delegate_task`) are unlimited. Spawn workers via `invoke_subagent` (or `delegate_task` for isolation or effort override): run routine Local CI fixers (lint, typecheck, stale tests, simple flakes) at `medium` where supported, keep `high` for complex root-cause bugs, and escalate a failed 1st fix once to Neon `@xhigh`. Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
 
 Read effective `maxAutoStart` from `readProjectConfig()` in `.agents/pstack/lead.mjs` (merges `.agents/pstack.json` with main checkout's gitignored `.agents/pstack.local.json`, default `0`).
 
