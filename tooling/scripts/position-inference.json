@@ -28,6 +28,12 @@
   "uncounted": {
     "packages/plitejs/src/core/change/range-content.ts": "It reads whether a range covers a letter or a whole void. It works out no move, split, join or wrap.",
     "packages/plitejs/src/core/change/text-leaf-boundary.ts": "It checks whether a change retained a token span verbatim and aligns a deletion across an adjacent empty text leaf of equal properties. It works out no move, split, join or wrap.",
+    "packages/plitejs/src/core/change/v4/apply.ts": "It applies closed ID-addressed v4 steps directly by element id and UTF-16 text offset. It works out no move, split, join or wrap from positions.",
+    "packages/plitejs/src/core/change/v4/builder-recorder.ts": "It records closed ID-addressed v4 steps directly from transaction builder primitives as they run. It works out no move, split, join or wrap from positions.",
+    "packages/plitejs/src/core/change/v4/extract.ts": "It extracts ID-keyed v4 steps between two snapshots by matching permanent element ids. It works out no move, split, join or wrap from positions.",
+    "packages/plitejs/src/core/change/v4/invert.ts": "It inverts closed ID-addressed v4 steps against the pre-state by element id. It works out no move, split, join or wrap from positions.",
+    "packages/plitejs/src/core/change/v4/lower.ts": "It lowers ID-addressed v4 steps sparsely into private RootChange sections using the snapshot element id lookup. It works out no move, split, join or wrap from positions.",
+    "packages/plitejs/src/core/change/v4/types.ts": "It defines and validates the closed 14-op ID-addressed v4 step schema and property delta helpers. It works out no move, split, join or wrap from positions.",
     "packages/plitejs/src/history/history-first-write.ts": "It keeps a session step's first write and the redo freeze, and splices a withdrawn step out of the undo list by its identity. It works out no move, split, join or wrap.",
     "packages/plitejs/src/history/history-forget.ts": "It removes a step the room refused from the undo or redo list by its identity, and records that identity so a resolve drops the step from any kept redo alternative that still holds it. It works out no move, split, join, wrap or restored letter from positions.",
     "packages/plitejs/src/history/history-forgotten.ts": "It drops each head a forget recorded by its identity while a list resolves, and maps the steps below a run of such heads onto the run's base. It works out no move, split, join, wrap or restored letter from positions.",

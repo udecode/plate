@@ -18,9 +18,11 @@ import {
 } from './classification';
 import {
   applyDocumentChangeWithIndexes,
+  attachV4Steps,
   createInternalDocumentChange,
   DocumentChange,
   freezeReadonlyMap,
+  getAttachedV4Steps,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeEntries,
@@ -86,6 +88,12 @@ import {
   type JsonNode,
   type JsonPoint,
 } from './tokens';
+import {
+  V4BuilderRecorder,
+  type V4RecorderSnapshot,
+} from './v4/builder-recorder';
+import { extractV4Between } from './v4/extract';
+import { countV4BuilderFallbackDiff, type V4Step } from './v4/types';
 
 type SliceShape = 'letters' | 'nodes' | 'part';
 
@@ -288,6 +296,51 @@ const NO_RUNTIME_CANDIDATES: ReadonlyMap<
  *
  * @internal
  */
+const documentChangeFillsOnlyMissingElementIds = (
+  change: DocumentChange,
+  indexedBefore: ReadonlyMap<string, DocumentIndex>
+): boolean => {
+  if (change.createRoots.size > 0 || change.deleteRoots.size > 0) return false;
+  if (getInternalDocumentChangeRecords(change).size > 0) return false;
+
+  for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+    const beforeIndex = indexedBefore.get(root);
+
+    if (!beforeIndex) return false;
+    let pos = 0;
+
+    for (let i = 0; i < rootChange.sections.length; i += 2) {
+      const length = getDefined(rootChange.sections[i]);
+      const inserted = getDefined(rootChange.sections[i + 1]);
+
+      if (inserted === -1) {
+        pos += length;
+        continue;
+      }
+      if (inserted !== -2) return false;
+
+      const mods = rootChange.data[i >> 1] as
+        | ReadonlyArray<Readonly<{ key: string }>>
+        | undefined;
+
+      if (!mods || !mods.every((mod) => mod.key === 'id')) return false;
+
+      const token = beforeIndex.slice(pos, pos + 1).tokens[0];
+
+      if (
+        !token ||
+        token.kind !== 'open' ||
+        (typeof token.props.id === 'string' && token.props.id.length > 0)
+      ) {
+        return false;
+      }
+      pos += length;
+    }
+  }
+
+  return true;
+};
+
 const rootChangeWritesElementId = (change: RootChange) => {
   for (let i = 0; i < change.sections.length; i += 2) {
     if (change.sections[i + 1] !== -2) continue;
@@ -406,6 +459,7 @@ export type DraftCheckpoint = Readonly<{
   sinceValidated: SinceValidated | null;
   spanStart: number;
   steps: readonly DraftStep[];
+  v4: V4RecorderSnapshot;
 }>;
 
 /** @internal */
@@ -432,6 +486,7 @@ export type PreparedDocumentChange = Readonly<{
     string,
     readonly DocumentChangeRuntimeCandidate[]
   >;
+  v4Steps: readonly V4Step[] | null;
 }>;
 
 export const PREPARED_DOCUMENT_CHANGES = new WeakMap<
@@ -505,6 +560,7 @@ export class ChangeDraft {
     input: Parameters<DocumentChangeConstructionPolicy>[0]
   ) => void;
   private readonly validateRecordsOnlyChange?: (change: DocumentChange) => void;
+  private readonly v4Recorder = new V4BuilderRecorder();
 
   constructor(
     value: JsonEditorValue,
@@ -569,7 +625,60 @@ export class ChangeDraft {
   }
 
   get change() {
-    return this.getAccumulated();
+    const accumulated = this.getAccumulated();
+
+    if (!accumulated.empty) {
+      const { recorded } = this.v4Recorder;
+
+      if (recorded) {
+        attachV4Steps(accumulated, recorded);
+      }
+    }
+
+    return accumulated;
+  }
+
+  private syncExternalV4Change(
+    change: DocumentChange,
+    indexedBefore: ReadonlyMap<string, DocumentIndex>,
+    indexedAfter: ReadonlyMap<string, DocumentIndex>
+  ) {
+    if (!this.v4Recorder.active || change.empty) return;
+
+    const attached = getAttachedV4Steps(change);
+
+    if (attached) {
+      this.v4Recorder.appendRaw(attached);
+      return;
+    }
+
+    if (documentChangeFillsOnlyMissingElementIds(change, indexedBefore)) {
+      this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
+      return;
+    }
+
+    if (
+      change.createRoots.size > 0 &&
+      change.deleteRoots.size === 0 &&
+      getInternalDocumentChangeRecords(change).size === 0 &&
+      [...getInternalDocumentChangeEntries(change)].every(([root]) =>
+        change.createRoots.has(root)
+      )
+    ) {
+      for (const root of change.createRoots) {
+        const afterIndex = indexedAfter.get(root) ?? this.getIndex(root);
+
+        this.v4Recorder.recordCreateRoot(root, afterIndex.value);
+      }
+      return;
+    }
+
+    this.v4Recorder.invalidate();
+  }
+
+  /** Recorded semantic v4 steps for this draft when available. @internal */
+  get v4Steps(): readonly V4Step[] | null {
+    return this.v4Recorder.recorded;
   }
 
   private hasAccumulated() {
@@ -718,6 +827,7 @@ export class ChangeDraft {
       sinceValidated: this.getSinceValidated(),
       spanStart: this.spanStart,
       steps: [...this.appliedSteps],
+      v4: this.v4Recorder.snapshot(),
     };
   }
 
@@ -727,6 +837,7 @@ export class ChangeDraft {
       ? null
       : this.apply(checkpoint.change, {
           indexedAfter: checkpoint.indexedAfter,
+          v4Recorded: true,
         });
 
     this.appliedSteps.length = 0;
@@ -736,6 +847,7 @@ export class ChangeDraft {
     this.sinceValidated = checkpoint.sinceValidated;
     this.pendingSinceValidated = [];
     this.spanStart = checkpoint.spanStart;
+    this.v4Recorder.restore(checkpoint.v4);
 
     return step;
   }
@@ -1068,6 +1180,12 @@ export class ChangeDraft {
       );
     }
 
+    const recordedV4 = this.v4Recorder.recorded;
+
+    if (recordedV4 && !classifiedChange.empty) {
+      attachV4Steps(classifiedChange, recordedV4);
+    }
+
     const token = Object.freeze({});
 
     PREPARED_DOCUMENT_CHANGES.set(
@@ -1086,6 +1204,7 @@ export class ChangeDraft {
         revision: this.preparationRevision?.(),
         runtimeCandidates:
           this.runtimeCandidatesByChange.get(classifiedChange) ?? new Map(),
+        v4Steps: recordedV4,
       })
     );
 
@@ -1156,6 +1275,13 @@ export class ChangeDraft {
         payload.runtimeCandidates
       );
     }
+    if (this.v4Recorder.active) {
+      if (payload.v4Steps !== null) {
+        this.v4Recorder.appendRaw(payload.v4Steps);
+      } else {
+        this.v4Recorder.invalidate();
+      }
+    }
     this.current = payload.after;
 
     return Object.freeze({
@@ -1205,6 +1331,13 @@ export class ChangeDraft {
       classifiedChange,
       freezeReadonlyMap(runtimeCandidates)
     );
+    const attachedSteps =
+      getAttachedV4Steps(change) ??
+      (change === this.accumulated ? this.v4Recorder.recorded : null);
+
+    if (attachedSteps && !classifiedChange.empty) {
+      attachV4Steps(classifiedChange, attachedSteps);
+    }
 
     return classifiedChange;
   }
@@ -1221,6 +1354,7 @@ export class ChangeDraft {
       letters?: NewLetters;
       origin?: DraftStepOrigin;
       relocations?: readonly Relocation[];
+      v4Recorded?: boolean;
     }> = {}
   ): DocumentChangeStep {
     const before = this.current;
@@ -1275,6 +1409,11 @@ export class ChangeDraft {
         records: getInternalDocumentChangeRecords(change),
       }
     );
+    const attachedSteps = getAttachedV4Steps(change);
+
+    if (attachedSteps && !classifiedChange.empty) {
+      attachV4Steps(classifiedChange, attachedSteps);
+    }
     const frozenRuntimeCandidates = freezeReadonlyMap(runtimeCandidates);
 
     if (options.classify !== false) {
@@ -1359,6 +1498,9 @@ export class ChangeDraft {
     }
     this.canonical = false;
     this.current = current;
+    if (!options.v4Recorded) {
+      this.syncExternalV4Change(change, indexedBefore, indexedAfter);
+    }
 
     return Object.freeze({
       after: current,
@@ -1732,6 +1874,8 @@ export class ChangeDraft {
     if (change !== canonicalChange) {
       this.runtimeCandidatesByChange.set(change, frozenRuntimeCandidates);
     }
+    this.syncExternalV4Change(change, indexedBefore, indexedAfter);
+
     this.canonical = true;
     this.current = current;
     if (!options.validated) this.adoptCanonicalBaseline?.(current);
@@ -1791,10 +1935,39 @@ export class ChangeDraft {
               joinsLeaves: true,
             }),
             origin: options.origin ?? 'canonical',
+            v4Recorded: true,
           })
         : null;
 
     this.spanStart = this.appliedSteps.length;
+
+    if (this.v4Recorder.active) {
+      if (!step) {
+        this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
+      } else if (
+        constructionChange &&
+        documentChangeFillsOnlyMissingElementIds(
+          constructionChange,
+          step.indexedBefore
+        )
+      ) {
+        this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
+      } else {
+        this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
+        try {
+          const repairSteps = extractV4Between(step.before, step.after, {
+            isSetValued: this.isSetValued,
+          });
+
+          if (repairSteps.length > 0) {
+            countV4BuilderFallbackDiff();
+            this.v4Recorder.appendRaw(repairSteps);
+          }
+        } catch {
+          this.v4Recorder.invalidate();
+        }
+      }
+    }
 
     // Composing the correction drops the classification of each root both
     // changes write, because their paths read in two documents, and a commit
@@ -1814,6 +1987,7 @@ export class ChangeDraft {
     if (accumulated.empty) {
       this.current = this.source;
       this.record = null;
+      this.v4Recorder.resetTo([]);
       this.indexes.clear();
       for (const [root, index] of this.sourceIndexes) {
         this.indexes.set(root, index);
@@ -1900,6 +2074,8 @@ export class ChangeDraft {
     const document = DocumentIndex.fromValue([]);
     const rootChange = replaceChildrenChange(document, [], 0, 0, children);
 
+    this.v4Recorder.recordCreateRoot(root, children);
+
     return this.applyConstructed(
       createInternalDocumentChange(
         rootChange.empty ? new Map() : new Map([[root, rootChange]]),
@@ -1925,6 +2101,8 @@ export class ChangeDraft {
       []
     );
 
+    this.v4Recorder.recordDeleteRoot(root, document.value);
+
     return this.applyConstructed(
       createInternalDocumentChange(
         rootChange.empty ? new Map() : new Map([[root, rootChange]]),
@@ -1938,6 +2116,8 @@ export class ChangeDraft {
 
   insertNode(root: string, path: readonly number[], node: JsonNode) {
     const document = this.getIndex(root);
+
+    this.v4Recorder.recordInsertNode(document, root, path, node);
 
     return this.applyRoot(
       root,
@@ -1957,6 +2137,8 @@ export class ChangeDraft {
     const from = this.marksLetters
       ? document.positionAt({ path, offset })
       : null;
+
+    this.v4Recorder.recordInsertText(document, path, offset, text);
 
     return this.applyRoot(
       root,
@@ -1978,6 +2160,8 @@ export class ChangeDraft {
       historyFollowsAllFacts() && !isTextNode(document.node(path))
         ? [[from - 1]]
         : [];
+
+    this.v4Recorder.recordMergeNode(document, path);
 
     return this.applyRoot(
       root,
@@ -2001,6 +2185,9 @@ export class ChangeDraft {
     const wasCanonical = this.canonical;
     const change = moveNodeChange(document, path, newPath);
     const moved = this.movedRun(root, document, path, change);
+
+    this.v4Recorder.recordMoveNode(document, root, path, newPath);
+
     const step = this.applyRoot(
       root,
       'move',
@@ -2029,6 +2216,8 @@ export class ChangeDraft {
   removeNode(root: string, path: readonly number[]) {
     const document = this.getIndex(root);
 
+    this.v4Recorder.recordRemoveNode(document, path);
+
     return this.applyRoot(
       root,
       'remove-node',
@@ -2053,6 +2242,8 @@ export class ChangeDraft {
       throw new Error(`Removed text does not match the draft at [${path}].`);
     }
 
+    this.v4Recorder.recordRemoveText(document, path, offset, text);
+
     return this.applyRoot(
       root,
       'text',
@@ -2069,6 +2260,15 @@ export class ChangeDraft {
   ) {
     const document = this.getIndex(root);
     const after = document.withSplicedNodes(path, index, removeCount, children);
+
+    this.v4Recorder.recordReplaceChildren(
+      document,
+      root,
+      path,
+      index,
+      removeCount,
+      children
+    );
 
     return this.applyRoot(
       root,
@@ -2103,6 +2303,15 @@ export class ChangeDraft {
         ? document.nodes.slice(index, index + count)
         : (document.node(path).children ?? []).slice(index, index + count);
 
+    this.v4Recorder.recordWrapChildren(
+      document,
+      root,
+      path,
+      index,
+      count,
+      wrapper
+    );
+
     return this.applyRoot(
       root,
       'wrap',
@@ -2114,6 +2323,8 @@ export class ChangeDraft {
   /** Remove the element at `path`, keeping its children's tokens in place. */
   unwrapNode(root: string, path: readonly number[]) {
     const document = this.getIndex(root);
+
+    this.v4Recorder.recordUnwrapNode(document, root, path);
 
     return this.applyRoot(
       root,
@@ -2129,6 +2340,8 @@ export class ChangeDraft {
   }
 
   replaceChildRuns(root: string, runs: readonly ChildRun[]) {
+    this.v4Recorder.invalidate();
+
     return this.applyRoot(
       root,
       'replace',
@@ -2142,6 +2355,8 @@ export class ChangeDraft {
     }
 
     const document = this.getIndex(root);
+
+    this.v4Recorder.invalidate();
 
     return this.applyDiff(
       root,
@@ -2164,6 +2379,8 @@ export class ChangeDraft {
       throw new RangeError('A slice replacement range must be forward.');
     }
 
+    this.v4Recorder.invalidate();
+
     return this.applyDiff(
       root,
       'slice',
@@ -2181,11 +2398,22 @@ export class ChangeDraft {
     newProperties: JsonRecord,
     properties: JsonRecord = {}
   ) {
+    const document = this.getIndex(root);
+
+    this.v4Recorder.recordSetNode(
+      document,
+      root,
+      path,
+      newProperties,
+      properties,
+      this.isSetValued
+    );
+
     return this.applyRoot(
       root,
       'props',
       setNodeChange(
-        this.getIndex(root),
+        document,
         path,
         newProperties,
         properties,
@@ -2205,11 +2433,24 @@ export class ChangeDraft {
       }>
     >
   ) {
+    const document = this.getIndex(root);
+
+    for (const update of updates) {
+      this.v4Recorder.recordSetNode(
+        document,
+        root,
+        update.path,
+        update.newProperties,
+        update.properties,
+        this.isSetValued
+      );
+    }
+
     return this.applyRoot(
       root,
       'props',
       setNodesChange(
-        this.getIndex(root),
+        document,
         updates,
         this.isSetValued,
         root === 'main' ? null : root
@@ -2230,6 +2471,8 @@ export class ChangeDraft {
       historyFollowsAllFacts() && !isTextNode(document.node(path))
         ? [[heir[0] - 1]]
         : [];
+
+    this.v4Recorder.recordSplitNode(document, root, path, position, properties);
 
     return this.applyRoot(
       root,
@@ -2381,6 +2624,7 @@ export class ChangeDraft {
             : undefined,
         origin,
         relocations,
+        v4Recorded: true,
       }
     );
   }
@@ -2393,6 +2637,7 @@ export class ChangeDraft {
     return this.apply(documentChange, {
       facts: this.unnamedFacts(documentChange),
       origin,
+      v4Recorded: true,
     });
   }
 
@@ -2401,7 +2646,12 @@ export class ChangeDraft {
     origin: DraftStepOrigin,
     indexedAfter?: ReadonlyMap<string, DocumentIndex>
   ): DocumentChangeStep {
-    return this.apply(change, { facts: NO_FACTS, indexedAfter, origin });
+    return this.apply(change, {
+      facts: NO_FACTS,
+      indexedAfter,
+      origin,
+      v4Recorded: true,
+    });
   }
 
   getIndex(root: string) {
@@ -2652,7 +2902,7 @@ export const classifyDocumentChange = (
     );
   }
 
-  return createInternalDocumentChange(
+  const classified = createInternalDocumentChange(
     new Map(getInternalDocumentChangeEntries(change)),
     {
       classifications,
@@ -2661,4 +2911,11 @@ export const classifyDocumentChange = (
       records: getInternalDocumentChangeRecords(change),
     }
   );
+  const attachedSteps = getAttachedV4Steps(change);
+
+  if (attachedSteps && !classified.empty) {
+    attachV4Steps(classified, attachedSteps);
+  }
+
+  return classified;
 };

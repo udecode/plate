@@ -199,6 +199,7 @@ import {
 } from './change/classification';
 import {
   assertDocumentRootKey,
+  bindV4DocumentChange,
   createInternalDocumentChange,
   documentChangeWritesOnlyElementProperties,
   getInternalDocumentChangeClassification,
@@ -207,6 +208,7 @@ import {
   getInternalDocumentRootChange,
   DocumentChange,
   isInternalRecordsOnlyChange,
+  isUnboundV4DocumentChange,
   transformInternalDocumentChange,
   valueRoot,
   valueRootIndex,
@@ -249,6 +251,7 @@ import type {
   OpenToken,
 } from './change/tokens';
 import type { PropertyModification } from './change/transform';
+import { registerValueIdLookup } from './change/v4/lower';
 import {
   cloneFrozen,
   cloneValue,
@@ -3241,6 +3244,31 @@ const createEditorDocumentValue = <V extends Value>({
   const documentValue = Object.freeze(value) as EditorDocumentValue<V>;
 
   if (Object.isFrozen(roots)) {
+    const owner = getEditorRuntimeOwner(editor);
+
+    registerValueIdLookup(documentValue, (id) => {
+      const currentRoots = getEditorDocumentRoots(owner);
+
+      for (const root of visitRootNames(roots)) {
+        const source = rootSourceOf(roots, root);
+        const snapshotIndex =
+          snapshotIndexOf(owner, source) ??
+          (currentRoots === roots ? runtimeRootIndex(owner, root) : undefined);
+
+        if (!snapshotIndex) continue;
+
+        const topology = uniqueTopologyOf(owner, snapshotIndex, source);
+        const holding = topology && topologyHolding(topology, 'id', id);
+        const first = holding?.all()[0];
+
+        if (first) {
+          return { path: first.path, root };
+        }
+      }
+
+      return null;
+    });
+
     DOCUMENT_VALUES.set(roots, {
       editor,
       fields,
@@ -9647,8 +9675,14 @@ export const getUpdateView = <
     changes: Object.freeze({
       apply: (change: DocumentChange) => {
         runActive(() => {
-          assertChangeDoesNotMutateElementId(editor, change);
-          applyDocumentChange(editor, change);
+          const snapshot = getTransactionSnapshot(editor);
+          const bound =
+            snapshot && isUnboundV4DocumentChange(change)
+              ? bindV4DocumentChange(change, snapshot.builder.value)
+              : change;
+
+          assertChangeDoesNotMutateElementId(editor, bound);
+          applyDocumentChange(editor, bound);
         });
       },
     }),
@@ -15318,7 +15352,10 @@ export const applyDocumentChange = (
     throw new Error('Document changes require an active transaction draft.');
   }
 
-  const step = snapshot.builder.applyCanonical(change, facts);
+  const bound = isUnboundV4DocumentChange(change)
+    ? bindV4DocumentChange(change, snapshot.builder.value)
+    : change;
+  const step = snapshot.builder.applyCanonical(bound, facts);
 
   applyTransactionSpecDocumentChangeStep(editor, step, options);
 };
