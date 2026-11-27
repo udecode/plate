@@ -15,6 +15,7 @@ import {
   type EditorSnapshot,
   isEditor,
   type NamedRootKey,
+  type ReadValue,
   type RootKey,
   type Selection,
   SelectionApi,
@@ -142,7 +143,7 @@ type PliteChangeCallbacks<E extends ReactEditorType<any, any>> = {
     }
   ) => void;
   onValueChange?: (
-    context: EditorCommitContext<E> & { value: ValueOf<E> }
+    context: EditorCommitContext<E> & { value: ReadValue<ValueOf<E>> }
   ) => void;
 };
 
@@ -169,7 +170,7 @@ export type ValueChangeContext<
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly unknown[],
 > = CommitContext<V, TPlugins> & {
-  value: V;
+  value: ReadValue<V>;
 };
 
 /** Selection-change payload derived independently from a canonical commit. */
@@ -199,7 +200,9 @@ export type EditorRootProps<
       }
     ) => void;
     onValueChange?: (
-      context: EditorCommitContext<NoInfer<E>> & { value: ValueOf<E> }
+      context: EditorCommitContext<NoInfer<E>> & {
+        value: ReadValue<ValueOf<E>>;
+      }
     ) => void;
   };
 
@@ -217,7 +220,7 @@ type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
     }
   ) => void;
   onValueChange?: (
-    context: EditorCommitContext<E> & { value: ValueOf<E> }
+    context: EditorCommitContext<E> & { value: ReadValue<ValueOf<E>> }
   ) => void;
   mountedIn?: AnyEditor;
   presentation?: ViewPresentation;
@@ -594,7 +597,7 @@ type ChangeCallbacksInput<E extends ReactEditorType<any, any>> = {
     }
   ) => void;
   onValueChange?: (
-    context: EditorCommitContext<E> & { value: ValueOf<E> }
+    context: EditorCommitContext<E> & { value: ReadValue<ValueOf<E>> }
   ) => void;
   root: RootKey;
 };

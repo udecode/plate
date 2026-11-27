@@ -55,8 +55,6 @@
       "name": "html-export",
       "files": [
         "apps/www/src/registry/blocks/html-export/page.tsx",
-        "apps/www/src/registry/components/editor/html-export-kit.ts",
-        "apps/www/src/registry/components/editor/html-export-schema-kit.ts",
         "apps/www/src/registry/components/editor/html-export.tsx",
         "apps/www/src/registry/examples/values/align-value.tsx",
         "apps/www/src/registry/examples/values/basic-blocks-value.tsx",

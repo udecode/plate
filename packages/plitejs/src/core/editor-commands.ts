@@ -665,7 +665,7 @@ const blockReplacing = (
               }),
               ([node]) => node
             )
-              .filter(NodeApi.isElement)
+              .filter((node) => NodeApi.isElement(node))
               .slice(1),
           ],
           root

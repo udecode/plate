@@ -307,8 +307,6 @@ export type DeserializeMdContext = Readonly<
   Omit<MarkdownParsePolicy, 'limits'>
 > &
   MarkdownConversionContext & {
-    /** Whether the optional ElementIdPlugin owns persisted block identity. */
-    elementIds?: boolean;
     /** Receives the syntax node count once tree limits pass. */
     onSyntaxNodes?: (count: number) => void;
     /** Receives the root's children before they are converted. */

@@ -78,14 +78,6 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:component',
       },
       {
-        path: 'components/editor/html-export-schema-kit.ts',
-        type: 'registry:component',
-      },
-      {
-        path: 'components/editor/html-export-kit.ts',
-        type: 'registry:component',
-      },
-      {
         path: 'examples/values/align-value.tsx',
         type: 'registry:example',
       },

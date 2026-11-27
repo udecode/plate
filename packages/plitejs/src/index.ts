@@ -343,6 +343,7 @@ export type {
   TargetFreshnessRequest,
   TopLevelRuntimeRange,
   TransactionSpec,
+  ReadValue,
   Value,
   ValueOf,
 } from './interfaces/editor';

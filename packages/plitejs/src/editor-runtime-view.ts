@@ -74,6 +74,7 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getEditorDocumentRecords,
+  getEditorStateView,
   getReadProjection,
   getUpdateView,
   withEditorViewSelectionRead,
@@ -92,8 +93,6 @@ import {
   withEditorTargetRuntime,
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
-  readElementById,
-  withElementFinder,
 } from './core/public-state';
 import { getValueRecords, type RecordStore } from './core/record-store';
 import { defineSemanticUpdateMethod } from './core/semantic-update-method';
@@ -640,40 +639,31 @@ const withRootChildren = <
     return path && state.nodes.get(path, options);
   }) as T['nodes']['get'];
 
-  return withElementFinder(
-    {
-      ...state.nodes,
-      above: rootMethod(editor, viewState, state.nodes.above),
-      block: rootMethod(editor, viewState, state.nodes.block),
-      blocks: rootMethod(editor, viewState, state.nodes.blocks),
-      byId: rootMethod(editor, viewState, (id: string) =>
-        namesItsRoot(state.nodes.byId(id))
-      ),
-      children: rootMethod(editor, viewState, state.nodes.children),
-      elementReadOnly: rootMethod(
-        editor,
-        viewState,
-        state.nodes.elementReadOnly
-      ),
-      entries: rootGeneratorMethod(editor, viewState, state.nodes.entries),
-      find: rootMethod(editor, viewState, state.nodes.find),
-      first: rootMethod(editor, viewState, state.nodes.first),
-      get: rootMethod(editor, viewState, getWithIdInOwnRoot),
-      last: rootMethod(editor, viewState, state.nodes.last),
-      leaf: rootMethod(editor, viewState, state.nodes.leaf),
-      levels: rootGeneratorMethod(editor, viewState, state.nodes.levels),
-      next: rootMethod(editor, viewState, state.nodes.next),
-      parent: rootMethod(editor, viewState, state.nodes.parent),
-      path: rootMethod(editor, viewState, state.nodes.path),
-      previous: rootMethod(editor, viewState, state.nodes.previous),
-      some: rootMethod(editor, viewState, state.nodes.some),
-      toArray: rootMethod(editor, viewState, state.nodes.toArray),
-      void: rootMethod(editor, viewState, state.nodes.void),
-    },
-    rootMethod(editor, viewState, (id: string) =>
-      readElementById(state.nodes, id)
-    )
-  );
+  return Object.freeze({
+    ...state.nodes,
+    above: rootMethod(editor, viewState, state.nodes.above),
+    block: rootMethod(editor, viewState, state.nodes.block),
+    blocks: rootMethod(editor, viewState, state.nodes.blocks),
+    byId: rootMethod(editor, viewState, (id: string) =>
+      namesItsRoot(state.nodes.byId(id))
+    ),
+    children: rootMethod(editor, viewState, state.nodes.children),
+    elementReadOnly: rootMethod(editor, viewState, state.nodes.elementReadOnly),
+    entries: rootGeneratorMethod(editor, viewState, state.nodes.entries),
+    find: rootMethod(editor, viewState, state.nodes.find),
+    first: rootMethod(editor, viewState, state.nodes.first),
+    get: rootMethod(editor, viewState, getWithIdInOwnRoot),
+    last: rootMethod(editor, viewState, state.nodes.last),
+    leaf: rootMethod(editor, viewState, state.nodes.leaf),
+    levels: rootGeneratorMethod(editor, viewState, state.nodes.levels),
+    next: rootMethod(editor, viewState, state.nodes.next),
+    parent: rootMethod(editor, viewState, state.nodes.parent),
+    path: rootMethod(editor, viewState, state.nodes.path),
+    previous: rootMethod(editor, viewState, state.nodes.previous),
+    some: rootMethod(editor, viewState, state.nodes.some),
+    toArray: rootMethod(editor, viewState, state.nodes.toArray),
+    void: rootMethod(editor, viewState, state.nodes.void),
+  });
 };
 
 const withRootPoints = <V extends Value, T extends ViewStateTransformInput<V>>(
@@ -1167,74 +1157,71 @@ const withViewTransaction = <V extends Value>(
           }),
       }) satisfies typeof transaction.marks
     ),
-    nodes: withElementFinder<EditorUpdateTransaction<V, any>['nodes']>(
-      {
-        ...state.nodes,
-        insert: (
-          nodes: ElementOrTextIn<V> | ReadonlyArray<ElementOrTextIn<V>>,
-          options?: { at?: NodeTarget }
-        ) =>
-          runImplicitSelectionMutation(options, () => {
-            transaction.nodes.insert(nodes, options);
-          }),
-        lift: (options?: { at?: NodeSelection | NodeTarget }) =>
-          runImplicitSelectionMutation(options, () => {
-            transaction.nodes.lift(options);
-          }),
-        merge: (options?: { at?: NodeSelection | NodeTarget }) =>
-          runImplicitSelectionMutation(options, () => {
-            transaction.nodes.merge(options);
-          }),
-        move: (options: { at?: NodeSelection | NodeTarget }) =>
-          runImplicitSelectionMutation(options, () => {
-            transaction.nodes.move(options as never);
-          }),
-        remove: (options?: { at?: NodeSelection | NodeTarget }) =>
-          runImplicitSelectionMutation(options, () => {
-            transaction.nodes.remove(options);
-          }),
-        replace: (nodes, options) =>
-          runImplicitSelectionMutation({ at: options.at }, () =>
-            transaction.nodes.replace(nodes, options)
-          ) ?? false,
-        replaceChildren: (children, options) =>
-          runImplicitSelectionMutation({ at: options.at }, () => {
-            transaction.nodes.replaceChildren(children, options);
-          }),
-        set: ((...args: Parameters<typeof transaction.nodes.set>) =>
-          runImplicitSelectionMutation(args[1], () => {
-            transaction.nodes.set(...args);
-          })) as typeof transaction.nodes.set,
-        split: (options?: { at?: NodeTarget }) =>
-          runImplicitSelectionMutation(options, () => {
-            transaction.nodes.split(options);
-          }),
-        unset: ((
-          props: string | readonly string[] | SchemaPropertyHandle,
-          options?: NodeUnsetNodesOptions
-        ) =>
-          runImplicitSelectionMutation(options, () => {
-            (
-              transaction.nodes.unset as (
-                property: string | readonly string[] | SchemaPropertyHandle,
-                options?: NodeUnsetNodesOptions
-              ) => void
-            )(props, options);
-          })) as typeof transaction.nodes.unset,
-        unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
-          runImplicitSelectionMutation(options, () =>
-            transaction.nodes.unwrap(options)
-          ) ?? false,
-        wrap: (
-          element: ElementIn<V>,
-          options?: { at?: NodeSelection | NodeTarget }
-        ) =>
-          runImplicitSelectionMutation(options, () =>
-            transaction.nodes.wrap(element, options)
-          ) ?? false,
-      },
-      (id) => readElementById(state.nodes, id)
-    ),
+    nodes: Object.freeze<EditorUpdateTransaction<V, any>['nodes']>({
+      ...state.nodes,
+      insert: (
+        nodes: ElementOrTextIn<V> | ReadonlyArray<ElementOrTextIn<V>>,
+        options?: { at?: NodeTarget }
+      ) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.insert(nodes, options);
+        }),
+      lift: (options?: { at?: NodeSelection | NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.lift(options);
+        }),
+      merge: (options?: { at?: NodeSelection | NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.merge(options);
+        }),
+      move: (options: { at?: NodeSelection | NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.move(options as never);
+        }),
+      remove: (options?: { at?: NodeSelection | NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.remove(options);
+        }),
+      replace: (nodes, options) =>
+        runImplicitSelectionMutation({ at: options.at }, () =>
+          transaction.nodes.replace(nodes, options)
+        ) ?? false,
+      replaceChildren: (children, options) =>
+        runImplicitSelectionMutation({ at: options.at }, () => {
+          transaction.nodes.replaceChildren(children, options);
+        }),
+      set: ((...args: Parameters<typeof transaction.nodes.set>) =>
+        runImplicitSelectionMutation(args[1], () => {
+          transaction.nodes.set(...args);
+        })) as typeof transaction.nodes.set,
+      split: (options?: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.split(options);
+        }),
+      unset: ((
+        props: string | readonly string[] | SchemaPropertyHandle,
+        options?: NodeUnsetNodesOptions
+      ) =>
+        runImplicitSelectionMutation(options, () => {
+          (
+            transaction.nodes.unset as (
+              property: string | readonly string[] | SchemaPropertyHandle,
+              options?: NodeUnsetNodesOptions
+            ) => void
+          )(props, options);
+        })) as typeof transaction.nodes.unset,
+      unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.nodes.unwrap(options)
+        ) ?? false,
+      wrap: (
+        element: ElementIn<V>,
+        options?: { at?: NodeSelection | NodeTarget }
+      ) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.nodes.wrap(element, options)
+        ) ?? false,
+    }),
     roots: Object.freeze({
       ...transaction.roots,
       fork: (root, options) =>
@@ -1918,6 +1905,25 @@ export const readShownDocument = (editor: Editor) => {
   const shown = () => getReadProjection(editor) ?? null;
 
   return viewState ? withRootRead(editor, viewState, shown) : shown();
+};
+
+export const readShownElementById = (
+  editor: Editor,
+  id: string
+): EditorElementEntry | null => {
+  const owner = getEditorRuntimeOwner(editor);
+  const viewState = VIEW_STATES.get(getEditorRuntime(editor));
+  const find = () => getEditorStateView(owner).nodes.byId(id);
+
+  return viewState
+    ? withRootRead(
+        owner,
+        viewState.root === MAIN_ROOT_KEY
+          ? viewState
+          : { ...viewState, root: MAIN_ROOT_KEY },
+        find
+      )
+    : find();
 };
 
 export const readShownRecords = (editor: Editor): RecordStore => {

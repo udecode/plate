@@ -1,4 +1,4 @@
-import { type NodeKey, readElementById } from '../../../facade';
+import type { NodeKey } from '../../../facade';
 import type { InkCopy, InkCopyPlace, InkMark } from '../../../features/ink/lib';
 import { blockAbove } from '../../../features/ink/lib/inkGone.internal';
 import {
@@ -259,9 +259,7 @@ const placeInkMarks = (
           const [, path] = state.nodes.get(key) ?? [];
           const id = path && blockAbove(state.value(), path);
 
-          return id === undefined
-            ? undefined
-            : readElementById(state.nodes, id)?.key;
+          return id === undefined ? undefined : state.nodes.byId(id)?.key;
         })
       );
     }

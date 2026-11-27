@@ -559,26 +559,13 @@ editor.update.nodes.remove({ at: nodeKey });
 节点键可以定位同一 editor 的任意文档 root。路径查找仍属于当前 root：base editor
 在 main root 中解析路径，editor view 则在自己的 root 中解析路径。
 
-只有当元素 ID 需要跨存储或会话引用时才安装 `ElementIdPlugin`。该插件是可选的，
-为 block 和 inline 元素生成持久化字符串 ID，但不会为文本节点生成 ID。
+每个编辑器中的每个 block 和 inline 元素都带有由编辑器核心管理的持久化字符串
+`id`（文本节点不带 ID）。核心使用每个编辑器随机生成的 12 位前缀与计数器生成
+`<scope>.<counter>` 格式的 ID。无需安装插件，schema 也不能声明名为 `id` 的元素属性。
 
 ```ts
-import { ElementIdPlugin } from "platejs";
-
-const editor = useCreateEditor({
-  plugins: [
-    ElementIdPlugin.configure({
-      initialState: {
-        generateId: () => crypto.randomUUID(),
-      },
-    }),
-  ],
-});
-
-const elementId = editor.plugin(ElementIdPlugin);
-const key = editor.key(element);
-const id = elementId.read.id(key);
-const entry = id ? editor.read.nodes.byId(id) : null;
+const block = editor.read.children()[0];
+const entry = editor.read.nodes.byId(block.id);
 ```
 
 `editor.read.nodes.byId(id)`（update 内用 `tx.nodes.byId(id)`）返回该元素的
@@ -593,10 +580,6 @@ editor.update.nodes.move({ at: { id: "intro" }, to: [0] });
 // 原始 update 在已存储的草稿中查找该 ID。
 editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 ```
-
-`byId` 和 `at: { id }` 需要一个保存 ID 的编辑器。当 schema 为每种元素类型声明
-生成的、唯一的字符串 `id`，并且没有内容允许未声明的元素类型时，编辑器才保存 ID。
-`ElementIdPlugin` 的默认 target 就是如此声明的。在其他编辑器中，两者都会抛出错误。
 
 `{ id }` target 指向持有该 ID 的元素。文本、mark、range 和 offset target
 仍使用各自的点或范围。只有当一个非数组对象唯一的自有键是字符串 `id` 时，它才是 ID
@@ -618,42 +601,16 @@ target，因此带有 `id` 的实时元素仍是节点 target。没有元素持�
   `nodes.get({ id })` 和 `nodes.path({ id })` 对其他 root 持有的 ID 不返回任何
   结果。节点 key 仍会读取任一 root 中持有它的元素。
 
-默认生成器是完整长度的 `nanoid()`。加载和移动保留有效 ID；复制、拆分、重复和
-粘贴副本使用新 ID。任何两个元素都不会保存同一个 ID。插入或更新时若写入其他元素
-已有的 ID，落地的元素会得到新 ID，因此应从落地后的元素读取 ID。协作中其他 peer
-的并发编辑也可能以同样方式再次改变它。精确 schema 派生元素可直接读取
-`element.id`；类型擦除或可选安装的 package 边界通过插件读取。建议的 Enter
-会在记录时保存新元素的 ID，因此
+加载和移动保留有效的非空字符串 ID；加载缺失 ID 的文档时会补齐确定性的 `fill.<n>`
+ID，空字符串或非字符串 ID 会被拒绝。复制、拆分、重复和粘贴副本使用新 ID。任何两个
+元素都不会保存同一个 ID。插入或更新时若写入其他元素已有的 ID，落地的元素会得到新
+ID，因此应从落地后的元素读取 ID。协作中其他 peer 的并发编辑也可能以同样方式再次改变
+它。编辑器的读取器将返回的每个元素的 `id` 类型定义为 `string`，而游离输入
+（`ElementIn`、`InitialValue`）与元素守卫（`ElementApi.isElement`）保持 `id`
+为可选。建议的 Enter 会在记录时保存新元素的 ID，因此
 [preview 和决定](/cn/docs/authored-changes#配置-view)都显示这个 ID。
 
-编译后的 schema 属性 target 决定哪些元素获得 ID。只有 block 需要持久化身份，
-并且应用从不通过 ID 查找或定位元素时，才在应用 schema 中收窄 target：
-
-```ts
-import { ElementIdPlugin, schema, target } from "platejs";
-
-const editor = useCreateEditor({
-  plugins: [ElementIdPlugin],
-  schema: {
-    overrides: [
-      schema.override(ElementIdPlugin, {
-        properties: { id: { target: target.group("block") } },
-      }),
-    ],
-  },
-});
-```
-
-只匹配 block 的 target 让 inline 元素没有 ID，因此在该编辑器中 `nodes.byId` 和
-`at: { id }` 会抛出错误，即使查找的是 block 的 ID。`elementId.read.id(key)` 和
-`platejs/ink` 的笔迹标记仍然可用。
-
-当前文档进入系统时，只为匹配的元素生成 ID，并从不匹配的元素中移除该插件拥有的
-`id`。只要没有元素的内容同时允许 block 和 inline 元素，block target 就可用，因为
-该 ID 是[唯一的](#唯一属性)，类型变更不能丢掉它。
-
-把 `ElementIdPlugin` 加入 `EditorMigrations`。已经使用当前 schema 的原始文档可以
-通过同一个 detached conversion 边界进入系统：
+已经使用当前 schema 的原始文档可以通过游离迁移边界进入系统：
 
 ```ts
 import { migrateDocument } from "platejs/migrations";
@@ -664,7 +621,7 @@ const current = migrateDocument(rawCurrentDocument, {
 }).output;
 
 const editor = createEditor({
-  plugins: [ElementIdPlugin],
+  plugins: EditorKit,
   initialValue: current,
 });
 ```
@@ -676,8 +633,8 @@ const editor = createEditor({
 
 #### 唯一属性
 
-`ElementIdPlugin` 用 `unique: true` 声明它的 `id`。当两个相同的值意味着同一个被
-复制的身份时，应用自己生成的元素元数据也可以这样声明：
+核心保留的元素 `id` 在所有根中强制保持唯一。当两个相同的值意味着同一个被复制的
+身份时，应用自己生成的元素元数据也可以通过 `unique: true` 声明：
 
 ```ts
 import { definePlugin, property, schema, target } from "platejs";
@@ -711,15 +668,15 @@ const AnchorPlugin = definePlugin("anchor", {
 已被占用的值时，会抛出写明该属性的错误。建议模式直接写入唯一值，不生成建议。
 当已存储的 block 重复已存储备用 block 所持的值时，构建该备用 block 的决定会给它一个新值。
 添加或移除 `unique` 会改变 schema 指纹，因此对它看法不同的编辑器不会共享协作房间，
-已保存的文档需要一个迁移步骤。建议模式支持的生成 element 属性（例如 `ElementIdPlugin`
-的 `id`）会把 schema 契约的存储修订设为 2，因为建议会存储保存其值的备用 block，
+已保存的文档需要一个迁移步骤。建议模式支持的生成 element 属性（例如核心保留的元素
+`id`）会把 schema 契约的存储修订设为 2，因为建议会存储保存其值的备用 block，
 所以它同样会改变指纹。
 
 用 `editor.read.unique.holder(property, value)` 查找持有某个唯一值的元素；在
 update 内使用 `tx.unique.holder`。它读取唯一值索引而不扫描文档，覆盖所有根，返回持有者的
 `key`、`path` 和 `root`；没有元素持有该值时返回 `null`。在 update 内，它也能找到在同一次
-update 中较早取得该值的元素。在元素保存 ID 的编辑器中，`holder("id", value)` 会抛出
-错误：用 `nodes.byId(id)` 查找该元素。
+update 中较早取得该值的元素。`holder("id", value)` 会抛出错误：用 `nodes.byId(id)`
+按 ID 查找元素。
 
 ```ts
 const holder = editor.read.unique.holder("anchorId", anchorId);

@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 
-import { definePlugin, ElementIdPlugin, txLocate } from '../../../core';
+import { definePlugin, txLocate } from '../../../core';
 import {
   defineRuntimePlugin,
   getDocumentValueNode,
@@ -10,8 +10,8 @@ import {
   PathApi,
   type Range,
   type RecordSetVersion,
-  readElementById,
   readRecord,
+  readShownElementById,
   readShownRecords,
   recordSetIds,
   txStored,
@@ -778,9 +778,9 @@ const markIn = (id: string, record: SavedRecord, copies: RecordSetVersion) => {
 /**
  * Pen marks on a document's text, saved as records of the document value.
  * Its updates add and remove marks, and its reads return them decoded and say
- * where each copy's block stands. It turns on block ids, because a mark names
- * its blocks by id, and saves where each marked block stands with its stroke,
- * and again in a delete that leaves that place wrong.
+ * where each copy's block stands. A mark names its blocks by id, and the
+ * plugin saves where each marked block stands with its stroke, and again in a
+ * delete that leaves that place wrong.
  */
 export const BaseInkPlugin = definePlugin('ink', {
   corrections: [
@@ -799,7 +799,7 @@ export const BaseInkPlugin = definePlugin('ink', {
       },
     },
   ],
-  dependencies: [inkRecords, ElementIdPlugin],
+  dependencies: [inkRecords],
   initialViewState: (): InkViewState => ({
     hidden: false,
     picked: [],
@@ -1016,7 +1016,7 @@ export const BaseInkPlugin = definePlugin('ink', {
             }
           }
 
-          const path = readElementById(state.nodes, saved.block)?.path;
+          const path = readShownElementById(editor, saved.block)?.path;
 
           for (const group of groups) {
             const start = lineStart(saved.lines, group.lo);
@@ -1118,7 +1118,7 @@ export const BaseInkPlugin = definePlugin('ink', {
 
         if (!saved) return null;
 
-        const holder = readElementById(state.nodes, saved.block);
+        const holder = readShownElementById(editor, saved.block);
 
         if (!holder || !inkHolds(saved, inkText(state.schema, holder.node))) {
           return null;
@@ -1186,7 +1186,7 @@ export const BaseInkPlugin = definePlugin('ink', {
         (block, text) => {
           if (!text.includes(INK_VOID)) return undefined;
 
-          const holder = readElementById(tx.nodes, block);
+          const holder = tx.nodes.byId(block);
           const now = holder && inkText(tx.schema, holder.node);
 
           return now?.text === text ? now.voids : undefined;

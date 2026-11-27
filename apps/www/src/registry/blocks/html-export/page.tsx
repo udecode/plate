@@ -14,7 +14,7 @@ import {
   ExportHtmlButton,
   HtmlIframe,
 } from '@/registry/components/editor/html-export';
-import { HtmlExportKit } from '@/registry/components/editor/html-export-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { alignValue } from '@/registry/examples/values/align-value';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
@@ -101,7 +101,7 @@ const createValue = (): EditorDocumentValue => ({
 
 export default async function HtmlExportBlock() {
   const editor = createEditor({
-    plugins: HtmlExportKit,
+    plugins: BaseEditorKit,
     initialValue: createValue(),
   });
 

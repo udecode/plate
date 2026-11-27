@@ -387,7 +387,7 @@ const getTextEntryAtPath = (
 };
 
 const readEditorValue = (editor: YjsEditor): CustomValue =>
-  cloneValue(editor.read.children()) as CustomValue;
+  cloneValue([...editor.read.children()]);
 
 const getFirstBlockTextEntry = (
   value: readonly Descendant[],

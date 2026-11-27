@@ -495,23 +495,20 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       (path) => view.read.nodes.get(path, { match: ElementApi.isElement })?.[0]
     );
 
-    if (
-      restored.length !== chatNodes.length ||
-      !restored.every(
-        (node, index): node is Element =>
-          node !== undefined &&
-          node.type === chatNodes[index].node.type &&
-          NodeApi.string(node) === NodeApi.string(chatNodes[index].node)
-      )
-    ) {
-      return;
-    }
-    context.store.set({
-      chatNodes: chatNodes.map((chatNode, index) => ({
-        ...chatNode,
-        nodeKey: view.key(restored[index]),
-      })),
+    if (restored.length !== chatNodes.length) return;
+
+    const nextChatNodes = chatNodes.flatMap((chatNode, index) => {
+      const node = restored[index];
+
+      return node &&
+        node.type === chatNode.node.type &&
+        NodeApi.string(node) === NodeApi.string(chatNode.node)
+        ? [{ ...chatNode, nodeKey: view.key(node) }]
+        : [];
     });
+
+    if (nextChatNodes.length !== chatNodes.length) return;
+    context.store.set({ chatNodes: nextChatNodes });
   };
   const withReviewRecords = (blocks: readonly Element[]) => {
     const { records } = editor.read.value();

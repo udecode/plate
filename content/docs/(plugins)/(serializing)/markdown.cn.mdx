@@ -292,8 +292,8 @@ Hello [Jane Smith](mention:user_123).
 ### Block ID
 
 Markdown 不携带 element ID，序列化也不会写出 ID。解析时会读取包裹单个 block 的
-`<block id="…">`：安装 `ElementIdPlugin` 时，该 block 保留这个 `id`；否则移除
-wrapper 并报告 `markdown-unsupported-node` warning。Mapping 不能占用 `block` tag。
+`<block id="…">` 并保留该非空 `id`；包裹其他内容或 `id` 为空时会移除 wrapper 并报告
+`markdown-unsupported-node` warning。Mapping 不能占用 `block` tag。
 
 ### Front matter
 

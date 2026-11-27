@@ -3277,7 +3277,7 @@ export const createEditorSchema = <V extends Value = Value>(
           } else {
             nextNode = {
               ...node,
-              id: generatePropertyValue(reservedId, 'element'),
+              id: generatePropertyValue(reservedId, 'element') as string,
             };
           }
         }

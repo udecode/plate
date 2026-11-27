@@ -1283,7 +1283,7 @@ export const withPlateFormatCompilation = <T>(
               const detachedState = Object.freeze({
                 ...state,
                 schema: operationSchema,
-                value: () => owned,
+                value: () => owned as ReturnType<EditorCoreStateView['value']>,
               }) satisfies EditorCoreStateView;
 
               return read(detachedState, owned, projected.diagnostics);
@@ -1398,7 +1398,7 @@ export type RuntimePluginsFromTuple<TPlugins extends readonly unknown[]> = [
  *
  * // Editor with custom configuration
  * const editor = createEditor({
- *   plugins: [ParagraphPlugin, ElementIdPlugin],
+ *   plugins: [ParagraphPlugin],
  *   maxLength: 1000,
  *   initialSelection: 'end',
  * });

@@ -167,9 +167,8 @@ you call.
 Strict static helpers keep their non-optional contracts and treat a missing
 result as an internal invariant failure.
 
-When the schema declares `id` as a generated, unique string property of every
-element type, as Plate's `ElementIdPlugin` does, and no content admits
-undeclared element types, an element's stored `id` is also a target. `{ id }`
+Every element carries a reserved string `id` managed by core, and that stored
+`id` is also a target. `{ id }`
 works as `at` on node reads and node transforms, and a write reaches the
 element that holds the id in its own root. A view bound to a root looks an id
 up only in that root, so its `nodes.get({ id })` and `nodes.path({ id })`
@@ -187,8 +186,9 @@ resolves a path or a key. A target that no element holds changes nothing, and
 reads return their empty result.
 `editor.read.nodes.byId(id)`, or `tx.nodes.byId(id)` inside an update, returns
 the element's `key`, `node` and `path`, with `root` when the element lives in
-a named root, or `null` when no element holds the id. Without that schema,
-`byId` and `{ id }` throw.
+a named root, or `null` when no element holds the id. Readers type every
+returned element's `id` as `string`, while detached inputs (`ElementIn`,
+`InitialValue`) and element guards (`ElementApi.isElement`) keep `id` optional.
 
 ```typescript
 const entry = editor.read.nodes.byId("intro");

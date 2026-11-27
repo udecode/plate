@@ -17,7 +17,6 @@ import {
   dispatchOneShot,
   resolvePluginMethod,
 } from './plugin-dispatch';
-import { ELEMENT_FINDER, readElementById } from './public-state';
 import { getSemanticUpdateLowering } from './semantic-update-method';
 import {
   compileEditorUpdatePolicy,
@@ -40,8 +39,6 @@ type RunEditorUpdate<V extends Value, TPlugins extends readonly unknown[]> = <
   fn: UpdateAuthor<V, TPlugins, R>,
   policy: CompiledEditorUpdatePolicy
 ) => R | undefined;
-
-type EditorNodesRead = Parameters<typeof readElementById>[0];
 
 type EditorUpdateApiOptions = {
   caller: () => Editor;
@@ -171,12 +168,6 @@ export const createEditorReadApi = <
       {},
       {
         get(target, key, receiver) {
-          if (key === ELEMENT_FINDER) {
-            return (id: string) =>
-              read((state) =>
-                readElementById(state[groupName] as EditorNodesRead, id)
-              );
-          }
           if (typeof key !== 'string') return undefined;
           if (key === 'toJSON') return undefined;
           if (key in target) {

@@ -16,8 +16,8 @@ import {
   type Path,
   type RecordSetVersion,
   recordSetChanges,
-  readElementById,
   readShownDocument,
+  readShownElementById,
   readShownRecords,
   type RuntimeAnyEditor,
   withStoredAuthoredRead,
@@ -259,10 +259,10 @@ type BlockHolder = Readonly<{ key: NodeKey; root: string }>;
 
 type Holder = BlockHolder & Readonly<{ node: Node }>;
 
-const holderIn = (state: InkState, id: string): Holder | undefined => {
+const holderIn = (editor: RuntimeAnyEditor, id: string): Holder | undefined => {
   metrics.holders += 1;
 
-  const entry = readElementById(state.nodes, id);
+  const entry = readShownElementById(editor, id);
 
   return entry
     ? { key: entry.key, node: entry.node, root: entry.root ?? MAIN_ROOT_KEY }
@@ -334,7 +334,7 @@ const trackCopy = (places: InkPlaces, read: InkPlaceRead, id: string) => {
       signed: new Set(),
     });
   }
-  resolveBlock(places, copy.block, holderIn(read.state, copy.block));
+  resolveBlock(places, copy.block, holderIn(read.editor, copy.block));
 
   return copy;
 };
@@ -365,8 +365,8 @@ const startEpoch = (places: InkPlaces) => {
   }
 };
 
-const walkIn = (state: InkState, gone: RecordSetVersion) => ({
-  holder: (id: string) => readElementById(state.nodes, id) ?? undefined,
+const walkIn = (editor: RuntimeAnyEditor, gone: RecordSetVersion) => ({
+  holder: (id: string) => readShownElementById(editor, id) ?? undefined,
   record: (id: string) => goneIn(gone, id),
 });
 
@@ -377,7 +377,12 @@ const goneGroupOf = (places: InkPlaces, read: InkPlaceRead, id: string) => {
 
   const gone = getRecordSetVersion(readShownRecords(read.editor), GONE);
   const memo = { ...places.chainEnds, walked: places.walked };
-  const { found, last } = walkGone(walkIn(read.state, gone), id, memo, metrics);
+  const { found, last } = walkGone(
+    walkIn(read.editor, gone),
+    id,
+    memo,
+    metrics
+  );
   const group = found
     ? groupAt(places, beside(found.side, found.holder.key), {
         ...found,
@@ -393,7 +398,7 @@ const goneGroupOf = (places: InkPlaces, read: InkPlaceRead, id: string) => {
 
 const reanchor = (
   places: InkPlaces,
-  state: InkState,
+  editor: RuntimeAnyEditor,
   gone: RecordSetVersion,
   group: DeletedGroup
 ) => {
@@ -402,9 +407,9 @@ const reanchor = (
   if (!anchor || place.kind !== 'gone' || place.beside.at === 'start') return;
   metrics.holders += 1;
 
-  const holder = readElementById(state.nodes, anchor.id);
+  const holder = readShownElementById(editor, anchor.id);
   const memo = { ...places.chainEnds, walked: places.walked };
-  const walk = walkIn(state, gone);
+  const walk = walkIn(editor, gone);
   const back = holder
     ? { found: { holder, id: anchor.id, side: anchor.side }, last: anchor.top }
     : reachGone(walk, anchor.id, anchor.side, memo, metrics);
@@ -903,7 +908,7 @@ export const advanceInkPlaces = (
         metrics.reads += 1;
         addArrivedBlocks(places, state, keys, dirty);
         for (const block of dirty) {
-          resolveBlock(places, block, holderIn(state, block));
+          resolveBlock(places, block, holderIn(editor, block));
         }
 
         const anchored = keys.flatMap((key) =>
@@ -914,7 +919,7 @@ export const advanceInkPlaces = (
 
         for (const group of anchored) {
           if (places.groups.get(keyOf(group.place)) === group) {
-            reanchor(places, state, sets[GONE], group);
+            reanchor(places, editor, sets[GONE], group);
           }
         }
       })

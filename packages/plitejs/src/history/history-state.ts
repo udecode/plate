@@ -2479,7 +2479,7 @@ export const clearHistoryState = (editor: Editor) => {
 export const replaceHistoryState = <V extends Value>(
   editor: Editor<V>,
   value: Pick<History<V>, 'redos' | 'schema' | 'undos'>,
-  current: EditorDocumentValue<V> = editor.read.value()
+  current: EditorDocumentValue<V> = editor.read.value() as unknown as EditorDocumentValue<V>
 ) => {
   const store = getStore(editor);
   const next = Object.freeze({

@@ -116,7 +116,6 @@ const readBlockIdentity = (
   const [block] = children;
 
   if (
-    options.elementIds &&
     typeof id === 'string' &&
     id.length > 0 &&
     children.length === 1 &&
@@ -128,11 +127,9 @@ const readBlockIdentity = (
   options.report({
     action: 'unwrapped',
     code: 'markdown-unsupported-node',
-    // Only the block's persisted identity is dropped, not its content.
     impact: 'lossless',
-    message: options.elementIds
-      ? 'Markdown block identity must wrap one block with a non-empty id; the id was omitted.'
-      : 'Markdown block identity requires ElementIdPlugin; the id was omitted.',
+    message:
+      'Markdown block identity must wrap one block with a non-empty id; the id was omitted.',
     nodeType: 'block',
     owner: 'markdown',
     phase: 'parse',

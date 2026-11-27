@@ -4762,16 +4762,6 @@
           "target": "@components/editor/html-export.tsx"
         },
         {
-          "path": "src/registry/components/editor/html-export-schema-kit.ts",
-          "type": "registry:component",
-          "target": "@components/editor/html-export-schema-kit.ts"
-        },
-        {
-          "path": "src/registry/components/editor/html-export-kit.ts",
-          "type": "registry:component",
-          "target": "@components/editor/html-export-kit.ts"
-        },
-        {
           "path": "src/registry/examples/values/align-value.tsx",
           "type": "registry:example"
         },

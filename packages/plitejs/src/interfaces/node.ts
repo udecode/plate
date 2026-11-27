@@ -14,11 +14,12 @@ import {
   isEditor as editorIsEditor,
 } from './editor';
 import {
+  type BaseElement,
   type Element,
   ElementApi,
   type ElementEntry,
-  type ElementIn,
   type ElementOf,
+  type ReadElement,
 } from './element';
 import { type Path, PathApi } from './path';
 import { type Range, RangeApi } from './range';
@@ -35,6 +36,14 @@ type AnyPluginEditor = EditorType;
 export type BaseNode = AnyPluginEditor | Element | Text;
 export type Node = AnyPluginEditor | Element | Text;
 
+/** Stored node returned by editor readers, typing elements with a required string `id`. */
+export type ReadNode<T = Node> = T extends BaseElement ? ReadElement<T> : T;
+
+/** Stored ancestor returned by editor readers, typing elements with a required string `id`. */
+export type ReadAncestor<T = Ancestor> = T extends BaseElement
+  ? ReadElement<T>
+  : T;
+
 export type DescendantOf<N> = N extends { getChildren: () => infer V }
   ? V extends ReadonlyArray<infer Child>
     ? ElementOf<Child> | TextOf<Child>
@@ -50,7 +59,7 @@ export type DescendantOf<N> = N extends { getChildren: () => infer V }
 export type AncestorOf<N> = N extends { getChildren: () => infer V }
   ? N | (V extends ReadonlyArray<infer Child> ? ElementOf<Child> : never)
   : N extends EditorType<infer V>
-    ? N | ElementIn<V>
+    ? N | ElementOf<V[number]>
     : N extends Element
       ? N | ElementOf<N>
       : never;

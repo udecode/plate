@@ -3131,7 +3131,10 @@ export const compileSliceFitter = <V extends Value>(
           ![...declarative.properties.byId.values()].some(
             (property) => property.references
           ) &&
-          !isFittingMove();
+          !isFittingMove() &&
+          sourceBlocks.every(
+            (block, index) => index === 0 || !Object.hasOwn(block, 'id')
+          );
         const targetProps = hasElementIds
           ? withoutStoredElementId(targetBlock)
           : targetBlock;

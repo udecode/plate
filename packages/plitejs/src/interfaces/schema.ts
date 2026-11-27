@@ -1749,6 +1749,7 @@ type PreservedSchemaElementProperties<TSchema extends EditorSchemaSource> = {
 type PreservedSchemaElement<TSchema extends EditorSchemaSource> = {
   readonly [key: string]: unknown;
   readonly children: BaseElement['children'];
+  readonly id?: string;
   readonly type: string;
 } & PreservedSchemaElementProperties<TSchema>;
 
@@ -1761,6 +1762,7 @@ type SchemaNodeElementFor<
     : TType extends SchemaElementTypes<TSchema>
       ? Readonly<{
           children: BaseElement['children'];
+          id?: string;
           type: TType;
         }> &
           SchemaElementPropertiesFor<TSchema, TType> &

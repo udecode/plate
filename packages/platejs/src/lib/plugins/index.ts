@@ -7,7 +7,6 @@ export * from './TransferPlugin';
 export * from './affinity/index';
 export * from './debug/index';
 export * from './dom/index';
-export * from './element-id/index';
 export * from './element-state/index';
 export * from './html/index';
 export * from './input-rules/index';

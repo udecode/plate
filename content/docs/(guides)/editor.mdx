@@ -590,27 +590,15 @@ Node keys can target nodes across one editor's document roots. Path lookup is
 root-local: the base editor resolves paths in the main root, while an editor
 view resolves paths in its own root.
 
-Use `ElementIdPlugin` only when an element needs an ID that survives storage or
-cross-session references. The plugin is opt-in. It assigns persisted string IDs
-to block and inline elements, never text nodes.
+Every block and inline element in every editor carries a persisted string `id`
+managed by the editor core, never text nodes. Core mints each `id` as
+`<scope>.<counter>` from a random 12-character scope per editor and a counter.
+No plugin is required, and schemas cannot declare an element property named
+`id`.
 
 ```ts
-import { ElementIdPlugin } from "platejs";
-
-const editor = useCreateEditor({
-  plugins: [
-    ElementIdPlugin.configure({
-      initialState: {
-        generateId: () => crypto.randomUUID(),
-      },
-    }),
-  ],
-});
-
-const elementId = editor.plugin(ElementIdPlugin);
-const key = editor.key(element);
-const id = elementId.read.id(key);
-const entry = id ? editor.read.nodes.byId(id) : null;
+const block = editor.read.children()[0];
+const entry = editor.read.nodes.byId(block.id);
 ```
 
 `editor.read.nodes.byId(id)`, or `tx.nodes.byId(id)` inside an update, returns
@@ -627,11 +615,6 @@ editor.update.nodes.move({ at: { id: "intro" }, to: [0] });
 // A raw update looks the ID up in the stored draft.
 editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 ```
-
-`byId` and `at: { id }` need an editor that stores IDs. An editor stores IDs
-when the schema gives every element type a generated, unique string `id`, as
-`ElementIdPlugin`'s default target does, and no content admits undeclared
-element types. In any other editor, both throw.
 
 An `{ id }` target names the element that holds the ID. Text,
 mark, range and offset targets keep their point or range. A target is an ID
@@ -656,46 +639,19 @@ The route decides which document the ID is looked up in:
   `nodes.path({ id })` return nothing for an ID another root holds. A node key
   still reads the element in whichever root holds it.
 
-The default generator is full-length `nanoid()`. Loads and moves preserve valid
-IDs. Copies, splits, duplicates, and pasted copies receive fresh IDs. No two
+Loads and moves preserve valid non-empty string IDs; missing IDs in a loaded
+document receive deterministic `fill.<n>` IDs, and an empty or non-string ID is
+refused. Copies, splits, duplicates, and pasted copies receive fresh IDs. No two
 elements store one ID. An insert or update that stores an ID another element
 holds lands with a fresh one, so read the ID back from the landed element. A
-collaboration peer's concurrent edit can change it again the same way. Exact
-schema-derived elements expose `element.id`; use the plugin read at erased or
-optionally installed package boundaries. A suggested Enter stores the new
-element's ID when it records, so
+collaboration peer's concurrent edit can change it again the same way. Editor
+readers type every returned element's `id` as `string`, while detached inputs
+(`ElementIn`, `InitialValue`) and element guards (`ElementApi.isElement`) keep
+`id` optional. A suggested Enter stores the new element's ID when it records, so
 [previews and decisions](/docs/authored-changes#configure-a-view) show that ID.
 
-The compiled schema property target decides which elements receive IDs. When
-only blocks need persisted identity and the application never finds or targets
-an element by ID, narrow the target in the application schema:
-
-```ts
-import { ElementIdPlugin, schema, target } from "platejs";
-
-const editor = useCreateEditor({
-  plugins: [ElementIdPlugin],
-  schema: {
-    overrides: [
-      schema.override(ElementIdPlugin, {
-        properties: { id: { target: target.group("block") } },
-      }),
-    ],
-  },
-});
-```
-
-A block-only target leaves inline elements without IDs, so `nodes.byId` and
-`at: { id }` throw in that editor, even for a block's ID.
-`elementId.read.id(key)` and pen marks from `platejs/ink` keep working.
-
-Current-document admission generates IDs only for matching elements and removes
-the plugin-owned `id` from excluded elements. The block target works while no
-element's content admits both a block and an inline element, because the ID is
-[unique](#unique-properties) and a type change must not drop it.
-
-Include `ElementIdPlugin` in `EditorMigrations`. Raw documents that already use
-the current schema can enter through the same detached conversion boundary:
+Raw documents that already use the current schema can enter through the detached
+migration boundary:
 
 ```ts
 import { migrateDocument } from "platejs/migrations";
@@ -706,7 +662,7 @@ const current = migrateDocument(rawCurrentDocument, {
 }).output;
 
 const editor = createEditor({
-  plugins: [ElementIdPlugin],
+  plugins: EditorKit,
   initialValue: current,
 });
 ```
@@ -720,8 +676,8 @@ application can define an explicit collision policy.
 
 #### Unique properties
 
-`ElementIdPlugin` declares its `id` with `unique: true`. Declare an
-application's own generated element metadata the same way when two equal
+Core's reserved element `id` enforces uniqueness across every root. Declare an
+application's own generated element metadata with `unique: true` when two equal
 values would mean one copied identity:
 
 ```ts
@@ -764,7 +720,7 @@ decision that builds that spare block gives it a fresh value.
 Adding or removing `unique` changes the schema fingerprint, so editors that
 disagree on it never share a collaboration room, and saved documents need a
 migration step. A generated element property that Suggesting supports, such as
-`ElementIdPlugin`'s `id`, sets the schema contract's storage revision to 2,
+core's reserved element `id`, sets the schema contract's storage revision to 2,
 because suggestions store spare blocks that hold its values. The revision
 changes the fingerprint the same way.
 
@@ -773,8 +729,8 @@ Find the element that holds a unique value with
 update. It reads the unique index instead of scanning, in every root, and
 returns the holder's `key`, `path` and `root`, or `null` when no element holds
 the value. Inside an update it also finds an element that took the value
-earlier in that update. In an editor whose elements store IDs,
-`holder("id", value)` throws: find that element with `nodes.byId(id)`.
+earlier in that update. `holder("id", value)` throws: find an element by its ID
+with `nodes.byId(id)`.
 
 ```ts
 const holder = editor.read.unique.holder("anchorId", anchorId);

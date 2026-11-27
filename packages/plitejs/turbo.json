@@ -945,6 +945,7 @@
         "test/support/sync-client.ts",
         "test/support/sync-decisions.ts",
         "test/support/sync-host.ts",
+        "test/support/unasked-ids.ts",
         "test/support/work-budget.ts",
         "test/yjs/support/collaboration.ts",
         "test/yjs/support/provider.ts",

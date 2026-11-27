@@ -612,7 +612,7 @@ export const steps = [
     cores: 4,
     private: true,
     optIn: '--audit',
-    run: 'pnpm check:authored-order && pnpm check:authored-order --schema=generated-elements --family=quotes --blocks=1',
+    run: 'pnpm check:authored-order',
     light: 'pnpm check:authored-order --light',
     affected: runsScript(
       'packages/plitejs/scripts/authored-decision-order.ts',

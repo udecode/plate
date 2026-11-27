@@ -4,6 +4,7 @@ import type {
   DescendantIn,
   Element,
   ElementIn,
+  ElementOf,
   ElementOrTextIn,
   Location,
   Node,
@@ -13,6 +14,10 @@ import type {
   Path,
   Point,
   Range,
+  ReadAncestor,
+  ReadDescendant,
+  ReadElement,
+  ReadNode,
   Span,
   Text,
 } from '..';
@@ -146,6 +151,11 @@ export type { Selection } from './selection';
  */
 export type Value = readonly Element[];
 
+/** Stored root child list returned by editor readers, where every element holds a required string `id`. */
+export type ReadValue<V extends Value = Value> = ReadonlyArray<
+  ReadElement<V[number]>
+>;
+
 type NodePropertyEntryIn<V extends Value> =
   NodeIn<V> extends infer TNode
     ? TNode extends Descendant
@@ -252,7 +262,7 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
       }
     ): void;
     (
-      options?: Omit<BlockDuplicateOptions<ElementIn<V>>, 'at'> & {
+      options?: Omit<BlockDuplicateOptions<ElementOf<V[number]>>, 'at'> & {
         at?: NodeSelectionTarget;
       }
     ): void;
@@ -293,11 +303,11 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
    */
   set: (
     props:
-      | NodePropertyPatch<NodeProps<ElementIn<V>>>
+      | NodePropertyPatch<NodeProps<ElementOf<V[number]>>>
       | ((
-          node: Readonly<ElementIn<V>>
-        ) => NodePropertyPatch<NodeProps<ElementIn<V>>>),
-    options?: EditorBlockSetOptions<ElementIn<V>>
+          node: Readonly<ElementOf<V[number]>>
+        ) => NodePropertyPatch<NodeProps<ElementOf<V[number]>>>),
+    options?: EditorBlockSetOptions<ElementOf<V[number]>>
   ) => boolean;
   /**
    * Set `props` on every target block, or, when any target already has them,
@@ -307,7 +317,9 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
    * changed.
    */
   toggle: (
-    props: NodePropertyPatch<NodeProps<ElementIn<V>>> & { type: string },
+    props: NodePropertyPatch<NodeProps<ElementOf<V[number]>>> & {
+      type: string;
+    },
     options?: EditorBlockToggleOptions
   ) => boolean;
 };
@@ -837,7 +849,7 @@ export type EditorGenericMethod<TMethod extends (...args: any[]) => any> =
   TMethod & Readonly<{ [editorGenericMethod]: true }>;
 
 export type EditorStateValueApi<V extends Value = Value> =
-  () => EditorDocumentValue<V>;
+  () => EditorDocumentValue<ReadValue<V>>;
 
 export type SnapshotSelectionInput<
   TSelection extends SelectionValue = SelectionValue,
@@ -920,7 +932,7 @@ export type EditorStateSelectionApi<
   /** How the current node selection was made, or `null` without one. */
   nodeMode: () => NodeSelectionMode | null;
   /** Exact live entries in the current node selection. */
-  nodes: () => ReadonlyArray<NodeEntry<ValueDescendant<V>>>;
+  nodes: () => ReadonlyArray<NodeEntry<ReadDescendant<ValueDescendant<V>>>>;
   ranges: () => readonly Range[];
 };
 
@@ -967,7 +979,7 @@ export type EditorFragmentReadOptions = {
 
 export type EditorStateFragmentApi<V extends Value = Value> = (
   options?: EditorFragmentReadOptions
-) => ReadonlyArray<DescendantIn<V>>;
+) => ReadonlyArray<ReadDescendant<DescendantIn<V>>>;
 
 export type EditorSliceReadOptions = Readonly<{
   at?: NodeSelection | Range;
@@ -1150,15 +1162,15 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options: WithNodeTarget<EditorAboveOptions<Ancestor, undefined>> & {
         match: (node: Ancestor, path: Path) => node is TGuard;
       }
-    ): NodeEntry<TGuard> | undefined;
+    ): NodeEntry<ReadAncestor<TGuard>> | undefined;
     <const TType extends NodeTypeSelector>(
       options: WithNodeTarget<
         EditorAboveOptions<NodeForTypeSelector<TType>, TType>
       > & { type: TType }
-    ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+    ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
     (
       options?: WithNodeTarget<EditorAboveOptions<Ancestor>>
-    ): NodeEntry<Ancestor> | undefined;
+    ): NodeEntry<ReadAncestor> | undefined;
   };
   block: {
     <TGuard extends ValueElement<V>>(
@@ -1167,15 +1179,15 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       > & {
         match: (node: ValueElement<V>, path: Path) => node is TGuard;
       }
-    ): NodeEntry<TGuard> | undefined;
+    ): NodeEntry<ReadElement<TGuard>> | undefined;
     <const TType extends NodeTypeSelector>(
       options: WithNodeTarget<
         EditorBlockOptions<NodeForTypeSelector<TType>, TType>
       > & { type: TType }
-    ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+    ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
     (
       options?: WithNodeTarget<EditorBlockOptions<ValueElement<V>>>
-    ): NodeEntry<ValueElement<V>> | undefined;
+    ): NodeEntry<ReadElement<ValueElement<V>>> | undefined;
   };
   /** Read every schema block relevant to the target or active selection. */
   blocks: {
@@ -1183,15 +1195,15 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options: EditorBlocksReadOptions<ValueElement<V>, undefined> & {
         match: (node: ValueElement<V>, path: Path) => node is TGuard;
       }
-    ): ReadonlyArray<NodeEntry<TGuard>>;
+    ): ReadonlyArray<NodeEntry<ReadElement<TGuard>>>;
     <const TType extends NodeTypeSelector>(
       options: EditorBlocksReadOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
-    ): ReadonlyArray<NodeEntry<NodeForTypeSelector<TType>>>;
+    ): ReadonlyArray<NodeEntry<ReadElement<NodeForTypeSelector<TType>>>>;
     (
       options?: EditorBlocksReadOptions<ValueElement<V>>
-    ): ReadonlyArray<NodeEntry<ValueElement<V>>>;
+    ): ReadonlyArray<NodeEntry<ReadElement<ValueElement<V>>>>;
   };
   /**
    * Find the element whose stored `id` is `id` in the current state, with its
@@ -1199,34 +1211,36 @@ export type EditorStateNodesApi<V extends Value = Value> = {
    * transaction, a document view and a preview each answer from their own
    * document, except that a view read while a command runs answers from the
    * command's state. A view bound to a named root finds no element of the
-   * main root, whose entry names no root. Throws unless the schema declares
-   * `id` as a generated, unique string property on every element type and no
-   * content admits undeclared element types.
+   * main root, whose entry names no root.
    */
-  byId: (id: string) => EditorElementEntry<ValueElement<V>> | null;
-  children: (at?: NodeTarget) => ReadonlyArray<ValueDescendant<V>>;
+  byId: (id: string) => EditorElementEntry<ReadElement<ValueElement<V>>> | null;
+  children: (
+    at?: NodeTarget
+  ) => ReadonlyArray<ReadDescendant<ValueDescendant<V>>>;
   elementReadOnly: (
     options?: WithNodeTarget<EditorElementReadOnlyOptions>
-  ) => NodeEntry<Element> | undefined;
-  first: (at: NodeTarget) => NodeEntry | undefined;
+  ) => NodeEntry<ReadElement> | undefined;
+  first: (at: NodeTarget) => NodeEntry<ReadNode> | undefined;
   get: {
     <TGuard extends ValueTreeNode<V>>(
       at: NodeTarget,
       options: EditorNodeGetOptions<ValueTreeNode<V>, undefined> & {
         match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
       }
-    ): NodeEntry<TGuard> | undefined;
+    ): NodeEntry<ReadNode<TGuard>> | undefined;
     <const TType extends NodeTypeSelector>(
       at: NodeTarget,
       options: EditorNodeGetOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
-    ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
-    <TNode extends Descendant>(at: TNode): NodeEntry<TNode> | undefined;
+    ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
+    <TNode extends Descendant>(
+      at: TNode
+    ): NodeEntry<ReadNode<TNode>> | undefined;
     (
       at: ElementIdTarget | Location | NodeKey,
       options?: EditorNodeGetOptions<ValueTreeNode<V>>
-    ): NodeEntry | undefined;
+    ): NodeEntry<ReadNode> | undefined;
   };
   /**
    * Whether a node is content. A capability that keeps non-content nodes in
@@ -1237,7 +1251,10 @@ export type EditorStateNodesApi<V extends Value = Value> = {
   isContent: (node: Node) => boolean;
   isSelectable: (element: Node) => boolean;
   isEmpty: (element: Element) => boolean;
-  last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;
+  last: (
+    at: NodeTarget,
+    options?: EditorLastOptions
+  ) => NodeEntry<ReadNode> | undefined;
   leaf: (
     at: NodeTarget<Text>,
     options?: EditorLeafOptions
@@ -1249,15 +1266,19 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       > & {
         match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
       }
-    ): Generator<NodeEntry<TGuard>, void, undefined>;
+    ): Generator<NodeEntry<ReadNode<TGuard>>, void, undefined>;
     <const TType extends NodeTypeSelector>(
       options: WithNodeTarget<
         EditorLevelsOptions<NodeForTypeSelector<TType>, TType>
       > & { type: TType }
-    ): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;
+    ): Generator<
+      NodeEntry<ReadElement<NodeForTypeSelector<TType>>>,
+      void,
+      undefined
+    >;
     (
       options?: WithNodeTarget<EditorLevelsOptions<ValueTreeNode<V>>>
-    ): Generator<NodeEntry, void, undefined>;
+    ): Generator<NodeEntry<ReadNode>, void, undefined>;
   };
   /**
    * Resolve a path in this editor/view root. A `NodeKey` owned by another root
@@ -1269,15 +1290,19 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options: EditorNodesReadOptions<ValueTreeNode<V>, undefined> & {
         match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
       }
-    ): Generator<NodeEntry<TGuard>, void, undefined>;
+    ): Generator<NodeEntry<ReadNode<TGuard>>, void, undefined>;
     <const TType extends NodeTypeSelector>(
       options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
-    ): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;
+    ): Generator<
+      NodeEntry<ReadElement<NodeForTypeSelector<TType>>>,
+      void,
+      undefined
+    >;
     (
       options?: EditorNodesReadOptions<ValueTreeNode<V>>
-    ): Generator<NodeEntry, void, undefined>;
+    ): Generator<NodeEntry<ReadNode>, void, undefined>;
   };
   find: {
     <TGuard extends ValueTreeNode<V>>(
@@ -1285,13 +1310,15 @@ export type EditorStateNodesApi<V extends Value = Value> = {
         match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
         type?: undefined;
       }
-    ): NodeEntry<TGuard> | undefined;
+    ): NodeEntry<ReadNode<TGuard>> | undefined;
     <const TType extends NodeTypeSelector>(
       options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
-    ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
-    (options?: EditorNodesReadOptions<ValueTreeNode<V>>): NodeEntry | undefined;
+    ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
+    (
+      options?: EditorNodesReadOptions<ValueTreeNode<V>>
+    ): NodeEntry<ReadNode> | undefined;
   };
   some: {
     <const TType extends NodeTypeSelector>(
@@ -1306,28 +1333,30 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options: EditorNodesReadOptions<ValueTreeNode<V>, undefined> & {
         match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
       }
-    ): ReadonlyArray<NodeEntry<TGuard>>;
+    ): ReadonlyArray<NodeEntry<ReadNode<TGuard>>>;
     <const TType extends NodeTypeSelector>(
       options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
-    ): ReadonlyArray<NodeEntry<NodeForTypeSelector<TType>>>;
-    (options?: EditorNodesReadOptions<ValueTreeNode<V>>): readonly NodeEntry[];
+    ): ReadonlyArray<NodeEntry<ReadElement<NodeForTypeSelector<TType>>>>;
+    (
+      options?: EditorNodesReadOptions<ValueTreeNode<V>>
+    ): ReadonlyArray<NodeEntry<ReadNode>>;
   };
   next: {
     <TGuard extends ValueDescendant<V>>(
       options: WithNodeTarget<EditorNextOptions<ValueDescendant<V>>> & {
         match: (node: ValueDescendant<V>, path: Path) => node is TGuard;
       }
-    ): NodeEntry<TGuard> | undefined;
+    ): NodeEntry<ReadDescendant<TGuard>> | undefined;
     <const TType extends NodeTypeSelector>(
       options: WithNodeTarget<
         EditorNextOptions<NodeForTypeSelector<TType>, TType>
       > & { type: TType }
-    ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+    ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
     (
       options?: WithNodeTarget<EditorNextOptions<ValueDescendant<V>>>
-    ): NodeEntry<ValueDescendant<V>> | undefined;
+    ): NodeEntry<ReadDescendant<ValueDescendant<V>>> | undefined;
   };
   parent: {
     <TGuard extends Ancestor>(
@@ -1335,17 +1364,17 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options: EditorParentOptions<Ancestor, undefined> & {
         match: (node: Ancestor, path: Path) => node is TGuard;
       }
-    ): NodeEntry<TGuard> | undefined;
+    ): NodeEntry<ReadAncestor<TGuard>> | undefined;
     <const TType extends NodeTypeSelector>(
       at: NodeTarget,
       options: EditorParentOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
-    ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+    ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
     (
       at: NodeTarget,
       options?: EditorParentOptions
-    ): NodeEntry<Ancestor> | undefined;
+    ): NodeEntry<ReadAncestor> | undefined;
   };
   previous: {
     <TGuard extends ValueTreeNode<V>>(
@@ -1354,19 +1383,19 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       > & {
         match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
       }
-    ): NodeEntry<TGuard> | undefined;
+    ): NodeEntry<ReadNode<TGuard>> | undefined;
     <const TType extends NodeTypeSelector>(
       options: WithNodeTarget<
         EditorPreviousOptions<NodeForTypeSelector<TType>, TType>
       > & { type: TType }
-    ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+    ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
     (
       options?: WithNodeTarget<EditorPreviousOptions<ValueTreeNode<V>>>
-    ): NodeEntry | undefined;
+    ): NodeEntry<ReadNode> | undefined;
   };
   void: (
     options?: WithNodeTarget<EditorVoidOptions>
-  ) => NodeEntry<Element> | undefined;
+  ) => NodeEntry<ReadElement> | undefined;
 };
 
 export type EditorTransactionNodesApi<V extends Value = Value> =
@@ -1896,7 +1925,7 @@ export type EditorCoreStateView<
    * Read the primary document children without cloning the full serializable
    * document value. Treat the returned nodes as read-only live state.
    */
-  children: () => readonly [...V];
+  children: () => ReadValue<V>;
   fragment: EditorStateFragmentApi<V>;
   getField: <TValue>(field: EditorStateField<TValue>) => TValue;
   lastCommit: () => EditorCommit<V> | null;
@@ -1913,9 +1942,7 @@ export type EditorCoreStateView<
   /**
    * Read a named secondary root. Use `children()` for the primary document.
    */
-  root: <TRoot extends RootKey>(
-    root: NamedRootKey<TRoot>
-  ) => ReadonlyArray<V[number]>;
+  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => ReadValue<V>;
   /**
    * List every named root in reading order, a root right after its first
    * owner's place, with the elements that own it. Roots no chain of owners
@@ -2425,7 +2452,7 @@ export type ProjectedRangeSegment = Readonly<{
 }>;
 
 export type EditorSnapshot<V extends Value = Value> = Readonly<{
-  children: V;
+  children: ReadValue<V>;
   index: SnapshotIndex;
   selection: Selection;
   version: number;
@@ -2461,7 +2488,7 @@ export type EditorCommitSource =
   | 'external';
 
 export type EditorTransaction<V extends Value = Value> = {
-  readonly children: V;
+  readonly children: ReadValue<V>;
   getModelSelection: () => Selection;
   /** Effective marks at the draft selection, including inherited leaf marks. */
   getSelectionMarks: () => EditorMarks<V> | null;
@@ -4349,17 +4376,17 @@ type EditorStaticAbove = {
     options: EditorAboveOptions<Ancestor, undefined> & {
       match: (node: Ancestor, path: Path) => node is TGuard;
     }
-  ): NodeEntry<TGuard> | undefined;
+  ): NodeEntry<ReadAncestor<TGuard>> | undefined;
   <V extends Value, const TType extends NodeTypeSelector>(
     editor: AnyEditor<V>,
     options: EditorAboveOptions<NodeForTypeSelector<TType>, TType> & {
       type: TType;
     }
-  ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+  ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
   <V extends Value>(
     editor: AnyEditor<V>,
     options?: EditorAboveOptions<Ancestor>
-  ): NodeEntry<Ancestor> | undefined;
+  ): NodeEntry<ReadAncestor> | undefined;
 };
 
 type EditorStaticLevels = {
@@ -4368,17 +4395,21 @@ type EditorStaticLevels = {
     options: EditorLevelsOptions<ValueTreeNode<V>, undefined> & {
       match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
     }
-  ): Generator<NodeEntry<TGuard>, void, undefined>;
+  ): Generator<NodeEntry<ReadNode<TGuard>>, void, undefined>;
   <V extends Value, const TType extends NodeTypeSelector>(
     editor: AnyEditor<V>,
     options: EditorLevelsOptions<NodeForTypeSelector<TType>, TType> & {
       type: TType;
     }
-  ): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;
+  ): Generator<
+    NodeEntry<ReadElement<NodeForTypeSelector<TType>>>,
+    void,
+    undefined
+  >;
   <V extends Value>(
     editor: AnyEditor<V>,
     options?: EditorLevelsOptions<ValueTreeNode<V>>
-  ): Generator<NodeEntry, void, undefined>;
+  ): Generator<NodeEntry<ReadNode>, void, undefined>;
 };
 
 type EditorStaticNext = {
@@ -4387,17 +4418,17 @@ type EditorStaticNext = {
     options: EditorNextOptions<ValueDescendant<V>, undefined> & {
       match: (node: ValueDescendant<V>, path: Path) => node is TGuard;
     }
-  ): NodeEntry<TGuard> | undefined;
+  ): NodeEntry<ReadDescendant<TGuard>> | undefined;
   <V extends Value, const TType extends NodeTypeSelector>(
     editor: AnyEditor<V>,
     options: EditorNextOptions<NodeForTypeSelector<TType>, TType> & {
       type: TType;
     }
-  ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+  ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
   <V extends Value>(
     editor: AnyEditor<V>,
     options?: EditorNextOptions<ValueDescendant<V>>
-  ): NodeEntry<ValueDescendant<V>> | undefined;
+  ): NodeEntry<ReadDescendant<ValueDescendant<V>>> | undefined;
 };
 
 type EditorStaticPrevious = {
@@ -4406,17 +4437,17 @@ type EditorStaticPrevious = {
     options: EditorPreviousOptions<ValueTreeNode<V>, undefined> & {
       match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
     }
-  ): NodeEntry<TGuard> | undefined;
+  ): NodeEntry<ReadNode<TGuard>> | undefined;
   <V extends Value, const TType extends NodeTypeSelector>(
     editor: AnyEditor<V>,
     options: EditorPreviousOptions<NodeForTypeSelector<TType>, TType> & {
       type: TType;
     }
-  ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+  ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
   <V extends Value>(
     editor: AnyEditor<V>,
     options?: EditorPreviousOptions<ValueTreeNode<V>>
-  ): NodeEntry | undefined;
+  ): NodeEntry<ReadNode> | undefined;
 };
 
 type EditorStaticParent = {
@@ -4426,14 +4457,14 @@ type EditorStaticParent = {
     options: EditorParentOptions<Ancestor, undefined> & {
       match: (node: Ancestor, path: Path) => node is TGuard;
     }
-  ): NodeEntry<TGuard> | undefined;
+  ): NodeEntry<ReadAncestor<TGuard>> | undefined;
   <const TType extends NodeTypeSelector>(
     editor: AnyEditor,
     at: Location,
     options: EditorParentOptions<NodeForTypeSelector<TType>, TType> & {
       type: TType;
     }
-  ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
+  ): NodeEntry<ReadElement<NodeForTypeSelector<TType>>> | undefined;
   (
     editor: AnyEditor,
     at: Location,
@@ -4441,12 +4472,12 @@ type EditorStaticParent = {
       match?: undefined;
       type?: undefined;
     }
-  ): NodeEntry<Ancestor>;
+  ): NodeEntry<ReadAncestor>;
   (
     editor: AnyEditor,
     at: Location,
     options: EditorParentOptions
-  ): NodeEntry<Ancestor> | undefined;
+  ): NodeEntry<ReadAncestor> | undefined;
 };
 
 export interface EditorStaticApi {
@@ -4867,7 +4898,9 @@ export interface EditorStaticApi {
   /** Toggle selected blocks between target properties and the schema default. */
   toggleBlock: <V extends Value, TPlugins extends readonly unknown[]>(
     editor: Editor<V, TPlugins>,
-    props: NodePropertyPatch<NodeProps<ElementIn<V>>> & { type: string },
+    props: NodePropertyPatch<NodeProps<ElementOf<V[number]>>> & {
+      type: string;
+    },
     options?: EditorToggleBlockOptions
   ) => void;
 

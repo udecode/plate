@@ -1,4 +1,3 @@
-import { readElementById } from '../../../facade';
 import {
   BaseInkPlugin,
   type InkMark,
@@ -73,9 +72,7 @@ const capturePassage = (
 
   if (!saved || saved.lines.length === 0) return null;
 
-  const holder = view.read((state) =>
-    readElementById(state.nodes, saved.block)
-  );
+  const holder = view.read((state) => state.nodes.byId(saved.block));
 
   if (!holder || !inkHolds(saved, inkText(view.read.schema, holder.node))) {
     return null;

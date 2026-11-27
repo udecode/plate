@@ -35,8 +35,6 @@ import {
 } from '../facade';
 import type { EditorApplicationSchema } from '../lib/editor/editorApplicationSchema';
 import { compilePlateEditorTarget } from '../lib/editor/withPlite';
-import { assertElementIds } from '../lib/plugins/element-id/elementIdAdmission.internal';
-import { ElementIdPlugin } from '../lib/plugins/element-id/ElementIdPlugin';
 import {
   findDocumentMigrationAuthoredCapability,
   registerDocumentMigrationAuthoredCapability,
@@ -46,10 +44,7 @@ import {
   landSelectionMarks,
   textAt,
 } from './documentMigrationSelection.internal';
-import {
-  getMigrationBinding,
-  registerMigrationBindings,
-} from './documentMigrationTarget.internal';
+import { registerMigrationBindings } from './documentMigrationTarget.internal';
 
 type NamedEditorApplicationSchema = EditorApplicationSchema &
   Readonly<{ id: string; version: number }>;
@@ -328,7 +323,6 @@ type MigrationContinuity<TSteps extends DocumentMigrationSteps> = [
 type MigrationAuthority = Readonly<{
   authored?: NativeAuthoredDocumentCapability;
   fields: ReadonlyArray<EditorStateField<any>>;
-  ownsElementIds: boolean;
   schema: ReturnType<typeof createDetachedEditorSchema>;
   target: DocumentMigrationTarget;
 }>;
@@ -630,6 +624,40 @@ const resolveSelection = (
   return point ? SelectionApi.text({ anchor: point, focus: point }) : null;
 };
 
+const assertUniqueElementIds = (value: EditorDocumentValue): void => {
+  const seen = new Map<
+    string,
+    Readonly<{ path: readonly number[]; root: string }>
+  >();
+  const visit = (
+    nodes: readonly Descendant[],
+    root: string,
+    prefix: readonly number[]
+  ) => {
+    nodes.forEach((node, index) => {
+      if (!ElementApi.isElement(node)) return;
+      const path = [...prefix, index];
+
+      if (typeof node.id === 'string' && node.id.length > 0) {
+        const existing = seen.get(node.id);
+
+        if (existing) {
+          throw new Error(
+            `Duplicate element ID "${node.id}" at ${existing.root}:[${existing.path}] and ${root}:[${path}].`
+          );
+        }
+        seen.set(node.id, { path, root });
+      }
+      visit(node.children, root, path);
+    });
+  };
+
+  visit(value.children, 'main', []);
+  for (const [root, children] of Object.entries(value.roots ?? {})) {
+    visit(children, root, []);
+  }
+};
+
 const completeDocument = (
   authority: MigrationAuthority,
   document: EditorDocumentValue,
@@ -637,6 +665,7 @@ const completeDocument = (
   hasSelection: boolean,
   ranges: ReadonlyArray<Range | null> | undefined
 ) => {
+  assertUniqueElementIds(document);
   const live = ranges?.flatMap((range) => (range ? [range] : [])) ?? [];
   const fitted =
     isConcreteSelection(selection) || live.length > 0
@@ -657,7 +686,7 @@ const completeDocument = (
     : selection;
   const assertTarget = (value: EditorDocumentValue) => {
     authority.schema.assertDocument(value);
-    if (authority.ownsElementIds) assertElementIds(value);
+    assertUniqueElementIds(value);
   };
   // A migrated document loads, so its pending changes get the spares a load
   // stores.
@@ -786,8 +815,6 @@ export const defineDocumentMigrations = <
     Object.freeze({
       ...(compiled.authored ? { authored: compiled.authored } : {}),
       fields: compiled.fields,
-      ownsElementIds:
-        getMigrationBinding(target, ElementIdPlugin) !== undefined,
       schema,
       target,
     })

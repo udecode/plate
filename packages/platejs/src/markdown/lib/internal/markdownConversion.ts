@@ -22,7 +22,6 @@ import {
   EditorSchemaValidationError,
   type Element,
   ElementApi,
-  ElementIdPlugin,
   type MarkdownPluginRegistry,
   type RootKey,
   type Text,
@@ -158,7 +157,6 @@ type MarkdownRuntimeOptions = Readonly<{
 
 export type MarkdownRuntime = Readonly<{
   formats: CompiledMarkdownMappings;
-  elementId: ((element: Element) => string | undefined) | null;
   options: MarkdownRuntimeOptions;
   registry: MarkdownPluginRegistry;
   state: MarkdownRuntimeEditorState;
@@ -176,23 +174,13 @@ const createMarkdownRuntimeFromParts = (
   options: MarkdownRuntimeState,
   registry: MarkdownPluginRegistry,
   state: MarkdownRuntimeEditorState
-): MarkdownRuntime => {
-  const hasElementIds = registry.has(ElementIdPlugin);
-
-  return Object.freeze({
+): MarkdownRuntime =>
+  Object.freeze({
     formats,
-    elementId: hasElementIds
-      ? (element) => {
-          const id = state.schema.getProperty(element, 'id');
-
-          return typeof id === 'string' ? id : undefined;
-        }
-      : null,
     options: Object.freeze(options),
     registry,
     state,
   });
-};
 
 export const createMarkdownRuntime = (
   editor: Editor,
@@ -276,7 +264,6 @@ export const getMergedOptionsDeserialize = (
     partial: options.partial,
     remarkPlugins: materializeRemarkPlugins(remarkPlugins),
     report: diagnostics.report,
-    ...(runtime.elementId ? { elementIds: true } : {}),
     sourceLocation: (node) =>
       createMarkdownSourceLocation(
         node,
@@ -2608,10 +2595,10 @@ const isFittedEmptyDocument = (
 
   if (document.children.length !== fitted.length) return false;
 
-  const comparable = (children: readonly Descendant[]) =>
-    runtime.elementId ? withoutElementIds(children) : children;
-
-  return dequal(comparable(document.children), comparable(fitted));
+  return dequal(
+    withoutElementIds(document.children),
+    withoutElementIds(fitted)
+  );
 };
 
 // mdast types name only `yaml`; remark-frontmatter's TOML preset emits `toml`.

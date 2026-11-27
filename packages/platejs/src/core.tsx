@@ -193,7 +193,6 @@ export type {
   ScrollIntoViewTarget,
   ScrollMode,
 } from './lib/plugins/dom/DOMPlugin';
-export * from './lib/plugins/element-id/index';
 export * from './lib/plugins/element-state/index';
 export { HtmlPlugin } from './lib/plugins/html/HtmlPlugin';
 export * from './lib/plugins/input-rules/index';

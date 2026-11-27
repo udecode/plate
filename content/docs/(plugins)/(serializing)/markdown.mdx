@@ -328,9 +328,10 @@ See [Mention](/docs/mention#markdown).
 ### Block IDs
 
 Markdown does not carry element IDs, and serialization writes none. Parsing
-reads a `<block id="…">` wrapper around one block: with `ElementIdPlugin`
-installed, the block keeps that `id`; otherwise the wrapper is removed with a
-`markdown-unsupported-node` warning. Mappings cannot claim the `block` tag.
+reads a `<block id="…">` wrapper around one block and keeps that non-empty `id`
+on the block; a wrapper around anything else or with an empty `id` is removed
+with a `markdown-unsupported-node` warning. Mappings cannot claim the `block`
+tag.
 
 ### Front matter
 

@@ -3640,9 +3640,14 @@ const validatePropertyKey = (
   placement: 'element' | 'text',
   source: Source<unknown>
 ) => {
+  const reservedKeys =
+    placement === 'element'
+      ? [...RESERVED_PROPERTY_KEYS, 'id']
+      : [...RESERVED_PROPERTY_KEYS];
+
   if (typeof key === 'string') {
     assertName(key, 'Schema property key', source);
-    if (RESERVED_PROPERTY_KEYS.has(key)) {
+    if (reservedKeys.includes(key)) {
       compileFailure(
         'reserved-property-key',
         `Schema ${placement} property at ${source.path} cannot claim reserved key "${key}".`,
@@ -3655,7 +3660,7 @@ const validatePropertyKey = (
   }
 
   assertName(key.prefix, 'Schema property key prefix', source);
-  const conflict = [...RESERVED_PROPERTY_KEYS].find((reservedKey) =>
+  const conflict = reservedKeys.find((reservedKey) =>
     reservedKey.startsWith(key.prefix)
   );
 
@@ -3749,19 +3754,6 @@ const compilePropertyLookup = (
         )
     ),
   });
-};
-
-const hasDeclaredElementId = (
-  properties: Iterable<{
-    key: SchemaPropertyKey;
-    placement: 'element' | 'text';
-  }>
-) => {
-  for (const property of properties) {
-    if (property.placement === 'element' && property.key === 'id') return true;
-  }
-
-  return false;
 };
 
 export const resolveCompiledSchemaProperty = (
@@ -5362,8 +5354,7 @@ const compileEditorSchemaInternal = (
     if (Object.hasOwn(descriptor, 'default')) {
       return 'references elements, so it cannot have a default value';
     }
-    const usesReservedId =
-      references.key === 'id' && !hasDeclaredElementId(mutableProperties);
+    const usesReservedId = references.key === 'id';
 
     if (
       !usesReservedId &&
@@ -6004,24 +5995,8 @@ const compileEditorSchemaInternal = (
   }
 
   const mint = elementIdMint ?? createElementIdMint();
-  const reservedElementId = hasDeclaredElementId(mutableProperties)
-    ? null
-    : createReservedElementIdProperty(mint);
-  const idProperty = mutableProperties.find(
-    (property) => property.key === 'id' && property.lifecycle.unique
-  );
-  const everyElementHasId =
-    reservedElementId !== null ||
-    (idProperty?.descriptor.kind === 'string' &&
-      [...frozenPrograms.values()].every(
-        (program) => !program.allowsUnknownElements
-      ) &&
-      [...compiledElements.keys()].every((type) =>
-        matchesCompiledSchemaTarget({ elements }, idProperty.target, {
-          root: null,
-          type,
-        })
-      ));
+  const reservedElementId = createReservedElementIdProperty(mint);
+  const everyElementHasId = true;
 
   return Object.freeze({
     diagnostics: Object.freeze([]),
@@ -6221,9 +6196,7 @@ const replaceCompiledPropertyDescriptors = (
   const mint =
     elementIdMint ??
     ('elementIdMint' in schema ? schema.elementIdMint : createElementIdMint());
-  const reservedElementId = hasDeclaredElementId(byId.values())
-    ? null
-    : createReservedElementIdProperty(mint);
+  const reservedElementId = createReservedElementIdProperty(mint);
   const compiled: CompiledEditorSchema = Object.freeze({
     ...schema,
     elementIdMint: mint,

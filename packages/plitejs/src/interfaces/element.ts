@@ -16,11 +16,22 @@ import type { SchemaElementShapeFor, SchemaElementTypes } from './schema';
 
 export interface BaseElement {
   readonly children: readonly Descendant[];
+  readonly id?: string;
   readonly type: string;
   readonly [key: string]: unknown;
 }
 
 export type Element = BaseElement;
+
+/** Stored element returned by editor readers, always carrying its reserved string `id`. */
+export type ReadElement<T = Element> = T extends BaseElement
+  ? T & Readonly<{ id: string }>
+  : T;
+
+/** Stored descendant returned by editor readers, typing elements with a required string `id`. */
+export type ReadDescendant<T = Descendant> = T extends BaseElement
+  ? ReadElement<T>
+  : T;
 
 export type ElementIn<V extends readonly unknown[]> = ElementOf<V[number]>;
 
@@ -29,7 +40,7 @@ type ElementOfVariant<N> = Element extends N
   : N extends EditorNodeTypeProvider<infer TElementFactory, any>
     ? Extract<ReturnType<TElementFactory>, Element>
     : N extends BaseEditor<infer V, any>
-      ? ElementIn<V>
+      ? ElementOf<V[number]>
       : N extends EditorSchemaPluginProvider<infer TSchemaFactory>
         ? SchemaElementShapeFor<
             ReturnType<TSchemaFactory>,

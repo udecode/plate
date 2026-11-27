@@ -12,8 +12,7 @@ import { useObjectUrl } from '@/registry/hooks/use-object-url';
 
 import { FixedToolbarPlugin } from './fixed-toolbar';
 import { FloatingToolbarPlugin } from './floating-toolbar';
-import { HtmlExportKit } from './html-export-kit';
-import { HtmlExportSchemaKit } from './html-export-schema-kit';
+import { BaseEditorKit } from './plugins-static';
 
 const subscribeNever = () => () => {};
 
@@ -91,7 +90,6 @@ export function HtmlIframe({
 export function EditorClient({ value }: { value: InitialValue }) {
   const editor = useCreateEditor({
     plugins: [
-      ...HtmlExportSchemaKit,
       ...EditorKit,
       FixedToolbarPlugin.configure({ enabled: false }),
       FloatingToolbarPlugin.configure({ enabled: false }),
@@ -108,7 +106,7 @@ export function EditorClient({ value }: { value: InitialValue }) {
 
 export const EditorViewClient = ({ value }: { value: InitialValue }) => {
   const editor = useCreateEditor({
-    plugins: HtmlExportKit,
+    plugins: BaseEditorKit,
     initialValue: value,
   });
 

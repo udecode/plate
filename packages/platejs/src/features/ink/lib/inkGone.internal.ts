@@ -11,7 +11,6 @@ import {
   getRecordSetVersion,
   type Node,
   type Path,
-  readElementById,
   readRecord,
   type RecordSetVersion,
   readShownRecords,
@@ -366,7 +365,7 @@ export const captureGone = (
   const names = namedInkBlocks(editor);
   const { pending, queued } = session;
   const walk = {
-    holder: (block: string) => readElementById(tx.nodes, block) ?? undefined,
+    holder: (block: string) => tx.nodes.byId(block) ?? undefined,
     record: (block: string) => pending.get(block) ?? savedGone(editor, block),
   };
   const gone = (block: string) => !walk.holder(block);
@@ -467,7 +466,7 @@ export const flushGone = (editor: RuntimeAnyEditor, tx: GoneTx) => {
     editor,
     tx,
     pending.keys(),
-    (id) => (readElementById(tx.nodes, id) ? undefined : pending.get(id)),
+    (id) => (tx.nodes.byId(id) ? undefined : pending.get(id)),
     (saved, place) => !sameGone(saved, place)
   );
 };
@@ -483,7 +482,7 @@ export const addGone = (
   const recent = session?.recent ?? [];
   const standing = new Map<string, InkGone>();
   const stand = (id: string) => {
-    const holder = readElementById(tx.nodes, id);
+    const holder = tx.nodes.byId(id);
 
     if (!holder || holder.root !== undefined || standing.has(id)) return;
 
@@ -510,7 +509,7 @@ export const addGone = (
     tx,
     blocks,
     (id) => {
-      if (readElementById(tx.nodes, id)) return undefined;
+      if (tx.nodes.byId(id)) return undefined;
 
       const departure =
         current?.get(id) ??

@@ -509,29 +509,28 @@ Provides debugging capabilities with configurable log levels and error handling.
 
 See [Debugging](/docs/debugging) for more details.
 
-### `ElementIdPlugin`
+### Element IDs
 
-Adds persisted string IDs to every block and inline element. It is opt-in and
-never assigns IDs to text nodes.
+Every block and inline element in every editor carries a persisted string `id`
+managed by the editor core (never text nodes). Core mints each `id` as
+`<scope>.<counter>` from a random 12-character scope per editor and a counter.
+No plugin is needed, and schemas cannot declare an element property named `id`.
 
 ```ts
-import { ElementIdPlugin, schema, target } from "platejs";
 import { createEditor } from "platejs/react";
 
 const editor = createEditor({
-  plugins: [ElementIdPlugin],
+  plugins: EditorKit,
 });
 
-const elementId = editor.plugin(ElementIdPlugin);
-const key = editor.key(element);
-const id = elementId.read.id(key);
-const entry = id ? editor.read.nodes.byId(id) : null;
+const block = editor.read.children()[0];
+const entry = editor.read.nodes.byId(block.id);
 
 editor.update.nodes.move({ at: { id: "intro" }, to: [0] });
 editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 ```
 
-An editor that stores IDs finds and targets an element by its ID:
+Every editor finds and targets an element by its ID:
 
 - `editor.read.nodes.byId(id)`: the element that holds `id`, as
   `{ key, node, path, root? }`, or `null`. `root` is present only when the
@@ -539,13 +538,9 @@ An editor that stores IDs finds and targets an element by its ID:
 - `tx.nodes.byId(id)`: the same lookup inside an update, read from its draft.
   It throws once its update ends.
 - `{ id }`: a node target, such as `nodes.path({ id })` on a read or
-  `at: { id }` on a transform, which names the element that holds the ID. Text, mark, range and offset targets keep their point or range. A
-  target is an ID only as an object, not an array, whose one own key is a
-  string `id`.
-
-An editor stores IDs when the schema gives every element type a generated,
-unique string `id`, as the plugin's default target does, and no content admits
-undeclared element types. In any other editor, `byId` and `at: { id }` throw.
+  `at: { id }` on a transform, which names the element that holds the ID. Text,
+  mark, range and offset targets keep their point or range. A target is an ID
+  only as an object, not an array, whose one own key is a string `id`.
 
 A command, a plugin update method and every one-shot on `editor.update` or on
 a writable view's `update` look an ID up in the command's document. Over
@@ -557,44 +552,21 @@ stored draft, as it resolves a path or a key, so it reaches the struck
 original. An editor view answers from its own document, except a read while a
 command runs, which answers from the command's document. A view bound to a
 root reads an ID only in that root, while a node key reads the element in
-whichever root holds it. When no element holds
-the ID, a write changes nothing and a read returns its empty result.
-[Node identity](/docs/editor#node-identity) shows each route.
+whichever root holds it. When no element holds the ID, a write changes nothing
+and a read returns its empty result. [Node identity](/docs/editor#node-identity)
+shows each route.
 
-Configure `initialState.generateId` to replace the default full-length
-`nanoid()` generator. Include `ElementIdPlugin` in the target passed to
-`defineDocumentMigrations`. The plugin declares its `id` with `unique: true`,
-so no commit or load leaves two elements with one ID. Current-document
-admission fills missing IDs before the editor is created. When two elements
-hold one ID, the first in document order keeps it and every later one gets a
-fresh ID. An insert or update that stores a held ID lands with a fresh one. The
-migration boundary refuses a document that holds one ID twice, so a historical
-migration step must convert numeric IDs, legacy property names or repeated IDs
-and define the application's collision policy.
-
-The application schema can narrow the plugin-owned `id` target. Current
-document admission generates and retains IDs only for elements that match the
-compiled target. A narrowed target must match every type that can take a
-matched type's place, so `target.group("block")` works while no element's
-content admits both a block and an inline element. Narrow it only when the
-application never finds or targets an element by ID:
-
-```ts
-const editor = createEditor({
-  plugins: [ElementIdPlugin],
-  schema: {
-    overrides: [
-      schema.override(ElementIdPlugin, {
-        properties: { id: { target: target.group("block") } },
-      }),
-    ],
-  },
-});
-```
-
-A block-only target leaves inline elements without IDs, so `nodes.byId` and
-`at: { id }` throw in that editor, even for a block's ID. `read.id(key)` and
-pen marks from `platejs/ink` keep working.
+Core enforces uniqueness across every root, so no commit or load leaves two
+elements with one ID. Current-document admission fills missing IDs with
+deterministic `fill.<n>` values before the editor is created, and refuses empty
+or non-string IDs. When two elements hold one ID on load, the first in document
+order keeps it and every later one gets a fresh ID. An insert or update that
+stores a held ID lands with a fresh one. The migration boundary refuses a
+document that holds one ID twice, so a historical migration step must convert
+numeric IDs, legacy property names or repeated IDs and define the application's
+collision policy. Readers type every returned element's `id` as `string`, while
+detached inputs (`ElementIn`, `InitialValue`) and element guards
+(`ElementApi.isElement`) keep `id` optional.
 
 ### `ElementStatePlugin`
 
@@ -602,10 +574,9 @@ Extend editor behavior.
 
 `ElementStatePlugin` exposes
 `editor.plugin(ElementStatePlugin).api.isEmpty(element)`. It checks the
-element's own props, not its text content. By default, only `type` and compiled
-element properties declared with `role: "metadata"` are ignored; any other prop
-means the element carries state. `ElementIdPlugin` declares its persisted ID
-property as metadata.
+element's own props, not its text content. By default, only `type`, core's
+reserved element `id`, and compiled element properties declared with
+`role: "metadata"` are ignored; any other prop means the element carries state.
 
 ```tsx
 const elementState = editor.plugin(ElementStatePlugin);
