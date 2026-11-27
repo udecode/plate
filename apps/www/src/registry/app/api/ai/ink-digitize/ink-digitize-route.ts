@@ -21,21 +21,13 @@ const pngDataUrlSchema = z
     }
   );
 
-const markRequestSchema = z
-  .strictObject({
-    box: z.tuple([z.number(), z.number(), z.number(), z.number()]),
-    gaps: z.array(z.number().int().nonnegative()).optional(),
-    id: markIdSchema,
-    margin: z.enum(['left', 'right']).optional(),
-    words: z.array(z.number().int().nonnegative()).optional(),
-  })
-  .refine(
-    (mark) =>
-      (mark.words?.length ?? 0) > 0 ||
-      (mark.gaps?.length ?? 0) > 0 ||
-      mark.margin !== undefined,
-    { message: 'Each mark must name at least one word, gap, or margin side.' }
-  );
+const markRequestSchema = z.strictObject({
+  box: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+  gaps: z.array(z.number().int().nonnegative()).optional(),
+  id: markIdSchema,
+  margin: z.enum(['left', 'right']).optional(),
+  words: z.array(z.number().int().nonnegative()).optional(),
+});
 
 const passageRequestSchema = z.strictObject({
   id: passageIdSchema,
@@ -367,26 +359,23 @@ const inkDigitizeProviderEditSchema = z.object({
     'answer',
   ]),
   passage: passageIdSchema,
-  question: z
-    .string()
-    .optional()
-    .describe('For answer: the transcribed handwritten question.'),
-  text: z
-    .string()
-    .optional()
-    .describe(
-      'For insert, replace, comment, or answer: text to write or answer body.'
-    ),
   quote: z
     .string()
-    .optional()
     .describe(
-      'For delete, replace, highlight, comment, answer: exact quoted words.'
+      'For delete, replace, highlight, comment, answer: exact quoted words; empty string "" for insert.'
+    ),
+  question: z
+    .string()
+    .describe(
+      'For answer: the transcribed handwritten question; empty string "" for other kinds.'
+    ),
+  text: z
+    .string()
+    .describe(
+      'For insert, replace, comment, or answer: text to write, transcribed note, or concise answer to the question; empty string "" for delete or highlight.'
     ),
   between: z
     .array(z.string())
-    .min(2)
-    .max(2)
     .optional()
     .describe('For insert: [wordBeforeOrEmpty, wordAfterOrEmpty] around gap.'),
   gap: z
@@ -397,8 +386,6 @@ const inkDigitizeProviderEditSchema = z.object({
     .describe('For insert: index of the word immediately after the insertion.'),
   words: z
     .array(z.number().int().nonnegative())
-    .min(2)
-    .max(2)
     .optional()
     .describe(
       'For delete, replace, highlight, comment, answer: [startWord, endWord] inclusive.'
@@ -426,16 +413,28 @@ const inkDigitizeProviderOutputSchema = z.object({
   ),
 });
 
+const normalizeWordPair = (
+  words: readonly number[] | undefined
+): readonly [number, number] | undefined => {
+  if (!words || words.length === 0) return undefined;
+  if (words.length === 1) return [words[0], words[0]];
+  if (words.length === 2) return [words[0], words[1]];
+
+  return undefined;
+};
+
 const normalizeProviderEdit = (
   edit: z.infer<typeof inkDigitizeProviderEditSchema>
 ): unknown => {
+  const words = normalizeWordPair(edit.words);
+
   switch (edit.kind) {
     case 'delete': {
       return {
         kind: 'delete',
         passage: edit.passage,
         quote: edit.quote,
-        words: edit.words,
+        words,
       };
     }
     case 'highlight': {
@@ -443,7 +442,7 @@ const normalizeProviderEdit = (
         kind: 'highlight',
         passage: edit.passage,
         quote: edit.quote,
-        words: edit.words,
+        words,
       };
     }
     case 'insert': {
@@ -461,7 +460,7 @@ const normalizeProviderEdit = (
         passage: edit.passage,
         quote: edit.quote,
         text: edit.text,
-        words: edit.words,
+        words,
       };
     }
     case 'comment': {
@@ -470,7 +469,7 @@ const normalizeProviderEdit = (
         passage: edit.passage,
         quote: edit.quote,
         text: edit.text,
-        words: edit.words,
+        words,
       };
     }
     case 'answer': {
@@ -480,7 +479,7 @@ const normalizeProviderEdit = (
         question: edit.question,
         quote: edit.quote,
         text: edit.text,
-        words: edit.words,
+        words,
       };
     }
     default: {
@@ -502,12 +501,21 @@ export const runInkDigitize = async (
   });
 
   const normalized = {
-    corrections: output.corrections.map((correction) => ({
-      marks: correction.marks,
-      meanings: correction.meanings.map((meaning) => ({
-        edits: meaning.edits.map(normalizeProviderEdit),
-      })),
-    })),
+    corrections: output.corrections.map((correction) => {
+      const validMeanings = correction.meanings
+        .map((meaning) =>
+          inkDigitizeMeaningSchema.safeParse({
+            edits: meaning.edits.map(normalizeProviderEdit),
+          })
+        )
+        .filter((item) => item.success)
+        .map((item) => item.data);
+
+      return {
+        marks: correction.marks,
+        meanings: validMeanings,
+      };
+    }),
   };
 
   const parsed = inkDigitizeModelOutputSchema.safeParse(normalized);

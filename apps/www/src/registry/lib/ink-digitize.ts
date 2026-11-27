@@ -103,8 +103,7 @@ export type PrepareInkDigitizeResult =
       prepared: PreparedInkDigitize;
     }>;
 
-const isUnanchoredMark = (mark: InkMark) =>
-  mark.margin === undefined && mark.blocks.every((b) => b.runs.length === 0);
+const isUnanchoredMark = (mark: InkMark) => mark.blocks.length === 0;
 
 const blockIdsBetween = (
   view: Editor,
@@ -374,6 +373,11 @@ export type ValidatedDigitizeReading =
         | 'unknown-reference';
     }>;
 
+const isCommentEdit = (
+  edit: InkDigitizeEdit
+): edit is Extract<InkDigitizeEdit, { kind: 'answer' | 'comment' }> =>
+  edit.kind === 'comment' || edit.kind === 'answer';
+
 const editSpan = (edit: InkDigitizeEdit): readonly [number, number] =>
   edit.kind === 'insert'
     ? [edit.gap, edit.gap]
@@ -381,6 +385,7 @@ const editSpan = (edit: InkDigitizeEdit): readonly [number, number] =>
 
 const editsOverlap = (a: InkDigitizeEdit, b: InkDigitizeEdit): boolean => {
   if (a.passage !== b.passage) return false;
+  if (isCommentEdit(a) || isCommentEdit(b)) return false;
   if (a.kind === 'insert' && b.kind === 'insert') return a.gap === b.gap;
   if (a.kind === 'insert' && b.kind !== 'insert') {
     return b.words[0] < a.gap && a.gap <= b.words[1];
@@ -450,7 +455,11 @@ const editTouchesCorrectionMarks = (
 
   if (
     (edit.kind === 'comment' || edit.kind === 'answer') &&
-    relevantMarks.some((mark) => mark.margin !== undefined)
+    relevantMarks.some(
+      (mark) =>
+        mark.margin !== undefined ||
+        ((mark.words?.length ?? 0) === 0 && (mark.gaps?.length ?? 0) === 0)
+    )
   ) {
     return true;
   }
@@ -491,6 +500,7 @@ const checkCorrectionsOrderAndOverlap = (
     const perPassage = new Map<string, { edits: InkDigitizeEdit[] }>();
 
     for (const edit of primary.edits) {
+      if (isCommentEdit(edit)) continue;
       const bucket = perPassage.get(edit.passage) ?? { edits: [] };
 
       bucket.edits.push(edit);
@@ -1179,11 +1189,6 @@ export const confirmInkDigitize = (
     status: 'applied',
   };
 };
-
-const isCommentEdit = (
-  edit: InkDigitizeEdit
-): edit is Extract<InkDigitizeEdit, { kind: 'answer' | 'comment' }> =>
-  edit.kind === 'comment' || edit.kind === 'answer';
 
 export const confirmInkDigitizeWithComments = async (
   view: Editor,

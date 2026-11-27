@@ -954,8 +954,6 @@ export const BaseInkPlugin = definePlugin('ink', {
             if (!saved || saved.lines.length === 0) continue;
 
             if (block.runs.length === 0) {
-              if (mark.margin === undefined) continue;
-
               let bucket = spansByCopy.get(saved.id);
 
               if (!bucket) {

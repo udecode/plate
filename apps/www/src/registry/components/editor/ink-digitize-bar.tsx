@@ -25,7 +25,7 @@ import { AI_SETTINGS_OPEN_EVENT } from '@/registry/components/editor/settings-di
 import { AIChatTransportPlugin } from '@/registry/components/editor/use-chat';
 import {
   canDigitizeInk,
-  confirmInkDigitize,
+  confirmInkDigitizeWithComments,
   type ConfirmSkipReason,
   latestInkDigitizeRequestId,
   marksTurningIntoSigns,
@@ -41,7 +41,6 @@ const DIGITIZE_ENDPOINT = '/api/ai/ink-digitize';
 
 type DigitizeNotice =
   | Readonly<{ kind: 'error'; message: string; needsKey?: boolean }>
-  | Readonly<{ kind: 'margin-only' }>
   | Readonly<{ kind: 'needs-key' }>
   | Readonly<{ kind: 'passage-too-large'; markIds: readonly string[] }>
   | Readonly<{
@@ -57,6 +56,8 @@ type ConfirmState = Readonly<{
   meaningIndices: ReadonlyMap<number, number>;
   prepared: PreparedInkDigitize;
   reaskingIndex: number | null;
+  saveError: string | null;
+  saving: boolean;
   staleMessage: string | null;
   typedByIndex: Readonly<Record<number, string>>;
   validated: Extract<ValidatedDigitizeReading, { ok: true }>;
@@ -169,6 +170,7 @@ export function InkDigitizeBar() {
   );
 
   const locked = session.kind === 'loading' || session.kind === 'confirm';
+  const savingConfirm = session.kind === 'confirm' && session.state.saving;
 
   React.useEffect(() => {
     if (!locked) return undefined;
@@ -189,7 +191,7 @@ export function InkDigitizeBar() {
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
-        closeSession();
+        if (!savingConfirm) closeSession();
 
         return;
       }
@@ -225,7 +227,7 @@ export function InkDigitizeBar() {
       }
       window.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [closeSession, editableRef, locked]);
+  }, [closeSession, editableRef, locked, savingConfirm]);
 
   const readAiConfig = React.useCallback(() => {
     const chatPlugin = editor.plugin(AIChatTransportPlugin);
@@ -271,13 +273,8 @@ export function InkDigitizeBar() {
 
       if (controller.signal.aborted || !canDigitizeInk(editor)) return;
 
-      if (prep.kind === 'blocked') {
+      if (prep.kind === 'blocked' || prep.kind === 'margin-only') {
         closeSession();
-
-        return;
-      }
-      if (prep.kind === 'margin-only') {
-        setSession({ kind: 'notice', notice: { kind: 'margin-only' } });
 
         return;
       }
@@ -382,6 +379,8 @@ export function InkDigitizeBar() {
             meaningIndices,
             prepared: prep.prepared,
             reaskingIndex: null,
+            saveError: null,
+            saving: false,
             staleMessage: null,
             typedByIndex: {},
             validated,
@@ -544,8 +543,8 @@ export function InkDigitizeBar() {
     [editor, readAiConfig, session]
   );
 
-  const handleConfirm = React.useCallback(() => {
-    if (session.kind !== 'confirm') return;
+  const handleConfirm = React.useCallback(async () => {
+    if (session.kind !== 'confirm' || session.state.saving) return;
     const { state } = session;
     const choices = [...state.keptIndices]
       .sort((a, b) => a - b)
@@ -553,7 +552,13 @@ export function InkDigitizeBar() {
         correctionIndex,
         meaningIndex: state.meaningIndices.get(correctionIndex) ?? 0,
       }));
-    const result = confirmInkDigitize(
+
+    setSession({
+      kind: 'confirm',
+      state: { ...state, saveError: null, saving: true, staleMessage: null },
+    });
+
+    const result = await confirmInkDigitizeWithComments(
       editor,
       state.prepared,
       state.validated,
@@ -562,14 +567,19 @@ export function InkDigitizeBar() {
     );
 
     if (result.status === 'stale') {
-      setSession({
-        kind: 'confirm',
-        state: {
-          ...state,
-          staleMessage:
-            'The text or ink changed since you picked it. Digitize again.',
-        },
-      });
+      setSession((prev) =>
+        prev.kind === 'confirm'
+          ? {
+              kind: 'confirm',
+              state: {
+                ...prev.state,
+                saving: false,
+                staleMessage:
+                  'The text or ink changed since you picked it. Digitize again.',
+              },
+            }
+          : prev
+      );
 
       return;
     }
@@ -578,15 +588,67 @@ export function InkDigitizeBar() {
 
       return;
     }
-    if (result.skipped.length > 0) {
+
+    const retryable = result.skipped.filter(
+      (entry) =>
+        entry.reason === 'save-rejected' || entry.reason === 'save-failed'
+    );
+    const otherSkipped = result.skipped.filter(
+      (entry) =>
+        entry.reason !== 'save-rejected' && entry.reason !== 'save-failed'
+    );
+
+    if (otherSkipped.length > 0) {
       const reasons = [
-        ...new Set(result.skipped.map((s) => skipReasonLabel(s.reason))),
+        ...new Set(otherSkipped.map((s) => skipReasonLabel(s.reason))),
       ].join('; ');
 
       toast.info(
-        `Kept ${result.skipped.length} correction(s) as ink (${reasons}).`
+        `Kept ${otherSkipped.length} correction(s) as ink (${reasons}).`
       );
     }
+
+    if (retryable.length > 0) {
+      const appliedMarkIds = new Set(
+        result.applied.flatMap((entry) => entry.markIds)
+      );
+      const retryIndices = new Set(
+        retryable.map((entry) => entry.correctionIndex)
+      );
+      const nextShownByBlock = new Map<string, readonly string[]>();
+
+      for (const [blockId, ids] of state.prepared.shownByBlock) {
+        nextShownByBlock.set(
+          blockId,
+          ids.filter((id) => !appliedMarkIds.has(id))
+        );
+      }
+
+      const reasons = [
+        ...new Set(retryable.map((s) => skipReasonLabel(s.reason))),
+      ].join('; ');
+
+      setSession((prev) =>
+        prev.kind === 'confirm'
+          ? {
+              kind: 'confirm',
+              state: {
+                ...prev.state,
+                keptIndices: retryIndices,
+                prepared: {
+                  ...prev.state.prepared,
+                  shownByBlock: nextShownByBlock,
+                },
+                saveError: `Could not save ${retryable.length} comment(s) (${reasons}). Click Confirm to retry.`,
+                saving: false,
+              },
+            }
+          : prev
+      );
+
+      return;
+    }
+
     closeSession();
   }, [closeSession, editor, session]);
 
@@ -690,15 +752,6 @@ export function InkDigitizeBar() {
             </div>
           )}
 
-          {session.notice.kind === 'margin-only' && (
-            <div className="space-y-3">
-              <p>Margin notes become comments in phase 2.</p>
-              <Button onClick={closeSession} size="sm" variant="outline">
-                Close
-              </Button>
-            </div>
-          )}
-
           {session.notice.kind === 'too-many-words' && (
             <div className="space-y-3">
               <p>
@@ -762,7 +815,9 @@ export function InkDigitizeBar() {
       {session.kind === 'confirm' && (
         <ConfirmDialog
           onClose={closeSession}
-          onConfirm={handleConfirm}
+          onConfirm={() => {
+            void handleConfirm();
+          }}
           onDigitizeAgain={() => {
             void runDigitize(pickedShown);
           }}
@@ -857,6 +912,7 @@ function ConfirmDialog({
         <div className="font-medium">Confirm digitized edits</div>
         <Button
           aria-label="Close confirm"
+          disabled={state.saving}
           onClick={onClose}
           size="icon-xs"
           variant="ghost"
@@ -864,12 +920,6 @@ function ConfirmDialog({
           <X className="size-4" />
         </Button>
       </div>
-
-      {state.prepared.marginNoteIds.length > 0 && (
-        <p className="mb-2 rounded-md bg-muted px-2.5 py-1.5 text-xs text-muted-foreground">
-          Margin notes stay out of Digitize and become comments in phase 2.
-        </p>
-      )}
 
       {signMarks.length > 0 && (
         <p
@@ -881,13 +931,28 @@ function ConfirmDialog({
         </p>
       )}
 
+      {state.saveError && (
+        <div
+          className="mb-2 rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive"
+          data-ink-digitize-save-error=""
+          role="alert"
+        >
+          {state.saveError}
+        </div>
+      )}
+
       {state.staleMessage && (
         <div
           className="mb-2 flex items-center justify-between gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive"
           data-ink-digitize-stale=""
         >
           <span>{state.staleMessage}</span>
-          <Button onClick={onDigitizeAgain} size="xs" variant="outline">
+          <Button
+            disabled={state.saving}
+            onClick={onDigitizeAgain}
+            size="xs"
+            variant="outline"
+          >
             Digitize again
           </Button>
         </div>
@@ -902,6 +967,7 @@ function ConfirmDialog({
           state.validated.corrections.map((correction, index) => (
             <CorrectionRow
               correction={correction}
+              disabled={state.saving}
               index={index}
               kept={state.keptIndices.has(index)}
               key={correction.markIds.join(',')}
@@ -918,17 +984,31 @@ function ConfirmDialog({
       </div>
 
       <div className="mt-3 flex items-center justify-end gap-2 border-t pt-3">
-        <Button onClick={onClose} size="sm" variant="outline">
+        <Button
+          disabled={state.saving}
+          onClick={onClose}
+          size="sm"
+          variant="outline"
+        >
           Reject
         </Button>
         <Button
           disabled={
-            state.keptIndices.size === 0 || state.reaskingIndex !== null
+            state.saving ||
+            state.keptIndices.size === 0 ||
+            state.reaskingIndex !== null
           }
           onClick={onConfirm}
           size="sm"
         >
-          Confirm
+          {state.saving ? (
+            <>
+              <Loader2 className="me-1.5 size-3.5 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Confirm'
+          )}
         </Button>
       </div>
     </dialog>
@@ -937,6 +1017,7 @@ function ConfirmDialog({
 
 function CorrectionRow({
   correction,
+  disabled,
   index,
   kept,
   meaningIndex,
@@ -948,6 +1029,7 @@ function CorrectionRow({
   typed,
 }: {
   correction: ValidatedCorrection;
+  disabled: boolean;
   index: number;
   kept: boolean;
   meaningIndex: number;
@@ -969,6 +1051,7 @@ function CorrectionRow({
         <Checkbox
           aria-label={`Keep correction ${index + 1}`}
           checked={kept}
+          disabled={disabled}
           onCheckedChange={(checked) => onToggleKeep(checked === true)}
         />
         <span className="flex-1 leading-snug">
@@ -985,6 +1068,7 @@ function CorrectionRow({
         <div className="flex flex-wrap gap-1.5 ps-6">
           {correction.meanings.map((meaning, mIndex) => (
             <Button
+              disabled={disabled}
               key={describeMeaning(meaning)}
               onClick={() => onSelectMeaning(mIndex)}
               size="xs"
@@ -1000,7 +1084,7 @@ function CorrectionRow({
         <Input
           aria-label={`Typed meaning for correction ${index + 1}`}
           className="h-7 text-xs"
-          disabled={reasking}
+          disabled={disabled || reasking}
           onChange={(e) => onTypedChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -1012,7 +1096,7 @@ function CorrectionRow({
           value={typed}
         />
         <Button
-          disabled={reasking || typed.trim().length === 0}
+          disabled={disabled || reasking || typed.trim().length === 0}
           onClick={onReask}
           size="xs"
           variant="outline"
