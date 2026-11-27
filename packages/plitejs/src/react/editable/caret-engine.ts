@@ -22,6 +22,7 @@ import {
   type DOMPhaseScheduler,
   getLineBoundaryKeyboardMove,
 } from '../../dom/internal';
+import { shouldClearEditableDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
@@ -178,6 +179,7 @@ const clearNativeSelectionForViewSelection = (
 
   const clearWhileShown = () => {
     if (readPliteViewSelection(editor) !== viewSelection) return;
+    if (!shouldClearEditableDOMSelection(rootElement, editor)) return;
     if (!claimPageSelection()) return;
     writeDOMSelection(rootElement.getRootNode() as Document | ShadowRoot, null);
   };

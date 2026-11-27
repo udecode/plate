@@ -9,6 +9,7 @@ import {
 import { getSelection } from '../../dom';
 import { type DOMPhaseScheduler, EDITOR_TO_ELEMENT } from '../../dom/internal';
 import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
+import { canWriteDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import {
   getDOMRangeSelectionPoints,
   writeDOMSelection,
@@ -59,7 +60,7 @@ export const exportTripleClickSelectionToDOM = ({
 }) => {
   const editorElement = EDITOR_TO_ELEMENT.get(editor);
 
-  if (!editorElement) {
+  if (!editorElement || !canWriteDOMSelection(editorElement, editor)) {
     return;
   }
 

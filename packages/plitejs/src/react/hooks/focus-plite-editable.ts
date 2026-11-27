@@ -1,17 +1,23 @@
-import { type Value, RangeApi } from '../..';
+import { type Value, RangeApi, SelectionApi } from '../..';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { hasOpenDraft } from '../../core/public-state';
 import { getPlacementGeneration, placedSince } from '../../core/view-carets';
 import { getSelection } from '../../dom';
-import { findDOMRootRuntime, IS_FOCUSED } from '../../dom/internal';
+import { findDOMRootRuntime } from '../../dom/internal';
 import {
   claimFocusRequest,
+  focusEditableElement,
   isFocusRequestedElsewhere,
   resolveWrittenDOMRange,
   supersedeFocusRequest,
   watchFocusSuperseded,
 } from '../../dom/plugin/dom-editor';
-import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
+import {
+  focusedElementOnPage,
+  isElementFocused,
+  movedFocusElsewhere,
+  shouldClearEditableDOMSelection,
+} from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import {
   getDOMRangeSelectionPoints,
@@ -25,7 +31,6 @@ import { readModelSelectionDOMPreference } from '../editable/model-selection-dom
 import {
   type Editor,
   getSelectionDOMRange,
-  setEditorFocused,
 } from '../editable/runtime-editor-api';
 import {
   reachesRoot,
@@ -76,9 +81,7 @@ const syncPreferredModelSelectionToDOM = <
 ) => {
   try {
     if (findDOMRootRuntime(element)?.isSelectionHeld()) {
-      IS_FOCUSED.set(editor as unknown as Editor, true);
-      setEditorFocused(editor as unknown as Editor, true);
-      element.focus({ preventScroll: true });
+      focusEditableElement(editor as unknown as Editor, element);
       return true;
     }
     const selection = resolveNextKeyCaret(editor as unknown as Editor, element);
@@ -100,10 +103,26 @@ const syncPreferredModelSelectionToDOM = <
     if (!projectedSelection) {
       const root = element.getRootNode() as Document | ShadowRoot;
 
-      IS_FOCUSED.set(editor as unknown as Editor, true);
-      setEditorFocused(editor as unknown as Editor, true);
-      element.focus({ preventScroll: true });
-      if (!superseded()) writeDOMSelection(root, null);
+      if (
+        focusEditableElement(editor as unknown as Editor, element) &&
+        !superseded() &&
+        !findDOMRootRuntime(element)?.isSelectionHeld()
+      ) {
+        const currentSelection = resolveNextKeyCaret(
+          editor as unknown as Editor,
+          element
+        );
+        const currentProjected =
+          currentSelection &&
+          getSelectionDOMRange(editor as unknown as Editor, currentSelection);
+
+        if (
+          !currentProjected &&
+          shouldClearEditableDOMSelection(element, editor)
+        ) {
+          writeDOMSelection(root, null);
+        }
+      }
       return true;
     }
 
@@ -124,15 +143,58 @@ const syncPreferredModelSelectionToDOM = <
       return false;
     }
 
-    IS_FOCUSED.set(editor as unknown as Editor, true);
-    setEditorFocused(editor as unknown as Editor, true);
-    element.focus({ preventScroll: true });
-    if (superseded()) return true;
+    const receipt = getPlacementGeneration(editor);
+
+    if (
+      !focusEditableElement(editor as unknown as Editor, element) ||
+      superseded() ||
+      findDOMRootRuntime(element)?.isSelectionHeld()
+    ) {
+      return true;
+    }
+
+    const currentSelection = resolveNextKeyCaret(
+      editor as unknown as Editor,
+      element
+    );
+    const sameSelection =
+      !placedSince(editor, receipt) &&
+      SelectionApi.equals(currentSelection, selection);
+    const currentProjected = sameSelection
+      ? projectedSelection
+      : currentSelection &&
+        getSelectionDOMRange(editor as unknown as Editor, currentSelection);
+
+    if (!currentProjected) {
+      if (
+        currentSelection &&
+        shouldClearEditableDOMSelection(element, editor)
+      ) {
+        writeDOMSelection(root, null);
+      }
+      return true;
+    }
+
+    const rangeConnected =
+      domRange.startContainer.isConnected && domRange.endContainer.isConnected;
+    const currentRange =
+      sameSelection && rangeConnected
+        ? domRange
+        : (readModelSelectionDOMPreference({
+            editor,
+            editorElement: element,
+            selection: currentProjected,
+          }) ?? resolveWrittenDOMRange(editor, currentProjected));
+
+    if (!currentRange) {
+      return true;
+    }
+
     writeDOMSelection(
       root,
       getDOMRangeSelectionPoints(
-        domRange,
-        RangeApi.isBackward(projectedSelection)
+        currentRange,
+        RangeApi.isBackward(currentProjected)
       )
     );
 
@@ -172,9 +234,7 @@ export const focusSelectionTarget = <
     return false;
   }
 
-  IS_FOCUSED.set(editor as unknown as Editor, true);
-  setEditorFocused(editor as unknown as Editor, true);
-  element.focus({ preventScroll: true });
+  focusEditableElement(editor as unknown as Editor, element);
 
   return true;
 };
@@ -198,11 +258,33 @@ const focusPliteEditableForRequest = <
     return;
   }
 
-  editor.api.dom.focus();
+  const activeBeforeFocus = element ? focusedElementOnPage(element) : null;
+  let focusAttempted = false;
+  const markFocusAttempted = () => {
+    focusAttempted = true;
+  };
+
+  element?.addEventListener('focus', markFocusAttempted, {
+    capture: true,
+    once: true,
+  });
+  try {
+    editor.api.dom.focus();
+  } finally {
+    element?.removeEventListener('focus', markFocusAttempted, {
+      capture: true,
+    });
+  }
 
   if (
     element &&
-    element.ownerDocument.activeElement !== element &&
+    !focusAttempted &&
+    !isElementFocused(element) &&
+    !movedFocusElsewhere(
+      element,
+      activeBeforeFocus,
+      focusedElementOnPage(element)
+    ) &&
     !isFocusRequestedElsewhere(editor as unknown as Editor, element)
   ) {
     element.focus({ preventScroll: true });

@@ -16,7 +16,11 @@ import {
 } from '../../core/view-carets';
 import { getSelection, isDOMElement, isDOMText } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
-import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
+import {
+  focusEditableElement,
+  resolveWrittenDOMRange,
+} from '../../dom/plugin/dom-editor';
+import { canWriteDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import { BROWSER_HANDLE_KEY } from '../../internal/browser-protocol';
 import type { EditableViewportScrollAlign } from '../components/editable';
 import {
@@ -333,6 +337,7 @@ export const attachPliteBrowserHandle = ({
       });
     }
     setExplicitViewportBackedSelection(viewportBackedSelection);
+    refocusHandleElement();
     syncEditableDOMSelectionToEditor({
       editor,
       editorElement: getCurrentHandleElement(),
@@ -341,7 +346,6 @@ export const attachPliteBrowserHandle = ({
       viewportBackedSelection,
       state: inputController.state,
     });
-    refocusHandleElement();
     recordEditableKernelTrace({
       editor,
       trace: {
@@ -870,7 +874,10 @@ export const attachPliteBrowserHandle = ({
         return false;
       }
 
-      currentElement.focus({ preventScroll: true });
+      focusEditableElement(editor, currentElement);
+      if (!canWriteDOMSelection(currentElement, editor)) {
+        return false;
+      }
       const documentSelection = currentElement.ownerDocument.getSelection();
       const selectionCandidates = [
         nativeSelection,

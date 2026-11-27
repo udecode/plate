@@ -152,10 +152,13 @@ import {
 import {
   documentOf,
   findDOMRootRuntime,
+  focusedElementOnPage,
   hasMountedDOMRoot,
   hasMountedDocumentView,
   isElementFocused,
+  isSelectionOwnedByEditable,
   listenEditorDOMScope,
+  movedFocusElsewhere,
   notifyEditorDOMScopeListeners,
   resolveDOMReach,
   resolveDOMTargetView,
@@ -230,6 +233,73 @@ export const claimFocusRequest = (editor: EditorType, element: Element) => {
   PAGE_TO_FOCUS_REQUEST_OWNER.set(pageOf(element.ownerDocument), {
     editor: new WeakRef(editor),
   });
+};
+
+const isAncestorChainActive = (node: Element) => {
+  let current: Element | null = node;
+
+  while (current) {
+    const tree = current.getRootNode() as Document | ShadowRoot;
+
+    if (tree.activeElement !== current) return false;
+    current =
+      'host' in tree ? tree.host : (tree.defaultView?.frameElement ?? null);
+  }
+
+  return true;
+};
+
+const focusEnclosingFrames = (el: Element) => {
+  const frames: HTMLElement[] = [];
+
+  for (
+    let frame = el.ownerDocument.defaultView?.frameElement;
+    frame;
+    frame = frame.ownerDocument.defaultView?.frameElement
+  ) {
+    if ('focus' in frame && typeof frame.focus === 'function') {
+      frames.push(frame as HTMLElement);
+    }
+  }
+
+  for (let i = frames.length - 1; i >= 0; i -= 1) {
+    const frame = frames[i];
+    const frameDoc =
+      'contentDocument' in frame
+        ? (frame as HTMLIFrameElement).contentDocument
+        : null;
+    const expectedChild = i > 0 ? frames[i - 1] : el;
+    const childBefore = frameDoc?.activeElement ?? null;
+
+    if (isAncestorChainActive(frame)) continue;
+    frame.focus({ preventScroll: true });
+    if (!isAncestorChainActive(frame)) return false;
+
+    const childAfter = frameDoc?.activeElement ?? null;
+
+    if (
+      childAfter &&
+      childAfter !== childBefore &&
+      childAfter !== expectedChild &&
+      childAfter !== frameDoc?.body &&
+      childAfter !== frameDoc?.documentElement
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+export const focusEditableElement = (editor: EditorType, el: HTMLElement) => {
+  if (!focusEnclosingFrames(el)) return false;
+  IS_FOCUSED.set(editor, true);
+  setEditorFocused(editor, true);
+  el.focus({ preventScroll: true });
+  if (isElementFocused(el)) return true;
+  IS_FOCUSED.delete(editor);
+  setEditorFocused(editor, false);
+  return false;
 };
 
 const getLastChildren = (element: HTMLElement): HTMLElement => {
@@ -1648,9 +1718,13 @@ const DOMEditorImpl: DOMEditorInterface = {
 
   deselect: (editor) => {
     const selection = editor.read((state) => state.selection());
+    const el = DOMEditor.editable(editor);
     const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
+    const domSelection = root ? getSelection(root) : null;
 
-    if (root) writeDOMSelection(root, null);
+    if (root && el && isSelectionOwnedByEditable(el, domSelection)) {
+      writeDOMSelection(root, null);
+    }
 
     if (selection) {
       editor.update((tx) => {
@@ -1832,11 +1906,6 @@ const DOMEditorImpl: DOMEditorInterface = {
       editor: new WeakRef(editor),
     });
     const superseded = watchFocusSuperseded(editor, el);
-    const markAndFocus = () => {
-      IS_FOCUSED.set(editor, true);
-      setEditorFocused(editor, true);
-      el.focus({ preventScroll: true });
-    };
 
     if (IS_NODE_MAP_DIRTY.get(editor)) {
       let cancel = () => {};
@@ -1865,9 +1934,15 @@ const DOMEditorImpl: DOMEditorInterface = {
 
     if (findDOMRootRuntime(el)?.focusSelection(el)) return;
 
+    const activeBeforeCaret = focusedElementOnPage(el);
     const selection = ensureFocusCaret(editor, el);
 
-    if (superseded()) return;
+    if (
+      superseded() ||
+      movedFocusElsewhere(el, activeBeforeCaret, focusedElementOnPage(el))
+    ) {
+      return;
+    }
 
     const focusPlacement = getPlacementGeneration(editor);
     const selectionAtFocus = selection
@@ -1932,32 +2007,39 @@ const DOMEditorImpl: DOMEditorInterface = {
         rootActiveElement ??
         (root === el.ownerDocument ? null : el.ownerDocument.activeElement);
 
-      if (activeElement === el) {
+      if (isElementFocused(el)) {
         if (placedSince(editor, focusPlacement)) return;
         trySyncDomSelection();
         return;
       }
       if (
-        activeElement?.isConnected &&
+        activeElement &&
+        activeElement !== el &&
+        activeElement.isConnected &&
         containsShadowAware(el, activeElement)
       ) {
         ownedActiveElement = activeElement;
         return;
       }
 
+      const pageActive = focusedElementOnPage(el);
       const lostToInactiveHost =
-        activeElement === null ||
-        activeElement === el.ownerDocument.body ||
+        pageActive === null ||
+        pageActive === pageActive.ownerDocument.body ||
         (rootActiveElement === null && activeElement === shadowHost) ||
-        (activeElement === ownedActiveElement && !activeElement.isConnected);
+        (activeElement !== null &&
+          activeElement === ownedActiveElement &&
+          !activeElement.isConnected);
 
       if (!lostToInactiveHost) {
         return;
       }
 
-      markAndFocus();
+      const focused = focusEditableElement(editor, el);
       if (superseded()) return;
-      trySyncDomSelection();
+      if (focused) {
+        trySyncDomSelection();
+      }
     };
     const scheduleFocusSettle = () => {
       scheduleEditorDOMPhase(
@@ -1993,22 +2075,32 @@ const DOMEditorImpl: DOMEditorInterface = {
       );
     };
 
-    if (root.activeElement !== el) {
+    if (!isElementFocused(el)) {
       const { activeElement } = root;
 
       if (
         isDOMElement(activeElement) &&
+        activeElement !== el &&
         containsShadowAware(el, activeElement) &&
         'blur' in activeElement &&
         typeof activeElement.blur === 'function'
       ) {
+        const activeBeforeBlur = focusedElementOnPage(el);
+
         activeElement.blur();
-        if (superseded()) return;
+        if (
+          superseded() ||
+          movedFocusElsewhere(el, activeBeforeBlur, focusedElementOnPage(el))
+        ) {
+          return;
+        }
       }
 
-      markAndFocus();
+      const focused = focusEditableElement(editor, el);
       if (superseded()) return;
-      trySyncDomSelection();
+      if (focused) {
+        trySyncDomSelection();
+      }
       if (selectionAtFocus) {
         scheduleEditorDOMPhase(
           editor,

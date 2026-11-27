@@ -44,6 +44,7 @@ export type DOMIntegrityCompositionLine = Readonly<{
 }>;
 
 export type DOMIntegrityObserverOptions = {
+  canWriteSelection?: (root: HTMLElement) => boolean;
   compositionLine?: DOMIntegrityCompositionLine;
   consumeOwnedMutation: (mutation: MutationRecord) => boolean;
   getAndroidMutationHandler: () =>
@@ -693,7 +694,9 @@ export class DOMIntegrityObserver {
 
     for (const mutation of mutations.reverse()) restoreMutation(mutation);
 
-    restoreSelection(root, selection);
+    if (this.options.canWriteSelection?.(root) ?? true) {
+      restoreSelection(root, selection);
+    }
     this.repairPassesInFrame += 1;
     this.scheduleRepairPassReset();
     this.diagnosticsValue.repairPasses += 1;

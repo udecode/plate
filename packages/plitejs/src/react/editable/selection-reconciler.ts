@@ -43,6 +43,10 @@ import {
   resolveDOMRangeInRoot,
 } from '../../dom/plugin/dom-editor';
 import { resolvePliteNodePath } from '../../dom/plugin/dom-node-path';
+import {
+  canWriteDOMSelection,
+  isElementFocused,
+} from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import {
   type DOMSelectionPoints,
@@ -313,16 +317,25 @@ export const applyEditableFocus = ({
   const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
 
   if (!el || !root) return false;
-  state.latestElement = root.activeElement;
+
+  const target = isDOMElement(event.target) ? event.target : el;
+  const targetFocused =
+    isElementFocused(el) || (target !== el && isElementFocused(target));
+
+  if (!targetFocused) {
+    return false;
+  }
 
   // COMPAT: If the editor has nested editable elements, the focus
   // can go to them. In Firefox, this must be prevented because it
   // results in issues with keyboard navigation. (2017/03/30)
   if (isGeckoDOMHost(event) && event.target !== el) {
+    state.latestElement = root.activeElement;
     el.focus();
     return false;
   }
 
+  state.latestElement = root.activeElement;
   IS_FOCUSED.set(editor, true);
   setEditorFocused(editor, true);
   return true;
@@ -1277,12 +1290,7 @@ export const useEditableSelectionReconciler = ({
     const editorElementForActiveTarget = rootRef.current;
     if (
       !editorElementForActiveTarget ||
-      (root.activeElement &&
-        root.activeElement !==
-          editorElementForActiveTarget.ownerDocument.body &&
-        root.activeElement !==
-          editorElementForActiveTarget.ownerDocument.documentElement &&
-        !containsShadowAware(editorElementForActiveTarget, root.activeElement))
+      !canWriteDOMSelection(editorElementForActiveTarget, editor)
     ) {
       return undefined;
     }
@@ -1476,6 +1484,9 @@ export const useEditableSelectionReconciler = ({
           coverage: runtime.domCoverage,
           editor,
           exportSelection: (points, modelOwned) => {
+            if (!canWriteDOMSelection(editorElement, editor)) {
+              return;
+            }
             if (modelOwned) {
               setEditableModelSelectionPreference({
                 inputController: runtime.inputController,
@@ -1680,6 +1691,7 @@ export const useEditableSelectionReconciler = ({
         exportSelection: () => {
           syncEditableDOMSelectionToEditor({
             editor,
+            editorElement: rootRef.current ?? undefined,
             options,
             scrollSelectionIntoView,
             viewportBackedSelection,
@@ -1689,7 +1701,7 @@ export const useEditableSelectionReconciler = ({
         selectionPolicy: { kind: 'export-model', reason: 'model-owned' },
       });
     },
-    [editor, scrollSelectionIntoView, viewportBackedSelection, state]
+    [editor, rootRef, scrollSelectionIntoView, viewportBackedSelection, state]
   );
 
   return { syncDOMSelectionToEditor };

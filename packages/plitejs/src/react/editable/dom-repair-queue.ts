@@ -18,6 +18,7 @@ import {
   getPliteTextHostBounds,
   getPliteTextHostStrings,
 } from '../../dom/plugin/dom-geometry';
+import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
 import {
   type DOMSelectionPoints,
   readDOMSelectionPoints,
@@ -868,6 +869,12 @@ export const createDOMRepairQueue = ({
           const selection = readRuntimeSelectionRange(editor);
 
           if (!selection || !RangeApi.isCollapsed(selection)) {
+            const editable = rootRef.current;
+
+            if (!editable || !isElementFocused(editable)) {
+              textInsertRepairCompleted = true;
+              return true;
+            }
             return scrollCurrentDOMSelectionIntoView();
           }
 
@@ -893,6 +900,23 @@ export const createDOMRepairQueue = ({
                 });
               });
             }
+          }
+
+          const editable = rootRef.current;
+
+          if (!editable || !isElementFocused(editable)) {
+            if (
+              kind === 'repair-caret-after-text-insert' &&
+              inputController.state.pendingNativeTextInputRepairPathKey ===
+                path.join(',') &&
+              inputController.state.pendingNativeTextInputRepairOffset ===
+                pliteOffset
+            ) {
+              inputController.state.pendingNativeTextInputRepairOffset = null;
+              inputController.state.pendingNativeTextInputRepairPathKey = null;
+            }
+            textInsertRepairCompleted = true;
+            return true;
           }
 
           const domPoint = profileDOMRepairDuration('lookup-text-host', () =>
@@ -1092,6 +1116,14 @@ export const createDOMRepairQueue = ({
           return true;
         }
         if (!claimPageSelection()) {
+          repairCompleted = true;
+
+          return true;
+        }
+        if (!rootRef.current || !isElementFocused(rootRef.current)) {
+          if (kind === 'repair-caret-after-text-insert') {
+            repairCollapsedSelectionByPath();
+          }
           repairCompleted = true;
 
           return true;

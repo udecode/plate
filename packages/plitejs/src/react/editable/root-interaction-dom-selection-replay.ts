@@ -1,5 +1,6 @@
 import { getSelection } from '../../dom';
 import { isGeckoDOMHost } from '../../dom/internal';
+import { canWriteDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import {
   type DOMSelectionPoints,
   readDOMSelectionRange,
@@ -61,7 +62,7 @@ export const restoreDOMSelectionInTarget = (
 
   const rootNode = target.getRootNode() as Document | ShadowRoot;
 
-  if (!getSelection(rootNode)) {
+  if (!getSelection(rootNode) || !canWriteDOMSelection(target)) {
     return false;
   }
 

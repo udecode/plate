@@ -13,6 +13,7 @@ import {
 } from '../..';
 import { asSelectionMotion } from '../../core/public-state';
 import { setShownSelectionAsView } from '../../core/view-carets';
+import { shouldClearEditableDOMSelection } from '../../dom/plugin/dom-root-runtime';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { EditorSelectionTarget } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -208,6 +209,7 @@ const collapseNativeSelectionForProjectedSelection = (
     if (!element.isConnected) return;
     const current = readPliteViewSelection(editor);
     if (!current || isPliteViewSelectionCollapsed(current)) return;
+    if (!shouldClearEditableDOMSelection(element, editor)) return;
     if (!claimPageSelection()) return;
     writeDOMSelection(element.getRootNode() as Document | ShadowRoot, null);
   };

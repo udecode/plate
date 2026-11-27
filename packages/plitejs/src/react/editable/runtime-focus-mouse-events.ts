@@ -265,7 +265,12 @@ export const useRuntimeFocusMouseEvents = ({
         const syncProgrammaticFocusSelection = () => {
           if (
             ReactEditor.isFocused(editor) &&
-            isElementFocused(editorElement)
+            isElementFocused(editorElement) &&
+            !isSelectionHeldForPendingImport(
+              inputController,
+              editor,
+              editorElement
+            )
           ) {
             syncDOMSelectionToEditor();
           }
@@ -279,7 +284,7 @@ export const useRuntimeFocusMouseEvents = ({
         // WebKit puts no caret of its own when the root's first content is
         // not editable, such as a block's drag handle, and drops the typing.
         const fillStartCaretOnceFocusSettles = () => {
-          if (!ReactEditor.isFocused(editor)) return;
+          if (!isElementFocused(editorElement)) return;
           if (
             isSelectionHeldForPendingImport(
               inputController,

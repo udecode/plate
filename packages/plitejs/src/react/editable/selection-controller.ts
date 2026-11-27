@@ -38,6 +38,12 @@ import {
   isSelectableDOMSelection,
   resolveDOMRangeInRoot,
 } from '../../dom/plugin/dom-editor';
+import {
+  canWriteDOMSelection,
+  isElementFocused,
+  isSelectionOwnedByEditable,
+  shouldClearEditableDOMSelection,
+} from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import {
@@ -560,7 +566,9 @@ const importProjectedDOMSelection = ({
   });
   if (
     !isPliteViewSelectionCollapsed(projectedSelection) &&
-    !canUseNativeViewSelection(editor, projectedSelection)
+    !canUseNativeViewSelection(editor, projectedSelection) &&
+    canWriteDOMSelection(editorElement, editor) &&
+    isSelectionOwnedByEditable(editorElement, domSelection)
   ) {
     writeDOMSelection(tree, null);
   }
@@ -1280,7 +1288,7 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
-  if (activeElement === editorElement) {
+  if (isElementFocused(editorElement)) {
     state.latestElement = activeElement;
     IS_FOCUSED.set(editor, true);
     setEditorFocused(editor, true);
@@ -1784,14 +1792,7 @@ export const syncEditableDOMSelectionToEditor = ({
       return;
     }
 
-    const { activeElement } = root;
-
-    if (
-      activeElement &&
-      activeElement !== editorElement.ownerDocument.body &&
-      activeElement !== editorElement.ownerDocument.documentElement &&
-      activeElement !== editorElement
-    ) {
+    if (!canWriteDOMSelection(editorElement, editor)) {
       return;
     }
 
@@ -1848,7 +1849,9 @@ export const syncEditableDOMSelectionToEditor = ({
           : 'model-only-selection';
       const clearUpdate = clearAfter(`clear-${label}-update`);
 
-      exportEditableDOMSelection(state, root, null, clearUpdate);
+      if (shouldClearEditableDOMSelection(editorElement, editor)) {
+        exportEditableDOMSelection(state, root, null, clearUpdate);
+      }
       const isSuperseded = () =>
         !SelectionApi.equals(
           resolveNextKeyCaret(
@@ -1858,6 +1861,7 @@ export const syncEditableDOMSelectionToEditor = ({
           selection
         );
       const clearNativeSelection = () => {
+        if (!shouldClearEditableDOMSelection(editorElement, editor)) return;
         if (!claimPageSelection()) return;
         if (isSuperseded()) return;
         if (
@@ -1912,6 +1916,9 @@ export const syncEditableDOMSelectionToEditor = ({
         coverage: runtime.domCoverage,
         editor,
         exportSelection: (points, modelOwned) => {
+          if (!canWriteDOMSelection(editorElement, editor)) {
+            return;
+          }
           if (modelOwned) {
             setEditableModelSelectionPreference({
               inputController: runtime.inputController,

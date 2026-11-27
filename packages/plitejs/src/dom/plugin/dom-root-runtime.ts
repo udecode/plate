@@ -17,14 +17,18 @@ import {
   getViewFollowTarget,
 } from '../../editor-runtime-view';
 import type { AnyEditor, Editor, RootKey } from '../../interfaces/editor';
-import { pageOf } from '../utils/dom';
+import { containsShadowAware, getSelection, pageOf } from '../utils/dom';
 import {
   type DOMRootFactOverrides,
   type DOMRootQuirk,
   type ResolvedDOMRootFacts,
   resolveDOMRootFacts,
 } from '../utils/environment';
-import { EDITOR_TO_DOM_SCOPE_LISTENERS, IS_FOCUSED } from '../utils/weak-maps';
+import {
+  EDITOR_TO_DOM_SCOPE_LISTENERS,
+  IS_FOCUSED,
+  IS_READ_ONLY,
+} from '../utils/weak-maps';
 import {
   createDOMCoverageSession,
   type DOMCoverageBoundary,
@@ -284,19 +288,39 @@ export const findDOMRootRuntime = (node: Node): DOMRootRuntime | null => {
   return null;
 };
 
+const isNestedEditableOrInput = (root: Element, node: Node | null) => {
+  let current = node ? asElement(node) : null;
+
+  while (current && current !== root) {
+    const tag = current.tagName;
+    const ce = current.getAttribute('contenteditable');
+
+    if (
+      tag === 'INPUT' ||
+      tag === 'TEXTAREA' ||
+      (ce !== null && ce.toLowerCase() !== 'false')
+    ) {
+      return true;
+    }
+
+    current = composedParent(current);
+  }
+
+  return false;
+};
+
 const isRuntimeRootActive = (runtime: DOMRootRuntime) => {
   const root = runtime.rootRef.current;
 
   if (!root) return false;
 
-  const rootNode = root.getRootNode() as Document | ShadowRoot;
-  const activeElement =
-    'activeElement' in rootNode
-      ? rootNode.activeElement
-      : root.ownerDocument.activeElement;
+  const active = focusedElementOnPage(root);
 
   return (
-    activeElement === root || (!!activeElement && root.contains(activeElement))
+    !!active &&
+    (active === root ||
+      (containsShadowAware(root, active) &&
+        !isNestedEditableOrInput(root, active)))
   );
 };
 
@@ -378,6 +402,66 @@ export const isElementFocused = (element: Element) => {
   }
 };
 
+const isReadOnlyRoot = (editable: Element, editor?: object) => {
+  const owner = editor ?? findDOMRootRuntime(editable)?.editor;
+
+  return (
+    (!!owner && !!IS_READ_ONLY.get(owner as AnyEditor)) ||
+    editable.getAttribute('contenteditable') === 'false'
+  );
+};
+
+export const canWriteDOMSelection = (editable: Element, editor?: object) => {
+  if (isElementFocused(editable)) return true;
+  if (!isReadOnlyRoot(editable, editor)) return false;
+
+  const active = focusedElementOnPage(editable);
+
+  return (
+    !active ||
+    active === active.ownerDocument.body ||
+    active === active.ownerDocument.documentElement ||
+    (containsShadowAware(editable, active) &&
+      !isNestedEditableOrInput(editable, active))
+  );
+};
+
+export const isSelectionOwnedByEditable = (
+  editable: Element,
+  selection: Selection | null,
+  exclude?: Element | null
+) => {
+  if (!selection) return false;
+
+  const owns = (node: Node | null) =>
+    !!node &&
+    containsShadowAware(editable, node) &&
+    !(exclude && exclude !== editable && containsShadowAware(exclude, node)) &&
+    !isNestedEditableOrInput(editable, node);
+
+  return owns(selection.anchorNode) || owns(selection.focusNode);
+};
+
+export const shouldClearEditableDOMSelection = (
+  editable: Element,
+  editor?: object
+) => {
+  const focusElement = findDOMRootRuntime(editable)?.nodeSelectionFocus();
+
+  if (
+    !canWriteDOMSelection(editable, editor) &&
+    !(focusElement && isElementFocused(focusElement))
+  ) {
+    return false;
+  }
+
+  return isSelectionOwnedByEditable(
+    editable,
+    getSelection(editable.getRootNode() as Document | ShadowRoot),
+    focusElement
+  );
+};
+
 export const resolveInnermostElementAtPoint = (
   document: Document,
   x: number,
@@ -416,6 +500,32 @@ const focusedElementOf = (top: Document) => {
 
 export const focusedElementOnPage = (node: Node) =>
   focusedElementOf(pageOf(node.ownerDocument ?? (node as Document)));
+
+export const movedFocusElsewhere = (
+  element: Element,
+  before: Element | null,
+  after: Element | null
+) => {
+  if (
+    !after ||
+    after === before ||
+    after === element ||
+    (containsShadowAware(element, after) &&
+      !isNestedEditableOrInput(element, after))
+  ) {
+    return false;
+  }
+
+  const ownDoc = element.ownerDocument;
+  const topDoc = pageOf(ownDoc);
+
+  return (
+    after !== ownDoc.body &&
+    after !== ownDoc.documentElement &&
+    after !== topDoc.body &&
+    after !== topDoc.documentElement
+  );
+};
 
 const outerElementOf = (element: Element) => {
   if (element.parentElement) return element.parentElement;
@@ -742,6 +852,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
         ) ?? (() => {})
     );
     this.domIntegrityObserver = new DOMIntegrityObserver({
+      canWriteSelection: (root) => canWriteDOMSelection(root, this.editor),
       getAndroidMutationHandler: options.getAndroidMutationHandler,
       isAndroidMutationOwned: options.isAndroidMutationOwned,
       isCanonicalTextMutation: options.isCanonicalTextMutation,

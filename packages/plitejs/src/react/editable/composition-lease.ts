@@ -12,6 +12,7 @@ import {
   RangeApi,
 } from '../..';
 import { getSelection, isDOMElement } from '../../dom';
+import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { PliteDecorationStore } from '../decoration-context';
 import { holdsPliteNodeKeyElement } from '../hooks/use-plite-node-ref';
@@ -553,7 +554,7 @@ const redrawRestoredLineAndCaret = (
   });
   const domPoint = point && ReactEditor.resolveDOMPoint(editor, point);
 
-  if (domPoint) {
+  if (domPoint && isElementFocused(root)) {
     writeDOMSelection(root.getRootNode() as Document | ShadowRoot, {
       anchor: domPoint,
       focus: domPoint,

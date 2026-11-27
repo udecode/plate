@@ -23,6 +23,7 @@ import {
   isAndroidDOMHost,
   isWebKitDOMHost,
 } from '../../dom/internal';
+import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
 import { isDOMInputOrTextArea } from '../../dom/utils/dom';
 import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -208,7 +209,10 @@ const keepCaretAfterFirstPreedit = (
   root.addEventListener(
     'input',
     () => {
-      if (insertion.data.slice(start, end) === preedit) {
+      if (
+        isElementFocused(root) &&
+        insertion.data.slice(start, end) === preedit
+      ) {
         writeDOMSelection(tree, {
           anchor: [insertion, end],
           focus: [insertion, end],
