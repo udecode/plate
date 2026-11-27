@@ -39,6 +39,7 @@ import {
 } from './check-steps.mjs';
 import {
   appendLocalCiEvent,
+  classifyLocalCiChanges,
   frictionCommand,
   FULL_RUN_HOUR,
   localCiFiles,
@@ -49,7 +50,12 @@ import {
   searchFirstBad,
   startsBrokenStreak,
 } from './local-ci-events.mjs';
-import { newPrivateFiles, PRIVATE_DIR } from './private-files.mjs';
+import {
+  isSplit,
+  newPrivateFiles,
+  pairedCommit,
+  PRIVATE_DIR,
+} from './private-files.mjs';
 import {
   dueRecurrences,
   recurrenceOffer,
@@ -614,6 +620,52 @@ const offerRecurrences = () => {
   }
 };
 
+const privateOriginTip = (tip) => {
+  if (!isSplit(main)) return null;
+  return (
+    pairedCommit(main, tip) ??
+    (git(main, [
+      `--git-dir=${join(main, PRIVATE_DIR)}`,
+      'rev-parse',
+      '--verify',
+      '--quiet',
+      'origin/next',
+    ]).stdout.trim() ||
+      null)
+  );
+};
+
+const changedFilesBetween = (fromTip, toTip, fromPrivate, toPrivate) => {
+  const files = new Set();
+  if (fromTip !== toTip) {
+    const pub = git(main, [
+      'diff',
+      '--name-only',
+      '--no-renames',
+      `${fromTip}..${toTip}`,
+    ]);
+    if (pub.status !== 0) return null;
+    for (const file of pub.stdout.split('\n').filter(Boolean)) files.add(file);
+  }
+  if (isSplit(main)) {
+    if (!fromPrivate || !toPrivate) return null;
+    if (fromPrivate !== toPrivate) {
+      const priv = git(main, [
+        `--git-dir=${join(main, PRIVATE_DIR)}`,
+        'diff',
+        '--name-only',
+        '--no-renames',
+        `${fromPrivate}..${toPrivate}`,
+      ]);
+      if (priv.status !== 0) return null;
+      for (const file of priv.stdout.split('\n').filter(Boolean)) {
+        files.add(file);
+      }
+    }
+  }
+  return [...files];
+};
+
 // Fetches next in both halves and returns its tip.
 const fetchNext = () => {
   must(main, ['fetch', '--quiet', 'origin', 'next']);
@@ -680,11 +732,15 @@ const run = async (args) => {
         now.getHours() >= FULL_RUN_HOUR &&
         state.fullDay !== today &&
         state.fullTip !== tip);
+    const targetPrivateTip = privateOriginTip(tip);
     if (
       !full &&
       !option('--ref') &&
       !args.includes('--force') &&
-      tip === state.tip
+      tip === state.tip &&
+      (!targetPrivateTip ||
+        !state.privateTip ||
+        targetPrivateTip === state.privateTip)
     ) {
       console.info(`[local-ci] next is still ${tip.slice(0, 10)}.`);
       try {
@@ -703,6 +759,46 @@ const run = async (args) => {
         .filter((event) => event.kind === 'red' && event.tip === state.tip)
         .map((event) => [event.step, event])
     );
+    let runMode = 'deep';
+    if (
+      !full &&
+      !option('--ref') &&
+      !args.includes('--force') &&
+      state.tip &&
+      wasRed.size === 0
+    ) {
+      const prevPrivateTip =
+        state.privateTip ??
+        (isSplit(main) ? pairedCommit(main, state.tip) : null);
+      const changed = changedFilesBetween(
+        state.tip,
+        tip,
+        prevPrivateTip,
+        targetPrivateTip
+      );
+      if (changed) runMode = classifyLocalCiChanges(changed);
+    }
+    if (runMode === 'md-only') {
+      const name = runId(tip, 'md-only');
+      const next = {
+        ...state,
+        lastRun: name,
+        lastRunAt: now.toISOString(),
+        privateTip: targetPrivateTip,
+        tip,
+        ...(state.green ? { green: tip } : {}),
+      };
+      emit({
+        kind: 'green',
+        skipped: 'md-only',
+        tip,
+        ...(targetPrivateTip ? { privateTip: targetPrivateTip } : {}),
+        ...(isMain && !dry ? { wake: true } : {}),
+      });
+      if (!dry && isMain) pushGreen(tip);
+      writeState(next);
+      return 0;
+    }
     let privateTip;
     try {
       checkout(tip);
@@ -711,16 +807,28 @@ const run = async (args) => {
       return brokenAt(tip, error);
     }
     const step = option('--step');
-    const name = runId(tip, step ?? (full ? 'full' : 'ci'));
-    const checkStarted = Date.now();
-    const result = check(
-      logs,
-      name,
-      step ? [step] : (mine ?? (full ? FULL_ARGS : ['--deep'])),
-      { full }
+    const name = runId(
+      tip,
+      step ?? (full ? 'full' : runMode === 'affected' ? 'affected' : 'ci')
     );
+    const checkStarted = Date.now();
+    const checkArgs = step
+      ? [step]
+      : (mine ??
+        (full
+          ? FULL_ARGS
+          : runMode === 'affected'
+            ? ['--affected', '--base', state.tip]
+            : ['--deep']));
+    const result = check(logs, name, checkArgs, { full });
     const green = option('--green') ?? state.green ?? null;
-    const next = { ...state, tip, lastRun: name, lastRunAt: now.toISOString() };
+    const next = {
+      ...state,
+      lastRun: name,
+      lastRunAt: now.toISOString(),
+      privateTip,
+      tip,
+    };
     if (full) Object.assign(next, { fullDay: today, fullTip: tip });
     if (result.ok) {
       emit({

@@ -1387,7 +1387,22 @@ const schedule = async (entries, budget, start, stopped, seconds) => {
 };
 
 const main = async () => {
-  const args = process.argv.slice(2);
+  const rawArgs = process.argv.slice(2);
+  let baseRef = null;
+  const args = [];
+  for (let i = 0; i < rawArgs.length; i += 1) {
+    if (rawArgs[i] === '--base') {
+      const value = rawArgs[i + 1];
+      if (!value || value.startsWith('--')) {
+        console.error('[check] --base needs a git ref.');
+        return 1;
+      }
+      baseRef = value;
+      i += 1;
+      continue;
+    }
+    args.push(rawArgs[i]);
+  }
   const flags = [
     '--affected',
     '--audit',
@@ -1435,6 +1450,10 @@ const main = async () => {
     return 1;
   }
   const affected = args.includes('--affected');
+  if (baseRef && !affected) {
+    console.error('[check] --base needs --affected.');
+    return 1;
+  }
   if (affected && (writing || optIns.length > 0 || names.length > 0)) {
     console.error(
       '[check] --affected picks its own steps; run it without step names, --write, --audit, --build, --browser or --reads.'
@@ -1540,7 +1559,7 @@ const main = async () => {
     };
     const { cover: covered, need } = planStep(
       step,
-      cache.bases(scope, { mergeBase: affected, near })
+      cache.bases(scope, { baseRef, mergeBase: affected, near })
     );
     const ran = Array.isArray(need) ? { ...scope, tests: need } : scope;
     const cover =

@@ -5,6 +5,47 @@ import { join } from 'node:path';
 
 export const FULL_RUN_HOUR = 4;
 
+const MD_ONLY_DIRS = [
+  'docs/plans/',
+  'docs/research/',
+  'docs/triage/',
+  'docs/editor-behavior/',
+];
+const NON_SKIP_MD_DIRS = [
+  'content/docs/',
+  '.agents/',
+  '.claude/',
+  '.changeset/',
+  'apps/',
+  'packages/',
+  'tooling/',
+  'docs/plite/',
+];
+const AFFECTED_ONLY_DIRS = [
+  '.agents/',
+  '.claude/skills/',
+  'content/docs/',
+  'docs/plite/',
+];
+
+const isMdOnlyFile = (file) =>
+  MD_ONLY_DIRS.some((dir) => file.startsWith(dir)) ||
+  file.endsWith('.decisions.tsv') ||
+  (file.endsWith('.md') &&
+    file !== 'AGENTS.md' &&
+    !NON_SKIP_MD_DIRS.some((dir) => file.startsWith(dir)));
+
+const isAffectedOnlyFile = (file) =>
+  isMdOnlyFile(file) ||
+  file === 'AGENTS.md' ||
+  AFFECTED_ONLY_DIRS.some((dir) => file.startsWith(dir));
+
+export const classifyLocalCiChanges = (files) => {
+  if (files.every(isMdOnlyFile)) return 'md-only';
+  if (files.every(isAffectedOnlyFile)) return 'affected';
+  return 'deep';
+};
+
 export const localCiFiles = (gitCommonDir) => {
   const home = join(gitCommonDir, 'plate-local-ci');
   return {

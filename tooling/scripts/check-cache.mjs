@@ -21,6 +21,7 @@ import {
   isSplit,
   newPrivateFiles,
   objectIds,
+  pairedCommit,
   privateGit,
   trackedFiles,
   withList,
@@ -237,20 +238,31 @@ const stateId = ({ head, index, work }, filesOnly) =>
     )
   ).slice(0, 40);
 
-const mergeBaseState = (root) => {
-  const baseTree = (git) => {
-    const base = git(['merge-base', 'HEAD', UPSTREAM]);
+/**
+ * @param {string} root checkout root directory
+ * @param {string | null} [baseRef] optional ancestor ref to compare against instead of origin/next
+ */
+const mergeBaseState = (root, baseRef = null) => {
+  const baseTree = (git, ref) => {
+    const base = git(['merge-base', 'HEAD', ref]);
     if (base.status !== 0) return null;
     return must(git, ['rev-parse', `${base.stdout.trim()}^{tree}`]).trim();
   };
-  const trees = { private: null, public: baseTree(gitIn(root, 'public')) };
+  const pubRef = baseRef ?? UPSTREAM;
+  const trees = {
+    private: null,
+    public: baseTree(gitIn(root, 'public'), pubRef),
+  };
   if (trees.public === null) {
     throw new Error(
-      'no merge base with origin/next; run git fetch origin next.'
+      baseRef
+        ? `no merge base with ${baseRef}.`
+        : 'no merge base with origin/next; run git fetch origin next.'
     );
   }
   if (isSplit(root)) {
-    trees.private = baseTree(gitIn(root, 'private'));
+    const privRef = baseRef ? pairedCommit(root, baseRef) : UPSTREAM;
+    trees.private = privRef ? baseTree(gitIn(root, 'private'), privRef) : null;
     if (trees.private === null) return null;
   }
   const index = { private: trees.private === null ? null : [], public: [] };
@@ -628,10 +640,10 @@ export function openCache(root, { fresh = false } = {}) {
      * `mergeBase`, the files changed since each half's merge base with
      * origin/next.
      * @param {Scope} scope the check to find passes for
-     * @param {{ mergeBase?: boolean, near?: boolean }} [options] near adds recent passes on other states, and mergeBase origin/next's merge base
+     * @param {{ baseRef?: string | null, mergeBase?: boolean, near?: boolean }} [options] near adds recent passes on other states, and mergeBase origin/next's merge base (or baseRef)
      * @returns {Base[]} each pass with the files changed since it, newest first and the merge base last
      */
-    bases(scope, { mergeBase = false, near = false } = {}) {
+    bases(scope, { baseRef = null, mergeBase = false, near = false } = {}) {
       const found = [];
       if (!fresh && scope.key) {
         const dir = path.join(storeDir(), keyOf(scope));
@@ -674,19 +686,22 @@ export function openCache(root, { fresh = false } = {}) {
       }
       if (mergeBase) {
         const filesOnly = Boolean(scope.filesOnly);
-        if (!mergeBases.has(filesOnly)) {
-          const base = mergeBaseState(root);
+        const key = `${filesOnly}:${baseRef ?? ''}`;
+        if (!mergeBases.has(key)) {
+          const base = mergeBaseState(root, baseRef);
           const changed = base && changedBetween(base, current(), filesOnly);
           mergeBases.set(
-            filesOnly,
+            key,
             changed && {
               ...changed,
               kind: 'merge-base',
-              label: 'passed at the merge base with origin/next',
+              label: baseRef
+                ? `passed at ${baseRef}`
+                : 'passed at the merge base with origin/next',
             }
           );
         }
-        if (mergeBases.get(filesOnly)) found.push(mergeBases.get(filesOnly));
+        if (mergeBases.get(key)) found.push(mergeBases.get(key));
       }
       return found;
     },

@@ -111,6 +111,11 @@
             "type": "command",
             "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/tooling/scripts/read-budget.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/read-budget.mjs\" --reset",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/tooling/scripts/prompt-ff.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/prompt-ff.mjs\" --hook",
+            "timeout": 15
           }
         ]
       }

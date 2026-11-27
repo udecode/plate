@@ -64,6 +64,11 @@
         "type": "command",
         "command": "cd .. && { [ ! -f tooling/scripts/read-budget.mjs ] || node tooling/scripts/read-budget.mjs --reset; }",
         "timeout": 10
+      },
+      {
+        "type": "command",
+        "command": "cd .. && { [ ! -f tooling/scripts/prompt-ff.mjs ] || node tooling/scripts/prompt-ff.mjs --hook; }",
+        "timeout": 15
       }
     ],
     "Stop": [
