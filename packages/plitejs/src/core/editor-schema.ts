@@ -4470,6 +4470,57 @@ export const createEditorSchema = <V extends Value = Value>(
     return element;
   };
 
+  const hasDeclaredSchema = () => {
+    const { records } = getRegistry().schemaContributions;
+
+    return records ? records.size > 0 : true;
+  };
+
+  const isInlineChild = (schema: CompiledEditorSchema, child: Descendant) =>
+    NodeApi.isText(child) ||
+    schema.elements.byType.get(getElementType(child) ?? '')?.behavior.inline ===
+      true;
+
+  const assertUndeclaredContentUnmixed = (
+    children: NodeList<Descendant>,
+    schema: CompiledEditorSchema,
+    owner: string,
+    root: RootKey,
+    path: readonly number[],
+    ancestors?: () => readonly Element[] | undefined
+  ) => {
+    if (!hasDeclaredSchema()) return;
+
+    let inlineIndex = -1;
+    let blockIndex = -1;
+
+    for (let index = 0; index < children.length; index += 1) {
+      const child = children.at(index);
+
+      if (!child) continue;
+      if (isInlineChild(schema, child)) {
+        if (inlineIndex < 0) inlineIndex = index;
+      } else if (blockIndex < 0) {
+        blockIndex = index;
+      }
+      if (inlineIndex >= 0 && blockIndex >= 0) {
+        const offendingIndex = Math.max(inlineIndex, blockIndex);
+        const offending = children.at(offendingIndex);
+
+        throw createEditorSchemaValidationError(
+          'invalid-content',
+          `${owner} cannot mix text or inline elements with blocks.`,
+          toSchemaValidationLocation(
+            root,
+            [...path, offendingIndex],
+            offending ? getValidationNodeType(offending) : undefined,
+            ancestors?.()
+          )
+        );
+      }
+    }
+  };
+
   const validateDeclarativeChildren = (
     children: readonly Descendant[],
     schema: CompiledEditorSchema,
@@ -4543,6 +4594,15 @@ export const createEditorSchema = <V extends Value = Value>(
             );
           }
         }
+      } else {
+        assertUndeclaredContentUnmixed(
+          node.children,
+          schema,
+          `Editor element "${type ?? 'unknown'}" at [${path}]`,
+          root,
+          path,
+          () => [node, ...ancestors]
+        );
       }
 
       validateDeclarativeChildren(
@@ -5054,6 +5114,14 @@ export const createEditorSchema = <V extends Value = Value>(
       );
       if (content) {
         validateDeclarativeRootContent(root, children, content, schema);
+      } else {
+        assertUndeclaredContentUnmixed(
+          children,
+          schema,
+          `Editor ${editorRootLabel(root)}`,
+          root,
+          []
+        );
       }
     }
   };
@@ -5287,15 +5355,20 @@ export const createEditorSchema = <V extends Value = Value>(
 
           return true;
         }
-        if (
-          Object.hasOwn(roots, root) &&
-          !schema.roots.has(root) &&
-          schema.unknown === 'reject'
-        ) {
-          throw createEditorSchemaValidationError(
-            'invalid-root',
-            `Undeclared editor root "${root}" in closed editor schema.`,
-            toSchemaValidationLocation(root, [])
+        if (Object.hasOwn(roots, root) && !schema.roots.has(root)) {
+          if (schema.unknown === 'reject') {
+            throw createEditorSchemaValidationError(
+              'invalid-root',
+              `Undeclared editor root "${root}" in closed editor schema.`,
+              toSchemaValidationLocation(root, [])
+            );
+          }
+          assertUndeclaredContentUnmixed(
+            rootNodes(roots[root]),
+            schema,
+            `Editor ${editorRootLabel(root)}`,
+            root,
+            []
           );
         }
 
@@ -5623,6 +5696,15 @@ export const createEditorSchema = <V extends Value = Value>(
             `Editor element "${node.type}" at [${path}]`,
             { ancestors: [node, ...ancestors], root }
           );
+        } else {
+          assertUndeclaredContentUnmixed(
+            node.children,
+            schema,
+            `Editor element "${getElementType(node) ?? 'unknown'}" at [${path}]`,
+            root,
+            path,
+            () => [node, ...ancestors]
+          );
         }
         node.children.forEach((child, index) => {
           validateSubtree(child, [...path, index], [node, ...ancestors]);
@@ -5675,9 +5757,28 @@ export const createEditorSchema = <V extends Value = Value>(
               `Undeclared editor root "${root}" in closed editor schema.`
             );
           }
+          assertUndeclaredContentUnmixed(
+            children,
+            schema,
+            `Editor ${editorRootLabel(root)}`,
+            root,
+            []
+          );
           continue;
         }
-        if (!content) continue;
+        if (!content) {
+          if (schema && ElementApi.isElement(parent)) {
+            assertUndeclaredContentUnmixed(
+              parent.children,
+              schema,
+              `Editor element "${getElementType(parent) ?? 'unknown'}" at [${path}]`,
+              root,
+              path,
+              () => [parent, ...getElementAncestors(children, path)]
+            );
+          }
+          continue;
+        }
         const parentChildren =
           path.length === 0
             ? children

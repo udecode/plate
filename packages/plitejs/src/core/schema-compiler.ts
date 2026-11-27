@@ -438,71 +438,333 @@ const getCompiledSchemaWrapperPlanKey = (
 ) => `${parentProgramId}\u0000${childType ?? '\u0000text'}`;
 
 const COMPILED_WRAPPER_PLAN_CACHE = new WeakMap<
-  CompiledEditorSchema,
+  CompiledSchemaContentProgram,
   Map<string, CompiledSchemaWrapperPlan | null>
 >();
 
-const orderedCompiledAllowedTypes = (program: CompiledSchemaContentProgram) => {
+const SCHEMA_REQUIRED_PARENT_DEPTH = new WeakMap<
+  CompiledEditorSchema,
+  number
+>();
+
+const targetParentDepth = (target: SchemaTarget | null): number => {
+  if (!target) return 0;
+  if (target.kind === 'parent') return 1 + targetParentDepth(target.target);
+  if (target.kind === 'not') return targetParentDepth(target.target);
+  if (target.kind === 'and' || target.kind === 'or') {
+    let max = 0;
+
+    for (const item of target.targets) {
+      const depth = targetParentDepth(item);
+
+      if (depth > max) max = depth;
+    }
+
+    return max;
+  }
+
+  return 0;
+};
+
+const requiredPropertyParentDepth = (schema: CompiledEditorSchema): number => {
+  const cached = SCHEMA_REQUIRED_PARENT_DEPTH.get(schema);
+
+  if (cached !== undefined) return cached;
+
+  let max = 0;
+
+  for (const property of schema.properties.byId.values()) {
+    if (!property.descriptor.required) continue;
+    const depth = targetParentDepth(property.target);
+
+    if (depth > max) max = depth;
+  }
+  SCHEMA_REQUIRED_PARENT_DEPTH.set(schema, max);
+
+  return max;
+};
+
+type EffectiveWrapperContent = Readonly<{
+  allowedElementTypes: ReadonlySet<string>;
+  allowsText: boolean;
+  allowsUnknownElements: boolean;
+  defaultPlan: CompiledSchemaConstructionPlan | null;
+  prefix?: readonly CompiledSchemaContentPrefixSlot[];
+}>;
+
+const effectiveWrapperContent = (
+  program: CompiledSchemaContentProgram,
+  remainderOnly: boolean
+): EffectiveWrapperContent | null => {
+  if (remainderOnly) {
+    const rest = program.remainder;
+
+    if (!rest || rest.max === 0) return null;
+
+    return rest;
+  }
+  if (program.max === 0) return null;
+  if (program.prefix && program.remainder) {
+    if (program.remainder.max === 0) {
+      return {
+        allowedElementTypes: new Set(program.prefix.map(({ type }) => type)),
+        allowsText: false,
+        allowsUnknownElements: false,
+        defaultPlan: null,
+        prefix: program.prefix,
+      };
+    }
+
+    return {
+      allowedElementTypes: new Set([
+        ...program.remainder.allowedElementTypes,
+        ...program.prefix.map(({ type }) => type),
+      ]),
+      allowsText: program.remainder.allowsText,
+      allowsUnknownElements: program.remainder.allowsUnknownElements,
+      defaultPlan: program.remainder.defaultPlan,
+      prefix: program.prefix,
+    };
+  }
+
+  return program;
+};
+
+const orderedCompiledAllowedTypes = (program: EffectiveWrapperContent) => {
   const preferred =
     program.defaultPlan?.kind === 'element' ? program.defaultPlan.type : null;
 
   return [
-    ...(preferred ? [preferred] : []),
+    ...(preferred && program.allowedElementTypes.has(preferred)
+      ? [preferred]
+      : []),
     ...[...program.allowedElementTypes]
       .filter((type) => type !== preferred)
       .sort((left, right) => left.localeCompare(right)),
   ];
 };
 
-/** Resolve and revision-cache one shortest grammar-only wrapper chain. */
+const suppliedWrapperProperties = (
+  parentProgram: EffectiveWrapperContent,
+  type: string
+): Readonly<Record<string, EditorJsonValue>> | undefined => {
+  if (
+    parentProgram.defaultPlan?.kind === 'element' &&
+    parentProgram.defaultPlan.type === type &&
+    parentProgram.defaultPlan.properties
+  ) {
+    return parentProgram.defaultPlan.properties;
+  }
+  const slot = parentProgram.prefix?.find((entry) => entry.type === type);
+
+  return slot && Object.keys(slot.properties).length > 0
+    ? slot.properties
+    : undefined;
+};
+
+const wrapperParentContext = (
+  parentProgram: string | CompiledSchemaContentProgram,
+  context?: Readonly<{ ancestors?: readonly string[]; root?: string | null }>
+): Readonly<{ ancestors: readonly string[]; root: string | null }> => {
+  if (context) {
+    return {
+      ancestors: context.ancestors ?? [],
+      root: context.root ?? null,
+    };
+  }
+  if (typeof parentProgram === 'string') {
+    if (parentProgram.startsWith('element:')) {
+      return {
+        ancestors: [parentProgram.slice('element:'.length)],
+        root: null,
+      };
+    }
+    if (parentProgram.startsWith('root:')) {
+      return { ancestors: [], root: parentProgram.slice('root:'.length) };
+    }
+  }
+
+  return { ancestors: [], root: null };
+};
+
+const hasUnfilledRequiredTextProperty = (
+  schema: CompiledEditorSchema,
+  type: string,
+  context: CompiledSchemaTargetContext
+): boolean => {
+  for (const propertyId of schema.properties.textAllowedByParentType.get(
+    type
+  ) ?? []) {
+    const property = schema.properties.byId.get(propertyId);
+
+    if (
+      property?.descriptor.required &&
+      typeof property.key === 'string' &&
+      matchesCompiledSchemaTarget(schema, property.target, context)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const isUsableWrapperElement = (
+  schema: CompiledEditorSchema,
+  type: string,
+  parentProgram: EffectiveWrapperContent,
+  context: CompiledSchemaTargetContext,
+  childType: string | null
+): boolean => {
+  const element = schema.elements.byType.get(type);
+
+  if (!element?.content || element.content.max === 0) return false;
+  if (
+    element.behavior.void ||
+    element.behavior.atom ||
+    element.behavior.readOnly ||
+    element.behavior.object ||
+    element.contentRoots.size > 0
+  ) {
+    return false;
+  }
+  if (childType === null && element.behavior.inline) return false;
+
+  const supplied = suppliedWrapperProperties(parentProgram, type);
+
+  for (const propertyId of schema.properties.elementAllowedByType.get(type) ??
+    []) {
+    const property = schema.properties.byId.get(propertyId);
+
+    if (
+      !property?.descriptor.required ||
+      typeof property.key !== 'string' ||
+      Object.hasOwn(supplied ?? {}, property.key)
+    ) {
+      continue;
+    }
+    if (matchesCompiledSchemaTarget(schema, property.target, context)) {
+      return false;
+    }
+  }
+
+  if (element.content.prefix) {
+    const slotAncestors = [type, ...(context.ancestors ?? [])];
+    const singlePrefixSlot = element.content.prefix.length === 1;
+
+    for (const slot of element.content.prefix) {
+      const slotCarriesChild =
+        singlePrefixSlot &&
+        (slot.type === childType ||
+          (childType === null &&
+            schema.elements.byType.get(slot.type)?.content?.allowsText ===
+              true));
+
+      if (slotCarriesChild) continue;
+      if (
+        hasUnfilledRequiredTextProperty(schema, slot.type, {
+          ancestors: slotAncestors,
+          root: context.root,
+          type: slot.type,
+        })
+      ) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};
+
 export const resolveCompiledSchemaWrapperPlan = (
   schema: CompiledEditorSchema,
-  parentProgramId: string,
-  childType: string | null
+  parentProgram: string | CompiledSchemaContentProgram,
+  childType: string | null,
+  remainder = false,
+  context?: Readonly<{ ancestors?: readonly string[]; root?: string | null }>
 ): CompiledSchemaWrapperPlan | null => {
+  const rawParent =
+    typeof parentProgram === 'string'
+      ? schema.elements.contentPrograms.get(parentProgram)
+      : parentProgram;
+
+  if (!rawParent) return null;
+
+  const parent = effectiveWrapperContent(rawParent, remainder);
+
+  if (!parent) return null;
+
   const preservedUnknown =
     childType !== null &&
     schema.unknown === 'preserve' &&
     !schema.elements.byType.has(childType);
-  const key = getCompiledSchemaWrapperPlanKey(
-    parentProgramId,
-    preservedUnknown ? UNKNOWN_TYPE : childType
-  );
-  const direct = schema.elements.wrapperPlans.get(key);
 
-  if (direct) return direct;
-  let cache = COMPILED_WRAPPER_PLAN_CACHE.get(schema);
+  const directAllowed =
+    childType === null
+      ? parent.allowsText
+      : parent.allowedElementTypes.has(childType) ||
+        (preservedUnknown && parent.allowsUnknownElements);
+
+  if (directAllowed) {
+    return Object.freeze([]);
+  }
+
+  const baseContext = wrapperParentContext(parentProgram, context);
+  const key = JSON.stringify([
+    preservedUnknown ? UNKNOWN_TYPE : childType,
+    remainder,
+    baseContext.root,
+    baseContext.ancestors,
+  ]);
+
+  let cache = COMPILED_WRAPPER_PLAN_CACHE.get(rawParent);
 
   if (!cache) {
     cache = new Map();
-    COMPILED_WRAPPER_PLAN_CACHE.set(schema, cache);
+    COMPILED_WRAPPER_PLAN_CACHE.set(rawParent, cache);
   }
   if (cache.has(key)) return cache.get(key) ?? null;
+
   return profileCoreDuration('schema-wrapper-plan-search', () => {
-    const parent = schema.elements.contentPrograms.get(parentProgramId);
+    const parentDepth = requiredPropertyParentDepth(schema);
+    const seenKey = (type: string, ancestors: readonly string[]) =>
+      parentDepth === 0
+        ? type
+        : JSON.stringify([type, ...ancestors.slice(0, parentDepth)]);
+    const queue: Array<Readonly<{ path: readonly string[]; type: string }>> =
+      [];
+    const seen = new Set<string>();
 
-    if (!parent) {
-      cache.set(key, null);
-      return null;
+    for (const type of orderedCompiledAllowedTypes(parent)) {
+      if (
+        !isUsableWrapperElement(
+          schema,
+          type,
+          parent,
+          {
+            ancestors: baseContext.ancestors,
+            root: baseContext.root,
+            type,
+          },
+          childType
+        )
+      ) {
+        continue;
+      }
+      const stateKey = seenKey(type, baseContext.ancestors);
+
+      if (seen.has(stateKey)) continue;
+      seen.add(stateKey);
+      queue.push({ path: [type], type });
     }
-
-    if (preservedUnknown && parent.allowsUnknownElements) {
-      const plan = Object.freeze([]) as CompiledSchemaWrapperPlan;
-
-      cache.set(key, plan);
-      return plan;
-    }
-
-    const queue = orderedCompiledAllowedTypes(parent).map((type) => ({
-      path: [type],
-      type,
-    }));
-    const seen = new Set(queue.map(({ type }) => type));
 
     for (const current of queue) {
-      const content = schema.elements.contentPrograms.get(
+      const rawContent = schema.elements.contentPrograms.get(
         `element:${current.type}`
       );
+      const content = rawContent
+        ? effectiveWrapperContent(rawContent, false)
+        : null;
 
       if (!content) continue;
       const matches =
@@ -517,9 +779,32 @@ export const resolveCompiledSchemaWrapperPlan = (
         cache.set(key, plan);
         return plan;
       }
+
+      const nextAncestors = [
+        ...current.path.toReversed(),
+        ...baseContext.ancestors,
+      ];
+
       for (const type of orderedCompiledAllowedTypes(content)) {
-        if (seen.has(type)) continue;
-        seen.add(type);
+        const stateKey = seenKey(type, nextAncestors);
+
+        if (
+          seen.has(stateKey) ||
+          !isUsableWrapperElement(
+            schema,
+            type,
+            content,
+            {
+              ancestors: nextAncestors,
+              root: baseContext.root,
+              type,
+            },
+            childType
+          )
+        ) {
+          continue;
+        }
+        seen.add(stateKey);
         queue.push({ path: [...current.path, type], type });
       }
     }

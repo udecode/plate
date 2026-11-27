@@ -290,7 +290,8 @@ type SliceFitterDependencies<V extends Value> = Readonly<{
     type: string,
     properties?: Readonly<Record<string, unknown>>,
     creating?: ReadonlySet<string>,
-    options?: SliceFitRuntimeTargetOptions
+    options?: SliceFitRuntimeTargetOptions,
+    filled?: readonly Descendant[]
   ) => Element;
   editorRootLabel: (root: string) => string;
   elementUsesInlineContent: (element: Element) => boolean;
@@ -706,7 +707,8 @@ export const compileSliceFitter = <V extends Value>(
     content: CompiledSchemaContentProgram,
     source: readonly Descendant[],
     createdDefaults: readonly Descendant[] = [],
-    options: RuntimeTargetOptions = {}
+    options: RuntimeTargetOptions = {},
+    indexOffset = 0
   ): readonly Descendant[] | null => {
     if (content.prefix && content.remainder) {
       const fitted: Descendant[] = [];
@@ -739,7 +741,7 @@ export const compileSliceFitter = <V extends Value>(
           outputs: [
             schemaModelLocation(options.root ?? 'main', [
               ...(options.path ?? []),
-              fitted.length - 1,
+              indexOffset + fitted.length - 1,
             ]),
           ],
         });
@@ -750,7 +752,8 @@ export const compileSliceFitter = <V extends Value>(
         content.remainder,
         source.slice(consumed),
         [],
-        options
+        options,
+        indexOffset + fitted.length
       );
 
       if (
@@ -787,7 +790,7 @@ export const compileSliceFitter = <V extends Value>(
         outputs: [
           schemaModelLocation(options.root ?? 'main', [
             ...(options.path ?? []),
-            fitted.length - 1,
+            indexOffset + fitted.length - 1,
           ]),
         ],
       });
@@ -800,39 +803,53 @@ export const compileSliceFitter = <V extends Value>(
     innerSchema3: CompiledEditorSchema,
     wrappers: readonly string[],
     source: readonly Descendant[],
-    options: RuntimeTargetOptions = {}
+    options: RuntimeTargetOptions = {},
+    parentContent?: CompiledSchemaContentProgram
   ): readonly Descendant[] | null => {
     const created: Element[] = [];
+    const ancestorsByDepth: Element[][] = [];
     const ancestors = [...(options.ancestors ?? [])];
+    let currentProgram = parentContent;
 
     for (const type of wrappers) {
+      const slot = currentProgram?.prefix?.find((entry) => entry.type === type);
+      const properties =
+        currentProgram?.defaultPlan?.kind === 'element' &&
+        currentProgram.defaultPlan.type === type &&
+        currentProgram.defaultPlan.properties
+          ? currentProgram.defaultPlan.properties
+          : slot && Object.keys(slot.properties).length > 0
+            ? slot.properties
+            : undefined;
       const wrapper = createDeclarativeAndFill(
         innerSchema3,
         type,
-        undefined,
+        properties,
         new Set(),
         {
           ancestors,
           root: options.root,
-        }
+        },
+        []
       );
 
       created.push(wrapper);
+      ancestorsByDepth.push([wrapper, ...ancestors]);
       ancestors.unshift(wrapper);
+      currentProgram =
+        innerSchema3.elements.byType.get(type)?.content ?? undefined;
     }
 
     let children = [...source];
 
-    for (const wrapper of created.toReversed()) {
+    for (let index = created.length - 1; index >= 0; index -= 1) {
+      const wrapper = getDefined(created[index]);
       const content = getCompiledElement(wrapper)?.content;
       const fitted = content
-        ? fitDirectContent(
-            innerSchema3,
-            content,
-            children,
-            wrapper.children,
-            options
-          )
+        ? fitDirectContent(innerSchema3, content, children, [], {
+            ...options,
+            ancestors: ancestorsByDepth[index],
+          })
         : children;
 
       if (!fitted) return null;
@@ -857,22 +874,50 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   const wrapperGroupHasCapacity = (
+    innerSchema4: CompiledEditorSchema,
     wrappers: readonly string[],
-    childCount: number
+    existing: readonly Descendant[],
+    candidate: Descendant
   ) => {
     const innermost = wrappers.at(-1);
-    const maximum = innermost
-      ? getDeclarativeSchema()?.elements.byType.get(innermost)?.content?.max
+    const content = innermost
+      ? innerSchema4.elements.byType.get(innermost)?.content
       : null;
 
-    return maximum === null || maximum === undefined || childCount < maximum;
+    if (!content) return true;
+    const { prefix, remainder } = content;
+
+    if (!prefix || !remainder) {
+      return content.max === null || existing.length < content.max;
+    }
+
+    const combined = [...existing, candidate];
+    let consumed = 0;
+
+    for (const [index] of prefix.entries()) {
+      const item = combined[consumed];
+
+      if (item && contentAllowsAt(innerSchema4, content, item, index)) {
+        consumed += 1;
+      }
+    }
+
+    const rest = combined.slice(consumed);
+
+    if (remainder.max !== null && rest.length > remainder.max) {
+      return false;
+    }
+    if (content.max !== null && prefix.length + rest.length > content.max) {
+      return false;
+    }
+
+    return rest.every((item) => contentAllows(innerSchema4, remainder, item));
   };
 
   const findWrapping = (
     parent: Element,
     child: Descendant
   ): readonly string[] | null => {
-    if (canContain(parent, child)) return [];
     const innerSchema4 = getDeclarativeSchema();
     const parentType = getElementType(parent);
     const childType = NodeApi.isText(child) ? null : getElementType(child);
@@ -882,7 +927,7 @@ export const compileSliceFitter = <V extends Value>(
       !parentType ||
       (!NodeApi.isText(child) && !childType)
     ) {
-      return null;
+      return canContain(parent, child) ? [] : null;
     }
 
     return resolveCompiledSchemaWrapperPlan(
@@ -894,16 +939,33 @@ export const compileSliceFitter = <V extends Value>(
 
   const findWrappingForContent = (
     innerSchema5: CompiledEditorSchema,
-    programId: string,
     content: CompiledSchemaContentProgram,
-    child: Descendant
+    child: Descendant,
+    options: RuntimeTargetOptions
   ): readonly string[] | null => {
     if (contentAllows(innerSchema5, content, child)) return [];
     const childType = NodeApi.isText(child) ? null : getElementType(child);
 
     if (!NodeApi.isText(child) && !childType) return null;
 
-    return resolveCompiledSchemaWrapperPlan(innerSchema5, programId, childType);
+    const ancestors: string[] = [];
+
+    for (const ancestor of options.ancestors ?? []) {
+      const type = getElementType(ancestor);
+
+      if (type) ancestors.push(type);
+    }
+
+    return resolveCompiledSchemaWrapperPlan(
+      innerSchema5,
+      content,
+      childType,
+      false,
+      {
+        ancestors,
+        root: options.root && options.root !== 'main' ? options.root : null,
+      }
+    );
   };
 
   const fitClosedNode = (
@@ -936,7 +998,6 @@ export const compileSliceFitter = <V extends Value>(
 
     const children = fitClosedContent(
       innerSchema6,
-      `element:${type}`,
       element.content,
       node.children,
       {
@@ -974,14 +1035,14 @@ export const compileSliceFitter = <V extends Value>(
       plan.type,
       plan.properties,
       new Set(),
-      options
+      options,
+      []
     );
     const shellContent = innerSchema7.elements.byType.get(plan.type)?.content;
 
     if (!shellContent) return null;
     const children = fitClosedContent(
       innerSchema7,
-      `element:${plan.type}`,
       shellContent,
       node.children,
       {
@@ -1015,30 +1076,77 @@ export const compileSliceFitter = <V extends Value>(
 
   function fitClosedContent(
     innerSchema7: CompiledEditorSchema,
-    programId: string,
     content: CompiledSchemaContentProgram,
     source: readonly Descendant[],
     options: RuntimeTargetOptions = {},
     coerceDefaultShell = false,
-    dropMisplacedText = false
+    dropMisplacedText = false,
+    indexOffset = 0,
+    wrapTextOnly = false
   ): readonly Descendant[] | null {
-    if (content.prefix) {
-      const closed = source.map((child, index) =>
-        fitClosedNode(innerSchema7, child, {
-          ...options,
-          path: [...(options.path ?? []), index],
-        })
+    if (content.prefix && content.remainder) {
+      const fittedPrefix: Descendant[] = [];
+      let consumed = 0;
+
+      for (const [index, slot] of content.prefix.entries()) {
+        const candidate = source[consumed];
+
+        if (
+          candidate &&
+          contentAllowsAt(innerSchema7, content, candidate, index, options)
+        ) {
+          const closed = fitClosedNode(innerSchema7, candidate, {
+            ...options,
+            path: [...(options.path ?? []), indexOffset + fittedPrefix.length],
+          });
+
+          if (!closed) return null;
+          fittedPrefix.push(closed);
+          consumed += 1;
+          continue;
+        }
+
+        fittedPrefix.push(
+          createDeclarativeAndFill(
+            innerSchema7,
+            slot.type,
+            slot.properties,
+            new Set(),
+            options
+          )
+        );
+        reportRepair(options, {
+          code: 'insert-required-content',
+          impact: 'lossless',
+          outputs: [
+            schemaModelLocation(options.root ?? 'main', [
+              ...(options.path ?? []),
+              indexOffset + fittedPrefix.length - 1,
+            ]),
+          ],
+        });
+      }
+
+      const remainder = fitClosedContent(
+        innerSchema7,
+        content.remainder,
+        source.slice(consumed),
+        options,
+        false,
+        dropMisplacedText,
+        indexOffset + fittedPrefix.length,
+        true
       );
 
-      return closed.some((child) => child === null)
-        ? null
-        : fitDirectContent(
-            innerSchema7,
-            content,
-            closed as Descendant[],
-            [],
-            options
-          );
+      if (
+        !remainder ||
+        (content.max !== null &&
+          fittedPrefix.length + remainder.length > content.max)
+      ) {
+        return null;
+      }
+
+      return Object.freeze([...fittedPrefix, ...remainder]);
     }
 
     const groups: Array<{
@@ -1049,22 +1157,25 @@ export const compileSliceFitter = <V extends Value>(
     for (const [sourceIndex, sourceChild] of source.entries()) {
       const child = fitClosedNode(innerSchema7, sourceChild, {
         ...options,
-        path: [...(options.path ?? []), sourceIndex],
+        path: [...(options.path ?? []), indexOffset + sourceIndex],
       });
 
       if (!child) return null;
-      let wrappers = findWrappingForContent(
-        innerSchema7,
-        programId,
-        content,
-        child
-      );
+      const directlyAllowed = contentAllows(innerSchema7, content, child);
+      const canWrapChild =
+        directlyAllowed ||
+        !wrapTextOnly ||
+        NodeApi.isText(child) ||
+        getElementBehavior(child).inline;
+      let wrappers = canWrapChild
+        ? findWrappingForContent(innerSchema7, content, child, options)
+        : null;
       let fittedChild = child;
 
       if (!wrappers && coerceDefaultShell && ElementApi.isElement(child)) {
         const shell = fitClosedDefaultShell(innerSchema7, content, child, {
           ...options,
-          path: [...(options.path ?? []), sourceIndex],
+          path: [...(options.path ?? []), indexOffset + sourceIndex],
         });
 
         if (shell) {
@@ -1092,7 +1203,12 @@ export const compileSliceFitter = <V extends Value>(
         previous &&
         previous.wrappers.length === wrappers.length &&
         wrappers.every((type, index) => type === previous.wrappers[index]) &&
-        wrapperGroupHasCapacity(wrappers, previous.children.length)
+        wrapperGroupHasCapacity(
+          innerSchema7,
+          wrappers,
+          previous.children,
+          fittedChild
+        )
       ) {
         previous.children.push(fittedChild);
       } else {
@@ -1109,8 +1225,9 @@ export const compileSliceFitter = <V extends Value>(
         group.children,
         {
           ...options,
-          path: [...(options.path ?? []), fitted.length],
-        }
+          path: [...(options.path ?? []), indexOffset + fitted.length],
+        },
+        content
       );
 
       if (!children) return null;
@@ -1119,7 +1236,14 @@ export const compileSliceFitter = <V extends Value>(
 
     if (content.max !== null && fitted.length > content.max) return null;
 
-    return fitDirectContent(innerSchema7, content, fitted, [], options);
+    return fitDirectContent(
+      innerSchema7,
+      content,
+      fitted,
+      [],
+      options,
+      indexOffset
+    );
   }
 
   const fitClosedSliceInterior = (
@@ -1599,11 +1723,11 @@ export const compileSliceFitter = <V extends Value>(
       }
     }
 
-    for (const [content, { id, options }] of contentPrograms) {
+    for (const [content, { options }] of contentPrograms) {
       if (content.prefix) continue;
 
       const fitted = declarative
-        ? fitClosedContent(declarative, id, content, slice.content, options)
+        ? fitClosedContent(declarative, content, slice.content, options)
         : null;
 
       if (
@@ -2631,7 +2755,6 @@ export const compileSliceFitter = <V extends Value>(
         stage && repairs ? { inputsOf: stage.inputsOf, repairs } : undefined;
       const fittedRoot = fitClosedContent(
         declarative,
-        root === 'main' ? 'root' : `root:${root}`,
         targetRootProgram,
         inputSlice.content,
         { fitOrigins: stage?.origins, path: [], report, root },
@@ -3845,7 +3968,6 @@ export const compileSliceFitter = <V extends Value>(
         const children = shellContent
           ? fitClosedContent(
               targetSchema,
-              `element:${slot.type}`,
               shellContent,
               sourceBlock.children,
               {
