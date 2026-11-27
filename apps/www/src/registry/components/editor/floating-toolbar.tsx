@@ -25,6 +25,7 @@ import {
   definePlugin,
   useComposedRef,
   useEditableRef,
+  useEditor,
   useEditorFocused,
   useEditorReadOnly,
   useEditorSelector,
@@ -125,7 +126,6 @@ export function FloatingToolbar({ children }: { children?: React.ReactNode }) {
 }
 
 const COARSE_POINTER_QUERY = '(pointer: coarse)';
-const CARET_GAP = 8;
 
 function subscribeCoarsePointer(onChange: () => void) {
   const query = window.matchMedia(COARSE_POINTER_QUERY);
@@ -164,6 +164,7 @@ function readViewportBottom() {
 
 // A page cannot move the phone's own selection menu, which opens above the selection, and iOS gives it no way to hide it, so touch screens dock the toolbar above the keyboard.
 function KeyboardToolbar({ children }: { children: React.ReactNode }) {
+  const editor = useEditor();
   const editableRef = useEditableRef();
   const editorFocused = useEditorFocused();
   const readOnly = useEditorReadOnly();
@@ -202,64 +203,138 @@ function KeyboardToolbar({ children }: { children: React.ReactNode }) {
   }, []);
 
   React.useEffect(() => {
-    const document = editableRef.current?.ownerDocument;
-    const view = document?.defaultView;
+    const bar = barRef.current;
 
-    if (!open || !document || !view) return undefined;
+    if (!open || !bar) return undefined;
 
-    let frame = 0;
-    const revealCaret = () => {
-      view.cancelAnimationFrame(frame);
-      frame = view.requestAnimationFrame(() => {
-        const selection = document.getSelection();
-        const node = selection?.focusNode;
-        const element = node instanceof Element ? node : node?.parentElement;
-        const bar = barRef.current;
-
-        if (
-          !bar ||
-          !selection?.isCollapsed ||
-          !element ||
-          !editableRef.current?.contains(element)
-        ) {
-          return;
-        }
-
-        const caret = selection.getRangeAt(0).getClientRects()[0];
-        let overlap =
-          (caret ?? element.getBoundingClientRect()).bottom +
-          CARET_GAP -
-          bar.getBoundingClientRect().top;
-
-        for (
-          let parent = element.parentElement;
-          parent && overlap > 0;
-          parent = parent.parentElement
-        ) {
-          if (!/auto|scroll/.test(view.getComputedStyle(parent).overflowY)) {
-            continue;
-          }
-
-          const before = parent.scrollTop;
-
-          parent.scrollTop += overlap;
-          overlap -= parent.scrollTop - before;
-        }
-
-        if (overlap > 0) view.scrollBy(0, overlap);
-      });
+    const { style } = bar.ownerDocument.documentElement;
+    const previous = style.scrollPaddingBottom;
+    const reserve = () => {
+      style.scrollPaddingBottom = `${bar.getBoundingClientRect().height}px`;
     };
+    const observer = new ResizeObserver(reserve);
 
-    document.addEventListener('selectionchange', revealCaret);
-    view.visualViewport?.addEventListener('resize', revealCaret);
-    revealCaret();
+    reserve();
+    observer.observe(bar);
 
     return () => {
-      view.cancelAnimationFrame(frame);
-      document.removeEventListener('selectionchange', revealCaret);
-      view.visualViewport?.removeEventListener('resize', revealCaret);
+      observer.disconnect();
+      style.scrollPaddingBottom = previous;
     };
-  }, [editableRef, open]);
+  }, [open]);
+
+  React.useEffect(() => {
+    const bar = barRef.current;
+    const document = bar?.ownerDocument;
+    const view = document?.defaultView;
+    const viewport = view?.visualViewport;
+
+    if (!open || !bar || !document || !view || !viewport) return undefined;
+
+    let cancelReveal: (() => void) | undefined;
+    let revealTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
+    let lastHeight = viewport.height;
+    let shrinkSettlingUntil = 0;
+    let shrinkHeight = viewport.height;
+    const reveal = () => {
+      cancelReveal?.();
+      const focus = editor.read.selection()?.focus;
+
+      cancelReveal = focus && editor.api.dom.scrollIntoView(focus);
+    };
+    const scheduleReveal = (delay: number) => {
+      globalThis.clearTimeout(revealTimer);
+      revealTimer = globalThis.setTimeout(() => {
+        revealTimer = undefined;
+        reveal();
+      }, delay);
+    };
+    // Chrome reports client rects against the layout viewport and Safari against the visual one; clamping pageTop - scrollY to [0, offsetTop] matches the visible top in both.
+    const isCaretWithinPreviousViewportHeight = (height: number) => {
+      const selection = document.getSelection();
+
+      if (
+        !selection?.focusNode ||
+        !editableRef.current?.contains(selection.focusNode)
+      ) {
+        return false;
+      }
+
+      const { focusNode, focusOffset } = selection;
+      const caret = document.createRange();
+
+      caret.setStart(focusNode, focusOffset);
+
+      const rangeRect = caret.getClientRects()[0];
+      const rect =
+        rangeRect &&
+        (rangeRect.height > 0 ||
+          rangeRect.width > 0 ||
+          rangeRect.top !== 0 ||
+          rangeRect.bottom !== 0)
+          ? rangeRect
+          : (focusNode instanceof Element
+              ? focusNode
+              : focusNode.parentElement
+            )?.getBoundingClientRect();
+
+      if (!rect) return false;
+
+      const visibleTop = Math.min(
+        Math.max(0, viewport.pageTop - view.scrollY),
+        Math.max(0, viewport.offsetTop)
+      );
+
+      return rect.bottom > visibleTop && rect.top < visibleTop + height;
+    };
+    // Both Chrome and Safari animate their own keyboard-open scroll after visualViewport shrinks; waiting until viewport scroll and resize settle avoids double-scrolling on iOS and prevents Chrome's pan animation from overwriting the reveal.
+    const onViewportScroll = () => {
+      if (
+        revealTimer !== undefined ||
+        (Date.now() < shrinkSettlingUntil &&
+          isCaretWithinPreviousViewportHeight(shrinkHeight))
+      ) {
+        scheduleReveal(200);
+      }
+    };
+    const onResize = () => {
+      const previousHeight = lastHeight;
+
+      lastHeight = viewport.height;
+      if (
+        viewport.height < previousHeight &&
+        isCaretWithinPreviousViewportHeight(previousHeight)
+      ) {
+        shrinkHeight = previousHeight;
+        shrinkSettlingUntil = Date.now() + 1200;
+        scheduleReveal(500);
+      } else if (viewport.height > previousHeight) {
+        shrinkSettlingUntil = 0;
+        if (revealTimer !== undefined) {
+          scheduleReveal(200);
+        }
+      } else if (revealTimer !== undefined) {
+        scheduleReveal(200);
+      }
+    };
+
+    if (viewport.height < view.innerHeight - 100) {
+      shrinkHeight = view.innerHeight;
+      shrinkSettlingUntil = Date.now() + 1200;
+      scheduleReveal(500);
+    } else {
+      reveal();
+    }
+    viewport.addEventListener('scroll', onViewportScroll);
+    viewport.addEventListener('resize', onResize);
+
+    return () => {
+      globalThis.clearTimeout(revealTimer);
+      cancelReveal?.();
+      viewport.removeEventListener('scroll', onViewportScroll);
+      viewport.removeEventListener('resize', onResize);
+    };
+  }, [editableRef, editor, open]);
 
   if (!open) return null;
 

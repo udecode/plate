@@ -205,6 +205,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-26-keyboard-bar-keeps-caret-above",
+      "href": "/registry/changelog/2026-11-26-keyboard-bar-keeps-caret-above.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the caret above the docked keyboard bar",
+      "change": {
+        "type": "source",
+        "date": "2026-11-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-26-suggestion-author-colors",
       "href": "/registry/changelog/2026-11-26-suggestion-author-colors.json",
       "status": "draft",

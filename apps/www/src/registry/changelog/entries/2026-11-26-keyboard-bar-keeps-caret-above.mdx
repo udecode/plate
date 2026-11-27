@@ -1,0 +1,14 @@
+---
+id: 2026-11-26-keyboard-bar-keeps-caret-above
+date: 2026-11-26
+status: draft
+kind: fix
+summary: 'Keep the caret above the docked keyboard bar'
+change: { 'type': 'source', 'date': '2026-11-26', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-26-floating-toolbar-caret-above-keyboard-bar","kind":"fix","migrationNotes":[]} -->
+
+- **`floating-toolbar`**: On a phone, the caret and a selected word stay just above the bar over the keyboard. While the bar shows, it sets the page's `scroll-padding-bottom` to its own height, and it asks the editor to scroll the caret into view when it opens and when the keyboard grows while the caret is on screen. The page no longer jumps when the keyboard opens or closes, or when you scroll with the keyboard up.

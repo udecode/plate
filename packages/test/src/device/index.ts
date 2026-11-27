@@ -11,6 +11,7 @@ export {
   type DeviceQuery,
   type DeviceRectSnapshot,
   type DeviceRunState,
+  type DeviceScrollSnapshot,
   type DeviceToolbar,
   type DeviceViewportSnapshot,
   DEVICE_STATE_PATH,

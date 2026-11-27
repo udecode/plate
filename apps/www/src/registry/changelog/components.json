@@ -229,16 +229,8 @@
       "2026-08-31-inline-component-props",
       "2026-08-25-base-first-registry"
     ],
-    "suggestion-colors": ["2026-11-26-suggestion-colors"],
-    "suggestion-style": [
-      "2026-11-26-suggestion-colors",
-      "2026-09-14-suggestion-author-colors",
-      "2026-08-25-base-first-registry"
-    ],
-    "draw-toolbar-button": ["2026-11-25-ink-tools"],
-    "ink-switch-toolbar-button": ["2026-11-25-ink-tools"],
-    "ink-demo": ["2026-11-25-ink-tools"],
     "floating-toolbar": [
+      "2026-11-26-keyboard-bar-keeps-caret-above",
       "2026-11-25-keyboard-bar-keeps-focus",
       "2026-11-24-floating-toolbar-touch-dock",
       "2026-11-23-fix-toolbar-menu-checks",
@@ -268,6 +260,15 @@
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
     ],
+    "suggestion-colors": ["2026-11-26-suggestion-colors"],
+    "suggestion-style": [
+      "2026-11-26-suggestion-colors",
+      "2026-09-14-suggestion-author-colors",
+      "2026-08-25-base-first-registry"
+    ],
+    "draw-toolbar-button": ["2026-11-25-ink-tools"],
+    "ink-switch-toolbar-button": ["2026-11-25-ink-tools"],
+    "ink-demo": ["2026-11-25-ink-tools"],
     "fixed-toolbar": [
       "2026-11-25-keyboard-bar-keeps-focus",
       "2026-11-20-drop-editor-selection-view",

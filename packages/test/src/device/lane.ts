@@ -119,6 +119,11 @@ export type DeviceRectSnapshot = {
   width: number;
 };
 
+export type DeviceScrollSnapshot = {
+  containerTop: number;
+  scrollY: number;
+};
+
 export type DeviceViewportSnapshot = {
   height: number;
   innerHeight: number;
@@ -234,6 +239,7 @@ export type DeviceEditor = Pick<
   'assert' | 'get' | 'snapshot'
 > & {
   childRoot: (key: string) => DeviceEditor;
+  rectAt: (point: SelectionPoint) => Promise<DeviceRectSnapshot | null>;
   selection: Pick<BrowserEditorHarness['selection'], 'get'>;
   touch: {
     doubleTap: (point: SelectionPoint) => Promise<void>;
@@ -277,9 +283,14 @@ export type DeviceLane = {
     caret: () => Promise<DeviceRectSnapshot | null>;
     editable: () => Promise<DeviceEditableDomSnapshot>;
     focus: () => Promise<DeviceFocusSnapshot>;
+    scroll: () => Promise<DeviceScrollSnapshot>;
     toolbar: (toolbar: DeviceToolbar) => Promise<DeviceRectSnapshot | null>;
     viewport: () => Promise<DeviceViewportSnapshot>;
   };
+  scroll: (
+    dy: number,
+    target?: 'container' | 'page'
+  ) => Promise<DeviceScrollSnapshot>;
   /** Steps on the current page. */
   steps: () => readonly DeviceWitnessStep[];
   system: {
@@ -757,6 +768,57 @@ export const createDeviceLane = ({
           `${key} `
         ),
       get,
+      rectAt: (point) =>
+        editorRoot.evaluate(
+          (element, { offset, path }) => {
+            const host = [
+              ...element.querySelectorAll(
+                `[data-editor-node="text"][data-editor-path="${path.join(',')}"]`
+              ),
+            ].find((text) => text.closest('[data-editor="true"]') === element);
+
+            if (!host) return null;
+
+            const walker = document.createTreeWalker(
+              host,
+              NodeFilter.SHOW_TEXT
+            );
+            let remaining = offset;
+            let node = walker.nextNode() as Text | null;
+
+            while (node && remaining > node.data.length) {
+              remaining -= node.data.length;
+              node = walker.nextNode() as Text | null;
+            }
+
+            let rect: DOMRect;
+
+            if (!node || node.data.length === 0) {
+              rect = host.getBoundingClientRect();
+            } else {
+              const range = document.createRange();
+
+              if (remaining === 0) {
+                range.setStart(node, 0);
+                range.setEnd(node, 1);
+              } else {
+                range.setStart(node, remaining - 1);
+                range.setEnd(node, remaining);
+              }
+              rect = range.getBoundingClientRect();
+            }
+
+            return {
+              bottom: rect.bottom,
+              height: rect.height,
+              left: rect.left,
+              right: rect.right,
+              top: rect.top,
+              width: rect.width,
+            };
+          },
+          { offset: point.offset, path: point.path }
+        ),
       selection: { get: () => takeSelectionSnapshotForRoot(editorRoot) },
       snapshot: () => snapshotEditor(get),
       touch: {
@@ -1107,6 +1169,30 @@ export const createDeviceLane = ({
 
           return { editorFocused, menuOpen, region };
         }, undefined),
+      scroll: () =>
+        driver.page.find({ css: 'body' }).evaluate(() => {
+          const editor = document.querySelector('[data-editor="true"]');
+          let container: Element | null = null;
+
+          for (
+            let el = editor?.parentElement ?? null;
+            el && el !== document.scrollingElement;
+            el = el.parentElement
+          ) {
+            if (
+              /(?:auto|scroll|overlay)/.test(getComputedStyle(el).overflowY) &&
+              el.scrollHeight > el.clientHeight + 1
+            ) {
+              container = el;
+              break;
+            }
+          }
+
+          return {
+            containerTop: container?.scrollTop ?? 0,
+            scrollY: window.scrollY,
+          };
+        }, undefined),
       toolbar: (toolbar) =>
         driver.page.find({ css: 'body' }).evaluate((_element, selector) => {
           const element = document.querySelector(selector);
@@ -1147,6 +1233,39 @@ export const createDeviceLane = ({
         };
       },
     },
+    scroll: (dy, target = 'page') =>
+      driver.page.find({ css: 'body' }).evaluate(
+        (_element, { delta, scrollTarget }) => {
+          const editor = document.querySelector('[data-editor="true"]');
+          let container: Element | null = null;
+
+          for (
+            let el = editor?.parentElement ?? null;
+            el && el !== document.scrollingElement;
+            el = el.parentElement
+          ) {
+            if (
+              /(?:auto|scroll|overlay)/.test(getComputedStyle(el).overflowY) &&
+              el.scrollHeight > el.clientHeight + 1
+            ) {
+              container = el;
+              break;
+            }
+          }
+
+          if (scrollTarget === 'container' && container) {
+            container.scrollBy({ behavior: 'instant', top: delta });
+          } else {
+            window.scrollBy({ behavior: 'instant', top: delta });
+          }
+
+          return {
+            containerTop: container?.scrollTop ?? 0,
+            scrollY: window.scrollY,
+          };
+        },
+        { delta: dy, scrollTarget: target }
+      ),
     steps: () => steps,
     system: {
       back: () => gesture({ kind: 'back', label: 'back' }, driver.system.back),

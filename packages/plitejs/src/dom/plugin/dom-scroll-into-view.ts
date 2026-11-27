@@ -199,35 +199,117 @@ const outsideBox = (rect: ScrollRect, box: ScrollRect, tolerance = 0) =>
   rect.left < box.left - tolerance ||
   rect.right > box.right + tolerance;
 
+const setCaretScrollMargin = (
+  el: HTMLElement,
+  elRect: DOMRect,
+  caret: ScrollRect,
+  top: number,
+  right: number,
+  bottom: number,
+  left: number
+) => {
+  el.style.setProperty(
+    'scroll-margin',
+    `${top - (caret.top - elRect.top)}px ${right - (elRect.right - caret.right)}px ${bottom - (elRect.bottom - caret.bottom)}px ${left - (caret.left - elRect.left)}px`
+  );
+};
+
+const canPanVisualViewport = (
+  win: Window,
+  scrollingElement: Element,
+  el: Element
+): el is HTMLElement => {
+  const vv = win.visualViewport;
+
+  return Boolean(
+    vv &&
+    isDOMHTMLElement(el) &&
+    typeof el.scrollIntoView === 'function' &&
+    (vv.height < scrollingElement.clientHeight ||
+      vv.width < scrollingElement.clientWidth)
+  );
+};
+
 // Blink's window.scrollBy only moves the layout viewport, so when the soft
 // keyboard shrinks the visual viewport (resizes-visual) and scrollY clamps at
 // scrollHeight - clientHeight, only scrollIntoView pans visualViewport.offsetTop.
-const panVisualViewport = (
+const panVisualViewportNearest = (
   win: Window,
   scrollingElement: Element,
   el: Element,
   caret: ScrollRect
-) => {
+): ScrollRect => {
   const vv = win.visualViewport;
 
-  if (
-    !vv ||
-    !isDOMHTMLElement(el) ||
-    (vv.height >= scrollingElement.clientHeight &&
-      vv.width >= scrollingElement.clientWidth)
-  ) {
-    return;
+  if (!vv || !canPanVisualViewport(win, scrollingElement, el)) {
+    return caret;
   }
 
   const elRect = el.getBoundingClientRect();
   const prev = el.style.getPropertyValue('scroll-margin');
   const priority = el.style.getPropertyPriority('scroll-margin');
+  const caretAfter = () => {
+    const afterRect = el.getBoundingClientRect();
 
-  el.style.setProperty(
-    'scroll-margin',
-    `${MARGIN - (caret.top - elRect.top)}px ${MARGIN - (elRect.right - caret.right)}px ${MARGIN - (elRect.bottom - caret.bottom)}px ${MARGIN - (caret.left - elRect.left)}px`
-  );
+    return shiftRect(
+      caret,
+      elRect.left - afterRect.left,
+      elRect.top - afterRect.top
+    );
+  };
+
+  setCaretScrollMargin(el, elRect, caret, MARGIN, MARGIN, MARGIN, MARGIN);
   el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+
+  let nextCaret = caretAfter();
+
+  if (outsideBox(nextCaret, getVisibleViewportBox(win, scrollingElement), 1)) {
+    const rootStyle = win.getComputedStyle(scrollingElement);
+    const padTop = pad(rootStyle.scrollPaddingTop, vv.height);
+    const padRight = pad(rootStyle.scrollPaddingRight, vv.width);
+    const padBottom = pad(rootStyle.scrollPaddingBottom, vv.height);
+    const padLeft = pad(rootStyle.scrollPaddingLeft, vv.width);
+
+    if (padTop > 0 || padRight > 0 || padBottom > 0 || padLeft > 0) {
+      // Blink ignores root scroll-padding when scrollIntoView pans the visual viewport;
+      // fold the root padding into scroll-margin so block: 'nearest' clears fixed bars.
+      setCaretScrollMargin(
+        el,
+        elRect,
+        caret,
+        MARGIN + padTop,
+        MARGIN + padRight,
+        MARGIN + padBottom,
+        MARGIN + padLeft
+      );
+      el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      nextCaret = caretAfter();
+    }
+  }
+
+  if (prev) el.style.setProperty('scroll-margin', prev, priority);
+  else el.style.removeProperty('scroll-margin');
+
+  return nextCaret;
+};
+
+// WebKit treats an element inside the layout viewport as already visible for
+// block: 'nearest' and skips panning the visual viewport; fall back to center
+// only after ancestor scrolling has also run and left the caret obscured.
+const panVisualViewportCenter = (
+  win: Window,
+  scrollingElement: Element,
+  el: Element,
+  caret: ScrollRect
+) => {
+  if (!canPanVisualViewport(win, scrollingElement, el)) return;
+
+  const elRect = el.getBoundingClientRect();
+  const prev = el.style.getPropertyValue('scroll-margin');
+  const priority = el.style.getPropertyPriority('scroll-margin');
+
+  setCaretScrollMargin(el, elRect, caret, MARGIN, MARGIN, MARGIN, MARGIN);
+  el.scrollIntoView({ block: 'center', inline: 'nearest' });
 
   if (prev) el.style.setProperty('scroll-margin', prev, priority);
   else el.style.removeProperty('scroll-margin');
@@ -267,12 +349,17 @@ export const scrollRectIntoViewIfNeeded = ({
     visible = getVisibleViewportBox(win, scrollingElement);
   }
 
+  if (outsideBox(cur, visible, 1)) {
+    cur = panVisualViewportNearest(win, scrollingElement, startElement, cur);
+    visible = getVisibleViewportBox(win, scrollingElement);
+  }
+
   if (outsideBox(cur, visible)) {
     cur = scrollAncestors(startElement, scrollingElement, cur, visible);
   }
 
   if (outsideBox(cur, visible, 1)) {
-    panVisualViewport(win, scrollingElement, startElement, cur);
+    panVisualViewportCenter(win, scrollingElement, startElement, cur);
   }
 };
 
