@@ -3,6 +3,7 @@ import React from 'react';
 import {
   type AnyEditor,
   commitMatchesSelectorDependencies,
+  countCoreWork,
   type EditorCommit,
   type EditorSelectorDependencies,
   type EditorViewStateBucket,
@@ -214,6 +215,9 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
         )
       ) {
         return tentative.value;
+      }
+      if (committed) {
+        countCoreWork('selectorVisits');
       }
       const raw = editor.read(() => selector(editor));
       const value =

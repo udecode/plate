@@ -212,7 +212,7 @@ export {
   recordEditorHistoryEffect,
   shouldMergeNodesRemovePrevNode,
 } from 'plitejs/internal';
-export { type CoreWork, readCoreWork } from 'plitejs/internal';
+export { countCoreWork, type CoreWork, readCoreWork } from 'plitejs/internal';
 export { getAnchorRuntimeId, restoreAnchor } from 'plitejs/internal';
 export {
   canonicalRecordJson,

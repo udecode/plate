@@ -12629,6 +12629,13 @@ const notifyViewStateChannel = (
   channel: object,
   change: EditorViewStateChange
 ) => {
+  if (
+    !EDITOR_VIEW_STATE_LISTENERS.get(channel)?.size &&
+    !VIEW_STATE_FOLLOWS.get(channel)?.size
+  ) {
+    return;
+  }
+
   const notice = { change, editor };
   const pending = PENDING_VIEW_STATE_NOTICES.get(channel) ?? new Set();
 
