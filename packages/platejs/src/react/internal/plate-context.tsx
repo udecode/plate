@@ -5,7 +5,7 @@ import {
   getCarriedCaretEditor,
   getEditorRuntimeOwner,
   getViewPresentation,
-  markRootViewUsed,
+  markRootViewInteraction,
   notifyObservers,
   readCaretViewIn,
   readRootViewUse,
@@ -497,7 +497,7 @@ export function PlateMountedView({
     // A focus inside a portal from outside the Editable reaches only this
     // native listener.
     const removeFocus = trackEditableFocus(root, () =>
-      markRootViewUsed(editor)
+      markRootViewInteraction(editor)
     );
     return () => {
       removeFocus();

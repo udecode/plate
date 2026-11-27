@@ -109,6 +109,7 @@ import {
   getTripleClickRange,
 } from './selection-triple-click';
 import {
+  isEditableControlTarget,
   preferModelSelectionForSelectableOwnerTarget,
   preferModelSelectionForVoidTarget,
   resolveEditableClickTarget,
@@ -394,7 +395,11 @@ export const applyEditableClick = ({
 
     const { node, path } = target;
 
-    if (event.detail === TRIPLE_CLICK && path.length >= 1) {
+    if (
+      event.detail === TRIPLE_CLICK &&
+      path.length >= 1 &&
+      !isEditableControlTarget(event.target, event.currentTarget)
+    ) {
       const { block, range } = getTripleClickRange(
         editor,
         [node, path],
@@ -459,7 +464,12 @@ export const applyEditableClick = ({
     const startVoid = editorVoid(editor, { at: start });
     const endVoid = editorVoid(editor, { at: end });
 
-    if (startVoid && endVoid && PathApi.equals(startVoid[1], endVoid[1])) {
+    if (
+      startVoid &&
+      endVoid &&
+      PathApi.equals(startVoid[1], endVoid[1]) &&
+      !isEditableControlTarget(event.target, event.currentTarget)
+    ) {
       const range = editorRange(editor, start);
       selectThenFocusUnlessMoved(editor, () =>
         editor.update((tx) => {

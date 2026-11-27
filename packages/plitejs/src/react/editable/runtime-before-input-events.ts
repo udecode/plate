@@ -115,7 +115,7 @@ const getRootInputEditor = (
   root: RootKey,
   runtimeContext: ReturnType<typeof useOptionalPliteRuntimeContext>
 ) =>
-  runtimeContext?.getMountedViewEditor(root) ??
+  runtimeContext?.getMountedContentViewEditor(root) ??
   createReactRuntimeViewEditor(
     projectEditorView(editor, { root: toPublicRoot(root) })
   );

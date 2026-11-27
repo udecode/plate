@@ -47,8 +47,11 @@ export {
   recordSetIds,
 } from '../core/record-store';
 export {
+  markRootViewInteraction,
   markRootViewUsed,
   readCaretViewIn,
+  readRootContentTarget,
+  readRootViewContentUse,
   readRootViewUse,
   readShownViewUse,
   subscribeShownViewUse,

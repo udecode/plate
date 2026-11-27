@@ -11,8 +11,13 @@ import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
-import { focusPressedView } from './editable-dom-runtime';
+import {
+  findMountedEditableDOMRuntime,
+  focusPressedView,
+} from './editable-dom-runtime';
 import type { EditableInputController } from './input-controller';
+import { getEditableInteractionOwner } from './interaction-owner';
+import { INTERACTIVE_CONTROL_TARGET_SELECTOR } from './root-interaction-resolver';
 import {
   dispatchCommand,
   editorCommands,
@@ -77,10 +82,36 @@ export const resolveEditableClickTarget = (
   }
 };
 
+export const isEditableControlTarget = (
+  target: EventTarget | null,
+  editorElement?: HTMLElement | null
+): boolean => {
+  const element = isDOMElement(target)
+    ? target
+    : isDOMText(target)
+      ? target.parentElement
+      : null;
+
+  if (!element) return false;
+
+  const root =
+    editorElement ?? findMountedEditableDOMRuntime(element)?.rootRef.current;
+
+  if (!root) return false;
+
+  const refused = element.closest(INTERACTIVE_CONTROL_TARGET_SELECTOR);
+
+  return !!refused && refused !== root && root.contains(refused);
+};
+
 export const resolveEditableVoidClickTarget = (
   editor: ReactRuntimeEditor,
   target: EventTarget
 ) => {
+  if (isEditableControlTarget(target)) {
+    return null;
+  }
+
   const resolvedTarget = resolveEditableClickTarget(editor, target);
 
   if (
@@ -148,7 +179,9 @@ export const resolveEditableSelectableOwnerClickTarget = (
   editor: ReactRuntimeEditor,
   target: EventTarget
 ) => {
-  if (!isDOMNode(target)) return null;
+  if (!isDOMNode(target) || isEditableControlTarget(target)) {
+    return null;
+  }
 
   const targetElement = isDOMText(target)
     ? target.parentElement
@@ -170,6 +203,23 @@ export const resolveEditableSelectableOwnerClickTarget = (
     : null;
 };
 
+export const isOwnEditableContentTarget = (
+  editor: ReactRuntimeEditor,
+  editorElement: HTMLElement,
+  target: EventTarget | null
+): boolean => {
+  const owner = getEditableInteractionOwner(editorElement, target);
+
+  if (!target || (owner !== 'editor' && owner !== 'chrome')) return false;
+  if (isEditableControlTarget(target, editorElement)) return false;
+  if (owner === 'editor') return true;
+
+  return (
+    resolveEditableVoidClickTarget(editor, target) !== null ||
+    resolveEditableSelectableOwnerClickTarget(editor, target) !== null
+  );
+};
+
 export const preferModelSelectionForVoidTarget = ({
   editor,
   inputController,
@@ -179,7 +229,7 @@ export const preferModelSelectionForVoidTarget = ({
   inputController: EditableInputController;
   target: EventTarget | null;
 }) => {
-  if (!isDOMNode(target)) {
+  if (!isDOMNode(target) || isEditableControlTarget(target)) {
     return false;
   }
 

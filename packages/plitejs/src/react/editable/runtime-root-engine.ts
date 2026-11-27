@@ -263,7 +263,7 @@ export const useEditableRootRuntime = ({
       getActiveContentRootOwner: pliteRuntimeContext?.getActiveContentRootOwner,
       getContentRootOwnerViewEditor:
         pliteRuntimeContext?.getContentRootOwnerViewEditor,
-      getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
+      getMountedViewEditor: pliteRuntimeContext?.getMountedContentViewEditor,
       getWritableViewEditor: (root) =>
         runtime.historyScope
           ? (readLatestShownWritableRootView(

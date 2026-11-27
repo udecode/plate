@@ -17,8 +17,10 @@ import {
   type Range as ModelRange,
   type Text as TextNode,
 } from '../..';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { flushEditorViewState } from '../../core/public-state';
-import { markRootViewUsed } from '../../core/root-target';
+import { markRootViewInteraction } from '../../core/root-target';
+import { isDOMElement, isDOMNode, isDOMText } from '../../dom';
 import {
   type DOMCoverageBoundary,
   type DOMCoverageCopyPolicy,
@@ -44,12 +46,13 @@ import {
   useRegisterPliteDecorationSource,
 } from '../decoration-context';
 import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
-import type {
-  EditableHistoryReplayEvent,
-  EditableDropResult,
-  EditablePasteResult,
-  EditablePointerSelectionEndHandler,
-  NodeSelectionFocus,
+import {
+  type EditableDropResult,
+  type EditableHistoryReplayEvent,
+  type EditablePasteResult,
+  type EditablePointerSelectionEndHandler,
+  findMountedEditableDOMRuntime,
+  type NodeSelectionFocus,
 } from '../editable/editable-dom-runtime';
 import { assertExternalTextElement } from '../editable/external-text-binding';
 import {
@@ -548,7 +551,7 @@ function EditableContentRootView({
     flushEditorViewState(editor);
   }, [editor, surfaceReadOnly]);
   const {
-    getMountedViewEditor,
+    getMountedContentViewEditor,
     registerContentRootOwner,
     registerHistoryStepSlot,
   } = useRequiredPliteRuntimeContext();
@@ -581,8 +584,8 @@ function EditableContentRootView({
   const externalMouseGestureRef = React.useRef(false);
   const getViewEditor = React.useCallback(
     (target: RootKey) =>
-      target === root ? editor : getMountedViewEditor(target),
-    [editor, getMountedViewEditor, root]
+      target === root ? editor : getMountedContentViewEditor(target),
+    [editor, getMountedContentViewEditor, root]
   );
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
@@ -598,7 +601,28 @@ function EditableContentRootView({
       externalMouseGestureRef.current = event.defaultPrevented;
 
       if (!externalMouseGestureRef.current) {
-        markRootViewUsed(editor);
+        const targetNode = isDOMNode(event.target) ? event.target : null;
+        const targetElement = isDOMElement(targetNode)
+          ? targetNode
+          : isDOMText(targetNode)
+            ? targetNode.parentElement
+            : null;
+        const targetEditable = targetElement?.closest<HTMLElement>(
+          '[data-editor="true"]'
+        );
+        const targetRuntime = targetEditable
+          ? findMountedEditableDOMRuntime(targetEditable)
+          : null;
+        const isOwnTarget =
+          !!targetNode &&
+          event.currentTarget.contains(targetNode) &&
+          (!targetRuntime ||
+            getEditorRuntimeOwner(targetRuntime.editor) ===
+              getEditorRuntimeOwner(editor));
+
+        if (isOwnTarget) {
+          markRootViewInteraction(editor);
+        }
         rootInteraction.onMouseDownCapture(event);
       }
     },

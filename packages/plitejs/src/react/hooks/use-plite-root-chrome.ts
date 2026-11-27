@@ -6,9 +6,9 @@ import {
 } from 'react';
 
 import type { NamedRootKey, RootKey } from '../..';
-import { markRootViewUsed } from '../../core/root-target';
 import { resolveDOMTargetView } from '../../dom/internal';
 import { mouseEventTargetToElement } from '../editable/content-root-owner-target';
+import { markCopyChainUsed } from '../editable/interaction-owner';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import { resolveRootInteractionTarget } from '../editable/root-interaction-resolver';
 import { MAIN_ROOT_KEY } from '../root-key';
@@ -119,7 +119,14 @@ const followSurroundedCopy = (
       findInnermostRootChrome(root, chrome, target)
     );
 
-  if (view) markRootViewUsed(view);
+  if (view) {
+    const element =
+      [...chrome.querySelectorAll<HTMLElement>(EDITABLE)].find(
+        (copy) => resolveDOMTargetView(control, copy) === view
+      ) ?? null;
+
+    markCopyChainUsed(view, element);
+  }
 };
 
 /** Options for mouse interaction on root-level chrome outside editable text. */
@@ -161,7 +168,7 @@ export function useRootChrome<const TRoot extends RootKey = RootKey>(
 
   const internalRoot = root ?? MAIN_ROOT_KEY;
   const editor = useRootEditor(root);
-  const { getMountedViewEditor } = useRequiredPliteRuntimeContext();
+  const { getMountedContentViewEditor } = useRequiredPliteRuntimeContext();
   const {
     onMouseDownCapture: onControllerMouseDownCapture,
     onMouseMoveCapture,
@@ -169,7 +176,7 @@ export function useRootChrome<const TRoot extends RootKey = RootKey>(
   } = useRootInteractionController({
     disabled,
     editor,
-    getMountedViewEditor,
+    getMountedViewEditor: getMountedContentViewEditor,
     root: internalRoot,
     selection,
   });
@@ -179,7 +186,7 @@ export function useRootChrome<const TRoot extends RootKey = RootKey>(
         followSurroundedCopy(
           editor,
           internalRoot,
-          getMountedViewEditor(internalRoot),
+          getMountedContentViewEditor(internalRoot),
           event
         );
       }
@@ -189,7 +196,7 @@ export function useRootChrome<const TRoot extends RootKey = RootKey>(
     [
       disabled,
       editor,
-      getMountedViewEditor,
+      getMountedContentViewEditor,
       internalRoot,
       onControllerMouseDownCapture,
     ]

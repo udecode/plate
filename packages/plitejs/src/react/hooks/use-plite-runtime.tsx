@@ -48,7 +48,9 @@ import {
   continueRootViewUse,
   mountRootView,
   readNestedRootView,
+  readRootContentTarget,
   readRootTarget,
+  readRootViewContentUse,
   readRootViewUse,
   subscribeRootTarget,
   subscribeRootViewPresentation,
@@ -170,6 +172,7 @@ type PliteRuntimeContextValue = {
   getContentRootOwnerViewEditor: (
     owner: PliteContentRootOwner
   ) => MountedViewEditor | null;
+  getMountedContentViewEditor: (root: RootKey) => MountedViewEditor | null;
   getMountedViewEditor: (root: RootKey) => MountedViewEditor | null;
   getRootTarget: (root: RootKey) => MountedRootTarget | null;
   historyScope: HistoryGateScope | null;
@@ -208,6 +211,10 @@ type PresentationLookups = {
     owner: PliteContentRootOwner,
     presentation: ViewPresentation | null
   ) => MountedViewEditor | null;
+  getMountedContentViewEditor: (
+    root: RootKey,
+    presentation: ViewPresentation | null
+  ) => MountedViewEditor | null;
   getMountedViewEditor: (
     root: RootKey,
     presentation: ViewPresentation | null
@@ -241,6 +248,8 @@ const scopeRuntimeContext = (
     provider.getActiveContentRootOwner(root, presentation),
   getContentRootOwnerViewEditor: (owner) =>
     provider.getContentRootOwnerViewEditor(owner, presentation),
+  getMountedContentViewEditor: (root) =>
+    provider.getMountedContentViewEditor(root, presentation),
   getMountedViewEditor: (root) =>
     provider.getMountedViewEditor(root, presentation),
   getRootTarget: (root) => provider.getRootTarget(root, presentation),
@@ -560,7 +569,10 @@ export function EditorRuntimeProvider({
     new Map<ViewPresentation, Map<string, typeof reactEditor>>()
   );
   const lastRootUseBySlotRef = useRef(
-    new WeakMap<Editor, Map<string, number>>()
+    new WeakMap<
+      Editor,
+      Map<string, Readonly<{ content: number; interaction: number }>>
+    >()
   );
   const subscribeProviderRootTarget = useCallback(
     (
@@ -602,6 +614,13 @@ export function EditorRuntimeProvider({
     (root: RootKey, presentation: ViewPresentation | null) =>
       readProviderRootTarget(root, presentation)?.view ?? null,
     [readProviderRootTarget]
+  );
+  const findMountedContentViewEditor = useCallback(
+    (root: RootKey, presentation: ViewPresentation | null) =>
+      ((presentation
+        ? readRootContentTarget(runtime, presentation, root)?.view
+        : null) ?? null) as MountedViewEditor | null,
+    [runtime]
   );
   const registerViewEditor = useCallback(
     (editor: typeof reactEditor, root: RootKey) => {
@@ -657,16 +676,22 @@ export function EditorRuntimeProvider({
       );
       const lastRootUses =
         lastRootUseBySlotRef.current.get(slot.parent) ??
-        new Map<string, number>();
+        new Map<string, Readonly<{ content: number; interaction: number }>>();
       const place = getSlotRootKey(slot, owner);
+      const lastUse = lastRootUses.get(place);
 
       lastRootUseBySlotRef.current.set(slot.parent, lastRootUses);
-      continueRootViewUse(editor, lastRootUses.get(place) ?? 0);
+      if (lastUse) {
+        continueRootViewUse(editor, lastUse.content, lastUse.interaction);
+      }
       contentRootOwnersRef.current.set(editor, owner);
       ownerViewEditors.set(getContentRootOwnerKey(owner), editor);
 
       return () => {
-        lastRootUses.set(place, readRootViewUse(editor));
+        lastRootUses.set(place, {
+          content: readRootViewContentUse(editor),
+          interaction: readRootViewUse(editor),
+        });
         if (contentRootOwnersRef.current.get(editor) === owner) {
           contentRootOwnersRef.current.delete(editor);
           unregisterContentRootOwnerViewEditor(ownerViewEditors, owner, editor);
@@ -700,13 +725,13 @@ export function EditorRuntimeProvider({
   );
   const getActiveContentRootOwner = useCallback(
     (root: RootKey, presentation: ViewPresentation | null) => {
-      const activeViewEditor = findMountedViewEditor(root, presentation);
+      const activeViewEditor = findMountedContentViewEditor(root, presentation);
 
       return activeViewEditor
         ? (contentRootOwnersRef.current.get(activeViewEditor) ?? null)
         : null;
     },
-    [findMountedViewEditor]
+    [findMountedContentViewEditor]
   );
   useIsomorphicLayoutEffect(() => {
     const maybeBatchUpdates =
@@ -762,6 +787,7 @@ export function EditorRuntimeProvider({
       completeHistoryReplay,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
+      getMountedContentViewEditor: findMountedContentViewEditor,
       getMountedViewEditor: findMountedViewEditor,
       getRootTarget: readProviderRootTarget,
       getView,
@@ -776,6 +802,7 @@ export function EditorRuntimeProvider({
     }),
     [
       completeHistoryReplay,
+      findMountedContentViewEditor,
       findMountedViewEditor,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,

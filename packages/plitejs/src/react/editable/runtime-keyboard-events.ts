@@ -391,7 +391,8 @@ export const useRuntimeKeyboardEvents = ({
                 pliteRuntimeContext?.getActiveContentRootOwner,
               getContentRootOwnerViewEditor:
                 pliteRuntimeContext?.getContentRootOwnerViewEditor,
-              getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
+              getMountedViewEditor:
+                pliteRuntimeContext?.getMountedContentViewEditor,
               preferredX: preferredVerticalX,
               selection: snapshotRange,
             })
@@ -488,7 +489,8 @@ export const useRuntimeKeyboardEvents = ({
               pliteRuntimeContext?.getActiveContentRootOwner,
             getContentRootOwnerViewEditor:
               pliteRuntimeContext?.getContentRootOwnerViewEditor,
-            getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
+            getMountedViewEditor:
+              pliteRuntimeContext?.getMountedContentViewEditor,
             onKeyDown,
             preferredVerticalX,
             readOnly,
@@ -664,7 +666,7 @@ export const useRuntimeKeyboardEvents = ({
           pliteRuntimeContext?.getActiveContentRootOwner,
         getContentRootOwnerViewEditor:
           pliteRuntimeContext?.getContentRootOwnerViewEditor,
-        getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
+        getMountedViewEditor: pliteRuntimeContext?.getMountedContentViewEditor,
         onKeyDown,
         readOnly,
         dispatchHistory:

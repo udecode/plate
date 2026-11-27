@@ -22,6 +22,9 @@ type Subscriber = {
 
 type Entry = {
   answer: RootTarget | null;
+  contentAnswer: RootTarget | null;
+  contentStale: boolean;
+  contentUsedLatestFirst: Editor[];
   owner: Editor;
   presentation: ViewPresentation;
   stale: boolean;
@@ -31,6 +34,7 @@ type Entry = {
 };
 
 type Notice = {
+  latestContentAt: number;
   latestUsed: Editor | null;
   listeners: Set<() => void>;
   queued: boolean;
@@ -51,7 +55,12 @@ const ENTRIES = new WeakMap<
 const VIEW_ENTRIES = new WeakMap<object, Entry>();
 // Kept while the view is unmounted: a use can arrive before its view mounts,
 // and StrictMode unmounts a view between its first use and its second mount.
-const USED_AT = new WeakMap<object, number>();
+// INTERACTION_USED_AT counts any press or focus in a view and orders the copy a
+// control follows. CONTENT_USED_AT leaves out a press or focus on a control,
+// such as a button or a slot's wrapper, so a control press inside a copy leaves
+// the keyboard, input and history lookups on the copy that holds the caret.
+const INTERACTION_USED_AT = new WeakMap<object, number>();
+const CONTENT_USED_AT = new WeakMap<object, number>();
 const USE_LISTENERS = new WeakMap<Editor, Set<() => void>>();
 let lastUse = 0;
 const PENDING = new Set<Entry>();
@@ -62,6 +71,7 @@ const noticeOf = (presentation: ViewPresentation) => {
 
   if (!notice) {
     notice = {
+      latestContentAt: 0,
       latestUsed: null,
       listeners: new Set(),
       queued: false,
@@ -92,6 +102,51 @@ const announcePresentation = (presentation: ViewPresentation) => {
   notifyOncePerMicrotask(notice);
 };
 
+const refreshPresentationLatestContent = (
+  owner: Editor,
+  presentation: ViewPresentation
+) => {
+  const notice = NOTICES.get(presentation);
+
+  if (!notice) return;
+
+  let latestUsed: Editor | null = null;
+  let latestContentAt = 0;
+
+  for (const entry of ENTRIES.get(owner)?.get(presentation)?.values() ?? []) {
+    for (const view of entry.views) {
+      const usedAt = readRootViewContentUse(view);
+
+      if (usedAt > latestContentAt) {
+        latestContentAt = usedAt;
+        latestUsed = view;
+      }
+    }
+  }
+
+  notice.latestUsed = latestUsed;
+  notice.latestContentAt = latestContentAt;
+};
+
+const recordPresentationContentUse = (
+  presentation: ViewPresentation,
+  view: Editor,
+  forceAnnounce = false
+) => {
+  const notice = noticeOf(presentation);
+  const usedAt = readRootViewContentUse(view);
+  const becameNewest =
+    usedAt > 0 &&
+    usedAt >= notice.latestContentAt &&
+    notice.latestUsed !== view;
+
+  if (usedAt > 0 && usedAt >= notice.latestContentAt) {
+    notice.latestContentAt = usedAt;
+    notice.latestUsed = view;
+  }
+  if (becameNewest || forceAnnounce) announcePresentation(presentation);
+};
+
 const findEntry = ([owner, presentation, root]: Key) =>
   ENTRIES.get(owner)?.get(presentation)?.get(root);
 
@@ -105,6 +160,9 @@ const ensureEntry = (key: Key): Entry => {
   const roots = presentations.get(presentation) ?? new Map();
   const entry: Entry = {
     answer: null,
+    contentAnswer: null,
+    contentStale: false,
+    contentUsedLatestFirst: [],
     owner,
     presentation,
     stale: false,
@@ -176,6 +234,16 @@ const readEntry = (entry: Entry) => {
   return entry.answer;
 };
 
+const readContentEntry = (entry: Entry) => {
+  if (entry.contentStale) {
+    const next = pickTarget(entry.contentUsedLatestFirst, entry.views);
+
+    if (!isSameTarget(next, entry.contentAnswer)) entry.contentAnswer = next;
+    entry.contentStale = false;
+  }
+  return entry.contentAnswer;
+};
+
 const announce = () => {
   const entries = [...PENDING];
 
@@ -217,7 +285,13 @@ export const flushRootTargets = () => {
 };
 
 export const readRootViewUse = (view: Editor) =>
-  USED_AT.get(getEditorRuntime(view)) ?? 0;
+  INTERACTION_USED_AT.get(getEditorRuntime(view)) ?? 0;
+
+export const readRootViewContentUse = (view: Editor) =>
+  CONTENT_USED_AT.get(getEditorRuntime(view)) ?? 0;
+
+export const isLatestPresentedContentView = (view: Editor) =>
+  NOTICES.get(getViewPresentation(view))?.latestUsed === view;
 
 /**
  * The newest use among the views the presentation shows, 0 while the user has
@@ -246,23 +320,55 @@ const tellViewUse = (owner: Editor) =>
     (listener) => listener()
   );
 
+const moveToFront = (list: readonly Editor[], view: Editor) => [
+  view,
+  ...list.filter((used) => used !== view),
+];
+
 const placeByUse = (entry: Entry, view: Editor) => {
-  entry.usedLatestFirst = [
-    ...entry.usedLatestFirst.filter((used) => used !== view),
-    view,
-  ].sort((left, right) => readRootViewUse(right) - readRootViewUse(left));
+  const runtime = getEditorRuntime(view);
+
+  if (INTERACTION_USED_AT.has(runtime)) {
+    entry.usedLatestFirst = [
+      ...entry.usedLatestFirst.filter((used) => used !== view),
+      view,
+    ].sort((left, right) => readRootViewUse(right) - readRootViewUse(left));
+  }
+  if (CONTENT_USED_AT.has(runtime)) {
+    entry.contentUsedLatestFirst = [
+      ...entry.contentUsedLatestFirst.filter((used) => used !== view),
+      view,
+    ].sort(
+      (left, right) =>
+        readRootViewContentUse(right) - readRootViewContentUse(left)
+    );
+  }
 };
 
-export const continueRootViewUse = (view: Editor, usedAt: number) => {
+export const continueRootViewUse = (
+  view: Editor,
+  contentUsedAt: number,
+  interactionUsedAt = contentUsedAt
+) => {
   const runtime = getEditorRuntime(view);
   const entry = VIEW_ENTRIES.get(runtime);
+  const nextInteractionAt = Math.max(contentUsedAt, interactionUsedAt);
+  const contentChanged = contentUsedAt > (CONTENT_USED_AT.get(runtime) ?? 0);
+  const interactionChanged =
+    nextInteractionAt > (INTERACTION_USED_AT.get(runtime) ?? 0);
 
-  if (usedAt <= (USED_AT.get(runtime) ?? 0)) return;
+  if (!contentChanged && !interactionChanged) return;
 
-  USED_AT.set(runtime, usedAt);
+  lastUse = Math.max(lastUse, contentUsedAt, nextInteractionAt);
+  if (contentChanged) CONTENT_USED_AT.set(runtime, contentUsedAt);
+  if (interactionChanged) INTERACTION_USED_AT.set(runtime, nextInteractionAt);
   if (entry?.views.has(view)) {
     placeByUse(entry, view);
-    invalidate(entry);
+    if (contentChanged) {
+      entry.contentStale = true;
+      recordPresentationContentUse(entry.presentation, view, true);
+    }
+    if (interactionChanged) invalidate(entry);
     tellViewUse(entry.owner);
   }
 };
@@ -298,9 +404,10 @@ export const mountRootView = (
 
   entry.views.add(view);
   VIEW_ENTRIES.set(runtime, entry);
-  if (USED_AT.has(runtime)) placeByUse(entry, view);
+  placeByUse(entry, view);
+  entry.contentStale = true;
   invalidate(entry);
-  announcePresentation(presentation);
+  recordPresentationContentUse(presentation, view, true);
   tellViewUse(owner);
 
   return () => {
@@ -309,8 +416,17 @@ export const mountRootView = (
     entry.usedLatestFirst = entry.usedLatestFirst.filter(
       (used) => used !== view
     );
+    entry.contentUsedLatestFirst = entry.contentUsedLatestFirst.filter(
+      (used) => used !== view
+    );
     if (VIEW_ENTRIES.get(runtime) === entry) VIEW_ENTRIES.delete(runtime);
 
+    const notice = NOTICES.get(presentation);
+    if (notice?.latestUsed === view) {
+      refreshPresentationLatestContent(owner, presentation);
+    }
+
+    entry.contentStale = true;
     invalidate(entry);
     announcePresentation(presentation);
     dropUnusedEntry(key, entry);
@@ -318,25 +434,39 @@ export const mountRootView = (
   };
 };
 
+export const markRootViewInteraction = (view: Editor) => {
+  const runtime = getEditorRuntime(view);
+  const entry = VIEW_ENTRIES.get(runtime);
+
+  lastUse += 1;
+  INTERACTION_USED_AT.set(runtime, lastUse);
+  if (entry?.views.has(view) && entry.usedLatestFirst[0] !== view) {
+    entry.usedLatestFirst = moveToFront(entry.usedLatestFirst, view);
+    invalidate(entry);
+  }
+  tellViewUse(getEditorRuntimeOwner(view));
+};
+
 export const markRootViewUsed = (view: Editor) => {
   const runtime = getEditorRuntime(view);
   const entry = VIEW_ENTRIES.get(runtime);
 
-  USED_AT.set(runtime, (lastUse += 1));
-  if (entry?.views.has(view) && entry.usedLatestFirst[0] !== view) {
-    entry.usedLatestFirst = [
-      view,
-      ...entry.usedLatestFirst.filter((used) => used !== view),
-    ];
-    invalidate(entry);
-  }
+  lastUse += 1;
+  INTERACTION_USED_AT.set(runtime, lastUse);
+  CONTENT_USED_AT.set(runtime, lastUse);
   if (entry?.views.has(view)) {
-    const notice = noticeOf(entry.presentation);
-
-    if (notice.latestUsed !== view) {
-      notice.latestUsed = view;
-      announcePresentation(entry.presentation);
+    if (entry.usedLatestFirst[0] !== view) {
+      entry.usedLatestFirst = moveToFront(entry.usedLatestFirst, view);
+      invalidate(entry);
     }
+    if (entry.contentUsedLatestFirst[0] !== view) {
+      entry.contentUsedLatestFirst = moveToFront(
+        entry.contentUsedLatestFirst,
+        view
+      );
+      entry.contentStale = true;
+    }
+    recordPresentationContentUse(entry.presentation, view);
   }
   tellViewUse(getEditorRuntimeOwner(view));
 };
@@ -349,6 +479,7 @@ export const reportShownChange = <T>(view: Editor, change: () => T): T => {
   if ((runtime.hasSurface?.() ?? false) !== wasShown) {
     const entry = VIEW_ENTRIES.get(runtime);
 
+    if (entry) entry.contentStale = true;
     invalidate(entry);
     if (entry) {
       announcePresentation(entry.presentation);
@@ -367,6 +498,16 @@ export const readRootTarget = (
   const entry = findEntry([owner, presentation, root]);
 
   return entry ? readEntry(entry) : null;
+};
+
+export const readRootContentTarget = (
+  owner: Editor,
+  presentation: ViewPresentation,
+  root: RootKey
+): RootTarget | null => {
+  const entry = findEntry([owner, presentation, root]);
+
+  return entry ? readContentEntry(entry) : null;
 };
 
 export const readNestedRootView = (
@@ -397,7 +538,7 @@ export const readCaretViewIn = <TView extends Editor>(
 ): TView | null => {
   const owner = getEditorRuntimeOwner(area);
   const caretOwner = getCaretOwner(owner);
-  const target = readRootTarget(
+  const target = readRootContentTarget(
     owner,
     caretOwner ? caretOwner.presentation : getViewPresentation(area),
     getBaseCallRoot(owner)
@@ -493,7 +634,7 @@ export const readLatestShownWritableRootView = (
   for (const view of findEntry([owner, presentation, root])?.views ?? []) {
     if (
       readViewState(view) === 'writable' &&
-      (!latest || readRootViewUse(view) > readRootViewUse(latest))
+      (!latest || readRootViewContentUse(view) > readRootViewContentUse(latest))
     ) {
       latest = view;
     }
@@ -521,7 +662,8 @@ export const readLatestShownWritableView = (
       shown = true;
       if (
         state === 'writable' &&
-        (!latest || readRootViewUse(view) > readRootViewUse(latest))
+        (!latest ||
+          readRootViewContentUse(view) > readRootViewContentUse(latest))
       ) {
         latest = view;
       }

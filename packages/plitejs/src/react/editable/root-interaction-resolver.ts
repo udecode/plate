@@ -3,8 +3,42 @@ import { resolveDOMTargetView } from '../../dom/internal';
 import { isDOMElement, isDOMHTMLElement, isDOMNode } from '../../dom/utils/dom';
 import { MAIN_ROOT_KEY } from '../root-key';
 
-const INTERACTIVE_CHROME_TARGET =
-  'a[href]:not([data-editor-inline="true"]), button, input, select, textarea, [contenteditable="true"]:not([data-editor="true"]), [role="button"], [data-editor-root-chrome-ignore="true"]';
+const INTERACTIVE_CHROME_TARGET = [
+  'button',
+  'input',
+  'label',
+  'select',
+  'summary',
+  'textarea',
+  '[role="application"]',
+  '[role="button"]',
+  '[role="checkbox"]',
+  '[role="combobox"]',
+  '[role="link"]:not([data-editor-inline="true"])',
+  '[role="listbox"]',
+  '[role="menu"]',
+  '[role="menubar"]',
+  '[role="menuitem"]',
+  '[role="menuitemcheckbox"]',
+  '[role="menuitemradio"]',
+  '[role="option"]',
+  '[role="radio"]',
+  '[role="radiogroup"]',
+  '[role="scrollbar"]',
+  '[role="searchbox"]',
+  '[role="slider"]',
+  '[role="spinbutton"]',
+  '[role="switch"]',
+  '[role="tab"]',
+  '[role="tablist"]',
+  '[role="textbox"]:not([data-editor="true"])',
+  '[role="toolbar"]',
+  '[role="treeitem"]',
+  '[contenteditable]:not([contenteditable="false" i]):not([contenteditable="inherit" i]):not([data-editor="true"])',
+  'a[href]:not([data-editor-inline="true"])',
+  '[data-editor-root-chrome-ignore="true"]',
+].join(', ');
+export const INTERACTIVE_CONTROL_TARGET_SELECTOR = `${INTERACTIVE_CHROME_TARGET}, [data-editor-content-root-slot]`;
 const NATIVE_EDITABLE_TARGET =
   '[data-editor-string], [data-editor-zero-width], [data-editor-leaf], [data-editor-node="text"], [data-editor-node="element"]';
 const EDITABLE_ROOT_TARGET = '[data-editor="true"]';
@@ -152,6 +186,32 @@ export const resolveRootInteractionTarget = ({
 
   if (hasClosestWithin(currentTarget, element, INTERACTIVE_CHROME_TARGET)) {
     return { kind: 'interactive-descendant', target: element };
+  }
+
+  if (isCurrentTargetEditableRoot(currentTarget)) {
+    if (
+      hasClosestWithin(
+        currentTarget,
+        element,
+        '[data-editor-content-root-slot]'
+      )
+    ) {
+      return { kind: 'interactive-descendant', target: element };
+    }
+
+    const nonEditableHost = element.closest('[contenteditable]');
+
+    if (
+      nonEditableHost &&
+      nonEditableHost !== currentTarget &&
+      currentTarget.contains(nonEditableHost) &&
+      nonEditableHost.getAttribute('contenteditable')?.toLowerCase() ===
+        'false' &&
+      !element.closest('[data-editor-void="true"]') &&
+      !nonEditableHost.hasAttribute('data-editor-node')
+    ) {
+      return { kind: 'interactive-descendant', target: element };
+    }
   }
 
   if (hasClosestWithin(currentTarget, element, NATIVE_EDITABLE_TARGET)) {

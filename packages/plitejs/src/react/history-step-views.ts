@@ -14,7 +14,7 @@ import {
   type EditorHistoryEdge,
   readEditorCommitHistoryEntry,
 } from '../core/public-state';
-import { readRootTarget } from '../core/root-target';
+import { readRootContentTarget } from '../core/root-target';
 import { containsShadowAware } from '../dom';
 import { findEditorDOMRootRuntime } from '../dom/internal';
 import { focusedElementOnPage } from '../dom/plugin/dom-root-runtime';
@@ -270,7 +270,7 @@ const recordCommit = (
     const target =
       views.roots.get(keyOf(step.made)) === root
         ? step.made
-        : readRootTarget(
+        : readRootContentTarget(
             getEditorRuntimeOwner(runtime),
             getViewPresentation(step.made),
             root

@@ -1,4 +1,9 @@
-import React, { useCallback, useContext, useSyncExternalStore } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useInsertionEffect,
+  useSyncExternalStore,
+} from 'react';
 
 import {
   NodeApi,
@@ -8,7 +13,7 @@ import {
   type NodeKey,
   type RootKey,
 } from '../..';
-import { markRootViewUsed } from '../../core/root-target';
+import { markRootViewInteraction } from '../../core/root-target';
 import { type DOMRange, isDOMNode } from '../../dom';
 import {
   createDOMGeometryKernel,
@@ -35,7 +40,12 @@ import type {
   EditableRepairRequest,
   InputIntent,
 } from '../editable/input-controller';
-import { guardExternalTextEvents } from '../editable/interaction-owner';
+import {
+  guardExternalTextEvents,
+  isOwnEditableInteractionTarget,
+  markCopyChainUsed,
+  registerEnclosingEditableRuntime,
+} from '../editable/interaction-owner';
 import { getPlacedDropPlacement } from '../editable/placed-drag';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import {
@@ -46,12 +56,16 @@ import {
 } from '../editable/runtime-editor-api';
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
-import { resolveEditableSelectableOwnerClickTarget } from '../editable/selection-void-target';
+import {
+  isOwnEditableContentTarget,
+  resolveEditableSelectableOwnerClickTarget,
+} from '../editable/selection-void-target';
 import { activateViewCaret } from '../editable/view-caret-restore';
 import { type ViewLines, ViewLinesContext } from '../editable/view-lines';
 import {
   EditableDOMRuntimeContext,
   useEditableDOMHostFact,
+  useEditableDOMRuntime,
 } from '../hooks/use-claim-editable-dom-commit';
 import { ComposingContext } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
@@ -391,17 +405,15 @@ export const EditableDOMRoot = (
     ...attributes
   } = editableProps;
   const editor = useEditorContext();
+  const enclosingRuntime = useEditableDOMRuntime();
   const editorRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const hasViewSelection = usePliteViewSelectionPresence(editor);
-  const { getMountedViewEditor } = useRequiredPliteRuntimeContext();
+  const { getMountedContentViewEditor } = useRequiredPliteRuntimeContext();
   const getViewEditor = useCallback(
     (root: RootKey) =>
-      root === editorRoot ? editor : getMountedViewEditor(root),
-    [editor, editorRoot, getMountedViewEditor]
+      root === editorRoot ? editor : getMountedContentViewEditor(root),
+    [editor, editorRoot, getMountedContentViewEditor]
   );
-  const activateRootView = useCallback(() => {
-    markRootViewUsed(editor);
-  }, [editor]);
   const rootRuntime = useEditableRootRuntime({
     autoFocus,
     callbacks: attributes,
@@ -427,6 +439,22 @@ export const EditableDOMRoot = (
     runtime,
     viewportBackedSelection,
   } = rootRuntime;
+  useInsertionEffect(
+    () => registerEnclosingEditableRuntime(runtime, enclosingRuntime),
+    [enclosingRuntime, runtime]
+  );
+  const activateCopyChain = useCallback(() => {
+    markCopyChainUsed(editor, runtime.rootElement);
+  }, [editor, runtime]);
+  const markViewUse = (event: React.SyntheticEvent<HTMLDivElement>) => {
+    if (isOwnEditableContentTarget(editor, event.currentTarget, event.target)) {
+      markCopyChainUsed(editor, event.currentTarget);
+    } else if (
+      isOwnEditableInteractionTarget(event.currentTarget, event.target)
+    ) {
+      markRootViewInteraction(editor);
+    }
+  };
   const supportsBeforeInput = useSyncExternalStore(
     runtime.subscribeHostFacts,
     () => runtime.supportsBeforeInput,
@@ -503,7 +531,7 @@ export const EditableDOMRoot = (
       // editables around its target, and the view that now holds focus got
       // its own focus event.
       if (findDOMRootRuntime(event.target)?.holdsFocus()) {
-        activateRootView();
+        markViewUse(event);
         if (
           !runtime.mousePressActive &&
           !runtime.longPressSelected &&
@@ -532,9 +560,7 @@ export const EditableDOMRoot = (
       runtime.clearOwnedPressGesture();
       runtime.setExternalMouseGesture(event.defaultPrevented);
 
-      if (!runtime.externalMouseGestureActive) {
-        activateRootView();
-      }
+      if (!runtime.externalMouseGestureActive) markViewUse(event);
       const voidTarget = getDropCursorTargetElement(event.target)?.closest(
         '[data-editor-node][data-editor-void="true"]'
       );
@@ -577,7 +603,7 @@ export const EditableDOMRoot = (
   };
   const guardedAttributes = guardExternalTextEvents(
     attributes,
-    activateRootView
+    activateCopyChain
   );
   const ownedEventBindings = guardExternalTextEvents(
     {
@@ -586,7 +612,7 @@ export const EditableDOMRoot = (
       onBlurCapture: (event: React.FocusEvent<HTMLDivElement>) =>
         attributes.onBlurCapture?.(event),
     },
-    activateRootView,
+    activateCopyChain,
     { editor, onKeyDown: propsOnKeyDown }
   );
 

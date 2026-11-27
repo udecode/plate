@@ -51,6 +51,7 @@ import { MAIN_ROOT_KEY } from '../root-key';
 import {
   getPliteRootBoundaryPoint,
   rootPlitePoint,
+  samePliteRootPoint,
 } from '../view-boundary-graph';
 import {
   createPliteViewSelection,
@@ -94,6 +95,8 @@ import {
 import {
   findNestedEditable,
   getExternalTextHostOwner,
+  isCopyChainContentCurrent,
+  markCopyChainUsed,
 } from './interaction-owner';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
@@ -524,12 +527,14 @@ const importProjectedDOMSelection = ({
 
   if (!projectedSelection) return false;
   if ('range' in projectedSelection) {
+    markCopyChainUsed(editor, editorElement);
     writePliteViewSelection(editor, null);
     setShownSelectionAsView(editor, projectedSelection.range);
     showStoredSelection(editor, inputController);
     return true;
   }
 
+  markCopyChainUsed(editor, editorElement);
   const shown = writePliteViewSelection(editor, projectedSelection, {
     place: () =>
       setShownSelectionAsView(
@@ -633,9 +638,11 @@ export const syncEditorSelectionFromDOM = ({
  */
 const showImportedRange = (
   editor: ReactRuntimeEditor,
+  editorElement: HTMLElement,
   inputController: EditableInputController,
   range: Range
 ) => {
+  markCopyChainUsed(editor, editorElement);
   const hold = inputController.state.nativeMoveHold;
   const place = () => setShownSelectionAsView(editor, range);
 
@@ -720,7 +727,19 @@ const importDOMSelection = ({
   }
 
   if (!range) return;
-  if (selectionRange && RangeApi.equals(selectionRange, range)) return;
+
+  const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
+
+  if (
+    selectionRange &&
+    samePliteRootPoint(selectionRange.anchor, range.anchor, viewRoot) &&
+    samePliteRootPoint(selectionRange.focus, range.focus, viewRoot)
+  ) {
+    if (!isCopyChainContentCurrent(editor, editorElement)) {
+      markCopyChainUsed(editor, editorElement);
+    }
+    return;
+  }
 
   const modelSelection = editorGetSelection(editor);
 
@@ -742,7 +761,7 @@ const importDOMSelection = ({
   }
 
   writePliteViewSelection(editor, null);
-  showImportedRange(editor, inputController, range);
+  showImportedRange(editor, editorElement, inputController, range);
 };
 
 export const setEditableModelSelectionPreference = ({
@@ -1640,7 +1659,7 @@ const importDOMSelectionChange = ({
             !androidInputManager?.hasPendingChanges() &&
             !androidInputManager?.isFlushing()
           ) {
-            showImportedRange(editor, inputController, range);
+            showImportedRange(editor, editorElement, inputController, range);
           } else {
             androidInputManager?.handleUserSelect(range);
           }

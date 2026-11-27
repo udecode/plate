@@ -1,14 +1,26 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
-import type { RootKey } from '../..';
+import type { Editor, RootKey } from '../..';
+import { getEditorRuntime } from '../../core/editor-runtime';
+import {
+  isLatestPresentedContentView,
+  markRootViewUsed,
+  readRootContentTarget,
+  readRootViewContentUse,
+} from '../../core/root-target';
 import { getSelection, isDOMElement, isDOMNode, isDOMText } from '../../dom';
 import { findDOMRootRuntime } from '../../dom/internal';
 import { isDOMHTMLElement } from '../../dom/utils/dom';
+import { getViewPresentation } from '../../editor-runtime-view';
 import type {
   EditableHandlerContext,
   EditableKeyDownHandler,
 } from '../components/editable';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import {
+  type EditableDOMRuntime,
+  findMountedEditableDOMRuntime,
+} from './editable-dom-runtime';
 import { applyUserKeyDownHandler } from './keyboard-input-strategy';
 import { getEditorRuntimeOwner, toInternalRoot } from './runtime-editor-api';
 
@@ -144,6 +156,121 @@ export const getEditableInteractionOwner = (
     return 'chrome' as const;
   }
   return 'editor' as const;
+};
+
+export const isOwnEditableInteractionTarget = (
+  root: Element | null,
+  target: EventTarget | null
+) => {
+  const owner = getEditableInteractionOwner(root, target);
+
+  return (
+    owner !== 'outside' &&
+    owner !== 'nested-editor' &&
+    owner !== 'external-text'
+  );
+};
+
+const ENCLOSING_EDITABLE_RUNTIMES = new WeakMap<
+  EditableDOMRuntime,
+  EditableDOMRuntime | null
+>();
+
+export const registerEnclosingEditableRuntime = (
+  runtime: EditableDOMRuntime,
+  enclosingRuntime: EditableDOMRuntime | null
+) => {
+  const parent =
+    enclosingRuntime &&
+    enclosingRuntime !== runtime &&
+    getEditorRuntimeOwner(enclosingRuntime.editor) ===
+      getEditorRuntimeOwner(runtime.editor) &&
+    getViewPresentation(enclosingRuntime.editor) ===
+      getViewPresentation(runtime.editor)
+      ? enclosingRuntime
+      : null;
+
+  ENCLOSING_EDITABLE_RUNTIMES.set(runtime, parent);
+
+  return () => {
+    if (ENCLOSING_EDITABLE_RUNTIMES.get(runtime) === parent) {
+      ENCLOSING_EDITABLE_RUNTIMES.delete(runtime);
+    }
+  };
+};
+
+const collectCopyChain = (
+  editor: Editor,
+  editableElement?: HTMLElement | null
+): Editor[] => {
+  const views: Editor[] = [];
+  const seen = new Set<object>();
+  const push = (view: Editor) => {
+    const runtime = getEditorRuntime(view);
+
+    if (seen.has(runtime)) return;
+    seen.add(runtime);
+    views.push(view);
+  };
+
+  push(editor);
+
+  let current = editableElement
+    ? findMountedEditableDOMRuntime(editableElement)
+    : null;
+
+  while (current) {
+    const parent = ENCLOSING_EDITABLE_RUNTIMES.get(current) ?? null;
+
+    if (!parent || !parent.rootElement) break;
+    push(parent.editor);
+    current = parent;
+  }
+
+  return views;
+};
+
+export const isCopyChainContentCurrent = (
+  editor: Editor,
+  editableElement?: HTMLElement | null
+): boolean => {
+  if (!isLatestPresentedContentView(editor)) return false;
+
+  const owner = getEditorRuntimeOwner(editor);
+  const presentation = getViewPresentation(editor);
+  const views = collectCopyChain(editor, editableElement);
+  let previousUse = Number.POSITIVE_INFINITY;
+
+  for (const view of views) {
+    const usedAt = readRootViewContentUse(view);
+    const root = toInternalRoot(view.read((state) => state.view.root()));
+
+    if (
+      usedAt <= 0 ||
+      usedAt >= previousUse ||
+      readRootContentTarget(owner, presentation, root)?.view !== view
+    ) {
+      return false;
+    }
+    previousUse = usedAt;
+  }
+
+  return true;
+};
+
+export const markCopyChainUsed = (
+  editor: Editor,
+  editableElement?: HTMLElement | null
+) => {
+  const views = collectCopyChain(editor, editableElement);
+
+  // Mark outermost first so the innermost copy remains newest for
+  // readLatestShownWritableView and the history gate.
+  for (let index = views.length - 1; index >= 0; index -= 1) {
+    const view = views[index];
+
+    if (view) markRootViewUsed(view);
+  }
 };
 
 export const isDOMHandler = (name: string, value: unknown) =>
