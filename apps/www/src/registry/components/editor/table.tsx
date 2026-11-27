@@ -83,6 +83,7 @@ type TableResizeContextValue = {
   columnsResizable: boolean;
   hasMultiRowSelection: boolean;
   rowSizeOverrides: Map<number, number>;
+  rowsResizable: boolean;
   clearResizePreview: (handleKey: string) => void;
   showResizePreview: (
     event: React.PointerEvent<HTMLDivElement>,
@@ -164,15 +165,6 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
 
     return view !== null && 'intent' in view && view.intent === 'propose';
   });
-  const widthChangeWaits =
-    'authored' in props.element &&
-    authored !== null &&
-    authored
-      .reviewOf(props.element)
-      .marks.some(
-        (mark) => mark.kind === 'format' && mark.key === 'columnWidths'
-      );
-  const columnsResizable = !suggesting && !widthChangeWaits;
   const marginLeft = props.element.marginLeft ?? 0;
   const baseColSizes = usePluginStore(
     TablePlugin,
@@ -207,6 +199,13 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
       view.bounds.maxRow > view.bounds.minRow
     );
   });
+  const gridLocked = useEditorSelector((innerEditor) => {
+    const table = innerEditor.read.nodes.get(tableNodeKey)?.[0];
+
+    return Boolean(table && authored?.gridLocked(table));
+  });
+  const rowsResizable = !gridLocked;
+  const columnsResizable = rowsResizable && !suggesting;
   const activeHandleKeyRef = React.useRef<string | null>(null);
   const activeRowElementRef = React.useRef<HTMLTableRowElement | null>(null);
   const previewHandleKeyRef = React.useRef<string | null>(null);
@@ -349,6 +348,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
       columnsResizable,
       hasMultiRowSelection,
       rowSizeOverrides,
+      rowsResizable,
       showResizePreview,
       startResize,
     }),
@@ -357,6 +357,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
       columnsResizable,
       hasMultiRowSelection,
       rowSizeOverrides,
+      rowsResizable,
       showResizePreview,
       startResize,
     ]
@@ -992,6 +993,7 @@ function TableCellResizeControls({
   const {
     clearResizePreview,
     columnsResizable,
+    rowsResizable,
     showResizePreview,
     startResize,
   } = useTableResizeContext();
@@ -1038,37 +1040,39 @@ function TableCellResizeControls({
           }}
         />
       )}
-      <div
-        className="pointer-events-auto absolute start-0 -bottom-1 z-40 h-2 w-full cursor-row-resize touch-none"
-        data-table-resize-handle="row-end"
-        onPointerEnter={(event) => {
-          showResizePreview(event, {
-            colIndex,
-            direction: 'bottom',
-            handleKey: bottomHandleKey,
-            rowIndex,
-          });
-        }}
-        onPointerMove={(event) => {
-          showResizePreview(event, {
-            colIndex,
-            direction: 'bottom',
-            handleKey: bottomHandleKey,
-            rowIndex,
-          });
-        }}
-        onPointerLeave={() => {
-          clearResizePreview(bottomHandleKey);
-        }}
-        onPointerDown={(event) => {
-          startResize(event, {
-            colIndex,
-            direction: 'bottom',
-            handleKey: bottomHandleKey,
-            rowIndex,
-          });
-        }}
-      />
+      {rowsResizable && (
+        <div
+          className="pointer-events-auto absolute start-0 -bottom-1 z-40 h-2 w-full cursor-row-resize touch-none"
+          data-table-resize-handle="row-end"
+          onPointerEnter={(event) => {
+            showResizePreview(event, {
+              colIndex,
+              direction: 'bottom',
+              handleKey: bottomHandleKey,
+              rowIndex,
+            });
+          }}
+          onPointerMove={(event) => {
+            showResizePreview(event, {
+              colIndex,
+              direction: 'bottom',
+              handleKey: bottomHandleKey,
+              rowIndex,
+            });
+          }}
+          onPointerLeave={() => {
+            clearResizePreview(bottomHandleKey);
+          }}
+          onPointerDown={(event) => {
+            startResize(event, {
+              colIndex,
+              direction: 'bottom',
+              handleKey: bottomHandleKey,
+              rowIndex,
+            });
+          }}
+        />
+      )}
     </div>
   );
 }

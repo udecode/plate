@@ -17,6 +17,7 @@
     "packages/plitejs/src/core/change/root-change.ts",
     "packages/plitejs/src/core/change/slice-facts.ts",
     "packages/plitejs/src/core/change/transform.ts",
+    "packages/plitejs/src/core/change/window.ts",
     "packages/plitejs/src/core/change/wrap-fidelity.ts",
     "packages/plitejs/src/history/history-character-map.ts",
     "packages/plitejs/src/history/history-replay.ts",
@@ -26,6 +27,9 @@
   ],
   "uncounted": {
     "packages/plitejs/src/core/change/range-content.ts": "It reads whether a range covers a letter or a whole void. It works out no move, split, join or wrap.",
-    "packages/plitejs/src/core/change/text-leaf-boundary.ts": "It checks whether a change retained a token span verbatim and aligns a deletion across an adjacent empty text leaf of equal properties. It works out no move, split, join or wrap."
+    "packages/plitejs/src/core/change/text-leaf-boundary.ts": "It checks whether a change retained a token span verbatim and aligns a deletion across an adjacent empty text leaf of equal properties. It works out no move, split, join or wrap.",
+    "packages/plitejs/src/history/history-origin.ts": "It records each history entry's start document, change, written records, and active window-track state by delegating to core/change/window.ts. It works out no move, split, join, wrap or restored letter from positions.",
+    "packages/plitejs/src/history/history-step-id.ts": "It attaches step ids, facts and carry programs to history batches and freezes snapshots. It works out no move, split, join, wrap or restored letter from positions.",
+    "packages/plitejs/src/history/history-store.ts": "It stores and publishes per-editor history stacks and transaction drafts. It works out no move, split, join, wrap or restored letter from positions."
   }
 }

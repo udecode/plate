@@ -64,6 +64,7 @@ import {
   historyReplayClaim,
 } from '../core/commit';
 import { DOCUMENT_SETTLED_TAG } from '../core/document-admission';
+import { setActiveHistoryReplayOrigin } from '../core/document-recorder';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -576,6 +577,7 @@ const applyHistoryAction = <V extends Value>(
     direction === 'undo' ? 'before' : 'after'
   );
 
+  setActiveHistoryReplayOrigin(editor, entry.origin);
   runHistoricUpdate(editor, root, tx, entry.batch, () => {
     consumeHistoryBatch(editor, tx, entry.batch, direction, root);
     if (entry.carets) {
@@ -1040,7 +1042,8 @@ const createHistoryPlugin = <
         ),
         after,
         unsettled,
-        replayRequest
+        replayRequest,
+        { after, before, change: changes }
       );
       COMMIT_STEPS.set(commit, { how: action, identity: entry.identity });
       return Object.freeze({
@@ -1064,7 +1067,11 @@ const createHistoryPlugin = <
 
       if (!commit.tags.includes('historic') && !changes.empty) {
         queuePendingHistoryReplayMapping(editor, changes, after);
-        queueHistoryMapping(editor, changes, after, { before, facts });
+        queueHistoryMapping(editor, changes, after, {
+          before,
+          facts,
+          otherWriter: commit.tags.includes('collaboration'),
+        });
       }
       return undefined;
     }
@@ -1303,6 +1310,7 @@ const createHistoryPlugin = <
           }
         ),
         clearRedos: true,
+        commit: { after, before, change: changes },
         group: mergedGroup,
         recovery: mergedRecovery,
         ...(takesBackCommit && lastEntry.restores
@@ -1314,6 +1322,7 @@ const createHistoryPlugin = <
         anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
         carets,
         clearRedos: true,
+        commit: { after, before, change: changes },
         group: boundary
           ? Object.freeze({
               ...(prepared.group ?? { kind: 'document', roots: [] }),

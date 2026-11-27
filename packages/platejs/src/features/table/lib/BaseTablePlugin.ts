@@ -1181,10 +1181,17 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
      * Interior boundaries preserve the adjacent columns' combined width.
      * The left boundary exchanges first-column width for table indentation.
      * Commit the result with `update.resize`; previews never change the editor.
-     * Throws a `RangeError` for a column edge while the table holds a pending
-     * column width change.
+     * Throws a `RangeError` for every edge while the table waits as a pending
+     * deletion or holds a pending row, column or format change.
      */
     createResize: (table: TableElement, target: TableResizeTarget) => {
+      const authored = editor.plugin(AuthoredPlugin);
+
+      if (authored.installed && authored.read.gridLocked(table)) {
+        throw new RangeError(
+          'Table resize cannot start while the table waits for review as a deletion or holds a row, column or format change.'
+        );
+      }
       const { minColumnWidth } = store.get();
       const minimum = isPositiveFiniteNumber(minColumnWidth)
         ? minColumnWidth
@@ -1207,10 +1214,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             'Table resize requires a valid row and positive height.'
           );
         }
-      } else if (getColumnWidthsWrite(editor, table)) {
-        throw new RangeError(
-          'Table resize cannot move a column while a column width change waits for review.'
-        );
       } else if (
         !Number.isSafeInteger(index) ||
         index < 0 ||

@@ -8738,6 +8738,7 @@
         "source-hash:partition:layout",
         "source-hash:partition:proxies",
         "source-hash:partition:react-core",
+        "source-hash:partition:standard-basic-nodes",
         "source-hash:partition:standard-basic-styles",
         "source-hash:partition:standard-list",
         "source-hash:partition:table",

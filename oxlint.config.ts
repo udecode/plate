@@ -299,6 +299,7 @@ const config = defineConfig({
         'packages/platejs/src/authored/__tests__/authoredTestApi.ts',
         'packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.authored-tree.spec.ts',
         'packages/platejs/src/features/table/lib/BaseTablePlugin.authored-tree.spec.ts',
+        'packages/platejs/src/features/table/lib/BaseTablePlugin.authored-grid-replay.spec.ts',
         'packages/platejs/src/features/details/lib/BaseDetailsPlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/find/lib/BaseFindPlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.authored-tree.spec.ts',

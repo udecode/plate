@@ -223,6 +223,7 @@ import {
 import { characterAlignedChange } from './tree/alignment';
 import { closeCommandValues, generatedOf } from './tree/command-values';
 import { relinkCuts } from './tree/cuts';
+import { isGridLocked, refuseGridUpdate } from './tree/grid';
 import { joinCompares } from './tree/halves';
 import { acceptedValues, type FormatTag, type Standing } from './tree/layers';
 import {
@@ -313,6 +314,13 @@ type AuthoredRead = {
    * author withdrew it, or when the document never held the id.
    */
   outcome: (id: string) => AuthoredOutcome | null;
+  /**
+   * Whether a stored grid element, such as a table, takes no write that
+   * reshapes it or sizes its rows and columns: it waits as a pending deletion
+   * or holds a pending row, column or format change of a change that does not
+   * insert it whole.
+   */
+  gridLocked: (node: unknown) => boolean;
   /** What review reads on a node of the stored document. */
   reviewOf: (node: unknown) => AuthoredReview;
 };
@@ -1836,6 +1844,16 @@ export const createAuthoredPlugin = (
           book.cardsOf(placeIds(editor, book, at, viewPlacesOf(editor)))
         );
       },
+      gridLocked: (node: unknown) => {
+        const gridRoles = gridRolesOf(getCompiledEditorSchema(editor));
+
+        return (
+          typeof node === 'object' &&
+          node !== null &&
+          gridRoles.roleOf(node) === 'grid' &&
+          isGridLocked(storedValue(editor), node as JsonNode, gridRoles)
+        );
+      },
       reviewOf: (node: unknown): AuthoredReview => {
         const facts = factsOf(storedValue(editor));
         const marks = marksOf(node, facts);
@@ -2128,7 +2146,33 @@ export const createAuthoredPlugin = (
         }
       });
       onCleanup(
-        registerEditorDraftGuard(editor, (value) => ledger.check(value))
+        registerEditorDraftGuard(editor, (value, _frame, update) => {
+          const tags = getActiveEditorUpdateTags(editor);
+
+          if (update && !passesThrough() && !tags.includes('collaboration')) {
+            const id = getActiveEditorUpdateId(editor);
+            const view = viewOf(getAuthoredUpdateView(editor));
+            const editing =
+              !(id && state.forced.has(id)) &&
+              'intent' in view &&
+              view.intent === 'edit';
+
+            refuseGridUpdate({
+              after: value,
+              before: update.before,
+              change: update.change,
+              intent: tags.includes('historic')
+                ? 'replay'
+                : editing
+                  ? 'edit'
+                  : 'propose',
+              replayOrigin: update.replayOrigin,
+              schema: getCompiledEditorSchema(editor),
+              writer: authorOf(getAuthoredUpdateView(editor)),
+            });
+          }
+          ledger.check(value);
+        })
       );
       // A node's own marks decide, so live text inside a struck block reads.
       onCleanup(

@@ -65,7 +65,7 @@ import { countLedgerWork } from '../ledger/work';
 import { unrepresentableFor, unrepresentable } from '../refusal';
 import { carriedJudge, type MovedCopy } from './carried';
 import { isCut } from './cuts';
-import { refuseUnplacedGridWrite } from './grid';
+import { refuseUnrecordableGridStep } from './grid';
 import { gaveBy, ownOf } from './halves';
 import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
@@ -2184,7 +2184,7 @@ const recordSteps = (
         removesStruckParts ||= writes === 'struck-parts';
         writesOther ||= writes === 'other';
         if (!isEditingChange(changeId)) {
-          refuseUnplacedGridWrite({
+          refuseUnrecordableGridStep({
             claims: input.dependencies.marks,
             frame,
             frameAfter: applyReusingStep(step, root, frame, written),

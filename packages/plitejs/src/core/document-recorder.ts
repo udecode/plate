@@ -10,6 +10,7 @@ import type { CarriedRun } from './change/carried-run';
 import type { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import type { ChangeFacts } from './change/record';
+import type { BlockWindow } from './change/window';
 import type { CommandProjection } from './command-document';
 import type { CompositionStamp } from './composition-stamp';
 import { getEditorRuntimeOwner } from './editor-runtime';
@@ -132,10 +133,57 @@ export type DraftGuardFrame = Readonly<{
   stored: EditorDocumentValue;
 }>;
 
+/** @internal */
+export type DraftGuardWindowTrack = Readonly<{
+  changesRoots: boolean;
+  dirty: boolean;
+  initial: readonly BlockWindow[];
+  recordChanged: boolean;
+  seenOther: boolean;
+  windows: readonly BlockWindow[];
+  writtenRecords: ReadonlyArray<readonly [string, string, string | undefined]>;
+}>;
+
+/** @internal */
+export type DraftGuardReplayOrigin = Readonly<{
+  base: EditorDocumentValue;
+  change: DocumentChange;
+  outside: DocumentChange | null;
+  track: DraftGuardWindowTrack | null;
+}>;
+
+/** @internal */
+export type DraftGuardUpdate = Readonly<{
+  before: EditorDocumentValue;
+  change: DocumentChange;
+  replayOrigin?: DraftGuardReplayOrigin | null;
+}>;
+
 type DraftGuard = (
   written: EditorDocumentValue,
-  frame?: DraftGuardFrame
+  frame?: DraftGuardFrame,
+  update?: DraftGuardUpdate
 ) => void;
+
+const ACTIVE_REPLAY_ORIGIN = new WeakMap<
+  object,
+  DraftGuardReplayOrigin | null
+>();
+
+/** @internal */
+export const setActiveHistoryReplayOrigin = (
+  editor: Editor,
+  origin: DraftGuardReplayOrigin | null | undefined
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (origin === undefined) ACTIVE_REPLAY_ORIGIN.delete(owner);
+  else ACTIVE_REPLAY_ORIGIN.set(owner, origin);
+};
+
+/** @internal */
+export const getActiveHistoryReplayOrigin = (editor: Editor) =>
+  ACTIVE_REPLAY_ORIGIN.get(getEditorRuntimeOwner(editor));
 
 const DOCUMENT_RECORDERS = new WeakMap<object, EditorDocumentRecorder>();
 type FitsByLook = (stored: EditorDocumentValue) => boolean;
@@ -262,10 +310,11 @@ export const ignoreEditorDraftGuardRefusals = (editor: Editor) => {
 
 /** @internal */
 export const endEditorTransactionDraftGuards = (editor: Editor) => {
-  REFUSALS_IGNORED.delete(getEditorRuntimeOwner(editor));
-  for (const release of [
-    ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor))?.transaction ?? []),
-  ]) {
+  const owner = getEditorRuntimeOwner(editor);
+
+  ACTIVE_REPLAY_ORIGIN.delete(owner);
+  REFUSALS_IGNORED.delete(owner);
+  for (const release of [...(DRAFT_GUARDS.get(owner)?.transaction ?? [])]) {
     release();
   }
 };
@@ -275,13 +324,14 @@ export const runEditorDraftGuards = (
   editor: Editor,
   phase: EditorDraftGuardPhase,
   written: EditorDocumentValue,
-  frame?: DraftGuardFrame
+  frame?: DraftGuardFrame,
+  update?: DraftGuardUpdate
 ) => {
   for (const guard of [
     ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor))?.[phase] ?? []),
   ]) {
     try {
-      guard(written, frame);
+      guard(written, frame, update);
     } catch (error) {
       if (
         !(error instanceof EditorRefusalError) ||

@@ -29,6 +29,7 @@ import {
   type PropertyModification,
 } from '../../core/change/transform';
 import {
+  getRecordEntries,
   getRecordIds,
   getValueRecords,
   NO_RECORD_OPS,
@@ -61,10 +62,13 @@ import { type SpareWrites, spareWritesChange } from '../tree/reserves';
 import { sparesIn } from '../tree/spares';
 import { settleAuthoredValue } from './admission';
 import { isEditingChange } from './editing';
+import { contentRootsOf } from './facts';
 import {
   CONTEXTS,
   incarnationOf,
   LANDED,
+  parseContext,
+  parseReserve,
   parseVerdict,
   RESERVES,
   type Verdict,
@@ -113,6 +117,14 @@ const writesMarks = (ops: RootChangeJson) =>
               readMembers({ [AUTHORED_MARKS_KEY]: operation.value }).length > 0)
       )
   );
+
+export const holdsAuthoredRecords = (value: JsonEditorValue) => {
+  const store = getValueRecords(value);
+
+  return [...AUTHORED_RECORD_SETS].some(
+    (set) => !getRecordEntries(store, set).next().done
+  );
+};
 
 export const writesAuthored = (change: DocumentChange) => {
   const { primary, roots = {} } = change.toJSON();
@@ -230,7 +242,7 @@ const decides = (
 };
 
 export const replayAt = (
-  { after, before }: AuthoredStep,
+  { after, before }: Pick<AuthoredStep, 'after' | 'before'>,
   requests: readonly DecisionRequest[],
   site: DecisionSite,
   schema: CompiledEditorSchema
@@ -272,8 +284,78 @@ export const decidesStructure = ({ request, site }: Replay) =>
     site.book.occurrences(id).some(({ mark }) => isStructureMark(mark))
   );
 
+const membersWithin = (node: unknown): readonly AuthoredMember[] => {
+  const { children } = node as { children?: unknown };
+
+  return [
+    ...readMembers(node),
+    ...(Array.isArray(children) ? children.flatMap(membersWithin) : []),
+  ];
+};
+
+export const contentMembersOf = (document: JsonEditorValue) =>
+  [...contentRootsOf(document).values()].flatMap((nodes) =>
+    nodes.slice().flatMap(membersWithin)
+  );
+
+export const claimBasesIn = (document: JsonEditorValue) => {
+  const store = getValueRecords(document);
+
+  return [
+    ...contentMembersOf(document).flatMap((member) =>
+      'author' in member ? [member] : []
+    ),
+    ...[...getRecordEntries(store, CONTEXTS)].flatMap(
+      ([ctx, json]) => parseContext(ctx, json)?.member ?? []
+    ),
+    ...[...getRecordEntries(store, RESERVES)].flatMap(
+      ([id, json]) => parseReserve(id, json) ?? []
+    ),
+  ];
+};
+
+// Rejecting an own change that still holds a claim in the result would
+// delete its other letters too, so a withdrawal rejects only the ones the
+// batch removes whole.
+const changeHeldBy = (member: AuthoredMember) =>
+  'author' in member && member.kind !== 'reserve' ? [member.change] : [];
+
+const changesHeldIn = (document: JsonEditorValue) => {
+  const members = contentMembersOf(document);
+  const liveContexts = new Set(
+    members.flatMap((member) => ('ctx' in member ? [member.ctx] : []))
+  );
+  const store = getValueRecords(document);
+
+  return new Set([
+    ...members.flatMap(changeHeldBy),
+    ...[...getRecordEntries(store, CONTEXTS)].flatMap(([ctx, json]) =>
+      liveContexts.has(ctx)
+        ? (parseContext(ctx, json)?.member.change ?? [])
+        : []
+    ),
+  ]);
+};
+
+export const ownChangesRemovedBy = (
+  { after, before }: Pick<AuthoredStep, 'after' | 'before'>,
+  actor: string
+): readonly string[] => {
+  const kept = changesHeldIn(after);
+
+  return [
+    ...new Set(
+      claimBasesIn(before).flatMap(({ author, change }) =>
+        author === actor && !isEditingChange(change) && !kept.has(change)
+          ? [change]
+          : []
+      )
+    ),
+  ];
+};
+
 export const replaysWithdrawal = (
-  step: AuthoredStep,
+  step: Pick<AuthoredStep, 'after' | 'before'>,
   changes: readonly string[],
   schema: CompiledEditorSchema
 ) => {

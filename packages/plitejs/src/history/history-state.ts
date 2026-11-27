@@ -6,7 +6,6 @@ import {
   type EditorDocumentValue,
   type EditorEffect,
   type EditorSchemaIdentity,
-  SelectionApi,
   type Value,
 } from '..';
 import {
@@ -15,7 +14,6 @@ import {
 } from '../core/anchor-state';
 import { classifyDocumentChange } from '../core/change/builder';
 import { landCarriedRuns } from '../core/change/carried-run';
-import type { CarryProgram } from '../core/change/carry-program';
 import { crossRecord } from '../core/change/cross';
 import {
   type ElementSchema,
@@ -35,7 +33,6 @@ import type { ChangeFacts } from '../core/change/record';
 import type { KeptWrap } from '../core/change/root-change';
 import { isElementNode, type JsonNode, nodeProps } from '../core/change/tokens';
 import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
-import { reportEditorLifecycleError } from '../core/lifecycle-error';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import { getEditorDocumentValue } from '../core/public-state';
@@ -50,6 +47,15 @@ import type { Batch, History } from './history';
 import { type HistoryCarets, mapHistoryCarets } from './history-carets';
 import { groupRoots, type HistoryBatchGroup } from './history-merge-policy';
 import {
+  branchHasActiveTrack,
+  createOrigin,
+  type HistoryCommitSlice,
+  type HistoryReplayOrigin,
+  mergeOrigin,
+  rebuildOriginOverAbove,
+  stepBranchTracks as stepTracks,
+} from './history-origin';
+import {
   historyReplaySchemaOf,
   keepsUndoThrough,
   projectedHistoryReplay,
@@ -59,12 +65,54 @@ import {
   type HistoryReplay,
   type ReplayRules,
 } from './history-replay';
+import {
+  additionalRoot,
+  cloneFrozen,
+  historyBatchStepId,
+  historyFactsOf,
+  historyProgramOf,
+  historyStepId,
+  historyStepOf,
+  knownHistoryStepId,
+  omitPrimarySelectionRoot,
+  withHistoryFacts,
+  withHistoryProgram,
+  withHistoryStep,
+  withHistoryStepId,
+} from './history-step-id';
+import {
+  captureHistoryState,
+  type CrossingDrop,
+  deleteHistoryStore,
+  type DropSink,
+  getStore as readHistoryStore,
+  type HistoryStoreBase,
+  NO_DROPS,
+  publishStore,
+  restoreHistoryState,
+  setStore as writeHistoryStore,
+  withDrops,
+  withHistoryStateDraft,
+  withPublishedHistoryState,
+} from './history-store';
+
+export {
+  captureHistoryState,
+  historyBatchStepId,
+  historyFactsOf,
+  historyProgramOf,
+  historyStepId,
+  knownHistoryStepId,
+  restoreHistoryState,
+  withHistoryFacts,
+  withHistoryProgram,
+  withHistoryStateDraft,
+  withHistoryStepId,
+  withPublishedHistoryState,
+};
+export type { HistoryCommitSlice, HistoryReplayOrigin };
 
 type HistoryStack = 'redos' | 'undos';
-
-const failInvariant = (message: string): never => {
-  throw new Error(message);
-};
 
 type PendingMapping<V extends Value> = Readonly<{
   /** The value `change` produced, so replay need not apply it again. */
@@ -80,6 +128,13 @@ type MappingJournal<V extends Value> = Readonly<{
   previous: MappingJournal<V> | null;
 }>;
 
+const stepBranchTracks = <V extends Value>(
+  value: HistoryBranch<V> | null,
+  commit: HistoryCommitSlice<V>,
+  otherWriter: boolean
+): HistoryBranch<V> | null =>
+  stepTracks(value, commit, otherWriter, withKeptBranch);
+
 type HistoryBranch<V extends Value> = Readonly<{
   anchorCeiling: number;
   base: EditorDocumentValue<V>;
@@ -92,9 +147,11 @@ type HistoryBranch<V extends Value> = Readonly<{
   carries: boolean;
   depth: number;
   group: HistoryBatchGroup | null;
+  hasActiveTrack: boolean;
   identity: object;
   mappings: MappingJournal<V> | null;
   next: HistoryBranch<V> | null;
+  origin: HistoryReplayOrigin<V> | null;
   recovery: AnchorHistoryRecovery | null;
   replay: HistoryReplay<EditorDocumentValue<V>>;
   kept: KeptRedo<V> | null;
@@ -118,6 +175,7 @@ type ResolvedHistoryEntry<V extends Value> = Readonly<{
   carets: HistoryCarets | null;
   group: HistoryBatchGroup | null;
   identity: object;
+  origin: HistoryReplayOrigin<V> | null;
   recovery: AnchorHistoryRecovery | null;
   kept: KeptRedo<V> | null;
   replay: HistoryReplay<EditorDocumentValue<V>>;
@@ -136,176 +194,25 @@ type PendingHistoryReplay<V extends Value> = Readonly<{
   undoAnchor: object | null;
 }>;
 
-type CrossingDrop = Readonly<{
-  cause: unknown;
-  direction: 'redo' | 'undo';
-  editor: AnyEditor;
-}>;
+type HistoryStore<V extends Value> = HistoryStoreBase<
+  V,
+  HistoryBranch<V>,
+  PendingHistoryReplay<V>
+>;
 
-type HistoryStore<V extends Value> = Readonly<{
-  crossingDrops: number;
-  maxDepth: number;
-  pendingReplay: PendingHistoryReplay<V> | null;
-  redos: HistoryBranch<V> | null;
-  revision: number;
-  schema: EditorSchemaIdentity;
-  snapshot: History<V> | null;
-  undos: HistoryBranch<V> | null;
-  unreportedDrops: readonly CrossingDrop[];
-}>;
-
-const HISTORY = new WeakMap<AnyEditor, HistoryStore<Value>>();
-const HISTORY_DRAFTS = new WeakMap<
-  AnyEditor,
-  Array<{ state: HistoryStore<Value> | undefined }>
->();
-const PUBLISHED_HISTORY_READ_DEPTH = new WeakMap<AnyEditor, number>();
 const KEPT_REDO_ATTEMPTS = new Map<
   number,
   Readonly<{ attempt: HistoryBranch<Value>; drops: readonly CrossingDrop[] }>
 >();
-const NO_DROPS: readonly CrossingDrop[] = Object.freeze([]);
 
-type DropSink = CrossingDrop[];
+const getStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> =>
+  readHistoryStore<V, HistoryBranch<V>, PendingHistoryReplay<V>>(editor);
 
-const withDrops = <S extends HistoryStore<Value>>(
-  store: S,
-  drops: readonly CrossingDrop[]
-): S =>
-  drops.length === 0
-    ? store
-    : Object.freeze({
-        ...store,
-        crossingDrops: store.crossingDrops + drops.length,
-        unreportedDrops: [...store.unreportedDrops, ...drops],
-      });
-
-const holdStore = (owner: AnyEditor, store: HistoryStore<Value>) => {
-  const { unreportedDrops } = store;
-
-  HISTORY.set(
-    owner,
-    unreportedDrops.length === 0
-      ? store
-      : Object.freeze({ ...store, unreportedDrops: NO_DROPS })
+const setStore = <V extends Value>(editor: Editor<V>, store: HistoryStore<V>) =>
+  writeHistoryStore<V, HistoryBranch<V>, PendingHistoryReplay<V>>(
+    editor,
+    store
   );
-  for (const { cause, direction, editor } of unreportedDrops) {
-    reportEditorLifecycleError({
-      cause,
-      direction,
-      editor,
-      phase: 'replay',
-      source: 'history',
-    });
-  }
-};
-
-const getHistoryDraft = (editor: AnyEditor) => {
-  const owner = getEditorRuntimeOwner(editor);
-
-  if ((PUBLISHED_HISTORY_READ_DEPTH.get(owner) ?? 0) > 0) return undefined;
-
-  return HISTORY_DRAFTS.get(owner)?.at(-1);
-};
-
-export const withHistoryStateDraft = <T>(
-  editor: AnyEditor,
-  state: HistoryStore<Value> | undefined,
-  fn: () => T
-) => {
-  const owner = getEditorRuntimeOwner(editor);
-  const drafts = HISTORY_DRAFTS.get(owner) ?? [];
-  const draft = { state };
-
-  drafts.push(draft);
-  HISTORY_DRAFTS.set(owner, drafts);
-
-  try {
-    return { result: fn(), state: draft.state } as const;
-  } finally {
-    drafts.pop();
-    if (drafts.length === 0) HISTORY_DRAFTS.delete(owner);
-  }
-};
-
-export const withPublishedHistoryState = <T>(
-  editor: AnyEditor,
-  fn: () => T
-): T => {
-  const owner = getEditorRuntimeOwner(editor);
-  const depth = PUBLISHED_HISTORY_READ_DEPTH.get(owner) ?? 0;
-
-  PUBLISHED_HISTORY_READ_DEPTH.set(owner, depth + 1);
-  try {
-    return fn();
-  } finally {
-    if (depth === 0) PUBLISHED_HISTORY_READ_DEPTH.delete(owner);
-    else PUBLISHED_HISTORY_READ_DEPTH.set(owner, depth);
-  }
-};
-
-export const captureHistoryState = (editor: AnyEditor) => {
-  const draft = getHistoryDraft(editor);
-
-  return draft ? draft.state : HISTORY.get(getEditorRuntimeOwner(editor));
-};
-
-export const restoreHistoryState = (
-  editor: AnyEditor,
-  state: HistoryStore<Value> | undefined
-) => {
-  const owner = getEditorRuntimeOwner(editor);
-  const draft = getHistoryDraft(owner);
-
-  if (draft) {
-    draft.state = state;
-    return;
-  }
-  if (state) holdStore(owner, state);
-  else HISTORY.delete(owner);
-};
-
-const createStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => ({
-  crossingDrops: 0,
-  maxDepth: 100,
-  pendingReplay: null,
-  redos: null,
-  revision: 0,
-  schema: editor.read.schema.identity(),
-  snapshot: null,
-  undos: null,
-  unreportedDrops: NO_DROPS,
-});
-
-const getStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => {
-  const owner = getEditorRuntimeOwner(editor);
-  const draft = getHistoryDraft(owner);
-  let store = (draft ? draft.state : HISTORY.get(owner)) as
-    | HistoryStore<V>
-    | undefined;
-
-  if (!store) {
-    store = createStore(editor);
-    if (draft) draft.state = store;
-    else HISTORY.set(owner, store);
-  }
-
-  return store;
-};
-
-const setStore = <V extends Value>(
-  editor: Editor<V>,
-  store: HistoryStore<V>
-) => {
-  const owner = getEditorRuntimeOwner(editor);
-  const draft = getHistoryDraft(owner);
-
-  if (draft) {
-    draft.state = store;
-    return;
-  }
-  holdStore(owner, store);
-};
 
 const publish = <V extends Value>(
   editor: Editor<V>,
@@ -316,140 +223,7 @@ const publish = <V extends Value>(
       'maxDepth' | 'pendingReplay' | 'redos' | 'schema' | 'undos'
     >
   >
-) => {
-  const next = Object.freeze({
-    ...store,
-    ...patch,
-    revision: store.revision + 1,
-    snapshot: null,
-  });
-
-  setStore(editor, next);
-
-  return next;
-};
-
-const cloneFrozen = <T>(value: T): T => {
-  const clone = structuredClone(value);
-  const pending: object[] = clone && typeof clone === 'object' ? [clone] : [];
-  const seen = new WeakSet<object>();
-
-  while (pending.length > 0) {
-    const item = pending.pop() ?? failInvariant('Expected value to be defined');
-
-    if (seen.has(item)) continue;
-    seen.add(item);
-    for (const nested of Object.values(item)) {
-      if (nested && typeof nested === 'object') pending.push(nested);
-    }
-    Object.freeze(item);
-  }
-
-  return clone;
-};
-
-const omitPrimaryPointRoot = <T extends { readonly root?: string }>(
-  point: T
-) => {
-  if (point.root !== MAIN_ROOT_KEY) return point;
-
-  const { root: _root, ...rest } = point;
-
-  return rest;
-};
-
-const omitPrimarySelectionRoot = <T extends Batch['selectionAfter']>(
-  selection: T
-): T =>
-  !selection || SelectionApi.isNode(selection)
-    ? selection
-    : {
-        ...selection,
-        anchor: omitPrimaryPointRoot(selection.anchor),
-        focus: omitPrimaryPointRoot(selection.focus),
-      };
-
-const additionalRoot = (root: string | undefined) =>
-  root && root !== MAIN_ROOT_KEY ? root : undefined;
-
-const STEP_IDS = new WeakMap<object, string>();
-const HISTORY_STEPS = new WeakMap<Batch, object>();
-
-const mintStepId = () =>
-  btoa(String.fromCodePoint(...crypto.getRandomValues(new Uint8Array(16))))
-    .replaceAll('+', '-')
-    .replaceAll('/', '_')
-    .replaceAll('=', '');
-
-export const knownHistoryStepId = (step: object) => STEP_IDS.get(step);
-
-export const historyStepId = (step: object) => {
-  const known = STEP_IDS.get(step);
-
-  if (known) return known;
-
-  const id = mintStepId();
-
-  STEP_IDS.set(step, id);
-
-  return id;
-};
-
-const withHistoryStep = <B extends Batch>(batch: B, step: object): B => {
-  HISTORY_STEPS.set(batch, step);
-
-  return batch;
-};
-
-export const withHistoryStepId = <B extends Batch>(
-  batch: B,
-  id: string | undefined
-): B => {
-  if (id === undefined) return batch;
-
-  const step = {};
-
-  STEP_IDS.set(step, id);
-
-  return withHistoryStep(batch, step);
-};
-
-export const historyBatchStepId = (batch: Batch) => {
-  let step = HISTORY_STEPS.get(batch);
-
-  if (!step) {
-    step = {};
-    withHistoryStep(batch, step);
-  }
-
-  return historyStepId(step);
-};
-
-const HISTORY_FACTS = new WeakMap<Batch, ChangeFacts>();
-
-export const withHistoryFacts = <B extends Batch>(
-  batch: B,
-  facts: ChangeFacts | undefined
-): B => {
-  if (facts) HISTORY_FACTS.set(batch, facts);
-
-  return batch;
-};
-
-export const historyFactsOf = (batch: Batch) => HISTORY_FACTS.get(batch);
-
-const HISTORY_PROGRAMS = new WeakMap<Batch, CarryProgram>();
-
-export const withHistoryProgram = <B extends Batch>(
-  batch: B,
-  program: CarryProgram | undefined
-): B => {
-  if (program) HISTORY_PROGRAMS.set(batch, program);
-
-  return batch;
-};
-
-export const historyProgramOf = (batch: Batch) => HISTORY_PROGRAMS.get(batch);
+) => publishStore(editor, store, patch);
 
 const HISTORY_FALLBACKS = new WeakMap<
   Batch,
@@ -519,15 +293,15 @@ export const freezeHistoryBatch = <V extends Value>(
       ),
       ...(beforeRoot ? { selectionBeforeRoot: beforeRoot } : {}),
     }),
-    HISTORY_PROGRAMS.get(batch)
+    historyProgramOf(batch)
   );
   const fallback = HISTORY_FALLBACKS.get(batch);
-  const step = HISTORY_STEPS.get(batch);
+  const step = historyStepOf(batch);
 
   if (fallback !== undefined) HISTORY_FALLBACKS.set(frozen, fallback);
   if (step) withHistoryStep(frozen, step);
 
-  return withHistoryFacts(frozen, HISTORY_FACTS.get(batch));
+  return withHistoryFacts(frozen, historyFactsOf(batch));
 };
 
 const freezeBatch = freezeHistoryBatch;
@@ -538,7 +312,7 @@ const freezeBatch = freezeHistoryBatch;
  */
 const replayedOf = <V extends Value>(batch: Batch<V>) => ({
   carried: batch.carried,
-  program: HISTORY_PROGRAMS.get(batch),
+  program: historyProgramOf(batch),
   parts:
     batch.rest && batch.unsettle
       ? { rest: batch.rest, unsettle: batch.unsettle }
@@ -556,7 +330,13 @@ const branch = <V extends Value>(
   anchorCeiling = 0,
   identity: object = {},
   carets: HistoryCarets | null = null,
-  kept: KeptRedo<V> | null = null
+  kept: KeptRedo<V> | null = null,
+  origin: HistoryReplayOrigin<V> | null = Object.freeze({
+    base,
+    change: replay.change,
+    outside: null,
+    track: null,
+  })
 ): HistoryBranch<V> =>
   Object.freeze({
     anchorCeiling,
@@ -567,7 +347,7 @@ const branch = <V extends Value>(
           freezeBatch({ ...batch, change: replay.change }),
           replay.program
         ),
-        replay.change === batch.change ? HISTORY_FACTS.get(batch) : undefined
+        replay.change === batch.change ? historyFactsOf(batch) : undefined
       ),
       identity
     ),
@@ -576,10 +356,12 @@ const branch = <V extends Value>(
     replay,
     depth: (next?.depth ?? 0) + 1,
     group,
+    hasActiveTrack: branchHasActiveTrack(origin, next, kept),
     identity,
     kept,
     mappings,
     next,
+    origin,
     recovery,
   });
 
@@ -629,7 +411,8 @@ const clipBranch = <V extends Value>(
       item.anchorCeiling,
       item.identity,
       item.carets,
-      withKeptBranch(item.kept, (other) => clipBranch(other, maxDepth - index))
+      withKeptBranch(item.kept, (other) => clipBranch(other, maxDepth - index)),
+      item.origin
     );
   }
 
@@ -646,7 +429,8 @@ const pushBranch = <V extends Value>(
   recovery: AnchorHistoryRecovery | null = null,
   anchorCeiling = 0,
   identity: object = {},
-  carets: HistoryCarets | null = null
+  carets: HistoryCarets | null = null,
+  origin?: HistoryReplayOrigin<V> | null
 ) =>
   branch(
     batchValue,
@@ -658,7 +442,9 @@ const pushBranch = <V extends Value>(
     recovery,
     anchorCeiling,
     identity,
-    carets
+    carets,
+    null,
+    origin
   );
 
 const addMapping = <V extends Value>(
@@ -856,11 +642,12 @@ const mapHead = <V extends Value>(
   let projected = false;
   let projectedAfterReadBack = false;
   let batchBase = value.base;
+  let outside = value.origin ? value.origin.outside : null;
   let batchValue = value.batch;
   let { replay } = value;
   let { next } = value;
   let { carets, recovery } = value;
-  let batchFacts = HISTORY_FACTS.get(value.batch);
+  let batchFacts = historyFactsOf(value.batch);
   const entries = journalEntries(value.mappings);
 
   for (const mapping of entries.slice(0, count)) {
@@ -973,6 +760,11 @@ const mapHead = <V extends Value>(
         ...(crossed ? { crossing: crossed.restFacts } : {}),
       });
     }
+    if (value.origin) {
+      outside = outside
+        ? outside.compose(mapping.change, value.origin.base)
+        : mapping.change;
+    }
     batchBase = mappedBatchBase;
   }
 
@@ -999,7 +791,9 @@ const mapHead = <V extends Value>(
           recovery,
           value.anchorCeiling,
           value.identity,
-          carets
+          carets,
+          null,
+          value.origin ? Object.freeze({ ...value.origin, outside }) : null
         ),
     keptWrap,
     projected,
@@ -1067,7 +861,9 @@ const resolveProgramHead = <V extends Value>(
       value.recovery,
       value.anchorCeiling,
       value.identity,
-      value.carets
+      value.carets,
+      null,
+      value.origin
     ),
     { anchor: false, readBack: false }
   );
@@ -1359,7 +1155,9 @@ const resolveCanonicalTop = <V extends Value>(
         undo
           ? { after: unmoved, before: moved }
           : { after: moved, before: unmoved }
-      )
+      ),
+    head.kept,
+    head.origin
   );
 };
 
@@ -1408,6 +1206,7 @@ const resolvedEntryOf = <V extends Value>(
   group: current.group,
   identity: current.identity,
   kept: current.kept,
+  origin: current.origin,
   recovery: current.recovery,
   replay: current.replay,
 });
@@ -1442,7 +1241,8 @@ const resolveAll = <V extends Value>(
       entry.anchorCeiling,
       entry.identity,
       entry.carets,
-      entry.kept
+      entry.kept,
+      entry.origin
     );
   }
 
@@ -1478,7 +1278,10 @@ const rebuildBranch = <V extends Value>(
       entry.anchorCeiling,
       entry.identity,
       entry.carets,
-      withKeptBranch(entry.kept, (other) => clipBranch(other, maxDepth - index))
+      withKeptBranch(entry.kept, (other) =>
+        clipBranch(other, maxDepth - index)
+      ),
+      entry.origin
     );
   }
 
@@ -1724,6 +1527,11 @@ export const settlePendingHistoryReplay = <V extends Value>(
     ...claimed,
     base: replayBase,
     kept: null,
+    origin:
+      (pending.edited && replayBase !== claimed.base) ||
+      pending.replayMappings !== null
+        ? null
+        : createOrigin(editor, replayBase, input.change),
     replay: recordHistoryReplay(
       historyReplaySchemaOf(editor),
       replayBase,
@@ -1789,7 +1597,7 @@ const fromBatches = <V extends Value>(
   for (const entry of entries.toReversed()) {
     const fallback =
       direction === 'redo' ? historyFallbackOf(entry.batch) : null;
-    const identity = HISTORY_STEPS.get(entry.batch) ?? {};
+    const identity = historyStepOf(entry.batch) ?? {};
 
     value = branch(
       entry.batch,
@@ -1814,10 +1622,14 @@ const fromBatches = <V extends Value>(
               null,
               null,
               0,
-              identity
+              identity,
+              null,
+              null,
+              null
             ),
           })
-        : null
+        : null,
+      null
     );
   }
 
@@ -1940,6 +1752,7 @@ const peekResolvedEntry = <V extends Value>(
         carets: resolved.carets,
         group: resolved.group,
         identity: resolved.identity,
+        origin: resolved.origin,
         recovery: resolved.recovery,
         restores: resolved.replay.after,
       })
@@ -2136,6 +1949,7 @@ export const writeHistory = <V extends Value>(
     anchorCeiling?: number;
     carets?: HistoryCarets | null;
     clearRedos?: boolean;
+    commit?: HistoryCommitSlice<V>;
     group?: HistoryBatchGroup | null;
     recovery?: AnchorHistoryRecovery | null;
     restores?: EditorDocumentValue<V>;
@@ -2143,10 +1957,26 @@ export const writeHistory = <V extends Value>(
 ) => {
   const store = getStore(editor);
   const identity = {};
+  const walkedStack = options.commit
+    ? stepBranchTracks(store[stack], options.commit, false)
+    : store[stack];
+  const otherStack: HistoryStack = stack === 'undos' ? 'redos' : 'undos';
+  const walkedOther =
+    options.commit && !(options.clearRedos && otherStack === 'redos')
+      ? stepBranchTracks(store[otherStack], options.commit, false)
+      : store[otherStack];
+  const origin = createOrigin(
+    editor,
+    current,
+    batchValue.change,
+    options.commit,
+    options.restores
+  );
 
   publish(editor, store, {
+    [otherStack]: walkedOther,
     [stack]: pushBranch(
-      store[stack],
+      walkedStack,
       batchValue,
       current,
       recordHistoryReplay(
@@ -2161,7 +1991,8 @@ export const writeHistory = <V extends Value>(
       options.recovery ?? null,
       options.anchorCeiling ?? 0,
       identity,
-      options.carets ?? null
+      options.carets ?? null,
+      origin
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
@@ -2178,6 +2009,7 @@ export const replaceHistoryHead = <V extends Value>(
     anchorCeiling?: number;
     carets?: HistoryCarets | null;
     clearRedos?: boolean;
+    commit?: HistoryCommitSlice<V>;
     group?: HistoryBatchGroup | null;
     recovery?: AnchorHistoryRecovery | null;
     restores?: EditorDocumentValue<V>;
@@ -2189,7 +2021,24 @@ export const replaceHistoryHead = <V extends Value>(
 
   if (!resolved) throw new Error(`Missing ${stack} history batch.`);
 
+  const walkedNext = options.commit
+    ? stepBranchTracks(resolved.next, options.commit, false)
+    : resolved.next;
+  const otherStack: HistoryStack = stack === 'undos' ? 'redos' : 'undos';
+  const walkedOther =
+    options.commit && !(options.clearRedos && otherStack === 'redos')
+      ? stepBranchTracks(store[otherStack], options.commit, false)
+      : store[otherStack];
+  const mergedOrigin = mergeOrigin(
+    editor,
+    resolved.origin,
+    current,
+    batchValue.change,
+    options.restores
+  );
+
   publish(editor, withDrops(store, drops), {
+    [otherStack]: walkedOther,
     [stack]: branch(
       batchValue,
       current,
@@ -2200,13 +2049,15 @@ export const replaceHistoryHead = <V extends Value>(
         stack === 'undos' ? 'undo' : 'redo',
         { ...replayedOf(batchValue), after: options.restores }
       ),
-      resolved.next,
+      walkedNext,
       null,
       options.group ?? null,
       options.recovery ?? null,
       options.anchorCeiling ?? resolved.anchorCeiling,
       resolved.identity,
-      options.carets ?? null
+      options.carets ?? null,
+      null,
+      mergedOrigin
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
@@ -2248,7 +2099,7 @@ const resolveDownTo = <V extends Value>(
 
     drops.push(...attemptDrops);
     onto = null;
-    if (STEP_IDS.get(current.identity) === id) {
+    if (knownHistoryStepId(current.identity) === id) {
       return {
         above,
         causes,
@@ -2292,9 +2143,26 @@ export const replaceUndoStep = <V extends Value>(
     'undo'
   );
 
+  const rebuiltOrigin = rebuildOriginOverAbove(
+    editor,
+    entry.base,
+    change,
+    replay.record().after,
+    above
+  );
+
   publish(editor, withDrops(store, drops), {
     undos: rebuildBranch(
-      [...above, { ...entry, batch: { ...plain, change }, kept: null, replay }],
+      [
+        ...above,
+        {
+          ...entry,
+          batch: { ...plain, change },
+          kept: null,
+          origin: rebuiltOrigin,
+          replay,
+        },
+      ],
       store.maxDepth,
       mappedOnto(
         editor,
@@ -2444,7 +2312,8 @@ export const completeHistoryAction = <V extends Value>(
         change: DocumentChange;
       }>
     | undefined,
-  request: number
+  request: number,
+  commit?: HistoryCommitSlice<V>
 ) => {
   const store = getStore(editor);
   const kept = keptAttempt<V>(source, request);
@@ -2458,11 +2327,17 @@ export const completeHistoryAction = <V extends Value>(
   KEPT_REDO_ATTEMPTS.delete(request);
   if (!resolved) throw new Error(`Missing ${source} history batch.`);
 
-  const nextSource = rebaseOnto(editor, drops, resolved.next, current);
-
-  const older = olderStepsMapping
-    ? addMapping(store[destination], { ...olderStepsMapping, textOnly: false })
+  const walkedNextSource = commit
+    ? stepBranchTracks(resolved.next, commit, false)
+    : resolved.next;
+  const nextSource = rebaseOnto(editor, drops, walkedNextSource, current);
+  const walkedDest = commit
+    ? stepBranchTracks(store[destination], commit, false)
     : store[destination];
+  const older = olderStepsMapping
+    ? addMapping(walkedDest, { ...olderStepsMapping, textOnly: false })
+    : walkedDest;
+  const pushedOrigin = createOrigin(editor, current, batchValue.change, commit);
 
   publish(editor, withDrops(store, drops), {
     [destination]:
@@ -2484,7 +2359,8 @@ export const completeHistoryAction = <V extends Value>(
             resolved.recovery,
             resolved.anchorCeiling,
             resolved.identity,
-            resolved.carets
+            resolved.carets,
+            pushedOrigin
           ),
     [source]: nextSource,
   });
@@ -2574,7 +2450,7 @@ const crossesEveryStep = <V extends Value>(
   schema: ElementSchema
 ) => {
   for (let entry = value; entry; entry = entry.next) {
-    const facts = HISTORY_FACTS.get(entry.batch);
+    const facts = historyFactsOf(entry.batch);
 
     if (
       !facts ||
@@ -2613,7 +2489,11 @@ export const queueHistoryMapping = <V extends Value>(
   editor: Editor<V>,
   change: DocumentChange,
   after: EditorDocumentValue<V>,
-  skipped: Readonly<{ before: EditorDocumentValue<V>; facts: ChangeFacts }>
+  skipped: Readonly<{
+    before: EditorDocumentValue<V>;
+    facts: ChangeFacts;
+    otherWriter?: boolean;
+  }>
 ) => {
   if (change.empty) return;
 
@@ -2634,15 +2514,23 @@ export const queueHistoryMapping = <V extends Value>(
     textOnly: isTextOnlyMapping(change),
     ...(crosses ? { crossing: skipped.facts } : {}),
   });
+  const commit: HistoryCommitSlice<V> = {
+    after,
+    before: skipped.before,
+    change,
+  };
+  const otherWriter = skipped.otherWriter ?? true;
+  const walkedRedos = stepBranchTracks(store.redos, commit, otherWriter);
+  const walkedUndos = stepBranchTracks(store.undos, commit, otherWriter);
 
   publish(editor, store, {
-    redos: addMapping(store.redos, mapping),
-    undos: addMapping(store.undos, mapping),
+    redos: addMapping(walkedRedos, mapping),
+    undos: addMapping(walkedUndos, mapping),
   });
 };
 
 export const clearHistoryState = (editor: Editor) => {
-  HISTORY.delete(getEditorRuntimeOwner(editor));
+  deleteHistoryStore(editor);
 };
 
 export const replaceHistoryState = <V extends Value>(

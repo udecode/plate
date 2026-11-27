@@ -62,6 +62,10 @@ export type CoreWork = {
   /** Steps, landed nodes and pieces those lookups examined. */
   formerPlaceVisits: number;
   documentValues: number;
+  gridChecks: number;
+  gridLockNodes: number;
+  windowWalks: number;
+  historyBranchRebuilds: number;
   /** Top-level blocks the authored stored-block index took in or let go. */
   heldBlocks: number;
   generatorDraws: number;
@@ -272,6 +276,10 @@ export const coreWork: CoreWork = {
   formerPlaceCalls: 0,
   formerPlaceVisits: 0,
   documentValues: 0,
+  gridChecks: 0,
+  gridLockNodes: 0,
+  windowWalks: 0,
+  historyBranchRebuilds: 0,
   heldBlocks: 0,
   generatorDraws: 0,
   contenderVisits: 0,

@@ -280,6 +280,7 @@ import {
   ignoreEditorDraftGuardRefusals,
   isEditorDraftView,
   recordedCarriedRuns,
+  getActiveHistoryReplayOrigin,
   runEditorDraftGuards,
 } from './document-recorder';
 import {
@@ -14544,7 +14545,16 @@ export const runEditorTransaction = <R>(
         runEditorDraftGuards(
           editor,
           'recorded',
-          snapshot.builder.value as EditorDocumentValue
+          snapshot.builder.value as EditorDocumentValue,
+          undefined,
+          {
+            before: getChangeValue(
+              snapshot.roots,
+              snapshot.records
+            ) as EditorDocumentValue,
+            change: snapshot.builder.change,
+            replayOrigin: getActiveHistoryReplayOrigin(editor),
+          }
         );
       } finally {
         PREPARING_COMMIT.delete(getEditorRuntimeOwner(editor));

@@ -24,29 +24,19 @@ import {
 } from '../decision';
 import { rootOf } from '../ledger/roots';
 import { type FormatTag, keyTips, sameValue } from '../tree/layers';
-import {
-  type AuthoredMember,
-  isClaim,
-  type MarkBase,
-  readMembers,
-} from '../tree/marks';
+import { isClaim, type MarkBase } from '../tree/marks';
 import { isSpareEveryEditorBuilds, isUnreachedSpare } from '../tree/reserves';
 import { editingChangeOf, isEditingChange } from './editing';
-import { claimsOf, contentRootsOf, factsOf, type ReviewFacts } from './facts';
+import { claimsOf, factsOf, type ReviewFacts } from './facts';
+import { incarnationOf, parseVerdict, VERDICTS } from './records';
 import {
-  CONTEXTS,
-  incarnationOf,
-  parseContext,
-  parseReserve,
-  parseVerdict,
-  RESERVES,
-  VERDICTS,
-} from './records';
-import {
+  claimBasesIn,
+  contentMembersOf,
   decideAtHead,
   decidesStructure,
   decisionJudgeView,
   keepingGapSpares,
+  ownChangesRemovedBy,
   replayAt,
   replaysWithdrawal,
   type VerdictBatch,
@@ -434,20 +424,6 @@ const changeClaimsOf = (bases: readonly MarkBase[]) => {
   return [...claims.values()];
 };
 
-const membersWithin = (node: unknown): readonly AuthoredMember[] => {
-  const { children } = node as { children?: unknown };
-
-  return [
-    ...readMembers(node),
-    ...(Array.isArray(children) ? children.flatMap(membersWithin) : []),
-  ];
-};
-
-const contentMembersOf = (document: JsonEditorValue) =>
-  [...contentRootsOf(document).values()].flatMap((nodes) =>
-    nodes.slice().flatMap(membersWithin)
-  );
-
 const cutHalvesIn = (document: JsonEditorValue) =>
   new Set(
     contentMembersOf(document).flatMap((member) => {
@@ -459,21 +435,7 @@ const cutHalvesIn = (document: JsonEditorValue) =>
 
 export const changeClaimsIn = (
   document: JsonEditorValue
-): readonly ChangeClaim[] => {
-  const store = getValueRecords(document);
-
-  return changeClaimsOf([
-    ...contentMembersOf(document).flatMap((member) =>
-      'author' in member ? [member] : []
-    ),
-    ...[...getRecordEntries(store, CONTEXTS)].flatMap(
-      ([ctx, json]) => parseContext(ctx, json)?.member ?? []
-    ),
-    ...[...getRecordEntries(store, RESERVES)].flatMap(
-      ([id, json]) => parseReserve(id, json) ?? []
-    ),
-  ]);
-};
+): readonly ChangeClaim[] => changeClaimsOf(claimBasesIn(document));
 
 export const decidedChangesIn = (
   document: JsonEditorValue
@@ -488,44 +450,6 @@ export const decidedChangesIn = (
     )
   ),
 ];
-
-// Rejecting an own change that still holds a claim in the result would
-// delete its other letters too, so a withdrawal rejects only the ones the
-// batch removes whole.
-const changeHeldBy = (member: AuthoredMember) =>
-  'author' in member && member.kind !== 'reserve' ? [member.change] : [];
-
-const changesHeldIn = (document: JsonEditorValue) => {
-  const members = contentMembersOf(document);
-  const liveContexts = new Set(
-    members.flatMap((member) => ('ctx' in member ? [member.ctx] : []))
-  );
-  const store = getValueRecords(document);
-
-  return new Set([
-    ...members.flatMap(changeHeldBy),
-    ...[...getRecordEntries(store, CONTEXTS)].flatMap(([ctx, json]) =>
-      liveContexts.has(ctx)
-        ? (parseContext(ctx, json)?.member.change ?? [])
-        : []
-    ),
-  ]);
-};
-
-const ownChangesRemovedBy = (
-  { after, before }: AuthoredStep,
-  { actor }: SyncGrant
-) => {
-  const kept = changesHeldIn(after);
-
-  return [
-    ...new Set(
-      changeClaimsIn(before).flatMap(({ author, change }) =>
-        author === actor && !kept.has(change) ? [change] : []
-      )
-    ),
-  ];
-};
 
 const requestsOf = (
   { actions, token }: VerdictBatch,
@@ -551,7 +475,7 @@ const requestsOf = (
           {
             actions: new Map([
               ...actions,
-              ...ownChangesRemovedBy(step, grant).map(
+              ...ownChangesRemovedBy(step, grant.actor).map(
                 (change) => [change, 'reject'] as const
               ),
             ]),
@@ -781,7 +705,7 @@ const ordinaryCover = (
 
   if (!uncovered) return { claims, kind: 'covered' };
 
-  const withdrawn = ownChangesRemovedBy(step, grant);
+  const withdrawn = ownChangesRemovedBy(step, grant.actor);
   const decided =
     withdrawn.length > 0 && replaysWithdrawal(step, withdrawn, schema);
 
