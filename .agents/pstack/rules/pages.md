@@ -6,11 +6,11 @@ This file says how plans and topic files stay structured in git, how hand-back r
   - **PR bodies.** `node .agents/pstack/plan-page.mjs <plan> --pr [--public] [--into <body.md>]` renders GitHub PR Markdown from a plan (requiring `## Brief` with `### What will change?` and `### What could go wrong?`), and `--comment <author sha> [--against <description.md>]` renders a follow-up comment on someone else's PR. `--check` validates fences, `## Defaults` tables, and playbook headers; `--rail` prints stage JSON.
   - **Defaults vs Open questions.** For noticeable calls outside the Autopilot stop list, pick the recommended option, add a `## Defaults` row (`Decision | Pick | Alternative | Word | Impact`), and keep going. Never default an option that leaves the user's goal unmet. Check prior art and shipped product docs before asking or running `architect` on an integration. Only Autopilot stops and held external drafts go under `## Open questions` (and to `AskUserQuestion` where supported, recommended option first). "go" accepts recommended options except production deploys or releases, which always need an explicit answer.
   - **Close.** The plan's `## Close` records what landed, proof and limits, reversals first, and open work with `owner:` and `stop:`.
-- **Hand-back reply.** Hand back directly in the chat reply in plain `pstack:bro` prose (never render or publish an HTML plan page; use T3's `html_render` only when a chart, diagram, or side-by-side comparison genuinely benefits from HTML):
-  - What changed and why, with clickable plan/topic file paths.
+- **Hand-back reply.** Hand back directly in the chat reply (never render or publish an HTML plan page; use T3's `html_render` only when a chart, diagram, or side-by-side comparison genuinely benefits from HTML). Open with the Opening bro summary from `writing.md` (plain `pstack:bro` catch-up at the top, with no file paths or code symbols there), then put technical specifics in `**Details.**` below when needed:
+  - What changed and why, with plan and topic file paths in Details or the link list.
   - Each public API change (before and after).
   - Any comparison made (such as a verdict against other editors).
   - Any demo clip or before-and-after image recorded during the run (such as via `clip` or a plan's `Demo:` step), embedded directly in the final chat reply (`![caption](/abs/path/to/clip.mp4)` or `.png` in T3 Code) in addition to any team `shots.md` handoff.
   - Noticeable picks with the word that reverses each.
-  - What waits on the owner and proof limits.
-  - The link list.
+  - What waits on the owner (right after the opening bullets) and proof limits.
+  - This turn's link list.
