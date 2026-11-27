@@ -10,6 +10,7 @@ This file says how plans and topic files stay structured in git, how hand-back r
   - What changed and why, with clickable plan/topic file paths.
   - Each public API change (before and after).
   - Any comparison made (such as a verdict against other editors).
+  - Any demo clip or before-and-after image recorded during the run (such as via `clip` or a plan's `Demo:` step), embedded directly in the final chat reply (`![caption](/abs/path/to/clip.mp4)` or `.png` in T3 Code) in addition to any team `shots.md` handoff.
   - Noticeable picks with the word that reverses each.
   - What waits on the owner and proof limits.
   - The link list.

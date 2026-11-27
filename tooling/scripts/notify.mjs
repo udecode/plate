@@ -408,22 +408,28 @@ const team = (args) => {
 };
 
 const DATED_PLAN = /^docs\/plans\/\d{4}-\d{2}-\d{2}-[^/]+\.md$/u;
-const STEP = /^- \[(?<done>[ x])\] (?<id>\w+)\./u;
+const STEP_BULLET = /^- \[[ xX]\][ \t]+/u;
+const STEP =
+  /^- \[(?<done>[ xX])\][ \t]+(?:\*\*)?(?:[Ss]tep[ \t]+)?(?<id>(?=\w*\d)\w+(?:\.\w+)*)(?:\*\*)?[.:)](?:$|[ \t*])/u;
 const DEMO = /^Demo:[ \t]*(?<value>.*?)[ \t]*$/mu;
-const DEMO_VALUE = /^(?:step (?<step>\w+)|none)[,.;:]?[ \t]+\S/u;
+const DEMO_VALUE = /^(?:step (?<step>\w+(?:\.\w+)*)|none)[,.;:]?[ \t]+\S/u;
 const SHOT = /^\[\[shot: (?<path>[^|\]]+?) *\|/gmu;
 
 const demoOf = (text) => DEMO.exec(text.split(/^## /mu)[0])?.groups.value;
 
-const stepsOf = (text) =>
-  new Map(
-    (text.split(/^## /mu).find((part) => part.startsWith('Steps\n')) ?? '')
-      .split('\n')
-      .flatMap((line) => {
-        const step = STEP.exec(line);
-        return step ? [[step.groups.id, step.groups.done === 'x']] : [];
-      })
-  );
+const parseSteps = (text) => {
+  const section =
+    text.split(/^## /mu).find((part) => /^Steps[ \t]*\r?\n/u.test(part)) ?? '';
+  const steps = new Map();
+  let bullets = 0;
+  for (const line of section.split('\n')) {
+    if (!STEP_BULLET.test(line)) continue;
+    bullets += 1;
+    const step = STEP.exec(line);
+    if (step) steps.set(step.groups.id, step.groups.done.toLowerCase() === 'x');
+  }
+  return { bullets, steps };
+};
 
 // zbot posts a landing's Team line with the files that this folder's shots.md
 // names, and posts none when one lies outside the folder or it names more than four.
@@ -471,8 +477,13 @@ const demoProblems = (bodies) => {
     .filter((path) => DATED_PLAN.test(path) && existsSync(join(root, path)))
     .flatMap((path) => {
       const after = readFileSync(join(root, path), 'utf-8');
-      const steps = stepsOf(after);
-      if (steps.size === 0) return [];
+      const { bullets, steps } = parseSteps(after);
+      if (steps.size === 0) {
+        if (bullets === 0) return [];
+        return [
+          `${path} has checkbox bullets under ## Steps, but none parse into a step id. Number each step (such as "- [ ] 1. ..." or "- [ ] **Step 1:** ...") so its Demo line can be checked.`,
+        ];
+      }
       const shown = showAt(root, base, path, pairing);
       const before = shown.status === 0 ? shown.stdout : null;
       const demo = demoOf(after);
@@ -496,7 +507,9 @@ const demoProblems = (bodies) => {
           `${path}'s Demo line names step ${step}, which its Steps lack. Move the line to the step whose landing now first gives a teammate something to try, or write "Demo: none, <why>".`,
         ];
       }
-      if (!steps.get(step) || stepsOf(before ?? '').get(step)) return [];
+      if (!steps.get(step) || parseSteps(before ?? '').steps.get(step)) {
+        return [];
+      }
       return [
         shotsProblem(path, step),
         committed && !announced

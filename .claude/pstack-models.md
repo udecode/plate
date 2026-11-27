@@ -28,6 +28,6 @@ operator, routine local ci: inherit-parent @medium
 docs, registry, sync: inherit-parent @medium
 evidence, research: inherit-parent @medium
 video transcripts: opus @medium
-clip: opus @medium
+clip: agy:gemini-4-neon @medium
 default effort: high
 session hook: on
