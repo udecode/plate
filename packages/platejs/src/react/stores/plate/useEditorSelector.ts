@@ -72,19 +72,48 @@ const createSelection = <T>(initialDeps: NormalizedSelectorDependencies) => {
       if (editor) {
         const preview = readShownPreview(editor);
         const version = editor.read.lastCommit()?.version;
+        const fromTentative =
+          tentative &&
+          tentative.revision === renderedRevision &&
+          tentative.selector === selector &&
+          tentative.equalityFn === equalityFn
+            ? tentative
+            : null;
+        tentative = undefined;
+        const rendered =
+          fromTentative ??
+          (committed &&
+          committed.revision === renderedRevision &&
+          committed.selector === selector &&
+          committed.equalityFn === equalityFn
+            ? committed
+            : null);
         committed = {
-          editor,
+          editor: rendered ? rendered.editor : editor,
           equalityFn,
-          preview,
+          preview: rendered ? rendered.preview : preview,
           revision: renderedRevision,
           selector,
           value,
-          version,
+          version: rendered ? rendered.version : version,
         };
         if (renderedRevision === revision) {
-          seenEditor = editor;
-          seenPreview = preview;
-          seenVersion = version;
+          if (fromTentative) {
+            seenEditor = fromTentative.editor;
+            seenPreview = fromTentative.preview;
+            seenVersion = fromTentative.version;
+          }
+          if (
+            editor !== seenEditor ||
+            version !== seenVersion ||
+            preview !== seenPreview
+          ) {
+            seenEditor = editor;
+            seenPreview = preview;
+            seenVersion = version;
+            revision += 1;
+            notify?.();
+          }
         }
       }
       if (!sameSelectorDependencies(committedDeps, nextDeps)) {

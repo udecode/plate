@@ -350,4 +350,5 @@ export {
   normalizeSelectorDependencies,
   sameSelectorDependencies,
   type NormalizedSelectorDependencies,
+  withPliteReactPreservedSelection,
 } from 'plitejs/internal';

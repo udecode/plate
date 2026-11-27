@@ -14,7 +14,7 @@ import {
   type DecorationSource,
   useEditorContext,
   useEditorState,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import { useMemo, useState } from 'react';
 
@@ -278,7 +278,7 @@ const LintingPanel = ({
 };
 
 const LintingExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {

@@ -1239,7 +1239,7 @@
           "kind": "function",
           "name": "createEditor",
           "runtime": true,
-          "signature": "declare function createEditor<const TSchema extends EditorApplicationSchema | undefined = undefined>(options?: CreateEditorOptions<readonly [], TSchema>): Editor<Value, readonly [], readonly [], TSchema>;",
+          "signature": "declare function createEditor<const TSchema extends EditorApplicationSchema | undefined = undefined>(options?: CreateEditorOptions<readonly [], TSchema>): Editor<Value, readonly [], readonly [], TSchema>;\ndeclare function createEditor<const TPlugins extends readonly PluginReference$1[] = readonly [], const TSchema extends EditorApplicationSchema | undefined = undefined>(options: CreateEditorOptions<TPlugins, TSchema> & {\n  plugins: TPlugins;\n}): Editor<Value, RuntimePluginsFromTuple<TPlugins>, PlatePluginsFromTuple<TPlugins>, TSchema>;",
           "source": null,
           "typeParameters": [
             "const TSchema extends EditorApplicationSchema | undefined = undefined"
@@ -1531,7 +1531,7 @@
           "kind": "function",
           "name": "defineInputRule",
           "runtime": true,
-          "signature": "declare function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(rule: InsertBreakInputRule<TMatch, TEditor>): InsertBreakInputRule<TMatch, TEditor>;",
+          "signature": "declare function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(rule: InsertBreakInputRule<TMatch, TEditor>): InsertBreakInputRule<TMatch, TEditor>;\ndeclare function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(rule: InsertDataInputRule<TMatch, TEditor>): InsertDataInputRule<TMatch, TEditor>;\ndeclare function defineInputRule<TMatch, TEditor extends Editor = Editor>(rule: InsertDataFollowUpInputRule<TMatch, TEditor>): DefinedInsertDataFollowUpInputRule<TMatch, TEditor>;\ndeclare function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(rule: InsertTextInputRule<TMatch, TEditor>): InsertTextInputRule<TMatch, TEditor>;\ndeclare function defineInputRule<TRule extends InputRule>(rule: TRule): TRule;\ndeclare function defineInputRule<P extends InputRuleOwner, TMatch>(owner: P, rule: BoundResolvedInsertBreakRule<P, TMatch>): InsertBreakInputRule<TMatch, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner, TMatch>(owner: P, rule: BoundResolvedInsertDataRule<P, TMatch>): InsertDataInputRule<TMatch, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner, TMatch>(owner: P, rule: BoundResolvedInsertDataFollowUpRule<P, TMatch>): DefinedInsertDataFollowUpInputRule<TMatch, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner, TMatch>(owner: P, rule: BoundResolvedInsertTextRule<P, TMatch>): InsertTextInputRule<TMatch, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner>(owner: P, rule: InsertBreakInputRule<true, OwnerEditor<P>>): InsertBreakInputRule<true, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner>(owner: P, rule: InsertDataInputRule<true, OwnerEditor<P>>): InsertDataInputRule<true, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner>(owner: P, rule: InsertTextInputRule<true, OwnerEditor<P>>): InsertTextInputRule<true, OwnerEditor<P>>;",
           "source": null,
           "typeParameters": [
             "TMatch = true",
@@ -4541,7 +4541,7 @@
           "kind": "function",
           "name": "getPluginNodeClass",
           "runtime": true,
-          "signature": "declare function getPluginNodeClass(type: string): string;",
+          "signature": "declare function getPluginNodeClass(type: string): string;\ndeclare function getPluginNodeClass(type?: string): string | undefined;",
           "source": null,
           "typeParameters": []
         },
@@ -5402,7 +5402,7 @@
           "kind": "function",
           "name": "isHotkey",
           "runtime": true,
-          "signature": "export function isHotkey(\n    hotkey: string | readonly string[],\n    options?: HotKeyOptions,\n): (event: KeyboardEventLike) => boolean;",
+          "signature": "export function isHotkey(\n    hotkey: string | readonly string[],\n    options?: HotKeyOptions,\n): (event: KeyboardEventLike) => boolean;\nexport function isHotkey(hotkey: string | readonly string[], event: KeyboardEventLike): boolean;\nexport function isHotkey(\n    hotkey: string | readonly string[],\n    options: HotKeyOptions,\n    event: KeyboardEventLike,\n): boolean;",
           "source": null,
           "typeParameters": []
         },
@@ -9186,7 +9186,7 @@
           "kind": "function",
           "name": "serializePlainText",
           "runtime": true,
-          "signature": "declare function serializePlainText(editor: Editor, options?: PlainTextEditorOptions): PlainTextSerializeResult;",
+          "signature": "declare function serializePlainText(editor: Editor, options?: PlainTextEditorOptions): PlainTextSerializeResult;\ndeclare function serializePlainText(document: EditorDocumentValue, options: PlainTextDocumentOptions): PlainTextSerializeResult;",
           "source": null,
           "typeParameters": []
         },
@@ -10953,7 +10953,7 @@
           "kind": "function",
           "name": "projectAuthoredDocument",
           "runtime": true,
-          "signature": "declare function projectAuthoredDocument(document: EditorDocumentValue, options: Readonly<{\n  projection: AuthoredFormatProjection;\n}>): AuthoredDocumentProjection;",
+          "signature": "declare function projectAuthoredDocument(document: EditorDocumentValue, options: Readonly<{\n  projection: AuthoredFormatProjection;\n}>): AuthoredDocumentProjection;\ndeclare function projectAuthoredDocument(document: EditorDocumentValue, options: Readonly<{\n  editor?: AnyEditor;\n  projection: AuthoredFormatProjection;\n}>): AuthoredDocumentProjection | AuthoredProjectionRefusal;",
           "source": null,
           "typeParameters": []
         },
@@ -12250,7 +12250,7 @@
           "kind": "function",
           "name": "compare",
           "runtime": true,
-          "signature": "declare function compare<V extends Value>(input: ThreeWayInput<V>): Promise<ThreeWayComparison<V>>;",
+          "signature": "declare function compare<V extends Value>(input: ThreeWayInput<V>): Promise<ThreeWayComparison<V>>;\ndeclare function compare<V extends Value>(input: TwoWayInput<V>): Promise<TwoWayComparison<V>>;",
           "source": null,
           "typeParameters": [
             "V extends Value"
@@ -13052,7 +13052,7 @@
           "kind": "function",
           "name": "isHotkey",
           "runtime": true,
-          "signature": "declare function isHotkey(hotkey: HotkeySpec, event: KeyboardEventLike): boolean;",
+          "signature": "declare function isHotkey(hotkey: HotkeySpec, event: KeyboardEventLike): boolean;\ndeclare function isHotkey(hotkey: HotkeySpec, options: HotkeyMatchOptions, event: KeyboardEventLike): boolean;",
           "source": null,
           "typeParameters": []
         },
@@ -17968,7 +17968,7 @@
           "kind": "function",
           "name": "createEditor",
           "runtime": true,
-          "signature": "declare function createEditor<const TSchema extends EditorApplicationSchema | undefined = undefined>(options?: CreateEditorOptions<readonly [], TSchema>): Editor<Value, readonly [], readonly [], TSchema>;",
+          "signature": "declare function createEditor<const TSchema extends EditorApplicationSchema | undefined = undefined>(options?: CreateEditorOptions<readonly [], TSchema>): Editor<Value, readonly [], readonly [], TSchema>;\ndeclare function createEditor<const TPlugins extends readonly PluginReference[] = readonly [], const TSchema extends EditorApplicationSchema | undefined = undefined>(options: CreateEditorOptions<TPlugins, TSchema> & {\n  plugins: TPlugins;\n}): Editor<Value, RuntimePluginsFromTuple<TPlugins>, PlatePluginsFromTuple<TPlugins>, TSchema>;",
           "source": null,
           "typeParameters": [
             "const TSchema extends EditorApplicationSchema | undefined = undefined"
@@ -18260,7 +18260,7 @@
           "kind": "function",
           "name": "defineInputRule",
           "runtime": true,
-          "signature": "declare function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(rule: InsertBreakInputRule<TMatch, TEditor>): InsertBreakInputRule<TMatch, TEditor>;",
+          "signature": "declare function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(rule: InsertBreakInputRule<TMatch, TEditor>): InsertBreakInputRule<TMatch, TEditor>;\ndeclare function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(rule: InsertDataInputRule<TMatch, TEditor>): InsertDataInputRule<TMatch, TEditor>;\ndeclare function defineInputRule<TMatch, TEditor extends Editor = Editor>(rule: InsertDataFollowUpInputRule<TMatch, TEditor>): DefinedInsertDataFollowUpInputRule<TMatch, TEditor>;\ndeclare function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(rule: InsertTextInputRule<TMatch, TEditor>): InsertTextInputRule<TMatch, TEditor>;\ndeclare function defineInputRule<TRule extends InputRule>(rule: TRule): TRule;\ndeclare function defineInputRule<P extends InputRuleOwner, TMatch>(owner: P, rule: BoundResolvedInsertBreakRule<P, TMatch>): InsertBreakInputRule<TMatch, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner, TMatch>(owner: P, rule: BoundResolvedInsertDataRule<P, TMatch>): InsertDataInputRule<TMatch, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner, TMatch>(owner: P, rule: BoundResolvedInsertDataFollowUpRule<P, TMatch>): DefinedInsertDataFollowUpInputRule<TMatch, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner, TMatch>(owner: P, rule: BoundResolvedInsertTextRule<P, TMatch>): InsertTextInputRule<TMatch, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner>(owner: P, rule: InsertBreakInputRule<true, OwnerEditor<P>>): InsertBreakInputRule<true, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner>(owner: P, rule: InsertDataInputRule<true, OwnerEditor<P>>): InsertDataInputRule<true, OwnerEditor<P>>;\ndeclare function defineInputRule<P extends InputRuleOwner>(owner: P, rule: InsertTextInputRule<true, OwnerEditor<P>>): InsertTextInputRule<true, OwnerEditor<P>>;",
           "source": null,
           "typeParameters": [
             "TMatch = true",
@@ -21984,7 +21984,7 @@
           "kind": "function",
           "name": "getPluginNodeClass",
           "runtime": true,
-          "signature": "declare function getPluginNodeClass(type: string): string;",
+          "signature": "declare function getPluginNodeClass(type: string): string;\ndeclare function getPluginNodeClass(type?: string): string | undefined;",
           "source": null,
           "typeParameters": []
         },
@@ -22900,7 +22900,7 @@
           "kind": "function",
           "name": "isHotkey",
           "runtime": true,
-          "signature": "export function isHotkey(\n    hotkey: string | readonly string[],\n    options?: HotKeyOptions,\n): (event: KeyboardEventLike) => boolean;",
+          "signature": "export function isHotkey(\n    hotkey: string | readonly string[],\n    options?: HotKeyOptions,\n): (event: KeyboardEventLike) => boolean;\nexport function isHotkey(hotkey: string | readonly string[], event: KeyboardEventLike): boolean;\nexport function isHotkey(\n    hotkey: string | readonly string[],\n    options: HotKeyOptions,\n    event: KeyboardEventLike,\n): boolean;",
           "source": null,
           "typeParameters": []
         },
@@ -27238,7 +27238,7 @@
           "kind": "function",
           "name": "serializePlainText",
           "runtime": true,
-          "signature": "declare function serializePlainText(editor: Editor, options?: PlainTextEditorOptions): PlainTextSerializeResult;",
+          "signature": "declare function serializePlainText(editor: Editor, options?: PlainTextEditorOptions): PlainTextSerializeResult;\ndeclare function serializePlainText(document: EditorDocumentValue, options: PlainTextDocumentOptions): PlainTextSerializeResult;",
           "source": null,
           "typeParameters": []
         },
@@ -27985,7 +27985,7 @@
           "kind": "function",
           "name": "toReactPlugin",
           "runtime": true,
-          "signature": "declare function toReactPlugin<const C extends AnyBasePluginDefinition>(basePlugin: BasePluginAdapterSource & PluginDefinitionWitness<C> & ConfiguredPluginDescriptor): ConfiguredPlugin<C>;",
+          "signature": "declare function toReactPlugin<const C extends AnyBasePluginDefinition>(basePlugin: BasePluginAdapterSource & PluginDefinitionWitness<C> & ConfiguredPluginDescriptor): ConfiguredPlugin<C>;\ndeclare function toReactPlugin<const C extends AnyBasePluginDefinition>(basePlugin: BasePluginAdapterSource & PluginDefinitionWitness<C>): Plugin<C>;\ndeclare function toReactPlugin<const TBasePlugin extends BasePluginAdapterSource, const TDependencies extends ReadonlyArray<PluginReference | PluginReference$1>, const TAdapter extends AdapterObjectWithoutDependencies<NoInfer<BasePluginDefinitionOf<TBasePlugin>>>>(basePlugin: TBasePlugin & (TBasePlugin extends ConfiguredPluginDescriptor ? never : unknown), adapter: TAdapter & Readonly<{\n  dependencies: TDependencies;\n}>): Plugin<AdaptedBasePluginDefinition<BasePluginDefinitionOf<TBasePlugin>, NormalizePluginAdapterWithDependencies<AdapterResult<TAdapter>, BasePluginDefinitionOf<TBasePlugin>['name'], TDependencies>>>;\ndeclare function toReactPlugin<const TBasePlugin extends BasePluginAdapterSource, const TAdapter extends AdapterInput<NoInfer<BasePluginDefinitionOf<TBasePlugin>>>>(basePlugin: TBasePlugin & (TBasePlugin extends ConfiguredPluginDescriptor ? never : unknown), adapter: TAdapter): InternalReactPluginAdapterResult<TBasePlugin, TAdapter>;",
           "source": null,
           "typeParameters": [
             "const C extends AnyBasePluginDefinition"
@@ -28612,12 +28612,9 @@
           "kind": "function",
           "name": "useCreateEditor",
           "runtime": true,
-          "signature": "declare function useCreateEditor<const TSchema extends EditorApplicationSchema | undefined = undefined, TEnabled extends boolean | undefined = undefined>(options?: CreateEditorOptions<readonly [], TSchema> & {\n  enabled?: TEnabled;\n}, deps?: React$1.DependencyList): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<readonly [], TSchema>>;",
+          "signature": "declare function useCreateEditor(options?: undefined, deps?: React$1.DependencyList): UseCreateEditorResult<readonly [], undefined>;\ndeclare function useCreateEditor<const TSchema extends EditorApplicationSchema | undefined = undefined, TEnabled extends boolean | undefined = undefined>(options: CreateEditorOptions<readonly [], TSchema> & UseCreateEditorEnabledOption<TEnabled>, deps?: React$1.DependencyList): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<readonly [], TSchema>>;\ndeclare function useCreateEditor<const TPlugins extends readonly PluginReference[] = readonly [], const TSchema extends EditorApplicationSchema | undefined = undefined, TEnabled extends boolean | undefined = undefined>(options: CreateEditorOptions<TPlugins, TSchema> & UseCreateEditorEnabledOption<TEnabled> & {\n  plugins: TPlugins;\n}, deps?: React$1.DependencyList): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<TPlugins, TSchema>>;\ndeclare function useCreateEditor(options: (CreateEditorOptions & {\n  enabled?: true;\n}) | undefined, deps?: React$1.DependencyList): UseCreateEditorResult<readonly [], undefined>;\ndeclare function useCreateEditor(options: (CreateEditorOptions & {\n  enabled?: boolean;\n}) | undefined, deps?: React$1.DependencyList): UseCreateEditorResult<readonly [], undefined> | null;",
           "source": null,
-          "typeParameters": [
-            "const TSchema extends EditorApplicationSchema | undefined = undefined",
-            "TEnabled extends boolean | undefined = undefined"
-          ]
+          "typeParameters": []
         },
         "platejs/react:useDropIndicator": {
           "aliases": [],
@@ -28773,7 +28770,7 @@
           "kind": "function",
           "name": "useEditorPluginStore",
           "runtime": true,
-          "signature": "declare function useEditorPluginStore<P extends PluginStoreDescriptor, K extends PluginStoreKey<DefinitionOf$1<P>> = PluginStoreKey<DefinitionOf$1<P>>>(editor: AnyEditor, plugin: P, key: K, ...args: PluginStoreArgs<DefinitionOf$1<P>, K>): PluginStoreValue<DefinitionOf$1<P>, K>;",
+          "signature": "declare function useEditorPluginStore<P extends PluginStoreDescriptor, K extends PluginStoreKey<DefinitionOf$1<P>> = PluginStoreKey<DefinitionOf$1<P>>>(editor: AnyEditor, plugin: P, key: K, ...args: PluginStoreArgs<DefinitionOf$1<P>, K>): PluginStoreValue<DefinitionOf$1<P>, K>;\ndeclare function useEditorPluginStore<P extends PluginStoreDescriptor, U = unknown>(editor: AnyEditor, plugin: P, selector: (state: InferPluginStoreState<DefinitionOf$1<P>>) => U, options?: {\n  equalityFn?: (a: U, b: U) => boolean;\n}): U;",
           "source": null,
           "typeParameters": [
             "P extends PluginStoreDescriptor",
@@ -28942,7 +28939,7 @@
           "kind": "function",
           "name": "useElement",
           "runtime": true,
-          "signature": "declare function useElement(): Element$1;",
+          "signature": "declare function useElement(): Element$1;\ndeclare function useElement<const TPlugin extends ElementDescriptor>(plugin: TPlugin): ElementForDescriptor<TPlugin>;",
           "source": null,
           "typeParameters": []
         },
@@ -28997,7 +28994,7 @@
           "kind": "function",
           "name": "useElementSelector",
           "runtime": true,
-          "signature": "declare function useElementSelector<T>(selector: ElementSelector<Element$1, T>, options?: UseElementSelectorOptions<T>): T;",
+          "signature": "declare function useElementSelector<T>(selector: ElementSelector<Element$1, T>, options?: UseElementSelectorOptions<T>): T;\ndeclare function useElementSelector<const TPlugin extends ElementDescriptor, T>(plugin: TPlugin, selector: ElementSelector<ElementForDescriptor<TPlugin>, T>, options?: Omit<UseElementSelectorOptions<T>, 'scope'>): T;",
           "source": null,
           "typeParameters": [
             "T"
@@ -29054,7 +29051,7 @@
           "kind": "function",
           "name": "usePath",
           "runtime": true,
-          "signature": "declare function usePath(): Path;",
+          "signature": "declare function usePath(): Path;\ndeclare function usePath<T>(selector: (path: Path) => T, options?: {\n  equalityFn?: (left: T, right: T) => boolean;\n}): T;",
           "source": null,
           "typeParameters": []
         },
@@ -29065,7 +29062,7 @@
           "kind": "function",
           "name": "usePluginStore",
           "runtime": true,
-          "signature": "declare function usePluginStore<P extends PluginStoreDescriptor, K extends PluginStoreKey<DefinitionOf$1<P>> = PluginStoreKey<DefinitionOf$1<P>>>(plugin: P, key: K, ...args: PluginStoreArgs<DefinitionOf$1<P>, K>): PluginStoreValue<DefinitionOf$1<P>, K>;",
+          "signature": "declare function usePluginStore<P extends PluginStoreDescriptor, K extends PluginStoreKey<DefinitionOf$1<P>> = PluginStoreKey<DefinitionOf$1<P>>>(plugin: P, key: K, ...args: PluginStoreArgs<DefinitionOf$1<P>, K>): PluginStoreValue<DefinitionOf$1<P>, K>;\ndeclare function usePluginStore<P extends PluginStoreDescriptor, U = unknown>(plugin: P, selector: (state: InferPluginStoreState<DefinitionOf$1<P>>) => U, options?: {\n  equalityFn?: (a: U, b: U) => boolean;\n}): U;",
           "source": null,
           "typeParameters": [
             "P extends PluginStoreDescriptor",
@@ -29182,7 +29179,7 @@
         },
         "platejs/react:useSetStateField": {
           "aliases": [],
-          "documentation": "Create a setter for one `defineStateField` value.\n\nThe setter writes through `editor.update` and preserves DOM selection by\ndefault so external controls can update state without stealing focus. Pass\nan update policy when history or tags need additional control.",
+          "documentation": "Create a setter for one `defineStateField` value on the selected Plate editor.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "useSetStateField",
@@ -29195,25 +29192,12 @@
         },
         "platejs/react:useStateFieldValue": {
           "aliases": [],
-          "documentation": "Subscribe to one `defineStateField` value.\n\nThe hook re-evaluates when the field key or `'$configuration'` appears in\nthe committed dirty state keys (for example on plugin uninstall or\nreinstall), and re-renders only when the value changes. Use it for document\nmeta controls such as title, page settings, or feature state that should not\nsubscribe to every editor change.",
+          "documentation": "Subscribe to one `defineStateField` value on the selected Plate editor.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "useStateFieldValue",
           "runtime": true,
           "signature": "declare function useStateFieldValue<TValue>(field: EditorStateField<TValue>, options?: UseStateFieldValueOptions<TValue>): TValue;",
-          "source": null,
-          "typeParameters": [
-            "TValue"
-          ]
-        },
-        "platejs/react:UseStateFieldValueOptions": {
-          "aliases": [],
-          "documentation": "Selector options for subscribing to one editor state field.",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "UseStateFieldValueOptions",
-          "runtime": false,
-          "signature": "type UseStateFieldValueOptions<TValue> = Pick<EditorStateSelectorOptions<TValue>, 'deferred' | 'equalityFn'>;",
           "source": null,
           "typeParameters": [
             "TValue"
@@ -30501,7 +30485,7 @@
           "kind": "function",
           "name": "jsx",
           "runtime": true,
-          "signature": "declare function jsx(tagName: 'editor', attributes?: object | null, ...children: unknown[]): TestEditor;",
+          "signature": "declare function jsx(tagName: 'editor', attributes?: object | null, ...children: unknown[]): TestEditor;\ndeclare function jsx(tagName: 'fragment', attributes?: object | null, ...children: unknown[]): Descendant[];\ndeclare function jsx(tagName: 'htext' | 'text', attributes?: object | null, ...children: unknown[]): Text;\ndeclare function jsx(tagName: ElementTag, attributes?: object | null, ...children: unknown[]): Element;",
           "source": null,
           "typeParameters": []
         },

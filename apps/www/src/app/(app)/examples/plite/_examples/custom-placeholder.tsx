@@ -3,11 +3,11 @@ import {
   Editable,
   type RenderPlaceholderProps,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 
 const PlainTextExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {

@@ -2,7 +2,7 @@ import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
   useEditorFocused,
 } from 'plitejs/react';
 
@@ -13,7 +13,7 @@ const FocusRingEditor = ({
   label: string;
   readOnly?: boolean;
 }) => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {

@@ -31,7 +31,7 @@ import {
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
   useEditorState,
   useSetStateField,
@@ -1065,7 +1065,7 @@ const PaginationEditor = ({
     controls.renderingMode === 'virtualized'
       ? controls.virtualizedStressPages
       : 0;
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue: {
       children: createInitialValue({
         longBlockPages: controls.longBlockPages,

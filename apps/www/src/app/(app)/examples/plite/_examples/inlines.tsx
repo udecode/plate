@@ -14,7 +14,7 @@ import {
   Editable,
   type RenderElementProps,
   type RenderTextProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
   useEditorSelector,
   useElementSelected,
@@ -35,7 +35,7 @@ import type {
 } from './custom-types.d';
 
 const InlinesExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), inline()],
     initialValue: [
       {

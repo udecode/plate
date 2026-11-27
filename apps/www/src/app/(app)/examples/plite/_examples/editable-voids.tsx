@@ -8,7 +8,7 @@ import {
   EditorRoot,
   useEditorContext,
   useChildRoot,
-  useEditor,
+  useCreateEditor,
   useRootChrome,
   useRootEditor,
 } from 'plitejs/react';
@@ -65,7 +65,7 @@ const createEditableVoidBody = (): CustomValue => [
 const createEmptyEditableVoidBody = (): CustomValue => [paragraph('')];
 
 const EditableVoidsExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), editableVoid()],
     initialValue: {
       children: [

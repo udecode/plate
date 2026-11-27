@@ -208,7 +208,9 @@ const extractEntrypoint = async (
 
   return exportedSymbols.map((exportedSymbol): SymbolFact => {
     const symbol = resolveSymbol(checker, exportedSymbol);
-    const declaration = symbol.declarations?.[0];
+    const declarations = symbol.declarations ?? [];
+    const functionDeclarations = declarations.filter(ts.isFunctionDeclaration);
+    const declaration = declarations[0];
     const declarationSourceFile = declaration?.getSourceFile();
     const aliases =
       symbol.name === exportedSymbol.name ? [] : [symbol.name].sort();
@@ -231,13 +233,19 @@ const extractEntrypoint = async (
       name: exportedSymbol.name,
       runtime: runtimeNames.has(exportedSymbol.name),
       signature:
-        declaration && declarationSourceFile
-          ? formatDeclaration(declaration, checker, publicExports)
-          : checker.typeToString(
-              checker.getTypeOfSymbolAtLocation(exportedSymbol, sourceFile),
-              sourceFile,
-              ts.TypeFormatFlags.NoTruncation
-            ),
+        functionDeclarations.length > 1
+          ? functionDeclarations
+              .map((fnDecl) =>
+                formatDeclaration(fnDecl, checker, publicExports)
+              )
+              .join('\n')
+          : declaration && declarationSourceFile
+            ? formatDeclaration(declaration, checker, publicExports)
+            : checker.typeToString(
+                checker.getTypeOfSymbolAtLocation(exportedSymbol, sourceFile),
+                sourceFile,
+                ts.TypeFormatFlags.NoTruncation
+              ),
       source:
         declaration && declarationSourceFile
           ? findSource(declarationSourceFile, declaration)

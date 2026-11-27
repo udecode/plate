@@ -15,7 +15,7 @@ import {
   EditorElement,
   type RenderElementProps,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
 } from 'plitejs/react';
 import React, {
@@ -389,7 +389,7 @@ const HiddenContentBlocksContent = () => {
 };
 
 const HiddenContentBlocksExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), hiddenContentBlocks()],
     initialValue: [
       {

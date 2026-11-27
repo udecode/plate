@@ -29,7 +29,7 @@ import {
   Editable,
   EditorRoot,
   type ValueChangeContext,
-  useEditor,
+  useCreateEditor,
 } from "plitejs/react";
 ```
 
@@ -49,17 +49,17 @@ const initialValue: CustomValue = [
 ```
 
 `CustomValue` is the TypeScript shape of this editor's primary document.
-Passing it to `useEditor` keeps element and text types attached to the
+Passing it to `useCreateEditor` keeps element and text types attached to the
 editor API.
 
-Call `useEditor` inside the component so React keeps the same editor
+Call `useCreateEditor` inside the component so React keeps the same editor
 object for the component lifetime.
 
 Render the editor with `<EditorRoot>` and `<Editable>`.
 
 ```tsx
 const App = () => {
-  const editor = useEditor<CustomValue>({ initialValue });
+  const editor = useCreateEditor<CustomValue>({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -69,7 +69,7 @@ const App = () => {
 };
 ```
 
-`useEditor({ initialValue })` seeds the editor. `<EditorRoot>`
+`useCreateEditor({ initialValue })` seeds the editor. `<EditorRoot>`
 provides that existing editor to everything underneath it, and `<Editable>`
 renders the editable document surface.
 
@@ -82,7 +82,7 @@ a single-root document.
 
 ```tsx
 const App = () => {
-  const editor = useEditor<CustomValue>({ initialValue });
+  const editor = useCreateEditor<CustomValue>({ initialValue });
 
   const handleValueChange = ({
     value,
@@ -98,7 +98,7 @@ const App = () => {
 };
 ```
 
-Use `initialValue` as the one-shot initial document passed to `useEditor`.
+Use `initialValue` as the one-shot initial document passed to `useCreateEditor`.
 If your app needs to replace the whole document after the
 editor exists, use an explicit editor update instead of treating `<EditorRoot>` like
 a controlled `<textarea>`.

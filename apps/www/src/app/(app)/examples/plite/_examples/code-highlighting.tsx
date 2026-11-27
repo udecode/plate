@@ -17,7 +17,7 @@ import {
   type Decoration,
   type DecorationSource,
   type RenderElementProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
 } from 'plitejs/react';
 import type React from 'react';
@@ -120,7 +120,7 @@ const editor = useEditor<CustomValue>({ initialValue })`),
       children: toChildren('There you have it!'),
     },
   ];
-  const editor = useEditor<
+  const editor = useCreateEditor<
     CustomValue,
     readonly [ReturnType<typeof history>, typeof CodeBlockTextPastePlugin]
   >({

@@ -5,7 +5,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
 } from 'plitejs/react';
 
@@ -185,7 +185,7 @@ const TablesEditor = () => {
 };
 
 const TablesExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), table()],
     initialValue,
   });

@@ -27,7 +27,7 @@ import {
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
   useEditorSelector,
 } from 'plitejs/react';
@@ -155,7 +155,7 @@ const BLOCK_HOTKEYS: Array<[string, RichTextElementFormat]> = [
 const CLEAR_FORMATTING_HOTKEY = 'mod+\\';
 
 const RichTextExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), RichTextPlugin],
     initialValue: [
       {

@@ -457,7 +457,7 @@ const MentionSchema = defineEditorSchema("mentionsSchema", {
   version: 1,
 });
 
-const editor = useEditor({
+const editor = useCreateEditor({
   plugins: [MentionSchema] as const,
   initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
 });

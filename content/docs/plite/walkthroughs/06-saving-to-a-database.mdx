@@ -18,7 +18,7 @@ after committed document or state-field changes.
 ```tsx
 import { useState } from "react";
 import { defineStateField, valueCodecs } from "plitejs";
-import { Editable, EditorRoot, useEditor } from "plitejs/react";
+import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const STORAGE_KEY = "plite.document";
 
@@ -46,7 +46,7 @@ const App = () => {
 
     return saved ? JSON.parse(saved) : fallbackValue;
   });
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [documentTitle],
     initialValue,
   });
@@ -108,7 +108,7 @@ Pass `initialValue.children` plus `initialValue.roots` when the saved document
 owns extra roots.
 
 ```tsx
-const editor = useEditor({
+const editor = useCreateEditor({
   initialValue: {
     children: [{ type: "paragraph", children: [{ text: "Body" }] }],
     roots: {

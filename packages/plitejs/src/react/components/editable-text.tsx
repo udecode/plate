@@ -32,7 +32,7 @@ import {
   useEditableDOMRuntime,
 } from '../hooks/use-claim-editable-dom-commit';
 import { useEditorContext } from '../hooks/use-editor-context';
-import { useEditorReadOnly } from '../hooks/use-editor-read-only';
+import { useInheritedReadOnly } from '../hooks/use-editor-read-only';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import {
   type EditorTextSelectorContext,
@@ -347,7 +347,7 @@ const RenderEditableText = ({
   useClaimEditableDOMCommit();
   const runtime = useEditableDOMRuntime();
   const scope = useContext(TextRenderScopeContext);
-  const readOnly = useEditorReadOnly();
+  const readOnly = useInheritedReadOnly();
   const contentRef = useRef<EditableTextContent>(null);
   useIsomorphicLayoutEffect(() => {
     contentRef.current?.defer();

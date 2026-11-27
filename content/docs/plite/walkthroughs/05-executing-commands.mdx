@@ -55,10 +55,10 @@ functions that receive an editor.
 Use `Editable onKeyDown` for keyboard shortcuts that belong to one editor UI:
 
 ```tsx
-import { Editable, EditorRoot, useEditor } from "plitejs/react";
+import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -158,7 +158,7 @@ const markdownBlocks = definePlugin("markdownBlocks", {
 });
 
 const App = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [markdownBlocks],
     initialValue,
   });

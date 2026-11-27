@@ -3,7 +3,7 @@ import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
   useEditorFocused,
   useElementSelected,
   type RenderElementProps,
@@ -23,7 +23,7 @@ import type {
 import { html } from './paste-html-import';
 
 const PasteHtmlExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), html()],
     initialValue: [
       {

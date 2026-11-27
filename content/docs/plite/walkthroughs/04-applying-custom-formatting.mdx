@@ -39,7 +39,7 @@ Use `editor.update.marks.toggle(...)` for a single formatting command.
 import { ElementApi } from "plitejs";
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -102,7 +102,7 @@ const FormattingPlugin = definePlugin("formatting", {
 });
 
 // Inside the component that owns this editor:
-const editor = useEditor({ plugins: [FormattingPlugin], initialValue });
+const editor = useCreateEditor({ plugins: [FormattingPlugin], initialValue });
 editor.update.marks.toggle("subscript");
 ```
 
@@ -133,7 +133,7 @@ Pass both renderers to `Editable`:
 
 ```tsx
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>

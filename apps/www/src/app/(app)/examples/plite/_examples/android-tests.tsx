@@ -5,7 +5,7 @@ import {
   Editable,
   type RenderLeafProps,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 
 import { Label } from '@/components/ui/label';
@@ -264,7 +264,7 @@ const TestCase = ({
   instructions: string;
   value: Value;
 }) => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: value,
   });

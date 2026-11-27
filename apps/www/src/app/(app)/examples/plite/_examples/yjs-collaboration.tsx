@@ -24,7 +24,7 @@ import {
   type Editor as ReactViewEditor,
   type RenderElementProps,
   type RenderLeafProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
 } from 'plitejs/react';
 import {
@@ -1628,7 +1628,7 @@ const PeerPanel = ({
   version: number;
   onRemount: () => void;
 }) => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [
       HistoryPlugin,
       schemaSlot.of(createCollaborationSchema(1)),

@@ -13,7 +13,7 @@ import {
   type ExternalTextSelection,
   EditorRoot,
   type RenderElementProps,
-  useEditor,
+  useCreateEditor,
   useEditorState,
   useEditorHistory,
 } from 'plitejs/react';
@@ -393,7 +393,7 @@ const Status = () => {
 };
 
 const ExternalTextExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [textSchema, history()],
     initialValue: {
       children: [

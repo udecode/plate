@@ -9,15 +9,15 @@ sync, void shells, hidden DOM coverage, decorations, annotations,
 and external text views. Explicit large-document virtualization lives
 in `plitejs/react/virtualized`.
 
-Start with `useEditor`, `EditorRoot`, and `Editable`.
+Start with `useCreateEditor`, `EditorRoot`, and `Editable`.
 
 ## Minimal usage
 
 ```tsx
-import { EditorRoot, Editable, useEditor } from "plitejs/react";
+import { EditorRoot, Editable, useCreateEditor } from "plitejs/react";
 
 const Editor = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
   });
 

@@ -14,7 +14,7 @@ import {
   EditorRoot,
   useEditorContext,
   useEditorReadOnly,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import type { ChangeEvent } from 'react';
 
@@ -114,7 +114,7 @@ const CheckListsEditor = ({
 }: {
   exampleCase: ChecklistExampleCase;
 }) => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), checklist()],
     initialValue: createInitialValue(exampleCase),
   });

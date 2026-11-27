@@ -69,9 +69,9 @@ into archaeology.
 
 | Slate 0.x                                         | Plite runtime                                                                                            |
 | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `createEditor()` plus `withReact(editor)`         | `useEditor({ initialValue })` in React, or `createEditor({ initialValue })` outside a component          |
+| `createEditor()` plus `withReact(editor)`         | `useCreateEditor({ initialValue })` in React, or `createEditor({ initialValue })` outside a component          |
 | `withHistory(editor)`                             | `history()` in the editor's `plugins` array           |
-| `<Slate editor={editor} initialValue={value}>`    | `const editor = useEditor({ initialValue }); <EditorRoot editor={editor}>`                                    |
+| `<Slate editor={editor} initialValue={value}>`    | `const editor = useCreateEditor({ initialValue }); <EditorRoot editor={editor}>`                                    |
 | Slate 0.x transform helper calls                  | `editor.update.<group>.<method>()` for one write, or `editor.update((tx) => tx.*...)` for grouped writes |
 | `Editor.*` reads that inspect the current editor  | `editor.read.<group>.<method>()` for one read, or `editor.read((state) => state.*...)` for grouped reads |
 | Pure node, point, path, range, and text helpers   | `NodeApi`, `ElementApi`, `PointApi`, `PathApi`, `RangeApi`, and `TextApi` from `plitejs`                 |
@@ -143,10 +143,10 @@ const App = () => {
 Plite runtime:
 
 ```tsx
-import { Editable, EditorRoot, useEditor } from "plitejs/react";
+import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -265,7 +265,7 @@ const renderElement = (props) => {
 };
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -295,7 +295,7 @@ const renderLeaf = ({ attributes, children, leaf }) => {
 };
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -481,10 +481,10 @@ Omit `history()` when the editor does not need undo/redo. Use
 
 ```tsx
 import { history } from "plitejs/history";
-import { useEditor } from "plitejs/react";
+import { useCreateEditor } from "plitejs/react";
 
 const App = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue,
     plugins: [history({ enabled: false })],
   });
@@ -505,12 +505,12 @@ For a single-root editor, save the `value` passed to `<EditorRoot onValueChange>
 import {
   Editable,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
   type ValueChangeContext,
 } from "plitejs/react";
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   const handleChange = ({ value }: ValueChangeContext) => {
     saveDocument(value);
@@ -588,7 +588,7 @@ import {
   Editable,
   EditorRoot,
   useSetStateField,
-  useEditor,
+  useCreateEditor,
   useStateFieldValue,
 } from "plitejs/react";
 
@@ -608,7 +608,7 @@ const TitleInput = () => {
 };
 
 const App = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [documentTitle],
     initialValue,
   });
@@ -639,7 +639,7 @@ Use extra roots when one editor owns multiple editable regions that share
 history, schema, commands, and document meta.
 
 ```tsx
-const editor = useEditor({
+const editor = useCreateEditor({
   initialValue: {
     children: [{ type: "paragraph", children: [{ text: "Body" }] }],
     roots: {
@@ -731,7 +731,7 @@ import {
   Editable,
   EditorRoot,
   createEditor,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
   useEditorState,
 } from "plitejs/react";
@@ -765,7 +765,7 @@ has proven the runtime integration.
 
 Run the migration in behavior order:
 
-1. Render the smallest editor with `useEditor`, `<EditorRoot>`, and
+1. Render the smallest editor with `useCreateEditor`, `<EditorRoot>`, and
    `<Editable>`.
 2. Type normal text and save the primary value in `<EditorRoot onValueChange>`.
 3. Port one command to `editor.read(...)` plus `editor.update(...)`.

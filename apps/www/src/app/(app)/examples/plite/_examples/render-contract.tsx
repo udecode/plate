@@ -7,7 +7,7 @@ import {
   EditorElement,
   EditorRoot,
   type RenderElementProps,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -59,7 +59,7 @@ const paragraph = (text: string): ElementNode => ({
 });
 
 const RenderContractExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: [paragraph('Intro')],
   });

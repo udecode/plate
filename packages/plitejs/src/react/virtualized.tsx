@@ -15,7 +15,7 @@ import {
 } from './editable/root-selector-sources';
 import { useEditorContext } from './hooks/use-editor-context';
 import { useEditorHostScrollElement } from './hooks/use-editor-dom-scope';
-import { useEditorReadOnly } from './hooks/use-editor-read-only';
+import { useInheritedReadOnly } from './hooks/use-editor-read-only';
 import {
   getVirtualizerScrollElement,
   useVirtualizedRootPlan,
@@ -116,7 +116,7 @@ export const VirtualizedEditable = <
   if (root === 'main') {
     throw new Error('Omit root to render the primary editable.');
   }
-  const inheritedReadOnly = useEditorReadOnly();
+  const inheritedReadOnly = useInheritedReadOnly();
   const editor = useEditorContext();
   const readOnly = props.readOnly || inheritedReadOnly;
   const editable = <VirtualizedEditableInner {...props} />;

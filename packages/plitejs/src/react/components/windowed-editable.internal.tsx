@@ -7,7 +7,7 @@ import type { PliteDecorationStore } from '../decoration-context';
 import { useRootNodeKeys } from '../editable/root-selector-sources';
 import type { ViewLines } from '../editable/view-lines';
 import { useEditorContext } from '../hooks/use-editor-context';
-import { useEditorReadOnly } from '../hooks/use-editor-read-only';
+import { useInheritedReadOnly } from '../hooks/use-editor-read-only';
 import { createEditableViewportPlan } from '../viewport-plan';
 import type { EditableElementLayout } from './editable-element-placement';
 import {
@@ -88,7 +88,7 @@ export const WindowedEditable = <
   if (root === 'main') {
     throw new Error('Omit root to render the primary editable.');
   }
-  const inheritedReadOnly = useEditorReadOnly();
+  const inheritedReadOnly = useInheritedReadOnly();
   const editor = useEditorContext();
   const readOnly = props.readOnly || inheritedReadOnly;
   const editable = <WindowedEditableInner {...props} />;

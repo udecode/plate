@@ -8,8 +8,15 @@ import type {
   NodeKey,
   ValueOf,
 } from '../..';
+import { readShownPreview } from '../../core/authored-runtime';
 import { keyMovedAt } from '../../core/commit';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { runEditorObserver } from '../../core/lifecycle-error';
+import { toPublicRoot } from '../../core/public-root';
+import {
+  getActiveCaretRoot,
+  subscribeActiveCaretRoot,
+} from '../../core/public-state';
 import {
   commitMatchesSelectorDependencies,
   type EditorSelectorDependencies,
@@ -17,11 +24,14 @@ import {
   sameSelectorDependencies,
 } from '../../core/selector-dependencies';
 import type { BaseEditor } from '../../interfaces/editor';
+import { PliteEditingAreaContext } from '../context';
+import { subscribeEditorViewState } from '../editable/runtime-editor-api';
 import type { EditorContextValue } from '../plugin/with-react';
 import { recordPliteReactRender } from '../render-profiler';
 import { useEditorContext } from './use-editor-context';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
+import { useOptionalPliteRuntimeContext } from './use-plite-runtime';
 
 type Callback = (change?: EditorCommit) => void;
 
@@ -202,11 +212,41 @@ export function useEditorSelector<T>(
 ): T {
   const normalizedDeps = normalizeSelectorDependencies(dependsOn);
   const { addEventListener } = useRequiredEditorSelectorContext();
-  const editor = useEditorContext();
-  const genericSelector = useCallback(
-    () => selector(editor),
-    [editor, selector]
-  );
+  const contextEditor = useEditorContext();
+  const insideEditingArea = useContext(PliteEditingAreaContext);
+  const runtimeContext = useOptionalPliteRuntimeContext();
+  const usesProviderContext = insideEditingArea || !runtimeContext;
+  const owner =
+    !usesProviderContext && runtimeContext
+      ? getEditorRuntimeOwner(runtimeContext.runtime)
+      : null;
+  const fallbackRoot = contextEditor.read.view.root();
+  const resolveTarget = useCallback((): ContextEditor => {
+    if (usesProviderContext || !runtimeContext || !owner) {
+      return contextEditor;
+    }
+    const activeRoot = getActiveCaretRoot(owner);
+    const targetRoot =
+      activeRoot !== null ? toPublicRoot(activeRoot) : fallbackRoot;
+
+    return runtimeContext.rootEditor(targetRoot) as unknown as ContextEditor;
+  }, [contextEditor, fallbackRoot, owner, runtimeContext, usesProviderContext]);
+  const renderedSnapshotRef = useRef<{
+    preview: ReturnType<typeof readShownPreview>;
+    target: ContextEditor;
+    version: number | undefined;
+  } | null>(null);
+  const genericSelector = useCallback(() => {
+    const target = resolveTarget();
+
+    renderedSnapshotRef.current = {
+      preview: readShownPreview(target),
+      target,
+      version: target.read.lastCommit()?.version,
+    };
+
+    return selector(target);
+  }, [resolveTarget, selector]);
   const [selectedState, update] = useGenericSelector(
     genericSelector,
     equalityFn
@@ -224,20 +264,106 @@ export function useEditorSelector<T>(
     if (changed) update();
   }, [normalizedDeps, update]);
 
-  const matchesCommit = useCallback(
+  const matchesProviderCommit = useCallback(
     (change?: EditorCommit) =>
-      commitMatchesSelectorDependencies(editor, change, depsRef.current),
-    [editor]
+      commitMatchesSelectorDependencies(contextEditor, change, depsRef.current),
+    [contextEditor]
   );
 
   useIsomorphicLayoutEffect(() => {
-    const unsubscribe = addEventListener(updateFromCommit, {
-      deferred,
-      shouldUpdate: matchesCommit,
-    });
-    update();
-    return unsubscribe;
-  }, [addEventListener, deferred, matchesCommit, update, updateFromCommit]);
+    const needsSync = () => {
+      const rendered = renderedSnapshotRef.current;
+
+      if (!rendered) return true;
+
+      const liveTarget = resolveTarget();
+
+      return (
+        liveTarget !== rendered.target ||
+        liveTarget.read.lastCommit()?.version !== rendered.version ||
+        readShownPreview(liveTarget) !== rendered.preview
+      );
+    };
+
+    if (usesProviderContext) {
+      const unsubscribe = addEventListener(updateFromCommit, {
+        deferred,
+        shouldUpdate: matchesProviderCommit,
+      });
+
+      if (needsSync()) update();
+
+      return unsubscribe;
+    }
+
+    let cancelled = false;
+    let scheduled = false;
+    let currentTarget: ContextEditor | null = null;
+    let unsubscribeCommit: (() => void) | null = null;
+    let unsubscribeView: (() => void) | null = null;
+    const scheduleUpdate = () => {
+      if (cancelled) return;
+      if (!deferred) {
+        update();
+        return;
+      }
+      if (scheduled) return;
+      scheduled = true;
+      scheduleMicrotask(() => {
+        scheduled = false;
+        if (cancelled) return;
+        update();
+      });
+    };
+    const follow = (notifyOnSwitch: boolean) => {
+      const next = resolveTarget();
+
+      if (next === currentTarget) return;
+      unsubscribeCommit?.();
+      unsubscribeView?.();
+      currentTarget = next;
+      unsubscribeCommit = next.subscribeCommit((change) => {
+        if (resolveTarget() !== next) {
+          follow(true);
+          return;
+        }
+        if (commitMatchesSelectorDependencies(next, change, depsRef.current)) {
+          scheduleUpdate();
+        }
+      });
+      unsubscribeView = subscribeEditorViewState(next, (change) => {
+        if (resolveTarget() !== next) {
+          follow(true);
+          return;
+        }
+        if (change === 'authored') scheduleUpdate();
+      });
+      if (notifyOnSwitch) scheduleUpdate();
+    };
+
+    follow(false);
+    const unsubscribeCaretRoot = owner
+      ? subscribeActiveCaretRoot(owner, () => follow(true))
+      : () => {};
+
+    if (needsSync()) update();
+
+    return () => {
+      cancelled = true;
+      unsubscribeCaretRoot();
+      unsubscribeCommit?.();
+      unsubscribeView?.();
+    };
+  }, [
+    addEventListener,
+    deferred,
+    matchesProviderCommit,
+    owner,
+    resolveTarget,
+    update,
+    updateFromCommit,
+    usesProviderContext,
+  ]);
 
   return selectedState;
 }

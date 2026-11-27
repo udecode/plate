@@ -20,7 +20,7 @@ const initialValue = [
 ];
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -73,7 +73,7 @@ Pass the renderer to `Editable`:
 
 ```tsx
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -104,7 +104,7 @@ Use `editor.update(...)` and `tx.blocks.set(...)` to change the selected block.
 import { ElementApi } from "plitejs";
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -131,7 +131,7 @@ To make the shortcut toggle, read first, then write:
 import { ElementApi } from "plitejs";
 
 const App = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>

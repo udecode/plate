@@ -1,8 +1,8 @@
 import { history } from 'plitejs/history';
-import { Editable, EditorRoot, useEditor } from 'plitejs/react';
+import { Editable, EditorRoot, useCreateEditor } from 'plitejs/react';
 
 const PlainTextExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {

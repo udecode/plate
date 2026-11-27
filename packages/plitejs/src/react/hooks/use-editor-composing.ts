@@ -1,13 +1,26 @@
 import { createContext, useContext } from 'react';
 
-/**
- * A React context for sharing the `composing` state of the editor.
- */
+import type { EditorStateView } from '../..';
+import { PliteEditingAreaContext } from '../context';
+import { useOptionalEditorViewState } from './use-editor-view-state';
+import { useOptionalEditor } from './use-plite-runtime';
 
 export const ComposingContext = createContext(false);
 
-/**
- * Get the current `composing` state of the editor.
- */
+const readViewComposing = (view: EditorStateView['view']) => view.isComposing();
 
-export const useEditorComposing = (): boolean => useContext(ComposingContext);
+/**
+ * Get the current `composing` state of the active editor.
+ */
+export const useEditorComposing = (): boolean => {
+  const insideEditingArea = useContext(PliteEditingAreaContext);
+  const surfaceComposing = useContext(ComposingContext);
+  const target = useOptionalEditor();
+  const targetComposing = useOptionalEditorViewState(
+    insideEditingArea ? null : target,
+    readViewComposing,
+    false
+  );
+
+  return insideEditingArea ? surfaceComposing : targetComposing;
+};

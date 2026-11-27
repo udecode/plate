@@ -104,7 +104,7 @@ const initialValue = saved
       children: [{ type: "paragraph", children: [{ text: "Body" }] }],
     };
 
-const editor = useEditor({
+const editor = useCreateEditor({
   plugins: [documentTitle],
   initialValue,
 });

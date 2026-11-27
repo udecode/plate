@@ -9,11 +9,11 @@ import {
   withPliteReactPreservedSelection,
   ReactUpdatePolicy,
 } from '../update-policy';
-import { useEditorContext } from './use-editor-context';
 import {
   type EditorStateSelectorOptions,
   useEditorState,
 } from './use-editor-selector';
+import { useEditor } from './use-plite-runtime';
 
 /** Selector options for subscribing to one editor state field. */
 export type UseStateFieldValueOptions<TValue> = Pick<
@@ -56,7 +56,7 @@ export function useStateFieldValue<TValue>(
 export function useSetStateField<TValue>(
   field: EditorStateField<TValue>
 ): StateFieldSetter<TValue> {
-  const editor = useEditorContext();
+  const editor = useEditor();
 
   return useCallback(
     (value: StateFieldValueInput<TValue>, policy?: EditorUpdatePolicy) => {

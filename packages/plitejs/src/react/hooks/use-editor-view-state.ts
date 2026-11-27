@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 import type { EditorStateView, ValueOf } from '../..';
 import {
@@ -8,9 +8,42 @@ import {
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
+const NOOP_SUBSCRIBE = () => () => {};
+
 /** Options for explicit editor view-state selectors. */
 export interface EditorViewStateSelectorOptions<T> {
   equalityFn?: (a: T, b: T) => boolean;
+}
+
+export function useOptionalEditorViewState<T>(
+  editor: AnyEditor | null,
+  selector: (view: EditorStateView['view']) => T,
+  nullFallback: T,
+  readOnServer = false
+): T {
+  const subscribe = useCallback(
+    (listener: () => void) =>
+      editor ? subscribeEditorViewState(editor, listener) : () => {},
+    [editor]
+  );
+  const getSnapshot = useCallback(
+    () =>
+      editor ? editor.read((state) => selector(state.view)) : nullFallback,
+    [editor, nullFallback, selector]
+  );
+  const getServerSnapshot = useCallback(
+    () =>
+      readOnServer && editor
+        ? editor.read((state) => selector(state.view))
+        : nullFallback,
+    [editor, nullFallback, readOnServer, selector]
+  );
+
+  return useSyncExternalStore(
+    editor ? subscribe : NOOP_SUBSCRIBE,
+    getSnapshot,
+    getServerSnapshot
+  );
 }
 
 /**

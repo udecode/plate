@@ -1,7 +1,7 @@
-import { Editable, EditorRoot, useEditor } from 'plitejs/react';
+import { Editable, EditorRoot, useCreateEditor } from 'plitejs/react';
 
 const ReadOnlyExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue: [
       {
         type: 'paragraph',

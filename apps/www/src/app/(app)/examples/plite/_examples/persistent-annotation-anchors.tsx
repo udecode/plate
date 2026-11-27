@@ -5,7 +5,7 @@ import {
   EditorRoot,
   useAnnotationStore,
   useAnnotations,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
   useEditorSelector,
 } from 'plitejs/react';
@@ -491,7 +491,7 @@ const MountedPersistentAnnotationAnchors = ({
 };
 
 const PersistentAnnotationAnchorsExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: createChildren(),
   });

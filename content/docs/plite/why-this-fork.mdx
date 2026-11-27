@@ -167,13 +167,13 @@ This keeps method-style ergonomics while making ownership visible. App commands 
 
 ## React runtime
 
-React editors start with `useEditor`, `<EditorRoot>`, and `<Editable>`.
+React editors start with `useCreateEditor`, `<EditorRoot>`, and `<Editable>`.
 
 ```tsx
-import { Editable, EditorRoot, useEditor } from "plitejs/react";
+import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const Editor = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
   });
 
@@ -185,7 +185,7 @@ const Editor = () => {
 };
 ```
 
-`useEditor` installs the React, DOM, and clipboard path. Install `history()` explicitly for undo/redo. Use `createEditor` when the editor must be created outside component ownership.
+`useCreateEditor` installs the React, DOM, and clipboard path. Install `history()` explicitly for undo/redo. Use `createEditor` when the editor must be created outside component ownership.
 
 React rendering is selector-first. App chrome should subscribe to the editor facts it needs, not to the whole editor tree.
 
@@ -280,7 +280,7 @@ This table covers every area of the runtime, so readers and agents have one plac
 | Document values    | primary `children`, optional extra `roots`, optional persistent `meta`, optional keyed `records`                                                                                                                                                                                                                       |
 | Roots              | rootless primary document, named extra roots, content roots, root-aware React hooks and chrome                                                                                                                                                                                                |
 | State fields       | versioned persistent/shared fields, local fields, history policy, effects, React state-field hooks                                                                                                                                                                                             |
-| React setup        | `useEditor`, `createEditor`, `<EditorRoot>`, `<Editable>`, render primitives                                                                                                                                                                                                             |
+| React setup        | `useCreateEditor`, `createEditor`, `<EditorRoot>`, `<Editable>`, render primitives                                                                                                                                                                                                             |
 | React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration and annotation hooks                                                                                                                                                                                          |
 | Browser editing    | DOM repair, native selection sync, beforeinput/input/paste/cut/drop authority, generated proof scenarios                                                                                                                                                                                      |
 | DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |

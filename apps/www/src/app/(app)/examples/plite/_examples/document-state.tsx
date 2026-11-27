@@ -12,7 +12,7 @@ import {
   useEditorContext,
   useEditorState,
   useSetStateField,
-  useEditor,
+  useCreateEditor,
   useStateFieldValue,
 } from 'plitejs/react';
 import { type ChangeEvent, type KeyboardEvent, useRef } from 'react';
@@ -257,7 +257,7 @@ const DocumentStatePanel = () => {
 };
 
 const DocumentStateExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [HistoryPlugin, DocumentStatePlugin],
     initialValue: {
       children: [

@@ -12243,6 +12243,63 @@ export const getBaseCallRoot = (editor: Editor): string =>
     ? getCurrentSelectionRoot(editor)
     : MAIN_ROOT_KEY;
 
+export const getActiveCaretRoot = (editor: Editor): string | null => {
+  const owner = getEditorRuntimeOwner(editor);
+  const committed = getSelectionStateCaret(owner);
+
+  return committed.selection ? committed.root : null;
+};
+
+type ActiveCaretRootWatch = {
+  readonly listeners: Set<() => void>;
+  root: string | null;
+  readonly stopOwner: () => void;
+};
+
+const ACTIVE_CARET_ROOT_WATCHES = new WeakMap<Editor, ActiveCaretRootWatch>();
+
+const publishActiveCaretRoot = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const watch = ACTIVE_CARET_ROOT_WATCHES.get(owner);
+
+  if (!watch) return;
+
+  const nextRoot = getActiveCaretRoot(owner);
+
+  if (watch.root === nextRoot) return;
+  watch.root = nextRoot;
+  notifyObservers(owner, watch.listeners, 'commit-listener', (listener) =>
+    listener()
+  );
+};
+
+export const subscribeActiveCaretRoot = (
+  editor: Editor,
+  listener: () => void
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const watch = ACTIVE_CARET_ROOT_WATCHES.get(owner) ?? {
+    listeners: new Set<() => void>(),
+    root: getActiveCaretRoot(owner),
+    stopOwner: subscribeCaretOwner(owner, () => publishActiveCaretRoot(owner)),
+  };
+
+  ACTIVE_CARET_ROOT_WATCHES.set(owner, watch);
+  watch.listeners.add(listener);
+
+  return () => {
+    watch.listeners.delete(listener);
+    if (
+      watch.listeners.size > 0 ||
+      ACTIVE_CARET_ROOT_WATCHES.get(owner) !== watch
+    ) {
+      return;
+    }
+    watch.stopOwner();
+    ACTIVE_CARET_ROOT_WATCHES.delete(owner);
+  };
+};
+
 type CaretTarget = Readonly<{ root: string; view: CaretPair | null }>;
 
 type CaretTargetWatch = {
@@ -15006,6 +15063,7 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
       }
     }
     publishCaretTarget(editor);
+    publishActiveCaretRoot(editor);
   } finally {
     const depth = (COMMIT_NOTIFICATION_DEPTH.get(editor) ?? 1) - 1;
 

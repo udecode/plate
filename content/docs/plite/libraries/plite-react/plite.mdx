@@ -55,11 +55,11 @@ callbacks and context to a named secondary root; omit it for the primary root.
 
 ### `editor`
 
-Pass the editor created with `useEditor`.
+Pass the editor created with `useCreateEditor`.
 
 ```tsx
 const MyEditor = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return <EditorRoot editor={editor}>...</EditorRoot>;
 };

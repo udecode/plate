@@ -7,7 +7,7 @@ import {
   EditorRoot,
   useEditorContext,
   useElementPath,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import type { PointerEvent } from 'react';
 
@@ -58,7 +58,7 @@ const getNextSiblingPath = (path: readonly number[]) => [
 const SyncedBlocksExample = () => {
   const sharedBodyRoot = 'synced-block:shared:body';
   const separateBodyRoot = 'synced-block:separate:body';
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), syncedBlocks()],
     initialValue: {
       children: [

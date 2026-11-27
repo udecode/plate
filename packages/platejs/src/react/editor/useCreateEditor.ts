@@ -27,6 +27,10 @@ type UseCreateEditorReturn<TEnabled, TEditor> = TEnabled extends false
     ? TEditor
     : TEditor | null;
 
+type UseCreateEditorEnabledOption<TEnabled> = [TEnabled] extends [false]
+  ? { enabled: false }
+  : { enabled?: TEnabled };
+
 type UseCreateEditorResult<
   TPlugins extends readonly RuntimePluginReference[],
   TSchema,
@@ -77,13 +81,16 @@ type UseCreateEditorResult<
  * @param deps - Values that replace the editor when they change (default: [])
  * @see {@link createEditor} for imperative editor creation.
  */
+export function useCreateEditor(
+  options?: undefined,
+  deps?: React.DependencyList
+): UseCreateEditorResult<readonly [], undefined>;
 export function useCreateEditor<
   const TSchema extends EditorApplicationSchema | undefined = undefined,
   TEnabled extends boolean | undefined = undefined,
 >(
-  options?: CreateEditorOptions<readonly [], TSchema> & {
-    enabled?: TEnabled;
-  },
+  options: CreateEditorOptions<readonly [], TSchema> &
+    UseCreateEditorEnabledOption<TEnabled>,
   deps?: React.DependencyList
 ): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<readonly [], TSchema>>;
 export function useCreateEditor<
@@ -91,12 +98,28 @@ export function useCreateEditor<
   const TSchema extends EditorApplicationSchema | undefined = undefined,
   TEnabled extends boolean | undefined = undefined,
 >(
-  options: CreateEditorOptions<TPlugins, TSchema> & {
-    enabled?: TEnabled;
-    plugins: TPlugins;
-  },
+  options: CreateEditorOptions<TPlugins, TSchema> &
+    UseCreateEditorEnabledOption<TEnabled> & {
+      plugins: TPlugins;
+    },
   deps?: React.DependencyList
 ): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<TPlugins, TSchema>>;
+export function useCreateEditor(
+  options:
+    | (CreateEditorOptions & {
+        enabled?: true;
+      })
+    | undefined,
+  deps?: React.DependencyList
+): UseCreateEditorResult<readonly [], undefined>;
+export function useCreateEditor(
+  options:
+    | (CreateEditorOptions & {
+        enabled?: boolean;
+      })
+    | undefined,
+  deps?: React.DependencyList
+): UseCreateEditorResult<readonly [], undefined> | null;
 export function useCreateEditor(
   options: object = {},
   deps: React.DependencyList = []

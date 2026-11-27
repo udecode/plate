@@ -6,7 +6,7 @@ import {
   type RenderVoidProps,
   EditorRoot,
   useEditorContext,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import React, { type ChangeEvent, useMemo } from 'react';
 
@@ -19,7 +19,7 @@ import type {
 } from './custom-types.d';
 
 const EmbedsExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), embed()],
     initialValue: [
       {

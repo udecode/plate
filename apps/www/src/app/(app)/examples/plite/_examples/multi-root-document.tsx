@@ -11,7 +11,7 @@ import {
   EditorRoot,
   useEditorState,
   useSetStateField,
-  useEditor,
+  useCreateEditor,
   useEditorHistory,
   useRootChrome,
   useRootState,
@@ -251,7 +251,7 @@ const MultiRootPanel = () => {
 };
 
 const MultiRootDocumentExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), documentTitlePlugin],
     initialValue: {
       children: [

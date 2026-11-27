@@ -60,7 +60,6 @@ export type {
   RuntimeStateSelectorOptions,
   UseRootEditorOptions,
   StateFieldSetter,
-  UseStateFieldValueOptions,
   ReactApi,
   ReactPluginOptions,
   ReactPlugin as RuntimeReactPlugin,
@@ -98,8 +97,6 @@ export {
   useRuntimeState,
   useEditableClip,
   useSelectionGeometry,
-  useSetStateField,
-  useStateFieldValue,
   react,
   ReactUpdatePolicy,
 } from './plite-react';
@@ -182,6 +179,8 @@ export {
   useEditorValue,
   useOptionalEditor,
   useRootEditor,
+  useSetStateField,
+  useStateFieldValue,
 } from './stores/plate/useEditor';
 export type { UseEditorStateOptions } from './stores/plate/useEditor';
 export * from './stores/plate/useEditorHistory';

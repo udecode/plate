@@ -120,7 +120,13 @@ const renderCallbackCalls = new Set([
   'toSorted',
   'useMemo',
 ]);
-const handleCalls = new Set(['plugin', 'useEditor', 'useEditorRef']);
+const handleCalls = new Set([
+  'plugin',
+  'useCreateEditor',
+  'useEditor',
+  'useEditorRef',
+  'useOptionalEditor',
+]);
 const isStoreHook = (name) => /^use\w*Store$/.test(name ?? '');
 
 const chainOf = (expression) => {

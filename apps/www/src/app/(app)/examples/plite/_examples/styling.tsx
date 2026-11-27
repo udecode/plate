@@ -1,8 +1,8 @@
 import { history } from 'plitejs/history';
-import { Editable, EditorRoot, useEditor } from 'plitejs/react';
+import { Editable, EditorRoot, useCreateEditor } from 'plitejs/react';
 
 const StylingExample = () => {
-  const editor1 = useEditor({
+  const editor1 = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {
@@ -11,7 +11,7 @@ const StylingExample = () => {
       },
     ],
   });
-  const editor2 = useEditor({
+  const editor2 = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {

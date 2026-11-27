@@ -5,7 +5,7 @@ import {
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
   useEditorSelector,
 } from 'plitejs/react';
@@ -67,7 +67,7 @@ const IFrameExample = () => {
       ],
     },
   ];
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue,
   });

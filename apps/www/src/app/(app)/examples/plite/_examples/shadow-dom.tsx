@@ -1,5 +1,5 @@
 import { history } from 'plitejs/history';
-import { Editable, EditorRoot, useEditor } from 'plitejs/react';
+import { Editable, EditorRoot, useCreateEditor } from 'plitejs/react';
 import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -39,7 +39,7 @@ const ShadowDOM = () => {
 };
 
 const ShadowEditor = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {

@@ -22,7 +22,7 @@ const HOOK_NAME = /^use[A-Z]/u;
 const CREATION_NAMES = new Set(['createEditor']);
 
 export const SCHEMALESS_VALUE_GENERICS = new Set([
-  'packages/plitejs/src/react/hooks/use-editor.ts#useEditor#V',
+  'packages/plitejs/src/react/hooks/use-editor.ts#useCreateEditor#V',
   'packages/plitejs/src/react/plugin/with-react.ts#createEditor#V',
 ]);
 

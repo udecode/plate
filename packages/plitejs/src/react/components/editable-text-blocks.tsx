@@ -39,6 +39,7 @@ import {
   PliteContentRootInstanceContext,
   PliteContentRootOwnerContext,
   PliteEditableRootContext,
+  PliteEditingAreaContext,
 } from '../context';
 import {
   DecorationContext,
@@ -85,7 +86,7 @@ import {
 } from '../hooks/use-claim-editable-dom-commit';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorFocused } from '../hooks/use-editor-focused';
-import { useEditorReadOnly } from '../hooks/use-editor-read-only';
+import { useInheritedReadOnly } from '../hooks/use-editor-read-only';
 import { useEditorSelection } from '../hooks/use-editor-selection';
 import { useEditorViewState } from '../hooks/use-editor-view-state';
 import { useHydrated } from '../hooks/use-hydrated';
@@ -480,7 +481,7 @@ function EditableContentRootSlot({
     rawParentInstance.childRoot === ownerRoot
       ? rawParentInstance
       : null;
-  const ownerReadOnly = useEditorReadOnly();
+  const ownerReadOnly = useInheritedReadOnly();
   const [slotMountId] = React.useState(createContentRootSlotKey);
   const contentRootOwner = React.useMemo(
     () => ({
@@ -1429,7 +1430,7 @@ const EditableInner = <TElement extends ElementNode>({
   const editableRoot = toInternalRoot(
     editor.read((state) => state.view.root())
   );
-  const inheritedReadOnly = useEditorReadOnly();
+  const inheritedReadOnly = useInheritedReadOnly();
   const effectiveReadOnly = readOnly || inheritedReadOnly;
   const inactiveSelectionStore = React.useMemo(
     () => createPliteInactiveSelectionStore(editor),
@@ -1696,62 +1697,65 @@ const EditableInner = <TElement extends ElementNode>({
   return (
     <OwnerHandlersContext value={ownerHandlers}>
       <EditableElementLayoutsProvider layouts={elementLayouts ?? null}>
-        <PliteEditableRootContext value={editableRoot}>
-          <ViewLinesContext value={viewLines}>
-            <EditableDOMRoot
-              autoFocus={autoFocus}
-              {...attributes}
-              className={className}
-              deferNativeTextInputRepair={viewportPlan != null}
-              disableDefaultStyles={disableDefaultStyles}
-              viewportRuntime={
-                viewportPlan
-                  ? {
-                      mountedTopLevelNodeKeys:
-                        viewportPlan.mountedTopLevelNodeKeys,
-                      mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
-                      scrollToPath: scrollViewportPathIntoView,
-                      type: 'virtualized',
-                    }
-                  : null
-              }
-              id={id}
-              ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-              nodeSelectionFocus={nodeSelectionFocus}
-              onBeforeInput={onBeforeInput}
-              onBlurCapture={handleBlurCapture}
-              onDOMBeforeInput={onDOMBeforeInput}
-              onFocusCapture={handleFocusCapture}
-              onHistoryReplay={onHistoryReplay}
-              onKeyDown={onKeyDown}
-              onPaste={onPaste}
-              onDropResult={onDropResult}
-              onPasteResult={onPasteResult}
-              onPointerSelectionEnd={onPointerSelectionEnd}
-              readOnly={effectiveReadOnly}
-              ref={editableRootRef}
-              scrollSelectionIntoView={scrollSelectionIntoView}
-              spellCheck={spellCheck}
-              style={rootStyle}
-            >
-              {viewportPlan && (
-                <EditableCoverageMaterializer
-                  materialize={materializeViewportBoundary}
-                />
-              )}
-              {renderedNodes}
-              <InactiveSelectionCaret
-                editableRef={inactiveSelectionEditableRef}
-                store={inactiveSelectionStore}
-              />
-              {!effectiveReadOnly && (
-                <ViewSelectionCaret
+        <PliteEditingAreaContext value={true}>
+          <PliteEditableRootContext value={editableRoot}>
+            <ViewLinesContext value={viewLines}>
+              <EditableDOMRoot
+                autoFocus={autoFocus}
+                {...attributes}
+                className={className}
+                deferNativeTextInputRepair={viewportPlan != null}
+                disableDefaultStyles={disableDefaultStyles}
+                viewportRuntime={
+                  viewportPlan
+                    ? {
+                        mountedTopLevelNodeKeys:
+                          viewportPlan.mountedTopLevelNodeKeys,
+                        mountedTopLevelRanges:
+                          viewportPlan.mountedTopLevelRanges,
+                        scrollToPath: scrollViewportPathIntoView,
+                        type: 'virtualized',
+                      }
+                    : null
+                }
+                id={id}
+                ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+                nodeSelectionFocus={nodeSelectionFocus}
+                onBeforeInput={onBeforeInput}
+                onBlurCapture={handleBlurCapture}
+                onDOMBeforeInput={onDOMBeforeInput}
+                onFocusCapture={handleFocusCapture}
+                onHistoryReplay={onHistoryReplay}
+                onKeyDown={onKeyDown}
+                onPaste={onPaste}
+                onDropResult={onDropResult}
+                onPasteResult={onPasteResult}
+                onPointerSelectionEnd={onPointerSelectionEnd}
+                readOnly={effectiveReadOnly}
+                ref={editableRootRef}
+                scrollSelectionIntoView={scrollSelectionIntoView}
+                spellCheck={spellCheck}
+                style={rootStyle}
+              >
+                {viewportPlan && (
+                  <EditableCoverageMaterializer
+                    materialize={materializeViewportBoundary}
+                  />
+                )}
+                {renderedNodes}
+                <InactiveSelectionCaret
                   editableRef={inactiveSelectionEditableRef}
+                  store={inactiveSelectionStore}
                 />
-              )}
-            </EditableDOMRoot>
-          </ViewLinesContext>
-        </PliteEditableRootContext>
+                {!effectiveReadOnly && (
+                  <ViewSelectionCaret
+                    editableRef={inactiveSelectionEditableRef}
+                  />
+                )}
+              </EditableDOMRoot>
+            </ViewLinesContext>
+          </PliteEditableRootContext>
+        </PliteEditingAreaContext>
       </EditableElementLayoutsProvider>
     </OwnerHandlersContext>
   );
@@ -1810,7 +1814,7 @@ const ViewSelectionCaret = ({
 }) => {
   const editor = useEditorContext();
   const focused = useEditorFocused();
-  const readOnly = useEditorReadOnly();
+  const readOnly = useInheritedReadOnly();
   const selection = React.useSyncExternalStore(
     React.useCallback(
       (notify) => subscribePliteViewSelection(editor, notify),
@@ -1957,7 +1961,7 @@ export const Editable = <
   if (root === 'main') {
     throw new Error('Omit root to render the primary editable.');
   }
-  const inheritedReadOnly = useEditorReadOnly();
+  const inheritedReadOnly = useInheritedReadOnly();
   const editor = useEditorContext();
   const rootReadOnly = props.readOnly || inheritedReadOnly;
   const editable = <EditableInner {...editableProps} />;

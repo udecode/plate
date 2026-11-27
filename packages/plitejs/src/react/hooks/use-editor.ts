@@ -19,12 +19,6 @@ import {
 } from '../plugin/with-react';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
-/** Options used to create a component-owned React editor. */
-export type UseEditorOptions<
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly [],
-> = CreateEditorOptions<V, TPlugins>;
-
 /**
  * Creates one React editor instance for the component lifetime.
  *
@@ -35,28 +29,38 @@ export type UseEditorOptions<
  * give them back when it unmounts or `deps` change. Use `createEditor` when an
  * editor must be created outside React ownership.
  */
-export function useEditor<
-  const TOptions extends UseEditorOptions<any, readonly unknown[]> & {
+export function useCreateEditor(
+  options?: undefined,
+  deps?: DependencyList
+): Editor;
+
+export function useCreateEditor<
+  const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
     plugins: readonly unknown[];
   },
 >(
-  options: CheckedEditorOptions<TOptions, UseEditorOptions>,
+  options: CheckedEditorOptions<TOptions, CreateEditorOptions>,
   deps?: DependencyList
 ): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
 
-export function useEditor<
+export function useCreateEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly [],
 >(
-  options?: UseEditorOptions<V, TPlugins>,
+  options: CreateEditorOptions<V, TPlugins>,
   deps?: DependencyList
 ): Editor<V, TPlugins>;
 
-export function useEditor<
+export function useCreateEditor(
+  options: CreateEditorOptions<Value, readonly unknown[]> | undefined,
+  deps?: DependencyList
+): Editor;
+
+export function useCreateEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly [],
 >(
-  options: UseEditorOptions<V, TPlugins> = {},
+  options: CreateEditorOptions<V, TPlugins> = {},
   deps: DependencyList = []
 ): Editor<V, TPlugins> {
   // Later renders skip createEditor, so check each render's options here.

@@ -153,7 +153,7 @@ const DataAttribute = schema.elementProperty(
   { target: target.group("block") }
 );
 
-const editor = useEditor({
+const editor = useCreateEditor({
   plugins: [
     definePlugin("appSchema", {
       schema: { properties: [Bold, DataAttribute] },

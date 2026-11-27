@@ -52,6 +52,7 @@ import type { AnyEditor } from '../../interfaces/editor';
 import {
   PliteContentRootInstanceContext,
   PliteContentRootOwnerContext,
+  PliteEditingAreaContext,
 } from '../context';
 import {
   DecorationContext,
@@ -79,6 +80,7 @@ import {
 } from '../hooks/use-editor-context';
 import { FocusedContext } from '../hooks/use-editor-focused';
 import {
+  ExplicitReadOnlyOverrideContext,
   ReadOnlyContext,
   ViewLockScopeContext,
 } from '../hooks/use-editor-read-only';
@@ -219,6 +221,7 @@ type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
   ) => void;
   mountedIn?: AnyEditor;
   presentation?: ViewPresentation;
+  preserveReadOnlyOverride?: boolean;
   readOnly?: boolean;
   root?: NamedRootKey;
 };
@@ -264,17 +267,26 @@ export const SurfaceRoot = ({
     [editor, nested]
   );
 
-  return <EditorRoot {...props} editor={surfaceEditor} />;
+  return (
+    <EditorRootContent
+      key={getRuntimeKey(surfaceEditor)}
+      {...props}
+      editor={surfaceEditor}
+      preserveReadOnlyOverride
+    />
+  );
 };
 
 const EditorRootContent = <
   E extends ReactEditorType<any, any>,
   const TRoot extends RootKey = RootKey,
 >(
-  props: EditorRootProps<E, TRoot>
+  props: EditorRootProps<E, TRoot> & {
+    preserveReadOnlyOverride?: boolean;
+  }
 ) => {
   const runtimeContext = useOptionalPliteRuntimeContext();
-  const { editor, ...viewProps } = props;
+  const { editor, preserveReadOnlyOverride = false, ...viewProps } = props;
 
   if (props.root === 'main') {
     throw new Error('Omit root to render the primary document.');
@@ -307,6 +319,7 @@ const EditorRootContent = <
       lockLink={followsEnclosingLock ? enclosingLock : undefined}
       mountedIn={carried?.mountedIn}
       presentation={carried?.presentation}
+      preserveReadOnlyOverride={preserveReadOnlyOverride}
       readOnly={props.readOnly ?? defaults.readOnly}
       root={props.root ?? defaults.root}
     />
@@ -336,6 +349,7 @@ export const EditorRuntimeView = <
   lockLink,
   mountedIn,
   presentation,
+  preserveReadOnlyOverride = false,
 }: EditorRuntimeViewProps<E>) => {
   const runtimeContext = useRequiredPliteRuntimeContext();
   const {
@@ -345,6 +359,7 @@ export const EditorRuntimeView = <
     updateViewInstance,
   } = runtimeContext;
   const parentEditor = useOptionalEditorContext();
+  const inheritedExplicitReadOnly = useContext(ExplicitReadOnlyOverrideContext);
   const inheritedTextFlow = useContext(ImperativeTextFlowContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
   const contentRootInstance = useContext(PliteContentRootInstanceContext);
@@ -492,29 +507,38 @@ export const EditorRuntimeView = <
             <EditorContext
               value={reactEditor as unknown as EditorContextValue<any>}
             >
-              <ReadOnlyContext value={readOnly}>
-                <FocusedContext value={isFocused}>
-                  {/* A nested editor renders its text as it would at the top level, even inside a paged view. */}
-                  <ImperativeTextFlowContext
-                    value={parentEditor ? true : inheritedTextFlow}
-                  >
-                    <TextRenderScopeContext value="flat">
-                      <SurfaceRuntimeScope
-                        mountedEditor={reactEditor}
-                        presentation={viewPresentation}
+              <PliteEditingAreaContext value={false}>
+                <ExplicitReadOnlyOverrideContext
+                  value={
+                    preserveReadOnlyOverride
+                      ? inheritedExplicitReadOnly
+                      : undefined
+                  }
+                >
+                  <ReadOnlyContext value={readOnly}>
+                    <FocusedContext value={isFocused}>
+                      <ImperativeTextFlowContext
+                        value={Boolean(parentEditor) || inheritedTextFlow}
                       >
-                        <PliteContentRootInstanceContext
-                          value={descendantInstanceContext}
-                        >
-                          <ViewLockScopeContext value={lockScope}>
-                            {children}
-                          </ViewLockScopeContext>
-                        </PliteContentRootInstanceContext>
-                      </SurfaceRuntimeScope>
-                    </TextRenderScopeContext>
-                  </ImperativeTextFlowContext>
-                </FocusedContext>
-              </ReadOnlyContext>
+                        <TextRenderScopeContext value="flat">
+                          <SurfaceRuntimeScope
+                            mountedEditor={reactEditor}
+                            presentation={viewPresentation}
+                          >
+                            <PliteContentRootInstanceContext
+                              value={descendantInstanceContext}
+                            >
+                              <ViewLockScopeContext value={lockScope}>
+                                {children}
+                              </ViewLockScopeContext>
+                            </PliteContentRootInstanceContext>
+                          </SurfaceRuntimeScope>
+                        </TextRenderScopeContext>
+                      </ImperativeTextFlowContext>
+                    </FocusedContext>
+                  </ReadOnlyContext>
+                </ExplicitReadOnlyOverrideContext>
+              </PliteEditingAreaContext>
             </EditorContext>
           </DecorationSourcesContext>
         </DecorationRegistrationContext>

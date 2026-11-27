@@ -13,7 +13,7 @@ import {
   Editable,
   type RenderElementProps,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 
 import type {
@@ -83,7 +83,7 @@ const MarkdownShortcutsExample = () => {
       ],
     },
   ];
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), markdownShortcuts()],
     initialValue,
   });

@@ -17,7 +17,7 @@ import {
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
 } from 'plitejs/react';
 import {
@@ -1343,7 +1343,7 @@ const ProviderBackedPeer = ({
   peer: PeerDefinition;
   provider: HocuspocusProvider;
 }) => {
-  const editor = useEditor<
+  const editor = useCreateEditor<
     CustomValue,
     readonly [typeof HistoryPlugin, ReturnType<typeof createPresenceYjs>]
   >({

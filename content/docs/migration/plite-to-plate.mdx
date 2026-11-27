@@ -31,8 +31,7 @@ and `platejs/yjs/react` re-export their Plite entrypoint whole.
 
 | Plite surface | Plate surface |
 | --- | --- |
-| `useEditor(options)` from `plitejs/react`, which creates an editor | `useCreateEditor(options)` in React components, or `createEditor(options)` in factories and tests. Plate's `useEditor()` returns the editor from context. |
-| `useEditorContext()` | `useEditor()`. |
+| `useCreateEditor(options)` / `useEditor()` / `useOptionalEditor()` | The same hook names and jobs from `platejs/react`, with Plate plugins and options. |
 | `<EditorRoot>` plus `<Editable>` | `<EditorRoot>` plus `<EditorContent>`. |
 | `renderElement` / `renderLeaf` switch statements | Plugin components through `.configure({ component })`. |
 | Plite plugins | Constructor `api`, `read`, `selectors`, `update`, native Plite fields, and format mappings built by `defineFormats`. |
@@ -266,10 +265,11 @@ them. Every other value keeps its binding, as
 
 | Plite | Plate | Notes |
 | --- | --- | --- |
-| `useEditor(options, deps)` | `useCreateEditor(options, deps)` | Plate's `useEditor()` takes no arguments and returns the editor from context. |
-| `useEditorContext()` | `useEditor()` | |
-| `useOptionalEditorContext()` | `useOptionalEditor()` | |
-| `useCaretEditor()` | `useEditor()` outside `EditorContent` | Outside every editing area, `useEditor()` returns the editor of the root that holds the caret. |
+| `useCreateEditor(options, deps)` | `useCreateEditor(options, deps)` | Takes Plate plugins and options, and accepts `clipboardFormatKey` like `platejs/react`'s `createEditor`. |
+| `useEditor()` | `useEditor()` | Returns Plate's React `Editor` for the editing area or active caret root, and throws if passed an argument. |
+| `useOptionalEditor()` | `useOptionalEditor()` | Returns Plate's React `Editor` or `null` outside a provider, and throws if passed an argument. |
+| `useEditorContext()` | `useEditor()` | Plate drops `useEditorContext()`. |
+| `useOptionalEditorContext()` | `useOptionalEditor()` | Plate drops `useOptionalEditorContext()`. |
 | `createEditor(options)` | `createEditor(options)` from `platejs`, or from `platejs/react` in React | `platejs/react`'s `createEditor` and `useCreateEditor` accept `clipboardFormatKey`; root `platejs`'s `createEditor` refuses it, matching Plite. |
 | `definePlugin(name, definition)` | `definePlugin(name, definition)` from `platejs`, or from `platejs/react` in React | The definition fields are the same, and `PluginDefinitionInput` has no `name`. The result is a Plate plugin with `.configure()` and `.extend()`, and a `name` key inside the definition throws. A Plate plugin declares one node, so rewrite a multi-element `schema.elements` plugin into one plugin per node with `schema.element`; `schema` keys other than `contentRoots`, `element`, `mark`, and `properties` fail at compile time and throw at runtime. Pass Plate plugins to `createEditor({ plugins })` and toggle runtime flags with `store.set({ readOnly: false })` instead of passing Plate plugins to `editor.install`, `tx.plugins.reconfigure`, or `definePluginSlot().of()`. Plate runs the `api` factory while it resolves the plugin's `.extend()` stages, so the factory gets no `getContributions`. Read contributions in `validate`. |
 | `useCommand(command, options)` | `editor.update.command(command, input)`, with the editor from `useEditor()` | Plate has no `root` or `focus` option for a command. |
@@ -294,6 +294,7 @@ them. Every other value keeps its binding, as
 | `useEditorSelector(selector, options)` | `useEditorSelector(selector, options)` | The options are `dependsOn` and `equalityFn` only. The hook follows the editor of the root that holds the caret. |
 | `useEditorState(selector, options)` | `useEditorState(selector, options)` | There is no `deferred` option. |
 | `useEditorSelection`, `useEditorFocused`, `useEditorComposing`, `useEditorReadOnly` | The same names | The calls are the same. Plate reads the selected editing area. |
+| `useStateFieldValue(field, options)`, `useSetStateField(field)` | The same names | Rebound to Plate's `useEditor()`, including passive `EditorProvider` targets. |
 | `useOptionalEditorReadOnly()` | `useEditorReadOnly()` | Plate always returns a boolean. |
 | `useEditorHistory(options)` | `useEditorHistory(options)` | The options are the same. |
 | `useElement<MyElement>()` | `useElement(MyPlugin)` | `useElement()` without arguments still returns the nearest element, and throws outside an element component. |
@@ -311,8 +312,9 @@ them. Every other value keeps its binding, as
 | `RenderElementProps`, `RenderLeafProps`, `RenderTextProps`, `RenderTextHostProps`, `RenderTextPieceProps` | The same names from `platejs/react` | Root `platejs` does not export render prop types. Import `StaticRenderLeafProps` and `RenderStaticNodeWrapper*` from `platejs/static`. |
 | `EditableHandlerContext`, `EditableInputEventContext`, `EditableDOMBeforeInputContext`, `EditableDOMBeforeInputHandler`, `EditableKeyDownHandler`, `EditablePointerSelectionEndHandler` | The same names from `platejs/react` | `context.editor` is Plate's React `Editor`. |
 | `PagedEditableProps`, `VirtualizedEditableProps` | `PagedEditorContentProps`, `VirtualizedEditorContentProps` | |
-| `UseEditorOptions` | `CreateEditorOptions` | |
+| `CreateEditorOptions` | `CreateEditorOptions` from `platejs` or `platejs/react` | Takes Plate plugins and options; `platejs/react`'s adds `clipboardFormatKey`. |
 | `EditorSelectorOptions`, `EditorStateSelectorOptions`, `EditorRuntimeSelectorOptions` | `UseEditorSelectorOptions`, `UseEditorStateOptions` | |
+| `UseStateFieldValueOptions` | `UseStateFieldValueOptions` from `platejs/react` | Plate's `UseStateFieldValueOptions` omits Plite's `deferred` option. |
 | `EditorRootProps`, `CommitContext`, `SelectionChangeContext`, `ValueChangeContext` | The same names | `CommitContext`, `SelectionChangeContext`, and `ValueChangeContext` type `editor` as Plate's `Editor`, and `value` is the whole document value. |
 | `NodeProps` from `plitejs/react` | `NodeProps` from `platejs` | `NodeProps` from `platejs/react` types the props a plugin injects into its node. |
 | `Editor`, `Plugin`, `DefinitionOf`, `PluginPortal`, `PluginReference`, `BlockInsertOptions` | The same names | Plate's take Plate's plugin and editor type parameters; a Plite state field or raw Plite plugin works in `createEditor({ plugins })` even though it does not satisfy Plate's own `PluginReference` or `PluginPortal`. |

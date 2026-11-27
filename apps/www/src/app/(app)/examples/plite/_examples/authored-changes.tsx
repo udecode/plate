@@ -23,7 +23,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   type RenderVoidProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
   useEditorReadOnly,
   useEditorSelector,
@@ -582,7 +582,7 @@ const ReviewCards = ({ authoring }: { authoring: AuthoredPlugin }) => {
 };
 
 const IndependentDocument = ({ authoring }: { authoring: AuthoredPlugin }) => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [historyPlugin, authoring],
     initialValue: [paragraph('A separate document.')],
   });
@@ -612,7 +612,7 @@ const AuthoredChangesDocument = ({
       },
     };
   });
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [inlineSchema, codeLines, historyPlugin, authoring],
     initialValue: samples[sample].value,
   });

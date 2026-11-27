@@ -31,11 +31,7 @@ import {
   TextApi,
 } from '..';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
-import {
-  type EditableProps,
-  useEditorContext,
-  useEditorReadOnly,
-} from '../react';
+import { type EditableProps, useEditorContext } from '../react';
 import {
   defaultScrollSelectionIntoView,
   getElementTransformScale,
@@ -54,6 +50,12 @@ import { TextRenderScopeContext } from '../react/components/editable-text-pieces
 import { SurfaceRoot } from '../react/components/plite';
 import { WindowedEditable } from '../react/components/windowed-editable.internal';
 import {
+  ComposingContext,
+  PliteEditableRootContext,
+  PliteEditingAreaContext,
+  ReadOnlyContext,
+} from '../react/context';
+import {
   DecorationContext,
   type PliteDecorationStore,
 } from '../react/decoration-context';
@@ -61,6 +63,7 @@ import {
   createContainerDecorationSlice,
   type DecorationSlice,
 } from '../react/decoration-source';
+import { toInternalRoot } from '../react/editable/runtime-editor-api';
 import {
   getPliteStringDirectPlacement,
   landInViewBlock,
@@ -70,7 +73,9 @@ import {
   type ViewLines,
 } from '../react/editable/view-lines';
 import { useEditableLayoutPass } from '../react/hooks/use-editable-layout-pass';
+import { useInheritedReadOnly } from '../react/hooks/use-editor-read-only';
 import { useInternalEditorSelector } from '../react/hooks/use-editor-selector';
+import { useOptionalEditorViewState } from '../react/hooks/use-editor-view-state';
 import { useElementPath } from '../react/hooks/use-element-path';
 import { useHydrated } from '../react/hooks/use-hydrated';
 import {
@@ -1299,6 +1304,11 @@ const shouldUpdatePagedSelectedPaths = (change?: EditorCommit) =>
   change.changed.hasAny('selection') ||
   change.changed.hasAny('structure');
 
+const readPagedViewReadOnly = (view: { isReadOnly: () => boolean }) =>
+  view.isReadOnly();
+const readPagedViewComposing = (view: { isComposing: () => boolean }) =>
+  view.isComposing();
+
 const PagedEditableInner = <TElement extends Element = Element>({
   engine: suppliedEngine,
   fragmentation,
@@ -1665,97 +1675,137 @@ const PagedEditableInner = <TElement extends Element = Element>({
     };
   }, [snapshot?.pages]);
   const canvas = geometry && createPagedCanvasStyles(geometry, style);
+  const editableRoot = toInternalRoot(
+    editor.read((state) => state.view.root())
+  );
+  const inheritedReadOnly = useInheritedReadOnly();
+  const viewReadOnly = useOptionalEditorViewState(
+    editor,
+    readPagedViewReadOnly,
+    false,
+    true
+  );
+  const pagedReadOnly = Boolean(
+    editableProps.readOnly || inheritedReadOnly || viewReadOnly
+  );
+  const pagedComposing = useOptionalEditorViewState(
+    editor,
+    readPagedViewComposing,
+    false
+  );
 
   return (
-    <FragmentContext value={fragmentContext}>
-      <div
-        data-editor-paged-editable
-        data-editor-paged-editable-page-virtualization={
-          canvas && virtualize ? 'true' : undefined
-        }
-        ref={rootRef}
-        style={canvas?.root}
-      >
-        <style href="editor-pagination-native-flow-break" precedence="editor">
-          {NATIVE_FLOW_BREAK_RULE}
-        </style>
-        <style href="editor-pagination-park" precedence="editor">
-          {PARK_RULE}
-        </style>
-        <style href="editor-pagination-soft-line-end" precedence="editor">
-          {SOFT_LINE_END_RULE}
-        </style>
-        {geometry &&
-          (virtualize ? windowedItems : pageMountPlan.items).flatMap((item) =>
-            item.pageIndexes.map((pageIndex) => {
-              const layoutPage = pageByIndex.get(pageIndex);
-              const arrayIndex = pageArrayIndex.get(pageIndex);
+    <PliteEditingAreaContext value={true}>
+      <PliteEditableRootContext value={editableRoot}>
+        <FragmentContext value={fragmentContext}>
+          <div
+            data-editor-paged-editable
+            data-editor-paged-editable-page-virtualization={
+              canvas && virtualize ? 'true' : undefined
+            }
+            ref={rootRef}
+            style={canvas?.root}
+          >
+            <style
+              href="editor-pagination-native-flow-break"
+              precedence="editor"
+            >
+              {NATIVE_FLOW_BREAK_RULE}
+            </style>
+            <style href="editor-pagination-park" precedence="editor">
+              {PARK_RULE}
+            </style>
+            <style href="editor-pagination-soft-line-end" precedence="editor">
+              {SOFT_LINE_END_RULE}
+            </style>
+            <ReadOnlyContext value={pagedReadOnly}>
+              <ComposingContext value={pagedComposing}>
+                {geometry &&
+                  (virtualize ? windowedItems : pageMountPlan.items).flatMap(
+                    (item) =>
+                      item.pageIndexes.map((pageIndex) => {
+                        const layoutPage = pageByIndex.get(pageIndex);
+                        const arrayIndex = pageArrayIndex.get(pageIndex);
 
-              if (!layoutPage || arrayIndex === undefined) return null;
-              const placement = geometry.pagePlacements[arrayIndex] ?? {
-                left: 0,
-                top: 0,
-              };
-              const occupied = geometry.occupiedSizes[arrayIndex] ?? layoutPage;
-              const attributes: PagedEditablePageAttributes = {
-                'data-editor-page': true,
-                'data-editor-page-index': layoutPage.index,
-                style: {
-                  boxSizing: 'border-box',
-                  height: layoutPage.height,
-                  overflow: 'hidden',
-                  pointerEvents: 'none',
-                  position: 'relative',
-                  width: layoutPage.width,
-                },
-              };
+                        if (!layoutPage || arrayIndex === undefined) {
+                          return null;
+                        }
+                        const placement = geometry.pagePlacements[
+                          arrayIndex
+                        ] ?? {
+                          left: 0,
+                          top: 0,
+                        };
+                        const occupied =
+                          geometry.occupiedSizes[arrayIndex] ?? layoutPage;
+                        const attributes: PagedEditablePageAttributes = {
+                          'data-editor-page': true,
+                          'data-editor-page-index': layoutPage.index,
+                          style: {
+                            boxSizing: 'border-box',
+                            height: layoutPage.height,
+                            overflow: 'hidden',
+                            pointerEvents: 'none',
+                            position: 'relative',
+                            width: layoutPage.width,
+                          },
+                        };
 
-              return (
-                <div
-                  data-editor-page-mount-item-index={item.index}
-                  data-editor-page-surface
-                  key={layoutPage.index}
-                  style={{
-                    height: occupied.height,
-                    left: placement.left,
-                    pointerEvents: 'none',
-                    position: 'absolute',
-                    top: placement.top,
-                    width: occupied.width,
-                  }}
-                >
-                  {renderPage({ attributes, page: layoutPage })}
-                </div>
-              );
-            })
-          )}
-        <div data-editor-paged-editable-editor-overlay style={canvas?.overlay}>
-          <div data-editor-paged-editable-editor style={canvas?.editor}>
-            <ImperativeTextFlowContext value={false}>
-              <TextRenderScopeContext value="paged">
-                <WindowedEditable
-                  {...editableProps}
-                  decorationStore={decorationStore}
-                  elementLayouts={elementLayouts}
-                  enabled={Boolean(canvas) && virtualize}
-                  ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-                  mountedTopLevelIndexes={mountedTopLevelIndexes}
-                  onRequestMount={(index, path) =>
-                    setPromotedPath(path ?? [index])
-                  }
-                  ref={editableRef}
-                  scrollSelectionIntoView={scrollSelectionIntoView}
-                  scrollToPath={scrollToPath}
-                  style={canvas ? canvas.host : style}
-                  totalSize={geometry?.height ?? 0}
-                  viewLines={viewLines}
-                />
-              </TextRenderScopeContext>
-            </ImperativeTextFlowContext>
+                        return (
+                          <div
+                            data-editor-page-mount-item-index={item.index}
+                            data-editor-page-surface
+                            key={layoutPage.index}
+                            style={{
+                              height: occupied.height,
+                              left: placement.left,
+                              pointerEvents: 'none',
+                              position: 'absolute',
+                              top: placement.top,
+                              width: occupied.width,
+                            }}
+                          >
+                            {renderPage({ attributes, page: layoutPage })}
+                          </div>
+                        );
+                      })
+                  )}
+              </ComposingContext>
+            </ReadOnlyContext>
+            <div
+              data-editor-paged-editable-editor-overlay
+              style={canvas?.overlay}
+            >
+              <div data-editor-paged-editable-editor style={canvas?.editor}>
+                <ImperativeTextFlowContext value={false}>
+                  <TextRenderScopeContext value="paged">
+                    <WindowedEditable
+                      {...editableProps}
+                      decorationStore={decorationStore}
+                      elementLayouts={elementLayouts}
+                      enabled={Boolean(canvas) && virtualize}
+                      ignoreBlankEditableRootClicks={
+                        ignoreBlankEditableRootClicks
+                      }
+                      mountedTopLevelIndexes={mountedTopLevelIndexes}
+                      onRequestMount={(index, path) =>
+                        setPromotedPath(path ?? [index])
+                      }
+                      ref={editableRef}
+                      scrollSelectionIntoView={scrollSelectionIntoView}
+                      scrollToPath={scrollToPath}
+                      style={canvas ? canvas.host : style}
+                      totalSize={geometry?.height ?? 0}
+                      viewLines={viewLines}
+                    />
+                  </TextRenderScopeContext>
+                </ImperativeTextFlowContext>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </FragmentContext>
+        </FragmentContext>
+      </PliteEditableRootContext>
+    </PliteEditingAreaContext>
   );
 };
 
@@ -1767,7 +1817,7 @@ export const PagedEditable = <TElement extends Element = Element>({
     throw new Error('Omit root to render the primary document.');
   }
   const editor = useEditorContext();
-  const inheritedReadOnly = useEditorReadOnly();
+  const inheritedReadOnly = useInheritedReadOnly();
   const editable = <PagedEditableInner {...props} />;
 
   return root === undefined ? (

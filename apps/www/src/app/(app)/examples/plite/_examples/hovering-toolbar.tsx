@@ -8,7 +8,7 @@ import {
   useEditorFocused,
   useEditorSelection,
   useEditorSelector,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import { type MouseEvent, type PointerEvent, useEffect, useRef } from 'react';
 
@@ -42,7 +42,7 @@ const HoveringMenuExample = () => {
       ],
     },
   ];
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue,
   });

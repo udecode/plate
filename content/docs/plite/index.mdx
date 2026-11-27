@@ -47,7 +47,7 @@ Plite gives you a document model, an explicit runtime, and React rendering hooks
 The first editor usually looks like this:
 
 ```tsx
-import { Editable, EditorRoot, useEditor } from "plitejs/react";
+import { Editable, EditorRoot, useCreateEditor } from "plitejs/react";
 
 const initialValue = [
   {
@@ -57,7 +57,7 @@ const initialValue = [
 ];
 
 export function Editor() {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>

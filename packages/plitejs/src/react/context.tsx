@@ -25,6 +25,7 @@ export type PliteContentRootInstanceContextValue = Readonly<{
 }>;
 
 export const PliteEditableRootContext = createContext<RootKey | null>(null);
+export const PliteEditingAreaContext = createContext<boolean>(false);
 export const PliteContentRootOwnerContext = createContext<{
   childRoot: RootKey;
   ownerPath: Path;

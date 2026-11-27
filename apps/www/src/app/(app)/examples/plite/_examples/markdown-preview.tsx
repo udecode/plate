@@ -6,7 +6,7 @@ import {
   EditorRoot,
   type Decoration,
   type DecorationSource,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import { useMemo } from 'react';
 
@@ -50,7 +50,7 @@ const markdownSegmentVariants = cva('editor-markdown-preview-segment', {
 });
 
 const MarkdownPreviewExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {

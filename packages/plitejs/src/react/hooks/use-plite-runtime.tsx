@@ -38,12 +38,12 @@ import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
 import { toPublicRoot } from '../../core/public-root';
 import {
-  getBaseCallRoot,
+  getActiveCaretRoot,
   getEditorReadDepth,
   getEditorRuntimeRootKeys,
   hasEditorSurface,
   isInTransaction,
-  subscribeCaretTarget,
+  subscribeActiveCaretRoot,
 } from '../../core/public-state';
 import {
   continueRootViewUse,
@@ -80,6 +80,7 @@ import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-
 import {
   PliteContentRootInstanceContext,
   PliteEditableRootContext,
+  PliteEditingAreaContext,
 } from '../context';
 import {
   type EditableDOMRuntime,
@@ -108,11 +109,16 @@ import {
   type ReactRuntimeEditor,
   toReactRuntimeEditor,
 } from '../plugin/react-editor';
-import type { Editor as ReactEditorType, ReactApi } from '../plugin/with-react';
+import type {
+  Editor as ReactEditorType,
+  EditorContextValue,
+  ReactApi,
+} from '../plugin/with-react';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { createSlotArrivalHost, type ViewInstanceInfo } from '../slot-arrival';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { focusPliteEditable } from './focus-plite-editable';
+import { useOptionalEditorContext } from './use-editor-context';
 import {
   type EditorSelectorContextValue,
   useEditorSelectorContext,
@@ -1067,25 +1073,80 @@ export function useRootEditor<const TRoot extends RootKey = RootKey>(
   return useRequiredPliteRuntimeContext().rootEditor(root, options.readOnly);
 }
 
+const NOOP_SUBSCRIBE = () => () => {};
+const RETURN_UNDEFINED = (): NamedRootKey | undefined => undefined;
+
 /**
- * Return a command-capable editor for the root that holds the caret, such as
- * a board note, or for the primary root while nothing is selected.
+ * Return the active command editor from the nearest `<EditorRoot>`, or `null`
+ * when called outside one.
  *
- * Use it for UI outside every `Editable`, such as a toolbar, that acts where
- * the caret is. The editor works as the one `useRootEditor` returns for that
- * root, and the hook renders again only when the caret moves to another root.
+ * Inside an editing area (`<Editable>`), returns that editing area's own
+ * editor without subscribing to caret moves. Outside editing areas, such as in
+ * a toolbar, returns the root editor for the root holding the caret, or the
+ * enclosing `<EditorRoot>`'s root while nothing is selected.
  */
-export function useCaretEditor(): ReactEditorType {
-  const context = useRequiredPliteRuntimeContext();
-  const owner = getEditorRuntimeOwner(context.runtime);
-  const readRoot = () => toPublicRoot(getBaseCallRoot(owner));
-  const root = useSyncExternalStore(
-    useCallback((listener) => subscribeCaretTarget(owner, listener), [owner]),
-    readRoot,
-    readRoot
+export function useOptionalEditor(): EditorContextValue | null {
+  if (arguments.length > 0) {
+    throw new Error(
+      'useOptionalEditor() takes no arguments. Call useCreateEditor(options, deps) to create an editor.'
+    );
+  }
+
+  const contextEditor = useOptionalEditorContext();
+  const insideEditable = useContext(PliteEditingAreaContext);
+  const runtimeContext = useOptionalPliteRuntimeContext();
+  const owner =
+    !insideEditable && runtimeContext
+      ? getEditorRuntimeOwner(runtimeContext.runtime)
+      : null;
+  const fallbackRoot = contextEditor?.read.view.root();
+  const subscribe = useCallback(
+    (listener: () => void) =>
+      owner ? subscribeActiveCaretRoot(owner, listener) : () => {},
+    [owner]
+  );
+  const readTargetRoot = useCallback((): NamedRootKey | undefined => {
+    if (!owner) return undefined;
+    const activeRoot = getActiveCaretRoot(owner);
+
+    return activeRoot !== null ? toPublicRoot(activeRoot) : fallbackRoot;
+  }, [fallbackRoot, owner]);
+  const targetRoot = useSyncExternalStore(
+    owner ? subscribe : NOOP_SUBSCRIBE,
+    owner ? readTargetRoot : RETURN_UNDEFINED,
+    owner ? readTargetRoot : RETURN_UNDEFINED
   );
 
-  return context.rootEditor(root);
+  if (!contextEditor) return null;
+  if (insideEditable || !runtimeContext) {
+    return contextEditor as EditorContextValue;
+  }
+
+  return runtimeContext.rootEditor(targetRoot) as EditorContextValue;
+}
+
+/**
+ * Return the active command editor from the nearest `<EditorRoot>`.
+ *
+ * Inside an editing area (`<Editable>`), returns that editing area's own
+ * editor. Outside editing areas, such as in a toolbar, returns the root editor
+ * for the root holding the caret, or the enclosing `<EditorRoot>`'s root while
+ * nothing is selected. Throws outside `<EditorRoot>`.
+ */
+export function useEditor(): EditorContextValue {
+  if (arguments.length > 0) {
+    throw new Error(
+      'useEditor() takes no arguments. Call useCreateEditor(options, deps) to create an editor.'
+    );
+  }
+
+  const editor = useOptionalEditor();
+
+  if (!editor) {
+    throw new Error('The `useEditor` hook must be used inside <EditorRoot>.');
+  }
+
+  return editor;
 }
 
 /** Focus behavior before or after root command callbacks. */

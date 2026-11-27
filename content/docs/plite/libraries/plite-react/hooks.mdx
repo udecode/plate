@@ -18,42 +18,63 @@ hooks for rendered nodes, and targeted hooks for annotations.
 
 ## Editor hooks
 
-#### `useEditor(options?, deps?): Editor`
+#### `useCreateEditor(options?, deps?): Editor`
 
 Create one component-owned editor. The optional dependency list controls when
 React creates a replacement editor. Plugins take outside resources, such as a
 Yjs document, when React commits the component, and give them back when it
 unmounts or the editor is replaced.
 
+#### `useEditor(): Editor`
+
+Get the active editor for UI inside an `EditorRoot` provider. Inside an
+`Editable`, `useEditor()` returns that editing area's editor without subscribing
+to caret root changes. Outside every editing area, such as in a toolbar, it
+returns the editor of the root that holds the caret, or the `EditorRoot`'s own
+root editor while nothing is selected. Throws outside an `EditorRoot` provider
+or when called with any argument. Use `useOptionalEditor()` when a component may
+render outside a provider.
+
+#### `useOptionalEditor(): Editor | null`
+
+Like `useEditor()`, but returns `null` outside an `EditorRoot` provider instead
+of throwing. Throws when called with any argument.
+
 #### `useEditorContext(): Editor`
 
-Get the editor from the nearest `EditorRoot` provider. Use
-`useOptionalEditorContext()` when a component may render outside a provider.
+Get the editor bound to the nearest `EditorRoot` provider, without following the
+caret across roots. Use `useEditor()` for UI that acts where the user works, and
+`useEditorContext()` (or `useOptionalEditorContext()`) for root-local UI bound
+to its own `EditorRoot`.
 
 #### `useEditorComposing(): boolean`
 
-Get whether the editor is currently handling a composition session.
+Get whether the active editor (from `useEditor()`) is currently handling a
+composition session.
 
 #### `useEditorFocused(): boolean`
 
-Get whether the editor is focused. Use this for toolbar UI, not for
-every rendered node in a large document. A read-only `Editable` renders as
-static text and never takes focus, so this is `false` for it.
+Get whether the active editor (from `useEditor()`) is focused. Use this for
+toolbar UI, not for every rendered node in a large document. A read-only
+`Editable` renders as static text and never takes focus, so this is `false` for
+it.
 
 #### `useEditorReadOnly(): boolean`
 
-Get whether the current editor is read-only.
+Get whether the active editor (from `useEditor()`) is read-only. Respects
+explicit `EditorReadOnlyProvider` overrides.
 
 #### `useEditorSelection(): Range | null`
 
-Get the current editor selection. This hook re-renders when the selection
-changes, so keep it out of large rendered node trees.
+Get the current selection of the active editor (from `useEditor()`). This hook
+re-renders when the selection changes, so keep it out of large rendered node
+trees.
 
 #### `useEditorState<T>(selector, options?): T`
 
-Subscribe to a derived editor-state value. The selector runs inside
-`editor.read`, so toolbar UI does not need to open a read boundary by
-hand.
+Subscribe to a derived editor-state value on the active editor (from
+`useEditor()`). The selector runs inside `editor.read`, so toolbar UI does not
+need to open a read boundary by hand.
 
 ```typescript
 const isBold = useEditorState((state) => {
@@ -363,15 +384,6 @@ its `EditorRoot` shows the root, the calls find no `Editable`, even when one in
 another `EditorRoot` holds the caret, and `focus()` does nothing.
 `resolveNode` and `resolvePoint` still resolve a text node that any view of the editor renders, because they
 read the document's text before they look for a view.
-
-#### `useCaretEditor(): Editor`
-
-Create a command-capable editor for the root that holds the caret, such as a
-board note's root, or for the primary root while nothing is selected. Use it
-for UI outside every `Editable`, such as a toolbar, that acts where the caret
-is. The editor works as the one `useRootEditor` returns for that root, and the
-hook renders again only when the caret moves to another root. See
-[Roots](../../concepts/13-roots#rendering-roots).
 
 #### `useRootChrome(root?, options?): RootChromeController`
 

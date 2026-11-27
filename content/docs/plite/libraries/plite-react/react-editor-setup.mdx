@@ -1,18 +1,18 @@
 ---
 title: "React Editor Setup"
-description: "Create React-backed editors with useEditor, createEditor, or the react plugin."
+description: "Create React-backed editors with useCreateEditor, createEditor, or the react plugin."
 ---
 
-Create React-backed editors with `useEditor` when a React component owns
+Create React-backed editors with `useCreateEditor` when a React component owns
 the editor lifetime.
 
-## useEditor
+## useCreateEditor
 
 ```tsx
-import { EditorRoot, useEditor } from "plitejs/react";
+import { EditorRoot, useCreateEditor } from "plitejs/react";
 
 const MyEditor = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
   });
 
@@ -20,7 +20,7 @@ const MyEditor = () => {
 };
 ```
 
-`useEditor` creates one editor for the component lifetime and installs
+`useCreateEditor` creates one editor for the component lifetime and installs
 React, DOM, and clipboard capabilities. Install the `history()` plugin when
 undo and redo are needed. The editor exposes host APIs through `editor.api`.
 

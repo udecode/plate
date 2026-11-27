@@ -104,15 +104,16 @@ that must run against a specific root.
 A content root's view, such as a board note's text, is an `Editable` of its
 own inside the page's `Editable`. UI outside every `Editable`, such as a page
 toolbar, gets the editor of the root that holds the caret from
-`useCaretEditor()`, or the primary root's editor while nothing is selected.
-Plate's `useEditor()` gives the same editor outside every editing area, as
+`useEditor()`, or the `EditorRoot`'s own root editor while nothing is selected.
+Inside an `Editable`, `useEditor()` returns that editing area's editor.
+Plate's `useEditor()` gives the same editor, as
 [Toolbar](/docs/toolbar#act-where-the-caret-is) describes.
 
 ```tsx
-import { useCaretEditor } from "plitejs/react";
+import { useEditor } from "plitejs/react";
 
 const BoldButton = () => {
-  const editor = useCaretEditor();
+  const editor = useEditor();
 
   return (
     <button

@@ -11,7 +11,7 @@ import {
   Editable,
   EditorRoot,
   type RenderElementProps,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 
 const ChipSchema = defineEditorSchema('inlineVoidDragSchema', {
@@ -54,7 +54,7 @@ const renderElement = ({
   );
 
 const InlineVoidDragExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue: [
       {
         children: [

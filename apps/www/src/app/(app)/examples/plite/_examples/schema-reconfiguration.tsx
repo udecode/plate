@@ -13,7 +13,7 @@ import {
   type RenderElementProps,
   useEditorContext,
   useEditorState,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 
 type SchemaProfile =
@@ -211,7 +211,7 @@ const SchemaControls = () => {
 };
 
 const SchemaReconfigurationExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), schemaSlot.of(createSchema('block'))] as const,
     initialValue: {
       children: [

@@ -17,7 +17,7 @@ import {
   EditorRoot,
   useEditorFocused,
   useElementSelected,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import {
   type KeyboardEvent,
@@ -106,7 +106,7 @@ const MentionExample = () => {
   const [target, setTarget] = useState<Range | null>(null);
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), MentionSchema],
     initialValue: [
       {

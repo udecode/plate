@@ -15,7 +15,7 @@ import {
   type Editor,
   useAnnotationStore,
   useAnnotations,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
   useEditorFocused,
   useEditorSelection,
@@ -670,7 +670,7 @@ const WriterView = ({
 };
 
 const CommentModeExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialSelection: {
       kind: 'text',

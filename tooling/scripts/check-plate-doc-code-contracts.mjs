@@ -130,7 +130,7 @@ const makerOptionKeySources = {
   pliteReact: {
     exportName: 'REACT_EDITOR_OPTION_KEYS',
     file: 'packages/plitejs/src/react/plugin/with-react.ts',
-    label: "Plite's React createEditor or useEditor",
+    label: "Plite's React createEditor or useCreateEditor",
   },
 };
 const importedMakers = [
@@ -152,14 +152,22 @@ const importedMakers = [
     set: 'pliteReact',
   },
   {
-    exportedName: 'useEditor',
+    exportedName: 'useCreateEditor',
     modulePattern: /^plitejs\/react$/,
     set: 'pliteReact',
   },
 ];
 const importedOptionlessContextHooks = [
-  { exportedName: 'useEditor', modulePattern: /^platejs\/react$/ },
+  { exportedName: 'useEditor', modulePattern: /^(?:platejs|plitejs)\/react$/ },
+  {
+    exportedName: 'useOptionalEditor',
+    modulePattern: /^(?:platejs|plitejs)\/react$/,
+  },
 ];
+const unimportedOptionlessContextHooks = new Set([
+  'useEditor',
+  'useOptionalEditor',
+]);
 const unknownBinding =
   'the check cannot tell which binding of this maker name the call reads, so its options are unchecked';
 const loadsMakerModule = (node) => {
@@ -173,17 +181,14 @@ const loadsMakerModule = (node) => {
     importedMakers.some(({ modulePattern }) => modulePattern.test(source.value))
   );
 };
-const editorMakingUseEditorSet = 'pliteReact';
 const widestSetByPageLibrary = {
   plate: {
     createEditor: 'plate',
     useCreateEditor: 'plateHook',
-    useEditor: editorMakingUseEditorSet,
   },
   plite: {
     createEditor: 'pliteReact',
-    useCreateEditor: 'plateHook',
-    useEditor: editorMakingUseEditorSet,
+    useCreateEditor: 'pliteReact',
   },
 };
 const plitePagePattern =
@@ -1385,13 +1390,25 @@ export function auditPlateDocCode(
       if (
         (node.type !== 'CallExpression' &&
           node.type !== 'OptionalCallExpression') ||
-        node.callee.type !== 'Identifier' ||
-        !Object.hasOwn(unimportedMakers, node.callee.name)
+        node.callee.type !== 'Identifier'
       ) {
         return undefined;
       }
 
       const { name } = node.callee;
+
+      if (unimportedOptionlessContextHooks.has(name)) {
+        if (fenceNames.bindingCount(name) === 0 && !fenceNames.hidesBindings) {
+          return { hook: { exportedName: name } };
+        }
+
+        return fenceNames.bindsOnceAtTopLevel(name)
+          ? undefined
+          : { unchecked: unknownBinding };
+      }
+      if (!Object.hasOwn(unimportedMakers, name)) {
+        return undefined;
+      }
 
       if (fenceNames.bindingCount(name) === 0 && !fenceNames.hidesBindings) {
         return { set: unimportedMakers[name] };
@@ -2163,7 +2180,7 @@ export function auditPlateDocCode(
               file,
               fence,
               argument,
-              "Plate's useEditor takes no options; build the editor with useCreateEditor"
+              'useEditor and useOptionalEditor take no options; build the editor with useCreateEditor'
             )
           );
         } else if (node.arguments.length > 0) {

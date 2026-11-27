@@ -21,11 +21,11 @@ import {
   PagedEditable,
   usePageLayout,
 } from "plitejs/pagination/react";
-import { EditorRoot, useEditor } from "plitejs/react";
+import { EditorRoot, useCreateEditor } from "plitejs/react";
 import { useMemo, useRef } from "react";
 
 const DocumentEditor = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
   const editableRef = useRef<HTMLDivElement>(null);
   const engine = useMemo(() => createPretextPageLayoutEngine(), []);
   const layout = usePageLayout(editableRef);

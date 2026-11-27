@@ -12,7 +12,7 @@ import {
   useEditorContext,
   useEditorFocused,
   useElementSelected,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import type { PointerEvent } from 'react';
 
@@ -134,7 +134,7 @@ const ImagesExample = () => {
 };
 
 const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), image()],
     initialValue: createInitialValue(exampleCase),
   });

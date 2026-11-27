@@ -11,7 +11,7 @@ import {
   EditorRoot,
   type Decoration,
   type DecorationSource,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -61,7 +61,7 @@ const collectAsyncHighlightDecorations = (
 };
 
 const AsyncDecorationsExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue: [
       {

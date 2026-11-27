@@ -14,7 +14,7 @@ const editor = createEditor({
 
 Use `isEditor` when library code needs to validate an unknown value before treating it as an editor.
 
-Use `createEditorView(editor, options)` when framework packages need a root-scoped view over a committed editor. React components use `useEditor` from `plitejs/react`.
+Use `createEditorView(editor, options)` when framework packages need a root-scoped view over a committed editor. React components create an editor with `useCreateEditor` and read the active editor with `useEditor` from `plitejs/react`.
 
 Read committed state with `editor.read(...)`. Use direct read methods for one-shot reads and the callback form when several reads must share one state view.
 

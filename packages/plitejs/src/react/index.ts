@@ -144,7 +144,7 @@ export {
   type UseContentRootOptions,
   useContentRoot,
 } from './hooks/use-plite-content-root';
-export { type UseEditorOptions, useEditor } from './hooks/use-editor';
+export { useCreateEditor } from './hooks/use-editor';
 export { useDropIndicator } from './hooks/use-drop-indicator';
 export {
   type UseEditableClipOptions,
@@ -173,8 +173,9 @@ export {
   type CommandDispatcher,
   type UseCommandOptions,
   type UseRootEditorOptions,
-  useCaretEditor,
   useCommand,
+  useEditor,
+  useOptionalEditor,
   useRootEditor,
   useRootState,
   useRuntimeState,

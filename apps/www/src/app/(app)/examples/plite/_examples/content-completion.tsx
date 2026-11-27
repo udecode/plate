@@ -7,7 +7,7 @@ import {
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
-  useEditor,
+  useCreateEditor,
   useEditorContext,
 } from 'plitejs/react';
 
@@ -112,7 +112,7 @@ const Commands = () => {
 };
 
 const ContentCompletionExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     initialValue,
     plugins: [ContentCompletion, history()],
   });

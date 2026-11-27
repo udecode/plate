@@ -1,6 +1,7 @@
 import React from 'react';
 
 import {
+  type EditorStateField,
   type EditorStateView,
   type NamedRootKey,
   type PluginsOf,
@@ -8,6 +9,7 @@ import {
   RangeApi,
   type RootKey,
   type ValueOf,
+  withPliteReactPreservedSelection,
 } from '../../../facade';
 import type { Editor } from '../../editor';
 import {
@@ -22,6 +24,8 @@ import {
 } from '../../internal/plate-context';
 import {
   type EditorRuntimeStateSelectorOptions,
+  ReactUpdatePolicy,
+  type StateFieldSetter,
   type UseRootEditorOptions,
   useEditorRootElement,
   useEditorRuntimeState,
@@ -30,6 +34,11 @@ import {
 
 /** Get the editor selected by the nearest Plate, PlateController, or EditorProvider. */
 export function useEditor(): Editor {
+  if (arguments.length > 0) {
+    throw new Error(
+      'useEditor() takes no arguments. Call useCreateEditor(options, deps) to create an editor.'
+    );
+  }
   const editor = useOptionalEditor();
   if (!editor) throw new Error('useEditor() requires an active Plate editor.');
   return editor;
@@ -47,6 +56,11 @@ export function useModelEditor(): Editor {
 
 /** Get the provider's selected editor, or null when no editor is available. */
 export function useOptionalEditor(): Editor | null {
+  if (arguments.length > 0) {
+    throw new Error(
+      'useOptionalEditor() takes no arguments. Call useCreateEditor(options, deps) to create an editor.'
+    );
+  }
   return usePlateTarget()?.editor ?? null;
 }
 
@@ -134,3 +148,41 @@ export const useEditorValue = () =>
     dependsOn: 'document',
     equalityFn: Object.is,
   });
+
+/** Options for Plate's `useStateFieldValue` selector hook. */
+export type UseStateFieldValueOptions<TValue = unknown> = Pick<
+  UseEditorStateOptions<TValue>,
+  'equalityFn'
+>;
+
+/** Subscribe to one `defineStateField` value on the selected Plate editor. */
+export function useStateFieldValue<TValue>(
+  field: EditorStateField<TValue>,
+  options: UseStateFieldValueOptions<TValue> = {}
+): TValue {
+  return useEditorState<TValue>((state) => state.getField(field), {
+    ...options,
+    dependsOn: field,
+  });
+}
+
+/** Create a setter for one `defineStateField` value on the selected Plate editor. */
+export function useSetStateField<TValue>(
+  field: EditorStateField<TValue>
+): StateFieldSetter<TValue> {
+  const editor = useEditor();
+
+  return React.useCallback<StateFieldSetter<TValue>>(
+    (value, policy) => {
+      editor.update(
+        policy
+          ? withPliteReactPreservedSelection(policy)
+          : ReactUpdatePolicy.preserveSelection,
+        (tx) => {
+          tx.setField(field, value);
+        }
+      );
+    },
+    [editor, field]
+  );
+}

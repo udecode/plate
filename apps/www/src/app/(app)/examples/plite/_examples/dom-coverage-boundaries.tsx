@@ -15,7 +15,7 @@ import {
   EditorElement,
   type RenderElementProps,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -132,7 +132,7 @@ const DomCoverageBoundariesExample = () => {
     }),
     [deepHidden, footerHidden, headerHidden, innerHidden, outerHidden]
   );
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [
       history(),
       isolateHiddenContent,

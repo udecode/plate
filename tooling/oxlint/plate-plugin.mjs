@@ -1584,7 +1584,7 @@ const radixStateVariant = {
 
 const PLITE_REACT_EDITOR_FACTORIES = new Set([
   'createReactEditor',
-  'useEditor',
+  'useCreateEditor',
 ]);
 
 const HISTORY_NAMES = new Set(['history']);

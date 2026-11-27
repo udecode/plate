@@ -31,9 +31,9 @@ Use `history({ enabled: false })` to disable history supplied by a preset.
 
 ```typescript
 import { history } from "plitejs/history";
-import { useEditor } from "plitejs/react";
+import { useCreateEditor } from "plitejs/react";
 
-const editor = useEditor({
+const editor = useCreateEditor({
   plugins: [history({ enabled: false })],
   initialValue,
 });

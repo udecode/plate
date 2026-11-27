@@ -11,7 +11,7 @@ a fresh renderer on every render.
 ## Elements
 
 ```tsx
-import { EditorRoot, Editable, useEditor } from "plitejs/react";
+import { EditorRoot, Editable, useCreateEditor } from "plitejs/react";
 
 const ParagraphElement = ({ attributes, children }) => {
   return <p {...attributes}>{children}</p>;
@@ -41,7 +41,7 @@ const renderElement = (props) => {
 };
 
 const MyEditor = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -178,7 +178,7 @@ A common use case for this is rendering a toolbar with formatting buttons that a
 
 ```tsx
 const MyEditor = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>
@@ -212,7 +212,7 @@ Custom styles can be applied to the editor itself by using the `style` prop on t
 
 ```tsx
 const MyEditor = () => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <EditorRoot editor={editor}>

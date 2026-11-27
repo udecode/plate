@@ -31,12 +31,12 @@ import {
   Editable,
   EditorRoot,
   type DecorationSource,
-  useEditor,
+  useCreateEditor,
 } from "plitejs/react";
 import { useMemo } from "react";
 
 const Editor = ({ query }: { query: string }) => {
-  const editor = useEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
   const searchDecorations = useMemo(
     () =>
       ({

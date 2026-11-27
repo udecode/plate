@@ -19,10 +19,10 @@ Render `VirtualizedEditable` from its dedicated entrypoint. Give it a bounded
 scroll surface, either on the editable itself or on an ancestor.
 
 ```tsx
-import { EditorRoot, useEditor } from "plitejs/react";
+import { EditorRoot, useCreateEditor } from "plitejs/react";
 import { VirtualizedEditable } from "plitejs/react/virtualized";
 
-const editor = useEditor({ initialValue });
+const editor = useCreateEditor({ initialValue });
 
 return (
   <EditorRoot editor={editor}>

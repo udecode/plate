@@ -405,3 +405,4 @@ export {
   sameSelectorDependencies,
   type NormalizedSelectorDependencies,
 } from '../core/selector-dependencies';
+export { withPliteReactPreservedSelection } from './update-policy';

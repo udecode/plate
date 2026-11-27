@@ -8,7 +8,7 @@ import {
   type Editor,
   EditorRoot,
   type DecorationSource,
-  useEditor,
+  useCreateEditor,
 } from 'plitejs/react';
 import { memo, useMemo, useState } from 'react';
 
@@ -52,7 +52,7 @@ const SearchHighlightingExample = () => {
   // nuqs echoes each throttled URL write back into its state after a later
   // render, which resets the box to an older value when typing outruns it.
   const [search, setSearch] = useState(query);
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history()],
     initialValue,
   });

@@ -4,7 +4,7 @@ import {
   Editable,
   type RenderElementProps,
   EditorRoot,
-  useEditor,
+  useCreateEditor,
   useEditorComposing,
   useElementSelected,
   useNodeSelector,
@@ -47,7 +47,7 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
 };
 
 const ForcedLayoutExample = () => {
-  const editor = useEditor({
+  const editor = useCreateEditor({
     plugins: [history(), ForcedLayoutSchema],
     initialValue: [
       {
