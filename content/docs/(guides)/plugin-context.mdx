@@ -232,18 +232,22 @@ export function CounterStatus() {
 }
 ```
 
-To subscribe to another editor registered under the same `<EditorController>`,
-pass its ID to the selector overload:
+To subscribe to an explicit editor instance instead of the nearest provider,
+use `useEditorPluginStore`:
 
 ```tsx title="counter-badge.tsx" showLineNumbers
-import { usePluginStore } from 'platejs/react';
+import type { Editor } from 'platejs/react';
+
+import { useEditorPluginStore } from 'platejs/react';
 
 import { CounterPlugin } from './counter-plugin';
 
-export function CounterBadge({ editorId }: { editorId: string }) {
-  const count = usePluginStore(CounterPlugin, (state) => state.count, {
-    id: editorId,
-  });
+export function CounterBadge({ editor }: { editor: Editor }) {
+  const count = useEditorPluginStore(
+    editor,
+    CounterPlugin,
+    (state) => state.count
+  );
 
   return <span>{count}</span>;
 }
@@ -380,7 +384,7 @@ export function FocusModeButton() {
 | `editor.plugin(plugin)` | Any editor code. | Opens the installed plugin's typed consumer portal. |
 | `useEditor().plugin(plugin)` | React under `<EditorRoot>`. | Returns the installed plugin's flat consumer portal. |
 | `usePluginStore(plugin, key, ...args)` | React under `<EditorRoot>`. | Subscribes to one state field or named selector. |
-| `usePluginStore(plugin, selector, options?)` | React under `<EditorRoot>` or a registered editor under `<EditorController>`. | Subscribes to a value derived from plugin state on the provider’s selected editor. Use `useEditorPluginStore(editor, plugin, selector)` for an explicit editor. |
+| `usePluginStore(plugin, selector, options?)` | React under `<EditorRoot>` or a registered editor under `<EditorController>`. | Subscribes to a value derived from plugin state on the provider's selected editor. Use `useEditorPluginStore(editor, plugin, selector)` for an explicit editor. |
 | `useViewStore(plugin, selector)` | React under `<EditorRoot>`. | Subscribes to a value derived from the plugin's view state in the view `useEditor()` returns. |
 
 For plugin plugin methods, see [Plugin Methods](/docs/plugin-methods). For

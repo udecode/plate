@@ -425,15 +425,17 @@ The callback receives the exact Plate root as `view` and returns sparse
 when no element needs attributes.
 
 ```tsx
-import { definePlugin, usePluginStore } from "platejs/react";
+import { definePlugin, useEditorPluginStore } from "platejs/react";
 
 const ActiveFirstBlockPlugin = definePlugin("activeFirstBlock", {
   initialState: { active: false },
   render: {
     useViewElementAttributes({ editor, plugin, view }) {
-      const active = usePluginStore(plugin, (state) => state.active, {
-        id: editor.id,
-      });
+      const active = useEditorPluginStore(
+        editor,
+        plugin,
+        (state) => state.active
+      );
       const key = view.key([0]);
 
       return active && key

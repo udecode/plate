@@ -38,16 +38,12 @@ import type {
   EditorSelection,
   EditorStateSelectionApi,
   EditorTransactionSelectionApi,
-  ElementIdTarget,
-  Location,
   Node,
   NodeEntry,
   NodeMatch,
-  NodeKey,
   NodeIn,
   NodeInsertNodesOptions,
   NodeRemoveNodesOptions,
-  NodeSelection,
   NodeSetNodesOptions,
   NodeTarget,
   NodeTypeSelector,
@@ -776,7 +772,10 @@ type ElementInsertOptions<
   TSchema,
   TSelector extends PluginNodeTypeSelector,
   TMutations = never,
-> = Omit<NodeInsertNodesOptions<Element>, 'match' | 'split' | 'type'> & {
+> = Omit<
+  WithNodeTarget<NodeInsertNodesOptions<Element>>,
+  'match' | 'split' | 'type'
+> & {
   split?: Omit<
     NonNullable<NodeInsertNodesOptions<Element>['split']>,
     'match' | 'type'
@@ -849,11 +848,11 @@ type GeneratedElementUpdate<
             >
           : BlockElementInsert<TMutation['construction']>;
         remove: (
-          options?: Omit<NodeRemoveNodesOptions<Element>, 'match' | 'type'>
+          options?: SelectorOptions<NodeRemoveNodesOptions<Element>>
         ) => void;
         set: (
           properties: Partial<TMutation['properties']>,
-          options?: Omit<NodeSetNodesOptions<Element>, 'match' | 'type'>
+          options?: SelectorOptions<NodeSetNodesOptions<Element>>
         ) => void;
       }> &
         (TMutation extends Readonly<{ block: false }>
@@ -907,10 +906,7 @@ type DefaultElementUpdate<
                     TSchemaDefinitions
                   >;
               remove: (
-                options?: Omit<
-                  NodeRemoveNodesOptions<Element>,
-                  'match' | 'type'
-                >
+                options?: SelectorOptions<NodeRemoveNodesOptions<Element>>
               ) => void;
               set: (
                 properties: Partial<
@@ -921,7 +917,7 @@ type DefaultElementUpdate<
                     TType
                   >
                 >,
-                options?: Omit<NodeSetNodesOptions<Element>, 'match' | 'type'>
+                options?: SelectorOptions<NodeSetNodesOptions<Element>>
               ) => void;
             }> &
               (EditorDefinitionElementSupportsBlockInsertion<TPlugin> extends true
@@ -2265,9 +2261,7 @@ type PluginNodeSetProps<D> = Partial<Omit<Element, 'children'>> &
   PluginWritablePropertyPatch<D> &
   PluginForbiddenWritablePropertyPatch<D>;
 
-type PluginNodeSetOptions = Omit<NodeSetNodesOptions<Element>, 'at'> & {
-  at?: Descendant | ElementIdTarget | Location | NodeKey | NodeSelection;
-};
+type PluginNodeSetOptions = WithNodeTarget<NodeSetNodesOptions<Element>>;
 
 type NodeSelectorOptions<
   TOptions,

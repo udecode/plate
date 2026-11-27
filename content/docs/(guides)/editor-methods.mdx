@@ -103,9 +103,9 @@ function ActiveEditorToolbar() {
 }
 ```
 
-`EditorController` resolves an editor by explicit `id`, focused editor, then
-primary editors. `useOptionalEditor()` returns `null` while none is active.
-Components that require an editor should use `useEditor()` and fail fast.
+`EditorController` resolves the focused editor, then primary editors.
+`useOptionalEditor()` returns `null` while none is active. Components that
+require an editor should use `useEditor()` and fail fast.
 
 ## Editor API and commands
 

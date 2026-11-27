@@ -389,15 +389,17 @@ callback 通过 `view` 获取当前 Plate root，并返回作用于整个 elemen
 `{ key, attributes }[]`。没有目标 element 时返回空数组。
 
 ```tsx
-import { definePlugin, usePluginStore } from "platejs/react";
+import { definePlugin, useEditorPluginStore } from "platejs/react";
 
 const ActiveFirstBlockPlugin = definePlugin("activeFirstBlock", {
   initialState: { active: false },
   render: {
     useViewElementAttributes({ editor, plugin, view }) {
-      const active = usePluginStore(plugin, (state) => state.active, {
-        id: editor.id,
-      });
+      const active = useEditorPluginStore(
+        editor,
+        plugin,
+        (state) => state.active
+      );
       const key = view.key([0]);
 
       return active && key

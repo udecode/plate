@@ -12,6 +12,7 @@ import {
   type NodeSetNodesOptions,
   type PluginFormatRegistry,
   type PluginTransaction,
+  type WithNodeTarget,
   txLocate,
   locateAt,
 } from '../../../core';
@@ -48,15 +49,21 @@ const blockStyleUpdate =
     plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>;
     tx: PluginTransaction;
   }) => ({
-    clear: txLocate(locateAt(0), (options?: NodeSetNodesOptions<Element>) => {
-      tx.nodes.unset(key, {
-        match: getInjectMatch(editor, plugin),
-        ...options,
-      });
-    }),
+    clear: txLocate(
+      locateAt(0),
+      (options?: WithNodeTarget<NodeSetNodesOptions<Element>>) => {
+        tx.nodes.unset(key, {
+          match: getInjectMatch(editor, plugin),
+          ...options,
+        });
+      }
+    ),
     set: txLocate(
       locateAt(1),
-      (value: TValue, options?: NodeSetNodesOptions<Element>) => {
+      (
+        value: TValue,
+        options?: WithNodeTarget<NodeSetNodesOptions<Element>>
+      ) => {
         tx.nodes.set(
           { [key]: value },
           {
