@@ -9,7 +9,15 @@ import {
   EditorContentView,
 } from './EditorContentView.internal';
 
-export type { EditorContentProps } from './EditorContentView.internal';
+export type {
+  EditableDOMBeforeInputContext,
+  EditableDOMBeforeInputHandler,
+  EditableHandlerContext,
+  EditableInputEventContext,
+  EditableKeyDownHandler,
+  EditablePointerSelectionEndHandler,
+  EditorContentProps,
+} from './EditorContentView.internal';
 
 /**
  * Editable with plugins.

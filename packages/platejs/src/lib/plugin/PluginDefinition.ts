@@ -535,11 +535,11 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 // -----------------------------------------------------------------------------
 
-type StructuralRulePluginPortal<P extends PluginReference> = [
-  DefinitionOf<P>,
-] extends [never]
-  ? PluginPortalContext
-  : PluginPortalContext<DefinitionOf<P>>;
+type StructuralRulePluginPortal<P extends PluginReference> = P extends unknown
+  ? [DefinitionOf<P>] extends [never]
+    ? PluginPortalContext
+    : PluginPortalContext<DefinitionOf<P>>
+  : never;
 
 /** Read-only editor capabilities available while resolving a structural rule. */
 export type StructuralRuleEditor = Omit<RuntimeEditor, 'plugin'> & {

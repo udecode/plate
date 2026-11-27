@@ -492,9 +492,11 @@ const pasteAutoEmbedRule = (
 
       const block = editor.read.nodes.block({ at: selection });
       const linkPlugin = editor.plugin(PLUGINS.link);
-      const linkType = linkPlugin.installed
-        ? linkPlugin.schema.type
-        : undefined;
+      const linkType =
+        linkPlugin.installed && linkPlugin.schema && 'type' in linkPlugin.schema
+          ? linkPlugin.schema.type
+          : undefined;
+      if (!paragraph.schema || !('type' in paragraph.schema)) return undefined;
       const paragraphType = paragraph.schema.type;
 
       if (

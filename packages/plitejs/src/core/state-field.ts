@@ -1,5 +1,6 @@
 import type {
   EditorStateField,
+  PluginReference,
   StateFieldDescriptor,
   StateFieldTransition,
 } from '../interfaces/editor';
@@ -196,9 +197,10 @@ export const defineStateField = <
         `state field "${normalizedDescriptor.key}"`
       );
     },
-  } satisfies EditorStateField<TValue, TEncoded>;
+  } satisfies Omit<EditorStateField<TValue, TEncoded>, keyof PluginReference> &
+    Readonly<{ name: string }>;
 
-  field = definition;
+  field = definition as unknown as EditorStateField<TValue, TEncoded>;
   definition.stateFields = Object.freeze([field]);
   field = compilePlugin(definition) as unknown as EditorStateField<
     TValue,

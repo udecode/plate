@@ -11,7 +11,7 @@ import {
 import { getDefaultElementTag } from '../../internal/plugin/defaultElementTag';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
-import { type EditableProps, getPluginNodeClass } from '../../lib';
+import { getPluginNodeClass, type RenderElementProps } from '../../lib';
 import { isHtmlVoidElementTag, EditorElement } from '../components';
 import type { Editor } from '../editor/Editor';
 import {
@@ -35,9 +35,7 @@ import {
   pluginRenderElement,
 } from './pluginRenderElement.internal';
 
-type RenderElementProps = Parameters<
-  NonNullable<EditableProps['renderElement']>
->[0];
+type InternalRenderElement = (props: RenderElementProps) => React.ReactNode;
 
 const getRenderedElementPath = (
   editor: Editor,
@@ -414,8 +412,8 @@ function DefaultElementWithPath({
 /** @see {@link RenderElement} */
 export const pipeRenderElement = (
   modelEditor: Editor,
-  renderElementProp?: EditableProps['renderElement']
-): EditableProps['renderElement'] => {
+  renderElementProp?: InternalRenderElement
+): InternalRenderElement => {
   const hasNodeWrappers =
     getPlateRuntime(modelEditor).pluginCache.slots.wrapNode.length > 0;
   const hasAfterNodeChildren =

@@ -781,12 +781,12 @@
           "kind": "type",
           "name": "BasePluginPortal",
           "runtime": false,
-          "signature": "type BasePluginPortal<C extends AnyBasePluginDefinition = BasePluginDefinition, S = C, TApi = PluginPortalContext<C>['api']> = Omit<ResolvedPlugin<C>, keyof PluginPortalContext<C> | 'schema'> & PluginReference<C['name']> & Omit<PluginPortalContext<C>, 'api' | 'read' | 'update'> & {\n  /** API scoped directly to this plugin. */\n  api: TApi;\n  /** State-bound reads scoped directly to this plugin. */\n  read: PluginReadCapability<C>;\n  /** One-shot updates scoped directly to this plugin. */\n  update: PluginDirectUpdate<C, S>;\n};",
+          "signature": "type BasePluginPortal<P extends AnyBasePluginDefinition | PluginReference = BasePluginDefinition, S = unknown, TApi = undefined> = P extends PluginDefinitionWitness<infer D> ? D extends AnyBasePluginDefinition ? InternalBasePluginPortal<D, S, ResolvedBasePluginPortalApi<D, TApi>> : AnyBasePluginPortal : P extends PluginReference$1 ? AnyBasePluginPortal : P extends AnyBasePluginDefinition ? InternalBasePluginPortal<P, S, ResolvedBasePluginPortalApi<P, TApi>> : AnyBasePluginPortal;",
           "source": null,
           "typeParameters": [
-            "C extends AnyBasePluginDefinition = BasePluginDefinition",
-            "S = C",
-            "TApi = PluginPortalContext<C>['api']"
+            "P extends AnyBasePluginDefinition | PluginReference = BasePluginDefinition",
+            "S = unknown",
+            "TApi = undefined"
           ]
         },
         "platejs:BasePoint": {
@@ -1834,17 +1834,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:EditableProps": {
-          "aliases": [],
-          "documentation": "`EditableProps` are passed to the <Editable> component.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "EditableProps",
-          "runtime": false,
-          "signature": "type EditableProps = {\n  as?: any;\n  disableDefaultStyles?: boolean;\n  placeholder?: string;\n  readOnly?: boolean;\n  renderElement?: RenderElementFn;\n  renderLeaf?: RenderLeafFn;\n  renderText?: RenderTextFn;\n  role?: string;\n  style?: any;\n  decorate?: (entry: NodeEntry) => Range[];\n  renderPlaceholder?: (props: {\n    attributes: {\n      contentEditable: boolean;\n      'data-editor-placeholder': boolean;\n      ref: (element: any) => void;\n      style: any;\n      dir?: 'rtl';\n    };\n    children: any;\n  }) => any;\n  scrollSelectionIntoView?: (editor: Editor, domRange: DOMRange) => void;\n  onDOMBeforeInput?: (event: InputEvent) => void;\n  [key: string]: unknown;\n};",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:EditOnlyConfig": {
           "aliases": [],
           "documentation": "",
@@ -2808,6 +2797,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:EditorReference": {
+          "aliases": [],
+          "documentation": "Nominal identity shared by every Plate editor specialization.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorReference",
+          "runtime": false,
+          "signature": "type EditorReference = Readonly<{\n  [plateEditorReference]: true;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:EditorReplaceChildrenOptions": {
           "aliases": [],
           "documentation": "",
@@ -3399,7 +3399,7 @@
           "kind": "type",
           "name": "EditorStateField",
           "runtime": false,
-          "signature": "type EditorStateField<TValue = unknown, TEncoded extends EditorJsonValue = EditorJsonValue> = PluginDefinitionInput & Readonly<{\n  name: string;\n}> & Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {\n  compare: (left: TValue, right: TValue) => boolean;\n  deserialize: (value: unknown) => TValue;\n  effect: EditorEffectType<StateFieldTransition<TValue>>;\n  serialize: (value: TValue) => SerializedEditorValue<TEncoded>;\n};",
+          "signature": "type EditorStateField<TValue = unknown, TEncoded extends EditorJsonValue = EditorJsonValue> = PluginReference & PluginDefinitionInput & Readonly<{\n  name: string;\n}> & Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {\n  compare: (left: TValue, right: TValue) => boolean;\n  deserialize: (value: unknown) => TValue;\n  effect: EditorEffectType<StateFieldTransition<TValue>>;\n  serialize: (value: TValue) => SerializedEditorValue<TEncoded>;\n};",
           "source": null,
           "typeParameters": [
             "TValue = unknown",
@@ -7219,12 +7219,12 @@
           "kind": "type",
           "name": "PluginPortal",
           "runtime": false,
-          "signature": "type BasePluginPortal<C extends AnyBasePluginDefinition = BasePluginDefinition, S = C, TApi = PluginPortalContext<C>['api']> = Omit<ResolvedPlugin<C>, keyof PluginPortalContext<C> | 'schema'> & PluginReference<C['name']> & Omit<PluginPortalContext<C>, 'api' | 'read' | 'update'> & {\n  /** API scoped directly to this plugin. */\n  api: TApi;\n  /** State-bound reads scoped directly to this plugin. */\n  read: PluginReadCapability<C>;\n  /** One-shot updates scoped directly to this plugin. */\n  update: PluginDirectUpdate<C, S>;\n};",
+          "signature": "type BasePluginPortal<P extends AnyBasePluginDefinition | PluginReference = BasePluginDefinition, S = unknown, TApi = undefined> = P extends PluginDefinitionWitness<infer D> ? D extends AnyBasePluginDefinition ? InternalBasePluginPortal<D, S, ResolvedBasePluginPortalApi<D, TApi>> : AnyBasePluginPortal : P extends PluginReference$1 ? AnyBasePluginPortal : P extends AnyBasePluginDefinition ? InternalBasePluginPortal<P, S, ResolvedBasePluginPortalApi<P, TApi>> : AnyBasePluginPortal;",
           "source": null,
           "typeParameters": [
-            "C extends AnyBasePluginDefinition = BasePluginDefinition",
-            "S = C",
-            "TApi = PluginPortalContext<C>['api']"
+            "P extends AnyBasePluginDefinition | PluginReference = BasePluginDefinition",
+            "S = unknown",
+            "TApi = undefined"
           ]
         },
         "platejs:PluginPublicationError": {
@@ -8044,17 +8044,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:RenderElementFn": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderElementFn",
-          "runtime": false,
-          "signature": "type RenderElementFn = (props: RenderElementProps) => any;",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:RenderElementProps": {
           "aliases": [],
           "documentation": "",
@@ -8080,17 +8069,6 @@
           "typeParameters": [
             "N extends Element = Element"
           ]
-        },
-        "platejs:RenderLeafFn": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderLeafFn",
-          "runtime": false,
-          "signature": "type RenderLeafFn = (props: RenderLeafProps) => any;",
-          "source": null,
-          "typeParameters": []
         },
         "platejs:RenderLeafProps": {
           "aliases": [],
@@ -8144,17 +8122,6 @@
           "typeParameters": [
             "TSource extends RenderStaticNodeWrapperSource = any"
           ]
-        },
-        "platejs:RenderTextFn": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderTextFn",
-          "runtime": false,
-          "signature": "type RenderTextFn = (props: RenderTextProps) => any;",
-          "source": null,
-          "typeParameters": []
         },
         "platejs:RenderTextHostProps": {
           "aliases": [],
@@ -17376,12 +17343,12 @@
           "kind": "type",
           "name": "BasePluginPortal",
           "runtime": false,
-          "signature": "type BasePluginPortal<C extends AnyBasePluginDefinition = BasePluginDefinition, S = C, TApi = PluginPortalContext<C>['api']> = Omit<ResolvedPlugin<C>, keyof PluginPortalContext<C> | 'schema'> & PluginReference<C['name']> & Omit<PluginPortalContext<C>, 'api' | 'read' | 'update'> & {\n  /** API scoped directly to this plugin. */\n  api: TApi;\n  /** State-bound reads scoped directly to this plugin. */\n  read: PluginReadCapability<C>;\n  /** One-shot updates scoped directly to this plugin. */\n  update: PluginDirectUpdate<C, S>;\n};",
+          "signature": "type BasePluginPortal<P extends AnyBasePluginDefinition | PluginReference = BasePluginDefinition, S = unknown, TApi = undefined> = P extends PluginDefinitionWitness<infer D> ? D extends AnyBasePluginDefinition ? InternalBasePluginPortal<D, S, ResolvedBasePluginPortalApi<D, TApi>> : AnyBasePluginPortal : P extends PluginReference$1 ? AnyBasePluginPortal : P extends AnyBasePluginDefinition ? InternalBasePluginPortal<P, S, ResolvedBasePluginPortalApi<P, TApi>> : AnyBasePluginPortal;",
           "source": null,
           "typeParameters": [
-            "C extends AnyBasePluginDefinition = BasePluginDefinition",
-            "S = C",
-            "TApi = PluginPortalContext<C>['api']"
+            "P extends AnyBasePluginDefinition | PluginReference = BasePluginDefinition",
+            "S = unknown",
+            "TApi = undefined"
           ]
         },
         "platejs/react:BasePoint": {
@@ -18604,18 +18571,18 @@
         },
         "platejs/react:EditableDOMBeforeInputContext": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Context passed to `onDOMBeforeInput` handlers on `EditorContent`.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditableDOMBeforeInputContext",
           "runtime": false,
-          "signature": "type EditableDOMBeforeInputContext = EditableInputEventContext & {\n  event: InputEvent;\n  inputType: string;\n};",
+          "signature": "type EditableDOMBeforeInputContext = RebindContext<EditableDOMBeforeInputContext$1>;",
           "source": null,
           "typeParameters": []
         },
         "platejs/react:EditableDOMBeforeInputHandler": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Handler for native `beforeinput` events on `EditorContent`.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditableDOMBeforeInputHandler",
@@ -18692,12 +18659,12 @@
         },
         "platejs/react:EditableHandlerContext": {
           "aliases": [],
-          "documentation": "What an editable passes each DOM handler after its event. `editor` is the\nview whose editable runs the handler, such as a content root's.",
+          "documentation": "Context passed to DOM event handlers on `EditorContent`.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditableHandlerContext",
           "runtime": false,
-          "signature": "type EditableHandlerContext = {\n  editor: ReactRuntimeEditor;\n};",
+          "signature": "type EditableHandlerContext = {\n  editor: Editor;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -18736,18 +18703,18 @@
         },
         "platejs/react:EditableInputEventContext": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Base input event context for `EditorContent`, extended by `EditableDOMBeforeInputContext`.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditableInputEventContext",
           "runtime": false,
-          "signature": "type EditableInputEventContext = EditableHandlerContext & {\n  data: unknown;\n  event?: InputEvent | React$1.KeyboardEvent<HTMLDivElement>;\n  inputType?: string;\n  intent: InputIntent | null;\n  native: boolean;\n  selection: Range | null;\n};",
+          "signature": "type EditableInputEventContext = RebindContext<EditableInputEventContext$1>;",
           "source": null,
           "typeParameters": []
         },
         "platejs/react:EditableKeyDownHandler": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Handler for keyboard `keydown` events on `EditorContent`.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditableKeyDownHandler",
@@ -18767,14 +18734,14 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/react:EditableProps": {
+        "platejs/react:EditablePointerSelectionEndHandler": {
           "aliases": [],
-          "documentation": "`EditableProps` are passed to the <Editable> component.",
+          "documentation": "Handler for mouse text selection completion on `EditorContent`.",
           "entrypoint": "platejs/react",
           "kind": "type",
-          "name": "EditableProps",
+          "name": "EditablePointerSelectionEndHandler",
           "runtime": false,
-          "signature": "type EditableProps = {\n  as?: any;\n  disableDefaultStyles?: boolean;\n  placeholder?: string;\n  readOnly?: boolean;\n  renderElement?: RenderElementFn;\n  renderLeaf?: RenderLeafFn;\n  renderText?: RenderTextFn;\n  role?: string;\n  style?: any;\n  decorate?: (entry: NodeEntry) => Range[];\n  renderPlaceholder?: (props: {\n    attributes: {\n      contentEditable: boolean;\n      'data-editor-placeholder': boolean;\n      ref: (element: any) => void;\n      style: any;\n      dir?: 'rtl';\n    };\n    children: any;\n  }) => any;\n  scrollSelectionIntoView?: (editor: Editor, domRange: DOMRange) => void;\n  onDOMBeforeInput?: (event: InputEvent) => void;\n  [key: string]: unknown;\n};",
+          "signature": "type EditablePointerSelectionEndHandler = (selection: Range, context: EditableHandlerContext) => void;",
           "source": null,
           "typeParameters": []
         },
@@ -19152,7 +19119,7 @@
           "kind": "type",
           "name": "EditorContentProps",
           "runtime": false,
-          "signature": "type EditorContentProps<TElement extends Element$1 = Element$1, TRoot extends RootKey = RootKey> = Omit<EditableProps<TElement, TRoot>, 'renderElement' | 'renderLeaf' | 'renderPlaceholder' | 'renderText' | 'renderVoid'> & {\n  /** Autofocus when it becomes editable (readOnly true -> false). */\n  autoFocusOnEditable?: boolean;\n  disabled?: boolean;\n  ref?: React$1.Ref<HTMLDivElement>;\n};",
+          "signature": "type EditorContentProps<TElement extends Element$1 = Element$1, TRoot extends RootKey = RootKey> = Omit<RebindHandlers<EditableProps<TElement, TRoot>>, 'renderElement' | 'renderLeaf' | 'renderPlaceholder' | 'renderText' | 'renderVoid' | 'scrollSelectionIntoView'> & {\n  /** Autofocus when it becomes editable (readOnly true -> false). */\n  autoFocusOnEditable?: boolean;\n  disabled?: boolean;\n  ref?: React$1.Ref<HTMLDivElement>;\n  scrollSelectionIntoView?: (editor: Editor, domRange: globalThis.Range) => void;\n};",
           "source": null,
           "typeParameters": [
             "TElement extends Element$1 = Element$1",
@@ -19945,6 +19912,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/react:EditorReference": {
+          "aliases": [],
+          "documentation": "Nominal identity shared by every Plate editor specialization.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "EditorReference",
+          "runtime": false,
+          "signature": "type EditorReference = Readonly<{\n  [plateEditorReference]: true;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/react:EditorReplaceChildrenOptions": {
           "aliases": [],
           "documentation": "",
@@ -19974,10 +19952,10 @@
           "kind": "function",
           "name": "EditorRoot",
           "runtime": true,
-          "signature": "declare function EditorRoot<E = Editor>(props: EditorRootProps<E>): React$1.ReactElement | null;",
+          "signature": "declare function EditorRoot<E extends EditorReference = Editor>(props: EditorRootProps<E>): React$1.ReactElement | null;",
           "source": null,
           "typeParameters": [
-            "E = Editor"
+            "E extends EditorReference = Editor"
           ]
         },
         "platejs/react:EditorRootEntry": {
@@ -20009,10 +19987,10 @@
           "kind": "interface",
           "name": "EditorRootProps",
           "runtime": false,
-          "signature": "interface EditorRootProps<E = Editor> {\n  /** Native authored input and projection for this mounted view. */\n  authored?: NoInfer<E> extends {\n    read: {\n      authored: unknown;\n    };\n  } ? EditorViewOptions['authored'] : never;\n  children: React$1.ReactNode;\n  editor: E | null;\n  /** Observe every published editor commit. */\n  onCommit?: (context: CommitContext<E>) => void;\n  /** Observe canonical node changes for this editor. */\n  onNodeChange?: (context: NodeChangeContext<E>) => void;\n  /** Observe commits that change the primary-root selection. */\n  onSelectionChange?: (context: SelectionChangeContext<E>) => void;\n  /** Observe canonical text changes for this editor. */\n  onTextChange?: (context: TextChangeContext<E>) => void;\n  /** Observe commits that change the full serializable document value. */\n  onValueChange?: (context: ValueChangeContext<E>) => void;\n  /** Whether this editor is the primary editor for its controller. */\n  primary?: boolean;\n  readOnly?: boolean;\n  suppressInstanceWarning?: boolean;\n}",
+          "signature": "interface EditorRootProps<E extends EditorReference = Editor> {\n  /** Native authored input and projection for this mounted view. */\n  authored?: NoInfer<E> extends {\n    read: {\n      authored: unknown;\n    };\n  } ? EditorViewOptions['authored'] : never;\n  children: React$1.ReactNode;\n  editor: E | null;\n  /** Observe every published editor commit. */\n  onCommit?: (context: CommitContext<E>) => void;\n  /** Observe canonical node changes for this editor. */\n  onNodeChange?: (context: NodeChangeContext<E>) => void;\n  /** Observe commits that change the primary-root selection. */\n  onSelectionChange?: (context: SelectionChangeContext<E>) => void;\n  /** Observe canonical text changes for this editor. */\n  onTextChange?: (context: TextChangeContext<E>) => void;\n  /** Observe commits that change the full serializable document value. */\n  onValueChange?: (context: ValueChangeContext<E>) => void;\n  /** Whether this editor is the primary editor for its controller. */\n  primary?: boolean;\n  readOnly?: boolean;\n  suppressInstanceWarning?: boolean;\n}",
           "source": null,
           "typeParameters": [
-            "E = Editor"
+            "E extends EditorReference = Editor"
           ]
         },
         "platejs/react:EditorRuntimeStateSelectorOptions": {
@@ -20576,7 +20554,7 @@
           "kind": "type",
           "name": "EditorStateField",
           "runtime": false,
-          "signature": "type EditorStateField<TValue = unknown, TEncoded extends EditorJsonValue = EditorJsonValue> = PluginDefinitionInput & Readonly<{\n  name: string;\n}> & Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {\n  compare: (left: TValue, right: TValue) => boolean;\n  deserialize: (value: unknown) => TValue;\n  effect: EditorEffectType<StateFieldTransition<TValue>>;\n  serialize: (value: TValue) => SerializedEditorValue<TEncoded>;\n};",
+          "signature": "type EditorStateField<TValue = unknown, TEncoded extends EditorJsonValue = EditorJsonValue> = PluginReference & PluginDefinitionInput & Readonly<{\n  name: string;\n}> & Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {\n  compare: (left: TValue, right: TValue) => boolean;\n  deserialize: (value: unknown) => TValue;\n  effect: EditorEffectType<StateFieldTransition<TValue>>;\n  serialize: (value: TValue) => SerializedEditorValue<TEncoded>;\n};",
           "source": null,
           "typeParameters": [
             "TValue = unknown",
@@ -22993,19 +22971,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/react:LeafNodeProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "LeafNodeProps",
-          "runtime": false,
-          "signature": "type LeafNodeProps<C extends AnyBasePluginDefinition = BasePluginDefinition> = ((props: EditorNodeProps<C> & RenderLeafProps$1<Text, Text>) => AnyObject | undefined) | AnyObject;",
-          "source": null,
-          "typeParameters": [
-            "C extends AnyBasePluginDefinition = BasePluginDefinition"
-          ]
-        },
         "platejs/react:LeafPosition": {
           "aliases": [],
           "documentation": "",
@@ -24729,7 +24694,7 @@
           "kind": "type",
           "name": "PluginContext",
           "runtime": false,
-          "signature": "type PluginContext<C extends AnyBasePluginDefinition = BasePluginDefinition> = Omit<PluginPortal<C>, keyof PluginBaseContext<C> | 'viewStore'> & PluginBaseContext<C> & {\n  defineFormats: DefinePluginFormats<C>;\n  editor: PluginContextEditor<C> & Readonly<{\n    api: Readonly<Record<C['name'], InferApi<C>>>;\n  }>;\n  plugin: ResolvedPlugin<C>;\n};",
+          "signature": "type PluginContext<C extends AnyBasePluginDefinition = BasePluginDefinition> = Omit<ResolvedPluginPortal<C>, keyof PluginBaseContext<C> | 'viewStore'> & PluginBaseContext<C> & {\n  defineFormats: DefinePluginFormats<C>;\n  editor: PluginContextEditor<C> & Readonly<{\n    api: Readonly<Record<C['name'], InferApi<C>>>;\n  }>;\n  plugin: ResolvedPlugin<C>;\n};",
           "source": null,
           "typeParameters": [
             "C extends AnyBasePluginDefinition = BasePluginDefinition"
@@ -24963,11 +24928,11 @@
           "kind": "type",
           "name": "PluginPortal",
           "runtime": false,
-          "signature": "type PluginPortal<C extends AnyBasePluginDefinition = BasePluginDefinition, S = C> = Omit<ResolvedPlugin<C>, keyof PluginPortalContext<C> | 'schema'> & PluginReference$1<C['name']> & Omit<PluginPortalContext<C>, 'read' | 'update'> & {\n  /** State-bound reads scoped directly to this plugin. */\n  read: PluginReadCapability<C>;\n  /** One-shot updates scoped directly to this plugin. */\n  update: PluginDirectUpdate<C, S>;\n};",
+          "signature": "type PluginPortal<P extends AnyBasePluginDefinition | PluginReference$1 = BasePluginDefinition, S = unknown> = P extends PluginDefinitionWitness<infer D> ? D extends AnyBasePluginDefinition ? ResolvedPluginPortal<D, S> : AnyPluginPortal : P extends PluginReference ? AnyPluginPortal : P extends AnyBasePluginDefinition ? ResolvedPluginPortal<P, S> : AnyPluginPortal;",
           "source": null,
           "typeParameters": [
-            "C extends AnyBasePluginDefinition = BasePluginDefinition",
-            "S = C"
+            "P extends AnyBasePluginDefinition | PluginReference$1 = BasePluginDefinition",
+            "S = unknown"
           ]
         },
         "platejs/react:PluginPublicationError": {
@@ -25855,17 +25820,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/react:RenderElementFn": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "RenderElementFn",
-          "runtime": false,
-          "signature": "type RenderElementFn = (props: RenderElementProps) => any;",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs/react:RenderElementProps": {
           "aliases": [],
           "documentation": "",
@@ -25891,17 +25845,6 @@
           "typeParameters": [
             "N extends Element = Element"
           ]
-        },
-        "platejs/react:RenderLeafFn": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "RenderLeafFn",
-          "runtime": false,
-          "signature": "type RenderLeafFn = (props: RenderLeafProps) => any;",
-          "source": null,
-          "typeParameters": []
         },
         "platejs/react:RenderLeafProps": {
           "aliases": [],
@@ -26028,17 +25971,6 @@
           "typeParameters": [
             "TSource extends RenderStaticNodeWrapperSource = any"
           ]
-        },
-        "platejs/react:RenderTextFn": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "RenderTextFn",
-          "runtime": false,
-          "signature": "type RenderTextFn = (props: RenderTextProps) => any;",
-          "source": null,
-          "typeParameters": []
         },
         "platejs/react:RenderTextHostProps": {
           "aliases": [],
@@ -27840,19 +27772,6 @@
             "V extends Value = Value"
           ]
         },
-        "platejs/react:TextNodeProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "TextNodeProps",
-          "runtime": false,
-          "signature": "type TextNodeProps<C extends AnyBasePluginDefinition = BasePluginDefinition> = ((props: EditorNodeProps<C> & RenderLeafProps$1<Text, Text>) => AnyObject | undefined) | AnyObject;",
-          "source": null,
-          "typeParameters": [
-            "C extends AnyBasePluginDefinition = BasePluginDefinition"
-          ]
-        },
         "platejs/react:TextOf": {
           "aliases": [],
           "documentation": "",
@@ -29123,12 +29042,12 @@
         },
         "platejs/react:useRootEditor": {
           "aliases": [],
-          "documentation": "Create a command-capable editor for one root.\n\nThe returned object is stable for the requested root and read-only option.\nA renderer inside an `Editable` gets another object than UI outside it, so\na lock set through one does not reach the other.\nIt obeys the read-only state and the authored view of the mounted view that\nshows its root, and of the view around the hook while none shows it. Inside\na view, that mounted view is the one this view mounts for the root, such as\nits own board when two editing areas show the same board. It acts only\nunder its own `EditorRoot`, so while that `EditorRoot` shows no editing\narea for its root, `api.dom.editable()` returns `null`, even when an\nediting area in another `EditorRoot` holds the caret. Use it for\nroot-specific toolbar/sidebar commands. Pass `readOnly: true` when UI only\nneeds read APIs. Exact plugin capability comes from `editor.plugin(Plugin)`.",
+          "documentation": "Return a command-capable Plate editor for one root under the nearest EditorRoot.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "useRootEditor",
           "runtime": true,
-          "signature": "declare function useRootEditor<const TRoot extends RootKey = RootKey>(root?: NamedRootKey<TRoot>, options?: UseRootEditorOptions): Editor$2;",
+          "signature": "declare function useRootEditor<const TRoot extends RootKey = RootKey>(root?: NamedRootKey<TRoot>, options?: UseRootEditorOptions): Editor;",
           "source": null,
           "typeParameters": [
             "const TRoot extends RootKey = RootKey"

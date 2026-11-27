@@ -8,12 +8,13 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { createTextInjectionMatcher } from '../../internal/plugin/pluginInjectNodeProps';
-import type { AnyBasePlugin, EditableProps, RenderTextProps } from '../../lib';
+import type { AnyBasePlugin, RenderTextProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
 import { EditorText } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
 import { useRedrawWithBlock } from '../internal/block-redraws';
 import { usePlateRenderContext } from '../internal/plate-context';
+import type { RuntimeEditableProps } from '../internal/plite-components';
 import {
   setDOMTextSyncRendererCapability,
   setRetainedTextFlowRendererCapability,
@@ -47,8 +48,8 @@ const isTextMarkActive = (marks: Record<string, unknown>, textKey: string) =>
 /** @see {@link RenderText} */
 export const pipeRenderText = (
   modelEditor: Editor,
-  renderTextProp?: EditableProps['renderText']
-): EditableProps['renderText'] => {
+  renderTextProp?: RuntimeEditableProps['renderText']
+): RuntimeEditableProps['renderText'] => {
   const renderTexts: RenderTextEntry[] = [];
   const renderTextByKey = new Map<string, true>();
   const simpleRenderTexts: SimpleRenderText[] = [];
@@ -129,7 +130,7 @@ export const pipeRenderText = (
   const Renderer = ({
     nodeProps,
   }: {
-    nodeProps: Parameters<NonNullable<EditableProps['renderText']>>[0];
+    nodeProps: Parameters<NonNullable<RuntimeEditableProps['renderText']>>[0];
   }) => {
     const { attributes: _attributes, ...props } = nodeProps;
     const { editor, wrap } = usePlateRenderContext(modelEditor);

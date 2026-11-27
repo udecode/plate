@@ -272,7 +272,7 @@ them. Every other value keeps its binding, as
 | `useOptionalEditorContext()` | `useOptionalEditor()` | |
 | `useCaretEditor()` | `useEditor()` outside `EditorContent` | Outside every editing area, `useEditor()` returns the editor of the root that holds the caret. |
 | `createEditor(options)` | `createEditor(options)` from `platejs`, or from `platejs/react` in React | The options are the same except `clipboardFormatKey`, which Plate refuses. |
-| `definePlugin(name, definition)` | `definePlugin(name, definition)` from `platejs`, or from `platejs/react` in React | The definition fields are the same. The result is a Plate plugin with `.configure()` and `.extend()`, and a `name` key inside the definition throws. |
+| `definePlugin(name, definition)` | `definePlugin(name, definition)` from `platejs`, or from `platejs/react` in React | The definition fields are the same, and `PluginDefinitionInput` has no `name`. The result is a Plate plugin with `.configure()` and `.extend()`, and a `name` key inside the definition throws. Plate runs the `api` factory while it resolves the plugin's `.extend()` stages, so the factory gets no `getContributions`. Read contributions in `validate`. |
 | `useCommand(command, options)` | `editor.update.command(command, input)`, with the editor from `useEditor()` | Plate has no `root` or `focus` option for a command. |
 
 ### Rendering
@@ -307,7 +307,8 @@ them. Every other value keeps its binding, as
 
 | Plite | Plate | Notes |
 | --- | --- | --- |
-| `EditableProps` | `EditorContentProps` | Plate's `EditableProps` is an internal renderer type. |
+| `EditableProps` | `EditorContentProps` | Plate does not export `EditableProps`. |
+| `EditableHandlerContext`, `EditableInputEventContext`, `EditableDOMBeforeInputContext`, `EditableDOMBeforeInputHandler`, `EditableKeyDownHandler`, `EditablePointerSelectionEndHandler` | The same names from `platejs/react` | `context.editor` is Plate's React `Editor`. |
 | `PagedEditableProps`, `VirtualizedEditableProps` | `PagedEditorContentProps`, `VirtualizedEditorContentProps` | |
 | `UseEditorOptions` | `CreateEditorOptions` | |
 | `EditorSelectorOptions`, `EditorStateSelectorOptions` | `UseEditorSelectorOptions`, `UseEditorStateOptions` | |

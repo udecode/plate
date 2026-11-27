@@ -192,12 +192,17 @@ export const BaseFormattingPlugin = definePlugin(PLUGINS.formatting, {
           .map((key) => [key, block[key]])
       );
       const heading = getCompiledPlatePlugin(editor, PLUGINS.heading);
+      const headingSchema = heading ? editor.plugin(heading).schema : undefined;
+      const headingType =
+        headingSchema && 'type' in headingSchema
+          ? headingSchema.type
+          : undefined;
       const identity = kept('type')
         ? null
         : block.type === editor.plugin(BaseParagraphPlugin).schema.type
           ? { kind: 'paragraph' as const }
-          : heading &&
-              block.type === editor.plugin(heading).schema.type &&
+          : headingType !== undefined &&
+              block.type === headingType &&
               typeof block.level === 'number'
             ? { kind: 'heading' as const, level: block.level }
             : null;
@@ -463,9 +468,13 @@ export const BaseFormattingPlugin = definePlugin(PLUGINS.formatting, {
           };
           const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
           const heading = getCompiledPlatePlugin(editor, PLUGINS.heading);
-          const headingType = heading
-            ? editor.plugin(heading).schema.type
+          const headingSchema = heading
+            ? editor.plugin(heading).schema
             : undefined;
+          const headingType =
+            headingSchema && 'type' in headingSchema
+              ? headingSchema.type
+              : undefined;
           const identity = data.block?.identity;
           const destination =
             identity?.kind === 'paragraph'

@@ -8,7 +8,7 @@ import type {
   Editor,
 } from '../editor/Editor';
 import {
-  type EditableHandlerContext,
+  type RuntimeEditableHandlerContext as EditableHandlerContext,
   getHandlerView,
 } from '../internal/plite-components';
 import type { AnyResolvedPlugin } from '../plugin';

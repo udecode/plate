@@ -13,8 +13,8 @@ import type { Editor } from '../../editor';
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
+  AnyBasePluginPortal,
   BasePluginPortal,
-  DynamicBasePluginPortal,
   PluginReference,
 } from '../../plugin';
 import type { InternalPluginDefinitionOf } from '../../plugin/pluginDefinitionLookup.internal';
@@ -43,7 +43,7 @@ type ReadPluginPortal<TPortal> = Pick<
 type InputRulePluginPortalFor<P extends PluginReference> = [
   InternalPluginDefinitionOf<P>,
 ] extends [never]
-  ? ReadPluginPortal<DynamicBasePluginPortal>
+  ? ReadPluginPortal<AnyBasePluginPortal>
   : ReadPluginPortal<
       BasePluginPortal<
         Extract<InternalPluginDefinitionOf<P>, AnyBasePluginDefinition>
@@ -52,10 +52,10 @@ type InputRulePluginPortalFor<P extends PluginReference> = [
 
 type InputRulePluginLookup = {
   <P extends PluginReference>(plugin: P): InputRulePluginPortalFor<P>;
-  (plugin: string): ReadPluginPortal<DynamicBasePluginPortal>;
+  (plugin: string): ReadPluginPortal<AnyBasePluginPortal>;
   (
     plugin: AnyBasePlugin | PluginReference | string
-  ): ReadPluginPortal<DynamicBasePluginPortal>;
+  ): ReadPluginPortal<AnyBasePluginPortal>;
 };
 
 /** Read-only editor capabilities available while an input rule is selected. */

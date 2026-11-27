@@ -214,12 +214,8 @@ export type AnyPluginPortal = Omit<
     'api' | 'installed' | 'read' | 'schema' | 'store' | 'update'
   >;
 
-/** Runtime-checked React portal returned for name-only plugin lookups. */
-export type DynamicPluginPortal = Omit<AnyPluginPortal, 'schema'> & {
-  readonly schema: Readonly<{ key: string; type: string }>;
-};
-
-export type PluginPortal<
+/** @internal */
+export type ResolvedPluginPortal<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   S = C,
 > = Omit<ResolvedPlugin<C>, keyof PluginPortalContext<C> | 'schema'> &
@@ -231,8 +227,22 @@ export type PluginPortal<
     update: PluginDirectUpdate<C, S>;
   };
 
+export type PluginPortal<
+  P extends AnyBasePluginDefinition | PluginReference = BasePluginDefinition,
+  S = unknown,
+> =
+  P extends PluginDefinitionWitness<infer D>
+    ? D extends AnyBasePluginDefinition
+      ? ResolvedPluginPortal<D, S>
+      : AnyPluginPortal
+    : P extends RuntimePluginReference
+      ? AnyPluginPortal
+      : P extends AnyBasePluginDefinition
+        ? ResolvedPluginPortal<P, S>
+        : AnyPluginPortal;
+
 /** Type-erased React authoring context used while compiling callbacks. */
-export type AnyPluginContext = Omit<DynamicPluginPortal, 'schema'> & {
+export type AnyPluginContext = Omit<AnyPluginPortal, 'schema'> & {
   readonly defineFormats: AnyBasePluginContext['defineFormats'];
   readonly editor: Editor;
   readonly plugin: AnyResolvedPlugin;
@@ -241,7 +251,7 @@ export type AnyPluginContext = Omit<DynamicPluginPortal, 'schema'> & {
 
 export type PluginContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = Omit<PluginPortal<C>, keyof PluginBaseContext<C> | 'viewStore'> &
+> = Omit<ResolvedPluginPortal<C>, keyof PluginBaseContext<C> | 'viewStore'> &
   PluginBaseContext<C> & {
     defineFormats: DefinePluginFormats<C>;
     editor: PluginContextEditor<C> &
@@ -313,9 +323,7 @@ export type InjectNodeProps<
   transformStyle?: (context: TransformOptions<C>) => CSSStyleDeclaration;
 };
 
-export type LeafNodeProps<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> =
+type MarkNodeProps<C extends AnyBasePluginDefinition = BasePluginDefinition> =
   | ((
       props: EditorNodeProps<C> & RenderLeafProps<Text, Text>
     ) => AnyObject | undefined)
@@ -329,14 +337,6 @@ export type NodeProps<
       props: EditorNodeProps<C> &
         RenderElementProps<ElementWith<C>> &
         RenderLeafProps<Text, Text>
-    ) => AnyObject | undefined)
-  | AnyObject;
-
-export type TextNodeProps<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> =
-  | ((
-      props: EditorNodeProps<C> & RenderLeafProps<Text, Text>
     ) => AnyObject | undefined)
   | AnyObject;
 
@@ -449,16 +449,16 @@ type ReactRenderFields<C extends AnyBasePluginDefinition> = {
   attributes?: NodeProps<WithAnyName<C>>;
   mark?:
     | Readonly<{
-        leafAttributes?: LeafNodeProps<WithAnyName<C>>;
+        leafAttributes?: MarkNodeProps<WithAnyName<C>>;
         leafComponent?: never;
         placement?: 'leaf';
-        textAttributes?: TextNodeProps<WithAnyName<C>>;
+        textAttributes?: MarkNodeProps<WithAnyName<C>>;
       }>
     | Readonly<{
-        leafAttributes?: LeafNodeProps<WithAnyName<C>>;
+        leafAttributes?: MarkNodeProps<WithAnyName<C>>;
         leafComponent?: NodeComponent;
         placement: 'text';
-        textAttributes?: TextNodeProps<WithAnyName<C>>;
+        textAttributes?: MarkNodeProps<WithAnyName<C>>;
       }>;
   /**
    * Mounts one hook host per enabled plugin and view. Use React hooks here to

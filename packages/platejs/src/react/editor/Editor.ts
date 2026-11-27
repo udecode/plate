@@ -9,6 +9,7 @@ import type {
   AnyBasePluginDefinition,
   AnyPluginBase,
   BasePluginInput,
+  EditorReference,
   InferPlugins,
   InferEditorRuntimePlugins,
   InternalEditorMutationProvider,
@@ -27,17 +28,12 @@ import type { ReactApi } from '../plite-react';
 import type {
   AnyResolvedPlugin,
   AnyPlugin,
-  DynamicPluginPortal,
-  PluginPortal,
+  AnyPluginPortal,
+  ResolvedPluginPortal,
 } from '../plugin/PlatePlugin';
 import type { ReactCorePlugins } from './getPlateCorePlugins.internal';
 
-declare const reactEditorReference: unique symbol;
-
-/** Nominal identity shared by every Plate editor specialization. */
-export type EditorReference = Readonly<{
-  [reactEditorReference]: true;
-}>;
+export type { EditorReference };
 
 type InternalReactEditorBase<
   V extends Value,
@@ -49,20 +45,17 @@ type InternalReactEditorBase<
   'plugin'
 >;
 
-type PortalFor<TPlugin, S> = [InternalPluginDefinitionOf<TPlugin>] extends [
-  never,
-]
-  ? DynamicPluginPortal
-  : PluginPortal<
-      Extract<InternalPluginDefinitionOf<TPlugin>, AnyBasePluginDefinition>,
-      S
-    >;
+type PortalFor<TPlugin, S> = TPlugin extends unknown
+  ? [InternalPluginDefinitionOf<TPlugin>] extends [never]
+    ? AnyPluginPortal
+    : ResolvedPluginPortal<InternalPluginDefinitionOf<TPlugin>, S>
+  : never;
 
 type InternalPluginPortal<V extends Value, S> = {
   <TPlugin extends PluginReference>(plugin: TPlugin): PortalFor<TPlugin, S>;
   (
     plugin: AnyResolvedPlugin | AnyPlugin | AnyBasePlugin | AnyPluginBase
-  ): DynamicPluginPortal;
+  ): AnyPluginPortal;
   <const TPlugin extends RuntimePluginReference>(
     plugin: TPlugin
   ): RuntimePluginPortal<TPlugin, V>;
@@ -137,19 +130,18 @@ export type InternalReactEditorWithInstalledPlugins<
   D,
   S = D,
   TRuntimePlugins extends readonly unknown[] = readonly [],
-> = EditorReference &
-  InternalReactEditorBase<V, D, S, TRuntimePlugins> & {
-    readonly api: InternalBaseEditorWithInstalledPlugins<
-      V,
-      D,
-      S,
-      TRuntimePlugins
-    >['api'] &
-      CoreEditorApi<V> & {
-        react: ReactApi;
-      };
-    plugin: InternalPluginPortal<V, S>;
-  };
+> = InternalReactEditorBase<V, D, S, TRuntimePlugins> & {
+  readonly api: InternalBaseEditorWithInstalledPlugins<
+    V,
+    D,
+    S,
+    TRuntimePlugins
+  >['api'] &
+    CoreEditorApi<V> & {
+      react: ReactApi;
+    };
+  plugin: InternalPluginPortal<V, S>;
+};
 
 /** Editor selected by value, runtime plugins, Plate plugins, and schema. */
 export type Editor<

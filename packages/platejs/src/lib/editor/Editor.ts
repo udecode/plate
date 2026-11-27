@@ -6,9 +6,9 @@ import type {
 import type { GeneratedEditorMutations } from '../../internal/editor/generatedEditorTypes';
 import type {
   AnyBasePlugin,
+  AnyBasePluginPortal,
   AnyPluginBase,
-  BasePluginPortal,
-  DynamicBasePluginPortal,
+  InternalBasePluginPortal,
 } from '../plugin/BasePlugin';
 import type {
   AnyBasePluginDefinition,
@@ -35,6 +35,13 @@ export type {
   MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
 
+declare const plateEditorReference: unique symbol;
+
+/** Nominal identity shared by every Plate editor specialization. */
+export type EditorReference = Readonly<{
+  [plateEditorReference]: true;
+}>;
+
 type PluginEditorUser = {
   /**
    * The user this editor writes and comments as, fixed for its life: the
@@ -43,27 +50,24 @@ type PluginEditorUser = {
   readonly userId: string;
 };
 
-type BasePortalFor<P, S, V extends Value> = [
-  InternalPluginDefinitionOf<P>,
-] extends [never]
-  ? DynamicBasePluginPortal
-  : BasePluginPortal<
-      Extract<InternalPluginDefinitionOf<P>, AnyBasePluginDefinition>,
-      S,
-      SpecializePluginApi<
-        BasePluginPortal<
-          Extract<InternalPluginDefinitionOf<P>, AnyBasePluginDefinition>,
-          S
-        >['api'],
-        V
+type BasePortalFor<P, S, V extends Value> = P extends unknown
+  ? [InternalPluginDefinitionOf<P>] extends [never]
+    ? AnyBasePluginPortal
+    : InternalBasePluginPortal<
+        InternalPluginDefinitionOf<P>,
+        S,
+        SpecializePluginApi<
+          InternalBasePluginPortal<InternalPluginDefinitionOf<P>, S>['api'],
+          V
+        >
       >
-    >;
+  : never;
 
 type GetBasePluginPortal<V extends Value, S> = {
   <P extends PluginReference>(plugin: P): BasePortalFor<P, S, V>;
   (
     plugin: AnyBasePlugin | AnyPluginBase | PluginReference
-  ): DynamicBasePluginPortal;
+  ): AnyBasePluginPortal;
   <const TPlugin extends RuntimePluginReference>(
     plugin: TPlugin
   ): RuntimePluginPortal<TPlugin, V>;
@@ -103,7 +107,8 @@ export type InternalBaseEditorWithPlugins<
   P extends AnyBasePluginDefinition,
 > = Omit<EditorWithPlugins<V, P>, 'plugin'> &
   PluginEditorUser &
-  PluginRuntime<V, P>;
+  PluginRuntime<V, P> &
+  EditorReference;
 
 /** Editor selected by value, runtime plugins, Plate plugins, and schema. */
 export type Editor<
@@ -144,4 +149,5 @@ export type InternalBaseEditorWithInstalledPlugins<
   'plugin'
 > &
   PluginEditorUser &
-  PluginRuntime<V, S>;
+  PluginRuntime<V, S> &
+  EditorReference;

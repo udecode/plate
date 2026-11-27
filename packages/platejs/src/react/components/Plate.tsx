@@ -13,7 +13,7 @@ import { runEditorObserver } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
-import type { Editor } from '../editor/Editor';
+import type { Editor, EditorReference } from '../editor/Editor';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import {
   PlateCaretScope,
@@ -45,7 +45,7 @@ export type ValueChangeContext<E = Editor> = CommitContext<E> & {
   value: EditorDocumentValue;
 };
 
-export interface EditorRootProps<E = Editor> {
+export interface EditorRootProps<E extends EditorReference = Editor> {
   /** Native authored input and projection for this mounted view. */
   authored?: NoInfer<E> extends { read: { authored: unknown } }
     ? EditorViewOptions['authored']
@@ -255,7 +255,7 @@ function PlateInner({
   );
 }
 
-export function EditorRoot<E = Editor>(
+export function EditorRoot<E extends EditorReference = Editor>(
   props: EditorRootProps<E>
 ): React.ReactElement | null;
 export function EditorRoot(props: EditorRootProps<any>) {

@@ -470,8 +470,11 @@ instead. Call the returned function to unsubscribe.
 
 ## Installing and reconfiguring plugins
 
-Install statically known plugins when the editor is created. This preserves
-their inferred `read`, `update`, and `api` groups.
+Install Plate plugins when the editor is created. This preserves their
+inferred `read`, `update`, and `api` groups. `editor.install`, plugin slots and
+`tx.plugins.reconfigure` take only runtime plugins, such as the one `yjs(...)`
+returns, and never install a Plate plugin. To switch a Plate plugin's behavior after
+creation, set its store with `editor.plugin(MyPlugin).store.set({ ... })`.
 
 ```javascript
 const editor = createEditor({ plugins: [myPlugin] as const });
@@ -479,22 +482,22 @@ const editor = createEditor({ plugins: [myPlugin] as const });
 
 #### `editor.install(plugin, options?) => (options?) => void`
 
-Install a host-selected plugin after creation. Plate compiles and validates
-a detached plugin candidate, publishes and activates it atomically, then
-emits one commit. The commit includes the migrated document when `options`
-provides one. The returned function removes each plugin this call added that
-nothing else still holds, in a commit of its own.
+Install a host-selected runtime plugin after creation. Plate compiles and
+validates a detached plugin candidate, publishes and activates it atomically,
+then emits one commit. The commit includes the migrated document when
+`options` provides one. The returned function removes each plugin this call
+added that nothing else still holds, in a commit of its own.
 
 ```javascript
-const removePlugin = editor.install(myPlugin);
+const removePlugin = editor.install(runtimePlugin);
 
 removePlugin();
 ```
 
 Call `editor.install` and the function it returns outside `editor.update` and
-`editor.read`. Both throw while an update or a read is open. To change plugins
-inside an update, swap a named slot with `tx.plugins.reconfigure`, as shown
-below.
+`editor.read`. Both throw while an update or a read is open. To swap a runtime
+plugin inside an update, use a named slot with `tx.plugins.reconfigure`, as
+shown below.
 
 When the plugin introduces a schema that rejects the current document, pass
 `options.migrate`. It receives the immutable current document and candidate
@@ -511,17 +514,17 @@ removePlugin({ migrate: ({ document }) => withoutMyNodes(document) });
 Use creation-time installation when TypeScript should infer the plugin's
 groups. Dynamic installation does not rewrite the editor's static type.
 
-Use a named slot for runtime configuration. Reconfiguration is part of one
-atomic editor transaction rather than an immediate registry mutation.
+Use a named slot to reconfigure a runtime plugin. Reconfiguration is part of
+one atomic editor transaction rather than an immediate registry mutation.
 
 ```javascript
 const feature = definePluginSlot("feature");
 const editor = createEditor({
-  plugins: [feature.of(readMode)] as const,
+  plugins: [feature.of(readModeRuntimePlugin)] as const,
 });
 
 editor.update((tx) => {
-  tx.plugins.reconfigure(feature, writeMode);
+  tx.plugins.reconfigure(feature, writeModeRuntimePlugin);
 });
 ```
 

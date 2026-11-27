@@ -257,7 +257,7 @@ const editor = useCreateEditor({
 | `useOptionalEditorContext()` | `useOptionalEditor()` | |
 | `useCaretEditor()` | 在 `EditorContent` 之外调用 `useEditor()` | 在所有编辑区域之外，`useEditor()` 返回光标所在根的编辑器。 |
 | `createEditor(options)` | 来自 `platejs` 的 `createEditor(options)`，React 中来自 `platejs/react` | 选项相同，但 Plate 拒绝 `clipboardFormatKey`。 |
-| `definePlugin(name, definition)` | 来自 `platejs` 的 `definePlugin(name, definition)`，React 中来自 `platejs/react` | 定义字段相同。结果是带 `.configure()` 和 `.extend()` 的 Plate 插件；定义中的 `name` 键会抛出错误。 |
+| `definePlugin(name, definition)` | 来自 `platejs` 的 `definePlugin(name, definition)`，React 中来自 `platejs/react` | 定义字段相同，且 `PluginDefinitionInput` 不含 `name`。结果是带 `.configure()` 和 `.extend()` 的 Plate 插件；定义中的 `name` 键会抛出错误。Plate 在解析插件的 `.extend()` 阶段时运行 `api` 工厂，因此该工厂拿不到 `getContributions`。请在 `validate` 中读取 contributions。 |
 | `useCommand(command, options)` | `editor.update.command(command, input)`，编辑器来自 `useEditor()` | Plate 的命令没有 `root` 或 `focus` 选项。 |
 
 ### 渲染
@@ -292,7 +292,8 @@ const editor = useCreateEditor({
 
 | Plite | Plate | 说明 |
 | --- | --- | --- |
-| `EditableProps` | `EditorContentProps` | Plate 的 `EditableProps` 是内部渲染器类型。 |
+| `EditableProps` | `EditorContentProps` | Plate 不导出 `EditableProps`。 |
+| `EditableHandlerContext`、`EditableInputEventContext`、`EditableDOMBeforeInputContext`、`EditableDOMBeforeInputHandler`、`EditableKeyDownHandler`、`EditablePointerSelectionEndHandler` | 来自 `platejs/react` 的同名类型 | `context.editor` 为 Plate 的 React `Editor`。 |
 | `PagedEditableProps`、`VirtualizedEditableProps` | `PagedEditorContentProps`、`VirtualizedEditorContentProps` | |
 | `UseEditorOptions` | `CreateEditorOptions` | |
 | `EditorSelectorOptions`、`EditorStateSelectorOptions` | `UseEditorSelectorOptions`、`UseEditorStateOptions` | |

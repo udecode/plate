@@ -23,7 +23,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { Editor } from 'slate';
 import { createEditor as createSlateEditor } from 'slate';
 import { Slate, Editable as SlateEditable, withReact } from 'slate-react';
 
@@ -286,16 +285,18 @@ const createBenchmarkEditor = ({
     editor.getChunkSize = (node) =>
       config.chunking && node === editor ? config.chunkSize : null;
 
-    return editor as Editor;
+    return { editor, engine: 'upstream-slate' as const };
   }
 
-  return createEditor({
+  const editor = createEditor({
     initialValue: structuredClone(initialValue),
     plugins: [
       ParagraphPlugin.configure({ component: HugeDocumentPlateParagraph }),
       HeadingPlugin.configure({ component: HugeDocumentPlateHeading }),
     ],
-  }) as unknown as Editor;
+  });
+
+  return { editor, engine: 'plate' as const };
 };
 
 const Chunk = ({
@@ -426,7 +427,7 @@ function EnginePane({
     [config.blocks, engine]
   );
 
-  const [editor] = useState(() =>
+  const [benchmarkEditor] = useState(() =>
     createBenchmarkEditor({
       config,
       engine,
@@ -536,9 +537,9 @@ function EnginePane({
 
   const editable = rendering ? (
     <div>Rendering&hellip;</div>
-  ) : engine === 'upstream-slate' ? (
+  ) : benchmarkEditor.engine === 'upstream-slate' ? (
     <Slate
-      editor={editor as any}
+      editor={benchmarkEditor.editor}
       initialValue={initialValue as any}
       onChange={() => {
         afterChange.current = true;
@@ -553,7 +554,7 @@ function EnginePane({
     </Slate>
   ) : (
     <EditorRoot
-      editor={editor}
+      editor={benchmarkEditor.editor}
       onCommit={() => {
         afterChange.current = true;
       }}

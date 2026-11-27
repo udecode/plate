@@ -683,8 +683,10 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       dimensions?: { naturalHeight: number; naturalWidth: number }
     ) => {
       const portal = destination(kind);
-      if (!portal) return undefined;
-      const { api } = portal;
+      if (!portal || !portal.schema || !('type' in portal.schema)) {
+        return undefined;
+      }
+      const { api, schema: portalSchema } = portal;
       if (!('normalizeUrl' in api) || typeof api.normalizeUrl !== 'function') {
         return undefined;
       }
@@ -703,7 +705,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         ...(kind === 'file' ? { name: file.name } : {}),
         ...(kind === 'image' && dimensions ? dimensions : {}),
         ...(kind === 'video' ? { provider: 'file' } : {}),
-        type: portal.schema.type,
+        type: portalSchema.type,
       };
     };
     const startTask = (
@@ -1152,7 +1154,9 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       }),
       commands: ({ around }) => [
         around(domCommands.insertData, ({ input, next, state }) => {
-          const pictureType = destination('image')?.schema.type;
+          const imageSchema = destination('image')?.schema;
+          const pictureType =
+            imageSchema && 'type' in imageSchema ? imageSchema.type : undefined;
           const writer = getAuthoredUpdateView(editor);
           const keepsPictures = () => {
             const authored = readAuthoredView(writer);

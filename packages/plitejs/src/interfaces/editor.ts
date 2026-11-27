@@ -642,7 +642,8 @@ export type StateFieldTransition<TValue> = Readonly<{
 export type EditorStateField<
   TValue = unknown,
   TEncoded extends EditorJsonValue = EditorJsonValue,
-> = PluginDefinitionInput &
+> = PluginReference &
+  PluginDefinitionInput &
   Readonly<{ name: string }> &
   Omit<StateFieldDescriptor<TValue, TEncoded>, 'compare'> & {
     compare: (left: TValue, right: TValue) => boolean;

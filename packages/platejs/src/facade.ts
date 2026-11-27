@@ -78,6 +78,7 @@ export type {
   EditorReadMethodTree,
   EditorSchemaContribution,
   EditorSchemaContract,
+  EditorSchemaDeclaration,
   EditorSchemaDerivedDefinition,
   EditorSchemaElement,
   EditorSchemaValidationDiagnostic,

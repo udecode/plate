@@ -13,8 +13,6 @@ export type RenderElementSlots<N extends Element = Element> = {
   contentRoot: (slot: ElementContentRootSlot<N>, options?: any) => any;
 };
 
-export type RenderElementFn = (props: RenderElementProps) => any;
-
 export type RenderElementProps<N extends Element = Element> = {
   attributes: {
     [key: string]: unknown;

@@ -1,7 +1,5 @@
 import type { Path, Text } from '../../facade';
 
-export type RenderTextFn = (props: RenderTextProps) => any;
-
 /**
  * Props of a text renderer. Outside a paged view each text gets one call with
  * its host attributes. In a paged view each piece of a text gets its own call

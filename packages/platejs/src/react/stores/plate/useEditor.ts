@@ -3,9 +3,11 @@ import React from 'react';
 import {
   type EditorCommit,
   type EditorStateView,
+  type NamedRootKey,
   type PluginsOf,
   type Range,
   RangeApi,
+  type RootKey,
   type ValueOf,
 } from '../../../facade';
 import type { Editor } from '../../editor';
@@ -21,8 +23,10 @@ import {
 } from '../../internal/plate-context';
 import {
   type EditorRuntimeStateSelectorOptions,
+  type UseRootEditorOptions,
   useEditorRootElement,
   useEditorRuntimeState,
+  useRootEditor as usePliteRootEditor,
 } from '../../plite-react';
 
 const childrenChanged = (change?: EditorCommit) =>
@@ -51,6 +55,14 @@ export function useModelEditor(): Editor {
 /** Get the provider's selected editor, or null when no editor is available. */
 export function useOptionalEditor(): Editor | null {
   return usePlateTarget()?.editor ?? null;
+}
+
+/** Return a command-capable Plate editor for one root under the nearest EditorRoot. */
+export function useRootEditor<const TRoot extends RootKey = RootKey>(
+  root?: NamedRootKey<TRoot>,
+  options?: UseRootEditorOptions
+): Editor {
+  return usePliteRootEditor(root, options) as unknown as Editor;
 }
 
 /** Get the selected editor's application ID. */

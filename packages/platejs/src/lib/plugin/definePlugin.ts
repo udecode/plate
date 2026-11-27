@@ -35,6 +35,7 @@ import type {
   NormalizePluginSelectors,
   NormalizePluginState,
 } from './PluginDefinition';
+import type { ExactPluginSchemaDeclaration } from './pluginDefinitionLookup.internal';
 import type { PluginInitialStateInput } from './pluginInitialState.internal';
 import type { InferPluginWritablePropertyEntries } from './pluginSchemaModel.internal';
 
@@ -78,7 +79,7 @@ type BasePluginConstructorSchemaFactory<
       BasePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins>
     >
   >
-) => TSchema;
+) => ExactPluginSchemaDeclaration<TSchema>;
 
 type BasePluginConstructorInitialStateInput<
   N extends string,
@@ -188,12 +189,9 @@ type BasePluginConstructorSchemaInput<
   TSchema extends PluginSchemaDeclaration,
 > =
   | BasePluginConstructorSchemaFactory<N, D, S, TTargetPlugins, TSchema>
-  | (TSchema & Readonly<Record<string, unknown>>);
+  | ExactPluginSchemaDeclaration<TSchema>;
 
-type BasePluginConstructorKey = Exclude<
-  keyof BasePluginDefinitionInput,
-  'name'
->;
+type BasePluginConstructorKey = keyof BasePluginDefinitionInput;
 
 type BasePluginConstructorDependencies<
   TKeys extends BasePluginConstructorKey,

@@ -1,7 +1,5 @@
 import type { LeafPosition, Path, Text } from '../../facade';
 
-export type RenderLeafFn = (props: RenderLeafProps) => any;
-
 export type RenderLeafProps<N extends Text = Text, L extends Text = N> = {
   attributes: {
     [key: string]: unknown;

@@ -13,6 +13,7 @@ export {
   type CreateEditorOptions,
   type Decorate,
   type Editor,
+  type EditorReference,
   type InjectNodeProps,
   type NodeProps,
   type RenderElementProps,

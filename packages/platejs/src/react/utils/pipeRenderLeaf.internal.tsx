@@ -10,11 +10,12 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { createTextInjectionMatcher } from '../../internal/plugin/pluginInjectNodeProps';
-import type { EditableProps, EditOnlyConfig } from '../../lib';
+import type { EditOnlyConfig } from '../../lib';
 import { EditorLeaf } from '../components';
 import type { Editor } from '../editor/Editor';
 import { useRedrawWithBlock } from '../internal/block-redraws';
 import { usePlateRenderContext } from '../internal/plate-context';
+import type { RuntimeEditableProps } from '../internal/plite-components';
 import {
   setDOMTextSyncRendererCapability,
   setRetainedTextFlowRendererCapability,
@@ -60,8 +61,8 @@ const isActiveHardAffinityBoundary = (
 /** @see {@link RenderLeaf} */
 export const pipeRenderLeaf = (
   modelEditor: Editor,
-  renderLeafProp?: EditableProps['renderLeaf']
-): EditableProps['renderLeaf'] => {
+  renderLeafProp?: RuntimeEditableProps['renderLeaf']
+): RuntimeEditableProps['renderLeaf'] => {
   const complexRenderLeafEntries: Array<{
     key: string;
     requiresModelTextSync: boolean;
@@ -180,7 +181,7 @@ export const pipeRenderLeaf = (
   const Renderer = ({
     nodeProps,
   }: {
-    nodeProps: Parameters<NonNullable<EditableProps['renderLeaf']>>[0];
+    nodeProps: Parameters<NonNullable<RuntimeEditableProps['renderLeaf']>>[0];
   }) => {
     const { attributes: initialAttributes, ...props } = nodeProps;
     const { editor, wrap } = usePlateRenderContext(modelEditor);

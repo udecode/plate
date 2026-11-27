@@ -182,8 +182,11 @@ export function isOrderedList(element: Element) {
 
 const getPluginType = (editor: Editor, key: string) => {
   const descriptor = getCompiledPlatePlugin(editor, key);
+  const pluginSchema = descriptor
+    ? editor.plugin(descriptor).schema
+    : undefined;
 
-  return descriptor ? editor.plugin(descriptor).schema.type : undefined;
+  return pluginSchema && 'type' in pluginSchema ? pluginSchema.type : undefined;
 };
 
 // A code block outside List's targets still owns Tab, so the check reads the

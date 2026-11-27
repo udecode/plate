@@ -16,6 +16,7 @@ import {
   definePlugin as defineHeadlessPlugin,
 } from '../../lib';
 import type { BasePluginDependencyReferences } from '../../lib/plugin/basePluginCompiler.internal';
+import type { ExactPluginSchemaDeclaration } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type { PluginInitialStateInput } from '../../lib/plugin/pluginInitialState.internal';
 import type {
   Plugin,
@@ -211,10 +212,10 @@ type PluginConstructorSchemaInput<
       context: PluginSchemaContext<
         PluginConstructorContextDefinition<N, D, S, never, TTargetPlugins>
       >
-    ) => TSchema)
-  | (TSchema & Readonly<Record<string, unknown>>);
+    ) => ExactPluginSchemaDeclaration<TSchema>)
+  | ExactPluginSchemaDeclaration<TSchema>;
 
-type PluginConstructorKey = Exclude<keyof PluginDefinitionInput, 'name'>;
+type PluginConstructorKey = keyof PluginDefinitionInput;
 
 type PluginConstructorDependencies<
   TKeys extends PluginConstructorKey,

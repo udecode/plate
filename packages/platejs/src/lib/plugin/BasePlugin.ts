@@ -283,13 +283,8 @@ export type AnyBasePluginPortal = Omit<
   readonly update: object;
 };
 
-/** Runtime-checked portal returned for name-only plugin lookups. */
-export type DynamicBasePluginPortal = Omit<AnyBasePluginPortal, 'schema'> & {
-  readonly schema: Readonly<{ key: string; type: string }>;
-};
-
 /** Type-erased authoring context used while compiling plugin callbacks. */
-export type AnyBasePluginContext = Omit<DynamicBasePluginPortal, 'schema'> & {
+export type AnyBasePluginContext = Omit<AnyBasePluginPortal, 'schema'> & {
   readonly defineFormats: object;
   readonly editor: object;
   readonly plugin: AnyPluginBase;
@@ -1533,7 +1528,6 @@ type BasePluginInputFields<C extends AnyBasePluginDefinition> = Omit<
   initialState?:
     | Partial<InferPluginStoreState<C>>
     | ((context: BasePluginContext<C>) => InferPluginStoreState<C>);
-  name: C['name'];
   read?: (
     context: BasePluginContext<C> & {
       state: PluginReadState<C>;
@@ -1853,7 +1847,8 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   targetPlugins?: ReadonlyArray<PluginReference | string>;
 };
 
-export type BasePluginPortal<
+/** @internal */
+export type InternalBasePluginPortal<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   S = C,
   TApi = PluginPortalContext<C>['api'],
@@ -1867,6 +1862,30 @@ export type BasePluginPortal<
     /** One-shot updates scoped directly to this plugin. */
     update: PluginDirectUpdate<C, S>;
   };
+
+type ResolvedBasePluginPortalApi<
+  C extends AnyBasePluginDefinition,
+  TApi,
+> = 0 extends 1 & TApi
+  ? TApi
+  : [TApi] extends [undefined]
+    ? PluginPortalContext<C>['api']
+    : TApi;
+
+export type BasePluginPortal<
+  P extends AnyBasePluginDefinition | PluginReference = BasePluginDefinition,
+  S = unknown,
+  TApi = undefined,
+> =
+  P extends PluginDefinitionWitness<infer D>
+    ? D extends AnyBasePluginDefinition
+      ? InternalBasePluginPortal<D, S, ResolvedBasePluginPortalApi<D, TApi>>
+      : AnyBasePluginPortal
+    : P extends RuntimePluginReference
+      ? AnyBasePluginPortal
+      : P extends AnyBasePluginDefinition
+        ? InternalBasePluginPortal<P, S, ResolvedBasePluginPortalApi<P, TApi>>
+        : AnyBasePluginPortal;
 
 // Author capabilities replace consumer methods; do not build that portal first.
 type BasePluginContextFields<

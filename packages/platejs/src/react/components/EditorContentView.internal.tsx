@@ -4,7 +4,7 @@ import { clsx } from 'clsx';
 import omit from 'lodash/omit.js';
 import React, { useRef } from 'react';
 
-import type { Element, RootKey } from '../../facade';
+import type { Element, Range, RootKey } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { mergePlateRenderedAttributes } from '../../internal/mergePlateRenderedAttributes';
 import {
@@ -21,8 +21,12 @@ import {
   usePlateModel,
 } from '../internal/plate-context';
 import {
+  type EditableHandlerResult,
   getHandlerView,
-  type EditableProps as RuntimeEditableProps,
+  type RuntimeEditableDOMBeforeInputContext,
+  type RuntimeEditableHandlerContext,
+  type RuntimeEditableInputEventContext,
+  type RuntimeEditableProps,
   useOptionalEditorContext,
 } from '../internal/plite-components';
 import { useComposedRef } from '../internal/react-helpers';
@@ -43,21 +47,67 @@ import { TapOrderEffect } from '../utils/tapOrder.internal';
 import { EditorRefEffect } from './EditorRefEffect';
 import { PlateRoot } from './PlateRoot.internal';
 
+type RebindContext<T> = Omit<T, 'editor'> & EditableHandlerContext;
+
+/** Context passed to DOM event handlers on `EditorContent`. */
+export type EditableHandlerContext = { editor: Editor };
+
+/** Base input event context for `EditorContent`, extended by `EditableDOMBeforeInputContext`. */
+export type EditableInputEventContext =
+  RebindContext<RuntimeEditableInputEventContext>;
+
+/** Context passed to `onDOMBeforeInput` handlers on `EditorContent`. */
+export type EditableDOMBeforeInputContext =
+  RebindContext<RuntimeEditableDOMBeforeInputContext>;
+
+/** Handler for native `beforeinput` events on `EditorContent`. */
+export type EditableDOMBeforeInputHandler = (
+  event: InputEvent,
+  context: EditableDOMBeforeInputContext
+) => EditableHandlerResult;
+
+/** Handler for keyboard `keydown` events on `EditorContent`. */
+export type EditableKeyDownHandler = (
+  event: React.KeyboardEvent<HTMLDivElement>,
+  context: EditableHandlerContext
+) => EditableHandlerResult;
+
+/** Handler for mouse text selection completion on `EditorContent`. */
+export type EditablePointerSelectionEndHandler = (
+  selection: Range,
+  context: EditableHandlerContext
+) => void;
+
+type RebindHandlers<T> = {
+  [K in keyof T]: K extends `on${string}`
+    ? NonNullable<T[K]> extends (...args: infer TArgs) => infer R
+      ? TArgs extends [infer A, infer C extends RuntimeEditableHandlerContext]
+        ? (first: A, context: RebindContext<C>) => R
+        : T[K]
+      : T[K]
+    : T[K];
+};
+
 export type EditorContentProps<
   TElement extends Element = Element,
   TRoot extends RootKey = RootKey,
 > = Omit<
-  RuntimeEditableProps<TElement, TRoot>,
+  RebindHandlers<RuntimeEditableProps<TElement, TRoot>>,
   | 'renderElement'
   | 'renderLeaf'
   | 'renderPlaceholder'
   | 'renderText'
   | 'renderVoid'
+  | 'scrollSelectionIntoView'
 > & {
   /** Autofocus when it becomes editable (readOnly true -> false). */
   autoFocusOnEditable?: boolean;
   disabled?: boolean;
   ref?: React.Ref<HTMLDivElement>;
+  scrollSelectionIntoView?: (
+    editor: Editor,
+    domRange: globalThis.Range
+  ) => void;
 };
 
 type EditorContentEditable<TExtra extends object> = React.ComponentType<
@@ -270,7 +320,7 @@ function EditorContentBranch<TExtra extends object>({
 
           const range = anchor.resolve();
 
-          if (range) propsListener?.(range, context);
+          if (range) propsListener?.(range, context as EditableHandlerContext);
         } finally {
           anchor.release();
         }

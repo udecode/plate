@@ -3,7 +3,6 @@
  */
 
 export * from './AnyObject';
-export * from './EditableProps';
 export * from './Nullable';
 export * from './RenderElementProps';
 export * from './RenderLeafProps';

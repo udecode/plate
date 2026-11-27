@@ -58,7 +58,7 @@ export {
   valueCodecs,
 } from 'plitejs';
 
-export type { Editor } from './lib/editor/Editor';
+export type { Editor, EditorReference } from './lib/editor/Editor';
 export type { EditorApplicationSchema } from './lib/editor/editorApplicationSchema';
 export type {
   BasePluginInput,

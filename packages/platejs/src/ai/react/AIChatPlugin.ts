@@ -421,8 +421,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       state.selection.nodes().at(-1)?.[1] ?? selection?.focus.path;
     const path = generated?.[1] ?? selectionPath?.slice(0, 1) ?? [0];
     const entry = state.nodes.get(path, { match: ElementApi.isElement });
+    const columnGroupSchema = columnGroup?.schema;
     const containerTypes = new Set<string>([
-      ...(columnGroup ? [columnGroup.schema.type] : []),
+      ...(columnGroupSchema && 'type' in columnGroupSchema
+        ? [columnGroupSchema.type]
+        : []),
       ...(tablePlugin.installed ? [tablePlugin.schema.type] : []),
     ]);
 

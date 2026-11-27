@@ -11,12 +11,7 @@ export type {
   AnnotationStoreOptions,
   OwnedAnnotationStore,
   ResolvedAnnotation,
-  EditableDOMBeforeInputContext,
-  EditableDOMBeforeInputHandler,
-  EditableHandlerContext,
   EditableHandlerResult,
-  EditableInputEventContext,
-  EditableKeyDownHandler,
   EditableHistoryReplayEvent,
   EditableHistoryReplayResult,
   EditableDropResult,
@@ -91,7 +86,6 @@ export {
   useDropIndicator,
   installBrowserHandle,
   useRootChrome,
-  useRootEditor,
   useRootState,
   useRuntimeState,
   useEditableClip,
@@ -120,7 +114,7 @@ export {
   type EditorTextProps,
   type EditorLeafProps,
 } from './components/plate-nodes';
-export type { Editor } from './editor/Editor';
+export type { Editor, EditorReference } from './editor/Editor';
 export { useCreateEditor } from './editor/useCreateEditor';
 export { createEditor, type CreateEditorOptions } from './editor/withPlate';
 export type { DOMHandler, DOMHandlers } from './plugin/DOMHandlers';
@@ -132,7 +126,6 @@ export type {
   EditableSiblingComponent,
   EditableSiblingProps,
   InjectNodeProps,
-  LeafNodeProps,
   NodeProps,
   OnNodeChange,
   OnTextChange,
@@ -150,7 +143,6 @@ export type {
   RenderNodeWrapperProps,
   Shortcut,
   Shortcuts,
-  TextNodeProps,
   TransformOptions,
   UseViewElementAttributes,
   WrapContentProps,
@@ -181,6 +173,7 @@ export {
   useEditorState,
   useEditorValue,
   useOptionalEditor,
+  useRootEditor,
 } from './stores/plate/useEditor';
 export type { UseEditorStateOptions } from './stores/plate/useEditor';
 export * from './stores/plate/useEditorHistory';

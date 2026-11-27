@@ -75,7 +75,13 @@ export const getInjectMatch =
 
             if (!descriptor) return [];
             const portal = editor.plugin(descriptor);
-            if (!portal.installed) return [];
+            if (
+              !portal.installed ||
+              !portal.schema ||
+              !('type' in portal.schema)
+            ) {
+              return [];
+            }
 
             return [portal.schema.type];
           }

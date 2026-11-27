@@ -74,9 +74,12 @@ const getBlockPlaceholderTarget = (
       editor.plugin(ElementStatePlugin).api.isEmpty(firstNode));
   const placeholderPlugin = Object.keys(state.placeholders).find((name) => {
     const descriptor = getCompiledPlatePlugin(editor, name);
+    const pluginSchema = descriptor
+      ? editor.plugin(descriptor).schema
+      : undefined;
 
-    return descriptor
-      ? editor.plugin(descriptor).schema.type === node.type
+    return pluginSchema && 'type' in pluginSchema
+      ? pluginSchema.type === node.type
       : false;
   });
 

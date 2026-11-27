@@ -40,7 +40,7 @@ export const createMarkInputRule = (
         if (!portal.installed) return undefined;
         const { schema } = portal;
 
-        if (!('key' in schema)) return undefined;
+        if (!schema || !('key' in schema)) return undefined;
         markKeys.push(schema.key);
       }
 
@@ -162,7 +162,9 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
       const defaultMatch = match as BlockStartInputRuleMatch;
       const target = config.node ?? plugin;
       const portal = editor.plugin(target);
-      if (!portal.installed) return context.decline();
+      if (!portal.installed || !portal.schema || !('type' in portal.schema)) {
+        return context.decline();
+      }
       const { type } = portal.schema;
 
       if (config.removeMatchedText !== false) {
@@ -205,7 +207,9 @@ const matchBlockFence = <TMatch = BlockFenceInputRuleMatch>(
 
   if (config.block) {
     const plugin = editor.plugin(config.block);
-    if (!plugin.installed) return undefined;
+    if (!plugin.installed || !plugin.schema || !('type' in plugin.schema)) {
+      return undefined;
+    }
 
     const blockType = plugin.schema.type;
 

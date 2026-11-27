@@ -1,5 +1,4 @@
 export type {
-  EditableProps,
   Decoration,
   DecorationAttributes,
   DecorationSource,

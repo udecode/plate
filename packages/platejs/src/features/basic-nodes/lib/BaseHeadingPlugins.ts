@@ -89,8 +89,11 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
   read: ({ editor, schema: { type }, state }) => {
     const detailsTitleType = () => {
       const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
+      const summarySchema = summary ? editor.plugin(summary).schema : undefined;
 
-      return summary ? editor.plugin(summary).schema.type : undefined;
+      return summarySchema && 'type' in summarySchema
+        ? summarySchema.type
+        : undefined;
     };
 
     return {
@@ -124,9 +127,9 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
 }).extend(({ read }) => ({
   update: ({ editor, tx, schema: { type } }) => {
     const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
-    const detailsTitleType = summary
-      ? editor.plugin(summary).schema.type
-      : undefined;
+    const summarySchema = summary ? editor.plugin(summary).schema : undefined;
+    const detailsTitleType =
+      summarySchema && 'type' in summarySchema ? summarySchema.type : undefined;
     const setLevel = txLocate(false, (level: HeadingLevel) => {
       const blocks = tx.nodes.blocks();
 
