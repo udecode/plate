@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-26-suggestion-colors",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-26-suggestion-colors.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Give suggestions seven theme colors that read well in dark mode",
+  "targets": [
+    {
+      "name": "suggestion-colors",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-styles.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-colors."
+        }
+      ]
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "board",
+      "files": [
+        "apps/www/src/registry/components/editor/board-static.tsx",
+        "apps/www/src/registry/components/editor/board-styles.tsx",
+        "apps/www/src/registry/components/editor/board.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-style",
+      "files": ["apps/www/src/registry/lib/inline-suggestion.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-26-suggestion-colors-item",
+      "kind": "new",
+      "summary": "Add `--editor-suggestion-1` to `--editor-suggestion-7` to your theme, with a light and a dark value each, and the Tailwind colors `editor-suggestion-1` to `editor-suggestion-7`.",
+      "details": [],
+      "migrationNotes": [
+        "To give suggestions your own colors, edit the `--editor-suggestion-*` values that shadcn wrote into `:root` and `.dark`. A later `shadcn add` keeps your edits."
+      ],
+      "targets": ["suggestion-colors"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-26",
+          "entry": "2026-11-26-suggestion-colors",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-26-suggestion-slot-colors",
+      "kind": "behavior",
+      "summary": "Each suggestion paints its text, background, hover and active state from one of the seven `--editor-suggestion-*` colors, so suggestions read well in dark mode instead of showing light boxes. A change without a color of its own uses the first one.",
+      "details": [],
+      "migrationNotes": [
+        "Components you copied before this change keep their old suggestion colors. Add `suggestion` again with `shadcn add --overwrite`, which replaces any edits you made to that file."
+      ],
+      "targets": ["suggestion"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-26",
+          "entry": "2026-11-26-suggestion-colors",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-26-board-suggestion-colors",
+      "kind": "behavior",
+      "summary": "A suggested board shape takes its suggestion's color instead of emerald.",
+      "details": [],
+      "migrationNotes": [
+        "A `board` you copied before this change keeps emerald suggestions. Add `board` again with `shadcn add --overwrite`, which replaces any edits you made to that file."
+      ],
+      "targets": ["board"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-26",
+          "entry": "2026-11-26-suggestion-colors",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-26-inline-suggestion-editor-color",
+      "kind": "behavior",
+      "summary": "A suggested link, mention, date, equation or field shows the editor color instead of emerald until its suggestion's color applies.",
+      "details": [],
+      "migrationNotes": [
+        "A `suggestion-style` you copied before this change keeps its emerald fallback. Add `suggestion-style` again with `shadcn add --overwrite`, which replaces any edits you made to that file."
+      ],
+      "targets": ["suggestion-style"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-26",
+          "entry": "2026-11-26-suggestion-colors",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-26-field-suggestion-labels",
+      "kind": "fix",
+      "summary": "Keep a suggested field's chip, required marker, and role, skipped, and review labels at full contrast on the suggestion's background.",
+      "details": [],
+      "migrationNotes": [
+        "A `field` you copied before this change dims its labels and paints the required marker in red when suggested. Add `field` again with `shadcn add --overwrite`, which replaces any edits you made to that file."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 30,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-11-26",
+          "entry": "2026-11-26-suggestion-colors",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

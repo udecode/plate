@@ -846,7 +846,7 @@ export function BoardNoteElement(
       {...props}
       className={cn(
         CURSOR_RING,
-        'rounded-sm p-3 leading-snug data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
+        'rounded-sm p-3 leading-snug data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-[color:var(--suggestion-fg,var(--editor-primary,_var(--primary)))] data-[editor-authored-change]:outline-dashed'
       )}
       style={{ fontSize: TEXT_SIZES[element.textSize] }}
     >
@@ -881,7 +881,7 @@ export function BoardGeoElement(
       {...props}
       className={cn(
         CURSOR_RING,
-        'flex flex-col justify-center p-3 text-center leading-snug data-selected:outline-2 data-selected:outline-offset-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-offset-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
+        'flex flex-col justify-center p-3 text-center leading-snug data-selected:outline-2 data-selected:outline-offset-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-offset-2 data-[editor-authored-change]:outline-[color:var(--suggestion-fg,var(--editor-primary,_var(--primary)))] data-[editor-authored-change]:outline-dashed'
       )}
       style={{ fontSize: TEXT_SIZES[element.textSize] }}
     >
@@ -930,7 +930,7 @@ export function BoardFrameElement(
       {...props}
       className={cn(
         CURSOR_RING,
-        'rounded-sm border-2 border-foreground/50 data-selected:border-ring data-[editor-authored-change]:border-dashed data-[editor-authored-change]:border-emerald-600'
+        'rounded-sm border-2 border-foreground/50 data-selected:border-ring data-[editor-authored-change]:border-dashed data-[editor-authored-change]:border-[color:var(--suggestion-fg,var(--editor-primary,_var(--primary)))]'
       )}
     >
       <div
@@ -947,7 +947,7 @@ export function BoardFrameElement(
 
 // A suggested arrow or pen line keeps the suggestion's color over its own.
 const SUGGESTED_INK =
-  'data-[editor-authored-change]:text-emerald-600 [&[data-editor-authored-change]_[data-board-ink]]:text-emerald-600!';
+  'data-[editor-authored-change]:text-[var(--suggestion-fg,var(--editor-primary,_var(--primary)))] [&[data-editor-authored-change]_[data-board-ink]]:text-[var(--suggestion-fg,var(--editor-primary,_var(--primary)))]!';
 
 export function BoardArrowElement(
   props: EditorElementProps<typeof BoardArrowPlugin>
@@ -1088,7 +1088,7 @@ export function BoardImageElement(
       {...props}
       className={cn(
         CURSOR_RING,
-        'data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
+        'data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-[color:var(--suggestion-fg,var(--editor-primary,_var(--primary)))] data-[editor-authored-change]:outline-dashed'
       )}
     >
       {picture

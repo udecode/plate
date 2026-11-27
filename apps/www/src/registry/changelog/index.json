@@ -92,6 +92,30 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-26-suggestion-colors",
+      "href": "/registry/changelog/2026-11-26-suggestion-colors.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Give suggestions seven theme colors that read well in dark mode",
+      "change": {
+        "type": "source",
+        "date": "2026-11-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "suggestion-colors",
+        "suggestion",
+        "board",
+        "suggestion-style",
+        "field"
+      ],
+      "entries": 5,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-25-field-demo-answer-conflict",
       "href": "/registry/changelog/2026-11-25-field-demo-answer-conflict.json",
       "status": "draft",

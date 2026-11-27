@@ -62,4 +62,38 @@ export const registryStyles: RegistryItem[] = [
     name: 'code-syntax-style',
     type: 'registry:lib',
   },
+  {
+    cssVars: {
+      dark: {
+        'editor-suggestion-1': 'oklch(0.845 0.143 164.978)',
+        'editor-suggestion-2': 'oklch(0.811 0.111 293.571)',
+        'editor-suggestion-3': 'oklch(0.828 0.111 230.318)',
+        'editor-suggestion-4': 'oklch(0.833 0.145 321.434)',
+        'editor-suggestion-5': 'oklch(0.837 0.128 66.29)',
+        'editor-suggestion-6': 'oklch(0.865 0.127 207.078)',
+        'editor-suggestion-7': 'oklch(0.81 0.117 11.638)',
+      },
+      light: {
+        'editor-suggestion-1': 'oklch(0.432 0.095 166.913)',
+        'editor-suggestion-2': 'oklch(0.432 0.232 292.759)',
+        'editor-suggestion-3': 'oklch(0.443 0.11 240.79)',
+        'editor-suggestion-4': 'oklch(0.452 0.211 324.591)',
+        'editor-suggestion-5': 'oklch(0.47 0.157 37.304)',
+        'editor-suggestion-6': 'oklch(0.45 0.085 224.283)',
+        'editor-suggestion-7': 'oklch(0.455 0.188 13.697)',
+      },
+      theme: {
+        'color-editor-suggestion-1': 'var(--editor-suggestion-1)',
+        'color-editor-suggestion-2': 'var(--editor-suggestion-2)',
+        'color-editor-suggestion-3': 'var(--editor-suggestion-3)',
+        'color-editor-suggestion-4': 'var(--editor-suggestion-4)',
+        'color-editor-suggestion-5': 'var(--editor-suggestion-5)',
+        'color-editor-suggestion-6': 'var(--editor-suggestion-6)',
+        'color-editor-suggestion-7': 'var(--editor-suggestion-7)',
+      },
+    },
+    files: [],
+    name: 'suggestion-colors',
+    type: 'registry:lib',
+  },
 ];

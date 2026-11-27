@@ -1,0 +1,30 @@
+---
+id: 2026-11-26-suggestion-colors
+date: 2026-11-26
+status: draft
+kind: new
+summary: 'Give suggestions seven theme colors that read well in dark mode'
+change: { 'type': 'source', 'date': '2026-11-26', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-26-suggestion-colors-item","kind":"new","migrationNotes":["To give suggestions your own colors, edit the `--editor-suggestion-*` values that shadcn wrote into `:root` and `.dark`. A later `shadcn add` keeps your edits."]} -->
+
+- **`suggestion-colors`**: Add `--editor-suggestion-1` to `--editor-suggestion-7` to your theme, with a light and a dark value each, and the Tailwind colors `editor-suggestion-1` to `editor-suggestion-7`.
+
+<!-- entry: {"id":"2026-11-26-suggestion-slot-colors","kind":"behavior","migrationNotes":["Components you copied before this change keep their old suggestion colors. Add `suggestion` again with `shadcn add --overwrite`, which replaces any edits you made to that file."]} -->
+
+- **`suggestion`**: Each suggestion paints its text, background, hover and active state from one of the seven `--editor-suggestion-*` colors, so suggestions read well in dark mode instead of showing light boxes. A change without a color of its own uses the first one.
+
+<!-- entry: {"id":"2026-11-26-board-suggestion-colors","kind":"behavior","migrationNotes":["A `board` you copied before this change keeps emerald suggestions. Add `board` again with `shadcn add --overwrite`, which replaces any edits you made to that file."]} -->
+
+- **`board`**: A suggested board shape takes its suggestion's color instead of emerald.
+
+<!-- entry: {"id":"2026-11-26-inline-suggestion-editor-color","kind":"behavior","migrationNotes":["A `suggestion-style` you copied before this change keeps its emerald fallback. Add `suggestion-style` again with `shadcn add --overwrite`, which replaces any edits you made to that file."]} -->
+
+- **`suggestion-style`**: A suggested link, mention, date, equation or field shows the editor color instead of emerald until its suggestion's color applies.
+
+<!-- entry: {"id":"2026-11-26-field-suggestion-labels","kind":"fix","migrationNotes":["A `field` you copied before this change dims its labels and paints the required marker in red when suggested. Add `field` again with `shadcn add --overwrite`, which replaces any edits you made to that file."]} -->
+
+- **`field`**: Keep a suggested field's chip, required marker, and role, skipped, and review labels at full contrast on the suggestion's background.

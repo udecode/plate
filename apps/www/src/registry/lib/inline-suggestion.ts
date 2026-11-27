@@ -6,8 +6,8 @@ export const inlineSuggestionVariants = cva('', {
     on: {
       // A trigger the element renders as its child paints the element's marks.
       parent:
-        '[[data-editor-authored-change]>&]:bg-[var(--suggestion-bg,var(--color-emerald-100))]! [[data-editor-authored-change]>&]:text-[var(--suggestion-fg,var(--color-emerald-700))]! [[data-editor-authored-kind~=delete]>&]:line-through',
-      self: '[&[data-editor-authored-change]]:bg-[var(--suggestion-bg,var(--color-emerald-100))]! [&[data-editor-authored-change]]:text-[var(--suggestion-fg,var(--color-emerald-700))]! [&[data-editor-authored-kind~=delete]]:line-through',
+        '[[data-editor-authored-change]>&]:bg-[var(--suggestion-bg,color-mix(in_oklab,var(--editor-primary,_var(--primary))_14%,var(--background)))]! [[data-editor-authored-change]>&]:text-[var(--suggestion-fg,var(--editor-primary,_var(--primary)))]! [[data-editor-authored-kind~=delete]>&]:line-through',
+      self: '[&[data-editor-authored-change]]:bg-[var(--suggestion-bg,color-mix(in_oklab,var(--editor-primary,_var(--primary))_14%,var(--background)))]! [&[data-editor-authored-change]]:text-[var(--suggestion-fg,var(--editor-primary,_var(--primary)))]! [&[data-editor-authored-kind~=delete]]:line-through',
     },
   },
 });

@@ -4,10 +4,13 @@
   "dependencies": [
     "class-variance-authority"
   ],
+  "registryDependencies": [
+    "https://platejs.org/r/plate-ui.json"
+  ],
   "files": [
     {
       "path": "src/registry/lib/inline-suggestion.ts",
-      "content": "import { cva } from 'class-variance-authority';\n\nexport const inlineSuggestionVariants = cva('', {\n  defaultVariants: { on: 'self' },\n  variants: {\n    on: {\n      // A trigger the element renders as its child paints the element's marks.\n      parent:\n        '[[data-editor-authored-change]>&]:bg-[var(--suggestion-bg,var(--color-emerald-100))]! [[data-editor-authored-change]>&]:text-[var(--suggestion-fg,var(--color-emerald-700))]! [[data-editor-authored-kind~=delete]>&]:line-through',\n      self: '[&[data-editor-authored-change]]:bg-[var(--suggestion-bg,var(--color-emerald-100))]! [&[data-editor-authored-change]]:text-[var(--suggestion-fg,var(--color-emerald-700))]! [&[data-editor-authored-kind~=delete]]:line-through',\n    },\n  },\n});\n",
+      "content": "import { cva } from 'class-variance-authority';\n\nexport const inlineSuggestionVariants = cva('', {\n  defaultVariants: { on: 'self' },\n  variants: {\n    on: {\n      // A trigger the element renders as its child paints the element's marks.\n      parent:\n        '[[data-editor-authored-change]>&]:bg-[var(--suggestion-bg,color-mix(in_oklab,var(--editor-primary,_var(--primary))_14%,var(--background)))]! [[data-editor-authored-change]>&]:text-[var(--suggestion-fg,var(--editor-primary,_var(--primary)))]! [[data-editor-authored-kind~=delete]>&]:line-through',\n      self: '[&[data-editor-authored-change]]:bg-[var(--suggestion-bg,color-mix(in_oklab,var(--editor-primary,_var(--primary))_14%,var(--background)))]! [&[data-editor-authored-change]]:text-[var(--suggestion-fg,var(--editor-primary,_var(--primary)))]! [&[data-editor-authored-kind~=delete]]:line-through',\n    },\n  },\n});\n",
       "type": "registry:lib"
     }
   ],

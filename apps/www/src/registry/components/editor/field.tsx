@@ -41,6 +41,10 @@ import {
 } from '@/components/ui/popover';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
+// Dimmed text on a suggestion's tint falls below 4.5:1, so it stays opaque there.
+const CHIP_NOTE =
+  'text-xs opacity-70 [[data-editor-authored-change]>*>&]:opacity-100';
+
 const KINDS: Record<FieldKind, string> = {
   checkbox: 'Checkbox',
   choice: 'Choice',
@@ -180,7 +184,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
     className: cn(
       'inline-flex w-fit items-baseline gap-1 rounded-sm bg-muted px-1 text-muted-foreground',
       (form || toggles) && 'cursor-pointer',
-      skipped && 'opacity-50',
+      skipped && 'opacity-50 [[data-editor-authored-change]>&]:opacity-100',
       inlineSuggestionVariants({ on: 'parent' })
     ),
     contentEditable: false,
@@ -222,12 +226,14 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
       {filling && element.kind !== 'checkbox'
         ? answer || element.label
         : element.label}
-      {element.required && <span className="text-destructive">*</span>}
-      <span className="text-xs opacity-70">{element.role}</span>
-      {skipped && <span className="text-xs opacity-70">skipped</span>}
-      {waitsForReview && (
-        <span className="text-xs opacity-70">waits for review</span>
+      {element.required && (
+        <span className="text-destructive [[data-editor-authored-change]>*>&]:text-current">
+          *
+        </span>
       )}
+      <span className={CHIP_NOTE}>{element.role}</span>
+      {skipped && <span className={CHIP_NOTE}>skipped</span>}
+      {waitsForReview && <span className={CHIP_NOTE}>waits for review</span>}
       {warning && (
         <span
           aria-label={warning}

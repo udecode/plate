@@ -286,8 +286,25 @@ export async function assertThemeEntries(
     .map(String)
     .join('\n');
 
+  const owned = {
+    '.dark': new Map<string, string>(),
+    ':root': new Map<string, string>(),
+    '@theme inline': new Map<string, string>(),
+  };
+
   for (const item of REGISTRY_COLOR_ITEMS) {
     const { dark = {}, light = {}, theme = {} } = item.cssVars ?? {};
+    for (const [key, value] of Object.entries(light)) {
+      owned[':root'].set(`--${key}`, value);
+    }
+    for (const [key, value] of Object.entries(dark)) {
+      owned['.dark'].set(`--${key}`, value);
+    }
+    for (const [key, value] of Object.entries(theme)) {
+      if (key.startsWith('color-')) {
+        owned['@theme inline'].set(`--${key}`, value);
+      }
+    }
     const themeChecks = [
       ...Object.entries(theme).filter(([key]) => key.startsWith('color-')),
       ...[...new Set([...Object.keys(light), ...Object.keys(dark)])]
@@ -326,5 +343,39 @@ export async function assertThemeEntries(
         );
       }
     }
+  }
+
+  const themeCounts = new Map<string, number>();
+
+  for (const { prop, scope, value } of declarations) {
+    const rule = scope.join(' ');
+    if (prop.startsWith('--editor-')) {
+      const expected =
+        rule === ':root' || rule === '.dark'
+          ? owned[rule].get(prop)
+          : undefined;
+      assert(
+        expected === value,
+        `Expected ${rule || 'root'} ${prop} in ${label} (${value}) to match a registry color item in :root or .dark, found ${expected ?? 'none'}`
+      );
+    }
+    if (prop.startsWith('--color-editor-')) {
+      const expected =
+        rule === '@theme inline' ? owned['@theme inline'].get(prop) : undefined;
+      assert(
+        expected === value,
+        `Expected ${rule || 'root'} ${prop} in ${label} (${value}) to match a registry color item in @theme inline, found ${expected ?? 'none'}`
+      );
+      themeCounts.set(prop, (themeCounts.get(prop) ?? 0) + 1);
+    }
+  }
+
+  for (const prop of owned['@theme inline'].keys()) {
+    if (!prop.startsWith('--color-editor-')) continue;
+    const count = themeCounts.get(prop) ?? 0;
+    assert(
+      count === 1,
+      `Expected ${prop} once in @theme inline of ${label}, found ${count}`
+    );
   }
 }
