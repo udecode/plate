@@ -1215,6 +1215,60 @@ const nextScrollIntoViewToken = (scope: object) => {
   return token;
 };
 
+const hasCSSScrollMargin = (element: HTMLElement) => {
+  const win = element.ownerDocument?.defaultView;
+
+  if (!win) return false;
+
+  const style = win.getComputedStyle(element);
+
+  return (
+    (Number.parseFloat(
+      element.style.scrollMarginTop || style.scrollMarginTop
+    ) || 0) > 0 ||
+    (Number.parseFloat(
+      element.style.scrollMarginBottom || style.scrollMarginBottom
+    ) || 0) > 0 ||
+    (Number.parseFloat(
+      element.style.scrollMarginLeft || style.scrollMarginLeft
+    ) || 0) > 0 ||
+    (Number.parseFloat(
+      element.style.scrollMarginRight || style.scrollMarginRight
+    ) || 0) > 0
+  );
+};
+
+const runScrollIntoViewIfNeeded = (
+  element: HTMLElement,
+  options: boolean | StandardBehaviorOptions | undefined
+) => {
+  if (
+    typeof options !== 'object' ||
+    options === null ||
+    typeof options.behavior === 'function' ||
+    !hasCSSScrollMargin(element)
+  ) {
+    scrollIntoViewIfNeeded(element, options);
+
+    return;
+  }
+
+  const { behavior } = options;
+
+  // scroll-into-view-if-needed subtracts scrollMarginTop a second time after
+  // compute-scroll-into-view already applied it; apply computed coordinates directly.
+  scrollIntoViewIfNeeded(element, {
+    ...options,
+    behavior: (actions) => {
+      for (const { el, left, top } of actions) {
+        if (el.scrollTop !== top || el.scrollLeft !== left) {
+          el.scroll({ behavior, left, top });
+        }
+      }
+    },
+  });
+};
+
 const getScrollIntoViewScope = (
   editor: EditorType,
   fallback: object
@@ -2709,7 +2763,7 @@ const DOMEditorImpl: DOMEditorInterface = {
             });
           }
         } else {
-          scrollIntoViewIfNeeded(element, options);
+          runScrollIntoViewIfNeeded(element, options);
         }
 
         return;
@@ -2762,17 +2816,38 @@ const DOMEditorImpl: DOMEditorInterface = {
       const hadOwnRect = Object.hasOwn(leafElement, 'getBoundingClientRect');
       // oxlint-disable-next-line typescript/unbound-method -- [P0 behavior-boundary] The original own method is restored on the same element after the temporary range-backed call; rebinding would change its identity.
       const originalGetBoundingClientRect = leafElement.getBoundingClientRect;
+      const nearestScrollMarginTop =
+        typeof options === 'object' &&
+        options !== null &&
+        (options.block === undefined || options.block === 'nearest')
+          ? readScrollMarginTop(leafElement)
+          : 0;
 
       leafElement.getBoundingClientRect = () => {
         const rangeRect = domRange.getBoundingClientRect();
-
-        return isUsableScrollRect(rangeRect)
+        const baseRect = isUsableScrollRect(rangeRect)
           ? rangeRect
           : originalGetBoundingClientRect.call(leafElement);
+
+        // compute-scroll-into-view shifts nearest-block bottom upward by
+        // scrollMarginTop, hiding targets within scrollMarginTop below the fold.
+        if (nearestScrollMarginTop <= 0) return baseRect;
+
+        return {
+          bottom: baseRect.bottom + nearestScrollMarginTop,
+          height: baseRect.height + nearestScrollMarginTop,
+          left: baseRect.left,
+          right: baseRect.right,
+          toJSON: () => baseRect.toJSON?.() ?? {},
+          top: baseRect.top,
+          width: baseRect.width,
+          x: baseRect.x,
+          y: baseRect.y,
+        };
       };
 
       try {
-        scrollIntoViewIfNeeded(leafElement, options);
+        runScrollIntoViewIfNeeded(leafElement, options);
       } finally {
         if (hadOwnRect) {
           leafElement.getBoundingClientRect = originalGetBoundingClientRect;
