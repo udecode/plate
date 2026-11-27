@@ -1,12 +1,12 @@
 # Sweep
 
-Beta sweeps run rounds over `https://beta.platejs.org` beside `slatejs.org` and `platejs.org`. Agents drive pages first, a person confirms each find, and each domain is triaged into one issue per cause before fixing.
+Beta sweeps run rounds over `https://beta.platejs.org` beside `slatejs.org` and `platejs.org`. Agents drive pages first, a person confirms each find, and clear blockers go straight to `udecode/plate-private`.
 
 ## Roles and handoff
 
-- **Tester:** runs rounds, retests finds, runs [Triage a domain](#triage-a-domain), publishes drafted issues, records retests (`pnpm triage retest`), and runs `/pstack:maintain-verification-skill` after a round.
-- **Fixer:** runs `triage fix <domain>` in priority order, syncs formal checks (`/pstack:maintain-formal-verification-skill`), and runs `/pstack:correct` on repeat miss classes.
-- **Handoff:** Triage a domain offers one `chips` task per domain. The tester never cards fix tasks; run `node .agents/pstack/setup.mjs` from the main checkout to sync `refs/pstack/ledger`, and the fixer's `/chips all` claims it.
+- **Tester:** runs rounds, retests finds, files confirmed Beta bugs straight to `udecode/plate-private` (do not wait for an entire domain to finish before filing a clear P0 or P1 blocker), records retests (`pnpm triage retest`), and runs `/pstack:maintain-verification-skill` after a round.
+- **Triage and queue:** `triage` groups open issues into failure kinds in `docs/triage/plate-private.tsv`. Run `pnpm triage status` to see `unfixed`, `claimed`, and `ready to retest on beta`.
+- **Fixer:** claims work via `pnpm triage claim --next --repo plate-private` (or `triage fix <domain>`), fixes claimed kinds together, syncs formal checks (`/pstack:maintain-formal-verification-skill`), and runs `/pstack:correct` on repeat miss classes.
 
 ## Pages and agent pass
 
@@ -31,13 +31,11 @@ Build state instead of resetting; never click to repair lost focus. Apply live w
 
 Reproduce each find once in a fresh tab with a clip before logging (`mm:ss browser: what differed`).
 
-## Triage a domain
+## Filing and triage
 
-A domain is the review scope owning the demo. Triage once every page in the domain has a session (or blocked record) and every find is retested; file nothing before domain triage.
-
-1. Gather confirmed finds, open `udecode/plate-private` issues, and Beta-milestone `udecode/plate` issues. Send spec questions and editor gaps to `verdict`. Set `regression: <ref-url>` when beta differs from its reference page.
-2. Group into failure kinds per `.agents/playbooks/triage.md` (Sweep domains): owner (`path:line`), miss class, cheapest catching layer, priority (`P0`-`P3`), and one drafted issue per kind via `maintainer` issue-draft. The tester publishes drafts, closes duplicates, and runs `triage #<N>`.
-3. Offer one fix-run task per `.agents/playbooks/triage.md` (`Offer fix runs`) for any regression, P0, or P1 kind (P2/P3-only new bugs go to Open work). Sync via `node .agents/pstack/setup.mjs`; never card from the tester's session.
+1. For any confirmed P0 or P1 blocker, draft and file straight to `udecode/plate-private` via `maintainer` issue-draft (one issue per cause, with clip and `regression: <ref-url>` when beta differs from its reference page). Send spec questions and editor gaps to `verdict`.
+2. Run `triage` (or `triage plate-private#<N>`) to group open `udecode/plate-private` and Beta-milestone `udecode/plate` issues into failure kinds in `docs/triage/plate-private.tsv` (owner `path:line`, miss class, cheapest catching layer, priority `P0`-`P3`) and close duplicates.
+3. Use `pnpm triage status` to track `unfixed`, `claimed`, and `ready to retest on beta`. Once a fix deploys to `beta.platejs.org`, run `pnpm triage retest plate-private#<N> --pass|--fail --on "<browser/device>"`.
 
 ## Rechecks
 
