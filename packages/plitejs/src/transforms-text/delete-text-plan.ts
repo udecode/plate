@@ -147,20 +147,22 @@ export const shouldPreserveEmptyStartBlockForHangingRange = (
   isAcrossBlocks: boolean,
   preserveEndBlock: boolean,
   originalHangingBlockRange: boolean,
-  effectiveStartBlock:
-    | readonly [import('../interfaces').Node, Path]
-    | undefined,
-  startLine: Path | undefined
+  startLineBlock: readonly [import('../interfaces').Node, Path] | undefined
 ) =>
   !isSingleText &&
   isAcrossBlocks &&
   (preserveEndBlock || originalHangingBlockRange) &&
-  effectiveStartBlock &&
-  startLine &&
-  NodeApi.isElement(effectiveStartBlock[0]) &&
-  !getEditorSchema(editor).isVoid(effectiveStartBlock[0]) &&
-  PointApi.equals(start, editorPoint(editor, startLine, { edge: 'start' }))
-    ? effectiveStartBlock[1]
+  startLineBlock &&
+  NodeApi.isElement(startLineBlock[0]) &&
+  !getEditorSchema(editor).isVoid(startLineBlock[0]) &&
+  PointApi.equals(
+    start,
+    matchPointRootVisibility(
+      editorPoint(editor, startLineBlock[1], { edge: 'start' }),
+      start
+    )
+  )
+    ? startLineBlock[1]
     : null;
 
 export type DeleteRangePlan = {
@@ -176,6 +178,7 @@ export type DeleteRangePlan = {
   isCollapsed: boolean;
   isSingleText: boolean;
   kind: 'range';
+  originalEndAtEffectiveEndStart: boolean;
   preserveEmptyStartBlockPath: Path | null;
   preserveEndBlock: boolean;
   preserveInlineEdge: boolean;

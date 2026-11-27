@@ -6,8 +6,10 @@ import {
   getActiveUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
+import { isNonEditable } from '../core/writable-text';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
+import { structuralPrevious } from '../editor/previous';
 import { LocationApi, SelectionApi } from '../interfaces';
 import type {
   AnyEditor as Editor,
@@ -21,7 +23,6 @@ import {
   isBlock as editorIsBlock,
   levels as editorLevels,
   parent as editorParent,
-  previous as editorPrevious,
   shouldMergeNodesRemovePrevNode as editorShouldMergeNodesRemovePrevNode,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
@@ -49,7 +50,7 @@ const readLevels = (editor: Editor, options?: EditorLevelsOptions<Node>) =>
     undefined
   >;
 const readPrevious = (editor: Editor, options?: EditorPreviousOptions<Node>) =>
-  editorPrevious(editor, options) as readonly [Node, Path] | undefined;
+  structuralPrevious(editor, options) as readonly [Node, Path] | undefined;
 
 const getChildren = (editor: Editor, node: Ancestor) =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
@@ -110,19 +111,41 @@ const crossesIsolatingBoundary = (
 ) => {
   const [previousNode, prevPath] = previous;
   const [node, path] = current;
+  const schema = getEditorSchema(editor);
   const prevIsolating = getClosestIsolatingAncestor(editor, prevPath);
   const currentIsolating = getClosestIsolatingAncestor(editor, path);
 
-  return (
+  if (
     (NodeApi.isElement(previousNode) &&
-      getEditorSchema(editor).isIsolating(previousNode) &&
+      schema.isIsolating(previousNode) &&
       !pathContainsPath(prevPath, path)) ||
     (NodeApi.isElement(node) &&
-      getEditorSchema(editor).isIsolating(node) &&
+      schema.isIsolating(node) &&
       !pathContainsPath(path, prevPath)) ||
     (prevIsolating && !pathContainsPath(prevIsolating[1], path)) ||
     (currentIsolating && !pathContainsPath(currentIsolating[1], prevPath))
-  );
+  ) {
+    return true;
+  }
+
+  if (PathApi.isBefore(prevPath, path)) {
+    const [intervening] = getNodes(editor, {
+      at: [prevPath, path],
+      match: (candidate, candidatePath) =>
+        NodeApi.isElement(candidate) &&
+        (schema.isIsolating(candidate) || isNonEditable(schema, candidate)) &&
+        !pathContainsPath(candidatePath, prevPath) &&
+        !pathContainsPath(candidatePath, path) &&
+        !pathContainsPath(prevPath, candidatePath) &&
+        !pathContainsPath(path, candidatePath),
+      mode: 'highest',
+      voids: true,
+    });
+
+    if (intervening) return true;
+  }
+
+  return false;
 };
 
 const dissolvesIsolatingDescendant = (
@@ -206,7 +229,6 @@ export const mergeNodes = ((
     }
 
     const isPathMerge = LocationApi.isPath(at);
-    let afterRangeRemoval = false;
     const pathAt = isPathMerge ? (at as Path) : null;
     const usesDefaultSiblingMatch = match == null && isPathMerge;
 
@@ -228,15 +250,18 @@ export const mergeNodes = ((
       if (RangeApi.isCollapsed(at)) {
         at = at.anchor;
       } else {
-        const [, end] = RangeApi.edges(at);
+        const [start, end] = RangeApi.edges(at);
+        const [startNode] = getNodes(editor, { at: start, match, voids, mode });
+        const [endNode] = getNodes(editor, { at: end, match, voids, mode });
+        const mergedByRangeRemoval = Boolean(
+          startNode && endNode && !PathApi.equals(startNode[1], endNode[1])
+        );
         const pointAnchor = editor.anchor(end, {
           association: 'forward',
           deletion: 'nearest',
         });
         const removal = removeText(editor, { at });
         const removalEnd = pointAnchor.release();
-
-        afterRangeRemoval = true;
 
         if (removal?.kind === 'grid') {
           if (removal.keepsGrid || !removal.landing) return;
@@ -247,23 +272,31 @@ export const mergeNodes = ((
         if (options.at == null) {
           select(editor, at);
         }
+        if (mergedByRangeRemoval && removal?.kind !== 'grid') {
+          return;
+        }
       }
     }
 
     const [current] = getNodes(editor, { at, match, voids, mode });
+
+    if (!current) {
+      return;
+    }
+
+    const [node, path] = current;
     const previousPath =
       usesDefaultSiblingMatch && pathAt && PathApi.hasPrevious(pathAt)
         ? PathApi.previous(pathAt)
         : null;
     const prev = previousPath
       ? getNode(editor, previousPath)
-      : readPrevious(editor, { at, match, voids, mode });
+      : readPrevious(editor, { at: path, match, voids, mode });
 
-    if (!current || !prev) {
+    if (!prev) {
       return;
     }
 
-    const [node, path] = current;
     const [previousNode, prevPath] = prev;
 
     if (path.length === 0 || prevPath.length === 0) {
@@ -272,7 +305,7 @@ export const mergeNodes = ((
 
     if (
       crossesIsolatingBoundary(editor, prev, current) ||
-      (afterRangeRemoval && PathApi.equals(prevPath, path))
+      PathApi.equals(prevPath, path)
     ) {
       return;
     }
@@ -305,7 +338,7 @@ export const mergeNodes = ((
 
     const newPath = PathApi.next(prevPath);
     const commonPath = PathApi.common(path, prevPath);
-    const isPreviousSibling = PathApi.isSibling(path, prevPath);
+    const isPreviousSibling = PathApi.equals(path, newPath);
     const levels = new Set(
       Array.from(readLevels(editor, { at: path }), ([n]) => n)
         .slice(commonPath.length)

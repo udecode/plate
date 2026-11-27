@@ -8,7 +8,7 @@ import {
 } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
 import { PathApi } from '../interfaces/path';
-import type { Point } from '../interfaces/point';
+import { type Point, PointApi } from '../interfaces/point';
 import {
   canUseAdjacentCharacterFastPath,
   getAdjacentCharacterPoint,
@@ -43,7 +43,10 @@ const stepBefore =
       at: range,
       reverse: true,
     })) {
-      if (skipsPoint(editor, p, reach)) {
+      if (skipsPoint(editor, p, reach, focus)) {
+        if (d === 0 && PointApi.equals(p, focus)) {
+          d = 1;
+        }
         continue;
       }
 
@@ -64,6 +67,8 @@ const stepBefore =
 const beforeBase = stepBefore('caret');
 
 export const contentBefore = stepBefore('content');
+
+export const structuralBefore = stepBefore('structural');
 
 export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
   if (!options.match && options.matchString === undefined) {

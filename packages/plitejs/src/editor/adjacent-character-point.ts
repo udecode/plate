@@ -87,42 +87,41 @@ export const canUseAdjacentCharacterFastPath = (
 };
 
 const getFirstTextPoint = (editor: Editor, path: Path): Point | null => {
-  let node = getNodeAtPath(editor, path);
-  const currentPath = [...path];
+  const node = getNodeAtPath(editor, path);
 
-  while (node && !NodeApi.isText(node)) {
-    const children = getChildren(editor, node);
+  if (!node) return null;
+  if (NodeApi.isText(node)) return { path, offset: 0 };
 
-    if (!children?.length) {
-      return null;
-    }
+  const children = getChildren(editor, node);
 
-    node = children.at(0);
-    currentPath.push(0);
+  if (!children?.length) return null;
+
+  for (let index = 0; index < children.length; index += 1) {
+    const point = getFirstTextPoint(editor, [...path, index]);
+
+    if (point) return point;
   }
 
-  return node && NodeApi.isText(node) ? { path: currentPath, offset: 0 } : null;
+  return null;
 };
 
 const getLastTextPoint = (editor: Editor, path: Path): Point | null => {
-  let node = getNodeAtPath(editor, path);
-  const currentPath = [...path];
+  const node = getNodeAtPath(editor, path);
 
-  while (node && !NodeApi.isText(node)) {
-    const children = getChildren(editor, node);
+  if (!node) return null;
+  if (NodeApi.isText(node)) return { path, offset: node.text.length };
 
-    if (!children?.length) {
-      return null;
-    }
+  const children = getChildren(editor, node);
 
-    const lastIndex = children.length - 1;
-    node = children.at(lastIndex);
-    currentPath.push(lastIndex);
+  if (!children?.length) return null;
+
+  for (let index = children.length - 1; index >= 0; index -= 1) {
+    const point = getLastTextPoint(editor, [...path, index]);
+
+    if (point) return point;
   }
 
-  return node && NodeApi.isText(node)
-    ? { path: currentPath, offset: node.text.length }
-    : null;
+  return null;
 };
 
 const getNextTextStartPoint = (editor: Editor, path: Path): Point | null => {
@@ -239,7 +238,9 @@ export const getAdjacentCharacterPoint = (
         ? getNextCharacterPoint(editor, current)
         : getPreviousCharacterPoint(editor, current);
 
-    if (!current || (!voids && skipsPoint(editor, current, reach))) continue;
+    if (!current || (!voids && skipsPoint(editor, current, reach, point))) {
+      continue;
+    }
 
     const atom =
       reach === 'content' && !voids

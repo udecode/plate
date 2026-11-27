@@ -17,16 +17,24 @@ import {
   withEditorUpdateRootChildren,
 } from '../core/public-state';
 import { crossesMembers, refuseCrossing } from '../core/set-root';
-import { isEditablePath, isWritablePoint } from '../core/writable-text';
+import {
+  canReplaceChildrenWithText,
+  isEditablePath,
+  isNonEditable,
+  isWritablePoint,
+} from '../core/writable-text';
 import { contentAfter } from '../editor/after';
 import { contentBefore } from '../editor/before';
 import { hasEdgeInReadOnlyInline } from '../editor/element-read-only';
 import { nodes as getNodes } from '../editor/nodes';
-import { skippedAbove } from '../editor/reach';
+import { readTextEdge } from '../editor/point';
+import { structuralPrevious } from '../editor/previous';
+import { isSkippedElement } from '../editor/reach';
 import {
   type Element as EditorElement,
   type Location,
   LocationApi,
+  type Node,
   NodeApi,
   type NodeEntry,
   type NodeSelection,
@@ -45,14 +53,15 @@ import {
   above as editorAbove,
   after as editorAfter,
   before as editorBefore,
+  first as editorFirst,
   getChildren as editorGetChildren,
   hasPath as editorHasPath,
   isBlock as editorIsBlock,
+  last as editorLast,
   leaf as editorLeaf,
   parent as editorParent,
   point as editorPoint,
   positions as editorPositions,
-  previous as editorPrevious,
   shouldMergeNodesRemovePrevNode as editorShouldMergeNodesRemovePrevNode,
   string as editorString,
 } from '../interfaces/editor';
@@ -141,7 +150,7 @@ const canMergeBlocksAtPoint = (
     mode: 'lowest',
     voids,
   });
-  const previous = editorPrevious(editor, {
+  const previous = structuralPrevious(editor, {
     at: point,
     match: matchBlock,
     mode: 'lowest',
@@ -200,7 +209,10 @@ const readForwardDeletedEmptyBlock = (
     !editorIsBlock(editor, startBlock) ||
     !PointApi.equals(
       plan.start,
-      editorPoint(editor, plan.effectiveStartBlockPath, { edge: 'end' })
+      matchPointRootVisibility(
+        editorPoint(editor, plan.effectiveStartBlockPath, { edge: 'end' }),
+        plan.start
+      )
     ) ||
     joinKeepsPrefixOccupant(
       editor,
@@ -312,63 +324,6 @@ const isReadOnlyGridPart = (
   );
 };
 
-const stopBeforeEnteredIsolatingNode = (
-  editor: Editor,
-  at: Point,
-  rawReach: Point,
-  reverse: boolean,
-  voids: boolean
-): Point => {
-  const reach = matchPointRootVisibility(rawReach, at);
-
-  if (PathApi.equals(at.path, reach.path)) return reach;
-
-  const schema = getEditorSchema(editor);
-  const [entered] = getNodes(editor, {
-    at: { anchor: at, focus: reach },
-    match: (node, path) =>
-      NodeApi.isElement(node) &&
-      !pathContainsPoint(path, at) &&
-      (isEditablePath(editor, path, { voids })
-        ? schema.isIsolating(node)
-        : isReadOnlyGridPart(editor, node, path, voids)),
-    mode: 'highest',
-    reverse,
-    voids,
-  });
-
-  if (!entered) return reach;
-
-  const [holdsText] = getNodes(editor, {
-    at: entered[1],
-    match: NodeApi.isText,
-    voids: true,
-  });
-
-  if (holdsText) {
-    return (
-      (reverse
-        ? editorAfter(editor, entered[1], { voids: true })
-        : editorBefore(editor, entered[1], { voids: true })) ?? at
-    );
-  }
-
-  const [beside] = getNodes(editor, {
-    at: { anchor: at, focus: reach },
-    match: (node, path) =>
-      NodeApi.isText(node) &&
-      (reverse
-        ? PathApi.isAfter(path, entered[1])
-        : PathApi.isBefore(path, entered[1])),
-    reverse: !reverse,
-    voids,
-  });
-
-  if (!beside) return at;
-
-  return editorPoint(editor, beside[1], { edge: reverse ? 'start' : 'end' });
-};
-
 const resolveMergePoint = (
   editor: Editor,
   plan: DeleteRangePlan,
@@ -407,7 +362,10 @@ const unhangDeleteRange = (
     return range;
   }
 
-  const endOfDocument = editorPoint(editor, [], { edge: 'end' });
+  const endOfDocument = matchPointRootVisibility(
+    editorPoint(editor, [], { edge: 'end' }),
+    end
+  );
   const endHolder = voids ? undefined : getHighestNonEditable(editor, end);
   const schema = getEditorSchema(editor);
   const endsInsideVoid = !!endHolder && schema.isVoid(endHolder[0]);
@@ -441,6 +399,36 @@ const unhangDeleteRange = (
     }
 
     if (node.text !== '' || PathApi.isBefore(path, blockPath)) {
+      const focus = matchPointRootVisibility(
+        { offset: node.text.length, path },
+        start
+      );
+      const unhungHasNoText =
+        PointApi.equals(start, focus) ||
+        editorString(editor, { anchor: start, focus }) === '';
+
+      if (unhungHasNoText) {
+        const startBlock = editorAbove(editor, {
+          at: start,
+          match: (candidate) =>
+            NodeApi.isElement(candidate) && editorIsBlock(editor, candidate),
+          voids,
+        });
+        const atStartBlockStart =
+          !!startBlock &&
+          PointApi.equals(
+            start,
+            matchPointRootVisibility(
+              editorPoint(editor, startBlock[1], { edge: 'start' }),
+              start
+            )
+          );
+
+        if (!atStartBlockStart) {
+          return range;
+        }
+      }
+
       return { anchor: start, focus: { offset: node.text.length, path } };
     }
   }
@@ -519,12 +507,24 @@ const resolveDeleteTarget = (
         };
       }
 
-      const target = getCollapsedDeleteTarget(editor, at, {
+      const collapsedTarget = getCollapsedDeleteTarget(editor, at, {
         reverse,
         distance,
         unit,
         voids,
       });
+
+      if (collapsedTarget.kind === 'path') {
+        return {
+          kind: 'path',
+          path: collapsedTarget.path,
+          fallbackAssociation: reverse ? 'backward' : 'forward',
+          fallbackPoint: at,
+          initialAt,
+        };
+      }
+
+      const target = collapsedTarget.point;
       const besideGrid =
         distance > 0 && PointApi.equals(target, at)
           ? getGridBesideBlockEdge(editor, at, reverse, voids)
@@ -675,7 +675,10 @@ const resolveDeleteTarget = (
     !!effectiveEndBlock &&
     PointApi.equals(
       end,
-      editorPoint(editor, effectiveEndBlock[1], { edge: 'start' })
+      matchPointRootVisibility(
+        editorPoint(editor, effectiveEndBlock[1], { edge: 'start' }),
+        end
+      )
     );
   const originalHangingBlockRange =
     !!initialAt &&
@@ -690,11 +693,31 @@ const resolveDeleteTarget = (
         !!effectiveStartBlock &&
         !PathApi.equals(effectiveStartBlock[1], originalEndBlock[1]) &&
         PointApi.equals(
-          originalEnd,
-          editorPoint(editor, originalEndBlock[1], { edge: 'start' })
+          matchPointRootVisibility(originalEnd, end),
+          matchPointRootVisibility(
+            editorPoint(editor, originalEndBlock[1], { edge: 'start' }),
+            end
+          )
         )
       );
     })();
+  const originalEndAtEffectiveEndStart =
+    !!initialAt &&
+    LocationApi.isRange(initialAt) &&
+    !RangeApi.isCollapsed(initialAt) &&
+    !!effectiveEndBlock &&
+    (() => {
+      const [, originalEnd] = RangeApi.edges(initialAt);
+
+      return PointApi.equals(
+        matchPointRootVisibility(originalEnd, end),
+        matchPointRootVisibility(
+          editorPoint(editor, effectiveEndBlock[1], { edge: 'start' }),
+          end
+        )
+      );
+    })();
+  const startLineBlock = lowestBlock(start);
   const preserveEmptyStartBlockPath =
     shouldPreserveEmptyStartBlockForHangingRange(
       editor,
@@ -703,15 +726,14 @@ const resolveDeleteTarget = (
       isAcrossBlocks,
       preserveEndBlock,
       originalHangingBlockRange,
-      effectiveStartBlock,
-      lowestBlock(start)?.[1]
+      startLineBlock
     );
   const preservedEmptyStartBlock =
     preserveEmptyStartBlockPath &&
-    effectiveStartBlock &&
-    NodeApi.isElement(effectiveStartBlock[0])
+    startLineBlock &&
+    canReplaceChildrenWithText(getEditorSchema(editor), startLineBlock[0])
       ? ({
-          ...effectiveStartBlock[0],
+          ...startLineBlock[0],
           children: [{ text: '' }],
         } as EditorElement)
       : null;
@@ -730,6 +752,7 @@ const resolveDeleteTarget = (
     editableEdges,
     isSingleText,
     isAcrossBlocks,
+    originalEndAtEffectiveEndStart,
     startNonEditable,
     endNonEditable,
     preserveEndBlock,
@@ -758,7 +781,8 @@ const reconcileDeleteStructure = (
   plan: DeleteRangePlan,
   removal: ReturnType<typeof removeDeleteContents>
 ) => {
-  const cleanupRange = () => getTopLevelCleanupRange(editor, plan);
+  const cleanupRange = (excludePreservedEnd = false) =>
+    getTopLevelCleanupRange(editor, plan, excludePreservedEnd);
   const touchedRange = getTouchedTopLevelRange(plan);
   let keptIncompatibleBlockBoundary = false;
 
@@ -782,11 +806,18 @@ const reconcileDeleteStructure = (
     const emptyForwardStartBlock = readForwardDeletedEmptyBlock(editor, plan);
 
     if (plan.preserveEmptyStartBlockPath) {
+      const preservesNestedLaterLine =
+        plan.originalEndAtEffectiveEndStart &&
+        plan.effectiveStartBlockPath != null &&
+        plan.preserveEmptyStartBlockPath
+          .slice(plan.effectiveStartBlockPath.length)
+          .some((index) => index > 0);
+
       removeEmptyStructuralArtifacts(
         editor,
         plan.preserveEmptyStartBlockPath,
         null,
-        cleanupRange()
+        cleanupRange(preservesNestedLaterLine)
       );
       mergeAdjacentTextRuns(editor, touchedRange);
     } else if (plan.preserveEndBlock && mergePoint) {
@@ -800,7 +831,8 @@ const reconcileDeleteStructure = (
       mergeAdjacentTextRuns(editor, touchedRange);
     } else if (plan.voids && mergePoint && plan.effectiveEndBlockPath) {
       mergeNodes(editor, {
-        at: plan.effectiveEndBlockPath,
+        at: mergePoint,
+        voids: plan.voids,
       });
       removeEmptyStructuralArtifacts(
         editor,
@@ -1409,50 +1441,302 @@ const reachAtomPastSpace = (
   return reach;
 };
 
-// Word positions give an atom no text, so a reach can run past one. An inline
-// atom past a block break does not touch `at`, so the delete joins the blocks
-// first, as it does without an atom.
-const stopAtAtom = (
+type CollapsedTarget =
+  | Readonly<{ kind: 'path'; path: Path }>
+  | Readonly<{ kind: 'point'; point: Point }>;
+
+const containsIsolatingDescendant = (
   editor: Editor,
-  at: Point,
-  reach: Point,
-  reverse: boolean
-) => {
-  const block = blockOf(editor, at) ?? [];
-  let near = at;
+  node: EditorElement,
+  path: Path,
+  voids: boolean
+): boolean => {
+  const schema = getEditorSchema(editor);
 
-  for (const point of editorPositions(editor, {
-    at: { anchor: at, focus: reach },
-    reverse,
-    unit: 'offset',
-  })) {
-    const atom = getHighestNonEditable(editor, point);
-    const skipped = skippedAbove(editor, point, 'content');
+  for (let index = 0; index < node.children.length; index += 1) {
+    const child = node.children[index];
 
-    if (skipped && (!atom || PathApi.isAncestor(skipped[1], atom[1]))) {
-      continue;
+    if (!NodeApi.isElement(child)) continue;
+
+    const childPath = [...path, index];
+
+    if (
+      schema.isIsolating(child) ||
+      isReadOnlyGridPart(editor, child, childPath, voids) ||
+      containsIsolatingDescendant(editor, child, childPath, voids)
+    ) {
+      return true;
     }
-
-    if (!atom) {
-      near = point;
-      continue;
-    }
-
-    const inline = getEditorSchema(editor).isInline(atom[0]);
-
-    if (inline && !PathApi.equals(block, blockOf(editor, point) ?? [])) {
-      return near;
-    }
-
-    const between = editorString(editor, { anchor: at, focus: near });
-
-    if (between === '') return point;
-    if (!inline) return null;
-
-    return between.trim() === '' ? besideAtom(editor, atom[1], reverse) : near;
   }
 
-  return null;
+  return false;
+};
+
+const scanCollapseTarget = (
+  editor: Editor,
+  from: Point,
+  reach: Point,
+  options: {
+    reverse: boolean;
+    stopAtInlineAtom: boolean;
+    takeWhitespaceBeforeInlineAtom: boolean;
+    voids: boolean;
+  }
+): CollapsedTarget | null => {
+  const { reverse, stopAtInlineAtom, takeWhitespaceBeforeInlineAtom, voids } =
+    options;
+  const normalizedReach = matchPointRootVisibility(reach, from);
+
+  if (
+    PathApi.equals(from.path, normalizedReach.path) &&
+    !PointApi.equals(from, normalizedReach)
+  ) {
+    const [leaf] = editorLeaf(editor, from);
+
+    if (
+      reverse
+        ? normalizedReach.offset > 0
+        : normalizedReach.offset < leaf.text.length
+    ) {
+      return null;
+    }
+  }
+
+  const schema = getEditorSchema(editor);
+  const scopePath = getClosestIsolatingAncestor(editor, from, voids)?.[1] ?? [];
+  const scopeTextEdge = matchPointRootVisibility(
+    editorPoint(editor, scopePath, { edge: reverse ? 'start' : 'end' }),
+    from
+  );
+  const atScopeTextEdge = PointApi.equals(normalizedReach, scopeTextEdge);
+
+  if (PathApi.equals(from.path, normalizedReach.path) && !atScopeTextEdge) {
+    return null;
+  }
+
+  const limitPath = atScopeTextEdge
+    ? ((reverse
+        ? editorFirst(editor, scopePath)
+        : editorLast(editor, scopePath))?.[1] ?? normalizedReach.path)
+    : normalizedReach.path;
+  const fromBlock = blockOf(editor, from);
+  const rootChildren = getChildList(editor);
+
+  let sawContent = false;
+  let sawOtherBlock = false;
+  let lastTextPoint: Point = from;
+  let firstSkipped: {
+    nearBefore: Point;
+    path: Path;
+    sawContentBefore: boolean;
+    sawOtherBlockBefore: boolean;
+  } | null = null;
+
+  const stopAtSkipped = (): CollapsedTarget | null => {
+    if (!firstSkipped) return null;
+
+    return !firstSkipped.sawContentBefore && !firstSkipped.sawOtherBlockBefore
+      ? { kind: 'path', path: firstSkipped.path }
+      : { kind: 'point', point: firstSkipped.nearBefore };
+  };
+
+  const isBeforeFrom = (path: Path) =>
+    !PathApi.isAncestor(path, from.path) &&
+    !PathApi.equals(path, from.path) &&
+    (reverse
+      ? PathApi.isAfter(path, from.path)
+      : PathApi.isBefore(path, from.path));
+
+  const isAfterLimit = (path: Path) =>
+    !PathApi.isAncestor(path, limitPath) &&
+    !PathApi.equals(path, limitPath) &&
+    (reverse
+      ? PathApi.isBefore(path, limitPath)
+      : PathApi.isAfter(path, limitPath));
+
+  const visitChildren = (
+    length: number,
+    getChild: (index: number) => Node | undefined,
+    parentPath: Path
+  ): CollapsedTarget | 'stop' | null => {
+    const onOriginSpine =
+      parentPath.length === 0 || PathApi.isAncestor(parentPath, from.path);
+    const startIndex = onOriginSpine
+      ? getDefined(from.path[parentPath.length])
+      : reverse
+        ? length - 1
+        : 0;
+    const step = reverse ? -1 : 1;
+
+    for (
+      let index = startIndex;
+      reverse ? index >= 0 : index < length;
+      index += step
+    ) {
+      const result = visit(getDefined(getChild(index)), [...parentPath, index]);
+
+      if (result) return result;
+    }
+
+    return null;
+  };
+
+  const visit = (node: Node, path: Path): CollapsedTarget | 'stop' | null => {
+    if (path.length === 0) {
+      return visitChildren(
+        rootChildren.length,
+        (index) => rootChildren.at(index),
+        path
+      );
+    }
+    if (isBeforeFrom(path)) return null;
+    if (isAfterLimit(path)) return 'stop';
+
+    if (PathApi.isAncestor(path, from.path)) {
+      return NodeApi.isElement(node)
+        ? visitChildren(
+            node.children.length,
+            (index) => node.children[index],
+            path
+          )
+        : null;
+    }
+
+    if (PathApi.equals(path, from.path)) {
+      if (TextApi.isText(node)) {
+        const endOffset = PathApi.equals(path, normalizedReach.path)
+          ? normalizedReach.offset
+          : reverse
+            ? 0
+            : node.text.length;
+
+        if (endOffset !== from.offset) {
+          sawContent = true;
+          lastTextPoint = matchPointRootVisibility(
+            { offset: endOffset, path },
+            from
+          );
+        }
+      }
+
+      return null;
+    }
+
+    if (
+      NodeApi.isElement(node) &&
+      (isReadOnlyGridPart(editor, node, path, voids) ||
+        (schema.isIsolating(node) &&
+          (voids || isEditablePath(editor, path, { voids }))))
+    ) {
+      return stopAtSkipped() ?? { kind: 'point', point: lastTextPoint };
+    }
+
+    if (!voids && NodeApi.isElement(node) && isNonEditable(schema, node)) {
+      const skippedTarget = stopAtSkipped();
+
+      if (skippedTarget) return skippedTarget;
+
+      if (schema.isInline(node)) {
+        if (!stopAtInlineAtom) {
+          sawContent = true;
+          return null;
+        }
+        if (sawOtherBlock) {
+          return { kind: 'point', point: lastTextPoint };
+        }
+
+        const between = editorString(editor, {
+          anchor: from,
+          focus: lastTextPoint,
+        });
+
+        if (between === '') {
+          const edge = readTextEdge(editor, path, reverse ? 'end' : 'start');
+
+          return edge
+            ? { kind: 'point', point: matchPointRootVisibility(edge, from) }
+            : { kind: 'path', path };
+        }
+
+        if (takeWhitespaceBeforeInlineAtom && between.trim() === '') {
+          return {
+            kind: 'point',
+            point: matchPointRootVisibility(
+              besideAtom(editor, path, reverse),
+              from
+            ),
+          };
+        }
+
+        return { kind: 'point', point: lastTextPoint };
+      }
+
+      return !sawContent && !sawOtherBlock
+        ? { kind: 'path', path }
+        : { kind: 'point', point: lastTextPoint };
+    }
+
+    if (
+      !voids &&
+      NodeApi.isElement(node) &&
+      isSkippedElement(editor, node, path, 'content', from)
+    ) {
+      if (containsIsolatingDescendant(editor, node, path, voids)) {
+        return stopAtSkipped() ?? { kind: 'point', point: lastTextPoint };
+      }
+      if (!firstSkipped) {
+        firstSkipped = {
+          nearBefore: lastTextPoint,
+          path,
+          sawContentBefore: sawContent,
+          sawOtherBlockBefore: sawOtherBlock,
+        };
+      }
+
+      return null;
+    }
+
+    if (TextApi.isText(node)) {
+      firstSkipped = null;
+
+      const textBlock = blockOf(editor, { offset: 0, path });
+
+      if (!fromBlock || !textBlock || !PathApi.equals(fromBlock, textBlock)) {
+        sawOtherBlock = true;
+      }
+
+      if (PathApi.equals(path, normalizedReach.path)) {
+        const startOffset = reverse ? node.text.length : 0;
+
+        if (normalizedReach.offset !== startOffset) sawContent = true;
+
+        lastTextPoint = normalizedReach;
+      } else {
+        if (node.text.length > 0) sawContent = true;
+
+        lastTextPoint = matchPointRootVisibility(
+          editorPoint(editor, path, { edge: reverse ? 'start' : 'end' }),
+          from
+        );
+      }
+
+      return null;
+    }
+
+    return NodeApi.isElement(node)
+      ? visitChildren(
+          node.children.length,
+          (index) => node.children[index],
+          path
+        )
+      : null;
+  };
+
+  const result = visit(editor, []);
+
+  if (result && result !== 'stop') return result;
+
+  return stopAtSkipped();
 };
 
 const getCollapsedDeleteTarget = (
@@ -1473,17 +1757,20 @@ const getCollapsedDeleteTarget = (
     >;
     voids: boolean;
   }
-) => {
+): CollapsedTarget => {
   const { reverse, distance, unit, voids } = options;
+  const pointResult = (point: Point): CollapsedTarget => ({
+    kind: 'point',
+    point: matchPointRootVisibility(point, at),
+  });
+
+  if (distance <= 0) {
+    return pointResult(at);
+  }
+
   const clamp = (from: Point, target: Point) =>
     matchPointRootVisibility(
-      stopBeforeEnteredIsolatingNode(
-        editor,
-        from,
-        clampToIsolationScope(editor, from, target, reverse, voids),
-        reverse,
-        voids
-      ),
+      clampToIsolationScope(editor, from, target, reverse, voids),
       at
     );
   const reachFrom = (from: Point, steps: number) =>
@@ -1513,7 +1800,18 @@ const getCollapsedDeleteTarget = (
             reverse
           )
         : reachFrom(from, 1);
-      const stop = stopAtAtom(editor, from, reach, reverse) ?? reach;
+      const scanned = scanCollapseTarget(editor, from, reach, {
+        reverse,
+        stopAtInlineAtom: true,
+        takeWhitespaceBeforeInlineAtom: true,
+        voids,
+      });
+
+      if (scanned?.kind === 'path') {
+        return step === 0 ? scanned : pointResult(from);
+      }
+
+      const stop = scanned ? scanned.point : reach;
       const atom = getHighestNonEditable(editor, stop);
 
       if (!atom) {
@@ -1523,24 +1821,37 @@ const getCollapsedDeleteTarget = (
       } else if (distance > 1 && getEditorSchema(editor).isInline(atom[0])) {
         from = besideAtom(editor, atom[1], reverse);
       } else {
-        return matchPointRootVisibility(step === 0 ? stop : from, at);
+        return pointResult(step === 0 ? stop : from);
       }
     }
 
-    return matchPointRootVisibility(from, at);
+    return pointResult(from);
   }
 
-  const pointTarget = reachFrom(at, distance);
+  let pointTarget = reachFrom(at, distance);
+  const scanned = scanCollapseTarget(editor, at, pointTarget, {
+    reverse,
+    stopAtInlineAtom: unit === 'character' && distance === 1,
+    takeWhitespaceBeforeInlineAtom: false,
+    voids,
+  });
+
+  if (scanned?.kind === 'path') {
+    return scanned;
+  }
+  if (scanned) {
+    pointTarget = matchPointRootVisibility(scanned.point, at);
+  }
 
   if (unit !== 'character' || distance !== 1) {
-    return pointTarget;
+    return pointResult(pointTarget);
   }
 
   const [leaf] = editorLeaf(editor, at);
   const atBoundary = reverse ? at.offset === 0 : at.offset === leaf.text.length;
 
   if (!atBoundary) {
-    return pointTarget;
+    return pointResult(pointTarget);
   }
 
   const offsetTarget = reverse
@@ -1548,19 +1859,13 @@ const getCollapsedDeleteTarget = (
     : contentAfter(editor, at, { distance, unit: 'offset', voids });
 
   if (!offsetTarget) {
-    return pointTarget;
+    return pointResult(pointTarget);
   }
 
   const normalizedOffsetTarget = matchPointRootVisibility(offsetTarget, at);
 
   if (PointApi.equals(pointTarget, at)) {
-    return at;
-  }
-
-  if (!voids) {
-    const stop = stopAtAtom(editor, at, pointTarget, reverse);
-
-    if (stop) return matchPointRootVisibility(stop, at);
+    return pointResult(at);
   }
 
   const currentBlock = editorAbove(editor, {
@@ -1598,7 +1903,7 @@ const getCollapsedDeleteTarget = (
         voids,
       });
 
-      return target ? matchPointRootVisibility(target, at) : pointTarget;
+      return pointResult(target ?? pointTarget);
     }
 
     if (!reverse && pointTarget.offset === 0) {
@@ -1608,7 +1913,7 @@ const getCollapsedDeleteTarget = (
         voids,
       });
 
-      return target ? matchPointRootVisibility(target, at) : pointTarget;
+      return pointResult(target ?? pointTarget);
     }
   }
 
@@ -1618,19 +1923,25 @@ const getCollapsedDeleteTarget = (
     ((reverse &&
       PointApi.equals(
         at,
-        editorPoint(editor, currentBlock[1], { edge: 'start' })
+        matchPointRootVisibility(
+          editorPoint(editor, currentBlock[1], { edge: 'start' }),
+          at
+        )
       )) ||
       (!reverse &&
         PointApi.equals(
           at,
-          editorPoint(editor, currentBlock[1], { edge: 'end' })
+          matchPointRootVisibility(
+            editorPoint(editor, currentBlock[1], { edge: 'end' }),
+            at
+          )
         ))) &&
     !PathApi.equals(currentBlock[1], targetBlock[1])
   ) {
-    return normalizedOffsetTarget;
+    return pointResult(normalizedOffsetTarget);
   }
 
-  return pointTarget;
+  return pointResult(pointTarget);
 };
 
 const oneTextLineEndAt = (

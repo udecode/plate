@@ -3,7 +3,7 @@ import {
   point as editorPoint,
   positions as editorPositions,
 } from '../interfaces/editor';
-import type { Point } from '../interfaces/point';
+import { type Point, PointApi } from '../interfaces/point';
 import {
   canUseAdjacentCharacterFastPath,
   getAdjacentCharacterPoint,
@@ -37,7 +37,10 @@ const stepAfter =
       ...options,
       at: range,
     })) {
-      if (skipsPoint(editor, p, reach)) {
+      if (skipsPoint(editor, p, reach, anchor)) {
+        if (d === 0 && PointApi.equals(p, anchor)) {
+          d = 1;
+        }
         continue;
       }
 

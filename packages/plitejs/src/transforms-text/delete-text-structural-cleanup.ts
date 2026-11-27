@@ -283,7 +283,8 @@ export const removeEmptyStructuralArtifacts = (
     if (
       preservePath &&
       (PathApi.equals(path, preservePath) ||
-        PathApi.isAncestor(preservePath, path))
+        PathApi.isAncestor(preservePath, path) ||
+        PathApi.isAncestor(path, preservePath))
     ) {
       return;
     }
@@ -333,7 +334,8 @@ export const getTouchedTopLevelRange = (
 
 export const getTopLevelCleanupRange = (
   editor: Editor,
-  plan: DeleteStructuralCleanupPlan
+  plan: DeleteStructuralCleanupPlan,
+  excludePreservedEnd = false
 ): { end: number; start: number } | null => {
   if (
     !plan.isAcrossBlocks ||
@@ -350,12 +352,13 @@ export const getTopLevelCleanupRange = (
   const removedTopLevelBlocks =
     plan.topLevelCountBefore - getChildList(editor).length;
 
+  const end =
+    Math.max(plan.effectiveStartBlockPath[0], plan.effectiveEndBlockPath[0]) -
+    removedTopLevelBlocks -
+    (excludePreservedEnd ? 1 : 0);
+
   return {
-    end: Math.max(
-      start,
-      Math.max(plan.effectiveStartBlockPath[0], plan.effectiveEndBlockPath[0]) -
-        removedTopLevelBlocks
-    ),
+    end: Math.max(start, end),
     start,
   };
 };
@@ -369,10 +372,13 @@ export const restorePreservedEmptyStartBlock = (
     return;
   }
 
-  const children = getChildList(editor);
+  const parentPath = PathApi.parent(preservePath);
+
+  if (!editorHasPath(editor, parentPath)) {
+    return;
+  }
+
   const shouldRestore =
-    (children.length === 1 &&
-      NodeApi.string(getDefined(children.at(0))) !== '') ||
     !editorHasPath(editor, preservePath) ||
     NodeApi.string(getCurrentNode(editor, preservePath)) !== '';
 

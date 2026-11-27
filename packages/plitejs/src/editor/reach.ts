@@ -5,20 +5,44 @@ import {
   above as editorAbove,
 } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
+import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 
-export type Reach = 'caret' | 'content';
+export type Reach = 'caret' | 'content' | 'structural';
 
-export const skippedAbove = (editor: Editor, point: Point, reach: Reach) =>
-  editorAbove(editor, {
-    at: point,
-    match: (node) =>
-      NodeApi.isElement(node) &&
-      !isEditorNodeSelectable(editor, node) &&
-      (reach === 'caret' || !getEditorSchema(editor).isInline(node)),
+export const isSkippedElement = (
+  editor: Editor,
+  node: unknown,
+  path: Path,
+  reach: Reach,
+  origin?: Point
+) =>
+  reach !== 'structural' &&
+  NodeApi.isElement(node) &&
+  !isEditorNodeSelectable(editor, node) &&
+  (reach === 'caret' ||
+    (!getEditorSchema(editor).isInline(node) &&
+      (!origin || !PathApi.isAncestor(path, origin.path))));
+
+export const skippedAbove = (
+  editor: Editor,
+  location: Path | Point,
+  reach: Reach,
+  origin?: Point
+) => {
+  if (reach === 'structural') return undefined;
+
+  return editorAbove(editor, {
+    at: location,
+    match: (node, path) => isSkippedElement(editor, node, path, reach, origin),
     mode: 'highest',
     voids: true,
   });
+};
 
-export const skipsPoint = (editor: Editor, point: Point, reach: Reach) =>
-  !!skippedAbove(editor, point, reach);
+export const skipsPoint = (
+  editor: Editor,
+  point: Point,
+  reach: Reach,
+  origin?: Point
+) => !!skippedAbove(editor, point, reach, origin);
