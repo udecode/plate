@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-board-static-note-text-mark",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-board-static-note-text-mark.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Mark static board note text blocks for picture export",
+  "targets": [
+    {
+      "name": "board",
+      "files": [
+        "apps/www/src/registry/components/editor/board-static.tsx",
+        "apps/www/src/registry/components/editor/board-styles.tsx",
+        "apps/www/src/registry/components/editor/board.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-board-mark-note-text-blocks-7fcad7a6",
+      "kind": "behavior",
+      "summary": "Add `data-board-text`, `flow-root`, and card `border-box` sizing to `BoardNoteElementStatic` in `board-static.tsx`, so exported board pictures measure grown notes and draw their text and bound arrows whole.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` and copy the `board` registry item again (or add `data-board-text=\"\"` and `flow-root` to `BoardNoteElementStatic`'s text wrapper and `boxSizing: 'border-box'` to its card in `board-static.tsx`) so exported board pictures measure and draw grown notes whole."
+      ],
+      "targets": ["board"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-board-static-note-text-mark",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

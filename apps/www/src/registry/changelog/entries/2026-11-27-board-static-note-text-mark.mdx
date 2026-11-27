@@ -1,0 +1,14 @@
+---
+id: 2026-11-27-board-static-note-text-mark
+date: 2026-11-27
+status: draft
+kind: behavior
+summary: 'Mark static board note text blocks for picture export'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-board-mark-note-text-blocks-7fcad7a6","kind":"behavior","migrationNotes":["Update `platejs` and copy the `board` registry item again (or add `data-board-text=\"\"` and `flow-root` to `BoardNoteElementStatic`'s text wrapper and `boxSizing: 'border-box'` to its card in `board-static.tsx`) so exported board pictures measure and draw grown notes whole."]} -->
+
+- **`board`**: Add `data-board-text`, `flow-root`, and card `border-box` sizing to `BoardNoteElementStatic` in `board-static.tsx`, so exported board pictures measure grown notes and draw their text and bound arrows whole.

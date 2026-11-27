@@ -108,6 +108,7 @@ export function BoardNoteElementStatic(
           <div
             className="relative rounded-sm p-3 leading-snug"
             style={{
+              boxSizing: 'border-box',
               fontSize: TEXT_SIZES[element.textSize],
               height: box.height,
               margin: SHADOW_REACH,
@@ -125,7 +126,8 @@ export function BoardNoteElementStatic(
               }}
             />
             <div
-              className={cn('relative', SHAPE_HEADINGS)}
+              className={cn('relative flow-root', SHAPE_HEADINGS)}
+              data-board-text=""
               style={{ opacity: element.opacity }}
             >
               {props.children}

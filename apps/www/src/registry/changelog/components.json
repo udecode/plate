@@ -1,6 +1,20 @@
 {
   "schemaVersion": 1,
   "components": {
+    "board": [
+      "2026-11-27-board-static-note-text-mark",
+      "2026-11-26-board-arrow-components",
+      "2026-11-26-suggestion-colors",
+      "2026-11-23-board-export",
+      "2026-11-22-board-styles-file",
+      "2026-11-20-board-picture-button",
+      "2026-11-19-board-images",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-12-add-board"
+    ],
     "find": [
       "2026-11-27-dark-mode-editor-chrome",
       "2026-11-22-find-bar-clears-matches",
@@ -188,19 +202,6 @@
       "2026-08-30-fix-annotation-hover-scroll",
       "2026-08-17-flat-editor-registry",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
-    "board": [
-      "2026-11-26-board-arrow-components",
-      "2026-11-26-suggestion-colors",
-      "2026-11-23-board-export",
-      "2026-11-22-board-styles-file",
-      "2026-11-20-board-picture-button",
-      "2026-11-19-board-images",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-12-add-board"
     ],
     "column": [
       "2026-11-26-column-drop-selection-tint",
