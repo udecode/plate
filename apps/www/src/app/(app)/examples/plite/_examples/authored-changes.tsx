@@ -18,7 +18,7 @@ import {
 } from 'plitejs/authored';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
@@ -380,7 +380,7 @@ const ReviewEditable = ({
   );
 
   return (
-    <Editable
+    <EditorContent
       aria-label={label}
       className="min-h-44 rounded-lg border p-4 outline-none focus:ring-2 focus:ring-blue-500/30"
       renderElement={renderElement}
@@ -588,7 +588,7 @@ const IndependentDocument = ({ authoring }: { authoring: AuthoredPlugin }) => {
   });
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         aria-label="Independent document"
         className="min-h-20 rounded-lg border p-4"
       />

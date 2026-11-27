@@ -10,7 +10,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type DecorationSource,
   type Editor,
@@ -349,7 +349,7 @@ const CommentedEditable = ({
   id: string;
   readOnly?: boolean;
 }) => (
-  <Editable
+  <EditorContent
     className="editor-comment-mode-editor"
     id={id}
     readOnly={readOnly}

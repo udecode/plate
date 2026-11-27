@@ -23,7 +23,7 @@ import {
   type PageSettings,
 } from 'plitejs/pagination';
 import {
-  PagedEditable,
+  PagedEditorContent,
   usePageLayout,
   usePageLayoutFragments,
 } from 'plitejs/pagination/react';
@@ -962,7 +962,7 @@ const PaginationSurface = ({
               className="editor-pagination-scaled-surface"
               style={{ transform: `scale(${pageScale})`, width: canvasWidth }}
             >
-              <PagedEditable
+              <PagedEditorContent
                 className="editor-pagination-editor"
                 engine={layoutEngine}
                 fragmentation={fragmentation}

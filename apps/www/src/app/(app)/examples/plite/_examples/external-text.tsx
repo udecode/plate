@@ -8,7 +8,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type ExternalTextAdapter,
   type ExternalTextSelection,
   EditorRoot,
@@ -517,7 +517,7 @@ const ExternalTextExample = () => {
           <div className="grid gap-6 md:grid-cols-2">
             <section className="min-w-0">
               <h3 className="mb-2 font-medium">Native Plite</h3>
-              <Editable
+              <EditorContent
                 aria-label="Native document"
                 className="min-h-48 rounded-md border p-4"
                 id="external-text-native"
@@ -528,7 +528,7 @@ const ExternalTextExample = () => {
             </section>
             <section className="min-w-0">
               <h3 className="mb-2 font-medium">External text view</h3>
-              <Editable
+              <EditorContent
                 aria-label="External document"
                 className="min-h-48 rounded-md border p-4"
                 id="external-text-primary"
@@ -547,7 +547,7 @@ const ExternalTextExample = () => {
             {second && (
               <section className="min-w-0">
                 <h3 className="mb-2 font-medium">Second external view</h3>
-                <Editable
+                <EditorContent
                   aria-label="Second external document"
                   className="min-h-48 rounded-md border p-4"
                   id="external-text-secondary"

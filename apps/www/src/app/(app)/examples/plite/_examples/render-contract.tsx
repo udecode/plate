@@ -3,7 +3,7 @@
 import type { Element as ElementNode } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type RenderElementProps,
   useCreateEditor,
@@ -105,7 +105,7 @@ const RenderContractExample = () => {
           Insert omitted child
         </button>
       </div>
-      <Editable
+      <EditorContent
         aria-label="Render contract editor"
         className="rounded border p-3 outline-none"
         renderElement={renderElement}

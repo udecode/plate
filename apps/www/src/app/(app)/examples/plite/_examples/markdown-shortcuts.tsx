@@ -10,7 +10,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   EditorRoot,
   useCreateEditor,
@@ -89,7 +89,7 @@ const MarkdownShortcutsExample = () => {
   });
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         autoFocus
         placeholder="Write some markdown..."
         renderElement={renderElement}

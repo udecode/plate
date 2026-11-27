@@ -8,7 +8,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type Decoration,
   type DecorationSource,
@@ -272,7 +272,7 @@ const LintingPanel = ({
           </li>
         ))}
       </ul>
-      <Editable className="editor-linting-editor" id="linting" />
+      <EditorContent className="editor-linting-editor" id="linting" />
     </div>
   );
 };

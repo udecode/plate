@@ -168,10 +168,12 @@ import { InlineVoidShell, VoidShell } from './plite-void-shell';
 
 export { isPliteReactDevelopmentEnvironment } from './editable-rendered-element';
 
-const OwnerHandlersContext = React.createContext<Partial<EditableProps>>({});
+const OwnerHandlersContext = React.createContext<Partial<EditorContentProps>>(
+  {}
+);
 
 const useStableOwnerHandlers = (props: object) => {
-  const handlers: Partial<EditableProps> = Object.fromEntries(
+  const handlers: Partial<EditorContentProps> = Object.fromEntries(
     Object.entries(props).filter(([name, value]) => isDOMHandler(name, value))
   );
   const [kept, setKept] = React.useState(handlers);
@@ -699,7 +701,7 @@ function EditableContentRootView({
     },
     [rootInteraction]
   );
-  const editableProps: EditableProps = {
+  const editableProps: EditorContentProps = {
     ...ownerHandlers,
     'aria-label': ariaLabel,
     className,
@@ -747,7 +749,7 @@ function EditableContentRootView({
 function EditableContentRootWindow({
   viewport: { mountedKeys, reveal },
   ...props
-}: EditableProps & {
+}: EditorContentProps & {
   nodeSelectionFocus?: NodeSelectionFocus;
   viewport: EditableContentRootViewport;
 }) {
@@ -888,7 +890,7 @@ type EditableDOMHandlers<TAttributes> = {
  * inside a content root's editable, which runs the same handlers on the
  * content root's view.
  */
-export type EditableProps<
+export type EditorContentProps<
   TElement extends ElementNode = ElementNode,
   TRoot extends RootKey = RootKey,
 > = {
@@ -1426,7 +1428,7 @@ const EditableInner = <TElement extends ElementNode>({
   viewLines = null,
   viewportPlan = null,
   ...callerProps
-}: EditableProps<TElement> & {
+}: EditorContentProps<TElement> & {
   elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
   nodeSelectionFocus?: NodeSelectionFocus;
   viewLines?: ViewLines | null;
@@ -1778,7 +1780,7 @@ export const EditableViewportSurface = <
   elementLayouts,
   viewportPlan,
   ...props
-}: EditableProps<TElement> & {
+}: EditorContentProps<TElement> & {
   decorationStore?: PliteDecorationStore | null;
   elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
   viewLines?: ViewLines | null;
@@ -1950,21 +1952,21 @@ const InactiveSelectionCaretGeometry = ({
 /**
  * Render the editable content area for one Plite root.
  *
- * `Editable` renders the complete root DOM and owns renderers, events,
+ * `EditorContent` renders the complete root DOM and owns renderers, events,
  * selection sync, and optional root scoping. Pass `root` to mount the editor
  * surface for a specific root.
  * When focus moves to an element or composed ancestor with
- * `data-editor-keep-selection-visible`, that exact Editable paints its live
- * canonical selection through `data-editor-inactive-selection` or
+ * `data-editor-keep-selection-visible`, that exact `EditorContent` paints its
+ * live canonical selection through `data-editor-inactive-selection` or
  * `data-editor-inactive-selection-caret` until focus returns or moves elsewhere.
  * A primary press on such an element counts as focus reaching it, for browsers
  * that do not focus a clicked button.
  */
-export const Editable = <
+export const EditorContent = <
   TElement extends ElementNode,
   const TRoot extends RootKey = RootKey,
 >(
-  props: EditableProps<TElement, TRoot>
+  props: EditorContentProps<TElement, TRoot>
 ) => {
   const { root, ...editableProps } = props;
 

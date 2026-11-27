@@ -13,7 +13,7 @@ import {
 import { domCommands, isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type Decoration,
   type DecorationSource,
@@ -140,7 +140,7 @@ const App = () => {
   return (
     <EditorRoot decorations={[codeHighlightingSource]} editor={editor}>
       <ExampleToolbar />
-      <Editable
+      <EditorContent
         onKeyDown={(event, { editor: viewEditor }) => {
           if (isHotkey(['mod+shift+c', 'mod+alt+c'], event)) {
             convertSelectionToCodeBlock(viewEditor);

@@ -1,7 +1,7 @@
 'use client';
 
 import { history } from 'plitejs/history';
-import { Editable, EditorRoot, useCreateEditor } from 'plitejs/react';
+import { EditorContent, EditorRoot, useCreateEditor } from 'plitejs/react';
 
 const DragEditor = ({ label, text }: { label: string; text: string }) => {
   const editor = useCreateEditor({
@@ -16,7 +16,7 @@ const DragEditor = ({ label, text }: { label: string; text: string }) => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         aria-label={label}
         className="min-h-20 rounded border p-3 outline-none"
       />

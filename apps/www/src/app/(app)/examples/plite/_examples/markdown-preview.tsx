@@ -2,7 +2,7 @@ import { cva } from 'class-variance-authority';
 import { NodeApi, type Path } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type Decoration,
   type DecorationSource,
@@ -82,7 +82,10 @@ const MarkdownPreviewExample = () => {
 
   return (
     <EditorRoot decorations={[markdownSource]} editor={editor}>
-      <Editable id="markdown-preview" placeholder="Write some markdown..." />
+      <EditorContent
+        id="markdown-preview"
+        placeholder="Write some markdown..."
+      />
     </EditorRoot>
   );
 };

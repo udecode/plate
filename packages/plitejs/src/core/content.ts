@@ -3,7 +3,7 @@ import type { Point } from '../interfaces/point';
 import { getEditorRuntimeOwner } from './editor-runtime';
 
 /** @internal */
-export type EditorContent = (editor: Editor, node: unknown) => boolean;
+export type EditorContentPredicate = (editor: Editor, node: unknown) => boolean;
 
 /** @internal */
 export type EditorHeldContent = (
@@ -13,7 +13,7 @@ export type EditorHeldContent = (
 ) => boolean;
 
 type ContentOwner = Readonly<{
-  content: EditorContent;
+  content: EditorContentPredicate;
   held: EditorHeldContent | null;
 }>;
 
@@ -22,7 +22,7 @@ const CONTENT = new WeakMap<Editor, ContentOwner>();
 /** @internal */
 export const registerEditorContent = (
   editor: Editor,
-  predicate: EditorContent,
+  predicate: EditorContentPredicate,
   held: EditorHeldContent | null = null
 ) => {
   const owner = getEditorRuntimeOwner(editor);

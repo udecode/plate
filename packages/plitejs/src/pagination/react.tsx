@@ -28,10 +28,11 @@ import {
   PointApi,
   type Range,
   RangeApi,
+  type RootKey,
   TextApi,
 } from '..';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
-import { type EditableProps, useEditorContext } from '../react';
+import { type EditorContentProps, useEditorContext } from '../react';
 import {
   defaultScrollSelectionIntoView,
   getElementTransformScale,
@@ -1091,38 +1092,40 @@ const createPaginationBuckets = (
   return buckets;
 };
 
-export type PagedEditablePageAttributes = Readonly<{
+/** DOM attributes and inline layout styles applied to each rendered page box. */
+export type PagedEditorContentPageAttributes = Readonly<{
   'data-editor-page': true;
   'data-editor-page-index': number;
   style: CSSProperties;
 }>;
 
-export type PagedEditableRenderPageProps = Readonly<{
-  attributes: PagedEditablePageAttributes;
+/** Props passed to `PagedEditorContent`'s `renderPage` callback for one measured page. */
+export type PagedEditorContentRenderPageProps = Readonly<{
+  attributes: PagedEditorContentPageAttributes;
   page: PageLayoutPage;
 }>;
 
-export type PagedEditablePageView = Readonly<{
+/** Visual presentation options for the page stack (mode and inter-page gap). */
+export type PagedEditorContentPageView = Readonly<{
   gap?: number;
   mode?: PageLayoutMode;
 }>;
 
-export type PagedEditableProps<TElement extends Element = Element> =
-  EditableProps<TElement> &
-    Pick<
-      MeasurePagesOptions<TElement>,
-      'fragmentation' | 'page' | 'typography'
-    > &
-    Readonly<{
-      engine?: PageLayoutEngine;
-      pageView?: PagedEditablePageView;
-      renderPage?: (props: PagedEditableRenderPageProps) => ReactNode;
-      virtualize?: boolean;
-    }>;
+export type PagedEditorContentProps<
+  TElement extends Element = Element,
+  TRoot extends RootKey = RootKey,
+> = EditorContentProps<TElement, TRoot> &
+  Pick<MeasurePagesOptions<TElement>, 'fragmentation' | 'page' | 'typography'> &
+  Readonly<{
+    engine?: PageLayoutEngine;
+    pageView?: PagedEditorContentPageView;
+    renderPage?: (props: PagedEditorContentRenderPageProps) => ReactNode;
+    virtualize?: boolean;
+  }>;
 
-const defaultRenderPage = ({ attributes }: PagedEditableRenderPageProps) => (
-  <div {...attributes} />
-);
+const defaultRenderPage = ({
+  attributes,
+}: PagedEditorContentRenderPageProps) => <div {...attributes} />;
 
 const pageDependency = (page: PageSettingsSource) =>
   'margins' in page && 'preset' in page
@@ -1145,8 +1148,8 @@ const measurePagedEditable = <TElement extends Element>(
   editor: Editor,
   options: MeasurePagesOptions<TElement>
 ) =>
-  // React context erases the schema generic; PagedEditableProps preserves it
-  // across the fragmentation, typography, and renderer callbacks.
+  // React context erases the schema generic; PagedEditorContentProps preserves
+  // it across the fragmentation, typography, and renderer callbacks.
   measurePages(editor, options as unknown as MeasurePagesOptions);
 
 const createPagedCanvasStyles = (
@@ -1321,7 +1324,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
   typography,
   virtualize = false,
   ...editableProps
-}: Omit<PagedEditableProps<TElement>, 'root'>) => {
+}: Omit<PagedEditorContentProps<TElement>, 'root'>) => {
   const editor = useEditorContext();
   const inheritedDecorations = useContext(DecorationContext);
   const [fallbackEngine] = useState(() => createPretextPageLayoutEngine());
@@ -1628,7 +1631,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
       } else {
         defaultScrollSelectionIntoView(editor, domRange);
       }
-    }) satisfies NonNullable<EditableProps['scrollSelectionIntoView']>;
+    }) satisfies NonNullable<EditorContentProps['scrollSelectionIntoView']>;
   }, [
     editableProps.scrollSelectionIntoView,
     editor,
@@ -1740,7 +1743,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
                         };
                         const occupied =
                           geometry.occupiedSizes[arrayIndex] ?? layoutPage;
-                        const attributes: PagedEditablePageAttributes = {
+                        const attributes: PagedEditorContentPageAttributes = {
                           'data-editor-page': true,
                           'data-editor-page-index': layoutPage.index,
                           style: {
@@ -1811,10 +1814,13 @@ const PagedEditableInner = <TElement extends Element = Element>({
   );
 };
 
-export const PagedEditable = <TElement extends Element = Element>({
+export const PagedEditorContent = <
+  TElement extends Element = Element,
+  const TRoot extends RootKey = RootKey,
+>({
   root,
   ...props
-}: PagedEditableProps<TElement>) => {
+}: PagedEditorContentProps<TElement, TRoot>) => {
   if (root === 'main') {
     throw new Error('Omit root to render the primary document.');
   }

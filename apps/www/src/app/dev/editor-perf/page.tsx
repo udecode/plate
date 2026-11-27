@@ -42,11 +42,11 @@ import {
 } from 'platejs/react';
 import { VirtualizedEditorContent } from 'platejs/react/virtualized';
 import {
-  Editable as PliteEditable,
+  EditorContent as PliteEditable,
   type Editor as RuntimeEditor,
   EditorRoot as RuntimeEditorRoot,
 } from 'plitejs/react';
-import { VirtualizedEditable } from 'plitejs/react/virtualized';
+import { VirtualizedEditorContent as VirtualizedEditable } from 'plitejs/react/virtualized';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';

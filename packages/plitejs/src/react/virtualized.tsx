@@ -5,7 +5,7 @@ import React from 'react';
 import type { Element, RootKey } from '..';
 import {
   EditableViewportSurface,
-  type EditableProps,
+  type EditorContentProps,
 } from './components/editable-text-blocks';
 import { SurfaceRoot } from './components/plite';
 import {
@@ -21,10 +21,10 @@ import {
   useVirtualizedRootPlan,
 } from './virtualized/use-virtualized-root-plan';
 
-export type VirtualizedEditableProps<
+export type VirtualizedEditorContentProps<
   TElement extends Element = Element,
   TRoot extends RootKey = RootKey,
-> = EditableProps<TElement, TRoot> & {
+> = EditorContentProps<TElement, TRoot> & {
   /** Estimated height in CSS pixels for an unmeasured top-level block. */
   estimatedBlockSize?: number;
   /** Extra top-level blocks rendered before and after the visible range. */
@@ -46,12 +46,12 @@ const assertOptions = ({
   }
 };
 
-const VirtualizedEditableInner = <TElement extends Element>({
+const VirtualizedEditorContentInner = <TElement extends Element>({
   estimatedBlockSize = 32,
   overscan = 2,
   ref: forwardedRef,
   ...props
-}: VirtualizedEditableProps<TElement>) => {
+}: VirtualizedEditorContentProps<TElement>) => {
   assertOptions({ estimatedBlockSize, overscan });
   const [rootElement, setRootElement] = React.useState<HTMLDivElement | null>(
     null
@@ -106,20 +106,20 @@ const VirtualizedEditableInner = <TElement extends Element>({
 };
 
 /** Render one explicitly virtualized Plite root. */
-export const VirtualizedEditable = <
+export const VirtualizedEditorContent = <
   TElement extends Element,
   const TRoot extends RootKey = RootKey,
 >({
   root,
   ...props
-}: VirtualizedEditableProps<TElement, TRoot>) => {
+}: VirtualizedEditorContentProps<TElement, TRoot>) => {
   if (root === 'main') {
     throw new Error('Omit root to render the primary editable.');
   }
   const inheritedReadOnly = useInheritedReadOnly();
   const editor = useEditorContext();
   const readOnly = props.readOnly || inheritedReadOnly;
-  const editable = <VirtualizedEditableInner {...props} />;
+  const editable = <VirtualizedEditorContentInner {...props} />;
 
   return root === undefined ? (
     editable

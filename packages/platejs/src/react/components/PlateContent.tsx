@@ -3,7 +3,7 @@
 import React from 'react';
 
 import type { Element, RootKey } from '../../facade';
-import { Editable } from '../internal/plite-components';
+import { PliteEditorContent } from '../internal/plite-components';
 import {
   type EditorContentProps,
   EditorContentView,
@@ -20,7 +20,7 @@ export type {
 } from './EditorContentView.internal';
 
 /**
- * Editable with plugins.
+ * EditorContent with plugins.
  *
  * - DOM handler props
  * - ReadOnly prop
@@ -33,7 +33,11 @@ function EditorContent<
   TRoot extends RootKey = RootKey,
 >(props: EditorContentProps<TElement, TRoot>) {
   return (
-    <EditorContentView {...props} editable={Editable} editableExtra={{}} />
+    <EditorContentView
+      {...props}
+      editable={PliteEditorContent}
+      editableExtra={{}}
+    />
   );
 }
 

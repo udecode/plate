@@ -74,6 +74,9 @@
       "path": "./react-core.json"
     },
     {
+      "path": "./react-virtualized.json"
+    },
+    {
       "path": "./root.json"
     },
     {

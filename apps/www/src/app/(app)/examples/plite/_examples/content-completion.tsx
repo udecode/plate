@@ -3,7 +3,7 @@
 import { defineEditorSchema, property, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
@@ -121,7 +121,7 @@ const ContentCompletionExample = () => {
     <EditorRoot editor={editor}>
       <div className="flex flex-col gap-4" id="content-completion-surface">
         <Commands />
-        <Editable
+        <EditorContent
           aria-label="Content completion editor"
           id="content-completion"
           renderElement={renderElement}

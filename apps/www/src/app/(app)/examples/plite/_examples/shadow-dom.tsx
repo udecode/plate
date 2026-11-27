@@ -1,5 +1,5 @@
 import { history } from 'plitejs/history';
-import { Editable, EditorRoot, useCreateEditor } from 'plitejs/react';
+import { EditorContent, EditorRoot, useCreateEditor } from 'plitejs/react';
 import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -53,7 +53,7 @@ const ShadowEditor = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable placeholder="Enter some plain text..." />
+      <EditorContent placeholder="Enter some plain text..." />
     </EditorRoot>
   );
 };

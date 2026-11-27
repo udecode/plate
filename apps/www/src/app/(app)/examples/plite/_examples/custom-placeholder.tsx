@@ -1,6 +1,6 @@
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderPlaceholderProps,
   EditorRoot,
   useCreateEditor,
@@ -19,7 +19,7 @@ const PlainTextExample = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         placeholder="Type something"
         renderPlaceholder={({
           children,

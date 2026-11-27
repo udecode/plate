@@ -1,7 +1,7 @@
 import { definePlugin, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderVoidProps,
@@ -98,7 +98,7 @@ const EditableVoidsExample = () => {
         <InsertEditableVoidButton />
       </Toolbar>
 
-      <Editable
+      <EditorContent
         placeholder="Enter some text..."
         renderElement={renderElement}
         renderLeaf={renderLeaf}
@@ -220,7 +220,7 @@ const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
         <h4>Tell us about yourself:</h4>
       </div>
       <div {...chrome.props}>
-        <Editable
+        <EditorContent
           aria-label="Editable void rich content"
           autoFocus={mountedWithCaret}
           className="editor-editable-voids-child-editor"

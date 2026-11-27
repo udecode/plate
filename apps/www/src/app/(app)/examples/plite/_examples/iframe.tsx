@@ -1,7 +1,7 @@
 import { isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
@@ -85,7 +85,7 @@ const IFrameExample = () => {
           editor.api.dom.deselect();
         }}
       >
-        <Editable
+        <EditorContent
           autoFocus
           onKeyDown={(event) => {
             for (const [hotkey, mark] of MARK_HOTKEYS) {

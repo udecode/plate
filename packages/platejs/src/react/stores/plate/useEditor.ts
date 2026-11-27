@@ -111,7 +111,7 @@ export function useEditorContainerRef(): React.RefObject<HTMLDivElement | null> 
   return target?.containerRef ?? emptyRef;
 }
 
-/** Get the selected view's Editable ref; its value is null before mount. */
+/** Get the selected view's `EditorContent` ref; its value is null before mount. */
 export function useEditableRef(): React.RefObject<HTMLElement | null> {
   const target = usePlateTarget();
   const emptyRef = React.useRef<HTMLElement>(null);

@@ -997,7 +997,7 @@ function createPliteRootEditor(
  * Create a command-capable editor for one root.
  *
  * The returned object is stable for the requested root and read-only option.
- * A renderer inside an `Editable` gets another object than UI outside it, so
+ * A renderer inside an `EditorContent` gets another object than UI outside it, so
  * a lock set through one does not reach the other.
  * It obeys the read-only state and the authored view of the mounted view that
  * shows its root, and of the view around the hook while none shows it. Inside
@@ -1027,7 +1027,7 @@ const RETURN_UNDEFINED = (): NamedRootKey | undefined => undefined;
  * Return the active command editor from the nearest `<EditorRoot>`, or `null`
  * when called outside one.
  *
- * Inside an editing area (`<Editable>`), returns that editing area's own
+ * Inside an editing area (`<EditorContent>`), returns that editing area's own
  * editor without subscribing to caret moves. Outside editing areas, such as in
  * a toolbar, returns the root editor for the root holding the caret, or the
  * enclosing `<EditorRoot>`'s root while nothing is selected.
@@ -1075,7 +1075,7 @@ export function useOptionalEditor(): EditorContextValue | null {
 /**
  * Return the active command editor from the nearest `<EditorRoot>`.
  *
- * Inside an editing area (`<Editable>`), returns that editing area's own
+ * Inside an editing area (`<EditorContent>`), returns that editing area's own
  * editor. Outside editing areas, such as in a toolbar, returns the root editor
  * for the root holding the caret, or the enclosing `<EditorRoot>`'s root while
  * nothing is selected. Throws outside `<EditorRoot>`.
@@ -1122,7 +1122,7 @@ export type CommandDispatcher<TCommand extends EditorCommandDescriptor> = (
  * Command input belongs to the returned dispatcher, so event-time data never
  * becomes hook configuration. Pass `root` for a known root and use
  * `focus: 'restore-root'` when the command should first restore editor focus.
- * Without `root`, the command runs in the root of the `Editable` around the
+ * Without `root`, the command runs in the root of the `EditorContent` around the
  * hook, or else in the caret's root when the dispatcher runs.
  * The command runs on the mounted view that shows the root, and on the editor
  * `useRootEditor` gives for the root while none shows it, so a lock on either

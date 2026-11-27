@@ -5,7 +5,7 @@ import { definePlugin, txLocate } from 'plitejs';
 import { domCommands } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type Editor,
   type RenderElementProps,
   type RenderVoidProps,
@@ -144,7 +144,7 @@ const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
       <Toolbar>
         <InsertImageButton />
       </Toolbar>
-      <Editable
+      <EditorContent
         placeholder="Enter some text..."
         renderElement={renderElement}
         renderVoid={renderVoid}

@@ -3,8 +3,8 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { NodeApi } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
-  type EditableProps,
+  EditorContent,
+  type EditorContentProps,
   type Editor,
   EditorRoot,
   type DecorationSource,
@@ -118,7 +118,7 @@ const SearchHighlightingEditor = memo(
     searchSource: DecorationSource<Editor<CustomValue>>;
   }) => (
     <EditorRoot decorations={[searchSource]} editor={editor}>
-      <Editable id="search-highlighting" renderLeaf={Leaf} />
+      <EditorContent id="search-highlighting" renderLeaf={Leaf} />
     </EditorRoot>
   )
 );
@@ -131,7 +131,7 @@ const Leaf = ({
   attributes,
   children,
   leaf,
-}: Parameters<NonNullable<EditableProps['renderLeaf']>>[0]) => {
+}: Parameters<NonNullable<EditorContentProps['renderLeaf']>>[0]) => {
   const highlightLeaf = leaf as HighlightLeaf;
   return (
     <span

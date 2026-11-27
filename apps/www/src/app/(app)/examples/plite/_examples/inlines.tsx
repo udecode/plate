@@ -11,7 +11,7 @@ import { domCommands, isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import * as PliteReact from 'plitejs/react';
 import {
-  Editable,
+  EditorContent,
   type Editor,
   type RenderElementProps,
   type RenderTextProps,
@@ -117,7 +117,7 @@ const InlinesExample = () => {
         <RemoveLinkButton />
         <ToggleEditableButtonButton />
       </Toolbar>
-      <Editable
+      <EditorContent
         onKeyDown={onKeyDown}
         placeholder="Enter some text..."
         renderElement={renderElement}

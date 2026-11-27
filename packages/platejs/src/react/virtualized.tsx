@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  VirtualizedEditable,
-  type VirtualizedEditableProps,
+  VirtualizedEditorContent as PliteVirtualizedEditorContent,
+  type VirtualizedEditorContentProps as PliteVirtualizedEditorContentProps,
 } from 'plitejs/react/virtualized';
 import React from 'react';
 
@@ -17,7 +17,7 @@ export type VirtualizedEditorContentProps<
   TRoot extends RootKey = RootKey,
 > = EditorContentProps<TElement, TRoot> &
   Pick<
-    VirtualizedEditableProps<TElement, TRoot>,
+    PliteVirtualizedEditorContentProps<TElement, TRoot>,
     'estimatedBlockSize' | 'overscan'
   >;
 
@@ -32,7 +32,7 @@ export const VirtualizedEditorContent = <
 }: VirtualizedEditorContentProps<TElement, TRoot>) => (
   <EditorContentView
     {...props}
-    editable={VirtualizedEditable}
+    editable={PliteVirtualizedEditorContent}
     editableExtra={{ estimatedBlockSize, overscan }}
   />
 );

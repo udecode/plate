@@ -12,14 +12,14 @@ import { createEditableViewportPlan } from '../viewport-plan';
 import type { EditableElementLayout } from './editable-element-placement';
 import {
   EditableViewportSurface,
-  type EditableProps,
+  type EditorContentProps,
 } from './editable-text-blocks';
 import { SurfaceRoot } from './plite';
 
 export type WindowedEditableProps<
   TElement extends Element = Element,
   TRoot extends RootKey = RootKey,
-> = EditableProps<TElement, TRoot> & {
+> = EditorContentProps<TElement, TRoot> & {
   decorationStore?: PliteDecorationStore | null;
   elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
   enabled?: boolean;

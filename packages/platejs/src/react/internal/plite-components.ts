@@ -9,13 +9,13 @@ import {
 import type { EditorViewOptions } from '../../facade';
 import type { Editor } from '../editor/Editor';
 
-export { Editable } from 'plitejs/react';
+export { EditorContent as PliteEditorContent } from 'plitejs/react';
 export type {
   EditableDOMBeforeInputContext as RuntimeEditableDOMBeforeInputContext,
   EditableHandlerContext as RuntimeEditableHandlerContext,
   EditableHandlerResult,
   EditableInputEventContext as RuntimeEditableInputEventContext,
-  EditableProps as RuntimeEditableProps,
+  EditorContentProps as RuntimeEditableProps,
 } from 'plitejs/react';
 
 // The public Plate root checks capability inference before private composition

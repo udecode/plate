@@ -1677,11 +1677,25 @@ const pliteExampleHistory = {
           ) {
             historyName = specifier.local.name;
           }
+          if (
+            node.source.value === 'plitejs/pagination/react' &&
+            imported === 'PagedEditorContent'
+          ) {
+            editables.add(specifier.local.name);
+            continue;
+          }
+          if (
+            node.source.value === 'plitejs/react/virtualized' &&
+            imported === 'VirtualizedEditorContent'
+          ) {
+            editables.add(specifier.local.name);
+            continue;
+          }
           if (node.source.value !== 'plitejs/react') continue;
           if (PLITE_REACT_EDITOR_FACTORIES.has(imported)) {
             factories.add(specifier.local.name);
           }
-          if (imported === 'Editable') editables.add(specifier.local.name);
+          if (imported === 'EditorContent') editables.add(specifier.local.name);
         }
       },
       JSXOpeningElement(node) {

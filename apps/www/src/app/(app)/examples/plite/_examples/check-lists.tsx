@@ -9,7 +9,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   EditorRoot,
   useEditor,
@@ -121,7 +121,7 @@ const CheckListsEditor = ({
 
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         autoFocus
         placeholder="Get to work…"
         renderElement={renderElement}

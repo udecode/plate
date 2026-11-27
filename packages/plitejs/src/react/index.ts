@@ -32,11 +32,11 @@ export type {
   EditableDOMCoverageBoundaryProps,
   EditableDOMCoverageBoundaryScope,
   EditableElementSlots,
-  EditableProps,
+  EditorContentProps,
   RenderElementProps,
   RenderVoidProps,
 } from './components/editable-text-blocks';
-export { Editable } from './components/editable-text-blocks';
+export { EditorContent } from './components/editable-text-blocks';
 export type {
   ExternalTextActions,
   ExternalTextAdapter,

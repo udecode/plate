@@ -11,7 +11,7 @@ import type {
 } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   EditorRoot,
   useCreateEditor,
@@ -338,7 +338,7 @@ const HiddenContentBlocksContent = () => {
           </CardContent>
         </Card>
 
-        <Editable
+        <EditorContent
           aria-label="Hidden content blocks editor"
           className="min-h-[220px] rounded-lg border border-border bg-background p-3"
           id="hidden-content-blocks-editor"

@@ -10,7 +10,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderVoidProps,
@@ -271,7 +271,7 @@ const MentionExample = () => {
         setTarget(null);
       }}
     >
-      <Editable
+      <EditorContent
         onKeyDown={onKeyDown}
         placeholder="Enter some text..."
         renderElement={renderElement}

@@ -1,8 +1,8 @@
 export * from '..';
 export {
-  type PagedEditablePageAttributes,
-  type PagedEditablePageView,
-  type PagedEditableRenderPageProps,
+  type PagedEditorContentPageAttributes,
+  type PagedEditorContentPageView,
+  type PagedEditorContentRenderPageProps,
   usePageLayout,
   usePageLayoutFragments,
 } from 'plitejs/pagination/react';

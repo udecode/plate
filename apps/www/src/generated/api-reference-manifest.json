@@ -16315,47 +16315,36 @@
             "TElement extends Element = Element"
           ]
         },
-        "platejs/pagination/react:PagedEditablePageAttributes": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/pagination/react",
-          "kind": "type",
-          "name": "PagedEditablePageAttributes",
-          "runtime": false,
-          "signature": "type PagedEditablePageAttributes = Readonly<{\n  'data-editor-page': true;\n  'data-editor-page-index': number;\n  style: CSSProperties;\n}>;",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs/pagination/react:PagedEditablePageView": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/pagination/react",
-          "kind": "type",
-          "name": "PagedEditablePageView",
-          "runtime": false,
-          "signature": "type PagedEditablePageView = Readonly<{\n  gap?: number;\n  mode?: PageLayoutMode;\n}>;",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs/pagination/react:PagedEditableRenderPageProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/pagination/react",
-          "kind": "type",
-          "name": "PagedEditableRenderPageProps",
-          "runtime": false,
-          "signature": "type PagedEditableRenderPageProps = Readonly<{\n  attributes: PagedEditablePageAttributes;\n  page: PageLayoutPage;\n}>;",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs/pagination/react:PagedEditorContent": {
           "aliases": [],
-          "documentation": "Render Plate content on measured pages: `EditorContent` with its plugin\nrenderers, handlers and slots, laid out by `PagedEditable`. The app owns\n`fragmentation` sizes and `typography`; keep both stable across renders.",
+          "documentation": "Render Plate content on measured pages: `EditorContent` with its plugin\nrenderers, handlers and slots, laid out by `PagedEditorContent`. The app\nowns `fragmentation` sizes and `typography`; keep both stable across renders.",
           "entrypoint": "platejs/pagination/react",
           "kind": "const",
           "name": "PagedEditorContent",
           "runtime": true,
           "signature": "PagedEditorContent: <TElement extends Element = Element, TRoot extends RootKey = RootKey>({ engine, fragmentation, page, pageView, renderPage, typography, virtualize, ...props }: PagedEditorContentProps<TElement, TRoot>) => React$1.JSX.Element",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/pagination/react:PagedEditorContentPageAttributes": {
+          "aliases": [],
+          "documentation": "DOM attributes and inline layout styles applied to each rendered page box.",
+          "entrypoint": "platejs/pagination/react",
+          "kind": "type",
+          "name": "PagedEditorContentPageAttributes",
+          "runtime": false,
+          "signature": "type PagedEditorContentPageAttributes = Readonly<{\n  'data-editor-page': true;\n  'data-editor-page-index': number;\n  style: CSSProperties;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/pagination/react:PagedEditorContentPageView": {
+          "aliases": [],
+          "documentation": "Visual presentation options for the page stack (mode and inter-page gap).",
+          "entrypoint": "platejs/pagination/react",
+          "kind": "type",
+          "name": "PagedEditorContentPageView",
+          "runtime": false,
+          "signature": "type PagedEditorContentPageView = Readonly<{\n  gap?: number;\n  mode?: PageLayoutMode;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -16366,12 +16355,23 @@
           "kind": "type",
           "name": "PagedEditorContentProps",
           "runtime": false,
-          "signature": "type PagedEditorContentProps<TElement extends Element = Element, TRoot extends RootKey = RootKey> = EditorContentProps<TElement, TRoot> & Pick<PagedEditableProps<TElement>, 'engine' | 'fragmentation' | 'page' | 'pageView' | 'renderPage' | 'typography' | 'virtualize'>;",
+          "signature": "type PagedEditorContentProps<TElement extends Element = Element, TRoot extends RootKey = RootKey> = EditorContentProps$1<TElement, TRoot> & Pick<PagedEditorContentProps$1<TElement, TRoot>, 'engine' | 'fragmentation' | 'page' | 'pageView' | 'renderPage' | 'typography' | 'virtualize'>;",
           "source": null,
           "typeParameters": [
             "TElement extends Element = Element",
             "TRoot extends RootKey = RootKey"
           ]
+        },
+        "platejs/pagination/react:PagedEditorContentRenderPageProps": {
+          "aliases": [],
+          "documentation": "Props passed to `PagedEditorContent`'s `renderPage` callback for one measured page.",
+          "entrypoint": "platejs/pagination/react",
+          "kind": "type",
+          "name": "PagedEditorContentRenderPageProps",
+          "runtime": false,
+          "signature": "type PagedEditorContentRenderPageProps = Readonly<{\n  attributes: PagedEditorContentPageAttributes;\n  page: PageLayoutPage;\n}>;",
+          "source": null,
+          "typeParameters": []
         },
         "platejs/pagination/react:PageLayoutBlock": {
           "aliases": [],
@@ -19171,7 +19171,7 @@
         },
         "platejs/react:EditorContent": {
           "aliases": [],
-          "documentation": "Editable with plugins.\n\n- DOM handler props\n- ReadOnly prop\n- Slots.afterEditable\n- Slots.beforeEditable\n- Plugin renderers and hooks",
+          "documentation": "EditorContent with plugins.\n\n- DOM handler props\n- ReadOnly prop\n- Slots.afterEditable\n- Slots.beforeEditable\n- Plugin renderers and hooks",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "EditorContent",
@@ -19190,7 +19190,7 @@
           "kind": "type",
           "name": "EditorContentProps",
           "runtime": false,
-          "signature": "type EditorContentProps<TElement extends Element$1 = Element$1, TRoot extends RootKey = RootKey> = Omit<RebindHandlers<EditableProps<TElement, TRoot>>, 'renderElement' | 'renderLeaf' | 'renderPlaceholder' | 'renderText' | 'renderVoid' | 'scrollSelectionIntoView'> & {\n  /** Autofocus when it becomes editable (readOnly true -> false). */\n  autoFocusOnEditable?: boolean;\n  disabled?: boolean;\n  ref?: React$1.Ref<HTMLDivElement>;\n  scrollSelectionIntoView?: (editor: Editor, domRange: globalThis.Range) => void;\n};",
+          "signature": "type EditorContentProps<TElement extends Element$1 = Element$1, TRoot extends RootKey = RootKey> = Omit<RebindHandlers<EditorContentProps$1<TElement, TRoot>>, 'renderElement' | 'renderLeaf' | 'renderPlaceholder' | 'renderText' | 'renderVoid' | 'scrollSelectionIntoView'> & {\n  /** Autofocus when it becomes editable (readOnly true -> false). */\n  autoFocusOnEditable?: boolean;\n  disabled?: boolean;\n  ref?: React$1.Ref<HTMLDivElement>;\n  scrollSelectionIntoView?: (editor: Editor, domRange: globalThis.Range) => void;\n};",
           "source": null,
           "typeParameters": [
             "TElement extends Element$1 = Element$1",
@@ -28689,7 +28689,7 @@
         },
         "platejs/react:useEditableRef": {
           "aliases": [],
-          "documentation": "Get the selected view's Editable ref; its value is null before mount.",
+          "documentation": "Get the selected view's `EditorContent` ref; its value is null before mount.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "useEditableRef",
@@ -29384,7 +29384,7 @@
           "kind": "type",
           "name": "VirtualizedEditorContentProps",
           "runtime": false,
-          "signature": "type VirtualizedEditorContentProps<TElement extends Element = Element, TRoot extends RootKey = RootKey> = EditorContentProps<TElement, TRoot> & Pick<VirtualizedEditableProps<TElement, TRoot>, 'estimatedBlockSize' | 'overscan'>;",
+          "signature": "type VirtualizedEditorContentProps<TElement extends Element = Element, TRoot extends RootKey = RootKey> = EditorContentProps$1<TElement, TRoot> & Pick<VirtualizedEditorContentProps$1<TElement, TRoot>, 'estimatedBlockSize' | 'overscan'>;",
           "source": null,
           "typeParameters": [
             "TElement extends Element = Element",

@@ -9,12 +9,12 @@ import type { Editor, Value } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   createEditor as createReactEditor,
-  Editable,
+  EditorContent,
   type RenderElementProps,
   EditorRoot,
   useElementSelected,
 } from 'plitejs/react';
-import { VirtualizedEditable } from 'plitejs/react/virtualized';
+import { VirtualizedEditorContent } from 'plitejs/react/virtualized';
 import React, {
   type CSSProperties,
   StrictMode,
@@ -342,7 +342,7 @@ const HugeDocumentExample = () => {
     <RenderConfigContext.Provider value={renderConfig}>
       <EditorRoot editor={editor} key={editorVersion}>
         {config.renderingMode === 'virtualized' ? (
-          <VirtualizedEditable
+          <VirtualizedEditorContent
             autoFocus
             estimatedBlockSize={config.virtualizedEstimatedBlockSize}
             id="huge-document-editor"
@@ -354,7 +354,7 @@ const HugeDocumentExample = () => {
             style={editableStyle}
           />
         ) : (
-          <Editable
+          <EditorContent
             autoFocus
             id="huge-document-editor"
             placeholder="Enter some text…"

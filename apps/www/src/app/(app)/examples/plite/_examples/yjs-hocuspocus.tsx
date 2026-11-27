@@ -13,7 +13,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
@@ -1313,7 +1313,7 @@ const ProviderBackedPeerContent = ({
           }
         }}
       >
-        <Editable
+        <EditorContent
           aria-busy={admission.state === 'waiting'}
           autoFocus={peer.id === 'a'}
           className="min-h-28 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm leading-6 outline-none focus:border-ring focus:bg-card"

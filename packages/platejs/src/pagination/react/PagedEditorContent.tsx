@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  PagedEditable,
-  type PagedEditableProps,
+  PagedEditorContent as PlitePagedEditorContent,
+  type PagedEditorContentProps as PlitePagedEditorContentProps,
 } from 'plitejs/pagination/react';
 import React from 'react';
 
@@ -17,7 +17,7 @@ export type PagedEditorContentProps<
   TRoot extends RootKey = RootKey,
 > = EditorContentProps<TElement, TRoot> &
   Pick<
-    PagedEditableProps<TElement>,
+    PlitePagedEditorContentProps<TElement, TRoot>,
     | 'engine'
     | 'fragmentation'
     | 'page'
@@ -29,8 +29,8 @@ export type PagedEditorContentProps<
 
 /**
  * Render Plate content on measured pages: `EditorContent` with its plugin
- * renderers, handlers and slots, laid out by `PagedEditable`. The app owns
- * `fragmentation` sizes and `typography`; keep both stable across renders.
+ * renderers, handlers and slots, laid out by `PagedEditorContent`. The app
+ * owns `fragmentation` sizes and `typography`; keep both stable across renders.
  */
 export const PagedEditorContent = <
   TElement extends Element = Element,
@@ -47,7 +47,7 @@ export const PagedEditorContent = <
 }: PagedEditorContentProps<TElement, TRoot>) => (
   <EditorContentView
     {...props}
-    editable={PagedEditable}
+    editable={PlitePagedEditorContent}
     editableExtra={{
       engine,
       fragmentation,

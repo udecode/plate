@@ -1,6 +1,6 @@
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   useCreateEditor,
   useEditorFocused,
@@ -44,7 +44,7 @@ const FocusRingEditable = ({
   const focused = useEditorFocused();
 
   return (
-    <Editable
+    <EditorContent
       aria-label={label}
       readOnly={readOnly}
       style={{

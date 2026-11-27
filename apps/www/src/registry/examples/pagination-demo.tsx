@@ -10,7 +10,7 @@ import {
 } from 'platejs/pagination';
 import {
   PagedEditorContent,
-  type PagedEditableRenderPageProps,
+  type PagedEditorContentRenderPageProps,
   usePageLayout,
 } from 'platejs/pagination/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
@@ -213,7 +213,10 @@ export default function PaginationDemo() {
     [tableType]
   );
 
-  const renderPage = ({ attributes, page }: PagedEditableRenderPageProps) => (
+  const renderPage = ({
+    attributes,
+    page,
+  }: PagedEditorContentRenderPageProps) => (
     <div
       {...attributes}
       className="rounded-sm bg-background shadow-sm ring-1 ring-border"

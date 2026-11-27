@@ -8,7 +8,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type RenderElementProps,
   useEditor,
@@ -236,13 +236,13 @@ const SchemaReconfigurationExample = () => {
     <EditorRoot editor={editor}>
       <div className="flex flex-col gap-4">
         <SchemaControls />
-        <Editable
+        <EditorContent
           aria-label="Primary root editor"
           id="schema-reconfiguration-main"
           renderElement={renderElement}
           renderVoid={renderVoid}
         />
-        <Editable
+        <EditorContent
           aria-label="Named root editor"
           id="schema-reconfiguration-notes"
           renderElement={renderElement}

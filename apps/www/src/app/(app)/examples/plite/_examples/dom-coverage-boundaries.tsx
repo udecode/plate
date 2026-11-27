@@ -11,7 +11,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   EditorRoot,
   useCreateEditor,
@@ -360,7 +360,7 @@ const DomCoverageBoundariesExample = () => {
 
       <div className="editor-dom-coverage-editor-wrap">
         <EditorRoot editor={editor}>
-          <Editable
+          <EditorContent
             autoFocus
             className="editor-dom-coverage-editor"
             placeholder="Try toggles, selection, and copy"

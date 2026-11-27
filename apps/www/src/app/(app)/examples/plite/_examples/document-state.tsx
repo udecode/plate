@@ -6,7 +6,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   ReactUpdatePolicy,
   useEditor,
@@ -246,7 +246,7 @@ const DocumentStatePanel = () => {
         className="editor-document-state-editor-surface"
         id="document-state-editor-surface"
       >
-        <Editable
+        <EditorContent
           className="editor-document-state-editor"
           id="document-state"
           spellCheck={spellcheckEnabled}

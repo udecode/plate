@@ -1,7 +1,7 @@
 import { definePlugin, NodeApi, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   type RenderLeafProps,
   EditorRoot,
@@ -168,7 +168,7 @@ const TablesEditor = () => {
   };
 
   return (
-    <Editable
+    <EditorContent
       onKeyDown={(event) => {
         if (event.key !== 'Tab') {
           return;

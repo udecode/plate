@@ -1,7 +1,7 @@
 import { definePlugin, property, schema, target } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   type RenderLeafProps,
   EditorRoot,
@@ -87,7 +87,7 @@ const SyncedBlocksExample = () => {
         <InsertSyncedBlockButton />
       </Toolbar>
 
-      <Editable
+      <EditorContent
         aria-label="Synced blocks editor"
         placeholder="Write around synced blocks..."
         renderElement={renderElement}

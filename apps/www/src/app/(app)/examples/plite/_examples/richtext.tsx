@@ -22,7 +22,7 @@ import {
 import { domCommands, isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
@@ -210,7 +210,7 @@ const RichTextExample = () => {
         <BlockButton format="justify" icon="format_align_justify" />
         <ClearFormattingButton />
       </Toolbar>
-      <Editable
+      <EditorContent
         autoFocus
         onKeyDown={(event, { editor: viewEditor }) =>
           handleRichTextKeyDown(viewEditor, event)

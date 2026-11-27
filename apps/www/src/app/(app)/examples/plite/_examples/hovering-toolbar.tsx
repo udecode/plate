@@ -1,7 +1,7 @@
 import { RangeApi } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderLeafProps,
   EditorRoot,
   useEditor,
@@ -50,7 +50,7 @@ const HoveringMenuExample = () => {
   return (
     <EditorRoot editor={editor}>
       <HoveringToolbar />
-      <Editable
+      <EditorContent
         onDOMBeforeInput={(event) => {
           switch (event.inputType) {
             case 'formatBold': {

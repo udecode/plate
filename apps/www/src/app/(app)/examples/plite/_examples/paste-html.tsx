@@ -1,7 +1,7 @@
 import type { Element as EditorElement } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   useCreateEditor,
   useEditorFocused,
@@ -57,7 +57,7 @@ const PasteHtmlExample = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         placeholder="Paste in some HTML..."
         renderElement={Element}
         renderLeaf={Leaf}

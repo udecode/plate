@@ -814,6 +814,7 @@ export const PLATE_FACADE_DIFFS = {
   },
   'platejs/react': {
     rebound: [
+      'EditorContent',
       'EditorRoot',
       'createEditor',
       'definePlugin',
@@ -833,7 +834,6 @@ export const PLATE_FACADE_DIFFS = {
       'useStateFieldValue',
     ],
     dropped: [
-      'Editable',
       'EditorPlaceholder',
       'EditorReadOnlyProvider',
       'setDOMTextSyncRendererCapability',
@@ -847,13 +847,17 @@ export const PLATE_FACADE_DIFFS = {
       'useTextSelector',
     ],
   },
+  'platejs/react/virtualized': {
+    dropped: [],
+    rebound: ['VirtualizedEditorContent'],
+  },
   'platejs/history': {
     dropped: ['history'],
     rebound: [],
   },
   'platejs/pagination/react': {
-    dropped: ['PagedEditable'],
-    rebound: [],
+    dropped: [],
+    rebound: ['PagedEditorContent'],
   },
 };
 
@@ -868,6 +872,7 @@ function createPlateRuntimeIdentityConsumerSource() {
     "import * as releasePliteLayout from 'plitejs/pagination';",
     "import * as releasePliteLayoutReact from 'plitejs/pagination/react';",
     "import * as releasePliteReact from 'plitejs/react';",
+    "import * as releasePliteReactVirtualized from 'plitejs/react/virtualized';",
     "import * as releasePliteYjs from 'plitejs/yjs';",
     "import * as releasePliteYjsReact from 'plitejs/yjs/react';",
     "import * as releasePlateRoot from 'platejs';",
@@ -878,6 +883,7 @@ function createPlateRuntimeIdentityConsumerSource() {
     "import * as releasePlateLayout from 'platejs/pagination';",
     "import * as releasePlateLayoutReact from 'platejs/pagination/react';",
     "import * as releasePlateReact from 'platejs/react';",
+    "import * as releasePlateReactVirtualized from 'platejs/react/virtualized';",
     "import * as releasePlateYjs from 'platejs/yjs';",
     "import * as releasePlateYjsReact from 'platejs/yjs/react';",
     '',
@@ -917,7 +923,9 @@ function createPlateRuntimeIdentityConsumerSource() {
     '}',
     `releasePlateDeepEqual(releaseFacadeDiff(releasePliteHistory, releasePlateHistory), ${JSON.stringify(PLATE_FACADE_DIFFS['platejs/history'])});`,
     `releasePlateDeepEqual(releaseFacadeDiff(releasePliteLayoutReact, releasePlateLayoutReact), ${JSON.stringify(PLATE_FACADE_DIFFS['platejs/pagination/react'])});`,
+    `releasePlateDeepEqual(releaseFacadeDiff(releasePliteReactVirtualized, releasePlateReactVirtualized), ${JSON.stringify(PLATE_FACADE_DIFFS['platejs/react/virtualized'])});`,
     "releasePlateIdentityEqual(typeof releasePlateLayoutReact.PagedEditorContent, 'function');",
+    "releasePlateIdentityEqual(typeof releasePlateReactVirtualized.VirtualizedEditorContent, 'function');",
     'releasePlateIdentityEqual(releasePlateRoot.definePlugin === releasePliteRoot.definePlugin, false);',
     'releasePlateIdentityEqual(releasePlateRoot.schema, releasePliteRoot.schema);',
     'releasePlateIdentityEqual(releasePlateReact.definePlugin === releasePliteReact.definePlugin, false);',

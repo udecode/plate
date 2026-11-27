@@ -1,7 +1,7 @@
 import { definePlugin } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   type RenderVoidProps,
   EditorRoot,
@@ -47,7 +47,7 @@ const EmbedsExample = () => {
   });
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         placeholder="Enter some text..."
         renderElement={renderElement}
         renderVoid={renderVoid}

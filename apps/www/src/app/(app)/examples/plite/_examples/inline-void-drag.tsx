@@ -8,7 +8,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type RenderElementProps,
   useCreateEditor,
@@ -74,7 +74,7 @@ const InlineVoidDragExample = () => {
 
   return (
     <EditorRoot editor={editor}>
-      <Editable
+      <EditorContent
         aria-label="Inline void drag editor"
         className="rounded border p-3 outline-none"
         renderElement={renderElement}

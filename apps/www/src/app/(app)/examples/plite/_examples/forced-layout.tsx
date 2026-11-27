@@ -1,7 +1,7 @@
 import { defineEditorSchema, NodeApi, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderElementProps,
   EditorRoot,
   useCreateEditor,
@@ -66,7 +66,7 @@ const ForcedLayoutExample = () => {
   });
   return (
     <EditorRoot editor={editor}>
-      <Editable autoFocus renderElement={renderElement} spellCheck />
+      <EditorContent autoFocus renderElement={renderElement} spellCheck />
     </EditorRoot>
   );
 };

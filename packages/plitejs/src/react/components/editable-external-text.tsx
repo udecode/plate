@@ -36,7 +36,7 @@ export const EditableExternalText = <TConfig,>({
 
   useIsomorphicLayoutEffect(() => {
     if (!runtime || !host.current) {
-      throw new Error('externalText must mount inside Editable.');
+      throw new Error('externalText must mount inside EditorContent.');
     }
     const mounted = runtime.externalText.register({
       adapter,

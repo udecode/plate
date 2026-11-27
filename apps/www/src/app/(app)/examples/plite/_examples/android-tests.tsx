@@ -2,7 +2,7 @@ import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import type { Value } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   type RenderLeafProps,
   EditorRoot,
   useCreateEditor,
@@ -271,7 +271,11 @@ const TestCase = ({
 
   return (
     <EditorRoot editor={editor}>
-      <Editable placeholder="Enter some text…" renderLeaf={Leaf} spellCheck />
+      <EditorContent
+        placeholder="Enter some text…"
+        renderLeaf={Leaf}
+        spellCheck
+      />
     </EditorRoot>
   );
 };

@@ -7,7 +7,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   type Decoration,
   type DecorationSource,
@@ -127,7 +127,7 @@ const AsyncDecorationsExample = () => {
           scheduleAsyncDecorations(value.children);
         }}
       >
-        <Editable
+        <EditorContent
           className="editor-decorations-async-editor"
           id="decorations-async"
         />

@@ -7,7 +7,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
-  Editable,
+  EditorContent,
   EditorRoot,
   useEditorSelector,
   useSetStateField,
@@ -145,7 +145,7 @@ const RootEditor = ({
         <span>{label}</span>
         <RootStatus id={`${id}-status`} label={rootLabel} root={root} />
       </div>
-      <Editable
+      <EditorContent
         aria-label={label}
         autoFocus={root === undefined}
         className={className}

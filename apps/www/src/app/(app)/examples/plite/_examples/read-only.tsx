@@ -1,4 +1,4 @@
-import { Editable, EditorRoot, useCreateEditor } from 'plitejs/react';
+import { EditorContent, EditorRoot, useCreateEditor } from 'plitejs/react';
 
 const ReadOnlyExample = () => {
   const editor = useCreateEditor({
@@ -15,7 +15,7 @@ const ReadOnlyExample = () => {
   });
   return (
     <EditorRoot editor={editor}>
-      <Editable placeholder="Enter some plain text..." readOnly />
+      <EditorContent placeholder="Enter some plain text..." readOnly />
     </EditorRoot>
   );
 };

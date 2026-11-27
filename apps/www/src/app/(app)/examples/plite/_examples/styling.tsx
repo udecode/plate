@@ -1,5 +1,5 @@
 import { history } from 'plitejs/history';
-import { Editable, EditorRoot, useCreateEditor } from 'plitejs/react';
+import { EditorContent, EditorRoot, useCreateEditor } from 'plitejs/react';
 
 const StylingExample = () => {
   const editor1 = useCreateEditor({
@@ -24,7 +24,7 @@ const StylingExample = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
       <EditorRoot editor={editor1}>
-        <Editable
+        <EditorContent
           style={{
             backgroundColor: 'rgb(255, 230, 156)',
             color: '#111827',
@@ -35,7 +35,7 @@ const StylingExample = () => {
       </EditorRoot>
 
       <EditorRoot editor={editor2}>
-        <Editable className="fancy" disableDefaultStyles />
+        <EditorContent className="fancy" disableDefaultStyles />
       </EditorRoot>
     </div>
   );
