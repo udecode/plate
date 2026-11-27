@@ -46,8 +46,8 @@ Challenge blocking rules as a "rule is wrong" lane (subject rules rewrite in pla
 
 Runs on `verdict|review <scope>`, plain scope next-step asks, `/loop verdict <scope>`, audit/relapse tasks, and Explore lock (skipped for narrow `decide` chips, `audit <scope|group>` and mid-run verdicts):
 
-1. Run `pnpm kb <scope>`; read listed research pages, topic file and public docs (add missing scope to `docs/research/areas.tsv`).
-2. Write `### Jobs` table under Evidence (job, strongest external alternative, better/as-well/worse, source). Max one `research` discovery shard for the highest-leverage ungraded job (promote to area page) and max one outside-scope `decide` chip (`via: verdict`, `session: none`).
+1. Run `pnpm kb <scope>`; read listed `docs/research/sources/` pages, topic file and public docs (add missing scope to `docs/research/areas.tsv`).
+2. Write `### Jobs` under Evidence (job, strongest external alternative, better/as-well/worse, grounded source; never model memory, checked by `review-ledger.mjs check`). Run a `research` discovery shard (`pnpm kb discover <area>` + live GitHub/web search, promoted to `docs/research/sources/` + `repos.tsv`) when a top job is ungraded, the area's research is stale against the question, or the verdict proposes a redesign or new subsystem (skip live discovery for pure Intake, narrow internal `decide` chips, or pure dead-code cuts). Max one outside-scope `decide` chip (`via: verdict`, `session: none`).
 3. Collect candidates (worse jobs, open work, strongest cut/merge, Redesign from First Principles, rule-is-wrong) into `### Lanes` ranked by user gain/cost (ties: cut/merge > redesign > addition).
 4. Top lane = Pursue (else Stop); a disjoint worthy lane may become a `via: verdict` chip.
 
@@ -64,7 +64,8 @@ Runs on `verdict|review <scope>`, plain scope next-step asks, `/loop verdict <sc
 Run dir: main checkout `docs/plans/artifacts/<date>-<slug>-explore/` (`goal.md` verbatim, `round-<n>.md`). Title: `🥔 <scope> (round N)` working, `🟠 <scope> (round N)` waiting (round 0 = goal; normal title after `lock`).
 
 - **Round 0 (Goal):** no search/lanes (may read `lookup`, `pnpm kb`, topic file); save ask in `goal.md`, restate goal, lead use case and out-of-scope, stop.
-- **Rounds 1+:** append answer, fan out parallel evidence lanes (Extraction), re-rank per Next step, promote research via `research` + `land.mjs`, send ~300-word reply (harsh pushback first, then **Learned**, **Ranking**, **Unsure**, **Your calls**, ending with `lock`/`drop`/continue), save `round-<n>.md`, stop. No-change round asks for `lock` (plain yes = `lock`).
+- **Round 1 (OSS + codebase):** append answer, load `research`, read `pnpm kb <scope>` + existing `docs/research/sources/` first, then fan out parallel evidence lanes (Extraction) pairing live codebase forensics with a mandatory OSS discovery lane (`pnpm kb discover <area>` + GitHub/web search beyond local clones). Grade `### Jobs` in `round-1.md`, re-rank per Next step, promote new findings to `docs/research/sources/` + `repos.tsv` via `research` + `land.mjs` (or log `0 new OSS findings` with queries run), send ~300-word reply (harsh pushback first, then **Learned**, **Ranking**, **Unsure**, **Your calls**, ending with `lock`/`drop`/continue), stop.
+- **Rounds 2+:** append answer, fan out steered evidence lanes (running another `research` shard when the steer opens an unresearched angle), re-rank per Next step, promote any new research via `research` + `land.mjs`, send ~300-word reply, save `round-<n>.md`, stop. No-change round asks for `lock` (plain yes = `lock`).
 - **Converge (`lock`):** deep path + Next step from round research (no new shard; quote `goal.md` in `### Requirements`; lanes name `owner:`/`stop:`; `lock` triggers panel with `goal.md` `[ask]` invariants). After panel fixes, rewrite topic file directly and close without building (`Status: closed: Pursue verdict, built by its own task` + `Built by: /loop verdict <scope id>`, or `closed: Defer verdict, waiting on <evidence>`).
 
 ## Sessions

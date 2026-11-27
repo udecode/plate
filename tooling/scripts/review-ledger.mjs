@@ -2208,11 +2208,16 @@ function planErrors(root, ledger, paths, base, pairing) {
       errors.push(`${path}: no such plan`);
       continue;
     }
+    const text = read(root, path);
     const plan = associationOf(root, ledger, path);
-    const unknown = unknownReviewKeys(read(root, path));
+    const unknown = unknownReviewKeys(text);
     const problems = [
       ...(unknown.length ? [`unknown review key ${unknown.join(', ')}`] : []),
-      ...(plan ? planProblems(context, plan) : []),
+      ...(plan
+        ? planProblems(context, plan)
+        : context.added(path)
+          ? externalCitationProblems(text, null, null)
+          : []),
     ];
     if (problems.length) errors.push(`${path}: ${problems.join(', ')}`);
   }
@@ -2478,6 +2483,34 @@ function dependentProblems(ledger, plan, evidence) {
     );
 }
 
+const externalCitation =
+  /[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+@[0-9a-f]{7,40}\b|https?:\/\/\S+|(?:docs\/research\/sources\/|\.\.\/research\/sources\/|docs\/plans\/topics\/|(?:\.\.\/)?topics\/)[\w./-]+\.md\b|\bno other editor\b/i;
+
+function externalCitationProblems(text, plan, page) {
+  const problems = [];
+  const upstreams = plan?.upstreams ?? documentMetadata(text).review_upstreams;
+  const hasUpstreams = Array.isArray(upstreams) && upstreams.length > 0;
+  const otherEditors = sectionOf(text, 'What other editors do');
+  if (otherEditors && !hasUpstreams && !externalCitation.test(otherEditors)) {
+    problems.push(
+      '## What other editors do cites no grounded external source: cite <owner>/<repo>@<commit>:<path>, a docs/research/sources/ or docs/plans/topics/ path, an https:// URL, review_upstreams frontmatter, or "no other editor"'
+    );
+  }
+  if (page?.jobs === 'ranked') {
+    const jobs = sectionOf(sectionOf(text, 'Evidence'), 'Jobs', '###');
+    if (
+      !hasUpstreams &&
+      !externalCitation.test(jobs) &&
+      !externalCitation.test(otherEditors)
+    ) {
+      problems.push(
+        '### Jobs cites no grounded external source: cite <owner>/<repo>@<commit>:<path>, a docs/research/sources/ or docs/plans/topics/ path, an https:// URL, or review_upstreams frontmatter'
+      );
+    }
+  }
+  return problems;
+}
+
 function pageProblems(root, unignored, ledger, plans, plan, added) {
   const problems = [];
   const text = read(root, plan.path);
@@ -2504,6 +2537,15 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
         );
       }
     }
+  }
+  if (added(plan.path)) {
+    problems.push(
+      ...externalCitationProblems(
+        text,
+        plan,
+        isReviewPage(plan) ? ledger.pages.get(idOf(plan.path)) : null
+      )
+    );
   }
   if (!isReviewPage(plan)) return problems;
   const page = ledger.pages.get(idOf(plan.path));

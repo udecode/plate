@@ -28,7 +28,7 @@ Record `design` or `review` verdicts in the active plan when one exists and retu
 Read only what can change the decision:
 
 1. `VISION.md`, `docs/vision/common.md`, and the matching Plate or Plite vision file.
-2. Prior art first (per `docs/vision/common.md` Redesign from First Principles): existing Plite components, Plate APIs, and reference editors; source-level editor comparisons consume `research audit` evidence.
+2. Prior art first (per `docs/vision/common.md` Redesign from First Principles): existing Plite components, Plate APIs, and cited OSS reference editors (`pnpm kb <scope>` + `docs/research/sources/`; run a `research` discovery pass before `design` when no fresh OSS evidence covers the surface, never model memory; exempt pure deletions).
 3. Public types, exports, docs, representative call sites, and owning implementation for the target API.
 4. Existing plans and compatibility constraints, only after the ideal target is clear on its own.
 
