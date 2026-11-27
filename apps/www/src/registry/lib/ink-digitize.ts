@@ -1,7 +1,6 @@
 import {
   type Anchor,
   type Editor,
-  type EditorDocumentValue,
   ElementApi,
   type Path,
   PointApi,
@@ -69,7 +68,6 @@ export type PreparedInkDigitize = Readonly<{
   blockOrder: readonly string[];
   extraMarkIds: readonly string[];
   lassoedMarkIds: readonly string[];
-  marginNoteIds: readonly string[];
   markIdByKey: ReadonlyMap<string, string>;
   markKeyById: ReadonlyMap<string, string>;
   passages: readonly PreparedPassageMeta[];
@@ -83,19 +81,13 @@ export type PreparedInkDigitize = Readonly<{
 export type PrepareInkDigitizeResult =
   | Readonly<{ kind: 'blocked'; reason: 'no-marks' | 'read-only-or-preview' }>
   | Readonly<{
-      kind: 'margin-only';
-      marginNoteIds: readonly string[];
-    }>
-  | Readonly<{
       canRetryLassoOnly: boolean;
       kind: 'too-many-words';
-      marginNoteIds: readonly string[];
       signMarkIds: readonly string[];
       wordCount: number;
     }>
   | Readonly<{
       kind: 'passage-too-large';
-      marginNoteIds: readonly string[];
       markIds: readonly string[];
     }>
   | Readonly<{
@@ -192,7 +184,6 @@ export const prepareInkDigitizeRequest = async (
     return { kind: 'blocked', reason: 'no-marks' };
   }
 
-  const marginNoteIds: string[] = [];
   const readablePicked = pickedMarks.filter((mark) => !isUnanchoredMark(mark));
 
   if (readablePicked.length === 0) {
@@ -245,7 +236,6 @@ export const prepareInkDigitizeRequest = async (
         extraMarkIds.length > 0 &&
         lassoOnlyWords <= maxWords,
       kind: 'too-many-words',
-      marginNoteIds,
       signMarkIds: options.lassoOnly ? [] : extraMarkIds,
       wordCount,
     };
@@ -259,7 +249,6 @@ export const prepareInkDigitizeRequest = async (
   if (oversizedIndex !== -1) {
     return {
       kind: 'passage-too-large',
-      marginNoteIds,
       markIds: passages[oversizedIndex].marks.map((mark) => mark.id),
     };
   }
@@ -336,7 +325,6 @@ export const prepareInkDigitizeRequest = async (
       blockOrder: blockIdsBetween(view, passageBlocks),
       extraMarkIds: options.lassoOnly ? [] : extraMarkIds,
       lassoedMarkIds: [...lassoedSet],
-      marginNoteIds,
       markIdByKey,
       markKeyById,
       passages: passageMetas,
@@ -519,14 +507,14 @@ const checkCorrectionsOrderAndOverlap = (
   }
 
   for (let i = 0; i < corrections.length; i += 1) {
-    const editsA = corrections[i].meanings[0]?.edits ?? [];
-
     for (let j = i + 1; j < corrections.length; j += 1) {
-      const editsB = corrections[j].meanings[0]?.edits ?? [];
-
-      for (const a of editsA) {
-        for (const b of editsB) {
-          if (editsOverlap(a, b)) return 'overlapping-edits';
+      for (const meaningA of corrections[i].meanings) {
+        for (const meaningB of corrections[j].meanings) {
+          for (const a of meaningA.edits) {
+            for (const b of meaningB.edits) {
+              if (editsOverlap(a, b)) return 'overlapping-edits';
+            }
+          }
         }
       }
     }
@@ -912,12 +900,19 @@ const canonicalizeNode = (node: unknown): unknown => {
   return { ...node, children: merged };
 };
 
-const canonicalValueChanged = (
-  before: EditorDocumentValue,
-  after: EditorDocumentValue
-): boolean =>
-  JSON.stringify(before.children.map(canonicalizeNode)) !==
-  JSON.stringify(after.children.map(canonicalizeNode));
+const canonicalBlocksSnapshot = (
+  nodes: Readonly<{
+    byId: (id: string) => Readonly<{ node: unknown }> | null;
+  }>,
+  blockIds: readonly string[]
+): string =>
+  JSON.stringify(
+    blockIds.map((blockId) => {
+      const entry = nodes.byId(blockId);
+
+      return entry ? canonicalizeNode(entry.node) : null;
+    })
+  );
 
 const isStalePick = (view: Editor, prepared: PreparedInkDigitize): boolean => {
   const { read } = view.plugin(BaseInkPlugin);
@@ -958,7 +953,8 @@ export const confirmInkDigitize = (
   prepared: PreparedInkDigitize,
   validated: Extract<ValidatedDigitizeReading, { ok: true }>,
   choices: readonly ConfirmChoice[],
-  latestRequestId: string | undefined = latestInkDigitizeRequestId(view)
+  latestRequestId: string | undefined = latestInkDigitizeRequestId(view),
+  options?: Readonly<{ skipDigitize?: ReadonlySet<number> }>
 ): ConfirmInkDigitizeResult => {
   if (!canDigitizeInk(view)) {
     return { reason: 'read-only-or-preview', status: 'blocked' };
@@ -1006,6 +1002,7 @@ export const confirmInkDigitize = (
     const resolvedEdits: ResolvedEdit[] = [];
 
     for (const edit of meaning.edits) {
+      if (isCommentEdit(edit)) continue;
       const entry = metaIndexById.get(edit.passage);
 
       if (!entry) return { status: 'stale' };
@@ -1033,6 +1030,8 @@ export const confirmInkDigitize = (
         range,
       });
     }
+
+    if (resolvedEdits.length === 0) continue;
 
     resolvedEdits.sort(
       (a, b) =>
@@ -1110,13 +1109,22 @@ export const confirmInkDigitize = (
 
     let noOp = false;
     let threw = false;
+    const deferDigitize =
+      options?.skipDigitize?.has(item.correctionIndex) ?? false;
+    const touchedBlockIds = [
+      ...new Set(
+        item.edits.map(
+          (resolved) => prepared.passages[resolved.passageIndex].blockId
+        )
+      ),
+    ];
 
     try {
       view.update((tx) => {
         if (committedCount === 0) tx.history.newBatch();
         else tx.history.merge();
 
-        const before = tx.value();
+        const before = canonicalBlocksSnapshot(tx.nodes, touchedBlockIds);
 
         for (const resolved of item.edits) {
           const { edit, range } = resolved;
@@ -1136,10 +1144,12 @@ export const confirmInkDigitize = (
           }
         }
 
-        if (!canonicalValueChanged(before, tx.value())) {
+        if (before === canonicalBlocksSnapshot(tx.nodes, touchedBlockIds)) {
           throw new NoOpRollbackError();
         }
-        tx.plugin(BaseInkPlugin).setDigitized(item.markIds, true);
+        if (!deferDigitize) {
+          tx.plugin(BaseInkPlugin).setDigitized(item.markIds, true);
+        }
       });
     } catch (error) {
       if (error instanceof NoOpRollbackError) noOp = true;
@@ -1164,7 +1174,8 @@ export const confirmInkDigitize = (
     }
 
     const shownAfter = new Set(read.shownMarks().map((mark) => mark.id));
-    const digitized = item.markIds.every((id) => !shownAfter.has(id));
+    const digitized =
+      deferDigitize || item.markIds.every((id) => !shownAfter.has(id));
 
     if (!digitized) {
       skipped.push({
@@ -1212,17 +1223,19 @@ export const confirmInkDigitizeWithComments = async (
 
   const textChoices: ConfirmChoice[] = [];
   const commentChoices: ConfirmChoice[] = [];
+  const mixedChoiceIndices = new Set<number>();
 
   for (const choice of choices) {
     const correction = validated.corrections[choice.correctionIndex];
     const meaning = correction?.meanings[choice.meaningIndex];
 
     if (!correction || !meaning) continue;
-    if (meaning.edits.some(isCommentEdit)) {
-      commentChoices.push(choice);
-    } else {
-      textChoices.push(choice);
-    }
+    const hasComment = meaning.edits.some(isCommentEdit);
+    const hasText = meaning.edits.some((edit) => !isCommentEdit(edit));
+
+    if (hasComment) commentChoices.push(choice);
+    if (hasText) textChoices.push(choice);
+    if (hasComment && hasText) mixedChoiceIndices.add(choice.correctionIndex);
   }
 
   if (commentChoices.length === 0) {
@@ -1330,14 +1343,25 @@ export const confirmInkDigitizeWithComments = async (
         prepared,
         validated,
         textChoices,
-        latestRequestId
+        latestRequestId,
+        mixedChoiceIndices.size > 0
+          ? { skipDigitize: mixedChoiceIndices }
+          : undefined
       );
 
       if (textResult.status !== 'applied') {
         return textResult;
       }
-      applied.push(...textResult.applied);
-      skipped.push(...textResult.skipped);
+      for (const entry of textResult.applied) {
+        if (!mixedChoiceIndices.has(entry.correctionIndex)) {
+          applied.push(entry);
+        }
+      }
+      for (const entry of textResult.skipped) {
+        if (!mixedChoiceIndices.has(entry.correctionIndex)) {
+          skipped.push(entry);
+        }
+      }
     }
 
     const commentsPlugin = view.plugin(BaseCommentsPlugin);

@@ -44,7 +44,8 @@ import {
 
 const DEFAULT_MODEL = 'google/gemini-3.8-flash';
 const DIGITIZE_ENDPOINT = '/api/ai/ink-digitize';
-const digitizeAllTriggers = new WeakMap<object, Set<() => void>>();
+const digitizeAllByView = new WeakMap<object, () => void>();
+const digitizeAllByOwner = new WeakMap<object, Set<() => void>>();
 
 type DigitizeKindFilter = InkDigitizeEdit['kind'] | 'all';
 
@@ -68,8 +69,8 @@ type DigitizeNotice =
 type ConfirmState = Readonly<{
   activeKind: DigitizeKindFilter;
   batch: BatchContext | null;
-  encodeMs: number;
   keptIndices: ReadonlySet<number>;
+  manualKeptBeforeFilter: ReadonlySet<number> | null;
   meaningIndices: ReadonlyMap<number, number>;
   prepared: PreparedInkDigitize;
   reaskingIndex: number | null;
@@ -144,8 +145,15 @@ export function DigitizeAllToolbarButton() {
       aria-label="Digitize all ink"
       disabled={readOnly || authoredPreview || !hasLiveMarks}
       onClick={() => {
+        const direct = digitizeAllByView.get(editor);
+
+        if (direct) {
+          direct();
+
+          return;
+        }
         const owner = getEditorRuntimeOwner(editor);
-        const triggers = digitizeAllTriggers.get(owner);
+        const triggers = digitizeAllByOwner.get(owner);
         const first = triggers?.values().next().value;
 
         first?.();
@@ -242,15 +250,25 @@ export function InkDigitizeBar() {
 
         return;
       }
-      if (event.key === 'Backspace' || event.key === 'Delete') {
-        const { target } = event;
 
-        if (
-          target instanceof HTMLInputElement ||
-          target instanceof HTMLTextAreaElement
-        ) {
-          return;
-        }
+      const { target } = event;
+
+      if (
+        target instanceof Element &&
+        target.closest('[data-ink-digitize-ui]')
+      ) {
+        return;
+      }
+      if (event.key === 'Tab') return;
+      if (
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        (event.key.length === 1 ||
+          event.key === 'Backspace' ||
+          event.key === 'Delete' ||
+          event.key === 'Enter')
+      ) {
         event.preventDefault();
         event.stopPropagation();
       }
@@ -303,27 +321,19 @@ export function InkDigitizeBar() {
 
       const { apiKey, model } = readAiConfig();
 
-      if (!apiKey) {
-        setSession({ kind: 'notice', notice: { kind: 'needs-key' } });
-
-        return;
-      }
-
       abortRef.current?.abort();
       const controller = new AbortController();
 
       abortRef.current = controller;
       setSession({ kind: 'loading', pickedIds: [...ids] });
 
-      const t0 = performance.now();
       const prep = await prepareInkDigitizeRequest(editor, ids, {
         lassoOnly: options?.lassoOnly,
       });
-      const encodeMs = performance.now() - t0;
 
       if (controller.signal.aborted || !canDigitizeInk(editor)) return;
 
-      if (prep.kind === 'blocked' || prep.kind === 'margin-only') {
+      if (prep.kind === 'blocked') {
         closeSession();
 
         return;
@@ -354,7 +364,7 @@ export function InkDigitizeBar() {
         const response = await fetch(DIGITIZE_ENDPOINT, {
           body: JSON.stringify({
             ...prep.prepared.request,
-            apiKey,
+            ...(apiKey ? { apiKey } : {}),
             model,
           }),
           headers: { 'Content-Type': 'application/json' },
@@ -365,15 +375,19 @@ export function InkDigitizeBar() {
         if (controller.signal.aborted || !canDigitizeInk(editor)) return;
 
         if (response.status === 401) {
-          setSession({
-            kind: 'notice',
-            notice: {
-              kind: 'error',
-              message:
-                'Add a valid AI Gateway API key in Settings to digitize ink.',
-              needsKey: true,
-            },
-          });
+          setSession(
+            apiKey
+              ? {
+                  kind: 'notice',
+                  notice: {
+                    kind: 'error',
+                    message:
+                      'Add a valid AI Gateway API key in Settings to digitize ink.',
+                    needsKey: true,
+                  },
+                }
+              : { kind: 'notice', notice: { kind: 'needs-key' } }
+          );
 
           return;
         }
@@ -426,8 +440,8 @@ export function InkDigitizeBar() {
           state: {
             activeKind: 'all',
             batch: options?.batch ?? null,
-            encodeMs,
             keptIndices,
+            manualKeptBeforeFilter: null,
             meaningIndices,
             prepared: prep.prepared,
             reaskingIndex: null,
@@ -472,15 +486,19 @@ export function InkDigitizeBar() {
 
   React.useEffect(() => {
     const owner = getEditorRuntimeOwner(editor);
-    let triggers = digitizeAllTriggers.get(owner);
+    let triggers = digitizeAllByOwner.get(owner);
 
     if (!triggers) {
       triggers = new Set();
-      digitizeAllTriggers.set(owner, triggers);
+      digitizeAllByOwner.set(owner, triggers);
     }
+    digitizeAllByView.set(editor, runDigitizeAll);
     triggers.add(runDigitizeAll);
 
     return () => {
+      if (digitizeAllByView.get(editor) === runDigitizeAll) {
+        digitizeAllByView.delete(editor);
+      }
       triggers.delete(runDigitizeAll);
     };
   }, [editor, runDigitizeAll]);
@@ -496,12 +514,6 @@ export function InkDigitizeBar() {
 
       const { apiKey, model } = readAiConfig();
 
-      if (!apiKey) {
-        setSession({ kind: 'notice', notice: { kind: 'needs-key' } });
-
-        return;
-      }
-
       setSession({
         kind: 'confirm',
         state: { ...state, reaskingIndex: correctionIndex, staleMessage: null },
@@ -515,7 +527,7 @@ export function InkDigitizeBar() {
         const response = await fetch(DIGITIZE_ENDPOINT, {
           body: JSON.stringify({
             ...state.prepared.request,
-            apiKey,
+            ...(apiKey ? { apiKey } : {}),
             correction: { marks: [...target.markKeys] },
             instruction,
             model,
@@ -526,6 +538,24 @@ export function InkDigitizeBar() {
         });
 
         if (controller.signal.aborted || !canDigitizeInk(editor)) return;
+
+        if (response.status === 401) {
+          setSession(
+            apiKey
+              ? {
+                  kind: 'notice',
+                  notice: {
+                    kind: 'error',
+                    message:
+                      'Add a valid AI Gateway API key in Settings to digitize ink.',
+                    needsKey: true,
+                  },
+                }
+              : { kind: 'notice', notice: { kind: 'needs-key' } }
+          );
+
+          return;
+        }
 
         if (!response.ok) {
           setSession((prev) =>
@@ -929,22 +959,38 @@ export function InkDigitizeBar() {
           onSelectKind={(kind) => {
             setSession((prev) => {
               if (prev.kind !== 'confirm') return prev;
+              if (kind === prev.state.activeKind) return prev;
+              if (kind === 'all') {
+                const restored =
+                  prev.state.manualKeptBeforeFilter ?? prev.state.keptIndices;
+
+                return {
+                  kind: 'confirm',
+                  state: {
+                    ...prev.state,
+                    activeKind: 'all',
+                    keptIndices: new Set(restored),
+                    manualKeptBeforeFilter: null,
+                  },
+                };
+              }
+
+              const savedAll =
+                prev.state.activeKind === 'all'
+                  ? new Set(prev.state.keptIndices)
+                  : prev.state.manualKeptBeforeFilter;
               const nextKept = new Set<number>();
 
               for (const [
                 index,
                 correction,
               ] of prev.state.validated.corrections.entries()) {
-                if (kind === 'all') {
-                  if (correction.defaultKept) nextKept.add(index);
-                } else {
-                  const primaryKind = correctionPrimaryKind(
-                    correction,
-                    prev.state.meaningIndices.get(index) ?? 0
-                  );
+                const primaryKind = correctionPrimaryKind(
+                  correction,
+                  prev.state.meaningIndices.get(index) ?? 0
+                );
 
-                  if (primaryKind === kind) nextKept.add(index);
-                }
+                if (primaryKind === kind) nextKept.add(index);
               }
 
               return {
@@ -953,6 +999,7 @@ export function InkDigitizeBar() {
                   ...prev.state,
                   activeKind: kind,
                   keptIndices: nextKept,
+                  manualKeptBeforeFilter: savedAll,
                 },
               };
             });
@@ -1051,7 +1098,6 @@ function ConfirmDialog({
       aria-label="Confirm digitized edits"
       className="pointer-events-auto static m-0 flex max-h-[min(70dvh,32rem)] w-full max-w-lg flex-col rounded-lg border bg-background p-4 text-sm text-foreground shadow-xl"
       data-ink-digitize-confirm=""
-      data-ink-digitize-encode-ms={state.encodeMs.toFixed(2)}
       open
     >
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -1148,22 +1194,33 @@ function ConfirmDialog({
             No matching edits were found for the marked words.
           </p>
         ) : (
-          state.validated.corrections.map((correction, index) => (
-            <CorrectionRow
-              correction={correction}
-              disabled={state.saving}
-              index={index}
-              kept={state.keptIndices.has(index)}
-              key={correction.markIds.join(',')}
-              meaningIndex={state.meaningIndices.get(index) ?? 0}
-              onReask={() => onReask(index)}
-              onSelectMeaning={(mIndex) => onSelectMeaning(index, mIndex)}
-              onToggleKeep={(checked) => onToggleKeep(index, checked)}
-              onTypedChange={(value) => onTypedChange(index, value)}
-              reasking={state.reaskingIndex === index}
-              typed={state.typedByIndex[index] ?? ''}
-            />
-          ))
+          state.validated.corrections.map((correction, index) => {
+            if (state.activeKind !== 'all') {
+              const primaryKind = correctionPrimaryKind(
+                correction,
+                state.meaningIndices.get(index) ?? 0
+              );
+
+              if (primaryKind !== state.activeKind) return null;
+            }
+
+            return (
+              <CorrectionRow
+                correction={correction}
+                disabled={state.saving}
+                index={index}
+                kept={state.keptIndices.has(index)}
+                key={correction.markIds.join(',')}
+                meaningIndex={state.meaningIndices.get(index) ?? 0}
+                onReask={() => onReask(index)}
+                onSelectMeaning={(mIndex) => onSelectMeaning(index, mIndex)}
+                onToggleKeep={(checked) => onToggleKeep(index, checked)}
+                onTypedChange={(value) => onTypedChange(index, value)}
+                reasking={state.reaskingIndex === index}
+                typed={state.typedByIndex[index] ?? ''}
+              />
+            );
+          })
         )}
       </div>
 

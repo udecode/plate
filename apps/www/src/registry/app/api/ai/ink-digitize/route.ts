@@ -24,7 +24,10 @@ export async function POST(req: NextRequest) {
     typeof raw === 'object' && raw !== null && 'apiKey' in raw
       ? (raw as { apiKey?: unknown }).apiKey
       : undefined;
-  const apiKey = typeof key === 'string' ? key.trim() : '';
+  const apiKey =
+    (typeof key === 'string' ? key.trim() : '') ||
+    process.env.AI_GATEWAY_API_KEY?.trim() ||
+    '';
 
   if (!apiKey) {
     return NextResponse.json(
@@ -55,10 +58,22 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(result.reading);
-  } catch {
-    return NextResponse.json(
-      { error: 'Failed to digitize ink marks.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    const statusCandidate =
+      typeof error === 'object' && error !== null && 'statusCode' in error
+        ? (error as { statusCode?: unknown }).statusCode
+        : undefined;
+    const status =
+      typeof statusCandidate === 'number' &&
+      statusCandidate >= 400 &&
+      statusCandidate <= 599
+        ? statusCandidate
+        : 500;
+    const message =
+      error instanceof Error && error.message.trim().length > 0
+        ? error.message
+        : 'Failed to digitize ink marks.';
+
+    return NextResponse.json({ error: message }, { status });
   }
 }
