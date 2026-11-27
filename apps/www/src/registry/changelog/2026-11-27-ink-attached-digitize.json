@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-ink-attached-digitize",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-ink-attached-digitize.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Digitize live attached ink marks on edited paragraphs and prevent overlapping cross-copy edits.",
+  "targets": [
+    {
+      "name": "ink-digitize",
+      "files": ["apps/www/src/registry/lib/ink-digitize.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-ink-digitize-live-attached-marks-edited-9ff39e40",
+      "kind": "behavior",
+      "summary": "Digitize live attached ink marks on edited paragraphs and prevent overlapping cross-copy edits.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-digitize"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-attached-digitize",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

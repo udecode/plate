@@ -81,12 +81,13 @@ const isMonotoneAxis = (
   axis: 0 | 1,
   maxReversal: number
 ) => {
-  const firstSample = samples[0];
+  if (samples.length < 2) return false;
+
+  const first = samples[0][axis];
   const lastSample = samples.at(-1);
 
-  if (samples.length < 2 || !firstSample || !lastSample) return false;
+  if (!lastSample) return false;
 
-  const first = firstSample[axis];
   const last = lastSample[axis];
   const dir = last >= first ? 1 : -1;
   let extreme = first * dir;
@@ -143,27 +144,19 @@ const savedRunLineSet = (copy: InkCopy, block: InkMarkBlock) => {
   return lines;
 };
 
-/**
- * Deterministically classify a saved mark into one of four reflow families
- * from its draw-time geometry alone, without extra persisted fields.
- */
 export const classifyInkMark = (
   mark: InkMark,
   copy: InkCopy,
   block: InkMarkBlock
 ): InkShapeFamily => {
   const { samples } = mark;
+
+  if (samples.length < 2 || copy.lines.length === 0) return 'rigid';
+
   const firstSample = samples[0];
   const lastSample = samples.at(-1);
 
-  if (
-    samples.length < 2 ||
-    !firstSample ||
-    !lastSample ||
-    copy.lines.length === 0
-  ) {
-    return 'rigid';
-  }
+  if (!lastSample) return 'rigid';
 
   const bounds = boundsOfSamples(samples);
   const pathLen = pathLengthOf(samples);
@@ -198,9 +191,6 @@ export const classifyInkMark = (
 
   if (!runsBox) return 'rigid';
 
-  // Monotone horizontal strokes on a single line are `flow` (underlines,
-  // strikethroughs, highlights). Arrows, checkmarks, and loops fail the
-  // monotonicity check so they never split like underlines.
   if (runLines.size === 1) {
     const [lineIndex] = runLines;
     const lh = copy.lines[lineIndex].height;
@@ -219,7 +209,6 @@ export const classifyInkMark = (
     }
   }
 
-  // Closed or semi-closed loops that enclose the marked runs are `box`.
   const diag = Math.hypot(bounds.width, bounds.height);
   const endGap = Math.hypot(
     lastSample[0] - firstSample[0],
@@ -248,11 +237,6 @@ export const classifyInkMark = (
   return 'rigid';
 };
 
-/**
- * Measure live visual segments for mapped runs, keeping fragments separated
- * whenever non-whitespace unmarked text sits between them or they lie on
- * different visual lines.
- */
 export const measureLiveRunSegments = (
   live: InkLiveBlock,
   runs: readonly InkMatchedRun[]
@@ -365,6 +349,32 @@ const densifySamples = (
   return out;
 };
 
+const mapAxis = (
+  value: number,
+  savedStart: number,
+  savedSize: number,
+  liveStart: number,
+  liveSize: number
+) => {
+  if (value < savedStart) return liveStart + (value - savedStart);
+  if (value > savedStart + savedSize) {
+    return liveStart + liveSize + (value - (savedStart + savedSize));
+  }
+
+  return liveStart + ((value - savedStart) / savedSize) * liveSize;
+};
+
+const isBelowBaseline = (
+  samples: readonly InkSample[],
+  blockTop: number,
+  savedLine: InkLine
+) => {
+  const meanRelY =
+    samples.reduce((sum, [, y]) => sum + (y - blockTop), 0) / samples.length;
+
+  return meanRelY >= savedLine.top + 0.65 * savedLine.height;
+};
+
 const projectFlow = (
   mark: InkMark,
   copy: InkCopy,
@@ -382,7 +392,6 @@ const projectFlow = (
   const blockDx = now.box.left - block.left;
   const blockDy = now.box.top - block.top;
 
-  // Same single line with unchanged width & height: keep rigid translation.
   if (
     segs.length === 1 &&
     Math.abs(segs[0].box.width - runsBox.width) <= lh / 8 &&
@@ -399,11 +408,7 @@ const projectFlow = (
   if (totalLiveWidth <= 0 || runsBox.width <= 0) return undefined;
 
   const dense = densifySamples(mark.samples, Math.max(2, lh / 2));
-  const meanRelY =
-    dense.reduce((sum, [, y]) => sum + (y - block.top), 0) / dense.length;
-  // Anchor underlines to the line bottom edge so font-size changes never pull
-  // underlines into glyphs; keep strikethroughs and highlights proportional.
-  const isUnderline = meanRelY >= savedLine.top + 0.65 * lh;
+  const anchorToBottom = isBelowBaseline(dense, block.top, savedLine);
   const savedBottom = savedLine.top + lh;
   const maxOverhang = 0.5 * lh;
 
@@ -417,7 +422,7 @@ const projectFlow = (
 
   const mapY = (sampleY: number, seg: InkLiveSegment) => {
     const relY = sampleY - block.top;
-    const liveY = isUnderline
+    const liveY = anchorToBottom
       ? seg.line.top + seg.line.height + (relY - savedBottom)
       : seg.line.top + ((relY - savedLine.top) / lh) * seg.line.height;
 
@@ -481,7 +486,6 @@ const projectFlow = (
       currentStroke.push(mapPoint(edgeSample, prevSeg, boundary));
       if (currentStroke.length >= 2) strokes.push(currentStroke);
 
-      // Step through any intermediate segments crossed in a single jump.
       const stepDir = forward ? 1 : -1;
 
       for (let mid = prevSeg + stepDir; mid !== segIndex; mid += stepDir) {
@@ -535,12 +539,10 @@ const projectBox = (
   const savedLineCount = savedRunLineSet(copy, block).size;
   const liveLineTops = new Set(segs.map((seg) => Math.round(seg.line.top)));
 
-  // Never stretch an enclosure across more lines than it was drawn on.
   if (liveLineTops.size > savedLineCount) return undefined;
 
   const liveBox = unionBoxes(segs.map((seg) => seg.box));
 
-  // Reject if an unmarked word now sits inside the live union bbox.
   for (const other of unmarkedBoxes) {
     const overlapX =
       Math.min(liveBox.left + liveBox.width, other.left + other.width) -
@@ -570,21 +572,6 @@ const projectBox = (
   const sy = liveBox.height / savedBox.height;
 
   if (sx < 0.5 || sx > 2 || sy < 0.5 || sy > 2) return undefined;
-
-  const mapAxis = (
-    value: number,
-    savedStart: number,
-    savedSize: number,
-    liveStart: number,
-    liveSize: number
-  ) => {
-    if (value < savedStart) return liveStart + (value - savedStart);
-    if (value > savedStart + savedSize) {
-      return liveStart + liveSize + (value - (savedStart + savedSize));
-    }
-
-    return liveStart + ((value - savedStart) / savedSize) * liveSize;
-  };
 
   const morphed: InkSample[] = mark.samples.map(([x, y, p, t]) => [
     mapAxis(
@@ -650,16 +637,12 @@ const projectSpanMargin = (
     return { dx: marginDx, dy: blockDy + (liveTop - savedTop) };
   }
 
-  const stretched: InkSample[] = mark.samples.map(([x, y, p, t]) => {
-    const relY = y - block.top;
-    let nextY: number;
-
-    if (relY < savedTop) nextY = liveTop + (relY - savedTop);
-    else if (relY > savedBottom) nextY = liveBottom + (relY - savedBottom);
-    else nextY = liveTop + ((relY - savedTop) / savedH) * liveH;
-
-    return [x, nextY + block.top, p, t];
-  });
+  const stretched: InkSample[] = mark.samples.map(([x, y, p, t]) => [
+    x,
+    mapAxis(y - block.top, savedTop, savedH, liveTop, liveH) + block.top,
+    p,
+    t,
+  ]);
 
   return { dx: marginDx, dy: blockDy, strokes: [stretched] };
 };
@@ -699,23 +682,23 @@ const projectRigidInline = (
 export const reflowInlineMark = ({
   block,
   copy,
+  getUnmarkedBoxes,
   mark,
   now,
   runs,
-  unmarkedBoxes,
 }: Readonly<{
   block: InkMarkBlock;
   copy: InkCopy;
+  getUnmarkedBoxes: () => readonly InkBox[];
   mark: InkMark;
   now: InkLiveBlock;
   runs: readonly InkMatchedRun[];
-  unmarkedBoxes: readonly InkBox[];
 }>): InkReflowResult | undefined => {
   const family = classifyInkMark(mark, copy, block);
 
   if (family === 'flow') return projectFlow(mark, copy, block, now, runs);
   if (family === 'box') {
-    return projectBox(mark, copy, block, now, runs, unmarkedBoxes);
+    return projectBox(mark, copy, block, now, runs, getUnmarkedBoxes());
   }
 
   return projectRigidInline(copy, block, now, runs);

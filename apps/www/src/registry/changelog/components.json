@@ -298,6 +298,7 @@
       "2026-11-18-registry-icon-library",
       "2026-08-17-flat-editor-registry"
     ],
+    "ink-digitize": ["2026-11-27-ink-attached-digitize"],
     "ink": ["2026-11-27-ink-digitize"],
     "ink-digitize-bar": [
       "2026-11-27-ink-digitize",

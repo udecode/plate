@@ -2,7 +2,6 @@ import {
   type Anchor,
   type Editor,
   ElementApi,
-  type Path,
   PointApi,
   type Range,
   RangeApi,
@@ -96,35 +95,33 @@ export type PrepareInkDigitizeResult =
       prepared: PreparedInkDigitize;
     }>;
 
-const isUnanchoredMark = (mark: InkMark) => mark.blocks.length === 0;
-
 const blockIdsBetween = (
   view: Editor,
   targetBlockIds: ReadonlySet<string>
 ): readonly string[] => {
-  const allBlocks: Array<{ id: string; path: Path }> = [];
+  const allBlocks: string[] = [];
 
-  for (const [node, path] of view.read.nodes.blocks({
+  for (const [node] of view.read.nodes.blocks({
     at: [],
     mode: 'lowest',
   })) {
     if (ElementApi.isElement(node) && typeof node.id === 'string') {
-      allBlocks.push({ id: node.id, path });
+      allBlocks.push(node.id);
     }
   }
 
   let first = -1;
   let last = -1;
 
-  for (const [index, entry] of allBlocks.entries()) {
-    if (targetBlockIds.has(entry.id)) {
+  for (const [index, id] of allBlocks.entries()) {
+    if (targetBlockIds.has(id)) {
       if (first === -1) first = index;
       last = index;
     }
   }
   if (first === -1) return [];
 
-  return allBlocks.slice(first, last + 1).map((entry) => entry.id);
+  return allBlocks.slice(first, last + 1);
 };
 
 const liveBlockInkText = (view: Editor, blockId: string): string | null => {
@@ -179,7 +176,6 @@ const shownMarkIdsByBlock = (
 
   for (const blockId of blockIds) byBlock.set(blockId, []);
   for (const mark of read.liveMarks()) {
-    if (isUnanchoredMark(mark)) continue;
     const seen = new Set<string>();
 
     for (const block of mark.blocks) {
@@ -228,16 +224,10 @@ export const prepareInkDigitizeRequest = async (
     return { kind: 'blocked', reason: 'no-marks' };
   }
 
-  const readablePicked = pickedMarks.filter((mark) => !isUnanchoredMark(mark));
-
-  if (readablePicked.length === 0) {
-    return { kind: 'blocked', reason: 'no-marks' };
-  }
-
-  const lassoedSet = new Set(readablePicked.map((mark) => mark.id));
+  const lassoedSet = new Set(pickedMarks.map((mark) => mark.id));
   const touchedBlocks = new Set<string>();
 
-  for (const mark of readablePicked) {
+  for (const mark of pickedMarks) {
     for (const block of mark.blocks) {
       const copy = ink.read.copy(block.copy);
 
@@ -245,20 +235,18 @@ export const prepareInkDigitizeRequest = async (
     }
   }
 
-  const widenedMarks = liveMarks.filter(
-    (mark) =>
-      !isUnanchoredMark(mark) &&
-      mark.blocks.some((block) => {
-        const copy = ink.read.copy(block.copy);
+  const widenedMarks = liveMarks.filter((mark) =>
+    mark.blocks.some((block) => {
+      const copy = ink.read.copy(block.copy);
 
-        return copy !== undefined && touchedBlocks.has(copy.block);
-      })
+      return copy !== undefined && touchedBlocks.has(copy.block);
+    })
   );
   const extraMarkIds = widenedMarks
     .filter((mark) => !lassoedSet.has(mark.id))
     .map((mark) => mark.id);
   const targetIds = options.lassoOnly
-    ? readablePicked.map((mark) => mark.id)
+    ? pickedMarks.map((mark) => mark.id)
     : widenedMarks.map((mark) => mark.id);
 
   const passages = ink.read.passages(targetIds);
@@ -272,7 +260,7 @@ export const prepareInkDigitizeRequest = async (
   if (wordCount > maxWords) {
     const lassoOnlyWords = options.lassoOnly
       ? wordCount
-      : totalWordsOf(ink.read.passages(readablePicked.map((mark) => mark.id)));
+      : totalWordsOf(ink.read.passages(pickedMarks.map((mark) => mark.id)));
 
     return {
       canRetryLassoOnly:
@@ -365,18 +353,17 @@ export const prepareInkDigitizeRequest = async (
         inkAlone: pic.inkAlone,
         inkOnText: pic.inkOnText,
       },
-      marks: passage.marks.map((mark) => ({
-        box: [...(pic.boxes[mark.id] ?? [0, 0, 0, 0])] as [
-          number,
-          number,
-          number,
-          number,
-        ],
-        ...(mark.gaps.length > 0 ? { gaps: [...mark.gaps] } : {}),
-        id: keyOf(mark.id),
-        ...(mark.margin ? { margin: mark.margin } : {}),
-        ...(mark.words.length > 0 ? { words: [...mark.words] } : {}),
-      })),
+      marks: passage.marks.map((mark) => {
+        const [left, top, right, bottom] = pic.boxes[mark.id] ?? [0, 0, 0, 0];
+
+        return {
+          box: [left, top, right, bottom],
+          ...(mark.gaps.length > 0 ? { gaps: [...mark.gaps] } : {}),
+          id: keyOf(mark.id),
+          ...(mark.margin ? { margin: mark.margin } : {}),
+          ...(mark.words.length > 0 ? { words: [...mark.words] } : {}),
+        };
+      }),
       words,
     });
   }
@@ -429,11 +416,6 @@ const isCommentEdit = (
 ): edit is Extract<InkDigitizeEdit, { kind: 'answer' | 'comment' }> =>
   edit.kind === 'comment' || edit.kind === 'answer';
 
-const editSpan = (edit: InkDigitizeEdit): readonly [number, number] =>
-  edit.kind === 'insert'
-    ? [edit.gap, edit.gap]
-    : [edit.words[0], edit.words[1]];
-
 const editsOverlap = (a: InkDigitizeEdit, b: InkDigitizeEdit): boolean => {
   if (a.passage !== b.passage) return false;
   if (isCommentEdit(a) || isCommentEdit(b)) return false;
@@ -445,10 +427,7 @@ const editsOverlap = (a: InkDigitizeEdit, b: InkDigitizeEdit): boolean => {
     return a.words[0] < b.gap && b.gap <= a.words[1];
   }
 
-  const [a0, a1] = editSpan(a);
-  const [b0, b1] = editSpan(b);
-
-  return a0 <= b1 && b0 <= a1;
+  return a.words[0] <= b.words[1] && b.words[0] <= a.words[1];
 };
 
 const editPos = (edit: InkDigitizeEdit): number =>
@@ -548,16 +527,16 @@ const checkCorrectionsOrderAndOverlap = (
       }
     }
 
-    const perPassage = new Map<string, { edits: InkDigitizeEdit[] }>();
+    const perPassage = new Map<string, InkDigitizeEdit[]>();
 
     for (const edit of primary.edits) {
       if (isCommentEdit(edit)) continue;
-      const bucket = perPassage.get(edit.passage) ?? { edits: [] };
+      const edits = perPassage.get(edit.passage) ?? [];
 
-      bucket.edits.push(edit);
-      perPassage.set(edit.passage, bucket);
+      edits.push(edit);
+      perPassage.set(edit.passage, edits);
     }
-    for (const [passageId, { edits }] of perPassage) {
+    for (const [passageId, edits] of perPassage) {
       const list = spansByPassage.get(passageId) ?? [];
 
       list.push({
@@ -1425,18 +1404,10 @@ export const confirmInkDigitizeWithComments = async (
         if (!isCommentEdit(edit)) continue;
         const meta = metaById.get(edit.passage);
 
-        if (!meta) {
-          releaseAllAnchors();
-
-          return { status: 'stale' };
-        }
+        if (!meta) return { status: 'stale' };
         const baseText = passageTextForEdit(view, read, meta);
 
-        if (baseText === null) {
-          releaseAllAnchors();
-
-          return { status: 'stale' };
-        }
+        if (baseText === null) return { status: 'stale' };
         const span = resolveEditSpan(baseText, meta, edit);
         const range = read.range(
           meta.passage.block
@@ -1452,11 +1423,7 @@ export const confirmInkDigitizeWithComments = async (
               }
         );
 
-        if (!range) {
-          releaseAllAnchors();
-
-          return { status: 'stale' };
-        }
+        if (!range) return { status: 'stale' };
         const anchor = view.anchor(range, {
           association: 'inward',
           deletion: 'nearest',
@@ -1786,7 +1753,9 @@ export const planInkDigitizeAllBatches = (
         0
       );
       const firstPassage = passages[0];
-      const blockId = firstPassage ? read.copy(firstPassage.copy)?.block : null;
+      const blockId = firstPassage
+        ? (firstPassage.block ?? read.copy(firstPassage.copy)?.block)
+        : null;
 
       return { blockId, ids, words };
     })

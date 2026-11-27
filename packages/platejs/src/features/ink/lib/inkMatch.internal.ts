@@ -25,6 +25,7 @@ import {
   lineStart,
   matchMarginBlock,
   matchMarkBlock,
+  SEGMENTED_SCRIPT,
 } from './inkAnchor.internal';
 import { digest } from './inkCodec.internal';
 import { reflowInlineMark, reflowMarginMark } from './inkReflow.internal';
@@ -104,10 +105,6 @@ const voidEntry = (schema: InkSchema, child: Element, at: number) => {
   return `[${at},${JSON.stringify(content, sortedKeys)}]`;
 };
 
-/**
- * A block's text as ink reads it: its text, with each inline void as one
- * `INK_VOID`, so a mention the copy lacks changes the text.
- */
 export const inkText = (schema: InkSchema, block: Node): InkText => {
   const identity = schema.identity();
   let texts = textsBySchema.get(identity);
@@ -149,9 +146,6 @@ export const inkText = (schema: InkSchema, block: Node): InkText => {
 
   return read;
 };
-
-const SEGMENTED_SCRIPT =
-  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u;
 
 let segmenter: Intl.Segmenter | undefined;
 const wordsCache = new Map<
@@ -645,7 +639,6 @@ export const placeMark = ({
   }
   if (mark.direction === 'rtl') return sign('changed');
 
-  // Fast path: every block is text-exact and layout-exact -> pure rigid shift.
   let allExactAndHeld = true;
   const shiftsX: number[] = [];
   const shiftsY: number[] = [];
@@ -662,46 +655,59 @@ export const placeMark = ({
     shiftsY.push(now.box.top - block.top);
   }
 
-  const heights = blocks.flatMap(({ copy }) =>
-    copy.lines.map((line) => line.height)
-  );
-  const tolerance = (heights.length > 0 ? Math.min(...heights) : 1) / 8;
   const unheldReach = Math.max(0, radius - SUBPIXEL_DRIFT);
+  const shiftTolerance = () => {
+    const heights = blocks.flatMap(({ copy }) =>
+      copy.lines.map((line) => line.height)
+    );
 
-  if (allExactAndHeld) {
-    const [dx] = shiftsX;
-    const [dy] = shiftsY;
+    return (heights.length > 0 ? Math.min(...heights) : 1) / 8;
+  };
+  const consistentShift = (xs: readonly number[], ys: readonly number[]) => {
+    const tolerance = shiftTolerance();
+    const [dx] = xs;
+    const [dy] = ys;
 
-    if (
-      !shiftsX.every((shift) => Math.abs(shift - dx) <= tolerance) ||
-      !shiftsY.every((shift) => Math.abs(shift - dy) <= tolerance)
-    ) {
-      return sign('changed');
-    }
-
-    const candidate: Extract<InkPlacement, { type: 'ink' }> = {
-      dx,
-      dy,
-      type: 'ink',
-    };
+    return xs.every((shift) => Math.abs(shift - dx) <= tolerance) &&
+      ys.every((shift) => Math.abs(shift - dy) <= tolerance)
+      ? ({ dx, dy } as const)
+      : undefined;
+  };
+  const verifyAndFinalize = (
+    candidate: Extract<InkPlacement, { type: 'ink' }>,
+    checks: ReadonlyArray<
+      Readonly<{ now: InkLiveBlock; runs: readonly InkMatchedRun[] }>
+    >
+  ) => {
     const polylines = placedPolylinesOf(mark, candidate);
 
-    for (const { block, now } of blocks) {
-      const exactRuns = block.runs.map((run) => ({
-        ...run,
-        copyEnd: run.end,
-        copyStart: run.start,
-      }));
-
-      if (!verifyPolylinesOnRuns(now, polylines, exactRuns, unheldReach)) {
+    for (const { now, runs } of checks) {
+      if (!verifyPolylinesOnRuns(now, polylines, runs, unheldReach)) {
         return sign('changed');
       }
     }
 
     return finalize(candidate);
+  };
+
+  if (allExactAndHeld) {
+    const shift = consistentShift(shiftsX, shiftsY);
+
+    if (!shift) return sign('changed');
+
+    return verifyAndFinalize(
+      { dx: shift.dx, dy: shift.dy, type: 'ink' },
+      blocks.map(({ block, now }) => ({
+        now,
+        runs: block.runs.map((run) => ({
+          ...run,
+          copyEnd: run.end,
+          copyStart: run.start,
+        })),
+      }))
+    );
   }
 
-  // Attached reflow path: resolve per-mark runs via dual-alignment diff.
   const matchedBlocks: Array<{
     block: InkMarkBlock;
     copy: InkCopy;
@@ -716,7 +722,6 @@ export const placeMark = ({
     matchedBlocks.push({ block, copy, now, runs: matched.runs });
   }
 
-  // Single-block mark: point mark or 4-family inline reflow.
   if (matchedBlocks.length === 1) {
     const [{ block, copy, now, runs }] = matchedBlocks;
 
@@ -735,67 +740,44 @@ export const placeMark = ({
 
       if (!gap || !savedLine) return sign('changed');
 
-      const dx =
-        now.box.left -
-        block.left +
-        (gap.left + gap.width / 2 - (run.left + run.width / 2));
-      const dy =
-        now.box.top -
-        block.top +
-        (gap.top + gap.height / 2 - (savedLine.top + savedLine.height / 2));
-      const candidate: Extract<InkPlacement, { type: 'ink' }> = {
-        dx,
-        dy,
-        type: 'ink',
-      };
-
-      if (
-        !verifyPolylinesOnRuns(
-          now,
-          placedPolylinesOf(mark, candidate),
-          runs,
-          unheldReach
-        )
-      ) {
-        return sign('changed');
-      }
-
-      return finalize(candidate);
+      return verifyAndFinalize(
+        {
+          dx:
+            now.box.left -
+            block.left +
+            (gap.left + gap.width / 2 - (run.left + run.width / 2)),
+          dy:
+            now.box.top -
+            block.top +
+            (gap.top + gap.height / 2 - (savedLine.top + savedLine.height / 2)),
+          type: 'ink',
+        },
+        [{ now, runs }]
+      );
     }
 
     const reflowed = reflowInlineMark({
       block,
       copy,
+      getUnmarkedBoxes: () => unmarkedWordBoxesIn(now, runs),
       mark,
       now,
       runs,
-      unmarkedBoxes: unmarkedWordBoxesIn(now, runs),
     });
 
     if (!reflowed) return sign('changed');
 
-    const candidate: Extract<InkPlacement, { type: 'ink' }> = {
-      dx: reflowed.dx,
-      dy: reflowed.dy,
-      ...(reflowed.strokes && { strokes: reflowed.strokes }),
-      type: 'ink',
-    };
-
-    if (
-      !verifyPolylinesOnRuns(
-        now,
-        placedPolylinesOf(mark, candidate),
-        runs,
-        unheldReach
-      )
-    ) {
-      return sign('changed');
-    }
-
-    return finalize(candidate);
+    return verifyAndFinalize(
+      {
+        dx: reflowed.dx,
+        dy: reflowed.dy,
+        ...(reflowed.strokes && { strokes: reflowed.strokes }),
+        type: 'ink',
+      },
+      [{ now, runs }]
+    );
   }
 
-  // Multi-block mark: require consistent rigid shift across every block.
   const multiShiftsX: number[] = [];
   const multiShiftsY: number[] = [];
 
@@ -803,39 +785,23 @@ export const placeMark = ({
     const reflowed = reflowInlineMark({
       block,
       copy,
+      getUnmarkedBoxes: () => [],
       mark,
       now,
       runs,
-      unmarkedBoxes: unmarkedWordBoxesIn(now, runs),
     });
 
-    if (!reflowed || reflowed.strokes) return sign('changed');
+    if (!reflowed) return sign('changed');
     multiShiftsX.push(reflowed.dx);
     multiShiftsY.push(reflowed.dy);
   }
 
-  const [dx] = multiShiftsX;
-  const [dy] = multiShiftsY;
+  const shift = consistentShift(multiShiftsX, multiShiftsY);
 
-  if (
-    !multiShiftsX.every((shift) => Math.abs(shift - dx) <= tolerance) ||
-    !multiShiftsY.every((shift) => Math.abs(shift - dy) <= tolerance)
-  ) {
-    return sign('changed');
-  }
+  if (!shift) return sign('changed');
 
-  const candidate: Extract<InkPlacement, { type: 'ink' }> = {
-    dx,
-    dy,
-    type: 'ink',
-  };
-  const polylines = placedPolylinesOf(mark, candidate);
-
-  for (const { now, runs } of matchedBlocks) {
-    if (!verifyPolylinesOnRuns(now, polylines, runs, unheldReach)) {
-      return sign('changed');
-    }
-  }
-
-  return finalize(candidate);
+  return verifyAndFinalize(
+    { dx: shift.dx, dy: shift.dy, type: 'ink' },
+    matchedBlocks
+  );
 };

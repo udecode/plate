@@ -16,7 +16,7 @@ Open [the full-page Ink demo](/blocks/ink-demo) to test drawing, margin signs, a
 
 - Pen, highlighter, eraser, and lasso tools stored per mounted view, never in the document. A pen or primary mouse button draws while a finger still scrolls, typing keeps working while Draw is on, and a stroke never moves the caret.
 - Document-backed ink storage (`ink-marks`, `ink-copies`, `ink-digitized`, and `ink-gone` records) that survives reload and syncs across peers. Each mark stores its block copies, line boxes, and touched word runs.
-- Exact word placement while a block's text and inline voids match its saved copy. When words change, a block is deleted, or a margin becomes too narrow for a margin note, affected marks move to a margin sign whose popover shows the original words and ink through `InkCopyView`.
+- Live word attachment while writing and wrapping. Untouched marks track their words across edits elsewhere in the same paragraph via deterministic dual-alignment matching, and reflow across wrapped lines by shape family (`flow` underlines and highlights split per line, `box` enclosures refit within bounds, `span` vertical margin bars stretch vertically, and `rigid` margin notes stay aligned in bursts). Marks whose own words change, whose duplicates become ambiguous, or whose margins narrow fold into a margin sign whose popover shows the original words and ink through `InkCopyView`.
 - AI Digitize over a lasso pick, all live shown marks (**Digitize all**), or a single edit kind (**Digitize by kind**), reading rough handwriting into deletes, replacements, inserts, highlights, handwritten comments, and circled-question answers after confirmation.
 - Writes under the view's current intent: direct edits in Editing, one independent suggestion per kept correction in Suggesting, and comment threads via `CommentsPlugin`, with one undo step restoring text, comments, and ink together.
 - **Show digitized ink** view switch to inspect digitized ink faded over its words (or as digitized signs after later edits) and **Bring back** to restore it, plus `dropDigitized` to permanently remove digitized ink and unreferenced saved copies.
@@ -94,20 +94,20 @@ For each contiguous run of marked lines (plus one surrounding line on each side)
 
 ### Lasso picks, Digitize all, and kind filters
 
-- **Lasso pick:** Encircling marks with the Lasso tool opens a floating bar with **Digitize**. Digitize widens the request to include every live shown mark on touched paragraphs so applying one edit does not silently turn sibling marks on that paragraph into signs. Corrections from the lassoed marks start checked, and sibling corrections on the same paragraph start unchecked.
-- **Digitize all:** Clicking `DigitizeAllToolbarButton` clusters live shown marks by spatial distance (48 px) and stroke time (30 s), then packs them into sequential batches under the 1,000-word cap (`maxSide: 2048` px per passage).
+- **Lasso pick:** Encircling marks with the Lasso tool opens a floating bar with **Digitize**. Digitize widens the request to include every live shown mark on touched paragraphs so you can review sibling marks together. Corrections from the lassoed marks start checked, and sibling corrections on the same paragraph start unchecked.
+- **Digitize all:** Clicking `DigitizeAllToolbarButton` clusters live shown marks within each block copy by spatial distance (48 px) and stroke time (30 s), then packs them into sequential batches under the 1,000-word cap (`maxSide: 2048` px per passage).
 - **Confirm and Digitize by kind:** Nothing writes to the document before confirmation. Each correction offers up to four candidate meanings and accepts a typed instruction to re-read that correction. Filter chips (**All**, **Delete**, **Replace**, **Insert**, **Highlight**, **Comment**, **Answer**) let you apply one kind at a time while leaving other marks on the page.
 
 ### Editing, Suggesting, and Comments
 
 - **Editing and Suggesting:** Confirmed text edits run synchronously from the end of each paragraph backward, one update per kept correction merged into a single undo step. In Suggesting mode, each kept correction becomes its own suggestion that reviewers accept or reject independently.
 - **Handwritten notes and circled questions:** A margin note or inline note reads as a `comment` edit, and a circled passage with a written question reads as an `answer` edit. Confirming them calls `CommentsPlugin`'s `createThread` with `withHistory`, digitizing the marks inside the post-save history update only after the comment save succeeds. One undo removes the comment and brings back the ink; a refused or failed save leaves the ink undigitized and keeps the dialog open for retry.
-- **Stale check:** Before writing, Confirm checks that every passage's saved copy still matches its live block and that shown marks on marked blocks have not changed. If anything changed meanwhile, nothing writes and the dialog prompts you to Digitize again.
+- **Stale check:** Before rendering images, Digitize snapshots the affected blocks and shown ink. Before writing, Confirm verifies that those blocks, attached strokes, and passages have not changed and rejects any overlapping document edits. If anything changed meanwhile, nothing writes and the dialog prompts you to Digitize again.
 - **Read-only and Authored Preview:** Digitize is disabled in read-only views and in Authored Preview. Switching to either closes an open confirmation dialog without writing.
 
 ### Live-mark scope and rejected suggestions
 
-- **Changed-text marks stay in signs:** Digitize reads only live marks whose block text and inline voids still match their saved copy. Marks that have already moved to signs (`changed`, `deleted`, or `narrow`) stay out of Digitize and remain inspectable in `InkSignButton`.
+- **Folded marks stay in signs:** Digitize reads only live attached marks (`read.liveMarks()`), including marks on edited paragraphs whose own words still match. Marks folded into signs (`changed`, `deleted`, or `narrow`) stay out of Digitize and remain inspectable in `InkSignButton`.
 - **Rejected suggestions keep ink digitized:** When a reviewer rejects a suggestion created by Digitize, the text reverts and the ink stays digitized instead of reappearing automatically. Turn on **Show digitized ink** (`api.setShowDigitized(true)`) to draw digitized marks faded over their words (or as digitized signs) and choose **Bring back** on a lasso pick or sign popover to restore them in one undo step.
 
 ## Persistence and compatibility
@@ -218,10 +218,11 @@ Headless plugin (`platejs/ink`) that uses core element IDs and owns the `ink-mar
 | `tx.plugin(BaseInkPlugin).dropDigitized(ids?)` | `BaseInkPlugin` | Permanently drops digitized marks, their digitized records, and every copy no remaining mark references, skipping undo history. Omit `ids` to drop all digitized marks. Returns the dropped mark ids. |
 | `editor.plugin(BaseInkPlugin).read.marks()` | `BaseInkPlugin` | Returns every saved mark, oldest first, frozen. |
 | `editor.plugin(BaseInkPlugin).read.shownMarks()` | `BaseInkPlugin` | Returns every saved mark with no digitized record, oldest first, frozen. |
+| `editor.plugin(BaseInkPlugin).read.liveMarks()` | `BaseInkPlugin` | Returns every shown mark currently attached to live document text, oldest first, frozen. |
 | `editor.plugin(BaseInkPlugin).read.mark(id)`, `read.copy(id)` | `BaseInkPlugin` | Reads one saved mark or saved block copy by id, or `undefined`. |
 | `editor.plugin(BaseInkPlugin).read.place(copyId)` | `BaseInkPlugin` | Returns whether a copy's block is `'live'`, `'changed'`, or `'gone'` (with its nearest surviving sign anchor). |
-| `editor.plugin(BaseInkPlugin).read.passages(ids)` | `BaseInkPlugin` | Returns one `InkPassage` per contiguous run of marked lines (plus one context line on each side), including margin notes, in document order. |
-| `editor.plugin(BaseInkPlugin).read.range({ copy, start, end })` | `BaseInkPlugin` | Resolves character offsets in a saved copy's text to a live `Range`, or `null` once the block is gone or its text or inline voids differ. |
+| `editor.plugin(BaseInkPlugin).read.passages(ids)` | `BaseInkPlugin` | Returns one `InkPassage` per contiguous run of marked lines (plus one context line on each side), including margin notes and live-block coordinates (`block`) on edited paragraphs, in document order. |
+| `editor.plugin(BaseInkPlugin).read.range(input)` | `BaseInkPlugin` | Resolves character offsets from `{ copy, start, end }` (exact live copy) or `{ block, start, end }` (live block) to a live `Range`, or `null` when unavailable. |
 | `InkMark`, `InkMarkInput`, `InkCopy`, `InkCopyPlace`, `InkSignPlace`, `InkPassage`, `InkPassageMark`, `InkPassageWord`, `InkRangeInput`, `InkTool`, `InkBrush`, `InkSample`, `InkLine`, `InkRun`, `InkMargin`, `InkDirection`, `InkViewState` | `platejs/ink` | Core data and view-state types exported from the headless entrypoint. |
 | `InkPlugin` | `platejs/ink/react` | React ink plugin with view-local tool, visibility, pick, and passage-image APIs. |
 | `editor.plugin(InkPlugin).api.setTool(tool)` | `InkPlugin` | Sets the view's active `InkTool` (`draw`, `erase`, `lasso`) or `null` to turn Draw off. Returns `false` in read-only views, in Authored Preview, or on invalid brush dimensions. |

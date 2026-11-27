@@ -1,16 +1,6 @@
 import * as React from 'react';
 
-import {
-  getRecordSetVersion,
-  readShownPreview,
-  readShownRecords,
-  subscribeEditorViewState,
-} from '../../../facade';
-import {
-  COPIES,
-  DIGITIZED,
-  MARKS,
-} from '../../../features/ink/lib/inkGone.internal';
+import { readShownPreview, subscribeEditorViewState } from '../../../facade';
 import {
   useEditableRef,
   useEditor,
@@ -90,10 +80,10 @@ const firstElementAfter = (element: Element) => {
 
 /**
  * The ink plugin's `wrapContent` slot: the slot's content, then a layer with
- * the ink of its Editable, drawn over it and its margins. Each mark
- * draws on its words while they stand as they were when it was drawn, and
- * otherwise shows as a `sign` in the Editable's padding where the mark's lines
- * end, the left padding for a mark drawn in right-to-left text: at its
+ * the ink of its Editable, drawn over it and its margins. Each mark tracks its
+ * words across edits elsewhere in the same paragraph and reflows across wraps
+ * by shape family, and otherwise shows as a `sign` in the Editable's padding
+ * where the mark's lines end, the left padding for a mark drawn in right-to-left text: at its
  * block's top when the block's words changed or cannot be measured, or a
  * margin note's margin is too narrow, and beside the nearest block left when a
  * marked block is gone, or on the document's start when none is left. A place
@@ -383,32 +373,8 @@ function InkLayer({
       printing = false;
       schedule();
     };
-    const savedSets = () => {
-      const records = readShownRecords(editor);
-
-      return [
-        getRecordSetVersion(records, MARKS),
-        getRecordSetVersion(records, COPIES),
-        getRecordSetVersion(records, DIGITIZED),
-      ] as const;
-    };
-    let saved = savedSets();
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
       if (!changed.hasAny('document')) return;
-
-      const next = savedSets();
-
-      if (
-        next[0] !== saved[0] ||
-        next[1] !== saved[1] ||
-        next[2] !== saved[2]
-      ) {
-        const { read } = view.plugin(InkPlugin);
-
-        saved = next;
-        surface.keep((mark) => read.mark(mark.id) === mark);
-        picker.keep((mark) => read.mark(mark.id) === mark);
-      }
       schedule();
     });
     const stopLayout = observeInkLayout(editable, layer, (change, within) => {

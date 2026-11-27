@@ -387,8 +387,5 @@ export const attachInkPick = ({
         layer.removeEventListener(type, listener);
       }
     },
-    keep: (_holding: (mark: InkMark) => boolean) => {
-      // WeakMap entries collect automatically once marks or strokes drop.
-    },
   };
 };

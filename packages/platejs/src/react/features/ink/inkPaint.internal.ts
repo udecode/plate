@@ -17,13 +17,6 @@ const shapeOf = ({ size }: InkBrush) => ({
   thinning: INK_THINNING,
 });
 
-export const inkOutlinePoints = ({ brush, samples }: InkMark) =>
-  strokePolygonPoints(
-    samples.map(([x, y, pressure]) => [x, y, pressure] as const),
-    shapeOf(brush),
-    true
-  );
-
 export const inkStrokeOutlinesPoints = (
   brush: InkBrush,
   strokes: ReadonlyArray<readonly InkSample[]>
@@ -39,10 +32,9 @@ export const inkStrokeOutlinesPoints = (
   );
 };
 
-/**
- * The SVG outline of a mark's samples in `brush`, moved by `dx` and `dy`.
- * `last` closes the line's end, for a finished mark.
- */
+export const inkOutlinePoints = ({ brush, samples }: InkMark) =>
+  inkStrokeOutlinesPoints(brush, [samples])[0];
+
 export const inkOutline = (
   samples: readonly InkSample[],
   brush: InkBrush,
@@ -162,9 +154,6 @@ export const createInkSurface = (into: SVGGElement) => {
   };
 
   return {
-    keep: (_holds: (mark: InkMark) => boolean) => {
-      // WeakMap entries collect automatically once marks or strokes drop.
-    },
     painted: () => ink,
     paint: (placed: InkPlaced['ink']) => {
       ink = placed;

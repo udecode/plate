@@ -26,13 +26,21 @@ export const gapAround = (text: string, offset: number) => {
   return [start, end] as const;
 };
 
-const MAX_DIFF_CHARS = 4096;
+const MAX_DIFF_TOKENS = 4096;
 const MAX_DIFF_OPS = 256;
 
 const WORD_CHAR = /[\p{L}\p{N}_]/u;
 const COMBINING_MARK = /\p{M}/u;
-const SEGMENTED_SCRIPT =
+export const SEGMENTED_SCRIPT =
   /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u;
+const DIFF_TOKEN =
+  /\s+|\uFFFC|[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]|[^\s\uFFFC\p{P}\p{S}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]+|[\p{P}\p{S}]/gu;
+
+type DiffToken = Readonly<{
+  end: number;
+  start: number;
+  text: string;
+}>;
 
 type EqualStretch = Readonly<{
   aStart: number;
@@ -76,14 +84,16 @@ export const getInkAnchorMetrics = () => Object.freeze({ ...metrics });
 
 const isLowSurrogate = (code: number) => code >= 0xdc_00 && code <= 0xdf_ff;
 
-const reverseCodeUnits = (text: string) => {
-  let out = '';
+const tokenizeForDiff = (text: string): DiffToken[] => {
+  const tokens: DiffToken[] = [];
 
-  for (let i = text.length - 1; i >= 0; i -= 1) {
-    out += text[i];
+  for (const match of text.matchAll(DIFF_TOKEN)) {
+    const start = match.index;
+
+    tokens.push({ end: start + match[0].length, start, text: match[0] });
   }
 
-  return out;
+  return tokens;
 };
 
 const mergeStretches = (stretches: readonly EqualStretch[]): EqualStretch[] => {
@@ -112,16 +122,15 @@ const mergeStretches = (stretches: readonly EqualStretch[]): EqualStretch[] => {
   return merged;
 };
 
-const myersEqualStretches = (
-  a: string,
-  b: string,
+const myersEqualTokenStretches = (
+  a: readonly DiffToken[],
+  b: readonly DiffToken[],
   maxOps: number
 ): EqualStretch[] | null => {
   const n = a.length;
   const m = b.length;
 
   if (n === 0 || m === 0) return [];
-  if (a === b) return [{ aStart: 0, bStart: 0, length: n }];
 
   const maxD = Math.min(maxOps, n + m);
   const offset = maxD;
@@ -139,7 +148,7 @@ const myersEqualStretches = (
           : v[offset + k - 1] + 1;
       let y = x - k;
 
-      while (x < n && y < m && a.charCodeAt(x) === b.charCodeAt(y)) {
+      while (x < n && y < m && a[x].text === b[y].text) {
         x += 1;
         y += 1;
       }
@@ -190,113 +199,124 @@ const myersEqualStretches = (
   return mergeStretches(reversed);
 };
 
-const alignPrefixFirst = (a: string, b: string): EqualStretch[] | null => {
+const emitTokenStretch = (
+  out: EqualStretch[],
+  aTokens: readonly DiffToken[],
+  bTokens: readonly DiffToken[],
+  aStart: number,
+  bStart: number,
+  length: number
+) => {
+  for (let i = 0; i < length; i += 1) {
+    const aTok = aTokens[aStart + i];
+    const bTok = bTokens[bStart + i];
+
+    out.push({
+      aStart: aTok.start,
+      bStart: bTok.start,
+      length: aTok.end - aTok.start,
+    });
+  }
+};
+
+const alignTokens = (
+  aTokens: readonly DiffToken[],
+  bTokens: readonly DiffToken[],
+  order: 'prefix' | 'suffix'
+): EqualStretch[] | null => {
   let prefix = 0;
-
-  while (
-    prefix < a.length &&
-    prefix < b.length &&
-    a.charCodeAt(prefix) === b.charCodeAt(prefix)
-  ) {
-    prefix += 1;
-  }
-
   let suffix = 0;
+  const trimPrefix = () => {
+    while (
+      prefix + suffix < aTokens.length &&
+      prefix + suffix < bTokens.length &&
+      aTokens[prefix].text === bTokens[prefix].text
+    ) {
+      prefix += 1;
+    }
+  };
+  const trimSuffix = () => {
+    while (
+      prefix + suffix < aTokens.length &&
+      prefix + suffix < bTokens.length &&
+      aTokens[aTokens.length - 1 - suffix].text ===
+        bTokens[bTokens.length - 1 - suffix].text
+    ) {
+      suffix += 1;
+    }
+  };
 
-  while (
-    prefix + suffix < a.length &&
-    prefix + suffix < b.length &&
-    a.charCodeAt(a.length - 1 - suffix) === b.charCodeAt(b.length - 1 - suffix)
-  ) {
-    suffix += 1;
+  if (order === 'prefix') {
+    trimPrefix();
+    trimSuffix();
+  } else {
+    trimSuffix();
+    trimPrefix();
   }
 
-  const midA = a.slice(prefix, a.length - suffix);
-  const midB = b.slice(prefix, b.length - suffix);
+  const midA = aTokens.slice(prefix, aTokens.length - suffix);
+  const midB = bTokens.slice(prefix, bTokens.length - suffix);
 
-  if (midA.length + midB.length > MAX_DIFF_CHARS) return null;
+  if (midA.length + midB.length > MAX_DIFF_TOKENS) return null;
 
-  const mid = myersEqualStretches(midA, midB, MAX_DIFF_OPS);
+  const mid =
+    order === 'prefix'
+      ? myersEqualTokenStretches(midA, midB, MAX_DIFF_OPS)
+      : myersEqualTokenStretches(
+          midA.toReversed(),
+          midB.toReversed(),
+          MAX_DIFF_OPS
+        );
 
   if (!mid) return null;
 
   const out: EqualStretch[] = [];
 
-  if (prefix > 0) out.push({ aStart: 0, bStart: 0, length: prefix });
-  for (const stretch of mid) {
-    out.push({
-      aStart: stretch.aStart + prefix,
-      bStart: stretch.bStart + prefix,
-      length: stretch.length,
-    });
+  if (prefix > 0) emitTokenStretch(out, aTokens, bTokens, 0, 0, prefix);
+  if (order === 'prefix') {
+    for (const stretch of mid) {
+      emitTokenStretch(
+        out,
+        aTokens,
+        bTokens,
+        stretch.aStart + prefix,
+        stretch.bStart + prefix,
+        stretch.length
+      );
+    }
+  } else {
+    for (let i = mid.length - 1; i >= 0; i -= 1) {
+      const stretch = mid[i];
+
+      emitTokenStretch(
+        out,
+        aTokens,
+        bTokens,
+        prefix + midA.length - stretch.aStart - stretch.length,
+        prefix + midB.length - stretch.bStart - stretch.length,
+        stretch.length
+      );
+    }
   }
   if (suffix > 0) {
-    out.push({
-      aStart: a.length - suffix,
-      bStart: b.length - suffix,
-      length: suffix,
-    });
+    emitTokenStretch(
+      out,
+      aTokens,
+      bTokens,
+      aTokens.length - suffix,
+      bTokens.length - suffix,
+      suffix
+    );
   }
 
   return mergeStretches(out);
 };
 
-const alignSuffixFirst = (a: string, b: string): EqualStretch[] | null => {
-  let suffix = 0;
+const alignPrefixFirst = (a: string, b: string): EqualStretch[] | null =>
+  alignTokens(tokenizeForDiff(a), tokenizeForDiff(b), 'prefix');
 
-  while (
-    suffix < a.length &&
-    suffix < b.length &&
-    a.charCodeAt(a.length - 1 - suffix) === b.charCodeAt(b.length - 1 - suffix)
-  ) {
-    suffix += 1;
-  }
-
-  let prefix = 0;
-
-  while (
-    prefix + suffix < a.length &&
-    prefix + suffix < b.length &&
-    a.charCodeAt(prefix) === b.charCodeAt(prefix)
-  ) {
-    prefix += 1;
-  }
-
-  const midA = a.slice(prefix, a.length - suffix);
-  const midB = b.slice(prefix, b.length - suffix);
-
-  if (midA.length + midB.length > MAX_DIFF_CHARS) return null;
-
-  const midRev = myersEqualStretches(
-    reverseCodeUnits(midA),
-    reverseCodeUnits(midB),
-    MAX_DIFF_OPS
-  );
-
-  if (!midRev) return null;
-
-  const out: EqualStretch[] = [];
-
-  if (prefix > 0) out.push({ aStart: 0, bStart: 0, length: prefix });
-  for (let i = midRev.length - 1; i >= 0; i -= 1) {
-    const stretch = midRev[i];
-
-    out.push({
-      aStart: prefix + midA.length - stretch.aStart - stretch.length,
-      bStart: prefix + midB.length - stretch.bStart - stretch.length,
-      length: stretch.length,
-    });
-  }
-  if (suffix > 0) {
-    out.push({
-      aStart: a.length - suffix,
-      bStart: b.length - suffix,
-      length: suffix,
-    });
-  }
-
-  return mergeStretches(out);
-};
+const alignSuffixFirst = (a: string, b: string): EqualStretch[] | null =>
+  alignTokens(tokenizeForDiff(a), tokenizeForDiff(b), 'suffix');
 
 const intersectAlignments = (
   first: readonly EqualStretch[],
@@ -454,7 +474,6 @@ const mapCopyPoint = (
     return undefined;
   }
 
-  // Keep relative offset inside the gap when unchanged, else clamp to the gap.
   const within = offset - gapStart;
 
   return Math.min(liveGapEnd, liveGapStart + within);
@@ -464,6 +483,36 @@ const isCleanGraphemeBoundary = (text: string, offset: number) => {
   if (offset <= 0 || offset >= text.length) return true;
   if (isLowSurrogate(text.charCodeAt(offset))) return false;
   if (COMBINING_MARK.test(text[offset])) return false;
+
+  return true;
+};
+
+const hasAlignedSegmentedNeighbors = (
+  alignment: InkTextAlignment,
+  copyText: string,
+  copyStart: number,
+  copyEnd: number
+) => {
+  if (
+    copyStart > 0 &&
+    SEGMENTED_SCRIPT.test(copyText[copyStart]) &&
+    SEGMENTED_SCRIPT.test(copyText[copyStart - 1])
+  ) {
+    const prevStretch = stretchAt(alignment.stretches, copyStart - 1);
+    const startStretch = stretchAt(alignment.stretches, copyStart);
+
+    if (!prevStretch || prevStretch !== startStretch) return false;
+  }
+  if (
+    copyEnd < copyText.length &&
+    SEGMENTED_SCRIPT.test(copyText[copyEnd - 1]) &&
+    SEGMENTED_SCRIPT.test(copyText[copyEnd])
+  ) {
+    const endStretch = stretchAt(alignment.stretches, copyEnd - 1);
+    const nextStretch = stretchAt(alignment.stretches, copyEnd);
+
+    if (!endStretch || endStretch !== nextStretch) return false;
+  }
 
   return true;
 };
@@ -504,39 +553,35 @@ const boundariesHold = (
     return false;
   }
 
-  // In unspaced CJK/Thai scripts, require the immediate neighbor on each side
-  // to stay aligned (or non-segmented) so a run does not detach mid-word
-  // across ICU versions.
-  if (
-    copyStart > 0 &&
-    SEGMENTED_SCRIPT.test(copyText[copyStart]) &&
-    copyPrev !== undefined &&
-    SEGMENTED_SCRIPT.test(copyPrev)
-  ) {
-    const prevStretch = stretchAt(alignment.stretches, copyStart - 1);
-    const startStretch = stretchAt(alignment.stretches, copyStart);
-
-    if (!prevStretch || prevStretch !== startStretch) return false;
-  }
-  if (
-    copyEnd < copyText.length &&
-    SEGMENTED_SCRIPT.test(copyText[copyEnd - 1]) &&
-    copyNext !== undefined &&
-    SEGMENTED_SCRIPT.test(copyNext)
-  ) {
-    const endStretch = stretchAt(alignment.stretches, copyEnd - 1);
-    const nextStretch = stretchAt(alignment.stretches, copyEnd);
-
-    if (!endStretch || endStretch !== nextStretch) return false;
-  }
-
-  return true;
+  return hasAlignedSegmentedNeighbors(alignment, copyText, copyStart, copyEnd);
 };
 
-/**
- * Resolve one mark's runs inside a live block using an O(1) exact-copy fast
- * path or a cached dual-alignment diff when the block's text changed.
- */
+const mergeWrappedRuns = (runs: InkMarkBlock['runs']) => {
+  const logical: Array<{
+    end: number;
+    indices: number[];
+    start: number;
+  }> = [];
+
+  for (const [index, run] of runs.entries()) {
+    const prev = logical.at(-1);
+
+    if (
+      prev &&
+      prev.end > prev.start &&
+      run.end > run.start &&
+      run.start === prev.end
+    ) {
+      prev.end = run.end;
+      prev.indices.push(index);
+    } else {
+      logical.push({ end: run.end, indices: [index], start: run.start });
+    }
+  }
+
+  return logical;
+};
+
 export const matchMarkBlock = (
   copy: InkCopy,
   block: InkMarkBlock,
@@ -563,30 +608,7 @@ export const matchMarkBlock = (
 
   if (!alignment) return { kind: 'changed' };
 
-  // Merge touching runs (such as a single word wrapped across visual lines at
-  // capture time) into logical spans before mapping so fragments never split
-  // across separate occurrences.
-  const logical: Array<{
-    end: number;
-    indices: number[];
-    start: number;
-  }> = [];
-
-  for (const [index, run] of block.runs.entries()) {
-    const prev = logical.at(-1);
-
-    if (
-      prev &&
-      prev.end > prev.start &&
-      run.end > run.start &&
-      run.start === prev.end
-    ) {
-      prev.end = run.end;
-      prev.indices.push(index);
-    } else {
-      logical.push({ end: run.end, indices: [index], start: run.start });
-    }
-  }
+  const logical = mergeWrappedRuns(block.runs);
 
   const mapped = new Array<InkMatchedRun>(block.runs.length);
 
@@ -720,11 +742,38 @@ const trimmedRange = (text: string, from: number, to: number) => {
   return start < end ? ([start, end] as const) : undefined;
 };
 
-/**
- * Anchor a margin note to the text of the copy lines it originally sat beside.
- * Unrelated edits on other lines of the same paragraph keep `changed: false`
- * and provide live character offsets for line tracking or vertical stretching.
- */
+const mapBoundaryLines = (
+  alignment: InkTextAlignment,
+  copy: InkCopy,
+  fromLine: number,
+  toLine: number
+): Readonly<{ liveEnd: number; liveStart: number }> | undefined => {
+  const firstTrim = trimmedRange(
+    copy.text,
+    lineStart(copy.lines, fromLine),
+    copy.lines[fromLine].end
+  );
+  const lastTrim = trimmedRange(
+    copy.text,
+    lineStart(copy.lines, toLine),
+    copy.lines[toLine].end
+  );
+  const liveStart =
+    firstTrim && mapCopySpan(alignment, firstTrim[0], firstTrim[1]);
+  const liveEndStart =
+    lastTrim && mapCopySpan(alignment, lastTrim[0], lastTrim[1]);
+  const liveEnd =
+    liveEndStart !== undefined && lastTrim
+      ? liveEndStart + (lastTrim[1] - lastTrim[0])
+      : undefined;
+
+  return liveStart !== undefined &&
+    liveEnd !== undefined &&
+    liveEnd >= liveStart
+    ? { liveEnd, liveStart }
+    : undefined;
+};
+
 export const matchMarginBlock = (
   copy: InkCopy,
   block: InkMarkBlock,
@@ -780,33 +829,20 @@ export const matchMarginBlock = (
     };
   }
 
-  // Even if text inside a multi-line span changed, keep start/end endpoints
-  // when both boundary lines still map cleanly (for vertical margin bars).
-  const firstTrim = trimmedRange(
-    copy.text,
-    lineStart(copy.lines, fromLine),
-    copy.lines[fromLine].end
-  );
-  const lastTrim = trimmedRange(
-    copy.text,
-    lineStart(copy.lines, toLine),
-    copy.lines[toLine].end
-  );
-  const liveStart =
-    firstTrim && mapCopySpan(alignment, firstTrim[0], firstTrim[1]);
-  const liveEndStart =
-    lastTrim && mapCopySpan(alignment, lastTrim[0], lastTrim[1]);
-  const liveEnd =
-    liveEndStart !== undefined && lastTrim
-      ? liveEndStart + (lastTrim[1] - lastTrim[0])
-      : undefined;
+  const bounds =
+    fromLine === toLine
+      ? fullLiveStart !== undefined
+        ? {
+            liveEnd: fullLiveStart + (trimEnd - trimStart),
+            liveStart: fullLiveStart,
+          }
+        : undefined
+      : mapBoundaryLines(alignment, copy, fromLine, toLine);
 
   return {
     changed: true,
     fromLine,
-    ...(liveStart !== undefined && liveEnd !== undefined && liveEnd >= liveStart
-      ? { liveEnd, liveStart }
-      : {}),
+    ...bounds,
     toLine,
   };
 };

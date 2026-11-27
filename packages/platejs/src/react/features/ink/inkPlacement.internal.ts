@@ -214,9 +214,11 @@ const inkInputs = (
       ? bandOfPolylines(placedPolylinesOf(mark, placement), reach)
       : (() => {
           const shift = first ? first.box.top - mark.blocks[at].top : 0;
-          const ys = mark.samples.map(([, y]) => y + shift);
+          const [minY, maxY] = markYRange(mark);
 
-          return { from: Math.min(...ys) - reach, to: Math.max(...ys) + reach };
+          return Number.isFinite(minY)
+            ? { from: minY + shift - reach, to: maxY + shift + reach }
+            : { from: 0, to: 0 };
         })();
   const marked = new Set(
     places.flatMap((place) =>
@@ -262,11 +264,7 @@ const alignMarginBursts = (
   const groups = new Map<string, number[]>();
 
   for (const [index, item] of ink.entries()) {
-    if (
-      !item.mark.margin ||
-      item.strokes !== undefined ||
-      item.mark.blocks.length !== 1
-    ) {
+    if (!item.mark.margin || item.strokes !== undefined) {
       continue;
     }
 
@@ -838,11 +836,18 @@ export const createInkPlacer = ({
         return undefined;
       }
 
-      const firstBox = blockAt(kept.firstKey)?.box;
+      const firstBlock = blockAt(kept.firstKey);
 
-      if (!firstBox) return undefined;
+      if (!firstBlock) return undefined;
 
-      const { left, top } = firstBox;
+      const { left, top } = firstBlock.box;
+
+      if (
+        left !== kept.firstLeft &&
+        firstBlock.element.parentElement !== editable
+      ) {
+        return undefined;
+      }
       const band = {
         from: kept.bandFromFirst.from + top,
         to: kept.bandFromFirst.to + top,
@@ -934,9 +939,12 @@ export const createInkPlacer = ({
         !placementClearsNearby(mark, candidate, nearby)
           ? ({ reason: 'changed', type: 'sign' } as const)
           : candidate;
+      const clearedPolylines =
+        cleared.type === 'ink' && !mark.margin
+          ? placedPolylinesOf(mark, cleared)
+          : undefined;
       const placement: InkPlacement =
-        cleared.type === 'ink' &&
-        !mark.margin &&
+        clearedPolylines !== undefined &&
         places.some((at) => {
           if (!at || at.kind === 'gone') return false;
 
@@ -948,7 +956,7 @@ export const createInkPlacer = ({
               element,
               editable,
               origin,
-              placedPolylinesOf(mark, cleared),
+              clearedPolylines,
               mark.brush.size / 2
             )
           );

@@ -886,7 +886,7 @@ export const BaseInkPlugin = definePlugin('ink', {
 
                 return (record && markIn(id, record, copies)) ?? [];
               })
-              .sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1))
+              .sort(byMark)
           );
           byCopies.set(copies ?? EMPTY_SET_VERSION, marks);
         }
@@ -919,6 +919,10 @@ export const BaseInkPlugin = definePlugin('ink', {
           return cursor;
         };
 
+        const matchedByBlock = new WeakMap<
+          InkMarkBlock,
+          ReturnType<typeof matchMarkBlock>
+        >();
         const markList = [...new Set(ids)]
           .map((id) => read.mark(id))
           .filter((mark): mark is InkMark => {
@@ -934,10 +938,15 @@ export const BaseInkPlugin = definePlugin('ink', {
 
               if (!holder) return true;
 
-              return (
-                matchMarkBlock(saved, block, inkText(state.schema, holder.node))
-                  .kind !== 'changed'
+              const matched = matchMarkBlock(
+                saved,
+                block,
+                inkText(state.schema, holder.node)
               );
+
+              matchedByBlock.set(block, matched);
+
+              return matched.kind !== 'changed';
             });
           });
 
@@ -1143,7 +1152,8 @@ export const BaseInkPlugin = definePlugin('ink', {
               continue;
             }
 
-            const matched = matchMarkBlock(saved, block, now);
+            const matched =
+              matchedByBlock.get(block) ?? matchMarkBlock(saved, block, now);
 
             if (matched.kind === 'changed') continue;
             for (const run of matched.runs) {
@@ -1247,29 +1257,20 @@ export const BaseInkPlugin = definePlugin('ink', {
        * is provided.
        */
       range: (input: InkRangeInput): Range | null => {
+        let holder: ReturnType<typeof readShownElementById>;
+
         if ('block' in input) {
-          const holder = readShownElementById(editor, input.block);
+          holder = readShownElementById(editor, input.block);
+        } else {
+          const saved = copy(input.copy);
 
-          if (!holder) return null;
-
-          return inkBlockRange(
-            state.schema,
-            holder.node,
-            holder.path,
-            input.start,
-            input.end
-          );
+          if (!saved) return null;
+          holder = readShownElementById(editor, saved.block);
+          if (!holder || !inkHolds(saved, inkText(state.schema, holder.node))) {
+            return null;
+          }
         }
-
-        const saved = copy(input.copy);
-
-        if (!saved) return null;
-
-        const holder = readShownElementById(editor, saved.block);
-
-        if (!holder || !inkHolds(saved, inkText(state.schema, holder.node))) {
-          return null;
-        }
+        if (!holder) return null;
 
         return inkBlockRange(
           state.schema,

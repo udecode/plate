@@ -89,8 +89,7 @@ const capturePassage = (
 
   if (!element) return null;
 
-  const targetText = passage.block ? now.text : (saved?.text ?? '');
-  const spans = inkElementSpans(element, targetText);
+  const spans = inkElementSpans(element, now.text);
 
   if (!spans) return null;
 
@@ -226,7 +225,10 @@ const capturePassage = (
       const placement = placeMark({
         copies,
         live: liveList,
-        margins: { left: 1e6, right: 1e6 },
+        margins: {
+          left: Number.POSITIVE_INFINITY,
+          right: Number.POSITIVE_INFINITY,
+        },
         mark,
         nearby: [],
       });

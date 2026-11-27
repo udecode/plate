@@ -291,6 +291,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-ink-attached-digitize",
+      "href": "/registry/changelog/2026-11-27-ink-attached-digitize.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Digitize live attached ink marks on edited paragraphs and prevent overlapping cross-copy edits.",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ink-digitize"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-ink-digitize",
       "href": "/registry/changelog/2026-11-27-ink-digitize.json",
       "status": "draft",

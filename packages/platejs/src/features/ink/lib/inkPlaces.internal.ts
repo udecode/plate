@@ -605,8 +605,6 @@ export const readInkLiveMarks = (
 
   const live = Object.freeze(
     shown.filter((mark) => {
-      if (mark.blocks.length === 0) return false;
-
       const kept = indexedMark(places, read, mark);
 
       return kept !== undefined && !kept.group && !kept.changed;
@@ -933,13 +931,6 @@ export const advanceInkPlaces = (
   const marksChanged = changedIn(MARKS);
   const digitizedChanged = changedIn(DIGITIZED);
 
-  if (
-    copiesChanged.length > 0 ||
-    marksChanged.length > 0 ||
-    digitizedChanged.length > 0
-  ) {
-    places.liveMarks = undefined;
-  }
   for (const id of copiesChanged) untrackCopy(places, id);
   for (const id of marksChanged) dropSign(places, id);
   if (digitizedChanged.length > 0) places.listed = undefined;
