@@ -667,7 +667,7 @@ export class TopologyBuilder {
     return { index, owner: row.owner };
   }
 
-  rawPathOfCell(cell: number): number[] {
+  pathOfCell(cell: number): Path {
     const path: number[] = [];
     let current = cell;
 
@@ -679,11 +679,7 @@ export class TopologyBuilder {
       current = owner;
     }
 
-    return path.reverse();
-  }
-
-  pathOfCell(cell: number): Path {
-    return Object.freeze(this.rawPathOfCell(cell));
+    return Object.freeze(path.reverse());
   }
 
   private setUp(page: number, up: number) {
@@ -1443,7 +1439,7 @@ export const topologyUniqueEntries = (topology: Topology) => {
     hashMapForEach(map, (key, holders) => {
       forEachHolder(holders, (cell) => {
         const path = dirGet(topology.cells, cell)
-          ? reader.rawPathOfCell(cell)
+          ? reader.pathOfCell(cell)
           : null;
 
         entries.push({ key, path, property });

@@ -40,13 +40,11 @@ type SliceFitCandidateBase = Readonly<{
 }>;
 
 type PreparedOpenBlockFitCandidate = Readonly<{
-  filledIds?: boolean;
   fullInsert: PreparedTokenSlice;
   prefix: string;
   semanticInsert: PreparedTokenSlice;
   sourceBlocks: readonly Element[];
   suffix: string;
-  targetBlockId?: string;
   targetPath: readonly number[];
 }>;
 

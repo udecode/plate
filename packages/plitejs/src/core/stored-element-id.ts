@@ -1,12 +1,9 @@
-import { isRecord, type JsonRecord } from './change/json';
+import { isRecord, jsonEqual, type JsonRecord } from './change/json';
 import {
   isElementNode,
   type JsonNode,
   type JsonTokenData,
-  type PreparedTokenSlice,
-  tokensEqual,
 } from './change/tokens';
-import type { PropertyModification } from './change/transform';
 
 export const storedElementIdOf = (node: JsonNode): string | undefined => {
   const id = isElementNode(node) ? node.id : undefined;
@@ -25,10 +22,18 @@ const storedIds = (nodes: readonly JsonNode[], ids: string[] = []) => {
   return ids;
 };
 
-export const hasDuplicateStoredIds = (nodes: readonly JsonNode[]) => {
-  const ids = storedIds(nodes);
+export const misreadsIds = (
+  merged: readonly JsonNode[],
+  paired: readonly JsonNode[],
+  known: readonly JsonNode[]
+) => {
+  const ids = storedIds(merged);
+  const knownIds = new Set(storedIds(known));
 
-  return new Set(ids).size < ids.length;
+  return (
+    new Set(ids).size < ids.length ||
+    storedIds(paired).some((id) => !knownIds.has(id))
+  );
 };
 
 export const withoutStoredElementId = (
@@ -39,13 +44,6 @@ export const withoutStoredElementId = (
 
   return rest;
 };
-
-export const openTokenProps = (
-  token: Readonly<{ nodeKind: string; props: Readonly<JsonRecord> }>
-): Readonly<JsonRecord> =>
-  token.nodeKind === 'element'
-    ? withoutStoredElementId(token.props)
-    : token.props;
 
 const keysOf = (node: JsonRecord) =>
   Object.keys(node).filter(
@@ -80,132 +78,18 @@ const withoutPropertiesId = (value: unknown) =>
 export const alike = (left: unknown, right: unknown) =>
   same(withoutPropertiesId(left), withoutPropertiesId(right));
 
-export const tokenAlike = (
-  left: JsonTokenData | undefined,
-  right: JsonTokenData | undefined
-) =>
-  left !== undefined &&
-  right !== undefined &&
-  (left.kind === 'open' &&
-  left.nodeKind === 'element' &&
-  right.kind === 'open' &&
-  right.nodeKind === 'element'
-    ? alike(left.props, right.props)
-    : tokensEqual(left, right));
-
 export const tokensAlike = (
   left: readonly JsonTokenData[],
   right: readonly JsonTokenData[]
 ) =>
   left.length === right.length &&
-  left.every((token, index) => tokenAlike(token, right[index]));
+  left.every((token, index) => {
+    const other = right[index];
 
-export const containsTokenRun = (
-  haystack: readonly JsonTokenData[],
-  needle: readonly JsonTokenData[]
-) => {
-  if (needle.length === 0) return true;
-  if (needle.length > haystack.length) return false;
-
-  for (let start = 0; start <= haystack.length - needle.length; start++) {
-    if (
-      needle.every((token, offset) =>
-        tokenAlike(haystack[start + offset], token)
-      )
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-export const remapAlikeElementIds = (
-  from: JsonNode,
-  to: JsonNode,
-  nodes: readonly JsonNode[]
-): readonly JsonNode[] => {
-  const map = new Map<string, string>();
-  const pair = (left: JsonNode, right: JsonNode) => {
-    const leftId = storedElementIdOf(left);
-    const rightId = storedElementIdOf(right);
-
-    if (leftId !== undefined && rightId !== undefined && leftId !== rightId) {
-      map.set(leftId, rightId);
-    }
-    if (isElementNode(left) && isElementNode(right)) {
-      left.children.forEach((child, index) => {
-        const other = right.children[index];
-
-        if (other) pair(child, other);
-      });
-    }
-  };
-
-  pair(from, to);
-  if (map.size === 0) return nodes;
-
-  const rewrite = (node: JsonNode): JsonNode => {
-    if (!isElementNode(node)) return node;
-
-    const id = storedElementIdOf(node);
-    const nextId = id !== undefined ? map.get(id) : undefined;
-    const children = node.children.map(rewrite);
-    const childChanged = children.some(
-      (child, index) => child !== node.children[index]
-    );
-
-    if (nextId === undefined && !childChanged) return node;
-
-    return {
-      ...node,
-      ...(nextId !== undefined ? { id: nextId } : {}),
-      children,
-    };
-  };
-
-  return nodes.map(rewrite);
-};
-
-const isIdOnlyPropertyDelta = (
-  data: PreparedTokenSlice | readonly PropertyModification[] | null | undefined
-) =>
-  Array.isArray(data) &&
-  data.length === 1 &&
-  data[0]?.key === 'id' &&
-  data[0].type === 'set' &&
-  typeof data[0].value === 'string';
-
-export const changeEditedRanges = (
-  change: Readonly<{
-    data: ReadonlyArray<
-      PreparedTokenSlice | readonly PropertyModification[] | null
-    >;
-    sections: readonly number[];
-  }>,
-  side: 'from' | 'to',
-  ignoreIdOnly = false
-): Array<readonly [number, number]> => {
-  const ranges: Array<readonly [number, number]> = [];
-  let position = 0;
-
-  for (let index = 0; index < change.sections.length; index += 2) {
-    const length = change.sections[index];
-    const inserted = change.sections[index + 1];
-    const size = side === 'to' && inserted >= 0 ? inserted : length;
-
-    if (
-      inserted !== -1 &&
-      !(
-        ignoreIdOnly &&
-        inserted === -2 &&
-        isIdOnlyPropertyDelta(change.data[index >> 1])
-      )
-    ) {
-      ranges.push([position, position + size]);
-    }
-    position += size;
-  }
-
-  return ranges;
-};
+    return token.kind === 'open' &&
+      token.nodeKind === 'element' &&
+      other?.kind === 'open' &&
+      other.nodeKind === 'element'
+      ? alike(token.props, other.props)
+      : jsonEqual(token, other);
+  });

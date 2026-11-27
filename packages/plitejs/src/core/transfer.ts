@@ -662,12 +662,10 @@ const runTransfer = (
       ),
     };
   };
-  const reservedIdKey = getCompiledEditorSchema(editor)?.reservedElementId?.key;
   const followsDrop =
     (element: Element, ancestors: readonly Element[]) => (key: string) =>
-      key === reservedIdKey ||
       schema.elementPropertyLanding(element, key, ancestors, targetRoot) !==
-        'preserve';
+      'preserve';
   const release = guardLanding(
     editor,
     copy,

@@ -74,20 +74,10 @@ const withoutUnaskedIds = (actual: unknown, expected: unknown): unknown => {
     return eachAgainst(actual, expected, withoutUnaskedIds);
   }
   if (!isPlainObject(actual) || !isPlainObject(expected)) return actual;
-  if (isElement(actual)) return node(actual, expected);
 
-  let changed = false;
-  const entries = Object.entries(actual).map(([key, value]) => {
-    const next = Object.hasOwn(expected, key)
-      ? withoutUnaskedIds(value, expected[key])
-      : value;
-
-    if (next !== value) changed = true;
-
-    return [key, next] as const;
-  });
-
-  return changed ? Object.fromEntries(entries) : actual;
+  return isElement(actual)
+    ? node(actual, expected)
+    : rebuildNodeLists(actual, expected);
 };
 
 const installed = Symbol.for('plate.withoutUnaskedIds');

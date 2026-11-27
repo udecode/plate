@@ -72,7 +72,6 @@ import {
   insertYjsChild,
   isEmptyAttributeFreeShownYjsText,
   isEmptyAttributeFreeYjsText,
-  moveVisibleYjsChildren,
   readPliteNodeFromYjs,
   readYjsChildrenNotingPlainList,
   readYjsRootIndex,
@@ -3110,63 +3109,13 @@ export class YjsEventChangeBridge {
       inlineJoinedLines,
       lowered: [
         ...lowered,
-        this.lowerStructureWithPeeledAncestors(
-          write,
-          rest.change,
-          expected,
-          () => ({
-            after: indexes().after,
-            before: rest.before,
-          })
-        ),
+        this.lowerStructure(write, rest.change, expected, () => ({
+          after: indexes().after,
+          before: rest.before,
+        })),
       ].reduce(combineLowered),
       writtenLines,
     };
-  }
-
-  private lowerStructureWithPeeledAncestors(
-    write: YjsWrite,
-    change: DocumentChange,
-    expected: NodeList<Descendant>,
-    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
-  ): YjsEventLowerResult {
-    const committed = getInternalDocumentRootChange(change, this.rootKey);
-    const peeled = committed
-      ? splitAncestorPropertyEdits(committed, indexes().before)
-      : null;
-
-    if (!peeled) {
-      return this.lowerStructure(write, change, expected, indexes);
-    }
-
-    const { mirror } = this;
-    const { after, before } = indexes();
-    const middle = peeled.inner.apply(before);
-    const addresses = yjsAddressesOf(this.root, mirror);
-    const elements = peeled.peeled.map(({ path }) => ({
-      node: addresses.elementAt(path),
-      path,
-      previous: before.node(path) as Element,
-    }));
-    const middleNodes = middle.nodes as NodeList<Descendant>;
-
-    this.setMirror(middleNodes);
-    this.advanceLetters(expected, [peeled.inner], middle);
-
-    const lowered = this.lowerStructure(
-      write,
-      createInternalDocumentChange(new Map([[this.rootKey, peeled.outer]])),
-      expected,
-      () => ({ after, before: middle })
-    );
-
-    if (lowered.kind !== 'lowered' && this.mirror === middleNodes) {
-      this.setMirror(mirror);
-    } else {
-      this.lowerPeeledProperties(elements, middle);
-    }
-
-    return lowered;
   }
 
   private flippedNodes(
@@ -5522,231 +5471,12 @@ export class YjsEventChangeBridge {
     }
   }
 
-  private lowerSingleNestedRelocation(
-    write: YjsWrite,
-    expected: NodeList<Descendant>,
-    regions: readonly EventImportRegion[],
-    relocation: DocumentChangeRelocation
-  ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
-    const { path, targetPath } = relocation;
-    const sourceParentPath = parentPath(path);
-    const targetParentPath = parentPath(targetPath);
-
-    if (
-      sourceParentPath.length === targetParentPath.length &&
-      sourceParentPath.every(
-        (value, index) => value === targetParentPath[index]
-      )
-    ) {
-      return null;
-    }
-
-    const removeChildAt = (
-      nodes: readonly Descendant[],
-      at: readonly number[]
-    ): Descendant[] | null => {
-      const [head, ...tail] = at;
-
-      if (head === undefined || head < 0 || head >= nodes.length) return null;
-      if (tail.length === 0) {
-        return [...nodes.slice(0, head), ...nodes.slice(head + 1)];
-      }
-
-      const parent = nodes[head];
-
-      if (!isElement(parent)) return null;
-
-      const nextChildren = removeChildAt(parent.children, tail);
-
-      if (!nextChildren) return null;
-
-      return [
-        ...nodes.slice(0, head),
-        { ...parent, children: nextChildren },
-        ...nodes.slice(head + 1),
-      ];
-    };
-
-    const first = regions[0];
-    const last = regions.at(-1);
-
-    if (!first || !last) return null;
-
-    const { afterFrom, beforeFrom } = first;
-    const { afterTo, beforeTo } = last;
-
-    if (
-      path[0] === undefined ||
-      targetPath[0] === undefined ||
-      path[0] < beforeFrom ||
-      path[0] >= beforeTo ||
-      targetPath[0] < afterFrom ||
-      targetPath[0] >= afterTo
-    ) {
-      return null;
-    }
-
-    const beforeWithout = removeChildAt(
-      this.mirror.slice(beforeFrom, beforeTo),
-      [path[0] - beforeFrom, ...path.slice(1)]
-    );
-    const afterWithout = removeChildAt(expected.slice(afterFrom, afterTo), [
-      targetPath[0] - afterFrom,
-      ...targetPath.slice(1),
-    ]);
-
-    if (
-      !beforeWithout ||
-      !afterWithout ||
-      !jsonEqual(beforeWithout, afterWithout)
-    ) {
-      return null;
-    }
-
-    const sourceIndex = getDefined(path.at(-1));
-    const targetParentBeforePath =
-      sourceParentPath.length < targetParentPath.length &&
-      sourceParentPath.every(
-        (value, index) => targetParentPath[index] === value
-      ) &&
-      targetParentPath[sourceParentPath.length] >= sourceIndex
-        ? [
-            ...targetParentPath.slice(0, sourceParentPath.length),
-            targetParentPath[sourceParentPath.length] + 1,
-            ...targetParentPath.slice(sourceParentPath.length + 1),
-          ]
-        : targetParentPath;
-    const addresses = yjsAddressesOf(this.root, this.mirror);
-    const sourceParent =
-      sourceParentPath.length === 0
-        ? this.root
-        : addresses.elementAt(sourceParentPath);
-    const targetParent =
-      targetParentBeforePath.length === 0
-        ? this.root
-        : addresses.elementAt(targetParentBeforePath);
-
-    if (!sourceParent || !targetParent || sourceParent === targetParent) {
-      return null;
-    }
-
-    const sourceSiblings =
-      sourceParentPath.length === 0
-        ? this.mirror.slice()
-        : (nodeAtPath(this.mirror, sourceParentPath) as Element).children;
-    const sourceVisible = getYjsVisibleChildren(this.root, sourceParent);
-    const sourceAligned = alignYjsChildren(sourceSiblings, sourceVisible);
-    const sourceOrder = sourceAligned?.segments.findIndex(
-      (segment) => segment.kind === 'element' && segment.from === sourceIndex
-    );
-    const sourceTarget =
-      sourceOrder === undefined || sourceOrder === -1
-        ? null
-        : sourceAligned?.targets[sourceOrder];
-
-    if (sourceTarget?.kind !== 'element') return null;
-
-    const sourceNode = sourceTarget.node;
-
-    if (
-      !canReplaceCompatibleYjsChildren(
-        this.root,
-        [sourceNode],
-        [nodeAtPath(this.mirror, path)],
-        [nodeAtPath(expected, targetPath)],
-        0
-      )
-    ) {
-      return null;
-    }
-
-    const targetSiblings =
-      targetParentBeforePath.length === 0
-        ? this.mirror.slice()
-        : (nodeAtPath(this.mirror, targetParentBeforePath) as Element).children;
-    const targetVisible = getYjsVisibleChildren(this.root, targetParent);
-    const targetAligned = alignYjsChildren(targetSiblings, targetVisible);
-
-    if (!targetAligned) return null;
-
-    const targetIndex = getDefined(targetPath.at(-1));
-    let insertAt: number | null = targetVisible.length;
-
-    for (const [order, segment] of targetAligned.segments.entries()) {
-      const size = segment.kind === 'text' ? segment.leaves.length : 1;
-
-      if (segment.from < targetIndex && targetIndex < segment.from + size) {
-        insertAt = null;
-        break;
-      }
-      if (segment.from >= targetIndex) {
-        const nextShown = targetAligned.targets
-          .slice(order)
-          .find((candidate) => candidate !== null);
-
-        insertAt = nextShown ? nextShown.from : targetVisible.length;
-        break;
-      }
-    }
-
-    if (insertAt === null) return null;
-
-    const [placeholder] = moveVisibleYjsChildren(
-      write,
-      sourceParent,
-      sourceTarget.from,
-      sourceTarget.from + 1
-    );
-
-    if (!placeholder) return null;
-
-    insertYjsChild(write, targetParent, insertAt, placeholder);
-    this.rewriteMovedLetters(write, expected, [
-      { before: path, node: sourceNode, path: targetPath },
-    ]);
-
-    let tokenLengthNodes = 0;
-
-    for (let index = regions.length - 1; index >= 0; index -= 1) {
-      const region = regions[index];
-
-      if (!region) continue;
-      tokenLengthNodes += this.lengths.splice(
-        region.beforeFrom,
-        region.beforeTo - region.beforeFrom,
-        expected.slice(region.afterFrom, region.afterTo)
-      );
-    }
-
-    this.ready = this.rootIndex.length === expected.length;
-
-    return {
-      changedRanges: regions.length,
-      inserted: 1,
-      kind: 'lowered',
-      removed: 1,
-      start: first.beforeFrom,
-      strategy: 'compatible',
-      tokenLengthNodes,
-    };
-  }
-
   private lowerCompositeRelocations(
     write: YjsWrite,
     expected: NodeList<Descendant>,
     regions: readonly EventImportRegion[],
     relocations: readonly DocumentChangeRelocation[]
   ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
-    if (relocations.length === 1) {
-      const single = this.lowerSingleNestedRelocation(
-        write,
-        expected,
-        regions,
-        relocations[0]
-      );
-
-      if (single !== null) return single;
-    }
     const relocationTargets = new Map<string, YjsNode>();
     const moved: Array<{
       before: readonly number[];

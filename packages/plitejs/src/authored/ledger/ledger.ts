@@ -559,7 +559,7 @@ class ModeProjection {
         ? write
         : null;
     const writtenRoot = (root: string): WrittenList | null => {
-      if (!written) return null;
+      if (!written || respared.has(root)) return null;
       const droppedByFrame =
         root !== 'main' && !Object.hasOwn(written.value.roots ?? {}, root);
 

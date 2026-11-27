@@ -36,7 +36,6 @@ import {
   toCompiledTargetContext,
 } from '../../core/schema-compiler';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
-import { gridHoldersOf } from '../../core/survival';
 import {
   documentRootsOf,
   rootChildrenOf,
@@ -51,7 +50,6 @@ import {
   type ContextLookup,
   factsOf,
   holdsBase,
-  outcomeOf,
   type ReviewFacts,
   standingClaimsOf,
   undecided,
@@ -76,7 +74,6 @@ import {
 import {
   type BuildReach,
   buildClaimsOf,
-  decidedMarkRemoves,
   type JoinBlock,
   placementLinksIn,
 } from './resolve';
@@ -163,16 +160,13 @@ export const sparePropertiesOf = (schema: CompiledEditorSchema) => {
   let properties = SPARE_PROPERTIES.get(schema);
 
   if (!properties) {
-    const found = new Set(
+    properties = new Set(
       [...schema.properties.byId.values()].filter(
         (property) =>
           isSupportedGeneratedElementProperty(property) &&
           !property.descriptor.omitDefault
       )
     );
-
-    if (schema.reservedElementId) found.add(schema.reservedElementId);
-    properties = found;
     SPARE_PROPERTIES.set(schema, properties);
   }
 
@@ -204,16 +198,15 @@ const generatingOf = (schema: CompiledEditorSchema) => {
     const element = schema.elements.byType.get(type);
     const own =
       !!element &&
-      (schema.reservedElementId !== null ||
-        generated.some(
-          (property) =>
-            element.construction.materializedPropertyIds.has(property.id) &&
-            matchesCompiledSchemaTarget(
-              schema,
-              property.target,
-              toCompiledTargetContext(type, {})
-            )
-        ));
+      generated.some(
+        (property) =>
+          element.construction.materializedPropertyIds.has(property.id) &&
+          matchesCompiledSchemaTarget(
+            schema,
+            property.target,
+            toCompiledTargetContext(type, {})
+          )
+      );
     const result = own || (!!element?.content && builds(element.content));
 
     types.set(type, result);
@@ -373,8 +366,7 @@ const typesOfTag = (mark: AuthoredMark) => {
 export const buildClaimsIn = <N extends Readonly<{ children?: readonly N[] }>>(
   facts: ReviewFacts,
   lookup: ContextLookup,
-  eachBlock: (root: string, visit: (node: N) => void) => void,
-  gridHolder?: (node: N) => boolean
+  eachBlock: (root: string, visit: (node: N) => void) => void
 ) => {
   const claimsOf = (node: N) => standingClaimsOf(node, facts, lookup);
   const isPending = (mark: AuthoredMark) => undecided(facts, mark);
@@ -414,16 +406,7 @@ export const buildClaimsIn = <N extends Readonly<{ children?: readonly N[] }>>(
       claimsOf,
       isPending,
       joinOf(root),
-      reach,
-      gridHolder,
-      (mark) => {
-        const decision = outcomeOf(facts, mark);
-
-        return decidedMarkRemoves(
-          mark,
-          decision === 'pending' ? 'keep' : decision
-        );
-      }
+      reach
     );
 };
 
@@ -456,7 +439,6 @@ export const sparesFor = (
 
   const value = document as JsonEditorValue;
   const facts = factsOf(value);
-  const gridHolder = gridHoldersOf(schema);
   const buildClaims = buildClaimsIn<Node>(
     facts,
     createDependencies(facts),
@@ -468,8 +450,7 @@ export const sparesFor = (
       } else {
         rootChildren(value, root)?.forEach(visit);
       }
-    },
-    gridHolder
+    }
   );
   let detached: ReturnType<typeof createDetachedEditorSchema> | null = null;
   const api = () => (detached ??= createDetachedEditorSchema(schema, document));
@@ -495,39 +476,12 @@ export const sparesFor = (
     if (!found) continue;
 
     const { ancestors, children: level, node: container } = found;
-    if (container && gridHolder(container)) continue;
-    const filling = fillsAt.get(siteKey) ?? [];
-    const stored = container ? sparesIn(container) : [];
-    const rootStored = container ? [] : rootSparesOf(value, site.root);
-
-    if (
-      filling.length === 0 &&
-      stored.length === 0 &&
-      rootStored.length === 0 &&
-      (!container || buildClaims(container, [], site.root).length === 0)
-    ) {
-      const type = container ? String(container.type) : null;
-      const content =
-        type === null
-          ? api().getRootContent(site.root, document)
-          : (schema.elements.byType.get(type)?.content ?? null);
-
-      if (!content || !generating.builds(content)) continue;
-      if (
-        !content.prefix?.length &&
-        noVerdictReaches(
-          buildClaims,
-          found,
-          site.root,
-          content.min > 0 ? [{ slot: { min: content.min - 1 } }] : []
-        )
-      ) {
-        continue;
-      }
-    }
-
     const claims = buildClaims(container, level, site.root);
     const writer = firstOf(claims);
+    const filling = fillsAt.get(siteKey) ?? [];
+
+    const stored = container ? sparesIn(container) : [];
+    const rootStored = container ? [] : rootSparesOf(value, site.root);
 
     if (!writer && filling.length === 0) {
       const siteNodes = container ? [container, ...level] : level;
@@ -647,7 +601,7 @@ export const sparesFor = (
       const content =
         type === null
           ? api().getRootContent(site.root, document)
-          : (schema.elements.byType.get(type)?.content ?? null);
+          : api().getElementContent(type);
 
       if (!content || !generating.builds(content)) continue;
 
@@ -658,15 +612,7 @@ export const sparesFor = (
         site.root
       );
 
-      if (
-        noVerdictReaches(
-          buildClaims,
-          found,
-          site.root,
-          completion.built,
-          content.min
-        )
-      ) {
+      if (noVerdictReaches(buildClaims, found, site.root, completion.built)) {
         continue;
       }
 
@@ -743,24 +689,19 @@ export const isUnreachedSpare = (
   const completion = emptyCompletionAt(document, schema, site, type);
 
   if (!completion) return true;
-  if (completion.found.node && gridHoldersOf(schema)(completion.found.node)) {
-    return true;
-  }
 
   const facts = factsOf(document);
   const buildClaims = buildClaimsIn<Node>(
     facts,
     createDependencies(facts),
-    (root, visit) => rootChildren(document, root)?.forEach(visit),
-    gridHoldersOf(schema)
+    (root, visit) => rootChildren(document, root)?.forEach(visit)
   );
 
   return noVerdictReaches(
     buildClaims,
     completion.found,
     site.root,
-    completion.built,
-    completion.min
+    completion.built
   );
 };
 
@@ -772,22 +713,12 @@ const noVerdictReaches = (
     unlistedStanding: number;
   }>,
   root: string,
-  built: ReadonlyArray<Readonly<{ slot: ConstructionSlot }>>,
-  min = 0
-) => {
-  const slots: ConstructionSlot[] = built.map(({ slot }) => slot);
-
-  if (min > 0 && slots.some((slot) => 'min' in slot)) {
-    slots.push({ min: min - 1 });
-  }
-
-  return (
-    buildClaims(found.node, found.children, root, {
-      slots,
-      unlistedStanding: found.unlistedStanding,
-    }).length === 0
-  );
-};
+  built: ReadonlyArray<Readonly<{ slot: ConstructionSlot }>>
+) =>
+  buildClaims(found.node, found.children, root, {
+    slots: built.map(({ slot }) => slot),
+    unlistedStanding: found.unlistedStanding,
+  }).length === 0;
 
 const emptyCompletionAt = (
   document: JsonEditorValue,
@@ -806,24 +737,17 @@ const emptyCompletionAt = (
         ...found.ancestors.slice(1),
       ] as unknown as Element[])
     : [];
-  const api = createDetachedEditorSchema(
-    schema,
-    document as EditorDocumentValue
-  );
-  const content =
-    type === null
-      ? api.getRootContent(root, document as EditorDocumentValue)
-      : api.getElementContent(type);
 
   return {
     built: completeChildrenAt(
-      getRepresentationEditorFromApi(api),
+      getRepresentationEditorFromApi(
+        createDetachedEditorSchema(schema, document as EditorDocumentValue)
+      ),
       site,
       [],
       root
     ).built,
     found,
-    min: content?.min ?? 0,
   };
 };
 
@@ -834,13 +758,11 @@ const emptyCompletionAt = (
  * @yields {SpareSite} Each such container's site.
  */
 export function* claimSitesOf(
-  document: EditorDocumentValue,
-  schema?: CompiledEditorSchema
+  document: EditorDocumentValue
 ): Generator<SpareSite> {
   const value = document as JsonEditorValue;
   const facts = factsOf(value);
   const dependencies = createDependencies(facts);
-  const gridHolder = schema ? gridHoldersOf(schema) : () => false;
   const claims = (node: Node) =>
     standingClaimsOf(node, facts, dependencies).length > 0;
   function* visit(
@@ -848,30 +770,15 @@ export function* claimSitesOf(
     path: Path,
     root: string,
     container: Node | null
-  ): Generator<SpareSite, boolean> {
-    let gridChildClaimed = false;
-
+  ): Generator<SpareSite> {
+    if ((container !== null && claims(container)) || nodes.some(claims)) {
+      yield { path, root };
+    }
     for (const [index, child] of nodes.entries()) {
       if (child.children && typeof child.text !== 'string') {
-        const subClaimed = yield* visit(
-          child.children,
-          [...path, index],
-          root,
-          child
-        );
-
-        if (subClaimed && gridHolder(child)) gridChildClaimed = true;
+        yield* visit(child.children, [...path, index], root, child);
       }
     }
-
-    const active =
-      (container !== null && claims(container)) ||
-      nodes.some(claims) ||
-      gridChildClaimed;
-
-    if (active) yield { path, root };
-
-    return active;
   }
 
   yield* visit(value.children, [], 'main', null);
@@ -1069,19 +976,12 @@ export const spareLinesOf = (
   if (!storesSpares(schema)) return null;
 
   const sites: Array<SpareSite & { members: readonly ReserveMember[] }> = [];
-  const sharedIds = new Set<string>();
 
   for (const root of documentRootsOf(document)) {
     visitElements(rootChildrenOf(document, root), (node, path) => {
       const members = sparesIn(node);
 
       if (members.length > 0) sites.push({ members, path, root });
-      if (
-        typeof node.id === 'string' &&
-        readAuthoredMarks(node).some((mark) => mark.kind === 'insert')
-      ) {
-        sharedIds.add(node.id);
-      }
     });
   }
 
@@ -1104,10 +1004,9 @@ export const spareLinesOf = (
       built: built === true,
       node: node as unknown as JsonNode,
     })),
-    sharedIds,
     write: (nodes: readonly JsonNode[]) => {
       const next = nodes.values();
-      const nodeOf = () => getDefined(next.next().value) as unknown as Element;
+      const nodeOf = () => next.next().value as unknown as Element;
       const containers = sites.flatMap(({ members, path, root }) => {
         const filled = members.flatMap((member) => {
           const node = nodeOf();
@@ -1165,29 +1064,15 @@ export const spareLinesOf = (
 export function* changedSitesOf(
   change: DocumentChange,
   indexes: ReadonlyMap<string, DocumentIndex>,
-  before: JsonEditorValue,
-  schema?: CompiledEditorSchema
+  before: JsonEditorValue
 ): Generator<SpareSite> {
-  const gridHolder = schema ? gridHoldersOf(schema) : () => false;
-
   for (const [root, index] of indexes) {
     const rootChange = getInternalDocumentRootChange(change, root);
 
     if (!rootChange || rootChange.empty) continue;
 
     const paths = new Map<string, Path>();
-    const add = (path: Path) => {
-      let current = path;
-
-      while (true) {
-        const key = current.join(',');
-
-        if (paths.has(key)) return;
-        paths.set(key, current);
-        if (current.length === 0 || !gridHolder(index.node(current))) return;
-        current = current.slice(0, -1);
-      }
-    };
+    const add = (path: Path) => paths.set(path.join(','), path);
     let was: DocumentIndex | undefined;
 
     rootChange.iterChangedRanges((fromA, toA, from, to) => {
@@ -1204,8 +1089,16 @@ export function* changedSitesOf(
         }
       }
 
-      let hasEnclosing = false;
+      const open = index
+        .openContextAt(from)
+        .filter(
+          (entry) =>
+            entry.kind === 'element' &&
+            entry.contentFrom <= from &&
+            from <= entry.contentTo
+        );
 
+      add(open.at(-1)?.path ?? []);
       for (const entry of index.nodeRangesTouching(from, to)) {
         const close = entry.to - 1;
 
@@ -1215,21 +1108,8 @@ export function* changedSitesOf(
         ) {
           continue;
         }
-        if (entry.from === from) hasEnclosing = true;
         add(entry.path.slice(0, -1));
         if (entry.kind === 'element') add(entry.path);
-      }
-      if (!hasEnclosing) {
-        const open = index
-          .openContextAt(from)
-          .filter(
-            (entry) =>
-              entry.kind === 'element' &&
-              entry.contentFrom <= from &&
-              from <= entry.contentTo
-          );
-
-        add(open.at(-1)?.path ?? []);
       }
     });
     for (const path of paths.values()) yield { path, root };

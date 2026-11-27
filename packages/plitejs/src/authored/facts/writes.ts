@@ -13,7 +13,6 @@ import {
   getValueRecords,
   hasRecord,
 } from '../../core/record-store';
-import { withoutStoredElementId } from '../../core/stored-element-id';
 import type { Path } from '../../interfaces/path';
 import { contentRootsOf } from '../ledger/roots';
 import { heldGift } from '../tree/halves';
@@ -340,7 +339,7 @@ const shownPropsOf = (node: unknown) => ({
 });
 
 const contentKeyOf = (node: unknown) =>
-  canonicalJsonKey([withoutStoredElementId(shownPropsOf(node)), textOf(node)]);
+  canonicalJsonKey([shownPropsOf(node), textOf(node)]);
 
 const nodesWithin = (node: unknown): readonly unknown[] => [
   node,

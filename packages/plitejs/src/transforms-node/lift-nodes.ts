@@ -85,24 +85,14 @@ export const liftNodes = ((
 
     // The lifted node keeps its tokens: the parent splits around it and the
     // piece that holds only it is unwrapped.
-    const split = (at: number, keepParentProps: boolean) =>
+    const props = NodeApi.extractProps(parent);
+    const split = (at: number) =>
       applyBuiltDocumentChange(editor, (builder, root) =>
-        builder.splitNode(
-          root,
-          parentPath,
-          at,
-          !keepParentProps && NodeApi.isElement(parent)
-            ? getEditorSchema(editor).elementPropertiesForSplitAt(
-                parent,
-                parentPath,
-                root
-              )
-            : NodeApi.extractProps(parent)
-        )
+        builder.splitNode(root, parentPath, at, props)
       );
 
-    if (index < childCount - 1) split(index + 1, index === 0);
-    if (index > 0) split(index, false);
+    if (index < childCount - 1) split(index + 1);
+    if (index > 0) split(index);
     applyBuiltDocumentChange(editor, (builder, root) =>
       builder.unwrapNode(
         root,

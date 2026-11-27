@@ -1196,33 +1196,16 @@ const writePropertiesFirst = (
 ) => {
   if (sameChildren(propertyCanonical, current)) return current;
 
-  let index = 0;
-
-  while (index < current.length) {
-    if (propertyCanonical[index] === current[index]) {
-      index += 1;
-      continue;
-    }
-
-    const start = index;
-
-    while (
-      index < current.length &&
-      propertyCanonical[index] !== current[index]
-    ) {
-      index += 1;
-    }
-    addDraftStep(
-      draft,
-      reconcileChildrenStep(
-        draft.document,
-        path,
-        from + start,
-        index - start,
-        propertyCanonical.slice(start, index)
-      )
-    );
-  }
+  addDraftStep(
+    draft,
+    reconcileChildrenStep(
+      draft.document,
+      path,
+      from,
+      current.length,
+      propertyCanonical
+    )
+  );
 
   return propertyCanonical;
 };

@@ -1,12 +1,11 @@
 import { valueRootNodes } from '../core/change/document-change';
 import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
 import type { Occurrence } from './changes';
-import { readMembers } from './tree/marks';
 import type { AuthoredWindow } from './tree/resolve';
 
 export type SpareGuard = Readonly<{
-  nodeBuildsGenerated: (node: JsonNode) => boolean;
   stored: boolean;
+  typeBuildsGenerated: (type: string) => boolean;
   windowBuildsGenerated: (window: AuthoredWindow) => boolean;
 }>;
 
@@ -17,12 +16,16 @@ const BOUNDARY_KINDS = new Set(['join', 'joined', 'split']);
 
 const startsAtBoundary = (node: JsonNode | undefined): boolean =>
   !!node &&
-  (readMembers(node).some(({ kind }) => BOUNDARY_KINDS.has(kind)) ||
+  ((node.authored as ReadonlyArray<{ kind: string }> | undefined)?.some(
+    ({ kind }) => BOUNDARY_KINDS.has(kind)
+  ) ||
     startsAtBoundary(node.children?.[0]));
 
 const holdsSpares = (node: JsonNode, spares: SpareGuard): boolean =>
-  readMembers(node).some(({ kind }) => kind === 'reserve' || kind === 'as') ||
-  spares.nodeBuildsGenerated(node) ||
+  (node.authored as ReadonlyArray<{ kind: string }> | undefined)?.some(
+    ({ kind }) => kind === 'reserve' || kind === 'as'
+  ) ||
+  (typeof node.type === 'string' && spares.typeBuildsGenerated(node.type)) ||
   (node.children ?? []).some((child) => holdsSpares(child, spares));
 
 export const decisionWindowsOf = (
@@ -57,9 +60,7 @@ export const decisionWindowsOf = (
     const nodes = valueRootNodes(value, root);
     const window = { from, root, to };
 
-    if (spares?.windowBuildsGenerated(window)) {
-      return null;
-    }
+    if (spares?.windowBuildsGenerated(window)) return null;
     if (startsAtBoundary(nodes.at(from)) || startsAtBoundary(nodes.at(to))) {
       return null;
     }

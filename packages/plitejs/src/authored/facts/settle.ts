@@ -28,7 +28,6 @@ import {
 import {
   canonicalizeCompiledTextProperties,
   readEmptyText,
-  withPropertyDraws,
 } from '../../core/editor-schema';
 import {
   composeRecordOps,
@@ -37,7 +36,6 @@ import {
   type RecordOps,
 } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
-import { storedElementIdOf } from '../../core/stored-element-id';
 import {
   gridHoldersOf,
   gridPartsOf,
@@ -130,7 +128,6 @@ type RootEdits = Readonly<{
 type Pass = Readonly<{
   /** Writes what a node's insertions rest on once some of them are accepted. */
   dependencies: Dependencies;
-  donateReservedId: boolean;
   edits: Map<string, RootEdits>;
   facts: ReviewFacts;
   gone: WeakSet<Node>;
@@ -643,44 +640,6 @@ const donationRetracts = (read: Node, built: Node, site: Site, pass: Pass) => {
   );
 };
 
-const DONATED_ELEMENT_ID = '\u0000settle:donated-id';
-
-const donateReservedIds = (
-  donor: Node | undefined,
-  built: Node
-): Node | null => {
-  if (isText(built)) return built;
-  const donorElement = donor && !isText(donor) ? donor : undefined;
-  let id = storedElementIdOf(built as JsonNode);
-
-  if (id === DONATED_ELEMENT_ID) {
-    id = donorElement ? storedElementIdOf(donorElement as JsonNode) : undefined;
-    if (id === undefined) return null;
-  }
-
-  let childrenChanged = false;
-  const donorChildren = donorElement?.children;
-  const children: Node[] = [];
-
-  for (const [index, child] of (built.children ?? []).entries()) {
-    const donated = donateReservedIds(donorChildren?.[index], child);
-
-    if (!donated) return null;
-    if (donated !== child) childrenChanged = true;
-    children.push(donated);
-  }
-
-  if (id === storedElementIdOf(built as JsonNode) && !childrenChanged) {
-    return built;
-  }
-
-  return {
-    ...built,
-    ...(id !== undefined ? { id } : {}),
-    ...(childrenChanged ? { children } : {}),
-  };
-};
-
 const replacementsOf = (
   size: number,
   removed: readonly number[],
@@ -729,38 +688,27 @@ const replacementsOf = (
   const completeHere = (nodes: readonly Node[]) => {
     const used = new Set<string>();
     const takenAt = new Map<string, string>();
-    const runComplete = () =>
-      complete(
-        nodes as readonly JsonNode[],
-        chain,
-        site.root,
-        (slot, candidate) => slotFate(start, slot, origin(candidate), inserted),
-        undefined,
-        spares.length === 0
-          ? undefined
-          : (nodeType, slot) => {
-              const spare = takeSpare(spares, parentType, nodeType, slot, used);
+    const completion = complete(
+      nodes as readonly JsonNode[],
+      chain,
+      site.root,
+      (slot, candidate) => slotFate(start, slot, origin(candidate), inserted),
+      undefined,
+      spares.length === 0
+        ? undefined
+        : (nodeType, slot) => {
+            const spare = takeSpare(spares, parentType, nodeType, slot, used);
 
-              if (!spare) return null;
-              takenAt.set(slotKeyOf(slot), spare.key);
+            if (!spare) return null;
+            takenAt.set(slotKeyOf(slot), spare.key);
 
-              return heldNode(schema.ownership, spare.node, {
-                outerTypes: outer.flatMap((type) => type ?? []),
-                parentType,
-                root: site.root,
-              });
-            }
-      );
-    const reserved = pass.donateReservedId
-      ? pass.schema.reservedElementId
-      : null;
-    const completion = reserved
-      ? withPropertyDraws(
-          reserved.descriptor,
-          () => DONATED_ELEMENT_ID,
-          runComplete
-        )
-      : runComplete();
+            return heldNode(schema.ownership, spare.node, {
+              outerTypes: outer.flatMap((type) => type ?? []),
+              parentType,
+              root: site.root,
+            });
+          }
+    );
     const taken: ReadonlySet<string> = new Set(
       completion.built.flatMap(({ slot }) => {
         const key = takenAt.get(slotKeyOf(slot));
@@ -768,13 +716,8 @@ const replacementsOf = (
         return key ? [key] : [];
       })
     );
-    const takenNodes = new Set<unknown>(
-      completion.built.flatMap(({ node, slot }) =>
-        takenAt.has(slotKeyOf(slot)) ? [node] : []
-      )
-    );
 
-    return { ...completion, taken, takenNodes };
+    return { ...completion, taken };
   };
   const completion = completeHere(left);
   const slots = content?.prefix ?? 0;
@@ -815,17 +758,11 @@ const replacementsOf = (
     ];
   });
   const builtNodes = new Set<unknown>(completion.built.map(({ node }) => node));
-  const takenNodes = new Set<unknown>();
-  const children = (completion.children as readonly Node[]).map((node) => {
-    const wrapped =
-      enclosing.length > 0 && builtNodes.has(node)
-        ? (pass.dependencies.throughout(node as JsonNode, enclosing) as Node)
-        : node;
-
-    if (completion.takenNodes.has(node)) takenNodes.add(wrapped);
-
-    return wrapped;
-  });
+  const children = (completion.children as readonly Node[]).map((node) =>
+    enclosing.length > 0 && builtNodes.has(node)
+      ? (pass.dependencies.throughout(node as JsonNode, enclosing) as Node)
+      : node
+  );
   const into = new Map<number, Node[]>(removed.map((at) => [at, []]));
   let gap: number[] = [];
   let filled = 0;
@@ -855,18 +792,6 @@ const replacementsOf = (
   }
   while (next < children.length) {
     if (!place(children[next])) return null;
-  }
-
-  if (pass.donateReservedId && pass.schema.reservedElementId) {
-    for (const [at, list] of into) {
-      const built = list[0];
-
-      if (!built || takenNodes.has(built)) continue;
-      const donated = donateReservedIds(readAt(at), built);
-
-      if (!donated) return null;
-      list[0] = donated;
-    }
   }
 
   return [...into].every(
@@ -1260,7 +1185,6 @@ export const repairKeys = (
  * scope returns held deletions only with `returnsHeld`.
  */
 export type SettleOptions = Readonly<{
-  donateReservedId?: boolean;
   returnsHeld?: boolean;
   restoreMissingFormats?: boolean;
   resolveSchema: () => AuthoredResolveSchema;
@@ -1272,7 +1196,6 @@ export const settleValue = <V extends JsonEditorValue>(
   facts: ReviewFacts,
   scope: SettleScope,
   {
-    donateReservedId = false,
     returnsHeld = scope === 'document',
     restoreMissingFormats = scope === 'document',
     resolveSchema,
@@ -1286,18 +1209,11 @@ export const settleValue = <V extends JsonEditorValue>(
   let resolve: AuthoredResolveSchema | undefined;
   const dependencies = createDependencies(facts);
   const liveLinks = new Map<string, ReturnType<typeof liveLinksIn>>();
-  const buildClaims = buildClaimsIn<Node>(
-    facts,
-    dependencies,
-    (root, visit) =>
-      (rootOf(value, root).nodes as NodeList<Node>).forEach((node) =>
-        visit(node)
-      ),
-    gridHoldersOf(schema)
+  const buildClaims = buildClaimsIn<Node>(facts, dependencies, (root, visit) =>
+    (rootOf(value, root).nodes as NodeList<Node>).forEach((node) => visit(node))
   );
   const pass: Pass = {
     dependencies,
-    donateReservedId,
     edits: new Map(),
     facts,
     gone: new WeakSet(),

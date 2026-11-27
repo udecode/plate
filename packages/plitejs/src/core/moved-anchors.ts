@@ -133,20 +133,16 @@ export const suspendMovePlacement = (editor: object) => {
   };
 };
 
-const uncarriedKeys = (editor: Editor) => {
-  const compiled = getCompiledEditorSchema(editor);
-
-  return new Set([
-    ...[...compiled.properties.byId.values()].flatMap(({ key, lifecycle }) =>
-      typeof key === 'string' && (lifecycle.unique || lifecycle.copy === 'drop')
-        ? [key]
-        : []
-    ),
-    ...(typeof compiled.reservedElementId?.key === 'string'
-      ? [compiled.reservedElementId.key]
-      : []),
-  ]);
-};
+const uncarriedKeys = (editor: Editor) =>
+  new Set(
+    [...getCompiledEditorSchema(editor).properties.byId.values()].flatMap(
+      ({ key, lifecycle }) =>
+        typeof key === 'string' &&
+        (lifecycle.unique || lifecycle.copy === 'drop')
+          ? [key]
+          : []
+    )
+  );
 
 const propertiesOf = (
   node: Descendant,

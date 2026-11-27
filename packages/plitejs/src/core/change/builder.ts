@@ -1076,6 +1076,7 @@ export class ChangeDraft {
         payload.runtimeCandidates
       );
     }
+    this.canonical = true;
     this.current = payload.after;
 
     return Object.freeze({

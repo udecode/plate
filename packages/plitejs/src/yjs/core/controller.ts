@@ -1735,17 +1735,14 @@ export class YjsController<
       loaded.set(root, children);
     }
 
-    const admission = editorDocumentAdmission(this.editor);
     const rawRecords: Record<string, Record<string, string>> = Object.create(
       null
     );
 
-    if (admission) {
-      for (const [set, map] of this.recordMaps) {
-        for (const [id, value] of map.entries()) {
-          if (typeof value === 'string') {
-            (rawRecords[set] ??= Object.create(null))[id] = value;
-          }
+    for (const [set, map] of this.recordMaps) {
+      for (const [id, value] of map.entries()) {
+        if (typeof value === 'string') {
+          (rawRecords[set] ??= Object.create(null))[id] = value;
         }
       }
     }
@@ -1760,7 +1757,11 @@ export class YjsController<
         ? NO_RECORD_OPS
         : recordOpsFromJson(rawRecords)
     );
-    const filled = loadElementIds(compiled, rawDoc, admission)?.fill(rawDoc);
+    const filled = loadElementIds(
+      compiled,
+      rawDoc,
+      editorDocumentAdmission(this.editor)
+    )?.fill(rawDoc);
 
     if (!filled) return loaded;
 

@@ -79,17 +79,13 @@ import {
 import {
   resolveCompiledSchemaProperty,
   resolveCompiledSchemaWrapperPlan,
-  uniquePropertiesOf,
   type CompiledEditorSchema,
   type CompiledSchemaContentProgram,
   type CompiledSchemaElement,
 } from '../schema-compiler';
 import { EditorSchemaValidationError } from '../schema-validation';
 import { mapSelectionWithContext } from '../selection-protocol';
-import {
-  storedElementIdOf,
-  withoutStoredElementId,
-} from '../stored-element-id';
+import { withoutStoredElementId } from '../stored-element-id';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from '../value-codec';
 import {
   applyPasteEdgePlan,
@@ -244,9 +240,6 @@ export type CompiledSliceFitter<V extends Value = Value> = Readonly<{
   fitDocument: <TValue extends Value>(
     input: EditorDocumentValue<TValue>
   ) => EditorDocumentValue<V>;
-  fitDocumentRaw: <TValue extends Value>(
-    input: EditorDocumentValue<TValue>
-  ) => EditorDocumentValue<V>;
   fitDocumentWithReport: <TValue extends Value>(
     input: EditorDocumentValue<TValue>
   ) => EditorSchemaFitReport<V>;
@@ -374,16 +367,9 @@ type SliceFitterDependencies<V extends Value> = Readonly<{
     parentPath: readonly number[],
     openAncestorBoundary?: boolean
   ) => void;
-  loadElementIds?: (incoming: EditorDocumentValue) => Readonly<{
-    fill: (
-      document: EditorDocumentValue
-    ) => Readonly<{ value: EditorDocumentValue }> | null;
-    withStandInIds: <T>(read: () => T) => T;
-  }> | null;
   validateDocument: (value: EditorDocumentValue) => void;
   validateSliceVocabulary: (children: readonly Descendant[]) => void;
   withoutGeneration: <T>(read: () => T) => T;
-  generateReservedElementId?: () => string | undefined;
 }>;
 
 export type SliceFitterDelegate<V extends Value = Value> = Pick<
@@ -392,7 +378,6 @@ export type SliceFitterDelegate<V extends Value = Value> = Pick<
   | 'fitPlacements'
   | 'fitContent'
   | 'fitDocument'
-  | 'fitDocumentRaw'
   | 'fitDocumentWithReport'
   | 'fitDocumentAndMapPositions'
   | 'fitDocumentWithSelection'
@@ -568,7 +553,6 @@ export const compileSliceFitter = <V extends Value>(
     createDeclarativeAndFill,
     editorRootLabel,
     elementUsesInlineContent,
-    generateReservedElementId,
     getCompiledElement,
     getDescendant,
     getDocumentRoot,
@@ -583,7 +567,6 @@ export const compileSliceFitter = <V extends Value>(
     getVocabulary,
     indexConstructedRoot,
     isSetValuedProperty,
-    loadElementIds,
     nodePropertiesEqual,
     observeRootCanonicalization,
     revision,
@@ -3122,16 +3105,8 @@ export const compileSliceFitter = <V extends Value>(
           return null;
         }
         const sourceBlocks = variant.content as readonly Element[];
-        const hasElementIds = declarative?.everyElementHasId === true;
-        const canFillPreparedIds =
-          hasElementIds &&
-          declarative?.reservedElementId != null &&
-          generateReservedElementId !== undefined &&
-          uniquePropertiesOf(declarative).size === 1 &&
-          ![...declarative.properties.byId.values()].some(
-            (property) => property.references
-          ) &&
-          !isFittingMove();
+        const hasElementIds =
+          getDeclarativeSchema()?.everyElementHasId === true;
         const targetProps = hasElementIds
           ? withoutStoredElementId(targetBlock)
           : targetBlock;
@@ -3200,31 +3175,17 @@ export const compileSliceFitter = <V extends Value>(
           lastSourceBlock
             ? withoutStoredElementId(lastSourceBlock)
             : null;
-        const targetBlockId = hasElementIds
-          ? storedElementIdOf(targetBlock)
-          : undefined;
         const fittedBlocks: readonly Element[] =
-          canFillPreparedIds && sourceBlocks.length > 1
-            ? sourceBlocks.map((block, index) => {
-                if (index === 0) return block;
-                const freshId = generateReservedElementId();
-
-                return freshId === undefined
-                  ? block
-                  : Object.freeze({ ...block, id: freshId });
-              })
-            : lastSourceBlock &&
-                tailWithoutId &&
-                tailWithoutId !== lastSourceBlock
-              ? [
-                  ...sourceBlocks.slice(0, -1),
-                  Object.freeze({
-                    ...tailWithoutId,
-                    children: lastSourceBlock.children,
-                    type: lastSourceBlock.type,
-                  }),
-                ]
-              : sourceBlocks;
+          lastSourceBlock && tailWithoutId && tailWithoutId !== lastSourceBlock
+            ? [
+                ...sourceBlocks.slice(0, -1),
+                Object.freeze({
+                  ...tailWithoutId,
+                  children: lastSourceBlock.children,
+                  type: lastSourceBlock.type,
+                }),
+              ]
+            : sourceBlocks;
         const fittedVariant =
           fittedBlocks === sourceBlocks
             ? variant
@@ -3242,13 +3203,11 @@ export const compileSliceFitter = <V extends Value>(
           cost,
           from: targetRange.from,
           preparedOpenBlock: Object.freeze({
-            filledIds: canFillPreparedIds,
             fullInsert,
             prefix,
             semanticInsert,
             sourceBlocks: Object.freeze(fittedBlocks),
             suffix,
-            ...(targetBlockId === undefined ? {} : { targetBlockId }),
             targetPath: Object.freeze(targetPath),
           }),
           to: targetRange.to,
@@ -4043,13 +4002,11 @@ export const compileSliceFitter = <V extends Value>(
       if ('insert' in candidate) return candidate;
       const { preparedOpenBlock, ...base } = candidate;
       const {
-        filledIds,
         fullInsert,
         prefix,
         semanticInsert,
         sourceBlocks,
         suffix,
-        targetBlockId,
         targetPath,
       } = preparedOpenBlock;
       const mergeText = (block: Element, text: string): Element => {
@@ -4083,28 +4040,20 @@ export const compileSliceFitter = <V extends Value>(
         throw new Error('Prepared open block fit requires text boundaries.');
       }
 
-      const firstWithId =
-        filledIds &&
-        targetBlockId !== undefined &&
-        storedElementIdOf(first) !== targetBlockId
-          ? Object.freeze({ ...first, id: targetBlockId })
-          : first;
       const preparedContent: readonly Descendant[] =
         prefix.length === 0 && suffix.length === 0
-          ? firstWithId === first
-            ? sourceBlocks
-            : [firstWithId, ...sourceBlocks.slice(1)]
+          ? sourceBlocks
           : sourceBlocks.length === 1
-            ? [mergeText(firstWithId, prefix + firstText.text + suffix)]
+            ? [mergeText(first, prefix + firstText.text + suffix)]
             : [
-                mergeText(firstWithId, prefix + firstText.text),
+                mergeText(first, prefix + firstText.text),
                 ...sourceBlocks.slice(1, -1),
                 mergeText(last, lastText.text + suffix),
               ];
 
       Object.freeze(preparedContent);
       const insert =
-        prefix.length === 0 && suffix.length === 0 && firstWithId === first
+        prefix.length === 0 && suffix.length === 0
           ? fullInsert
           : PreparedTokenSlice.fromPreparedNodes(preparedContent);
       const targetIndex = targetPath[0];
@@ -4180,7 +4129,6 @@ export const compileSliceFitter = <V extends Value>(
       }
 
       const hasElementIds = getDeclarativeSchema()?.everyElementHasId === true;
-      const trustCanonical = !hasElementIds || filledIds === true;
 
       return Object.freeze({
         ...base,
@@ -4190,7 +4138,7 @@ export const compileSliceFitter = <V extends Value>(
         runtimeCandidatePaths,
         semanticChange,
         selectionOffset,
-        ...(trustCanonical ? { trustedCanonical: true } : {}),
+        ...(hasElementIds ? {} : { trustedCanonical: true }),
       });
     };
     const getStructuralContext = (position: number) =>
@@ -5446,8 +5394,7 @@ export const compileSliceFitter = <V extends Value>(
   const fitDocumentInput = <TValue extends Value>(
     rawInput: EditorDocumentValue<TValue>,
     positions?: FitPositions,
-    repairCollector?: EditorSchemaFitRepairCollector,
-    fillElementIds = true
+    repairCollector?: EditorSchemaFitRepairCollector
   ) => {
     const innerInput2 = readEditorDocument(
       rawInput,
@@ -5462,260 +5409,241 @@ export const compileSliceFitter = <V extends Value>(
       (record) => assertEditorJsonValue(record, 'Editor schema document')
     ) as EditorDocumentValue<TValue>;
 
-    if (!repairCollector && placesEachNodeOnce(innerInput2)) {
-      const candidate =
-        (fillElementIds
-          ? loadElementIds?.(innerInput2)?.fill(innerInput2)?.value
-          : undefined) ?? innerInput2;
-      const reused = reuseCanonicalDocument(candidate, positions);
+    const inputRoots = innerInput2.roots ?? {};
+    const seededRoots: Record<string, readonly Descendant[]> = {};
 
-      if (reused) return reused;
-    }
-
-    const ids = fillElementIds ? (loadElementIds?.(innerInput2) ?? null) : null;
-    const runFit = () => {
-      const inputRoots = innerInput2.roots ?? {};
-      const seededRoots: Record<string, readonly Descendant[]> = {};
-
-      if (schema) {
-        for (const root of getVocabulary().rootNames) {
-          const content = getRootContent(root, innerInput2);
-
-          if (!content?.min) continue;
-          const children = fitDirectContent(schema, content, [], [], { root });
-
-          if (!children) {
-            throw new Error(
-              `Editor root "${root}" requires defaultable content.`
-            );
-          }
-          seededRoots[root] = children;
-        }
-      }
-
-      const initial = cloneFrozen({
-        children: [],
-        ...(innerInput2.meta !== undefined ? { meta: innerInput2.meta } : {}),
-        ...(Object.keys(seededRoots).length > 0 ? { roots: seededRoots } : {}),
-      }) as JsonEditorValue;
-      const builder = new ChangeDraft(initial, {
-        construct: (
-          { after, before, change, indexedAfter, indexedBefore },
-          preparation
-        ) =>
-          constructCanonicalDocumentChange(getEditor(), after, change, {
-            before,
-            fitPreparation: preparation,
-            indexedAfter,
-            indexedBefore,
-            schema: api,
-          }),
-        indexConstructedRoot,
-        isSetValued: (node, key, context) =>
-          isSetValuedProperty(node, key, context),
-        preparationAuthority: api,
-        preparationRevision: () => api,
-      });
-      const roots = new Map<string, readonly Descendant[]>([
-        ['main', innerInput2.children],
-        ...Object.entries(inputRoots).sort(([left], [right]) =>
-          left.localeCompare(right)
-        ),
-      ]);
-
+    if (schema) {
       for (const root of getVocabulary().rootNames) {
-        if (getRootContent(root, innerInput2)?.min) {
-          roots.set(root, inputRoots[root] ?? []);
-        }
-      }
+        const content = getRootContent(root, innerInput2);
 
-      const collectProjectedRoots = (children: readonly Descendant[]) => {
-        for (const node of children) {
-          if (!ElementApi.isElement(node)) continue;
+        if (!content?.min) continue;
+        const children = fitDirectContent(schema, content, [], [], { root });
 
-          for (const root of Object.values(getElementContentRoots(node))) {
-            if (roots.has(root)) continue;
-            if (!isDocumentRootKey(root)) {
-              throw new EditorSchemaValidationError(
-                `Invalid document root key ${root}.`
-              );
-            }
-            roots.set(root, []);
-          }
-          collectProjectedRoots(node.children);
-        }
-      };
-
-      collectProjectedRoots(innerInput2.children);
-      for (const children of Object.values(inputRoots)) {
-        collectProjectedRoots(children);
-      }
-
-      let mappedSelection: NonNullable<Selection> | undefined;
-      const mappedRanges: Array<Range | null> =
-        positions?.ranges?.map(() => null) ?? [];
-      const fitRoot = (root: string, children: readonly Descendant[]) => {
-        const selectionInput = positions?.selection;
-        const mapsSelection = selectionInput?.root === root;
-        const owned =
-          positions?.ranges?.flatMap((range, index) =>
-            (SelectionApi.root(range) ?? 'main') === root
-              ? [{ index, range }]
-              : []
-          ) ?? [];
-        const ranges =
-          owned.length > 0 ? owned.map(({ range }) => range) : undefined;
-        const repairs: EditorSchemaRepair[] = [];
-        const report = repairCollector
-          ? { provenance: createRootFitPathProvenance(children), repairs }
-          : undefined;
-        const run = () =>
-          fit(ContentSliceValue.closed(children), {
-            apply:
-              mapsSelection || ranges
-                ? (_step, selection, _landing, rangesAfter) => {
-                    if (mapsSelection) mappedSelection = selection;
-                    owned.forEach(({ index }, at) => {
-                      mappedRanges[index] = rangesAfter?.[at] ?? null;
-                    });
-                  }
-                : undefined,
-            builder,
-            target: {
-              kind: 'root' as const,
-              ...(report ? { report } : {}),
-              ...(ranges ? { ranges } : {}),
-              root,
-              ...(mapsSelection ? { selection: selectionInput.selection } : {}),
-              ...(positions?.omitSelectionSpacers
-                ? { omitSelectionSpacers: true as const }
-                : {}),
-            },
-          });
-        const observed = report
-          ? observeRootCanonicalization(root, run)
-          : { events: [], passes: [], value: run() };
-        const fitted = observed.value;
-
-        if (!fitted) {
-          validateDocument(innerInput2);
-          throw new EditorSchemaValidationError(
-            `Editor ${
-              root === 'main' ? 'primary root' : `root "${root}"`
-            } cannot fit external content.`
+        if (!children) {
+          throw new Error(
+            `Editor root "${root}" requires defaultable content.`
           );
         }
-        if (repairCollector && report) {
-          const [propertyPass, representationPass, ...unmapped] =
-            observed.passes;
+        seededRoots[root] = children;
+      }
+    }
 
-          if (unmapped.length > 0) {
-            throw new Error(
-              `Unclassified canonical pass in editor root "${root}".`
+    const reused = repairCollector
+      ? null
+      : reuseCanonicalDocument(innerInput2, positions);
+
+    if (reused) return reused;
+
+    const initial = cloneFrozen({
+      children: [],
+      ...(innerInput2.meta !== undefined ? { meta: innerInput2.meta } : {}),
+      ...(Object.keys(seededRoots).length > 0 ? { roots: seededRoots } : {}),
+    }) as JsonEditorValue;
+    const builder = new ChangeDraft(initial, {
+      construct: (
+        { after, before, change, indexedAfter, indexedBefore },
+        preparation
+      ) =>
+        constructCanonicalDocumentChange(getEditor(), after, change, {
+          before,
+          fitPreparation: preparation,
+          indexedAfter,
+          indexedBefore,
+          schema: api,
+        }),
+      indexConstructedRoot,
+      isSetValued: (node, key, context) =>
+        isSetValuedProperty(node, key, context),
+      preparationAuthority: api,
+      preparationRevision: () => api,
+    });
+    const roots = new Map<string, readonly Descendant[]>([
+      ['main', innerInput2.children],
+      ...Object.entries(inputRoots).sort(([left], [right]) =>
+        left.localeCompare(right)
+      ),
+    ]);
+
+    for (const root of getVocabulary().rootNames) {
+      if (getRootContent(root, innerInput2)?.min) {
+        roots.set(root, inputRoots[root] ?? []);
+      }
+    }
+
+    const collectProjectedRoots = (children: readonly Descendant[]) => {
+      for (const node of children) {
+        if (!ElementApi.isElement(node)) continue;
+
+        for (const root of Object.values(getElementContentRoots(node))) {
+          if (roots.has(root)) continue;
+          if (!isDocumentRootKey(root)) {
+            throw new EditorSchemaValidationError(
+              `Invalid document root key ${root}.`
             );
           }
-
-          const { inputPaths } = report.provenance;
-          const representation =
-            propertyPass && representationPass
-              ? resolveRepresentationRepairs(
-                  propertyPass.output,
-                  representationPass.input,
-                  observed.events,
-                  root,
-                  inputPaths
-                )
-              : null;
-          const canonicalRepairs = [
-            ...(propertyPass
-              ? collectPropertyRepairs(
-                  propertyPass.input,
-                  propertyPass.output,
-                  root,
-                  inputPaths
-                )
-              : []),
-            ...(representationPass && representation
-              ? collectPropertyRepairs(
-                  representationPass.input,
-                  representationPass.output,
-                  root,
-                  (path) => {
-                    const node = getDescendant(representationPass.input, path);
-
-                    return node ? representation.inputsOf(node) : [];
-                  }
-                )
-              : []),
-            ...(representation?.repairs ?? []),
-          ];
-
-          repairCollector.replaceRoot(root, [
-            ...(root !== 'main' && !Object.hasOwn(inputRoots, root)
-              ? [
-                  schemaRepair({
-                    code: 'create-root',
-                    impact: 'lossless',
-                    outputs: [schemaModelLocation(root, [])],
-                    owner: 'document',
-                  }),
-                ]
-              : []),
-            ...repairs,
-            ...canonicalRepairs,
-          ]);
+          roots.set(root, []);
         }
-      };
-
-      for (const [root, children] of roots) fitRoot(root, children);
-
-      // Only projected root grammar depends on owners installed by the first pass.
-      for (const [root, children] of roots) {
-        if (root !== 'main' && !schema?.roots.has(root)) {
-          fitRoot(root, children);
-        }
+        collectProjectedRoots(node.children);
       }
-
-      builder.finalize();
-      // Fitting reaches no record, so a document's records pass through.
-      const fittedDocument = (
-        innerInput2.records === undefined
-          ? builder.value
-          : Object.freeze(
-              showValueRecords(
-                { ...builder.value },
-                recordStoreFromJson(innerInput2.records)
-              )
-            )
-      ) as EditorDocumentValue<V>;
-      const document = (ids?.fill(fittedDocument)?.value ??
-        fittedDocument) as EditorDocumentValue<V>;
-
-      validateDocument(document);
-      if (positions?.selection && !mappedSelection) {
-        throw new Error(
-          'Initial selection cannot be mapped through schema fitting.'
-        );
-      }
-
-      return Object.freeze({
-        document,
-        ranges: mappedRanges,
-        selection: mappedSelection,
-      });
     };
 
-    return ids ? ids.withStandInIds(runFit) : runFit();
+    collectProjectedRoots(innerInput2.children);
+    for (const children of Object.values(inputRoots)) {
+      collectProjectedRoots(children);
+    }
+
+    let mappedSelection: NonNullable<Selection> | undefined;
+    const mappedRanges: Array<Range | null> =
+      positions?.ranges?.map(() => null) ?? [];
+    const fitRoot = (root: string, children: readonly Descendant[]) => {
+      const selectionInput = positions?.selection;
+      const mapsSelection = selectionInput?.root === root;
+      const owned =
+        positions?.ranges?.flatMap((range, index) =>
+          (SelectionApi.root(range) ?? 'main') === root
+            ? [{ index, range }]
+            : []
+        ) ?? [];
+      const ranges =
+        owned.length > 0 ? owned.map(({ range }) => range) : undefined;
+      const repairs: EditorSchemaRepair[] = [];
+      const report = repairCollector
+        ? { provenance: createRootFitPathProvenance(children), repairs }
+        : undefined;
+      const run = () =>
+        fit(ContentSliceValue.closed(children), {
+          apply:
+            mapsSelection || ranges
+              ? (_step, selection, _landing, rangesAfter) => {
+                  if (mapsSelection) mappedSelection = selection;
+                  owned.forEach(({ index }, at) => {
+                    mappedRanges[index] = rangesAfter?.[at] ?? null;
+                  });
+                }
+              : undefined,
+          builder,
+          target: {
+            kind: 'root' as const,
+            ...(report ? { report } : {}),
+            ...(ranges ? { ranges } : {}),
+            root,
+            ...(mapsSelection ? { selection: selectionInput.selection } : {}),
+            ...(positions?.omitSelectionSpacers
+              ? { omitSelectionSpacers: true as const }
+              : {}),
+          },
+        });
+      const observed = report
+        ? observeRootCanonicalization(root, run)
+        : { events: [], passes: [], value: run() };
+      const fitted = observed.value;
+
+      if (!fitted) {
+        validateDocument(innerInput2);
+        throw new EditorSchemaValidationError(
+          `Editor ${
+            root === 'main' ? 'primary root' : `root "${root}"`
+          } cannot fit external content.`
+        );
+      }
+      if (repairCollector && report) {
+        const [propertyPass, representationPass, ...unmapped] = observed.passes;
+
+        if (unmapped.length > 0) {
+          throw new Error(
+            `Unclassified canonical pass in editor root "${root}".`
+          );
+        }
+
+        const { inputPaths } = report.provenance;
+        const representation =
+          propertyPass && representationPass
+            ? resolveRepresentationRepairs(
+                propertyPass.output,
+                representationPass.input,
+                observed.events,
+                root,
+                inputPaths
+              )
+            : null;
+        const canonicalRepairs = [
+          ...(propertyPass
+            ? collectPropertyRepairs(
+                propertyPass.input,
+                propertyPass.output,
+                root,
+                inputPaths
+              )
+            : []),
+          ...(representationPass && representation
+            ? collectPropertyRepairs(
+                representationPass.input,
+                representationPass.output,
+                root,
+                (path) => {
+                  const node = getDescendant(representationPass.input, path);
+
+                  return node ? representation.inputsOf(node) : [];
+                }
+              )
+            : []),
+          ...(representation?.repairs ?? []),
+        ];
+
+        repairCollector.replaceRoot(root, [
+          ...(root !== 'main' && !Object.hasOwn(inputRoots, root)
+            ? [
+                schemaRepair({
+                  code: 'create-root',
+                  impact: 'lossless',
+                  outputs: [schemaModelLocation(root, [])],
+                  owner: 'document',
+                }),
+              ]
+            : []),
+          ...repairs,
+          ...canonicalRepairs,
+        ]);
+      }
+    };
+
+    for (const [root, children] of roots) fitRoot(root, children);
+
+    // Only projected root grammar depends on owners installed by the first pass.
+    for (const [root, children] of roots) {
+      if (root !== 'main' && !schema?.roots.has(root)) fitRoot(root, children);
+    }
+
+    builder.finalize();
+    // Fitting reaches no record, so a document's records pass through.
+    const document = (
+      innerInput2.records === undefined
+        ? builder.value
+        : Object.freeze(
+            showValueRecords(
+              { ...builder.value },
+              recordStoreFromJson(innerInput2.records)
+            )
+          )
+    ) as EditorDocumentValue<V>;
+
+    validateDocument(document);
+    if (positions?.selection && !mappedSelection) {
+      throw new Error(
+        'Initial selection cannot be mapped through schema fitting.'
+      );
+    }
+
+    return Object.freeze({
+      document,
+      ranges: mappedRanges,
+      selection: mappedSelection,
+    });
   };
 
   const fitDocument = <TValue extends Value>(
     innerInput3: EditorDocumentValue<TValue>
   ): EditorDocumentValue<V> => fitDocumentInput(innerInput3).document;
-
-  const fitDocumentRaw = <TValue extends Value>(
-    innerInput3: EditorDocumentValue<TValue>
-  ): EditorDocumentValue<V> =>
-    fitDocumentInput(innerInput3, undefined, undefined, false).document;
 
   const fitDocumentWithReport = <TValue extends Value>(
     innerInput3: EditorDocumentValue<TValue>
@@ -5759,7 +5687,6 @@ export const compileSliceFitter = <V extends Value>(
     fitPlacements,
     fitContent,
     fitDocument,
-    fitDocumentRaw,
     fitDocumentAndMapPositions,
     fitDocumentWithReport,
     fitDocumentWithSelection,
@@ -5792,7 +5719,6 @@ export const createCompiledSliceFitterDelegate = <V extends Value>(
       getCompiled().fitPlacements(placements, options),
     fitContent: (slice, options) => getCompiled().fitContent(slice, options),
     fitDocument: (input) => getCompiled().fitDocument(input),
-    fitDocumentRaw: (input) => getCompiled().fitDocumentRaw(input),
     fitDocumentWithReport: (input) =>
       getCompiled().fitDocumentWithReport(input),
     fitDocumentAndMapPositions: (input, options) =>

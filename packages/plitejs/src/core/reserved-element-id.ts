@@ -1,10 +1,7 @@
-import type { CompiledSchemaProperty } from './schema-compiler';
 import {
   createEditorSchemaValidationError,
   type EditorSchemaValidationLocation,
 } from './schema-validation';
-
-export const RESERVED_ELEMENT_ID_PROPERTY_ID = 'core:reserved-id';
 
 const ELEMENT_ID_SCOPE_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 const ELEMENT_ID_SCOPE_LENGTH = 12;
@@ -16,24 +13,12 @@ export type ElementIdMint = Readonly<{
   scope: string;
 }>;
 
-const fillRandomBytes = (bytes: Uint8Array<ArrayBuffer>) => {
-  if (typeof globalThis.crypto?.getRandomValues === 'function') {
-    globalThis.crypto.getRandomValues(bytes);
-
-    return;
-  }
-
-  for (let index = 0; index < bytes.length; index += 1) {
-    bytes[index] = Math.floor(Math.random() * 256);
-  }
-};
-
 const randomElementIdScope = (): string => {
   let scope = '';
   const bytes = new Uint8Array(24);
 
   while (scope.length < ELEMENT_ID_SCOPE_LENGTH) {
-    fillRandomBytes(bytes);
+    crypto.getRandomValues(bytes);
     for (const byte of bytes) {
       if (byte >= ELEMENT_ID_SCOPE_UNIFORM_LIMIT) continue;
       scope += ELEMENT_ID_SCOPE_ALPHABET.charAt(
@@ -48,7 +33,8 @@ const randomElementIdScope = (): string => {
 
 // The scope is drawn on first use because every editor compiles a schema,
 // including in a Next.js `cacheComponents` prerender, which fails on
-// `crypto.getRandomValues` and `Math.random()`.
+// `crypto.getRandomValues`, and in runtimes without Web Crypto; an editor that
+// mints no id must need neither.
 export const createElementIdMint = (): ElementIdMint => {
   let scope: string | undefined;
   let counter = 0;
@@ -72,14 +58,11 @@ export const createElementIdMint = (): ElementIdMint => {
   });
 };
 
-export const isValidElementId = (value: unknown): value is string =>
-  typeof value === 'string' && value.length > 0;
-
 export function assertValidElementId(
   value: unknown,
   location: EditorSchemaValidationLocation
 ): asserts value is string {
-  if (!isValidElementId(value)) {
+  if (typeof value !== 'string' || value.length === 0) {
     throw createEditorSchemaValidationError(
       'invalid-property-value',
       'Element property "id" must be a non-empty string.',
@@ -87,32 +70,3 @@ export function assertValidElementId(
     );
   }
 }
-
-export const createReservedElementIdProperty = (
-  mint: ElementIdMint
-): CompiledSchemaProperty =>
-  Object.freeze({
-    descriptor: Object.freeze({
-      generate: mint.next,
-      kind: 'string' as const,
-      omitDefault: false,
-      required: false,
-      validate: isValidElementId,
-      validationVersion: 1,
-    }),
-    exclusiveGroupIds: Object.freeze([]),
-    id: RESERVED_ELEMENT_ID_PROPERTY_ID,
-    key: 'id',
-    lifecycle: Object.freeze({
-      copy: 'drop' as const,
-      inclusive: null,
-      split: 'drop' as const,
-      typeChange: 'preserve-if-allowed' as const,
-      unique: true as const,
-    }),
-    merge: 'replace' as const,
-    owner: 'core',
-    placement: 'element' as const,
-    role: 'metadata' as const,
-    target: null,
-  });

@@ -12,7 +12,6 @@ import {
   admitEditorDocument,
   documentAdmissionPoint,
   onlyDocumentAdmission,
-  repairLoadedDocument,
 } from './core/document-admission';
 import { assertNoDocumentViewRead } from './core/document-view-read';
 import {
@@ -30,11 +29,9 @@ import {
   setEditorRuntime,
 } from './core/editor-runtime';
 import {
-  createDetachedEditorSchema,
   createEditorSchema,
   type InternalEditorSchemaApi,
 } from './core/editor-schema';
-import { loadElementIds } from './core/element-id';
 import {
   createEditorViewPluginApis,
   destroyEditor,
@@ -93,7 +90,6 @@ import type {
 import { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
 import {
   assertSelectionSupported,
-  mapDetachedSelectionThroughChange,
   mapSelectionThroughChange,
 } from './core/selection-protocol';
 import type { InternalEditorUpdateOptions } from './core/update-policy';
@@ -120,7 +116,6 @@ import type {
   ValueOf,
   Value,
 } from './interfaces';
-import { SelectionApi } from './interfaces/selection';
 import {
   assertEditorOptions,
   type CheckedEditorOptions,
@@ -245,20 +240,13 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
 
   try {
     // Plugins activate on the document they publish.
-    const mappedSelection = adoptInitialDocumentChange(
+    adoptInitialDocumentChange(
       editor,
       publication.documentChange,
       publication.schemaCompilation()
     );
     publication.stage();
     publication.commit();
-    if (mappedSelection) {
-      initializeEditorSchemaSelection(
-        editor,
-        mappedSelection.selection,
-        mappedSelection.root
-      );
-    }
     const validatePublishedDocument = (
       requireExplicitDocument = explicitInitialDocument,
       validateDocument = true
@@ -369,7 +357,7 @@ const adoptInitialDocumentChange = (
   change: DocumentChange,
   compilation: PreparedEditorSchemaCompilation | null
 ) => {
-  if (change.empty) return null;
+  if (change.empty) return;
 
   const initialDocument = getEditorDocumentValue(editor);
   const initialSelection = getLiveSelection(editor);
@@ -382,55 +370,25 @@ const adoptInitialDocumentChange = (
     schema
   );
 
-  initializeEditorSchemaDocument(editor, admitted.document, schema, true);
-  if (!initialSelection) return null;
+  initializeEditorSchemaDocument(editor, admitted.document, schema);
+  if (!initialSelection) return;
 
-  const detachedSchema = compilation
-    ? createDetachedEditorSchema(schema, admitted.document)
-    : null;
-  const mapped = detachedSchema
-    ? mapDetachedSelectionThroughChange(
-        detachedSchema,
-        initialSelection,
-        change.compose(admitted.change),
-        initialDocument,
-        admitted.document,
-        initialSelectionRoot,
-        { association: 'backward', preferPositionMapping: true }
-      )
-    : mapSelectionThroughChange(
-        editor,
-        initialSelection,
-        change.compose(admitted.change),
-        initialDocument,
-        admitted.document,
-        initialSelectionRoot,
-        { association: 'backward', preferPositionMapping: true }
-      ).selection;
+  const mapped = mapSelectionThroughChange(
+    editor,
+    initialSelection,
+    change.compose(admitted.change),
+    initialDocument,
+    admitted.document,
+    initialSelectionRoot,
+    { association: 'backward', preferPositionMapping: true }
+  ).selection;
 
   if (!mapped) {
     throw new Error(
       'Initial selection cannot be mapped through schema fitting.'
     );
   }
-  if (
-    detachedSchema &&
-    SelectionApi.isText(initialSelection) &&
-    initialSelection.marks !== undefined &&
-    SelectionApi.isText(mapped)
-  ) {
-    const marksRoot =
-      mapped.focus.root ?? SelectionApi.root(mapped) ?? initialSelectionRoot;
-
-    detachedSchema.validateTextPropertiesAtValue(
-      initialSelection.marks,
-      mapped.focus.path,
-      admitted.document,
-      marksRoot
-    );
-  }
-
-  return { root: initialSelectionRoot, selection: mapped };
+  initializeEditorSchemaSelection(editor, mapped, initialSelectionRoot);
 };
 
 const assertEditorSchemaBootstrap = (editor: AnyEditor) => {
@@ -835,7 +793,6 @@ const createEditorImplementation = <
       initialState.explicit
     );
   } else {
-    snapshotInitialDocumentState(editor);
     loadOpenedRecords(editor, undefined);
     const initialDocument = getEditorDocumentValue(editor);
 
@@ -845,24 +802,9 @@ const createEditorImplementation = <
       );
     }
     assertSelectionSupported(editor, getLiveSelection(editor), initialDocument);
-    const editorSchema: InternalEditorSchemaApi = getEditorSchema(editor);
-
-    editorSchema.assertDocument(initialDocument);
-    const compiled = getCompiledEditorSchema(editor);
-    const repair = repairLoadedDocument(
-      null,
-      initialDocument,
-      compiled,
-      loadElementIds(compiled, initialDocument, null)
-    );
-
     adoptInitialDocumentChange(
       editor as AnyEditor,
-      repair
-        ? repair.change.compose(
-            constructLoadedDocumentChange(editor, repair.value)
-          )
-        : constructLoadedDocumentChange(editor, initialDocument),
+      constructLoadedDocumentChange(editor, initialDocument),
       null
     );
     seedUniqueMaps(editor);

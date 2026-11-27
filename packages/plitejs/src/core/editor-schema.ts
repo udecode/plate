@@ -56,7 +56,6 @@ import {
   readEditorDocument,
   type EditorDocumentShapeIssue,
 } from './document-shape';
-import { loadElementIds } from './element-id';
 import {
   countElementOwnedRootBuilds,
   ensureElementOwnedRootIndex,
@@ -78,7 +77,6 @@ import { profileCoreDuration } from './profiling';
 import { verdictOf } from './property-validity';
 import { getEditorDocumentValue } from './public-state';
 import { getValueRecords } from './record-store';
-import { assertValidElementId, isValidElementId } from './reserved-element-id';
 import {
   emptyIndexedDocument,
   type OrphanedRootsInput,
@@ -546,10 +544,6 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       slice: ContentSlice,
       options: Readonly<{ parent: Element; root?: RootKey }>
     ) => readonly Descendant[] | null;
-    assertContentRoot: (value: EditorDocumentValue, root: RootKey) => void;
-    fitDocumentRaw: <TValue extends Value>(
-      input: EditorDocumentValue<TValue>
-    ) => EditorDocumentValue<V>;
     getElementContent: (type: string) => CompiledSchemaContentProgram | null;
     getElementOwnedRoots: (element: Element) => ReadonlyArray<
       Readonly<{
@@ -1127,10 +1121,7 @@ const isDeepFrozenNode = (node: Descendant): boolean => {
 // deterministic, so a later document sharing them validates only new nodes. A
 // rebound validator compiles a new schema even when its identity is equal.
 const VALIDATED_ROOT_NODES = new WeakMap<object, WeakMap<object, RootKey>>();
-const SCHEMA_COPY_MODE = new WeakMap<
-  CompiledEditorSchema,
-  'full' | 'none' | 'reserved-id-only'
->();
+const SCHEMA_HAS_COPY_TRANSFORMS = new WeakMap<CompiledEditorSchema, boolean>();
 const REFERENCED_KEYS = new WeakMap<
   CompiledEditorSchema,
   ReadonlySet<string>
@@ -2283,11 +2274,6 @@ export const createEditorSchema = <V extends Value = Value>(
 
     const context = toCompiledTargetContext(type, options);
     const nextProperties: Record<string, unknown> = {};
-    const reservedId = schema.reservedElementId;
-
-    if (reservedId && !Object.hasOwn(properties ?? {}, 'id')) {
-      nextProperties.id = generatePropertyValue(reservedId, 'element');
-    }
 
     for (const propertyId of compiled.construction.materializedPropertyIds) {
       const property = getDefined(schema.properties.byId.get(propertyId));
@@ -2343,15 +2329,6 @@ export const createEditorSchema = <V extends Value = Value>(
 
     for (const [key, value] of Object.entries(properties ?? {})) {
       if (key === 'children' || key === 'type') continue;
-      if (key === 'id' && reservedId) {
-        assertValidElementId(value, {
-          nodeType: type,
-          path: options.path ?? [],
-          root: options.root ?? null,
-        });
-        nextProperties.id = value;
-        continue;
-      }
       const candidates = getCompiledPropertyCandidates(schema, 'element', key);
       const property = resolveCompiledSchemaProperty(
         schema,
@@ -2683,7 +2660,6 @@ export const createEditorSchema = <V extends Value = Value>(
     }
 
     const repairs: EditorSchemaRepair[] = [];
-    let sawReservedId = false;
     const visit = (
       before: readonly Descendant[],
       after: readonly Descendant[],
@@ -2761,16 +2737,6 @@ export const createEditorSchema = <V extends Value = Value>(
             has &&
             structurallyEqual(sourceRecord[key], targetRecord[key])
           ) {
-            continue;
-          }
-          if (
-            declarative.reservedElementId &&
-            placement === 'element' &&
-            key === 'id' &&
-            !had &&
-            has
-          ) {
-            sawReservedId = true;
             continue;
           }
 
@@ -2861,7 +2827,7 @@ export const createEditorSchema = <V extends Value = Value>(
     };
 
     visit(input, output, [], []);
-    if (repairs.length === 0 && !sawReservedId) {
+    if (repairs.length === 0) {
       throw new Error(
         `Unclassified property mutation in editor root "${root}".`
       );
@@ -2905,20 +2871,6 @@ export const createEditorSchema = <V extends Value = Value>(
     validateDocument: assertDocument,
     validateSliceVocabulary,
     withoutGeneration,
-    generateReservedElementId: () => {
-      const compiled = getDeclarativeSchema();
-
-      return compiled?.reservedElementId
-        ? String(generatePropertyValue(compiled.reservedElementId, 'element'))
-        : undefined;
-    },
-    loadElementIds: (incoming) => {
-      const compiled = getDeclarativeSchema();
-
-      return compiled?.reservedElementId && draws === null
-        ? loadElementIds(compiled, incoming, null)
-        : null;
-    },
   }));
   const fit: InternalEditorSchemaApi<V>['fit'] = sliceFitter.fit;
   const fitPlacements: InternalEditorSchemaApi<V>['fitPlacements'] =
@@ -2928,9 +2880,6 @@ export const createEditorSchema = <V extends Value = Value>(
   const fitDocument = <TValue extends Value>(
     input: EditorDocumentValue<TValue>
   ): EditorDocumentValue<V> => sliceFitter.fitDocument(input);
-  const fitDocumentRaw = <TValue extends Value>(
-    input: EditorDocumentValue<TValue>
-  ): EditorDocumentValue<V> => sliceFitter.fitDocumentRaw(input);
   const fitDocumentWithReport: InternalEditorSchemaApi<V>['fitDocumentWithReport'] =
     (input) => sliceFitter.fitDocumentWithReport(input);
   const fitDocumentAndMapPositions: InternalEditorSchemaApi<V>['fitDocumentAndMapPositions'] =
@@ -2949,8 +2898,7 @@ export const createEditorSchema = <V extends Value = Value>(
     dropMisplaced: boolean,
     openAncestorBoundary = false,
     validationLocation?: EditorSchemaValidationLocation,
-    carried?: (key: string) => boolean,
-    requireReservedId = true
+    carried?: (key: string) => boolean
   ) => {
     const output: Record<string, unknown> = {};
     const canonicalizeProperty = (
@@ -2979,27 +2927,12 @@ export const createEditorSchema = <V extends Value = Value>(
       }
     };
 
-    const reservedId =
-      placement === 'element' ? schema.reservedElementId : null;
-
     for (const key of reserved) {
       if (Object.hasOwn(source, key)) output[key] = source[key];
     }
 
     for (const [key, value] of Object.entries(source)) {
       if (reserved.has(key)) continue;
-      if (key === 'id' && reservedId) {
-        assertValidElementId(
-          value,
-          validationLocation ?? {
-            nodeType: context.type,
-            path: [],
-            root: context.root,
-          }
-        );
-        output.id = value;
-        continue;
-      }
       const candidates = getCompiledPropertyCandidates(schema, placement, key);
       const property = resolveCompiledSchemaProperty(
         schema,
@@ -3100,27 +3033,6 @@ export const createEditorSchema = <V extends Value = Value>(
           : property.descriptor.default;
       }
     );
-
-    if (reservedId && !Object.hasOwn(output, 'id')) {
-      if (validationLocation) {
-        if (requireReservedId) {
-          throw createEditorSchemaValidationError(
-            'missing-property',
-            'Editor element requires canonical property "id".',
-            validationLocation,
-            {
-              property: {
-                candidates: [reservedId],
-                key: 'id',
-                placement: 'element',
-              },
-            }
-          );
-        }
-      } else {
-        output.id = generatePropertyValue(reservedId, 'element');
-      }
-    }
 
     const allowedIds =
       placement === 'element'
@@ -3239,38 +3151,18 @@ export const createEditorSchema = <V extends Value = Value>(
           );
         }
 
-        const reservedId = schema.reservedElementId;
-        let nextNode = node;
-
-        if (reservedId) {
-          if (Object.hasOwn(node, 'id')) {
-            assertValidElementId((node as Record<string, unknown>).id, {
-              nodeType: type ?? undefined,
-              path,
-              root: root === 'main' ? null : root,
-            });
-          } else {
-            nextNode = {
-              ...node,
-              id: generatePropertyValue(reservedId, 'element'),
-            };
-          }
-        }
-
         const nested = canonicalizeDeclarativeChildren(
           node.children,
           schema,
           root,
-          [nextNode, ...ancestors],
+          [node, ...ancestors],
           dropMisplaced,
           previousChildren && { children: previousChildren, from: 0, shift: 0 },
           carried,
           path
         );
 
-        return nextNode === node && nested === node.children
-          ? node
-          : { ...nextNode, children: nested };
+        return nested === node.children ? node : { ...node, children: nested };
       }
 
       const properties = canonicalizeDeclarativePropertyRecord(
@@ -3387,13 +3279,6 @@ export const createEditorSchema = <V extends Value = Value>(
       const output = Object.fromEntries(
         Object.entries(source).filter(([key]) => {
           if (reserved.has(key)) return true;
-          if (
-            placement === 'element' &&
-            key === 'id' &&
-            schema.reservedElementId !== null
-          ) {
-            return carried?.has('id') === true;
-          }
           const property = resolveCompiledSchemaProperty(
             schema,
             placement,
@@ -3447,37 +3332,6 @@ export const createEditorSchema = <V extends Value = Value>(
       : copied;
   };
 
-  const copyChildrenWithoutReservedId = (
-    children: readonly Descendant[]
-  ): readonly Descendant[] => {
-    let changed = false;
-    const copied = children.map((node) => {
-      if (NodeApi.isText(node)) return node;
-
-      const nested = copyChildrenWithoutReservedId(node.children);
-      const hasId = Object.hasOwn(node, 'id');
-
-      if (!hasId && nested === node.children) return node;
-      changed = true;
-      const frozen = Object.isFrozen(node);
-
-      if (!hasId) {
-        const next = { ...node, children: nested };
-
-        return frozen ? Object.freeze(next) : next;
-      }
-
-      const { id: _id, ...kept } = node as Element & { id?: unknown };
-      const next = { ...kept, children: nested } as Element;
-
-      return frozen ? Object.freeze(next) : next;
-    });
-
-    if (!changed) return children;
-
-    return Object.isFrozen(children) ? Object.freeze(copied) : copied;
-  };
-
   const copyChildren: InternalEditorSchemaApi['copyChildren'] = (
     children,
     root,
@@ -3486,30 +3340,21 @@ export const createEditorSchema = <V extends Value = Value>(
     const schema = getDeclarativeSchema();
 
     if (!schema) return children;
-    let copyMode = SCHEMA_COPY_MODE.get(schema);
-    if (copyMode === undefined) {
-      let hasDeclaredDrop = false;
-
+    let hasCopyTransforms = SCHEMA_HAS_COPY_TRANSFORMS.get(schema);
+    if (hasCopyTransforms === undefined) {
+      hasCopyTransforms = false;
       for (const lifecycle of schema.properties.lifecycle.values()) {
         if (lifecycle.copy === 'drop') {
-          hasDeclaredDrop = true;
+          hasCopyTransforms = true;
           break;
         }
       }
-      copyMode = hasDeclaredDrop
-        ? 'full'
-        : schema.reservedElementId !== null
-          ? 'reserved-id-only'
-          : 'none';
-      SCHEMA_COPY_MODE.set(schema, copyMode);
+      SCHEMA_HAS_COPY_TRANSFORMS.set(schema, hasCopyTransforms);
     }
 
-    if (copyMode === 'none') return children;
-    if (copyMode === 'reserved-id-only') {
-      return copyChildrenWithoutReservedId(children);
-    }
-
-    return copyDeclarativeChildren(children, schema, root, ancestors);
+    return hasCopyTransforms
+      ? copyDeclarativeChildren(children, schema, root, ancestors)
+      : children;
   };
 
   const carryChildren: InternalEditorSchemaApi['carryChildren'] = (
@@ -3605,7 +3450,6 @@ export const createEditorSchema = <V extends Value = Value>(
     context: CompiledSchemaTargetContext
   ) => {
     if (key === 'type') return true;
-    if (key === 'id' && schema.reservedElementId !== null) return false;
     const property = resolveCompiledSchemaProperty(
       schema,
       'element',
@@ -3631,17 +3475,13 @@ export const createEditorSchema = <V extends Value = Value>(
       options
     );
 
-    const kept = Object.fromEntries(
-      Object.entries(NodeApi.extractProps(element)).filter(([key]) =>
-        keepsElementPropertyOnSplit(schema, key, context)
+    return Object.freeze(
+      Object.fromEntries(
+        Object.entries(NodeApi.extractProps(element)).filter(([key]) =>
+          keepsElementPropertyOnSplit(schema, key, context)
+        )
       )
     );
-
-    if (schema.reservedElementId !== null && !Object.hasOwn(kept, 'id')) {
-      kept.id = generatePropertyValue(schema.reservedElementId, 'element');
-    }
-
-    return Object.freeze(kept);
   };
 
   const elementPropertiesForSplitAt = (
@@ -3754,9 +3594,6 @@ export const createEditorSchema = <V extends Value = Value>(
               : getPropertyDefault(property)
           );
         }
-      }
-      if (schema.reservedElementId && !declared.has('id')) {
-        declared.set('id', undefined);
       }
 
       return declared;
@@ -4001,9 +3838,6 @@ export const createEditorSchema = <V extends Value = Value>(
     from: CompiledSchemaTargetContext,
     to: CompiledSchemaTargetContext
   ): ((value: unknown) => Readonly<{ value: unknown }> | null) | null => {
-    if (key === 'id' && schema.reservedElementId !== null) {
-      return (value) => (isValidElementId(value) ? { value } : null);
-    }
     const source = resolveCompiledSchemaProperty(schema, 'element', key, from);
 
     if (!source) {
@@ -4182,13 +4016,6 @@ export const createEditorSchema = <V extends Value = Value>(
         value: unknown,
         context: CompiledSchemaTargetContext
       ) => {
-        if (
-          placement === 'element' &&
-          key === 'id' &&
-          schema.reservedElementId !== null
-        ) {
-          return isValidElementId(value);
-        }
         const property = resolveCompiledSchemaProperty(
           schema,
           placement,
@@ -4608,8 +4435,7 @@ export const createEditorSchema = <V extends Value = Value>(
     root: RootKey,
     ancestors: readonly Element[],
     path: readonly number[],
-    openAncestorBoundary = false,
-    requireReservedId = true
+    openAncestorBoundary = false
   ) => {
     const location = toSchemaValidationLocation(
       root,
@@ -4643,26 +4469,6 @@ export const createEditorSchema = <V extends Value = Value>(
           location
         );
       }
-      if (schema.reservedElementId) {
-        if (!Object.hasOwn(node, 'id')) {
-          if (requireReservedId) {
-            throw createEditorSchemaValidationError(
-              'missing-property',
-              'Editor element requires canonical property "id".',
-              location,
-              {
-                property: {
-                  candidates: [schema.reservedElementId],
-                  key: 'id',
-                  placement: 'element',
-                },
-              }
-            );
-          }
-        } else {
-          assertValidElementId((node as Record<string, unknown>).id, location);
-        }
-      }
 
       return null;
     }
@@ -4679,9 +4485,7 @@ export const createEditorSchema = <V extends Value = Value>(
       ]),
       false,
       openAncestorBoundary,
-      location,
-      undefined,
-      requireReservedId
+      location
     );
 
     return element;
@@ -4765,8 +4569,7 @@ export const createEditorSchema = <V extends Value = Value>(
     ancestors: readonly Element[],
     parentPath: readonly number[],
     openAncestorBoundary = false,
-    validated?: (node: Descendant) => boolean,
-    requireReservedId = true
+    validated?: (node: Descendant) => boolean
   ): void => {
     children.forEach((node, index) => {
       if (validated?.(node)) return;
@@ -4778,8 +4581,7 @@ export const createEditorSchema = <V extends Value = Value>(
         root,
         ancestors,
         path,
-        openAncestorBoundary,
-        requireReservedId
+        openAncestorBoundary
       );
 
       if (NodeApi.isText(node)) return;
@@ -4850,9 +4652,7 @@ export const createEditorSchema = <V extends Value = Value>(
         root,
         [node, ...ancestors],
         path,
-        openAncestorBoundary,
-        undefined,
-        requireReservedId
+        openAncestorBoundary
       );
     });
   };
@@ -4864,16 +4664,7 @@ export const createEditorSchema = <V extends Value = Value>(
     const declarative = getDeclarativeSchema();
 
     if (declarative) {
-      validateDeclarativeChildren(
-        children,
-        declarative,
-        root,
-        [],
-        [],
-        true,
-        undefined,
-        false
-      );
+      validateDeclarativeChildren(children, declarative, root, [], [], true);
     }
   };
   const assertSchemaJsonValue = (
@@ -4975,13 +4766,6 @@ export const createEditorSchema = <V extends Value = Value>(
             key === 'type' ||
             (key === 'childRoots' && (element?.contentRoots.size ?? 0) > 0)
           ) {
-            continue;
-          }
-          if (key === 'id' && declarative.reservedElementId) {
-            assertValidElementId(
-              value,
-              toSchemaValidationLocation('main', [], type ?? undefined)
-            );
             continue;
           }
           const candidates = getCompiledPropertyCandidates(
@@ -5367,8 +5151,7 @@ export const createEditorSchema = <V extends Value = Value>(
         [],
         [],
         false,
-        validated ? (node) => validated.get(node) === root : undefined,
-        false
+        validated ? (node) => validated.get(node) === root : undefined
       );
       if (content) {
         validateDeclarativeRootContent(root, children, content, schema);
@@ -6123,27 +5906,6 @@ export const createEditorSchema = <V extends Value = Value>(
     copyChildren,
     copyIfCarrying,
     copyNodeAt,
-    assertContentRoot: (value, root) => {
-      const declarative = getDeclarativeSchema();
-      const children = value.roots?.[root];
-
-      if (!declarative || !children) return;
-      const content = getRootContent(root, value);
-
-      validateDeclarativeChildren(
-        children,
-        declarative,
-        root,
-        [],
-        [],
-        false,
-        undefined,
-        false
-      );
-      if (content) {
-        validateDeclarativeRootContent(root, children, content, declarative);
-      }
-    },
     validateChildrenAt: (children, root, ancestors) => {
       const declarative = getDeclarativeSchema();
 
@@ -6178,7 +5940,6 @@ export const createEditorSchema = <V extends Value = Value>(
     fitPlacements,
     fitContent,
     fitDocument,
-    fitDocumentRaw,
     fitDocumentAndMapPositions,
     fitDocumentWithReport,
     fitDocumentWithSelection,

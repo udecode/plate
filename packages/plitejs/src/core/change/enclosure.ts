@@ -307,6 +307,111 @@ const pieceLead = (
 };
 
 /**
+ * Rebase a wrap over a split between its edges that closes the parent the
+ * wrap puts its element in, as a split of the line a link's letters sit in
+ * does: the wrap closes a piece before each such split and opens the next
+ * after it, so each side keeps a piece over its own letters. Each next piece
+ * takes the properties `pieceProps` gives it, or the wrap's own without it.
+ */
+const wrapOverPieces = (
+  document: DocumentIndex,
+  wrap: RootChange,
+  wrapSections: readonly Section[],
+  split: RootChange,
+  splitSections: readonly Section[],
+  wrapFirst: boolean,
+  pieceProps: PieceProps | undefined,
+  replayBase: DocumentIndex | undefined
+) => {
+  if (
+    wrapSections.length !== 2 ||
+    !wrapSections.every(isInsertion) ||
+    !splitSections.every(isInsertion)
+  ) {
+    return null;
+  }
+
+  const [lead, tail] = wrapSections;
+  const opening = lowestDepth(lead.insert);
+
+  if (
+    opening.depth !== 1 ||
+    lowestDepth(tail.insert).depth !== -1 ||
+    splitSections.some(({ insert }) => lowestDepth(insert).depth !== 0)
+  ) {
+    return null;
+  }
+
+  const parent = depthAt(document, lead.from) + opening.lowest;
+  const inner = splitSections.filter(
+    ({ from, insert }) =>
+      lead.from < from &&
+      from < tail.from &&
+      depthAt(document, from) + lowestDepth(insert).lowest < parent
+  );
+
+  if (
+    inner.length === 0 ||
+    inner.some(
+      ({ from }) => depthAt(document, from) !== depthAt(document, tail.from)
+    )
+  ) {
+    return null;
+  }
+
+  const afterSplit = split.apply(document);
+  const pieces = inner.map(({ from, insert }) => {
+    const start = split.mapPos(from, -1) ?? from;
+    const at = start + insert.length;
+
+    return {
+      at,
+      from,
+      lead: pieceLead(afterSplit, lead.insert, parent, at, pieceProps),
+      start,
+    };
+  });
+  const edges = RootChange.create(
+    afterSplit,
+    pieces.flatMap((piece) => [
+      { from: piece.start, insert: tail.insert },
+      { from: piece.at, insert: piece.lead },
+    ])
+  );
+  const wrapOver = edges.compose(
+    transformChange(
+      transformChange(wrap, split, wrapFirst, replayBase),
+      edges,
+      true
+    )
+  );
+  const splitOver = transformChange(
+    RootChange.create(
+      document,
+      splitSections.map(({ from, insert }) => {
+        const piece = pieces.find((each) => each.from === from);
+
+        return {
+          from,
+          insert: piece
+            ? PreparedTokenSlice.fromTokens([
+                ...tail.insert.tokens,
+                ...insert.tokens,
+                ...piece.lead.tokens,
+              ])
+            : insert,
+        };
+      })
+    ),
+    wrap,
+    !wrapFirst,
+    replayBase
+  );
+
+  return { split: splitOver, wrap: wrapOver };
+};
+
+/**
  * Rebase an unwrap over a teammate's split of the element it unwraps: the
  * unwrap also deletes the open and close tokens of every piece, and the split
  * keeps only the tokens that split the content around them. A wrap rebased
@@ -326,108 +431,6 @@ export const rebaseOverPieces = (
 
   if (!aSections || !bSections) return null;
 
-  /**
-   * Rebase a wrap over a split between its edges that closes the parent the
-   * wrap puts its element in, as a split of the line a link's letters sit in
-   * does: the wrap closes a piece before each such split and opens the next
-   * after it, so each side keeps a piece over its own letters. Each next piece
-   * takes the properties `pieceProps` gives it, or the wrap's own without it.
-   */
-  const wrapPieces = (
-    wrap: RootChange,
-    wrapSections: readonly Section[],
-    split: RootChange,
-    splitSections: readonly Section[],
-    wrapFirst: boolean
-  ) => {
-    if (
-      wrapSections.length !== 2 ||
-      !wrapSections.every(isInsertion) ||
-      !splitSections.every(isInsertion)
-    ) {
-      return null;
-    }
-
-    const [lead, tail] = wrapSections;
-    const opening = lowestDepth(lead.insert);
-
-    if (
-      opening.depth !== 1 ||
-      lowestDepth(tail.insert).depth !== -1 ||
-      splitSections.some(({ insert }) => lowestDepth(insert).depth !== 0)
-    ) {
-      return null;
-    }
-
-    const parent = depthAt(document, lead.from) + opening.lowest;
-    const inner = splitSections.filter(
-      ({ from, insert }) =>
-        lead.from < from &&
-        from < tail.from &&
-        depthAt(document, from) + lowestDepth(insert).lowest < parent
-    );
-
-    if (
-      inner.length === 0 ||
-      inner.some(
-        ({ from }) => depthAt(document, from) !== depthAt(document, tail.from)
-      )
-    ) {
-      return null;
-    }
-
-    const afterSplit = split.apply(document);
-    const pieces = inner.map(({ from, insert }) => {
-      const start = split.mapPos(from, -1) ?? from;
-      const at = start + insert.length;
-
-      return {
-        at,
-        from,
-        lead: pieceLead(afterSplit, lead.insert, parent, at, pieceProps),
-        start,
-      };
-    });
-    const edges = RootChange.create(
-      afterSplit,
-      pieces.flatMap((piece) => [
-        { from: piece.start, insert: tail.insert },
-        { from: piece.at, insert: piece.lead },
-      ])
-    );
-    const wrapOver = edges.compose(
-      transformChange(
-        transformChange(wrap, split, wrapFirst, replayBase),
-        edges,
-        true
-      )
-    );
-    const splitOver = transformChange(
-      RootChange.create(
-        document,
-        splitSections.map(({ from, insert }) => {
-          const piece = pieces.find((each) => each.from === from);
-
-          return {
-            from,
-            insert: piece
-              ? PreparedTokenSlice.fromTokens([
-                  ...tail.insert.tokens,
-                  ...insert.tokens,
-                  ...piece.lead.tokens,
-                ])
-              : insert,
-          };
-        })
-      ),
-      wrap,
-      !wrapFirst,
-      replayBase
-    );
-
-    return { first: wrapOver, second: splitOver };
-  };
-
   const over = (
     unwrap: RootChange,
     unwrapSections: readonly Section[],
@@ -443,101 +446,105 @@ export const rebaseOverPieces = (
     const removed: Array<Readonly<{ from: number; to: number }>> = [];
 
     for (const section of splitSections) {
-      const tokens = section.insert?.tokens;
-      const lead = tokens?.[0];
-      const rewrite =
-        section.to === section.from + 1 &&
-        tokens &&
-        tokens.length > 1 &&
-        lead?.kind === 'open' &&
-        lead.nodeKind === 'element'
+      const element =
+        section.from === section.to && section.insert
           ? elements.find(
-              (el) =>
-                el.from === section.from &&
-                document.node(el.path).type === lead.props.type
+              ({ from, to }) => from < section.from && section.from < to
             )
           : undefined;
-      const element =
-        rewrite ??
-        (section.from === section.to && tokens
-          ? elements.find(
-              (el) => el.from < section.from && section.from < el.to
-            )
-          : undefined);
-      const offset = rewrite ? 1 : 0;
-      const at = section.from + offset;
-      const body =
-        rewrite && tokens
-          ? PreparedTokenSlice.fromTokens(tokens.slice(1))
-          : section.insert;
       const edges =
-        element && body ? pieceEdgesOf(document, element, at, body) : null;
+        element && section.insert
+          ? pieceEdgesOf(document, element, section.from, section.insert)
+          : null;
 
-      if (!edges?.length || !body) {
+      if (!edges?.length || !section.insert) {
         kept.push(section);
         continue;
       }
 
       const start = split.mapPos(section.from, -1) ?? section.from;
+      const tokens = section.insert.tokens.filter(
+        (_, index) => !edges.includes(index)
+      );
 
-      if (offset) removed.push({ from: start, to: start + 1 });
       for (const edge of edges) {
-        removed.push({
-          from: start + offset + edge,
-          to: start + offset + edge + 1,
-        });
+        removed.push({ from: start + edge, to: start + edge + 1 });
       }
-      kept.push({
-        from: at,
-        insert: PreparedTokenSlice.fromTokens(
-          body.tokens.filter((_, index) => !edges.includes(index))
-        ),
-        to: at,
-      });
+      kept.push({ ...section, insert: PreparedTokenSlice.fromTokens(tokens) });
     }
 
     if (removed.length === 0) return null;
 
-    const edges = RootChange.create(split.apply(document), removed);
+    const afterSplit = split.apply(document);
+    const edges = RootChange.create(afterSplit, removed);
+    const unwrapOverSplit = transformChange(unwrap, split, unwrapFirst);
+    const unwrapOver = edges.compose(
+      transformChange(unwrapOverSplit, edges, true)
+    );
+    const splitOver = transformChange(
+      RootChange.create(
+        document,
+        kept.map(({ from, insert, to }) => ({
+          from,
+          insert: insert ?? PreparedTokenSlice.empty,
+          to,
+        }))
+      ),
+      unwrap,
+      !unwrapFirst
+    );
 
-    return {
-      first: edges.compose(
-        transformChange(
-          transformChange(unwrap, split, unwrapFirst),
-          edges,
-          true
-        )
-      ),
-      second: transformChange(
-        RootChange.create(
-          document,
-          kept.map(({ from, insert, to }) => ({
-            from,
-            insert: insert ?? PreparedTokenSlice.empty,
-            to,
-          }))
-        ),
-        unwrap,
-        !unwrapFirst
-      ),
-    };
+    return { split: splitOver, unwrap: unwrapOver };
   };
 
-  for (const pass of [over, wrapPieces]) {
-    for (const [x, xS, y, yS, xIsA] of [
-      [a, aSections, b, bSections, true],
-      [b, bSections, a, aSections, false],
-    ] as const) {
-      const pair = pass(x, xS, y, yS, xIsA);
+  const aUnwraps = over(a, aSections, b, bSections, true);
 
-      if (!pair) continue;
-      const ordered = xIsA
-        ? { a: pair.first, b: pair.second }
-        : { a: pair.second, b: pair.first };
-
-      return convergedResult(document, a, b, ordered);
-    }
+  if (aUnwraps) {
+    return convergedResult(document, a, b, {
+      a: aUnwraps.unwrap,
+      b: aUnwraps.split,
+    });
   }
 
-  return null;
+  const bUnwraps = over(b, bSections, a, aSections, false);
+
+  if (bUnwraps) {
+    return convergedResult(document, a, b, {
+      a: bUnwraps.split,
+      b: bUnwraps.unwrap,
+    });
+  }
+
+  const aWraps = wrapOverPieces(
+    document,
+    a,
+    aSections,
+    b,
+    bSections,
+    true,
+    pieceProps,
+    replayBase
+  );
+
+  if (aWraps) {
+    return convergedResult(document, a, b, {
+      a: aWraps.wrap,
+      b: aWraps.split,
+    });
+  }
+
+  const bWraps = wrapOverPieces(
+    document,
+    b,
+    bSections,
+    a,
+    aSections,
+    false,
+    pieceProps,
+    replayBase
+  );
+
+  return bWraps
+    ? convergedResult(document, a, b, { a: bWraps.split, b: bWraps.wrap })
+    : null;
 };

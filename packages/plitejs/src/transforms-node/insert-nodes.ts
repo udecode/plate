@@ -1,5 +1,4 @@
 import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
-import { getCompiledEditorSchema } from '../core/plugin-registry';
 import {
   applyBuiltDocumentChange,
   findLiveNodeKeys,
@@ -111,23 +110,13 @@ const keyInsertedNodes = (
     isBuildingTransactionSpec(editor) ? 'prepared' : 'live'
   );
 
-  const compiled = getCompiledEditorSchema(editor);
-  const reservedIdKey =
-    typeof compiled.reservedElementId?.key === 'string'
-      ? compiled.reservedElementId.key
-      : undefined;
   const toPlaced = (inserted: InsertedNode): Descendant => {
     const { source } = inserted;
     const children = inserted.children.map(toPlaced);
     const keeps = inserted.kind !== 'copy';
-    const needsId =
-      reservedIdKey !== undefined &&
-      NodeApi.isElement(source) &&
-      !Object.hasOwn(source, reservedIdKey);
 
     if (
       keeps &&
-      !needsId &&
       children.every(
         (child, index) => child === inserted.children[index].source
       )
@@ -136,13 +125,7 @@ const keyInsertedNodes = (
     }
 
     const standIn: Descendant = NodeApi.isElement(source)
-      ? {
-          ...source,
-          ...(needsId
-            ? { [reservedIdKey]: compiled.elementIdMint.next() }
-            : {}),
-          children,
-        }
+      ? { ...source, children }
       : { ...source };
 
     if (keeps) {

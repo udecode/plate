@@ -17,8 +17,8 @@ Handle `$ARGUMENTS`. Opt-in `--audit` check (not blocking Local CI) running the 
 
 ## Run it
 
-- `pnpm check yjs-peer-order` (`pnpm check:yjs-peer-order`): full opt-in gate (22,206 leaves, pinned by `GATE_LEAVES`).
-- `pnpm check yjs-peer-order --light`: 1-in-6 subset (3,958 leaves, `LIGHT_LEAVES`).
+- `pnpm check yjs-peer-order` (`pnpm check:yjs-peer-order`): full opt-in gate (22,194 leaves, pinned by `GATE_LEAVES`).
+- `pnpm check yjs-peer-order --light`: 1-in-6 subset (3,957 leaves, `LIGHT_LEAVES`).
 - `pnpm check:yjs-peer-order --all-docs --world=<w> --intent=<plain|suggesting>`: run one extra world/intent at a time (`--unheard` runs concurrent unheard grid schedules outside the gate).
 - `pnpm check:yjs-peer-order --world=<w> --intent=<i> --doc=<d> --case='<id>'`: inspect one interleaving.
 - `pnpm check:yjs-peer-order --lower`: shrink `packages/plitejs/scripts/yjs-peer-order-baseline.json` after fixes.

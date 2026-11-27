@@ -262,7 +262,7 @@ export const BaseBoardPlugin = definePlugin('board', {
             if (!ElementApi.isElement(shape)) return [];
 
             const dropped = Object.keys(shape).filter(
-              (key) => key !== 'children' && key !== 'id' && key !== 'type'
+              (key) => key !== 'children' && key !== 'type'
             );
 
             report({

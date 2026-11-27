@@ -715,14 +715,6 @@ const someSlotInReach = (
   standingUnderEveryVerdict <=
     Math.max(...slots.map((slot) => ('min' in slot ? slot.min : -1)));
 
-export const decidedMarkRemoves = (
-  mark: AuthoredMark,
-  decision: 'accept' | 'keep' | 'reject'
-) =>
-  decision !== 'keep' &&
-  (removes(mark, decision) ||
-    (mark.kind === 'format' && mark.key === 'type' && decision === 'accept'));
-
 /**
  * The claims that can change what completing a container builds: the
  * container's own and each child's that `changesBuild` names, among those
@@ -734,162 +726,43 @@ export const decidedMarkRemoves = (
  *
  * @internal
  */
-export const buildClaimsOf = <N extends Readonly<{ children?: readonly N[] }>>(
+export const buildClaimsOf = <N>(
   container: N | null,
   children: readonly N[],
   claimsOf: (node: N) => readonly AuthoredMark[],
   isPending: (mark: AuthoredMark) => boolean,
   joinOf: (link: string, child: N) => AuthoredMark | null,
-  reach?: BuildReach<N>,
-  gridHolder?: (node: N) => boolean,
-  decidedRemoves?: (mark: AuthoredMark) => boolean
+  reach?: BuildReach<N>
 ): AuthoredMark[] => {
-  const containerPending =
-    container === null ? [] : claimsOf(container).filter(isPending);
-  const own = containerPending.filter((mark) =>
-    changesBuild(mark, 'container')
-  );
-  const containerFates = new Set(
-    containerPending.flatMap((mark) =>
-      mark.kind === 'insert' || mark.kind === 'delete'
-        ? [`${mark.kind}\u0000${mark.change}\u0000${mark.inc ?? ''}`]
-        : []
-    )
-  );
-  const changesChild = (mark: AuthoredMark) =>
-    isPending(mark) &&
-    changesBuild(mark, 'child') &&
-    !(
-      (mark.kind === 'insert' || mark.kind === 'delete') &&
-      containerFates.has(
-        `${mark.kind}\u0000${mark.change}\u0000${mark.inc ?? ''}`
-      )
-    );
-  const removesDecidedChild = (child: N) =>
-    decidedRemoves !== undefined &&
-    claimsOf(child).some((mark) => !isPending(mark) && decidedRemoves(mark));
-  const claimsOnChild = (child: N): AuthoredMark[] => {
-    const direct = claimsOf(child).flatMap((mark) => {
+  const own =
+    container === null
+      ? []
+      : claimsOf(container).filter(
+          (mark) => isPending(mark) && changesBuild(mark, 'container')
+        );
+  const onChild = (child: N) =>
+    claimsOf(child).flatMap((mark) => {
       const follows = followsOf(mark);
       const join = follows === undefined ? null : joinOf(follows, child);
 
-      return [...(changesChild(mark) ? [mark] : []), ...(join ? [join] : [])];
+      return [
+        ...(isPending(mark) && changesBuild(mark, 'child') ? [mark] : []),
+        ...(join ? [join] : []),
+      ];
     });
-
-    if (direct.length > 0 || !gridHolder?.(child)) return direct;
-
-    return buildClaimsOf(
-      child,
-      child.children ?? [],
-      claimsOf,
-      isPending,
-      joinOf,
-      { slots: [{ min: 0 }] },
-      gridHolder,
-      decidedRemoves
-    );
-  };
-
-  const staysAtLeastOne = (child: N, childClaims: readonly AuthoredMark[]) =>
-    (childClaims.length === 0 && !removesDecidedChild(child)) ||
-    (childClaims.length > 0 &&
-      childClaims.every((mark) => mark.kind === 'wrap') &&
-      !removesDecidedChild(child) &&
-      (child.children ?? []).some(
-        (grandchild) =>
-          claimsOnChild(grandchild).length === 0 &&
-          !removesDecidedChild(grandchild)
-      ));
-  const prefixStanding = (child: N, childClaims: readonly AuthoredMark[]) =>
-    childClaims.length === 0 &&
-    !removesDecidedChild(child) &&
-    !claimsOf(child).some(
-      (mark) =>
-        mark.kind === 'format' &&
-        mark.key === 'type' &&
-        (isPending(mark) || (decidedRemoves?.(mark) ?? false))
-    );
-
-  if (reach && own.length === 0) {
-    const unlisted = reach.unlistedStanding ?? 0;
-
-    if (!someSlotInReach(reach.slots, unlisted)) return [];
-    const hasPrefix = reach.slots.some((slot) => 'prefix' in slot);
-
-    if (!hasPrefix) {
-      const limit = Math.max(
-        ...reach.slots.map((slot) => ('min' in slot ? slot.min : -1))
-      );
-      let standing = unlisted;
-      let previousStandingIsText = false;
-      const found: AuthoredMark[] = [];
-
-      for (const child of children) {
-        const childClaims = claimsOnChild(child);
-
-        if (staysAtLeastOne(child, childClaims)) {
-          if (reach.kept?.(child) ?? true) {
-            const childIsText =
-              typeof (child as { text?: unknown }).text === 'string';
-
-            if (!(childIsText && previousStandingIsText)) {
-              standing += 1;
-              if (standing > limit) return [];
-            }
-            previousStandingIsText = childIsText;
-          }
-        } else {
-          found.push(...childClaims);
-        }
-      }
-
-      return found;
-    }
-  }
-
-  const perChild = children.map(claimsOnChild);
+  const perChild = children.map(onChild);
   const claims = [...own, ...perChild.flat()];
 
   if (!reach || own.length > 0 || claims.length === 0) return claims;
 
-  const prefixCount = Math.max(
-    0,
-    ...reach.slots.map((slot) => ('prefix' in slot ? slot.prefix + 1 : 0))
-  );
+  const standing =
+    (reach.unlistedStanding ?? 0) +
+    children.filter(
+      (child, index) =>
+        (reach.kept?.(child) ?? true) && perChild[index]?.length === 0
+    ).length;
 
-  if (
-    prefixCount > 0 &&
-    (reach.unlistedStanding ?? 0) === 0 &&
-    children.length >= prefixCount &&
-    children
-      .slice(0, prefixCount)
-      .every((child, index) => prefixStanding(child, perChild[index] ?? []))
-  ) {
-    const minSlots = reach.slots.flatMap((slot) =>
-      'min' in slot ? [slot.min] : []
-    );
-
-    if (minSlots.length === 0) return [];
-
-    const limit = Math.max(...minSlots);
-    let standing = 0;
-
-    for (let index = prefixCount; index < children.length; index += 1) {
-      const child = children[index];
-
-      if (
-        (reach.kept?.(child) ?? true) &&
-        staysAtLeastOne(child, perChild[index] ?? [])
-      ) {
-        standing += 1;
-        if (standing > limit) return [];
-      }
-    }
-
-    return claims;
-  }
-
-  return claims;
+  return someSlotInReach(reach.slots, standing) ? claims : [];
 };
 
 export const joinKeysOf = (marks: readonly AuthoredMark[]) =>
@@ -3436,10 +3309,9 @@ const resolveIn = (
             : [child]
       );
 
-    const surviving = standing(inside);
     const claims = buildClaimsOf(
       container,
-      surviving,
+      standing(inside),
       pending,
       keeps,
       (link, child) => {
@@ -3453,25 +3325,8 @@ const resolveIn = (
 
         return join;
       },
-      { slots },
-      undefined,
-      (mark) => decidedMarkRemoves(mark, decisionOf(mark))
+      { slots }
     );
-
-    if (
-      claims.length === 0 &&
-      container &&
-      pending(container).some(
-        (mark) =>
-          (mark.kind === 'delete' || mark.kind === 'insert') && keeps(mark)
-      )
-    ) {
-      const content = contentOf(typeOf(container));
-
-      if (content && (surviving.length < content.min || content.prefix > 0)) {
-        return true;
-      }
-    }
 
     if (!resolvedLevel || claims.length === 0) return claims.length > 0;
 

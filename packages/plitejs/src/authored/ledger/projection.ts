@@ -4,7 +4,6 @@ import { RootChange } from '../../core/change/root-change';
 import type { JsonNode } from '../../core/change/tokens';
 import { canonicalJsonKey } from '../../core/change/transform';
 import type { ChangedRange } from '../../core/measured-sequence';
-import { alike, withoutStoredElementId } from '../../core/stored-element-id';
 import { getDefined } from '../../internal/get-defined';
 import type { AuthoredFormatProjection } from '../format';
 import { unrepresentableFor } from '../refusal';
@@ -28,41 +27,12 @@ const blocksOf = (nodes: readonly JsonNode[]): string[] =>
     if (typeof node.text === 'string') return [];
 
     const children = node.children ?? [];
-    const { children: _children, ...own } = withoutStoredElementId(node);
+    const { children: _children, ...own } = node;
 
     return children.some((child) => typeof child.text !== 'string')
       ? [canonicalJsonKey(own), ...blocksOf(children)]
-      : [canonicalJsonKey({ ...own, children })];
+      : [canonicalJsonKey(node)];
   });
-
-const acceptsAlike = (
-  wroteList: readonly JsonNode[],
-  shownList: readonly JsonNode[]
-): boolean => {
-  let end = wroteList.length;
-
-  while (end > shownList.length && isBuilt(getDefined(wroteList[end - 1]))) {
-    end -= 1;
-  }
-
-  return (
-    end === shownList.length &&
-    shownList.every((shown, index) => {
-      const wrote = getDefined(wroteList[index]);
-
-      if (alike(wrote, shown)) return true;
-      if (!wrote.children || !shown.children) return false;
-
-      const { children: _wroteChildren, ...wroteOwn } = wrote;
-      const { children: _shownChildren, ...shownOwn } = shown;
-
-      return (
-        alike(wroteOwn, shownOwn) &&
-        acceptsAlike(wrote.children, shown.children)
-      );
-    })
-  );
-};
 
 /**
  * Refuses a framed write where a window the gate resolved shows other than
@@ -96,7 +66,7 @@ const assertShowsWritten = (
     countLedgerWork('comparedBlocks', toA - fromA + toB - fromB);
     countLedgerWork('comparedNodes', read);
 
-    if (acceptsAlike(wroteNodes, shownNodes)) return;
+    if (jsonEqual(wroteNodes, shownNodes)) return;
 
     countLedgerWork('classifiedNodes', read);
 
