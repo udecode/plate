@@ -40,7 +40,7 @@ const historyPlugin = history();
 const codeMirrorAdapter = createCodeMirrorAdapter({
   extensions: keymap.of(standardKeymap),
 });
-const inlineSchema = defineEditorSchema('schema:authored-example-inline', {
+const inlineSchema = defineEditorSchema('authoredExampleInlineSchema', {
   id: 'authored-example-inline',
   version: 1,
   unknown: 'preserve',
@@ -64,7 +64,7 @@ const inlineSchema = defineEditorSchema('schema:authored-example-inline', {
     default: { type: 'paragraph' },
   }),
 });
-const codeLines = definePlugin('authored-example-code-lines', {
+const codeLines = definePlugin('authoredExampleCodeLines', {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) => {
       const selection = state.selection();

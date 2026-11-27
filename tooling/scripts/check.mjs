@@ -809,8 +809,11 @@ export const steps = [
         '.changeset/',
         'AGENTS.md',
         'apps/www/public/',
+        'apps/www/src/app/(app)/examples/plite/',
         'content/docs/',
-        'docs/plite/'
+        'docs/plite/',
+        'packages/platejs/type-tests/plite-rebound-contracts.tsx',
+        'packages/plitejs/README.md'
       )(files),
     key: [],
   },

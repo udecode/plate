@@ -287,6 +287,7 @@ const editor = useCreateEditor({
 | `useNodeSelector(selector)` | 在元素组件中使用 `useElementSelector(selector)` | 选择器收到元素。Plate 没有按 key 选择节点的 hook。 |
 | `useTextSelector(selector)` | 无 | 文本插件组件从属性中收到 `text`。 |
 | `useEditorEditableElement()` | `useEditableRef()` | 挂载前 ref 为 `null`，元素挂载时不会重新渲染。`useEditorMounted()` 返回布尔值。 |
+| `useRootEditor(options)` | `useRootEditor(options)` | 返回该根对应的 Plate React `Editor`。 |
 
 ### 类型
 
@@ -297,28 +298,30 @@ const editor = useCreateEditor({
 | `EditableHandlerContext`、`EditableInputEventContext`、`EditableDOMBeforeInputContext`、`EditableDOMBeforeInputHandler`、`EditableKeyDownHandler`、`EditablePointerSelectionEndHandler` | 来自 `platejs/react` 的同名类型 | `context.editor` 为 Plate 的 React `Editor`。 |
 | `PagedEditableProps`、`VirtualizedEditableProps` | `PagedEditorContentProps`、`VirtualizedEditorContentProps` | |
 | `UseEditorOptions` | `CreateEditorOptions` | |
-| `EditorSelectorOptions`、`EditorStateSelectorOptions` | `UseEditorSelectorOptions`、`UseEditorStateOptions` | |
-| `EditorRootProps`、`ValueChangeContext` | 同名 | `value` 是完整的文档值。 |
+| `EditorSelectorOptions`、`EditorStateSelectorOptions`、`EditorRuntimeSelectorOptions` | `UseEditorSelectorOptions`、`UseEditorStateOptions` | |
+| `EditorRootProps`、`CommitContext`、`SelectionChangeContext`、`ValueChangeContext` | 同名 | `CommitContext`、`SelectionChangeContext` 和 `ValueChangeContext` 中的 `editor` 为 Plate 的 `Editor`，`value` 是完整的文档值。 |
 | 来自 `plitejs/react` 的 `NodeProps` | 来自 `platejs` 的 `NodeProps` | 来自 `platejs/react` 的 `NodeProps` 描述插件注入节点的属性。 |
-| `Editor`、`Plugin` | 同名 | Plate 的版本使用不同的类型参数，`Plugin` 是 Plate 插件的类型。 |
+| `Editor`、`Plugin`、`DefinitionOf`、`PluginPortal`、`PluginReference`、`BlockInsertOptions` | 同名 | Plate 的版本使用 Plate 的插件和编辑器类型参数；Plite 的状态字段或原生 Plite 插件可传入 `createEditor({ plugins })`，但不满足 Plate 自身的 `PluginReference` 或 `PluginPortal`。 |
+| `TransferPlugin` 类型 | `typeof TransferPlugin` | Plate 的 `TransferPlugin` 是核心插件值。 |
 | `ReactPlugin` | `RuntimeReactPlugin` | |
+| `CommandDispatcher`、`CommandFocusPolicy`、`UseCommandOptions`、`EditorNodeSelectorContext`、`EditorTextSelectorContext`、`EditorReadOnlyProviderProps`、`DOMTextSyncRendererCapabilityContext` | 无 | 已移除的 `useCommand`、`useNodeSelector`、`useTextSelector`、`EditorReadOnlyProvider` 和 `setDOMTextSyncRendererCapability` 的配套类型。 |
 
 ### DOM
 
-`platejs/dom` 保留 `ariaKeyShortcuts`、`dataTransferFormats`、`domCommands`、`DOMResolutionError`、`isHotkey`、`usesAppleDOMHotkeys` 和 `writeDataTransferFragment`。其他 `plitejs/dom` 值对应如下。
+`platejs/dom` 保留 `ariaKeyShortcuts`、`dataTransferFormats`、`domCommands`、`DOMResolutionError`、`isHotkey`、`usesAppleDOMHotkeys`、`writeDataTransferFragment`，以及 `DOMApi` 和 `useDropIndicator` 使用的拖拽与几何类型。其他 `plitejs/dom` 导出对应如下。
 
 | Plite | Plate | 说明 |
 | --- | --- | --- |
 | `DOMEditor.focus(editor)` 和其他 `DOMEditor` 方法 | `editor.api.dom.focus()` 和其他 `editor.api.dom` 方法 | 去掉编辑器参数。 |
 | `getEditorDOMRoot(editor)` | `editor.api.dom.root()` | |
-| `dom` | 无 | 来自 `platejs/react` 的 `createEditor` 会安装 Plate 的 DOM 插件。无头编辑器添加来自 `platejs` 的 `DOMPlugin`。 |
-| `getDOMClipboardFormatKey`、`writeDOMFragmentData`、`writeDOMRangeData`、`cleanDOMClipboardContents` | `editor.api.dom.clipboard` 和插件的 `dataTransferFormats` | |
+| `dom`、`DOMEditorOptions`、`DOMPlugin`、`DOMPluginTypes` | 无 | Plate 会自动安装核心 DOM 插件；在来自 `platejs/react` 的 `createEditor` 或 `useCreateEditor` 中配置 `clipboardFormatKey`。 |
+| `getDOMClipboardFormatKey`、`writeDOMFragmentData`、`writeDOMRangeData`、`cleanDOMClipboardContents`、`DOMClipboardInsertDataHandler`、`DOMEditorClipboardCapability`、`DOMFragmentDataHtml`、`DOMFragmentDataPayload` | `editor.api.dom.clipboard` 和插件的 `dataTransferFormats` | |
 | `Hotkeys` | 来自 `platejs` 的 `Hotkeys` | Plate 的集合成员不同。 |
 | `createCompiledHotkeyMatcher`、`Key` | `isHotkey`，或插件的 `shortcuts` | |
-| `readDOMSelectionRange`、`writeDOMSelection` | 无 | `EditorContent` 负责读写 DOM 选区。 |
+| `readDOMSelectionRange`、`writeDOMSelection`、`DOMSelectionPoints` | 无 | `EditorContent` 负责读写 DOM 选区。 |
 | `isEditor`、`isElement`、`isLeaf`、`isNode`、`isString`、`isText`、`isVoid`、`getElements`、`getNodeDataAttributeKeys`、`keyToDataAttribute` | 无 | 它们读取 Plite 的 DOM 数据属性。来自 `platejs` 的 `isEditor` 是另一个函数，用于检查编辑器对象。 |
 | `getSelection`、`getActiveElement`、`getDefaultView`、`isDOMNode`、`isDOMElement`、`isDOMText`、`isDOMSelection`、`hasShadowRoot`、`closestShadowAware`、`containsShadowAware`、`isAfter`、`isBefore`、`normalizeDOMPoint`、`isPlainTextOnlyPaste`、`CAN_USE_DOM`、`isGeckoDOMHost`、`TRIPLE_CLICK` | 无 | 使用 DOM API。 |
-| `DOMCoverage`、`isTrackedMutation`、`applyStringDiff`、`mergeStringDiffs`、`normalizeStringDiff`、`normalizePoint`、`normalizeRange`、`targetRange`、`verifyDiffState` | 无 | `EditorContent` 负责 DOM 覆盖、变更跟踪和 Android 输入差异。 |
+| `DOMCoverage`、`DOMCoverageBoundary`、`DOMCoverageBoundaryAnchor`、`DOMCoverageBoundaryEdge`、`DOMCoverageBoundaryState`、`DOMCoverageCopyPolicy`、`DOMCoverageMaterializeHandler`、`DOMCoverageMaterializeRangeRole`、`DOMCoverageMaterializeReason`、`DOMCoverageMaterializeResult`、`DOMCoveragePathRange`、`DOMCoveragePointResult`、`DOMCoverageReason`、`DOMCoverageRuntimeRange`、`DOMCoverageSelectionPolicy`、`DOMCoverageSession`、`isTrackedMutation`、`applyStringDiff`、`mergeStringDiffs`、`normalizeStringDiff`、`normalizePoint`、`normalizeRange`、`targetRange`、`verifyDiffState`、`StringDiff`、`TextDiff` | 无 | `EditorContent` 负责 DOM 覆盖、变更跟踪和 Android 输入差异。 |
 
 ### 历史记录
 
@@ -336,6 +339,6 @@ const editor = useCreateEditor({
 | --- | --- | --- |
 | 来自 `plitejs/authored` 的 `authored({ authorId })` | 把来自 `platejs/authored` 的 `AuthoredPlugin` 加入 `plugins` | 作者是编辑器的 `userId`，或 `createEditorView` 创建的视图的 `authorId`。 |
 | `authoredRecords` | 无 | `AuthoredPlugin` 会安装它。 |
-| `createAuthoredPlugin` | 无 | 它是 Plite 的测试辅助函数，使用固定的 id 和时钟。 |
+| `createAuthoredPlugin`、`AuthoredTestOptions` | 无 | 它是 Plite 的测试辅助函数（使用固定的 id 和时钟）及其选项类型。 |
 | `AuthoredPlugin` 类型 | `typeof AuthoredPlugin` | Plate 的 `AuthoredPlugin` 是插件值。 |
 | 来自 `plitejs/annotations` 的 `createAnnotationStore` | 来自 `platejs/react` 的 `useAnnotationStore(editor, annotations, options)` | Plate 没有无头批注存储。批注类型改从 `platejs/react` 导入。 |

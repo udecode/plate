@@ -69,7 +69,7 @@ import { definePlugin, defineEffect } from 'plitejs';
 
 const refreshIndex = defineEffect({ key: 'search.refresh-index' });
 
-const searchEffects = definePlugin('search-effects', {
+const searchEffects = definePlugin('searchEffects', {
   effectTypes: [refreshIndex],
 });
 ```

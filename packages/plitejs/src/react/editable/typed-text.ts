@@ -21,6 +21,7 @@ export type TypedText = Readonly<{
   text: string;
 }>;
 
+/** Listener called when a mounted Editable commits typed text. */
 export type TypedTextListener = (typed: TypedText) => void;
 
 type TypingInput = Readonly<{

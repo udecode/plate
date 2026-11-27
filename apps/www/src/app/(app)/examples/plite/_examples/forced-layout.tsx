@@ -16,7 +16,7 @@ import type {
   TitleElement,
 } from './custom-types.d';
 
-const ForcedLayoutSchema = defineEditorSchema('schema:forced-layout-example', {
+const ForcedLayoutSchema = defineEditorSchema('forcedLayoutExampleSchema', {
   elements: {
     paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),

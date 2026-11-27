@@ -31,7 +31,7 @@ import { cn } from '@/utils/cn';
 
 import { Portal } from './components';
 
-const MentionSchema = defineEditorSchema('schema:derived', {
+const MentionSchema = defineEditorSchema('mentionsSchema', {
   elements: {
     mention: {
       properties: { character: property.string() },

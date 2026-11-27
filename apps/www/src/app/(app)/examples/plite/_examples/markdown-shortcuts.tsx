@@ -100,7 +100,7 @@ const MarkdownShortcutsExample = () => {
 };
 
 const markdownShortcuts = () =>
-  definePlugin('markdown-shortcuts', {
+  definePlugin('markdownShortcuts', {
     commands: ({ around, handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();

@@ -22,7 +22,7 @@ The block's compiled schema must permit exactly one direct Text:
 ```ts
 import { defineEditorSchema, schema } from "plitejs";
 
-const sourceSchema = defineEditorSchema("schema:source", {
+const sourceSchema = defineEditorSchema("sourceSchema", {
   elements: {
     source: { content: schema.content.text({ min: 1, max: 1 }) },
   },

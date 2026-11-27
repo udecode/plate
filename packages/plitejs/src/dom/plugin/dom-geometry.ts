@@ -12,6 +12,7 @@ export type DOMGeometryAssociation = 'backward' | 'forward';
 
 export type DOMGeometryPoint = readonly [globalThis.Node, number];
 
+/** Plain bounding rectangle with viewport coordinates and dimensions. */
 export type DOMGeometryRect = {
   bottom: number;
   height: number;

@@ -76,7 +76,7 @@ handler. Return `false` to let the next handler or descriptor default run:
 ```ts
 import { definePlugin, editorCommands } from "plitejs";
 
-const noEmptyText = definePlugin("no-empty-text", {
+const noEmptyText = definePlugin("noEmptyText", {
   commands: ({ handle }) => [
     handle(editorCommands.insertText, ({ input, state }) =>
       input.text.length === 0

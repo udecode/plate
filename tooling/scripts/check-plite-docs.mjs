@@ -1,8 +1,12 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { PLATE_FACADE_DIFFS } from './check-plite-release-artifacts.mjs';
+import { readPackageEntrypoints } from './export-targets.mjs';
+
+const require = createRequire(import.meta.url);
+const ts = require('@typescript/typescript6');
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -720,40 +724,252 @@ function auditSlateV2Docs() {
     });
   }
 
+  const pairedDiffs = comparePairedEntrypoints(repoRoot);
+
   for (const guide of migrationGuides) {
     const source = readFileSync(join(repoRoot, guide), 'utf-8');
 
-    for (const { change, entrypoint, name } of unlistedFacadeNames(source)) {
+    for (const { change, entrypoint, name } of checkGuideCoverage(
+      source,
+      pairedDiffs
+    )) {
       failures.push(
         `${guide}: ${entrypoint} ${change} Plite's ${name}, so the guide must list it in inline code with its Plate replacement`
       );
     }
   }
 
+  const reboundSource = readFileSync(
+    join(repoRoot, reboundContractPath),
+    'utf-8'
+  );
+
+  for (const { entrypoint, name } of checkReboundContractCoverage(
+    reboundSource,
+    pairedDiffs
+  )) {
+    failures.push(
+      `${reboundContractPath}: ${entrypoint} rebinds Plite's ${name}, so the rebound contract type test must cover it`
+    );
+  }
+
+  failures.push(...auditLowerCamelPluginNames(repoRoot));
+
   return failures;
 }
 
-const unlistedFacadeNames = (source, diffs = PLATE_FACADE_DIFFS) => {
+const reboundContractPath =
+  'packages/platejs/type-tests/plite-rebound-contracts.tsx';
+const lowerCamelPattern = /^[a-z][a-zA-Z0-9]*$/;
+const generatedPluginPrefixPattern = /^(?:schema|slot|state-field):/;
+const pluginNameCallPattern =
+  /\b(?:definePlugin|defineRuntimePlugin|defineEditorSchema)(?:<[^>]*>)?\s*\(\s*(['"`])([^'"`]+)\1/g;
+const testFilePattern =
+  /(?:^|\/)(?:__tests__|tests)\/|\.(?:spec|test|slow)\.[cm]?[jt]sx?$/;
+
+const readTsconfig = (root) => {
+  const configPath = join(root, 'tsconfig.json');
+  const { config, error } = ts.readConfigFile(configPath, (file) =>
+    ts.sys.readFile(file)
+  );
+
+  if (error) {
+    throw new Error(ts.flattenDiagnosticMessageText(error.messageText, '\n'));
+  }
+
+  return ts.parseJsonConfigFileContent(config, ts.sys, root);
+};
+
+const symbolDeclarationKeys = (checker, symbol) => {
+  let target = symbol;
+  const seen = new Set();
+
+  while (target && target.flags & ts.SymbolFlags.Alias && !seen.has(target)) {
+    seen.add(target);
+    target =
+      checker.getImmediateAliasedSymbol(target) ??
+      checker.getAliasedSymbol(target);
+  }
+
+  return (target?.declarations ?? [])
+    .map(
+      (declaration) =>
+        `${declaration.getSourceFile().fileName}:${declaration.pos}`
+    )
+    .sort(compareStrings);
+};
+
+const sameKeys = (left, right) =>
+  left.length === right.length &&
+  left.every((value, index) => value === right[index]);
+
+export function comparePairedEntrypoints(root = repoRoot) {
+  const { options } = readTsconfig(root);
+  const pliteEntrypoints = readPackageEntrypoints(
+    join(root, 'packages/plitejs')
+  );
+  const plateEntrypoints = readPackageEntrypoints(
+    join(root, 'packages/platejs')
+  );
+  const pairs = [];
+
+  for (const [
+    pliteSpecifier,
+    pliteSource,
+  ] of pliteEntrypoints.sourceBySpecifier) {
+    if (pliteSpecifier === 'plitejs/internal') continue;
+    const plateSpecifier = pliteSpecifier.replace(/^plitejs/, 'platejs');
+    const plateSource = plateEntrypoints.sourceBySpecifier.get(plateSpecifier);
+
+    if (!plateSource) continue;
+    pairs.push({ plateSource, plateSpecifier, pliteSource, pliteSpecifier });
+  }
+
+  pairs.sort((left, right) =>
+    compareStrings(left.plateSpecifier, right.plateSpecifier)
+  );
+
+  const program = ts.createProgram(
+    pairs.flatMap(({ plateSource, pliteSource }) => [pliteSource, plateSource]),
+    { ...options, noEmit: true }
+  );
+  const checker = program.getTypeChecker();
+  const diffs = [];
+
+  for (const { plateSource, plateSpecifier, pliteSource } of pairs) {
+    const pliteFile = program.getSourceFile(pliteSource);
+    const plateFile = program.getSourceFile(plateSource);
+    const pliteModule = pliteFile && checker.getSymbolAtLocation(pliteFile);
+    const plateModule = plateFile && checker.getSymbolAtLocation(plateFile);
+
+    if (!pliteModule || !plateModule) continue;
+
+    const plateExports = new Map(
+      checker
+        .getExportsOfModule(plateModule)
+        .map((exported) => [
+          exported.name,
+          symbolDeclarationKeys(checker, exported),
+        ])
+    );
+
+    for (const exported of checker.getExportsOfModule(pliteModule)) {
+      const { name } = exported;
+      const plateKeys = plateExports.get(name);
+
+      if (!plateKeys) {
+        diffs.push({
+          change: 'does not export',
+          entrypoint: plateSpecifier,
+          kind: 'dropped',
+          name,
+        });
+        continue;
+      }
+
+      const pliteKeys = symbolDeclarationKeys(checker, exported);
+
+      if (!sameKeys(pliteKeys, plateKeys)) {
+        diffs.push({
+          change: 'rebinds',
+          entrypoint: plateSpecifier,
+          kind: 'rebound',
+          name,
+        });
+      }
+    }
+  }
+
+  return diffs.sort(
+    (left, right) =>
+      compareStrings(left.entrypoint, right.entrypoint) ||
+      compareStrings(left.name, right.name)
+  );
+}
+
+const collectFilesUnder = (root, relativeTarget) => {
+  const fullPath = join(root, relativeTarget);
+
+  if (!existsSync(fullPath)) return [];
+  if (statSync(fullPath).isFile()) return [fullPath];
+
+  const found = [];
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const next = join(dir, entry.name);
+
+      if (entry.isDirectory()) walk(next);
+      else if (entry.isFile()) found.push(next);
+    }
+  };
+
+  walk(fullPath);
+
+  return found.sort(compareStrings);
+};
+
+export function auditLowerCamelPluginNames(root = repoRoot) {
+  const failures = [];
+  const checkFile = (fullPath, allowGeneratedPrefix) => {
+    const relativePath = relative(root, fullPath).replaceAll('\\', '/');
+
+    if (allowGeneratedPrefix && testFilePattern.test(relativePath)) return;
+    if (!/\.(?:[cm]?[jt]sx?|mdx?)$/.test(relativePath)) return;
+
+    const source = readFileSync(fullPath, 'utf-8');
+
+    pluginNameCallPattern.lastIndex = 0;
+    for (const match of source.matchAll(pluginNameCallPattern)) {
+      const name = match[2];
+
+      if (lowerCamelPattern.test(name)) continue;
+      if (allowGeneratedPrefix && generatedPluginPrefixPattern.test(name)) {
+        continue;
+      }
+
+      const lineNumber = source.slice(0, match.index ?? 0).split('\n').length;
+
+      failures.push(
+        `${relativePath}:${lineNumber}: plugin and schema names must be lower camel case: ${name}`
+      );
+    }
+  };
+
+  for (const target of [
+    'content/docs/plite',
+    'packages/plitejs/README.md',
+    'apps/www/src/app/(app)/examples/plite',
+  ]) {
+    for (const file of collectFilesUnder(root, target)) {
+      checkFile(file, false);
+    }
+  }
+
+  for (const target of ['packages/plitejs/src', 'packages/platejs/src']) {
+    for (const file of collectFilesUnder(root, target)) {
+      checkFile(file, true);
+    }
+  }
+
+  return failures;
+}
+
+const checkGuideCoverage = (source, diffs) => {
   const listed = new Set(
     (source.match(inlineCodePattern) ?? []).flatMap(
       (span) => span.match(identifierPattern) ?? []
     )
   );
 
-  return Object.entries(diffs)
-    .flatMap(([entrypoint, { dropped, rebound }]) => [
-      ...rebound.map((name) => ({
-        change: 'rebinds',
-        entrypoint,
-        name,
-      })),
-      ...dropped.map((name) => ({
-        change: 'does not export',
-        entrypoint,
-        name,
-      })),
-    ])
-    .filter(({ name }) => !listed.has(name));
+  return diffs.filter(({ name }) => !listed.has(name));
+};
+
+const checkReboundContractCoverage = (source, diffs) => {
+  const identifiers = new Set(source.match(identifierPattern));
+
+  return diffs.filter(
+    ({ kind, name }) => kind === 'rebound' && !identifiers.has(name)
+  );
 };
 
 function runAudit() {

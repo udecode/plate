@@ -185,7 +185,7 @@ validation, API factories, takes, releases and cleanup are synchronous.
 ```ts
 import { definePlugin } from "plitejs";
 
-const plugin = definePlugin("host-state", {
+const plugin = definePlugin("hostState", {
   activate({ editor, ...context }) {
     context.acquire(() => subscribeToHostState(refreshHostCache));
     context.afterPublish(() => {

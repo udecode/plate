@@ -109,7 +109,7 @@ import { definePlugin } from "plitejs";
 
 const removedAt = new Map();
 
-const removedPlaces = definePlugin("removed-places", {
+const removedPlaces = definePlugin("removedPlaces", {
   on: {
     transactionChange: ({ changed }) => {
       for (const { key, node, path } of changed.removed()) {

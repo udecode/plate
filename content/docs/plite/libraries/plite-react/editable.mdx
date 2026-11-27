@@ -436,7 +436,7 @@ Inline, void, selectable, and read-only behavior belongs to the editor schema.
 ```tsx
 import { defineEditorSchema, schema } from "plitejs";
 
-const MentionSchema = defineEditorSchema("schema:mentions", {
+const MentionSchema = defineEditorSchema("mentionsSchema", {
   elements: {
     mention: {
       void: "markable-inline",

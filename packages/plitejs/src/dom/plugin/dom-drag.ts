@@ -63,6 +63,7 @@ export type DOMDropTargetInput = Readonly<{
   target?: EventTarget | null;
 }>;
 
+/** Options for resolving a drop target or running a drop at a pointer position. */
 export type DOMDropTargetOptions = Readonly<{
   /** Copy instead of move; defaults to the input's modifier. */
   copy?: boolean;

@@ -97,7 +97,7 @@ import {
   RangeApi,
 } from "plitejs";
 
-const markdownBlocks = definePlugin("markdown-blocks", {
+const markdownBlocks = definePlugin("markdownBlocks", {
   commands: ({ around, handle }) => [
     handle(editorCommands.delete, ({ input, state }) => {
       const selection = state.selection();

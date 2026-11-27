@@ -54,7 +54,7 @@ const getPlateChangeCallbacks = (editor: Editor) =>
   PLATE_CHANGE_CALLBACKS.get(editor);
 
 export const createPlateChangeHandlersPlugin = (editor: Editor) =>
-  defineRuntimePlugin('core:change-handlers', {
+  defineRuntimePlugin('coreChangeHandlers', {
     on: {
       nodeChange(context) {
         const callbacks = getPlateChangeCallbacks(editor);

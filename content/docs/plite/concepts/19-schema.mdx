@@ -43,7 +43,7 @@ import {
   target,
 } from "plitejs";
 
-const ArticleSchema = defineEditorSchema("schema:article", {
+const ArticleSchema = defineEditorSchema("articleSchema", {
   elements: {
     paragraph: schema.element.textBlock({
       properties: {
@@ -290,7 +290,7 @@ application intentionally carries forward undeclared element types or
 properties.
 
 ```ts
-const ForwardCompatibleSchema = defineEditorSchema("schema:forward-compatible", {
+const ForwardCompatibleSchema = defineEditorSchema("forwardCompatibleSchema", {
   id: "forward-compatible",
   root: schema.content.not(schema.content.text()),
   unknown: "preserve",
@@ -431,7 +431,7 @@ import {
 } from "plitejs";
 
 const articleSchema = (version: number, type: string) =>
-  defineEditorSchema("schema:article", {
+  defineEditorSchema("articleSchema", {
     elements: {
       [type]: {
         content: schema.content.text({ min: 1 }),

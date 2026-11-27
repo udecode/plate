@@ -14,7 +14,7 @@ import {
   useEditor,
 } from 'plitejs/react';
 
-const ChipSchema = defineEditorSchema('schema:inline-void-drag', {
+const ChipSchema = defineEditorSchema('inlineVoidDragSchema', {
   elements: {
     chip: { properties: { label: property.string() }, void: 'inline' },
     paragraph: {

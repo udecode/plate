@@ -54,7 +54,7 @@ rule.
 import { definePlugin } from "plitejs";
 import { domCommands } from "plitejs/dom";
 
-const pasteTodoPrefix = definePlugin("paste-todo-prefix", {
+const pasteTodoPrefix = definePlugin("pasteTodoPrefix", {
   commands: ({ around }) => [
     around(domCommands.insertData, ({ input, next, state }) => {
       const text = input.getData("text/plain");

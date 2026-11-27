@@ -270,7 +270,7 @@ const copiesOf = ({ copies }: Readonly<Record<string, unknown>>) => {
 
 const beta2MayUndoTo = (id: string) => id.startsWith('c_');
 
-const inkRecords = defineRuntimePlugin('ink-records', {
+const inkRecords = defineRuntimePlugin('inkRecords', {
   activate: ({ afterPublish, editor }) => {
     afterPublish(() => {
       const store = readShownRecords(editor);
@@ -789,14 +789,14 @@ export const BaseInkPlugin = definePlugin('ink', {
       event: 'children',
       query: 'root',
       correct: ({ editor, tx }) => {
-        if (hasPendingGone(editor)) tx['ink-records'].flush();
+        if (hasPendingGone(editor)) tx.inkRecords.flush();
       },
     },
     {
       event: 'properties',
       query: 'root',
       correct: ({ editor, tx }) => {
-        if (hasPendingGone(editor)) tx['ink-records'].flush();
+        if (hasPendingGone(editor)) tx.inkRecords.flush();
       },
     },
   ],

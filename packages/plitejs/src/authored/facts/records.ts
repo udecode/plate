@@ -434,7 +434,7 @@ export const withStore = <V extends object>(value: V, store: RecordStore): V =>
  * such as Plate, names it. Undo carries a verdict or a landed write with the
  * commit that stored it.
  */
-export const authoredRecords = definePlugin('authored-records', {
+export const authoredRecords = definePlugin('authoredRecords', {
   schema: {
     records: {
       [CONTEXTS]: { history: 'retain' },

@@ -119,7 +119,7 @@ const ROOT_NAME = 'plitejs';
 const schemaSlot = definePluginSlot('yjs-collaboration-schema');
 
 const createCollaborationSchema = (version: number) =>
-  defineEditorSchema('schema:yjs-collaboration-example', {
+  defineEditorSchema('yjsCollaborationExampleSchema', {
     elements: {
       'block-quote': {
         content: schema.content.type('paragraph', {

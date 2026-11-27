@@ -137,7 +137,7 @@ in the element's `children`.
 ```tsx
 import { definePlugin, schema } from "plitejs";
 
-const syncedBlocks = definePlugin("synced-blocks", {
+const syncedBlocks = definePlugin("syncedBlocks", {
   schema: {
     elements: {
       "synced-block": {
@@ -270,7 +270,7 @@ it refuses:
 ```tsx
 import { definePlugin, nodeWriteVeto } from "plitejs";
 
-const keepPanels = definePlugin("keep-panels", {
+const keepPanels = definePlugin("keepPanels", {
   contributions: [nodeWriteVeto.of(({ node }) => node.type === "panel")],
 });
 ```

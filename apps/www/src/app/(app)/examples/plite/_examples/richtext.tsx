@@ -53,7 +53,7 @@ const TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify'] as const;
 const HEADING_TYPES = ['heading-one', 'heading-two'] as const;
 const EXIT_ON_ENTER_TYPES = [...HEADING_TYPES, 'block-quote'] as const;
 
-const RichTextSchema = defineEditorSchema('schema:derived', {
+const RichTextSchema = defineEditorSchema('richtextSchema', {
   elements: {
     'block-quote': {
       content: schema.content.text({ default: 'text', min: 1 }),

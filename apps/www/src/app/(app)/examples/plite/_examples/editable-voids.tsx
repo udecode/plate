@@ -110,7 +110,7 @@ const EditableVoidsExample = () => {
 };
 
 const editableVoid = () =>
-  definePlugin('editable-voids', {
+  definePlugin('editableVoids', {
     schema: {
       elements: {
         'editable-void': {

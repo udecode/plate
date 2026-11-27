@@ -448,7 +448,7 @@ const HiddenContentBlocksExample = () => {
 };
 
 const hiddenContentBlocks = () =>
-  definePlugin('hidden-content-blocks', {
+  definePlugin('hiddenContentBlocks', {
     schema: {
       elements: {
         'accordion-block': {

@@ -19,7 +19,7 @@ import {
 } from 'plitejs/react';
 import { StrictMode, useMemo, useState } from 'react';
 
-const textSchema = defineEditorSchema('schema:external-text-example', {
+const textSchema = defineEditorSchema('externalTextExampleSchema', {
   elements: {
     'external-text': { content: schema.content.text({ min: 1, max: 1 }) },
     paragraph: { content: schema.content.text({ min: 0 }) },

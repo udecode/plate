@@ -55,7 +55,7 @@ const sectionBodyHidden: Partial<Record<string, keyof HiddenBoundaryState>> = {
   section: 'outerHidden',
 };
 
-const isolateHiddenContent = definePlugin('dom-coverage-isolating', {
+const isolateHiddenContent = definePlugin('domCoverageIsolating', {
   schema: {
     elements: {
       'deep-section': { content: schema.content.open(), isolating: true },
@@ -67,10 +67,10 @@ const isolateHiddenContent = definePlugin('dom-coverage-isolating', {
   },
 });
 
-const hiddenSectionEnterSlot = definePluginSlot('dom-coverage-hidden-enter');
+const hiddenSectionEnterSlot = definePluginSlot('domCoverageHiddenEnter');
 
 const exitHiddenSectionOnEnter = (hidden: HiddenBoundaryState) =>
-  definePlugin('dom-coverage-hidden-enter', {
+  definePlugin('domCoverageHiddenEnter', {
     commands: ({ handle }) => [
       handle(editorCommands.insertBreak, ({ state }) => {
         const selection = state.selection();

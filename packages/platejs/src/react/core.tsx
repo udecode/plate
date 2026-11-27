@@ -63,6 +63,8 @@ export type {
   ReactPlugin as RuntimeReactPlugin,
   RangeGeometry,
   RangeRects,
+  TypedText,
+  TypedTextListener,
   ViewportRect,
   UseEditableClipOptions,
   UseSelectionGeometryOptions,

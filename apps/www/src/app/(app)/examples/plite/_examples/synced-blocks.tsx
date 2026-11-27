@@ -104,7 +104,7 @@ const SyncedBlocksExample = () => {
 };
 
 const syncedBlocks = () =>
-  definePlugin('synced-blocks', {
+  definePlugin('syncedBlocks', {
     schema: {
       elements: {
         'synced-block': {

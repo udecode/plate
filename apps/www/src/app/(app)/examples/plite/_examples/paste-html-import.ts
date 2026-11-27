@@ -683,7 +683,7 @@ export const deserialize = (
 };
 
 export const html = () =>
-  definePlugin('paste-html', {
+  definePlugin('pasteHtml', {
     commands: ({ around }) => [
       around(domCommands.insertData, ({ input, next, state }) => {
         const innerHtml = input.getData('text/html');

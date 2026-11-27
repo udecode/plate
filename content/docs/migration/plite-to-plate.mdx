@@ -301,6 +301,7 @@ them. Every other value keeps its binding, as
 | `useNodeSelector(selector)` | `useElementSelector(selector)` inside an element component | The selector receives the element. Plate has no hook that selects a node by key. |
 | `useTextSelector(selector)` | None | A text plugin component receives its `text` in props. |
 | `useEditorEditableElement()` | `useEditableRef()` | The ref is `null` before mount and does not rerender when the element mounts. `useEditorMounted()` returns a boolean. |
+| `useRootEditor(options)` | `useRootEditor(options)` | Returns Plate's React `Editor` for the root. |
 
 ### Types
 
@@ -311,30 +312,33 @@ them. Every other value keeps its binding, as
 | `EditableHandlerContext`, `EditableInputEventContext`, `EditableDOMBeforeInputContext`, `EditableDOMBeforeInputHandler`, `EditableKeyDownHandler`, `EditablePointerSelectionEndHandler` | The same names from `platejs/react` | `context.editor` is Plate's React `Editor`. |
 | `PagedEditableProps`, `VirtualizedEditableProps` | `PagedEditorContentProps`, `VirtualizedEditorContentProps` | |
 | `UseEditorOptions` | `CreateEditorOptions` | |
-| `EditorSelectorOptions`, `EditorStateSelectorOptions` | `UseEditorSelectorOptions`, `UseEditorStateOptions` | |
-| `EditorRootProps`, `ValueChangeContext` | The same names | `value` is the whole document value. |
+| `EditorSelectorOptions`, `EditorStateSelectorOptions`, `EditorRuntimeSelectorOptions` | `UseEditorSelectorOptions`, `UseEditorStateOptions` | |
+| `EditorRootProps`, `CommitContext`, `SelectionChangeContext`, `ValueChangeContext` | The same names | `CommitContext`, `SelectionChangeContext`, and `ValueChangeContext` type `editor` as Plate's `Editor`, and `value` is the whole document value. |
 | `NodeProps` from `plitejs/react` | `NodeProps` from `platejs` | `NodeProps` from `platejs/react` types the props a plugin injects into its node. |
-| `Editor`, `Plugin` | The same names | Plate's take other type parameters, and `Plugin` is the type of a Plate plugin. |
+| `Editor`, `Plugin`, `DefinitionOf`, `PluginPortal`, `PluginReference`, `BlockInsertOptions` | The same names | Plate's take Plate's plugin and editor type parameters; a Plite state field or raw Plite plugin works in `createEditor({ plugins })` even though it does not satisfy Plate's own `PluginReference` or `PluginPortal`. |
+| `TransferPlugin` type | `typeof TransferPlugin` | Plate's `TransferPlugin` is the core plugin value. |
 | `ReactPlugin` | `RuntimeReactPlugin` | |
+| `CommandDispatcher`, `CommandFocusPolicy`, `UseCommandOptions`, `EditorNodeSelectorContext`, `EditorTextSelectorContext`, `EditorReadOnlyProviderProps`, `DOMTextSyncRendererCapabilityContext` | None | Companion types of dropped `useCommand`, `useNodeSelector`, `useTextSelector`, `EditorReadOnlyProvider`, and `setDOMTextSyncRendererCapability`. |
 
 ### DOM
 
 `platejs/dom` keeps `ariaKeyShortcuts`, `dataTransferFormats`, `domCommands`,
-`DOMResolutionError`, `isHotkey`, `usesAppleDOMHotkeys` and
-`writeDataTransferFragment`. The other `plitejs/dom` values map as follows.
+`DOMResolutionError`, `isHotkey`, `usesAppleDOMHotkeys`,
+`writeDataTransferFragment`, and the drag and geometry types used by `DOMApi`
+and `useDropIndicator`. The other `plitejs/dom` exports map as follows.
 
 | Plite | Plate | Notes |
 | --- | --- | --- |
 | `DOMEditor.focus(editor)` and the other `DOMEditor` methods | `editor.api.dom.focus()` and the other `editor.api.dom` methods | Drop the editor argument. |
 | `getEditorDOMRoot(editor)` | `editor.api.dom.root()` | |
-| `dom` | None | `createEditor` from `platejs/react` installs Plate's DOM plugin. A headless editor adds `DOMPlugin` from `platejs`. |
-| `getDOMClipboardFormatKey`, `writeDOMFragmentData`, `writeDOMRangeData`, `cleanDOMClipboardContents` | `editor.api.dom.clipboard` and a plugin's `dataTransferFormats` | |
+| `dom`, `DOMEditorOptions`, `DOMPlugin`, `DOMPluginTypes` | None | Plate installs its core DOM plugin automatically; configure `clipboardFormatKey` on `platejs/react`'s `createEditor` or `useCreateEditor`. |
+| `getDOMClipboardFormatKey`, `writeDOMFragmentData`, `writeDOMRangeData`, `cleanDOMClipboardContents`, `DOMClipboardInsertDataHandler`, `DOMEditorClipboardCapability`, `DOMFragmentDataHtml`, `DOMFragmentDataPayload` | `editor.api.dom.clipboard` and a plugin's `dataTransferFormats` | |
 | `Hotkeys` | `Hotkeys` from `platejs` | Plate's set has other members. |
 | `createCompiledHotkeyMatcher`, `Key` | `isHotkey`, or a plugin's `shortcuts` | |
-| `readDOMSelectionRange`, `writeDOMSelection` | None | `EditorContent` reads and writes the DOM selection. |
+| `readDOMSelectionRange`, `writeDOMSelection`, `DOMSelectionPoints` | None | `EditorContent` reads and writes the DOM selection. |
 | `isEditor`, `isElement`, `isLeaf`, `isNode`, `isString`, `isText`, `isVoid`, `getElements`, `getNodeDataAttributeKeys`, `keyToDataAttribute` | None | They read Plite's DOM data attributes. `isEditor` from `platejs` is a different function that checks an editor object. |
 | `getSelection`, `getActiveElement`, `getDefaultView`, `isDOMNode`, `isDOMElement`, `isDOMText`, `isDOMSelection`, `hasShadowRoot`, `closestShadowAware`, `containsShadowAware`, `isAfter`, `isBefore`, `normalizeDOMPoint`, `isPlainTextOnlyPaste`, `CAN_USE_DOM`, `isGeckoDOMHost`, `TRIPLE_CLICK` | None | Use the DOM API. |
-| `DOMCoverage`, `isTrackedMutation`, `applyStringDiff`, `mergeStringDiffs`, `normalizeStringDiff`, `normalizePoint`, `normalizeRange`, `targetRange`, `verifyDiffState` | None | `EditorContent` owns DOM coverage, mutation tracking and Android input diffs. |
+| `DOMCoverage`, `DOMCoverageBoundary`, `DOMCoverageBoundaryAnchor`, `DOMCoverageBoundaryEdge`, `DOMCoverageBoundaryState`, `DOMCoverageCopyPolicy`, `DOMCoverageMaterializeHandler`, `DOMCoverageMaterializeRangeRole`, `DOMCoverageMaterializeReason`, `DOMCoverageMaterializeResult`, `DOMCoveragePathRange`, `DOMCoveragePointResult`, `DOMCoverageReason`, `DOMCoverageRuntimeRange`, `DOMCoverageSelectionPolicy`, `DOMCoverageSession`, `isTrackedMutation`, `applyStringDiff`, `mergeStringDiffs`, `normalizeStringDiff`, `normalizePoint`, `normalizeRange`, `targetRange`, `verifyDiffState`, `StringDiff`, `TextDiff` | None | `EditorContent` owns DOM coverage, mutation tracking and Android input diffs. |
 
 ### History
 
@@ -354,7 +358,7 @@ Plite plugin factory and its plugin-only types.
 | --- | --- | --- |
 | `authored({ authorId })` from `plitejs/authored` | `AuthoredPlugin` from `platejs/authored` in `plugins` | The author is the editor's `userId`, or the `authorId` of a view from `createEditorView`. |
 | `authoredRecords` | None | `AuthoredPlugin` installs it. |
-| `createAuthoredPlugin` | None | It is Plite's test helper with fixed ids and clock. |
+| `createAuthoredPlugin`, `AuthoredTestOptions` | None | Plite's test helper with fixed ids and clock, plus its options type. |
 | `AuthoredPlugin` type | `typeof AuthoredPlugin` | Plate's `AuthoredPlugin` is the plugin value. |
 | `createAnnotationStore` from `plitejs/annotations` | `useAnnotationStore(editor, annotations, options)` from `platejs/react` | Plate has no headless annotation store. The annotation types move to `platejs/react`. |
 

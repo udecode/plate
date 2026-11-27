@@ -36,7 +36,7 @@ import {
   schema,
 } from "plitejs";
 
-const ArticleSchema = defineEditorSchema("schema:article", {
+const ArticleSchema = defineEditorSchema("articleSchema", {
   elements: {
     paragraph: {
       content: schema.content.text({ default: "text", min: 1 }),

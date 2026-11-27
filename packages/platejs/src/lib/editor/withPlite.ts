@@ -449,7 +449,7 @@ const createPlateSchemaPlugins = (
     : undefined;
   let publication: ReturnType<typeof createPlateModelPublication> | undefined;
 
-  const modelPlugin = defineRuntimePlugin('core:model', {
+  const modelPlugin = defineRuntimePlugin('coreModel', {
     validate: ({ schema: schemaApi }) => {
       const compiledSchema = getCompiledEditorSchemaFromApi(schemaApi);
 

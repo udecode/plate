@@ -15,32 +15,29 @@ import type { CustomElement, ParagraphElement } from './custom-types.d';
 
 const c = schema.content;
 
-const ContentCompletion = defineEditorSchema(
-  'schema:content-completion-proof',
-  {
-    elements: {
-      'block-quote': {
-        content: c.type('paragraph', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      },
-      paragraph: { content: c.text() },
-      title: { content: c.text() },
-    },
-    id: 'content-completion-proof',
-    properties: [schema.textProperty('bold', property.boolean())],
-    root: c.prefix(
-      [{ element: 'title' }],
-      c.any([c.type('title'), c.type('paragraph'), c.type('block-quote')], {
+const ContentCompletion = defineEditorSchema('contentCompletionProofSchema', {
+  elements: {
+    'block-quote': {
+      content: c.type('paragraph', {
         default: { type: 'paragraph' },
         min: 1,
-      })
-    ),
-    unknown: 'reject',
-    version: 1,
-  }
-);
+      }),
+    },
+    paragraph: { content: c.text() },
+    title: { content: c.text() },
+  },
+  id: 'content-completion-proof',
+  properties: [schema.textProperty('bold', property.boolean())],
+  root: c.prefix(
+    [{ element: 'title' }],
+    c.any([c.type('title'), c.type('paragraph'), c.type('block-quote')], {
+      default: { type: 'paragraph' },
+      min: 1,
+    })
+  ),
+  unknown: 'reject',
+  version: 1,
+});
 
 const paragraph = (text: string, bold?: boolean): ParagraphElement => ({
   children: [bold ? { bold, text } : { text }],

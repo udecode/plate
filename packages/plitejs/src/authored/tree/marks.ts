@@ -155,8 +155,10 @@ type Follows = Readonly<{
 
 type NoGave = Readonly<{ gave?: undefined }>;
 
+/** A format write an authored split carried onto the split-off block, optionally naming its source. */
 export type GaveWrite = FormatWrite & Readonly<{ from?: string }>;
 
+/** Format writes keyed by property name that an authored split carried onto the split-off block. */
 export type SplitGave = Readonly<Record<string, GaveWrite>>;
 
 /** @internal */

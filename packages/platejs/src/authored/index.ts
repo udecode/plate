@@ -26,5 +26,7 @@ export {
   type AuthoredResult,
   type AuthoredReview,
   type AuthoredView,
+  type GaveWrite,
+  type SplitGave,
 } from 'plitejs/authored';
 export * from './AuthoredPlugin';
