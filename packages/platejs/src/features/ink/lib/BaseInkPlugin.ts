@@ -259,20 +259,10 @@ export type InkRangeInput = Readonly<{
 }>;
 
 const copiesOf = ({ copies }: Readonly<Record<string, unknown>>) => {
-  const ids =
-    typeof copies === 'string'
-      ? copies.split(' ')
-      : Array.isArray(copies)
-        ? copies
-        : [];
+  const ids = typeof copies === 'string' ? copies.split(' ') : [];
 
-  return ids.length > 0 &&
-    ids.every((id): id is string => typeof id === 'string' && id !== '')
-    ? ids
-    : null;
+  return ids.length > 0 && ids.every((id) => id !== '') ? ids : null;
 };
-
-const beta2MayUndoTo = (id: string) => id.startsWith('c_');
 
 const inkRecords = defineRuntimePlugin('inkRecords', {
   activate: ({ afterPublish, editor }) => {
@@ -301,7 +291,7 @@ const inkRecords = defineRuntimePlugin('inkRecords', {
     records: {
       [COPIES]: {
         history: 'retain',
-        namedBy: { keep: beta2MayUndoTo, names: copiesOf, set: MARKS },
+        namedBy: { names: copiesOf, set: MARKS },
       },
       [DIGITIZED]: {},
       [GONE]: { history: 'retain' },
@@ -399,9 +389,7 @@ const sideIn = (value: unknown): InkMargin['side'] =>
     ? value
     : refuse("margin.side must be 'left' or 'right'");
 
-type SavedShape = 'beta2' | 'packed';
-
-const encodeSamples = (input: unknown, shape: SavedShape) => {
+const encodeSamples = (input: unknown) => {
   const samples = listIn<InkSample>(input, 'samples');
   let time = 0;
 
@@ -423,9 +411,7 @@ const encodeSamples = (input: unknown, shape: SavedShape) => {
     ];
   });
 
-  return shape === 'packed'
-    ? encodePoints(checked.map(roundSample))
-    : checked.flat().join(' ');
+  return encodePoints(checked.map(roundSample));
 };
 
 const copyRecord = (
@@ -472,11 +458,9 @@ const copyRecord = (
 const encodeMark = (
   input: InkMarkInput,
   author: string,
-  voidsOf: (block: string, text: string) => string | undefined,
-  shape: SavedShape = 'packed'
+  voidsOf: (block: string, text: string) => string | undefined
 ) => {
-  const list = <T>(values: readonly T[]) =>
-    shape === 'packed' ? values.join(' ') : values;
+  const list = <T>(values: readonly T[]) => values.join(' ');
   if (typeof input !== 'object' || input === null) {
     refuse('input must be an object');
   }
@@ -514,7 +498,7 @@ const encodeMark = (
     };
 
     return {
-      id: `${shape === 'packed' ? 'p' : 'c'}_${digest(JSON.stringify(record))}`,
+      id: `p_${digest(JSON.stringify(record))}`,
       record,
     };
   });
@@ -585,26 +569,17 @@ const readSaved = <T>(read: () => T): T | undefined => {
 };
 
 const sameFields = (encoded: SavedRecord, saved: SavedRecord) =>
-  Object.entries(encoded).every(([key, value]) => {
-    const other = saved[key];
-
-    return Array.isArray(value) && Array.isArray(other)
-      ? value.length === other.length &&
-          value.every((item, at) => item === other[at])
-      : value === other;
-  });
+  Object.entries(encoded).every(([key, value]) => value === saved[key]);
 
 const savedList = (value: unknown, name: string) =>
   typeof value === 'string'
     ? value === ''
       ? []
       : value.split(' ')
-    : listIn<unknown>(value, name);
+    : refuse(`${name} must be a string`);
 
 const savedNumbers = (value: unknown, name: string, stride: number) => {
-  const numbers = savedList(value, name).map((number) =>
-    typeof number === 'string' ? Number(number) : number
-  );
+  const numbers = savedList(value, name).map(Number);
 
   if (numbers.length % stride !== 0) {
     refuse(`${name} must hold ${stride} numbers per entry`);
@@ -639,10 +614,7 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       'copy'
     );
 
-    if (
-      typeof record.lines === 'string' &&
-      written.lines.join(' ') !== record.lines
-    ) {
+    if (written.lines.join(' ') !== record.lines) {
       refuse('a saved copy must be what add writes');
     }
 
@@ -665,18 +637,13 @@ const decodeMark = (
   readSaved(() => {
     countInkDecode('marks');
 
-    const shape: SavedShape =
-      typeof record.copies === 'string' ? 'packed' : 'beta2';
     const copies = savedList(record.copies, 'copies').map(
       (copy, at) =>
-        (typeof copy === 'string' && copyOf(copy)) ||
-        refuse(`copies[${at}] must name a saved copy`)
+        copyOf(copy) || refuse(`copies[${at}] must name a saved copy`)
     );
     const origins = savedNumbers(record.origins, 'origins', 2);
     const runs =
       record.runs === undefined ? [] : savedNumbers(record.runs, 'runs', 5);
-    const points =
-      shape === 'packed' ? [] : savedNumbers(record.points, 'points', 4);
     const marked = groupsOf(runs, 5, (at) => ({
       copy: runs[at],
       run: {
@@ -714,15 +681,7 @@ const decodeMark = (
             },
           }
         : {}),
-      samples:
-        shape === 'packed'
-          ? decodePoints(textIn(record.points, 'points'))
-          : groupsOf(points, 4, (at): InkSample => [
-              points[at],
-              points[at + 1],
-              points[at + 2],
-              points[at + 3],
-            ]),
+      samples: decodePoints(textIn(record.points, 'points')),
     };
     const { copies: _, ...written } = encodeMark(
       {
@@ -738,15 +697,10 @@ const decodeMark = (
         })),
       },
       author,
-      () => undefined,
-      shape
+      () => undefined
     ).mark;
 
-    if (
-      !sameFields(written, record) ||
-      (shape === 'beta2' &&
-        encodeSamples(mark.samples, 'beta2') !== record.points)
-    ) {
+    if (!sameFields(written, record)) {
       refuse('a saved mark must be what add writes');
     }
 
@@ -1197,7 +1151,7 @@ export const BaseInkPlugin = definePlugin('ink', {
           return now?.text === text ? now.voids : undefined;
         }
       );
-      const points = encodeSamples(input.samples, 'packed');
+      const points = encodeSamples(input.samples);
       const id = `m_${nanoid()}`;
 
       for (const copy of copies) {
