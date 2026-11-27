@@ -17,17 +17,17 @@ Handle `$ARGUMENTS`. Opt-in `--audit` check (not blocking Local CI) running the 
 
 ## Run it
 
-- `pnpm check yjs-peer-order` (`pnpm check:yjs-peer-order`): full opt-in gate (21,688 leaves, pinned by `GATE_LEAVES`).
-- `pnpm check yjs-peer-order --light`: 1-in-6 subset (3,898 leaves, `LIGHT_LEAVES`).
-- `pnpm check:yjs-peer-order --all-docs --world=<w> --intent=<plain|suggesting>`: run one extra world/intent at a time.
+- `pnpm check yjs-peer-order` (`pnpm check:yjs-peer-order`): full opt-in gate (22,194 leaves, pinned by `GATE_LEAVES`).
+- `pnpm check yjs-peer-order --light`: 1-in-6 subset (3,957 leaves, `LIGHT_LEAVES`).
+- `pnpm check:yjs-peer-order --all-docs --world=<w> --intent=<plain|suggesting>`: run one extra world/intent at a time (`--unheard` runs concurrent unheard grid schedules outside the gate).
 - `pnpm check:yjs-peer-order --world=<w> --intent=<i> --doc=<d> --case='<id>'`: inspect one interleaving.
 - `pnpm check:yjs-peer-order --lower`: shrink `packages/plitejs/scripts/yjs-peer-order-baseline.json` after fixes.
 
-Exit 0 passes, 1 reports findings (`yjs-peer-mirror`, `yjs-peer-admission`, `yjs-peer-converge`, `yjs-peer-letters`), 2 reports harness/flag error.
+Exit 0 passes, 1 reports findings (`yjs-peer-mirror`, `yjs-peer-admission`, `yjs-peer-converge`, `yjs-peer-letters`, `yjs-peer-grid`, `yjs-peer-verdict`), 2 reports harness/flag error.
 
 ## Bounds and assumptions
 
-- 1 command per peer at gate (`--commands=2` exceeds 1h); excludes marks other than `commentIds`, inlines other than `link`, lists, tables, undo/redo, awareness, partial/out-of-order updates, trimmed rooms, Enter in code blocks, browser input, and Hocuspocus providers.
+- 1 command per peer at gate (`--commands=2` exceeds 1h); `grid` runs Suggesting heard schedules (`cells` 2x2 at gate, `wide` 2x3 under `--all-docs`) and checks rectangular rows, single-change column/row marks, and plain-editor parity across verdict orders. Excludes marks other than `commentIds`, inlines other than `link`, lists, plain/Editing tables, widths, merged cells, unheard grid crossings, undo/redo, awareness, partial/out-of-order updates, trimmed rooms, Enter in code blocks, browser input, and Hocuspocus providers.
 
 ## Bug vs drift
 
