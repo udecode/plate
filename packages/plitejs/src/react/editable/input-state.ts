@@ -2,8 +2,8 @@ import type { RefObject } from 'react';
 
 import { type Path, type Range, RangeApi } from '../..';
 import { setEditorCompositionPending } from '../../core/public-state';
-import { placedSince } from '../../core/view-carets';
-import { containsShadowAware, type DOMElement, getSelection } from '../../dom';
+import { getPlacementGeneration, placedSince } from '../../core/view-carets';
+import { type DOMElement, getSelection } from '../../dom';
 import {
   canWriteEditableDOMSelection,
   clearEditableDOMSelection,
@@ -15,11 +15,16 @@ import {
   type EditableDOMSelectionWritePolicy,
   writeEditableDOMSelection,
 } from '../../dom/internal';
-import { shouldClearEditableDOMSelection } from '../../dom/plugin/dom-root-runtime';
+import {
+  isSelectionOwnedByEditable,
+  readEditableDOMSelectionPoints,
+  shouldClearEditableDOMSelection,
+} from '../../dom/plugin/dom-root-runtime';
 import {
   type DOMSelectionPoints,
   isDOMSelectionWriteEcho,
   readDOMSelectionPoints,
+  sameDOMSelectionPoints,
 } from '../../dom/utils/selection-writes';
 import type { OpenedInput } from '../../dom/utils/weak-maps';
 import { createNativeGroupingId } from './input-history';
@@ -127,6 +132,13 @@ export type CompositionReceipt = Readonly<{
 
 export type NativeMoveHold = Readonly<{ receipt: number }>;
 
+export type PendingDOMSelectionImport = Readonly<{
+  receipt: number;
+  seq: number;
+}>;
+
+export type DeferredSelectionWriteStatus = 'hold' | 'ready' | 'superseded';
+
 export type ParkedExport = Readonly<{
   breaks: number;
   points: DOMSelectionPoints | null;
@@ -160,7 +172,7 @@ export type EditableInputControllerState = {
   nativeMoveHold: NativeMoveHold | null;
   outsideFocusBoundarySettleUntil: number;
   parkedExport: ParkedExport | null;
-  pendingDOMSelectionImport: boolean;
+  pendingDOMSelectionImport: PendingDOMSelectionImport | null;
   pendingCompositionEnd: PendingCompositionEnd | null;
   pendingRootDOMInput?: {
     data: string | null;
@@ -180,6 +192,7 @@ export type EditableInputControllerState = {
   } | null;
   repairInducedSelectionOriginVersion?: number;
   selectionChangeOrigin: SelectionChangeOrigin | null;
+  selectionChangeSeq: number;
   selectionSource: SelectionSource;
   textInputOwnership?: 'model' | 'native' | null;
 };
@@ -335,7 +348,7 @@ export const createEditableInputControllerState = (
       nativeMoveHold: null,
       outsideFocusBoundarySettleUntil: 0,
       parkedExport: null,
-      pendingDOMSelectionImport: false,
+      pendingDOMSelectionImport: null,
       pendingCompositionEnd: null,
       pendingRootDOMInput: null,
       pendingNativeTextInputRepairSuppressedDOMSelection: false,
@@ -344,6 +357,7 @@ export const createEditableInputControllerState = (
       recentTextInputRepairEcho: null,
       repairInducedSelectionOriginVersion: 0,
       selectionChangeOrigin: null,
+      selectionChangeSeq: 0,
       selectionSource: 'unknown',
       textInputOwnership: null,
     },
@@ -620,29 +634,93 @@ export const isSelectionHeldForNativeMove = (
     editorElement.getRootNode() as Document | ShadowRoot
   );
 
-  return (
-    !!domSelection &&
-    containsShadowAware(editorElement, domSelection.anchorNode) &&
-    containsShadowAware(editorElement, domSelection.focusNode)
-  );
+  return isSelectionOwnedByEditable(editorElement, domSelection);
+};
+
+export const markPendingDOMSelectionImport = (
+  state: Pick<
+    EditableInputControllerState,
+    'pendingDOMSelectionImport' | 'selectionChangeSeq'
+  >,
+  editor: AnyEditor
+) => {
+  const seq = state.selectionChangeSeq + 1;
+
+  state.selectionChangeSeq = seq;
+  state.pendingDOMSelectionImport = {
+    receipt: getPlacementGeneration(editor),
+    seq,
+  };
+};
+
+export const armNativeMoveHold = (
+  inputController: EditableInputController,
+  editor: AnyEditor
+) => {
+  const receipt = getPlacementGeneration(editor);
+  const seq = inputController.state.selectionChangeSeq + 1;
+
+  inputController.state.selectionChangeSeq = seq;
+  inputController.state.pendingDOMSelectionImport = { receipt, seq };
+  inputController.state.nativeMoveHold = { receipt };
+
+  return receipt;
+};
+
+export const isPendingDOMSelectionImportFresh = (
+  inputController: EditableInputController,
+  editor: AnyEditor
+) => {
+  const pending = inputController.state.pendingDOMSelectionImport;
+
+  return !!pending && !placedSince(editor, pending.receipt);
+};
+
+export const hasFreshPendingDOMSelectionImport = (
+  inputController: EditableInputController,
+  editor: AnyEditor
+) => {
+  const pending = inputController.state.pendingDOMSelectionImport;
+
+  if (!pending) return false;
+  if (placedSince(editor, pending.receipt)) {
+    inputController.state.pendingDOMSelectionImport = null;
+    return false;
+  }
+
+  return true;
 };
 
 /**
  * While a native move or a non-echo DOM selection change inside the editor
  * waits for its import, late settles and caret repairs leave the browser's
- * selection alone. An echo of our own last write passes so WebKit settles can
- * still rewrite a caret placed before its text had a layout box.
+ * selection alone. A newer model placement retires older pending imports, and
+ * an echo of our own last write passes so WebKit settles can still rewrite a
+ * caret placed before its text had a layout box.
  */
 export const isSelectionHeldForPendingImport = (
   inputController: EditableInputController,
   editor: AnyEditor,
-  editorElement: HTMLElement | null | undefined
+  editorElement: HTMLElement | null | undefined,
+  options?: Readonly<{ afterSeq?: number }>
 ) => {
   if (isSelectionHeldForNativeMove(inputController, editor, editorElement)) {
     return true;
   }
 
-  if (!editorElement || !inputController.state.pendingDOMSelectionImport) {
+  if (
+    !editorElement ||
+    !hasFreshPendingDOMSelectionImport(inputController, editor)
+  ) {
+    return false;
+  }
+
+  const pending = inputController.state.pendingDOMSelectionImport;
+
+  if (
+    !pending ||
+    (options?.afterSeq !== undefined && pending.seq <= options.afterSeq)
+  ) {
     return false;
   }
 
@@ -651,15 +729,45 @@ export const isSelectionHeldForPendingImport = (
 
   if (
     !domSelection ||
-    !containsShadowAware(editorElement, domSelection.anchorNode) ||
-    !containsShadowAware(editorElement, domSelection.focusNode)
+    !isSelectionOwnedByEditable(editorElement, domSelection)
   ) {
     return false;
   }
 
-  const livePoints = readDOMSelectionPoints(domSelection);
+  const livePoints = readEditableDOMSelectionPoints(
+    editorElement,
+    domSelection
+  );
 
   return !!livePoints && !isDOMSelectionWriteEcho(tree, livePoints);
+};
+
+export const getDeferredSelectionWriteStatus = ({
+  afterSeq,
+  editable,
+  editor,
+  inputController,
+  receipt,
+}: {
+  afterSeq?: number;
+  editable: HTMLElement | null | undefined;
+  editor: AnyEditor;
+  inputController: EditableInputController | null | undefined;
+  receipt: number;
+}): DeferredSelectionWriteStatus => {
+  if (!editable?.isConnected || placedSince(editor, receipt)) {
+    return 'superseded';
+  }
+  if (
+    inputController &&
+    isSelectionHeldForPendingImport(inputController, editor, editable, {
+      afterSeq,
+    })
+  ) {
+    return 'hold';
+  }
+
+  return 'ready';
 };
 
 /** Ends the native-move hold and leaves any pending selection import. */
@@ -718,7 +826,7 @@ export const endHiddenAnchorPress = (
 export const endSelectionImport = (
   inputController: EditableInputController
 ) => {
-  inputController.state.pendingDOMSelectionImport = false;
+  inputController.state.pendingDOMSelectionImport = null;
   inputController.state.nativeMoveHold = null;
   endHiddenAnchorPress(inputController);
 };
@@ -801,19 +909,28 @@ export const scheduleEditableDOMSelectionClear = ({
   editable,
   editor,
   immediate = 'claimed',
+  inputController,
   label,
   shouldRun,
   shouldRunDeferred,
 }: {
   clear?: () => void;
   domPhaseScheduler?: DOMPhaseScheduler | null;
-  editable: Element;
-  editor: object;
+  editable: HTMLElement;
+  editor: AnyEditor;
   immediate?: 'claimed' | 'direct';
+  inputController?: EditableInputController | null;
   label: string;
   shouldRun?: () => boolean;
   shouldRunDeferred?: () => boolean;
 }) => {
+  const receipt = getPlacementGeneration(editor);
+  const tree = editable.getRootNode() as Document | ShadowRoot;
+  const readPoints = () => {
+    const selection = getSelection(tree);
+
+    return selection ? readDOMSelectionPoints(selection) : null;
+  };
   const doClear = () => {
     if (clear) {
       clear();
@@ -821,7 +938,34 @@ export const scheduleEditableDOMSelectionClear = ({
       clearEditableDOMSelection(editable, { editor });
     }
   };
+  const runImmediate = () => {
+    if (shouldRun && !shouldRun()) return;
+    if (!shouldClearEditableDOMSelection(editable, editor)) return;
+    if (!claimPageSelection()) return;
+    doClear();
+  };
   const runDeferred = () => {
+    if (
+      editable.getRootNode() !== tree ||
+      getDeferredSelectionWriteStatus({
+        editable,
+        editor,
+        inputController,
+        receipt,
+      }) !== 'ready'
+    ) {
+      return;
+    }
+    const current = readPoints();
+
+    if (
+      afterImmediate &&
+      current &&
+      !sameDOMSelectionPoints(current, afterImmediate) &&
+      !isDOMSelectionWriteEcho(tree, current)
+    ) {
+      return;
+    }
     if (shouldRun && !shouldRun()) return;
     if (!shouldClearEditableDOMSelection(editable, editor)) return;
     if (!claimPageSelection()) return;
@@ -834,10 +978,11 @@ export const scheduleEditableDOMSelectionClear = ({
       doClear();
     }
   } else {
-    runDeferred();
+    runImmediate();
   }
 
   if (!domPhaseScheduler) return;
+  const afterImmediate = readPoints();
 
   domPhaseScheduler.schedule(
     'selection-repair',

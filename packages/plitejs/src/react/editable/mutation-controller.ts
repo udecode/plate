@@ -24,7 +24,11 @@ import {
   syncImplicitTargetToCurrentSelection,
   withUpdateTagContext,
 } from '../../core/public-state';
-import { capturePlacement, holdsCaretAt } from '../../core/view-carets';
+import {
+  capturePlacement,
+  getPlacementGeneration,
+  holdsCaretAt,
+} from '../../core/view-carets';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { domCommands } from '../../dom/internal';
 import { readClipboardCut } from '../../dom/utils/dom';
@@ -62,8 +66,8 @@ import {
   commitUnderCompositionReceipt,
   type EditableInputController,
   type EditableSelectionSourceTransition,
+  getDeferredSelectionWriteStatus,
   getEditableNativeGroupingInput,
-  isSelectionHeldForPendingImport,
 } from './input-state';
 import {
   getLineBoundarySelection,
@@ -109,6 +113,7 @@ import {
 } from './selection-controller';
 import { shouldSkipSelectionFocus } from './selection-side-effect-policy';
 import { withTypedTextIntent } from './typed-text';
+import { claimPageSelection } from './unread-press';
 
 export {
   applyModelOwnedHistoryIntent,
@@ -1312,12 +1317,14 @@ export const applyEditableRepairRequest = ({
           if (!isEditableModelSelectionPreferred(inputController)) {
             return;
           }
+          if (!claimPageSelection()) return;
 
           markProgrammaticSelectionUpdate();
           syncDOMSelectionToEditor();
         };
 
         const focusedAtCommand = ReactEditor.isFocused(editor);
+        const receipt = getPlacementGeneration(editor);
         syncProgrammaticDOMSelection();
         const resyncUnlessBlurred = () => {
           // Chromium focuses an editable that gets a DOM selection, so a rerun
@@ -1327,12 +1334,14 @@ export const applyEditableRepairRequest = ({
             (candidate) => candidate.inputController === inputController
           )?.rootElement;
 
+          if (!editorElement) return;
           if (
-            isSelectionHeldForPendingImport(
-              inputController,
+            getDeferredSelectionWriteStatus({
+              editable: editorElement,
               editor,
-              editorElement
-            )
+              inputController,
+              receipt,
+            }) !== 'ready'
           ) {
             return;
           }

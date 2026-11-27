@@ -15,6 +15,7 @@ import { asSelectionMotion, getChildList } from '../../core/public-state';
 import { getSelectionStateCaret } from '../../core/selection-state';
 import {
   clearCaretUnlessHeldElsewhere,
+  getPlacementGeneration,
   liftShownTarget,
   placedSince,
   setSelectionAsView,
@@ -91,9 +92,9 @@ import type {
 } from './input-state';
 import {
   exportEditableDOMSelection,
+  getDeferredSelectionWriteStatus,
   isEditableOutsideFocusBoundarySettling,
   isSelectionHeldForNativeMove,
-  isSelectionHeldForPendingImport,
   scheduleEditableDOMSelectionClear,
 } from './input-state';
 import {
@@ -492,11 +493,23 @@ const showStoredSelection = (
   const runtime = getMountedEditableDOMRuntimes(editor).find(
     (candidate) => candidate.inputController === inputController
   );
+  const receipt = getPlacementGeneration(editor);
 
   runtime?.domPhaseScheduler.schedule(
     'selection-repair',
     'settled-import',
-    () =>
+    () => {
+      if (
+        getDeferredSelectionWriteStatus({
+          editable: runtime.rootElement,
+          editor,
+          inputController,
+          receipt,
+        }) !== 'ready'
+      ) {
+        return;
+      }
+
       syncEditableDOMSelectionToEditor({
         editor,
         editorElement: runtime.rootElement ?? undefined,
@@ -504,7 +517,8 @@ const showStoredSelection = (
         scrollSelectionIntoView: () => {},
         state: inputController.state,
         viewportBackedSelection: false,
-      }),
+      });
+    },
     { timing: 'animation-frame' }
   );
 };
@@ -1869,18 +1883,10 @@ export const syncEditableDOMSelectionToEditor = ({
         editable: editorElement,
         editor,
         immediate: 'direct',
+        inputController: runtime.inputController,
         label: `clear-${label}`,
         shouldRunDeferred: () => {
           if (isSuperseded()) return false;
-          if (
-            isSelectionHeldForPendingImport(
-              runtime.inputController,
-              editor,
-              editorElement
-            )
-          ) {
-            return false;
-          }
           const current = readPliteViewSelection(editor);
           if (current && canUseNativeViewSelection(editor, current)) {
             return false;

@@ -179,6 +179,8 @@ const clearNativeSelectionForViewSelection = (
     domPhaseScheduler,
     editable: rootElement,
     editor,
+    inputController:
+      findMountedEditableDOMRuntime(rootElement)?.inputController,
     label: 'clear-caret-view-selection',
     shouldRun: () => readPliteViewSelection(editor) === viewSelection,
   });

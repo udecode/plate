@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useReducer, useRef } from 'react';
 
 import { SelectionApi, type Selection } from '../..';
+import { getPlacementGeneration } from '../../core/view-carets';
 import { EDITOR_TO_FORCE_RENDER } from '../../dom/internal';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -10,6 +11,7 @@ import {
   type EditableDOMRuntime,
   isHistoryReplayInFlight,
 } from './editable-dom-runtime';
+import { getDeferredSelectionWriteStatus } from './input-state';
 import {
   applyEditableRepairRequest,
   type EditableRepairOptions,
@@ -128,10 +130,24 @@ export const useRuntimeRepairEngine = ({
       kind: 'runtime-time',
     });
     forceRender();
+    const receipt = getPlacementGeneration(editor);
+
     domPhaseScheduler.schedule(
       'selection-repair',
       'dom-integrity-selection-export',
-      syncDOMSelectionToEditor,
+      () => {
+        if (
+          getDeferredSelectionWriteStatus({
+            editable: runtime.rootElement,
+            editor,
+            inputController,
+            receipt,
+          }) !== 'ready'
+        ) {
+          return;
+        }
+        syncDOMSelectionToEditor();
+      },
       {
         key: 'dom-integrity-selection-export',
         timing: 'microtask',

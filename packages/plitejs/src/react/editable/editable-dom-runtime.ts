@@ -109,6 +109,7 @@ import {
   setEditableComposingState,
 } from './input-controller';
 import {
+  armNativeMoveHold,
   beginEditableNativeSelectionImport,
   cancelCompositionReceipt,
   captureEditableCompositionRuntimeMarks,
@@ -585,6 +586,8 @@ export class EditableDOMRuntime {
   private cancelSelectionExportFrameTask: (() => void) | null = null;
 
   private cancelSelectionExportMicrotask: (() => void) | null = null;
+
+  private selectionExportAfterDOMCommitReceipt = 0;
 
   private verticalGoalFocus: Point | null = null;
 
@@ -1366,18 +1369,37 @@ export class EditableDOMRuntime {
   }
 
   requestSelectionExportAfterDOMCommit() {
+    this.selectionExportAfterDOMCommitReceipt = getPlacementGeneration(
+      this.editorValue
+    );
     if (!this.cancelSelectionExportMicrotask) {
       this.cancelSelectionExportMicrotask = this.domPhaseScheduler.schedule(
         'selection-repair',
         'node-bind-selection-export-microtask',
         () => {
           this.cancelSelectionExportMicrotask = null;
+          if (
+            placedSince(
+              this.editorValue,
+              this.selectionExportAfterDOMCommitReceipt
+            )
+          ) {
+            return;
+          }
           this.cancelSelectionExportFrameTask?.();
           this.cancelSelectionExportFrameTask = this.domPhaseScheduler.schedule(
             'selection-repair',
             'node-bind-selection-export-frame',
             () => {
               this.cancelSelectionExportFrameTask = null;
+              if (
+                placedSince(
+                  this.editorValue,
+                  this.selectionExportAfterDOMCommitReceipt
+                )
+              ) {
+                return;
+              }
               this.selectionExportAfterDOMCommitHandler();
             },
             {
@@ -1977,20 +1999,18 @@ export class EditableDOMRuntime {
       inputController.state.activeIntent = null;
     }
     inputController.state.modelOwnedTextInputGuard = 0;
+    if (!holdExport) {
+      return;
+    }
     setEditableModelSelectionPreference({
       inputController,
       preferModelSelection: false,
       selectionSource: 'dom-current',
     });
     beginEditableNativeSelectionImport(inputController);
-    if (holdExport) {
-      inputController.state.pendingDOMSelectionImport = true;
-      inputController.state.nativeMoveHold = {
-        receipt: getPlacementGeneration(this.editorValue),
-      };
-      endHiddenAnchorPress(inputController);
-      this.scheduleOnDOMSelectionChange?.();
-    }
+    armNativeMoveHold(inputController, this.editorValue);
+    endHiddenAnchorPress(inputController);
+    this.scheduleOnDOMSelectionChange?.();
   }
 
   private attachNativeInputListeners() {
@@ -2097,6 +2117,7 @@ export class EditableDOMRuntime {
     this.selectionClaimsValue = claims;
     const detachSelectionChangeListener = attachEditableSelectionChangeListener(
       {
+        editor: this.editorValue,
         root: node,
         scheduleOnDOMSelectionChange: () => {
           claims.observeSelection();

@@ -2,7 +2,10 @@ import { useMemo } from 'react';
 
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
-import { endHiddenAnchorPress } from './input-state';
+import {
+  endHiddenAnchorPress,
+  hasFreshPendingDOMSelectionImport,
+} from './input-state';
 import {
   createRuntimeSelectionChangeHandler,
   createRuntimeSelectionChangeScheduler,
@@ -44,12 +47,13 @@ export const useEditableRootSelectionImport = ({
     });
 
     // An import the previous handlers left pending still owns the browser's
-    // move, so it runs on these handlers and ends the flag and the hold itself.
-    if (inputController.state.pendingDOMSelectionImport) {
+    // move, so it runs on these handlers and ends the pending import and the hold itself.
+    if (hasFreshPendingDOMSelectionImport(inputController, editor)) {
       scheduleOnDOMSelectionChange();
     }
     return dispose;
   }, [
+    editor,
     inputController,
     onDOMSelectionChange,
     runtime,

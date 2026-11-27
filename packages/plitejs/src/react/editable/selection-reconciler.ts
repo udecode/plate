@@ -82,7 +82,10 @@ import {
   setEditableModelSelectionPreference,
   syncEditableDOMSelectionToEditor,
 } from './input-controller';
-import { exportEditableDOMSelection } from './input-state';
+import {
+  exportEditableDOMSelection,
+  isSelectionHeldForPendingImport,
+} from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
@@ -167,7 +170,6 @@ export type EditableSelectionReconcilerState = {
   isUpdatingSelection: boolean;
   latestElement: DOMElement | null;
   outsideFocusBoundarySettleUntil: number;
-  pendingDOMSelectionImport: boolean;
   selectionChangeOrigin?: SelectionChangeOrigin | null;
 };
 
@@ -1311,12 +1313,11 @@ export const useEditableSelectionReconciler = ({
       runtime.domCoverage.getBoundariesForRange(projectedSelection).length > 0;
 
     if (
-      state.pendingDOMSelectionImport &&
-      containsShadowAware(
-        editorElementForActiveTarget,
-        domSelection.anchorNode
-      ) &&
-      containsShadowAware(editorElementForActiveTarget, domSelection.focusNode)
+      isSelectionHeldForPendingImport(
+        runtime.inputController,
+        editor,
+        editorElementForActiveTarget
+      )
     ) {
       return undefined;
     }

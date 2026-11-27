@@ -1,3 +1,4 @@
+import { getPlacementGeneration, placedSince } from '../../core/view-carets';
 import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor } from '../plugin/react-editor';
@@ -27,16 +28,24 @@ export const useEditableRootSelectionExport = ({
         getSelectionDOMRange(editor, selection),
       getModelSelection: () => getEditorSelection(editor),
       inputController,
-      scheduleDOMExport: (callback) =>
-        domPhaseScheduler.schedule(
+      scheduleDOMExport: (callback) => {
+        const receipt = getPlacementGeneration(editor);
+
+        return domPhaseScheduler.schedule(
           'selection-repair',
           'selection-dom-export',
-          callback,
+          () => {
+            if (placedSince(editor, receipt)) {
+              return;
+            }
+            callback();
+          },
           {
             key: 'selection-dom-export',
             timing: 'animation-frame',
           }
-        ),
+        );
+      },
       // Chromium focuses an unfocused editable when a DOM selection is written into it.
       shouldSkipDOMExport: (selection) =>
         !ReactEditor.isFocused(editor) ||

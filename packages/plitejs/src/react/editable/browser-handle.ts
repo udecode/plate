@@ -55,6 +55,7 @@ import {
   recordEditableKernelTrace,
 } from './editing-kernel';
 import type { ExternalTextRuntime } from './external-text-runtime';
+import { isPendingDOMSelectionImportFresh } from './input-state';
 import type { EditableInputController } from './input-state';
 import {
   applyEditableCommand,
@@ -765,8 +766,10 @@ export const attachPliteBrowserHandle = ({
         modelSelectionPreference:
           inputController.state.modelSelectionPreference,
         modelOwnedDOMCoverageSelection,
-        pendingDOMSelectionImport:
-          inputController.state.pendingDOMSelectionImport,
+        pendingDOMSelectionImport: isPendingDOMSelectionImportFresh(
+          inputController,
+          editor
+        ),
         pendingNativeTextInputRepairOffset:
           inputController.state.pendingNativeTextInputRepairOffset ?? null,
         pendingNativeTextInputRepairPathKey:

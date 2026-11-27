@@ -86,6 +86,7 @@ export {
   findDOMRootRuntime,
   hasMountedDOMRoot,
   isSelectionOwnedByEditable,
+  readEditableDOMSelectionPoints,
   resolveDOMReach,
   resolveDOMTargetView,
   writeEditableDOMSelection,

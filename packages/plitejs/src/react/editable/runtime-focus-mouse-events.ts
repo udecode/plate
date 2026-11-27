@@ -2,8 +2,11 @@ import { type FocusEvent, type MouseEvent, useCallback, useRef } from 'react';
 
 import { SelectionApi } from '../..';
 import {
+  capturePlacement,
+  getPlacementGeneration,
   holdsCaret,
   mayClearCaret,
+  placedSince,
   resolveLiveCaret,
 } from '../../core/view-carets';
 import { getSelection, isDOMNode } from '../../dom';
@@ -27,6 +30,7 @@ import {
 import {
   type EditableInputController,
   endSelectionImport,
+  getDeferredSelectionWriteStatus,
   isSelectionHeldForPendingImport,
 } from './input-state';
 import { findSelectionNestedEditable } from './interaction-owner';
@@ -280,6 +284,7 @@ export const useRuntimeFocusMouseEvents = ({
           }
         };
         let placedStartCaret = false;
+        let receipt = getPlacementGeneration(editor);
         const lacksAnyCaret = () =>
           mayClearCaret(editor) &&
           !resolveLiveCaret(editor) &&
@@ -290,18 +295,26 @@ export const useRuntimeFocusMouseEvents = ({
         const fillStartCaretOnceFocusSettles = () => {
           if (!isElementFocused(editorElement)) return;
           if (
-            isSelectionHeldForPendingImport(
-              inputController,
+            getDeferredSelectionWriteStatus({
+              editable: editorElement,
               editor,
-              editorElement
-            )
+              inputController,
+              receipt,
+            }) !== 'ready'
           ) {
             return;
           }
           if (!readOnly && !placedStartCaret && lacksAnyCaret()) {
-            editor.update({ tags: 'skip-scroll-into-view' }, () => {
-              placedStartCaret = !ensureFocusCaret(editor, editorElement);
-            });
+            receipt = capturePlacement(
+              editor,
+              () => {
+                editor.update({ tags: 'skip-scroll-into-view' }, () => {
+                  placedStartCaret = !ensureFocusCaret(editor, editorElement);
+                });
+              },
+              receipt
+            );
+            if (placedSince(editor, receipt)) return;
           }
           if (!placedStartCaret || !hasDOMCaretIn(editorElement)) {
             syncDOMSelectionToEditor();

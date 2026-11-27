@@ -28,6 +28,7 @@ import {
   changeDOMSelection,
   type DOMSelectionPoints,
   forgetDOMSelectionRecord,
+  readDOMSelectionPoints,
   readDOMSelectionRange,
   readDOMSelectionRecord,
   readsSelectionAsHost,
@@ -455,6 +456,56 @@ const shadowRootsAbove = (element: Element) => {
   return roots;
 };
 
+const readComposedSelectionRange = (
+  editable: Element,
+  selection: Selection,
+  shadowRoots = shadowRootsAbove(editable)
+): AbstractRange | null => {
+  const composedSelection = selection as Selection & {
+    getComposedRanges?: (
+      ...args: ReadonlyArray<
+        ShadowRoot | { shadowRoots?: readonly ShadowRoot[] }
+      >
+    ) => readonly AbstractRange[];
+  };
+
+  if (typeof composedSelection.getComposedRanges !== 'function') {
+    return null;
+  }
+
+  try {
+    return composedSelection.getComposedRanges({ shadowRoots })[0] ?? null;
+  } catch {
+    try {
+      return composedSelection.getComposedRanges(...shadowRoots)[0] ?? null;
+    } catch {
+      return null;
+    }
+  }
+};
+
+export const readEditableDOMSelectionPoints = (
+  editable: Element,
+  selection: Selection | null
+): DOMSelectionPoints | null => {
+  if (!selection) return null;
+
+  const tree = editable.getRootNode() as Document | ShadowRoot;
+
+  if (tree.nodeType === tree.DOCUMENT_FRAGMENT_NODE) {
+    const composed = readComposedSelectionRange(editable, selection);
+
+    if (composed) {
+      return {
+        anchor: [composed.startContainer, composed.startOffset],
+        focus: [composed.endContainer, composed.endOffset],
+      };
+    }
+  }
+
+  return readDOMSelectionPoints(selection);
+};
+
 export const isSelectionOwnedByEditable = (
   editable: Element,
   selection: Selection | null,
@@ -488,19 +539,11 @@ export const isSelectionOwnedByEditable = (
   };
 
   if (typeof composedSelection.getComposedRanges === 'function') {
-    let composedRanges: readonly AbstractRange[] = [];
-
-    try {
-      composedRanges = composedSelection.getComposedRanges({ shadowRoots });
-    } catch {
-      try {
-        composedRanges = composedSelection.getComposedRanges(...shadowRoots);
-      } catch {
-        composedRanges = [];
-      }
-    }
-
-    const composed = composedRanges[0];
+    const composed = readComposedSelectionRange(
+      editable,
+      selection,
+      shadowRoots
+    );
 
     return (
       !!composed &&

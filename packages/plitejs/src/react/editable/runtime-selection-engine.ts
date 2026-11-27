@@ -3,7 +3,6 @@ import throttle from 'lodash/throttle.js';
 import type { RefObject } from 'react';
 
 import { PointApi, RangeApi } from '../..';
-import { getPlacementGeneration } from '../../core/view-carets';
 import { getSelection } from '../../dom';
 import {
   clearAfterInsertCaret,
@@ -24,6 +23,7 @@ import {
 } from './editing-kernel';
 import {
   armHiddenAnchorPress,
+  armNativeMoveHold,
   beginEditableNativeSelectionImport,
   endHiddenAnchorPress,
   endSelectionImport,
@@ -299,6 +299,9 @@ export const createRuntimeSelectionChangeHandler = ({
       domRepairQueueRef.current?.cancelBefore(frame.id);
     }
 
+    let deferred = false;
+    let ended = false;
+
     try {
       applyEditableDOMSelectionChange({
         androidInputManager: androidInputManagerRef.current,
@@ -306,8 +309,14 @@ export const createRuntimeSelectionChangeHandler = ({
         inputController,
         webKitProbeActive,
         readOnly,
-        rerunOnDirtyNodeMap: onDOMSelectionChange,
+        rerunOnDirtyNodeMap: () => {
+          deferred = true;
+          onDOMSelectionChange();
+        },
       });
+      if (deferred) return;
+      ended = true;
+      endSelectionImport(inputController);
 
       const shouldRepairPendingNativeTextInput =
         shouldRepairPendingNativeTextInputDuringSelectionChange({
@@ -350,7 +359,9 @@ export const createRuntimeSelectionChangeHandler = ({
         selectionChangeOrigin,
       });
     } finally {
-      endSelectionImport(inputController);
+      if (!deferred && !ended) {
+        endSelectionImport(inputController);
+      }
     }
   }, SELECTION_IMPORT_THROTTLE);
 
@@ -493,10 +504,7 @@ export const createRuntimeSelectionImportController = ({
     fromHiddenAnchor: boolean;
     root: HTMLElement;
   }) {
-    const receipt = getPlacementGeneration(editor);
-
-    inputController.state.pendingDOMSelectionImport = true;
-    inputController.state.nativeMoveHold = { receipt };
+    const receipt = armNativeMoveHold(inputController, editor);
     if (fromHiddenAnchor) {
       armHiddenAnchorPress(inputController, receipt, root, () =>
         this.settleHiddenEnd(root)

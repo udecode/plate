@@ -1,5 +1,10 @@
 import { type Path, PathApi, RangeApi } from '../..';
 import {
+  capturePlacement,
+  getPlacementGeneration,
+  placedSince,
+} from '../../core/view-carets';
+import {
   type DOMRange,
   getSelection,
   isDOMElement,
@@ -49,9 +54,8 @@ import { updateNativeTextInput } from './input-history';
 import {
   clearEditablePendingNativeTextInputRepair,
   type EditableInputController,
+  getDeferredSelectionWriteStatus,
   getEditableNativeGroupingInput,
-  isSelectionHeldForNativeMove,
-  isSelectionHeldForPendingImport,
 } from './input-state';
 import { getUserTextLanding } from './mutation-controller';
 import { readRuntimeText } from './runtime-live-state';
@@ -98,10 +102,13 @@ export type DOMRepairQueue = {
     kind?: 'repair-caret' | 'repair-caret-after-text-insert',
     options?: DOMCaretRepairOptions
   ) => void;
-  repairCaretAfterModelTextInsert: () => void;
+  repairCaretAfterModelTextInsert: (options?: DOMCaretRepairOptions) => void;
 };
 
 export type DOMCaretRepairOptions = Readonly<{
+  afterSeq?: number;
+  ownedRepair?: Readonly<{ offset: number; pathKey: string }> | null;
+  receipt?: number;
   /**
    * The page's selection when the model selection collapsed. The caret then
    * takes its point's default side, not the side the live focus shows across
@@ -210,6 +217,28 @@ export const createDOMRepairQueue = ({
       timing: 'timeout',
     });
 
+  const capturePendingNativeTextInputRepair = () =>
+    inputController.state.pendingNativeTextInputRepairPathKey != null &&
+    inputController.state.pendingNativeTextInputRepairOffset != null
+      ? {
+          offset: inputController.state.pendingNativeTextInputRepairOffset,
+          pathKey: inputController.state.pendingNativeTextInputRepairPathKey,
+        }
+      : null;
+
+  const clearOwnedPendingNativeTextInputRepair = (
+    owned: Readonly<{ offset: number; pathKey: string }> | null
+  ) => {
+    if (
+      owned &&
+      inputController.state.pendingNativeTextInputRepairPathKey ===
+        owned.pathKey &&
+      inputController.state.pendingNativeTextInputRepairOffset === owned.offset
+    ) {
+      clearEditablePendingNativeTextInputRepair(inputController);
+    }
+  };
+
   const scheduleTextInsertCaretRepair = ({
     delays = [],
     immediate = true,
@@ -217,8 +246,19 @@ export const createDOMRepairQueue = ({
     delays?: number[];
     immediate?: boolean;
   } = {}) => {
+    const scheduledReceipt = getPlacementGeneration(editor);
+    const scheduledSeq = inputController.state.selectionChangeSeq;
+    const ownedRepair = capturePendingNativeTextInputRepair();
     const repair = () => {
-      queue.repairCaretAfterModelTextInsert();
+      if (placedSince(editor, scheduledReceipt)) {
+        clearOwnedPendingNativeTextInputRepair(ownedRepair);
+        return;
+      }
+      queue.repairCaretAfterModelTextInsert({
+        afterSeq: scheduledSeq,
+        ownedRepair,
+        receipt: scheduledReceipt,
+      });
     };
 
     if (immediate) {
@@ -791,12 +831,23 @@ export const createDOMRepairQueue = ({
 
     repairCaretAfterModelIntent(
       kind: 'repair-caret' | 'repair-caret-after-text-insert' = 'repair-caret',
-      { replacing }: DOMCaretRepairOptions = {}
+      {
+        afterSeq,
+        ownedRepair: initialOwnedRepair,
+        receipt: initialReceipt,
+        replacing,
+      }: DOMCaretRepairOptions = {}
     ) {
       const currentFrameId = profileDOMRepairDuration(
         'read-current-frame',
         () => getCurrentEditableEventFrame(editor)?.id ?? null
       );
+      const ownedRepair =
+        initialOwnedRepair !== undefined
+          ? initialOwnedRepair
+          : kind === 'repair-caret-after-text-insert'
+            ? capturePendingNativeTextInputRepair()
+            : null;
       const hasPendingTextInsertRepair =
         inputController.state.pendingNativeTextInputRepairPathKey != null &&
         inputController.state.pendingNativeTextInputRepairOffset != null;
@@ -810,6 +861,12 @@ export const createDOMRepairQueue = ({
       const isCurrentRepairFrame = () =>
         frameId === null || isDOMRepairFrameCurrent(frameState, frameId);
       let textInsertRepairCompleted = false;
+      let receipt = initialReceipt ?? getPlacementGeneration(editor);
+      const repairAfterSeq =
+        afterSeq ??
+        (kind === 'repair-caret-after-text-insert'
+          ? inputController.state.selectionChangeSeq
+          : undefined);
       const selectionBefore = profileDOMRepairDuration(
         'read-runtime-selection',
         () => readRuntimeSelection(editor)
@@ -895,12 +952,22 @@ export const createDOMRepairQueue = ({
             pliteOffset = pendingTextInputRepairOffset;
 
             if (selection.anchor.offset !== pliteOffset) {
-              editor.update((tx) => {
-                tx.selection.set({
-                  anchor: { path, offset: pliteOffset },
-                  focus: { path, offset: pliteOffset },
-                });
-              });
+              receipt = capturePlacement(
+                editor,
+                () => {
+                  editor.update((tx) => {
+                    tx.selection.set({
+                      anchor: { path, offset: pliteOffset },
+                      focus: { path, offset: pliteOffset },
+                    });
+                  });
+                },
+                receipt
+              );
+              if (placedSince(editor, receipt)) {
+                clearOwnedPendingNativeTextInputRepair(ownedRepair);
+                return false;
+              }
             }
           }
 
@@ -1126,6 +1193,14 @@ export const createDOMRepairQueue = ({
 
           return true;
         }
+        if (placedSince(editor, receipt)) {
+          if (kind === 'repair-caret-after-text-insert') {
+            clearOwnedPendingNativeTextInputRepair(ownedRepair);
+          }
+          repairCompleted = true;
+
+          return true;
+        }
         if (!rootRef.current || !isElementFocused(rootRef.current)) {
           if (kind === 'repair-caret-after-text-insert') {
             repairCollapsedSelectionByPath();
@@ -1134,25 +1209,28 @@ export const createDOMRepairQueue = ({
 
           return true;
         }
-        // Native text input's own selectionchange leaves pendingDOMSelectionImport
-        // set until its handler's finally block runs after repair-caret-after-text-insert.
         if (
-          kind === 'repair-caret'
-            ? isSelectionHeldForPendingImport(
-                inputController,
-                editor,
-                rootRef.current
-              )
-            : isSelectionHeldForNativeMove(
-                inputController,
-                editor,
-                rootRef.current
-              )
+          getDeferredSelectionWriteStatus({
+            afterSeq: repairAfterSeq,
+            editable: rootRef.current,
+            editor,
+            inputController,
+            receipt,
+          }) === 'hold'
         ) {
           return false;
         }
 
         const repaired = repairCollapsedSelectionByPath();
+
+        if (placedSince(editor, receipt)) {
+          if (kind === 'repair-caret-after-text-insert') {
+            clearOwnedPendingNativeTextInputRepair(ownedRepair);
+          }
+          repairCompleted = true;
+
+          return true;
+        }
 
         repairCompleted =
           repaired && (kind === 'repair-caret' || textInsertRepairCompleted);
@@ -1190,11 +1268,14 @@ export const createDOMRepairQueue = ({
       retry(kind === 'repair-caret-after-text-insert' ? 40 : 8);
     },
 
-    repairCaretAfterModelTextInsert() {
-      this.repair({
-        kind: 'repair-caret',
-        reason: 'repair-caret-after-text-insert',
-      });
+    repairCaretAfterModelTextInsert(options) {
+      this.repair(
+        {
+          kind: 'repair-caret',
+          reason: 'repair-caret-after-text-insert',
+        },
+        options
+      );
     },
   };
 

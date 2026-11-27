@@ -1,19 +1,25 @@
+import { getPlacementGeneration } from '../../core/view-carets';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { resolveEditableImplicitTarget } from './input-controller';
-import type { EditableInputController } from './input-state';
+import {
+  type EditableInputController,
+  getDeferredSelectionWriteStatus,
+} from './input-state';
 import { writeTargetRuntime } from './runtime-mutation-state';
 
 export const useRuntimeTargetBridge = ({
   domPhaseScheduler,
   editor,
   inputController,
+  rootRef,
   syncDOMSelectionToEditor,
 }: {
   domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
+  rootRef: Readonly<{ current: HTMLElement | null }>;
   syncDOMSelectionToEditor: () => void;
 }) => {
   useIsomorphicLayoutEffect(() => {
@@ -24,10 +30,24 @@ export const useRuntimeTargetBridge = ({
           inputController,
           request,
           scheduleSelectionSync: (callback) => {
+            const receipt = getPlacementGeneration(editor);
+
             domPhaseScheduler.schedule(
               'selection-repair',
               'implicit-target-selection-sync',
-              callback,
+              () => {
+                if (
+                  getDeferredSelectionWriteStatus({
+                    editable: rootRef.current,
+                    editor,
+                    inputController,
+                    receipt,
+                  }) !== 'ready'
+                ) {
+                  return;
+                }
+                callback();
+              },
               { timing: 'timeout' }
             );
           },
@@ -39,5 +59,11 @@ export const useRuntimeTargetBridge = ({
     return () => {
       writeTargetRuntime(editor, null);
     };
-  }, [domPhaseScheduler, editor, inputController, syncDOMSelectionToEditor]);
+  }, [
+    domPhaseScheduler,
+    editor,
+    inputController,
+    rootRef,
+    syncDOMSelectionToEditor,
+  ]);
 };

@@ -1,7 +1,11 @@
 import { getSelection } from '../../dom';
-import { findDOMRootRuntime } from '../../dom/internal';
-import { containsShadowAware } from '../../dom/utils/dom';
+import {
+  findDOMRootRuntime,
+  isSelectionOwnedByEditable,
+} from '../../dom/internal';
 import type { EditableInputController } from './input-controller';
+import { markPendingDOMSelectionImport } from './input-state';
+import type { AnyEditor } from './runtime-editor-api';
 
 type SelectionChangeRegistration = {
   notify: () => void;
@@ -128,13 +132,18 @@ const createSelectionTransport = (document: Document) => {
 };
 
 export const attachEditableSelectionChangeListener = ({
+  editor,
   root,
   scheduleOnDOMSelectionChange,
   state,
 }: {
+  editor: AnyEditor;
   root: HTMLElement;
   scheduleOnDOMSelectionChange: () => void;
-  state: Pick<EditableInputController['state'], 'pendingDOMSelectionImport'> &
+  state: Pick<
+    EditableInputController['state'],
+    'pendingDOMSelectionImport' | 'selectionChangeSeq'
+  > &
     Partial<
       Pick<
         EditableInputController['state'],
@@ -170,10 +179,11 @@ export const attachEditableSelectionChangeListener = ({
         root.getRootNode() as Document | ShadowRoot
       );
 
-      state.pendingDOMSelectionImport =
-        !!domSelection &&
-        containsShadowAware(root, domSelection.anchorNode) &&
-        containsShadowAware(root, domSelection.focusNode);
+      if (isSelectionOwnedByEditable(root, domSelection)) {
+        markPendingDOMSelectionImport(state, editor);
+      } else {
+        state.pendingDOMSelectionImport = null;
+      }
       scheduleOnDOMSelectionChange();
     },
   });

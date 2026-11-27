@@ -190,6 +190,7 @@ export const useEditableEventRuntime = ({
     domPhaseScheduler: runtime.domPhaseScheduler,
     editor,
     inputController,
+    rootRef,
     syncDOMSelectionToEditor,
   });
   const inputHandlers = useRuntimeInputEvents({

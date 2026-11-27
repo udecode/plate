@@ -177,10 +177,16 @@ export const changeDOMSelection = (
     UNPLACED_WRITES.delete(tree);
   }
 
+  const writtenPoints = readDOMSelectionPoints(selection);
+
   RECORDS.set(tree, {
-    points: readsSelectionAsHost(tree)
-      ? points
-      : readDOMSelectionPoints(selection),
+    points:
+      readsSelectionAsHost(tree) ||
+      (tree.nodeType === tree.DOCUMENT_FRAGMENT_NODE &&
+        points !== null &&
+        !writtenPoints)
+        ? points
+        : writtenPoints,
     source: 'write',
   });
 

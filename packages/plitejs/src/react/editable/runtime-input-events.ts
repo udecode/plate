@@ -5,6 +5,7 @@ import {
   useRef,
 } from 'react';
 
+import { getPlacementGeneration, placedSince } from '../../core/view-carets';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
@@ -35,26 +36,33 @@ type InputHandler = (event: ReactInputEvent<HTMLDivElement>) => boolean | void;
 
 const syncModelOwnedTextInputSelectionToDOM = ({
   domPhaseScheduler,
+  editor,
   syncDOMSelectionToEditor,
 }: {
   domPhaseScheduler: DOMPhaseScheduler;
+  editor: ReactRuntimeEditor;
   syncDOMSelectionToEditor: (options?: EditableDOMSelectionSyncOptions) => void;
 }) => {
+  const receipt = getPlacementGeneration(editor);
   const sync = () => {
     syncDOMSelectionToEditor({ compositionCaret: true });
+  };
+  const syncDeferred = () => {
+    if (placedSince(editor, receipt)) return;
+    sync();
   };
 
   sync();
   domPhaseScheduler.schedule(
     'selection-repair',
     'input-selection-sync-microtask',
-    sync,
+    syncDeferred,
     { timing: 'microtask' }
   );
   domPhaseScheduler.schedule(
     'selection-repair',
     'input-selection-sync-frame',
-    sync,
+    syncDeferred,
     { timing: 'animation-frame' }
   );
 };
@@ -222,6 +230,7 @@ export const useRuntimeInputEvents = ({
         armModelOwnedTextInputGuard({ inputController });
         syncModelOwnedTextInputSelectionToDOM({
           domPhaseScheduler,
+          editor,
           syncDOMSelectionToEditor,
         });
       }

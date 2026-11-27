@@ -204,11 +204,13 @@ const clearNativeSelectionForProjectedSelection = (
     return;
   }
 
+  const runtime = findMountedEditableDOMRuntime(element);
+
   scheduleEditableDOMSelectionClear({
-    domPhaseScheduler:
-      findMountedEditableDOMRuntime(element)?.domPhaseScheduler,
+    domPhaseScheduler: runtime?.domPhaseScheduler,
     editable: element,
     editor,
+    inputController: runtime?.inputController,
     label: 'clear-projected-selection',
     shouldRun: () => {
       if (!element.isConnected) return false;

@@ -101,6 +101,7 @@ import {
   type EditableDOMRuntime,
 } from './editable-dom-runtime';
 import type { EditableDOMSelectionSyncOptions } from './input-controller';
+import { getDeferredSelectionWriteStatus } from './input-state';
 import { findNestedEditable } from './interaction-owner';
 import { writeCollapsedModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
@@ -1666,7 +1667,7 @@ export const useRootInteractionController = ({
   const scheduleInteractionFrame = useCallback(
     (
       label: string,
-      callback: () => void,
+      callback: (runtime: EditableDOMRuntime) => void,
       {
         phase = 'selection-repair',
         target,
@@ -1684,9 +1685,14 @@ export const useRootInteractionController = ({
         getMountedEditableDOMRuntime(mountedEditor) ??
         getMountedEditableDOMRuntime(editor);
 
-      return runtime?.domPhaseScheduler.schedule(phase, label, callback, {
-        timing,
-      });
+      return runtime?.domPhaseScheduler.schedule(
+        phase,
+        label,
+        () => callback(runtime),
+        {
+          timing,
+        }
+      );
     },
     [editor, getMountedViewEditor, root, rootRuntime]
   );
@@ -1837,15 +1843,28 @@ export const useRootInteractionController = ({
             },
           }
         );
-        focusPliteEditableAfterEventFrame(focusEditor, {
-          receipt: getPlacementGeneration(focusEditor),
-        });
+        const receipt = getPlacementGeneration(focusEditor);
+
+        focusPliteEditableAfterEventFrame(focusEditor, { receipt });
         const syncOptions = { preserveScroll: options.keepScroll };
 
         selectionBridge?.syncDOMSelectionToEditor(syncOptions);
-        scheduleInteractionFrame('root-interaction-selection-sync', () => {
-          selectionBridge?.syncDOMSelectionToEditor(syncOptions);
-        });
+        scheduleInteractionFrame(
+          'root-interaction-selection-sync',
+          (focusRuntime) => {
+            if (
+              getDeferredSelectionWriteStatus({
+                editable: focusRuntime.rootElement,
+                editor: focusEditor,
+                inputController: focusRuntime.inputController,
+                receipt,
+              }) !== 'ready'
+            ) {
+              return;
+            }
+            selectionBridge?.syncDOMSelectionToEditor(syncOptions);
+          }
+        );
         return;
       }
 
