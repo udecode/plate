@@ -35,7 +35,7 @@ import {
   validateInkDigitizeReading,
 } from '@/registry/lib/ink-digitize';
 
-const DEFAULT_MODEL = 'google/gemini-2.5-flash';
+const DEFAULT_MODEL = 'google/gemini-3.8-flash';
 const DIGITIZE_ENDPOINT = '/api/ai/ink-digitize';
 
 type DigitizeNotice =

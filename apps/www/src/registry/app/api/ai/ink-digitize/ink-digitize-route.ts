@@ -316,7 +316,7 @@ export const validateInkDigitizeReading = (
   return null;
 };
 
-export const DEFAULT_INK_DIGITIZE_MODEL = 'google/gemini-2.5-flash';
+export const DEFAULT_INK_DIGITIZE_MODEL = 'google/gemini-3.8-flash';
 
 // Gemini and Vertex response schemas reject JSON Schema tuple arrays (`items: [...]`)
 // and drop fields inside `oneOf` discriminated unions, so the provider output schema

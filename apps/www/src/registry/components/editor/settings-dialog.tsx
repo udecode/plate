@@ -69,8 +69,11 @@ export const models: Model[] = [
   { label: 'O4 Mini', value: 'openai/o4-mini' },
 
   // Google Models
-  { label: 'Gemini 2.0 Flash', value: 'google/gemini-2.0-flash' },
-  { label: 'Gemini 2.0 Flash Lite', value: 'google/gemini-2.0-flash-lite' },
+  { label: 'Gemini 4 Neon', value: 'google/gemini-4-neon' },
+  { label: 'Gemini 4 Hydrogen', value: 'google/gemini-4-hydrogen' },
+  { label: 'Gemini 3.8 Flash', value: 'google/gemini-3.8-flash' },
+  { label: 'Gemini 3.7 Flash', value: 'google/gemini-3.7-flash' },
+  { label: 'Gemini 3.5 Flash Lite', value: 'google/gemini-3.5-flash-lite' },
   { label: 'Gemini 2.5 Flash', value: 'google/gemini-2.5-flash' },
   {
     label: 'Gemini 2.5 Flash Image Preview',
@@ -78,6 +81,8 @@ export const models: Model[] = [
   },
   { label: 'Gemini 2.5 Flash Lite', value: 'google/gemini-2.5-flash-lite' },
   { label: 'Gemini 2.5 Pro', value: 'google/gemini-2.5-pro' },
+  { label: 'Gemini 2.0 Flash', value: 'google/gemini-2.0-flash' },
+  { label: 'Gemini 2.0 Flash Lite', value: 'google/gemini-2.0-flash-lite' },
   { label: 'Gemma 2 9B', value: 'google/gemma-2-9b' },
 
   // Alibaba Models
@@ -215,7 +220,7 @@ export const models: Model[] = [
 ];
 
 const DEFAULT_MODEL =
-  models.find((m) => m.value === 'google/gemini-2.5-flash') ?? models[7];
+  models.find((m) => m.value === 'google/gemini-3.8-flash') ?? models[7];
 
 export const AI_SETTINGS_OPEN_EVENT = 'editor-ai-settings-open';
 
