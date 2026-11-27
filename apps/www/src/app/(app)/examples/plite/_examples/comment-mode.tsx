@@ -108,7 +108,7 @@ const createCommentViewStore = (
 ): CommentViewStore => {
   let currentEditor = initialEditor;
   let currentComments = initialComments;
-  let snapshot = initialComments.map((comment) =>
+  let snapshot: readonly ResolvedComment[] = initialComments.map((comment) =>
     resolveCommentEntry(currentEditor, comment)
   );
   const listeners = new Set<() => void>();
