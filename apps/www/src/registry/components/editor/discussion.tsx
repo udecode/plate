@@ -187,7 +187,7 @@ const blockThreadCount = (
   return count;
 };
 
-type AreaOwner = Readonly<{ path: Path; root: NamedRootKey | undefined }>;
+type AreaOwner = Readonly<{ path: Path; root?: NamedRootKey | undefined }>;
 
 type AreaPlaces = Readonly<{
   owners: ReadonlyMap<string, readonly AreaOwner[]>;
@@ -458,12 +458,13 @@ const useDiscussionController = () => {
   const authoredView = useEditorViewState(editor, () =>
     readAuthoredViewMode(editor)
   );
+  const viewRoot = useEditorSelector((current) => current.read.view.root());
   const presentationView = React.useMemo(
     () =>
-      editor.read.view.root() === undefined
+      viewRoot === undefined
         ? editor
         : createEditorView(editor, { readOnly: true }),
-    [editor]
+    [editor, viewRoot]
   );
   const { api: comments } = presentationView.plugin(CommentsPlugin);
   const visibleThreadIds = useVisibleCommentThreadIds();
@@ -1119,12 +1120,13 @@ function NewComment({
   pendingRoot: NamedRootKey | undefined;
 }) {
   const editor = useEditor();
+  const viewRoot = useEditorSelector((current) => current.read.view.root());
   const submitEditor = React.useMemo(
     () =>
-      pendingRoot === editor.read.view.root()
+      pendingRoot === viewRoot
         ? editor
         : createEditorView(editor, { root: pendingRoot }),
-    [editor, pendingRoot]
+    [editor, pendingRoot, viewRoot]
   );
   const { api: comments } = submitEditor.plugin(CommentsPlugin);
 
@@ -1294,12 +1296,13 @@ function DiscussionPopover({
   const model = useModelEditor();
   const { isPrimaryForRoot, nestedView, standaloneRoots } =
     useEditorRootAreas(editor);
+  const viewRoot = useEditorSelector((current) => current.read.view.root());
   const presentationView = React.useMemo(
     () =>
-      editor.read.view.root() === undefined
+      viewRoot === undefined
         ? editor
         : createEditorView(editor, { readOnly: true }),
-    [editor]
+    [editor, viewRoot]
   );
   const rootElement = useEditorRootElement(editor);
   const store = useDiscussionStore();
@@ -1313,7 +1316,8 @@ function DiscussionPopover({
   // the popover until the pointer is released.
   const pressingRef = React.useRef(false);
   const releasedPendingRef = React.useRef<typeof rawPending>(null);
-  const activeCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
+  const rawActiveCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
+  const activeCommentIds = isPrimaryForRoot ? rawActiveCommentIds : [];
   const activeOrder = new Map(activeCommentIds.map((id, index) => [id, index]));
   const suggestions = React.useContext(SuggestionsInstalledContext);
   const targetKey = snapshot.target?.blockKey ?? null;
@@ -1363,6 +1367,8 @@ function DiscussionPopover({
   // thread opened alone, such as from a list, opens its change's card.
   const activeGroups = useEditorSelector(
     (current) => {
+      if (!isPrimaryForRoot) return NO_GROUPS;
+
       const id = activeSuggestionId ?? changeId;
       const group =
         suggestions && id
@@ -1391,22 +1397,18 @@ function DiscussionPopover({
         : NO_GROUPS,
     { equalityFn: sameGroups }
   );
-  const activeItems: DiscussionItem[] = isPrimaryForRoot
-    ? [
-        ...activeCommentIds.flatMap((id) => {
-          const item = store.getComment(id);
+  const activeItems: DiscussionItem[] = [
+    ...activeCommentIds.flatMap((id) => {
+      const item = store.getComment(id);
 
-          return item ? [item] : [];
-        }),
-        ...activeGroups.map((group) =>
-          suggestionItemOf(editor, threads, group)
-        ),
-      ].toSorted(
-        (left, right) =>
-          (activeOrder.get(left.id) ?? activeCommentIds.length) -
-          (activeOrder.get(right.id) ?? activeCommentIds.length)
-      )
-    : [];
+      return item ? [item] : [];
+    }),
+    ...activeGroups.map((group) => suggestionItemOf(editor, threads, group)),
+  ].toSorted(
+    (left, right) =>
+      (activeOrder.get(left.id) ?? activeCommentIds.length) -
+      (activeOrder.get(right.id) ?? activeCommentIds.length)
+  );
   const targetItems = targetKey
     ? sortDiscussionItems([
         ...store.getComments(targetKey),
@@ -1523,13 +1525,13 @@ function DiscussionPopover({
 
     const { root } = RangeApi.start(range);
     const fallbackView =
-      root === editor.read.view.root()
+      root === viewRoot
         ? editor
         : createEditorView(editor, { readOnly: true, root });
 
     return () => {
       const rangeView =
-        root === editor.read.view.root()
+        root === viewRoot
           ? editor
           : ((root ? nestedView(root) : null) ?? fallbackView);
       const domRange = rangeView.api.dom.resolveDOMRange(range);
@@ -1562,6 +1564,7 @@ function DiscussionPopover({
     nestedView,
     store,
     targetElement,
+    viewRoot,
   ]);
   const { anchor: anchorElement, hidden } = useVisibleAnchor({
     editableRef,
