@@ -8,6 +8,7 @@ export {
   type DeviceFocusSnapshot,
   type DeviceKnownFailure,
   type DeviceLane,
+  type DevicePhoneItem,
   type DeviceQuery,
   type DeviceRectSnapshot,
   type DeviceRunState,

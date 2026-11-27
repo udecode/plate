@@ -8,6 +8,7 @@ export type DeviceWitnessPlatform = 'android' | 'ios';
 /** One lane gesture, before the lane measures its trace range. */
 export type DeviceWitnessGesture =
   | { kind: 'back'; label: string }
+  | { kind: 'phone'; label: string }
   | {
       kind: 'content';
       label: string;

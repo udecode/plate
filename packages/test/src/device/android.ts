@@ -864,6 +864,7 @@ export const chromeContentBounds = (serial: string) => {
         .map((node) => node.bounds[1])
     ),
     left: content.bounds[0],
+    minTop: content.bounds[1],
     right: content.bounds[2],
     top: toolbar?.bounds[3] ?? content.bounds[1],
   };

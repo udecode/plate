@@ -119,12 +119,18 @@ export type DeviceRectSnapshot = {
   width: number;
 };
 
+export type DevicePhoneItem = {
+  box: [number, number, number, number];
+  name: string;
+};
+
 export type DeviceScrollSnapshot = {
   containerTop: number;
   scrollY: number;
 };
 
 export type DeviceViewportSnapshot = {
+  devicePixelRatio: number;
   height: number;
   innerHeight: number;
   innerWidth: number;
@@ -133,6 +139,7 @@ export type DeviceViewportSnapshot = {
   offsetTop: number;
   pageTop: number;
   scale: number;
+  screenHeight: number;
   scrollY: number;
   width: number;
 };
@@ -146,10 +153,13 @@ export type DevicePage = {
 /** Touches at CSS points of the current page's layout viewport. */
 export type DeviceScreen = {
   doubleTap: (point: Point) => Promise<void>;
+  phoneItems: () => Promise<DevicePhoneItem[]>;
   press: (point: Point, ms: number) => Promise<void>;
   afterLoad: () => Promise<void>;
   settle: () => Promise<void>;
+  swipe: (from: Point, to: Point) => Promise<void>;
   tap: (point: Point) => Promise<void>;
+  tapScreen: (point: Point) => Promise<void>;
   toScreen: (point: Point) => Promise<Point>;
 };
 
@@ -283,8 +293,10 @@ export type DeviceLane = {
     caret: () => Promise<DeviceRectSnapshot | null>;
     editable: () => Promise<DeviceEditableDomSnapshot>;
     focus: () => Promise<DeviceFocusSnapshot>;
+    phoneItems: () => Promise<DevicePhoneItem[]>;
     scroll: () => Promise<DeviceScrollSnapshot>;
     toolbar: (toolbar: DeviceToolbar) => Promise<DeviceRectSnapshot | null>;
+    toScreen: (point: Point) => Promise<Point>;
     viewport: () => Promise<DeviceViewportSnapshot>;
   };
   scroll: (
@@ -298,8 +310,10 @@ export type DeviceLane = {
   };
   tapStrip: (candidate: RegExp | string) => Promise<string>;
   touch: {
+    swipe: (from: Point, to: Point) => Promise<void>;
     tapButton: (name: RegExp | string) => Promise<void>;
     tapMenuItem: (name: RegExp | string) => Promise<void>;
+    tapPhone: (name: RegExp | string) => Promise<string>;
     tapTestId: (testId: string) => Promise<void>;
     tapText: (text: string) => Promise<void>;
     tapTextEnd: (text: string) => Promise<void>;
@@ -1169,6 +1183,7 @@ export const createDeviceLane = ({
 
           return { editorFocused, menuOpen, region };
         }, undefined),
+      phoneItems: () => driver.screen.phoneItems(),
       scroll: () =>
         driver.page.find({ css: 'body' }).evaluate(() => {
           const editor = document.querySelector('[data-editor="true"]');
@@ -1210,11 +1225,13 @@ export const createDeviceLane = ({
             width: rect.width,
           };
         }, TOOLBAR_SELECTORS[toolbar]),
+      toScreen: (point) => driver.screen.toScreen(point),
       viewport: async () => {
         const view = await driver.page.find({ css: 'body' }).evaluate(() => {
           const visual = window.visualViewport;
 
           return {
+            devicePixelRatio: window.devicePixelRatio || 1,
             height: visual?.height ?? innerHeight,
             innerHeight,
             innerWidth,
@@ -1222,6 +1239,7 @@ export const createDeviceLane = ({
             offsetTop: visual?.offsetTop ?? 0,
             pageTop: visual?.pageTop ?? scrollY,
             scale: visual?.scale ?? 1,
+            screenHeight: window.screen.height,
             scrollY,
             width: visual?.width ?? innerWidth,
           };
@@ -1272,9 +1290,36 @@ export const createDeviceLane = ({
     },
     tapStrip: keyboard.strip,
     touch: {
+      swipe: (from, to) =>
+        gesture({ kind: 'content', label: 'swipe', target: from }, () =>
+          driver.screen.swipe(from, to)
+        ),
       tapButton: (name) => tapQuery(`tap button ${name}`, { button: name }),
       tapMenuItem: (name) =>
         tapQuery(`tap menu item ${name}`, { menuItem: name }),
+      tapPhone: async (name) => {
+        const items = await driver.screen.phoneItems();
+        const match = items.find((item) =>
+          typeof name === 'string' ? item.name === name : name.test(item.name)
+        );
+
+        if (!match) {
+          throw new Error(
+            `No phone control matches ${String(name)}; saw ${items.map((item) => item.name).join(', ') || 'none'}.`
+          );
+        }
+
+        const point = {
+          x: match.box[0] + match.box[2] / 2,
+          y: match.box[1] + match.box[3] / 2,
+        };
+
+        await gesture({ kind: 'phone', label: `phone ${match.name}` }, () =>
+          driver.screen.tapScreen(point)
+        );
+
+        return match.name;
+      },
       tapTestId: (testId) => tapQuery(`tap ${testId}`, { testId }),
       tapText: (text) => tapQuery(`tap "${text}"`, { text }),
       tapTextEnd: (text) => tapQuery(`tap end of "${text}"`, { text }, 'end'),

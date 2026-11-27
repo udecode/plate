@@ -194,20 +194,26 @@ export const createAndroidDriver = ({
   state: AndroidRunState;
 }): DeviceDriver => {
   const touch = createDeviceTouch(state.serial);
-  let offset: { innerHeight: number; x: number; y: number } | null = null;
+  let offset: { height: number; minY: number; x: number; y: number } | null =
+    null;
 
   const toScreen = async (css: { x: number; y: number }) => {
     if (!offset) throw new Error('Open a page before touching its content.');
 
     const view = await page.evaluate(() => ({
       dpr: devicePixelRatio,
+      height: visualViewport?.height ?? innerHeight,
       innerHeight,
       offsetLeft: visualViewport?.offsetLeft ?? 0,
       offsetTop: visualViewport?.offsetTop ?? 0,
       scale: visualViewport?.scale ?? 1,
     }));
-    // Chrome's offline and back-online line and its hiding toolbar move the page's top while its bottom stays put.
-    const top = offset.y + (offset.innerHeight - view.innerHeight) * view.dpr;
+    // Chrome's offline banner and hiding toolbar move the page top, while edge-to-edge bottom-bar retraction expands innerHeight without moving the top past compositor_view_holder.
+    const top = Math.max(
+      offset.minY,
+      offset.y +
+        (offset.height - Math.max(view.innerHeight, view.height)) * view.dpr
+    );
 
     return {
       x: offset.x + (css.x - view.offsetLeft) * view.dpr * view.scale,
@@ -345,10 +351,16 @@ export const createAndroidDriver = ({
       if (!seen) {
         throw new Error('The calibration touch never reached the page.');
       }
+      const calibratedY =
+        guess.y - (seen.y - seen.offsetTop) * seen.dpr * seen.scale;
+
       offset = {
-        innerHeight: await page.evaluate(() => innerHeight),
+        height: await page.evaluate(() =>
+          Math.max(innerHeight, visualViewport?.height ?? innerHeight)
+        ),
+        minY: Math.min(calibratedY, content.minTop),
         x: guess.x - (seen.x - seen.offsetLeft) * seen.dpr * seen.scale,
-        y: guess.y - (seen.y - seen.offsetTop) * seen.dpr * seen.scale,
+        y: calibratedY,
       };
     } finally {
       await page
@@ -617,6 +629,18 @@ export const createAndroidDriver = ({
 
         touch.doubleTap(point.x, point.y);
       },
+      phoneItems: async () =>
+        Object.entries(readKeyboard(state.serial, { unclickable: true })).map(
+          ([name, key]) => ({
+            box: [
+              key.bounds[0],
+              key.bounds[1],
+              key.bounds[2] - key.bounds[0],
+              key.bounds[3] - key.bounds[1],
+            ] as [number, number, number, number],
+            name,
+          })
+        ),
       press: async (css, ms) => {
         const point = await toScreen(css);
 
@@ -624,12 +648,20 @@ export const createAndroidDriver = ({
       },
       afterLoad: calibrateContent,
       settle: async () => {},
-      toScreen,
+      swipe: async (from, to) => {
+        const [start, end] = await Promise.all([toScreen(from), toScreen(to)]);
+
+        touch.move([start.x, start.y], [end.x, end.y], 300);
+      },
       tap: async (css) => {
         const point = await toScreen(css);
 
         touch.tap(point.x, point.y);
       },
+      tapScreen: async (point) => {
+        touch.tap(point.x, point.y);
+      },
+      toScreen,
     },
     system: {
       back: async () => {

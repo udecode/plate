@@ -557,6 +557,11 @@ export const createIosDriver = ({
       doubleTap: async (css) => {
         await send({ action: 'doubleTap', ...(await webPoint(css)) });
       },
+      phoneItems: async () => {
+        const { items = [] } = await send({ action: 'snapshot' });
+
+        return items;
+      },
       press: async (css, ms) => {
         await send({ action: 'press', ms, ...(await webPoint(css)) });
       },
@@ -566,6 +571,34 @@ export const createIosDriver = ({
       settle: async () => {
         await send({ action: 'idle' });
       },
+      swipe: async (from, to) => {
+        const [pixelRatio, start, end] = await Promise.all([
+          inspector.evaluate<number>('devicePixelRatio'),
+          webPoint(from),
+          webPoint(to),
+        ]);
+
+        await send({
+          action: 'drag',
+          holdMs: 0,
+          x1: start.x * pixelRatio,
+          x2: end.x * pixelRatio,
+          y1: start.y * pixelRatio,
+          y2: end.y * pixelRatio,
+        });
+      },
+      tap: async (css) => {
+        await send({ action: 'tap', ...(await webPoint(css)) });
+      },
+      tapScreen: async (point) => {
+        await send({
+          action: 'touch',
+          double: false,
+          holdMs: 0,
+          x: point.x,
+          y: point.y,
+        });
+      },
       toScreen: async (css) => {
         const [point, pixelRatio] = await Promise.all([
           webPoint(css),
@@ -573,9 +606,6 @@ export const createIosDriver = ({
         ]);
 
         return { x: point.x * pixelRatio, y: point.y * pixelRatio };
-      },
-      tap: async (css) => {
-        await send({ action: 'tap', ...(await webPoint(css)) });
       },
     },
     system: {
