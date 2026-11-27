@@ -120,6 +120,25 @@ const countRbush = (stats: Instruments['stats'], onLoad: () => void) => {
   };
 };
 
+const NOTE_ROOT_LOOK: React.CSSProperties = {
+  fontSize: 12,
+  lineHeight: 1.375,
+  padding: 12,
+};
+
+const NOTE_PAPER_LOOK: React.CSSProperties = {
+  background: '#fef9c3',
+  border: '1px solid #eab308',
+  borderRadius: 2,
+  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+  inset: 0,
+  position: 'absolute',
+};
+
+const NOTE_TEXT_LOOK: React.CSSProperties = {
+  position: 'relative',
+};
+
 const FRAME_NAME_LOOK: React.CSSProperties = {
   bottom: '100%',
   fontSize: 12,
@@ -193,11 +212,15 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     if (!layoutPlant || instrumented.has(view)) return;
     instrumented.add(view);
 
-    const { layoutOf, subscribeShapes } = view;
+    const { layoutOf, placementOf, subscribeShape, subscribeShapes } = view;
 
     const copies = new Map<
       string,
       { copy: ReturnType<typeof layoutOf>; from: unknown; tick: number }
+    >();
+    const placementCopies = new Map<
+      string,
+      { copy: ReturnType<typeof placementOf>; from: unknown; tick: number }
     >();
 
     view.subscribeShapes = (listener) => {
@@ -206,6 +229,15 @@ export const createProductionRenderer = (config: ProductionConfig) => {
 
       return () => {
         shapes();
+        ticks();
+      };
+    };
+    view.subscribeShape = (id, listener) => {
+      const shape = subscribeShape(id, listener);
+      const ticks = subscribeTick(listener);
+
+      return () => {
+        shape();
         ticks();
       };
     };
@@ -220,6 +252,20 @@ export const createProductionRenderer = (config: ProductionConfig) => {
       const copy = { ...layout };
 
       copies.set(key, { copy, from: layout, tick });
+
+      return copy;
+    };
+    view.placementOf = (key) => {
+      const placement = placementOf(key);
+      const tick = readTick();
+      const held = placementCopies.get(key);
+
+      if (!placement || tick === 0) return placement;
+      if (held?.from === placement && held.tick === tick) return held.copy;
+
+      const copy = { ...placement };
+
+      placementCopies.set(key, { copy, from: placement, tick });
 
       return copy;
     };
@@ -547,7 +593,13 @@ export const createProductionRenderer = (config: ProductionConfig) => {
           ...props.attributes,
           ...(arrow ? {} : marksOf(shape)),
         }}
-        style={arrow ? ARROW_LOOK : LOOK[shape.type ?? '']}
+        style={
+          arrow
+            ? ARROW_LOOK
+            : shape.type === 'boardNote'
+              ? NOTE_ROOT_LOOK
+              : LOOK[shape.type ?? '']
+        }
       />
     );
   }
@@ -576,6 +628,21 @@ export const createProductionRenderer = (config: ProductionConfig) => {
       : plant === 'shape-selector'
         ? SelectingShape
         : Shape;
+
+  function NoteShape(props: RenderElementProps) {
+    'use no memo';
+
+    return (
+      <ShapeComponent {...props}>
+        <div
+          contentEditable={false}
+          data-board-note-paper=""
+          style={NOTE_PAPER_LOOK}
+        />
+        <div style={NOTE_TEXT_LOOK}>{props.children}</div>
+      </ShapeComponent>
+    );
+  }
 
   function FrameShape(props: RenderElementProps) {
     'use no memo';
@@ -659,7 +726,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
       ],
     }),
     BoardNotePlugin.configure({
-      component: ShapeComponent as never,
+      component: NoteShape as never,
       targetPlugins: NOTE_TARGETS,
     }),
     BoardGeoPlugin.configure({ component: ShapeComponent as never }),

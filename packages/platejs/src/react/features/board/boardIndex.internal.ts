@@ -53,6 +53,26 @@ export type BoardShapeLayout = Readonly<{
   rank: number;
 }>;
 
+export type BoardShapePlacement = Readonly<{
+  box: BoardBox;
+  id: string;
+  key: NodeKey;
+  kind: BoardMemberEntry['kind'];
+  note: boolean;
+  rank: number;
+}>;
+
+type NoteHeightStamp = Readonly<{
+  children: Element['children'];
+  key: NodeKey;
+  sizeHeight: number;
+  sizeWidth: number;
+  textSize: unknown;
+  type: string;
+}>;
+
+const NO_BOX: BoardBox = { height: 0, width: 0, x: 0, y: 0 };
+
 /** Where an arrow draws: its two ends in board coordinates and the path between them. */
 export type BoardArrowPath = BoardArrowEnds & Readonly<{ path: string }>;
 
@@ -78,16 +98,40 @@ const sameEnd = (a: BoardArrowEnd, b: BoardArrowEnd) =>
       a.anchor[1] === b.anchor[1]
     : !isBoundArrowEnd(b));
 
+const sameArrowDrawing = (
+  a: BoardArrowPath | undefined,
+  b: BoardArrowPath | undefined
+) =>
+  a === b ||
+  (!!a &&
+    !!b &&
+    a.path === b.path &&
+    a.start.x === b.start.x &&
+    a.start.y === b.start.y &&
+    a.end.x === b.end.x &&
+    a.end.y === b.end.y);
+
 const sameTarget = (a: BoardArrowTarget, b: BoardArrowTarget) =>
   a.outline === b.outline &&
   sameBox({ ...a.place, ...a.size }, { ...b.place, ...b.size });
 
-const memberTarget = (entry: BoardFrameEntry | BoardShapeEntry) =>
+const memberTarget = (
+  entry: BoardFrameEntry | BoardShapeEntry,
+  height: number
+) =>
   boardArrowTargetOf({
     geo: entry.node.geo,
     place: entry.place,
-    size: entry.size,
+    size: { height, width: entry.size.width },
   });
+
+const cullBoxOf = ({ box, key }: BoardShapeLayout): CullBox => ({
+  key,
+  maxX: box.x + box.width,
+  maxY: box.y + box.height,
+  minX: box.x,
+  minY: box.y,
+});
 
 const drawArrow = (
   ends: ArrowEnds,
@@ -306,7 +350,7 @@ export const createBoardIndex = ({
   members: () => readonly BoardMemberEntry[];
   /** A member's current node, which a text commit changes without an update. */
   nodeOf: (key: NodeKey) => Element | undefined;
-  previewCleared: () => void;
+  previewCleared: (ids: readonly string[]) => void;
   types: BoardTypes;
 }>) => {
   const tree = new RBush<CullBox>();
@@ -321,9 +365,63 @@ export const createBoardIndex = ({
   let previewed = new Map<NodeKey, BoardArrowPath>();
   let previewedBoxes = new Map<string, BoardBox>();
   const shownLayouts = new WeakMap<BoardShapeLayout, BoardShapeLayout>();
+  let placements = new Map<string, BoardShapePlacement>();
+  const previewPlacements = new WeakMap<BoardBox, BoardShapePlacement>();
   const arrowListeners = new Map<NodeKey, Set<() => void>>();
   const strokePaths = new WeakMap<BoardStrokePoints, BoardStrokePath>();
+  const heights = new Map<string, number>();
+  const measuredStamps = new Map<string, NoteHeightStamp>();
+  const stamps = new Map<string, NoteHeightStamp>();
+  let shapeEntries = new Map<string, BoardFrameEntry | BoardShapeEntry>();
+  let cull = new Map<NodeKey, CullBox>();
   let version = 0;
+
+  const stampOf = (
+    entry: BoardFrameEntry | BoardShapeEntry,
+    node: Element = nodeOf(entry.key) ?? entry.node
+  ): NoteHeightStamp => ({
+    children: node.children,
+    key: entry.key,
+    sizeHeight: entry.size.height,
+    sizeWidth: entry.size.width,
+    textSize: node.textSize,
+    type: node.type,
+  });
+
+  const stampMatches = (
+    stamp: NoteHeightStamp,
+    entry: BoardFrameEntry | BoardShapeEntry,
+    node: Element = nodeOf(entry.key) ?? entry.node
+  ) =>
+    stamp.key === entry.key &&
+    stamp.type === node.type &&
+    stamp.sizeWidth === entry.size.width &&
+    stamp.sizeHeight === entry.size.height &&
+    stamp.textSize === node.textSize &&
+    stamp.children === node.children;
+
+  const laidOutHeight = (entry: BoardFrameEntry | BoardShapeEntry) => {
+    const measured = heights.get(entry.id);
+
+    return measured === undefined
+      ? entry.size.height
+      : Math.max(entry.size.height, measured);
+  };
+
+  const targetOf = (entry: BoardFrameEntry | BoardShapeEntry) =>
+    memberTarget(entry, laidOutHeight(entry));
+
+  const relayout = (layout: BoardShapeLayout, box: BoardBox) => {
+    const next = { ...layout, box };
+    const previous = cull.get(layout.key);
+    const item = cullBoxOf(next);
+
+    layouts.set(layout.key, next);
+    byId.set(layout.id, next);
+    if (previous) tree.remove(previous);
+    tree.insert(item);
+    cull.set(layout.key, item);
+  };
 
   const isStroke = (entry: BoardMemberEntry) =>
     entry.node.type === types.stroke();
@@ -347,7 +445,12 @@ export const createBoardIndex = ({
       );
     }
 
+    const stamp = stamps.get(entry.id);
+
+    if (stamp && !stampMatches(stamp, entry)) return false;
+
     const shown = targets.get(entry.id);
+    const placement = placements.get(entry.id);
 
     return (
       entry.node.type === previous.node.type &&
@@ -355,7 +458,9 @@ export const createBoardIndex = ({
       (entry.kind === 'frame' ||
         (previous.kind === 'shape' && previous.frame === entry.frame)) &&
       !!shown &&
-      sameTarget(memberTarget(entry), shown)
+      !!placement &&
+      sameBox(placement.box, { ...entry.place, ...entry.size }) &&
+      sameTarget(targetOf(entry), shown)
     );
   };
 
@@ -375,12 +480,33 @@ export const createBoardIndex = ({
     version += 1;
 
     const nextTargets = new Map<string, BoardArrowTarget>();
+    const nextShapes = new Map<string, BoardFrameEntry | BoardShapeEntry>();
     const changed = new Set<string>();
+    const noteType = types.note();
 
     for (const entry of read) {
       if (entry.kind === 'arrow') continue;
 
-      const target = memberTarget(entry);
+      nextShapes.set(entry.id, entry);
+      if (entry.node.type !== noteType) {
+        heights.delete(entry.id);
+        measuredStamps.delete(entry.id);
+        stamps.delete(entry.id);
+      } else {
+        const measured = measuredStamps.get(entry.id);
+        const stamp = stamps.get(entry.id);
+
+        if (
+          (measured && measured.key !== entry.key) ||
+          (stamp && !stampMatches(stamp, entry))
+        ) {
+          heights.delete(entry.id);
+          measuredStamps.delete(entry.id);
+          stamps.delete(entry.id);
+        }
+      }
+
+      const target = targetOf(entry);
       const previous = targets.get(entry.id);
 
       if (previous && sameTarget(previous, target)) {
@@ -393,7 +519,15 @@ export const createBoardIndex = ({
     for (const id of targets.keys()) {
       if (!nextTargets.has(id)) changed.add(id);
     }
+    for (const id of heights.keys()) {
+      if (!nextTargets.has(id)) {
+        heights.delete(id);
+        measuredStamps.delete(id);
+        stamps.delete(id);
+      }
+    }
     targets = nextTargets;
+    shapeEntries = nextShapes;
 
     const redraw = new Set<NodeKey>();
 
@@ -445,6 +579,7 @@ export const createBoardIndex = ({
     );
     const nextLayouts = new Map<NodeKey, BoardShapeLayout>();
     const nextMembers = new Map<string, string[]>();
+    const nextPlacements = new Map<string, BoardShapePlacement>();
 
     for (const entry of read) {
       const arrow = arrows.get(entry.key);
@@ -452,7 +587,11 @@ export const createBoardIndex = ({
         ? spanOf(arrow.drawn)
         : entry.kind === 'arrow'
           ? null
-          : { ...entry.place, ...entry.size };
+          : {
+              ...entry.place,
+              height: laidOutHeight(entry),
+              width: entry.size.width,
+            };
       const rank = ranks.get(entry.key) ?? 0;
       const previous = layouts.get(entry.key);
       const stored = inkOf(entry);
@@ -466,6 +605,37 @@ export const createBoardIndex = ({
       const keepsRatio = keepsRatioIn(entry.node);
 
       if (!box) continue;
+
+      const placed =
+        entry.kind === 'arrow'
+          ? NO_BOX
+          : {
+              ...entry.place,
+              height: entry.size.height,
+              width: entry.size.width,
+            };
+      const note = entry.node.type === noteType;
+      const placement = placements.get(entry.id);
+
+      nextPlacements.set(
+        entry.id,
+        placement &&
+          placement.id === entry.id &&
+          placement.key === entry.key &&
+          placement.kind === entry.kind &&
+          placement.note === note &&
+          placement.rank === rank &&
+          sameBox(placement.box, placed)
+          ? placement
+          : {
+              box: placed,
+              id: entry.id,
+              key: entry.key,
+              kind: entry.kind,
+              note,
+              rank,
+            }
+      );
       if (entry.kind === 'shape' && entry.frame !== undefined) {
         const members = nextMembers.get(entry.frame);
 
@@ -497,24 +667,84 @@ export const createBoardIndex = ({
     }
     layouts = nextLayouts;
     membersOf = nextMembers;
+    placements = nextPlacements;
     byId = new Map(
       [...nextLayouts.values()].map((layout) => [layout.id, layout])
     );
-    tree.clear().load(
-      [...nextLayouts.values()].map(({ box, key }) => ({
-        key,
-        maxX: box.x + box.width,
-        maxY: box.y + box.height,
-        minX: box.x,
-        minY: box.y,
-      }))
-    );
+
+    const items = [...nextLayouts.values()].map(cullBoxOf);
+
+    cull = new Map(items.map((item) => [item.key, item]));
+    tree.clear().load(items);
   };
 
   const notifyArrows = (keys: Iterable<NodeKey>) => {
     for (const key of keys) {
       for (const listener of arrowListeners.get(key) ?? []) listener();
     }
+  };
+
+  const measure = (
+    measured: ReadonlyMap<string, number | null>
+  ): Readonly<{
+    moved: ReadonlySet<string>;
+    redrawn: ReadonlySet<NodeKey>;
+  }> => {
+    const moved = new Set<string>();
+    const redrawn = new Set<NodeKey>();
+
+    for (const [id, height] of measured) {
+      const entry = shapeEntries.get(id);
+      const layout = byId.get(id);
+
+      if (height === null) {
+        heights.delete(id);
+        measuredStamps.delete(id);
+      } else {
+        heights.set(id, height);
+        if (entry) measuredStamps.set(id, stampOf(entry));
+      }
+      stamps.delete(id);
+
+      if (!entry || !layout) continue;
+
+      const box = { ...layout.box, height: laidOutHeight(entry) };
+
+      if (sameBox(box, layout.box)) continue;
+      targets.set(id, targetOf(entry));
+      relayout(layout, box);
+      moved.add(id);
+    }
+    if (moved.size === 0) return { moved, redrawn };
+
+    const bound = new Set<NodeKey>();
+
+    for (const id of moved) {
+      for (const key of arrowsTo.get(id) ?? []) bound.add(key);
+    }
+    for (const key of bound) {
+      const arrow = arrows.get(key);
+      const layout = layouts.get(key);
+
+      if (!arrow) continue;
+
+      const drawn = drawArrow(arrow, (id) => targets.get(id));
+
+      if (sameArrowDrawing(drawn, arrow.drawn)) continue;
+      arrows.set(key, { ...arrow, drawn });
+      redrawn.add(key);
+      if (!layout) continue;
+
+      const span = spanOf(drawn);
+
+      if (sameBox(span, layout.box)) continue;
+      relayout(layout, span);
+      moved.add(layout.id);
+    }
+    version += 1;
+    notifyArrows(redrawn);
+
+    return { moved, redrawn };
   };
 
   const along = (
@@ -566,22 +796,87 @@ export const createBoardIndex = ({
     },
     byId: (id: string) => byId.get(id),
     clearPreview: () => {
-      if (previewedBoxes.size > 0) {
+      const cleared = previewedBoxes.size > 0 ? [...previewedBoxes.keys()] : [];
+
+      if (cleared.length > 0) {
         previewedBoxes = new Map();
-        previewCleared();
+        previewCleared(cleared);
       }
       if (previewed.size === 0) return;
 
-      const keys = [...previewed.keys()];
+      const changed: NodeKey[] = [];
 
+      for (const [key, drawn] of previewed) {
+        if (!sameArrowDrawing(drawn, arrows.get(key)?.drawn)) {
+          changed.push(key);
+        }
+      }
       previewed = new Map();
-      notifyArrows(keys);
+      if (changed.length > 0) notifyArrows(changed);
+    },
+    clearStamp: (id: string) => {
+      stamps.delete(id);
+    },
+    confirmMountedHeights: (ids: Iterable<string>) => {
+      for (const id of ids) {
+        if (!heights.has(id) || previewedBoxes.has(id)) continue;
+
+        const entry = shapeEntries.get(id);
+
+        if (entry) measuredStamps.set(id, stampOf(entry));
+      }
     },
     drawnTo,
+    dropUnmountedHeights: () => {
+      if (stamps.size === 0) return false;
+      for (const id of stamps.keys()) {
+        heights.delete(id);
+        measuredStamps.delete(id);
+      }
+      stamps.clear();
+      children = null;
+
+      return true;
+    },
     entries: () => entries,
+    hasHeight: (id: string) => heights.has(id),
+    hasHeights: () => heights.size > 0,
+    hasUnmountedHeights: () => stamps.size > 0,
+    isPreviewing: (id: string) => previewedBoxes.has(id),
+    isStaleStamp: (id: string) => {
+      const stamp = stamps.get(id);
+      const entry = shapeEntries.get(id);
+
+      return !!stamp && (!entry || !stampMatches(stamp, entry));
+    },
     layout: (key: NodeKey) => layouts.get(key),
     layouts: () => layouts.values(),
+    measure,
     membersOf: (id: string) => membersOf.get(id),
+    placementOf: (id: string) => {
+      const placement = placements.get(id);
+      const box = previewedBoxes.get(id);
+
+      if (!placement || !box) return placement;
+
+      const cached = previewPlacements.get(box);
+
+      if (
+        cached?.id === placement.id &&
+        cached.key === placement.key &&
+        cached.kind === placement.kind &&
+        cached.note === placement.note &&
+        cached.rank === placement.rank
+      ) {
+        return cached;
+      }
+
+      const shown = { ...placement, box };
+
+      previewPlacements.set(box, shown);
+
+      return shown;
+    },
     /**
      * Show the arrows that `ids` carry or bind as if each shape `boxOf`
      * names sat at that box and each carried arrow's free ends moved by
@@ -610,37 +905,52 @@ export const createBoardIndex = ({
           ? { x: end.x + delta.x, y: end.y + delta.y }
           : end;
       const next = new Map<NodeKey, BoardArrowPath>();
+      const changed: NodeKey[] = [];
 
       for (const key of reached) {
         const arrow = arrows.get(key);
 
         if (!arrow) continue;
-        next.set(
-          key,
-          drawArrow(
-            moving.has(key)
-              ? { end: shift(arrow.end), start: shift(arrow.start) }
-              : arrow,
-            (id) => {
-              const target = targets.get(id);
-              const box = target && boxOf(id);
 
-              return box
-                ? {
-                    ...target,
-                    place: { x: box.x, y: box.y },
-                    size: { height: box.height, width: box.width },
-                  }
-                : target;
-            }
-          )
+        const drawn = drawArrow(
+          moving.has(key)
+            ? { end: shift(arrow.end), start: shift(arrow.start) }
+            : arrow,
+          (id) => {
+            const target = targets.get(id);
+            const box = target && boxOf(id);
+
+            return box
+              ? {
+                  ...target,
+                  place: { x: box.x, y: box.y },
+                  size: { height: box.height, width: box.width },
+                }
+              : target;
+          }
         );
+        const previous = previewed.get(key);
+        const shown = previous ?? arrow.drawn;
+
+        if (sameArrowDrawing(shown, drawn)) {
+          next.set(key, shown);
+          continue;
+        }
+        next.set(key, drawn);
+        changed.push(key);
       }
 
-      const left = [...previewed.keys()].filter((key) => !next.has(key));
+      for (const [key, drawn] of previewed) {
+        if (
+          !next.has(key) &&
+          !sameArrowDrawing(drawn, arrows.get(key)?.drawn)
+        ) {
+          changed.push(key);
+        }
+      }
 
       previewed = next;
-      notifyArrows([...next.keys(), ...left]);
+      if (changed.length > 0) notifyArrows(changed);
     },
     previewShape: (id: string, box: BoardBox) => {
       previewedBoxes.set(id, box);
@@ -742,10 +1052,25 @@ export const createBoardIndex = ({
 
       return boxes;
     },
-    storedBoxOf: (id: string) => {
-      const layout = byId.get(id);
+    stampHeight: (id: string) => {
+      if (!heights.has(id)) return true;
 
-      return layout && layout.kind !== 'arrow' ? layout.box : undefined;
+      const entry = shapeEntries.get(id);
+      const measured = measuredStamps.get(id);
+
+      if (!entry || (measured && !stampMatches(measured, entry))) {
+        return false;
+      }
+      stamps.set(id, measured ?? stampOf(entry));
+
+      return true;
+    },
+    storedBoxOf: (id: string) => {
+      const placement = placements.get(id);
+
+      return placement && placement.kind !== 'arrow'
+        ? placement.box
+        : undefined;
     },
     /**
      * Where the stroke `key` draws its line within its box. The path is

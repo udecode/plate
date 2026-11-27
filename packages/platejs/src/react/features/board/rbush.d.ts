@@ -11,7 +11,9 @@ declare module 'rbush' {
   export default class RBush<T extends BBox = BBox> {
     constructor(maxEntries?: number);
     clear(): this;
+    insert(item: T): this;
     load(items: readonly T[]): this;
+    remove(item: T): this;
     search(box: BBox): T[];
   }
 }

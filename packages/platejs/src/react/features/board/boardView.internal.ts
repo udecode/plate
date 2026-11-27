@@ -638,16 +638,46 @@ export const createBoardView = (
     writable: writable(),
   };
   const stateListeners = new Set<() => void>();
-  const shapeListeners = new Set<() => void>();
+  const shapeListeners = new Map<string, Set<() => void>>();
+  const everyShapeListeners = new Set<() => void>();
   const viewportListeners = new Set<() => void>();
   const erasing = new Set<string>();
   const erasingListeners = new Map<string, Set<() => void>>();
+
+  const listenTo =
+    (listeners: Map<string, Set<() => void>>) =>
+    (id: string, listener: () => void) => {
+      const forId = listeners.get(id) ?? new Set();
+
+      forId.add(listener);
+      listeners.set(id, forId);
+
+      return () => {
+        forId.delete(listener);
+        if (forId.size === 0) listeners.delete(id);
+      };
+    };
 
   const notifyErasing = (ids: Iterable<string>) => {
     for (const id of ids) {
       for (const listener of erasingListeners.get(id) ?? []) listener();
     }
   };
+
+  const notifyShapes = (ids?: Iterable<string>) => {
+    for (const listener of everyShapeListeners) listener();
+    if (!ids) {
+      for (const forId of shapeListeners.values()) {
+        for (const listener of forId) listener();
+      }
+
+      return;
+    }
+    for (const id of ids) {
+      for (const listener of shapeListeners.get(id) ?? []) listener();
+    }
+  };
+  const subscribeShape = listenTo(shapeListeners);
 
   const types = boardTypesOf(editor);
   const toolShapes: Readonly<
@@ -827,8 +857,31 @@ export const createBoardView = (
 
       return ElementApi.isElement(node) ? node : undefined;
     },
-    previewCleared: () => {
-      for (const listener of shapeListeners) listener();
+    previewCleared: (cleared) => {
+      notifyShapes();
+
+      const measured = new Map<string, number>();
+
+      for (const id of cleared) {
+        const target = mountedText.get(id);
+
+        if (!target) continue;
+
+        const height = target.offsetHeight;
+        const current = index.byId(id)?.box.height;
+
+        if (
+          height > 0 &&
+          (current === undefined || Math.abs(height - current) >= 1)
+        ) {
+          measured.set(id, height);
+        }
+        if (textObserver && observedText.has(target)) {
+          textObserver.unobserve(target);
+          textObserver.observe(target, { box: 'border-box' });
+        }
+      }
+      if (measured.size > 0) layOutText(measured);
     },
   });
   let shownVersion = 0;
@@ -924,6 +977,96 @@ export const createBoardView = (
     }
   };
 
+  const observedText = new Map<HTMLElement, string>();
+  const mountedText = new Map<string, HTMLElement>();
+  const pendingConfirm = new Set<string>();
+  let textObserver: ResizeObserver | null = null;
+  let settleFrame = 0;
+  let settleTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const cancelSettle = () => {
+    if (settleFrame !== 0) {
+      cancelAnimationFrame(settleFrame);
+      settleFrame = 0;
+    }
+    if (settleTimer !== null) {
+      clearTimeout(settleTimer);
+      settleTimer = null;
+    }
+  };
+
+  const queueConfirm = (ids: Iterable<string>) => {
+    let added = false;
+
+    for (const id of ids) {
+      if (
+        mountedText.has(id) &&
+        index.hasHeight(id) &&
+        !index.isPreviewing(id)
+      ) {
+        pendingConfirm.add(id);
+        added = true;
+      }
+    }
+    if (!added || typeof requestAnimationFrame !== 'function') return;
+    cancelSettle();
+    settleFrame = requestAnimationFrame(() => {
+      settleFrame = 0;
+      settleTimer = setTimeout(() => {
+        settleTimer = null;
+        if (frame !== 0 || pendingConfirm.size === 0) return;
+
+        const ready = [...pendingConfirm].filter(
+          (id) => mountedText.has(id) && !index.isPreviewing(id)
+        );
+
+        pendingConfirm.clear();
+        if (ready.length > 0) index.confirmMountedHeights(ready);
+      }, 0);
+    });
+  };
+
+  const verticalWriting = (target: HTMLElement) => {
+    const mode =
+      target.ownerDocument.defaultView?.getComputedStyle(target).writingMode ||
+      target.style.writingMode;
+
+    return mode.startsWith('vertical') || mode.startsWith('sideways');
+  };
+
+  const layOutText = (measured: ReadonlyMap<string, number | null>) => {
+    const { moved: relaidOut, redrawn } = index.measure(measured);
+
+    if (relaidOut.size === 0 && redrawn.size === 0) return;
+    shownVersion = index.version();
+    notifyShapes([]);
+    refresh();
+    interaction?.follow?.();
+    gestures?.follow();
+  };
+
+  const deliverText = (records: readonly ResizeObserverEntry[]) => {
+    const measured = new Map<string, number>();
+
+    for (const record of records) {
+      const target = record.target as HTMLElement;
+      const id = observedText.get(target);
+
+      if (id === undefined || index.isPreviewing(id)) continue;
+      pendingConfirm.delete(id);
+
+      const box = record.borderBoxSize?.[0];
+      const height = box
+        ? verticalWriting(target)
+          ? box.inlineSize
+          : box.blockSize
+        : target.offsetHeight;
+
+      measured.set(id, height);
+    }
+    if (measured.size > 0) layOutText(measured);
+  };
+
   const follow = () => {
     const rendered = renderedKeyOf;
 
@@ -932,7 +1075,7 @@ export const createBoardView = (
     interaction?.follow?.();
     if (index.version() === shownVersion) return;
     shownVersion = index.version();
-    for (const listener of shapeListeners) listener();
+    notifyShapes();
     gestures?.follow();
   };
 
@@ -963,6 +1106,9 @@ export const createBoardView = (
       paintCamera();
     }
     refresh();
+    if (frame === 0 && pendingConfirm.size > 0) {
+      queueConfirm([...pendingConfirm]);
+    }
   };
 
   // Blink relayerizes every paint chunk on each change to a layer's transform
@@ -1771,6 +1917,8 @@ export const createBoardView = (
       gestures = null;
       cancelAnimationFrame(frame);
       frame = 0;
+      cancelSettle();
+      pendingConfirm.clear();
       identityAnimation?.cancel();
       identityAnimation = null;
       layer = null;
@@ -1778,6 +1926,10 @@ export const createBoardView = (
       surface = null;
       unmountPointerStyle();
       resizeObserver.disconnect();
+      textObserver?.disconnect();
+      textObserver = null;
+      observedText.clear();
+      mountedText.clear();
       host.removeEventListener('wheel', onWheel);
       for (const type of FILE_DRAG_EVENTS) {
         host.removeEventListener(type, onFileDrag);
@@ -1882,14 +2034,56 @@ export const createBoardView = (
         if (changed.hasAny('selection')) voice.selectionChanged();
       });
 
+      const subscribeRootText = () =>
+        shownView.subscribeCommit(({ changed }) => {
+          const reshaped =
+            changed.hasAny('properties') ||
+            changed.hasAny('structure') ||
+            changed.hasAny('replace');
+
+          if (
+            (!reshaped && !changed.has('text', root)) ||
+            !index.hasHeights()
+          ) {
+            return;
+          }
+
+          const nodes = shownView.read.children();
+          const stale = new Map<string, null>();
+          const confirmIds: string[] = [];
+
+          for (const [start, end] of changed.topLevelRanges(root)) {
+            for (let at = start; at <= end; at += 1) {
+              const node = nodes[at];
+
+              if (!ElementApi.isElement(node)) continue;
+
+              const id = shapeIdOf(node);
+
+              if (!reshaped && index.isStaleStamp(id)) stale.set(id, null);
+              if (mountedText.has(id) && index.hasHeight(id)) {
+                confirmIds.push(id);
+              }
+            }
+          }
+          if (stale.size > 0) layOutText(stale);
+          if (confirmIds.length > 0) queueConfirm(confirmIds);
+        });
+
+      let unsubscribeRootText = subscribeRootText();
+
       const unsubscribeViewState = subscribeEditorViewState(
         shapes,
         (change) => {
           if (change !== 'readOnly' && change !== 'authored') return;
 
           gestures?.refuseWrites();
+          unsubscribeRootText();
           shownView = createEditorView(mounted, { root });
+          unsubscribeRootText = subscribeRootText();
+          if (change === 'authored') index.dropUnmountedHeights();
           follow();
+          queueConfirm(mountedText.keys());
           showSelection();
         }
       );
@@ -1898,11 +2092,15 @@ export const createBoardView = (
       showSelection();
 
       return () => {
+        cancelSettle();
+        pendingConfirm.clear();
         unsubscribe();
+        unsubscribeRootText();
         unsubscribeViewState();
         pendingPictures.cancel();
       };
     },
+    dropText: (id: string) => layOutText(new Map([[id, null]])),
     erasing: (id: string) => erasing.has(id),
     focusTarget,
     isCursor: (id: string) =>
@@ -1911,6 +2109,31 @@ export const createBoardView = (
       if (!index.byId(id)) index.update();
 
       return index.shownLayout(id);
+    },
+    observeText: (id: string, target: HTMLElement) => {
+      const Observer =
+        target.ownerDocument.defaultView?.ResizeObserver ?? ResizeObserver;
+
+      textObserver ??= new Observer(deliverText);
+      observedText.set(target, id);
+      mountedText.set(id, target);
+      index.clearStamp(id);
+      textObserver.observe(target, { box: 'border-box' });
+
+      return () => {
+        textObserver?.unobserve(target);
+        observedText.delete(target);
+        if (mountedText.get(id) === target) {
+          mountedText.delete(id);
+          pendingConfirm.delete(id);
+          if (!index.stampHeight(id)) layOutText(new Map([[id, null]]));
+        }
+      };
+    },
+    placementOf: (id: string) => {
+      if (!index.byId(id)) index.update();
+
+      return index.placementOf(id);
     },
     holdPictureHost: (host: HTMLDivElement | null) => {
       pictureHost = host;
@@ -1962,26 +2185,16 @@ export const createBoardView = (
     subscribeArrow: (id: string, listener: () => void) => {
       const key = keyById(id);
       const stop = key ? index.subscribeArrow(key, listener) : () => {};
-
-      shapeListeners.add(listener);
+      const stopShape = subscribeShape(id, listener);
 
       return () => {
         stop();
-        shapeListeners.delete(listener);
+        stopShape();
       };
     },
-    subscribeErasing: (id: string, listener: () => void) => {
-      const listeners = erasingListeners.get(id) ?? new Set();
-
-      listeners.add(listener);
-      erasingListeners.set(id, listeners);
-
-      return () => {
-        listeners.delete(listener);
-        if (listeners.size === 0) erasingListeners.delete(id);
-      };
-    },
-    subscribeShapes: subscribeTo(shapeListeners),
+    subscribeErasing: listenTo(erasingListeners),
+    subscribeShape,
+    subscribeShapes: subscribeTo(everyShapeListeners),
     subscribeViewport: subscribeTo(viewportListeners),
     takeTextTab: (event: React.KeyboardEvent) => takeTextTab(core, event),
     viewport: () => viewport,

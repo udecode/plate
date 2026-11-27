@@ -107,6 +107,14 @@ const FIXED_STYLE_KEYS: ReadonlySet<string> = new Set([
   'width',
 ]);
 
+const NOTE_FIXED_STYLE_KEYS: ReadonlySet<string> = new Set([
+  ...FIXED_STYLE_KEYS,
+  'maxBlockSize',
+  'maxHeight',
+  'minBlockSize',
+  'minHeight',
+]);
+
 const ROOT_FIXED_STYLE: React.CSSProperties = {
   alignSelf: 'start',
   bottom: 0,
@@ -126,6 +134,14 @@ const ROOT_FIXED_STYLE: React.CSSProperties = {
   width: '100%',
 };
 
+const ROOT_NOTE_FIXED_STYLE: React.CSSProperties = {
+  ...ROOT_FIXED_STYLE,
+  height: 'auto',
+  maxBlockSize: 'none',
+  maxHeight: 'none',
+  minHeight: '100%',
+};
+
 const WRAPPER_STYLE: React.CSSProperties = {
   alignItems: 'start',
   contain: 'size layout',
@@ -138,25 +154,31 @@ const WRAPPER_STYLE: React.CSSProperties = {
 
 const rootStyle = (
   attrStyle: React.CSSProperties | undefined,
-  propStyle: React.CSSProperties | undefined
+  propStyle: React.CSSProperties | undefined,
+  note: boolean
 ): React.CSSProperties => {
-  if (!attrStyle && !propStyle) return ROOT_FIXED_STYLE;
+  const fixed = note ? ROOT_NOTE_FIXED_STYLE : ROOT_FIXED_STYLE;
+
+  if (!attrStyle && !propStyle) return fixed;
 
   const merged =
     attrStyle && propStyle
       ? { ...attrStyle, ...propStyle }
       : (propStyle ?? attrStyle);
 
-  if (!merged) return ROOT_FIXED_STYLE;
-  if (!Object.keys(merged).some((key) => FIXED_STYLE_KEYS.has(key))) {
-    return { ...merged, ...ROOT_FIXED_STYLE };
+  if (!merged) return fixed;
+
+  const blocked = note ? NOTE_FIXED_STYLE_KEYS : FIXED_STYLE_KEYS;
+
+  if (!Object.keys(merged).some((key) => blocked.has(key))) {
+    return { ...merged, ...fixed };
   }
 
   return {
     ...Object.fromEntries(
-      Object.entries(merged).filter(([key]) => !FIXED_STYLE_KEYS.has(key))
+      Object.entries(merged).filter(([key]) => !blocked.has(key))
     ),
-    ...ROOT_FIXED_STYLE,
+    ...fixed,
   };
 };
 
@@ -176,17 +198,21 @@ const rootStyle = (
  * `className` and `style` go on the member's root, which fills a `div` that
  * carries the member's box, paint rank and drag `translate` (read inline
  * `left`, `top`, `width`, `height`, `z-index`, `translate`, `offsetLeft` and
- * `offsetTop` on `root.parentElement`). A private `@layer board-shapes` style
- * rule makes the wrapper take no press and restores `pointer-events: auto` on
- * the root so host CSS layers and classes still override `pointer-events`; to
- * disable pointer input on an ancestor of a board, set `inert`. The root's
- * `position` is `relative`, so its absolute children place against it, and
- * `style` cannot change its `all`, `boxSizing`, `height`, `inset`, `margin`,
- * `position`, `width`, their sides or logical forms, or its grid placement and
- * self-alignment properties.
+ * `offsetTop` on `root.parentElement`). A note's root grows down past its
+ * stored height when its text needs the room, and the board view lays the
+ * note out at that height without changing its stored size. A private
+ * `@layer board-shapes` style rule makes the wrapper take no press and
+ * restores `pointer-events: auto` on the root so host CSS layers and classes
+ * still override `pointer-events`; to disable pointer input on an ancestor of
+ * a board, set `inert`. The root's `position` is `relative`, so its absolute
+ * children place against it, and `style` cannot change its `all`,
+ * `boxSizing`, `height`, `inset`, `margin`, `position`, `width`, their sides
+ * or logical forms, its grid placement and self-alignment properties, or
+ * `minHeight`, `minBlockSize`, `maxHeight` and `maxBlockSize` on a note.
  */
 export function BoardShape({
   className,
+  ref,
   style,
   ...props
 }: EditorElementProps<
@@ -203,14 +229,15 @@ export function BoardShape({
   useClaimEditableDOMCommit();
   const view = useBoardViewContext();
   const id = shapeIdOf(props.element);
-  const readLayout = React.useMemo(
-    () => createLayoutReader(view, id),
+  const subscribeShape = useShapeSubscription(view, id);
+  const readPlacement = React.useMemo(
+    () => createPlacementReader(view, id),
     [id, view]
   );
-  const layout = React.useSyncExternalStore(
-    view.subscribeShapes,
-    readLayout,
-    readLayout
+  const placement = React.useSyncExternalStore(
+    subscribeShape,
+    readPlacement,
+    readPlacement
   );
   const subscribeErasing = React.useCallback(
     (listener: () => void) => view.subscribeErasing(id, listener),
@@ -225,9 +252,39 @@ export function BoardShape({
   const [cursor] = React.useState(() => view.isCursor(id));
   const selected = useElementSelected({ mode: 'node' });
   const arrow = props.element.type === BOARD_ARROW_TYPE;
+  const note = placement?.note === true;
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const composedRef = useComposedRef(rootRef, ref);
+  const observedRef = React.useRef<{
+    element: HTMLElement;
+    id: string;
+    stop: () => void;
+    view: ReturnType<typeof useBoardViewContext>;
+  } | null>(null);
   const arrowChannel = React.useMemo(
     () => (arrow ? createArrowChannel(view, id) : null),
     [arrow, id, view]
+  );
+
+  React.useLayoutEffect(() => {
+    const target = note ? rootRef.current : null;
+    const held = observedRef.current;
+
+    if (target === held?.element && id === held?.id && view === held?.view) {
+      return;
+    }
+    held?.stop();
+    observedRef.current = target
+      ? { element: target, id, stop: view.observeText(id, target), view }
+      : null;
+    if (held && !target) held.view.dropText(held.id);
+  });
+  React.useLayoutEffect(
+    () => () => {
+      observedRef.current?.stop();
+      observedRef.current = null;
+    },
+    []
   );
 
   React.useLayoutEffect(() => {
@@ -235,31 +292,32 @@ export function BoardShape({
     arrowChannel.sync();
 
     return view.subscribeArrow(id, arrowChannel.sync);
-  }, [arrowChannel, layout?.key, id, view]);
+  }, [arrowChannel, placement?.key, id, view]);
 
   return (
     <div
       style={{
         ...WRAPPER_STYLE,
-        height: arrow ? 0 : layout?.box.height,
-        left: arrow ? 0 : layout?.box.x,
-        top: arrow ? 0 : layout?.box.y,
-        width: arrow ? 0 : layout?.box.width,
-        zIndex: layout?.rank,
+        height: arrow ? 0 : placement?.box.height,
+        left: arrow ? 0 : placement?.box.x,
+        top: arrow ? 0 : placement?.box.y,
+        width: arrow ? 0 : placement?.box.width,
+        zIndex: placement?.rank,
       }}
     >
       <EditorElement
         {...props}
+        ref={composedRef}
         attributes={{
           ...props.attributes,
           'data-board-cursor': cursor ? '' : undefined,
-          'data-board-shape': layout?.id,
+          'data-board-shape': placement?.id,
           'data-erasing': erasing || undefined,
           'data-selected': selected || undefined,
           style: undefined,
         }}
         className={className}
-        style={rootStyle(props.attributes.style, style)}
+        style={rootStyle(props.attributes.style, style, note)}
       >
         {arrowChannel ? (
           <ArrowContext value={arrowChannel}>{props.children}</ArrowContext>
@@ -272,14 +330,23 @@ export function BoardShape({
   );
 }
 
-const createLayoutReader = (
+const useShapeSubscription = (
+  view: ReturnType<typeof useBoardViewContext>,
+  id: string
+) =>
+  React.useCallback(
+    (listener: () => void) => view.subscribeShape(id, listener),
+    [id, view]
+  );
+
+const createPlacementReader = (
   view: ReturnType<typeof useBoardViewContext>,
   id: string
 ) => {
-  let held: ReturnType<typeof view.layoutOf>;
+  let held: ReturnType<typeof view.placementOf>;
 
   return () => {
-    const next = view.layoutOf(id);
+    const next = view.placementOf(id);
 
     if (
       next?.kind === 'arrow' &&
@@ -467,7 +534,8 @@ export const useStrokePath = (
 ): BoardStrokePath | undefined => {
   const view = useBoardViewContext();
   const id = shapeIdOf(element);
+  const subscribe = useShapeSubscription(view, id);
   const read = () => view.strokePathOf(id);
 
-  return React.useSyncExternalStore(view.subscribeShapes, read, read);
+  return React.useSyncExternalStore(subscribe, read, read);
 };

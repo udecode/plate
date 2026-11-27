@@ -247,9 +247,9 @@ export const attachBoardGestures = (
   const heldBox = (ids: Iterable<string>) =>
     unionOf(
       [...ids].flatMap((id) => {
-        const box = index.storedBoxOf(id);
+        const layout = index.byId(id);
 
-        return box ? [box] : [];
+        return layout && layout.kind !== 'arrow' ? [layout.box] : [];
       })
     );
 
@@ -363,8 +363,9 @@ export const attachBoardGestures = (
       gesture.left ||= dragged(gesture.press, gesture.pointer);
 
       const { zoom } = core.state().camera;
+      const moved = gesture.left && (dx !== 0 || dy !== 0);
       const snapped =
-        gesture.left && !gesture.free
+        moved && !gesture.free
           ? snapResize(start, corner, { x: dx, y: dy }, modifiers, {
               boxesIn: (area) => index.snapTargets(area, new Set([id])),
               view: core.viewBox(),
@@ -373,7 +374,7 @@ export const attachBoardGestures = (
           : null;
       const rect =
         snapped?.rect ??
-        (gesture.left ? resized(start, corner, dx, dy, modifiers) : start);
+        (moved ? resized(start, corner, dx, dy, modifiers) : start);
 
       gesture.rect = rect;
       drawGuides(gesture.guides, snapped?.guides ?? [], zoom);
@@ -435,6 +436,18 @@ export const attachBoardGestures = (
       gesture = null;
       free?.();
       core.voice.release();
+
+      return;
+    }
+
+    if (done.kind === 'resize' && !sameBox(done.rect, done.start)) {
+      gesture = null;
+      free?.();
+      core.voice.release();
+      done.guides.remove();
+      core.commit({ id: done.id, kind: 'resize', rect: done.rect });
+      placeAtModel(done.element, done.id);
+      index.clearPreview();
 
       return;
     }
@@ -510,9 +523,6 @@ export const attachBoardGestures = (
           y: Math.min(...boxes.map(({ y }) => y)) + delta.y,
         });
       }
-    } else if (!sameBox(done.rect, done.start)) {
-      core.commit({ id: done.id, kind: 'resize', rect: done.rect });
-      placeAtModel(done.element, done.id);
     }
   };
 

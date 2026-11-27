@@ -97,7 +97,10 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
 
     if (!shown) return undefined;
 
-    const { box, resize: shownResize } = shown;
+    const { box, layout, resize: shownResize } = shown;
+
+    if (sameBox(box, layout.box)) return shown;
+
     const { id } = shownResize;
     const element = elementFor(shownResize);
 
@@ -148,11 +151,13 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
       const done = held();
 
       if (!done) return;
-      core.cancelInteraction();
       if (!sameBox(done.box, done.layout.box)) {
-        core.commit({ id: done.resize.id, kind: 'resize', rect: done.box });
-        placeAtModel(done.resize);
+        const committed = done.resize;
+
+        resize = null;
+        core.commit({ id: committed.id, kind: 'resize', rect: done.box });
       }
+      core.cancelInteraction();
     },
     move: (by: BoardPlace) => {
       const moving = held();
