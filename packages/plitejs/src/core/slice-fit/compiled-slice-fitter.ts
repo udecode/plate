@@ -65,6 +65,7 @@ import { toPublicRoot } from '../public-root';
 import { recordStoreFromJson, showValueRecords } from '../record-store';
 import {
   bindCanonicalFitPreparation,
+  bindCanonicalFitPreparations,
   canonicalizeElement,
   constructCanonicalDocumentChange,
   getProtectedInlineSpacerEntries,
@@ -204,8 +205,33 @@ type CanonicalRepresentationSchema = NonNullable<
   NonNullable<Parameters<typeof constructCanonicalDocumentChange>[3]>['schema']
 >;
 
+export type InternalSlicePlacementFit = Readonly<{
+  at: Range;
+  bounds: Readonly<{ from: number; to: number }>;
+  parentPath: Path;
+  slice: ContentSlice;
+}>;
+
+export type InternalSlicePlacementsFitOptions = Readonly<{
+  apply?: (
+    step: DocumentChangeStep,
+    selection?: NonNullable<Selection>
+  ) => void;
+  builder: ChangeDraft;
+  root: RootKey;
+}>;
+
+export type InternalSlicePlacementsFitResult =
+  | 'fallback'
+  | 'fitted'
+  | 'invalid';
+
 export type CompiledSliceFitter<V extends Value = Value> = Readonly<{
   fit: (slice: ContentSlice, options: InternalSliceFitOptions) => boolean;
+  fitPlacements: (
+    placements: readonly InternalSlicePlacementFit[],
+    options: InternalSlicePlacementsFitOptions
+  ) => InternalSlicePlacementsFitResult;
   fitContent: (
     slice: ContentSlice,
     options: Readonly<{ parent: Element; root?: RootKey }>
@@ -347,6 +373,7 @@ type SliceFitterDependencies<V extends Value> = Readonly<{
 export type SliceFitterDelegate<V extends Value = Value> = Pick<
   CompiledSliceFitter<V>,
   | 'fit'
+  | 'fitPlacements'
   | 'fitContent'
   | 'fitDocument'
   | 'fitDocumentWithReport'
@@ -4913,6 +4940,233 @@ export const compileSliceFitter = <V extends Value>(
     return true;
   };
 
+  // Fit disjoint exact-children replacements in one RootChange so multi-cell
+  // fills run canonicalization, index mapping, and validation once instead of
+  // once per placement.
+  const fitPlacements = (
+    placements: readonly InternalSlicePlacementFit[],
+    options: InternalSlicePlacementsFitOptions
+  ): InternalSlicePlacementsFitResult => {
+    const { builder, root } = options;
+    const value = builder.value as EditorDocumentValue;
+    const document = builder.getIndex(root);
+    const rootChildren = getDocumentRoot(value, root);
+    const declarative = getDeclarativeSchema();
+    const planned: Array<
+      Readonly<{
+        from: number;
+        insert: PreparedTokenSlice;
+        parentPath: Path;
+        selectionOffset: number;
+        startParentPath: Path;
+        to: number;
+      }>
+    > = [];
+    const trustedNodes: object[] = [];
+    const inserts: PreparedTokenSlice[] = [];
+
+    for (const placement of placements) {
+      const sourceSlice = ContentSliceValue.fromJSON(placement.slice);
+
+      if (sourceSlice.openStart !== 0 || sourceSlice.openEnd !== 0) {
+        return 'fallback';
+      }
+      if (
+        sourceSlice.content.length === 0 &&
+        placement.bounds.from === placement.bounds.to
+      ) {
+        return 'fallback';
+      }
+
+      try {
+        validateSliceVocabulary(sourceSlice.content);
+      } catch (error) {
+        if (error instanceof EditorSchemaValidationError) return 'invalid';
+        throw error;
+      }
+
+      const grammarFittedInput = declarative
+        ? fitClosedSliceInterior(declarative, sourceSlice, root)
+        : sourceSlice;
+
+      if (!grammarFittedInput) return 'invalid';
+
+      const preparedInput = prepareCanonicalFitSlice(
+        getEditor(),
+        declarative,
+        grammarFittedInput,
+        getDeclarativeSchema,
+        root,
+        api
+      );
+      const inputSlice = preparedInput?.slice ?? grammarFittedInput;
+      const insert = encodeContentSlice(inputSlice);
+      const prepared = getPreparedDocumentSlice(insert);
+
+      if (!prepared || !prepared.nodes.every(NodeApi.isDescendant)) {
+        return 'fallback';
+      }
+
+      const parent = getDescendant(rootChildren, placement.parentPath);
+
+      if (!parent || !ElementApi.isElement(parent)) return 'fallback';
+
+      const applicable =
+        prepared.nodes.length === 0
+          ? true
+          : !declarative
+            ? prepared.nodes.every((child) => canContain(parent, child))
+            : (() => {
+                const parentType = getElementType(parent);
+                const program = parentType
+                  ? declarative.elements.byType.get(parentType)?.content
+                  : null;
+
+                if (!program) return false;
+
+                return acceptsReplacement(
+                  declarative,
+                  program,
+                  parent.children,
+                  0,
+                  parent.children.length,
+                  prepared.nodes,
+                  {
+                    ancestors: getElementAncestors(
+                      rootChildren,
+                      placement.parentPath,
+                      { includeTarget: true }
+                    ),
+                    path: placement.parentPath,
+                    root,
+                  }
+                );
+              })();
+
+      if (!applicable) return 'fallback';
+      if (
+        insert.length === 0 &&
+        placement.bounds.from === placement.bounds.to &&
+        inputSlice.content.length > 0
+      ) {
+        return 'invalid';
+      }
+
+      for (const node of inputSlice.content) trustedNodes.push(node);
+      inserts.push(insert);
+      planned.push({
+        from: placement.bounds.from,
+        insert,
+        parentPath: placement.parentPath,
+        selectionOffset: getContentEndOffset(insert),
+        startParentPath: RangeApi.edges(placement.at)[0].path.slice(0, -1),
+        to: placement.bounds.to,
+      });
+    }
+
+    const rootChange = RootChange.create(
+      document,
+      planned.map(({ from, insert, to }) => ({ from, insert, to }))
+    );
+
+    if (rootChange.empty) return 'invalid';
+
+    const rawChange = createInternalDocumentChange(
+      new Map([[root, rootChange]])
+    );
+    const fitPreparation = bindCanonicalFitPreparations(
+      declarative,
+      getDeclarativeSchema,
+      trustedNodes,
+      inserts
+    );
+    let fittedDocument: ReturnType<typeof prepareFittedDocument>;
+
+    try {
+      fittedDocument = prepareFittedDocument(
+        builder.fork(),
+        rawChange,
+        false,
+        undefined,
+        fitPreparation
+      );
+    } catch (error) {
+      if (
+        error instanceof PreparedTokenSliceStructureError ||
+        error instanceof EditorSchemaValidationError
+      ) {
+        return 'invalid';
+      }
+      throw error;
+    }
+
+    const { canonicalIndexes, constructionChange, prepared, rawIndexes } =
+      fittedDocument;
+    const rawIndex = rawIndexes.get(root) ?? null;
+    const canonicalIndex = canonicalIndexes.get(root) ?? rawIndex;
+
+    if (!rawIndex || !canonicalIndex) {
+      throw new Error('Fitted range did not retain its root indexes.');
+    }
+
+    const last = getDefined(planned.at(-1));
+    const rawSelectionPosition =
+      getDefined(rootChange.mapPos(last.from, -1)) + last.selectionOffset;
+    const point = mapFittedSelectionPoint(
+      rawIndex,
+      canonicalIndex,
+      constructionChange,
+      root,
+      rawSelectionPosition
+    );
+    const canonicalChildren = canonicalIndex.value as readonly Descendant[];
+    const checkedPaths = [
+      ...planned.map(({ startParentPath }) => startParentPath),
+      ...(point ? [point.path.slice(0, -1)] : []),
+    ];
+
+    for (const path of checkedPaths) {
+      const parent = getDescendant(canonicalChildren, path);
+
+      if (!ElementApi.isElement(parent)) continue;
+      const content = getCompiledElement(parent)?.content;
+
+      if (
+        content?.allowsText &&
+        content.max !== null &&
+        parent.children.length > content.max
+      ) {
+        return 'invalid';
+      }
+    }
+
+    const selection = point
+      ? cloneFrozen(
+          SelectionApi.text({
+            anchor: {
+              offset: point.offset,
+              path: [...point.path],
+              ...(root === 'main' ? {} : { root }),
+            },
+            focus: {
+              offset: point.offset,
+              path: [...point.path],
+              ...(root === 'main' ? {} : { root }),
+            },
+          })
+        )
+      : undefined;
+    const step = builder.adopt(prepared);
+
+    if (!step) {
+      throw new Error('Prepared slice fit does not match its transaction.');
+    }
+
+    options.apply?.(step, selection);
+
+    return 'fitted';
+  };
+
   const fitKeepsSelection = (
     document: EditorDocumentValue,
     {
@@ -5330,6 +5584,7 @@ export const compileSliceFitter = <V extends Value>(
 
   return Object.freeze({
     fit,
+    fitPlacements,
     fitContent,
     fitDocument,
     fitDocumentAndMapPositions,
@@ -5360,6 +5615,8 @@ export const createCompiledSliceFitterDelegate = <V extends Value>(
 
   return Object.freeze({
     fit: (slice, options) => getCompiled().fit(slice, options),
+    fitPlacements: (placements, options) =>
+      getCompiled().fitPlacements(placements, options),
     fitContent: (slice, options) => getCompiled().fitContent(slice, options),
     fitDocument: (input) => getCompiled().fitDocument(input),
     fitDocumentWithReport: (input) =>

@@ -3966,17 +3966,18 @@ export class RootChange {
     sections: readonly number[],
     data: readonly SectionData[]
   ) {
+    let length = 0;
+    let newLength = 0;
+
+    for (let i = 0; i < sections.length; i += 2) {
+      length += sections[i];
+      newLength += sections[i + 1] < 0 ? sections[i] : sections[i + 1];
+    }
+
     this.sections = Object.freeze(sections);
     this.data = Object.freeze(data);
-    this.length = this.sections.reduce(
-      (length, value, index) => (index % 2 === 0 ? length + value : length),
-      0
-    );
-    this.newLength = this.sections.reduce((length, value, index) => {
-      if (index % 2 === 0) return length;
-
-      return length + (value < 0 ? this.sections[index - 1] : value);
-    }, 0);
+    this.length = length;
+    this.newLength = newLength;
     Object.freeze(this);
   }
 

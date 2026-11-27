@@ -457,6 +457,7 @@ import {
   valueSite,
 } from './set-root';
 import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
+import type { InternalSlicePlacementFit } from './slice-fit/compiled-slice-fitter';
 import { replacesEmptyBlockHead } from './slice-fit/edge-plan';
 import { isFittingMove } from './slice-fit/provenance';
 import { renewContentSlice } from './slice-identities';
@@ -6722,35 +6723,119 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
       ? { node, path }
       : null;
   };
-  let offset = 0;
+  const tryBatchFit = () => {
+    const builder = getActiveDocumentChangeBuilder(editor);
 
-  for (let index = 0; index < parents.length; index++) {
-    const parent = verifyParent(getDefined(parents[index]));
-    const childCount = getDefined(copied[index]).length;
-    const content = prepared.content.slice(offset, offset + childCount);
-
-    offset += childCount;
-    if (!parent) return false;
     if (
-      !withRenewalOff(
-        editor,
-        fitSliceIntoActiveDraft<V>,
-        editor,
-        ContentSlice.fromJSON({
-          content,
-          openEnd: 0,
-          openStart: 0,
-          ...(prepared.roots ? { roots: prepared.roots } : {}),
-        }),
-        undefined,
-        {
-          childrenAt: getDefined(parents[index]).key,
-          rootsPrepared: true,
-        }
-      ) ||
-      !verifyParent(getDefined(parents[index]))
+      parents.length <= 1 ||
+      getEditorMaxLength(editor) !== undefined ||
+      getEditorFitsByLook(editor) !== undefined ||
+      builder.marksLetters
     ) {
-      return false;
+      return 'fallback';
+    }
+
+    const currentState = getStateView(editor);
+    const document = builder.getIndex(root);
+    const compiled = getCompiledEditorSchemaFromApi(schema);
+    const site = getSetSite(editor);
+    const runtime = getEditorRuntime(editor);
+    const batch: InternalSlicePlacementFit[] = [];
+    let batchOffset = 0;
+
+    for (let index = 0; index < parents.length; index++) {
+      const path = getDefined(paths[index]);
+      const childCount = getDefined(copied[index]).length;
+      const content = prepared.content.slice(
+        batchOffset,
+        batchOffset + childCount
+      );
+
+      batchOffset += childCount;
+      const anchor = currentState.points.start(path);
+      const focus = currentState.points.end(path);
+
+      if (!anchor || !focus) return 'invalid';
+
+      const rawRange = { anchor, focus };
+
+      if (
+        crossesMembers(site, rawRange, root) ||
+        runtime.void({ at: rawRange }) ||
+        runtime.elementReadOnly({ at: rawRange })
+      ) {
+        return 'invalid';
+      }
+
+      const cellSlice = createContentSliceFromFragment(content, 0, 0);
+      const dissolved = dissolveOpenEndMatter(cellSlice, compiled);
+      const { endMatter, flow } = splitEndMatter(dissolved, compiled);
+
+      if (endMatter.length > 0) return 'fallback';
+
+      const range =
+        root === MAIN_ROOT_KEY
+          ? rawRange
+          : {
+              anchor: { ...anchor, root },
+              focus: { ...focus, root },
+            };
+      const parentBounds = document.nodeRange(path);
+
+      batch.push({
+        at: range,
+        bounds: { from: parentBounds.from + 1, to: parentBounds.to - 1 },
+        parentPath: path,
+        slice: flow,
+      });
+    }
+
+    return schema.fitPlacements(batch, {
+      apply: (step, selection) => {
+        applyDocumentChangeStep(
+          editor,
+          step,
+          selection ? { selection: { root, value: selection } } : {}
+        );
+      },
+      builder,
+      root,
+    });
+  };
+  const batchOutcome = tryBatchFit();
+
+  if (batchOutcome === 'invalid') return false;
+  if (batchOutcome === 'fallback') {
+    let offset = 0;
+
+    for (let index = 0; index < parents.length; index++) {
+      const parent = verifyParent(getDefined(parents[index]));
+      const childCount = getDefined(copied[index]).length;
+      const content = prepared.content.slice(offset, offset + childCount);
+
+      offset += childCount;
+      if (!parent) return false;
+      if (
+        !withRenewalOff(
+          editor,
+          fitSliceIntoActiveDraft<V>,
+          editor,
+          ContentSlice.fromJSON({
+            content,
+            openEnd: 0,
+            openStart: 0,
+            ...(prepared.roots ? { roots: prepared.roots } : {}),
+          }),
+          undefined,
+          {
+            childrenAt: getDefined(parents[index]).key,
+            rootsPrepared: true,
+          }
+        ) ||
+        !verifyParent(getDefined(parents[index]))
+      ) {
+        return false;
+      }
     }
   }
 

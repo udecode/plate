@@ -1485,6 +1485,47 @@ const preparedLocalPath = (
   ];
 };
 
+const indexPlacementsByParent = (
+  placements: readonly PreparedRuntimePlacement[]
+) => {
+  const byParent = new Map<string, PreparedRuntimePlacement[]>();
+
+  for (const placement of placements) {
+    const key = pathKey(placement.parentPath);
+    const list = byParent.get(key);
+
+    if (list) list.push(placement);
+    else byParent.set(key, [placement]);
+  }
+
+  return byParent;
+};
+
+const forEachMatchingPlacement = (
+  byParent: ReadonlyMap<string, readonly PreparedRuntimePlacement[]>,
+  originPath: Path,
+  visit: (placement: PreparedRuntimePlacement, local: Path) => boolean
+): boolean => {
+  if (byParent.size === 0 || originPath.length === 0) return false;
+
+  let key = '';
+
+  for (let depth = 0; depth < originPath.length; depth++) {
+    const list = byParent.get(key);
+
+    if (list) {
+      for (const placement of list) {
+        const local = preparedLocalPath(placement, originPath);
+
+        if (local && visit(placement, local)) return true;
+      }
+    }
+    key = depth === 0 ? `${originPath[0]}` : `${key}.${originPath[depth]}`;
+  }
+
+  return false;
+};
+
 const comparePaths = (left: Path, right: Path) => {
   for (let index = 0; index < Math.min(left.length, right.length); index++) {
     const difference = left[index] - right[index];
@@ -1610,10 +1651,9 @@ const mapChangedNodeKeys = (
     targetPaths.set(pathKey(path), path);
   }
 
+  const placementsByParent = indexPlacementsByParent(preparedRuntimePlacements);
   const hasReservedKey = (path: Path) =>
-    preparedRuntimePlacements.some((placement) =>
-      preparedLocalPath(placement, path)
-    );
+    forEachMatchingPlacement(placementsByParent, path, () => true);
   const relocations = segmentMayRelocate(segment)
     ? getSegmentRelocations(segment)
     : [];
@@ -1894,6 +1934,53 @@ const holdsSlotOf = (
   );
 };
 
+const indexWindowsByParent = (
+  windows: readonly Window[],
+  side: 'after' | 'before'
+) => {
+  const byParent = new Map<string, Window[]>();
+
+  for (const window of windows) {
+    const key = pathKey(
+      side === 'before' ? window.parentBefore : window.parentAfter
+    );
+    const list = byParent.get(key);
+
+    if (list) list.push(window);
+    else byParent.set(key, [window]);
+  }
+
+  return byParent;
+};
+
+const holdsAnyWindow = (
+  byParent: ReadonlyMap<string, readonly Window[]>,
+  path: readonly number[],
+  side: 'after' | 'before'
+) => {
+  if (byParent.size === 0 || path.length === 0) return false;
+
+  let key = '';
+
+  for (let depth = 0; depth < path.length; depth++) {
+    const list = byParent.get(key);
+
+    if (list) {
+      const slot = path[depth];
+
+      for (const window of list) {
+        const lo = side === 'before' ? window.loBefore : window.loAfter;
+        const hi = side === 'before' ? window.hiBefore : window.hiAfter;
+
+        if (slot >= lo && slot <= hi) return true;
+      }
+    }
+    key = depth === 0 ? `${path[0]}` : `${key}.${path[depth]}`;
+  }
+
+  return false;
+};
+
 const changedWindowsOf = (
   segment: MappingSegment,
   countBefore: (parent: Path) => number
@@ -2154,10 +2241,12 @@ export const mapSnapshotIndexThroughChange = (
       retyped.set(pathKey(path), path);
     }
   }
+  const beforeWindows = indexWindowsByParent(windows, 'before');
+  const afterWindows = indexWindowsByParent(windows, 'after');
   const inBefore = (path: readonly number[]) =>
-    windows.some((window) => holdsSlotOf(window, path, 'before'));
+    holdsAnyWindow(beforeWindows, path, 'before');
   const inAfter = (path: readonly number[]) =>
-    windows.some((window) => holdsSlotOf(window, path, 'after'));
+    holdsAnyWindow(afterWindows, path, 'after');
   const available: KeyAvailability = (nodeKey, targetPath) => {
     const held = source.pathOf(nodeKey);
 
@@ -2177,6 +2266,7 @@ export const mapSnapshotIndexThroughChange = (
             placementKeysAdopted(placement, editor)
         )
       : placements;
+    const retainedByParent = indexPlacementsByParent(retainedPlacements);
     const claimed = profileCoreDuration(
       publishNodeKeys
         ? 'runtime-index-publish-changed'
@@ -2225,17 +2315,22 @@ export const mapSnapshotIndexThroughChange = (
           nodeKey = own;
         }
         if (!nodeKey) {
-          for (const placement of retainedPlacements) {
-            const local = preparedLocalPath(placement, path);
-            const prepared = local
-              ? getPreparedDocumentNodeKey(placement.slice, local)
-              : null;
+          forEachMatchingPlacement(
+            retainedByParent,
+            path,
+            (placement, local) => {
+              const prepared = getPreparedDocumentNodeKey(
+                placement.slice,
+                local
+              );
 
-            if (prepared && usable(prepared) && !usedNodeKeys.has(prepared)) {
-              nodeKey = prepared;
-              break;
+              if (prepared && usable(prepared) && !usedNodeKeys.has(prepared)) {
+                nodeKey = prepared;
+                return true;
+              }
+              return false;
             }
-          }
+          );
         }
         if (!nodeKey) {
           const sourcePath = mapPathBackward(segment, path);

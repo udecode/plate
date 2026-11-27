@@ -361,6 +361,9 @@ export const PREPARED_DOCUMENT_CHANGES = new WeakMap<
 /** Builds and applies canonical document steps against one immutable draft. */
 export class ChangeDraft {
   private accumulated: DocumentChange;
+  private accumulatedHasRootLifecycle = false;
+  private pendingAccumulated: DocumentChange[] = [];
+  private pendingSinceValidated: DocumentChange[] = [];
   private readonly appliedSteps: DraftStep[] = [];
   private stepComposition: CompositionStamp | null = null;
   private stepMove: DraftStepMove | null = null;
@@ -485,7 +488,51 @@ export class ChangeDraft {
   }
 
   get change() {
+    return this.getAccumulated();
+  }
+
+  private hasAccumulated() {
+    return !this.accumulated.empty || this.pendingAccumulated.length > 0;
+  }
+
+  private getAccumulated() {
+    if (this.pendingAccumulated.length === 0) return this.accumulated;
+
+    const list = this.accumulated.empty
+      ? this.pendingAccumulated
+      : [this.accumulated, ...this.pendingAccumulated];
+
+    this.pendingAccumulated = [];
+    this.accumulated = composeChangesBalanced(list, this.source);
+
     return this.accumulated;
+  }
+
+  private appendAccumulated(change: DocumentChange) {
+    if (change.empty) return;
+
+    if (hasRootLifecycle(change)) this.accumulatedHasRootLifecycle = true;
+    this.pendingAccumulated.push(change);
+  }
+
+  private getSinceValidated() {
+    if (!this.sinceValidated || this.pendingSinceValidated.length === 0) {
+      return this.sinceValidated;
+    }
+
+    const { before, change, indexedBefore } = this.sinceValidated;
+    const list = change.empty
+      ? this.pendingSinceValidated
+      : [change, ...this.pendingSinceValidated];
+
+    this.pendingSinceValidated = [];
+    this.sinceValidated = Object.freeze({
+      before,
+      change: composeChangesBalanced(list, before),
+      indexedBefore,
+    });
+
+    return this.sinceValidated;
   }
 
   /** Canonical steps retain movement identity lost by composition. @internal */
@@ -583,11 +630,11 @@ export class ChangeDraft {
   /** @internal */
   checkpoint(): DraftCheckpoint {
     return {
-      change: this.accumulated,
+      change: this.getAccumulated(),
       indexedAfter: this.indexedAfter(),
       letters: this.marks,
       record: this.record?.clone() ?? null,
-      sinceValidated: this.sinceValidated,
+      sinceValidated: this.getSinceValidated(),
       spanStart: this.spanStart,
       steps: [...this.appliedSteps],
     };
@@ -606,6 +653,7 @@ export class ChangeDraft {
     this.marks = checkpoint.letters;
     this.record = checkpoint.record?.clone() ?? null;
     this.sinceValidated = checkpoint.sinceValidated;
+    this.pendingSinceValidated = [];
     this.spanStart = checkpoint.spanStart;
 
     return step;
@@ -617,7 +665,7 @@ export class ChangeDraft {
   }
 
   factsFor(change: DocumentChange): ChangeFacts {
-    return sameRootChanges(change, this.accumulated)
+    return sameRootChanges(change, this.getAccumulated())
       ? (this.record?.facts() ?? NO_FACTS)
       : UNKNOWN_FACTS;
   }
@@ -673,15 +721,26 @@ export class ChangeDraft {
   }
 
   private recordFacts(
-    prefix: DocumentChange,
+    getPrefix: () => DocumentChange,
     change: DocumentChange,
     facts: ChangeFacts
   ) {
     if (this.record?.unknown) return;
+    if (facts.kind === 'unknown') {
+      (this.record ??= new DraftFacts()).forget();
+      return;
+    }
+
+    const lifecycle =
+      this.accumulatedHasRootLifecycle || hasRootLifecycle(change);
+
+    if (!this.record && facts.roots.size === 0 && !lifecycle) return;
+
+    const prefix = getPrefix();
+
     if (
-      facts.kind === 'unknown' ||
-      (hasRootLifecycle(prefix, change) &&
-        rootComposeRebuilds(prefix, change) !== undefined)
+      hasRootLifecycle(prefix, change) &&
+      rootComposeRebuilds(prefix, change) !== undefined
     ) {
       (this.record ??= new DraftFacts()).forget();
       return;
@@ -833,7 +892,7 @@ export class ChangeDraft {
    *
    * @internal
    */
-  indexedAfter(change: DocumentChange = this.accumulated) {
+  indexedAfter(change: DocumentChange = this.getAccumulated()) {
     const result = new Map<string, DocumentIndex>();
 
     for (const [root] of getInternalDocumentChangeEntries(change)) {
@@ -884,7 +943,7 @@ export class ChangeDraft {
   }
 
   check() {
-    if (!this.accumulated.empty) {
+    if (!this.getAccumulated().empty) {
       this.checkConstructed?.(this.validationInput());
     }
   }
@@ -895,7 +954,7 @@ export class ChangeDraft {
    * @internal
    */
   requireValidation() {
-    if (!this.accumulated.empty) this.validationPending = true;
+    if (this.hasAccumulated()) this.validationPending = true;
   }
 
   /**
@@ -968,13 +1027,11 @@ export class ChangeDraft {
     }
 
     const before = this.current;
-    const accumulated = this.accumulated.empty
-      ? payload.change
-      : this.accumulated.compose(payload.change, this.source);
+    const wasEmpty = !this.hasAccumulated();
 
     if (!payload.change.empty) {
       this.recordFacts(
-        this.accumulated,
+        () => this.getAccumulated(),
         payload.change,
         this.landedAsUnknown(payload.facts)
       );
@@ -987,7 +1044,7 @@ export class ChangeDraft {
       this.indexes.delete(root);
     }
 
-    this.accumulated = accumulated;
+    this.appendAccumulated(payload.change);
     this.composeSinceValidated(payload.change);
     for (const step of payload.steps) {
       if (!this.stepMove || step.move) {
@@ -1009,9 +1066,9 @@ export class ChangeDraft {
         this.composed(letters && !landing ? { ...moved, letters } : moved)
       );
     }
-    if (accumulated === payload.change) {
+    if (wasEmpty) {
       this.runtimeCandidatesByChange.set(
-        accumulated,
+        payload.change,
         payload.runtimeCandidates
       );
     }
@@ -1029,7 +1086,7 @@ export class ChangeDraft {
   }
 
   /** Classify a transaction-wide change against cached source/current indexes. */
-  classify(change: DocumentChange = this.accumulated) {
+  classify(change: DocumentChange = this.getAccumulated()) {
     const cachedRuntimeCandidates = this.runtimeCandidatesByChange.get(change);
 
     if (cachedRuntimeCandidates && isClassified(change)) return change;
@@ -1186,19 +1243,18 @@ export class ChangeDraft {
     });
 
     if (this.trackChanges) {
-      const prefix = this.accumulated;
       const facts = this.landedAsUnknown(options.facts ?? UNKNOWN_FACTS);
 
-      this.accumulated = this.accumulated.empty
-        ? classifiedChange
-        : this.accumulated.compose(classifiedChange, this.source);
+      if (!classifiedChange.empty) {
+        this.recordFacts(() => this.getAccumulated(), classifiedChange, facts);
+      }
+      this.appendAccumulated(classifiedChange);
       this.composeSinceValidated(classifiedChange);
       if (!classifiedChange.empty) {
         const relocations = this.recordsRelocations
           ? options.relocations
           : undefined;
 
-        this.recordFacts(prefix, classifiedChange, facts);
         this.land(
           this.composed({
             indexedAfter,
@@ -1259,9 +1315,10 @@ export class ChangeDraft {
       isSetValued: this.isSetValued,
     });
     const candidate = candidateBuilder.apply(change);
-    const accumulated = this.accumulated.empty
+    const currentAccumulated = this.getAccumulated();
+    const accumulated = currentAccumulated.empty
       ? candidate.change
-      : this.accumulated.compose(candidate.change, this.source);
+      : currentAccumulated.compose(candidate.change, this.source);
 
     if (this.validateConstructed) {
       // Earlier draft steps may be unvalidated; retain the transaction baseline.
@@ -1349,9 +1406,7 @@ export class ChangeDraft {
     const before = this.current;
     const current = applyDocumentChangeWithIndexes(change, before, NO_INDEXES);
 
-    this.accumulated = this.accumulated.empty
-      ? change
-      : this.accumulated.compose(change, this.source);
+    this.appendAccumulated(change);
     this.composeSinceValidated(change);
     this.land(
       this.composed({
@@ -1568,14 +1623,12 @@ export class ChangeDraft {
       this.indexes.delete(root);
     }
 
-    const prefix = this.accumulated;
-
-    this.accumulated = this.accumulated.empty
-      ? canonicalChange
-      : this.accumulated.compose(canonicalChange, this.source);
+    if (!canonicalChange.empty) {
+      this.recordFacts(() => this.getAccumulated(), canonicalChange, facts);
+    }
+    this.appendAccumulated(canonicalChange);
     this.composeSinceValidated(canonicalChange);
     if (!canonicalChange.empty) {
-      this.recordFacts(prefix, canonicalChange, facts);
       this.land(
         this.composed({
           indexedAfter,
@@ -1626,8 +1679,9 @@ export class ChangeDraft {
 
     if (!this.canonical && this.construct) {
       const steps = this.appliedSteps.slice(this.spanStart);
-      const input = this.sinceValidated
-        ? { ...this.validationInput(), sinceValidated: this.sinceValidated }
+      const sinceValidated = this.getSinceValidated();
+      const input = sinceValidated
+        ? { ...this.validationInput(), sinceValidated }
         : this.validationInput();
 
       constructionChange = this.construct(
@@ -1644,7 +1698,7 @@ export class ChangeDraft {
         preparation
       );
     }
-    const classified = isClassified(this.accumulated);
+    const classified = isClassified(this.getAccumulated());
     const step =
       constructionChange && !constructionChange.empty
         ? this.apply(constructionChange, {
@@ -1662,16 +1716,19 @@ export class ChangeDraft {
     // Composing the correction drops the classification of each root both
     // changes write, because their paths read in two documents, and a commit
     // without one reads its roots whole to answer what changed.
+    let accumulated = this.getAccumulated();
+
     if (
       step &&
       classified &&
       options.classify !== false &&
-      !this.accumulated.empty
+      !accumulated.empty
     ) {
-      this.accumulated = this.classify(this.accumulated);
+      accumulated = this.classify(accumulated);
+      this.accumulated = accumulated;
     }
 
-    if (this.accumulated.empty) {
+    if (accumulated.empty) {
       this.current = this.source;
       this.record = null;
       this.indexes.clear();
@@ -1721,12 +1778,12 @@ export class ChangeDraft {
         this.validate &&
         this.hasUnindexedRootChange(input.after, input.indexedAfter)
       ) {
-        this.validate(this.current, this.accumulated);
+        this.validate(this.current, accumulated);
       } else {
         this.validateConstructed(input);
       }
     } else {
-      this.validate?.(this.current, this.accumulated);
+      this.validate?.(this.current, accumulated);
     }
     this.standValidated();
     this.validationPending = false;
@@ -1736,7 +1793,8 @@ export class ChangeDraft {
 
   private standValidated() {
     this.canonical = true;
-    this.sinceValidated = this.accumulated.empty
+    this.pendingSinceValidated = [];
+    this.sinceValidated = this.getAccumulated().empty
       ? null
       : Object.freeze({
           before: this.current,
@@ -1748,13 +1806,7 @@ export class ChangeDraft {
   private composeSinceValidated(change: DocumentChange) {
     if (!this.sinceValidated || change.empty) return;
 
-    const { before, change: since, indexedBefore } = this.sinceValidated;
-
-    this.sinceValidated = Object.freeze({
-      before,
-      change: since.empty ? change : since.compose(change, before),
-      indexedBefore,
-    });
+    this.pendingSinceValidated.push(change);
   }
 
   createRoot(root: string, children: readonly JsonNode[]) {
@@ -2282,17 +2334,18 @@ export class ChangeDraft {
   }
 
   private validationInput() {
+    const accumulated = this.getAccumulated();
     const indexedAfter = new Map<string, DocumentIndex>();
     const indexedBefore = new Map<string, DocumentIndex>();
     const touchedRoots = new Set([
-      ...[...getInternalDocumentChangeEntries(this.accumulated)].map(
+      ...[...getInternalDocumentChangeEntries(accumulated)].map(
         ([root]) => root
       ),
-      ...this.accumulated.createRoots,
+      ...accumulated.createRoots,
     ]);
 
     for (const root of touchedRoots) {
-      if (!this.accumulated.deleteRoots.has(root)) {
+      if (!accumulated.deleteRoots.has(root)) {
         indexedAfter.set(root, this.getIndex(root));
       }
       indexedBefore.set(root, this.getSourceIndex(root));
@@ -2301,7 +2354,7 @@ export class ChangeDraft {
     return {
       after: this.current,
       before: this.source,
-      change: this.accumulated,
+      change: accumulated,
       indexedAfter,
       indexedBefore,
     };
@@ -2340,6 +2393,45 @@ const hasRootLifecycle = (...changes: readonly DocumentChange[]) =>
   changes.some(
     (change) => change.createRoots.size > 0 || change.deleteRoots.size > 0
   );
+
+// Root lifecycle transitions need sequential composition with the source value;
+// otherwise composition is associative and pairwise reduction avoids O(N^2)
+// section copying across large multi-step transactions.
+const composeChangesBalanced = (
+  changes: readonly DocumentChange[],
+  source: JsonEditorValue
+): DocumentChange => {
+  if (changes.length === 0) return DocumentChange.empty;
+  if (changes.length === 1) return getDefined(changes[0]);
+  if (hasRootLifecycle(...changes)) {
+    let composed = getDefined(changes[0]);
+
+    for (let index = 1; index < changes.length; index++) {
+      composed = composed.compose(getDefined(changes[index]), source);
+    }
+
+    return composed;
+  }
+
+  let current = changes;
+
+  while (current.length > 1) {
+    const next: DocumentChange[] = [];
+
+    for (let index = 0; index < current.length; index += 2) {
+      const left = getDefined(current[index]);
+
+      next.push(
+        index + 1 < current.length
+          ? left.compose(getDefined(current[index + 1]))
+          : left
+      );
+    }
+    current = next;
+  }
+
+  return getDefined(current[0]);
+};
 
 const sameRootChanges = (left: DocumentChange, right: DocumentChange) => {
   if (left === right) return true;

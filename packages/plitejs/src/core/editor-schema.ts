@@ -107,6 +107,9 @@ import {
   type FitDocumentPositions,
   type FittedDocumentPositions,
   type InternalSliceFitOptions,
+  type InternalSlicePlacementFit,
+  type InternalSlicePlacementsFitOptions,
+  type InternalSlicePlacementsFitResult,
   type SliceFitRuntimeTargetOptions,
 } from './slice-fit/compiled-slice-fitter';
 import {
@@ -537,6 +540,10 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root: RootKey
     ) => SchemaPropertyLandingPolicy;
     fit: (slice: ContentSlice, options: InternalSliceFitOptions) => boolean;
+    fitPlacements: (
+      placements: readonly InternalSlicePlacementFit[],
+      options: InternalSlicePlacementsFitOptions
+    ) => InternalSlicePlacementsFitResult;
     fitContent: (
       slice: ContentSlice,
       options: Readonly<{ parent: Element; root?: RootKey }>
@@ -2845,6 +2852,8 @@ export const createEditorSchema = <V extends Value = Value>(
     withoutGeneration,
   }));
   const fit: InternalEditorSchemaApi<V>['fit'] = sliceFitter.fit;
+  const fitPlacements: InternalEditorSchemaApi<V>['fitPlacements'] =
+    sliceFitter.fitPlacements;
   const fitContent: InternalEditorSchemaApi<V>['fitContent'] =
     sliceFitter.fitContent;
   const fitDocument = <TValue extends Value>(
@@ -5789,6 +5798,7 @@ export const createEditorSchema = <V extends Value = Value>(
     delta: () => getRegistry().schemaContributions.delta,
     element: getPublicElement,
     fit,
+    fitPlacements,
     fitContent,
     fitDocument,
     fitDocumentAndMapPositions,

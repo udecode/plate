@@ -1052,6 +1052,29 @@ export const bindCanonicalFitPreparation = (
   return bound;
 };
 
+/**
+ * Bind one combined canonical slice proof across multiple disjoint insertions.
+ *
+ * @internal
+ */
+export const bindCanonicalFitPreparations = (
+  schema: object | null,
+  currentSchema: () => object | null,
+  trustedNodes: readonly object[],
+  inserts: readonly PreparedTokenSlice[]
+): CanonicalFitPreparation => {
+  const bound = Object.freeze({}) as CanonicalFitPreparation;
+
+  CANONICAL_FIT_PREPARATIONS.set(bound, {
+    currentSchema,
+    inserts: new Set(inserts),
+    schema,
+    trustedNodes: new WeakSet(trustedNodes),
+  });
+
+  return bound;
+};
+
 const addChildWindow = (
   windows: Map<string, { path: readonly number[]; window: ChildWindow }>,
   path: readonly number[],
