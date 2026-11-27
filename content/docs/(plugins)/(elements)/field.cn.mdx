@@ -18,8 +18,8 @@ docs:
 
 ## 功能特性
 
-- 行内 void `field` 元素，共六种类型：文本、数字、日期、复选框、选择和签名。
-- 每个字段有一个角色、一个标签，以及可选的必填标记、选择选项和值，每一项都按字段的类型检查。
+- 行内 void `field` 元素，共七种类型：文本、数字、日期、复选框、选择、多选和签名。
+- 每个字段有一个角色、一个标签，以及可选的必填标记、选项、`min`、`max` 和值，每一项都按字段的类型检查。
 - 条件可以是单个测试，或是由两个及以上测试组成的 `all` 或 `any` 列表，每个测试通过 `fieldId` 指向一个字段。条件不成立的字段被跳过，因此不需要答案。
 - 可选的 `name`，让一个角色的多个字段共用一个答案，因此文档问两次的问题只需回答一次。
 - `insert` 和 `update` 命令拒绝不符合的设置或条件，读取会报告每个字段的问题以及它是否适用。
@@ -80,7 +80,7 @@ export function FieldToolbar() {
 
 ### 添加静态渲染
 
-`BaseFieldKit` 在 `platejs/static` 的只读输出中渲染每个字段。字段在原处显示它的答案：选择字段显示所选选项的标签，复选框显示为已勾选或空的方框，数字按原样显示，包括 `0`。复选框以外的字段在没有已填答案时显示一条空白线。应用用这份输出生成填写后文档的 PDF，见[打印填写后的文档](#print-the-filled-document)。
+`BaseFieldKit` 在 `platejs/static` 的只读输出中渲染每个字段。字段在原处显示它的答案：选择字段显示所选选项的标签，多选字段把所选选项的标签用逗号连接，复选框显示为已勾选或空的方框，数字按原样显示，包括 `0`。复选框以外的字段在没有已填答案时显示一条空白线。应用用这份输出生成填写后文档的 PDF，见[打印填写后的文档](#print-the-filled-document)。
 
 <ComponentSource name="field-static" />
 
@@ -151,12 +151,14 @@ export const readFields = (value: Value) =>
 |------|------|------|
 | `type` | `'field'` | 由 `BaseFieldPlugin` 拥有的行内 void 元素。 |
 | `fieldId` | `string` | 在文档中唯一。新字段获得一个随机的 `nanoid`。 |
-| `kind` | `FieldKind` | `'text'`、`'number'`、`'date'`、`'checkbox'`、`'choice'` 或 `'signature'`。必需。 |
+| `kind` | `FieldKind` | `'text'`、`'number'`、`'date'`、`'checkbox'`、`'choice'`、`'multiple'` 或 `'signature'`。必需。 |
 | `role` | `string` | 填写该字段的角色，例如 `'tenant'`。必需。 |
 | `label` | `string` | 必需。字段标签显示它，字段没有答案时 HTML、Word 和纯文本会显示方括号中的它。 |
 | `name` | `string` | 同一角色中名称相同的字段共用一个答案，见[名称](#names)。 |
 | `required` | `boolean` | 标记字段适用时需要已填答案。提交让它保持未填写时，`applyFieldValues` 会拒绝该提交。 |
-| `options` | `FieldOption[]` | 仅用于选择字段。每个选项为 `{ value, label }`，任意两个选项的 `value` 都不相同。 |
+| `options` | `FieldOption[]` | 仅用于选择和多选字段。每个选项为 `{ value, label }`，任意两个选项的 `value` 都不相同。 |
+| `min` | `number` | 仅用于多选字段。已填答案最少选择的项数：至少为 2 且不大于 `max` 的整数。 |
+| `max` | `number` | 仅用于多选字段。最多选择的项数：至少为 1 且不小于 `min` 的整数。 |
 | `value` | `FieldValue` | 答案。没有答案，或 `fillsField` 判断它的答案不算填写时，字段未填写。 |
 | `condition` | `FieldCondition` | `{ ref, test, value? }`、`{ all: tests }` 或 `{ any: tests }`，见下文的条件一节。 |
 | `children` | `[{ text: '' }]` | 行内 void 元素必需的子节点。 |
@@ -172,11 +174,16 @@ export const readFields = (value: Value) =>
 | `date` | ISO 日期，`YYYY-MM-DD` | `filled`、`blank`、`equals`、`not-equals`、`above`、`below` |
 | `checkbox` | `true` 或 `false` | `equals`、`not-equals` |
 | `choice` | 某个选项的 `value` | `filled`、`blank`、`equals`、`not-equals` |
+| `multiple` | 互不相同的选项 `value` 数组（`readonly string[]`） | `filled`、`blank`、`includes`、`not-includes` |
 | `signature` | 由你的应用决定的字符串，例如存储图片的 id | `filled`、`blank` |
 
-选择字段保存选项的 `value`，因此修改选项的 `label` 后，指向它的答案和条件都保持不变。
+选择和多选字段保存选项的 `value`，因此修改选项的 `label` 后，指向它的答案和条件都保持不变。
 
-`platejs/field` 中的 `fillsField(field, value)` 判断一个值是否是字段的已填答案。`required` 以及 `filled` 和 `blank` 测试使用同一条规则。已填答案是已勾选的复选框，或者符合字段类型的值。文本或签名答案还需要包含至少一个 JavaScript 的 `\s` 不匹配的字符。因此 `false`、空文本和只含空格的文本符合字段，但不算填写，而 `0` 算作数字字段的已填答案。
+`multiple` 字段支持可选的 `min`（至少为 2 的整数）和 `max`（至少为 1 的整数，且 `min <= max`）。这两个计数只限制已填答案：只有 `required` 会拒绝空答案，因此带 `min` 的可选字段从不会让它自己的角色出现在 `pending` 中。`fitsField(field, value)` 检查多选值是否只包含互不相同的选项值且数量不超过 `max`，不检查 `min`，因此只填写视图、`update`、条件、读取和静态输出在填写者逐项勾选时都会保留未达 `min` 的部分选择。`applyFieldValues` 在提交时把少于 `min` 的已填选择拒绝为 `invalid-value`。`min` 大于 `options` 数量时会读到 `invalid-value`，但 `update` 不拒绝它，以便作者在添加选项前先设置数量；`max` 大于选项数量是合法的。编辑 `options` 会保留 `min` 和 `max`；把 `kind` 从 `multiple` 改为其他类型时会丢弃两者。
+
+两个 `multiple` 答案只要包含按任意顺序排列的相同选项值就视为一致。名称组、`answer-conflict`、`startFieldValues`、`applyFieldValues`、`readFieldAnswers` 和字段标签都按这种方式比较。由于 `multiple` 字段把整个选择存为单个属性，两名协作者同时切换不同选项时，会收敛到其中一人的完整选择，而不是合并单个勾选项。
+
+`platejs/field` 中的 `fillsField(field, value)` 判断一个值是否是字段的已填答案。`required` 以及 `filled` 和 `blank` 测试使用同一条规则。已填答案是已勾选的复选框、非空且符合条件的 `multiple` 选择，或者符合字段类型的其他值。文本或签名答案还需要包含至少一个 JavaScript 的 `\s` 不匹配的字符。因此 `false`、空文本、只含空格的文本和空数组 `[]` 符合字段，但不算填写，而 `0` 算作数字字段的已填答案。
 
 ```ts
 import { fillsField } from 'platejs/field';
@@ -202,9 +209,9 @@ fillsField({ kind: 'checkbox' }, false); // false
 
 `update` 把 `value`（包括清空的值）写入该角色中与该字段同名的每个字段，并在同一个提交和同一个撤销步骤中完成。其他设置不会传到其他字段。在示例中，租赁合同以同一个名称询问两次租客姓名，因此在一处输入会填写另一处，撤销会同时撤回两处。
 
-同一角色中名称相同的字段必须有相同的类型、相同的选项值和相同的条件。两个条件形式相同（单个测试、`all` 或 `any`），且它们的测试可以按任意顺序一一对应时，它们相同。两个测试指向同一个字段，或指向同一角色中同名且该名称组没有 `name-conflict` 的字段，并且测试和值相同时，这两个测试相同。名称下的字段不一致时，其中每个字段都读到 `name-conflict`，此时 `update` 只把值写入它自己的字段。`insert` 和 `update` 从不拒绝名称冲突，因此作者可以逐个修改同名的字段。
+同一角色中名称相同的字段必须有相同的类型、相同的选项值、相同的 `min` 和 `max` 以及相同的条件。两个条件形式相同（单个测试、`all` 或 `any`），且它们的测试可以按任意顺序一一对应时，它们相同。两个测试指向同一个字段，或指向同一角色中同名且该名称组没有 `name-conflict` 的字段，并且测试和值相同时，这两个测试相同。名称下的字段不一致时，其中每个字段都读到 `name-conflict`，此时 `update` 只把值写入它自己的字段。`insert` 和 `update` 从不拒绝名称冲突，因此作者可以逐个修改同名的字段。
 
-名称下的字段持有不同的值时，其中每个字段都读到 `answer-conflict`。空文本与没有值不同，`false` 与没有值也不同。`insert` 和粘贴不会写入其他字段。因此以不同的值或没有值加入某个名称的字段会读到 `answer-conflict`，直到某次 `update` 向该名称下的一个字段写入值，这次写入会写入该名称下的每个字段。
+名称下的字段持有不同的值时，其中每个字段都读到 `answer-conflict`。多选值不区分选项顺序，而空文本与没有值不同，`false` 与没有值也不同。`insert` 和粘贴不会写入其他字段。因此以不同的值或没有值加入某个名称的字段会读到 `answer-conflict`，直到某次 `update` 向该名称下的一个字段写入值，这次写入会写入该名称下的每个字段。
 
 ## 插入与更新
 
@@ -220,9 +227,22 @@ const fieldId = editor.plugin(BaseFieldPlugin).update.insert({
   required: true,
   role: 'tenant',
 });
+const utilitiesId = editor.plugin(BaseFieldPlugin).update.insert({
+  kind: 'multiple',
+  label: 'Utilities',
+  max: 2,
+  name: 'utilities',
+  options: [
+    { label: 'Water', value: 'water' },
+    { label: 'Gas', value: 'gas' },
+    { label: 'Electric', value: 'electric' },
+  ],
+  required: true,
+  role: 'tenant',
+});
 ```
 
-当值或选项不符合类型，设置中指定了 `fieldId` 或[名称规则](#names)拒绝的名称，或者条件包含指向不存在字段的测试，或使用了被指向字段的类型不接受的测试或值时，`insert` 会抛出错误。
+当值、选项、`min` 或 `max` 不符合类型，设置中指定了 `fieldId` 或[名称规则](#names)拒绝的名称，或者条件包含指向不存在字段的测试，或使用了被指向字段的类型不接受的测试或值时，`insert` 会抛出错误。
 
 `update` 修改持有某个 `fieldId` 的字段的设置或值。传入 `undefined` 的设置会被移除。`value` 还会写入该角色中同名的每个其他字段。
 
@@ -243,11 +263,11 @@ editor.update((tx) => {
 
 补丁前已有同一问题的测试可以通过，因此作者可以在另一条规则仍损坏时逐条修复，或者在损坏规则旁边移除一条正常规则。
 
-修改 `kind` 或 `options` 的补丁还会丢弃字段不再符合的值和选项。把带值的数字字段改为日期字段会丢弃该值。字段保留它的 `fieldId`。
+修改 `kind` 或 `options` 的补丁还会丢弃字段不再符合的值和选项。把 `kind` 从 `multiple` 改为其他类型时会丢弃 `min` 和 `max`，而在 `multiple` 字段上编辑 `options` 会保留它们。把带值的数字字段改为日期字段会丢弃该值。字段保留它的 `fieldId`。
 
 ## 条件
 
-条件说明字段何时适用。它可以是单个测试 `{ ref, test, value? }`，或是包含两个及以上测试的列表 `{ all: tests }` 或 `{ any: tests }`。除 `filled` 和 `blank` 外，每个测试都与 `value` 比较，`value` 使用被指向字段的值的结构。列表不能嵌套列表，可以重复同一个测试。加载、`insert`、`update` 和直接的 `tx.nodes.set` 会拒绝少于两个测试的列表、嵌套列表、同时带有 `all` 和 `any` 的对象，以及同时带有 `ref` 和列表的对象。单个测试或列表会保留其持有的任何额外键。
+条件说明字段何时适用。它可以是单个测试 `{ ref, test, value? }`，或是包含两个及以上测试的列表 `{ all: tests }` 或 `{ any: tests }`。除 `filled` 和 `blank` 外，每个测试都与 `value` 比较，`value` 使用被指向字段的值的结构（对 `multiple` 字段的 `includes` 和 `not-includes` 使用单个选项的 `value`）。列表不能嵌套列表，可以重复同一个测试。加载、`insert`、`update` 和直接的 `tx.nodes.set` 会拒绝少于两个测试的列表、嵌套列表、同时带有 `all` 和 `any` 的对象，以及同时带有 `ref` 和列表的对象。单个测试或列表会保留其持有的任何额外键。
 
 示例中由租客填写的宠物名字字段，在房东的允许养宠物选择为 `yes` 且租客勾选我有宠物时适用：
 
@@ -269,6 +289,7 @@ editor.update((tx) => {
 编辑器从不隐藏字段。条件不成立的字段被跳过。即使它是 `required`，它也不需要答案，并且 `applyFieldValues` 会拒绝它的已填答案。条件检查它指向的每个字段的答案：
 
 - `equals` 在答案等于 `value` 时成立，`not-equals` 在答案不等于它时成立，没有答案也算不等于。
+- `includes` 在 `multiple` 字段的答案包含单个选项 `value` 时成立，`not-includes` 在不包含时成立，空选择或没有答案也算不包含。在示例中，燃气表号在水电燃气包含 `gas` 时适用。
 - `above` 和 `below` 比较数字，并按日期比较 ISO 日期。没有答案时两者都不成立。
 - 不符合字段类型的答案算作没有答案，本身被跳过的字段的答案也算作没有答案。
 - 没有答案的复选框在它的角色完成作答后读作 `false`。在编辑器中，这适用于填写被读取字段的那个角色的复选框。在 `applyFieldValues` 中，这在复选框的角色提交之后适用。
@@ -302,9 +323,9 @@ const targets = fields.conditionTargets(petNameId);
 |------|----------|
 | `missing-target` | 没有字段持有其条件指向的某个 id，例如那个字段被删除之后。 |
 | `unsupported-test` | 条件指向的某个字段的类型不接受该测试。 |
-| `invalid-value` | 它的值或选项不符合它的类型，或者某个测试的值不符合测试或被指向字段的类型。 |
+| `invalid-value` | 它的值、选项、`min` 或 `max` 不符合它的类型（包括 `min` 大于选项数量），或者某个测试的值不符合测试或被指向字段的类型。 |
 | `condition-loop` | 从该字段出发的条件路径指回它自身，例如 A 指向 B 而 B 指向 A。 |
-| `name-conflict` | 同一角色中同名的某个字段的类型、选项值或条件不同。 |
+| `name-conflict` | 同一角色中同名的某个字段的类型、选项值、`min`、`max` 或条件不同。 |
 | `answer-conflict` | 同一角色中同名的某个字段持有不同的值，或者没有值。 |
 
 即使列表中多条测试触发同一个问题，每个问题代码在 `problems` 中最多出现一次。`insert` 和 `update` 会拒绝引入前四种问题的写入。它们从不拒绝名称冲突或答案冲突，由读取报告这些问题。问题来自之后的编辑，例如删除或修改条件指向的字段，或者来自绕过这些命令的写入，例如直接的 `tx.nodes.set` 或加载的文档。
@@ -360,7 +381,7 @@ editor.plugin(FieldPlugin).store.set({ fillRole: null });
 
 设置角色后：
 
-- 注册表中该角色字段的标签打开一个弹出框，带有答案输入框和 Clear 按钮，该角色的复选框点击即可勾选或取消。答案带有待审阅建议的标签会提示它在等待审阅，并且不会打开任何内容。其他角色的标签不会打开任何内容，标签不能拖动，插入菜单被禁用。
+- 注册表中该角色字段的标签打开一个弹出框，带有答案输入框（`multiple` 字段为带数量提示、达到 `max` 时禁用未勾选项、取消最后一个勾选即清空答案的复选框列表）和 Clear 按钮，该角色的复选框点击即可勾选或取消。答案带有待审阅建议的标签会提示它在等待审阅，并且不会打开任何内容。其他角色的标签不会打开任何内容，标签不能拖动，插入菜单被禁用。
 - 编辑器拒绝除该角色字段上符合的答案或清空答案之外的任何本地提交。输入、粘贴、剪切、拖放、回车和 AI 写入都不会改变文档。被拒绝的更新不会向调用者抛出错误，也不会改变任何内容。
 - 选区、没有 `persist` 的状态字段，以及既不持久化也不同步给其他协作者的副作用都可以通过，因此仍然可以选择和复制。
 - 撤销和重做只撤回该角色自己的答案。撤销在第一个修改了其他内容的步骤处停止，例如作者的编辑，并返回 `{ reason, status: 'blocked' }`。切换后的第一个答案是单独的撤销步骤，因此切换后立即输入的答案需要撤销两次。
@@ -426,7 +447,7 @@ await saveFilled(result.document);
 | `unknown-role` | 该角色不拥有任何字段。 |
 | `unknown-field` | 答案指向的字段不在模板中。 |
 | `wrong-role` | 答案属于另一个角色的字段。 |
-| `invalid-value` | 答案不符合它的字段。 |
+| `invalid-value` | 答案不符合它的字段，或已填的 `multiple` 答案少于 `min` 项。 |
 | `waiting` | 该角色的字段在等待一个或多个尚未提交的角色。`waitsOn` 给出其中按 UTF-16 码元顺序排在最前的角色。即使该字段的答案也被拒绝，仍会报告这条拒绝。 |
 | `skipped` | 该角色的字段被跳过，却持有已填答案。未填写的答案按原样保留，因此清空答案或取消勾选即可消除这条拒绝。 |
 | `missing-required` | 该角色的必填字段适用，但没有已填答案。 |
@@ -547,10 +568,10 @@ readFieldAnswers(result.document).tenant?.tenant_name;
 
 | 答案 | 何时出现 |
 |------|----------|
-| `{ kind, value }` | 该名称的字段持有一个符合 `kind` 的值。复选框的 `value` 是 `boolean`，数字是 `number`，其他每种类型是 `string`。 |
+| `{ kind, value }` | 该名称的字段持有一个符合 `kind` 的值。复选框的 `value` 是 `boolean`，数字是 `number`，`multiple` 字段是 `readonly string[]`，其他每种类型是 `string`。 |
 | `{ kind }` | 这些字段没有值，或持有一个不符合 `kind` 的值。 |
 | `{ kind, problem: 'answer-conflict' }` | 这些字段持有不同的值。 |
-| `{ problem: 'name-conflict' }` | 这些字段的类型、选项值或条件不同，因此该名称没有唯一的类型。 |
+| `{ problem: 'name-conflict' }` | 这些字段的类型、选项值、`min`、`max` 或条件不同，因此该名称没有唯一的类型。 |
 
 先检查 `'problem' in answer`，再按 `kind` 收窄以读取 `value`：
 
@@ -580,13 +601,13 @@ if (rent && !('problem' in rent) && rent.kind === 'number') {
 
 ## HTML
 
-`editor.api.html.serialize()` 把每个字段写成一个 `span`，每个属性对应一个 `data-field-*` 属性。span 的文本是答案：选择字段为所选选项的标签，没有答案的字段为方括号中的标签。id、kind、label、name 和 role 属性保存纯文本，其他属性保存 JSON：
+`editor.api.html.serialize()` 把每个字段写成一个 `span`，每个属性对应一个 `data-field-*` 属性（`multiple` 字段包含 `data-field-min` 和 `data-field-max`）。span 的文本是答案：选择字段为所选选项的标签，`multiple` 字段为所选选项的标签以逗号连接，没有答案的字段为方括号中的标签。id、kind、label、name 和 role 属性保存纯文本，其他属性保存 JSON：
 
 ```html
 <p>Pets allowed? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets allowed" data-field-name="pets_allowed" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-required="true" data-field-role="landlord" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-name="pet_name" data-field-required="true" data-field-role="tenant">[Pet name]</span></p>
 ```
 
-解析这段 HTML 会读回每个有效属性，丢弃格式错误的条件并保留该字段。span 需要 `data-field-kind`、`data-field-label` 和 `data-field-role` 才会被读成字段。粘贴的 HTML 模板会获得新 id，其中的条件指向副本。
+解析这段 HTML 会读回每个有效属性，丢弃格式错误的条件并保留该字段，并把导入的 `multiple` 字段上的 `data-field-min="1"` 映射为 `required: true`。span 需要 `data-field-kind`、`data-field-label` 和 `data-field-role` 才会被读成字段。粘贴的 HTML 模板会获得新 id，其中的条件指向副本。
 
 示例的 HTML 面板使用 `lossPolicy: 'allow'` 序列化，因为日期元素没有 HTML 编码器。面板为丢弃的日期列出一行 `html-unsupported-content`。
 
@@ -598,11 +619,11 @@ Markdown 把每个字段写成一个 `<field>` 标签，包含每个属性，`fi
 Pets allowed? <field kind="choice" label="Pets allowed" name="pets_allowed" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" required role="landlord" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" name="pet_name" required role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
 ```
 
-读取器需要 `kind`、`label` 和 `role`，并会丢弃格式错误的条件同时保留字段。缺少它们的标签保留为文本，并返回 `markdown-unsupported-node` diagnostic。粘贴的 Markdown 模板会获得新 id，其中的条件指向副本。
+读取器需要 `kind`、`label` 和 `role`，会丢弃格式错误的条件同时保留字段，并把导入的 `multiple` 字段上的 `min` 为 `1` 映射为 `required: true`。缺少它们的标签保留为文本，并返回 `markdown-unsupported-node` diagnostic。粘贴的 Markdown 模板会获得新 id，其中的条件指向副本。
 
 ## Word
 
-Word 没有字段元素。Word 导出把每个字段的答案写成文本：选择字段为所选选项的标签，没有答案的字段为方括号中的标签。它不需要静态字段组件，因此无界面的导出也会保留答案。
+Word 没有字段元素。Word 导出把每个字段的答案写成文本：选择字段为所选选项的标签，`multiple` 字段为所选选项的标签以逗号连接，没有答案的字段为方括号中的标签。它不需要静态字段组件，因此无界面的导出也会保留答案。
 
 ```tsx
 import { exportDocx } from 'platejs/docx/export';
@@ -635,7 +656,7 @@ const dropped = result.diagnostics.filter(
 | `fieldSubmission(template, role, values, options?)` | `platejs/field` | 从以字段名称为键的记录构建一个角色的提交，以 `fieldId` 为键。 |
 | `startFieldValues(template, submissions, start, options?)` | `platejs/field` | 检查这些提交，返回一个角色开始填写时的文档和 `pending`，或者返回拒绝。 |
 | `readFieldAnswers(document, options?)` | `platejs/field` | 按角色和名称读取保存的文档中的答案，每个答案是一个 `FieldAnswer`。 |
-| `fitsField(field, value)` | `platejs/field` | 判断一个值是否符合字段的类型和选项。 |
+| `fitsField(field, value)` | `platejs/field` | 判断一个值是否符合字段的类型、选项和 `max`。 |
 | `fillsField(field, value)` | `platejs/field` | 判断一个值是否是字段的已填答案。 |
 | `FIELD_TESTS` | `platejs/field` | 每种类型的条件可以使用的测试。 |
 | `FieldElement`、`FieldSettings`、`FieldPatch`、`FieldRead`、`FieldCondition`、`FieldConditionTest`、`FieldProblem`、`FieldKind`、`FieldTest`、`FieldValue`、`FieldOption`、`FieldSubmission`、`FieldRefusal`、`FieldApplyResult`、`FieldAnswer` | `platejs/field` | 字段类型。 |

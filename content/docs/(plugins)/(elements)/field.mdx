@@ -18,8 +18,8 @@ The demo is a lease template for a landlord, a tenant and an `app` role that hol
 
 ## Features
 
-- Inline void `field` element of six kinds: text, number, date, checkbox, choice and signature.
-- A role per field, a label, and an optional required flag, choice options and value, each checked against the field's kind.
+- Inline void `field` element of seven kinds: text, number, date, checkbox, choice, multiple choice and signature.
+- A role per field, a label, and optional required, options, `min`, `max` and value settings, each checked against the field's kind.
 - A condition of one test or an `all` or `any` list of two or more tests, each naming a field by its `fieldId`. A field whose condition fails is skipped, so it needs no answer.
 - An optional `name` that gives the fields of one role one answer, so a question the document asks twice is answered once.
 - `insert` and `update` commands that refuse a setting or condition that does not fit, and reads that report what is wrong with each field and whether it applies.
@@ -80,7 +80,7 @@ export function FieldToolbar() {
 
 ### Add static rendering
 
-`BaseFieldKit` renders each field for read-only output with `platejs/static`. A field shows its answer in place: a choice as its option's label, a checkbox as a ticked or empty box, and a number as written, `0` included. A field other than a checkbox shows a blank line when it has no filled answer. An app makes the PDF of a filled document from this output, as [Print the filled document](#print-the-filled-document) shows.
+`BaseFieldKit` renders each field for read-only output with `platejs/static`. A field shows its answer in place: a choice as its option's label, a multiple-choice field as its selected options' labels joined by a comma, a checkbox as a ticked or empty box, and a number as written, `0` included. A field other than a checkbox shows a blank line when it has no filled answer. An app makes the PDF of a filled document from this output, as [Print the filled document](#print-the-filled-document) shows.
 
 <ComponentSource name="field-static" />
 
@@ -151,12 +151,14 @@ A field sits inside a paragraph, like a date or a mention.
 |----------|------|-------|
 | `type` | `'field'` | Inline void element owned by `BaseFieldPlugin`. |
 | `fieldId` | `string` | Unique in the document. A new field gets a random `nanoid`. |
-| `kind` | `FieldKind` | `'text'`, `'number'`, `'date'`, `'checkbox'`, `'choice'` or `'signature'`. Required. |
+| `kind` | `FieldKind` | `'text'`, `'number'`, `'date'`, `'checkbox'`, `'choice'`, `'multiple'` or `'signature'`. Required. |
 | `role` | `string` | The role that fills the field, such as `'tenant'`. Required. |
 | `label` | `string` | Required. The chip shows it, and HTML, Word and plain text show it in brackets when the field has no answer. |
 | `name` | `string` | Fields of one role that share a name hold one answer, see [Names](#names). |
 | `required` | `boolean` | Marks a field that needs a filled answer while it applies. `applyFieldValues` refuses a submission that leaves it unfilled. |
-| `options` | `FieldOption[]` | Choice fields only. Each option is `{ value, label }`, and no two share a `value`. |
+| `options` | `FieldOption[]` | Choice and multiple-choice fields only. Each option is `{ value, label }`, and no two share a `value`. |
+| `min` | `number` | Multiple-choice fields only. Minimum number of picks for a filled answer: an integer of at least 2 and no greater than `max`. |
+| `max` | `number` | Multiple-choice fields only. Maximum number of picks: an integer of at least 1 and no less than `min`. |
 | `value` | `FieldValue` | The answer. A field is unfilled without one, or when `fillsField` says its answer does not fill it. |
 | `condition` | `FieldCondition` | `{ ref, test, value? }`, `{ all: tests }` or `{ any: tests }`, see [Conditions](#conditions). |
 | `children` | `[{ text: '' }]` | Required child of an inline void element. |
@@ -172,11 +174,16 @@ Each kind fixes the shape of its value and the tests a condition on it may use. 
 | `date` | an ISO date, `YYYY-MM-DD` | `filled`, `blank`, `equals`, `not-equals`, `above`, `below` |
 | `checkbox` | `true` or `false` | `equals`, `not-equals` |
 | `choice` | one option's `value` | `filled`, `blank`, `equals`, `not-equals` |
+| `multiple` | array of distinct option `value`s (`readonly string[]`) | `filled`, `blank`, `includes`, `not-includes` |
 | `signature` | a string your app owns, such as a stored image's id | `filled`, `blank` |
 
-A choice stores the option's `value`, so renaming an option's `label` keeps every answer and condition that names it.
+Choice and multiple-choice fields store option `value`s, so renaming an option's `label` keeps every answer and condition that names it.
 
-`fillsField(field, value)` from `platejs/field` says whether a value is a filled answer for a field. `required` and the `filled` and `blank` tests read the same rule. A filled answer is a ticked checkbox, or a value that fits the field's kind. A text or signature answer also needs a character that JavaScript's `\s` does not match. So `false`, an empty text and a text of spaces fit a field but do not fill it, and `0` fills a number field.
+A `multiple` field takes optional `min` (integer at least 2) and `max` (integer at least 1, with `min <= max`). Both counts apply only to a filled answer: `required` alone refuses an empty answer, so an optional field with `min` never puts its role in `pending`. `fitsField(field, value)` checks that a `multiple` value holds distinct option values and no more than `max` entries, without checking `min`, so a fill view, `update`, conditions, reads and static output all keep a partial selection while a signer ticks options. `applyFieldValues` refuses a filled selection below `min` as `invalid-value`. A `min` greater than the number of `options` reads `invalid-value` without `update` refusing it, so an author can set counts before adding options, and a `max` greater than the number of `options` is valid. Editing `options` keeps `min` and `max`; changing `kind` away from `multiple` drops both.
+
+Two `multiple` answers agree when they hold the same option values in any order. Name groups, `answer-conflict`, `startFieldValues`, `applyFieldValues`, `readFieldAnswers` and the chip compare multiple-choice answers that way. Because a `multiple` field stores its selection as one property, two collaborative peers who toggle different options at the same time converge on one peer's whole selection rather than merging individual picks.
+
+`fillsField(field, value)` from `platejs/field` says whether a value is a filled answer for a field. `required` and the `filled` and `blank` tests read the same rule. A filled answer is a ticked checkbox, a non-empty fitting `multiple` selection, or any other value that fits the field's kind. A text or signature answer also needs a character that JavaScript's `\s` does not match. So `false`, an empty text, a text of spaces and an empty array `[]` fit a field but do not fill it, and `0` fills a number field.
 
 ```ts
 import { fillsField } from 'platejs/field';
@@ -202,9 +209,9 @@ A name is a text that is not empty, has no whitespace at either end, and holds n
 
 `update` writes a `value`, a cleared one included, to every field of the role that shares the field's name, in the same commit and the same undo step. No other setting reaches the other fields. In the demo, the lease asks for the tenant's name twice under one name, so typing it in one place fills the other, and undo takes it back in both.
 
-Fields of one role that share a name must share their kind, the values of their options and their condition. Two conditions match when they have the same form (one test, `all` or `any`) and their tests match one to one in any order. Two tests match when they name the same field, or fields of one role and name whose own group reads no `name-conflict`, with the same test and value. Each field of a name whose fields differ reads `name-conflict`, and `update` then writes a value to its own field alone. `insert` and `update` never refuse a name conflict, so an author can change the fields of a name one at a time.
+Fields of one role that share a name must share their kind, the values of their options, `min`, `max` and their condition. Two conditions match when they have the same form (one test, `all` or `any`) and their tests match one to one in any order. Two tests match when they name the same field, or fields of one role and name whose own group reads no `name-conflict`, with the same test and value. Each field of a name whose fields differ reads `name-conflict`, and `update` then writes a value to its own field alone. `insert` and `update` never refuse a name conflict, so an author can change the fields of a name one at a time.
 
-Each field of a name whose fields hold different values reads `answer-conflict`. An empty text and no value differ, and so do `false` and no value. `insert` and a paste write no other field. So a field that joins a name with another value, or with none, reads `answer-conflict` until an `update` writes a value to a field of that name, which writes every field of it.
+Each field of a name whose fields hold different values reads `answer-conflict`. Multiple-choice values compare without regard to option order, while an empty text and no value differ, and `false` and no value differ. `insert` and a paste write no other field. So a field that joins a name with another value, or with none, reads `answer-conflict` until an `update` writes a value to a field of that name, which writes every field of it.
 
 ## Insert and update
 
@@ -220,9 +227,22 @@ const fieldId = editor.plugin(BaseFieldPlugin).update.insert({
   required: true,
   role: 'tenant',
 });
+const utilitiesId = editor.plugin(BaseFieldPlugin).update.insert({
+  kind: 'multiple',
+  label: 'Utilities',
+  max: 2,
+  name: 'utilities',
+  options: [
+    { label: 'Water', value: 'water' },
+    { label: 'Gas', value: 'gas' },
+    { label: 'Electric', value: 'electric' },
+  ],
+  required: true,
+  role: 'tenant',
+});
 ```
 
-`insert` throws when a value or options do not fit the kind, when the settings name a `fieldId` or a name the [name rule](#names) refuses, or when the condition holds a test that names no field, or uses a test or value that the named field's kind does not take.
+`insert` throws when a value, options, `min` or `max` do not fit the kind, when the settings name a `fieldId` or a name the [name rule](#names) refuses, or when the condition holds a test that names no field, or uses a test or value that the named field's kind does not take.
 
 `update` changes the settings or value of the field that holds a `fieldId`. A setting given as `undefined` is removed. A `value` also goes to every other field of the role and name.
 
@@ -243,11 +263,11 @@ editor.update((tx) => {
 
 A test that already had the same problem before the patch passes, so an author can fix one broken test while another stays broken, or remove a working test beside a broken one.
 
-A patch that changes `kind` or `options` also drops each value and options that the field no longer fits. Turning a number field with a value into a date field drops the value. The field keeps its `fieldId`.
+A patch that changes `kind` or `options` also drops each value and options that the field no longer fits. Changing `kind` away from `multiple` drops `min` and `max`, while editing `options` on a `multiple` field keeps them. Turning a number field with a value into a date field drops the value. The field keeps its `fieldId`.
 
 ## Conditions
 
-A condition says when a field applies. It is either one test, `{ ref, test, value? }`, or a list of two or more tests, `{ all: tests }` or `{ any: tests }`. Every test but `filled` and `blank` compares against `value`, which takes the shape of the named field's value. A list holds no nested list, and it may repeat a test. Loading, `insert`, `update` and a plain `tx.nodes.set` refuse a list with fewer than two tests, a nested list, an object with both `all` and `any`, and an object with both `ref` and a list. A test or a list keeps any extra keys it holds.
+A condition says when a field applies. It is either one test, `{ ref, test, value? }`, or a list of two or more tests, `{ all: tests }` or `{ any: tests }`. Every test but `filled` and `blank` compares against `value`, which takes the shape of the named field's value (or one option's `value` for `includes` and `not-includes` on a `multiple` field). A list holds no nested list, and it may repeat a test. Loading, `insert`, `update` and a plain `tx.nodes.set` refuse a list with fewer than two tests, a nested list, an object with both `all` and `any`, and an object with both `ref` and a list. A test or a list keeps any extra keys it holds.
 
 The demo's Pet name field, which the tenant fills, applies when the landlord's Pets allowed choice is `yes` and the tenant ticked I have a pet:
 
@@ -269,6 +289,7 @@ In the registry UI, the popover's Show when section reads its target choices fro
 The editor never hides a field. A field whose condition fails is skipped. It needs no answer even when it is `required`, and `applyFieldValues` refuses a filled answer for it. A condition tests the answer of each field it names:
 
 - `equals` holds when the answer is `value`, and `not-equals` when it is not, no answer included.
+- `includes` holds when a `multiple` field's answer holds the single option `value`, and `not-includes` when it does not, an empty or absent answer included. In the demo, Gas meter number applies when Utilities includes `gas`.
 - `above` and `below` compare numbers, and ISO dates as dates. Neither holds without an answer.
 - An answer that does not fit its field's kind counts as no answer, and so does the answer of a field that is skipped itself.
 - A checkbox with no answer reads as `false` once its role is done answering. In the editor, that holds for a checkbox of the role that fills the field being read. In `applyFieldValues`, it holds once the checkbox's role has submitted.
@@ -302,9 +323,9 @@ const targets = fields.conditionTargets(petNameId);
 |---------|------|
 | `missing-target` | No field holds an id its condition names, such as after that field is deleted. |
 | `unsupported-test` | The kind of a field its condition names does not take that test. |
-| `invalid-value` | Its value or options do not fit its kind, or a test's value does not fit the test or the named field's kind. |
+| `invalid-value` | Its value, options, `min` or `max` do not fit its kind (including `min` greater than its option count), or a test's value does not fit the test or the named field's kind. |
 | `condition-loop` | A path of conditions from the field leads back to it, such as A naming B while B names A. |
-| `name-conflict` | A field of its role and name has another kind, other option values or another condition. |
+| `name-conflict` | A field of its role and name has another kind, other option values, different `min` or `max`, or another condition. |
 | `answer-conflict` | A field of its role and name holds another value, or none. |
 
 Each problem appears at most once in `problems`, even when several tests in a list share it. `insert` and `update` refuse a write that introduces one of the first four problems. They never refuse a name or answer conflict, which the read reports. A problem comes from a later edit, such as deleting or changing a field a condition names, or from a write that skipped the commands, such as a plain `tx.nodes.set` or a loaded document.
@@ -360,7 +381,7 @@ editor.plugin(FieldPlugin).store.set({ fillRole: null });
 
 While a role is set:
 
-- The registry chip of the role's field opens a popover with an input for the answer and a Clear button, and the role's checkbox ticks and unticks on click. A chip whose answer holds a pending suggestion says it waits for review and opens nothing. Another role's chip opens nothing, no chip drags, and the insert menu is disabled.
+- The registry chip of the role's field opens a popover with an input for the answer (a checkbox list with a count hint and `max` disable for `multiple`, clearing on the last untick) and a Clear button, and the role's checkbox ticks and unticks on click. A chip whose answer holds a pending suggestion says it waits for review and opens nothing. Another role's chip opens nothing, no chip drags, and the insert menu is disabled.
 - The editor refuses a local commit that writes anything besides a fitting or cleared answer on the role's fields. Typing, paste, cut, a drop, Enter and AI writes change nothing. A refused update throws nothing to its caller and changes nothing.
 - Selection, state fields without `persist` and effects that neither persist nor sync to peers pass, so a person can still select and copy.
 - Undo and redo take back only the role's own answers. Undo stops at the first step that changed anything else, such as the author's edit, and returns `{ reason, status: 'blocked' }`. The first answer after a switch is its own undo step, so an answer typed right after a switch takes two undos.
@@ -426,7 +447,7 @@ On a refusal, `result` is `{ ok: false, refusals }` with at least one refusal. W
 | `unknown-role` | The role owns no field. |
 | `unknown-field` | An answer names no field of the template. |
 | `wrong-role` | An answer is for another role's field. |
-| `invalid-value` | An answer does not fit its field. |
+| `invalid-value` | An answer does not fit its field, or a filled `multiple` answer holds fewer picks than `min`. |
 | `waiting` | A field of the role waits on one or more roles that have not submitted. `waitsOn` names the first of those roles in UTF-16 code-unit order. It is reported even when the field's answer is refused too. |
 | `skipped` | A field of the role is skipped and holds a filled answer. An unfilled answer stays as written, so clearing the answer or unticking the box ends the refusal. |
 | `missing-required` | A required field of the role applies and has no filled answer. |
@@ -547,10 +568,10 @@ Each answer is a `FieldAnswer`:
 
 | Answer | When |
 |--------|------|
-| `{ kind, value }` | The fields of the name hold one value that fits `kind`. `value` is a `boolean` for a checkbox, a `number` for a number and a `string` for every other kind. |
+| `{ kind, value }` | The fields of the name hold one value that fits `kind`. `value` is a `boolean` for a checkbox, a `number` for a number, a `readonly string[]` for a `multiple` field and a `string` for every other kind. |
 | `{ kind }` | The fields hold no value, or one value that does not fit `kind`. |
 | `{ kind, problem: 'answer-conflict' }` | The fields hold different values. |
-| `{ problem: 'name-conflict' }` | The fields differ in kind, option values or condition, so the name has no one kind. |
+| `{ problem: 'name-conflict' }` | The fields differ in kind, option values, `min`, `max` or condition, so the name has no one kind. |
 
 Check `'problem' in answer` first, then narrow on `kind` to read `value`:
 
@@ -580,13 +601,13 @@ In Suggesting mode, a change from a field to a mention shows the field as delete
 
 ## HTML
 
-`editor.api.html.serialize()` writes each field as a `span` with one `data-field-*` attribute per property. The span's text is the answer, a choice as its option's label, or the label in brackets when the field has no answer. The id, kind, label, name and role attributes hold plain text, and the others hold JSON:
+`editor.api.html.serialize()` writes each field as a `span` with one `data-field-*` attribute per property (`data-field-min` and `data-field-max` included for `multiple` fields). The span's text is the answer, a choice as its option's label, a `multiple` field as its selected options' labels joined by a comma, or the label in brackets when the field has no answer. The id, kind, label, name and role attributes hold plain text, and the others hold JSON:
 
 ```html
 <p>Pets allowed? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets allowed" data-field-name="pets_allowed" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-required="true" data-field-role="landlord" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-name="pet_name" data-field-required="true" data-field-role="tenant">[Pet name]</span></p>
 ```
 
-Parsing that HTML reads every valid property back, dropping a malformed condition while keeping the field. A span needs `data-field-kind`, `data-field-label` and `data-field-role` to read as a field. A pasted HTML template gets new ids, and its conditions name the copies.
+Parsing that HTML reads every valid property back, dropping a malformed condition while keeping the field, and maps an imported `data-field-min="1"` on a `multiple` field to `required: true`. A span needs `data-field-kind`, `data-field-label` and `data-field-role` to read as a field. A pasted HTML template gets new ids, and its conditions name the copies.
 
 The demo's HTML panel serializes with `lossPolicy: 'allow'`, because the date element has no HTML encoder. The panel lists one `html-unsupported-content` line for the date it drops.
 
@@ -598,11 +619,11 @@ Markdown writes each field as a `<field>` tag with every property, the `fieldId`
 Pets allowed? <field kind="choice" label="Pets allowed" name="pets_allowed" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" required role="landlord" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" name="pet_name" required role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
 ```
 
-The reader needs `kind`, `label` and `role`, and drops a malformed condition while keeping the field. A tag without them stays as text, with a `markdown-unsupported-node` diagnostic. A pasted Markdown template gets new ids, and its conditions name the copies.
+The reader needs `kind`, `label` and `role`, drops a malformed condition while keeping the field, and maps an imported `min` of `1` on a `multiple` field to `required: true`. A tag without them stays as text, with a `markdown-unsupported-node` diagnostic. A pasted Markdown template gets new ids, and its conditions name the copies.
 
 ## Word
 
-Word has no field element. Word export writes each field's answer as text, a choice as its option's label, or the label in brackets when the field has no answer. It needs no static field component, so a headless export keeps the answers.
+Word has no field element. Word export writes each field's answer as text, a choice as its option's label, a `multiple` field as its selected options' labels joined by a comma, or the label in brackets when the field has no answer. It needs no static field component, so a headless export keeps the answers.
 
 ```tsx
 import { exportDocx } from 'platejs/docx/export';
@@ -635,7 +656,7 @@ Plain text, through `serializePlainText` from `platejs`, writes the same text as
 | `fieldSubmission(template, role, values, options?)` | `platejs/field` | Builds one role's submission, keyed by `fieldId`, from a record keyed by field name. |
 | `startFieldValues(template, submissions, start, options?)` | `platejs/field` | Checks the submissions, and returns the document a role starts filling from with `pending`, or the refusals. |
 | `readFieldAnswers(document, options?)` | `platejs/field` | Reads a saved document's answers by role and name, each as a `FieldAnswer`. |
-| `fitsField(field, value)` | `platejs/field` | Whether a value fits a field's kind and options. |
+| `fitsField(field, value)` | `platejs/field` | Whether a value fits a field's kind, options and `max`. |
 | `fillsField(field, value)` | `platejs/field` | Whether a value is a filled answer for a field. |
 | `FIELD_TESTS` | `platejs/field` | The tests a condition may use on each kind. |
 | `FieldElement`, `FieldSettings`, `FieldPatch`, `FieldRead`, `FieldCondition`, `FieldConditionTest`, `FieldProblem`, `FieldKind`, `FieldTest`, `FieldValue`, `FieldOption`, `FieldSubmission`, `FieldRefusal`, `FieldApplyResult`, `FieldAnswer` | `platejs/field` | Field types. |
