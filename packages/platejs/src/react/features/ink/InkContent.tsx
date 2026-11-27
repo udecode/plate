@@ -5,7 +5,11 @@ import {
   readShownRecords,
   subscribeEditorViewState,
 } from '../../../facade';
-import { COPIES, MARKS } from '../../../features/ink/lib/inkGone.internal';
+import {
+  COPIES,
+  DIGITIZED,
+  MARKS,
+} from '../../../features/ink/lib/inkGone.internal';
 import {
   useEditableRef,
   useEditor,
@@ -30,9 +34,11 @@ import { observeInkLayout, stackInkSigns } from './inkWatch.internal';
 /**
  * Marks whose ink is not on the page, shown as one sign: `changed` when their
  * words changed or moved, `deleted` when a marked block is gone, and `narrow`
- * when a margin note's margin is too narrow for it.
+ * when a margin note's margin is too narrow for it. `digitized` is `true` for
+ * signs shown while `showDigitized` is on.
  */
 export type InkSign = Readonly<{
+  digitized?: boolean;
   marks: readonly string[];
   state: 'changed' | 'deleted' | 'narrow';
 }>;
@@ -67,6 +73,7 @@ const sameSigns = (a: InkSigns, b: InkSigns) =>
       id === b.signs[at].id &&
       left === b.signs[at].left &&
       top === b.signs[at].top &&
+      sign.digitized === b.signs[at].sign.digitized &&
       (sign.marks === b.signs[at].sign.marks ||
         (sign.marks.length === b.signs[at].sign.marks.length &&
           sign.marks.every((mark, n) => mark === b.signs[at].sign.marks[n])))
@@ -211,9 +218,18 @@ function InkLayer({
       tool: live,
       view,
     });
+    const isShownMark = (mark: { id: string }) =>
+      view
+        .plugin(InkPlugin)
+        .read.shownMarks()
+        .some((shownMark) => shownMark === mark);
     const picker = attachInkPick({
+      canErase: isShownMark,
       editor,
-      holds: (mark) => view.plugin(InkPlugin).read.mark(mark.id) === mark,
+      holds: (mark) =>
+        tools.get('showDigitized')
+          ? view.plugin(InkPlugin).read.mark(mark.id) === mark
+          : isShownMark(mark),
       layer,
       painted: surface.painted,
       preview: path,
@@ -343,6 +359,7 @@ function InkLayer({
       return [
         getRecordSetVersion(records, MARKS),
         getRecordSetVersion(records, COPIES),
+        getRecordSetVersion(records, DIGITIZED),
       ] as const;
     };
     let saved = savedSets();
@@ -351,7 +368,11 @@ function InkLayer({
 
       const next = savedSets();
 
-      if (next[0] !== saved[0] || next[1] !== saved[1]) {
+      if (
+        next[0] !== saved[0] ||
+        next[1] !== saved[1] ||
+        next[2] !== saved[2]
+      ) {
         const { read } = view.plugin(InkPlugin);
 
         saved = next;
@@ -376,6 +397,10 @@ function InkLayer({
     const stopTool = tools.subscribe((state, previous) => {
       if (state.tool !== previous.tool || state.hidden !== previous.hidden) {
         end();
+      }
+      if (state.showDigitized !== previous.showDigitized) {
+        end();
+        schedule();
       }
     });
     const stopViewState = subscribeEditorViewState(view, (change) => {

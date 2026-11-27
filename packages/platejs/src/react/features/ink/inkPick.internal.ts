@@ -75,6 +75,7 @@ const touches = ({ points }: Outline, a: Point, b: Point, radius: number) => {
 };
 
 export const attachInkPick = ({
+  canErase,
   editor,
   holds,
   layer,
@@ -83,6 +84,7 @@ export const attachInkPick = ({
   tool,
   view,
 }: Readonly<{
+  canErase: (mark: InkMark) => boolean;
   editor: Editor;
   holds: (mark: InkMark) => boolean;
   layer: HTMLElement;
@@ -120,9 +122,13 @@ export const attachInkPick = ({
   const erase = (erasing: Erasing, to: Point) => {
     const { last: from, radius } = erasing;
     const hit = painted()
-      .filter(({ dx, dy, mark }) => {
+      .filter(({ digitized, dx, dy, mark }) => {
         metrics.boxChecks += 1;
-        if (!(mark.brush.size > 0 && mark.brush.opacity > 0) || !holds(mark)) {
+        if (
+          digitized ||
+          !(mark.brush.size > 0 && mark.brush.opacity > 0) ||
+          !canErase(mark)
+        ) {
           return false;
         }
 

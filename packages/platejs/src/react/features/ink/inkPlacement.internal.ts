@@ -37,7 +37,13 @@ export type InkPlaced = Readonly<{
   bottom: number;
   contentOrigin: InkLayerOrigin;
   ink: ReadonlyArray<
-    Readonly<{ dx: number; dy: number; mark: InkMark; pin?: InkPin }>
+    Readonly<{
+      digitized?: boolean;
+      dx: number;
+      dy: number;
+      mark: InkMark;
+      pin?: InkPin;
+    }>
   >;
   signs: ReadonlyArray<
     Readonly<{ id: string; left: number; sign: InkSign; top: number }>
@@ -94,7 +100,14 @@ type InkInputs = Readonly<{
   near: readonly InkMeasuredBlock[];
 }>;
 
-const metrics = { arrivalLookups: 0, decided: 0, shownIds: 0, signReads: 0 };
+const metrics = {
+  arrivalLookups: 0,
+  decided: 0,
+  indexRebuilds: 0,
+  sampleVisits: 0,
+  shownIds: 0,
+  signReads: 0,
+};
 
 export const getInkPlacementMetrics = () => Object.freeze({ ...metrics });
 
@@ -142,15 +155,18 @@ const inkInputs = (
   };
 };
 
+type DeletedEntry = InkDeletedSign & Readonly<{ digitized?: boolean }>;
+
 const placeInkMarks = (
   view: Editor,
   editable: HTMLElement,
   origin: InkLayerOrigin,
   marks: readonly InkMark[],
-  deleted: readonly InkDeletedSign[],
+  deleted: readonly DeletedEntry[],
   entryOf: (mark: InkMark) => InkIndexedMark | undefined,
   signOf: (mark: InkMark) => InkMarkSign | undefined,
-  decide: (...of: Parameters<Decide>) => Decided | undefined
+  decide: (...of: Parameters<Decide>) => Decided | undefined,
+  isDigitized: (mark: InkMark) => boolean
 ): InkPlaced => {
   const editableBox = inkBoxOf(editable, origin);
   const style = getComputedStyle(editable);
@@ -226,6 +242,7 @@ const placeInkMarks = (
   const signs = new Map<
     string,
     {
+      digitized: boolean;
       first: InkMark;
       left: number;
       marks: string[];
@@ -239,6 +256,7 @@ const placeInkMarks = (
 
     if (!entry) continue;
 
+    const digitized = isDigitized(mark);
     const kept = signOf(mark);
     let state: InkSign['state'] | undefined = kept?.state;
     let place = kept?.place;
@@ -252,6 +270,7 @@ const placeInkMarks = (
 
       if (placement.type === 'ink') {
         ink.push({
+          ...(digitized && { digitized: true }),
           dx: placement.dx,
           dy: placement.dy,
           mark,
@@ -264,8 +283,9 @@ const placeInkMarks = (
     if (!state) continue;
 
     const anchor = anchorOf(place);
-    const id = `${mark.direction}|${anchor.id}|${state}`;
+    const id = `${mark.direction}|${anchor.id}|${state}${digitized ? '|digitized' : ''}`;
     const sign = signs.get(id) ?? {
+      digitized,
       first: mark,
       left: rails[mark.direction],
       marks: [],
@@ -279,16 +299,22 @@ const placeInkMarks = (
 
   const gone = new Map<
     string,
-    Readonly<{ ids: readonly string[]; marks: readonly InkMark[]; top: number }>
+    Readonly<{
+      digitized: boolean;
+      ids: readonly string[];
+      marks: readonly InkMark[];
+      top: number;
+    }>
   >();
 
-  for (const { ids, marks: of, place } of deleted) {
+  for (const { digitized = false, ids, marks: of, place } of deleted) {
     const anchor = anchorOf(place);
-    const id = `${of[0].direction}|${anchor.id}|deleted`;
+    const id = `${of[0].direction}|${anchor.id}|deleted${digitized ? '|digitized' : ''}`;
     const there = gone.get(id);
     const merged = there && [...there.marks, ...of].sort(byMark);
 
     gone.set(id, {
+      digitized,
       ids: merged ? merged.map((mark) => mark.id) : ids,
       marks: merged ?? of,
       top: anchor.top,
@@ -303,16 +329,24 @@ const placeInkMarks = (
     },
     ink,
     signs: [
-      ...[...signs].map(([id, { marks: ofSign, state, ...at }]) => ({
+      ...[...signs].map(([id, { digitized, marks: ofSign, state, ...at }]) => ({
         ...at,
         id,
-        sign: { marks: ofSign, state },
+        sign: {
+          ...(digitized && { digitized: true }),
+          marks: ofSign,
+          state,
+        },
       })),
-      ...[...gone].map(([id, { ids, marks: of, top }]) => ({
+      ...[...gone].map(([id, { digitized, ids, marks: of, top }]) => ({
         first: of[0],
         id,
         left: rails[of[0].direction],
-        sign: { marks: ids, state: 'deleted' as const },
+        sign: {
+          ...(digitized && { digitized: true }),
+          marks: ids,
+          state: 'deleted' as const,
+        },
         top,
       })),
     ]
@@ -396,11 +430,15 @@ export const createInkPlacer = ({
     view.read((state) =>
       readInkIndexedMark({ copy: read.copy, editor: view, state }, mark)
     );
-  const signOf = (mark: InkMark) => {
+  const signOf = (mark: InkMark, includeDigitized = false) => {
     metrics.signReads += 1;
 
     return view.read((state) =>
-      readInkSign({ copy: read.copy, editor: view, state }, mark)
+      readInkSign(
+        { copy: read.copy, editor: view, state },
+        mark,
+        includeDigitized
+      )
     );
   };
   const deletedSigns = () =>
@@ -408,7 +446,7 @@ export const createInkPlacer = ({
       readInkDeletedSigns({
         copy: read.copy,
         editor: view,
-        marks: read.marks,
+        marks: read.shownMarks,
         state,
       })
     );
@@ -449,6 +487,8 @@ export const createInkPlacer = ({
   const indexed = (marks: readonly InkMark[]) => {
     if (index?.marks === marks) return index;
 
+    metrics.indexRebuilds += 1;
+
     const byBlock = new Map<string, InkMark[]>();
     const saved = new Set(marks.map((mark) => mark.id));
     let reachAbove = 0;
@@ -473,6 +513,7 @@ export const createInkPlacer = ({
       const radius = mark.brush.size / 2;
 
       for (const [, y] of first ? mark.samples : []) {
+        metrics.sampleVisits += 1;
         reachAbove = Math.max(reachAbove, first.top - y + radius);
         reachBelow = Math.max(reachBelow, y + radius - first.top);
       }
@@ -483,9 +524,19 @@ export const createInkPlacer = ({
   };
 
   const openPass = (span: Span, fresh: boolean) => {
-    const marks = read.marks();
+    const showDigitized = view.plugin(InkPlugin).viewStore.get('showDigitized');
+    const shownMarks = read.shownMarks();
+    const marks = showDigitized ? read.marks() : shownMarks;
 
     if (marks.length === 0) return undefined;
+
+    const shownIds =
+      showDigitized && shownMarks !== marks
+        ? new Set(shownMarks.map((mark) => mark.id))
+        : null;
+    const isDigitized = (mark: InkMark) =>
+      shownIds !== null && !shownIds.has(mark.id);
+    const readSign = (mark: InkMark) => signOf(mark, isDigitized(mark));
 
     const rect = layer.getBoundingClientRect();
     const origin = { left: rect.left, top: rect.top };
@@ -734,7 +785,25 @@ export const createInkPlacer = ({
       return { pin, place, placement };
     };
 
-    const deleted = deletedSigns();
+    const deleted: DeletedEntry[] = [...deletedSigns()];
+
+    if (shownIds !== null) {
+      for (const mark of marks) {
+        if (!isDigitized(mark)) continue;
+
+        const kept = readSign(mark);
+
+        if (kept?.state === 'deleted') {
+          deleted.push({
+            digitized: true,
+            ids: [mark.id],
+            marks: [mark],
+            place: kept.place,
+          });
+        }
+      }
+    }
+
     const visible = new Set(
       blocks.flatMap((block) => markIndex.byBlock.get(block.id) ?? [])
     );
@@ -743,10 +812,12 @@ export const createInkPlacer = ({
       blocks,
       decide,
       deleted,
+      isDigitized,
       marksOn: (block: string) => markIndex.byBlock.get(block) ?? [],
       origin,
+      readSign,
       shown: [...visible]
-        .filter((mark) => signOf(mark)?.state !== 'deleted')
+        .filter((mark) => readSign(mark)?.state !== 'deleted')
         .sort(byMark),
       stillHeld,
     };
@@ -763,8 +834,9 @@ export const createInkPlacer = ({
           pass.shown,
           pass.deleted,
           entryOf,
-          signOf,
-          pass.decide
+          pass.readSign,
+          pass.decide,
+          pass.isDigitized
         )
       : {
           ...NOTHING_PLACED,
@@ -819,7 +891,7 @@ export const createInkPlacer = ({
       for (const [mark, rank] of [...ranks].sort(([, a], [, b]) => a - b)) {
         const entry = entryOf(mark);
 
-        if (!entry || signOf(mark)) continue;
+        if (!entry || pass.readSign(mark)) continue;
 
         const kept = pass.stillHeld(mark, entry);
 
@@ -843,8 +915,9 @@ export const createInkPlacer = ({
           pass.shown,
           pass.deleted,
           entryOf,
-          signOf,
-          (mark) => decided.get(mark)
+          pass.readSign,
+          (mark) => decided.get(mark),
+          pass.isDigitized
         ),
         undecided,
       };
@@ -860,7 +933,7 @@ export const createInkPlacer = ({
           const entry = entryOf(mark);
 
           at += 1;
-          if (entry && !signOf(mark)) pass.decide(mark, entry);
+          if (entry && !pass.readSign(mark)) pass.decide(mark, entry);
           if (expired()) break;
         }
 

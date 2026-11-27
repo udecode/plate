@@ -9,12 +9,13 @@ const heldKeys = new WeakMap<object, string>();
 
 /**
  * Pen markup on a document's text, with each view's Draw tool. A view keeps
- * its own tool, whether it hides ink and signs, and which marks are picked.
+ * its own tool, whether it hides ink and signs, whether digitized marks show
+ * faded, and which marks are picked.
  * While the lasso is on, Backspace or Delete removes the picked marks that
- * still exist and show no sign in one undo step, and Escape clears the pick,
- * before the editor handles the key. A key with Alt, Control or Meta, an input
- * method's key, a key another handler took and the repeats of a key held after
- * the press that acted stay out of the pick.
+ * are still shown (not digitized) and show no sign in one undo step, and
+ * Escape clears the pick, before the editor handles the key. A key with Alt,
+ * Control or Meta, an input method's key, a key another handler took and the
+ * repeats of a key held after the press that acted stay out of the pick.
  */
 export const InkPlugin = toReactPlugin(BaseInkPlugin, {
   api: ({ editor, viewStore }) => ({
@@ -29,6 +30,27 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
       viewStore.set((draft) => {
         draft.hidden = hidden;
         if (hidden && draft.picked.length > 0) draft.picked = [];
+      });
+    },
+    /**
+     * Draw digitized marks faded over their words, or as their sign once their
+     * text changed, and let the lasso pick them. Turning it off drops digitized
+     * marks from the pick.
+     */
+    setShowDigitized: (showDigitized: boolean) => {
+      viewStore.set((draft) => {
+        draft.showDigitized = showDigitized;
+        if (!showDigitized && draft.picked.length > 0) {
+          const shown = new Set(
+            editor
+              .plugin(BaseInkPlugin)
+              .read.shownMarks()
+              .map((mark) => mark.id)
+          );
+          const kept = draft.picked.filter((id) => shown.has(id));
+
+          if (kept.length !== draft.picked.length) draft.picked = kept;
+        }
       });
     },
     /**
@@ -89,17 +111,32 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
       if (!removes && event.key !== 'Escape') return undefined;
 
       const picks = editor.read((state) => {
-        const { picked, tool } = viewStoreOf(state).get();
+        const { picked, showDigitized, tool } = viewStoreOf(state).get();
 
-        return tool?.type === 'lasso'
-          ? picked.filter((id) => {
-              const mark = read.mark(id);
+        if (tool?.type !== 'lasso' || picked.length === 0) return [];
 
-              return (
-                mark && !readInkSign({ copy: read.copy, editor, state }, mark)
-              );
-            })
-          : [];
+        const shown = new Set(read.shownMarks().map((mark) => mark.id));
+
+        return picked.filter((id) => {
+          const mark = read.mark(id);
+
+          if (!mark) return false;
+          if (removes) {
+            return (
+              shown.has(id) &&
+              !readInkSign({ copy: read.copy, editor, state }, mark)
+            );
+          }
+
+          return (
+            (shown.has(id) || showDigitized) &&
+            !readInkSign(
+              { copy: read.copy, editor, state },
+              mark,
+              showDigitized && !shown.has(id)
+            )
+          );
+        });
       });
 
       if (picks.length === 0) return undefined;

@@ -195,12 +195,13 @@ export type InkTool =
 
 /**
  * What one view shows and does with ink: the tool a pen uses, or `null` when
- * drawing is off, whether ink and signs are hidden, and the ids of the marks
- * picked.
+ * drawing is off, whether ink and signs are hidden, whether digitized marks
+ * show faded, and the ids of the marks picked.
  */
 export type InkViewState = {
   hidden: boolean;
   picked: readonly string[];
+  showDigitized: boolean;
   tool: InkTool | null;
 };
 
@@ -803,6 +804,7 @@ export const BaseInkPlugin = definePlugin('ink', {
   initialViewState: (): InkViewState => ({
     hidden: false,
     picked: [],
+    showDigitized: false,
     tool: null,
   }),
   on: {

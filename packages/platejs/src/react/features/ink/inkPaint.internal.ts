@@ -40,6 +40,7 @@ export const inkOutline = (
   );
 
 type InkPath = Readonly<{
+  digitized: boolean;
   dx: number;
   dy: number;
   halo: boolean;
@@ -47,6 +48,7 @@ type InkPath = Readonly<{
   path: SVGPathElement;
 }>;
 
+const DIGITIZED_OPACITY = 0.3;
 const HALO = ['data-picked', 'stroke', 'stroke-opacity', 'stroke-width'];
 
 export const createInkSurface = (into: SVGGElement) => {
@@ -71,11 +73,12 @@ export const createInkSurface = (into: SVGGElement) => {
     const shown: SVGPathElement[] = [];
     const left = new Set(paths.keys());
 
-    for (const { dx, dy, mark } of hidden ? [] : ink) {
+    for (const { digitized = false, dx, dy, mark } of hidden ? [] : ink) {
       const { color, opacity, size } = mark.brush;
       const halo = picked.includes(mark.id);
       const kept = paths.get(mark.id);
       const inked = kept?.mark !== mark;
+      const fadedChanged = kept?.digitized !== digitized;
       const moved = kept?.dx !== dx || kept?.dy !== dy;
       const path =
         kept?.path ??
@@ -88,7 +91,14 @@ export const createInkSurface = (into: SVGGElement) => {
       if (inked) {
         path.setAttribute('d', outlineOf(mark));
         path.setAttribute('fill', color);
-        path.setAttribute('opacity', String(opacity));
+      }
+      if (inked || fadedChanged) {
+        path.setAttribute(
+          'opacity',
+          String(digitized ? opacity * DIGITIZED_OPACITY : opacity)
+        );
+        if (digitized) path.setAttribute('data-ink-digitized', 'true');
+        else path.removeAttribute('data-ink-digitized');
       }
       if (halo && (inked || !kept?.halo)) {
         path.setAttribute('data-picked', 'true');
@@ -99,8 +109,8 @@ export const createInkSurface = (into: SVGGElement) => {
         for (const name of HALO) path.removeAttribute(name);
       }
       if (moved) path.setAttribute('transform', `translate(${dx} ${dy})`);
-      if (inked || moved || kept?.halo !== halo) {
-        paths.set(mark.id, { dx, dy, halo, mark, path });
+      if (inked || fadedChanged || moved || kept?.halo !== halo) {
+        paths.set(mark.id, { digitized, dx, dy, halo, mark, path });
       }
       left.delete(mark.id);
       shown.push(path);

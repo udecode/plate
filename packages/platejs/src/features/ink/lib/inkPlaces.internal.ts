@@ -540,9 +540,11 @@ export const readInkIndexedMark = (
 
 export const readInkSign = (
   read: InkPlaceRead,
-  mark: InkMark
+  mark: InkMark,
+  includeDigitized = false
 ): InkMarkSign | undefined => {
   if (
+    !includeDigitized &&
     !isInkMarkShown(
       getRecordSetVersion(readShownRecords(read.editor), DIGITIZED),
       mark.id
