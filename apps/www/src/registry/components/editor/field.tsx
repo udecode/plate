@@ -414,12 +414,7 @@ function FieldSettingsForm({
         targetIds: read.conditionTargets(fieldId),
       };
     },
-    {
-      shouldUpdate: (commit) =>
-        !commit ||
-        commit.changed.hasAny('properties') ||
-        commit.changed.hasAny('structure'),
-    }
+    { dependsOn: ['properties', 'structure'] }
   );
   const byId = new Map<string, (typeof fields)[number]>();
 

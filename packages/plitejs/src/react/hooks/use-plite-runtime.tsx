@@ -27,6 +27,7 @@ import {
   type Value,
   type ValueOf,
 } from '../..';
+import { getAuthoredViewCommit } from '../../core/authored-runtime';
 import {
   createEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
@@ -56,6 +57,12 @@ import {
   subscribeRootTarget,
   subscribeRootViewPresentation,
 } from '../../core/root-target';
+import {
+  commitMatchesSelectorDependencies,
+  type EditorSelectorDependencies,
+  normalizeSelectorDependencies,
+  sameSelectorDependencies,
+} from '../../core/selector-dependencies';
 import type { ViewPresentation } from '../../core/view-presentation';
 import type { DOMApi } from '../../dom';
 import {
@@ -107,7 +114,6 @@ import { createSlotArrivalHost, type ViewInstanceInfo } from '../slot-arrival';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { focusPliteEditable } from './focus-plite-editable';
 import {
-  callShouldUpdate,
   type EditorSelectorContextValue,
   useEditorSelectorContext,
 } from './use-editor-selector';
@@ -408,10 +414,10 @@ export const EditingAreaRootEditors = ({
 };
 
 /** Selector options for `useRuntimeState` and `useRootState`. */
-export type RuntimeStateSelectorOptions<T> = {
+export type RuntimeStateSelectorOptions<T = unknown> = {
   deferred?: boolean;
+  dependsOn?: EditorSelectorDependencies;
   equalityFn?: (a: T, b: T) => boolean;
-  shouldUpdate?: (change?: EditorCommit) => boolean;
 };
 
 export const PliteRuntimeContext =
@@ -536,9 +542,6 @@ export const createReactRuntimeViewEditor = <
 
   return Object.freeze(editor) as ReactRuntimeViewEditor<V, TPlugins>;
 };
-
-const isRootAffected = (root: RootKey, change?: EditorCommit) =>
-  !change || change.changed.has('snapshot', toPublicRootOption(root));
 
 export function useOptionalPliteRuntimeContext() {
   return useContext(PliteRuntimeContext);
@@ -876,33 +879,34 @@ type ReactEditorState = EditorStateView<
  *
  * Use this for toolbar, sidebar, and shell UI that reads the whole editor
  * runtime. Use `useRootState` for root-scoped UI in multi-root editors.
- * Inline selectors observe current render values. Use `shouldUpdate` when a
- * commit can be skipped before the selector runs. The selector state holds the
- * core editor groups; read a plugin's state through `editor.plugin(Plugin)`.
+ * Inline selectors observe current render values. Scope updates with
+ * `dependsOn`. The selector state holds the core editor groups; read a
+ * plugin's state through `editor.plugin(Plugin)`.
  */
 export function useRuntimeState<T>(
   selector: (state: ReactEditorState) => T,
-  { deferred, equalityFn, shouldUpdate }: RuntimeStateSelectorOptions<T> = {}
+  { deferred, dependsOn, equalityFn }: RuntimeStateSelectorOptions<T> = {}
 ): T {
+  const normalizedDeps = normalizeSelectorDependencies(dependsOn);
   const { runtime, selectorContext } = useRequiredPliteRuntimeContext();
   const stateSelector = useCallback(
     () => runtime.read(selector),
     [runtime, selector]
   );
   const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
-  const shouldUpdateRef = useRef(shouldUpdate);
+  const depsRef = useRef(normalizedDeps);
 
   useIsomorphicLayoutEffect(() => {
-    const changed = shouldUpdateRef.current !== shouldUpdate;
+    const changed = !sameSelectorDependencies(depsRef.current, normalizedDeps);
 
-    shouldUpdateRef.current = shouldUpdate;
+    depsRef.current = normalizedDeps;
 
     if (changed) update();
-  }, [shouldUpdate, update]);
+  }, [normalizedDeps, update]);
 
-  const shouldUpdateCommit = useCallback(
+  const matchesCommit = useCallback(
     (change?: EditorCommit) =>
-      callShouldUpdate(runtime, shouldUpdateRef.current, change),
+      commitMatchesSelectorDependencies(runtime, change, depsRef.current),
     [runtime]
   );
 
@@ -910,13 +914,13 @@ export function useRuntimeState<T>(
   useIsomorphicLayoutEffect(() => {
     const unsubscribe = selectorContext.addEventListener(update, {
       deferred,
-      shouldUpdate: shouldUpdateCommit,
+      shouldUpdate: matchesCommit,
     });
 
     update();
 
     return unsubscribe;
-  }, [deferred, selectorContext, shouldUpdateCommit, update]);
+  }, [deferred, matchesCommit, selectorContext, update]);
 
   return selectedState;
 }
@@ -924,61 +928,67 @@ export function useRuntimeState<T>(
 /**
  * Subscribe to a selected value from one root.
  *
- * Root-scoped selectors skip commits that cannot affect the requested root.
  * Use this for chrome tied to a known root, such as headers, sidebars, and
- * nested content roots. Use `useRuntimeState` only when the selected value
- * genuinely spans roots. The selector state holds the core editor groups; read
- * a plugin's state through `editor.plugin(Plugin)`.
+ * nested content roots. Scope updates with `dependsOn`. The selector state
+ * holds the core editor groups; read a plugin's state through
+ * `editor.plugin(Plugin)`.
  */
 export function useRootState<T, const TRoot extends RootKey = RootKey>(
   root: NamedRootKey<TRoot> | undefined,
   selector: (state: ReactEditorState) => T,
-  { deferred, equalityFn, shouldUpdate }: RuntimeStateSelectorOptions<T> = {}
+  { deferred, dependsOn, equalityFn }: RuntimeStateSelectorOptions<T> = {}
 ): T {
   if (root === MAIN_ROOT_KEY) {
     throw new Error('Omit root to read the primary document root state.');
   }
 
-  const { getView, presentation, runtime, selectorContext } =
+  const normalizedDeps = normalizeSelectorDependencies(dependsOn);
+  const { getView, presentation, selectorContext } =
     useRequiredPliteRuntimeContext();
-  const internalRoot = root ?? MAIN_ROOT_KEY;
+  const matchView = useMemo(
+    () => getView({ root }, presentation ?? undefined),
+    [getView, presentation, root]
+  );
   const stateSelector = useCallback(
     () => getView({ root }, presentation ?? undefined).read(selector),
     [getView, presentation, root, selector]
   );
   const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
-  const shouldUpdateRef = useRef(shouldUpdate);
+  const depsRef = useRef(normalizedDeps);
 
   useIsomorphicLayoutEffect(() => {
-    const changed = shouldUpdateRef.current !== shouldUpdate;
+    const changed = !sameSelectorDependencies(depsRef.current, normalizedDeps);
 
-    shouldUpdateRef.current = shouldUpdate;
+    depsRef.current = normalizedDeps;
 
     if (changed) update();
-  }, [shouldUpdate, update]);
+  }, [normalizedDeps, update]);
 
-  const shouldUpdateView = useCallback(
+  const matchesViewCommit = useCallback(
     (change?: EditorCommit) => {
-      if (!isRootAffected(internalRoot, change)) {
-        return false;
-      }
+      if (!change || depsRef.current.all) return true;
+      const viewCommit = getAuthoredViewCommit(matchView, change);
 
-      return callShouldUpdate(runtime, shouldUpdateRef.current, change);
+      return commitMatchesSelectorDependencies(
+        matchView,
+        viewCommit,
+        depsRef.current
+      );
     },
-    [internalRoot, runtime]
+    [matchView]
   );
 
   // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- The registration returns the unsubscribe function used by this effect's cleanup.
   useIsomorphicLayoutEffect(() => {
     const unsubscribe = selectorContext.addEventListener(update, {
       deferred,
-      shouldUpdate: shouldUpdateView,
+      shouldUpdate: matchesViewCommit,
     });
 
     update();
 
     return unsubscribe;
-  }, [deferred, selectorContext, shouldUpdateView, update]);
+  }, [deferred, matchesViewCommit, selectorContext, update]);
 
   return selectedState;
 }

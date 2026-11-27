@@ -312,7 +312,7 @@ return (
 
 ### `useEditorSelector`
 
-`useEditorSelector(selector, options?)` derives a value from the selected editor and rerenders when the result changes. The selector receives the editor, and the options are `equalityFn` and `shouldUpdate`. When the call passes no `equalityFn`, the hook compares each result with the earlier one by value, so a selector may return an object or a list. [Selector results](/docs/api/react-hooks#selector-results) gives the limits of that comparison.
+`useEditorSelector(selector, options?)` derives a value from the selected editor and rerenders when the result changes. The selector receives the editor, and the options are `dependsOn` and `equalityFn`. When the call passes no `equalityFn`, the hook compares each result with the earlier one by value, so a selector may return an object or a list. [Selector results](/docs/api/react-hooks#selector-results) gives the limits of that comparison.
 
 ### `useEditorState`
 

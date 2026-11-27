@@ -342,4 +342,8 @@ export {
   withMountedPresentation,
   txStored,
   type CompiledEditorSchema,
+  commitMatchesSelectorDependencies,
+  normalizeSelectorDependencies,
+  sameSelectorDependencies,
+  type NormalizedSelectorDependencies,
 } from 'plitejs/internal';

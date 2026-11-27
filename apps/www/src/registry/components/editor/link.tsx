@@ -329,10 +329,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
 
       return entry ? innerEditor.key(entry[0]) : null;
     },
-    {
-      shouldUpdate: (change) =>
-        !change || change.selectionChanged || change.changed.hasAny('document'),
-    }
+    { dependsOn: ['selection', 'document'] }
   );
   const mode = usePluginStore(linkPlugin, 'mode');
   const open = usePluginStore(linkPlugin, 'isOpen', editor.id);
@@ -554,17 +551,17 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
 }
 
 function LinkOpenButton() {
-  const attributes = useEditorSelector(
-    (innerEditor) => {
-      const link = innerEditor.read.nodes.find({ type: linkPlugin })?.[0];
-
-      return link ? innerEditor.plugin(linkPlugin).api.getAttributes(link) : {};
-    },
+  const editor = useEditor();
+  const link = useEditorSelector(
+    (innerEditor) => innerEditor.read.nodes.find({ type: linkPlugin })?.[0],
     {
-      equalityFn: sameAttributes,
-      shouldUpdate: (change) =>
-        !change || change.selectionChanged || change.changed.hasAny('document'),
+      dependsOn: ['selection', 'document'],
     }
+  );
+  const attributes = usePluginStore(
+    linkPlugin,
+    () => (link ? editor.plugin(linkPlugin).api.getAttributes(link) : {}),
+    { equalityFn: sameAttributes }
   );
 
   return (

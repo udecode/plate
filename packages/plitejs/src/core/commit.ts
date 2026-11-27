@@ -888,6 +888,7 @@ const createCommitChanged = ({
     let topLevelOrderChanged: boolean | undefined;
     const getPathNodeKeys = () => {
       if (pathNodeKeys) return pathNodeKeys;
+      countCoreWork('pathNodeKeyEnumerations');
 
       const keys = new Set<NodeKey>();
       const collectChangedPaths = (
@@ -1374,6 +1375,16 @@ const createCommitChanged = ({
     return result;
   };
 
+  const hasNodeKeyAny = (
+    nodeKey: NodeKey,
+    kind: EditorCommitRuntimeChangeKind
+  ) =>
+    knownRoots.some((root) =>
+      kind === 'path'
+        ? pathChangedIn(root, nodeKey)
+        : getMembership(kind, root).has(nodeKey)
+    );
+
   const changed: EditorCommitChanged = Object.freeze({
     anchors: storedAnchors ?? (() => readCommitAnchors(changed)),
     has: (kind, root) => hasInRoot(kind, toInternalRoot(root)),
@@ -1399,7 +1410,26 @@ const createCommitChanged = ({
     topLevelRanges: (root) => getChangedTopLevelRanges(toInternalRoot(root)),
   });
 
+  COMMIT_CHANGED_HAS_NODE_KEY_ANY.set(changed, hasNodeKeyAny);
+
   return changed;
+};
+
+const COMMIT_CHANGED_HAS_NODE_KEY_ANY = new WeakMap<
+  EditorCommitChanged,
+  (nodeKey: NodeKey, kind: EditorCommitRuntimeChangeKind) => boolean
+>();
+
+export const hasCommitNodeKeyAny = (
+  commit: EditorCommit<any>,
+  nodeKey: NodeKey,
+  kind: EditorCommitRuntimeChangeKind
+): boolean => {
+  const lookup = COMMIT_CHANGED_HAS_NODE_KEY_ANY.get(commit.changed);
+
+  return lookup
+    ? lookup(nodeKey, kind)
+    : commit.changed.nodeKeysAll(kind).includes(nodeKey);
 };
 
 export const createEditorCommit = <V extends Value>(

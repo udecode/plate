@@ -7,17 +7,19 @@ import type {
   PluginsOf,
   ValueOf,
 } from '../..';
-import { callShouldUpdate } from './use-editor-selector';
+import {
+  commitMatchesSelectorDependencies,
+  type EditorSelectorDependencies,
+  normalizeSelectorDependencies,
+  sameSelectorDependencies,
+} from '../../core/selector-dependencies';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /** Options for explicit editor runtime-state selectors. */
-export interface EditorRuntimeStateSelectorOptions<
-  T,
-  TEditor extends Editor<any, any> = Editor<any, any>,
-> {
+export interface EditorRuntimeStateSelectorOptions<T = unknown> {
+  dependsOn?: EditorSelectorDependencies;
   equalityFn?: (a: T, b: T) => boolean;
-  shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
 }
 
 /**
@@ -33,11 +35,9 @@ export function useEditorRuntimeState<
 >(
   editor: TEditor,
   selector: (state: EditorStateView<ValueOf<TEditor>, PluginsOf<TEditor>>) => T,
-  {
-    equalityFn,
-    shouldUpdate,
-  }: EditorRuntimeStateSelectorOptions<T, TEditor> = {}
+  { dependsOn, equalityFn }: EditorRuntimeStateSelectorOptions<T> = {}
 ): T {
+  const normalizedDeps = normalizeSelectorDependencies(dependsOn);
   const readSelectedState = useCallback(
     () =>
       editor.read((state) =>
@@ -54,19 +54,19 @@ export function useEditorRuntimeState<
     readSelectedState,
     equalityFn
   );
-  const shouldUpdateRef = useRef(shouldUpdate);
+  const depsRef = useRef(normalizedDeps);
 
   useIsomorphicLayoutEffect(() => {
-    const changed = shouldUpdateRef.current !== shouldUpdate;
+    const changed = !sameSelectorDependencies(depsRef.current, normalizedDeps);
 
-    shouldUpdateRef.current = shouldUpdate;
+    depsRef.current = normalizedDeps;
 
     if (changed) update();
-  }, [shouldUpdate, update]);
+  }, [normalizedDeps, update]);
 
   const updateWithCommit = useCallback(
     (change: EditorCommit<ValueOf<TEditor>>) => {
-      if (!callShouldUpdate(editor, shouldUpdateRef.current, change)) {
+      if (!commitMatchesSelectorDependencies(editor, change, depsRef.current)) {
         return;
       }
 

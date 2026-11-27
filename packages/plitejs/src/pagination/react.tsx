@@ -17,6 +17,7 @@ import { flushSync } from 'react-dom';
 
 import {
   type Editor,
+  type EditorCommit,
   type Element,
   type Node,
   NodeApi,
@@ -34,7 +35,6 @@ import {
   type EditableProps,
   useEditorContext,
   useEditorReadOnly,
-  useEditorState,
 } from '../react';
 import {
   defaultScrollSelectionIntoView,
@@ -70,6 +70,7 @@ import {
   type ViewLines,
 } from '../react/editable/view-lines';
 import { useEditableLayoutPass } from '../react/hooks/use-editable-layout-pass';
+import { useInternalEditorSelector } from '../react/hooks/use-editor-selector';
 import { useElementPath } from '../react/hooks/use-element-path';
 import { useHydrated } from '../react/hooks/use-hydrated';
 import {
@@ -1288,6 +1289,16 @@ const useReportEachNewMeasureFailure = (editor: Editor, error: unknown) => {
   }, [editor, error]);
 };
 
+const selectPagedSelectedPaths = (innerEditor: {
+  read: { selection: () => Range | null };
+}) => selectedPathsFor(innerEditor.read.selection());
+
+const shouldUpdatePagedSelectedPaths = (change?: EditorCommit) =>
+  !change ||
+  change.selectionChanged ||
+  change.changed.hasAny('selection') ||
+  change.changed.hasAny('structure');
+
 const PagedEditableInner = <TElement extends Element = Element>({
   engine: suppliedEngine,
   fragmentation,
@@ -1314,16 +1325,10 @@ const PagedEditableInner = <TElement extends Element = Element>({
     [inheritedDecorations]
   );
   const [viewportStore] = useState(createViewportStore);
-  const selectedPaths = useEditorState(
-    (state) => selectedPathsFor(state.selection()),
-    {
-      equalityFn: sameSelectedPaths,
-      shouldUpdate: (change) =>
-        !change ||
-        change.selectionChanged ||
-        change.changed.hasAny('structure'),
-    }
-  );
+  const selectedPaths = useInternalEditorSelector(selectPagedSelectedPaths, {
+    equalityFn: sameSelectedPaths,
+    shouldUpdate: shouldUpdatePagedSelectedPaths,
+  });
   const pageFieldKey = 'margins' in page && 'preset' in page ? null : page.key;
   // Only document and page-field commits advance this version, so a selection
   // commit re-renders the projection without remeasuring the document.

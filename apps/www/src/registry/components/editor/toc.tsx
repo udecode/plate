@@ -79,7 +79,7 @@ export function TocElement({
             heading.title === nextHeading.title
           );
         }),
-      shouldUpdate: (change) => !change || change.changed.hasAny('document'),
+      dependsOn: 'document',
     }
   );
 

@@ -1,0 +1,14 @@
+---
+id: 2026-11-27-selector-depends-on
+date: 2026-11-27
+status: draft
+kind: rename
+summary: 'Scope useEditorSelector with dependsOn instead of shouldUpdate'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-board-scope-editor-selectors-dependson-aba5f21a","kind":"rename","migrationNotes":["Update `platejs` and copy these registry items again, or replace each `useEditorSelector` `shouldUpdate` predicate in your copies with `dependsOn`: a change kind such as `'document'`, a list such as `['selection', 'document']`, or `{ nodeKey }` for one node."]} -->
+
+- **`board`**, **`caption`**, **`code-block-diagram`**, **`discussion`**, **`field`**, **`link`**, **`toc`**, **`field-demo`**: `useEditorSelector` calls declare `dependsOn` instead of a `shouldUpdate` predicate. `board`'s image shape now re-reads when its own node changes, so replacing or inserting its picture updates the shape.

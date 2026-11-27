@@ -377,7 +377,7 @@ function FieldOutputs() {
       HTML: current.api.html.serialize({ lossPolicy: 'allow' }),
       Markdown: current.plugin(MarkdownPlugin).api.serialize(),
     }),
-    { shouldUpdate: (change) => !change || change.changed.hasAny('document') }
+    { dependsOn: 'document' }
   );
 
   React.useEffect(() => {

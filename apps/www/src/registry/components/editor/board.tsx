@@ -1067,16 +1067,9 @@ export function BoardImageElement(
   const editor = useEditor();
   const path = usePath();
   const image = editor.plugin(ImagePlugin);
-  const [stored] = element.children;
-  const childKey = stored ? editor.key(stored) : undefined;
   const child = useEditorSelector(
     (current) => current.read.nodes.get([...path, 0])?.[0],
-    {
-      shouldUpdate: (change) =>
-        !change ||
-        (!!childKey &&
-          change.changed.hasNodeKey(childKey, 'node', editor.read.view.root())),
-    }
+    { dependsOn: { nodeKey: editor.key(element) } }
   );
   const picture =
     image.installed &&

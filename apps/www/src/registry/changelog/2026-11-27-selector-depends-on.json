@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-selector-depends-on",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-selector-depends-on.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Scope useEditorSelector with dependsOn instead of shouldUpdate",
+  "targets": [
+    {
+      "name": "board",
+      "files": [
+        "apps/www/src/registry/components/editor/board-static.tsx",
+        "apps/www/src/registry/components/editor/board-styles.tsx",
+        "apps/www/src/registry/components/editor/board.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "caption",
+      "files": ["apps/www/src/registry/components/editor/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-diagram",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-diagram.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-demo",
+      "files": [
+        "apps/www/src/registry/examples/field-demo.tsx",
+        "apps/www/src/registry/examples/values/cn/field-value.tsx",
+        "apps/www/src/registry/examples/values/field-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-board-scope-editor-selectors-dependson-aba5f21a",
+      "kind": "rename",
+      "summary": "`useEditorSelector` calls declare `dependsOn` instead of a `shouldUpdate` predicate. `board`'s image shape now re-reads when its own node changes, so replacing or inserting its picture updates the shape.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` and copy these registry items again, or replace each `useEditorSelector` `shouldUpdate` predicate in your copies with `dependsOn`: a change kind such as `'document'`, a list such as `['selection', 'document']`, or `{ nodeKey }` for one node."
+      ],
+      "targets": [
+        "board",
+        "caption",
+        "code-block-diagram",
+        "discussion",
+        "field",
+        "link",
+        "toc",
+        "field-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-selector-depends-on",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

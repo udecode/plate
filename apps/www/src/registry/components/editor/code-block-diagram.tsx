@@ -261,12 +261,7 @@ function useLiveSource(element: CodeBlockElementProps['element']) {
 
   return useEditorSelector(
     (current) => NodeApi.string(current.read.nodes.get(path)?.[0] ?? element),
-    {
-      shouldUpdate: (change) =>
-        !change ||
-        !nodeKey ||
-        change.changed.hasNodeKey(nodeKey, 'node', editor.read.view.root()),
-    }
+    { dependsOn: { nodeKey } }
   );
 }
 

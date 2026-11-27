@@ -85,12 +85,7 @@ export function Caption({
   const empty = useEditorSelector(
     (current) =>
       NodeApi.string(current.read.nodes.get(path)?.[0] ?? element).length === 0,
-    {
-      shouldUpdate: (change) =>
-        !change ||
-        !nodeKey ||
-        change.changed.hasNodeKey(nodeKey, 'node', editor.read.view.root()),
-    }
+    { dependsOn: { nodeKey } }
   );
   const focused = useCaptionFocused(path);
   const hidden = !focused && empty;

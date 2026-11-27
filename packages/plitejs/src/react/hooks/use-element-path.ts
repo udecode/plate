@@ -6,7 +6,7 @@ import { ElementContext } from '../context';
 import { readPathByNodeKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorContext } from './use-editor-context';
-import { useEditorSelector } from './use-editor-selector';
+import { useInternalEditorSelector } from './use-editor-selector';
 
 const samePath = (left: Path | null, right: Path | null) => {
   if (left === right) return true;
@@ -42,7 +42,7 @@ export const useElementPath = (): Path | null => {
     [nodeKey, root]
   );
 
-  return useEditorSelector(selector, {
+  return useInternalEditorSelector(selector, {
     equalityFn: samePath,
     profileId: 'element-path',
     runtimeEventSource: 'path',

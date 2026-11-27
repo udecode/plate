@@ -847,7 +847,7 @@ function SuggestionDiscussionCard({
   );
   const descriptions = useEditorSelector(readLines, {
     equalityFn: sameLines,
-    shouldUpdate: (change) => !change || change.changed.hasAny('document'),
+    dependsOn: 'document',
   });
   const setOutcome = (result: AuthoredResult) =>
     setOutcomeState({ groupKey, result });
@@ -1305,7 +1305,7 @@ function DiscussionPopover({
     () => (pending ? comments.pendingRange() : null),
     {
       equalityFn: RangeApi.equals,
-      shouldUpdate: (change) => !change || change.changed.hasAny('document'),
+      dependsOn: 'document',
     }
   );
   // A suggestion's ranges are places of the stored document, so a preview

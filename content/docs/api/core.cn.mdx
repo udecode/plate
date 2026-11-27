@@ -247,7 +247,7 @@ return (
 
 ### `useEditorSelector`
 
-`useEditorSelector(selector, options?)` 从所选编辑器派生值，并仅在结果变化时重新渲染。`selector` 接收编辑器，选项为 `equalityFn` 和 `shouldUpdate`。调用未传入 `equalityFn` 时，hook 按值比较每次的结果与上一次的结果，因此 selector 可以返回对象或列表。该比较的限制见[选择器结果](/docs/api/react-hooks#selector-results)。
+`useEditorSelector(selector, options?)` 从所选编辑器派生值，并仅在结果变化时重新渲染。`selector` 接收编辑器，选项为 `dependsOn` 和 `equalityFn`。调用未传入 `equalityFn` 时，hook 按值比较每次的结果与上一次的结果，因此 selector 可以返回对象或列表。该比较的限制见[选择器结果](/docs/api/react-hooks#selector-results)。
 
 ### `useEditorState`
 

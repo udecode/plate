@@ -1007,6 +1007,13 @@ export const markDefinedStateField = (field: EditorStateField<any>) => {
   DEFINED_STATE_FIELDS.add(field);
 };
 
+export const isDefinedStateField = (
+  value: unknown
+): value is EditorStateField<any> =>
+  typeof value === 'object' &&
+  value !== null &&
+  DEFINED_STATE_FIELDS.has(value as EditorStateField<any>);
+
 export const registerStateFieldDescriptorInRegistry = <TEditor extends Editor>(
   registry: PluginRegistry<TEditor>,
   pluginName: string,

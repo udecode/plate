@@ -1,14 +1,10 @@
-import type { EditorCommit } from '../../../core';
 import { BaseFieldPlugin, type FieldRead } from '../../../features/field/lib';
 import { toReactPlugin, useEditorSelector } from '../../core';
 
 /** The field plugin for a React editor. */
 export const FieldPlugin = toReactPlugin(BaseFieldPlugin);
 
-const elementsChanged = (commit?: EditorCommit) =>
-  !commit ||
-  commit.changed.hasAny('properties') ||
-  commit.changed.hasAny('structure');
+const FIELD_DEPENDENCIES = ['properties', 'structure'] as const;
 
 const sameRead = (a: FieldRead | null, b: FieldRead | null) =>
   a === b ||
@@ -28,5 +24,5 @@ const sameRead = (a: FieldRead | null, b: FieldRead | null) =>
 export const useFieldRead = (fieldId: string) =>
   useEditorSelector(
     (editor) => editor.plugin(BaseFieldPlugin).read.field(fieldId),
-    { equalityFn: sameRead, shouldUpdate: elementsChanged }
+    { dependsOn: FIELD_DEPENDENCIES, equalityFn: sameRead }
   );

@@ -30,9 +30,11 @@ export type StateFieldSetter<TValue> = (
 /**
  * Subscribe to one `defineStateField` value.
  *
- * The hook only re-renders when the field key appears in the committed dirty
- * state keys. Use it for document meta controls such as title, page settings,
- * or feature state that should not subscribe to every editor change.
+ * The hook re-evaluates when the field key or `'$configuration'` appears in
+ * the committed dirty state keys (for example on plugin uninstall or
+ * reinstall), and re-renders only when the value changes. Use it for document
+ * meta controls such as title, page settings, or feature state that should not
+ * subscribe to every editor change.
  */
 export function useStateFieldValue<TValue>(
   field: EditorStateField<TValue>,
@@ -40,8 +42,7 @@ export function useStateFieldValue<TValue>(
 ): TValue {
   return useEditorState<TValue>((state) => state.getField(field), {
     ...options,
-    shouldUpdate: (change) =>
-      Boolean(change?.dirtyStateKeys.includes(field.key)),
+    dependsOn: field,
   });
 }
 

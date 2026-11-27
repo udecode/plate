@@ -10,6 +10,12 @@ import type {
 } from '../..';
 import { keyMovedAt } from '../../core/commit';
 import { runEditorObserver } from '../../core/lifecycle-error';
+import {
+  commitMatchesSelectorDependencies,
+  type EditorSelectorDependencies,
+  normalizeSelectorDependencies,
+  sameSelectorDependencies,
+} from '../../core/selector-dependencies';
 import type { BaseEditor } from '../../interfaces/editor';
 import type { EditorContextValue } from '../plugin/with-react';
 import { recordPliteReactRender } from '../render-profiler';
@@ -39,17 +45,7 @@ type DeferredCallbackPayload = {
 
 type ContextEditor = EditorContextValue<any>;
 
-export type EditorSelectorContextValue = {
-  addEventListener: (
-    callback: Callback,
-    options?: EditorSelectorOptions
-  ) => () => void;
-  flushDeferred: () => void;
-  invalidate: (nodeKeys: readonly NodeKey[]) => void;
-};
-
-/** Commit-subscription options for selectors that read from the editor. */
-export interface EditorSelectorOptions<T = unknown> {
+export interface InternalEditorSelectorOptions<T = unknown> {
   deferred?: boolean;
   equalityFn?: (a: T, b: T) => boolean;
   includeRootOrderChanges?: boolean;
@@ -60,11 +56,27 @@ export interface EditorSelectorOptions<T = unknown> {
   shouldUpdate?: (change?: EditorCommit) => boolean;
 }
 
+export type EditorSelectorContextValue = {
+  addEventListener: (
+    callback: Callback,
+    options?: InternalEditorSelectorOptions
+  ) => () => void;
+  flushDeferred: () => void;
+  invalidate: (nodeKeys: readonly NodeKey[]) => void;
+};
+
+/** Commit-subscription options for selectors that read from the editor. */
+export interface EditorSelectorOptions<T = unknown> {
+  deferred?: boolean;
+  dependsOn?: EditorSelectorDependencies;
+  equalityFn?: (a: T, b: T) => boolean;
+}
+
 /** Options for selectors that read from the immutable editor state view. */
 export interface EditorStateSelectorOptions<T> {
   deferred?: boolean;
+  dependsOn?: EditorSelectorDependencies;
   equalityFn?: (a: T, b: T) => boolean;
-  shouldUpdate?: (change?: EditorCommit) => boolean;
 }
 
 export const EditorSelectorContext =
@@ -106,13 +118,7 @@ export function useRequiredEditorSelectorContext() {
   return context;
 }
 
-/**
- * Subscribe to editor commits and derive a render value from the editor.
- *
- * Scope updates with roots/node keys or `shouldUpdate`, and use
- * `useEditorState` when the selector only needs the immutable state view.
- */
-export function useEditorSelector<T>(
+export function useInternalEditorSelector<T>(
   selector: (editor: ContextEditor) => T,
   {
     deferred,
@@ -123,7 +129,7 @@ export function useEditorSelector<T>(
     nodeKey,
     nodeKeys,
     shouldUpdate,
-  }: EditorSelectorOptions<T> = {}
+  }: InternalEditorSelectorOptions<T> = {}
 ): T {
   const { addEventListener } = useRequiredEditorSelectorContext();
 
@@ -185,6 +191,58 @@ export function useEditorSelector<T>(
 }
 
 /**
+ * Subscribe to editor commits and derive a render value from the editor.
+ *
+ * Scope updates with `dependsOn`, and use `useEditorState` when the selector
+ * only needs the immutable state view.
+ */
+export function useEditorSelector<T>(
+  selector: (editor: ContextEditor) => T,
+  { deferred, dependsOn, equalityFn }: EditorSelectorOptions<T> = {}
+): T {
+  const normalizedDeps = normalizeSelectorDependencies(dependsOn);
+  const { addEventListener } = useRequiredEditorSelectorContext();
+  const editor = useEditorContext();
+  const genericSelector = useCallback(
+    () => selector(editor),
+    [editor, selector]
+  );
+  const [selectedState, update] = useGenericSelector(
+    genericSelector,
+    equalityFn
+  );
+  const updateFromCommit = useCallback(() => {
+    update();
+  }, [update]);
+  const depsRef = useRef(normalizedDeps);
+
+  useIsomorphicLayoutEffect(() => {
+    const changed = !sameSelectorDependencies(depsRef.current, normalizedDeps);
+
+    depsRef.current = normalizedDeps;
+
+    if (changed) update();
+  }, [normalizedDeps, update]);
+
+  const matchesCommit = useCallback(
+    (change?: EditorCommit) =>
+      commitMatchesSelectorDependencies(editor, change, depsRef.current),
+    [editor]
+  );
+
+  useIsomorphicLayoutEffect(() => {
+    const unsubscribe = addEventListener(updateFromCommit, {
+      deferred,
+      shouldUpdate: matchesCommit,
+    });
+    update();
+    return unsubscribe;
+  }, [addEventListener, deferred, matchesCommit, update, updateFromCommit]);
+
+  return selectedState;
+}
+
+/**
  * Reads from the immutable editor state view and re-renders only when the
  * selected value changes.
  *
@@ -194,7 +252,7 @@ export function useEditorState<T>(
   selector: (
     state: EditorStateView<ValueOf<ContextEditor>, PluginsOf<ContextEditor>>
   ) => T,
-  { deferred, equalityFn, shouldUpdate }: EditorStateSelectorOptions<T> = {}
+  { deferred, dependsOn, equalityFn }: EditorStateSelectorOptions<T> = {}
 ): T {
   const stateSelector = useCallback(
     (editor: ContextEditor) => editor.read((state) => selector(state)),
@@ -203,8 +261,8 @@ export function useEditorState<T>(
 
   return useEditorSelector<T>(stateSelector, {
     deferred,
+    dependsOn,
     equalityFn,
-    shouldUpdate,
   });
 }
 
@@ -374,7 +432,7 @@ export function useEditorSelectorContext() {
         nodeKey = null,
         nodeKeys = null,
         shouldUpdate,
-      }: EditorSelectorOptions = {}
+      }: InternalEditorSelectorOptions = {}
     ) => {
       const subscribedNodeKeys =
         nodeKeys && nodeKeys.length > 0

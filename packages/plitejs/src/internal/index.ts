@@ -397,3 +397,9 @@ export { isObject } from '../utils/is-object';
 export { getRangeRoot, getReaderRange, MAIN_ROOT_KEY } from './root-location';
 export { readDocumentRange } from './document-range';
 export { vetoesWrite } from '../core/node-write-veto';
+export {
+  commitMatchesSelectorDependencies,
+  normalizeSelectorDependencies,
+  sameSelectorDependencies,
+  type NormalizedSelectorDependencies,
+} from '../core/selector-dependencies';

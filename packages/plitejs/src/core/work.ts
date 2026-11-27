@@ -233,6 +233,7 @@ export type CoreWork = {
   selectorVisits: number;
   /** Values a selector result comparison charged against its limit. */
   selectorResultValues: number;
+  pathNodeKeyEnumerations: number;
 };
 
 /**
@@ -372,6 +373,7 @@ export const coreWork: CoreWork = {
   subscriberVisits: 0,
   selectorVisits: 0,
   selectorResultValues: 0,
+  pathNodeKeyEnumerations: 0,
 };
 
 /** @internal */

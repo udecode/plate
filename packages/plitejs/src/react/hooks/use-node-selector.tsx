@@ -14,7 +14,7 @@ import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
 import { readNodeByKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorContext } from './use-editor-context';
-import { useEditorSelector } from './use-editor-selector';
+import { useInternalEditorSelector } from './use-editor-selector';
 import { didSyncTextPathToDOM } from './use-plite-node-ref';
 
 /** Runtime/node payload passed to node selectors. */
@@ -139,15 +139,18 @@ const shouldSkipSyncedTextRender = (
   }
 
   const relevantTextPaths = change.changed
-    .nodeKeys('text')
+    .nodeKeys('text', editor.read.view.root())
     .flatMap((textNodeKey) => {
       const textPath = readNodeByKey(editor, textNodeKey).path;
 
       return textPath && isAncestorOrSelfPath(path, textPath) ? [textPath] : [];
     });
 
-  return relevantTextPaths.every((textPath) =>
-    didSyncTextPathToDOM(editor, textPath)
+  return (
+    relevantTextPaths.length > 0 &&
+    relevantTextPaths.every((textPath) =>
+      didSyncTextPathToDOM(editor, textPath)
+    )
   );
 };
 
@@ -198,7 +201,7 @@ function useRuntimeNodeSelector<T>(
     ]
   );
 
-  return useEditorSelector(nodeSelector, {
+  return useInternalEditorSelector(nodeSelector, {
     deferred,
     equalityFn,
     includeRootOrderChanges,
@@ -221,7 +224,13 @@ export function useNodeSelector<T>(
   equalityFn?: (a: T, b: T) => boolean,
   options: EditorRuntimeSelectorOptions = {}
 ): T {
-  return useRuntimeNodeSelector(selector, equalityFn, options);
+  const { deferred, includeRootOrderChanges, nodeKey } = options;
+
+  return useRuntimeNodeSelector(selector, equalityFn, {
+    deferred,
+    includeRootOrderChanges,
+    nodeKey,
+  });
 }
 
 export function useMountedNodeRenderSelector<T>(
@@ -229,8 +238,12 @@ export function useMountedNodeRenderSelector<T>(
   equalityFn: (a: T, b: T) => boolean = Object.is,
   options: EditorRuntimeSelectorOptions = {}
 ): T {
+  const { deferred, includeRootOrderChanges, nodeKey } = options;
+
   return useRuntimeNodeSelector(selector, equalityFn, {
-    ...options,
+    deferred,
+    includeRootOrderChanges,
+    nodeKey,
     observeEmptyTextParentStructure: true,
     updatePolicy: 'skip-synced-text-render',
   });

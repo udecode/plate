@@ -291,7 +291,7 @@ them. Every other value keeps its binding, as
 
 | Plite | Plate | Notes |
 | --- | --- | --- |
-| `useEditorSelector(selector, options)` | `useEditorSelector(selector, options)` | The options are `equalityFn` and `shouldUpdate` only. The hook follows the editor of the root that holds the caret. |
+| `useEditorSelector(selector, options)` | `useEditorSelector(selector, options)` | The options are `dependsOn` and `equalityFn` only. The hook follows the editor of the root that holds the caret. |
 | `useEditorState(selector, options)` | `useEditorState(selector, options)` | There is no `deferred` option. |
 | `useEditorSelection`, `useEditorFocused`, `useEditorComposing`, `useEditorReadOnly` | The same names | The calls are the same. Plate reads the selected editing area. |
 | `useOptionalEditorReadOnly()` | `useEditorReadOnly()` | Plate always returns a boolean. |

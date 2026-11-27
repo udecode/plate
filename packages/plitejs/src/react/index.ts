@@ -101,6 +101,10 @@ export {
 } from './hooks/use-editor-runtime-state';
 export { useEditorSelection } from './hooks/use-editor-selection';
 export {
+  type EditorSelectorDependencies,
+  type EditorSelectorDependency,
+} from '../core/selector-dependencies';
+export {
   type EditorSelectorOptions,
   type EditorStateSelectorOptions,
   useEditorSelector,

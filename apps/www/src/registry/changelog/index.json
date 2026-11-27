@@ -151,6 +151,33 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-selector-depends-on",
+      "href": "/registry/changelog/2026-11-27-selector-depends-on.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Scope useEditorSelector with dependsOn instead of shouldUpdate",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "board",
+        "caption",
+        "code-block-diagram",
+        "discussion",
+        "field",
+        "link",
+        "toc",
+        "field-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-suggestion-table-rows-columns",
       "href": "/registry/changelog/2026-11-27-suggestion-table-rows-columns.json",
       "status": "draft",

@@ -25,7 +25,7 @@ import {
   subscribePliteViewSelection,
 } from '../view-selection';
 import { useEditorContext } from './use-editor-context';
-import { useEditorSelector } from './use-editor-selector';
+import { useInternalEditorSelector } from './use-editor-selector';
 
 /**
  * Selection match mode for `useElementSelected`:
@@ -173,7 +173,7 @@ export const useElementSelected = ({
     [editor, explicitPath, watchedNodeKey]
   );
 
-  const selected = useEditorSelector(selector, {
+  const selected = useInternalEditorSelector(selector, {
     deferred: true,
     nodeKey: explicitPath ? null : watchedNodeKey,
     profileId: 'element-selected',

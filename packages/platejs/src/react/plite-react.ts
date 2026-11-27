@@ -47,6 +47,8 @@ export type {
   EditorNodeSelectorContext,
   EditorRuntimeStateSelectorOptions,
   EditorRuntimeSelectorOptions,
+  EditorSelectorDependencies,
+  EditorSelectorDependency,
   EditorTextSelectorContext,
   EditorViewStateSelectorOptions,
   UseAnnotationStoreOptions,

@@ -1,7 +1,6 @@
 import React from 'react';
 
 import {
-  type EditorCommit,
   type EditorStateView,
   type NamedRootKey,
   type PluginsOf,
@@ -28,12 +27,6 @@ import {
   useEditorRuntimeState,
   useRootEditor as usePliteRootEditor,
 } from '../../plite-react';
-
-const childrenChanged = (change?: EditorCommit) =>
-  Boolean(change?.changed.hasAny('document'));
-
-const selectionChanged = (change?: { selectionChanged?: boolean }) =>
-  Boolean(change?.selectionChanged);
 
 /** Get the editor selected by the nearest Plate, PlateController, or EditorProvider. */
 export function useEditor(): Editor {
@@ -117,20 +110,17 @@ export function useEditableRef(): React.RefObject<HTMLElement | null> {
 /** Get the selected root's text selection. */
 export const useEditorSelection = (): Range | null =>
   useEditorRuntimeState(useEditor(), (state) => state.selection(), {
+    dependsOn: ['selection', 'document'],
     equalityFn: RangeApi.equals,
-    shouldUpdate: selectionChanged,
   });
 
 /** Whether the selected root has a text selection, including a caret. */
 export const useEditorHasSelection = (): boolean =>
   useEditorRuntimeState(useEditor(), (state) => state.selection() !== null, {
-    shouldUpdate: selectionChanged,
+    dependsOn: 'selection',
   });
 
-export type UseEditorStateOptions<T> = EditorRuntimeStateSelectorOptions<
-  T,
-  Editor
->;
+export type UseEditorStateOptions<T> = EditorRuntimeStateSelectorOptions<T>;
 
 /** Subscribe to a value derived from the selected editor's immutable state. */
 export const useEditorState = <T>(
@@ -141,6 +131,6 @@ export const useEditorState = <T>(
 /** Get the selected root's children. */
 export const useEditorValue = () =>
   useEditorRuntimeState(useEditor(), (state) => state.children(), {
+    dependsOn: 'document',
     equalityFn: Object.is,
-    shouldUpdate: childrenChanged,
   });

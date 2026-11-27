@@ -7,6 +7,6 @@ import { useEditorSelector } from './use-editor-selector';
  */
 export const useEditorSelection = () =>
   useEditorSelector((editor) => editor.read.selection(), {
+    dependsOn: ['selection', 'document'],
     equalityFn: RangeApi.equals,
-    profileId: 'editor-selection',
   });

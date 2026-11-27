@@ -2,7 +2,6 @@ import React from 'react';
 
 import {
   type Editor,
-  type EditorCommit,
   type NodeKey,
   PLUGINS,
   type RootKey,
@@ -23,11 +22,11 @@ import { toReactPlugin } from '../../core';
 import { useEditorContext } from '../../internal/plite-components';
 import { useEditorRuntimeState } from '../../plite-react';
 
-const renumbers = (commit?: EditorCommit) =>
-  !commit ||
-  commit.changed.hasAny('structure') ||
-  commit.changed.hasAny('properties') ||
-  commit.changed.hasAny('replace');
+const LIST_RENUMBER_DEPENDENCIES = [
+  'structure',
+  'properties',
+  'replace',
+] as const;
 
 // Resolving a key that is not mounted queries the DOM, so a large renumber,
 // as in a virtualized view, walks the mounted lists instead.
@@ -70,7 +69,7 @@ function ListNumberWriter({ editor }: { editor: Editor }) {
   const lastCommit = useEditorRuntimeState(
     view,
     (state) => state.lastCommit(),
-    { shouldUpdate: renumbers }
+    { dependsOn: LIST_RENUMBER_DEPENDENCIES }
   );
   const written = React.useRef<Map<RootKey, number> | undefined>(undefined);
 

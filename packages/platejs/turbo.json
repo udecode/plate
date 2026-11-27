@@ -3711,7 +3711,6 @@
     "source-hash:partition:field-react": {
       "cache": true,
       "dependsOn": [
-        "source-hash:partition:core",
         "source-hash:partition:field",
         "source-hash:partition:react-core"
       ],

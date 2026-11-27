@@ -9,7 +9,6 @@ import {
   PathApi,
   SelectionApi,
   type Descendant,
-  type EditorCommit,
   type Element,
   type Path,
   type NodeKey,
@@ -42,11 +41,11 @@ const getHighlightedElements = (editor: Editor) =>
         .nodes()
         .flatMap(([node]) => (ElementApi.isElement(node) ? [node] : []));
 
-const shouldUpdateSelectionHighlights = (change?: EditorCommit) =>
-  !change ||
-  change.selectionChanged ||
-  change.changed.hasAny('properties') ||
-  change.changed.hasAny('structure');
+const SELECTION_HIGHLIGHT_DEPENDENCIES = [
+  'selection',
+  'properties',
+  'structure',
+] as const;
 
 const samePaths = (left: readonly Path[], right: readonly Path[]) =>
   left.length === right.length &&
@@ -136,7 +135,7 @@ export function NodeSelectionHighlight({
   const editable = useEditorEditableElement(editor);
   const selectedNodes = useEditorSelector(getHighlightedElements, {
     equalityFn: sameNodes,
-    shouldUpdate: shouldUpdateSelectionHighlights,
+    dependsOn: SELECTION_HIGHLIGHT_DEPENDENCIES,
   });
   const [targetRevision, setTargetRevision] = React.useState(0);
   const targets = React.useMemo(

@@ -72,12 +72,19 @@ const marks = useEditorState((state) => ({
 }));
 ```
 
-Use `options.shouldUpdate` to skip commits that cannot affect the selected
-value.
+Use `options.dependsOn` to scope invalidation to a single dependency or a
+non-empty tuple of commit change kinds, `defineStateField` descriptors, or
+live node-key descriptors (`{ nodeKey, kind? }` / `{ nodeKeys, kind? }`).
+Omitted `kind` on a node-key descriptor watches `'node'`, `'path'`, and
+`'presence'`. Passing a nullish `nodeKey` or an empty/nullish `nodeKeys` fails
+open and updates on every commit. Passing an empty array (`dependsOn: []`) or
+an invalid entry throws `TypeError` synchronously during render.
 
 ```typescript
+// Include "document" when reading state.selection() because a block
+// selection's end offset follows the selected block's text length.
 const selection = useEditorState((state) => state.selection(), {
-  shouldUpdate: (change) => Boolean(change?.selectionChanged),
+  dependsOn: ["selection", "document"],
 });
 ```
 
@@ -105,10 +112,10 @@ const readOnly = useEditorRuntimeState(editor, (state) =>
 Inside provider descendants, prefer `useEditorState`. It reads the same state
 but gets the editor from context.
 
-Commit subscriptions invalidate this selector synchronously. `shouldUpdate`
-skips commits that cannot affect the selected value. Use a provider selector's
-explicit `deferred` option when delayed delivery is an intentional product
-choice.
+Commit subscriptions invalidate this selector synchronously. Pass `dependsOn`
+to declare which commit change kinds, state fields, or node keys invalidate
+the selector. Use a provider selector's explicit `deferred` option when
+delayed delivery is an intentional product choice.
 
 #### `useStateFieldValue<T>(field, options?): T`
 
@@ -118,9 +125,10 @@ Subscribe to one `defineStateField` value.
 const title = useStateFieldValue(documentTitle);
 ```
 
-The hook only re-renders when that field key appears in
-`change.dirtyStateKeys`. Use it for document title, page settings, spellcheck,
-and other document meta controls.
+The hook re-evaluates when that field key or `'$configuration'` appears in
+`change.dirtyStateKeys` (for example when the owning plugin is uninstalled or
+reinstalled), and re-renders only when the value changes. Use it for document
+title, page settings, spellcheck, and other document meta controls.
 
 #### `useSetStateField<T>(field): (value, policy?) => void`
 
@@ -146,11 +154,10 @@ installed runtime API. Prefer node-, text-, decoration-, or element-scoped
 hooks when rendering editor content.
 
 ```typescript
-const documentVersion = useEditorSelector(
-  (editor) => editor.read.runtime.snapshot().version,
+const blockCount = useEditorSelector(
+  (editor) => editor.read.children().length,
   {
-    shouldUpdate: (commit) =>
-      commit === undefined || commit.changed.has("document"),
+    dependsOn: "document",
   }
 );
 ```
@@ -276,14 +283,14 @@ Subscribe to whole-runtime editor state. The selector runs in a read boundary,
 and the hook re-renders only when the selected value changes, as
 [Selector results](hooks#selector-results) describes.
 
-Shared selector options are `equalityFn`, `shouldUpdate`, and `deferred`.
-Selectors always read the latest render closure. Use `shouldUpdate(commit)`
-with `commit.changed` to skip commits that cannot affect the selected value.
+Shared selector options are `dependsOn`, `equalityFn`, and `deferred`.
+Selectors always read the latest render closure. Pass `dependsOn` to declare
+which commit change kinds, state fields, or node keys invalidate the selector.
 
 #### `useRootState<T>(root, selector, options?): T`
 
-Subscribe to one root's state. The selector skips commits that cannot affect
-that root.
+Subscribe to one root's state. Pass `dependsOn` to declare which commit
+changes invalidate the selector.
 
 #### `useRootEditor(root?, options?): Editor`
 

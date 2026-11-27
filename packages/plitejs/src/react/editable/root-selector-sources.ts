@@ -3,7 +3,7 @@ import { type ReactNode, useCallback } from 'react';
 import type { EditorCommit, NodeKey, Path } from '../..';
 import { NodeApi, SelectionApi } from '../..';
 import { useEditorContext } from '../hooks/use-editor-context';
-import { useEditorSelector } from '../hooks/use-editor-selector';
+import { useInternalEditorSelector } from '../hooks/use-editor-selector';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { toPublicRootOption } from '../root-key';
 import { toInternalRoot } from './runtime-editor-api';
@@ -101,7 +101,7 @@ export const useRootNodeKeys = () => {
     [root]
   );
 
-  return useEditorSelector(selector, {
+  return useInternalEditorSelector(selector, {
     equalityFn: sameRootNodeKeys,
     profileId: 'root-node-keys',
     shouldUpdate,
@@ -140,7 +140,7 @@ export const useTopLevelSelectionIndex = (enabled: boolean) => {
     [enabled, root]
   );
 
-  return useEditorSelector(selector, {
+  return useInternalEditorSelector(selector, {
     equalityFn: Object.is,
     profileId: 'top-level-selection-index',
     shouldUpdate,
@@ -190,7 +190,7 @@ export const useSelectionPaths = (enabled: boolean) => {
     [enabled, root]
   );
 
-  return useEditorSelector(selector, {
+  return useInternalEditorSelector(selector, {
     equalityFn: sameSelectionPaths,
     profileId: 'selection-paths',
     shouldUpdate,
@@ -219,7 +219,7 @@ export const usePlaceholderValue = (placeholder?: ReactNode) => {
     [root]
   );
 
-  return useEditorSelector(selector, {
+  return useInternalEditorSelector(selector, {
     equalityFn: Object.is,
     profileId: 'placeholder',
     shouldUpdate,
@@ -234,7 +234,7 @@ export const useEditableRootCommitWakeup = () => {
     [root]
   );
 
-  useEditorSelector(
+  useInternalEditorSelector(
     (innerEditor6) =>
       innerEditor6.read((state) => state.lastCommit()?.version ?? 0),
     {

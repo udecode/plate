@@ -277,7 +277,7 @@ const editor = useCreateEditor({
 
 | Plite | Plate | 说明 |
 | --- | --- | --- |
-| `useEditorSelector(selector, options)` | `useEditorSelector(selector, options)` | 选项只有 `equalityFn` 和 `shouldUpdate`。该 hook 跟随光标所在根的编辑器。 |
+| `useEditorSelector(selector, options)` | `useEditorSelector(selector, options)` | 选项只有 `dependsOn` 和 `equalityFn`。该 hook 跟随光标所在根的编辑器。 |
 | `useEditorState(selector, options)` | `useEditorState(selector, options)` | 没有 `deferred` 选项。 |
 | `useEditorSelection`、`useEditorFocused`、`useEditorComposing`、`useEditorReadOnly` | 同名 | 调用方式相同。Plate 读取当前选中的编辑区域。 |
 | `useOptionalEditorReadOnly()` | `useEditorReadOnly()` | Plate 总是返回布尔值。 |

@@ -47,6 +47,8 @@ export type {
   UseElementSelectedMode,
   UseElementSelectedOptions,
   EditorRuntimeStateSelectorOptions,
+  EditorSelectorDependencies,
+  EditorSelectorDependency,
   EditorViewStateSelectorOptions,
   UseAnnotationStoreOptions,
   ContentRootController,
