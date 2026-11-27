@@ -11,6 +11,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { readSources } from './docs-sources.mjs';
+import {
+  BRANCH,
+  entries,
+  isSplit,
+  objectIds,
+  privateGit,
+  privatePaths,
+  run as runGit,
+} from './private-files.mjs';
 
 const { hasComponentDocsPage, registryExampleSlug, sourcePathToDocsRoute } =
   await import('../../apps/www/src/lib/docs-routes.ts');
@@ -393,6 +402,19 @@ function report({ states, unmapped }) {
 
 const AGY_EDIT_TOOLS = new Set(['edit_file', 'write_file']);
 const AGY_USER_REQUEST = /<USER_REQUEST>\s*([\s\S]*?)\s*<\/USER_REQUEST>/u;
+const ACTIVE_WORK_STATES = new Set(['working', 'waiting_for_children']);
+const ACTIVE_TASK_STATUSES = new Set([
+  'pending',
+  'queued',
+  'running',
+  'starting',
+]);
+const DELEGATE_TOOL = /(?:^|__|_|\/)delegate_task$/u;
+const STATUS_TOOL = /(?:^|__|_|\/)task_status$/u;
+const CANCEL_TOOL = /(?:^|__|_|\/)task_cancel$/u;
+const DELEGATE_CMD = /\b(?:delegate_task|task_status|task_cancel)\b/u;
+const SUBAGENT_CREATED = /Created the following subagent:\s*(\{[\s\S]*\})/u;
+
 const agyString = (value) => {
   if (typeof value !== 'string') return '';
   try {
@@ -403,8 +425,122 @@ const agyString = (value) => {
   }
 };
 
-function filesEditedSinceSkipDrive(transcript, root) {
+const delegationToolKind = (name) => {
+  if (typeof name !== 'string') return null;
+  if (DELEGATE_TOOL.test(name)) return 'delegate';
+  if (STATUS_TOOL.test(name)) return 'status';
+  if (CANCEL_TOOL.test(name)) return 'cancel';
+  return null;
+};
+
+const parseJsonObject = (text) => {
+  if (typeof text !== 'string') return null;
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  const tryParse = (candidate) => {
+    try {
+      const value = JSON.parse(candidate);
+      return value && typeof value === 'object' ? value : null;
+    } catch {
+      return null;
+    }
+  };
+  const direct = tryParse(trimmed);
+  if (direct) return direct;
+  const lastLine = trimmed.split('\n').findLast((line) => line.trim());
+  return lastLine?.trim().startsWith('{') ? tryParse(lastLine.trim()) : null;
+};
+
+const extractTaskPayload = (raw) => {
+  const fromObject = (obj) => {
+    if (!obj || typeof obj !== 'object' || obj.isError === true) return null;
+    if (obj.structuredContent && typeof obj.structuredContent === 'object') {
+      return obj.structuredContent;
+    }
+    if (typeof obj.taskId === 'string') return obj;
+    if (Array.isArray(obj.content)) {
+      for (const block of obj.content) {
+        if (block?.type === 'text') {
+          const inner = fromObject(parseJsonObject(block.text));
+          if (inner) return inner;
+        }
+      }
+    }
+    return null;
+  };
+  if (typeof raw === 'string') return fromObject(parseJsonObject(raw));
+  if (Array.isArray(raw)) {
+    for (const block of raw) {
+      if (block?.type === 'text') {
+        const inner = fromObject(parseJsonObject(block.text));
+        if (inner) return inner;
+      }
+    }
+    return null;
+  }
+  return fromObject(raw);
+};
+
+const applyTaskState = (pendingDelegates, payload, kind) => {
+  if (typeof payload?.taskId !== 'string' || !payload.taskId) return;
+  if (kind === 'cancel') {
+    pendingDelegates.delete(payload.taskId);
+    return;
+  }
+  const active =
+    typeof payload.workState === 'string'
+      ? ACTIVE_WORK_STATES.has(payload.workState)
+      : typeof payload.status === 'string' &&
+        ACTIVE_TASK_STATUSES.has(payload.status);
+  if (active) {
+    pendingDelegates.set(
+      payload.taskId,
+      typeof payload.childThreadId === 'string' ? payload.childThreadId : null
+    );
+  } else {
+    pendingDelegates.delete(payload.taskId);
+  }
+};
+
+const clearMentionedDelegates = (pendingDelegates, text) => {
+  if (!text || pendingDelegates.size === 0) return;
+  for (const [taskId, childThreadId] of pendingDelegates) {
+    if (
+      text.includes(taskId) ||
+      (childThreadId && text.includes(childThreadId))
+    ) {
+      pendingDelegates.delete(taskId);
+    }
+  }
+};
+
+const agyGenericBody = (content) => {
+  const marker = 'Command output:\n';
+  const at = content.indexOf(marker);
+  if (at !== -1) return content.slice(at + marker.length);
+  return content
+    .replace(/^(?:(?:Created|Completed) At:.*\r?\n)+/u, '')
+    .trimStart();
+};
+
+const agyList = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+function analyzeTranscript(transcript, root) {
   let files = new Set();
+  const pendingDelegates = new Map();
+  const pendingSubagents = new Set();
+  const claudeCalls = new Map();
+  const codexCalls = new Map();
+  let agyTurn = { delegateKind: null, subagent: false };
 
   for (const line of transcript.split('\n')) {
     if (!line) continue;
@@ -423,33 +559,142 @@ function filesEditedSinceSkipDrive(transcript, root) {
 
     if (record.type === 'assistant' && Array.isArray(record.message?.content)) {
       for (const block of record.message.content) {
-        if (block.type === 'tool_use' && EDIT_TOOLS.has(block.name)) {
+        if (block.type !== 'tool_use') continue;
+        if (EDIT_TOOLS.has(block.name)) {
           files.add(block.input?.file_path ?? block.input?.notebook_path);
+        }
+        const kind = delegationToolKind(block.name);
+        if (kind) {
+          if (block.id) claudeCalls.set(block.id, kind);
+          if (kind === 'cancel' && typeof block.input?.taskId === 'string') {
+            pendingDelegates.delete(block.input.taskId);
+          }
+        }
+      }
+    } else if (record.type === 'PLANNER_RESPONSE') {
+      agyTurn = { delegateKind: null, subagent: false };
+      for (const call of Array.isArray(record.tool_calls)
+        ? record.tool_calls
+        : []) {
+        if (AGY_EDIT_TOOLS.has(call?.name)) {
+          files.add(agyString(call.args?.Path));
+        } else if (call?.name === 'invoke_subagent') {
+          agyTurn.subagent = true;
+        } else if (call?.name === 'manage_subagents') {
+          const action = agyString(call.args?.Action);
+          if (action === 'kill_all') {
+            pendingSubagents.clear();
+          } else if (action === 'kill') {
+            for (const id of agyList(call.args?.ConversationIds)) {
+              pendingSubagents.delete(id);
+            }
+          }
+        } else if (call?.name === 'call_mcp_tool') {
+          const kind = delegationToolKind(agyString(call.args?.ToolName));
+          if (kind) {
+            agyTurn.delegateKind = kind;
+            if (kind === 'cancel') {
+              const args = parseJsonObject(agyString(call.args?.Arguments));
+              if (typeof args?.taskId === 'string') {
+                pendingDelegates.delete(args.taskId);
+              }
+            }
+          }
+        } else if (call?.name === 'run_command') {
+          const cmd = agyString(call.args?.CommandLine);
+          if (DELEGATE_CMD.test(cmd)) {
+            agyTurn.delegateKind =
+              cmd.includes('task_cancel') && !cmd.includes('delegate_task')
+                ? 'cancel'
+                : 'delegate';
+          }
+        } else {
+          const kind = delegationToolKind(call?.name);
+          if (kind) {
+            agyTurn.delegateKind = kind;
+            if (kind === 'cancel') {
+              const id = agyString(call.args?.taskId);
+              if (id) pendingDelegates.delete(id);
+            }
+          }
         }
       }
     } else if (
-      record.type === 'PLANNER_RESPONSE' &&
-      Array.isArray(record.tool_calls)
+      record.type === 'GENERIC' &&
+      typeof record.content === 'string'
     ) {
-      for (const call of record.tool_calls) {
-        if (AGY_EDIT_TOOLS.has(call?.name)) {
-          files.add(agyString(call.args?.Path));
+      if (agyTurn.subagent) {
+        const match = record.content.match(SUBAGENT_CREATED);
+        const created = match && parseJsonObject(match[1]);
+        if (typeof created?.conversationId === 'string') {
+          pendingSubagents.add(created.conversationId);
+        }
+      }
+      if (agyTurn.delegateKind) {
+        const body = agyGenericBody(record.content);
+        if (!body.startsWith('Showing lines ')) {
+          applyTaskState(
+            pendingDelegates,
+            extractTaskPayload(body),
+            agyTurn.delegateKind
+          );
         }
       }
     } else if (
       record.type === 'USER_INPUT' &&
-      record.source === 'USER_EXPLICIT' &&
       typeof record.content === 'string'
     ) {
-      const text =
-        record.content.match(AGY_USER_REQUEST)?.[1] ?? record.content;
-      if (SKIP_WORDS.test(text)) files = new Set();
+      clearMentionedDelegates(pendingDelegates, record.content);
+      if (record.source === 'USER_EXPLICIT') {
+        const text =
+          record.content.match(AGY_USER_REQUEST)?.[1] ?? record.content;
+        if (SKIP_WORDS.test(text)) files = new Set();
+      }
+    } else if (
+      record.type === 'SYSTEM_MESSAGE' &&
+      typeof record.content === 'string'
+    ) {
+      clearMentionedDelegates(pendingDelegates, record.content);
+      for (const id of pendingSubagents) {
+        if (record.content.includes(`sender=${id}`)) {
+          pendingSubagents.delete(id);
+        }
+      }
     } else if (change?.type === 'FileChange' && change.status === 'completed') {
       for (const [file, { move_path: moved }] of Object.entries(
         change.changes ?? {}
       )) {
         files.add(file);
         if (typeof moved === 'string') files.add(moved);
+      }
+    } else if (
+      payload?.type === 'function_call' ||
+      payload?.type === 'custom_tool_call' ||
+      payload?.type === 'mcp_tool_call'
+    ) {
+      const kind = delegationToolKind(payload.name);
+      if (kind) {
+        const callId = payload.call_id ?? payload.id;
+        if (callId) codexCalls.set(callId, kind);
+        if (kind === 'cancel') {
+          const args = parseJsonObject(payload.arguments ?? payload.input);
+          if (typeof args?.taskId === 'string') {
+            pendingDelegates.delete(args.taskId);
+          }
+        }
+      }
+    } else if (
+      payload?.type === 'function_call_output' ||
+      payload?.type === 'custom_tool_call_output' ||
+      payload?.type === 'mcp_tool_call_output'
+    ) {
+      const callId = payload.call_id ?? payload.id;
+      if (callId && codexCalls.has(callId)) {
+        applyTaskState(
+          pendingDelegates,
+          extractTaskPayload(payload.output ?? payload.result),
+          codexCalls.get(callId)
+        );
       }
     } else {
       const message =
@@ -464,23 +709,120 @@ function filesEditedSinceSkipDrive(transcript, root) {
           : Array.isArray(message?.content)
             ? message.content
             : [];
-      if (
-        blocks.some(
-          (block) =>
-            (block.type === 'text' || block.type === 'input_text') &&
-            SKIP_WORDS.test(block.text)
-        )
-      ) {
-        files = new Set();
+      for (const block of blocks) {
+        if (
+          block.type === 'tool_result' &&
+          !block.is_error &&
+          claudeCalls.has(block.tool_use_id)
+        ) {
+          applyTaskState(
+            pendingDelegates,
+            extractTaskPayload(block.content),
+            claudeCalls.get(block.tool_use_id)
+          );
+        } else if (
+          (block.type === 'text' || block.type === 'input_text') &&
+          typeof block.text === 'string'
+        ) {
+          clearMentionedDelegates(pendingDelegates, block.text);
+          if (SKIP_WORDS.test(block.text)) files = new Set();
+        }
       }
     }
   }
 
-  return [...files]
-    .filter(Boolean)
-    .map((file) => path.relative(root, path.resolve(root, file)))
-    .filter((file) => !file.startsWith('..') && !path.isAbsolute(file))
-    .map((file) => file.split(path.sep).join('/'));
+  return {
+    files: [...files]
+      .filter(Boolean)
+      .map((file) => path.relative(root, path.resolve(root, file)))
+      .filter((file) => !file.startsWith('..') && !path.isAbsolute(file))
+      .map((file) => file.split(path.sep).join('/')),
+    pendingChildTasks: pendingDelegates.size > 0 || pendingSubagents.size > 0,
+  };
+}
+
+function upstreamBranch(root) {
+  const configPath = path.join(root, '.agents/pstack.json');
+  if (!existsSync(configPath)) return BRANCH;
+  try {
+    return JSON.parse(readFileSync(configPath, 'utf-8')).branch || BRANCH;
+  } catch {
+    return BRANCH;
+  }
+}
+
+function mergeBase(root, ref, { side = false } = {}) {
+  const exec = (args) => (side ? privateGit(root, args) : runGit(root, args));
+  if (exec(['rev-parse', '--verify', '--quiet', ref]).status !== 0) {
+    return null;
+  }
+  const result = exec(['merge-base', 'HEAD', ref]);
+  return result.status === 0 ? result.stdout.trim() || null : null;
+}
+
+function filterUnlandedHalf(root, files, base, { side = false } = {}) {
+  if (files.length === 0 || !base) return files;
+  const exec = (args) => (side ? privateGit(root, args) : runGit(root, args));
+  const worktree = exec([
+    'diff',
+    '-z',
+    '--name-only',
+    '--no-renames',
+    base,
+    '--',
+  ]);
+  const staged = exec([
+    'diff',
+    '-z',
+    '--name-only',
+    '--no-renames',
+    '--cached',
+    base,
+    '--',
+  ]);
+  if (worktree.status !== 0 || staged.status !== 0) return files;
+  const changed = new Set([
+    ...entries(worktree.stdout),
+    ...entries(staged.stdout),
+  ]);
+  const inBase = objectIds(
+    root,
+    files.map((file) => `${base}:${file}`),
+    { side }
+  );
+  return files.filter(
+    (file) =>
+      changed.has(file) ||
+      (!inBase.has(`${base}:${file}`) && existsSync(path.join(root, file)))
+  );
+}
+
+function unlandedFiles(files, root) {
+  if (files.length === 0) return files;
+  const branch = upstreamBranch(root);
+  const publicBase =
+    mergeBase(root, `refs/remotes/upstream/${branch}`) ??
+    mergeBase(root, `refs/remotes/origin/${branch}`);
+  if (!isSplit(root)) {
+    return filterUnlandedHalf(root, files, publicBase);
+  }
+  const hidden = privatePaths(root, files);
+  const privateBase = mergeBase(root, `refs/remotes/origin/${branch}`, {
+    side: true,
+  });
+  return [
+    ...filterUnlandedHalf(
+      root,
+      files.filter((file) => !hidden.has(file)),
+      publicBase
+    ),
+    ...filterUnlandedHalf(
+      root,
+      files.filter((file) => hidden.has(file)),
+      privateBase,
+      { side: true }
+    ),
+  ];
 }
 
 function hook({ dir, root }) {
@@ -502,10 +844,15 @@ function hook({ dir, root }) {
     return;
   }
 
-  const files = filesEditedSinceSkipDrive(
+  const { files: editedFiles, pendingChildTasks } = analyzeTranscript(
     readFileSync(transcriptPath, 'utf-8'),
     root
   );
+  if (pendingChildTasks) {
+    if (isAgy) process.stdout.write('{}');
+    return;
+  }
+  const files = unlandedFiles(editedFiles, root);
   if (files.length === 0) {
     if (isAgy) process.stdout.write('{}');
     return;
