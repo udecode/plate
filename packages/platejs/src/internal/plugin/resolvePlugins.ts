@@ -83,6 +83,7 @@ import { getCaretInline, selectAfterInline } from './inlineInsertion';
 import { isEditOnly } from './isEditOnlyDisabled';
 import { mergePluginCapabilities } from './mergePluginCapabilities';
 import {
+  isInnerWrapNodeChildren,
   STRUCTURAL_RULE_KEYS,
   setPlateRuntimeCandidate,
   type PlatePluginCache,
@@ -820,6 +821,7 @@ export const createPlateModelPublication = (
     return [];
   });
   const pluginCache = createMutablePlatePluginCache();
+  const innerWrapNodeChildren: string[] = [];
 
   let contentAttributes = EMPTY_RENDERED_ATTRIBUTES;
   let readOnlyContentAttributes = EMPTY_RENDERED_ATTRIBUTES;
@@ -908,7 +910,11 @@ export const createPlateModelPublication = (
       pluginCache.slots.caret.push(plugin.name);
     }
     if (plugin.slots.wrapNodeChildren) {
-      pluginCache.slots.wrapNodeChildren.push(plugin.name);
+      if (isInnerWrapNodeChildren(plugin.slots.wrapNodeChildren)) {
+        innerWrapNodeChildren.push(plugin.name);
+      } else {
+        pluginCache.slots.wrapNodeChildren.push(plugin.name);
+      }
     }
     if (plugin.slots.afterNodeChildren) {
       pluginCache.slots.afterNodeChildren.push(plugin.name);
@@ -980,7 +986,10 @@ export const createPlateModelPublication = (
       caret: freezeList(pluginCache.slots.caret),
       wrapContent: freezeList(pluginCache.slots.wrapContent),
       wrapNode: freezeList(pluginCache.slots.wrapNode),
-      wrapNodeChildren: freezeList(pluginCache.slots.wrapNodeChildren),
+      wrapNodeChildren: freezeList([
+        ...innerWrapNodeChildren,
+        ...pluginCache.slots.wrapNodeChildren,
+      ]),
       wrapRoot: freezeList(pluginCache.slots.wrapRoot),
     }),
     rules: Object.freeze(

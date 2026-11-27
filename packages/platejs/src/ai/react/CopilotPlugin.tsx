@@ -17,6 +17,7 @@ import {
   locateAt,
 } from '../../core';
 import { hasNonWritableAt, subscribeSharedEditorViewState } from '../../facade';
+import { markInnerWrapNodeChildren } from '../../internal/plugin/plateRuntime';
 import {
   type MarkdownEditor,
   type MarkdownSerializeResult,
@@ -600,7 +601,7 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
 
     return {
       slots: {
-        wrapNodeChildren: () => {
+        wrapNodeChildren: markInnerWrapNodeChildren(() => {
           const GhostText = context.store.get().renderGhostText;
 
           if (!GhostText) return undefined;
@@ -611,7 +612,7 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
               <GhostText />
             </>
           );
-        },
+        }),
       },
       selectors: {
         isSuggested: (state, key: NodeKey) => state.suggestionNodeKey === key,

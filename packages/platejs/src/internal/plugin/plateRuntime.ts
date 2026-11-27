@@ -85,6 +85,16 @@ export type PlateRuntime = Readonly<{
 }>;
 
 const CANDIDATE_PLATE_RUNTIMES = new WeakMap<object, PlateRuntime>();
+const INNER_WRAP_NODE_CHILDREN = new WeakSet<object>();
+
+export const markInnerWrapNodeChildren = <T extends object>(wrapper: T): T => {
+  INNER_WRAP_NODE_CHILDREN.add(wrapper);
+
+  return wrapper;
+};
+
+export const isInnerWrapNodeChildren = (wrapper: unknown) =>
+  typeof wrapper === 'function' && INNER_WRAP_NODE_CHILDREN.has(wrapper);
 
 export const getPlateRuntimeOwner = (editor: object): RuntimeEditor =>
   getEditorRuntimeOwner(editor as RuntimeEditor);
