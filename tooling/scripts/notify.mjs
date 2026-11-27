@@ -18,7 +18,9 @@ import { findings } from '../../.agents/pstack/writing-check.mjs';
 import {
   changedSince,
   run as gitAt,
+  isSplit,
   landingPair,
+  privateGit,
   showAt,
   untrackedFiles,
   UPSTREAM,
@@ -27,6 +29,7 @@ import {
 const USAGE =
   'usage: notify send --to <login|dev|channel> [--file <png|jpg|gif|mp4|webm>]... <text...> | notify team <revision-range> | notify check';
 const DAY = 24 * 60 * 60 * 1000;
+const MAX_SHOT_AGE = 2 * 60 * 60 * 1000;
 const LIMIT = 2000;
 const MAX_FILES = 4;
 // Discord's default limits since 2026-09-03: 20 MiB per file, 25 MiB per message request.
@@ -414,6 +417,56 @@ const STEP =
 const DEMO = /^Demo:[ \t]*(?<value>.*?)[ \t]*$/mu;
 const DEMO_VALUE = /^(?:step (?<step>\w+(?:\.\w+)*)|none)[,.;:]?[ \t]+\S/u;
 const SHOT = /^\[\[shot: (?<path>[^|\]]+?) *\|/gmu;
+const SESSION_LINE = /^Session:[ \t]+(\S+)[ \t]*$/u;
+
+const sessionFromBodies = (bodies) => {
+  for (const body of bodies) {
+    for (const line of body.split('\n')) {
+      const match = SESSION_LINE.exec(line);
+      if (match) return match[1];
+    }
+  }
+  return null;
+};
+
+const sessionLastCommitIn = (runGit, session) => {
+  const run = runGit([
+    'log',
+    UPSTREAM,
+    '--fixed-strings',
+    `--grep=Session: ${session}`,
+    '--format=%H%x00%ct%x00%B%x00',
+  ]);
+  if (run.status !== 0 || !run.stdout) return null;
+  const fields = run.stdout.split('\0');
+  let latest = null;
+  for (let i = 0; i + 2 < fields.length; i += 3) {
+    const sha = fields[i].trim();
+    const seconds = Number(fields[i + 1].trim());
+    const body = fields[i + 2];
+    if (!sha || !Number.isFinite(seconds)) continue;
+    const matched = body
+      .split('\n')
+      .some((line) => SESSION_LINE.exec(line)?.[1] === session);
+    if (!matched) continue;
+    const at = seconds * 1000;
+    if (!latest || at > latest.at) latest = { at, sha };
+  }
+  return latest;
+};
+
+const sessionLastCommit = (root, session) => {
+  const candidates = [
+    sessionLastCommitIn((args) => gitAt(root, args), session),
+    ...(isSplit(root)
+      ? [sessionLastCommitIn((args) => privateGit(root, args), session)]
+      : []),
+  ].filter(Boolean);
+  if (candidates.length === 0) return null;
+  return candidates.reduce((latest, item) =>
+    item.at > latest.at ? item : latest
+  );
+};
 
 const demoOf = (text) => DEMO.exec(text.split(/^## /mu)[0])?.groups.value;
 
@@ -433,8 +486,9 @@ const parseSteps = (text) => {
 
 // zbot posts a landing's Team line with the files that this folder's shots.md
 // names, and posts none when one lies outside the folder or it names more than four.
-const shotsProblem = (path, id) => {
+const shotsProblem = (path, id, { bodies, root }) => {
   const session =
+    sessionFromBodies(bodies) ||
     process.env.CLAUDE_CODE_HOST_SESSION_ID ||
     process.env.CLAUDE_CODE_SESSION_ID ||
     process.env.CODEX_SESSION_ID ||
@@ -455,8 +509,26 @@ const shotsProblem = (path, id) => {
     !shot.includes('..') &&
     shot.startsWith(`${dir}/`) &&
     existsSync(shot);
-  if (shots.length > 0 && shots.length <= 4 && shots.every(posts)) return null;
-  return `${demo}, and ${file} must name one to four clips or stills that exist in that folder, or zbot posts none. Record the demo with the clip skill, copy its files into ${dir} and write one [[shot: <absolute path> | <a few words>]] line per file in shots.md, as AGENTS.md's Team section says.`;
+  if (shots.length === 0 || shots.length > 4 || !shots.every(posts)) {
+    return `${demo}, and ${file} must name one to four clips or stills that exist in that folder, or zbot posts none. Record the demo with the clip skill, copy its files into ${dir} and write one [[shot: <absolute path> | <a few words>]] line per file in shots.md, as AGENTS.md's Team section says.`;
+  }
+  const now = Date.now();
+  const files = [file, ...shots].map((target) => ({
+    mtimeMs: statSync(target).mtimeMs,
+    path: target,
+  }));
+  const previous = sessionLastCommit(root, session);
+  if (previous) {
+    const older = files.find(({ mtimeMs }) => mtimeMs < previous.at);
+    if (older) {
+      return `${demo}, but ${older.path} was last modified at ${new Date(older.mtimeMs).toISOString()}, which is older than this session's previous landed commit (${previous.sha.slice(0, 7)} at ${new Date(previous.at).toISOString()}). Record a fresh clip for this landing and overwrite ${file}, as AGENTS.md's Team section says.`;
+    }
+  }
+  const expired = files.find(({ mtimeMs }) => now - mtimeMs > MAX_SHOT_AGE);
+  if (expired) {
+    return `${demo}, but ${expired.path} was last modified at ${new Date(expired.mtimeMs).toISOString()}, which is more than 2 hours old. Record a fresh clip for this landing and overwrite ${file}, as AGENTS.md's Team section says.`;
+  }
+  return null;
 };
 
 const demoProblems = (bodies) => {
@@ -511,7 +583,7 @@ const demoProblems = (bodies) => {
         return [];
       }
       return [
-        shotsProblem(path, step),
+        shotsProblem(path, step, { bodies, root }),
         committed && !announced
           ? `step ${step} of ${path} is the plan's Demo step, and the land message has no Team line. Say what teammates can now try, then run land.mjs again with --message.`
           : null,
