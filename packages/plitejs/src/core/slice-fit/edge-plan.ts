@@ -396,6 +396,7 @@ export const applyPasteEdgePlan = (
     };
   }
   const headFrom = edgePlan.head.blockRange.from;
+  const headTo = edgePlan.head.blockRange.to;
   const outChanges: FitSection[] = [];
   const outProperties: RootChangeSection[] = [];
   const outSections: RootChangeSection[] = [];
@@ -403,11 +404,14 @@ export const applyPasteEdgePlan = (
 
   for (const change of changes) {
     const { from, insert, to } = change;
+    const coversHead = from <= headFrom;
+    const closesHead = to >= headTo;
     const replaced =
-      from <= headFrom && to !== from && insert.length > 0
+      (coversHead || closesHead) && to !== from && insert.length > 0
         ? document.slice(from, to)
         : null;
-    const ownKeys = replaced ? getDocumentSliceNodeKeys(insert) : null;
+    const ownKeys =
+      coversHead && replaced ? getDocumentSliceNodeKeys(insert) : null;
     const props: RootChangeSection[] = [];
     let head = 0;
     if (replaced && ownKeys) {
@@ -436,7 +440,9 @@ export const applyPasteEdgePlan = (
       }
     }
     const split =
-      replaced && head > 0 ? splitAtKeptCloses(change, replaced, head) : [];
+      replaced && (head > 0 || closesHead)
+        ? splitAtKeptCloses(change, replaced, head)
+        : [];
     if (split.length === 0) {
       outChanges.push(change);
       outSections.push(change);

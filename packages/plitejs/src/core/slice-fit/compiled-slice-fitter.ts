@@ -388,50 +388,67 @@ const withoutUnchangedTail = (
   if (common === 0) return candidate;
   const replacedStart = replaced.length - common;
   const insertStart = insert.length - common;
-  // Close tokens carry no type, so the common suffix can pair the replaced
-  // block's close with the close of a block the insert adds after its first
-  // block. The trim keeps that close, or the edit would read as the replaced
-  // block becoming the added one.
-  const insertSplits: boolean[] = [];
+  // Close tokens carry no type, so the common suffix can pair a replaced or
+  // ancestor block's close with the close of a block the insert adds after its
+  // first close. Keep that close when the replaced range opened the block, or
+  // when a closes-only tail pairs closes of different element types.
+  const insertOpens: Array<Readonly<{ split: boolean; type: unknown }>> = [];
   let seenElementClose = false;
 
   for (const [index, token] of insert.tokens.entries()) {
     if (insert.offsets[index] >= insertStart) break;
     if (token.kind === 'open' && token.nodeKind === 'element') {
-      insertSplits.push(seenElementClose);
+      insertOpens.push({ split: seenElementClose, type: token.props.type });
     } else if (token.kind === 'close' && token.nodeKind === 'element') {
       seenElementClose = true;
-      insertSplits.pop();
+      insertOpens.pop();
     }
   }
 
   let cut = replacedStart;
-  let docOpen = 0;
+  const docOpens: Array<Readonly<{ inReplaced: boolean; type: unknown }>> =
+    document
+      .openContextAt(candidate.from)
+      .filter(
+        ({ from, kind, to }) =>
+          kind === 'element' && from < candidate.from && candidate.from < to
+      )
+      .map(({ path }) => ({
+        inReplaced: false,
+        type: document.node(path).type,
+      }));
   let tailDepth = 0;
+  let tailHasContent = false;
 
   for (const [index, token] of replaced.tokens.entries()) {
     const at = replaced.offsets[index];
 
     if (at < replacedStart) {
       if (token.kind === 'open' && token.nodeKind === 'element') {
-        docOpen += 1;
-      } else if (
-        token.kind === 'close' &&
-        token.nodeKind === 'element' &&
-        docOpen > 0
-      ) {
-        docOpen -= 1;
+        docOpens.push({ inReplaced: true, type: token.props.type });
+      } else if (token.kind === 'close' && token.nodeKind === 'element') {
+        docOpens.pop();
       }
-    } else if (token.kind === 'open' && token.nodeKind === 'element') {
-      tailDepth += 1;
-    } else if (token.kind === 'close' && token.nodeKind === 'element') {
+    } else if (token.kind !== 'close') {
+      tailHasContent = true;
+      if (token.kind === 'open' && token.nodeKind === 'element') {
+        tailDepth += 1;
+      }
+    } else if (token.nodeKind === 'element') {
       if (tailDepth > 0) {
         tailDepth -= 1;
       } else {
-        const inReplaced = docOpen > 0;
+        const docOpen = docOpens.pop();
+        const insertOpen = insertOpens.pop();
 
-        if (inReplaced) docOpen -= 1;
-        if (insertSplits.pop() && inReplaced) cut = at + 1;
+        if (
+          insertOpen?.split &&
+          docOpen &&
+          (docOpen.inReplaced ||
+            (!tailHasContent && insertOpen.type !== docOpen.type))
+        ) {
+          cut = at + 1;
+        }
       }
     }
   }
@@ -447,22 +464,25 @@ const withoutUnchangedTail = (
       });
 };
 
-const keptCloseOffsets = (
-  slice: PreparedTokenSlice,
-  kept: number
-): ReadonlyArray<number | undefined> => {
-  const closes = new Array<number | undefined>(kept);
+const unmatchedCloses = (slice: PreparedTokenSlice, start: number) => {
+  const closes: Array<
+    Readonly<{ nodeKind: 'element' | 'text'; offset: number }>
+  > = [];
   const { offsets, tokens } = slice;
-  let depth = kept;
+  let depth = 0;
+  let minDepth = 0;
 
-  for (let index = kept; index < tokens.length && depth > 0; index += 1) {
-    const { kind } = tokens[index];
+  for (let index = start; index < tokens.length; index += 1) {
+    const token = tokens[index];
 
-    if (kind === 'open') {
+    if (token.kind === 'open') {
       depth += 1;
-    } else if (kind === 'close') {
+    } else if (token.kind === 'close') {
       depth -= 1;
-      if (depth < kept) closes[depth] ??= offsets[index];
+      if (depth < minDepth) {
+        minDepth = depth;
+        closes.push({ nodeKind: token.nodeKind, offset: offsets[index] });
+      }
     }
   }
 
@@ -485,12 +505,20 @@ const closesWhatItOpens = ({ tokens }: PreparedTokenSlice) => {
 };
 
 const splitAtKeptCloses = (
-  { from, insert, to }: FitSection,
+  change: FitSection,
   replaced: PreparedTokenSlice,
   kept: number
 ) => {
-  const replacedCloses = keptCloseOffsets(replaced, kept);
-  const insertCloses = keptCloseOffsets(insert, kept);
+  const { from, insert, to } = change;
+  const replacedCloses = unmatchedCloses(replaced, kept);
+  const insertCloses = unmatchedCloses(insert, kept);
+
+  if (
+    kept === 0 &&
+    (replacedCloses.length === 0 || insertCloses.length === 0)
+  ) {
+    return [change];
+  }
   const changes: FitSection[] = [];
   let replacedFrom = kept;
   let insertFrom = kept;
@@ -505,14 +533,18 @@ const splitAtKeptCloses = (
     );
   };
 
-  for (let level = kept - 1; level >= 0; level -= 1) {
+  for (
+    let level = 0;
+    level < replacedCloses.length && level < insertCloses.length;
+    level += 1
+  ) {
     const replacedClose = replacedCloses[level];
     const insertClose = insertCloses[level];
 
-    if (replacedClose === undefined || insertClose === undefined) break;
-    replace(replacedClose, insertClose);
-    replacedFrom = replacedClose + 1;
-    insertFrom = insertClose + 1;
+    if (replacedClose.nodeKind !== insertClose.nodeKind) break;
+    replace(replacedClose.offset, insertClose.offset);
+    replacedFrom = replacedClose.offset + 1;
+    insertFrom = insertClose.offset + 1;
   }
 
   if (
@@ -520,7 +552,9 @@ const splitAtKeptCloses = (
     !closesWhatItOpens(insert.slice(insertFrom))
   ) {
     return [
-      Object.freeze({ from: from + kept, insert: insert.slice(kept), to }),
+      kept === 0
+        ? change
+        : Object.freeze({ from: from + kept, insert: insert.slice(kept), to }),
     ];
   }
   replace(to - from, insert.length);
@@ -3410,6 +3444,9 @@ export const compileSliceFitter = <V extends Value>(
 
         return true;
       };
+      const syncPosition = getLocalSyncPosition();
+      const tail = document.tokens.slice(exactTo, syncPosition).tokens;
+      const tailOnlyCloses = tail.every((token) => token.kind === 'close');
       const process = (
         token: FitToken,
         kind: 'document' | 'slice',
@@ -3441,9 +3478,6 @@ export const compileSliceFitter = <V extends Value>(
         ? encoded.length
         : getContentEndOffset(encoded);
       let insertedPosition = 0;
-      const syncPosition = getLocalSyncPosition();
-      const tail = document.tokens.slice(exactTo, syncPosition).tokens;
-      const tailContentAt = tail.findIndex((token) => token.kind !== 'close');
 
       for (const token of encoded.tokens) {
         const appended = output.length;
@@ -3465,7 +3499,6 @@ export const compileSliceFitter = <V extends Value>(
         to: outputPosition,
       };
 
-      const tailOnlyCloses = tailContentAt === -1;
       const expected =
         syncPosition === exactTo
           ? localEndContext
@@ -3478,8 +3511,11 @@ export const compileSliceFitter = <V extends Value>(
           openContextsMatch(token, expected[index])
         );
 
+      const closedEnd = inputSlice.openEnd === 0 && tailOnlyCloses;
+
       if (
         !sourceAlreadyAtSync &&
+        !closedEnd &&
         stack.length > 0 &&
         stack.length < localEndContext.length &&
         stack.every((token, index) =>
@@ -3498,7 +3534,7 @@ export const compileSliceFitter = <V extends Value>(
         }
       }
 
-      if (!sourceAlreadyAtSync) {
+      if (!sourceAlreadyAtSync && !closedEnd) {
         let tailPosition = exactTo;
 
         for (const token of tail) {
@@ -3515,7 +3551,29 @@ export const compileSliceFitter = <V extends Value>(
       }
 
       while (stack.length > shared) {
-        if (!closeTop()) return null;
+        const depth = stack.length - 1;
+        const top = stack[depth];
+        const endToken =
+          closedEnd &&
+          depth >= expected.length &&
+          depth < localEndContext.length
+            ? localEndContext[depth]
+            : undefined;
+        const docClose =
+          endToken !== undefined &&
+          openTokenAt.get(top) !== undefined &&
+          openTokenAt.get(top) === openTokenAt.get(endToken);
+
+        if (
+          !(docClose
+            ? closeTop(
+                'document',
+                exactTo + (localEndContext.length - 1 - depth)
+              )
+            : closeTop())
+        ) {
+          return null;
+        }
       }
       for (let index = shared; index < expected.length; index++) {
         append(expected[index]);
