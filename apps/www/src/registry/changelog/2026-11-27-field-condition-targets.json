@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-field-condition-targets",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-field-condition-targets.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Read Show when choices from FieldPlugin conditionTargets",
+  "targets": [
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-field-condition-targets",
+      "kind": "wiring",
+      "summary": "Read Show when target choices from `editor.plugin(FieldPlugin).read.conditionTargets(fieldId)`.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with the copied `field` component, because Show when calls `editor.plugin(FieldPlugin).read.conditionTargets(fieldId)`."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-condition-targets",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

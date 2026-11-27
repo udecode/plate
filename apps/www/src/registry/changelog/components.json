@@ -1,6 +1,16 @@
 {
   "schemaVersion": 1,
   "components": {
+    "field": [
+      "2026-11-27-field-condition-targets",
+      "2026-11-26-suggestion-colors",
+      "2026-11-25-field-name-conflicts",
+      "2026-11-25-field-name-input",
+      "2026-11-24-field-static-answers",
+      "2026-11-23-field-condition-loop",
+      "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
     "board": [
       "2026-11-26-board-arrow-components",
       "2026-11-26-suggestion-colors",
@@ -75,15 +85,6 @@
       "2026-11-26-suggestion-colors",
       "2026-09-14-suggestion-author-colors",
       "2026-08-25-base-first-registry"
-    ],
-    "field": [
-      "2026-11-26-suggestion-colors",
-      "2026-11-25-field-name-conflicts",
-      "2026-11-25-field-name-input",
-      "2026-11-24-field-static-answers",
-      "2026-11-23-field-condition-loop",
-      "2026-11-23-field-fill-view",
-      "2026-11-21-add-field"
     ],
     "draw-toolbar-button": ["2026-11-25-ink-tools"],
     "ink-switch-toolbar-button": ["2026-11-25-ink-tools"],

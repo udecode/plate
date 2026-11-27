@@ -334,8 +334,15 @@ function FieldSettingsForm({
   const { condition, fieldId, kind, options = [] } = element;
   const update = (patch: FieldPatch) =>
     editor.update((tx) => tx.plugin(FieldPlugin).update(fieldId, patch));
-  const fields = useEditorSelector(
-    (innerEditor) => innerEditor.plugin(FieldPlugin).read.fields(),
+  const { fields, targetIds } = useEditorSelector(
+    (innerEditor) => {
+      const { read } = innerEditor.plugin(FieldPlugin);
+
+      return {
+        fields: read.fields(),
+        targetIds: read.conditionTargets(fieldId),
+      };
+    },
     {
       shouldUpdate: (commit) =>
         !commit ||
@@ -343,28 +350,15 @@ function FieldSettingsForm({
         commit.changed.hasAny('structure'),
     }
   );
+  const byId = new Map<string, (typeof fields)[number]>();
+
+  for (const entry of fields) {
+    if (!byId.has(entry.fieldId)) byId.set(entry.fieldId, entry);
+  }
+
+  const choices = targetIds.flatMap((id) => byId.get(id) ?? []);
   const targets = fields.filter((entry) => entry.fieldId !== fieldId);
   const target = fields.find((entry) => entry.fieldId === condition?.ref)?.node;
-  const namers = new Map<string, string[]>();
-
-  for (const { fieldId: namer, node } of fields) {
-    if (!node.condition) continue;
-
-    const named = namers.get(node.condition.ref) ?? [];
-
-    named.push(namer);
-    namers.set(node.condition.ref, named);
-  }
-
-  const leadsHere = new Set([fieldId]);
-
-  for (const id of leadsHere) {
-    for (const namer of namers.get(id) ?? []) leadsHere.add(namer);
-  }
-
-  const choices = fields.filter(
-    (entry) => entry.fieldId === condition?.ref || !leadsHere.has(entry.fieldId)
-  );
   const tests = target ? fillableTests(target) : [];
 
   return (

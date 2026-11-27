@@ -34,6 +34,7 @@ import {
   carryFieldNames,
   conditionGraph,
   conditionProblem,
+  conditionTargets,
   dropFieldNames,
   FIELD_KINDS,
   fieldProblems,
@@ -396,9 +397,14 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
         : null;
     const fieldsIn = (nodes: readonly Descendant[]): FieldElement[] =>
       nodes.flatMap((node) => {
-        if (isField(node)) return [node];
+        if (!ElementApi.isElement(node)) return [];
 
-        return ElementApi.isElement(node) ? fieldsIn(node.children) : [];
+        const nested =
+          node.children.length === 1 && !ElementApi.isElement(node.children[0])
+            ? []
+            : fieldsIn(node.children);
+
+        return isField(node) ? [node, ...nested] : nested;
       });
     const documentOf = (
       reader: typeof editor,
@@ -627,6 +633,17 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           namesOfUntouchedDraft(reader, nodes) ?? indexFieldNames(nodes());
 
         return {
+          /**
+           * Every field id, in reading order, that a test in `fieldId`'s
+           * condition may name without closing a loop, plus any field its
+           * condition already names. Returns an empty list when no field holds
+           * `fieldId`.
+           */
+          conditionTargets: (fieldId: string): string[] => {
+            const { lookup, nodes } = listed();
+
+            return conditionTargets(fieldId, nodes, lookup);
+          },
           /**
            * The field whose `fieldId` is `fieldId`, in any root, or null when
            * no field holds it. Looks up the field, then one field for each

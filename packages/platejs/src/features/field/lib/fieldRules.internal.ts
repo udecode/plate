@@ -250,6 +250,46 @@ const judge = (
   );
 };
 
+const conditionRefs = (
+  condition: FieldCondition | undefined
+): readonly string[] => (condition ? [condition.ref] : []);
+
+export const conditionTargets = (
+  fieldId: string,
+  nodes: readonly FieldElement[],
+  held: Held
+): string[] => {
+  const self = held(fieldId);
+
+  if (!self) return [];
+
+  const canonical = nodes.filter((node) => held(node.fieldId) === node);
+  const namers = new Map<string, string[]>();
+
+  for (const node of canonical) {
+    for (const ref of conditionRefs(node.condition)) {
+      const named = namers.get(ref);
+
+      if (named) named.push(node.fieldId);
+      else namers.set(ref, [node.fieldId]);
+    }
+  }
+
+  const leadsHere = new Set([fieldId]);
+
+  for (const id of leadsHere) {
+    for (const namer of namers.get(id) ?? []) leadsHere.add(namer);
+  }
+
+  const alreadyNamed = new Set(conditionRefs(self.condition));
+
+  return canonical
+    .filter(
+      (node) => alreadyNamed.has(node.fieldId) || !leadsHere.has(node.fieldId)
+    )
+    .map((node) => node.fieldId);
+};
+
 export const fieldLinkWork = { judgments: 0, lookups: 0, loopVisits: 0 };
 
 const conditionEdges = (condition: FieldCondition | undefined, held: Held) => {
@@ -642,6 +682,8 @@ export const dropFieldNames = (editor: RuntimeAnyEditor, from: number) => {
 const optionValues = ({ options = [] }: FieldElement) =>
   new Set(options.map((option) => option.value));
 
+type NameGroup = Readonly<{ key: string; name: string; role: string }>;
+
 export const nameProblems = (
   field: FieldElement,
   index: NameIndex,
@@ -651,51 +693,162 @@ export const nameProblems = (
 
   const members = (role: string, name: string) =>
     (index.byRole.get(role)?.get(name) ?? []).flatMap((id) => held(id) ?? []);
-  const onConditionPath = new Set<string>();
-  const conflicts = (role: string, name: string): boolean => {
-    const key = JSON.stringify([role, name]);
-    const known = index.settingConflicts.get(key);
-
-    if (known !== undefined) return known;
-    if (onConditionPath.has(key)) return true;
-
-    onConditionPath.add(key);
-
-    const [first, ...rest] = members(role, name);
-    const conflict = rest.some((other) => !sameQuestion(first, other));
-
-    onConditionPath.delete(key);
-    index.settingConflicts.set(key, conflict);
-
-    return conflict;
-  };
-  const sameCondition = (
+  const sameConditionDeps = (
     left: FieldCondition | undefined,
     right: FieldCondition | undefined
-  ) => {
-    if (!left || !right) return left === right;
+  ): readonly NameGroup[] | null => {
+    if (!left || !right) return left === right ? [] : null;
     if (left.test !== right.test || !Object.is(left.value, right.value)) {
-      return false;
+      return null;
     }
-    if (left.ref === right.ref) return true;
+    if (left.ref === right.ref) return [];
 
     const [a, b] = [held(left.ref), held(right.ref)];
 
-    return (
-      a?.name !== undefined &&
-      a.name === b?.name &&
-      a.role === b.role &&
-      !conflicts(a.role, a.name)
-    );
+    if (a?.name === undefined || a.name !== b?.name || a.role !== b.role) {
+      return null;
+    }
+
+    return [
+      { key: JSON.stringify([a.role, a.name]), name: a.name, role: a.role },
+    ];
   };
-  const sameQuestion = (left: FieldElement, right: FieldElement) => {
-    const [a, b] = [optionValues(left), optionValues(right)];
+  const inspect = (
+    role: string,
+    name: string
+  ): { deps: readonly NameGroup[]; intrinsic: boolean } => {
+    const [first, ...rest] = members(role, name);
+
+    if (!first || rest.length === 0) {
+      return { deps: [], intrinsic: false };
+    }
+
+    const firstOptions = optionValues(first);
+    const deps = new Map<string, NameGroup>();
+
+    for (const other of rest) {
+      if (first.kind !== other.kind) {
+        return { deps: [], intrinsic: true };
+      }
+
+      const otherOptions = optionValues(other);
+
+      if (
+        firstOptions.size !== otherOptions.size ||
+        [...firstOptions].some((value) => !otherOptions.has(value))
+      ) {
+        return { deps: [], intrinsic: true };
+      }
+
+      const needed = sameConditionDeps(first.condition, other.condition);
+
+      if (needed === null) {
+        return { deps: [], intrinsic: true };
+      }
+      for (const dep of needed) deps.set(dep.key, dep);
+    }
+
+    return { deps: [...deps.values()], intrinsic: false };
+  };
+  const conflicts = (startRole: string, startName: string): boolean => {
+    const startKey = JSON.stringify([startRole, startName]);
+    const knownStart = index.settingConflicts.get(startKey);
+
+    if (knownStart !== undefined) return knownStart;
+
+    const orders = new Map<string, { index: number; low: number }>();
+    const sccStack: string[] = [];
+    const selfLoop = new Set<string>();
+    const frames: Array<{
+      conflict: boolean;
+      deps: readonly NameGroup[];
+      key: string;
+      nextDep: number;
+      order: { index: number; low: number };
+    }> = [];
+    const visit = (group: NameGroup) => {
+      const { deps, intrinsic } = inspect(group.role, group.name);
+
+      if (intrinsic) {
+        index.settingConflicts.set(group.key, true);
+
+        return true;
+      }
+
+      const order = { index: orders.size, low: orders.size };
+
+      orders.set(group.key, order);
+      sccStack.push(group.key);
+      frames.push({
+        conflict: false,
+        deps,
+        key: group.key,
+        nextDep: 0,
+        order,
+      });
+
+      return false;
+    };
+
+    if (visit({ key: startKey, name: startName, role: startRole })) return true;
+
+    for (let frame = frames.at(-1); frame; frame = frames.at(-1)) {
+      if (frame.nextDep < frame.deps.length) {
+        const dep = frame.deps[frame.nextDep];
+
+        frame.nextDep += 1;
+
+        const known = index.settingConflicts.get(dep.key);
+
+        if (known !== undefined) {
+          if (known) frame.conflict = true;
+          continue;
+        }
+        if (dep.key === frame.key) {
+          selfLoop.add(frame.key);
+          continue;
+        }
+
+        const reached = orders.get(dep.key);
+
+        if (!reached) {
+          if (visit(dep)) frame.conflict = true;
+        } else {
+          frame.order.low = Math.min(frame.order.low, reached.index);
+        }
+        continue;
+      }
+
+      frames.pop();
+
+      if (frame.order.low === frame.order.index) {
+        const single = sccStack.at(-1) === frame.key;
+        const sccConflict =
+          !single || selfLoop.has(frame.key) || frame.conflict;
+
+        frame.conflict = sccConflict;
+
+        for (
+          let member = sccStack.pop();
+          member !== undefined;
+          member = sccStack.pop()
+        ) {
+          index.settingConflicts.set(member, sccConflict);
+          if (member === frame.key) break;
+        }
+      }
+
+      const parent = frames.at(-1);
+
+      if (parent) {
+        parent.order.low = Math.min(parent.order.low, frame.order.low);
+        parent.conflict ||= frame.conflict;
+      }
+    }
 
     return (
-      left.kind === right.kind &&
-      a.size === b.size &&
-      [...a].every((value) => b.has(value)) &&
-      sameCondition(left.condition, right.condition)
+      index.settingConflicts.get(startKey) ??
+      failInvariant('A field name group was read before its check.')
     );
   };
   const own = members(field.role, field.name);

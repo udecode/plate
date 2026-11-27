@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-27-field-condition-targets",
+      "href": "/registry/changelog/2026-11-27-field-condition-targets.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Read Show when choices from FieldPlugin conditionTargets",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-26-board-arrow-components",
       "href": "/registry/changelog/2026-11-26-board-arrow-components.json",
       "status": "draft",
