@@ -415,16 +415,17 @@ export const COLUMN_TOC_VALUE: Value = [
 
 export const MEDIA_VALUE: Value = [
   {
+    alt: 'Plate rich-text editor preview',
+    children: [{ text: 'Resizable image block with editable caption.' }],
+    type: 'image',
+    url: '/_og.png',
+    width: '100%',
+  },
+  {
     children: [{ text: 'Q4 architecture brief and component audit.' }],
     name: 'plate-v2-architecture.pdf',
     type: 'file',
     url: '#plate-v2-architecture.pdf',
-  },
-  {
-    children: [{ text: 'Release checklist and token spec.' }],
-    name: 'shadcn-preset-tokens.json',
-    type: 'file',
-    url: '#shadcn-preset-tokens.json',
   },
 ];
 

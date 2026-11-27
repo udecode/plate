@@ -45,22 +45,11 @@ import {
 } from '@/__registry__/create-preview/base/editor-ai/components/editor/toolbar';
 import { TurnIntoToolbarButton } from '@/__registry__/create-preview/base/editor-ai/components/editor/turn-into-toolbar-button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/__registry__/create-preview/base/editor-ai/components/ui/alert-dialog';
-import {
   Avatar,
   AvatarFallback,
   AvatarGroup,
 } from '@/__registry__/create-preview/base/editor-ai/components/ui/avatar';
 import { Button } from '@/__registry__/create-preview/base/editor-ai/components/ui/button';
-import { Checkbox } from '@/__registry__/create-preview/base/editor-ai/components/ui/checkbox';
 import {
   Command,
   CommandEmpty,
@@ -70,39 +59,20 @@ import {
   CommandList,
   CommandShortcut,
 } from '@/__registry__/create-preview/base/editor-ai/components/ui/command';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/__registry__/create-preview/base/editor-ai/components/ui/dialog';
 import { Input } from '@/__registry__/create-preview/base/editor-ai/components/ui/input';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
-} from '@/__registry__/create-preview/base/editor-ai/components/ui/input-group';
 import { Separator } from '@/__registry__/create-preview/base/editor-ai/components/ui/separator';
-import { Textarea } from '@/__registry__/create-preview/base/editor-ai/components/ui/textarea';
 import { Toggle } from '@/__registry__/create-preview/base/editor-ai/components/ui/toggle';
 import { TooltipProvider } from '@/__registry__/create-preview/base/editor-ai/components/ui/tooltip';
+import {
+  resolveEmojiData,
+  useEmojiSearch,
+} from '@/__registry__/create-preview/base/editor-ai/lib/emoji-data';
 import { SelectEditor } from '@/__registry__/create-preview/base/editor-select/components/editor/select-editor';
 
 import { CreateSink, type CreateSinkKit } from './create-sink';
 
 const BASE_SINK_KIT: CreateSinkKit = {
   AIToolbarButton,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlignToolbarButton,
   Avatar,
   AvatarFallback,
@@ -110,7 +80,6 @@ const BASE_SINK_KIT: CreateSinkKit = {
   BulletedListToolbarButton,
   Button,
   calloutDetailsPlugins: [...BasicMarksKit, ...CalloutKit, ...DetailsKit],
-  Checkbox,
   codePlugins: [...CodeBlockKit],
   columnTocPlugins: [
     ...BasicBlocksKit,
@@ -127,12 +96,6 @@ const BASE_SINK_KIT: CreateSinkKit = {
   CommandShortcut,
   CommentToolbarButton,
   defaultColors: DEFAULT_COLORS,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   docPlugins: [
     ...EditorKit.filter(
       (plugin) =>
@@ -147,10 +110,6 @@ const BASE_SINK_KIT: CreateSinkKit = {
   FontSizeToolbarButton,
   footnotePlugins: [...BasicMarksKit, ...FootnoteKit],
   Input,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
   InsertToolbarButton,
   LinkToolbarButton,
   MarkToolbarButton,
@@ -158,12 +117,12 @@ const BASE_SINK_KIT: CreateSinkKit = {
   mediaPlugins: [...BasicMarksKit, ...MediaKit],
   ModeToolbarButton,
   RedoToolbarButton,
+  resolveEmojiData,
   SelectEditor,
   Separator,
   suggestionPlugins: [...SuggestionKit],
   tablePlugins: [...BasicMarksKit, ...TableKit],
   TableToolbarButton,
-  Textarea,
   TodoListToolbarButton,
   Toggle,
   Toolbar,
@@ -171,6 +130,7 @@ const BASE_SINK_KIT: CreateSinkKit = {
   TooltipProvider,
   TurnIntoToolbarButton,
   UndoToolbarButton,
+  useEmojiSearch,
 };
 
 export default function CreateSinkBase() {

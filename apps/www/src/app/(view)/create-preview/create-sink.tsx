@@ -14,23 +14,24 @@ import {
   useCreateEditor,
   useEditor,
 } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
 import * as React from 'react';
 
 import {
   AIAssistantCard,
   BlockMenuCard,
-  CollaboratorsCard,
-  ColorPaletteCard,
+  EmojiPickerCard,
+  FindReplaceCard,
   IconPreviewGridCard,
+  LinkFloatingCard,
   MarkdownOutputCard,
   ReviewCard,
   SelectEditorCard,
   ShortcutsCard,
   SlashCommandCard,
-  TypographySpecimenCard,
-  UIElementsCard,
+  TablePickerCard,
 } from './create-sink-cards';
-import type { CreateSinkKit } from './create-sink-types';
+import type { CreateSinkKit, SinkEmojiPick } from './create-sink-types';
 import {
   CALLOUT_DETAILS_VALUE,
   CODE_VALUE,
@@ -371,6 +372,41 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
     [docEditor]
   );
 
+  const handlePickEmoji = React.useCallback(
+    (pick: SinkEmojiPick) => {
+      appendParagraph(`${pick.emoji} ${pick.label}`);
+    },
+    [appendParagraph]
+  );
+
+  const handleInsertLink = React.useCallback(
+    (url: string, text: string) => {
+      docEditor.update.nodes.insert(
+        {
+          children: [
+            { text: 'Reference: ' },
+            { children: [{ text }], type: 'link', url },
+          ],
+          type: 'paragraph',
+        },
+        { at: [docEditor.read.children().length] }
+      );
+    },
+    [docEditor]
+  );
+
+  const handleInsertTable = React.useCallback(
+    (rowCount: number, colCount: number) => {
+      docEditor
+        .plugin(TablePlugin)
+        .update.insert(
+          { colCount, header: true, rowCount },
+          { at: [docEditor.read.children().length] }
+        );
+    },
+    [docEditor]
+  );
+
   const handlePickCommand = React.useCallback(
     (label: string) => {
       if (label === 'Heading 1') {
@@ -513,16 +549,17 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                   </EditorRoot>
                 </section>
 
-                <TypographySpecimenCard kit={kit} />
-
                 <section
-                  className="cn-card flex flex-col gap-2 bg-card p-4 text-card-foreground"
+                  className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-4 text-card-foreground"
                   data-slot="card"
                 >
-                  <div className="text-xs font-medium">Footnotes</div>
-                  <EditorRoot editor={footnoteEditor} readOnly>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium">Media &amp; caption</span>
+                    <span className="text-muted-foreground">MediaKit</span>
+                  </div>
+                  <EditorRoot editor={mediaEditor}>
                     <Editor
-                      className="min-h-0 px-0 py-1 text-sm"
+                      className="min-h-0 px-0 py-0 text-sm"
                       variant="none"
                     />
                   </EditorRoot>
@@ -542,23 +579,20 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
 
                 <SlashCommandCard kit={kit} onPickCommand={handlePickCommand} />
 
-                <UIElementsCard kit={kit} />
+                <EmojiPickerCard kit={kit} onPickEmoji={handlePickEmoji} />
 
-                <ColorPaletteCard kit={kit} />
+                <FindReplaceCard kit={kit} />
 
                 <ShortcutsCard />
 
                 <section
-                  className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-4 text-card-foreground"
+                  className="cn-card flex flex-col gap-2 bg-card p-4 text-card-foreground"
                   data-slot="card"
                 >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium">Attachments</span>
-                    <span className="text-muted-foreground">MediaKit</span>
-                  </div>
-                  <EditorRoot editor={mediaEditor} readOnly>
+                  <div className="text-xs font-medium">Footnotes</div>
+                  <EditorRoot editor={footnoteEditor} readOnly>
                     <Editor
-                      className="min-h-0 px-0 py-0 text-sm"
+                      className="min-h-0 px-0 py-1 text-sm"
                       variant="none"
                     />
                   </EditorRoot>
@@ -569,6 +603,8 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                 <ReviewCard kit={kit} suggestionEditor={suggestionEditor} />
 
                 <BlockMenuCard />
+
+                <LinkFloatingCard kit={kit} onInsertLink={handleInsertLink} />
 
                 <section
                   className="cn-card gap-0 overflow-hidden bg-card px-3 py-2 text-card-foreground"
@@ -581,6 +617,8 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                     />
                   </EditorRoot>
                 </section>
+
+                <TablePickerCard onInsertTable={handleInsertTable} />
 
                 <section
                   className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-4 text-card-foreground"
@@ -600,8 +638,6 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                 <MarkdownOutputCard kit={kit} />
 
                 <SelectEditorCard kit={kit} />
-
-                <CollaboratorsCard kit={kit} />
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import type { EmojiDataResolver } from 'frimousse';
 import type { PluginReference } from 'platejs';
 import type {
   BoldPlugin,
@@ -30,46 +31,15 @@ export type SinkSelectItem = {
   value: string;
 };
 
+export type SinkEmojiPick = {
+  emoji: string;
+  label: string;
+};
+
 export type CreateSinkKit = {
   AIToolbarButton: React.ComponentType<{
     children?: React.ReactNode;
     tooltip?: React.ReactNode;
-  }>;
-  AlertDialog: React.ComponentType<{
-    children?: React.ReactNode;
-    onOpenChange?: (open: boolean) => void;
-    open?: boolean;
-  }>;
-  AlertDialogAction: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-    onClick?: () => void;
-  }>;
-  AlertDialogCancel: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-    onClick?: () => void;
-  }>;
-  AlertDialogContent: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-    size?: 'default' | 'sm';
-  }>;
-  AlertDialogDescription: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  AlertDialogFooter: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  AlertDialogHeader: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  AlertDialogTitle: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
   }>;
   AlignToolbarButton: React.ComponentType;
   Avatar: React.ComponentType<{
@@ -111,11 +81,6 @@ export type CreateSinkKit = {
       | 'secondary';
   }>;
   calloutDetailsPlugins: readonly PluginReference[];
-  Checkbox: React.ComponentType<{
-    className?: string;
-    defaultChecked?: boolean;
-    id?: string;
-  }>;
   codePlugins: readonly PluginReference[];
   columnTocPlugins: readonly PluginReference[];
   Command: React.ComponentType<{
@@ -151,31 +116,6 @@ export type CreateSinkKit = {
   }>;
   CommentToolbarButton: React.ComponentType;
   defaultColors: readonly SinkColorOption[];
-  Dialog: React.ComponentType<{
-    children?: React.ReactNode;
-    onOpenChange?: (open: boolean) => void;
-    open?: boolean;
-  }>;
-  DialogContent: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  DialogDescription: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  DialogFooter: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  DialogHeader: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  DialogTitle: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
   docPlugins: readonly PluginReference[];
   Editor: React.ComponentType<{
     className?: string;
@@ -202,26 +142,6 @@ export type CreateSinkKit = {
     type?: string;
     value?: string;
   }>;
-  InputGroup: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  InputGroupAddon: React.ComponentType<{
-    align?: 'block-end' | 'block-start' | 'inline-end' | 'inline-start';
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  InputGroupInput: React.ComponentType<{
-    'aria-label'?: string;
-    className?: string;
-    onChange?: React.ChangeEventHandler<HTMLInputElement>;
-    placeholder?: string;
-    value?: string;
-  }>;
-  InputGroupText: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
   InsertToolbarButton: React.ComponentType;
   LinkToolbarButton: React.ComponentType;
   MarkToolbarButton: React.ComponentType<{
@@ -233,6 +153,7 @@ export type CreateSinkKit = {
   mediaPlugins: readonly PluginReference[];
   ModeToolbarButton: React.ComponentType;
   RedoToolbarButton: React.ComponentType;
+  resolveEmojiData: EmojiDataResolver;
   SelectEditor: React.ComponentType<{
     className?: string;
     defaultValue?: readonly SinkSelectItem[];
@@ -246,20 +167,14 @@ export type CreateSinkKit = {
   suggestionPlugins: readonly PluginReference[];
   tablePlugins: readonly PluginReference[];
   TableToolbarButton: React.ComponentType;
-  Textarea: React.ComponentType<{
-    'aria-label'?: string;
-    className?: string;
-    id?: string;
-    onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;
-    placeholder?: string;
-    value?: string;
-  }>;
   TodoListToolbarButton: React.ComponentType;
   Toggle: React.ComponentType<{
     'aria-label'?: string;
     children?: React.ReactNode;
     className?: string;
     defaultPressed?: boolean;
+    onPressedChange?: (pressed: boolean) => void;
+    pressed?: boolean;
     size?: 'default' | 'lg' | 'sm';
     variant?: 'default' | 'outline';
   }>;
@@ -270,4 +185,8 @@ export type CreateSinkKit = {
   TooltipProvider: React.ComponentType<{ children: React.ReactNode }>;
   TurnIntoToolbarButton: React.ComponentType;
   UndoToolbarButton: React.ComponentType;
+  useEmojiSearch: (query: string) => {
+    results: readonly SinkEmojiPick[];
+    status: 'failed' | 'loading' | 'ready';
+  };
 };

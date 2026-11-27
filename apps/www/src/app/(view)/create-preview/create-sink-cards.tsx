@@ -1,6 +1,12 @@
 'use client';
 
-import type { EditorReference } from 'platejs';
+import {
+  type EmojiPickerListCategoryHeaderProps,
+  type EmojiPickerListEmojiProps,
+  type EmojiPickerListRowProps,
+  EmojiPicker as EmojiPickerPrimitive,
+} from 'frimousse';
+import { type EditorReference, NodeApi } from 'platejs';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { EditorRoot, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
@@ -8,7 +14,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 import { useCreatePreviewConfig } from './create-preview-context';
-import type { CreateSinkKit } from './create-sink-types';
+import type { CreateSinkKit, SinkEmojiPick } from './create-sink-types';
 import {
   AI_QUICK_PROMPTS,
   EDITOR_SHORTCUTS,
@@ -21,127 +27,205 @@ import {
 } from './create-sink-values';
 import { IconPlaceholder } from './icon-placeholder';
 
-function formatTokenName(value: string) {
-  return value
-    .split('-')
-    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
-    .join(' ');
+const EMOJI_COLUMNS = 10;
+const TABLE_PICKER_DIMENSION = 8;
+
+function EmojiPickerRow({ children, ...props }: EmojiPickerListRowProps) {
+  return (
+    <div
+      {...props}
+      className="flex w-full scroll-my-1 justify-between px-2"
+      data-slot="emoji-picker-row"
+    >
+      {children}
+    </div>
+  );
 }
 
-export function TypographySpecimenCard({ kit }: { kit: CreateSinkKit }) {
-  const {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    Input,
-    Textarea,
-  } = kit;
-  const config = useCreatePreviewConfig();
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [title, setTitle] = React.useState('Q4 Release Spec');
-  const [summary, setSummary] = React.useState(
-    'Shared document conventions and preset tokens for Plate v2.'
+function EmojiPickerEmoji({
+  className,
+  emoji,
+  ...props
+}: EmojiPickerListEmojiProps) {
+  return (
+    <button
+      type="button"
+      {...props}
+      className={cn(
+        'flex size-8 items-center justify-center rounded-sm text-lg data-active:bg-accent',
+        className
+      )}
+      data-slot="emoji-picker-emoji"
+    >
+      {emoji.emoji}
+    </button>
   );
+}
 
-  const headingLabel =
-    config.fontHeading && config.fontHeading !== 'inherit'
-      ? formatTokenName(config.fontHeading)
-      : 'Inherit';
-  const bodyLabel = formatTokenName(config.font);
+function EmojiPickerCategoryHeader({
+  category,
+  ...props
+}: EmojiPickerListCategoryHeaderProps) {
+  return (
+    <div
+      {...props}
+      className="bg-popover px-3 pt-3 pb-1.5 text-xs leading-none text-muted-foreground"
+      data-slot="emoji-picker-category-header"
+    >
+      {category.label}
+    </div>
+  );
+}
+
+export function EmojiPickerCard({
+  kit,
+  onPickEmoji,
+}: {
+  kit: CreateSinkKit;
+  onPickEmoji: (pick: SinkEmojiPick) => void;
+}) {
+  const { resolveEmojiData, useEmojiSearch } = kit;
+  const [search, setSearch] = React.useState('');
+  const [active, setActive] = React.useState(0);
+  const [lastPicked, setLastPicked] = React.useState<SinkEmojiPick | null>(
+    null
+  );
+  const { results, status } = useEmojiSearch(search);
+
+  const select = (pick: SinkEmojiPick) => {
+    setLastPicked(pick);
+    onPickEmoji(pick);
+  };
 
   return (
-    <section
-      className="cn-card flex flex-col gap-3 bg-card p-4 text-card-foreground"
-      data-slot="card"
+    <div
+      className="cn-popover-content cn-menu-target flex h-80 w-full flex-col overflow-hidden rounded-xl border bg-popover p-0 text-popover-foreground shadow-sm"
+      data-menu-translucent=""
+      data-slot="sink-emoji-picker"
     >
-      <div className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-        {headingLabel} &middot; {bodyLabel}
-      </div>
-      <p className="cn-font-heading style-sera:text-lg style-sera:font-semibold style-sera:tracking-wider style-sera:uppercase text-xl font-medium tracking-tight">
-        Designing editors with rhythm and hierarchy.
-      </p>
-      <p className="text-sm leading-relaxed text-muted-foreground">
-        Readable body copy balances heading weight, inline{' '}
-        <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground">
-          code
-        </code>
-        , and keyboard hints like{' '}
-        <kbd className="rounded border bg-muted px-1 py-0.5 font-mono text-xs text-foreground">
-          ⌘K
-        </kbd>
-        .
-      </p>
-
-      <Button
-        className="mt-1 w-full"
-        onClick={() => setDialogOpen(true)}
-        size="sm"
-        type="button"
-        variant="outline"
-      >
+      <div className="flex h-9 shrink-0 items-center gap-2 border-b px-3">
         <IconPlaceholder
-          className="size-3.5"
-          hugeicons="SettingsIcon"
-          lucide="Settings"
-          phosphor="GearIcon"
-          remixicon="RiSettingsLine"
-          tabler="IconSettings"
+          className="size-4 shrink-0 opacity-50"
+          hugeicons="SearchIcon"
+          lucide="SearchIcon"
+          phosphor="MagnifyingGlassIcon"
+          remixicon="RiSearchLine"
+          tabler="IconSearch"
         />
-        Document properties
-      </Button>
+        <input
+          aria-label="Search emoji"
+          className="flex h-9 w-full bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setActive(0);
+          }}
+          placeholder="Search emoji..."
+          value={search}
+        />
+        {lastPicked && (
+          <span className="cn-badge cn-badge-variant-secondary shrink-0">
+            {lastPicked.emoji}
+          </span>
+        )}
+      </div>
 
-      <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Document properties</DialogTitle>
-            <DialogDescription>
-              Update metadata for this Plate document.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 py-1">
-            <div className="flex flex-col gap-1.5 text-xs font-medium">
-              <label htmlFor="sink-doc-title">Title</label>
-              <Input
-                id="sink-doc-title"
-                onChange={(event) => setTitle(event.target.value)}
-                value={title}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5 text-xs font-medium">
-              <label htmlFor="sink-doc-summary">Summary</label>
-              <Textarea
-                className="min-h-20 resize-none text-sm"
-                id="sink-doc-summary"
-                onChange={(event) => setSummary(event.target.value)}
-                value={summary}
-              />
-            </div>
+      {status === 'failed' ? (
+        <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
+          Emoji catalog unavailable
+        </div>
+      ) : search ? (
+        results.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
+            No emoji found.
           </div>
-          <DialogFooter>
-            <Button
-              onClick={() => setDialogOpen(false)}
-              size="sm"
-              type="button"
-              variant="outline"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => setDialogOpen(false)}
-              size="sm"
-              type="button"
-              variant="default"
-            >
-              Save changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </section>
+        ) : (
+          <div
+            aria-label="Emoji results"
+            className="grid min-h-0 flex-1 auto-rows-min overflow-y-auto p-1"
+            role="listbox"
+            style={{
+              gridTemplateColumns: `repeat(${EMOJI_COLUMNS}, minmax(0, 1fr))`,
+            }}
+          >
+            {results.slice(0, 54).map((result, index) => (
+              <button
+                key={result.emoji}
+                aria-label={result.label}
+                aria-selected={index === active}
+                className="flex size-8 items-center justify-center rounded-sm text-lg data-active:bg-accent"
+                data-active={index === active ? '' : undefined}
+                onClick={() => select(result)}
+                onMouseEnter={() => setActive(index)}
+                role="option"
+                type="button"
+              >
+                {result.emoji}
+              </button>
+            ))}
+          </div>
+        )
+      ) : status === 'ready' ? (
+        <EmojiPickerPrimitive.Root
+          className="isolate flex min-h-0 flex-1 flex-col"
+          columns={EMOJI_COLUMNS}
+          onEmojiSelect={select}
+          resolveEmojiData={resolveEmojiData}
+        >
+          <EmojiPickerPrimitive.Viewport
+            className="relative flex-1 outline-hidden"
+            data-slot="emoji-picker-viewport"
+          >
+            <EmojiPickerPrimitive.Loading className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+              <IconPlaceholder
+                className="size-4 animate-spin"
+                hugeicons="Loading03Icon"
+                lucide="LoaderIcon"
+                phosphor="SpinnerIcon"
+                remixicon="RiLoader4Line"
+                tabler="IconLoader"
+              />
+            </EmojiPickerPrimitive.Loading>
+            <EmojiPickerPrimitive.List
+              className="pb-1 select-none"
+              components={{
+                CategoryHeader: EmojiPickerCategoryHeader,
+                Emoji: EmojiPickerEmoji,
+                Row: EmojiPickerRow,
+              }}
+            />
+          </EmojiPickerPrimitive.Viewport>
+          <EmojiPickerPrimitive.ActiveEmoji>
+            {({ emoji }) => (
+              <div className="flex h-10 w-full shrink-0 items-center gap-1.5 border-t px-2.5 text-xs">
+                {emoji ? (
+                  <>
+                    <span className="text-base">{emoji.emoji}</span>
+                    <span className="truncate text-secondary-foreground">
+                      {emoji.label}
+                    </span>
+                  </>
+                ) : (
+                  <span className="truncate text-muted-foreground">
+                    Click an emoji to insert into document...
+                  </span>
+                )}
+              </div>
+            )}
+          </EmojiPickerPrimitive.ActiveEmoji>
+        </EmojiPickerPrimitive.Root>
+      ) : (
+        <div className="flex flex-1 items-center justify-center text-muted-foreground">
+          <IconPlaceholder
+            className="size-4 animate-spin"
+            hugeicons="Loading03Icon"
+            lucide="LoaderIcon"
+            phosphor="SpinnerIcon"
+            remixicon="RiLoader4Line"
+            tabler="IconLoader"
+          />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -372,233 +456,285 @@ export function AIAssistantCard({
   );
 }
 
-export function UIElementsCard({ kit }: { kit: CreateSinkKit }) {
-  const {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    Button,
-    Checkbox,
-    InputGroup,
-    InputGroupAddon,
-    InputGroupInput,
-    InputGroupText,
-    Separator,
-    Toggle,
-  } = kit;
-  const [alertOpen, setAlertOpen] = React.useState(false);
-  const [findQuery, setFindQuery] = React.useState('');
+export function FindReplaceCard({ kit }: { kit: CreateSinkKit }) {
+  const { Button, Input, Toggle } = kit;
+  const [query, setQuery] = React.useState('Plate');
+  const [replaceText, setReplaceText] = React.useState('Plate v2');
+  const [matchCase, setMatchCase] = React.useState(false);
+
+  const documentText = useEditorSelector(
+    (editor) =>
+      editor.read
+        .children()
+        .map((node) => NodeApi.string(node))
+        .join('\n'),
+    { dependsOn: 'document' }
+  );
+  const matchCount = React.useMemo(() => {
+    if (!query.trim()) return 0;
+
+    const haystack = matchCase ? documentText : documentText.toLowerCase();
+    const needle = matchCase ? query : query.toLowerCase();
+
+    return haystack.split(needle).length - 1;
+  }, [documentText, matchCase, query]);
 
   return (
-    <section
-      className="cn-card flex flex-col gap-3.5 bg-card p-4 text-card-foreground"
-      data-slot="card"
+    <div
+      className="cn-popover-content cn-menu-target flex flex-col gap-2 rounded-xl border bg-popover p-3 text-popover-foreground shadow-sm"
+      data-menu-translucent=""
+      data-slot="sink-find-replace"
     >
-      <div className="flex flex-wrap gap-1.5">
-        <Button size="sm" type="button" variant="default">
-          Publish
-        </Button>
-        <Button size="sm" type="button" variant="secondary">
-          Share
-        </Button>
-        <Button size="sm" type="button" variant="outline">
-          Export
-        </Button>
-        <Button size="sm" type="button" variant="ghost">
-          History
-        </Button>
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-medium">Find &amp; replace</span>
+        <span className="font-mono text-xs text-muted-foreground">
+          {matchCount} {matchCount === 1 ? 'match' : 'matches'}
+        </span>
       </div>
 
-      <InputGroup>
-        <InputGroupInput
-          aria-label="Find in document"
-          onChange={(event) => setFindQuery(event.target.value)}
-          placeholder="Find in document..."
-          value={findQuery}
+      <div className="flex items-center gap-1.5">
+        <Input
+          aria-label="Find in editor"
+          className="h-8 text-xs"
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Find..."
+          value={query}
         />
-        <InputGroupAddon align="inline-end">
-          <InputGroupText>
-            <IconPlaceholder
-              className="size-3.5"
-              hugeicons="SearchIcon"
-              lucide="SearchIcon"
-              phosphor="MagnifyingGlassIcon"
-              remixicon="RiSearchLine"
-              tabler="IconSearch"
-            />
-          </InputGroupText>
-        </InputGroupAddon>
-      </InputGroup>
-
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <Toggle
-            aria-label="Toggle bold"
-            defaultPressed
-            size="sm"
-            variant="outline"
-          >
-            <IconPlaceholder
-              className="size-3.5"
-              hugeicons="TextBoldIcon"
-              lucide="BoldIcon"
-              phosphor="TextBIcon"
-              remixicon="RiBold"
-              tabler="IconBold"
-            />
-          </Toggle>
-          <Toggle aria-label="Toggle italic" size="sm" variant="outline">
-            <IconPlaceholder
-              className="size-3.5"
-              hugeicons="TextItalicIcon"
-              lucide="ItalicIcon"
-              phosphor="TextItalicIcon"
-              remixicon="RiItalic"
-              tabler="IconItalic"
-            />
-          </Toggle>
-          <Toggle aria-label="Toggle underline" size="sm" variant="outline">
-            <IconPlaceholder
-              className="size-3.5"
-              hugeicons="TextUnderlineIcon"
-              lucide="UnderlineIcon"
-              phosphor="TextUnderlineIcon"
-              remixicon="RiUnderline"
-              tabler="IconUnderline"
-            />
-          </Toggle>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <span className="cn-badge cn-badge-variant-default">Beta</span>
-          <span className="cn-badge cn-badge-variant-secondary">MIT</span>
-          <span className="cn-badge cn-badge-variant-outline">v54</span>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="flex flex-col gap-2 text-xs">
-        <div className="flex items-center gap-2">
-          <Checkbox defaultChecked id="sink-check-md" />
-          <label className="cursor-pointer" htmlFor="sink-check-md">
-            Markdown autoformat shortcuts
-          </label>
-        </div>
-        <div className="flex items-center gap-2">
-          <Checkbox defaultChecked id="sink-check-suggest" />
-          <label className="cursor-pointer" htmlFor="sink-check-suggest">
-            Track suggestions per author
-          </label>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between gap-2 pt-0.5">
-        <Button
-          onClick={() => setAlertOpen(true)}
-          size="xs"
-          type="button"
+        <Toggle
+          aria-label="Match case"
+          onPressedChange={setMatchCase}
+          pressed={matchCase}
+          size="sm"
           variant="outline"
         >
-          Reset draft...
-        </Button>
-        <Button size="xs" type="button" variant="destructive">
-          <IconPlaceholder
-            className="size-3"
-            hugeicons="Delete02Icon"
-            lucide="Trash2Icon"
-            phosphor="TrashIcon"
-            remixicon="RiDeleteBinLine"
-            tabler="IconTrash"
-          />
-          Clear
-        </Button>
+          Aa
+        </Toggle>
       </div>
 
-      <AlertDialog onOpenChange={setAlertOpen} open={alertOpen}>
-        <AlertDialogContent size="sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reset editor draft?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This restores the initial Plate Sink document and clears local
-              formatting edits.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setAlertOpen(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => setAlertOpen(false)}>
-              Reset
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </section>
+      <div className="flex items-center gap-1.5">
+        <Input
+          aria-label="Replace with"
+          className="h-8 text-xs"
+          onChange={(event) => setReplaceText(event.target.value)}
+          placeholder="Replace with..."
+          value={replaceText}
+        />
+        <Button size="xs" type="button" variant="secondary">
+          Replace
+        </Button>
+      </div>
+    </div>
   );
 }
 
-export function ColorPaletteCard({ kit }: { kit: CreateSinkKit }) {
-  const { defaultColors } = kit;
-  const swatches = defaultColors.slice(0, 20);
-  const [selectedColor, setSelectedColor] = React.useState(
-    swatches[16]?.value ?? '#4A86E8'
+export function LinkFloatingCard({
+  kit,
+  onInsertLink,
+}: {
+  kit: CreateSinkKit;
+  onInsertLink: (url: string, text: string) => void;
+}) {
+  const { Button, Input, Separator } = kit;
+  const [url, setUrl] = React.useState('https://platejs.org/docs');
+  const [text, setText] = React.useState('Plate v2 docs');
+  const [inserted, setInserted] = React.useState(false);
+
+  const submit = () => {
+    const cleanUrl = url.trim();
+    if (!cleanUrl) return;
+
+    onInsertLink(cleanUrl, text.trim() || cleanUrl);
+    setInserted(true);
+    window.setTimeout(() => setInserted(false), 1500);
+  };
+
+  return (
+    <div className="flex flex-col gap-2" data-slot="sink-link-popover">
+      <div
+        className="cn-menu-target flex w-fit flex-row items-center gap-1 rounded-lg border bg-popover p-1 text-popover-foreground shadow-sm"
+        data-menu-translucent=""
+      >
+        <Button size="xs" type="button" variant="ghost">
+          Edit link
+        </Button>
+        <Separator className="h-4" orientation="vertical" />
+        <a
+          aria-label="Open link"
+          className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          href={url}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <IconPlaceholder
+            className="size-3.5"
+            hugeicons="LinkSquare02Icon"
+            lucide="ExternalLinkIcon"
+            phosphor="ArrowSquareOutIcon"
+            remixicon="RiExternalLinkLine"
+            tabler="IconExternalLink"
+          />
+        </a>
+        <Separator className="h-4" orientation="vertical" />
+        <Button
+          aria-label="Unlink"
+          onClick={() => setUrl('')}
+          size="icon-xs"
+          type="button"
+          variant="ghost"
+        >
+          <IconPlaceholder
+            className="size-3.5"
+            hugeicons="Unlink02Icon"
+            lucide="Unlink"
+            phosphor="LinkBreakIcon"
+            remixicon="RiLinkUnlink"
+            tabler="IconUnlink"
+          />
+        </Button>
+      </div>
+
+      <div
+        className="cn-popover-content cn-menu-target flex flex-col gap-1.5 rounded-xl border bg-popover p-2 text-popover-foreground shadow-sm"
+        data-menu-translucent=""
+      >
+        <div className="flex items-center gap-1.5">
+          <IconPlaceholder
+            className="ms-1 size-3.5 shrink-0 text-muted-foreground"
+            hugeicons="LinkIcon"
+            lucide="LinkIcon"
+            phosphor="LinkIcon"
+            remixicon="RiLinksLine"
+            tabler="IconLink"
+          />
+          <Input
+            aria-label="Link URL"
+            className="h-7 border-none bg-transparent px-1 text-xs shadow-none focus-visible:ring-0"
+            onChange={(event) => setUrl(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                submit();
+              }
+            }}
+            placeholder="Paste link"
+            value={url}
+          />
+        </div>
+        <Separator />
+        <div className="flex items-center gap-1.5">
+          <IconPlaceholder
+            className="ms-1 size-3.5 shrink-0 text-muted-foreground"
+            hugeicons="TextAlignLeftIcon"
+            lucide="Text"
+            phosphor="TextAlignLeftIcon"
+            remixicon="RiAlignLeft"
+            tabler="IconAlignLeft"
+          />
+          <Input
+            aria-label="Link display text"
+            className="h-7 border-none bg-transparent px-1 text-xs shadow-none focus-visible:ring-0"
+            onChange={(event) => setText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                submit();
+              }
+            }}
+            placeholder="Text to display"
+            value={text}
+          />
+          <Button
+            onClick={submit}
+            size="xs"
+            type="button"
+            variant={inserted ? 'secondary' : 'default'}
+          >
+            {inserted ? 'Added' : 'Insert'}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
-  const [selectedName, setSelectedName] = React.useState(
-    swatches[16]?.name ?? 'cornflower blue'
-  );
+}
+
+export function TablePickerCard({
+  onInsertTable,
+}: {
+  onInsertTable: (rowCount: number, colCount: number) => void;
+}) {
+  const [size, setSize] = React.useState({ colCount: 4, rowCount: 3 });
 
   return (
     <section
-      className="cn-card flex flex-col gap-3 bg-card p-4 text-card-foreground"
+      className="cn-card flex items-center justify-between gap-4 bg-card p-4 text-card-foreground"
       data-slot="card"
     >
-      <div className="flex items-center justify-between text-xs">
-        <span className="font-medium">Color swatches</span>
-        <span className="font-mono text-xs text-muted-foreground">
-          {selectedName}
-        </span>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-1.5 text-xs font-medium">
+          <IconPlaceholder
+            className="size-3.5 text-muted-foreground"
+            hugeicons="GridTableIcon"
+            lucide="Grid3x3Icon"
+            phosphor="GridNineIcon"
+            remixicon="RiGridLine"
+            tabler="IconTable"
+          />
+          <span>Insert table</span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Hover grid to pick dimensions and click to insert into the live
+          document.
+        </p>
+        <div className="mt-1 font-mono text-xs font-medium text-foreground">
+          {size.rowCount} &times; {size.colCount}
+        </div>
       </div>
 
-      <div className="grid grid-cols-10 gap-1.5">
-        {swatches.map((color) => {
-          const active = selectedColor === color.value;
+      <div
+        aria-colcount={TABLE_PICKER_DIMENSION}
+        aria-label="Table size picker"
+        aria-rowcount={TABLE_PICKER_DIMENSION}
+        className="grid shrink-0 grid-cols-8 gap-0.5 rounded-lg border bg-popover p-1.5"
+        role="grid"
+      >
+        {Array.from({ length: TABLE_PICKER_DIMENSION }, (_, rowIndex) => (
+          <div key={rowIndex} className="contents" role="row">
+            {Array.from(
+              { length: TABLE_PICKER_DIMENSION },
+              (_col, colIndex) => {
+                const selected =
+                  rowIndex < size.rowCount && colIndex < size.colCount;
 
-          return (
-            <button
-              key={color.value}
-              aria-label={color.name}
-              aria-pressed={active}
-              className={cn(
-                'flex aspect-square w-full cursor-pointer items-center justify-center rounded-sm border transition-transform hover:scale-105',
-                active && 'ring-2 ring-ring ring-offset-1 ring-offset-card'
-              )}
-              onClick={() => {
-                setSelectedColor(color.value);
-                setSelectedName(color.name);
-              }}
-              style={{ backgroundColor: color.value }}
-              title={color.name}
-              type="button"
-            />
-          );
-        })}
-      </div>
-
-      <div className="rounded-lg border bg-muted/40 px-3 py-2 text-xs">
-        <span style={{ color: selectedColor }}>Colored text</span>
-        <span className="mx-2 text-muted-foreground">&middot;</span>
-        <span
-          className="rounded-sm px-1.5 py-0.5 text-foreground"
-          style={{ backgroundColor: `${selectedColor}33` }}
-        >
-          Highlight preview
-        </span>
+                return (
+                  <button
+                    key={`${rowIndex}-${colIndex}`}
+                    aria-label={`Insert ${rowIndex + 1} by ${colIndex + 1} table`}
+                    aria-selected={selected}
+                    className={cn(
+                      'size-3.5 cursor-pointer rounded-[2px] border border-border bg-secondary transition-colors',
+                      selected && 'border-primary bg-primary/25'
+                    )}
+                    onClick={() => onInsertTable(rowIndex + 1, colIndex + 1)}
+                    onFocus={() =>
+                      setSize({
+                        colCount: colIndex + 1,
+                        rowCount: rowIndex + 1,
+                      })
+                    }
+                    onPointerEnter={() =>
+                      setSize({
+                        colCount: colIndex + 1,
+                        rowCount: rowIndex + 1,
+                      })
+                    }
+                    role="gridcell"
+                    type="button"
+                  />
+                );
+              }
+            )}
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -969,75 +1105,6 @@ export function SelectEditorCard({ kit }: { kit: CreateSinkKit }) {
       <p className="text-xs text-muted-foreground">
         Type to filter tags or press Backspace to remove chips.
       </p>
-    </section>
-  );
-}
-
-const COLLABORATORS = [
-  { initials: 'AC', name: 'Alice Chen', role: 'Owner' },
-  { initials: 'BL', name: 'Bob Lee', role: 'Can edit' },
-  { initials: 'SK', name: 'Sara Kim', role: 'Commenter' },
-] as const;
-
-export function CollaboratorsCard({ kit }: { kit: CreateSinkKit }) {
-  const { Avatar, AvatarFallback, Button, Input } = kit;
-  const [invite, setInvite] = React.useState('');
-  const [invited, setInvited] = React.useState(false);
-
-  return (
-    <section
-      className="cn-card flex flex-col gap-3 bg-card p-4 text-card-foreground"
-      data-slot="card"
-    >
-      <div className="flex items-center justify-between text-xs">
-        <span className="font-medium">Share document</span>
-        <span className="cn-badge cn-badge-variant-secondary">3 active</span>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        {COLLABORATORS.map((member) => (
-          <div
-            key={member.name}
-            className="flex items-center justify-between gap-2 text-xs"
-          >
-            <div className="flex items-center gap-2">
-              <Avatar size="sm">
-                <AvatarFallback className="bg-primary/15 text-xs font-medium text-primary">
-                  {member.initials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="font-medium">{member.name}</span>
-            </div>
-            <span className="text-muted-foreground">{member.role}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Input
-          aria-label="Invite collaborator email"
-          className="h-8 text-xs"
-          onChange={(event) => {
-            setInvite(event.target.value);
-            setInvited(false);
-          }}
-          placeholder="teammate@company.com"
-          type="email"
-          value={invite}
-        />
-        <Button
-          onClick={() => {
-            if (!invite.trim()) return;
-            setInvite('');
-            setInvited(true);
-          }}
-          size="xs"
-          type="button"
-          variant={invited ? 'secondary' : 'default'}
-        >
-          {invited ? 'Sent' : 'Invite'}
-        </Button>
-      </div>
     </section>
   );
 }
