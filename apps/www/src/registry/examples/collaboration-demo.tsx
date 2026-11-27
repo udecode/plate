@@ -760,6 +760,9 @@ function PeerControls({
   const history = useEditorSelector(editor, (current) =>
     current.read.history()
   );
+  const canRedo = useEditorSelector(editor, (current) =>
+    current.read.history.hasRedo()
+  );
   const redoDepth = history.redos.length;
   const undoDepth = history.undos.length;
 
@@ -804,7 +807,7 @@ function PeerControls({
       <Button
         aria-label={`Redo ${peer.name}`}
         data-history-action="redo"
-        disabled={redoDepth === 0}
+        disabled={!canRedo}
         onMouseDown={(event) => {
           event.preventDefault();
         }}

@@ -68,6 +68,7 @@ type ExamplePeer = PeerDefinition & {
   doc: Y.Doc;
   editor?: YjsEditor;
   redoDepth: number;
+  redoReady: boolean;
   renderEpoch: number;
   undoDepth: number;
 };
@@ -172,9 +173,10 @@ type YjsEditor = ReactViewEditor<
   ]
 >;
 
-const syncPeerHistoryDepths = (peer: ExamplePeer, editor: YjsEditor) => {
+const syncPeerHistory = (peer: ExamplePeer, editor: YjsEditor) => {
   peer.undoDepth = editor.read.history().undos.length;
   peer.redoDepth = editor.read.history().redos.length;
+  peer.redoReady = editor.read.history.hasRedo();
 };
 
 const INITIAL_VALUE: CollaborationValue = [
@@ -313,6 +315,7 @@ const createExampleNetwork = (): ExampleNetwork => {
       connected: true,
       doc,
       redoDepth: 0,
+      redoReady: false,
       renderEpoch: 0,
       undoDepth: 0,
     };
@@ -728,7 +731,7 @@ const runPeerCommand = (
   syncSelectionFromDom(editor);
 
   editor.update({ history: 'new-batch' }, command);
-  syncPeerHistoryDepths(peer, editor);
+  syncPeerHistory(peer, editor);
 
   editor.api.dom.focus({ retries: 1 });
   network.syncAll();
@@ -1018,7 +1021,7 @@ const undoPeer = (
 
   editor.api.history.undo();
 
-  syncPeerHistoryDepths(peer, editor);
+  syncPeerHistory(peer, editor);
   syncPeerSelectionAfterHistory(
     network,
     peer,
@@ -1039,7 +1042,7 @@ const redoPeer = (
 
   editor.api.history.redo();
 
-  syncPeerHistoryDepths(peer, editor);
+  syncPeerHistory(peer, editor);
   syncPeerSelectionAfterHistory(
     network,
     peer,
@@ -1274,7 +1277,7 @@ const PeerPanelContent = ({
   const admission = useYjsAdmissionStatus(editor);
 
   const canUndo = peer.undoDepth > 0;
-  const canRedo = peer.redoDepth > 0;
+  const canRedo = peer.redoReady;
   const { connected } = peer;
   const label = `Peer ${peer.id.toUpperCase()}`;
   const ready = admission.state === 'ready';
@@ -1644,7 +1647,7 @@ const PeerPanel = ({
     <EditorRoot
       editor={editor}
       onCommit={({ editor: mountedEditor }) => {
-        syncPeerHistoryDepths(peer, mountedEditor);
+        syncPeerHistory(peer, mountedEditor);
         network.syncAll();
       }}
     >
