@@ -669,7 +669,7 @@ function viewIssue(repo, number) {
 
 const POST_FIELDS =
   'id isAnswer createdAt authorAssociation author { login } body';
-const DISCUSSION_FIELDS = `id number title body closed category { name isAnswerable } labels(first: 100) { nodes { id name } } author { login } comments(first: 100) { pageInfo { hasNextPage } nodes { ${POST_FIELDS} replies(first: 100) { pageInfo { hasNextPage } nodes { ${POST_FIELDS} } } } }`;
+const DISCUSSION_FIELDS = `id number title body closed isAnswered category { name isAnswerable } labels(first: 100) { nodes { id name } } author { login } comments(first: 100) { pageInfo { hasNextPage } nodes { ${POST_FIELDS} replies(first: 100) { pageInfo { hasNextPage } nodes { ${POST_FIELDS} } } } }`;
 
 const flattenDiscussion = ({ closed, comments, labels, ...node }) => ({
   ...node,
@@ -1424,10 +1424,13 @@ function syncDiscussionsGitHub(policy, records, discussionsList, { apply }) {
       (reply !== undefined &&
         (record.outcome !== 'feature' || record.lean === 'not-planned'));
     if (!closes) continue;
+    const isAnswered =
+      discussion.isAnswered ||
+      discussion.comments.some((comment) => comment.isAnswer);
     if (
       record.outcome === 'answered' &&
       discussion.category.isAnswerable &&
-      !reply.isAnswer
+      !isAnswered
     ) {
       const query = `mutation { markDiscussionCommentAsAnswer(input: { id: "${reply.id}" }) { clientMutationId } }`;
       planned.push({
