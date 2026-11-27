@@ -335,8 +335,14 @@ export const writePliteViewSelection: WritePliteViewSelection = (
     return false;
   }
   if (!selection) {
-    end();
-    options.place?.();
+    forget(key);
+    try {
+      options.place?.();
+    } finally {
+      if (wasShown && shouldNotify && !EDITOR_TO_VIEW_SELECTION.has(key)) {
+        notifyViewSelectionListeners(key);
+      }
+    }
     return false;
   }
   if (

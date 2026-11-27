@@ -127,6 +127,7 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleBlur = useCallback(
     (event: FocusEvent<HTMLDivElement>) => {
+      nativePointerFocusRef.current = false;
       flushPendingNativeTextInput?.();
       const decision = prepareEditableFocusMouseKernel({
         editor,

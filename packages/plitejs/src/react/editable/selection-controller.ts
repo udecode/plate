@@ -545,8 +545,9 @@ const importProjectedDOMSelection = ({
   if (!projectedSelection) return false;
   if ('range' in projectedSelection) {
     markCopyChainUsed(editor, editorElement);
-    writePliteViewSelection(editor, null);
-    setShownSelectionAsView(editor, projectedSelection.range);
+    writePliteViewSelection(editor, null, {
+      place: () => setShownSelectionAsView(editor, projectedSelection.range),
+    });
     showStoredSelection(editor, inputController);
     return true;
   }
@@ -773,8 +774,10 @@ const importDOMSelection = ({
     return;
   }
 
-  writePliteViewSelection(editor, null);
-  showImportedRange(editor, editorElement, inputController, range);
+  writePliteViewSelection(editor, null, {
+    place: () =>
+      showImportedRange(editor, editorElement, inputController, range),
+  });
 };
 
 export const setEditableModelSelectionPreference = ({
