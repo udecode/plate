@@ -359,8 +359,9 @@ against the compiled schema at its actual replacement range.
 #### `tx.slice.replace(slice: ContentSlice, options?)`
 
 Fit and atomically replace content at `options.at` or the transaction target.
-The slice's optional `roots` map carries detached transitive secondary roots;
-insertion remaps copied keys deterministically and preserves shared aliases.
+The slice's optional `roots` map carries detached transitive secondary roots.
+Insertion gives each copied exclusive root a new key and keeps a shared root's
+key, as [Roots](../concepts/13-roots#copy-paste-and-drag) describes.
 The method returns `false` without mutating when the target cannot be resolved,
 is a protected void, or a well-formed slice cannot fit. Malformed slice shapes
 are programmer errors and throw. The method returns `true` once a fitted

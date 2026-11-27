@@ -173,9 +173,11 @@ const SyncedBlocksSchema = defineEditorSchema('documentSchema', {
 });
 ```
 
-The owner stores `childRoots: { body: "synced:1" }`; the detached blocks live
-in `document.roots["synced:1"]`. Use `ownership: "shared"` only when multiple
-owners intentionally project the same root. See
+The owner stores `childRoots: { body: key }`, and the detached blocks live in
+`document.roots[key]`. Build a shared key from a random id, such as
+`` `synced:${crypto.randomUUID()}` ``, because a copy keeps it. Use
+`ownership: "shared"` only when multiple owners intentionally project the same
+root. See
 [Roots](13-roots#content-roots) for rendering, persistence, clipboard, and
 lifecycle behavior.
 

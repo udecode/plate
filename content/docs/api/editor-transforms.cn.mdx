@@ -35,3 +35,7 @@ editor.update((tx) => {
 会运行命令处理器与[粘贴落点读取](/docs/api/core/plate-plugin)。
 回调中的 `tx.slice.replace`、`tx.fragment.replace` 和独立的
 `editor.read.slice.fit` 直接适配内容，不运行这些命令策略。
+
+`tx.slice.replace` 插入 slice 的 `roots` 时，每个被复制的 exclusive content root
+获得新 key，shared content root 保留原 key，参见
+[Roots](/cn/docs/roots#copy-paste-and-drag)。

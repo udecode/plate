@@ -363,6 +363,10 @@ const slice = ContentSlice.fromJSON({
 editor.update.slice.replace(slice);
 ```
 
+`roots` 携带 slice 内容引用的 detached secondary root。插入 slice 时，每个被复制的
+exclusive root 获得新 key，shared root 保留原 key；shared root 仍以新 key 复制的情形见
+[Roots](/cn/docs/roots#copy-paste-and-drag)。
+
 直接 HTML/Markdown `parseSlice` 产生闭合的 slice。Markdown slice 不带 root，
 HTML slice 只携带 mapping 解码出的 content root。只有 native fragment transport
 可以为 open edge 提供 authority。Destination-specific fit 在 insertion owner 处

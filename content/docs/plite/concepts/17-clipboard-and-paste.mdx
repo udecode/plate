@@ -171,7 +171,9 @@ editor.update.slice.replace(slice);
 `ContentSlice` has one transport shape:
 `{ content, openStart, openEnd, roots? }`. `roots` carries the transitive
 detached secondary roots referenced by the slice content. Inserting the slice
-remaps copied keys deterministically and keeps shared aliases together.
+gives each copied exclusive root a new key and keeps a shared root's key.
+[Roots](13-roots#copy-paste-and-drag) lists the cases where a shared root
+still gets a new key.
 
 Core slice replacement is structural and schema-fitted. Grid-aware table paste,
 spreadsheet mapping, and product-specific merge rules belong in the table or

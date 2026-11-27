@@ -163,7 +163,7 @@ Create a persistent content root by storing the root key on the owning element
 and creating the named root in the same transaction.
 
 ```tsx
-const bodyRoot = `synced-block:${blockId}:body`;
+const bodyRoot = `synced-block:${crypto.randomUUID()}:body`;
 
 editor.update((tx) => {
   tx.roots.create(bodyRoot, [
@@ -177,19 +177,80 @@ editor.update((tx) => {
 });
 ```
 
+Owner-first and root-first creation are both valid inside one transaction.
+
 Each `contentRoots` entry declares a slot, child-root grammar, and ownership.
+An entry that gives only its grammar, such as
+`body: schema.content.type("paragraph")`, declares an exclusive root.
 `childRoots[slot]` is the persisted ownership link that survives save/load and
 collaboration.
 
 Use `ownership: "shared"` when several owners intentionally project the same
-root, as with synced blocks. Shared aliases stay attached to one root; removing
-even the last owner preserves that root. A schema with `unknown: "reject"`
-cannot hold a root that no element owns, so there the root goes with its last
-owner. Use `ownership: "exclusive"` for
-a separately mounted document that belongs to exactly one element, such as an
-element-owned annotation surface. Moving an owner preserves its root key.
-Removing, retargeting, or changing the type of an exclusive owner removes the
-root only when it becomes orphaned.
+root, as with synced blocks. Shared aliases stay attached to one root, and a
+copy of an owner keeps the root's key, as
+[Copy, paste, and drag](#copy-paste-and-drag) describes. Removing even the last
+owner preserves the root. A schema with `unknown: "reject"` cannot hold a root
+that no element owns, so there the root goes with its last owner. Use
+`ownership: "exclusive"` for a separately mounted document that belongs to
+exactly one element, such as an element-owned annotation surface. The schema
+refuses a second owner of an exclusive root. Moving an owner preserves its root
+key. Removing, retargeting, or changing the type of an exclusive owner removes
+the root only when it becomes orphaned, so an exclusive root goes with its last
+owner in every schema.
+
+### Copy, paste, and drag
+
+Copy and paste, `tx.blocks.duplicate` and drag carry each content root that a
+copied owner names, and the root's ownership decides the key it lands under.
+
+A copy of an exclusive root's owner gets its own copy of the root, under a key
+that no earlier copy took: `<root>:copy:<n>`, or `<root>:copy:<clientID>:<n>`
+in an editor bound to Yjs, so two collaborators' copies never share a key.
+
+A copy of a shared root's owner keeps the root's key, so both blocks show and
+edit the same content. When the document holds the root and every block that
+names the key declares it the same way, the copy names that root and keeps the
+document's content, not the copied content. When the document lacks the root,
+the copy creates it under the same key from the copied content. When the
+document holds the root and no block names it, as after a cut, the copy names
+that root if its content fits the copied owner's grammar. So a cut then paste
+keeps the key, in one update or in two. The
+[synced blocks example](/examples/plite/synced-blocks) copies, cuts and pastes
+synced blocks this way.
+
+A shared key must be unique across every document a copy can reach. A paste
+into a document that holds an unrelated root under the same key links the
+pasted block to that root. Build the key from a random id, such as
+`crypto.randomUUID()`, never from a counter that restarts in each document.
+
+A shared root still gets its own copy, as an exclusive root does, when:
+
+- The editor is bound to Yjs or `plitejs/sync`.
+- A paste fills or replaces table cells, or pastes a copied table.
+- The paste lands inside the root's own content, directly or through another
+  root that the shared root holds.
+- A block that names the key declares it differently from the copy.
+- The document holds the key with no block that names it, and the schema
+  declares a root under that key or the root's content does not fit the copied
+  owner's grammar. In a `propose` view, the check includes the blocks the view
+  hides.
+- A `propose` view reserves the key without showing it, as after a cut in that
+  view.
+
+Within one landed copy, owners of one shared root share one new root.
+
+A drag into another document is a copy. When the target's root under that key
+holds other content, the drag keeps the target's content and lands with a
+`lossy` report. The content matches only when each root holds the same blocks
+and the dragged owners share their roots the way the target's owners do. Then
+the drag names that root with no report.
+
+`ContentSlice` carries the transitive detached-root payload across clipboard
+and insertion boundaries, including a collapsed target. Cut captures that
+payload before deleting the owner and root in one transaction. Undo and redo
+restore the owner, root content, and root-qualified selection together. One
+undo of a paste removes the pasted owner, and the root as well when the paste
+created it.
 
 ### List roots and their owners
 
@@ -290,16 +351,6 @@ One refusal from any contributed veto rolls back the whole update, as a
 [refused update](../api/nodes/editor#updating-state) does. Remote imports and
 history replays never consult a veto. Removing the owner is not one of these
 writes, so the orphan rule above still applies to it.
-
-Duplicate and copy/paste clone detached roots. Each copy gets a key that no
-earlier copy took, `<root>:copy:<n>`, or `<root>:copy:<clientID>:<n>` in an
-editor bound to Yjs, so two collaborators' copies never share a key. Shared
-aliases in the copied group continue to share one remapped root. Owner-first and root-first creation are both valid
-inside one transaction. `ContentSlice` carries the transitive detached-root
-payload across clipboard and insertion boundaries, including a collapsed
-target. Cut captures that payload before deleting the owner and root in one
-transaction. Undo and redo restore the owner, root content, and root-qualified
-selection together.
 
 Render the child root from `renderElement` with `slots.contentRoot(slot)`.
 
