@@ -3,6 +3,7 @@ import { type Browser, chromium, type Page } from '@playwright/test';
 import {
   acquireSerialLock,
   forwardDevTools,
+  readRestoreState,
   recordOwnedTarget,
   releaseRunResources,
   releaseSerialLock,
@@ -23,9 +24,24 @@ export type DeviceRun = {
 
 export const openDeviceRun = async (
   serial: string,
-  { ports, url }: { ports: number[]; url: string }
+  {
+    ports,
+    takeOverStale = false,
+    url,
+  }: { ports: number[]; takeOverStale?: boolean; url: string }
 ): Promise<DeviceRun> => {
-  acquireSerialLock(serial);
+  acquireSerialLock(serial, { takeOverStale });
+  if (takeOverStale) {
+    const stale = readRestoreState(serial);
+
+    if (stale && (stale.forwards.length > 0 || stale.reverses.length > 0)) {
+      releaseRunResources(serial, {
+        closedTargets: [],
+        forwards: stale.forwards,
+        reverses: stale.reverses,
+      });
+    }
+  }
 
   const forwards: string[] = [];
   const reverses: string[] = [];

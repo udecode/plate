@@ -136,8 +136,8 @@ const isAlive = (pid: number) => {
   try {
     process.kill(pid, 0);
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === 'EPERM';
   }
 };
 
@@ -233,6 +233,12 @@ export const acquireSerialLock = (
   } finally {
     rmSync(marker, { force: true });
   }
+};
+
+export const hasLiveSerialLock = (serial: string) => {
+  const held = readJSON<{ owner: number }>(lockPath(serial));
+
+  return typeof held?.owner === 'number' && isAlive(held.owner);
 };
 
 export const releaseSerialLock = (serial: string, owner = process.pid) => {
