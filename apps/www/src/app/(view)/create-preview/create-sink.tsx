@@ -1,6 +1,6 @@
 'use client';
 
-import type { AnyPlugin, Descendant } from 'platejs';
+import type { PluginReference, Value } from 'platejs';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils';
 import { IconPlaceholder } from './icon-placeholder';
 
 export type CreateSinkKit = {
-  codePlugins: readonly AnyPlugin[];
-  docPlugins: readonly AnyPlugin[];
+  codePlugins: readonly PluginReference[];
+  docPlugins: readonly PluginReference[];
   Editor: React.ComponentType<{
     className?: string;
     variant?: 'default' | 'demo' | 'fullWidth' | 'none' | 'select';
@@ -20,13 +20,13 @@ export type CreateSinkKit = {
   >;
   FixedToolbarButtons: React.ComponentType;
   FloatingToolbarButtons: React.ComponentType;
-  suggestionPlugins: readonly AnyPlugin[];
-  tablePlugins: readonly AnyPlugin[];
+  suggestionPlugins: readonly PluginReference[];
+  tablePlugins: readonly PluginReference[];
   Toolbar: React.ComponentType<React.PropsWithChildren<{ className?: string }>>;
-  TooltipProvider: React.ComponentType<React.PropsWithChildren>;
+  TooltipProvider: React.ComponentType<{ children: React.ReactNode }>;
 };
 
-const DOC_VALUE: Descendant[] = [
+const DOC_VALUE: Value = [
   {
     children: [{ text: 'Design your Plate editor' }],
     level: 1,
@@ -96,7 +96,7 @@ const DOC_VALUE: Descendant[] = [
   },
 ];
 
-const CODE_VALUE: Descendant[] = [
+const CODE_VALUE: Value = [
   {
     children: [
       {
@@ -116,7 +116,7 @@ const CODE_VALUE: Descendant[] = [
   },
 ];
 
-const SUGGESTION_VALUE: Descendant[] = [
+const SUGGESTION_VALUE: Value = [
   {
     children: [
       { text: 'Ship ' },
@@ -144,7 +144,7 @@ const SUGGESTION_VALUE: Descendant[] = [
   },
 ];
 
-const TABLE_VALUE: Descendant[] = [
+const TABLE_VALUE: Value = [
   {
     children: [
       {
