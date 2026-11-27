@@ -10,6 +10,7 @@ import {
 import { failInvariant } from '../../../internal/failInvariant';
 import type {
   FieldCondition,
+  FieldConditionTest,
   FieldElement,
   FieldKind,
   FieldOption,
@@ -61,10 +62,16 @@ export const isFieldOptions = (
   ) &&
   new Set(value.map((option) => option.value)).size === value.length;
 
-export const isFieldCondition = (value: unknown): value is FieldCondition => {
-  if (!value || typeof value !== 'object') return false;
+const isConditionRecord = (
+  value: unknown
+): value is Readonly<Record<string, unknown>> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
-  const { ref, test, value: compared } = value as Record<string, unknown>;
+const isFieldConditionTest = (value: unknown): value is FieldConditionTest => {
+  if (!isConditionRecord(value)) return false;
+  if (Object.hasOwn(value, 'all') || Object.hasOwn(value, 'any')) return false;
+
+  const { ref, test, value: compared } = value;
 
   return (
     typeof ref === 'string' &&
@@ -74,6 +81,61 @@ export const isFieldCondition = (value: unknown): value is FieldCondition => {
     (compared === undefined || isFieldValue(compared))
   );
 };
+
+export const isFieldCondition = (value: unknown): value is FieldCondition => {
+  if (!isConditionRecord(value)) return false;
+
+  const hasAll = Object.hasOwn(value, 'all');
+  const hasAny = Object.hasOwn(value, 'any');
+
+  if (hasAll && hasAny) return false;
+  if (hasAll || hasAny) {
+    if (Object.hasOwn(value, 'ref')) return false;
+
+    const list = hasAll ? value.all : value.any;
+
+    if (!Array.isArray(list) || list.length < 2) return false;
+
+    for (const entry of list) {
+      if (!isFieldConditionTest(entry)) return false;
+    }
+
+    return true;
+  }
+
+  return isFieldConditionTest(value);
+};
+
+export const conditionTests = (
+  condition: FieldCondition | undefined
+): readonly FieldConditionTest[] => {
+  if (!condition) return [];
+  if (Object.hasOwn(condition, 'all')) {
+    return (condition as Readonly<{ all: readonly FieldConditionTest[] }>).all;
+  }
+  if (Object.hasOwn(condition, 'any')) {
+    return (condition as Readonly<{ any: readonly FieldConditionTest[] }>).any;
+  }
+
+  return [condition as FieldConditionTest];
+};
+
+const conditionForm = (condition: FieldCondition): 'all' | 'any' | 'one' =>
+  Object.hasOwn(condition, 'all')
+    ? 'all'
+    : Object.hasOwn(condition, 'any')
+      ? 'any'
+      : 'one';
+
+const conditionValueKey = (value: boolean | number | string | undefined) =>
+  value === undefined
+    ? null
+    : Object.is(value, -0)
+      ? '-0'
+      : [typeof value, value];
+
+export const conditionTestKey = ({ ref, test, value }: FieldConditionTest) =>
+  JSON.stringify([ref, test, conditionValueKey(value)]);
 
 export const isFieldName = (value: unknown): value is string =>
   typeof value === 'string' &&
@@ -132,7 +194,7 @@ export const fitsField = (
 };
 
 export const conditionProblem = (
-  { test, value }: FieldCondition,
+  { test, value }: FieldConditionTest,
   named: FieldShape | undefined
 ): FieldProblem | undefined => {
   if (!named) return 'missing-target';
@@ -159,7 +221,7 @@ export const fillsField = (field: FieldShape, value: unknown): boolean =>
         /\S/.test(String(value)));
 
 const holds = (
-  { test, value }: FieldCondition,
+  { test, value }: FieldConditionTest,
   target: FieldShape,
   answer: FieldValue | undefined
 ) => {
@@ -188,11 +250,19 @@ const holds = (
   }
 };
 
-type Chain = Readonly<{ loop: boolean; target: FieldElement | undefined }>;
+type ConditionEdge = Readonly<{
+  target: FieldElement | undefined;
+  test: FieldConditionTest;
+}>;
+
+type Chain = Readonly<{
+  edges: readonly ConditionEdge[];
+  loop: boolean;
+}>;
 
 type Verdict =
   | Readonly<{ applies: boolean }>
-  | Readonly<{ applies: null; waitsOn: string }>;
+  | Readonly<{ applies: null; waitsOn: readonly string[] }>;
 
 const APPLIES: Verdict = { applies: true };
 const SKIPS: Verdict = { applies: false };
@@ -218,41 +288,99 @@ export const fieldProblems = (
   field: FieldElement,
   link: Chain
 ): FieldProblem[] => {
-  const own: FieldProblem[] =
+  const problems: FieldProblem[] =
     unfitSettings(field).length === 0 ? [] : ['invalid-value'];
-  const conditioned =
-    field.condition && conditionProblem(field.condition, link.target);
-  const problems =
-    conditioned && !own.includes(conditioned) ? [...own, conditioned] : own;
 
-  return link.loop ? [...problems, 'condition-loop'] : problems;
+  for (const { target, test } of link.edges) {
+    const problem = conditionProblem(test, target);
+
+    if (problem && !problems.includes(problem)) problems.push(problem);
+  }
+  if (link.loop) problems.push('condition-loop');
+
+  return problems;
 };
 
 type Held = (fieldId: string) => FieldElement | undefined;
 type AnswerOf = (field: FieldElement) => FieldValue | undefined;
 
-const judge = (
-  condition: FieldCondition,
+const judgeTest = (
+  test: FieldConditionTest,
   target: FieldElement,
   reached: Verdict,
   settled: boolean,
   answer: FieldValue | undefined
 ): Verdict => {
   if (reached.applies === null) return reached;
-  if (!reached.applies) return verdictOf(holds(condition, target, undefined));
+  if (!reached.applies) return verdictOf(holds(test, target, undefined));
   if (fitsField(target, answer)) {
-    return verdictOf(holds(condition, target, answer));
+    return verdictOf(holds(test, target, answer));
   }
-  if (!settled) return { applies: null, waitsOn: target.role };
+  if (!settled) return { applies: null, waitsOn: [target.role] };
 
   return verdictOf(
-    holds(condition, target, target.kind === 'checkbox' ? false : undefined)
+    holds(test, target, target.kind === 'checkbox' ? false : undefined)
   );
 };
 
-const conditionRefs = (
+const foldEdges = (
+  condition: FieldCondition,
+  edges: readonly ConditionEdge[],
+  verdictOfTarget: (target: FieldElement) => Verdict,
+  settled: (role: string) => boolean,
+  answerOf: AnswerOf
+): Verdict => {
+  const form = conditionForm(condition);
+
+  if (form === 'one') {
+    const [edge] = edges;
+
+    if (!edge?.target) {
+      failInvariant('A field was judged with no condition edge.');
+    }
+
+    return judgeTest(
+      edge.test,
+      edge.target,
+      verdictOfTarget(edge.target),
+      settled(edge.target.role),
+      answerOf(edge.target)
+    );
+  }
+
+  const stop = form === 'any';
+  let waitingRoles: Set<string> | undefined;
+
+  for (const { target, test } of edges) {
+    if (!target) {
+      failInvariant('A field was judged with no condition edge.');
+    }
+
+    const verdict = judgeTest(
+      test,
+      target,
+      verdictOfTarget(target),
+      settled(target.role),
+      answerOf(target)
+    );
+
+    if (verdict.applies === stop) return verdict;
+    if (verdict.applies === null) {
+      waitingRoles ??= new Set();
+      for (const role of verdict.waitsOn) waitingRoles.add(role);
+    }
+  }
+
+  if (waitingRoles) {
+    return { applies: null, waitsOn: [...waitingRoles].sort() };
+  }
+
+  return form === 'all' ? APPLIES : SKIPS;
+};
+
+export const conditionRefs = (
   condition: FieldCondition | undefined
-): readonly string[] => (condition ? [condition.ref] : []);
+): readonly string[] => conditionTests(condition).map((entry) => entry.ref);
 
 export const conditionTargets = (
   fieldId: string,
@@ -292,15 +420,15 @@ export const conditionTargets = (
 
 export const fieldLinkWork = { judgments: 0, lookups: 0, loopVisits: 0 };
 
-const conditionEdges = (condition: FieldCondition | undefined, held: Held) => {
-  if (!condition) return [];
+const conditionEdges = (
+  condition: FieldCondition | undefined,
+  held: Held
+): readonly ConditionEdge[] =>
+  conditionTests(condition).map((test) => {
+    fieldLinkWork.lookups += 1;
 
-  fieldLinkWork.lookups += 1;
-
-  return [{ target: held(condition.ref), test: condition }];
-};
-
-type ConditionEdge = ReturnType<typeof conditionEdges>[number];
+    return { target: held(test.ref), test };
+  });
 
 export const conditionGraph = (held: Held) => {
   const edgesById = new Map<string, readonly ConditionEdge[]>();
@@ -399,13 +527,49 @@ export const conditionGraph = (held: Held) => {
     );
   };
 
+  const reaches = (
+    start: FieldElement,
+    targetId: string,
+    added: ReadonlySet<string>
+  ): boolean => {
+    fieldLinkWork.loopVisits += 1;
+
+    const seen = new Set<string>();
+    const queue: FieldElement[] = [];
+
+    for (const { target, test } of edges(start)) {
+      if (!added.has(test.ref)) continue;
+      if (test.ref === targetId) return true;
+      if (target && !seen.has(target.fieldId)) {
+        seen.add(target.fieldId);
+        queue.push(target);
+      }
+    }
+
+    for (const node of queue) {
+      fieldLinkWork.loopVisits += 1;
+
+      for (const { target } of edges(node)) {
+        if (!target) continue;
+        if (target.fieldId === targetId) return true;
+        if (!seen.has(target.fieldId)) {
+          seen.add(target.fieldId);
+          queue.push(target);
+        }
+      }
+    }
+
+    return false;
+  };
+
   return {
     edges,
     link: (field: FieldElement): Chain => ({
+      edges: edges(field),
       loop: loop(field),
-      target: edges(field)[0]?.target,
     }),
     loop,
+    reaches,
   };
 };
 
@@ -463,24 +627,23 @@ const judgmentsOver = (
       }
 
       frames.pop();
-      const [edge] = frame.edges;
+      const { condition } = frame.field;
 
-      if (!edge?.target) {
+      if (!condition) {
         failInvariant('A field was judged with no condition edge.');
       }
-
-      const { target, test } = edge;
 
       fieldLinkWork.judgments += 1;
       remember(
         frame.field.fieldId,
-        judge(
-          test,
-          target,
-          read(target.fieldId) ??
+        foldEdges(
+          condition,
+          frame.edges,
+          (target) =>
+            read(target.fieldId) ??
             failInvariant('A field was judged before its condition target.'),
-          settled(target.role),
-          answerOf(target)
+          settled,
+          answerOf
         )
       );
     }
@@ -550,21 +713,25 @@ export const fieldLinks = () => {
         if (known) return known;
 
         const { condition } = field;
-        const target = conditionEdges(condition, held)[0]?.target;
+        const edges = conditionEdges(condition, held);
         const result =
-          !condition || !target || conditionProblem(condition, target)
+          !condition ||
+          edges.length === 0 ||
+          edges.some(
+            ({ target, test }) => !target || conditionProblem(test, target)
+          )
             ? APPLIES
-            : judge(
+            : foldEdges(
                 condition,
-                target,
-                verdict(target),
-                target.role === field.role,
-                target.value
+                edges,
+                verdict,
+                (role) => role === field.role,
+                ({ value }) => value
               );
 
         fieldLinkWork.judgments += 1;
 
-        const link: FieldLink = { ...result, loop: false, target };
+        const link: FieldLink = { ...result, edges, loop: false };
 
         copies.set(field, link);
 
@@ -698,20 +865,81 @@ export const nameProblems = (
     right: FieldCondition | undefined
   ): readonly NameGroup[] | null => {
     if (!left || !right) return left === right ? [] : null;
-    if (left.test !== right.test || !Object.is(left.value, right.value)) {
-      return null;
+    if (conditionForm(left) !== conditionForm(right)) return null;
+
+    const leftTests = conditionTests(left);
+    const rightTests = conditionTests(right);
+
+    if (leftTests.length !== rightTests.length) return null;
+
+    const unmatchedRight = new Map<string, number[]>();
+
+    for (const [at, entry] of rightTests.entries()) {
+      const key = conditionTestKey(entry);
+      const list = unmatchedRight.get(key);
+
+      if (list) list.push(at);
+      else unmatchedRight.set(key, [at]);
     }
-    if (left.ref === right.ref) return [];
 
-    const [a, b] = [held(left.ref), held(right.ref)];
+    const leftRest: FieldConditionTest[] = [];
 
-    if (a?.name === undefined || a.name !== b?.name || a.role !== b.role) {
-      return null;
+    for (const entry of leftTests) {
+      const indices = unmatchedRight.get(conditionTestKey(entry));
+
+      if (indices && indices.length > 0) indices.pop();
+      else leftRest.push(entry);
     }
 
-    return [
-      { key: JSON.stringify([a.role, a.name]), name: a.name, role: a.role },
-    ];
+    if (leftRest.length === 0) return [];
+
+    const rightRest = [...unmatchedRight.values()]
+      .flat()
+      .map((at) => rightTests[at]);
+    const buckets = new Map<string, number>();
+    const deps = new Map<string, NameGroup>();
+
+    for (const entry of leftRest) {
+      const target = held(entry.ref);
+
+      if (target?.name === undefined) return null;
+
+      const bucketKey = JSON.stringify([
+        entry.test,
+        conditionValueKey(entry.value),
+        target.role,
+        target.name,
+      ]);
+
+      buckets.set(bucketKey, (buckets.get(bucketKey) ?? 0) + 1);
+
+      const groupKey = JSON.stringify([target.role, target.name]);
+
+      deps.set(groupKey, {
+        key: groupKey,
+        name: target.name,
+        role: target.role,
+      });
+    }
+
+    for (const entry of rightRest) {
+      const target = held(entry.ref);
+
+      if (target?.name === undefined) return null;
+
+      const bucketKey = JSON.stringify([
+        entry.test,
+        conditionValueKey(entry.value),
+        target.role,
+        target.name,
+      ]);
+      const count = buckets.get(bucketKey) ?? 0;
+
+      if (count === 0) return null;
+      buckets.set(bucketKey, count - 1);
+    }
+
+    return [...deps.values()];
   };
   const inspect = (
     role: string,

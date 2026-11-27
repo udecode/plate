@@ -79,8 +79,9 @@ export type FieldRefusal =
 
 /**
  * The filled document, or the refusals. `pending` lists each role that has not
- * submitted and holds a required field that applies or waits, and the role
- * whose answer each such waiting field needs next.
+ * submitted and holds a required field that applies or waits, and every other
+ * role in the wait of any waiting field (required or optional) of an
+ * unsubmitted role.
  */
 export type FieldApplyResult<D extends EditorDocumentValue | Value> =
   | Readonly<{ document: D; ok: true; pending: readonly string[] }>
@@ -407,7 +408,7 @@ const replaySubmissions = (
           fieldId,
           ...nameOf(field),
           role,
-          waitsOn: verdict.waitsOn,
+          waitsOn: verdict.waitsOn[0],
         });
         refusedIds.add(fieldId);
         continue;
@@ -450,15 +451,18 @@ const replaySubmissions = (
   const pending = new Set<string>();
 
   for (const field of fields) {
-    if (settled.has(field.role) || !field.required) continue;
+    if (settled.has(field.role)) continue;
+    if (!field.required && !field.condition) continue;
 
     const verdict = judgePending(field);
 
     if (verdict.applies === false) continue;
-
-    pending.add(field.role);
-
-    if (verdict.applies === null) pending.add(verdict.waitsOn);
+    if (field.required) pending.add(field.role);
+    if (verdict.applies === null) {
+      for (const role of verdict.waitsOn) {
+        if (role !== field.role) pending.add(role);
+      }
+    }
   }
 
   return {

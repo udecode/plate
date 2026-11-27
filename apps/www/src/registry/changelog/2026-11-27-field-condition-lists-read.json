@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-field-condition-lists-read",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-field-condition-lists-read.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Display stored multi-rule field conditions in Show when",
+  "targets": [
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-field-condition-lists-read",
+      "kind": "behavior",
+      "summary": "Display stored `all` and `any` condition lists in the Show when settings view without overwriting them.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with the copied `field` component to handle `all` and `any` `FieldCondition` lists."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-condition-lists-read",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

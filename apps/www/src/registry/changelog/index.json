@@ -43,6 +43,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-field-condition-lists-read",
+      "href": "/registry/changelog/2026-11-27-field-condition-lists-read.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Display stored multi-rule field conditions in Show when",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-field-condition-targets",
       "href": "/registry/changelog/2026-11-27-field-condition-targets.json",
       "status": "draft",

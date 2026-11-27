@@ -34,7 +34,10 @@ import {
   carryFieldNames,
   conditionGraph,
   conditionProblem,
+  conditionRefs,
   conditionTargets,
+  conditionTestKey,
+  conditionTests,
   dropFieldNames,
   FIELD_KINDS,
   fieldProblems,
@@ -73,14 +76,23 @@ export type FieldTest =
   | 'not-equals';
 
 /**
- * When a field applies: the field whose `fieldId` is `ref` passes `test`.
- * Every test but `filled` and `blank` compares against `value`.
+ * One test on another field's answer: the field whose `fieldId` is `ref`
+ * passes `test`. Every test but `filled` and `blank` compares against `value`.
  */
-export type FieldCondition = Readonly<{
+export type FieldConditionTest = Readonly<{
   ref: string;
   test: FieldTest;
-  value?: FieldValue;
+  value?: boolean | number | string;
 }>;
+
+/**
+ * When a field applies: one test on another field's answer, or a list of two
+ * or more tests where every test (`all`) or any test (`any`) must hold.
+ */
+export type FieldCondition =
+  | FieldConditionTest
+  | Readonly<{ all: readonly FieldConditionTest[] }>
+  | Readonly<{ any: readonly FieldConditionTest[] }>;
 
 /**
  * What a read finds wrong with a field. `missing-target`: no field holds the
@@ -302,14 +314,35 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
     },
     properties: {
       condition: schema.elementProperty(
-        property.json({ validate: isFieldCondition, validationVersion: 1 }),
+        property.json({ validate: isFieldCondition, validationVersion: 2 }),
         {
           references: {
             key: 'fieldId',
-            map: (condition, renamed) => ({
-              ...condition,
-              ref: renamed(condition.ref) ?? condition.ref,
-            }),
+            map: (condition, renamed) => {
+              const mapTest = (
+                entry: FieldConditionTest
+              ): FieldConditionTest => ({
+                ...entry,
+                ref: renamed(entry.ref) ?? entry.ref,
+              });
+
+              if (Object.hasOwn(condition, 'all')) {
+                const list = condition as Readonly<{
+                  all: readonly FieldConditionTest[];
+                }>;
+
+                return { ...list, all: list.all.map(mapTest) };
+              }
+              if (Object.hasOwn(condition, 'any')) {
+                const list = condition as Readonly<{
+                  any: readonly FieldConditionTest[];
+                }>;
+
+                return { ...list, any: list.any.map(mapTest) };
+              }
+
+              return mapTest(condition as FieldConditionTest);
+            },
           },
           target: target.types([FIELD_TYPE]),
           typeChange: 'preserve-if-allowed',
@@ -730,14 +763,32 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
         };
         const checkCondition = (
           condition: FieldCondition,
-          self?: FieldElement
+          before?: FieldElement,
+          after?: FieldElement
         ) => {
-          const problem = conditionProblem(
-            condition,
-            condition.ref === self?.fieldId ? self : held(condition.ref)[0]
-          );
+          const prior = new Map<string, FieldProblem>();
 
-          if (problem) throw refusal(`its condition has ${problem}`);
+          if (before?.condition) {
+            for (const entry of conditionTests(before.condition)) {
+              const problem = conditionProblem(
+                entry,
+                entry.ref === before.fieldId ? before : held(entry.ref)[0]
+              );
+
+              if (problem) prior.set(conditionTestKey(entry), problem);
+            }
+          }
+
+          for (const entry of conditionTests(condition)) {
+            const problem = conditionProblem(
+              entry,
+              entry.ref === after?.fieldId ? after : held(entry.ref)[0]
+            );
+
+            if (problem && prior.get(conditionTestKey(entry)) !== problem) {
+              throw refusal(`its condition has ${problem}`);
+            }
+          }
         };
 
         return {
@@ -761,7 +812,12 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
               if (unfit) {
                 throw refusal(`${unfit} does not fit a ${settings.kind} field`);
               }
-              if (settings.condition) checkCondition(settings.condition);
+              if (
+                settings.condition !== undefined &&
+                isFieldCondition(settings.condition)
+              ) {
+                checkCondition(settings.condition);
+              }
 
               const field = tx.schema.create(type, settings);
 
@@ -783,12 +839,12 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
            * and changes nothing, when no field holds `fieldId`, a setting the
            * patch names does not fit the field's kind, the patch removes `kind`,
            * `role` or `label`, names `fieldId` or gives a `name` that `insert`
-           * refuses, or its condition names no field, a test or value the
-           * named field's kind does not take, or a
-           * field it did not name before whose chain of conditions leads back
-           * to this one. While a fill role is set, a missing field or a
-           * setting that does not fit refuses the whole update instead, which
-           * then returns `undefined`.
+           * refuses, or its condition has a test with a problem that the same
+           * test did not have before the patch (whether the patch added the
+           * test or changed this field's kind or options under it), or adds a
+           * ref whose chain of conditions leads back to this field. While a
+           * fill role is set, a missing field or a setting that does not fit
+           * refuses the whole update instead, which then returns `undefined`.
            */
           update: txLocate(false, (fieldId: string, patch: FieldPatch) => {
             if ('fieldId' in patch) throw refusal('fieldId is not a setting');
@@ -816,20 +872,38 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                 `${named} does not fit a ${next.kind} field`
               );
             }
-            if (patch.condition) {
-              checkCondition(patch.condition, next);
+            const reshaped = 'kind' in patch || 'options' in patch;
+
+            if (
+              patch.condition !== undefined &&
+              isFieldCondition(patch.condition)
+            ) {
+              checkCondition(patch.condition, field, next);
+
+              const beforeRefs = new Set(conditionRefs(field.condition));
+              const addedRefs = new Set(
+                conditionRefs(patch.condition).filter(
+                  (ref) => !beforeRefs.has(ref)
+                )
+              );
 
               if (
-                patch.condition.ref !== field.condition?.ref &&
+                addedRefs.size > 0 &&
                 conditionGraph((id) =>
                   id === fieldId ? next : held(id)[0]
-                ).loop(next)
+                ).reaches(next, fieldId, addedRefs)
               ) {
                 throw refusal('its condition closes a loop');
               }
+            } else if (
+              !('condition' in patch) &&
+              reshaped &&
+              field.condition &&
+              isFieldCondition(field.condition)
+            ) {
+              checkCondition(field.condition, field, next);
             }
 
-            const reshaped = 'kind' in patch || 'options' in patch;
             const valuesOnly = Object.keys(patch).every(
               (setting) => setting === 'value'
             );

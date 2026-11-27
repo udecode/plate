@@ -7,6 +7,8 @@ import { AuthoredPlugin } from 'platejs/authored';
 import {
   FIELD_TESTS,
   fitsField,
+  type FieldCondition,
+  type FieldConditionTest,
   type FieldKind,
   type FieldOption,
   type FieldPatch,
@@ -87,12 +89,19 @@ const fillableTests = (target: FieldSettings) =>
   FIELD_TESTS[target.kind].filter(
     (test) => !needsValue(test) || firstValue(target) !== undefined
   );
+const isConditionList = (
+  condition: FieldCondition
+): condition is
+  | Readonly<{ all: readonly FieldConditionTest[] }>
+  | Readonly<{ any: readonly FieldConditionTest[] }> =>
+  Object.hasOwn(condition, 'all') || Object.hasOwn(condition, 'any');
+
 const conditionOn = (
   ref: string,
   target: FieldSettings,
   test: FieldTest,
   value?: FieldValue
-) => ({
+): FieldConditionTest => ({
   ref,
   test,
   ...(needsValue(test) ? { value: value ?? firstValue(target) } : {}),
@@ -358,7 +367,46 @@ function FieldSettingsForm({
 
   const choices = targetIds.flatMap((id) => byId.get(id) ?? []);
   const targets = fields.filter((entry) => entry.fieldId !== fieldId);
-  const target = fields.find((entry) => entry.fieldId === condition?.ref)?.node;
+  const singleCondition =
+    condition && !isConditionList(condition) ? condition : undefined;
+  const listCondition =
+    condition && isConditionList(condition) ? condition : undefined;
+  const listRules = listCondition
+    ? Object.hasOwn(listCondition, 'all')
+      ? (listCondition as Readonly<{ all: readonly FieldConditionTest[] }>).all
+      : (listCondition as Readonly<{ any: readonly FieldConditionTest[] }>).any
+    : [];
+  const listRows = (() => {
+    const seen = new Map<string, number>();
+
+    return listRules.map((rule) => {
+      const ruleTarget = byId.get(rule.ref)?.node;
+      const targetLabel = ruleTarget
+        ? ruleTarget.name === undefined
+          ? ruleTarget.label
+          : `${ruleTarget.label} (${ruleTarget.name})`
+        : 'Missing field';
+      const formattedValue =
+        ruleTarget?.options?.find((option) => option.value === rule.value)
+          ?.label ?? (rule.value === '' ? '""' : String(rule.value));
+      const valueLabel =
+        needsValue(rule.test) && rule.value !== undefined
+          ? ` ${formattedValue}`
+          : '';
+      const baseKey = `${rule.ref}:${rule.test}:${String(rule.value ?? '')}`;
+      const occurrence = (seen.get(baseKey) ?? 0) + 1;
+
+      seen.set(baseKey, occurrence);
+
+      return {
+        key: `${baseKey}#${occurrence}`,
+        text: `${targetLabel} ${TEST_LABELS[rule.test]}${valueLabel}`,
+      };
+    });
+  })();
+  const target = fields.find(
+    (entry) => entry.fieldId === singleCondition?.ref
+  )?.node;
   const tests = target ? fillableTests(target) : [];
 
   return (
@@ -475,84 +523,110 @@ function FieldSettingsForm({
           />
         </>
       )}
-      <Label htmlFor={`${fieldId}-condition`}>Show when</Label>
-      <NativeSelect
-        id={`${fieldId}-condition`}
-        size="sm"
-        value={condition ? `#${condition.ref}` : ''}
-        onChange={(event) => {
-          const next = choices.find(
-            (entry) => `#${entry.fieldId}` === event.target.value
-          );
-
-          update({
-            condition:
-              next &&
-              conditionOn(next.fieldId, next.node, fillableTests(next.node)[0]),
-          });
-        }}
-      >
-        <NativeSelectOption value="">Always</NativeSelectOption>
-        {condition && !target && (
-          <NativeSelectOption value={`#${condition.ref}`}>
-            Missing field
-          </NativeSelectOption>
-        )}
-        {choices.map((entry) => (
-          <NativeSelectOption key={entry.fieldId} value={`#${entry.fieldId}`}>
-            {entry.node.name === undefined
-              ? entry.node.label
-              : `${entry.node.label} (${entry.node.name})`}
-          </NativeSelectOption>
-        ))}
-      </NativeSelect>
-      {condition && target && (
-        <div className="col-start-2 flex gap-1">
+      {listCondition ? (
+        <>
+          <Label className="self-start pt-1">Show when</Label>
+          <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">
+              {'all' in listCondition ? 'Match all' : 'Match any'}
+            </span>
+            <ul className="flex flex-col gap-1">
+              {listRows.map((row) => (
+                <li key={row.key}>{row.text}</li>
+              ))}
+            </ul>
+          </div>
+        </>
+      ) : (
+        <>
+          <Label htmlFor={`${fieldId}-condition`}>Show when</Label>
           <NativeSelect
-            aria-label="Test"
+            id={`${fieldId}-condition`}
             size="sm"
-            value={condition.test}
+            value={singleCondition ? `#${singleCondition.ref}` : ''}
             onChange={(event) => {
-              if (!isTest(event.target.value)) return;
+              const next = choices.find(
+                (entry) => `#${entry.fieldId}` === event.target.value
+              );
 
               update({
-                condition: conditionOn(
-                  condition.ref,
-                  target,
-                  event.target.value,
-                  fitsField(target, condition.value)
-                    ? condition.value
-                    : undefined
-                ),
+                condition:
+                  next &&
+                  conditionOn(
+                    next.fieldId,
+                    next.node,
+                    fillableTests(next.node)[0]
+                  ),
               });
             }}
           >
-            {[...new Set([...tests, condition.test])].map((test) => (
-              <NativeSelectOption key={test} value={test}>
-                {TEST_LABELS[test]}
+            <NativeSelectOption value="">Always</NativeSelectOption>
+            {singleCondition && !target && (
+              <NativeSelectOption value={`#${singleCondition.ref}`}>
+                Missing field
+              </NativeSelectOption>
+            )}
+            {choices.map((entry) => (
+              <NativeSelectOption
+                key={entry.fieldId}
+                value={`#${entry.fieldId}`}
+              >
+                {entry.node.name === undefined
+                  ? entry.node.label
+                  : `${entry.node.label} (${entry.node.name})`}
               </NativeSelectOption>
             ))}
           </NativeSelect>
-          {needsValue(condition.test) && tests.includes(condition.test) && (
-            <FieldValueInput
-              clearable={false}
-              kind={target.kind}
-              label="Compared value"
-              options={target.options}
-              value={condition.value}
-              onChange={(value) =>
-                update({
-                  condition: conditionOn(
-                    condition.ref,
-                    target,
-                    condition.test,
-                    value
-                  ),
-                })
-              }
-            />
+          {singleCondition && target && (
+            <div className="col-start-2 flex gap-1">
+              <NativeSelect
+                aria-label="Test"
+                size="sm"
+                value={singleCondition.test}
+                onChange={(event) => {
+                  if (!isTest(event.target.value)) return;
+
+                  update({
+                    condition: conditionOn(
+                      singleCondition.ref,
+                      target,
+                      event.target.value,
+                      fitsField(target, singleCondition.value)
+                        ? singleCondition.value
+                        : undefined
+                    ),
+                  });
+                }}
+              >
+                {[...new Set([...tests, singleCondition.test])].map((test) => (
+                  <NativeSelectOption key={test} value={test}>
+                    {TEST_LABELS[test]}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+              {needsValue(singleCondition.test) &&
+                tests.includes(singleCondition.test) && (
+                  <FieldValueInput
+                    clearable={false}
+                    kind={target.kind}
+                    label="Compared value"
+                    options={target.options}
+                    value={singleCondition.value}
+                    onChange={(value) =>
+                      update({
+                        condition: conditionOn(
+                          singleCondition.ref,
+                          target,
+                          singleCondition.test,
+                          value
+                        ),
+                      })
+                    }
+                  />
+                )}
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
