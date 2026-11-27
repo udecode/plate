@@ -547,6 +547,12 @@ export type EditorEffectHistoryReplayResult<TValue = unknown> =
   | Readonly<{ status: 'applied'; value: TValue }>
   | Readonly<{ reason: string; status: 'blocked' }>;
 
+/** What History hands a session effect's replay beside the step's value. */
+export type EditorEffectHistoryReplayContext<TValue = unknown> = Readonly<{
+  /** The step's first write, until an undo of the step applies. */
+  firstWrite: Promise<EditorEffectHistoryReplayResult<TValue>> | null;
+}>;
+
 /** Final outcome of a replay that waited on its effect owner or failed. */
 export type HistorySettlement =
   | Readonly<{ status: 'applied' }>
@@ -688,7 +694,8 @@ export type EditorEffectCollabReplay = 'latest' | 'live';
 
 type EditorEffectHistoryReplay<TValue> = (
   editor: Editor,
-  value: TValue
+  value: TValue,
+  context: EditorEffectHistoryReplayContext<TValue>
 ) =>
   | EditorEffectHistoryReplayResult<TValue>
   | Promise<EditorEffectHistoryReplayResult<TValue>>;
@@ -3079,6 +3086,17 @@ export type EditorLifecycleError<TEditor = Editor> =
        * after its outcome threw, such as `onHistoryReplay` or focus repair.
        */
       phase: 'observer' | 'replay';
+      source: 'history';
+    }>
+  | Readonly<{
+      cause: unknown;
+      editor: TEditor;
+      /**
+       * A session step's first write rejected or answered malformed, its
+       * settlement commit threw, or its record faulted after History
+       * published the step.
+       */
+      phase: 'apply';
       source: 'history';
     }>
   | Readonly<{

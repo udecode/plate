@@ -307,6 +307,7 @@ export type {
   EditorUpdateTransaction,
   EditorUpdateValueFromPlugin,
   EditorUniqueHolder,
+  EditorEffectHistoryReplayContext,
   EditorEffectHistoryReplayResult,
   HistoryApi,
   HistoryOutcome,

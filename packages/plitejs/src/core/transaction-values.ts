@@ -1,6 +1,7 @@
 import type {
   EditorCoreStateView,
   EditorEffect,
+  EditorEffectHistoryReplayContext,
   EditorEffectHistoryReplayResult,
   EditorEffectType,
   EditorUpdateAnnotation,
@@ -25,7 +26,8 @@ type DefineEffectBaseOptions<
 type DefineEffectSessionHistory<TValue> = Readonly<{
   replay: (
     editor: Editor,
-    value: TValue
+    value: TValue,
+    context: EditorEffectHistoryReplayContext<TValue>
   ) =>
     | EditorEffectHistoryReplayResult<TValue>
     | Promise<EditorEffectHistoryReplayResult<TValue>>;

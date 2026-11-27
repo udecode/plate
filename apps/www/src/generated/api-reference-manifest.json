@@ -2304,6 +2304,19 @@
             "TValue = unknown"
           ]
         },
+        "platejs:EditorEffectHistoryReplayContext": {
+          "aliases": [],
+          "documentation": "What History hands a session effect's replay beside the step's value.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorEffectHistoryReplayContext",
+          "runtime": false,
+          "signature": "type EditorEffectHistoryReplayContext<TValue = unknown> = Readonly<{\n  /** The step's first write, until an undo of the step applies. */\n  firstWrite: Promise<EditorEffectHistoryReplayResult<TValue>> | null;\n}>;",
+          "source": null,
+          "typeParameters": [
+            "TValue = unknown"
+          ]
+        },
         "platejs:EditorEffectHistoryReplayResult": {
           "aliases": [],
           "documentation": "Result of replaying one live-session history effect.",
@@ -2472,7 +2485,7 @@
           "kind": "type",
           "name": "EditorLifecycleError",
           "runtime": false,
-          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'cleanup' | 'measure' | 'publish';\n  source: 'pagination';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'mount' | 'update' | 'focus' | 'offsetAt' | 'destroy';\n  source: 'external-text';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  phase: 'after-commit' | 'afterPublish' | 'cleanup' | 'commit-listener' | 'node-change-listener' | 'snapshot-listener' | 'source-listener' | 'text-change-listener';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  mimeType: string;\n  key: string;\n  phase: 'accept' | 'decode' | 'encode';\n  source: 'data-transfer-format';\n}> | Readonly<{\n  cause: unknown;\n  direction: 'redo' | 'undo';\n  editor: TEditor;\n  /**\n   * `replay` when the replay could not finish; `observer` when a step\n   * after its outcome threw, such as `onHistoryReplay` or focus repair.\n   */\n  phase: 'observer' | 'replay';\n  source: 'history';\n}> | Readonly<{\n  cause: Error;\n  /** The editable child the renderer left without DOM or a DOM coverage boundary. */\n  childPath: Path;\n  editor: TEditor;\n  /** The element whose `renderElement` omitted the child. */\n  element: Element;\n  path: Path;\n  /**\n   * `commit` from the development check after an element renders;\n   * `selection-export` from a failed post-commit selection export.\n   */\n  phase: 'commit' | 'selection-export';\n  source: 'render-element';\n}> | Readonly<{\n  cause: Error;\n  editor: TEditor;\n  /** This peer's copy of the root, which the merge replaced. */\n  lost: readonly Descendant[];\n  /**\n   * `merge` when a teammate's concurrent write of a root replaced this\n   * peer's copy, such as when both restored one deleted board apart.\n   */\n  phase: 'merge';\n  root: NamedRootKey;\n  source: 'yjs';\n}>;",
+          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'cleanup' | 'measure' | 'publish';\n  source: 'pagination';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'mount' | 'update' | 'focus' | 'offsetAt' | 'destroy';\n  source: 'external-text';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  phase: 'after-commit' | 'afterPublish' | 'cleanup' | 'commit-listener' | 'node-change-listener' | 'snapshot-listener' | 'source-listener' | 'text-change-listener';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  mimeType: string;\n  key: string;\n  phase: 'accept' | 'decode' | 'encode';\n  source: 'data-transfer-format';\n}> | Readonly<{\n  cause: unknown;\n  direction: 'redo' | 'undo';\n  editor: TEditor;\n  /**\n   * `replay` when the replay could not finish; `observer` when a step\n   * after its outcome threw, such as `onHistoryReplay` or focus repair.\n   */\n  phase: 'observer' | 'replay';\n  source: 'history';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  /**\n   * A session step's first write rejected or answered malformed, its\n   * settlement commit threw, or its record faulted after History\n   * published the step.\n   */\n  phase: 'apply';\n  source: 'history';\n}> | Readonly<{\n  cause: Error;\n  /** The editable child the renderer left without DOM or a DOM coverage boundary. */\n  childPath: Path;\n  editor: TEditor;\n  /** The element whose `renderElement` omitted the child. */\n  element: Element;\n  path: Path;\n  /**\n   * `commit` from the development check after an element renders;\n   * `selection-export` from a failed post-commit selection export.\n   */\n  phase: 'commit' | 'selection-export';\n  source: 'render-element';\n}> | Readonly<{\n  cause: Error;\n  editor: TEditor;\n  /** This peer's copy of the root, which the merge replaced. */\n  lost: readonly Descendant[];\n  /**\n   * `merge` when a teammate's concurrent write of a root replaced this\n   * peer's copy, such as when both restored one deleted board apart.\n   */\n  phase: 'merge';\n  root: NamedRootKey;\n  source: 'yjs';\n}>;",
           "source": null,
           "typeParameters": [
             "TEditor = Editor"
@@ -19294,6 +19307,19 @@
             "TValue = unknown"
           ]
         },
+        "platejs/react:EditorEffectHistoryReplayContext": {
+          "aliases": [],
+          "documentation": "What History hands a session effect's replay beside the step's value.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "EditorEffectHistoryReplayContext",
+          "runtime": false,
+          "signature": "type EditorEffectHistoryReplayContext<TValue = unknown> = Readonly<{\n  /** The step's first write, until an undo of the step applies. */\n  firstWrite: Promise<EditorEffectHistoryReplayResult<TValue>> | null;\n}>;",
+          "source": null,
+          "typeParameters": [
+            "TValue = unknown"
+          ]
+        },
         "platejs/react:EditorEffectHistoryReplayResult": {
           "aliases": [],
           "documentation": "Result of replaying one live-session history effect.",
@@ -19546,7 +19572,7 @@
           "kind": "type",
           "name": "EditorLifecycleError",
           "runtime": false,
-          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'cleanup' | 'measure' | 'publish';\n  source: 'pagination';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'mount' | 'update' | 'focus' | 'offsetAt' | 'destroy';\n  source: 'external-text';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  phase: 'after-commit' | 'afterPublish' | 'cleanup' | 'commit-listener' | 'node-change-listener' | 'snapshot-listener' | 'source-listener' | 'text-change-listener';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  mimeType: string;\n  key: string;\n  phase: 'accept' | 'decode' | 'encode';\n  source: 'data-transfer-format';\n}> | Readonly<{\n  cause: unknown;\n  direction: 'redo' | 'undo';\n  editor: TEditor;\n  /**\n   * `replay` when the replay could not finish; `observer` when a step\n   * after its outcome threw, such as `onHistoryReplay` or focus repair.\n   */\n  phase: 'observer' | 'replay';\n  source: 'history';\n}> | Readonly<{\n  cause: Error;\n  /** The editable child the renderer left without DOM or a DOM coverage boundary. */\n  childPath: Path;\n  editor: TEditor;\n  /** The element whose `renderElement` omitted the child. */\n  element: Element;\n  path: Path;\n  /**\n   * `commit` from the development check after an element renders;\n   * `selection-export` from a failed post-commit selection export.\n   */\n  phase: 'commit' | 'selection-export';\n  source: 'render-element';\n}> | Readonly<{\n  cause: Error;\n  editor: TEditor;\n  /** This peer's copy of the root, which the merge replaced. */\n  lost: readonly Descendant[];\n  /**\n   * `merge` when a teammate's concurrent write of a root replaced this\n   * peer's copy, such as when both restored one deleted board apart.\n   */\n  phase: 'merge';\n  root: NamedRootKey;\n  source: 'yjs';\n}>;",
+          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'cleanup' | 'measure' | 'publish';\n  source: 'pagination';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'mount' | 'update' | 'focus' | 'offsetAt' | 'destroy';\n  source: 'external-text';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  phase: 'after-commit' | 'afterPublish' | 'cleanup' | 'commit-listener' | 'node-change-listener' | 'snapshot-listener' | 'source-listener' | 'text-change-listener';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  mimeType: string;\n  key: string;\n  phase: 'accept' | 'decode' | 'encode';\n  source: 'data-transfer-format';\n}> | Readonly<{\n  cause: unknown;\n  direction: 'redo' | 'undo';\n  editor: TEditor;\n  /**\n   * `replay` when the replay could not finish; `observer` when a step\n   * after its outcome threw, such as `onHistoryReplay` or focus repair.\n   */\n  phase: 'observer' | 'replay';\n  source: 'history';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  /**\n   * A session step's first write rejected or answered malformed, its\n   * settlement commit threw, or its record faulted after History\n   * published the step.\n   */\n  phase: 'apply';\n  source: 'history';\n}> | Readonly<{\n  cause: Error;\n  /** The editable child the renderer left without DOM or a DOM coverage boundary. */\n  childPath: Path;\n  editor: TEditor;\n  /** The element whose `renderElement` omitted the child. */\n  element: Element;\n  path: Path;\n  /**\n   * `commit` from the development check after an element renders;\n   * `selection-export` from a failed post-commit selection export.\n   */\n  phase: 'commit' | 'selection-export';\n  source: 'render-element';\n}> | Readonly<{\n  cause: Error;\n  editor: TEditor;\n  /** This peer's copy of the root, which the merge replaced. */\n  lost: readonly Descendant[];\n  /**\n   * `merge` when a teammate's concurrent write of a root replaced this\n   * peer's copy, such as when both restored one deleted board apart.\n   */\n  phase: 'merge';\n  root: NamedRootKey;\n  source: 'yjs';\n}>;",
           "source": null,
           "typeParameters": [
             "TEditor = Editor"

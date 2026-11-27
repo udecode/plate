@@ -49,6 +49,7 @@ import type { AnyEditor } from '../interfaces/editor';
 import type { SchemaRecordSet } from '../interfaces/schema';
 import { isObject } from '../utils/is-object';
 import type { Batch, History, HistoryBatchJSON, HistoryJSON } from './history';
+import { withoutFrozenRedos } from './history-first-write';
 import { checkedCarryProgram, historyReplaySchemaOf } from './history-replay';
 import {
   freezeHistoryBatch,
@@ -640,9 +641,10 @@ export const decodeHistoryValue = <V extends Value>(
 
 export const encodeHistoryValue = <V extends Value>(
   editor: Editor<V>,
-  history: Pick<History<V>, 'redos' | 'schema' | 'undos'>,
+  value: Pick<History<V>, 'redos' | 'schema' | 'undos'>,
   options: HistoryValidationOptions = {}
 ): HistoryJSON => {
+  const history = withoutFrozenRedos(value);
   const schema = copyHistorySchemaIdentity(history.schema);
 
   assertSchemaIdentity(editor, schema);

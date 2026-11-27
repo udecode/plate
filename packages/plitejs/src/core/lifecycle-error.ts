@@ -40,7 +40,10 @@ const describeSource: {
   'data-transfer-format': (error) =>
     `data-transfer-format ${error.phase} failed in plugin "${error.pluginName}" for MIME type "${error.mimeType}" and key "${error.key}"`,
   'external-text': (error) => `external-text ${error.phase} failed`,
-  history: (error) => `history ${error.phase} failed on ${error.direction}`,
+  history: (error) =>
+    error.phase === 'apply'
+      ? 'history apply failed on a session step'
+      : `history ${error.phase} failed on ${error.direction}`,
   pagination: (error) => `pagination ${error.phase} failed`,
   'render-element': (error) => `render-element ${error.phase} check failed`,
   yjs: (error) =>

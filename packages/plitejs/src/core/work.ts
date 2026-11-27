@@ -183,6 +183,8 @@ export type CoreWork = {
   /** Mounted views a root's target pick asked whether an `Editable` shows them. */
   rootTargetChecks: number;
   historyHeadRootReads: number;
+  historyBranchVisits: number;
+  historyMappingNodes: number;
   ownershipIndexVisits: number;
   ownerPathWalks: number;
   shownWritableViewChecks: number;
@@ -342,6 +344,8 @@ export const coreWork: CoreWork = {
   rootListCompares: 0,
   rootTargetChecks: 0,
   historyHeadRootReads: 0,
+  historyBranchVisits: 0,
+  historyMappingNodes: 0,
   ownershipIndexVisits: 0,
   ownerPathWalks: 0,
   shownWritableViewChecks: 0,

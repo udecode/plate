@@ -7,6 +7,7 @@ import {
   type EditorDocumentValue,
   type EditorEffect,
   type EditorEffectHistoryReplayResult,
+  type EditorEffectType,
   type EditorSchemaIdentity,
   type Plugin,
   type PluginTypeProvider,
@@ -87,6 +88,8 @@ import {
   isInTransaction,
   type EditorHistoryEntry,
   type EditorHistoryHeadRoots,
+  type EditorHistoryRecordOptions,
+  type EditorHistoryRecordResult,
   type EditorHistoryReplayReceipt,
   type EditorHistoryStep,
   recordEditorHistoryReplayReceipt,
@@ -115,6 +118,22 @@ import {
   mergeHistoryCarets,
 } from './history-carets';
 import { decodeHistoryValue, encodeHistoryValue } from './history-codec';
+import {
+  dropFrozenRedos,
+  endFirstWrite,
+  type FirstWrite,
+  type FirstWriteOutcome,
+  firstWriteChanges,
+  firstWriteOf,
+  resolveFrozenRedo,
+  isRedoFrozen,
+  joinRedoFreeze,
+  observeFirstWrite,
+  readHistory,
+  releaseFirstWrite,
+  settleFirstWrite,
+  startFirstWrite,
+} from './history-first-write';
 import {
   createHistoryBatchGroup,
   type HistoryBatchGroup,
@@ -148,8 +167,6 @@ import {
   attachKeptHistoryRedo,
   dropPendingHistoryReplayEntry,
   forgetHistoryStep,
-  getHistory,
-  getWorkingHistory,
   historyFactsOf,
   historyProgramOf,
   historyStepId,
@@ -183,6 +200,7 @@ const readHeadRoots = <V extends Value>(
   withPublishedHistoryState(editor, () => {
     let entry: ReturnType<typeof peekHistoryEntry>;
 
+    if (direction === 'redo' && isRedoFrozen(editor)) return null;
     try {
       entry = peekHistoryEntry(
         editor,
@@ -413,6 +431,59 @@ const historyReplaySettlement = defineUpdateAnnotation<HistoryReplaySettlement>(
   }
 );
 
+type HistoryRecordToken = {
+  published: boolean;
+  readonly write: FirstWrite | null;
+};
+
+type FirstWriteSettlement = {
+  readonly end: 'confirmed' | 'withdrawn';
+  published: boolean;
+  readonly undo: Extract<HistorySettlement, { status: 'blocked' }> | null;
+  readonly write: FirstWrite;
+};
+
+let nextHistoryToken = 1;
+
+/**
+ * An annotation that hands a commit's reducer one live token. Annotations
+ * clone their values, so the commit carries the token's number.
+ */
+const defineHistoryToken = <TToken>(key: string) => {
+  const annotation = defineUpdateAnnotation<number>({
+    combine: (_previous, next) => next,
+    key,
+  });
+  const tokens = new Map<number, TToken>();
+
+  return {
+    annotation,
+    of: (commit: EditorCommit) => {
+      const id = commit.annotations[key];
+
+      return typeof id === 'number' ? tokens.get(id) : undefined;
+    },
+    with: <T>(token: TToken, fn: (id: number) => T) => {
+      const id = nextHistoryToken;
+
+      nextHistoryToken += 1;
+      tokens.set(id, token);
+      try {
+        return fn(id);
+      } finally {
+        tokens.delete(id);
+      }
+    },
+  };
+};
+
+const historyRecord = defineHistoryToken<HistoryRecordToken>('history.record');
+const historyFirstWrite = defineHistoryToken<FirstWriteSettlement>(
+  'history.first-write'
+);
+
+const ON_COMMIT_PUBLISHED = new WeakMap<EditorCommit, () => void>();
+
 type PreparedHistoryReplay = Readonly<{
   receipt: EditorHistoryReplayReceipt;
   request: number;
@@ -430,6 +501,18 @@ const BUSY_HISTORY_RESULT = Object.freeze({
 const FAILED_HISTORY_RESULT = Object.freeze({
   status: 'failed',
 }) satisfies HistorySettlement;
+const RECORDED_HISTORY_RESULT = Object.freeze({
+  status: 'recorded',
+}) satisfies EditorHistoryRecordResult;
+
+const reportFirstWrite = (editor: Editor, cause: unknown) => {
+  reportEditorLifecycleError({
+    cause,
+    editor,
+    phase: 'apply',
+    source: 'history',
+  });
+};
 
 const refusalReason = (refusal: unknown) => {
   if (typeof refusal !== 'object' || refusal === null) return 'refused';
@@ -866,6 +949,107 @@ const redoWithoutSettlement = (
     historyReplaySchemaOf(editor).isSetValued
   );
 
+/**
+ * Settle a recorded step by its first write's answer: `blocked` withdraws the
+ * step, anything else confirms it, and a rejection or a malformed answer also
+ * reports once. A settlement whose commit cannot publish falls back to the
+ * base outcome, the step kept and a redo it froze dropped. The settlement runs
+ * on the owner, so a view that turns read-only meanwhile does not stop it.
+ */
+const answerFirstWrite = (
+  editor: Editor,
+  write: FirstWrite,
+  outcome: FirstWriteOutcome
+) => {
+  if (write.state === 'running' && write.identity) {
+    const end = outcome.kind === 'blocked' ? 'withdrawn' : 'confirmed';
+
+    if (firstWriteChanges(editor, write.identity, end)) {
+      const settlement: FirstWriteSettlement = {
+        end,
+        published: false,
+        undo:
+          outcome.kind === 'blocked'
+            ? Object.freeze({ reason: outcome.reason, status: 'blocked' })
+            : null,
+        write,
+      };
+
+      try {
+        historyFirstWrite.with(settlement, (id) =>
+          getEditorRuntime(getEditorRuntimeOwner(editor)).update(
+            (tx) => {
+              tx.annotations.set(historyFirstWrite.annotation, id);
+            },
+            { ignoreGuardRefusals: true }
+          )
+        );
+      } catch (error) {
+        reportFirstWrite(editor, error);
+      }
+      if (!settlement.published) {
+        dropFrozenRedos(editor, write.identity);
+        endFirstWrite(write, 'confirmed');
+      }
+    } else {
+      endFirstWrite(write, end);
+    }
+  }
+  if (outcome.kind === 'failed') reportFirstWrite(editor, outcome.cause);
+};
+
+/**
+ * Record one session step in its own update. A first write is observed before
+ * anything can throw, and the step counts as recorded once History publishes
+ * it, whatever faults after.
+ */
+const recordHistoryStep = (
+  editor: Editor,
+  effect: EditorEffectType,
+  value: unknown,
+  { firstWrite }: EditorHistoryRecordOptions
+): EditorHistoryRecordResult => {
+  const write = firstWrite
+    ? observeFirstWrite(firstWrite, (observed, outcome) =>
+        answerFirstWrite(editor, observed, outcome)
+      )
+    : null;
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (isInTransaction(owner) || isBuildingTransactionSpec(owner)) {
+    throw new Error(
+      'History record cannot run inside editor.update or a transaction spec.'
+    );
+  }
+  if (typeof effect.history !== 'object') {
+    throw new Error(
+      `History records only session effects; "${effect.key}" has no replay owner.`
+    );
+  }
+  if (editor.read.view.isReadOnly()) {
+    return Object.freeze({ reason: 'read-only', status: 'blocked' });
+  }
+
+  const token: HistoryRecordToken = { published: false, write };
+  let blocked: HistoryOutcome | null;
+
+  try {
+    blocked = historyRecord.with(token, (id) =>
+      blockedOf(editor, (tx) => {
+        tx.effects.emit(effect, value);
+        tx.annotations.set(historyRecord.annotation, id);
+      })
+    );
+  } catch (error) {
+    if (!token.published) throw error;
+    reportFirstWrite(editor, error);
+    return RECORDED_HISTORY_RESULT;
+  }
+  if (token.published) return RECORDED_HISTORY_RESULT;
+  if (blocked && 'reason' in blocked) return blocked;
+  throw new Error('History did not record the session step.');
+};
+
 const shouldSaveCommit = (
   commit: EditorCommit,
   effects: readonly EditorEffect[]
@@ -899,11 +1083,37 @@ const createHistoryPlugin = <
       ? keyedHistoryCarets(commitCarets, before, after)
       : null;
 
-    if (
-      configureHistoryState(editor, getHistoryMaxDepth(options), schema) ||
-      PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
-    ) {
+    const schemaChanged = configureHistoryState(
+      editor,
+      getHistoryMaxDepth(options),
+      schema
+    );
+
+    if (schemaChanged) dropPendingHistoryReplayEntry(editor);
+    if (schemaChanged || PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)) {
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      return undefined;
+    }
+
+    const firstWrite = historyFirstWrite.of(commit);
+
+    // A first write's answer can land while the user types, so its commit
+    // keeps the typing clock and the typing stays one step.
+    if (firstWrite?.write.identity) {
+      const endsUndo = settleFirstWrite(
+        editor,
+        firstWrite.write.identity,
+        firstWrite.end
+      );
+
+      ON_COMMIT_PUBLISHED.set(commit, () => {
+        firstWrite.published = true;
+        endFirstWrite(
+          firstWrite.write,
+          firstWrite.end,
+          endsUndo ? firstWrite.undo : null
+        );
+      });
       return undefined;
     }
 
@@ -952,7 +1162,8 @@ const createHistoryPlugin = <
     }
 
     if (replaySettlement) {
-      const claimVersion = readPendingHistoryReplay(editor)?.claimVersion;
+      const claim = readPendingHistoryReplay(editor);
+      const claimVersion = claim?.claimVersion;
       const identity = settlePendingHistoryReplay(editor, {
         ...(replaySettlement.status === 'applied'
           ? { after, change: inverse, effects, forward: changes }
@@ -962,6 +1173,18 @@ const createHistoryPlugin = <
       });
 
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      // An applied undo confirms its step and lets its first write go, even
+      // when a mapping removed the step meanwhile, so a redo the step froze
+      // clears and a late answer of that write changes nothing.
+      if (
+        replaySettlement.status === 'applied' &&
+        claim?.direction === 'undo'
+      ) {
+        const step = claim.identity;
+
+        if (!identity) settleFirstWrite(editor, step, 'confirmed');
+        ON_COMMIT_PUBLISHED.set(commit, () => releaseFirstWrite(step));
+      }
       return identity
         ? Object.freeze({
             receipt: Object.freeze({
@@ -995,7 +1218,7 @@ const createHistoryPlugin = <
           editor,
           {
             redos: [],
-            schema: getWorkingHistory(editor).schema,
+            schema: captureHistoryState(editor)?.schema ?? schema,
             undos: [],
           },
           after
@@ -1347,7 +1570,7 @@ const createHistoryPlugin = <
 
       const joined = withHistoryFacts(mergedBatch, mergedFacts);
 
-      replaceHistoryHead(editor, 'undos', joined, after, {
+      replaceHistoryHead(editor, joined, after, {
         anchorCeiling: lastEntry.anchorCeiling,
         carets: mergeHistoryCarets(
           editor,
@@ -1377,10 +1600,15 @@ const createHistoryPlugin = <
           : {}),
       });
     } else {
-      const identity = writeHistory(editor, 'undos', preparedBatch, after, {
+      const recordToken = historyRecord.of(commit);
+      const freezes =
+        !!recordToken?.write &&
+        !pendingReplayEdited &&
+        !!captureHistoryState(editor)?.redos;
+      const identity = writeHistory(editor, preparedBatch, after, {
         anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
         carets,
-        clearRedos: true,
+        clearRedos: !freezes,
         commit: { after, before, change: changes },
         group: boundary
           ? Object.freeze({
@@ -1394,6 +1622,13 @@ const createHistoryPlugin = <
         ...(takesBackCommit ? { restores: before } : {}),
       });
 
+      if (freezes) joinRedoFreeze(editor, identity);
+      if (recordToken) {
+        ON_COMMIT_PUBLISHED.set(commit, () => {
+          recordToken.published = true;
+          if (recordToken.write) startFirstWrite(recordToken.write, identity);
+        });
+      }
       COMMIT_STEPS.set(commit, { how: 'push', identity });
       COMMIT_ENTRIES.set(commit, {
         ...savedEdges,
@@ -1540,9 +1775,11 @@ const createHistoryPlugin = <
         const request = nextHistoryReplayRequest;
         nextHistoryReplayRequest += 1;
         const root = getEditorUpdateRoot(editor);
-        const isCurrent = () => HISTORY_ACTIVATION.get(owner) === activation;
-        const isClaimed = () =>
-          readPendingHistoryReplay(editor)?.request === request;
+        // The store's claim says whether this replay still settles, so a
+        // configure that keeps the store keeps it settleable, and the check
+        // creates no store after deactivation.
+        const holdsClaim = () =>
+          captureHistoryState(editor)?.pendingReplay?.request === request;
         const report = (cause: unknown) =>
           reportEditorLifecycleError({
             cause,
@@ -1563,7 +1800,7 @@ const createHistoryPlugin = <
           );
         };
         const fail = (cause: unknown): HistorySettlement => {
-          if (isCurrent() && isClaimed()) {
+          if (holdsClaim()) {
             try {
               settleBlocked();
             } catch (clearError) {
@@ -1590,18 +1827,18 @@ const createHistoryPlugin = <
             tx.annotations.set(historyReplayClaim, request);
           });
         } catch (error) {
-          if (!isClaimed()) throw error;
+          if (!holdsClaim()) throw error;
           return fail(error);
         } finally {
           PENDING_HISTORY_REPLAY_CLAIMS.delete(request);
         }
-        if (!isClaimed()) return claimBlocked ?? FAILED_HISTORY_RESULT;
+        if (!holdsClaim()) return claimBlocked ?? FAILED_HISTORY_RESULT;
 
         const settle = (
           ownerResult: EditorEffectHistoryReplayResult
         ): HistorySettlement => {
           try {
-            if (!isCurrent()) {
+            if (!holdsClaim()) {
               return ownerResult.status === 'applied'
                 ? Object.freeze({ status: 'applied' })
                 : ownerResult;
@@ -1639,7 +1876,7 @@ const createHistoryPlugin = <
 
             const receipt = PREPARED_HISTORY_REPLAYS.get(request);
             PREPARED_HISTORY_REPLAYS.delete(request);
-            if (isCurrent() && isClaimed()) {
+            if (holdsClaim()) {
               settleBlocked();
               return FAILED_HISTORY_RESULT;
             }
@@ -1655,9 +1892,15 @@ const createHistoryPlugin = <
           }
         };
 
+        const write =
+          direction === 'undo' ? firstWriteOf(entry.identity) : undefined;
         let ownerResult;
         try {
-          ownerResult = sessionHistory.replay(editor, sessionEffect.value);
+          ownerResult = sessionHistory.replay(
+            editor,
+            sessionEffect.value,
+            Object.freeze({ firstWrite: write?.parsed ?? null })
+          );
         } catch (error) {
           return fail(error);
         }
@@ -1668,8 +1911,35 @@ const createHistoryPlugin = <
           return settle(ownerResult as EditorEffectHistoryReplayResult);
         }
 
+        // A first write that answers `blocked` first withdraws the step and
+        // settles this undo; the owner's later answer is dropped.
+        let withdrawn = false;
+        const owned = Promise.resolve(ownerResult).then(
+          (result) => {
+            if (withdrawn) return FAILED_HISTORY_RESULT;
+            if (write) write.settleUndo = null;
+            return settle(result);
+          },
+          (error: unknown) => {
+            if (withdrawn) return FAILED_HISTORY_RESULT;
+            if (write) write.settleUndo = null;
+            return fail(error);
+          }
+        );
+
         return Object.freeze({
-          settled: Promise.resolve(ownerResult).then(settle, fail),
+          settled:
+            write?.state === 'running'
+              ? Promise.race([
+                  new Promise<HistorySettlement>((resolve) => {
+                    write.settleUndo = (settlement) => {
+                      withdrawn = true;
+                      resolve(settlement);
+                    };
+                  }),
+                  owned,
+                ])
+              : owned,
           status: 'pending',
         });
       };
@@ -1685,10 +1955,19 @@ const createHistoryPlugin = <
 
         let entry: ReturnType<typeof peekHistoryEntry>;
         const drops = crossingDropCount(editor);
+        const frozenRedo = () => {
+          if (direction !== 'redo' || !isRedoFrozen(editor)) return null;
+
+          return resolveFrozenRedo(editor)
+            ? BUSY_HISTORY_RESULT
+            : EMPTY_HISTORY_RESULT;
+        };
 
         try {
           const stack = direction === 'undo' ? 'undos' : 'redos';
+          const frozen = frozenRedo();
 
+          if (frozen) return frozen;
           entry = peekHistoryEntry(editor, stack);
           while (
             entry &&
@@ -1699,6 +1978,11 @@ const createHistoryPlugin = <
             dropHistoryHeadStep(editor, direction, {
               ignoreGuardRefusals: true,
             });
+            // A commit listener can record during the drop.
+            if (readPendingHistoryReplay(editor)) return BUSY_HISTORY_RESULT;
+            const frozenAfterDrop = frozenRedo();
+
+            if (frozenAfterDrop) return frozenAfterDrop;
             const head = peekHistoryEntry(editor, stack);
 
             if (head?.identity === entry.identity) return FAILED_HISTORY_RESULT;
@@ -1737,11 +2021,13 @@ const createHistoryPlugin = <
     },
     enabled: options.enabled as TEnabled,
     read({ editor }) {
-      return Object.assign(() => getHistory(editor), {
+      return Object.assign(() => readHistory(editor), {
         hasRedo: () =>
           withPublishedHistoryState(
             editor,
-            () => peekHistoryEntry(editor, 'redos') !== undefined
+            () =>
+              !isRedoFrozen(editor) &&
+              peekHistoryEntry(editor, 'redos') !== undefined
           ),
         hasUndo: () =>
           withPublishedHistoryState(
@@ -1784,13 +2070,16 @@ const createHistoryPlugin = <
         LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
       const previousState = captureHistoryState(editor);
       const activation = {};
-      const configured = withHistoryStateDraft(editor, previousState, () =>
-        configureHistoryState(
+      const configured = withHistoryStateDraft(editor, previousState, () => {
+        const schemaChanged = configureHistoryState(
           editor,
           getHistoryMaxDepth(options),
           context.schema.identity()
-        )
-      );
+        );
+
+        if (schemaChanged) dropPendingHistoryReplayEntry(editor);
+        return schemaChanged;
+      });
       const activationState = configured.state;
       let activationPublished = false;
 
@@ -1802,6 +2091,8 @@ const createHistoryPlugin = <
           forgetStep: (step) => forgetHistoryStep(editor, step),
           headRoots: (direction) => readHeadRoots(editor, direction),
           mintStepOf: (commit) => commitStepWith(commit, historyStepId),
+          record: (caller, effect, value, recordOptions) =>
+            recordHistoryStep(caller, effect, value, recordOptions),
           replaceUndoStep: (step, change, matches) =>
             replaceUndoStep(editor, step, change, matches),
           restores: (commit) =>
@@ -1823,6 +2114,7 @@ const createHistoryPlugin = <
           let next;
           let nextReplay: PreparedHistoryReplay | undefined;
           let nextTime;
+          let published: (() => void) | undefined;
           try {
             const prepared = withHistoryStateDraft(
               editor,
@@ -1834,6 +2126,8 @@ const createHistoryPlugin = <
             nextReplay = prepared.result;
             next = prepared.state;
             nextTime = LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
+            published = ON_COMMIT_PUBLISHED.get(guarded.commit);
+            ON_COMMIT_PUBLISHED.delete(guarded.commit);
           } finally {
             restoreTime(beforeTime);
           }
@@ -1847,6 +2141,7 @@ const createHistoryPlugin = <
                 nextReplay.receipt
               );
             }
+            published?.();
           };
         })
       );

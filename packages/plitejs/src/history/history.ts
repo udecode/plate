@@ -19,7 +19,7 @@ import {
   encodeHistoryValue,
   isHistorySchemaIdentity,
 } from './history-codec';
-import { getHistory } from './history-state';
+import { readHistory } from './history-first-write';
 
 export type { CarriedRun } from '../core/change/carried-run';
 
@@ -181,6 +181,6 @@ export const History = {
   },
   /** Encode the editor's current history as validated versioned JSON. */
   toJSON<V extends Value>(editor: Editor<V>): HistoryJSON {
-    return encodeHistoryValue(editor, getHistory(editor));
+    return encodeHistoryValue(editor, readHistory(editor));
   },
 };

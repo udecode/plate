@@ -24,6 +24,7 @@ import type {
   EditorDocumentRecords,
   EditorDocumentValue,
   EditorEffect,
+  EditorEffectHistoryReplayResult,
   EditorEffectType,
   PluginInput,
   PluginReference,
@@ -1164,11 +1165,25 @@ export type EditorHistoryEntry = Readonly<{
  */
 export type EditorHistoryHeadRoots = readonly RootKey[] | 'broken' | null;
 
+export type EditorHistoryRecordResult =
+  | Readonly<{ reason: string; status: 'blocked' }>
+  | Readonly<{ status: 'recorded' }>;
+
+export type EditorHistoryRecordOptions<TValue = unknown> = Readonly<{
+  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;
+}>;
+
 type EditorHistoryRuntime = Readonly<{
   entryOf: (commit: EditorCommit) => EditorHistoryEntry | null;
   forgetStep: (step: string) => boolean;
   headRoots: (direction: 'redo' | 'undo') => EditorHistoryHeadRoots;
   mintStepOf: (commit: EditorCommit) => EditorHistoryStep | null;
+  record: (
+    editor: Editor,
+    effect: EditorEffectType,
+    value: unknown,
+    options: EditorHistoryRecordOptions
+  ) => EditorHistoryRecordResult;
   replaceUndoStep: (
     step: string,
     change: DocumentChange,
@@ -1207,6 +1222,35 @@ export const readEditorCommitHistoryEntry = (
 ) =>
   EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.entryOf(commit) ??
   null;
+
+/**
+ * Record one session step through the editor's History, which opens its own
+ * update. A rejected first write reports even when no History records it.
+ *
+ * @internal
+ */
+export const recordEditorHistoryEffect = <TValue>(
+  editor: Editor,
+  effect: EditorEffectType<TValue>,
+  value: TValue,
+  options: EditorHistoryRecordOptions<TValue> = {}
+): EditorHistoryRecordResult => {
+  const runtime = EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor));
+
+  if (!runtime) {
+    options.firstWrite?.then(undefined, (error: unknown) => {
+      reportEditorLifecycleError({
+        cause: error,
+        editor,
+        phase: 'apply',
+        source: 'history',
+      });
+    });
+    throw new Error('Recording a session step requires History.');
+  }
+
+  return runtime.record(editor, effect, value, options);
+};
 
 export const readEditorHistoryHeadRoots = (
   editor: Editor,

@@ -22,6 +22,8 @@ export type HistoryStoreBase<
   crossingDrops: number;
   maxDepth: number;
   pendingReplay: PendingReplay | null;
+  /** The steps whose running first writes keep `redos` listed but frozen. */
+  redoFreeze: Readonly<{ steps: readonly object[] }> | null;
   redos: Branch | null;
   revision: number;
   schema: EditorSchemaIdentity;
@@ -117,10 +119,18 @@ export const withPublishedHistoryState = <T>(
   }
 };
 
-export const captureHistoryState = (editor: AnyEditor) => {
+export const captureHistoryState = <
+  V extends Value,
+  Branch extends BranchWithDepth,
+  PendingReplay,
+>(
+  editor: AnyEditor
+) => {
   const draft = getHistoryDraft(editor);
 
-  return draft ? draft.state : HISTORY.get(getEditorRuntimeOwner(editor));
+  return (draft ? draft.state : HISTORY.get(getEditorRuntimeOwner(editor))) as
+    | HistoryStoreBase<V, Branch, PendingReplay>
+    | undefined;
 };
 
 export const restoreHistoryState = (
@@ -152,6 +162,7 @@ const createStore = <
   crossingDrops: 0,
   maxDepth: 100,
   pendingReplay: null,
+  redoFreeze: null,
   redos: null,
   revision: 0,
   schema: editor.read.schema.identity(),
@@ -182,16 +193,21 @@ export const getStore = <
   return store;
 };
 
+/** Write the store; a freeze never outlives the redo list it froze. */
 export const setStore = <
   V extends Value,
   Branch extends BranchWithDepth,
   PendingReplay,
 >(
   editor: Editor<V>,
-  store: HistoryStoreBase<V, Branch, PendingReplay>
+  value: HistoryStoreBase<V, Branch, PendingReplay>
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const draft = getHistoryDraft(owner);
+  const store =
+    value.redos || !value.redoFreeze
+      ? value
+      : Object.freeze({ ...value, redoFreeze: null });
 
   if (draft) {
     draft.state = store;
@@ -208,10 +224,7 @@ export const publishStore = <
   editor: Editor<V>,
   store: HistoryStoreBase<V, Branch, PendingReplay>,
   patch: Partial<
-    Pick<
-      HistoryStoreBase<V, Branch, PendingReplay>,
-      'maxDepth' | 'pendingReplay' | 'redos' | 'schema' | 'undos'
-    >
+    Omit<HistoryStoreBase<V, Branch, PendingReplay>, 'revision' | 'snapshot'>
   >
 ) => {
   const next = Object.freeze({
