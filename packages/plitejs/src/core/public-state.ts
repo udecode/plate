@@ -5275,50 +5275,16 @@ export const getSelectionMarks = <V extends Value>(
       return null;
     }
 
-    let [node] = getEditorRuntime(editor).leaf(path);
-    let inheritedFromPrevious = false;
-    let propertyPath = path;
-
-    if (anchor.offset === 0) {
-      const prev = getEditorRuntime(editor).previous({
-        at: path,
-        match: NodeApi.isText,
-      });
-      const markedVoid = getEditorRuntime(editor).above({
-        match: (n: PliteNode) =>
-          NodeApi.isElement(n) &&
-          getEditorSchema(editor).isVoid(n) &&
-          getEditorSchema(editor).isMarkableVoid(n),
-      });
-
-      if (!markedVoid) {
-        const block = getEditorRuntime(editor).above({
-          match: (n: PliteNode) =>
-            NodeApi.isElement(n) && !getEditorSchema(editor).isInline(n),
-        });
-
-        if (prev && NodeApi.isText(prev[0]) && block) {
-          const [previousNode, prevPath] = prev;
-          const [, blockPath] = block;
-
-          if (PathApi.isAncestor(blockPath, prevPath)) {
-            node = previousNode;
-            propertyPath = prevPath;
-            inheritedFromPrevious = true;
-          }
-        }
-      }
-    }
-
+    const [node] = getEditorRuntime(editor).leaf(path);
     const { text, ...nodeProperties } = node;
     const rest: Record<string, unknown> = { ...nodeProperties };
 
-    if (inheritedFromPrevious || anchor.offset === node.text.length) {
+    if (anchor.offset === node.text.length) {
       for (const key of Object.keys(rest)) {
         if (
           getEditorSchema(editor).getTextPropertyAt(
             key,
-            propertyPath,
+            path,
             anchor.root ?? getCurrentSelectionRoot(editor)
           )?.lifecycle.inclusive === false
         ) {

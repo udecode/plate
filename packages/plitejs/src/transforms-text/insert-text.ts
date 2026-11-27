@@ -619,12 +619,44 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             return;
           }
 
+          const emptiedNode = NodeApi.has(editor, nextAt.path)
+            ? NodeApi.get(editor, nextAt.path)
+            : null;
+          let landingAt = nextAt;
+
+          if (
+            TextApi.isText(emptiedNode) &&
+            emptiedNode.text === '' &&
+            PathApi.hasPrevious(nextAt.path)
+          ) {
+            const previousPath = PathApi.previous(nextAt.path);
+            const previous = NodeApi.has(editor, previousPath)
+              ? NodeApi.get(editor, previousPath)
+              : null;
+
+            if (TextApi.isText(previous)) {
+              landingAt = {
+                ...nextAt,
+                offset: previous.text.length,
+                path: previousPath,
+              };
+              at = landingAt;
+
+              if (!explicitAtPreservesNullSelection) {
+                setSelection(editor, {
+                  anchor: landingAt,
+                  focus: landingAt,
+                });
+              }
+            }
+          }
+
           setCurrentMarks(editor, null);
 
           const inheritedMarks = normalizeTextMarks(getSelectionMarks(editor));
           const inheritedInsertionPoint = getPointTextInsertionPoint(
             editor,
-            nextAt,
+            landingAt,
             inheritedMarks
           );
 

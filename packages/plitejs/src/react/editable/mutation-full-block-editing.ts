@@ -2,14 +2,11 @@ import {
   type EditorMarks,
   type Node,
   NodeApi,
-  PathApi,
-  type Point,
   type Range,
   SelectionApi,
 } from '../..';
 import { commandViewHides } from '../../core/command-frame';
 import { toInternalRoot } from '../../core/public-root';
-import { profilePliteReactDuration } from '../render-profiler';
 import {
   failInvariant,
   type Editor as RuntimeEditor,
@@ -21,36 +18,6 @@ const hasActiveMarks = (marks: Record<string, unknown> | null) =>
 
 export const isUnmarkedTextNode = (node: Node) =>
   NodeApi.isText(node) && Object.keys(node).length === 1;
-
-const followsPlainText = (editor: RuntimeEditor, point: Point) =>
-  editor.read((state) => {
-    const { path } = point;
-
-    if (path.length < 2) {
-      return false;
-    }
-
-    const blockPath = [path[0]];
-    const [block] =
-      state.nodes.get(blockPath) ??
-      failInvariant(
-        `Expected collapsed replacement block at ${JSON.stringify(blockPath)}`
-      );
-    const targetRelativePath = path.slice(1);
-    let previousTextNode: Node | null = null;
-
-    for (const [textNode, textPath] of NodeApi.texts(block)) {
-      if (PathApi.equals(textPath, targetRelativePath)) {
-        return (
-          previousTextNode === null || isUnmarkedTextNode(previousTextNode)
-        );
-      }
-
-      previousTextNode = textNode;
-    }
-
-    return false;
-  });
 
 export type UserTextLanding = 'pinned' | 'selection' | 'stored';
 
@@ -108,18 +75,11 @@ export const readUserTextLanding = ({
 
     return isUnmarkedTextNode(node);
   });
-  const inheritsMarks =
-    plainLeaf &&
-    pending === null &&
-    point.offset === 0 &&
-    !followsPlainText(editor, point);
-  const activeMarks = inheritsMarks
-    ? hasActiveMarks(
-        profilePliteReactDuration('model-text-input-read-marks', () =>
-          editor.read((state) => state.marks())
-        )
-      )
-    : hasActiveMarks(pending);
 
-  return decideUserTextLanding({ activeMarks, composed, hidden, plainLeaf });
+  return decideUserTextLanding({
+    activeMarks: hasActiveMarks(pending),
+    composed,
+    hidden,
+    plainLeaf,
+  });
 };
