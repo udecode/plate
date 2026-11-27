@@ -1365,7 +1365,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
       value={{ element: node, nodeKey, path }}
     >
       <EditorElement
-        style={{ position: 'relative' }}
+        style={inline ? undefined : { position: 'relative' }}
         as={inline ? 'span' : 'div'}
         dir={direction}
         isInline={inline}

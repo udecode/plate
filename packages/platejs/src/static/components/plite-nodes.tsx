@@ -124,10 +124,14 @@ export const EditorElement = function EditorElement({
       data-editor-node="element"
       data-editor-inline={attributes['data-editor-inline']}
       {...attributes}
-      style={{
-        position: 'relative',
-        ...attributes?.style,
-      }}
+      style={
+        attributes['data-editor-inline']
+          ? attributes?.style
+          : {
+              position: 'relative',
+              ...attributes?.style,
+            }
+      }
     >
       {children}
     </Tag>

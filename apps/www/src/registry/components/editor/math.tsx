@@ -185,7 +185,7 @@ export function InlineEquationElement(
               element.latex.length > 0 ? 'Edit equation' : 'Add equation'
             }
             className={cn(
-              'after:-top-0.5 after:-start-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
+              'relative after:-top-0.5 after:-start-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
               'h-6',
               inlineSuggestionVariants({ on: 'parent' }),
               ((element.latex.length > 0 && open) || selected) &&

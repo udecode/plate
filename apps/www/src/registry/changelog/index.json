@@ -446,6 +446,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-math-inline-relative",
+      "href": "/registry/changelog/2026-11-27-math-inline-relative.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep inline equation highlights anchored to the equation element",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["math", "math-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-merge-derived-read-hooks",
       "href": "/registry/changelog/2026-11-27-merge-derived-read-hooks.json",
       "status": "draft",

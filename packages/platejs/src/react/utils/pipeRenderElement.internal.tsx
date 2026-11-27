@@ -313,14 +313,21 @@ function FastIntrinsicElementBody({
     );
   }
 
+  const isInline = Boolean(
+    (mergedAttributes as { 'data-editor-inline'?: boolean })[
+      'data-editor-inline'
+    ]
+  );
   const fastElementProps: React.HTMLAttributes<HTMLElement> &
     React.RefAttributes<HTMLElement> & { 'data-editor-node': 'element' } = {
     ...mergedAttributes,
     'data-editor-node': 'element',
-    style: {
-      position: 'relative',
-      ...mergedAttributes.style,
-    },
+    style: isInline
+      ? mergedAttributes.style
+      : {
+          position: 'relative',
+          ...mergedAttributes.style,
+        },
   };
 
   if (isVoidTag) {

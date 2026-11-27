@@ -206,6 +206,17 @@ function PlateElementBody({
   tag: keyof HTMLElementTagNameMap;
 }) {
   const isVoidTag = isHtmlVoidElementTag(Tag);
+  const inlineAttr = (attributes as { 'data-editor-inline'?: boolean })[
+    'data-editor-inline'
+  ];
+  // Positioned inline elements paint after non-positioned text and cover a
+  // native caret at the chip's edge in Chromium and WebKit.
+  const style = inlineAttr
+    ? (attributes?.style as React.CSSProperties | undefined)
+    : ({
+        position: 'relative',
+        ...attributes?.style,
+      } as React.CSSProperties);
 
   return (
     <>
@@ -213,18 +224,9 @@ function PlateElementBody({
       {isVoidTag ? (
         <div
           data-editor-node="element"
-          data-editor-inline={
-            (attributes as { 'data-editor-inline'?: boolean })[
-              'data-editor-inline'
-            ]
-          }
+          data-editor-inline={inlineAttr}
           {...attributes}
-          style={
-            {
-              position: 'relative',
-              ...attributes?.style,
-            } as React.CSSProperties
-          }
+          style={style}
         >
           <Tag contentEditable={false} />
           {children}
@@ -232,18 +234,9 @@ function PlateElementBody({
       ) : (
         <Tag
           data-editor-node="element"
-          data-editor-inline={
-            (attributes as { 'data-editor-inline'?: boolean })[
-              'data-editor-inline'
-            ]
-          }
+          data-editor-inline={inlineAttr}
           {...attributes}
-          style={
-            {
-              position: 'relative',
-              ...attributes?.style,
-            } as React.CSSProperties
-          }
+          style={style}
         >
           {children}
           {inset && <NonBreakingSpace />}
