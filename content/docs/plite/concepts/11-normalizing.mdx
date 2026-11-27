@@ -14,16 +14,19 @@ canonical changes, history, and collaboration deterministic.
 
 1. **Text containers keep a text anchor.** Void elements keep one empty text child. A block-only container can be empty when its schema permits zero children.
 2. **Adjacent text nodes with the same properties merge.** Construction emits one canonical leaf instead of retaining equivalent neighbors.
-3. **Children follow the parent grammar.** A schema element holds either block children or text and inline children.
+3. **Children follow the parent grammar.** A schema element holds either block children or text and inline children, never both. Use `schema.element.textBlock()` for an editable text block and `schema.content.openBlocks()` for an open block container.
 4. **Inline nodes have text on both sides.** Empty text nodes are inserted before, after, or between inline nodes when needed.
-5. **Roots contain elements allowed by their grammar.** Root grammars reject text children; snapshot fitting can wrap stray text in the root default.
+5. **Roots hold block elements only.** Root grammars reject text and inline elements; snapshot fitting wraps stray text in a usable allowed text block (preferring the root default) and drops text when no allowed wrapper can hold it.
 6. **Nodes must be JSON-serializable.** Documents and changes need to move cleanly through storage and collaboration layers.
 7. **Property values follow their descriptors.** JSON values can include `null`; use `tx.nodes.unset(...)` to delete an optional property explicitly.
 
 These constraints are the base document contract, not app preferences.
 Construction and contextual slice fitting produce this shape directly.
 Imported `DocumentChange` values are validated against the compiled schema
-instead of being accepted and repaired later.
+instead of being accepted and repaired later. Changing a schema's content
+grammar changes its compiled identity, so persisted envelopes and Yjs rooms
+reject mismatched identities until migrated; see
+[Schema identity and persistence](19-schema#schema-identity-and-persistence).
 
 ## Write canonical shapes
 

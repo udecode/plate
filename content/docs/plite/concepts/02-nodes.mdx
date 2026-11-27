@@ -132,8 +132,10 @@ public `at` option instead of resolving its path first. See
 
 ## Blocks and inlines
 
-Elements default to block behavior. The parent schema determines which block,
-inline, and text children can be siblings.
+Elements default to block behavior. An element holds either block elements or
+text and inline elements, never both, and every root holds block elements only.
+Declare an editable text block with `schema.element.textBlock()` and an open
+block container or root with `schema.content.openBlocks()`.
 
 Inline elements live in text flow. Links, mentions, and inline equations are
 typical inline elements. Inline elements can be siblings with text nodes and
@@ -197,13 +199,15 @@ complete rendering example.
 
 Plite keeps document trees valid while transaction writes run.
 
-- Roots contain block elements.
+- Roots hold block elements only, never text or inline elements.
 - Element children follow the schema content grammar, holding either block
-  elements or text and inline elements.
+  elements or text and inline elements, never both.
 - The schema defines required children through minimum counts and defaults.
 - Text nodes merge with adjacent text nodes that have matching marks.
 - Inline and void elements get empty text spacing where selection needs it.
 
-See [Schema](19-schema) for declarations, compiled validation, and fitting.
+Changing a schema's content grammar changes its compiled identity, so saved
+envelopes need migration and existing Yjs rooms need migration or a new room
+lineage; see [Schema identity and persistence](19-schema#schema-identity-and-persistence).
 See [Normalizing](11-normalizing) for semantic corrections that run after
 schema-valid writes.

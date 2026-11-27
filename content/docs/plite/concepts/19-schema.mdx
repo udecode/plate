@@ -94,19 +94,29 @@ policy. Plugin order does not decide defaults or conflict winners.
 
 Element and root content use explicit rules.
 
-| Builder                            | Accepts                          |
-| ---------------------------------- | -------------------------------- |
-| `schema.content.text(...)`         | text children                    |
-| `schema.content.type(type, ...)`   | one element type                 |
-| `schema.content.types(types, ...)` | any listed element type          |
-| `schema.content.group(group, ...)` | any element in a compiled group  |
-| `schema.content.any(rules, ...)`   | at least one nested rule         |
-| `schema.content.all(rules, ...)`   | every nested rule                |
-| `schema.content.not(rule, ...)`    | anything outside the nested rule |
+| Builder                            | Accepts                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------ |
+| `schema.content.text(...)`         | text children                                                                              |
+| `schema.content.type(type, ...)`   | one element type                                                                           |
+| `schema.content.types(types, ...)` | any listed element type                                                                    |
+| `schema.content.group(group, ...)` | any element in a compiled group                                                            |
+| `schema.content.openBlocks(...)`   | every declared block element type, plus undeclared types when `unknown` is `"preserve"`    |
+| `schema.content.any(rules, ...)`   | at least one nested rule                                                                   |
+| `schema.content.all(rules, ...)`   | every nested rule                                                                          |
+| `schema.content.not(rule, ...)`    | anything outside the nested rule                                                           |
+
+Every element holds either text and inline elements or block elements, never
+both; rules that mix them fail compilation (for example, with
+`mixed-element-content` or `inline-content-rejects-blocks`). Every root
+(primary, named, or `contentRoots`) holds block elements only; rules that admit
+text or an inline element fail compilation (for example, with
+`text-in-root-content`, `inline-in-root-content`, or `invalid-content-prefix`).
 
 Use `schema.element.textBlock(options?)` for an editable element that accepts
 text and inline elements, requires one child, and constructs an empty text
-child by default. Structural and void elements still declare their own shape.
+child by default. Use `schema.content.openBlocks(options?)` for an open block
+container or root; it admits block elements only and refuses a text default.
+Structural and void elements still declare their own shape.
 
 `min`, `max`, and `default` define cardinality and construction. A required
 content rule needs a constructable default. An element default can also set
@@ -119,7 +129,10 @@ without a default ignores them. `state.schema.create(type)` uses the compiled
 plan, and `state.schema.findWrapping(parent, child)` uses the same grammar.
 
 `schema.content.not(...)` is a true complement. It permits undeclared element
-types when they are outside the excluded rule. Inspect compiled grammar through
+types when they are outside the excluded rule, and it still admits text and
+inline elements unless the excluded rule covers them. Use
+`schema.content.openBlocks(...)` instead of `schema.content.not(schema.content.text())`
+for an open block container or root. Inspect compiled grammar through
 `state.schema.element(type)?.content`; its `allowsUnknownElements` field makes
 that open-world behavior explicit alongside `allowedElementTypes` and
 `allowsText`.
@@ -292,7 +305,7 @@ properties.
 ```ts
 const ForwardCompatibleSchema = defineEditorSchema("forwardCompatibleSchema", {
   id: "forward-compatible",
-  root: schema.content.not(schema.content.text()),
+  root: schema.content.openBlocks(),
   unknown: "preserve",
   version: 1,
 });
@@ -307,11 +320,11 @@ kept as JSON values. The unknown policy contributes to schema identity.
 
 ## External validation
 
-`createEditor(...)` snapshots `initialValue`, fits every root through the
-candidate schema, canonicalizes node properties and representation, maps the
-initial selection, and validates the result before publishing the editor.
-Unknown element types, roots, properties, invalid property values, and illegal
-parent/child relationships fail atomically when they cannot be fitted.
+`createEditor(...)` snapshots a bare document or child array in `initialValue`,
+validates every root strictly against the compiled schema, canonicalizes node
+properties and representation, maps the initial selection, and publishes the
+editor. Unknown element types, roots, properties, invalid property values, and
+illegal parent/child relationships fail atomically.
 
 Use the compiled read API at other external boundaries:
 
@@ -491,9 +504,25 @@ deterministic for the compiled semantics. Increment a named lineage's
 different fingerprint is an invalid deployment contract.
 
 The document returned by `editor.read.value()` does not embed schema identity.
-Persist it in an application envelope when documents may cross schema versions.
-`plitejs/history` does this in `History.toJSON(editor)` and rejects a
-mismatch in `History.fromJSON(editor, json)` before decoding any batch.
+Persist `{ document, schema }` in an application envelope when documents may
+cross schema versions. Changes to element content rules, roots, property
+descriptors, `validationVersion`, or `unknown` policy change the compiled
+`fingerprint` (increment `validationVersion` whenever a custom `validate`
+function changes its accepted values):
+
+- **Saved envelopes:** `tx.value.replace(...)` (`editor.update.value.replace(...)`)
+  accepts a persisted `{ document, schema }` envelope and rejects it before
+  fitting content when `schema` does not match `editor.read.schema.identity()`.
+  Plite's `createEditor({ initialValue })` takes a bare document or child array,
+  not an envelope. For a named lineage, bump `version` and migrate persisted
+  envelopes to the new lineage before loading them.
+- **Yjs rooms:** `plitejs/yjs` writes the schema identity into room metadata
+  and refuses to join, import, or reconfigure against a room whose stored
+  identity differs from the editor's compiled identity. Changing schema
+  semantics requires migrating the room or starting a new room lineage.
+- **History:** `plitejs/history` embeds schema identity in `History.toJSON(editor)`
+  and rejects a mismatch in `History.fromJSON(editor, json)` before decoding any
+  batch.
 
 ## Related docs
 
