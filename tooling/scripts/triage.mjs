@@ -1419,18 +1419,23 @@ function syncDiscussionsGitHub(policy, records, discussionsList, { apply }) {
         isDraft(comment) &&
         Date.parse(comment.createdAt) > Date.parse(record.ts)
     );
-    const closes =
-      record.outcome === 'dup' ||
-      (reply !== undefined &&
-        (record.outcome !== 'feature' || record.lean === 'not-planned'));
-    if (!closes) continue;
     const isAnswered =
       discussion.isAnswered ||
       discussion.comments.some((comment) => comment.isAnswer);
+    const hasTeamReply = discussion.comments.some((comment) =>
+      TEAM.has(comment.authorAssociation)
+    );
+    const closes =
+      record.outcome === 'dup' ||
+      (record.outcome === 'answered' && (isAnswered || hasTeamReply)) ||
+      (reply !== undefined &&
+        (record.outcome !== 'feature' || record.lean === 'not-planned'));
+    if (!closes) continue;
     if (
       record.outcome === 'answered' &&
       discussion.category.isAnswerable &&
-      !isAnswered
+      !isAnswered &&
+      reply !== undefined
     ) {
       const query = `mutation { markDiscussionCommentAsAnswer(input: { id: "${reply.id}" }) { clientMutationId } }`;
       planned.push({
