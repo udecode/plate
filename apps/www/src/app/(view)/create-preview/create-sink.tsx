@@ -420,7 +420,7 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
       docEditor
         .plugin(TablePlugin)
         .update.insert(
-          { colCount, header: true, rowCount },
+          { columns: colCount, header: true, rows: rowCount },
           { at: [docEditor.read.children().length] }
         );
     },
