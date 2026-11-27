@@ -7,6 +7,7 @@ import {
   PointApi,
   RangeApi,
   type Element as EditorElement,
+  type Node as EditorNode,
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
@@ -130,10 +131,7 @@ const markdownShortcuts = () =>
 
                 if (block.type === 'list-item') {
                   tx.nodes.unwrap({
-                    match: (n) =>
-                      NodeApi.isElement(n) &&
-                      (n.type === 'bulleted-list' ||
-                        n.type === 'numbered-list'),
+                    match: isListElement,
                     split: true,
                   });
                 }
@@ -209,11 +207,28 @@ const markdownShortcuts = () =>
               currentBlock.type !== 'paragraph'
             ) {
               if (type === 'list-item' && currentBlock.type === 'list-item') {
+                const list = createListElement(beforeText, orderedListMatch);
+                const currentList = state.nodes.above({
+                  at: path,
+                  match: isListElement,
+                })?.[0];
+
                 return state.transaction((tx) => {
                   tx.selection.set(range);
 
                   if (!RangeApi.isCollapsed(range)) {
                     tx.text.delete();
+                  }
+
+                  if (!currentList || currentList.type !== list.type) {
+                    if (currentList) {
+                      tx.nodes.unwrap({
+                        match: isListElement,
+                        split: true,
+                      });
+                    }
+
+                    wrapListItem(tx, list);
                   }
 
                   selectCurrentBlockStart(tx);
@@ -233,15 +248,10 @@ const markdownShortcuts = () =>
               tx.blocks.set({ type });
 
               if (type === 'list-item') {
-                const list = createListElement(beforeText, orderedListMatch);
-
-                tx.nodes.wrap(list, {
-                  match: (n) => NodeApi.isElement(n) && n.type === 'list-item',
-                });
-
-                if (list.type === 'bulleted-list') {
-                  mergeAdjacentBulletedLists(tx);
-                }
+                wrapListItem(
+                  tx,
+                  createListElement(beforeText, orderedListMatch)
+                );
               }
 
               selectCurrentBlockStart(tx);
@@ -297,6 +307,23 @@ const renderElement = ({
     default: {
       return <p {...attributes}>{children}</p>;
     }
+  }
+};
+
+const isListElement = (node: EditorNode): node is EditorElement =>
+  NodeApi.isElement(node) &&
+  (node.type === 'bulleted-list' || node.type === 'numbered-list');
+
+const wrapListItem = (
+  tx: EditorTransactionSpecBuilder,
+  list: BulletedListElement | NumberedListItemElement
+) => {
+  tx.nodes.wrap(list, {
+    match: (n) => NodeApi.isElement(n) && n.type === 'list-item',
+  });
+
+  if (list.type === 'bulleted-list') {
+    mergeAdjacentBulletedLists(tx);
   }
 };
 
