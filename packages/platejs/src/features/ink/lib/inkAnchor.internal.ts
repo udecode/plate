@@ -1,11 +1,30 @@
 import type { InkCopy, InkLine, InkMark, InkMarkBlock } from './BaseInkPlugin';
-import {
-  gapAround,
-  INK_VOID,
-  type InkText,
-  inkHolds,
-  lineStart,
-} from './inkMatch.internal';
+
+export const INK_VOID = String.fromCodePoint(0xff_fc);
+
+export type InkText = Readonly<{ text: string; voids?: string }>;
+
+export const inkHolds = (copy: InkText, now: InkText) =>
+  now.text === copy.text && now.voids === copy.voids;
+
+export const lineStart = (lines: readonly InkLine[], index: number) =>
+  index === 0 ? 0 : lines[index - 1].end;
+
+export const lineOf = (lines: readonly InkLine[], offset: number) => {
+  const index = lines.findIndex((line) => offset < line.end);
+
+  return index === -1 ? lines.length - 1 : index;
+};
+
+export const gapAround = (text: string, offset: number) => {
+  let start = offset;
+  let end = offset;
+
+  while (start > 0 && /\s/.test(text[start - 1])) start -= 1;
+  while (end < text.length && /\s/.test(text[end])) end += 1;
+
+  return [start, end] as const;
+};
 
 const MAX_DIFF_CHARS = 4096;
 const MAX_DIFF_OPS = 256;
