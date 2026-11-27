@@ -1,6 +1,6 @@
 'use client';
 
-import type { PluginReference, Value } from 'platejs';
+import type { EditorReference, PluginReference, Value } from 'platejs';
 import {
   BoldPlugin,
   CodePlugin,
@@ -104,7 +104,11 @@ export type CreateSinkKit = {
     className?: string;
   }>;
   CommentToolbarButton: React.ComponentType;
-  defaultColors: Array<{ isBrightColor: boolean; name: string; value: string }>;
+  defaultColors: ReadonlyArray<{
+    isBrightColor: boolean;
+    name: string;
+    value: string;
+  }>;
   docPlugins: readonly PluginReference[];
   Editor: React.ComponentType<{
     className?: string;
@@ -114,8 +118,12 @@ export type CreateSinkKit = {
     React.PropsWithChildren<{ className?: string }>
   >;
   FontColorToolbarButton: React.ComponentType<{
-    children?: React.ReactNode;
-    colors: Array<{ isBrightColor: boolean; name: string; value: string }>;
+    children: React.ReactNode;
+    colors: ReadonlyArray<{
+      isBrightColor: boolean;
+      name: string;
+      value: string;
+    }>;
     plugin: typeof FontBackgroundColorPlugin | typeof FontColorPlugin;
     tooltip?: string;
   }>;
@@ -1031,7 +1039,7 @@ function ReviewCard({
   suggestionEditor,
 }: {
   kit: CreateSinkKit;
-  suggestionEditor: ReturnType<typeof useCreateEditor>;
+  suggestionEditor: EditorReference;
 }) {
   const { Avatar, AvatarFallback, Button, Editor, Input, Separator } = kit;
   const [decision, setDecision] = React.useState<

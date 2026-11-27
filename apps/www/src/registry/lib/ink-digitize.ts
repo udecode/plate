@@ -419,11 +419,12 @@ const isCommentEdit = (
 const editsOverlap = (a: InkDigitizeEdit, b: InkDigitizeEdit): boolean => {
   if (a.passage !== b.passage) return false;
   if (isCommentEdit(a) || isCommentEdit(b)) return false;
-  if (a.kind === 'insert' && b.kind === 'insert') return a.gap === b.gap;
-  if (a.kind === 'insert' && b.kind !== 'insert') {
+  if (a.kind === 'insert') {
+    if (b.kind === 'insert') return a.gap === b.gap;
+
     return b.words[0] < a.gap && a.gap <= b.words[1];
   }
-  if (b.kind === 'insert' && a.kind !== 'insert') {
+  if (b.kind === 'insert') {
     return a.words[0] < b.gap && b.gap <= a.words[1];
   }
 
