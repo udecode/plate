@@ -65,12 +65,12 @@ import {
   heldOf,
   isAuthoredSetValued,
   isClaim,
+  isKeyedSplit,
   isPlaceChange,
   isStructureChange,
   readAuthoredMarks,
   readMembers,
   dissolveClaimsOf,
-  splitNamedBy,
   withMembers,
 } from '../tree/marks';
 import { buildClaimsIn } from '../tree/reserves';
@@ -109,6 +109,7 @@ import {
   putContexts,
   putLanded,
   RESERVES,
+  splitLinkOf,
 } from './records';
 
 type Node = Readonly<Record<string, unknown>> & {
@@ -138,6 +139,7 @@ type Pass = Readonly<{
   indexOf: (root: string) => DocumentIndex;
   landed: Map<string, LandedRecord>;
   liveLinkByRootWalk: (node: Node, root: string, link: string) => boolean;
+  liveSplitByRootWalk: (root: string, link: string) => boolean;
   loading: boolean;
   reopenedRejections: Set<string>;
   reserveWrites: Map<string, string | null>;
@@ -435,7 +437,14 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
       continue;
     }
     if (member.kind === 'end') {
-      if (outcomeOf(facts, splitNamedBy(member)) === 'pending') {
+      const incarnation = incarnationOf(member);
+      const stands =
+        !isEditingChange(member.change) &&
+        (!facts.hasVerdict(incarnation) ||
+          (!facts.hasVerdict(incarnation, 'accept') &&
+            pass.liveSplitByRootWalk(site.root, splitLinkOf(member))));
+
+      if (stands) {
         kept.push(member);
       } else {
         changed = true;
@@ -1209,6 +1218,21 @@ const liveLinksIn = (nodes: NodeList<Node>, facts: ReviewFacts) => {
   return (node: Node, link: string) => sourceOf(link, node) !== null;
 };
 
+const liveSplitsIn = (nodes: NodeList<Node>): ReadonlySet<string> => {
+  const splits = new Set<string>();
+  const visit = (node: Node) => {
+    if (isText(node)) return;
+    for (const mark of readAuthoredMarks(node)) {
+      if (isKeyedSplit(mark)) splits.add(splitLinkOf(mark));
+    }
+    node.children?.forEach(visit);
+  };
+
+  nodes.forEach(visit);
+
+  return splits;
+};
+
 const formatTagsOf = (node: Node) =>
   readAuthoredMarks(node).filter(
     (mark): mark is FormatTag => mark.kind === 'format'
@@ -1295,6 +1319,7 @@ export const settleValue = <V extends JsonEditorValue>(
   let resolve: AuthoredResolveSchema | undefined;
   const dependencies = createDependencies(facts);
   const liveLinks = new Map<string, ReturnType<typeof liveLinksIn>>();
+  const liveSplits = new Map<string, ReadonlySet<string>>();
   const buildClaims = buildClaimsIn<Node>(
     facts,
     dependencies,
@@ -1321,6 +1346,16 @@ export const settleValue = <V extends JsonEditorValue>(
       }
 
       return live(node, link);
+    },
+    liveSplitByRootWalk: (root, link) => {
+      let live = liveSplits.get(root);
+
+      if (!live) {
+        live = liveSplitsIn(rootOf(value, root).nodes);
+        liveSplits.set(root, live);
+      }
+
+      return live.has(link);
     },
     loading: scope === 'document',
     reopenedRejections: new Set(),

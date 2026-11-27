@@ -218,6 +218,10 @@ type CoveredStep = SyncStep &
   Readonly<{
     [coveredByGrant]: true;
     judge?: SyncJudgeView;
+    matchesRebased?: (
+      rebased: JsonEditorValue,
+      decided: JsonEditorValue
+    ) => boolean;
     owners: readonly ChangeOwner[];
     structure: boolean;
   }>;
@@ -508,6 +512,9 @@ export const createSyncServer = <
       ? ({
           ...own,
           ...(cover.judge ? { judge: cover.judge } : {}),
+          ...(cover.matchesRebased
+            ? { matchesRebased: cover.matchesRebased }
+            : {}),
           owners,
           structure: cover.structure === true,
         } as CoveredStep)
@@ -828,11 +835,9 @@ export const createSyncServer = <
     if (typeof covered === 'string') return refuse(covered);
     if (covered.structure && gap.length > 0) {
       const step = rebased();
+      const matches = covered.matchesRebased ?? sameDocument;
 
-      if (
-        typeof step === 'string' ||
-        !sameDocument(step.after, covered.after)
-      ) {
+      if (typeof step === 'string' || !matches(step.after, covered.after)) {
         return refuse('lost');
       }
     }

@@ -39,6 +39,7 @@ import {
   ownChangesRemovedBy,
   replayAt,
   replaysWithdrawal,
+  sameSettledStructure,
   type VerdictBatch,
   verdictBatchOf,
   type VerdictDrops,
@@ -71,6 +72,10 @@ export type Cover =
       change?: DocumentChange;
       judge?: SyncJudgeView;
       kind: 'covered';
+      matchesRebased?: (
+        rebased: JsonEditorValue,
+        decided: JsonEditorValue
+      ) => boolean;
       structure?: true;
     }>
   | Readonly<{ kind: 'refused'; why: Refusal }>
@@ -524,6 +529,7 @@ export const syncDecisionOf = (
     replay && {
       atHead: (head) => decideAtHead(replay, head, schema)?.change ?? null,
       decidesStructure: decidesStructure(replay),
+      matchesRebased: sameSettledStructure,
     }
   );
 };
@@ -542,7 +548,9 @@ const decisionCover = (
   const covered = {
     claims: [],
     kind: 'covered' as const,
-    ...(decidesStructure(replay) ? { structure: true as const } : {}),
+    ...(decidesStructure(replay)
+      ? { matchesRebased: sameSettledStructure, structure: true as const }
+      : {}),
   };
 
   if (head === undefined) return { ...covered, change: replay.decided.change };

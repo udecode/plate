@@ -19,6 +19,7 @@ import {
 } from '../../core/change/root-change';
 import {
   type JsonEditorValue,
+  type JsonNode,
   type JsonToken,
   openToken,
   PreparedTokenSlice,
@@ -55,14 +56,18 @@ import {
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMember,
+  isKeyedSplit,
+  isSplitEnd,
   type ReserveMember,
+  readAuthoredMarks,
   readMembers,
+  withMembers,
 } from '../tree/marks';
 import { type SpareWrites, spareWritesChange } from '../tree/reserves';
 import { sparesIn } from '../tree/spares';
 import { settleAuthoredValue } from './admission';
 import { isEditingChange } from './editing';
-import { contentRootsOf } from './facts';
+import { contentRootsOf, factsOf, type ReviewFacts } from './facts';
 import {
   CONTEXTS,
   incarnationOf,
@@ -71,6 +76,7 @@ import {
   parseReserve,
   parseVerdict,
   RESERVES,
+  splitLinkOf,
   type Verdict,
   VERDICTS,
 } from './records';
@@ -99,6 +105,99 @@ const documentOf = (value: JsonEditorValue) => ({
 
 export const sameDocument = (left: JsonEditorValue, right: JsonEditorValue) =>
   jsonEqual(documentOf(left), documentOf(right));
+
+const liveSplitsIn = (nodes: readonly JsonNode[]): ReadonlySet<string> => {
+  const splits = new Set<string>();
+  const visit = (node: JsonNode) => {
+    if (typeof node.text === 'string') return;
+    for (const mark of readAuthoredMarks(node)) {
+      if (isKeyedSplit(mark)) splits.add(splitLinkOf(mark));
+    }
+    node.children?.forEach(visit);
+  };
+
+  nodes.forEach(visit);
+
+  return splits;
+};
+
+const withoutDecidedEndsIn = (
+  node: JsonNode,
+  facts: ReviewFacts,
+  liveSplits: ReadonlySet<string>
+): Readonly<Record<string, unknown>> => {
+  const members = readMembers(node);
+  const kept =
+    members.length === 0
+      ? members
+      : members.filter((member) => {
+          if (!isSplitEnd(member)) return true;
+
+          const incarnation = incarnationOf(member);
+
+          return (
+            !isEditingChange(member.change) &&
+            (!facts.hasVerdict(incarnation) ||
+              (!facts.hasVerdict(incarnation, 'accept') &&
+                liveSplits.has(splitLinkOf(member))))
+          );
+        });
+  const children = node.children?.map((child) =>
+    typeof child.text === 'string'
+      ? child
+      : withoutDecidedEndsIn(child, facts, liveSplits)
+  );
+  const membersChanged = kept.length < members.length;
+  const childrenChanged =
+    children !== undefined &&
+    children.some((child, index) => child !== node.children?.[index]);
+
+  if (!membersChanged && !childrenChanged) return node;
+
+  const next = membersChanged ? withMembers(node, kept) : node;
+
+  return childrenChanged ? { ...next, children } : next;
+};
+
+/**
+ * Whether a structure decision's plain rebase `rebased` lands on the same
+ * document as replaying the decision at the head (`decided`), ignoring split
+ * `end` markers whose split already holds a verdict and no longer stands, which
+ * editor settlement drops on commit.
+ */
+export const sameSettledStructure = (
+  rebased: JsonEditorValue,
+  decided: JsonEditorValue
+) => {
+  if (sameDocument(rebased, decided)) return true;
+
+  const facts = factsOf(rebased);
+
+  if (!facts.hasVerdicts) return false;
+
+  const strip = (nodes: readonly JsonNode[]) => {
+    const liveSplits = liveSplitsIn(nodes);
+
+    return nodes.map((node) => withoutDecidedEndsIn(node, facts, liveSplits));
+  };
+  const roots = rebased.roots
+    ? Object.fromEntries(
+        Object.entries(rebased.roots).map(([root, nodes]) => [
+          root,
+          strip(nodes),
+        ])
+      )
+    : {};
+
+  return jsonEqual(
+    {
+      children: strip(rebased.children),
+      records: recordStoreToJson(getValueRecords(rebased)),
+      roots,
+    },
+    documentOf(decided)
+  );
+};
 
 const AUTHORED_RECORD_SETS = new Set([CONTEXTS, LANDED, RESERVES, VERDICTS]);
 

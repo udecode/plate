@@ -16,6 +16,10 @@ export type SyncDecision = Readonly<{
   /** The change at `head`, or null when a change it decides reads otherwise. */
   atHead: (head: JsonEditorValue) => DocumentChange | null;
   decidesStructure: boolean;
+  matchesRebased?: (
+    rebased: JsonEditorValue,
+    decided: JsonEditorValue
+  ) => boolean;
 }>;
 
 export type SyncDecisionStep = Readonly<{
@@ -97,8 +101,9 @@ const decideAgain = (
   if (kind === 'lost' || kind === 'unjudged') return failed('judge');
   if (decision.decidesStructure) {
     const rebased = rebasedAt(origin, head);
+    const matches = decision.matchesRebased ?? sameDocument;
 
-    if (!rebased || !sameDocument(rebased, rebuilt.apply(head))) {
+    if (!rebased || !matches(rebased, rebuilt.apply(head))) {
       return failed('structure');
     }
   }

@@ -43,6 +43,10 @@ export type SyncCover =
        * Set for a decision on a split, join, wrap or unwrap. When it crossed
        * entries, the batch rebased over them must give `change`'s result.
        */
+      matchesRebased?: (
+        rebased: JsonEditorValue,
+        decided: JsonEditorValue
+      ) => boolean;
       structure?: true;
     }>
   | Readonly<{

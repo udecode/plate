@@ -665,20 +665,30 @@ const endWritesOf = ({
   const same = (was: Line, now: Line) =>
     was.root === now.root && headFrom(now) === was.from;
   const born = (line: Line) => headFrom(line) === null;
-  const opensAfter = (was: Line, now: Line) => {
+  const mappedFrom = (was: Line) => {
     const rootChange = rootChangeOf(was.root);
     const at =
-      rootChange === null || was.root !== now.root
+      rootChange === null
         ? null
         : rootChange === 'same' || rootChange.empty
           ? was.from
           : rootChange.mapPos(was.from, 1);
 
+    return at !== null && headFrom({ from: at, root: was.root }) === was.from
+      ? at
+      : null;
+  };
+  const opensAfter = (was: Line, now: Line) => {
+    const at = was.root === now.root ? mappedFrom(was) : null;
+
     return (
-      at !== null &&
-      headFrom({ from: at, root: was.root }) === was.from &&
-      results.get(was.root)?.nodeStartingAt(at)?.to === now.from
+      at !== null && results.get(was.root)?.nodeStartingAt(at)?.to === now.from
     );
+  };
+  const wrapsWas = (slot: Line, was: Line) => {
+    const at = was.root === slot.root ? mappedFrom(was) : null;
+
+    return at !== null && slot.from < at && at < slot.to;
   };
   const writes: AuthoredWrite[] = [];
 
@@ -716,7 +726,11 @@ const endWritesOf = ({
     const slot = half?.before;
     const stays = same(was.line, now.line);
     const placed =
-      was.slotted && half && slot && !born(half.line) && (gone || born(slot))
+      was.slotted &&
+      half &&
+      slot &&
+      !born(half.line) &&
+      (gone || (born(slot) && !wrapsWas(slot, was.line)))
         ? slot.root === now.line.root && slot.from === now.line.from
         : stays ||
           (!!gone && born(now.line) && was.line.text === now.line.text) ||

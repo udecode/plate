@@ -260,7 +260,7 @@ export const combineFacts = (
     settles,
     ownsFirstLine:
       opensWithStructure ||
-      (members.length === 0 &&
+      (members.every(isSplitEnd) &&
         keepsLine.accepted &&
         keepsLine.proposed &&
         settles),
