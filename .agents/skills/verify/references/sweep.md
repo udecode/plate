@@ -5,7 +5,7 @@ Beta sweeps run rounds over `https://beta.platejs.org` beside `slatejs.org` and 
 ## Roles and handoff
 
 - **Tester:** runs rounds, retests finds, files confirmed Beta bugs straight to `udecode/plate-private` (do not wait for an entire domain to finish before filing a clear P0 or P1 blocker), records retests (`pnpm triage retest`), and runs `/pstack:maintain-verification-skill` after a round.
-- **Triage and queue:** `triage` groups open issues into failure kinds in `docs/triage/plate-private.tsv`. Run `pnpm triage status` to see `unfixed`, `claimed`, and `ready to retest on beta`.
+- **Triage and queue:** `triage` groups open issues into failure kinds on `refs/triage/state`. Run `pnpm triage status` to see `unfixed`, `claimed`, and `ready to retest on beta`.
 - **Fixer:** claims work via `pnpm triage claim --next --repo plate-private` (or `triage fix <domain>`), fixes claimed kinds together, syncs formal checks (`/pstack:maintain-formal-verification-skill`), and runs `/pstack:correct` on repeat miss classes.
 
 ## Pages and agent pass
@@ -34,7 +34,7 @@ Reproduce each find once in a fresh tab with a clip before logging (`mm:ss brows
 ## Filing and triage
 
 1. For any confirmed P0 or P1 blocker, draft and file straight to `udecode/plate-private` via `maintainer` issue-draft (one issue per cause, with clip and `regression: <ref-url>` when beta differs from its reference page). Send spec questions and editor gaps to `verdict`.
-2. Run `triage` (or `triage plate-private#<N>`) to group open `udecode/plate-private` and Beta-milestone `udecode/plate` issues into failure kinds in `docs/triage/plate-private.tsv` (owner `path:line`, miss class, cheapest catching layer, priority `P0`-`P3`) and close duplicates.
+2. Run `triage` (or `triage plate-private#<N>`) to group open `udecode/plate-private` and Beta-milestone `udecode/plate` issues into failure kinds on `refs/triage/state` (priority `P0`-`P3`, scope, optional owner `path:line`) and close duplicates.
 3. Use `pnpm triage status` to track `unfixed`, `claimed`, and `ready to retest on beta`. Once a fix deploys to `beta.platejs.org`, run `pnpm triage retest plate-private#<N> --pass|--fail --on "<browser/device>"`.
 
 ## Rechecks

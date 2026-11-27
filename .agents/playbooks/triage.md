@@ -5,89 +5,88 @@ when: Use it for `triage`, `triage label:<label>`, `triage discussions [<categor
 
 # Triage
 
-Writes issue/discussion calls to `docs/triage/{issues,plate-private,discussions}.tsv` exclusively via `pnpm triage` (`tooling/scripts/triage.mjs`; `pnpm triage --help` lists all subcommands/flags). Each command reads one repo (`udecode/plate` default, `--repo plate-private` / `plate-private#<N>`, `--repo discussions` / `discussions#<N>`). Beta issues = `udecode/plate` issues on the 5 Beta milestones (`Slate regressions`, `Plate regressions`, `New Slate`, `New Plate`, `Experimental`) + all `udecode/plate-private` issues; other `udecode/plate` issues report `main` -> [Main reports](#main-reports). `maintainer` owns GitHub I/O (issue drafts, Slate issues, security, truth gate).
+Stores triage state on `refs/triage/state` (in `udecode/plate-private`) and claims on `refs/triage/claims*` via `pnpm triage` (`tooling/scripts/triage.mjs`; `pnpm triage --help` lists all commands). `pnpm triage record` writes atomically to `refs/triage/state` and syncs GitHub fields, labels, milestones, and issue types directly, with zero git commits on `next` and no `land.mjs` wait. Each command targets one repo (`udecode/plate` default, `--repo plate-private` / `plate-private#<N>`, `--repo discussions` / `discussions#<N>`). Beta issues are `udecode/plate` issues on the 5 Beta milestones (`Slate regressions`, `Plate regressions`, `New Slate`, `New Plate`, `Experimental`) plus all `udecode/plate-private` issues; other `udecode/plate` issues report `main` -> [Main reports](#main-reports). `maintainer` owns issue drafts, Slate issues, security, and the public truth gate.
 
 ## Entry points
 
 | Request | Scope | Ends with |
 | --- | --- | --- |
-| `triage`, `/triage`, `maintainer issues`, `triage label:<label>` | `pnpm triage queue` (both repos, opt `--label`) | records landed, comments posted, `pnpm triage status` summary |
-| `triage discussions [<category>]` | `pnpm triage queue --repo discussions` | records landed, replies posted, `labels --repo discussions` |
+| `triage`, `/triage`, `maintainer issues`, `triage label:<label>` | `pnpm triage queue` (both repos, opt `--label`) | records saved, GitHub synced, comments posted, `pnpm triage status` summary |
+| `triage discussions [<category>]` | `pnpm triage queue --repo discussions` | records saved, replies posted, GitHub labels/closes synced |
 | `triage #<N>`, `plate-private#<N>`, URL | issue N + neighbors | N's record (if current, print and stop) |
-| `triage fix #<N>` / `<domain>` / `next` | issue/domain/next group (`plate-private` first) | claim, records, one Bug fix run over claimed kinds |
+| `triage fix #<N>` / `<domain>` / `next` | issue/domain/next group (`plate-private` first) | claim, missing records, one Bug fix run over claimed kinds |
 | `triage status` | `pnpm triage status` (`unfixed` / `claimed` / `ready to retest on beta`) | live summary per repo and domain |
-| `triage retest #<N>` / `plate-private#<N>` | issue N's `fixed` record | retest comment, close on pass |
-
-## Who records
-
-Run `pnpm triage show <N>...` first (only `claim`, `queue` or `kinds` precedes it) and read every line including `seen:`. Only a root session meeting `triage.floor` (prefer Gemini 4 Neon `@high`; Opus/Sol `@high` also allowed) on every turn since reading the issue (or plate-bot) can record (`show`'s `session:` states eligibility; Codex runs outside sandbox and chunks saved files). Accounts outside `team` maintainers and `triage.gated` (`zbeyens-bot[bot]`) record `unconfirmed` until a maintainer confirms. Non-recording sessions still triage/draft and list `triage #<N>` (never spawn another session to record). Subagents may search; lead reads `show` and decides.
+| `triage retest #<N>` / `plate-private#<N>` | issue N's `fixed` record | retest comment, close on pass or return to fix queue on fail |
 
 ## Method
 
 ### Read
 
-Read `show`, live `gh` neighbors (+ fresh gitcrawl archive) and `pnpm kb <area>` / `pnpm kb plate#<N>`. Challenge claims; send security reports to `maintainer security` immediately.
+Run `pnpm triage show <N>...` (with `--repo plate-private` or `--repo discussions` when needed), check live neighbors and `pnpm kb <area>` / `pnpm kb plate#<N>`. Challenge claims; send security reports to `maintainer security` immediately. Accounts in `triage.gated` (`zbeyens-bot[bot]`) record `unconfirmed` until a maintainer records the issue again.
 
 ### Main reports
 
-Replay non-Beta `udecode/plate` issues on `beta.platejs.org` (deployed SHA: `gh run list --repo udecode/plate --workflow deploy.yml --branch next --status success --limit 1 --json headSha`): works -> `works-on-beta` (`commit`, `proof`; post `Fixed in <commit>.` + clip; `release.yml` updates/closes on publish); fails -> `kind` (`labels` sets Beta milestone); removed/ruled out -> `not-bug` (`law:`; closes not planned); missing steps -> `needs-repro`.
+Replay non-Beta `udecode/plate` issues on `beta.platejs.org` (deployed SHA: `gh run list --repo udecode/plate --workflow deploy.yml --branch next --status success --limit 1 --json headSha`): works -> `works-on-beta` (`--commit`, `--why`; post `Fixed in <commit>.` + clip; `release.yml` updates and closes on publish); fails -> `kind` (syncs Beta milestone); removed or by design -> `not-bug` (`--why`; closes not planned); missing steps -> `needs-repro`.
 
 ### Duplicates
 
-`dup` needs >=2 matching evidence categories (symptom, repro, fix area, linked PRs/discussion, browser/native edge, code surface; never title alone) covering every numbered repro. Split extra kinds into new `udecode/plate-private` issues (`maintainer` issue-draft, published without asking) with `moved:` on the kept issue (`split` if title names none).
+`dup` requires matching evidence (symptom, repro, fix area, or code surface; never title alone) covering every repro. Split unrelated bugs into new `udecode/plate-private` issues (`maintainer` issue-draft, published without asking) and record `split` (`--into`) on the original if needed.
 
-### Kinds
+### Kinds and Fit Gate
 
-One wrong result one fix removes: `owner:` (`path:line`), `cause:` (`read`|`inferred`), `scope:` (review-scope file), miss classes (`M1`-`M7`), priority (`regression` >= P1), opt `device:` (`ios`/`android`/`ime` -> [Device lane](#device-lane)), opt `regression:` (`slatejs.org`/`platejs.org` working URLs).
+A `kind` is one wrong behavior that one fix removes. Record:
 
-### Why tests missed it
+- `--priority P0|P1|P2|P3` (`regression` is at least P1)
+- `--scope <slug>` (review-scope domain)
+- optional `--owner <path:line>` (hint and shared-owner grouping)
+- optional `--device ios|android|ime` (routes to [Device lane](#device-lane))
+- optional `--regression slate|plate|<ref-url>` (ranks Slate regressions > Plate regressions > new bugs)
+- `--why "<concise cause/repro note>"`
 
-`M1` no test (lowest-layer test + scenario catalog row); `M2` wrong layer (Plite browser test or `apps/www/tests/browser/regressions/`); `M3` wrong assertion (fix assertion + `test-audit`); `M4` engine gap (gated engine test); `M5` wiring gap (kit/demo check via `/pstack:correct`); `M6` composition gap (generated/formal check via `/pstack:create-formal-verification-skill`); `M7` spec gap (`docs/editor-behavior/markdown-editing-spec.md` row + test). Two kinds sharing a miss reason trigger `/pstack:correct` on the 2nd fix.
-
-### Fit Gate
-
-Requires all 8: (1) fits `VISION.md`/doctrine (else `not-bug` + `law:`), (2) live source, (3) clear owner, (4) observable repro + final-ref replay plan (else `needs-repro`), (5) no new feature/config/product call (else `spec`), (6) sufficient intake context, (7) no unauthorized creds/destructive/public mutations, (8) grounded beyond title or AI word.
+Before recording `kind`, verify it fits `VISION.md` (else `not-bug`), reproduces on live source with clear steps (else `needs-repro`), and requires no open product or API decision (else `spec`).
 
 ### Record
 
-Keys (`key: value; ...`): `kind` (`scope`, `priority`, `owner`, `cause`, opt `miss`/`moved`/`device`/`regression`); `dup` (`of`); `fixed` (`commit`, `owner`, `proof`, `retest`, `unchecked` unless `retest: none`, opt `clips`, `escaped` after failed retest); `needs-repro` (`missing`); `not-bug` (`law`); `split` (`into`); `spec` (`question`, opt `law`); `works-on-beta` (`commit`, `proof`; `udecode/plate` only). Write `issue outcome detail seen why` TSV -> `record --from <batch.tsv> --dry-run` -> record -> `land.mjs`.
+Record one issue directly:
 
-### Drafts
+```bash
+pnpm triage record 300 --repo plate-private --outcome kind --priority P1 --scope selection --why "..."
+```
 
-Draft for `dup`, `needs-repro`, `not-bug`, `spec`, `fixed`/`works-on-beta`, or `kind` adding cause/owner (`**Cause.**`, `**Not traced.**`, `**Open decision.**`, `**Test.**`) with commit-pinned permalinks. Add `clip` media for visual/behavioral public answers (`gh issue comment --attach`); mark every draft via `pnpm --silent triage mark <draft.md>`. Pass `maintainer` truth gate before fixed comments and verify `deploy.yml` ancestor before claiming live on `beta.platejs.org`. `udecode/plate` `fixed`/`works-on-beta` opens with `Fixed in <commit>.` (auto-closed on publish by `release.yml` / `close-released-issues.mjs`). Once landed, `maintainer` posts marked drafts and runs `pnpm triage labels` automatically (owner's word, 2026-10-26/27); others list under Needs you (plate-bot emits comment blocks). Notify `team` reporters once via `notify`. Retests: `pnpm triage retest <N> --pass|--fail --on "<browser/device>" [--device ...] [--found <M>]` (pass closes; fail voids `fixed` to `retest-failed`; `--found` is `plate-private` only).
+Or batch multiple issues with `--from <batch.json|batch.tsv>` (JSON array of `{ issue, outcome, priority?, scope?, owner?, device?, regression?, of?, into?, commit?, retest?, why? }`, or 4-column TSV `issue\toutcome\tdetail\twhy`). Pass `--dry-run` to validate first, or `--no-sync` to skip GitHub field sync.
+
+Outcomes for issues: `kind`, `dup` (`--of`), `needs-repro` (`--why`), `not-bug` (`--why`), `spec` (`--why`), `split` (`--into`), `fixed` (`--commit`, opt `--retest none|<steps>`, `--owner`, `--proof`), `works-on-beta` (`--commit`, opt `--proof`; `udecode/plate` only).
+
+### Drafts and comments
+
+Post a comment when it gives the reporter actionable information (`dup`, `needs-repro`, `not-bug`, `spec`, `fixed`/`works-on-beta`, or `kind` with a traced cause). Use commit-pinned permalinks, attach `clip` media for visual/behavioral public answers (`gh issue comment --attach`), and mark every posted comment via `pnpm --silent triage mark <draft.md>` so it does not trigger `new-comment` staleness. Pass `maintainer` truth gate before fixed comments and verify `deploy.yml` ancestry before claiming a fix is live on `beta.platejs.org`. `udecode/plate` `fixed`/`works-on-beta` comments open with `Fixed in <commit>.` so `release.yml` / `close-released-issues.mjs` rewrites and closes on publish. Notify `team` reporters once via `notify`.
+
+Retests: `pnpm triage retest <N> --pass|--fail --on "<browser/device>" [--device ios|android|ime] [--found <M>] [--note "..."]`. A pass closes the issue; a fail reverts the `fixed` record back to `kind` (`retestFailed`) so it returns to the fix queue.
 
 ### Discussions
 
-`docs/triage/discussions.tsv`; write replies in `.agents/pstack/rules/writing.md` Messages mode (no rigid templates) and call the release `platejs@beta` (never v2 or beta number): `answered` (`answer:`), `outdated` (`law:`, state what replaced it in `platejs@beta` and link the matching `beta.platejs.org` doc section), `moved` (open `udecode/plate` issue, `issue:`, check per Main reports), `dup` (`of:`), `feature` (`priority:` P1 Vision/plan, P2 common elsewhere, P3 else; `lean:` `pro`/`planned`/`not-planned`; no task; rank via `pnpm triage features`). Post marked draft via `gh api graphql` (`addDiscussionComment`), then `labels --repo discussions`.
+Record with `--repo discussions`: `answered` (`--why`), `outdated` (`--why`, state what replaced it in `platejs@beta` and link the matching `beta.platejs.org` doc section), `moved` (`--issue <N>`), `dup` (`--of <N>`), `feature` (`--priority P1-P3`, `--lean planned|pro|not-planned`; rank via `pnpm triage features`). Write replies in `.agents/pstack/rules/writing.md` Messages mode and call the release `platejs@beta`. Post marked reply via `gh api graphql` (`addDiscussionComment`), then run `pnpm triage labels --repo discussions --apply`.
 
 ### GitHub state
 
-`pnpm triage labels` syncs only: `Triage` (`Triaged`, `Needs reproduction`, `Needs retest`, `Fixed in next release`, `Duplicate`), `Issue type` (`Bug`/`Feature`), `Priority` (P0-P3), `Scope` (review-scope options keeping `accessibility`/`performance`), `Platform` (human/publisher), 5 Beta milestones, `ime`/`regression` labels, completed/not-planned closes, discussion labels/closes (`planned`/`pro`/`not-planned`, resolved/outdated/duplicate).
-
-## The global run
-
-Save `pnpm triage queue` for both repos (`--label` if given), work scope by scope (conflicts, stale, unchecked, untriaged, unconfirmed), leave `unchecked` until readable.
-
-## Sweep domains
-
-Teammates file clear P0/P1 Beta blockers straight to `udecode/plate-private` (no waiting for a full domain to finish); `triage` groups open issues into failure kinds in `docs/triage/plate-private.tsv`, and `pnpm triage status` lists `unfixed`, `claimed`, and `ready to retest on beta`.
+`pnpm triage record` syncs GitHub automatically (and `pnpm triage labels [--repo <name>] [--apply]` inspects or repairs drift): `Triage` (`Triaged`, `Needs reproduction`, `Needs retest`, `Fixed in next release`, `Duplicate`), `Issue type` (`Bug`/`Feature`), `Priority` (P0-P3), `Scope` (keeping `accessibility`/`performance`), 5 Beta milestones, `ime` label, completed/not-planned closes, and discussion labels/answers/closes.
 
 ## Device lane
 
-`device:` kinds + dups wait in `pnpm triage lane [<device>]`. Claims skip them unless `--drives <device>` after user confirms device testing (agent fixes desktop owner first; person rechecks on real device, 5 warm runs when required). Android emulator reproduces within limits only.
+`device` kinds and their duplicates wait in `pnpm triage lane [<device>]`. Claims skip them unless `--drives <device>` is passed after the user confirms real-device testing.
 
 ## Fix
 
-1. **Claim first:** `pnpm triage claim` (`<N>`, `plate-private#<N>`, `--domain <scope> --repo plate-private` falling back to `--repo plate`, or `--next --repo plate-private` ranking Slate regressions > Plate regressions > new bugs by priority) + `--session <id>`. Checks live holds (claims, assignees, PRs, recent comments; 48h quiet prints `stale` and still holds), refuses domain/next claims while non-main issues are untriaged, and auto-assigns account. Exit 1 stops run (rerun once on post-push error, else `pnpm triage release`). `--take <holds> --why "<words>"` needs owner word (`babysit <PR>` authorizes PR author's holds; only maintainers take others'). Title multi-issue claims by domain.
-2. **Triage claimed group:** record missing/stale issues; re-claim if group changed.
-3. **Fix together:** one Bug fix run over all claimed kinds (2+ kinds on one owner = Redesign run; tag `[plate#N]`/`[plate-private#N]`; build missing M6 check before fixing; follow formal check skills).
-4. **Close or release:** after landing, record `fixed` (`retest: none` only for exact non-device/non-mobile browser+input replay, else `retest:` + `unchecked:`; after failed retest also `escaped:` + new tagged test), post comments, or `pnpm triage release <N>... --why "<reason>"`.
+1. **Claim first:** `pnpm triage claim` (`<N>`, `plate-private#<N>`, `--domain <scope> --repo plate-private`, or `--next --repo plate-private`) + `--session <id>`. Checks live holds (claims, assignees, PRs, 30d claim comments; 48h quiet prints `stale` and still holds) and auto-assigns `@me`. `--domain` never blocks on unrelated untriaged issues; `--next` skips untriaged issues with a one-line warning and claims the highest-priority triaged domain. Exit 1 stops the run. `--take <holds> --why "<words>"` requires owner authorization (only maintainers take others' holds).
+2. **Triage claimed group:** record any missing or stale issues in the group; re-claim if grouping changed.
+3. **Fix together:** one Bug fix run over all claimed kinds (2+ kinds on one owner = Redesign run; tag `[plate#N]`/`[plate-private#N]`; follow formal check skills).
+4. **Record fix or release:** after landing, record `fixed` (`--commit <sha>`, `--retest none` only for exact non-device browser replay, else `--retest "<steps>"`), post comments, or run `pnpm triage release <N>... --why "<reason>"`.
 
 ## Steps
 
-- **Replace** "Trace the code the question is about. For motivation questions, also route through the **why** skill.": `triage fix` runs Fix step 1 first (stop on exit 1), then Who records and Method (`how`/`why` optional).
+- **Replace** "Trace the code the question is about. For motivation questions, also route through the **why** skill.": `triage fix` runs Fix step 1 first (stop on exit 1), then Read and Method (`how`/`why` optional).
 - **Replace** "Throughput checkpoint stays one line": queue counts by state and scope order, or `n/a, one issue`.
-- **Replace** "Produce the output": landed records, posted comments, `pnpm triage status` summary and unrecorded issues.
+- **Replace** "Produce the output": saved records, synced GitHub fields, posted comments, and `pnpm triage status` summary.
 - **After** "Produce the output": `triage fix` -> Fix step 3; others hand back here.
 
-**Reply:** record counts per outcome, remaining queue per repo, posted comments, Needs you commands, `labels` results, `triage status` counts, unrecorded `triage #<N>` lines.
+**Reply:** record counts per outcome, remaining queue per repo, posted comments, and `triage status` counts.

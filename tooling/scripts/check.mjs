@@ -1013,7 +1013,7 @@ export const steps = [
     land: true,
     private: true,
     run: 'node tooling/scripts/triage.mjs check',
-    affected: touches('.agents/pstack.json', 'docs/triage/'),
+    affected: touches('.agents/pstack.json'),
     key: [],
   },
   {

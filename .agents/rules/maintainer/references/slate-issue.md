@@ -12,7 +12,7 @@ Bare issue numbers target `udecode/slate`; an issue URL keeps its explicit
 repository. Use `maintainer` for queue selection or batches. Use pstack's Bug
 fix playbook for a local behavior bug or regression with no public mutation.
 A duplicate or fit call follows the [Triage playbook](../../../playbooks/triage.md)'s
-Duplicates and Fit Gate, and a Slate issue gets no row in `docs/triage/issues.tsv`.
+Duplicates and Fit Gate, and a Slate issue gets no triage record on `refs/triage/state`.
 
 ## Authority
 

@@ -137,16 +137,9 @@
       "apps/www/src/app/(app)/examples/plite/"
     ],
     "focus": "all",
-    "floor": [
-      "gemini-4-neon @high",
-      "claude-opus-5 @high",
-      "gpt-6.1-sol @high",
-      "gpt-6.2-sol @high"
-    ],
     "gated": [
       "zbeyens-bot[bot]"
-    ],
-    "rev": 1
+    ]
   },
   "notify": {
     "channel": "1080884840884346941",

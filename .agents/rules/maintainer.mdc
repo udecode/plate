@@ -7,7 +7,7 @@ argument-hint: '[queue | issues | prs | security | issue-draft | slate-issue] <u
 
 Handle $ARGUMENTS.
 
-Use `maintainer` for public GitHub work: repo maintenance, PR and security scans, Slate issues, issue drafts, and public PRs or Slate issues without a chosen owner. Triage of `udecode/plate` and `udecode/plate-private` issues, their records in `docs/triage/issues.tsv` or `docs/triage/plate-private.tsv`, and their fix runs belong to the [Triage playbook](../../playbooks/triage.md). Narrower user-named owners, internal benchmark/quality loops, and broad research go to their own owners; never hand public queue ownership to an internal quality run.
+Use `maintainer` for public GitHub work: repo maintenance, PR and security scans, Slate issues, issue drafts, and public PRs or Slate issues without a chosen owner. Triage of `udecode/plate` and `udecode/plate-private` issues, their records on `refs/triage/state`, and their fix runs belong to the [Triage playbook](../../playbooks/triage.md). Narrower user-named owners, internal benchmark/quality loops, and broad research go to their own owners; never hand public queue ownership to an internal quality run.
 
 Maintenance runs in local maintainer sessions, never a hosted bot, cloud worker, or daemon, and never mutates GitHub without explicit authority. Read public intake contracts first (`CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/*.yml`, `SECURITY.md`). An item lacking public reproduction, proof, risk, owner, blocker, and next action is not agent-ready: ask for the smallest missing evidence or keep it brief-only. A run finishes when its item is routed, proved, or stopped at its authority boundary.
 

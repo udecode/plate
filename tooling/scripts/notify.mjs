@@ -20,6 +20,7 @@ import {
   run as gitAt,
   isSplit,
   landingPair,
+  PRIVATE_DIR,
   privateGit,
   showAt,
   untrackedFiles,
@@ -159,19 +160,26 @@ const hasTeamTrailer = (message) =>
 const PRIVATE_ISSUE = /\bplate-private#(\d+)\b/gu;
 
 const openIssuesNamed = (bodies) => {
-  const register = join(process.cwd(), 'docs/triage/plate-private.tsv');
-  if (!existsSync(register)) return [];
-  const latest = new Map();
-  for (const row of readFileSync(register, 'utf-8').split('\n').slice(1)) {
-    const [, ts, issue, outcome] = row.split('\t');
-    const seen = latest.get(issue);
-    if (outcome && (!seen || seen.ts <= ts)) latest.set(issue, { ts, outcome });
+  const root = process.cwd();
+  const privateDir = join(root, PRIVATE_DIR);
+  const via = existsSync(privateDir) ? [`--git-dir=${privateDir}`] : [];
+  const read = spawnSync(
+    'git',
+    [...via, 'show', 'refs/triage/state:plate-private.json'],
+    { cwd: root, encoding: 'utf-8' }
+  );
+  if (read.status !== 0) return [];
+  let records;
+  try {
+    records = JSON.parse(read.stdout);
+  } catch {
+    return [];
   }
   const named = bodies.flatMap((body) =>
     [...body.matchAll(PRIVATE_ISSUE)].map(([, issue]) => issue)
   );
   return [...new Set(named)].filter(
-    (issue) => latest.get(issue)?.outcome === 'kind'
+    (issue) => records?.[issue]?.outcome === 'kind'
   );
 };
 

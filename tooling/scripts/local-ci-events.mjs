@@ -5,12 +5,7 @@ import { join } from 'node:path';
 
 export const FULL_RUN_HOUR = 4;
 
-const MD_ONLY_DIRS = [
-  'docs/plans/',
-  'docs/research/',
-  'docs/triage/',
-  'docs/editor-behavior/',
-];
+const MD_ONLY_DIRS = ['docs/plans/', 'docs/research/', 'docs/editor-behavior/'];
 const NON_SKIP_MD_DIRS = [
   'content/docs/',
   '.agents/',

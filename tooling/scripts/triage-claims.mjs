@@ -181,9 +181,9 @@ const dupsOf = (issue, world) =>
 
 export const ownerFiles = (head) =>
   head?.outcome === 'kind'
-    ? head.fields
-        .get('owner')
+    ? (head.fields.get('owner') ?? '')
         .split(/,\s*/u)
+        .filter(Boolean)
         .map((ref) => ref.replace(/:\d+(?:-\d+)?$/u, ''))
     : [];
 
@@ -372,7 +372,8 @@ export const RELEASED_SITES = new Map([
 ]);
 
 export const regressionOf = (pages) => {
-  if (pages === undefined) return null;
+  if (!pages) return null;
+  if (pages === 'slate' || pages === 'plate') return pages;
   return pages
     .split(/,\s*/u)
     .some((page) => RELEASED_SITES.get(URL.parse(page)?.hostname) === 'slate')
