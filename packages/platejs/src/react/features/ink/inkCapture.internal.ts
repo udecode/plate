@@ -289,6 +289,9 @@ export const attachInkCapture = ({
         runs: margin ? [] : runsOf(live, points, radius),
         text: live.text,
         top: live.box.top,
+        ...(live.voidLabels === undefined
+          ? {}
+          : { voidLabels: live.voidLabels }),
         voids: block.voids,
         width: live.box.width,
       })),

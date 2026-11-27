@@ -476,7 +476,6 @@ const copyHolds = (
 
   return block.runs.every((run) => {
     const tolerance = copy.lines[lineOf(copy.lines, run.start)].height / 8;
-    const savedLeft = block.left + run.left;
 
     if (run.start === run.end) {
       const [start, end] = gapAround(copy.text, run.start);
@@ -487,9 +486,7 @@ const copyHolds = (
       const half = end > start ? gap.width / 2 : tolerance;
 
       return (
-        Math.abs(
-          savedLeft + run.width / 2 - (live.box.left + gap.left + gap.width / 2)
-        ) <= half
+        Math.abs(run.left + run.width / 2 - (gap.left + gap.width / 2)) <= half
       );
     }
 
@@ -497,7 +494,7 @@ const copyHolds = (
 
     return (
       now !== undefined &&
-      Math.abs(live.box.left + now.left - savedLeft) <= tolerance &&
+      Math.abs(now.left - run.left) <= tolerance &&
       Math.abs(now.width - run.width) <= tolerance
     );
   });
@@ -554,7 +551,8 @@ export const placeMark = ({
   }
   if (mark.direction === 'rtl') return sign('changed');
 
-  const shifts: number[] = [];
+  const shiftsX: number[] = [];
+  const shiftsY: number[] = [];
 
   for (const { block, copy, now } of blocks) {
     if (!inkHolds(copy, now)) return sign('changed');
@@ -563,20 +561,25 @@ export const placeMark = ({
     ) {
       return sign('changed');
     }
-    shifts.push(now.box.top - block.top);
+    shiftsX.push(now.box.left - block.left);
+    shiftsY.push(now.box.top - block.top);
   }
 
-  const [dy] = shifts;
+  const [dx] = shiftsX;
+  const [dy] = shiftsY;
   const heights = blocks.flatMap(({ copy }) =>
     copy.lines.map((line) => line.height)
   );
   const tolerance = (heights.length > 0 ? Math.min(...heights) : 1) / 8;
 
-  if (!shifts.every((shift) => Math.abs(shift - dy) <= tolerance)) {
+  if (
+    !shiftsX.every((shift) => Math.abs(shift - dx) <= tolerance) ||
+    !shiftsY.every((shift) => Math.abs(shift - dy) <= tolerance)
+  ) {
     return sign('changed');
   }
 
-  const moved = points.map(([x, y]): Point => [x, y + dy]);
+  const moved = points.map(([x, y]): Point => [x + dx, y + dy]);
   const unheldReach = Math.max(0, radius - SUBPIXEL_DRIFT);
 
   for (const { block, now } of blocks) {
@@ -593,5 +596,5 @@ export const placeMark = ({
     }
   }
 
-  return clear(0, dy);
+  return clear(dx, dy);
 };

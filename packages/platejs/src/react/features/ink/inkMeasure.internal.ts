@@ -22,6 +22,7 @@ export type InkMeasuredBlock = InkLiveBlock &
   Readonly<{
     lines: readonly InkLine[];
     movedTo: (box: InkBox, origin: InkLayerOrigin) => InkMeasuredBlock;
+    voidLabels?: Readonly<Record<number, string>>;
   }>;
 
 export type InkBand = Readonly<{ from: number; to: number }>;
@@ -321,6 +322,18 @@ export const measureInkBlock = (
 
     return low;
   };
+  const voidLabelEntries = spans.flatMap((span) => {
+    if (!(span.piece instanceof Element)) return [];
+
+    const visible = (span.piece.textContent ?? '').trim();
+
+    return visible.length > 0 ? ([[span.start, visible]] as const) : [];
+  });
+  const voidLabels: Readonly<Record<number, string>> | undefined =
+    voidLabelEntries.length > 0
+      ? Object.fromEntries(voidLabelEntries)
+      : undefined;
+
   const blockAt = (
     where: InkBox,
     reader: ReturnType<typeof readerAt>
@@ -355,6 +368,7 @@ export const measureInkBlock = (
       return { height, left, top, width };
     },
     text,
+    ...(voidLabels === undefined ? {} : { voidLabels }),
   });
 
   return blockAt(box, { char, run });

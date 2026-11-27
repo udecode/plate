@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import {
   getRecordSetVersion,
+  readShownPreview,
   readShownRecords,
   subscribeEditorViewState,
 } from '../../../facade';
@@ -152,7 +153,10 @@ function InkLayer({
   const tool = useViewStore(InkPlugin, (state) => state.tool);
   const hidden = useViewStore(InkPlugin, (state) => state.hidden);
   const picked = useViewStore(InkPlugin, (state) => state.picked);
-  const readOnly = useEditorViewState(view, (state) => state.isReadOnly());
+  const readOnly = useEditorViewState(
+    view,
+    (state) => state.isReadOnly() || readShownPreview(view) !== undefined
+  );
   const [layer, setLayer] = React.useState<HTMLDivElement | null>(null);
   const [surface, setSurface] = React.useState<ReturnType<
     typeof createInkSurface
@@ -208,7 +212,9 @@ function InkLayer({
 
     const tools = view.plugin(InkPlugin).viewStore;
     const live = () =>
-      view.read.view.isReadOnly() || tools.get('hidden')
+      view.read.view.isReadOnly() ||
+      readShownPreview(view) !== undefined ||
+      tools.get('hidden')
         ? null
         : tools.get('tool');
     const attached = attachInkCapture({
@@ -390,6 +396,7 @@ function InkLayer({
     page.addEventListener('scroll', onScroll, { capture: true, passive: true });
     win?.addEventListener('resize', schedule);
     win?.addEventListener('beforeprint', onPrint);
+    win?.addEventListener('afterprint', schedule);
     const end = () => {
       attached.cancel();
       picker.cancel();
@@ -404,9 +411,11 @@ function InkLayer({
       }
     });
     const stopViewState = subscribeEditorViewState(view, (change) => {
-      if (change !== 'readOnly') return;
-      end();
-      view.plugin(InkPlugin).api.setTool(null);
+      if (change !== 'readOnly' && change !== 'authored') return;
+      if (change === 'readOnly' || readShownPreview(view) !== undefined) {
+        end();
+        view.plugin(InkPlugin).api.setTool(null);
+      }
     });
 
     schedule();
@@ -423,6 +432,7 @@ function InkLayer({
       page.removeEventListener('scroll', onScroll, { capture: true });
       win?.removeEventListener('resize', schedule);
       win?.removeEventListener('beforeprint', onPrint);
+      win?.removeEventListener('afterprint', schedule);
       attached.detach();
       picker.detach();
     };

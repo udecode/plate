@@ -1,6 +1,7 @@
 import React from 'react';
 
 import type { InkCopy, InkMark, InkRun } from '../../../features/ink/lib';
+import { INK_VOID } from '../../../features/ink/lib/inkMatch.internal';
 import { useEditor, useEditorSelector } from '../../core';
 import { inkOutline } from './inkPaint.internal';
 import { InkPlugin } from './InkPlugin';
@@ -32,6 +33,22 @@ const placesOf = (mark: InkMark, anchor: Anchor) =>
   );
 
 const grows = (from: Edge, to: Edge) => to.at > from.at && to.x >= from.x;
+
+const sliceCopyText = (copy: InkCopy, from: number, to: number) => {
+  const slice = copy.text.slice(from, to);
+
+  if (!copy.voidLabels || !slice.includes(INK_VOID)) return slice;
+
+  let rendered = '';
+
+  for (let index = 0; index < slice.length; index += 1) {
+    const ch = slice[index];
+
+    rendered += ch === INK_VOID ? (copy.voidLabels[from + index] ?? ch) : ch;
+  }
+
+  return rendered;
+};
 
 const piecesOf = (copy: InkCopy, runs: readonly InkRun[]) =>
   copy.lines.flatMap((line, index) => {
@@ -176,7 +193,7 @@ export function InkCopyView({ marks }: { marks: readonly string[] }) {
                     xmlSpace="preserve"
                     y={block.top - top + line.top + line.height / 2}
                   >
-                    {copies[at].text.slice(from.at, to.at)}
+                    {sliceCopyText(copies[at], from.at, to.at)}
                   </text>
                 ));
               })}

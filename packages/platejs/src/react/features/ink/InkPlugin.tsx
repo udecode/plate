@@ -1,3 +1,4 @@
+import { readShownPreview } from '../../../facade';
 import {
   BaseInkPlugin,
   type InkPassage,
@@ -112,6 +113,7 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
 
         if (
           editor.read.view.isReadOnly() ||
+          readShownPreview(editor) !== undefined ||
           !within(size, Number.POSITIVE_INFINITY) ||
           (tool.type === 'draw' &&
             (!within(tool.brush.opacity, 1) ||
@@ -147,6 +149,13 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
       const removes = event.key === 'Backspace' || event.key === 'Delete';
 
       if (!removes && event.key !== 'Escape') return undefined;
+      if (
+        removes &&
+        (editor.read.view.isReadOnly() ||
+          readShownPreview(editor) !== undefined)
+      ) {
+        return undefined;
+      }
 
       const picks = editor.read((state) => {
         const { picked, showDigitized, tool } = viewStoreOf(state).get();

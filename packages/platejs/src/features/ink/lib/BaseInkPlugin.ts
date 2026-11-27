@@ -123,6 +123,12 @@ export type InkCopy = Readonly<{
   lines: readonly InkLine[];
   text: string;
   /**
+   * Optional visible display labels for inline voids in `text`, keyed by
+   * character offset, so `InkCopyView` renders readable labels instead of
+   * raw `U+FFFC` placeholders.
+   */
+  voidLabels?: Readonly<Record<number, string>>;
+  /**
    * A digest of the content properties of the block's inline voids at their
    * offsets, excluding metadata such as ids and review marks, so a mention
    * swapped for another reads as changed.
@@ -414,6 +420,37 @@ const encodeSamples = (input: unknown) => {
   return encodePoints(checked.map(roundSample));
 };
 
+const voidLabelsIn = (
+  value: unknown,
+  text: string,
+  name: string
+): Readonly<Record<number, string>> | undefined => {
+  if (value === undefined) return undefined;
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    refuse(`${name}.voidLabels must be an object`);
+  }
+
+  const entries = Object.entries(value as Record<string, unknown>)
+    .map(([key, label]) => {
+      const offset = Number(key);
+
+      if (
+        !Number.isInteger(offset) ||
+        offset < 0 ||
+        offset >= text.length ||
+        String(offset) !== key ||
+        text[offset] !== INK_VOID
+      ) {
+        refuse(`${name}.voidLabels[${key}] must point to an inline void`);
+      }
+
+      return [offset, textIn(label, `${name}.voidLabels[${key}]`)] as const;
+    })
+    .sort(([a], [b]) => a - b);
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+};
+
 const copyRecord = (
   copy: Readonly<Partial<Record<keyof Omit<InkCopy, 'id'>, unknown>>>,
   name: string
@@ -440,11 +477,14 @@ const copyRecord = (
   }
   if (end !== text.length) refuse(`${name}.lines must end where its text ends`);
 
+  const voidLabels = voidLabelsIn(copy.voidLabels, text, name);
+
   return {
     block: textIn(copy.block, `${name}.block`),
     height: numberIn(copy.height, `${name}.height`, 0),
     lines: flat,
     text,
+    voidLabels,
     voids:
       copy.voids === undefined
         ? undefined
@@ -482,6 +522,7 @@ const encodeMark = (
       height,
       lines,
       text,
+      voidLabels,
       voids: measured,
       width,
     } = typeof block === 'object' && block !== null
@@ -494,6 +535,7 @@ const encodeMark = (
       lines: list(lines),
       text,
       width,
+      ...(voidLabels === undefined ? {} : { voidLabels }),
       ...(voids === undefined ? {} : { voids }),
     };
 
@@ -609,10 +651,8 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       top: numbers[at + 2],
       width: numbers[at + 3],
     }));
-    const { block, height, text, voids, width, ...written } = copyRecord(
-      { ...record, lines },
-      'copy'
-    );
+    const { block, height, text, voidLabels, voids, width, ...written } =
+      copyRecord({ ...record, lines }, 'copy');
 
     if (written.lines.join(' ') !== record.lines) {
       refuse('a saved copy must be what add writes');
@@ -625,6 +665,7 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       lines,
       text,
       width,
+      ...(voidLabels === undefined ? {} : { voidLabels }),
       ...(voids === undefined ? {} : { voids }),
     });
   });
@@ -1218,6 +1259,39 @@ export const BaseInkPlugin = definePlugin('ink', {
       }
       for (const copyId of staleCopies) {
         tx.records.drop(COPIES, copyId);
+      }
+
+      const gone = getRecordSetVersion(store, GONE);
+
+      if (gone && staleCopies.size > 0) {
+        const reachable = new Set<string>();
+        const queue: string[] = [];
+
+        for (const copyId of recordSetIds(copies)) {
+          if (staleCopies.has(copyId)) continue;
+          const block = readRecord(copies, copyId)?.block;
+
+          if (typeof block === 'string' && !reachable.has(block)) {
+            reachable.add(block);
+            queue.push(block);
+          }
+        }
+        for (const id of queue) {
+          const entry = readRecord(gone, id);
+
+          if (!entry) continue;
+          for (const side of ['previous', 'next'] as const) {
+            const neighbor = entry[side];
+
+            if (typeof neighbor === 'string' && !reachable.has(neighbor)) {
+              reachable.add(neighbor);
+              queue.push(neighbor);
+            }
+          }
+        }
+        for (const id of recordSetIds(gone)) {
+          if (!reachable.has(id)) tx.records.drop(GONE, id);
+        }
       }
 
       return toDrop;
