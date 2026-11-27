@@ -47,8 +47,6 @@ const typescript5Compiler = join(
   'bin',
   'tsc'
 );
-const localImportPattern =
-  /\b(?:import|export)\s+(?:[^'";]*?\s+from\s+)?['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 const namedExportBlockPattern = /\bexport\s*\{([^}]*)\}/g;
 const directNamedExportPattern =
   /\bexport\s+(?:async\s+)?(?:const|function|class|let|var)\s+([A-Za-z_$][\w$]*)/g;
@@ -217,6 +215,12 @@ export function collectPublicExportOptionalPeers({
       if (specifier.startsWith('/') || specifier.includes(':')) continue;
 
       const dependencyName = getDependencyName(specifier);
+      const optionalPeers = getOptionalPeerNames(current.owner.packageJson);
+
+      if (optionalPeers.has(dependencyName)) {
+        requiredPeers.add(dependencyName);
+      }
+
       const packedDependency = packedByName.get(dependencyName);
 
       if (packedDependency) {
@@ -240,16 +244,6 @@ export function collectPublicExportOptionalPeers({
         continue;
       }
 
-      const optionalPeers = new Set(
-        Object.entries(current.owner.packageJson.peerDependenciesMeta ?? {})
-          .filter(([, metadata]) => metadata?.optional === true)
-          .map(([name]) => name)
-      );
-
-      if (optionalPeers.has(dependencyName)) {
-        requiredPeers.add(dependencyName);
-      }
-
       const typePackage = dependencyName.startsWith('@')
         ? `@types/${dependencyName.slice(1).replace('/', '__')}`
         : `@types/${dependencyName}`;
@@ -263,13 +257,62 @@ export function collectPublicExportOptionalPeers({
   return [...requiredPeers].sort(compareStrings);
 }
 
+function getOptionalPeerNames(packageJson) {
+  return new Set(
+    Object.entries(packageJson.peerDependenciesMeta ?? {})
+      .filter(([, metadata]) => metadata?.optional === true)
+      .map(([name]) => name)
+  );
+}
+
+function collectAllowedProofPackages({
+  packedPackage,
+  packedPackages,
+  requiredOptionalPackages,
+}) {
+  const packedByName = new Map(
+    packedPackages.map((item) => [item.packageJson.name, item])
+  );
+  const requiredOptional = new Set(requiredOptionalPackages);
+  const allowed = new Set(requiredOptional);
+  const queue = [packedPackage.packageJson.name];
+  const visited = new Set();
+
+  while (queue.length > 0) {
+    const packageName = queue.shift();
+
+    if (visited.has(packageName)) continue;
+    visited.add(packageName);
+    allowed.add(packageName);
+
+    const current = packedByName.get(packageName);
+
+    if (!current) continue;
+
+    const optionalPeers = getOptionalPeerNames(current.packageJson);
+    const requiredDependencies = [
+      ...Object.keys(current.packageJson.dependencies ?? {}),
+      ...Object.keys(current.packageJson.peerDependencies ?? {}).filter(
+        (name) => !optionalPeers.has(name) || requiredOptional.has(name)
+      ),
+    ];
+
+    for (const dependencyName of requiredDependencies) {
+      allowed.add(dependencyName);
+      if (packedByName.has(dependencyName)) {
+        queue.push(dependencyName);
+      }
+    }
+  }
+
+  return allowed;
+}
+
 export function createPackedPublicExportPeerProofs(packedPackages) {
   const allOptionalPeers = new Set(
-    packedPackages.flatMap(({ packageJson }) =>
-      Object.entries(packageJson.peerDependenciesMeta ?? {})
-        .filter(([, metadata]) => metadata?.optional === true)
-        .map(([name]) => name)
-    )
+    packedPackages.flatMap(({ packageJson }) => [
+      ...getOptionalPeerNames(packageJson),
+    ])
   );
   const declarationPackageNames = packedPackages.map(
     ({ packageJson }) => packageJson.name
@@ -298,18 +341,22 @@ export function createPackedPublicExportPeerProofs(packedPackages) {
         continue;
       }
 
-      const requiredOptional = new Set(requiredOptionalPackages);
+      const allowedPackages = collectAllowedProofPackages({
+        packedPackage,
+        packedPackages,
+        requiredOptionalPackages,
+      });
       const typePackages = ['@types/node'];
 
-      if (requiredOptional.has('react')) typePackages.push('@types/react');
-      if (requiredOptional.has('react-dom')) {
+      if (allowedPackages.has('react')) typePackages.push('@types/react');
+      if (allowedPackages.has('react-dom')) {
         typePackages.push('@types/react-dom');
       }
 
       groups.set(key, {
         declarationPackageNames,
         forbiddenPackages: [...allOptionalPeers]
-          .filter((name) => !requiredOptional.has(name))
+          .filter((name) => !allowedPackages.has(name))
           .sort(compareStrings),
         packageNames: [packedPackage.packageJson.name],
         requiredOptionalPackages,
@@ -327,11 +374,9 @@ export function createPackedPublicExportPeerProofs(packedPackages) {
 
 export function createPackedHeadlessRuntimeProofs(packedPackages) {
   const allOptionalPeers = new Set(
-    packedPackages.flatMap(({ packageJson }) =>
-      Object.entries(packageJson.peerDependenciesMeta ?? {})
-        .filter(([, metadata]) => metadata?.optional === true)
-        .map(([name]) => name)
-    )
+    packedPackages.flatMap(({ packageJson }) => [
+      ...getOptionalPeerNames(packageJson),
+    ])
   );
   const declarationPackageNames = packedPackages.map(
     ({ packageJson }) => packageJson.name
@@ -363,12 +408,16 @@ export function createPackedHeadlessRuntimeProofs(packedPackages) {
         continue;
       }
 
-      const requiredOptional = new Set(requiredOptionalPackages);
+      const allowedPackages = collectAllowedProofPackages({
+        packedPackage,
+        packedPackages,
+        requiredOptionalPackages,
+      });
 
       groups.set(key, {
         declarationPackageNames,
         forbiddenPackages: [...allOptionalPeers]
-          .filter((name) => !requiredOptional.has(name))
+          .filter((name) => !allowedPackages.has(name))
           .sort(compareStrings),
         packageNames: [packedPackage.packageJson.name],
         requiredOptionalPackages,
@@ -463,21 +512,9 @@ export function collectExternalImports(source) {
   );
 }
 
-export function collectImportSpecifiers(source) {
-  const imports = new Set();
-
-  for (const match of source.matchAll(localImportPattern)) {
-    const specifier = match[1] ?? match[2];
-
-    if (specifier) imports.add(specifier);
-  }
-
-  return [...imports].sort(compareStrings);
-}
-
-function collectDeclarationImportSpecifiers(source) {
+function collectAstImportSpecifiers(source, plugins = []) {
   const root = parse(source, {
-    plugins: ['typescript'],
+    plugins,
     sourceType: 'module',
   });
   const imports = new Set();
@@ -489,6 +526,17 @@ function collectDeclarationImportSpecifiers(source) {
       (node.type === 'ImportDeclaration' ||
         node.type === 'ExportNamedDeclaration' ||
         node.type === 'ExportAllDeclaration') &&
+      node.source?.type === 'StringLiteral'
+    ) {
+      imports.add(node.source.value);
+    } else if (
+      node.type === 'CallExpression' &&
+      node.callee?.type === 'Import' &&
+      node.arguments?.[0]?.type === 'StringLiteral'
+    ) {
+      imports.add(node.arguments[0].value);
+    } else if (
+      node.type === 'ImportExpression' &&
       node.source?.type === 'StringLiteral'
     ) {
       imports.add(node.source.value);
@@ -507,6 +555,14 @@ function collectDeclarationImportSpecifiers(source) {
 
   visit(root);
   return [...imports].sort(compareStrings);
+}
+
+export function collectImportSpecifiers(source) {
+  return collectAstImportSpecifiers(source);
+}
+
+function collectDeclarationImportSpecifiers(source) {
+  return collectAstImportSpecifiers(source, ['typescript']);
 }
 
 function auditPackedDocs({ docs, files, packageJson }) {
@@ -995,11 +1051,14 @@ function createPliteSchemaConsumerSource({ typed }) {
     typed
       ? "const releaseTypedParagraph: ReleaseSchemaElementFor<typeof ReleaseArtifactSchema, 'paragraph'> = releaseCanonicalParagraph;"
       : 'const releaseTypedParagraph = releaseCanonicalParagraph;',
-    'releaseAssertDeepEqual(releaseTypedParagraph, {',
+    'const { id: releaseParagraphId, ...releaseParagraphFields } = releaseCanonicalParagraph;',
+    "releaseAssertEqual(typeof releaseParagraphId === 'string' && releaseParagraphId.length > 0, true);",
+    'releaseAssertDeepEqual(releaseParagraphFields, {',
     "  tone: 'body',",
     "  children: [{ text: '' }],",
     "  type: 'paragraph',",
     '});',
+    'void releaseTypedParagraph;',
   ].join('\n');
 }
 
@@ -1090,7 +1149,9 @@ function createPlateSchemaConsumerSource({ typed }) {
           'void releaseCreatedElementTone;',
         ]
       : []),
-    'releasePlateAssertDeepEqual(releasePlateElementBefore, {',
+    'const { id: releasePlateElementBeforeId, ...releasePlateElementBeforeFields } = releasePlateElementBefore;',
+    "releasePlateAssertEqual(typeof releasePlateElementBeforeId === 'string' && releasePlateElementBeforeId.length > 0, true);",
+    'releasePlateAssertDeepEqual(releasePlateElementBeforeFields, {',
     "  children: [{ text: '' }],",
     "  tone: 'draft',",
     "  type: 'release-artifact-paragraph',",
@@ -1124,7 +1185,10 @@ function createPlateSchemaConsumerSource({ typed }) {
     '}',
     'const releasePlateElementAfter =',
     '  releasePlateEditor.read.schema.create(ReleaseElementPlugin);',
-    'releasePlateAssertDeepEqual(releasePlateElementAfter, {',
+    'const { id: releasePlateElementAfterId, ...releasePlateElementAfterFields } = releasePlateElementAfter;',
+    "releasePlateAssertEqual(typeof releasePlateElementAfterId === 'string' && releasePlateElementAfterId.length > 0, true);",
+    'releasePlateAssertEqual(releasePlateElementAfterId === releasePlateElementBeforeId, false);',
+    'releasePlateAssertDeepEqual(releasePlateElementAfterFields, {',
     "  children: [{ text: '' }],",
     "  tone: 'draft',",
     "  type: 'release-artifact-paragraph',",
@@ -1483,11 +1547,7 @@ function verifyIsolatedPackedConsumer({
     cpSync(packedPackage.packageDirectory, destination, { recursive: true });
     installed.add(packageName);
 
-    const optionalPeers = new Set(
-      Object.entries(packedPackage.packageJson.peerDependenciesMeta ?? {})
-        .filter(([, metadata]) => metadata?.optional === true)
-        .map(([name]) => name)
-    );
+    const optionalPeers = getOptionalPeerNames(packedPackage.packageJson);
     const requiredDependencies = new Set([
       ...Object.keys(packedPackage.packageJson.dependencies ?? {}),
       ...Object.keys(packedPackage.packageJson.peerDependencies ?? {}).filter(
@@ -1654,11 +1714,7 @@ export function materializeResolvedDependencyClosure({
     if (packageNodes.has(source)) continue;
 
     const packageJson = readJson(join(source, 'package.json'));
-    const optionalPeers = new Set(
-      Object.entries(packageJson.peerDependenciesMeta ?? {})
-        .filter(([, metadata]) => metadata?.optional === true)
-        .map(([name]) => name)
-    );
+    const optionalPeers = getOptionalPeerNames(packageJson);
     packageNodes.set(source, {
       dependencies: new Map(),
       source,
