@@ -1,6 +1,6 @@
 ---
-description: Triage udecode/plate and udecode/plate-private issues/discussions, record triage state, card fix chips, run fix domains, and record beta retests. Use for /triage, issue URLs, or `triage fix`/`retest`/`chips`.
-argument-hint: '[[plate-private]#<N> | label:<label> | chips | fix [[plate-private]#<N> | <domain> | next] | retest [plate-private]#<N>]'
+description: Triage udecode/plate and udecode/plate-private issues/discussions, record triage state, check triage status, run fix domains, and record beta retests. Use for /triage, issue URLs, or `triage fix`/`retest`/`status`.
+argument-hint: '[[plate-private]#<N> | label:<label> | status | fix [[plate-private]#<N> | <domain> | next] | retest [plate-private]#<N>]'
 name: triage
 metadata:
   skiller:

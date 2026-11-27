@@ -138,27 +138,6 @@ function holdsOf(issue, world) {
       });
     }
   }
-  // A started row holds only for a task no claim row names, so a claim's own task never holds against a later claim.
-  for (const linked of world.linked(issue)) {
-    const task = world.tasks.get(linked.id);
-    const ours =
-      task.startedIn !== null &&
-      [actor.session, actor.transcript].includes(task.startedIn);
-    if (
-      task.status === 'started' &&
-      !ours &&
-      !world.claimRows.some((row) => row.task === task.id)
-    ) {
-      const times = world.times(task.id);
-      found.push({
-        key: `task:${task.id}`,
-        who: null,
-        session: task.startedIn,
-        since: times.started,
-        activity: times.last,
-      });
-    }
-  }
   const standing = mine
     ? found.filter((hold) => !claim.over.includes(hold.key))
     : found;
@@ -208,21 +187,13 @@ export const ownerFiles = (head) =>
         .map((ref) => ref.replace(/:\d+(?:-\d+)?$/u, ''))
     : [];
 
-const openTasks = (issue, world) =>
-  world
-    .linked(issue)
-    .filter((task) => task.status === 'offered' || task.status === 'started');
-
-function tiedTo(issues, world, { tasks = true } = {}) {
+function tiedTo(issues, world) {
   const tied = [...new Set(issues)];
   for (const member of tied) {
     const head = world.head(member);
     const next = [
       ...(head?.outcome === 'dup' ? [head.fields.get('of')] : []),
       ...dupsOf(member, world),
-      ...(tasks
-        ? openTasks(member, world).flatMap((task) => world.taskIssues(task.id))
-        : []),
     ];
     for (const issue of next) if (!tied.includes(issue)) tied.push(issue);
   }
@@ -256,22 +227,16 @@ export function targetMembers(target, world) {
       allowed: null,
     };
   }
-  let base;
-  if (target.domain) {
-    const kinds = [...world.open.keys()].filter((issue) => {
-      const head = world.head(issue);
-      return (
-        head?.outcome === 'kind' && head.fields.get('scope') === target.domain
-      );
-    });
-    base = target.task
-      ? [
-          ...world.taskIssues(target.task),
-          ...kinds.filter((issue) => openTasks(issue, world).length === 0),
-        ]
-      : kinds;
-  } else base = world.taskIssues(target.task);
-  base = [...new Set(base)];
+  const base = [
+    ...new Set(
+      [...world.open.keys()].filter((issue) => {
+        const head = world.head(issue);
+        return (
+          head?.outcome === 'kind' && head.fields.get('scope') === target.domain
+        );
+      })
+    ),
+  ];
   const units = [];
   for (const issue of base) {
     if (!units.some((unit) => unit.includes(issue))) {
@@ -282,7 +247,7 @@ export function targetMembers(target, world) {
     members: [...new Set(units.flat())],
     units,
     roots: [],
-    allowed: new Set(tiedTo(base, world, { tasks: false })),
+    allowed: new Set(tiedTo(base, world)),
   };
 }
 
@@ -362,52 +327,16 @@ export function decide(request, world) {
     }
   }
   const held = members.filter((issue) => HOLDS.has(results.get(issue).verdict));
-  const agentWork = (task) =>
-    world
-      .taskIssues(task.id)
-      .filter((issue) => skipOf(issue, { drives: null }, world) === null);
-  const candidates = new Set([
-    ...held.flatMap((issue) => openTasks(issue, world).map((task) => task.id)),
-    ...(request.target.task ? [request.target.task] : []),
-  ]);
-  const starts = [...candidates].filter((id) => {
-    const task = world.tasks.get(id);
-    const issues = task?.status === 'offered' ? agentWork(task) : [];
-    return (
-      issues.length > 0 &&
-      issues.every((issue) => held.includes(issue)) &&
-      world.ready(task)
-    );
-  });
-  const loose =
-    request.drives || request.target.task
-      ? []
-      : held.filter((issue) =>
-          tiedTo([issue], world, { tasks: false }).every(
-            (each) => openTasks(each, world).length === 0
-          )
-        );
-  const offer = offerOf(loose, world);
-  const offered = (issue) =>
-    offer?.skip === null && offer.issues.includes(issue);
-  const taskOf = (issue) =>
-    starts.find((id) => world.taskIssues(id).includes(issue)) ??
-    (request.target.task &&
-    world.taskIssues(request.target.task).includes(issue)
-      ? request.target.task
-      : null) ??
-    (offered(issue) ? request.offerId : null);
   const writes = members.flatMap((issue) => {
     const result = results.get(issue);
-    const naming = result.verdict === 'mine' && offered(issue);
-    if (result.verdict !== 'claim' && result.verdict !== 'take' && !naming) {
+    if (result.verdict !== 'claim' && result.verdict !== 'take') {
       return [];
     }
     return [
       {
         issue,
         move: result.verdict === 'take' ? 'take' : 'claim',
-        task: taskOf(issue),
+        task: null,
         drives: laneOf(issue, world).length > 0 ? request.drives : null,
         over: (result.taken ?? []).map((hold) => hold.key),
       },
@@ -418,17 +347,13 @@ export function decide(request, world) {
     results: [...results.values()],
     writes,
     held,
-    starts,
-    offer,
     refusal: null,
     exit: held.length > 0 ? 0 : 1,
   };
 }
 
-// An offered task is a target of its own, because a domain target skips each
-// unit its task ties to a kind of another domain.
-export const nextTargets = (world) => [
-  ...[
+export const nextTargets = (world) =>
+  [
     ...new Set(
       [...world.open.keys()]
         .map((issue) => world.head(issue))
@@ -437,14 +362,7 @@ export const nextTargets = (world) => [
     ),
   ]
     .sort((a, b) => a.localeCompare(b))
-    .map((domain) => ({ domain, task: null })),
-  ...[...world.tasks]
-    .filter(
-      ([id, task]) =>
-        task.status === 'offered' && world.taskIssues(id).length > 0
-    )
-    .map(([id]) => ({ domain: null, task: id })),
-];
+    .map((domain) => ({ domain }));
 
 export const RELEASED_SITES = new Map([
   ['slatejs.org', 'slate'],
@@ -506,38 +424,9 @@ export function decideNext(request, world) {
       results: [],
       writes: [],
       held: [],
-      starts: [],
-      offer: null,
       refusal: null,
       exit: 1,
       target: null,
     }
   );
-}
-
-const OFFERED = new Set(['P0', 'P1']);
-
-function offerOf(loose, world) {
-  const unrecorded = loose.filter((issue) => !world.head(issue));
-  if (unrecorded.length > 0) return { skip: 'unrecorded', issues: unrecorded };
-  const kinds = [...new Set(loose.map((issue) => rootOf(issue, world)))].filter(
-    (issue) => world.head(issue)?.outcome === 'kind'
-  );
-  if (kinds.length === 0) return null;
-  const issues = loose
-    .filter((issue) => kinds.includes(rootOf(issue, world)))
-    .sort((a, b) => Number(a) - Number(b));
-  const priority = taskPriority(
-    kinds.map((issue) => rankOf(world.head(issue)))
-  );
-  if (!OFFERED.has(priority)) return { skip: 'priority', issues, priority };
-  return {
-    skip: null,
-    issues,
-    kinds,
-    priority,
-    files: [
-      ...new Set(kinds.flatMap((issue) => ownerFiles(world.head(issue)))),
-    ],
-  };
 }

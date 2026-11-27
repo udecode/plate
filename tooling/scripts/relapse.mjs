@@ -5,9 +5,14 @@ import path from 'node:path';
 import { parseArgs, promisify } from 'node:util';
 
 import { stateOf, waitsOnOwner } from '../../.agents/pstack/status.mjs';
-import { gitMerges } from '../../.agents/pstack/tasks.mjs';
 import { isSplit, pairedCommit, PRIVATE_DIR } from './private-files.mjs';
-import { adoptionOf, headsOf, loadLedger, plansOf } from './review-ledger.mjs';
+import {
+  adoptionOf,
+  headsOf,
+  loadLedger,
+  planActiveAt,
+  plansOf,
+} from './review-ledger.mjs';
 
 const DAY = 86_400_000;
 const RECENT_DAYS = 14;
@@ -328,7 +333,7 @@ async function reworkOf(fix) {
 
 const ledger = loadLedger(root);
 const plans = plansOf(root, ledger);
-const { activeAt } = gitMerges();
+const activeAt = (planPath) => planActiveAt(root, planPath);
 const closestScopes = (file) => {
   const parts = file.split('/');
   for (let depth = parts.length; depth > 0; depth--) {

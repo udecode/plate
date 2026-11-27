@@ -1,13 +1,6 @@
 {
   "version": 2,
   "skills": {
-    "chips": {
-      "source": "udecode/ustack",
-      "commit": "d149b4098f3c44369bf940d36e828ffdf69a6753",
-      "sourceType": "github",
-      "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "194c8d459c564ac6f48eedf3c4a8b4cf7f8b35203cdf84773de9372c0b5a234c"
-    },
     "cleanup": {
       "source": "udecode/ustack",
       "commit": "c10d06f463907410f9ba5c035fad61d322806704",

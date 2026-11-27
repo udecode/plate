@@ -1,22 +1,11 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import {
-  existsSync,
-  readdirSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-} from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { landed, stateOf, waitsOnOwner } from '../../.agents/pstack/status.mjs';
-import {
-  gitMerges,
-  ledgerPath,
-  readTasks,
-} from '../../.agents/pstack/tasks.mjs';
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import {
   changedSince,
@@ -1400,12 +1389,12 @@ const report = (ledger) =>
 
 const shipSteps = {
   unreviewed: (scope) => ({
-    title: `Review ${scope.title} (xhigh)`,
+    title: `Review ${scope.title}`,
     kind: 'decide',
     finding: `Nobody has reviewed the ${scope.id} scope yet. Start it with verdict ${scope.id}.`,
   }),
   fork: (scope) => ({
-    title: `Settle the open fork in ${scope.title} (xhigh)`,
+    title: `Settle the open fork in ${scope.title}`,
     kind: 'decide',
     finding: `The ${scope.id} scope has more than one current review. Start it with verdict ${scope.id}, which settles them into one.`,
   }),
@@ -1468,12 +1457,12 @@ const offerOf = (scope, step, running) => ({
 
 const dueSteps = {
   closed: (scope) => ({
-    title: `Pick the next step for ${scope.title} (xhigh)`,
+    title: `Pick the next step for ${scope.title}`,
     kind: 'decide',
     finding: `The audit pass has not reached the ${scope.id} scope: no review has ranked its jobs against other editors. Run verdict ${scope.id} with the Verdict playbook's Next step, as its Audit pass section says.`,
   }),
   unreviewed: (scope) => ({
-    title: `Review ${scope.title} (xhigh)`,
+    title: `Review ${scope.title}`,
     kind: 'decide',
     finding: `Nobody has reviewed the ${scope.id} scope yet, so the audit pass has not reached it. Run verdict ${scope.id} with the Verdict playbook's Next step, as its Audit pass section says.`,
   }),
@@ -1614,51 +1603,104 @@ function changesSince(root, paths, head) {
   return halves.reduce((sum, out) => sum + Number(out?.trim() || 0), 0);
 }
 
-/**
- * The task board dates a plan's last activity through git in the working
- * directory, so its answer holds only when the process runs in `root`.
- * Elsewhere the activity stays unknown, and every open plan keeps its wait.
- */
-const boardActivity = (root) =>
-  realpathSync(root) === realpathSync(process.cwd())
-    ? gitMerges().activeAt
-    : () => null;
+const DEFAULT_DEFERRED = ['collaboration'];
+const DEFAULT_TIERS = [
+  {
+    name: 'plite core',
+    paths: ['packages/plitejs/src/'],
+    except: [
+      'packages/plitejs/src/authored/',
+      'packages/plitejs/src/diff/',
+      'packages/plitejs/src/pagination/',
+      'packages/plitejs/src/yjs/',
+    ],
+  },
+  {
+    name: 'plate core',
+    paths: ['packages/platejs/src/'],
+    except: [
+      'packages/platejs/src/ai/',
+      'packages/platejs/src/authored/',
+      'packages/platejs/src/code-block/',
+      'packages/platejs/src/diff/',
+      'packages/platejs/src/docx/',
+      'packages/platejs/src/excalidraw/',
+      'packages/platejs/src/features/',
+      'packages/platejs/src/math/',
+      'packages/platejs/src/pagination/',
+      'packages/platejs/src/react/features/field/',
+      'packages/platejs/src/yjs/',
+    ],
+  },
+  { name: 'feature' },
+  { name: 'suggestions', scopes: ['suggestions'] },
+  {
+    name: 'experimental',
+    scopes: ['authored', 'diff', 'documents', 'fields', 'ink', 'pagination'],
+    paths: [
+      'packages/plitejs/src/authored/',
+      'packages/plitejs/src/diff/',
+      'packages/plitejs/src/pagination/',
+      'packages/platejs/src/authored/',
+      'packages/platejs/src/diff/',
+      'packages/platejs/src/features/field/',
+      'packages/platejs/src/pagination/',
+      'packages/platejs/src/react/features/field/',
+    ],
+  },
+  { name: 'ai', scopes: ['ai'], paths: ['packages/platejs/src/ai/'] },
+];
 
-const mainCheckout = (root) => {
-  const out = git(root, ['worktree', 'list', '--porcelain']);
-  const first = out?.split('\n').find((line) => line.startsWith('worktree '));
-  return first ? first.slice('worktree '.length) : root;
-};
-
-const openDecides = (root, config) => {
-  const path = join(
-    config.delivery === 'trunk' ? mainCheckout(root) : root,
-    ledgerPath(config.plans ?? 'docs/plans', config.delivery)
-  );
-  const waits = new Map();
-  if (!existsSync(path)) return waits;
-  const rows = readFileSync(path, 'utf-8').split('\n').slice(1);
-  for (const task of readTasks(rows).values()) {
-    if (
-      task.kind === 'decide' &&
-      ['offered', 'started'].includes(task.status)
-    ) {
-      waits.set(task.topic, [
-        ...(waits.get(task.topic) ?? []),
-        `task:${task.id}`,
-      ]);
+/** Returns the newest commit or decision-log timestamp (ms) for a plan path, or null. */
+export function planActiveAt(root, given) {
+  const plan = isAbsolute(given) ? relative(root, given) : given;
+  const log = plan.replace(/\.md$/u, '.decisions.tsv');
+  const paths = [plan, log];
+  let ref = 'HEAD';
+  const cfgPath = join(root, '.agents/pstack.json');
+  if (existsSync(cfgPath)) {
+    try {
+      const cfg = JSON.parse(readFileSync(cfgPath, 'utf-8'));
+      if (cfg.delivery === 'trunk') ref = UPSTREAM;
+    } catch {
+      ref = 'HEAD';
     }
   }
-  return waits;
-};
+  const commitMs = (out) => Number(out?.trim() || 0) * 1000 || 0;
+  const pub = commitMs(
+    git(root, ['log', '-1', '--format=%ct', ref, '--', ...paths])
+  );
+  const priv = isSplit(root)
+    ? commitMs(
+        privateGit(root, ['log', '-1', '--format=%ct', ref, '--', ...paths])
+          .stdout
+      )
+    : 0;
+  let rowAt = 0;
+  const logPath = join(root, log);
+  if (existsSync(logPath)) {
+    const last =
+      readFileSync(logPath, 'utf-8').trimEnd().split('\n').at(-1) ?? '';
+    rowAt = Date.parse(last.split('\t')[0]) || 0;
+  }
+  return Math.max(0, pub, priv, rowAt) || null;
+}
 
-/** The scopes the audit pass has not reached, each as the task to offer. */
+/** The scopes the audit pass has not reached, each as the verdict to run next. */
 export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
   const ledger = loadLedger(root);
   const plans = plansOf(root, ledger);
   const config = configOf(root, ledger);
-  const decides = openDecides(root, config);
-  const { tiers = [], deferred = [] } = config.chips ?? {};
+  const hasExplicit =
+    config.audit?.tiers !== undefined || config.chips?.tiers !== undefined;
+  const tiers =
+    config.audit?.tiers ??
+    config.chips?.tiers ??
+    (config.triage ? DEFAULT_TIERS : []);
+  const deferred =
+    config.audit?.deferred ??
+    config.chips?.deferred ??
+    (hasExplicit || !config.triage ? [] : DEFAULT_DEFERRED);
   const experimental = config.triage?.experimental ?? [];
   const scopes = dueScopes(root, ledger, plans);
   const reached = new Set(scopes.map(({ scope }) => scope.id));
@@ -1688,7 +1730,7 @@ export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
         ...offer,
         finding: [offer.finding, ...notes].filter(Boolean).join(' '),
         writes: [...offer.writes, ...led],
-        waits: [...offer.waits, ...(decides.get(offer.topic) ?? [])],
+        waits: [...offer.waits],
       };
       const at = tierAt(tiers, item);
       const head = latest(headsOf(ledger, scope.id));
@@ -2774,7 +2816,9 @@ export function main(root, args) {
   if (command === '--help' || command === '-h') return `${usage}\n`;
   if (command === 'status') return status(root);
   if (command === 'ship') return ship(root);
-  if (command === 'due') return due(root, { activeAt: boardActivity(root) });
+  if (command === 'due') {
+    return due(root, { activeAt: (path) => planActiveAt(root, path) });
+  }
   if (command === 'lookup') {
     return lookup(root, argument, { detail: args.includes('--detail') });
   }

@@ -6,9 +6,8 @@
 // The owner's Mac is the main CI and checks every step; another teammate's
 // Mac checks the steps its config.json names. A red step is rerun alone,
 // its first bad commit is searched for from the last commit that step passed
-// on while the hour lasts, and the result goes to events.jsonl and the
-// suggested-task ledger, never to the team channel (owner's word,
-// 2026-11-17).
+// on while the hour lasts, and the result goes to events.jsonl, never to the
+// team channel (owner's word, 2026-11-17).
 import { spawnSync } from 'node:child_process';
 import {
   cpSync,
@@ -26,12 +25,6 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
 import {
-  ledgerPath,
-  lockLedger,
-  readTasks,
-  syncLedger,
-} from '../../.agents/pstack/tasks.mjs';
-import {
   installLockfile,
   INTERRUPTED,
   lockfileInstalled,
@@ -44,7 +37,6 @@ import {
   FULL_RUN_HOUR,
   localCiFiles,
   localCiRedSince,
-  localCiTaskFinding,
   readLocalCiEvents,
   readLocalCiState,
   searchFirstBad,
@@ -89,7 +81,6 @@ const BUDGET_MS = 55 * 60_000;
 const FULL_ARGS = ['--build', '--browser', '--reads'];
 const FLAKE_LOAD = 20;
 const GREEN_REF = 'refs/pstack/local-ci-green';
-const FIX_TOPIC = 'local-ci';
 const POLL_MS = 5000;
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -460,40 +451,6 @@ const firstBad = (
   }
 };
 
-const ledgerHelper = join(main, '.agents', 'pstack', 'decisions-check.mjs');
-const ledger = join(main, ledgerPath('docs/plans', 'trunk'));
-const fixTitle = (step) => `Fix the ${step} check that fails on next`;
-// A run can take most of an hour, and another Mac's run may offer the step's
-// task meanwhile, so each read first syncs the ledger with its ref on origin,
-// as setup.mjs does at each session start.
-const syncTasks = () => {
-  const companion = join(main, PRIVATE_DIR);
-  if (!existsSync(companion)) return;
-  const lock = lockLedger(common);
-  if (!lock) return;
-  try {
-    syncLedger(ledger, ['--git-dir', companion], lock);
-  } finally {
-    lock.release();
-  }
-};
-const isOpen = (task) => ['offered', 'started'].includes(task.status);
-const stepTasks = (step) => {
-  syncTasks();
-  return existsSync(ledger)
-    ? [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].filter(
-        (task) => task.title?.includes(fixTitle(step))
-      )
-    : [];
-};
-const openTask = (step) => stepTasks(step).find(isOpen);
-
-const taskRowTimes = (task) =>
-  readFileSync(ledger, 'utf-8')
-    .split('\n')
-    .filter((line) => line.split('\t')[2]?.startsWith(`${task.id} `))
-    .map((line) => Date.parse(line.split('\t')[0]));
-
 const isRed = (step, event) =>
   event.step === step && ['flake', 'red'].includes(event.kind);
 const firstRedAfterRecordedPass = (step) => {
@@ -519,104 +476,23 @@ const redStart = (step, tipStillReporting) =>
     openStreakStart(step, tipStillReporting)
   );
 
-const missesLandedFix = (task, event) => {
-  const halves = [
-    [[], event.tip],
-    [['--git-dir', join(main, PRIVATE_DIR)], event.privateTip],
-  ];
-  const holds = (via, sha, ref) =>
-    git(main, [...via, 'merge-base', '--is-ancestor', sha, ref]).status === 0;
-  return task.commits.some((sha) => {
-    const half = halves.find(([via]) => holds(via, sha, 'origin/next'));
-    return half !== undefined && !holds(half[0], sha, half[1]);
-  });
-};
+const report = (event) => localCiRedSince(redStart(event.step, event.tip));
 
-const report = (event) => {
-  const title = fixTitle(event.step);
-  const tasks = stepTasks(event.step);
-  const open = tasks.find(isOpen);
-  const redMeta = localCiRedSince(
-    redStart(event.step, event.tip),
-    open ? taskRowTimes(open) : []
-  );
-  if (open) {
-    return {
-      ...redMeta,
-      startedIn: open.status === 'started' ? (open.startedIn ?? null) : null,
-      task: open.id,
-    };
-  }
-  const closed = tasks.at(-1);
-  if (event.kind === 'red' && closed && missesLandedFix(closed, event)) {
-    return { ...redMeta, heldFor: closed.id, wake: false };
-  }
-  const found = localCiTaskFinding(event, eventsPath);
-  let id = null;
-  if (existsSync(ledger)) {
-    id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
-    const added = node(main, [
-      ledgerHelper,
-      'append',
-      ledger,
-      'chip',
-      `${id} ${title}`,
-      found,
-      // A check that fails on next is P0, and the ledger refuses an offer
-      // that names no check it owns or paths it writes.
-      `writes: packages, apps, tooling; topic: ${FIX_TOPIC}; kind: fix; priority: P0; owns: ${event.step}; via: hook; session: none`,
-      'offered',
-    ]);
-    if (added.status !== 0) id = null;
-  }
-  return { ...redMeta, task: id };
-};
-
-// Dismisses a step's offered task once a run on next passes the step, so a
-// fix that already landed for another step queues no second fix. A started
-// task stays with the session working on it.
-const settle = (step, tip) => {
-  const task = openTask(step);
-  if (!task) return {};
-  if (task.status === 'started') return { task: task.id };
-  const dismissed = node(main, [
-    ledgerHelper,
-    'append',
-    ledger,
-    'chip',
-    `${task.id} ${task.title}`,
-    `Local CI passed ${step} on next at ${tip.slice(0, 10)}, so a fix already landed`,
-    `the run on ${tip} passed ${step}; ${eventsPath} holds its passed event`,
-    'dismissed done',
-  ]);
-  return { dismissed: dismissed.status === 0, task: task.id };
-};
-
-const offerRecurrences = () => {
-  if (!existsSync(ledger)) return;
-  const ledgerRows = readFileSync(ledger, 'utf-8').split('\n').filter(Boolean);
+const recordRecurrences = (tip) => {
   for (const due of dueRecurrences({
     events: readEvents(),
-    ledgerRows,
     now: Date.now(),
   })) {
-    const { finding, title, tokens } = recurrenceOffer(due, eventsPath);
-    const id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
-    const added = node(main, [
-      ledgerHelper,
-      'append',
-      ledger,
-      'chip',
-      `${id} ${title}`,
+    const { files, finding, title } = recurrenceOffer(due, eventsPath);
+    appendEvent({
+      files,
       finding,
-      tokens,
-      'offered',
-    ]);
-    console.info(
-      added.status === 0
-        ? `[local-ci] offered ${id} ${title}; /chips all cards it.`
-        : `[local-ci] the ledger refused the ${due.step} recurrence task: ${`${added.stderr}${added.stdout}`.trim()}`
-    );
+      kind: 'recurrence',
+      step: due.step,
+      tip,
+      title,
+      wake: false,
+    });
   }
 };
 
@@ -864,13 +740,9 @@ const run = async (args) => {
         : readFailures(result.log, failed);
       const failing = [...failures.keys()];
       const before = wasRed.get(failed);
-      // An interrupted step shows no failures, so without an open fix task
-      // its last red would name failures this tip never showed.
       const held =
         Array.isArray(before?.failures) &&
-        (interrupted
-          ? Boolean(openTask(failed))
-          : sameFailures(before, failing));
+        (interrupted ? Boolean(before) : sameFailures(before, failing));
       if (held) {
         const event = {
           author: before.author,
@@ -969,11 +841,10 @@ const run = async (args) => {
             step: cleared,
             tip,
             wake: true,
-            ...settle(cleared, tip),
           });
         }
       }
-      if (!dry) offerRecurrences();
+      if (!dry) recordRecurrences(tip);
       next.passed = {
         ...state.passed,
         ...Object.fromEntries([...passing].map((ok) => [ok, tip])),

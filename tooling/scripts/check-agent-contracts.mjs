@@ -55,10 +55,9 @@ export function checkAgentContracts(root = DEFAULT_ROOT) {
   }
 
   const pstackRulesDir = join(root, '.agents/pstack/rules');
-  const MULTI_READ_RULES = new Set(['chips.md']);
   if (existsSync(pstackRulesDir)) {
     for (const name of readdirSync(pstackRulesDir)) {
-      if (!name.endsWith('.md') || MULTI_READ_RULES.has(name)) continue;
+      if (!name.endsWith('.md')) continue;
       const { size } = statSync(join(pstackRulesDir, name));
       if (size > READ_FILE_MAX_BYTES) {
         errors.push(

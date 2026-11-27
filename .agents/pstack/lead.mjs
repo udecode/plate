@@ -348,6 +348,9 @@ const versionOrder = (a, b) => {
 };
 const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null);
 const mainCheckout = (root) => { try { return execFileSync('git', ['-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).trim().replace(/\/\.git$/u, ''); } catch { return root; } };
+export const LOCAL_CONFIG = '.agents/pstack.local.json';
+/** Reads `.agents/pstack.json`, shallow-merging main checkout's `.agents/pstack.local.json` with default `maxAutoStart: 0`. */
+export const readProjectConfig = (root = process.cwd(), main = mainCheckout(root)) => ({ maxAutoStart: 0, ...readJson(join(root, '.agents/pstack.json')), ...readJson(join(main, LOCAL_CONFIG)) });
 
 /** How this runtime's installed pstack falls behind .claude/settings.json's pin, with update command and cwd, or null. */
 export function pluginLag(runtime, root = process.cwd(), env = process.env) {

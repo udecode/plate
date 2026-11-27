@@ -35,8 +35,6 @@ const OPEN_WORK_ITEM = /\bstop:/u;
 const IS_HARD_CUT =
   /\b(?:is|are|was|were|would be|will be|becomes|counts as|stays)\s+(?:still\s+)?an?\s+hard[- ]cut\b/iu;
 
-const CHIP = /\bt_[0-9a-f]{8}\b/gu;
-
 const maskQuoted = (line) => line.replaceAll(/"[^"]*"|`[^`]*`/gu, '""');
 
 const splitSentences = (line) =>
@@ -50,20 +48,7 @@ const parksCut = (sentence) => UNASKED.test(sentence) && CUT.test(sentence);
 const parksOpenWorkItem = (line, sentence) =>
   OPEN_WORK_ITEM.test(line) && IS_HARD_CUT.test(sentence);
 
-const decideChips = (ledger) => {
-  const ids = new Set();
-  for (const row of ledger.split('\n')) {
-    const cells = row.split('\t');
-    if (cells[1] !== 'chip' || !/\bkind: decide\b/u.test(cells[4] ?? '')) {
-      continue;
-    }
-    const id = /^t_[0-9a-f]{8}\b/u.exec(cells[2] ?? '')?.[0];
-    if (id) ids.add(id);
-  }
-  return ids;
-};
-
-export function cutProblems(text, { chips, lines } = {}) {
+export function cutProblems(text, { lines } = {}) {
   const problems = [];
   text.split('\n').forEach((line, index) => {
     const number = index + 1;
@@ -72,48 +57,14 @@ export function cutProblems(text, { chips, lines } = {}) {
       (sentence) => parksCut(sentence) || parksOpenWorkItem(line, sentence)
     );
     if (!parked) return;
-    const named = line.match(CHIP) ?? [];
-    if (named.length === 0) {
-      problems.push({
-        line: number,
-        message:
-          'leaves a cut waiting because nobody asked. Judge the cut on its merits and give that reason, since nobody asking only stops the run from making the cut. When the cut stays undecided, offer its question as a decide chip and name the task id on this line',
-      });
-      return;
-    }
-    if (!chips) {
-      problems.push({
-        line: number,
-        message: `names ${named.join(', ')}, but the suggested-task ledger cannot be read to confirm it is a decide chip`,
-      });
-      return;
-    }
-    if (!named.some((id) => chips.has(id))) {
-      problems.push({
-        line: number,
-        message: `names ${named.join(', ')}, which the suggested-task ledger holds as no decide chip. Offer the cut's question with kind: decide and name that task id`,
-      });
-    }
+    problems.push({
+      line: number,
+      message:
+        'leaves a cut waiting because nobody asked. Judge the cut on its merits and give that reason, since nobody asking only stops the run from making the cut',
+    });
   });
   return problems;
 }
-
-const readChips = (root) => {
-  const common = run(root, [
-    'rev-parse',
-    '--path-format=absolute',
-    '--git-common-dir',
-  ]).stdout?.trim();
-  const ledger = common
-    ? join(
-        dirname(common),
-        'docs/plans/artifacts/suggested-tasks.decisions.tsv'
-      )
-    : null;
-  return ledger && existsSync(ledger)
-    ? decideChips(readFileSync(ledger, 'utf-8'))
-    : null;
-};
 
 const isPlan = (path) =>
   path.startsWith('docs/plans/') &&
@@ -137,7 +88,7 @@ export const linesBeyondBase = (before, after) => {
   return lines;
 };
 
-export function checkLanding(root, { base, chips = readChips(root) }) {
+export function checkLanding(root, { base }) {
   const pairing = { pair: landingPair };
   const changed = changedSince(root, base, pairing);
   if (!changed) {
@@ -154,16 +105,16 @@ export function checkLanding(root, { base, chips = readChips(root) }) {
     const shown = showAt(root, base, path, pairing);
     const before = shown.status === 0 ? shown.stdout : '';
     const lines = linesBeyondBase(before, after);
-    errors.push(...report(path, cutProblems(after, { chips, lines })));
+    errors.push(...report(path, cutProblems(after, { lines })));
   }
   return errors;
 }
 
-export function checkFiles(root, paths, { chips = readChips(root) } = {}) {
+export function checkFiles(root, paths) {
   return paths.flatMap((path) =>
     report(
       relative(root, resolve(root, path)),
-      cutProblems(readFileSync(resolve(root, path), 'utf-8'), { chips })
+      cutProblems(readFileSync(resolve(root, path), 'utf-8'))
     )
   );
 }

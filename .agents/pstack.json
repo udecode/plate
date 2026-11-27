@@ -16,6 +16,7 @@
     "FAST_CHECK_SEED=random"
   ],
   "maxEffort": "xhigh",
+  "maxAutoStart": 0,
   "stepBudget": {
     "exclude": [
       "apps/www/src/generated/**",
@@ -84,99 +85,6 @@
       "apps/www/src/registry/**",
       "content/docs/**",
       "templates/**"
-    ]
-  },
-  "chips": {
-    "ship": [
-      "node",
-      "tooling/scripts/review-ledger.mjs",
-      "ship"
-    ],
-    "scopes": "docs/research/review-scopes",
-    "deferred": [
-      "collaboration"
-    ],
-    "tiers": [
-      {
-        "name": "plite core",
-        "paths": [
-          "packages/plitejs/src/"
-        ],
-        "except": [
-          "packages/plitejs/src/authored/",
-          "packages/plitejs/src/diff/",
-          "packages/plitejs/src/pagination/",
-          "packages/plitejs/src/yjs/"
-        ]
-      },
-      {
-        "name": "plate core",
-        "paths": [
-          "packages/platejs/src/"
-        ],
-        "except": [
-          "packages/platejs/src/ai/",
-          "packages/platejs/src/authored/",
-          "packages/platejs/src/code-block/",
-          "packages/platejs/src/diff/",
-          "packages/platejs/src/docx/",
-          "packages/platejs/src/excalidraw/",
-          "packages/platejs/src/features/",
-          "packages/platejs/src/math/",
-          "packages/platejs/src/pagination/",
-          "packages/platejs/src/react/features/field/",
-          "packages/platejs/src/yjs/"
-        ]
-      },
-      {
-        "name": "feature"
-      },
-      {
-        "name": "suggestions",
-        "scopes": [
-          "suggestions"
-        ]
-      },
-      {
-        "name": "experimental",
-        "scopes": [
-          "authored",
-          "diff",
-          "documents",
-          "fields",
-          "ink",
-          "pagination"
-        ],
-        "paths": [
-          "packages/plitejs/src/authored/",
-          "packages/plitejs/src/diff/",
-          "packages/plitejs/src/pagination/",
-          "packages/platejs/src/authored/",
-          "packages/platejs/src/diff/",
-          "packages/platejs/src/features/field/",
-          "packages/platejs/src/pagination/",
-          "packages/platejs/src/react/features/field/"
-        ],
-        "checks": [
-          "e2e:plite-pagination-",
-          "e2e:plite-authored-",
-          "e2e:plite-diff-"
-        ]
-      },
-      {
-        "name": "ai",
-        "scopes": [
-          "ai"
-        ],
-        "paths": [
-          "packages/platejs/src/ai/"
-        ],
-        "checks": [
-          "e2e:www-ai-",
-          "test:www-ai-",
-          "e2e:www-kit-lifetime-probe"
-        ]
-      }
     ]
   },
   "team": {
@@ -304,6 +212,7 @@
     "autoreview",
     "best-api audit",
     "best-api-review",
+    "chips",
     "clawsweeper",
     "cross-review",
     "deep-check",
@@ -328,6 +237,7 @@
     "sync-plate-ui",
     "task",
     "testing",
+    "triage chips",
     "typescript-advanced-types",
     "vercel-composition-patterns",
     "verify corpus",
@@ -335,8 +245,8 @@
     "walkthrough"
   ],
   "synced": {
-    "source": "8e87a57738a80904d0e7abcddedb499951361cee",
-    "config": "622573b9914abb52"
+    "source": "82dad56201df33e875bc8fe43ad6a4a98f4ce3a8",
+    "config": "1d262c27da3244f7"
   },
   "pageTopic": {
     "field": "review_scopes",

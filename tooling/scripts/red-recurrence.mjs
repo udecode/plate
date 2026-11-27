@@ -1,10 +1,8 @@
 import { existsSync } from 'node:fs';
 
-import { readTasks } from '../../.agents/pstack/tasks.mjs';
 import { isRunEvent } from './local-ci-events.mjs';
 import { failureFile } from './step-failures.mjs';
 
-const RECURRENCE_TOPIC = 'red-recurrence';
 const WINDOW_MS = 7 * 86_400_000;
 const STARTS = 3;
 
@@ -57,7 +55,7 @@ const startsByFailure = (runs) => {
   return starts;
 };
 
-export const dueRecurrences = ({ events, ledgerRows, now }) => {
+export const dueRecurrences = ({ events, now }) => {
   const runs = runsOf(events);
   const newest = runs.at(-1)?.tip;
   const restarted = new Map();
@@ -66,25 +64,14 @@ export const dueRecurrences = ({ events, ledgerRows, now }) => {
     if (tip !== newest) continue;
     restarted.set(step, [...(restarted.get(step) ?? []), entry]);
   }
-  const tasks = [...readTasks(ledgerRows).values()].filter(
-    (task) => task.topic === RECURRENCE_TOPIC
-  );
   const due = [];
   for (const [step, entries] of restarted) {
-    const ours = tasks.filter((task) =>
-      task.title.includes(recurrenceTitle(step))
-    );
-    if (ours.some((task) => ['offered', 'started'].includes(task.status))) {
-      continue;
-    }
-    const ids = new Set(ours.map((task) => task.id));
-    const rowTimes = ledgerRows
-      .map((row) => row.split('\t'))
-      .filter((cells) => ids.has(cells[2]?.split(' ')[0]))
-      .map((cells) => Date.parse(cells[0]));
+    const priorTimes = events
+      .filter((event) => event.kind === 'recurrence' && event.step === step)
+      .map((event) => Date.parse(event.at));
     const since = Math.max(
       now - WINDOW_MS,
-      ...rowTimes.filter(Number.isFinite)
+      ...priorTimes.filter(Number.isFinite)
     );
     const recurring = entries
       .map((entry) => ({
@@ -109,8 +96,8 @@ export const recurrenceOffer = ({ failures, since, step }, eventsPath) => {
   );
   const files = failures.map(({ file }) => file).filter(Boolean);
   return {
-    finding: `Local CI saw ${seen.join('; ')}, since ${new Date(since).toISOString().slice(0, 16)}. Each start got its own fix task and the failure came back, so no check before landing catches this kind of break. Find what these failures share from their logs and the events in ${eventsPath}. Then stop the kind as /pstack:correct does: in the architecture or the types first, then with a lint whose error names the fix, then with a fast test or check that pnpm check --affected runs before landing, as AGENTS.md's rule for the landing list allows, and last in the skill or rule that let it through. Prove the new guard fails on one of these past failures, such as at its first bad commit, and land through land.mjs.`,
+    files: [...new Set(files)],
+    finding: `Local CI saw ${seen.join('; ')}, since ${new Date(since).toISOString().slice(0, 16)}. Each start got fixed and the failure came back, so no check before landing catches this kind of break. Find what these failures share from their logs and the events in ${eventsPath}, then add a guard via /pstack:correct and prove it fails on one of these past failures.`,
     title: recurrenceTitle(step),
-    tokens: `writes: ${[...new Set(files), 'tooling', '.agents'].join(', ')}; topic: ${RECURRENCE_TOPIC}; kind: fix; priority: P3; via: hook; session: none`,
   };
 };

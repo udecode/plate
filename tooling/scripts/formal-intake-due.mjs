@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { hookPayload } from '../../.agents/pstack/checkout.mjs';
-import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
 
 const ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -14,9 +20,7 @@ const ROOT = path.resolve(
 const BRANCH = 'origin/next';
 const FIXES_DUE = 50;
 const HOOK_TIMEOUT_MS = 30_000;
-const TOPIC = 'formal-intake';
 const INTAKE = /^(\d{4}-\d{2}-\d{2})-(?:.*-)?formal-.*-intake\.md$/;
-const HELPER = path.join(ROOT, '.agents/pstack/decisions-check.mjs');
 
 const run = (command, args) =>
   execFileSync(command, args, {
@@ -54,19 +58,6 @@ function breakStaleLock(lock) {
   } finally {
     rmSync(breaker, { force: true, recursive: true });
   }
-}
-
-function countStart(intakeDay, rows, closedIntakes) {
-  const ids = new Set(closedIntakes.map((task) => task.id));
-  return [
-    intakeDay,
-    ...rows
-      .map((row) => row.split('\t'))
-      .filter((cells) => ids.has(cells[2]?.split(' ')[0]))
-      .map((cells) => cells[0].slice(0, 10)),
-  ]
-    .sort((a, b) => a.localeCompare(b))
-    .at(-1);
 }
 
 function main() {
@@ -143,36 +134,25 @@ function main() {
   }
 
   const common = git('rev-parse', '--path-format=absolute', '--git-common-dir');
-  const ledger = path.join(
-    path.dirname(common),
-    ledgerPath(config.plans, config.delivery)
-  );
   const lock = path.join(common, 'formal-intake.lock');
   if (!takeLock(lock)) {
     done();
     return;
   }
   try {
-    const rows = (existsSync(ledger) ? readFileSync(ledger, 'utf-8') : '')
-      .split('\n')
-      .filter(Boolean);
-    const intakes = [...readTasks(rows).values()].filter(
-      (task) => task.topic === TOPIC
-    );
+    const intakeDay = INTAKE.exec(intake)[1];
+    const marker = path.join(common, 'formal-intake-notified');
     if (
-      intakes.some(
-        (task) => task.status === 'offered' || task.status === 'started'
-      )
+      existsSync(marker) &&
+      readFileSync(marker, 'utf-8').trim() === intakeDay
     ) {
       done();
       return;
     }
 
-    const intakeDay = INTAKE.exec(intake)[1];
-    const since = countStart(intakeDay, rows, intakes);
     const fixes = git(
       'log',
-      `--since-as-filter=${since}T00:00:00`,
+      `--since-as-filter=${intakeDay}T00:00:00`,
       '--format=%s',
       BRANCH
     )
@@ -183,21 +163,11 @@ function main() {
       return;
     }
 
-    const id = run('node', [HELPER, 'chips', 'id']);
-    run('node', [
-      HELPER,
-      'append',
-      ledger,
-      'chip',
-      `${id} Run formal intake over the fixes since ${intakeDay}`,
-      `${fixes} fix commits landed on next since ${since}, the later of the newest formal intake, ${config.plans}/${intake}, and the last intake task's close. Run the formal intake that AGENTS.md's Owner phrases define, which reads every fix since that intake, to judge where a new formal check is worth building.`,
-      `writes: ${config.plans}; topic: ${TOPIC}; kind: decide; priority: P3; via: hook; session: none`,
-      'offered',
-    ]);
+    writeFileSync(marker, `${intakeDay}\n`);
     process.stdout.write(
       JSON.stringify({
         decision: isAgy ? 'continue' : 'block',
-        reason: `Formal intake is due: ${fixes} fix commits landed on next since ${since}, and this session landed ${landed}. This hook offered it as ${id} in the suggested-task ledger with no owner, because it lies outside this session's domain, so only /chips all cards it. Say so in one line.`,
+        reason: `Formal intake is due: ${fixes} fix commits landed on next since ${intakeDay}, and this session landed ${landed}. Note this in one line for a follow-up formal intake run.`,
       })
     );
   } finally {

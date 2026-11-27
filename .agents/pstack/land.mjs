@@ -55,8 +55,8 @@
 // reads for the agent session running this land, or `unknown`, replacing any
 // such line in the message. When <branch>'s config lists `sourceless` GitHub
 // logins, a commit lands only for them unless it names a source: an issue of
-// this repository or its companion, a card in the suggested-task ledger, or a
-// dated plan in the plans directory that exists.
+// this repository or its companion, or a dated plan in the plans directory
+// that exists.
 // A landing takes one core of the machine's core pool the first time it
 // rebuilds or checks, and holds it until it exits. It never waits for it, so
 // the pool only counts the landing's workers against the proofs that queue.
@@ -82,7 +82,6 @@ import { fileURLToPath } from 'node:url';
 import { effectiveModelsSheet, findLead, leadLabel, maxEffort, pluginLag, runtimeFromEnv, sheetMisses } from './lead.mjs';
 import { defaultsRefusal } from './plan-page.mjs';
 import { LAND_CHECK, reserve } from './proof.mjs';
-import { ledgerPath, readTasks, TASK_ID } from './tasks.mjs';
 import { remoteWorkingBranch } from './working-branch.mjs';
 import { findings } from './writing-check.mjs';
 
@@ -609,8 +608,6 @@ function homes() {
   });
 }
 
-const ledgerFile = () => join(basename(common) === '.git' ? dirname(common) : process.cwd(), ledgerPath(plans, config.delivery));
-
 function sourced(text, plan) {
   if (plan || [...text.matchAll(/^Plan: (\S+)$/gmu)].some(([, path]) => isPlan(path))) return true;
   const ours = homes();
@@ -619,13 +616,7 @@ function sourced(text, plan) {
     const name = (refName ?? urlName).toLowerCase();
     return ours.some((home) => home.name === name && (owner === undefined || home.owner === owner));
   };
-  if ([...text.matchAll(ISSUE)].some(issue)) return true;
-  const cards = text.match(TASK_ID) ?? [];
-  if (cards.length === 0) return false;
-  const ledger = ledgerFile();
-  if (!existsSync(ledger)) return false;
-  const tasks = readTasks(readFileSync(ledger, 'utf8').split('\n'));
-  return cards.some((id) => tasks.has(id));
+  return [...text.matchAll(ISSUE)].some(issue);
 }
 
 function sourceRefusal(subject, body, plan) {
@@ -636,7 +627,7 @@ function sourceRefusal(subject, body, plan) {
   const why = who ? `, not ${who}` : `; gh api user failed: ${login.error?.message ?? (login.stderr.trim() || 'it printed no login')}`;
   return (
     `the message names no source, and only ${sourceless.join(', ')} land without one${why}. ` +
-    `A source is an issue of ${homes().map((home) => home.name).join(' or ')} written as \`<repo>#<N>\` or its URL, the id of a card in the suggested-task ledger, or a \`Plan:\` line naming a dated plan in ${plans}/ that exists. ` +
+    `A source is an issue of ${homes().map((home) => home.name).join(' or ')} written as \`<repo>#<N>\` or its URL, or a \`Plan:\` line naming a dated plan in ${plans}/ that exists. ` +
     'Add one to the message and run land.mjs again with --message'
   );
 }

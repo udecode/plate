@@ -1,6 +1,6 @@
 ---
 extends: investigation
-when: Use it for `triage`, `triage label:<label>`, `triage discussions [<category>]`, `triage #<N>`, `triage plate-private#<N>`, `triage fix #<N>`, `triage fix plate-private#<N>`, `triage fix <domain>`, `triage fix next` or `triage chips`, for `maintainer issues`, and for a udecode/plate or udecode/plate-private issue URL. A Slate issue stays with `maintainer slate-issue`, and a security-shaped report with `maintainer security`.
+when: Use it for `triage`, `triage label:<label>`, `triage discussions [<category>]`, `triage #<N>`, `triage plate-private#<N>`, `triage fix #<N>`, `triage fix plate-private#<N>`, `triage fix <domain>`, `triage fix next` or `triage status`, for `maintainer issues`, and for a udecode/plate or udecode/plate-private issue URL. A Slate issue stays with `maintainer slate-issue`, and a security-shaped report with `maintainer security`.
 ---
 
 # Triage
@@ -11,11 +11,11 @@ Writes issue/discussion calls to `docs/triage/{issues,plate-private,discussions}
 
 | Request | Scope | Ends with |
 | --- | --- | --- |
-| `triage`, `/triage`, `maintainer issues`, `triage label:<label>` | `pnpm triage queue` (both repos, opt `--label`) | records landed, comments posted, fix runs offered, [Triage chips](#triage-chips) (maintainer) |
+| `triage`, `/triage`, `maintainer issues`, `triage label:<label>` | `pnpm triage queue` (both repos, opt `--label`) | records landed, comments posted, `pnpm triage status` summary |
 | `triage discussions [<category>]` | `pnpm triage queue --repo discussions` | records landed, replies posted, `labels --repo discussions` |
-| `triage #<N>`, `plate-private#<N>`, URL | issue N + neighbors | N's record + domain fix run (if current, print and stop) |
+| `triage #<N>`, `plate-private#<N>`, URL | issue N + neighbors | N's record (if current, print and stop) |
 | `triage fix #<N>` / `<domain>` / `next` | issue/domain/next group (`plate-private` first) | claim, records, one Bug fix run over claimed kinds |
-| `triage chips` | `pnpm triage kinds` (`triage first`, then tasks) | records landed, Ready cards in `kinds` order |
+| `triage status` | `pnpm triage status` (`unfixed` / `claimed` / `ready to retest on beta`) | live summary per repo and domain |
 | `triage retest #<N>` / `plate-private#<N>` | issue N's `fixed` record | retest comment, close on pass |
 
 ## Who records
@@ -50,7 +50,7 @@ Requires all 8: (1) fits `VISION.md`/doctrine (else `not-bug` + `law:`), (2) liv
 
 ### Record
 
-Keys (`key: value; ...`): `kind` (`scope`, `priority`, `owner`, `cause`, opt `miss`/`moved`/`device`/`regression`); `dup` (`of`); `fixed` (`commit`, `owner`, `proof`, `retest`, `unchecked` unless `retest: none`, opt `clips`, `escaped` after failed retest); `needs-repro` (`missing`); `not-bug` (`law`); `split` (`into`); `spec` (`question`, opt `law`); `works-on-beta` (`commit`, `proof`; `udecode/plate` only). Write `issue outcome detail seen why` TSV -> `record --from <batch.tsv> --dry-run` -> record -> `land.mjs` -> update open tasks -> [Offer fix runs](#offer-fix-runs).
+Keys (`key: value; ...`): `kind` (`scope`, `priority`, `owner`, `cause`, opt `miss`/`moved`/`device`/`regression`); `dup` (`of`); `fixed` (`commit`, `owner`, `proof`, `retest`, `unchecked` unless `retest: none`, opt `clips`, `escaped` after failed retest); `needs-repro` (`missing`); `not-bug` (`law`); `split` (`into`); `spec` (`question`, opt `law`); `works-on-beta` (`commit`, `proof`; `udecode/plate` only). Write `issue outcome detail seen why` TSV -> `record --from <batch.tsv> --dry-run` -> record -> `land.mjs`.
 
 ### Drafts
 
@@ -70,15 +70,7 @@ Save `pnpm triage queue` for both repos (`--label` if given), work scope by scop
 
 ## Sweep domains
 
-`verify` sweep groups bug finds + open Beta issues into kinds before filing, drafting one issue per kind with clips (`maintainer` issue-draft); tester publishes/dedups and runs `triage #<N>`.
-
-## Offer fix runs
-
-After landing records, offer one `chips` task per `(domain, repo)` with an unheld, untasked non-device regression or P0/P1 `kind` (skip main reports). Priority = worst kind (regression >= P1), `review-scope:` = domain, `regression:`, `repro:`, `writes:`, finding starting with `pnpm triage claim --domain <scope> --task <id> --repo <name>` + `triage fix <domain>`. P2/P3-only domains -> Open work.
-
-## Triage chips
-
-`pnpm triage kinds` -> triage `triage first` + rerun -> offer `free` regression/P0/P1 domains + rerun -> check Ready tasks (`chips brief <id>`) -> adopt archived/gone-session tasks (`uncarded` + `updated session:`), fold missing claim steps (`folded` + `updated review-scope:`) -> card via `pnpm triage kinds --titles` (`[P1] #22 #23 Short problem`) in one batch -> reply with outcome counts, remaining `triage first`, cards, uncarded Ready (`start <id>`), live-session tasks, device/main counts.
+Teammates file clear P0/P1 Beta blockers straight to `udecode/plate-private` (no waiting for a full domain to finish); `triage` groups open issues into failure kinds in `docs/triage/plate-private.tsv`, and `pnpm triage status` lists `unfixed`, `claimed`, and `ready to retest on beta`.
 
 ## Device lane
 
@@ -86,16 +78,16 @@ After landing records, offer one `chips` task per `(domain, repo)` with an unhel
 
 ## Fix
 
-1. **Claim first:** `pnpm triage claim` (`<N>`, `plate-private#<N>`, `--domain <scope> --repo plate-private` falling back to `--repo plate`, `--task <id> --repo <name>`, or `--next --repo plate-private` ranking Slate regressions > Plate regressions > new bugs by priority) + `--session <id>`. Checks live holds (claims, assignees, PRs, recent comments, started tasks; 48h quiet prints `stale` and still holds), refuses domain/next claims while non-main issues are untriaged, auto-assigns account, starts/offers tasks. Exit 1 stops run (rerun once on post-push error, else `pnpm triage release`). `--take <holds> --why "<words>"` needs owner word (`babysit <PR>` authorizes PR author's holds; only maintainers take others'). Title multi-issue claims by domain.
+1. **Claim first:** `pnpm triage claim` (`<N>`, `plate-private#<N>`, `--domain <scope> --repo plate-private` falling back to `--repo plate`, or `--next --repo plate-private` ranking Slate regressions > Plate regressions > new bugs by priority) + `--session <id>`. Checks live holds (claims, assignees, PRs, recent comments; 48h quiet prints `stale` and still holds), refuses domain/next claims while non-main issues are untriaged, and auto-assigns account. Exit 1 stops run (rerun once on post-push error, else `pnpm triage release`). `--take <holds> --why "<words>"` needs owner word (`babysit <PR>` authorizes PR author's holds; only maintainers take others'). Title multi-issue claims by domain.
 2. **Triage claimed group:** record missing/stale issues; re-claim if group changed.
 3. **Fix together:** one Bug fix run over all claimed kinds (2+ kinds on one owner = Redesign run; tag `[plate#N]`/`[plate-private#N]`; build missing M6 check before fixing; follow formal check skills).
-4. **Close or release:** after landing, record `fixed` (`retest: none` only for exact non-device/non-mobile browser+input replay, else `retest:` + `unchecked:`; after failed retest also `escaped:` + new tagged test), post comments, log `landed`, or `pnpm triage release <N>... --why "<reason>"`.
+4. **Close or release:** after landing, record `fixed` (`retest: none` only for exact non-device/non-mobile browser+input replay, else `retest:` + `unchecked:`; after failed retest also `escaped:` + new tagged test), post comments, or `pnpm triage release <N>... --why "<reason>"`.
 
 ## Steps
 
 - **Replace** "Trace the code the question is about. For motivation questions, also route through the **why** skill.": `triage fix` runs Fix step 1 first (stop on exit 1), then Who records and Method (`how`/`why` optional).
 - **Replace** "Throughput checkpoint stays one line": queue counts by state and scope order, or `n/a, one issue`.
-- **Replace** "Produce the output": landed records, posted comments, offered fix runs and unrecorded issues.
-- **After** "Produce the output": `triage fix` -> Fix step 3; `triage` / `triage label:` -> [Triage chips](#triage-chips) (maintainer); `triage chips` runs [Triage chips](#triage-chips) whole; others hand back here.
+- **Replace** "Produce the output": landed records, posted comments, `pnpm triage status` summary and unrecorded issues.
+- **After** "Produce the output": `triage fix` -> Fix step 3; others hand back here.
 
-**Reply:** record counts per outcome, remaining queue per repo, posted comments, Needs you commands, `labels` results, offered fix runs, P2/P3 Open work domains, unrecorded `triage #<N>` lines.
+**Reply:** record counts per outcome, remaining queue per repo, posted comments, Needs you commands, `labels` results, `triage status` counts, unrecorded `triage #<N>` lines.

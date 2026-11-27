@@ -9,20 +9,14 @@
 // path when that path is free, and runs
 // --install once per worktree, again after a failed run or once the path
 // --installs names is gone; run by hand, a failed install makes it exit 1.
-// Then, in the main
-// checkout, it keeps the suggested-task ledger, which git ignores, in step
-// with refs/pstack/ledger on origin, or on the companion repository's origin
-// through the main checkout's `companion.dir` when the config names a
-// `companion`, skipping it while that is missing. The file takes the ref's
-// order, and each row the ref's state forbids moves to
-// suggested-tasks.refused.tsv beside it. On the branch
-// .agents/pstack.json names it fast-forwards only when no other local edit,
-// staged, unstaged or untracked, touches a path the incoming commits change,
-// except an unstaged edit to a regular file they delete, whose bytes it first
-// saves under pstack-kept/ in the git directory, in a folder its output names.
-// It never overwrites an ignored file. When the pull fails and leaves HEAD where
-// it was, it puts back each saved edit whose file still holds HEAD's bytes, and
-// it keeps the folder and names it unless every edit came back.
+// Then, in the main checkout, on the branch .agents/pstack.json names, it
+// fast-forwards only when no other local edit, staged, unstaged or untracked,
+// touches a path the incoming commits change, except an unstaged edit to a
+// regular file they delete, whose bytes it first saves under pstack-kept/ in
+// the git directory, in a folder its output names. It never overwrites an
+// ignored file. When the pull fails and leaves HEAD where it was, it puts back
+// each saved edit whose file still holds HEAD's bytes, and keeps the folder
+// and names it unless every edit came back.
 // When the session's pstack install is older than the tag .claude/settings.json
 // pins, a --hook run updates a Claude Code install and says to restart, and
 // prints the update command for a Codex one.
@@ -33,14 +27,12 @@
 // read-only, which sets PSTACK_READ_ONLY, it does nothing.
 
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { hookPayload, sessionCheckout } from './checkout.mjs';
 import { localOverrides, pluginLag, runtimeFromEnv } from './lead.mjs';
-import { LEDGER, LEDGER_REF, ledgerPath, lockLedger, REFUSED, syncLedger } from './tasks.mjs';
 
-// The ledger outgrows spawnSync's 1 MB default buffer, which cuts its output off without failing.
-const git = (args, options = {}) => spawnSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 30, timeout: 30_000, ...options });
+const git = (args, options = {}) => spawnSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 26, timeout: 30_000, ...options });
 const out = (...args) => {
   const run = git(args);
   return run.status === 0 ? run.stdout.trim() : null;
@@ -128,57 +120,8 @@ if (linked) {
 const local = runtime === 'codex' ? null : localOverrides(process.cwd());
 if (local?.lines.length) say(`setup.mjs: ${local.path} overrides these lines of .claude/pstack-models.md for this person:\n${local.lines.join('\n')}`);
 
-const rows = (text) => text.slice(0, text.lastIndexOf('\n') + 1).split('\n').filter(Boolean);
-
-// Appends the complete rows of text that the file lacks, after the file's own. Returns how many,
-// or null when the file ends inside a row another session is still writing.
-const appendMissing = (path, text) => {
-  const file = existsSync(path) ? readFileSync(path, 'utf8') : '';
-  if (file !== '' && !file.endsWith('\n')) return null;
-  const known = new Set(rows(file));
-  const added = rows(text).filter((row) => !known.has(row));
-  if (added.length > 0) {
-    mkdirSync(dirname(path), { recursive: true });
-    appendFileSync(path, `${added.join('\n')}\n`);
-  }
-  return added.length;
-};
-
-// Helpers from before the ledger moved append to its former path. Once this checkout has the
-// tracked link there, their rows reach the ledger through it; until then, or when a file replaces
-// the link, the rows move into the ledger and the path goes back to what HEAD holds.
-const absorbFormer = (former, ledger) => {
-  if (!lstatSync(former, { throwIfNoEntry: false })?.isFile()) return;
-  const moved = appendMissing(ledger, readFileSync(former, 'utf8'));
-  if (moved === null) return;
-  if (moved > 0) console.log(`setup.mjs: moved ${moved} ledger row(s) from ${former} to ${ledger}`);
-  if (git(['ls-files', '--error-unmatch', '--', former]).status !== 0) rmSync(former);
-  else if (git(['diff', '--quiet', 'HEAD', '--', former]).status !== 0) git(['checkout', 'HEAD', '--', former]);
-};
-
-// Every session appends its suggested-task rows to this checkout's ledger, which git ignores, so
-// the ref on origin keeps them durable and shared between clones.
-const sync = (ledger, former, via) => {
-  // A start that finds another run syncing leaves the ledger to it.
-  const lock = lockLedger(commonDir);
-  if (!lock) return;
-  try {
-    absorbFormer(former, ledger);
-    const { reachable, pulled, pushed, refused, pending } = syncLedger(ledger, via, lock);
-    if (pulled) console.log(`setup.mjs: added ${pulled} ledger row(s) from ${LEDGER_REF} on origin`);
-    for (const { problem } of refused) console.log(`setup.mjs: refused ${problem}; the row moved to ${REFUSED}`);
-    if (pushed) console.log(`setup.mjs: pushed ${pushed} ledger row(s) to ${LEDGER_REF} on origin`);
-    if (pending) console.log(`setup.mjs: could not push ${pending} ledger row(s) to ${LEDGER_REF} on origin${reachable ? '' : ', because origin cannot be reached'}`);
-  } finally {
-    lock.release();
-  }
-};
-
 const config = existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {};
 const { branch } = config;
-const mainCompanion = config.companion?.dir ? join(dirname(commonDir), config.companion.dir) : null;
-if (config.plans && mainCompanion && !existsSync(mainCompanion)) console.log(`setup.mjs: skipped the ledger sync, because this clone has no ${config.companion.dir} yet`);
-else if (config.plans) sync(ledgerPath(config.plans, 'trunk'), join(config.plans, LEDGER), mainCompanion ? ['--git-dir', mainCompanion] : []);
 if (!branch || out('branch', '--show-current') !== branch) process.exit();
 const upstream = `refs/remotes/origin/${branch}`;
 if (out('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`) === null) process.exit();

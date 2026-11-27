@@ -2,15 +2,14 @@
 // Keeps the triage register, docs/triage/issues.tsv: one row per triage call on
 // an issue of the triage repository, with the commit and issue text it read and
 // the GitHub account, model and effort that wrote it. Every state is derived at
-// read time from fresh reads of the trunk branch, the suggested-task ledger and
-// GitHub.
+// read time from fresh reads of the trunk branch and GitHub.
 // Usage: pnpm triage claim <N>... [--take <hold>,... --why "<owner's words>"] [--drives <device>] [--session <id>]
-//        pnpm triage claim --domain <scope> [--task <id>] --repo <name> [same flags]
-//        pnpm triage claim --task <id> --repo <name> [same flags]
+//        pnpm triage claim --domain <scope> --repo <name> [same flags]
 //        pnpm triage claim --next --repo <name> [--drives <device>] [--session <id>]
 //        pnpm triage release <N>... --why "<reason>" [--session <id>]
 //        pnpm triage lane [<device>]
-//        pnpm triage kinds [--json | --titles]   (every repository unless --repo names one)
+//        pnpm triage kinds [--json]   (every repository unless --repo names one)
+//        pnpm triage status [--json]  (every repository unless --repo names one)
 //        pnpm triage show <N>... [--brief] [--json]
 //        pnpm triage queue [--label <label>] [--json]
 //        pnpm triage record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]
@@ -32,17 +31,6 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { EFFORTS, findLead, leadLabel } from '../../.agents/pstack/lead.mjs';
-import {
-  board,
-  boardState,
-  gitMerges,
-  LEDGER,
-  LEDGER_REF,
-  ledgerPath,
-  newId,
-  readTasks,
-  SESSION,
-} from '../../.agents/pstack/tasks.mjs';
 import { closeReleasedIssues } from './close-released-issues.mjs';
 import {
   BRANCH,
@@ -75,7 +63,6 @@ import {
   sameActor,
   STALE_MS,
   targetMembers,
-  taskPriority,
 } from './triage-claims.mjs';
 
 // Each repository in triage.repos keeps its own register and claims ref, chosen before the command runs. The first
@@ -107,8 +94,7 @@ const COLUMNS = [
   'why',
 ];
 const BATCH_COLUMNS = ['issue', 'outcome', 'detail', 'seen', 'why'];
-// A private copy, so this helper never moves the ref setup.mjs syncs the ledger file with.
-const LEDGER_COPY = 'refs/pstack/triage-ledger';
+const SESSION = /^\w[\w.:-]*$/u;
 const GH_FIELDS = 'number,title,body,state,comments,labels,issueType,author';
 const GRAPHQL_BATCH = 50;
 const PRIORITY_FIELD = 'Priority';
@@ -754,31 +740,6 @@ function freshReads({ fallback, claims = false }) {
     }
   }
 
-  // A second fetch from a remote that gave no answer would double the wait past a caller's two-minute timeout.
-  const ledgerError = fetchError?.timedOut
-    ? {
-        message: `skipped, because the fetch of ${remote}/${branch} gave no answer`,
-      }
-    : fetchRef(teamRemote(remote), `+${LEDGER_REF}:${LEDGER_COPY}`, teamVia);
-  const ledgerFetched = ledgerError === null;
-  if (!ledgerFetched) {
-    notes.push(
-      `could not fetch ${LEDGER_REF} from ${remote} (${ledgerError.message})`
-    );
-  }
-  const ledgerRefs = ledgerFetched
-    ? [LEDGER_COPY]
-    : fallback
-      ? [LEDGER_COPY, LEDGER_REF]
-      : [];
-  const ledgerText =
-    ledgerRefs
-      .map((ref) => teamOut('show', `${ref}:${LEDGER}`))
-      .find((text) => text !== null) ?? null;
-  if (!ledgerFetched && ledgerText !== null) cached.push(LEDGER_REF);
-  const ledger =
-    ledgerText === null || !policy ? null : ledgerOf(ledgerText, policy);
-
   let claimRows = null;
   if (claims) {
     const read = fetchError?.timedOut
@@ -807,81 +768,13 @@ function freshReads({ fallback, claims = false }) {
     notes,
     rows,
     landed,
-    ledger,
     claimRows,
     issues: reportSource.reader(policy?.repo),
     stateMemo: new Map(),
   };
 }
 
-const taskIdOf = (cells) => cells[2].split(' ')[0];
-
 const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-
-const referenceOf = (repo, bare) =>
-  new RegExp(
-    `(?:\\b${literal(repoNameOf(repo))}#|${bare ? '(?<![\\w/#])#|' : ''}github\\.com/${literal(repo)}/issues/)(\\d+)\\b`,
-    'gu'
-  );
-
-// A ledger row written before its issue moved out of the first repository names the old number, which moved.tsv maps
-// to the issue's new home, so the row links there and not to the first repository.
-function issuesIn(text, { repo, primary, first, moved }) {
-  const found = [];
-  for (const match of text.matchAll(referenceOf(repo, primary))) {
-    if (!primary || !moved.has(match[1])) found.push(match[1]);
-  }
-  if (!primary) {
-    for (const match of text.matchAll(referenceOf(first, true))) {
-      const [home, number] = (moved.get(match[1]) ?? '').split('#');
-      if (home === repoNameOf(repo)) found.push(number);
-    }
-  }
-  return found;
-}
-
-function ledgerOf(text, policy) {
-  const lines = text
-    .split('\n')
-    .filter((line) => line.trim() && !line.startsWith('ts\t'));
-  const chips = lines
-    .map((line) => line.split('\t'))
-    .filter((cells) => cells[1] === 'chip');
-  const times = new Map();
-  for (const cells of chips) {
-    const id = taskIdOf(cells);
-    const time = times.get(id) ?? {};
-    const move = (cells[5] ?? '').split(' ')[0];
-    if (move === 'started') time.started ??= cells[0];
-    if (move === 'landed' || move === 'dismissed') time[move] = cells[0];
-    time.last = cells[0];
-    times.set(id, time);
-  }
-  return {
-    chips,
-    tasks: readTasks(lines),
-    times,
-    // Every row's repro: counts because a fold replaces it, and only repro: counts because a finding's prose names unrelated issues.
-    links: issueIndex(chips, policy, reproOf),
-    mentions: issueIndex(chips, policy, (cells) => cells[3] ?? ''),
-  };
-}
-
-const reproOf = (cells) =>
-  (cells[4] ?? '')
-    .split(/;\s+/u)
-    .find((token) => token.startsWith('repro: ')) ?? '';
-
-function issueIndex(chips, policy, textOf) {
-  const index = new Map();
-  for (const cells of chips) {
-    for (const issue of issuesIn(textOf(cells), policy)) {
-      if (!index.has(issue)) index.set(issue, new Set());
-      index.get(issue).add(taskIdOf(cells));
-    }
-  }
-  return index;
-}
 
 // An issue's last reopen id survives a later close and changes on another reopen.
 function reopenIds(repo, numbers) {
@@ -1298,50 +1191,6 @@ function ownerRefs(row) {
   return fields.has('law') ? [fields.get('law')] : [];
 }
 
-const dismissedAt = (ledger, id) =>
-  Date.parse(ledger.times.get(id)?.dismissed ?? '') || -Infinity;
-
-const linkedTasks = (issue, ledger) =>
-  keptTasks(ledger.links.get(issue) ?? [], ledger);
-
-const mentionedTasks = (issue, ledger) => {
-  const linked = new Set(linkedTasks(issue, ledger).map((task) => task.id));
-  return keptTasks(ledger.mentions.get(issue) ?? [], ledger).filter(
-    (task) =>
-      !linked.has(task.id) &&
-      (task.status === 'offered' || task.status === 'started')
-  );
-};
-
-function keptTasks(ids, ledger) {
-  // A task dismissed into another, as a dup or a replacement, lives on as that one, as tasks.mjs's follow reads it.
-  const kept = new Map();
-  for (const id of ids) {
-    let keeper = id;
-    const followed = new Set([id]);
-    for (
-      let task = ledger.tasks.get(keeper);
-      task?.status === 'dismissed' &&
-      task.target &&
-      ledger.tasks.has(task.target) &&
-      !followed.has(task.target);
-      task = ledger.tasks.get(keeper)
-    ) {
-      keeper = task.target;
-      followed.add(keeper);
-    }
-    const task = ledger.tasks.get(keeper);
-    if (task) {
-      kept.set(keeper, {
-        id: keeper,
-        status: task.status,
-        reason: task.reason ?? null,
-      });
-    }
-  }
-  return [...kept.values()];
-}
-
 function stateOf(issue, reads, visiting = new Set()) {
   if (!reads.stateMemo.has(issue)) {
     reads.stateMemo.set(
@@ -1419,22 +1268,6 @@ function computeState(issue, reads, visiting) {
       } else if (targetState === 'unchecked') {
         unknown.push(`the duplicate's target #${target} is unchecked`);
       }
-    }
-  }
-  if (head.outcome === 'kind') {
-    if (!reads.ledger) {
-      unknown.push('the suggested-task ledger could not be read');
-    } else {
-      const tasks = linkedTasks(issue, reads.ledger);
-      // A task dismissed done counts as a landing, because the tree already held its fix.
-      const ended =
-        tasks.length > 0 &&
-        tasks.every(
-          (task) => task.status === 'dismissed' && task.reason !== 'done'
-        ) &&
-        Math.max(...tasks.map((task) => dismissedAt(reads.ledger, task.id))) >
-          Date.parse(head.ts);
-      if (ended) stale.push('task-ended');
     }
   }
   if (stale.length > 0) return { state: 'stale', reasons: stale, head };
@@ -2006,11 +1839,12 @@ function parseArgs(argv, flags) {
 const OPTIONS = {
   claim: {
     boolean: ['next'],
-    value: ['domain', 'task', 'take', 'why', 'drives', 'session'],
+    value: ['domain', 'take', 'why', 'drives', 'session'],
   },
   release: { value: ['why', 'session'] },
   lane: {},
-  kinds: { boolean: ['json', 'titles'] },
+  kinds: { boolean: ['json'] },
+  status: { boolean: ['json'] },
   show: { boolean: ['brief', 'json'] },
   queue: { boolean: ['json'], value: ['label'] },
   record: {
@@ -2061,19 +1895,8 @@ const summary = (issue, reads) => {
         }
       : null,
     scope: head ? (parseDetail(head.detail)?.get('scope') ?? null) : null,
-    tasks: reads.ledger ? linkedTasks(issue, reads.ledger) : null,
   };
 };
-
-const taskText = (tasks) =>
-  tasks?.length
-    ? tasks
-        .map(
-          (task) =>
-            `${task.id} ${task.status}${task.reason ? ` ${task.reason}` : ''}`
-        )
-        .join(', ')
-    : '-';
 
 function show(options) {
   if (options.positional.length === 0) {
@@ -2109,7 +1932,6 @@ function show(options) {
     ...summary(number, reads),
     claim: claimOf(number),
     category: reads.issues.get(number)?.category?.name,
-    mentions: reads.ledger ? mentionedTasks(number, reads.ledger) : null,
     clips: reads.issues.get(number) ? clipsOf(reads.issues.get(number)) : null,
     text: options.brief || options.json ? null : reads.issues.get(number),
   }));
@@ -2141,12 +1963,8 @@ function show(options) {
         `record: ${result.head.outcome} ${result.head.detail}; by ${result.head.who} on ${result.head.by}; read ${result.head.read.slice(0, 10)}`
       );
     }
-    console.log(`tasks: ${result.tasks ? taskText(result.tasks) : 'unread'}`);
     console.log(
       `claim: ${result.claim ? `${result.claim.who} session ${result.claim.session} since ${result.claim.since}, last activity ${result.claim.activity}${result.claim.stale ? ', stale' : ''}` : 'none'}`
-    );
-    console.log(
-      `mentions: ${result.mentions ? taskText(result.mentions) : 'unread'}`
     );
     console.log(`clips: ${result.clips ? result.clips.length : 'unread'}`);
     for (const clip of result.clips ?? []) {
@@ -2268,7 +2086,6 @@ const queueLine = (result, prefix = '#') =>
     result.state,
     result.reasons.join('; ') || '-',
     result.scope ?? '-',
-    taskText(result.tasks),
     result.title,
   ].join('\t');
 
@@ -2540,11 +2357,6 @@ function labels() {
   if (!reads.policy) {
     refuse(
       `labels needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
-    );
-  }
-  if (!reads.ledger) {
-    refuse(
-      `labels needs the suggested-task ledger from ${reads.remote}: ${reads.notes.join('; ')}`
     );
   }
   const { repo } = reads.policy;
@@ -3352,16 +3164,9 @@ const claimEnd = (reads, isOpen) => (issue, claim) => {
   const fixedAt = [...(reads.landed.get(issue)?.values() ?? [])]
     .filter((row) => row.outcome === 'fixed')
     .map((row) => row.ts);
-  const task = claim.task ? reads.ledger?.tasks.get(claim.task) : null;
-  const times = task ? reads.ledger.times.get(task.id) : null;
-  const ownStart =
-    Boolean(task?.startedIn) &&
-    [claim.actor.session, claim.actor.transcript].includes(task.startedIn);
-  const after = [
-    ...fixedAt,
-    times?.landed,
-    ownStart ? times?.dismissed : null,
-  ].filter((at) => at && Date.parse(at) > Date.parse(claim.since));
+  const after = fixedAt.filter(
+    (at) => at && Date.parse(at) > Date.parse(claim.since)
+  );
   return after.length > 0
     ? after.reduce((a, b) => (Date.parse(b) < Date.parse(a) ? b : a))
     : null;
@@ -3381,11 +3186,7 @@ function claimActivity(reads, claim, issue) {
           ...files
         )?.trim()
       : null;
-  return latest(
-    claim.since,
-    claim.task ? reads.ledger?.times.get(claim.task)?.last : null,
-    touched || null
-  );
+  return latest(claim.since, touched || null);
 }
 
 const liveClaims = (reads, rows, isOpen) =>
@@ -3394,28 +3195,12 @@ const liveClaims = (reads, rows, isOpen) =>
     endedAt: claimEnd(reads, isOpen),
   });
 
-function claimWorld(reads, open, rows, live, actor, git) {
-  const { tasks } = reads.ledger;
+function claimWorld(reads, open, rows, live, actor) {
   const heads = new Map();
   const head = (issue) => {
     if (!heads.has(issue)) heads.set(issue, headOf(issue, reads));
     return heads.get(issue);
   };
-  const linked = new Map();
-  const links = (issue) => {
-    if (!linked.has(issue)) {
-      linked.set(issue, linkedTasks(issue, reads.ledger));
-    }
-    return linked.get(issue);
-  };
-  const byTask = new Map();
-  for (const issue of open.keys()) {
-    for (const task of links(issue)) {
-      byTask.set(task.id, [...(byTask.get(task.id) ?? []), issue]);
-    }
-  }
-  const times = (id) => reads.ledger.times.get(id) ?? {};
-  let whole = null;
   return {
     actor,
     now: Date.now(),
@@ -3423,17 +3208,10 @@ function claimWorld(reads, open, rows, live, actor, git) {
     open,
     main: (issue) => mainReport(reads.policy, open.get(issue)?.milestone),
     head,
-    tasks,
-    linked: links,
-    taskIssues: (id) => byTask.get(id) ?? [],
-    times,
     activity: (claim, issue) => claimActivity(reads, claim, issue),
     claimRows: rows,
     claims: liveClaims(reads, rows, (issue) => open.has(issue)),
     live,
-    ready: (task) =>
-      boardState(tasks, task, git, () => (whole ??= board(tasks, git))) ===
-      'Ready',
   };
 }
 
@@ -3463,21 +3241,15 @@ function claimCommand(options) {
   const forms = [
     issues.length > 0,
     options.domain !== undefined,
-    options.task !== undefined && options.domain === undefined,
     options.next === true,
   ].filter(Boolean).length;
   if (forms !== 1) {
-    usage(
-      'claim takes issue numbers, --domain <scope> [--task <id>], --task <id>, or --next'
-    );
+    usage('claim takes issue numbers, --domain <scope>, or --next');
   }
   if (options.domain !== undefined && !KEY_VALUES.scope.test(options.domain)) {
     usage(
       `--domain takes a review scope such as editing, not ${JSON.stringify(options.domain)}`
     );
-  }
-  if (options.task !== undefined && !SESSION.test(options.task)) {
-    usage(`--task takes one task id, not ${JSON.stringify(options.task)}`);
   }
   if (options.drives !== undefined && !DEVICES.includes(options.drives)) {
     usage(`--drives takes one of ${DEVICES.join(', ')}`);
@@ -3492,7 +3264,7 @@ function claimCommand(options) {
   }
   if (issues.length === 0 && repoName === null) {
     usage(
-      '--domain, --task and --next take --repo <name>, because each repository in triage.repos keeps its own queue'
+      '--domain and --next take --repo <name>, because each repository in triage.repos keeps its own queue'
     );
   }
   if (take.length > 0 && options.next) {
@@ -3506,17 +3278,6 @@ function claimCommand(options) {
   if (!reads.policy) {
     refuse(
       `a claim needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
-    );
-  }
-  if (!reads.ledger) {
-    refuse(
-      `a claim needs the suggested-task ledger from ${reads.remote}: ${reads.notes.join('; ') || `${LEDGER_REF} holds no ${LEDGER}`}`
-    );
-  }
-  const task = options.task ? reads.ledger.tasks.get(options.task) : null;
-  if (options.task && !['offered', 'started'].includes(task?.status)) {
-    refuse(
-      `${options.task} is ${task ? task.status : 'no task the ledger holds'}, so there is nothing to claim for it`
     );
   }
   const { repo } = reads.policy;
@@ -3535,27 +3296,22 @@ function claimCommand(options) {
   const them = (list) => (list.length === 1 ? 'it' : 'them');
   const unrecorded = (list) =>
     `${list.map((issue) => `${issuePrefix(reads)}${issue}`).join(' ')} ${list.length === 1 ? 'has' : 'have'} no triage record yet`;
-  // A task claim's group starts from the issues its task names, so an issue
-  // with no record that the task does not name cannot join it, and one new
-  // issue must not stop every card session at once.
-  if (untriaged.length > 0 && !options.task) {
+  if (untriaged.length > 0) {
     refuse(
       `${unrecorded(untriaged)}, so this claim cannot tell which group each joins; triage ${them(untriaged)} first, then claim again`
     );
   }
-  const git = gitMerges({ branch: reads.branch });
   let target = null;
   if (issues.length > 0) target = { issues };
   else if (!options.next) {
-    target = { domain: options.domain ?? null, task: options.task ?? null };
+    target = { domain: options.domain ?? null };
   }
   const request = {
     target,
     take,
     drives: options.drives ?? null,
-    offerId: newId(),
   };
-  const scan = claimWorld(reads, open, [], new Map(), actor, git);
+  const scan = claimWorld(reads, open, [], new Map(), actor);
   const members = [
     ...new Set(
       (target ? [target] : nextTargets(scan)).flatMap(
@@ -3575,21 +3331,18 @@ function claimCommand(options) {
       : [
           options.next && '--next',
           chosen?.domain && `--domain ${chosen.domain}`,
-          chosen?.task && `--task ${chosen.task}`,
         ]
           .filter(Boolean)
           .join(' ');
   let named = nameOf(target);
-  let world;
-  let written = [];
   const decision = pushClaims(reads.remote, (text, attempt) => {
     if (attempt > 0) live = readGitHub();
-    world = claimWorld(reads, open, parseClaims(text), live, actor, git);
+    const world = claimWorld(reads, open, parseClaims(text), live, actor);
     const result = target ? decide(request, world) : decideNext(request, world);
     if (result.refusal) refuse(result.refusal);
     named = nameOf(result.target ?? target);
     const start = Date.now();
-    written = result.writes.map((write, at) =>
+    const written = result.writes.map((write, at) =>
       claimLine({
         ...write,
         ts: new Date(start + at).toISOString(),
@@ -3608,8 +3361,8 @@ function claimCommand(options) {
   if (options.next) {
     console.log(
       decision.target
-        ? `next: ${decision.target.task ? `--task ${decision.target.task}` : `--domain ${decision.target.domain}`}, whose first kind this claim holds is a ${decision.kinds[0].priority} ${decision.kinds[0].regression ? 'regression' : 'new bug'}`
-        : 'next: no domain or task has a kind this claim can hold'
+        ? `next: --domain ${decision.target.domain}, whose first kind this claim holds is a ${decision.kinds[0].priority} ${decision.kinds[0].regression ? 'regression' : 'new bug'}`
+        : 'next: no domain has a kind this claim can hold'
     );
   }
   console.log(
@@ -3688,24 +3441,11 @@ function claimCommand(options) {
     .map((line) => line.split('\t')[1]?.replace('refs/heads/', ''))
     .filter(Boolean);
   for (const issue of decision.held) {
-    for (const mention of mentionedTasks(issue, reads.ledger)) {
-      console.log(
-        `note: ${mention.id} (${mention.status}) names #${issue} in its finding, not in repro:`
-      );
-    }
     for (const branch of branches.filter((name) =>
       new RegExp(`(?<!\\d)${issue}(?!\\d)`, 'u').test(name)
     )) {
       console.log(`note: branch ${branch} names #${issue}`);
     }
-  }
-  const leftOut = untriaged.filter(
-    (issue) => !decision.members.includes(issue)
-  );
-  if (leftOut.length > 0) {
-    console.log(
-      `note: ${unrecorded(leftOut)}, so this task claim leaves ${them(leftOut)} out; a triage run records ${them(leftOut)}, and this run does not`
-    );
   }
   if (decision.exit === 1) {
     console.log('nothing claimed');
@@ -3747,202 +3487,7 @@ function claimCommand(options) {
       `GitHub does not show ${actor.who} assigned on ${missing.map((issue) => `#${issue}`).join(' ')}; the claim stands, and running this claim again repairs it, or pnpm triage release ${decision.held.join(' ')} --why "<reason>" --session ${actor.session} frees it`
     );
     process.exitCode = 1;
-    return;
   }
-  const { offer } = decision;
-  const listed = (numbers) => numbers.map((issue) => `#${issue}`).join(' ');
-  if (offer?.skip === 'unrecorded') {
-    console.log(
-      `note: no task covers ${listed(offer.issues)}, which has no record yet, so the claim offers none; run it again once the records are written`
-    );
-  }
-  if (offer?.skip === 'priority') {
-    console.log(
-      `note: no task covers ${listed(offer.issues)}, whose worst kind is a ${offer.priority} new bug, so the claim offers none; a run offers a task only for a regression or a P0 or P1 kind`
-    );
-  }
-  const offering = offer?.skip === null;
-  if (decision.starts.length === 0 && !offering) return;
-  const main =
-    gitOut('worktree', 'list', '--porcelain')?.match(
-      /^worktree (.+)$/mu
-    )?.[1] ?? root;
-  setupIn(main);
-  const ledger = ledgerNow(reads);
-  if (!ledger) {
-    console.log(
-      `note: could not read ${LEDGER_REF} again, so the claim starts no task; a rerun starts them`
-    );
-    return;
-  }
-  const rows = [
-    ...world.claimRows,
-    ...parseClaims(`${CLAIM_COLUMNS.join('\t')}\n${written.join('\n')}`),
-  ];
-  const fresh = claimWorld({ ...reads, ledger }, open, rows, live, actor, git);
-  const recheck = decide(
-    { ...request, target: decision.target ?? target },
-    fresh
-  );
-  const why = `claimed by pnpm triage claim ${named}`;
-  const current = () => ledgerNow(reads);
-  for (const id of decision.starts) {
-    console.log(
-      recheck.starts.includes(id)
-        ? startTask(ledger.tasks.get(id), actor, why, main, current)
-        : `note: ${id} changed after the claim decided, so the claim leaves it ${ledger.tasks.get(id)?.status ?? 'as it is'}`
-    );
-  }
-  if (!offering) return;
-  console.log(
-    recheck.offer?.skip === null
-      ? offerTask(recheck.offer, {
-          id: request.offerId,
-          world: fresh,
-          policy: reads.policy,
-          actor,
-          named,
-          main,
-          current,
-        })
-      : `note: the shared ledger changed after the claim decided, so it offers no task for ${listed(offer.issues)}`
-  );
-}
-
-function offerTask(offer, { id, world, policy, actor, named, main, current }) {
-  const name = repoNameOf(policy.repo);
-  const refs = offer.issues.map((issue) => `${name}#${issue}`);
-  const names =
-    refs.length > 1
-      ? `${refs.slice(0, -1).join(' ')} and ${refs.at(-1)}`
-      : refs[0];
-  const file = ledgerIn(main);
-  // A start whose push failed leaves its rows only in this file, so the shared ledger the claim read cannot show them.
-  const local = existsSync(file)
-    ? ledgerOf(readFileSync(file, 'utf-8'), policy)
-    : null;
-  const waiting = local
-    ? offer.issues
-        .flatMap((issue) => linkedTasks(issue, local))
-        .find((task) => task.status === 'offered' || task.status === 'started')
-    : undefined;
-  if (waiting) {
-    return `note: ${waiting.id} in ${file} already covers ${names}, so the claim offers no task; node .agents/pstack/setup.mjs run in ${main} pushes it`;
-  }
-  const details = offer.issues.map((issue) => {
-    const { outcome, fields } = world.head(issue);
-    const about =
-      outcome === 'kind'
-        ? `${fields.get('priority')}, ${fields.get('scope')}, ${fields.get('owner')}`
-        : `dup of ${name}#${fields.get('of')}`;
-    return `${name}#${issue} (${about}) "${world.open.get(issue).title.replace(/\s+/gu, ' ')}".`;
-  });
-  const decision = `${id} Fix ${names}`;
-  const appended = run(
-    process.execPath,
-    [
-      PSTACK('decisions-check.mjs'),
-      'append',
-      file,
-      'chip',
-      decision,
-      `pnpm triage claim ${named} holds ${names}, which no open task covers, so it offers this task and starts it for its own session. ${details.join(' ')}`,
-      `writes: ${offer.files.join(', ')}; topic: ${name}-${offer.issues[0]}; kind: fix; priority: ${offer.priority}; repro: ${names} numbered repros hold the exact steps; ${milestoneFacts(
-        offer.kinds.map((issue) => world.head(issue)),
-        policy.experimental
-      )}; session: ${actor.session}`,
-      'offered',
-    ],
-    { cwd: main }
-  );
-  if (appended.status !== 0) {
-    return `note: the claim offers no task for ${names}, because its offered row was refused: ${appended.stderr.trim().split('\n').at(-1)}`;
-  }
-  return `offered ${decision}\n${startTask({ id, decision }, actor, `claimed by pnpm triage claim ${named}`, main, current)}`;
-}
-
-function milestoneFacts(records, experimental) {
-  const scopes = [...new Set(records.map((head) => head.fields.get('scope')))];
-  const kept = scopes.filter((scope) => !experimental.includes(scope));
-  const owned = (scope) =>
-    new Set(
-      records
-        .filter((head) => head.fields.get('scope') === scope)
-        .flatMap(ownerFiles)
-    ).size;
-  const scope = (kept.length > 0 ? kept : scopes).reduce((best, each) =>
-    owned(each) > owned(best) ? each : best
-  );
-  const pages = [
-    ...new Set(
-      records.flatMap((head) =>
-        head.fields.has('regression')
-          ? paths(head.fields.get('regression'))
-          : []
-      )
-    ),
-  ];
-  return pages.length > 0
-    ? `review-scope: ${scope}; regression: ${pages.join(', ')}`
-    : `review-scope: ${scope}`;
-}
-
-function ledgerIn(main) {
-  const config = readJson(readFileSync(join(main, CONFIG), 'utf-8')) ?? {};
-  return join(main, ledgerPath(config.plans || 'docs/plans', config.delivery));
-}
-
-const PSTACK = (name) =>
-  fileURLToPath(new URL(`../../.agents/pstack/${name}`, import.meta.url));
-
-// The ledger file lives in the main checkout, which setup.mjs keeps in step with refs/pstack/ledger.
-const setupIn = (main) =>
-  run(process.execPath, [PSTACK('setup.mjs')], {
-    cwd: main,
-    timeout: 2 * NETWORK_MS,
-  });
-
-function ledgerNow(reads) {
-  if (
-    fetchRef(teamRemote(reads.remote), `+${LEDGER_REF}:${LEDGER_COPY}`, teamVia)
-  ) {
-    return null;
-  }
-  const text = teamOut('show', `${LEDGER_COPY}:${LEDGER}`);
-  return text === null ? null : ledgerOf(text, reads.policy);
-}
-
-function startTask(task, actor, why, main, current) {
-  const ledger = ledgerIn(main);
-  const appended = run(
-    process.execPath,
-    [
-      PSTACK('decisions-check.mjs'),
-      'append',
-      ledger,
-      'chip',
-      task.decision,
-      why,
-      `session: ${actor.session}`,
-      'started',
-    ],
-    { cwd: main }
-  );
-  if (appended.status !== 0) {
-    return `note: ${task.id} stays offered, because its started row was refused: ${appended.stderr.trim().split('\n').at(-1)}`;
-  }
-  // setup.mjs returns at once while another start holds the ledger lock, so only the shared ref shows the push.
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    if (attempt > 0) {
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2000);
-    }
-    setupIn(main);
-    const shared = current()?.tasks.get(task.id);
-    if (shared?.status === 'started' && shared.startedIn === actor.session) {
-      return `task ${task.id} started for session ${actor.session}`;
-    }
-  }
-  return `task ${task.id} started for session ${actor.session}; note: its row is only in ${ledger}, and node .agents/pstack/setup.mjs run in ${main} pushes it`;
 }
 
 function releaseCommand(options) {
@@ -4106,13 +3651,9 @@ function kindsIn(reads, open, self) {
       if (head?.outcome !== 'kind') return [];
       const claim = claims.get(issue);
       const devices = devicesOf(head);
-      const tasks = (reads.ledger ? linkedTasks(issue, reads.ledger) : [])
-        .filter(({ status }) => status === 'offered' || status === 'started')
-        .map(({ id }) => id);
       const route =
         (claim && `${claim.actor.who}/${claim.actor.session}`) ||
         othersOf(assignees, self).join(',') ||
-        tasks.join(',') ||
         (devices.length > 0 && 'lane') ||
         (mainReport(reads.policy, milestone) && 'main') ||
         'free';
@@ -4123,7 +3664,6 @@ function kindsIn(reads, open, self) {
           scope: head.fields.get('scope'),
           devices,
           route,
-          tasks,
           title,
         },
       ];
@@ -4132,7 +3672,6 @@ function kindsIn(reads, open, self) {
 
 function kinds(options) {
   if (options.positional.length > 0) usage('kinds takes no issue numbers');
-  if (options.json && options.titles) usage('kinds takes --json or --titles');
   let notes;
   let entries;
   let open;
@@ -4183,22 +3722,6 @@ function kinds(options) {
     return;
   }
   for (const note of notes) console.log(`note: ${note}`);
-  if (options.titles) {
-    const titles = new Map();
-    for (const entry of entries) {
-      for (const id of entry.tasks) {
-        titles.set(id, [...(titles.get(id) ?? []), entry]);
-      }
-    }
-    for (const [id, held] of titles) {
-      const refs = held
-        .map(({ issue }) => Number(issue.split('#')[1]))
-        .sort((a, b) => a - b)
-        .map((n) => `#${n}`);
-      console.log(`${id}\t[${taskPriority(held)}] ${refs.join(' ')}`);
-    }
-    return;
-  }
   const waiting = open.flatMap((repo) => repo.waiting);
   if (waiting.length > 0) {
     console.log(
@@ -4226,6 +3749,126 @@ function kinds(options) {
         ...counts.map(([outcome, n]) => `${n} ${outcome}`),
         ...(outside > 0 ? [`${outside} main reports outside the focus`] : []),
       ].join(', ')
+    );
+  }
+}
+
+function statusIn(reads, open) {
+  const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
+  const prefix = issuePrefix(reads);
+  const unfixed = [];
+  const claimed = [];
+  const retest = [];
+  for (const [issue, { title, assignees }] of [...open].sort(
+    ([a], [b]) => Number(a) - Number(b)
+  )) {
+    const head = headOf(issue, reads);
+    const ref = `${prefix}${issue}`;
+    const scope = head?.fields.get('scope') ?? '-';
+    const priority = head?.fields.get('priority') ?? '-';
+    if (head && CLOSED_BY_BETA.has(head.outcome)) {
+      retest.push({
+        commit: head.fields.get('commit') ?? null,
+        issue: ref,
+        outcome: head.outcome,
+        scope,
+        title,
+      });
+      continue;
+    }
+    const claim = claims.get(issue);
+    const holder =
+      (claim && `${claim.actor.who}/${claim.actor.session}`) ||
+      (assignees ?? [])
+        .map((assignee) =>
+          typeof assignee === 'string' ? assignee : assignee.login
+        )
+        .filter(Boolean)
+        .join(',') ||
+      null;
+    if (holder) {
+      claimed.push({ holder, issue: ref, priority, scope, title });
+    } else {
+      unfixed.push({
+        issue: ref,
+        outcome: head?.outcome ?? 'untriaged',
+        priority,
+        scope,
+        title,
+      });
+    }
+  }
+  return { claimed, retest, unfixed };
+}
+
+function statusCommand(options) {
+  if (options.positional.length > 0) usage('status takes no issue numbers');
+  let notes;
+  let unfixed;
+  let claimed;
+  let retest;
+  if (repoName === null) {
+    notes = [];
+    unfixed = [];
+    claimed = [];
+    retest = [];
+    for (const repo of localConfig().triage.repos) {
+      const read = spawnSync(
+        process.execPath,
+        [
+          fileURLToPath(import.meta.url),
+          'status',
+          '--repo',
+          repoNameOf(repo),
+          '--json',
+        ],
+        { encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024 }
+      );
+      if (read.status !== 0) {
+        refuse(
+          read.stderr.trim().replace(/^triage status: /u, '') ||
+            `status of ${repo} exited ${read.status}`
+        );
+      }
+      const listed = JSON.parse(read.stdout);
+      notes.push(...listed.notes.map((note) => `${repoNameOf(repo)}: ${note}`));
+      unfixed.push(...listed.unfixed);
+      claimed.push(...listed.claimed);
+      retest.push(...listed.retest);
+    }
+  } else {
+    const reads = freshReads({ fallback: true, claims: true });
+    if (!reads.policy) {
+      refuse(
+        `status needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+      );
+    }
+    ({ notes } = reads);
+    const listed = openIssues(reads);
+    const focus = listed.filter((issue) => inFocus(reads, issue));
+    ({ claimed, retest, unfixed } = statusIn(reads, openMap(focus)));
+  }
+  if (options.json) {
+    console.log(JSON.stringify({ notes, unfixed, claimed, retest }, null, 2));
+    return;
+  }
+  for (const note of notes) console.log(`note: ${note}`);
+  console.log(`unfixed (${unfixed.length}):`);
+  for (const item of unfixed) {
+    console.log(
+      `  ${[item.issue, item.priority, item.scope, item.outcome, item.title].join('\t')}`
+    );
+  }
+  console.log(`claimed (${claimed.length}):`);
+  for (const item of claimed) {
+    console.log(
+      `  ${[item.issue, item.priority, item.scope, item.holder, item.title].join('\t')}`
+    );
+  }
+  console.log(`ready to retest on beta (${retest.length}):`);
+  for (const item of retest) {
+    console.log(
+      `  ${[item.issue, item.commit ? item.commit.slice(0, 10) : '-', item.scope, item.title].join('\t')}`
     );
   }
 }
@@ -4294,11 +3937,6 @@ function recordCommand(options) {
   if (!reads.policy) {
     refuse(
       `a record needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
-    );
-  }
-  if (!reads.ledger) {
-    refuse(
-      `a record needs the suggested-task ledger from ${reads.remote}: ${reads.notes.join('; ') || `${LEDGER_REF} holds no ${LEDGER}`}`
     );
   }
   const identity = recorder(reads.policy);
@@ -4623,6 +4261,7 @@ const COMMANDS = {
     release: releaseCommand,
     lane,
     kinds,
+    status: statusCommand,
     show,
     queue,
     record: recordCommand,
@@ -4654,12 +4293,12 @@ const HELP = `usage: pnpm triage <command> [--repo <name>] [options]
 
 Commands (issues; default repo udecode/plate, or --repo plate-private):
   claim <N>... [--take <hold>,... --why "<words>"] [--drives <device>] [--session <id>]
-  claim --domain <scope> [--task <id>] --repo <name> [same flags]
-  claim --task <id> --repo <name> [same flags]
+  claim --domain <scope> --repo <name> [same flags]
   claim --next --repo <name> [--drives <device>] [--session <id>]
   release <N>... --why "<reason>" [--session <id>]
   lane [<device>]
-  kinds [--json | --titles] [--repo <name>]
+  kinds [--json] [--repo <name>]
+  status [--json] [--repo <name>]
   show <N>... [--brief] [--json]
   queue [--label <label>] [--json]
   record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]

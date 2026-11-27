@@ -9,7 +9,7 @@ How the lead titles a session by state. Edit in `udecode/ustack`.
 | Casual / non-pstack | `<name>` | Plain name, no emoji; also read-only closes waiting on nobody. |
 | Active pstack run | `🥔 <name>` or `🥔 <name> (ticked/total)` | Add count for plans with checkboxes; update on step land or state change. |
 | Waiting on owner | `🟠 <name>` or `🟠 <name> (ticked/total)` | Use whenever anything waits on the owner: open questions, unacted proposals, optional next-step go/stop calls, partial or blocked scope, or an explicit stop. Never auto-archived. |
-| Landed on `next`, awaiting Local CI | `⏳ <name>` | Use only when the run is 100% done and landed (every plan step landed, zero open questions, proposals, or optional-go calls waiting on the owner, and any follow-ups already carded or launched). Drops count; `operator` auto-archives non-pinned, non-running `⏳` threads once Local CI is green. |
+| Landed on `next`, awaiting Local CI | `⏳ <name>` | Use only when the run is 100% done and landed (every plan step landed, zero open questions, proposals, or optional-go calls waiting on the owner, and any follow-ups already launched or filed). Drops count; `operator` auto-archives non-pinned, non-running `⏳` threads once Local CI is green. |
 | Local CI red / fix, or owner blocker | `🔴 <name>` | Red Local CI fix or failure only the owner can resolve. |
 | Pinned (`📌` or pinned) | Unchanged | Never rename, never auto-archive. |
 

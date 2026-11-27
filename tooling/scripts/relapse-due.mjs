@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { hookPayload } from '../../.agents/pstack/checkout.mjs';
-import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
 
 const BRANCH = 'origin/next';
 const SCRIPT = fileURLToPath(new URL('relapse.mjs', import.meta.url));
@@ -78,28 +77,9 @@ function main() {
   mkdirSync(checked, { recursive: true });
   for (const sha of landed) writeFileSync(path.join(checked, sha), '');
 
-  const root = git('rev-parse', '--show-toplevel');
-  const config = JSON.parse(
-    readFileSync(path.join(root, '.agents/pstack.json'), 'utf-8')
+  const cards = [...report.matchAll(/^== card (\S+):/gm)].map(
+    (match) => match[1]
   );
-  const ledger = path.join(
-    path.dirname(common),
-    ledgerPath(config.plans, config.delivery)
-  );
-  const open = new Set(
-    [
-      ...readTasks(
-        (existsSync(ledger) ? readFileSync(ledger, 'utf-8') : '')
-          .split('\n')
-          .slice(1)
-      ).values(),
-    ]
-      .filter((task) => ['offered', 'started'].includes(task.status))
-      .map((task) => task.topic)
-  );
-  const cards = [...report.matchAll(/^== card (\S+):/gm)]
-    .map((match) => match[1])
-    .filter((id) => !open.has(`review-${id}`));
   if (!cards.length) {
     done();
     return;
@@ -108,7 +88,7 @@ function main() {
   process.stdout.write(
     JSON.stringify({
       decision: isAgy ? 'continue' : 'block',
-      reason: `This session landed fixes that rework recent fixes in ${cards.join(', ')}, whose fixes keep coming back two weeks running. Run step 2 of the Verdict playbook's Relapse pass for ${cards.length === 1 ? 'that scope' : 'each of those scopes'} from the report below, as the pass's fix-time check says, then the chips skill's Close, and say so in one line.\n\n${report}`,
+      reason: `This session landed fixes that rework recent fixes in ${cards.join(', ')}, whose fixes keep coming back two weeks running. Note ${cards.length === 1 ? 'that scope' : 'those scopes'} for a follow-up verdict from the report below in one line.\n\n${report}`,
     })
   );
 }

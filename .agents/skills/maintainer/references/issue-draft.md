@@ -274,7 +274,7 @@ session through the Triage playbook's `triage plate-private#<N>`. A domain or
 next claim refuses while an open issue has no record. Run
 `pnpm triage show plate-private#<N>` first. When its `session:` line says this
 session cannot record, name the issue in the reply and say that
-`triage plate-private#<N>` in a fresh Opus or Sol xhigh session records it, as
+`triage plate-private#<N>` in a fresh Gemini 4 Neon @high (or Opus/Sol @high) session records it, as
 the playbook's Who records says. A `--comment-on` run adds repros to an issue
 that already has a record, so it records nothing here.
 

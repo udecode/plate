@@ -153,3 +153,4 @@ packages/platejs/docs/
 /autoresearch.research/
 
 .claude/*.local.md
+.agents/*.local.json
