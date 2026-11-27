@@ -111,6 +111,55 @@ const metrics = {
 
 export const getInkPlacementMetrics = () => Object.freeze({ ...metrics });
 
+const isClippedByInnerAncestor = (
+  element: Element,
+  editable: HTMLElement,
+  origin: InkLayerOrigin,
+  mark: InkMark,
+  dx: number,
+  dy: number
+) => {
+  if (!element.parentElement || element.parentElement === editable) {
+    return false;
+  }
+
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  const radius = mark.brush.size / 2;
+
+  for (const [x, y] of mark.samples) {
+    minX = Math.min(minX, x + dx - radius);
+    maxX = Math.max(maxX, x + dx + radius);
+    minY = Math.min(minY, y + dy - radius);
+    maxY = Math.max(maxY, y + dy + radius);
+  }
+
+  for (
+    let ancestor: HTMLElement | null = element.parentElement;
+    ancestor && ancestor !== editable;
+    ancestor = ancestor.parentElement
+  ) {
+    const { overflowX, overflowY } = getComputedStyle(ancestor);
+    const clipsX = /auto|clip|hidden|scroll/.test(overflowX);
+    const clipsY = /auto|clip|hidden|scroll/.test(overflowY);
+
+    if (!clipsX && !clipsY) continue;
+
+    const clip = inkBoxOf(ancestor, origin);
+
+    if (
+      (clipsX && (minX < clip.left - 1 || maxX > clip.left + clip.width + 1)) ||
+      (clipsY && (minY < clip.top - 1 || maxY > clip.top + clip.height + 1))
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const crosses = (box: InkBox, { from, to }: InkBand) =>
   box.top <= to && box.top + box.height >= from;
 
@@ -733,7 +782,7 @@ export const createInkPlacer = ({
         measure,
         candidatesMovingWith(pin)
       );
-      const placement = placeMark({
+      const rawPlacement = placeMark({
         copies,
         live,
         margins: first
@@ -745,6 +794,28 @@ export const createInkPlacer = ({
         mark,
         nearby: near.flatMap((block) => inkWordBoxes(block, band)),
       });
+      const placement: InkPlacement =
+        rawPlacement.type === 'ink' &&
+        !mark.margin &&
+        places.some((at) => {
+          if (!at || at.kind === 'gone') return false;
+
+          const element = blockAt(at.key)?.element;
+
+          return (
+            element !== undefined &&
+            isClippedByInnerAncestor(
+              element,
+              editable,
+              origin,
+              mark,
+              rawPlacement.dx,
+              rawPlacement.dy
+            )
+          );
+        })
+          ? { reason: 'changed', type: 'sign' }
+          : rawPlacement;
       const place = places.find((at) => at?.kind !== 'live') ?? places[0];
       const firstTop = first?.box.top ?? 0;
       const witnesses = keys.flatMap((key): Witness[] => {

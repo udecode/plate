@@ -251,6 +251,7 @@ function InkLayer({
     let stopSlice: (() => void) | undefined;
     let audit: InkAudit | undefined;
     let painted = NOTHING_PLACED;
+    let printing = false;
     let scrollStartedAt: number | undefined;
     let stopArrival: (() => void) | undefined;
     const show = (next: InkPlaced) => {
@@ -267,7 +268,7 @@ function InkLayer({
     };
     const paint = () => {
       frame = 0;
-      show(placer.place());
+      show(printing ? placer.placeEvery() : placer.place());
     };
     const arrive = () => {
       const start = performance.now();
@@ -319,7 +320,7 @@ function InkLayer({
         return;
       }
       stopAudit();
-      show(placer.place());
+      show(printing ? placer.placeEvery() : placer.place());
     };
     // A change that moves words and reports nothing, such as a style rule on
     // a neighbor, leaves a held decision stale, so the audit decides again
@@ -351,6 +352,7 @@ function InkLayer({
       settleLater();
     };
     const onPrint = () => {
+      printing = true;
       cancelAnimationFrame(frame);
       cancelAnimationFrame(moveFrame);
       frame = 0;
@@ -358,6 +360,10 @@ function InkLayer({
       stopAudit();
       stopArriving();
       show(placer.placeEvery());
+    };
+    const onAfterPrint = () => {
+      printing = false;
+      schedule();
     };
     const savedSets = () => {
       const records = readShownRecords(editor);
@@ -396,7 +402,7 @@ function InkLayer({
     page.addEventListener('scroll', onScroll, { capture: true, passive: true });
     win?.addEventListener('resize', schedule);
     win?.addEventListener('beforeprint', onPrint);
-    win?.addEventListener('afterprint', schedule);
+    win?.addEventListener('afterprint', onAfterPrint);
     const end = () => {
       attached.cancel();
       picker.cancel();
@@ -432,7 +438,7 @@ function InkLayer({
       page.removeEventListener('scroll', onScroll, { capture: true });
       win?.removeEventListener('resize', schedule);
       win?.removeEventListener('beforeprint', onPrint);
-      win?.removeEventListener('afterprint', schedule);
+      win?.removeEventListener('afterprint', onAfterPrint);
       attached.detach();
       picker.detach();
     };

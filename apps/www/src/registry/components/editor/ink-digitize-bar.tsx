@@ -253,11 +253,15 @@ export function InkDigitizeBar() {
 
       const { target } = event;
 
-      if (
-        target instanceof Element &&
-        target.closest('[data-ink-digitize-ui]')
-      ) {
-        return;
+      if (target instanceof Element) {
+        if (target.closest('[data-ink-digitize-ui]')) return;
+        if (
+          container &&
+          !container.contains(target) &&
+          target !== document.body
+        ) {
+          return;
+        }
       }
       if (event.key === 'Tab') return;
       if (
