@@ -16,7 +16,7 @@ import {
   txLocate,
   locateAt,
 } from '../../core';
-import { subscribeSharedEditorViewState } from '../../facade';
+import { hasNonWritableAt, subscribeSharedEditorViewState } from '../../facade';
 import {
   type MarkdownEditor,
   type MarkdownSerializeResult,
@@ -178,9 +178,25 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
 
     return {
       accept: () => {
-        const { suggestionText } = store.get();
+        const { suggestionNodeKey, suggestionText } = store.get();
 
         if (!suggestionText?.length) return false;
+
+        const selection = tx.selection();
+        const block = selection ? tx.nodes.block({ at: selection }) : undefined;
+        const liveBlockKey = block ? tx.key(block[1]) : null;
+
+        if (
+          !selection ||
+          (suggestionNodeKey && liveBlockKey !== suggestionNodeKey) ||
+          hasNonWritableAt(editor, selection)
+        ) {
+          tx.tags.add('history-skip');
+          tx.tags.add(COPILOT_SKIP_ABORT_TAG);
+          setSuggestion({ nodeKey: null, text: null });
+          return false;
+        }
+
         const parsed = editor.api.markdown.parseInline(suggestionText);
 
         if (!parsed.ok) return false;
@@ -194,6 +210,21 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
         const { getNextWord, suggestionNodeKey, suggestionText } = store.get();
 
         if (!getNextWord || !suggestionText?.length) return false;
+
+        const selection = tx.selection();
+        const block = selection ? tx.nodes.block({ at: selection }) : undefined;
+        const liveBlockKey = block ? tx.key(block[1]) : null;
+
+        if (
+          !selection ||
+          (suggestionNodeKey && liveBlockKey !== suggestionNodeKey) ||
+          hasNonWritableAt(editor, selection)
+        ) {
+          tx.tags.add('history-skip');
+          tx.tags.add(COPILOT_SKIP_ABORT_TAG);
+          setSuggestion({ nodeKey: null, text: null });
+          return false;
+        }
 
         const { firstWord, remainingText } = getNextWord({
           text: suggestionText,
@@ -259,16 +290,26 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
     > | null = null;
     const views = new Set<HTMLElement>();
     let mounted = false;
-    const isWritable = () =>
-      !context.editor.read.view.isReadOnly() &&
-      (!mounted ||
+    const isWritable = () => {
+      if (context.editor.read.view.isReadOnly()) return false;
+
+      const selection = context.editor.read.selection();
+
+      if (selection && hasNonWritableAt(context.editor, selection)) {
+        return false;
+      }
+
+      return (
+        !mounted ||
         Array.from(views).some(
           (element) =>
             element.isConnected &&
             element.getAttribute('data-readonly') !== 'true' &&
             element.getAttribute('aria-readonly') !== 'true' &&
             element.getAttribute('aria-disabled') !== 'true'
-        ));
+        )
+      );
+    };
     const stop = () => {
       debouncedTrigger?.cancel();
       const { abortController } = context.store.get();
@@ -495,6 +536,8 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
           completeOptions.onError?.(error);
         },
         onFinish: (sourcePrompt, completion) => {
+          if (blockKey && hasNonWritableAt(commandEditor, blockKey)) return;
+
           context.update.setBlockSuggestion({
             key: blockKey,
             text: completion,

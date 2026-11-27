@@ -116,6 +116,29 @@ export const wholeTextBlocks = (
     : undefined;
 };
 
+export const extractCopiedBlockProps = (
+  node: Element,
+  schema?: Pick<EditorCoreStateView['schema'], 'property'>,
+  options?: Readonly<{ preserveIdentity?: boolean }>
+): Record<string, unknown> => {
+  const props: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(NodeApi.extractProps(node))) {
+    if (key === 'locked') continue;
+    if (!options?.preserveIdentity) {
+      const descriptor = schema?.property({
+        key,
+        placement: 'element',
+        type: node.type,
+      });
+      if (descriptor?.lifecycle.copy === 'drop') continue;
+    }
+    props[key] = value;
+  }
+
+  return props;
+};
+
 /**
  * Copy the source block's formatting onto AI output. An answer that writes
  * lists keeps them, so only an answer without list items takes the source's
@@ -126,10 +149,12 @@ export const wholeTextBlocks = (
 export const formatAIOutput = ({
   blocks,
   format,
+  schema,
   sourceBlock,
 }: {
   blocks: Element[];
   format: 'all' | 'none' | 'single';
+  schema?: Pick<EditorCoreStateView['schema'], 'property'>;
   sourceBlock: Element;
 }) => {
   if (format === 'none') return blocks;
@@ -139,14 +164,13 @@ export const formatAIOutput = ({
   if (!TextApi.isText(firstText[0])) return null;
 
   const {
-    children: _children,
     indent,
     listId: _listId,
     listLevels: _listLevels,
     listRestart: _listRestart,
     listStart: _listStart,
     ...blockProps
-  } = sourceBlock;
+  } = extractCopiedBlockProps(sourceBlock, schema);
   const textProps = NodeApi.extractProps(firstText[0]);
   const ownProps = hasListItems(blocks)
     ? {}
@@ -469,7 +493,9 @@ export const suggestionBlocks = (
     keepsShape(answer, roundTrip)
   ) {
     return answer.map((block, index) => ({
-      ...NodeApi.extractProps(source[index]),
+      ...extractCopiedBlockProps(source[index], editor.read.schema, {
+        preserveIdentity: true,
+      }),
       children: block.children,
       type: source[index].type,
     }));

@@ -36,8 +36,10 @@ import {
   canPlaceBlocksAtPath,
   getCompiledEditorSchema,
   getEditorAuthoredDocumentCapability,
+  hasNonWritableAt,
   placeElementAt,
   projectEditorView,
+  subscribeEditorRefusals,
 } from '../../facade';
 import { isListItem } from '../../features/list/lib/listIndex.internal';
 import {
@@ -61,6 +63,7 @@ import type {
 import { findQuotedSpan } from '../lib/findQuotedSpan.internal';
 import {
   captureTextRange,
+  extractCopiedBlockProps,
   fillEmptyListItem,
   formatAIOutput,
   landAIOutput,
@@ -137,6 +140,8 @@ export type AIChatPluginState = {
   mode: AIMode;
   open: boolean;
   previewValue: Value;
+  /** Refusal message when an AI write was blocked by a non-writable target. */
+  refusalMessage: string | null;
   streaming: boolean;
   toolName: AIToolName;
   /** Text that opens AI Space, or a pattern tested against the typed text. */
@@ -214,6 +219,7 @@ const initialState: AIChatPluginState = {
   mode: 'insert',
   open: false,
   previewValue: [],
+  refusalMessage: null,
   streaming: false,
   toolName: null,
   trigger: ' ',
@@ -567,6 +573,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       chatSelection: null,
       mode: 'insert',
       previewValue: [],
+      refusalMessage: null,
       toolName: null,
     });
     try {
@@ -590,7 +597,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     return result;
   };
   const hideOptions = () => {
-    context.store.set({ open: false });
+    context.store.set({ open: false, refusalMessage: null });
   };
   // A prompt is context for a model, not a copy of the document, so content
   // Markdown cannot write stays out instead of failing the whole prompt.
@@ -1008,7 +1015,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       }
 
       return {
-        ...NodeApi.extractProps(sourceNode),
+        ...extractCopiedBlockProps(sourceNode, editor.read.schema, {
+          preserveIdentity: true,
+        }),
         ...node,
         children: node.children,
       };
@@ -1025,15 +1034,41 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     actionEditor: AIActionEditor | null,
     land: (tx: AIActionTransaction) => boolean
   ) => {
+    if (!actionEditor) return;
+
     let closed = false;
-    const landed = actionEditor?.update((tx, { afterCommit }) => {
-      if (!land(tx)) return false;
-      afterCommit(() => {
-        closed = true;
-        finishCompleteAction();
-      });
-      return true;
+    let lockedRefusal = false;
+    context.store.set({ refusalMessage: null });
+    const stopRefusals = subscribeEditorRefusals(actionEditor, (refusal) => {
+      if (
+        typeof refusal === 'object' &&
+        refusal !== null &&
+        (refusal as Record<string, unknown>).reason === 'block-locked'
+      ) {
+        lockedRefusal = true;
+      }
     });
+    let landed: boolean | undefined;
+
+    try {
+      landed = actionEditor.update((tx, { afterCommit }) => {
+        if (!land(tx)) return false;
+        afterCommit(() => {
+          closed = true;
+          finishCompleteAction();
+        });
+        return true;
+      });
+    } finally {
+      stopRefusals();
+    }
+    if (lockedRefusal) {
+      context.store.set({
+        refusalMessage:
+          'This selection contains a locked block. Unlock it or insert below instead.',
+      });
+      return;
+    }
     if (landed && !closed) finishCompleteAction();
   };
   const getActionChatBlocks = (tx: AIActionTransaction) => {
@@ -1469,7 +1504,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       tx.history.newBatch();
       const [node, path] = target;
       const replace =
-        node.type === paragraph.schema.type && tx.nodes.isEmpty(node);
+        node.type === paragraph.schema.type &&
+        tx.nodes.isEmpty(node) &&
+        !hasNonWritableAt(commandEditor, path);
       const [anchor, anchorPath] = replace
         ? target
         : resolveInsertionAnchor(editor, tx, target);

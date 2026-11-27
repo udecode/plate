@@ -31,7 +31,7 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
-import { projectEditorView } from '../../../facade';
+import { hasNonWritableAt, projectEditorView } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
   applyBlockReleases,
@@ -1040,12 +1040,16 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
       return {
         outdent: txLocate(locateAt(0), ({ at }: OutdentListOptions = {}) => {
-          const entries = tx.nodes.blocks({ at, mode: 'lowest' });
+          const entries = tx.nodes
+            .blocks({ at, mode: 'lowest' })
+            .filter(([, path]) => !hasNonWritableAt(editor, path));
           const keys = entries.flatMap(([, path]) => tx.key(path) ?? []);
 
           moveListFamilies(editor, tx, entries, { offset: -1 });
 
           for (const key of keys) {
+            if (hasNonWritableAt(editor, key)) continue;
+
             const node = tx.nodes.get(key)?.[0];
 
             if (ElementApi.isElement(node) && !node.indent) {
@@ -1061,7 +1065,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               match: getInjectMatch(editor, plugin),
               mode: 'lowest',
             })) {
-              if (!isListItem(node)) continue;
+              if (!isListItem(node) || hasNonWritableAt(editor, path)) continue;
               tx.nodes.unset([...LIST_FIELDS, 'indent'], { at: path });
             }
           }
@@ -1083,10 +1087,13 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
             const keyAt = (path: Path) => tx.key(path);
             const match = getInjectMatch(editor, plugin);
+            const writableBlocks = tx.nodes
+              .blocks({ at, mode: 'lowest' })
+              .filter(([, path]) => !hasNonWritableAt(editor, path));
             const releases = readBlockReleases(
               editor,
               tx,
-              tx.nodes.blocks({ at, mode: 'lowest' }),
+              writableBlocks,
               (block, [, path]) => match(block, path)
             );
             const holdsRelease = ([, path]: NodeEntry<Element>) =>
@@ -1095,7 +1102,10 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               );
             const matched = tx.nodes
               .blocks({ at, match, mode: 'lowest' })
-              .filter((entry) => !holdsRelease(entry));
+              .filter(
+                (entry) =>
+                  !hasNonWritableAt(editor, entry[1]) && !holdsRelease(entry)
+              );
 
             if (matched.length === 0 && releases.length === 0) return false;
 
@@ -1292,7 +1302,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               mode: 'lowest',
             });
 
-            if (!entry) return false;
+            if (!entry || hasNonWritableAt(editor, entry[1])) return false;
             if (Object.hasOwn(entry[0], 'listRestart')) {
               tx.nodes.unset('listRestart', { at: entry[1] });
 
@@ -1308,6 +1318,11 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             const previous = position?.previousCompatible?.[0];
 
             if (!position || position.index !== 0 || !previous) return false;
+            if (
+              position.items.some(([, path]) => hasNonWritableAt(editor, path))
+            ) {
+              return false;
+            }
 
             for (const [, path] of position.items) {
               if (typeof previous.listId === 'string') {

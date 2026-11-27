@@ -1,6 +1,7 @@
 import type { Editor } from '../../../core';
 import {
   ElementApi,
+  hasNonWritableAt,
   PathApi,
   type Descendant,
   type EditorCoreStateView,
@@ -198,9 +199,10 @@ export const moveListFamilies = (
   const moved = getListFamilies(tx, entries)
     .filter(
       (family) =>
-        offset < 0 ||
-        typeof indentMax !== 'number' ||
-        family.every(({ node }) => listDepth(node) + 1 <= indentMax)
+        !family.some(({ path }) => hasNonWritableAt(editor, path)) &&
+        (offset < 0 ||
+          typeof indentMax !== 'number' ||
+          family.every(({ node }) => listDepth(node) + 1 <= indentMax))
     )
     .flat();
   const styles = planMovedListStyles(tx, moved, offset);

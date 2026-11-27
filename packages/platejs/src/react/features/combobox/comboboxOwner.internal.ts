@@ -3,6 +3,7 @@ import type React from 'react';
 import { type PluginTransaction, PointApi } from '../../../core';
 import {
   type Anchor,
+  hasNonWritableAt,
   type Range,
   RangeApi,
   subscribeEditorViewState,
@@ -128,7 +129,7 @@ class ComboboxOwner {
           !selection ||
           !RangeApi.isCollapsed(selection) ||
           !this.isEditable() ||
-          tx.nodes.elementReadOnly({ at: RangeApi.start(trigger) }) ||
+          hasNonWritableAt(this.view, RangeApi.start(trigger)) ||
           readComboboxQuery(
             tx,
             {
@@ -278,7 +279,11 @@ class ComboboxOwner {
       length: text.length,
     };
 
-    if (this.view.api.react.isFocused() && this.isEditable()) {
+    if (
+      this.view.api.react.isFocused() &&
+      this.isEditable() &&
+      !hasNonWritableAt(this.view, range)
+    ) {
       let latest: { popup: ComboboxPopup; trigger: Range } | null = null;
 
       for (const popup of this.popups) {

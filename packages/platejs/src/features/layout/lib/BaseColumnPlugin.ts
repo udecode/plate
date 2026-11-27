@@ -22,7 +22,7 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
-import { canPlaceBlocksAtPath } from '../../../facade';
+import { canPlaceBlocksAtPath, hasNonWritableAt } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 
 export type SetColumnsOptions = {
@@ -182,14 +182,33 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
 
         if (Math.abs(sum - 100) < 1e-6) return;
 
-        // An inserted column makes a group over-full; scaling keeps every
-        // column's share, where the additive repair can push one below zero.
-        const resize = (width: number) =>
-          sum > 100
-            ? (width * 100) / sum
-            : width + (100 - sum) / columns.length;
+        const locked = columns.filter(({ index }) =>
+          hasNonWritableAt(innerEditor, path.concat([index]))
+        );
+        const unlocked = columns.filter(
+          ({ index }) => !hasNonWritableAt(innerEditor, path.concat([index]))
+        );
 
-        for (const { index, width } of columns) {
+        if (unlocked.length === 0) return;
+
+        const lockedSum = locked.reduce((total, { width }) => total + width, 0);
+        const targetSum = 100 - lockedSum;
+
+        if (targetSum <= 0) return;
+
+        const unlockedSum = unlocked.reduce(
+          (total, { width }) => total + width,
+          0
+        );
+
+        // An inserted column makes the unlocked share over-full; scaling keeps
+        // each unlocked column's share without mutating locked columns.
+        const resize = (width: number) =>
+          unlockedSum > targetSum
+            ? (width * targetSum) / unlockedSum
+            : width + (targetSum - unlockedSum) / unlocked.length;
+
+        for (const { index, width } of unlocked) {
           tx.nodes.set(
             { width: `${resize(width)}%` },
             {
@@ -300,19 +319,65 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
 
       if (!children.every((child) => ElementApi.isElement(child))) return;
 
+      if (hasNonWritableAt(editor, path)) return;
+
       // A column a pending suggestion deletes keeps its place and its width.
       const live = children.flatMap((column, index) =>
         ElementApi.isElement(column) && tx.nodes.isContent(column)
           ? [{ column, index }]
           : []
       );
+      const parseWidth = (value: unknown) => {
+        const parsed =
+          typeof value === 'string'
+            ? Number.parseFloat(value)
+            : typeof value === 'number'
+              ? value
+              : Number.NaN;
+
+        return Number.isNaN(parsed) ? 0 : parsed;
+      };
       const setWidths = (indexes: readonly number[]) => {
-        indexes.forEach((index, position) => {
-          tx.nodes.set(
-            { width: nextWidths[position] },
-            { at: path.concat([index]) }
-          );
-        });
+        const lockedIndexes = new Set(
+          indexes.filter((index) =>
+            hasNonWritableAt(editor, path.concat([index]))
+          )
+        );
+        let lockedSum = 0;
+
+        for (const index of lockedIndexes) {
+          const column = tx.nodes.get(path.concat([index]))?.[0];
+
+          if (ElementApi.isElement(column)) {
+            lockedSum += parseWidth(column.width);
+          }
+        }
+
+        const unlockedPositions = indexes
+          .map((index, position) => ({ index, position }))
+          .filter(({ index }) => !lockedIndexes.has(index));
+
+        if (unlockedPositions.length === 0) return;
+
+        const remaining = 100 - lockedSum;
+
+        if (remaining <= 0) return;
+
+        const requestedUnlockedSum = unlockedPositions.reduce(
+          (total, { position }) => total + parseWidth(nextWidths[position]),
+          0
+        );
+
+        for (const { index, position } of unlockedPositions) {
+          const width =
+            lockedIndexes.size === 0
+              ? nextWidths[position]
+              : requestedUnlockedSum > 0
+                ? `${(parseWidth(nextWidths[position]) * remaining) / requestedUnlockedSum}%`
+                : `${remaining / unlockedPositions.length}%`;
+
+          tx.nodes.set({ width }, { at: path.concat([index]) });
+        }
       };
       const currentCount = live.length;
       const targetCount = nextWidths.length;
@@ -350,7 +415,17 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
       }
 
       const kept = live.slice(0, targetCount);
+      const removed = live.slice(targetCount);
       const keepColumnPath = path.concat([kept[targetCount - 1].index]);
+
+      if (
+        hasNonWritableAt(editor, keepColumnPath) ||
+        removed.some(({ index }) =>
+          hasNonWritableAt(editor, path.concat([index]))
+        )
+      ) {
+        return;
+      }
 
       tx.nodes.replaceChildren(
         live.slice(targetCount - 1).flatMap(({ column }) => column.children),
@@ -439,6 +514,8 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
 
             return;
           }
+
+          if (hasNonWritableAt(editor, path)) return;
 
           const columnWidths = widths ?? columnsToWidths(columns);
           const columnGroup = {

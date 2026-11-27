@@ -43,6 +43,7 @@ import {
   getActiveEditorTransaction,
   getAuthoredUpdateView,
   getEditorCommitNode,
+  hasNonWritableAt,
   getEditorRuntimeRootKeys,
   getSnapshotVersion,
   getViewAuthor,
@@ -1575,9 +1576,9 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                       'Upload fill takes the key of a live upload draft of its file kind.'
                     );
                   }
-                  if (tx.nodes.elementReadOnly({ at: key })) {
+                  if (hasNonWritableAt(updateEditor, key)) {
                     throw new Error(
-                      'Upload fill cannot give a file to a draft inside a read-only element.'
+                      'Upload fill cannot give a file to a draft inside a non-writable element.'
                     );
                   }
                   if (taken.has(key)) {
@@ -1636,7 +1637,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               ? draftKind(tx.nodes.get(slot)?.[0])
               : undefined;
 
-            if (slot && (!slotKind || tx.nodes.elementReadOnly({ at: slot }))) {
+            if (slot && (!slotKind || hasNonWritableAt(updateEditor, slot))) {
               return false;
             }
 
@@ -1703,7 +1704,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                 inserted = tx.blocks.insert(nodes, insertOptions);
               } else {
                 const after = insertOptions.after ?? getCaretAnchor(editor, tx);
-                const anchor = tx.nodes.block({ at: after })?.[0];
+                const anchor = tx.nodes.block({ at: after });
                 // A submit at the selection fills an empty block, as paste does.
                 const replaceEmpty =
                   insertOptions.replaceEmpty ??
@@ -1714,7 +1715,8 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                   after,
                   replaceEmpty:
                     replaceEmpty &&
-                    (!anchor || isReplaceableEmptyBlock(tx, anchor)),
+                    (!anchor ||
+                      isReplaceableEmptyBlock(updateEditor, tx, anchor)),
                 });
               }
               if (!inserted) return refuseDoesNotFit();

@@ -2,10 +2,12 @@ import isEqual from 'lodash/isEqual.js';
 
 import {
   getCompiledEditorSchemaFromApi,
+  hasNonWritableAt,
   NodeApi,
   type Editor,
   type EditorUpdateTransaction,
   type Element,
+  type NodeEntry,
   type NodeKey,
 } from '../../facade';
 import type {
@@ -32,12 +34,14 @@ type ApplyBlockInsertionOptions = Readonly<{
 
 /** An empty structural block, such as a Details title, keeps its slot. */
 export const isReplaceableEmptyBlock = (
+  editor: Editor,
   tx: Pick<EditorUpdateTransaction, 'nodes' | 'schema'>,
-  block: Element
+  [block, path]: NodeEntry<Element>
 ) =>
   NodeApi.isText(block.children[0]) &&
   isPlateBlockContent(tx.schema, block) &&
   !tx.schema.isReadOnly(block) &&
+  !hasNonWritableAt(editor, path) &&
   tx.nodes.isEmpty(block);
 
 export const applyBlockInsertion = ({
@@ -63,7 +67,7 @@ export const applyBlockInsertion = ({
       : undefined;
 
     return insert(
-      target && !isReplaceableEmptyBlock(tx, target[0])
+      target && !isReplaceableEmptyBlock(editor, tx, target)
         ? { ...insertOptions, replaceEmpty: false }
         : insertOptions
     );
@@ -71,7 +75,7 @@ export const applyBlockInsertion = ({
 
   const source = tx.nodes.block({ at: insertOptions.after });
 
-  if (!source || !isReplaceableEmptyBlock(tx, source[0])) {
+  if (!source || !isReplaceableEmptyBlock(editor, tx, source)) {
     return insert({ ...insertOptions, replaceEmpty: false });
   }
 

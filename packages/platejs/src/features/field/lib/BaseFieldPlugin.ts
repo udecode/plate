@@ -28,8 +28,10 @@ import {
   readRootEntries,
   readViewPage,
   registerEditorTransactionGuard,
+  shouldSkipHistoryForOnlyProperties,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
+import { lockWriteExemption } from '../../lock';
 import {
   carryFieldNames,
   conditionGraph,
@@ -616,6 +618,24 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
     };
 
     return {
+      contributions: [
+        lockWriteExemption.of(({ element, modifications }) => {
+          if (!isField(element)) return false;
+
+          const role = store.get('fillRole') ?? null;
+
+          if (role !== null && element.role !== role) return false;
+
+          return modifications.every(
+            (modification) =>
+              (modification.key === 'value' &&
+                (modification.type === 'unset' ||
+                  (modification.type === 'set' &&
+                    fitsField(element, modification.value)))) ||
+              (role === null && modification.key === 'authored')
+          );
+        }),
+      ],
       activate({ afterPublish, onCleanup }) {
         afterPublish(readCountAtCommit);
         onCleanup(owner.subscribeCommit(readCountAtCommit));
@@ -648,6 +668,12 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                 tags.includes('historic') ||
                 replaces ||
                 (!tags.includes('history-skip') &&
+                  !shouldSkipHistoryForOnlyProperties(
+                    editor,
+                    before,
+                    commit,
+                    effects
+                  ) &&
                   (!commit.changes.empty ||
                     commit.effects.some(
                       ({ type: effect }) => effect.history !== 'skip'

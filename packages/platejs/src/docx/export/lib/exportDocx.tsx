@@ -284,27 +284,70 @@ const namedRootDiagnostics = (
       severity: 'warning' as const,
     }));
 
-const docxTextFormatsOf = (editor: Editor): readonly DocxTextFormat[] =>
-  getPlateNodeMappingContributions(editor, 'docx').map(
-    ({ declaration, owner, targetPlugin, targetType }) => {
-      if (
-        typeof declaration.dropped !== 'string' ||
-        typeof declaration.text !== 'function' ||
-        targetType === null
-      ) {
+type DocxPropertyFormat = Readonly<{
+  dropped: string;
+  plugin: string;
+  property: string;
+}>;
+
+const docxFormatsOf = (
+  editor: Editor
+): Readonly<{
+  propertyFormats: readonly DocxPropertyFormat[];
+  textFormats: readonly DocxTextFormat[];
+}> => {
+  const propertyFormats: DocxPropertyFormat[] = [];
+  const textFormats: DocxTextFormat[] = [];
+
+  for (const {
+    declaration,
+    owner,
+    targetKey,
+    targetPlugin,
+    targetType,
+  } of getPlateNodeMappingContributions(editor, 'docx')) {
+    if (typeof declaration.dropped !== 'string') {
+      throw new Error(
+        `DOCX node mapping "${owner}" must define a dropped warning message.`
+      );
+    }
+
+    if (targetType !== null) {
+      if (typeof declaration.text !== 'function') {
         throw new Error(
           `DOCX node mapping "${owner}" must define dropped and text for an element.`
         );
       }
 
-      return {
+      textFormats.push({
         dropped: declaration.dropped,
         plugin: targetPlugin,
         text: declaration.text as DocxTextFormat['text'],
         type: targetType,
-      };
+      });
+      continue;
     }
-  );
+
+    const property =
+      typeof declaration.property === 'string'
+        ? declaration.property
+        : targetKey;
+
+    if (!property) {
+      throw new Error(
+        `DOCX node mapping "${owner}" must target an element type or element property.`
+      );
+    }
+
+    propertyFormats.push({
+      dropped: declaration.dropped,
+      plugin: targetPlugin,
+      property,
+    });
+  }
+
+  return { propertyFormats, textFormats };
+};
 
 const countElements = (nodes: readonly Descendant[], type: string): number =>
   nodes.reduce(
@@ -316,6 +359,47 @@ const countElements = (nodes: readonly Descendant[], type: string): number =>
         : count,
     0
   );
+
+const countElementsWithProperty = (
+  nodes: readonly Descendant[],
+  property: string
+): number =>
+  nodes.reduce(
+    (count, node) =>
+      ElementApi.isElement(node)
+        ? count +
+          (node[property] !== undefined && node[property] !== false ? 1 : 0) +
+          countElementsWithProperty(node.children, property)
+        : count,
+    0
+  );
+
+const propertyFormatDiagnostics = (
+  propertyFormats: readonly DocxPropertyFormat[],
+  document: EditorDocumentValue
+): readonly DocxDiagnostic[] =>
+  propertyFormats.flatMap(({ dropped, plugin, property }) => {
+    const count =
+      countElementsWithProperty(document.children, property) +
+      Object.values(document.roots ?? {}).reduce(
+        (total, rootNodes) =>
+          total + countElementsWithProperty(rootNodes, property),
+        0
+      );
+
+    return count > 0
+      ? [
+          {
+            code: 'property-dropped' as const,
+            count,
+            feature: plugin,
+            impact: 'lossy' as const,
+            message: dropped,
+            severity: 'warning' as const,
+          },
+        ]
+      : [];
+  });
 
 const textFormatDiagnostics = (
   textFormats: readonly DocxTextFormat[],
@@ -783,11 +867,12 @@ export async function exportDocx(
       ok: true,
     });
   }
-  const textFormats = docxTextFormatsOf(editor);
+  const { propertyFormats, textFormats } = docxFormatsOf(editor);
   const diagnostics: DocxDiagnostic[] = [
     ...sourceResolution.diagnostics,
     ...metadata,
     ...textFormatDiagnostics(textFormats, capture.document),
+    ...propertyFormatDiagnostics(propertyFormats, capture.document),
     ...listDiagnostics(capture.document),
     ...quoteDiagnostics(editor, capture.document.children),
     ...capture.comments.flatMap(({ body, id, target }) =>

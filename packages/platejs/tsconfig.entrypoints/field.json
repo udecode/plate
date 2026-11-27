@@ -22,6 +22,9 @@
   "references": [
     {
       "path": "./core.json"
+    },
+    {
+      "path": "./lock.json"
     }
   ]
 }
