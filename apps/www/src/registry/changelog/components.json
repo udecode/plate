@@ -10,6 +10,24 @@
       "2026-09-18-item-focus-block-upsert",
       "2026-08-17-flat-editor-registry"
     ],
+    "block-menu": [
+      "2026-11-27-block-menu-board-suppress",
+      "2026-10-28-touch-menus",
+      "2026-10-15-quote-on-details-title",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-details-heading-titles",
+      "2026-10-10-selection-context-menu",
+      "2026-10-08-registry-install-dependencies",
+      "2026-10-02-schema-block-handles",
+      "2026-10-01-block-move-actions",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-block-action-owners",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-single-selection-authority",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
     "board": [
       "2026-11-27-board-free-text",
       "2026-11-27-board-static-note-text-mark",
@@ -1550,23 +1568,6 @@
     "pagination-demo": [
       "2026-10-28-pagination-demo-list-callout",
       "2026-10-28-pagination-demo-named-fonts"
-    ],
-    "block-menu": [
-      "2026-10-28-touch-menus",
-      "2026-10-15-quote-on-details-title",
-      "2026-10-14-block-void-selection",
-      "2026-10-13-details-heading-titles",
-      "2026-10-10-selection-context-menu",
-      "2026-10-08-registry-install-dependencies",
-      "2026-10-02-schema-block-handles",
-      "2026-10-01-block-move-actions",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-block-action-owners",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-single-selection-authority",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
     ],
     "code-block-diagram-mermaid": [
       "2026-10-24-mermaid-pele-1-9",

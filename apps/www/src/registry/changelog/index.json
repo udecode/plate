@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-block-menu-board-suppress",
+      "href": "/registry/changelog/2026-11-27-block-menu-board-suppress.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Stop the block menu from opening on right-clicks inside a board",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-board-free-text",
       "href": "/registry/changelog/2026-11-27-board-free-text.json",
       "status": "draft",

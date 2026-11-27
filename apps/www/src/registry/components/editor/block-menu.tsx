@@ -195,7 +195,21 @@ export function BlockContextMenu({ children }: WrapContentProps) {
           }
         }}
       >
-        <div className="w-full">{children}</div>
+        <div className="w-full">
+          <div
+            className="contents"
+            onContextMenu={(event) => {
+              if (
+                event.target instanceof Element &&
+                event.target.closest('[data-board]')
+              ) {
+                event.stopPropagation();
+              }
+            }}
+          >
+            {children}
+          </div>
+        </div>
       </ContextMenuTrigger>
       <ContextMenuContent
         className="w-64"

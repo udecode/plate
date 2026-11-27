@@ -287,7 +287,7 @@ export type BoardViewCore = Readonly<{
   viewCenter: () => BoardPlace;
   viewBox: () => BoardBox;
   commit: (change: BoardWrite) => void;
-  edit: (key: NodeKey) => void;
+  edit: (key: NodeKey, edge?: 'end' | 'start') => void;
   editedShape: () => BoardShapeLayout | null;
   editor: Editor;
   fit: () => void;
@@ -2035,16 +2035,18 @@ export const createBoardView = (
     viewCenter,
     viewBox,
     commit,
-    edit: (key) => {
+    edit: (key, edge = 'end') => {
       const id = index.layout(key)?.id;
 
       if (!id || !boards.read.shape(id)) return;
       focusRoot();
       editor.update((tx) => {
         const owned = tx.unique.holder('shapeId', id)?.key;
-        const end = owned && tx.points.end(owned);
+        const point =
+          owned &&
+          (edge === 'start' ? tx.points.start(owned) : tx.points.end(owned));
 
-        if (end) tx.selection.set(end);
+        if (point) tx.selection.set(point);
       });
     },
     editedShape,

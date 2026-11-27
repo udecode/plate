@@ -2214,7 +2214,7 @@ export const useRootInteractionController = ({
   const onMouseDownCapture = useCallback<MouseEventHandler<HTMLElement>>(
     (event) => {
       profilePliteReactDuration('root-mousedown.capture', () => {
-        if (disabled || event.defaultPrevented) {
+        if (disabled || event.defaultPrevented || event.button !== 0) {
           return;
         }
 

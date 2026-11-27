@@ -663,6 +663,42 @@ export const attachBoardGestures = (
 
   const inOwnText = (element: Element | null) =>
     !!element && element === host.querySelector(SHAPES_EDITABLE);
+  const nonTextEdgeInEditedShape = (
+    shapeElement: HTMLElement,
+    event: PointerEvent
+  ): 'end' | 'start' | null => {
+    const target = event.target as Element;
+
+    if (target.closest('a, button, input, select, textarea, [role="button"]')) {
+      return null;
+    }
+
+    const closestBlock = target.closest('[data-editor-node="element"]');
+
+    if (
+      closestBlock &&
+      closestBlock !== shapeElement &&
+      shapeElement.contains(closestBlock)
+    ) {
+      return null;
+    }
+
+    const blocks = [
+      ...shapeElement.querySelectorAll<HTMLElement>(
+        '[data-editor-node="element"]'
+      ),
+    ];
+    const firstRect = blocks[0]?.getBoundingClientRect();
+    const lastRect = blocks.at(-1)?.getBoundingClientRect();
+    const nonEditable = target.closest('[contenteditable="false"]');
+    const onNonEditable = !!nonEditable && shapeElement.contains(nonEditable);
+
+    if (firstRect && event.clientY < firstRect.top) return 'start';
+    if (lastRect && event.clientY > lastRect.bottom) return 'end';
+    if (!onNonEditable) return null;
+
+    return firstRect && event.clientX < firstRect.left ? 'start' : 'end';
+  };
   const buttonOwnsPress = (target: Element) => {
     const owner = target
       .closest('button')
@@ -716,6 +752,15 @@ export const attachBoardGestures = (
     ) {
       pressed = shape;
       lastPress = 'shape';
+
+      const edge =
+        shapeElement && nonTextEdgeInEditedShape(shapeElement, event);
+
+      if (edge) {
+        event.preventDefault();
+        event.stopPropagation();
+        core.edit(shape.key, edge);
+      }
 
       return;
     }
