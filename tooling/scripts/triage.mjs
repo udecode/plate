@@ -1044,12 +1044,29 @@ function normalizeRegression(raw) {
   );
 }
 
+const cleanField = (val) =>
+  val === undefined || val === null
+    ? undefined
+    : String(val).trim() || undefined;
+
+const hasExplicitEntryNumber = (raw) =>
+  cleanField(raw.number) !== undefined ||
+  cleanField(raw.discussion) !== undefined;
+
+const entryNumberOf = (raw) =>
+  (
+    cleanField(raw.number) ??
+    cleanField(raw.discussion) ??
+    cleanField(raw.issue) ??
+    ''
+  ).replace(/^#/u, '');
+
 function buildRecord(raw, policy, existing) {
-  const issue = String(raw.issue ?? '')
-    .replace(/^#/u, '')
-    .trim();
+  const issue = entryNumberOf(raw);
   if (!ISSUE_RE.test(issue)) {
-    refuse(`invalid issue number ${JSON.stringify(raw.issue)}`);
+    refuse(
+      `invalid issue number ${JSON.stringify(raw.number ?? raw.discussion ?? raw.issue)}`
+    );
   }
   const outcome = String(raw.outcome ?? '').trim();
   const allowed = policy.isDiscussions ? DISCUSSION_OUTCOMES : ISSUE_OUTCOMES;
@@ -1062,12 +1079,7 @@ function buildRecord(raw, policy, existing) {
     refuse('works-on-beta is only for the primary public repository');
   }
   const detail = parseDetail(raw.detail);
-  const pick = (key) => {
-    const val = raw[key] ?? detail.get(key);
-    return val === undefined || val === null
-      ? undefined
-      : String(val).trim() || undefined;
-  };
+  const pick = (key) => cleanField(raw[key]) ?? cleanField(detail.get(key));
   const why =
     pick('why') ??
     pick('missing') ??
@@ -1092,7 +1104,12 @@ function buildRecord(raw, policy, existing) {
       rec.priority = priority;
       rec.lean = lean;
     } else if (outcome === 'moved') {
-      const target = (pick('issue') ?? '').replace(/^#/u, '');
+      const target = (
+        cleanField(raw.targetIssue) ??
+        (hasExplicitEntryNumber(raw) ? cleanField(raw.issue) : undefined) ??
+        cleanField(detail.get('issue')) ??
+        ''
+      ).replace(/^#/u, '');
       if (!ISSUE_RE.test(target)) {
         refuse(`#${issue}: moved requires issue number`);
       }
@@ -1182,7 +1199,8 @@ function parseBatchFile(filePath) {
   }
   const lines = text.split('\n').filter((line) => line.trim());
   const first = lines[0].split('\t').map((cell) => cell.trim());
-  const hasHeader = first[0] === 'issue';
+  const hasHeader =
+    first[0] === 'issue' || first[0] === 'discussion' || first[0] === 'number';
   const rows = hasHeader ? lines.slice(1) : lines;
   return rows.map((line) => {
     const cells = line.split('\t');
@@ -1190,14 +1208,14 @@ function parseBatchFile(filePath) {
       cells.length >= 5 && (!hasHeader || first[3] === 'seen');
     if (hasLegacySeenColumn) {
       return {
-        issue: cells[0],
+        number: cells[0],
         outcome: cells[1],
         detail: cells[2],
         why: cells[4],
       };
     }
     return {
-      issue: cells[0],
+      number: cells[0],
       outcome: cells[1],
       detail: cells[2] ?? '',
       why: cells[3] ?? '',
@@ -1737,7 +1755,7 @@ function recordCommand(policy, options) {
         }
         return [
           {
-            issue: numbers[0],
+            number: numbers[0],
             outcome: options.outcome,
             priority: options.priority,
             scope: options.scope,
@@ -1749,21 +1767,12 @@ function recordCommand(policy, options) {
             commit: options.commit,
             retest: options.retest,
             proof: options.proof,
-            issueTarget: options.issue,
+            targetIssue: options.issue,
             lean: options.lean,
             detail: options.detail,
             why: options.why,
           },
-        ].map(({ issueTarget, ...rest }) => ({
-          ...rest,
-          ...(issueTarget
-            ? {
-                detail: [rest.detail, `issue: ${issueTarget}`]
-                  .filter(Boolean)
-                  .join('; '),
-              }
-            : {}),
-        }));
+        ];
       })();
 
   if (entries.length === 0) usage('record received no entries');
@@ -1779,11 +1788,7 @@ function recordCommand(policy, options) {
     const { issue, record } = buildRecord(
       entry,
       policy,
-      existingMap[
-        String(entry.issue ?? '')
-          .replace(/^#/u, '')
-          .trim()
-      ]
+      existingMap[entryNumberOf(entry)]
     );
     return { issue, record: { ...record, who, ts } };
   });

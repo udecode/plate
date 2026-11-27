@@ -53,7 +53,7 @@ Record one issue directly:
 pnpm triage record 300 --repo plate-private --outcome kind --priority P1 --scope selection --why "..."
 ```
 
-Or batch multiple issues with `--from <batch.json|batch.tsv>` (JSON array of `{ issue, outcome, priority?, scope?, owner?, device?, regression?, of?, into?, commit?, retest?, why? }`, or 4-column TSV `issue\toutcome\tdetail\twhy`). Pass `--dry-run` to validate first, or `--no-sync` to skip GitHub field sync.
+Or batch multiple issues with `--from <batch.json|batch.tsv>` (JSON array of `{ issue|discussion|number, outcome, priority?, scope?, owner?, device?, regression?, of?, into?, commit?, retest?, lean?, targetIssue?, why? }`; for `moved` discussions, set `discussion` or `number` with `issue`, or set `targetIssue`; or 4-column TSV `issue\toutcome\tdetail\twhy`). Pass `--dry-run` to validate first, or `--no-sync` to skip GitHub field sync.
 
 Outcomes for issues: `kind`, `dup` (`--of`), `needs-repro` (`--why`), `not-bug` (`--why`), `spec` (`--why`), `split` (`--into`), `fixed` (`--commit`, opt `--retest none|<steps>`, `--owner`, `--proof`), `works-on-beta` (`--commit`, opt `--proof`; `udecode/plate` only).
 
