@@ -9,3 +9,4 @@ export * from './BaseBoardImagePlugin';
 export * from './BaseBoardNotePlugin';
 export * from './BaseBoardPlugin';
 export * from './BaseBoardStrokePlugin';
+export * from './BaseBoardTextPlugin';

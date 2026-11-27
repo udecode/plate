@@ -105,7 +105,7 @@ export const boardTargetsOn =
   (
     memberOf: (id: string) => BoardMemberEntry | null,
     root: string,
-    heightOf?: (member: BoardFrameEntry | BoardShapeEntry) => number
+    sizeOf?: (member: BoardFrameEntry | BoardShapeEntry) => BoardSize
   ) =>
   (id: string): BoardArrowTarget | undefined => {
     const member = memberOf(id);
@@ -114,9 +114,7 @@ export const boardTargetsOn =
       ? boardArrowTargetOf({
           geo: member.node.geo,
           place: member.place,
-          size: heightOf
-            ? { height: heightOf(member), width: member.size.width }
-            : member.size,
+          size: sizeOf ? sizeOf(member) : member.size,
         })
       : undefined;
   };

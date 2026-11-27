@@ -1731,6 +1731,7 @@ const EMBEDDED_HTML_CONTENT = new Set([
  */
 export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
   'data-board',
+  'data-board-auto-size',
   'data-board-dash',
   'data-board-fill',
   'data-board-geo',

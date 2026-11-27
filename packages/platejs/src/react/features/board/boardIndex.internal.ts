@@ -379,6 +379,7 @@ export const createBoardIndex = ({
     entry: BoardFrameEntry | BoardShapeEntry,
     node: Element = nodeOf(entry.key) ?? entry.node
   ): BoardNoteHeightStamp => ({
+    autoSize: node.autoSize,
     children: node.children,
     key: entry.key,
     sizeHeight: entry.size.height,

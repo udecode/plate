@@ -38,6 +38,7 @@ import { BaseBoardGeoPlugin } from './BaseBoardGeoPlugin';
 import { BaseBoardImagePlugin } from './BaseBoardImagePlugin';
 import { BaseBoardNotePlugin } from './BaseBoardNotePlugin';
 import { BaseBoardStrokePlugin } from './BaseBoardStrokePlugin';
+import { BaseBoardTextPlugin } from './BaseBoardTextPlugin';
 import {
   ARROW_SIDES,
   BOARD_ARROW_TYPE,
@@ -65,22 +66,28 @@ import {
   placeAmong,
 } from './boardFrame.internal';
 import {
-  lentBoardHeightFor,
+  type BoardPictureMeasuredSize,
+  isAutoSizeBoardText,
+  lentBoardSizeFor,
   pictureBoardHeightsOf,
+  resolvePictureBoardSize,
 } from './boardHeights.internal';
 import {
   BOARD_ARROW_ATTRIBUTES,
   BOARD_FRAME_ATTRIBUTES,
   BOARD_SHAPE_ATTRIBUTES,
   BOARD_STROKE_ATTRIBUTES,
+  BOARD_TEXT_ATTRIBUTES,
   decodeBoardArrowAttributes,
   decodeBoardFrameAttributes,
   decodeBoardShapeAttributes,
   decodeBoardStrokeAttributes,
+  decodeBoardTextAttributes,
   encodeBoardArrowAttributes,
   encodeBoardFrameAttributes,
   encodeBoardShapeAttributes,
   encodeBoardStrokeAttributes,
+  encodeBoardTextAttributes,
 } from './boardHtml.internal';
 import {
   type BoardFrameEntry,
@@ -114,6 +121,7 @@ import {
   BOARD_GEO_STYLES,
   BOARD_NOTE_STYLES,
   BOARD_STROKE_STYLES,
+  BOARD_TEXT_STYLES,
   decodeBoardStyleAttributes,
   encodeBoardStyleAttributes,
   reportInvalidBoardAttribute,
@@ -272,6 +280,7 @@ export const BaseBoardPlugin = definePlugin('board', {
     }),
   targetPlugins: [
     BaseBoardNotePlugin,
+    BaseBoardTextPlugin,
     BaseBoardGeoPlugin,
     BaseBoardImagePlugin,
     BaseBoardArrowPlugin,
@@ -354,15 +363,13 @@ export const BaseBoardPlugin = definePlugin('board', {
         const types = boardTypesOf(editor);
         const sized = (
           entry: BoardMemberEntry,
-          heights: ReadonlyMap<string, number> | undefined
+          heights: ReadonlyMap<string, BoardPictureMeasuredSize> | undefined
         ): BoardMemberEntry => {
           if (!heights || entry.kind === 'arrow') return entry;
 
-          const height = heights.get(entry.id);
+          const size = resolvePictureBoardSize(entry, heights, types.text());
 
-          return height !== undefined && height > entry.size.height
-            ? { ...entry, size: { ...entry.size, height } }
-            : entry;
+          return size === entry.size ? entry : { ...entry, size };
         };
 
         return {
@@ -377,7 +384,7 @@ export const BaseBoardPlugin = definePlugin('board', {
               id,
               heights
                 ? (member) =>
-                    Math.max(member.size.height, heights.get(member.id) ?? 0)
+                    resolvePictureBoardSize(member, heights, types.text())
                 : undefined
             );
           },
@@ -676,6 +683,7 @@ export const BaseBoardPlugin = definePlugin('board', {
       update: ({ tx }) => {
         const members = boardMembersOf(tx, properties);
         const keepsRatio = keepsBoardRatio(editor);
+        const types = boardTypesOf(editor);
         const entriesOf = (ids: readonly string[]) =>
           ids.flatMap((id) => members.member(id) ?? []);
         const membersOf = (frame: BoardFrameEntry) =>
@@ -695,7 +703,8 @@ export const BaseBoardPlugin = definePlugin('board', {
             const targetOnBoard = boardTargetsOn(
               members.member,
               root,
-              (member) => lentBoardHeightFor(presentation, root, member)
+              (member) =>
+                lentBoardSizeFor(presentation, root, member, types.text())
             );
 
             for (const arrow of members.membersIn(root)) {
@@ -931,6 +940,8 @@ export const BaseBoardPlugin = definePlugin('board', {
            * frontmost frame under its middle, or leaves its frame. An image
            * shape keeps its ratio: its height follows the given width, and a
            * shrink stops at a short edge of 8, so it can store another width.
+           * Resizing a free-text shape locks its width by setting `autoSize`
+           * to `false`.
            */
           resize: txLocate(
             false,
@@ -955,6 +966,9 @@ export const BaseBoardPlugin = definePlugin('board', {
 
                 tx.nodes.set(
                   {
+                    ...(isAutoSizeBoardText(entry.node, types.text())
+                      ? { autoSize: false }
+                      : {}),
                     place: placeAmong(members.framesIn(entry.root), shape, {
                       current: tx.schema.getProperty(
                         entry.node,
@@ -1107,6 +1121,41 @@ export const BaseBoardPlugin = definePlugin('board', {
           };
         },
         match: [{ attributes: { 'data-board': 'stroke' }, tag: 'div' }],
+      },
+    }),
+  }))
+  .extend(({ defineFormats }) => ({
+    formats: defineFormats(BaseBoardTextPlugin, {
+      html: {
+        decode: ({ element, preserve, report }) => {
+          const shape = decodeBoardTextAttributes(element, (raw) =>
+            reportInvalidBoardAttribute(report, 'data-board-auto-size', raw)
+          );
+
+          if (!shape) return undefined;
+          preserve(...BOARD_TEXT_ATTRIBUTES);
+
+          return {
+            ...shape,
+            ...decodeBoardStyleAttributes(element, BOARD_TEXT_STYLES, {
+              preserve,
+              report,
+            }),
+          };
+        },
+        encode: ({ node, preserve }) => {
+          preserve('autoSize', 'place', 'size', 'zIndex');
+
+          return {
+            attributes: {
+              ...encodeBoardTextAttributes(node),
+              ...encodeBoardStyleAttributes(node, BOARD_TEXT_STYLES, preserve),
+              'data-board': 'text',
+            },
+            tag: 'div',
+          };
+        },
+        match: [{ attributes: { 'data-board': 'text' }, tag: 'div' }],
       },
     }),
   }))

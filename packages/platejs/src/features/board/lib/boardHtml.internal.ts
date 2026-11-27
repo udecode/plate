@@ -72,6 +72,44 @@ export const BOARD_SHAPE_ATTRIBUTES = [
   'data-board-z-index',
 ] as const;
 
+export const BOARD_TEXT_ATTRIBUTES = [
+  ...BOARD_SHAPE_ATTRIBUTES,
+  'data-board-auto-size',
+] as const;
+
+export const encodeBoardTextAttributes = (
+  node: Readonly<{
+    autoSize?: unknown;
+    place?: unknown;
+    shapeId?: unknown;
+    size?: unknown;
+    zIndex?: unknown;
+  }>
+) => ({
+  ...encodeBoardShapeAttributes(node),
+  'data-board-auto-size':
+    typeof node.autoSize === 'boolean' ? String(node.autoSize) : undefined,
+});
+
+export const decodeBoardTextAttributes = (
+  element: Readonly<HTMLElement>,
+  reportInvalid?: (raw: string) => void
+) => {
+  const shape = decodeBoardShapeAttributes(element);
+
+  if (!shape) return undefined;
+
+  const raw = element.getAttribute('data-board-auto-size');
+
+  if (raw === null) return shape;
+  if (raw === 'true' || raw === 'false') {
+    return { ...shape, autoSize: raw === 'true' };
+  }
+  reportInvalid?.(raw);
+
+  return shape;
+};
+
 export const encodeBoardArrowAttributes = (
   node: Readonly<{
     end?: unknown;

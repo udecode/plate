@@ -134,6 +134,11 @@ export const BOARD_NOTE_STYLES = {
   textSize: 'm',
 } as const;
 
+export const BOARD_TEXT_STYLES = {
+  opacity: 1,
+  textSize: 'm',
+} as const;
+
 export const BOARD_GEO_STYLES = {
   dash: 'solid',
   fill: 'none',
