@@ -939,6 +939,7 @@
         "$TURBO_ROOT$/tooling/config/withoutUnaskedIds.ts",
         "$TURBO_ROOT$/tsconfig.json",
         "test/support/authored.ts",
+        "test/support/first-write-model.ts",
         "test/support/recording-laws.ts",
         "test/support/schema.ts",
         "test/support/sync-client.ts",
