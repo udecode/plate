@@ -10,8 +10,7 @@
       "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
     ],
     "packages/plitejs/src/react/editable/caret-engine.ts": [
-      "editor.api.dom?.root();",
-      "getMountedEditableDOMRuntime(editor)?.clearModelSelectionDOMPreference();"
+      "editor.api.dom?.root();"
     ],
     "packages/plitejs/src/react/editable/clipboard-input-strategy.ts": [
       "clearDragSession(ReactEditor.getWindow(editor).document, editor);",
