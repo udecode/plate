@@ -1,6 +1,6 @@
 ---
 title: 白板
-description: 一个白板块，其中的便签、图形、图片、箭头、框架和笔迹都是文档里的块。
+description: 一个白板块，其中的便签、自由文本、图形、图片、箭头、框架和笔迹都是文档里的块。
 docs:
   - route: /docs/components/board
     title: 白板元素
@@ -13,7 +13,7 @@ docs:
 ## 功能特性
 
 - 一个 void `board` 块，拥有自己的图形列表。每个图形都是该列表的顶层块，因此同步、建议、撤销以及复制粘贴都以图形为单位。
-- 六种图形：可容纳富文本并随文字长高的便签、可容纳富文本的几何图形、容纳一张图片的图片图形、两端可绑定到图形的箭头、可容纳图形的框架，以及笔迹。
+- 七种图形：可容纳富文本并随文字长高的便签、在调整大小或按固定折行宽度绘制前随文字增宽增高（固定宽度后高度仍随文字长高）的自由文本、可容纳富文本的几何图形、容纳一张图片的图片图形、两端可绑定到图形的箭头、可容纳图形的框架，以及笔迹。
 - 每个图形存储自己的样式：填充、轮廓颜色、线型、轮廓粗细、不透明度和文字大小，每种图形类型各有默认值。一次选取把选中的图形改为新样式，作为一步撤销；选中绘制工具时，只设置下一个图形的样式。
 - 插入、移动、缩放、调整层级和删除图形的命令。撤销不会拆开一次调用，在建议模式下每次调用是一条建议。
 - 复制、粘贴和创建副本时图形获得新 id。复制的箭头绑定到复制出的图形。副本落在最上层，框架仍在其他图形之后。指针位于白板上时，副本落在指针处。若该位置已有图形，副本每次向右下方错开 24px，直到所在位置没有图形。
@@ -21,8 +21,8 @@ docs:
 - 粘贴图片链接或从网页复制的图片，它会作为图片图形落在指针处，并保持图片的比例。安装了 [`UploadPlugin`](/cn/docs/upload) 后，粘贴、拖放或从工具栏选取的图片文件也会作为图片图形落下，每个文件在自己的图形中上传。
 - 把白板或选中的图形导出或复制为 PNG 或 SVG，屏幕外的图形也包含在内。
 - 每个挂载的视图各自拥有相机、工具、工具锁定和下一个样式，文档从不存储它们。
-- Tab 和 Mod 加方向键在图形之间移动，Shift+Enter 进入工具栏，按键可以缩放、平移和适配视图。Enter 可以放置便签、图形或框架，也可以用箭头连接两个图形。屏幕阅读器会听到选中的图形、选择的工具、缩放比例、每次删除和连接的每一步，使用你的应用传入的文字。
-- 只挂载相机附近的图形，因此每次按键的工作量不会随白板变大而增加。
+- Tab 和 Mod 加方向键在图形之间移动，Shift+Enter 进入工具栏，按键可以缩放、平移和适配视图。Enter 可以放置便签、文本、图形或框架，也可以用箭头连接两个图形。使用选择工具时，双击白板空白处（包括空框架内部）可添加自适应尺寸的自由文本。屏幕阅读器会听到选中的图形、选择的工具、缩放比例、每次删除和连接的每一步，使用你的应用传入的文字。
+- 只挂载相机附近的图形，使已挂载的 DOM 节点数量在白板变大时保持有界，且绑定箭头直接更新 DOM 而不触发 React 重渲染。
 
 </PackageInfo>
 
@@ -32,15 +32,15 @@ docs:
 
 ### 安装
 
-`BoardKit` 安装 `BoardPlugin` 和五个图形插件，并配好复制的白板 UI：带工具栏的白板表面，以及这五种图形各自的渲染组件。
+`BoardKit` 安装 `BoardPlugin` 和六个图形插件，并配好复制的白板 UI：带工具栏的白板表面，以及这六种图形各自的渲染组件。
 
 <ComponentSource name="board" />
 
 - `BoardElement`：渲染白板表面及其工具栏。
 - `BoardPageElement`：渲染填满容器的白板。`BoardPageKit` 用它代替 `BoardElement`。
-- `BoardNoteElement`、`BoardGeoElement`、`BoardArrowElement`、`BoardFrameElement` 和 `BoardStrokeElement`：渲染各类图形。
+- `BoardNoteElement`、`BoardTextElement`、`BoardGeoElement`、`BoardArrowElement`、`BoardFrameElement` 和 `BoardStrokeElement`：渲染各类图形。
 - `BoardImageElement`：渲染图片图形。`BoardImageKit` 在 `BoardKit` 之外单独安装它，见[图片](#图片)。
-- `BoardToolbar`：选择选择、抓手、便签、图形、箭头、框架、笔或橡皮擦工具，图形菜单为下一个图形选择矩形、椭圆、菱形或三角形。其后的锁定按钮像 Q 一样开启或关闭工具锁定，锁定开启时显示为按下状态。锁定按钮之后的图片按钮打开文件选择器，并把选取的图片放到白板上，见[图片文件](#图片文件)；在不接收图片文件的白板上，它是禁用的。图片按钮之后的导出菜单把白板保存或复制为 PNG 或 SVG，见[导出](#导出)。缩小和放大按钮各缩放一级，两者之间的缩放比例以百分比显示，点击它会回到 100%；适应按钮让所有图形进入视图。选中框架时，一个图标按钮可以删除框架并保留其中的图形。
+- `BoardToolbar`：选择选择、抓手、便签、文本、图形、箭头、框架、笔或橡皮擦工具，图形菜单为下一个图形选择矩形、椭圆、菱形或三角形。其后的锁定按钮像 Q 一样开启或关闭工具锁定，锁定开启时显示为按下状态。锁定按钮之后的图片按钮打开文件选择器，并把选取的图片放到白板上，见[图片文件](#图片文件)；在不接收图片文件的白板上，它是禁用的。图片按钮之后的导出菜单把白板保存或复制为 PNG 或 SVG，见[导出](#导出)。缩小和放大按钮各缩放一级，两者之间的缩放比例以百分比显示，点击它会回到 100%；适应按钮让所有图形进入视图。选中框架时，一个图标按钮可以删除框架并保留其中的图形。
 - `BoardStylePanel`：停靠在白板右上角，为选中的图形设置样式；选中绘制工具时，为下一个图形设置样式，见[样式面板](#样式面板)。
 
 ### 添加套件
@@ -74,7 +74,7 @@ const editor = createEditor({
 
 选中图形或选择绘制工具后，白板右上角的面板会为这些图形接受的每种样式显示一行：图形（把几何图形改为矩形、椭圆、菱形或三角形）、填充、轮廓、线型、粗细和文字大小。一次选取会写入每个接受该样式的选中图形，以及你正在输入文字的图形，作为一步撤销，共享房间中的协作者也会看到。选中绘制工具时，一次选取只设置下一个图形的样式。没有目标图形接受任何样式时，以及在只读视图中，面板会隐藏。面板没有不透明度一行，图形保留它存储的 `opacity`。白板窄于 36rem 时，面板收进一个 Styles 按钮。一次选取会让光标留在你正在输入文字的图形中，但收起的面板除外，因为 Styles 按钮会把焦点移进面板。
 
-复制的 `board.tsx` 在画板表面的 `toolbar` 中渲染面板，放在 `BoardToolbar` 旁边，并定义了它用到的类名常量，例如 `BOARD_COLORS`：
+复制的 `board.tsx` 在画板表面的 `toolbar` 中渲染面板，放在 `BoardToolbar` 旁边，并使用来自 `board.tsx` 和 `board-styles.tsx` 的类名常量（例如 `BOARD_COLORS`）：
 
 ```tsx
 const boardToolbar = (
@@ -250,12 +250,12 @@ const editor = createEditor({
 复制的工具栏中的导出菜单把白板保存为 `board.png` 或 `board.svg`。其中的 Copy as PNG 和 Copy as SVG 菜单项把同一张图片放到剪贴板上。SVG 以文本形式放到剪贴板上，因为 Firefox 和 Safari 无法复制 SVG 图片。
 
 - 图片包含选中的图形以及选中框架中的每个图形；没有选中任何图形时，包含整个白板。屏幕外的图形也包含在内。
-- 图片会根据每个便签自己的静态绘制结果进行测量，因此屏幕外的便签以及文字超出存储高度的便签都会完整绘制，绑定的箭头也会贴合长高后的轮廓。自定义静态便签在文字包裹块上添加 `data-board-text` 即可参与这项测量，见 [API 参考](#api-参考)；没有该标记的静态副本在图片中会按存储的方框绘制每个便签。
+- 图片会根据每个便签和自由文本自己的静态绘制结果进行测量，因此屏幕外的便签、文字超出存储高度的便签，以及自适应或折行的自由文本都会完整绘制，绑定的箭头也会贴合扩展后的轮廓。自定义静态渲染组件（`BoardNoteElementStatic` 或 `BoardTextElementStatic`）保留外层的 `data-board-picture`、`data-board-box` 与直接子级 `<svg>` 结构，并在文字包裹块上添加 `data-board-text`（自适应自由文本还需设置 `min-width: 100%; width: max-content`）即可参与这项测量，见 [API 参考](#api-参考)；没有该标记的静态副本在图片中会按存储的方框绘制每个便签或文本图形。
 - 它以当前的浅色或深色主题绘制白板背景，不绘制点阵网格。
 - 文件内含文字所用的字体和白板中的图片，因此在其他电脑上看起来也一样。
 - PNG 的尺寸是白板的两倍。白板过大、超出浏览器画布的限制时，PNG 会缩小绘制，菜单会给出提示。
 - 无法读取的图片在 PNG 中绘制为灰色方块，在 SVG 中保留为网页链接。没有静态组件的图形类型绘制为灰色方块。`BoardPictureKit` 缺少其插件的便签内容显示为纯文本，无法读取的字体会让其文字改用其他字体。每种情况菜单都会显示一条警告。
-- 便签的文字在 SVG 中是 HTML。浏览器会绘制它，但用设计工具打开该 SVG 时，只显示图形，不显示便签文字。
+- 便签卡片（含纸张与阴影）和自由文本在 SVG 中位于 `foreignObject` 内的 HTML 中。浏览器会正常渲染，但跳过 `foreignObject` 的导入器或设计工具会丢弃它们，只显示非 HTML 图形。
 - 在空白板上，菜单会提示没有可导出或复制的内容。
 - 浏览器拒绝复制时，菜单会提示无法复制白板。Export as PNG 和 Export as SVG 仍然可以保存它。
 
@@ -317,6 +317,7 @@ import {
   BoardNotePlugin,
   BoardPlugin,
   BoardStrokePlugin,
+  BoardTextPlugin,
 } from 'platejs/board/react';
 import { createEditor } from 'platejs/react';
 
@@ -327,12 +328,14 @@ import {
   BoardGeoElement,
   BoardNoteElement,
   BoardStrokeElement,
+  BoardTextElement,
 } from '@/components/editor/board';
 
 const editor = createEditor({
   plugins: [
     BoardPlugin.configure({ component: BoardElement }),
     BoardNotePlugin.configure({ component: BoardNoteElement }),
+    BoardTextPlugin.configure({ component: BoardTextElement }),
     BoardGeoPlugin.configure({ component: BoardGeoElement }),
     BoardArrowPlugin.configure({ component: BoardArrowElement }),
     BoardFramePlugin.configure({ component: BoardFrameElement }),
@@ -351,24 +354,26 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 
 | 输入 | 结果 |
 | --- | --- |
-| 使用选择工具时按下图形 | 选中它。按住 Shift 会把它加入选区。 |
+| 使用选择工具时按下图形 | 选中它。按住 Shift 会在选区中切换它的选中状态。 |
 | 使用便签、图形或框架工具点击 | 在点击位置居中放置一个默认大小的该图形，在白板空白处或其他图形上方都可以。然后选中新图形并选择选择工具；工具锁定开启时保留当前工具。 |
 | 使用便签、图形或框架工具拖动 | 按拖出的方框绘制该图形，在白板空白处或其他图形上方都可以，拖动时显示所选图形的轮廓。按住 Shift 保持正方形，按住 Alt 从拖动起点向四周扩展。然后选中新图形并选择选择工具；工具锁定开启时保留当前工具。 |
-| 拖动选中图形的角手柄（只在使用选择工具时显示） | 指针移动达到 8 px 后调整图形大小，每边最小 8 个单位，对角保持不动。按住 Shift 保持比例，按住 Alt 围绕中心调整。图片图形无论是否按住 Shift 都保持比例。保持比例的调整在短边达到 8 时停止；短边已不足 8 的图形只能放大。对便签而言，拖动从绘制的方框开始，并把拖出的宽高（作为新的高度下限）存入保持不动一边或中心原位的位置；即使只调宽已长高的便签，角拖动也会把绘制的高度存为新的高度下限。文字高于拖出高度时，纸张保持文字高度，且垂直对齐与水平辅助线关闭。拖动移动的每条边会与视图中 8 个屏幕像素以内最近的其他图形或框架的边缘或中心对齐，并用一条线标出每条对齐的边。图形不会与箭头或笔画对齐。按住 Control 或 Command 可自由调整大小。 |
-| 在被选中的白板上，或没有选中图形、使用便签、图形、框架和箭头以外的任何工具时在获得焦点的白板上按 Enter | 选中它的第一个图形。在被选中的空白板上，它让白板获得焦点，这样工具字母就能用。 |
+| 使用文本工具点击，或使用选择工具双击白板空白处 | 在点击处放置自适应自由文本（`autoSize: true`）并立即进入文字编辑，随输入在宽度和高度上扩展。使用文本工具点击后，除非工具锁定开启，否则切回选择工具。编辑模式下，离开未修改的空白点击或按 `Enter` 放置的文本框会移除它且不增加撤销步骤。双击编辑中图形里的单词、非框架图形本体、角手柄或工具栏不会添加自由文本；双击空框架内部会添加自由文本。 |
+| 使用文本工具拖动 | 按拖出的方框放置固定宽度自由文本（`autoSize: false`，可在白板空白处或非当前正在编辑图形的其他图形上方绘制），拖动时显示矩形预览并立即进入文字编辑，使文字按拖出的宽度折行。按住 Shift 保持正方形，按住 Alt 从拖动起点向四周扩展。之后除非工具锁定开启，否则切回选择工具。 |
+| 拖动选中图形的角手柄（只在使用选择工具时显示） | 指针移动达到 8 px 后调整图形大小，每边最小 8 个单位，对角保持不动。按住 Shift 保持比例，按住 Alt 围绕中心调整。图片图形无论是否按住 Shift 都保持比例。保持比例的调整在短边达到 8 时停止；短边已不足 8 的图形只能放大。对便签和自由文本而言，拖动从绘制的方框开始，并把拖出的宽高（作为新的高度下限）存入保持不动一边或中心原位的位置；调整自适应自由文本大小还会写入 `autoSize: false`，使文字按新宽度折行而高度仍随文字扩展，撤销该次调整可恢复 `autoSize: true`。即使只调宽已长高的便签或自由文本，角拖动也会把绘制的高度存为新的高度下限。文字高于拖出高度时，图形保持文字高度，且垂直对齐与水平辅助线关闭。拖动移动的每条边会与视图中 8 个屏幕像素以内最近的其他图形或框架的边缘或中心对齐，并用一条线标出每条对齐的边。图形不会与箭头或笔画对齐。按住 Control 或 Command 可自由调整大小。 |
+| 在被选中的白板上，或没有选中图形、使用便签、文本、图形、框架和箭头以外的任何工具时在获得焦点的白板上按 Enter | 选中它的第一个图形。在被选中的空白板上，它让白板获得焦点，这样工具字母就能用。 |
 | Tab 和 Shift+Tab | 按白板存储图形的顺序在图形之间移动，最后一个图形之后离开白板。视图外的图形会移入视图。 |
 | Mod 加方向键 | 选中该方向上最近的图形，并把它移入视图。没有选中图形时，从视图中心开始。该方向没有图形时，选区不变，白板会再播报一次选中的图形。 |
-| 使用选择工具时双击；或使用便签、图形、框架和箭头以外的任何工具时，在选中的一个便签、几何图形或箭头上按 Enter；或使用箭头工具时，在选中的一个箭头上按 Enter | 编辑其文字。图片图形没有文字，因此两者都只让它保持选中。 |
+| 使用选择工具时双击；或使用便签、文本、图形、框架和箭头以外的任何工具时，在选中的一个便签、文本、几何图形或箭头上按 Enter；或使用箭头工具时，在选中的一个箭头上按 Enter | 编辑其文字。图片图形没有文字，因此两者都只让它保持选中。编辑任意图形的文字时，当光标移动或输入靠近白板任意边缘、工具栏或停靠面板（`data-board-dock`）后方，白板会自动最小幅度平移相机，使光标留在视野内且不写入文档。 |
 | Escape | 结束进行中的拖动、连接、调整大小或挑选，并保留当前工具。否则，它从文字上升到所在图形。在获得焦点的白板或其选中的图形上，选择了其他工具时它选择选择工具，使用选择工具时它上升到白板。 |
 | 在获得焦点的白板或其选中的图形上按 Shift+Enter | 把焦点移到工具栏。按 Escape 或 Shift+Tab，焦点回到白板。 |
-| `V`、`H`、`N`、`R`、`A`、`F`、`P`、`E` | 选择选择、抓手、便签、图形、箭头、框架、笔和橡皮擦工具。 |
-| 在获得焦点的白板或其选中的图形上按 `Q` | 开启或关闭工具锁定。锁定开启时，便签、图形、框架和箭头工具在每次添加图形后保持选中，因此可以连续添加多个。Escape 和工具字母会切换工具，但保留锁定。按住 Q 只切换一次，在图形的文字中按 Q 会输入 q。 |
-| 使用便签或图形工具时，在获得焦点的白板或其选中的图形上按 Enter | 在选区右侧 24 px 处放置一个默认大小的图形，没有选中图形时放在视图中心，然后选中它并选择选择工具，所以下一次 Enter 会编辑它的文字。工具锁定开启时保留当前工具，所以下一次 Enter 会在它旁边再放置一个。其他不是箭头的图形的左上角正好在新图形左上角要放的位置时，依次尝试向右下方 24 px、48 px，以此类推。尝试的点都不空闲，或要存储的坐标不是有限数时，Enter 不放置任何东西，并再次播报选区。 |
+| `V`、`H`、`N`、`T`、`R`、`A`、`F`、`P`、`E` | 选择选择、抓手、便签、文本、图形、箭头、框架、笔和橡皮擦工具。 |
+| 在获得焦点的白板或其选中的图形上按 `Q` | 开启或关闭工具锁定。锁定开启时，便签、文本、图形、框架和箭头工具在每次添加图形后保持选中，因此可以连续添加多个。Escape 和工具字母会切换工具，但保留锁定。按住 Q 只切换一次，在图形的文字中按 Q 会输入 q。 |
+| 使用便签、文本或图形工具时，在获得焦点的白板或其选中的图形上按 Enter | 在选区右侧 24 px 处放置一个默认大小的便签、自适应自由文本或图形，没有选中图形时放在视图中心。对于自由文本，Enter 会立即进入文字编辑（编辑模式下离开未修改的空白文本框会移除它且不增加撤销步骤），之后除非工具锁定开启否则切回选择工具；对于便签或图形，会选中新图形并切回选择工具，所以下一次 Enter 会编辑它的文字，而在工具锁定开启时保留当前工具，所以下一次 Enter 会在旁边再放置一个。其他不是箭头的图形的左上角正好在新图形左上角要放的位置时，依次尝试向右下方 24 px、48 px，以此类推。尝试的点都不空闲，或要存储的坐标不是有限数时，Enter 不放置任何东西，并再次播报选区。 |
 | 使用框架工具时，在获得焦点的白板或其选中的图形上按 Enter | 在选中的图形周围放置一个外扩 24 px 的框架，框架会收纳完全位于其中、不在任何框架里、也没有被建议删除的每个图形（箭头和框架除外）。没有选中图形时，在视图中心放置一个默认大小的框架。然后选中新框架并选择选择工具；工具锁定开启时保留框架工具。框架要存储的坐标不是有限数，或围绕选区的框架不会收纳任何图形时，Enter 不放置任何东西，并再次播报选区。 |
 | 使用箭头工具且选中一个不是箭头的图形时按 Enter | 开始连接这个图形。Tab 和 Shift+Tab 把箭头终点对准其他不是箭头的图形的中心并循环，Mod 加方向键从终点出发，把它对准该方向上最近的这类图形。方向键把终点移动 1 个单位，按住 Shift 时移动 10 个单位。终点绑定到它下方最前面的、既不是箭头也不是起始图形的图形，绑定在它所在的位置；框架只在边框上可绑定，画笔线只在线条上可绑定；不在任何这类图形上时，终点保持自由。Enter 从起始图形的中心向终点绘制箭头，选中它并选择选择工具；工具锁定开启时保留箭头工具。按 Escape、用左键或中键在白板上按下、换用其他工具、撤销或重做、按 Mod+D、删除起始图形、视图变为只读或焦点离开白板，都会停止连接且不绘制。 |
 | 使用箭头工具且未选中任何图形时按 Enter | 开始绘制一个箭头，起点位于视图中心。方向键把起点移动 1 个单位，按住 Shift 时移动 10 个单位。在视图中心以及每次移动之后，起点都绑定到它下方最前面的、不是箭头的图形，绑定在它所在的位置；框架只在边框上可绑定，画笔线只在线条上可绑定；不在任何这类图形上时，起点保持自由。Tab、Shift+Tab 和 Mod 加方向键把起点对准图形的中心。Enter 保留起点并从那里开始连接，与上一行从选中图形开始连接相同，终点可以绑定到起点所在图形以外的任何图形。同样的按键和事件会停止绘制且不写入，删除起点绑定的图形也会停止。 |
 | 使用箭头工具且选中多个图形时按 Enter | 通过 `shapes` 再播报一次选择，不绘制任何内容。 |
-| 选中一个不是箭头的图形时按 S | 从图形的右下角开始调整大小。Tab 按顺时针移到下一个角，Shift+Tab 移到上一个角。方向键把这个角移动 1 个单位，按住 Shift 时移动 10 个单位，每边最小 8 个单位，对角保持不动。图片图形保持比例，因此在短边达到 8 时停止；短边已不足 8 的图片图形只能放大。对便签而言，调整大小从绘制的方框开始，按 Enter 会把调整后的宽高（作为新的高度下限）存入保持对边不动的位置；即使只调宽已长高的便签，也会把绘制的高度存为新的高度下限；若文字高于该高度，纸张仍保持文字高度。每次按键都会显示新的方框，绑定到该图形的箭头跟随移动，但不写入。方框有变化时，Enter 把它写入，作为一步撤销。Escape、按下指针、视图变为只读、删除该图形或焦点离开白板，都会恢复原来的方框且不写入；其他任何按键也是如此，然后再执行它本来的操作。 |
+| 选中一个不是箭头的图形时按 S | 从图形的右下角开始调整大小。Tab 按顺时针移到下一个角，Shift+Tab 移到上一个角。方向键把这个角移动 1 个单位，按住 Shift 时移动 10 个单位，每边最小 8 个单位，对角保持不动。图片图形保持比例，因此在短边达到 8 时停止；短边已不足 8 的图片图形只能放大。对便签和自由文本而言，调整大小从绘制的方框开始，按 Enter 会把调整后的宽高（作为新的高度下限）存入保持对边不动的位置，并在自由文本上写入 `autoSize: false` 使文字按调整后的宽度折行；即使只调宽已长高的便签或自由文本，也会把绘制的高度存为新的高度下限；若文字高于该高度，图形仍保持文字高度。每次按键都会显示新的方框，绑定到该图形的箭头跟随移动，但不写入。方框有变化时，Enter 把它写入，作为一步撤销。Escape、按下指针、视图变为只读、删除该图形或焦点离开白板，都会恢复原来的方框且不写入；其他任何按键也是如此，然后再执行它本来的操作。 |
 | 在获得焦点的白板上按 Space | 开始挑选图形。光标从按存储顺序的第一个选中图形开始，没有选中图形时从第一个图形开始，复制的白板用虚线环标出它。Tab 和 Shift+Tab 按存储顺序在所有图形之间移动光标并循环，Mod 加方向键把它移到该方向上最近的图形，两者都不改变选区。Space 把光标所在的图形加入选区或移出选区。Enter 或 Escape 保留选区并结束挑选。按下指针、焦点离开白板或删除光标所在的图形也会结束挑选，其他任何按键也是如此，然后再执行它本来的操作。白板在 Space 松开时才响应，而且只响应在获得焦点的白板上按下、没有按住修饰键、松开前没有按过其他键也没有按下过指针的 Space，所以按住 Space 拖动仍会平移。调整大小期间，Space 只会像其他按键一样结束调整。连接或指针手势进行期间，或白板上没有图形时，Space 不做任何事。 |
 | 方向键 | 把选中的图形移动 1 个单位，按住 Shift 时移动 10 个单位。连接期间，方向键改为移动正在放置的那一端。对于未选中任何图形时开始的箭头，Enter 保留起点之前移动起点，之后移动终点。调整大小期间，方向键移动正在调整的那个角。 |
 | `]` 和 `[` | 把选中的图形上移或下移一层。 |
@@ -388,7 +393,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | 用抓手拖动 | 从任意位置平移，在图形和正在编辑的文字上方也可以。它不会选中、移动或编辑任何内容。选中抓手时，指针显示为张开的手，自带光标的元素除外。 |
 | 滚轮，或按住 Space 拖动，或用中键拖动 | 从任意位置平移，在图形上方也可以。按住 Mod 滚动滚轮会缩放。 |
 
-在只读白板上，不改变内容的按键照常可用：Tab 和 Shift+Tab、Mod 加方向键、Mod+A、在白板上按 Enter、用 Space 挑选、Escape、Shift+Enter、工具字母、Q，以及缩放、适配和平移按键。会写入的按键不做任何事，也不播报。使用便签、图形、框架或箭头工具时，Enter 的行为与使用选择工具时相同。最后一个图形之后，Tab 会清除选区，由浏览器把焦点移出白板。
+在只读白板上，不改变内容的按键照常可用：Tab 和 Shift+Tab、Mod 加方向键、Mod+A、在白板上按 Enter、用 Space 挑选、Escape、Shift+Enter、工具字母、Q，以及缩放、适配和平移按键。会写入的按键不做任何事，也不播报。使用便签、文本、图形、框架或箭头工具时，Enter 的行为与使用选择工具时相同。最后一个图形之后，Tab 会清除选区，由浏览器把焦点移出白板。
 
 在白板之后那个块的开头按 Backspace，或在白板之前那个块的末尾按 Delete，会选中白板。再按一次 Backspace 或 Delete 会删除白板及其所有图形，一次撤销即可恢复。
 
@@ -415,13 +420,13 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | `zoom(percent)` | 缩放键、`zoomIn`、`zoomOut`、`resetZoom` 或 `fit` 改变缩放比例时播报。滚轮缩放不播报。 |
 | `removed(count)` | 删除完成时播报，带上从白板上移除的图形数，被删除框架中的图形也计算在内。 |
 
-`shape`、`aim`、`connecting`、`starting`、`resizing`、`picking` 和 `pick` 收到一个 `BoardShapeDescription`。它的 `kind` 是 `note`、`geo`、`arrow`、`frame`、`stroke`，或者表示图片图形或应用自定义图形的 `shape`；它的 `text` 是图形的文字或框架的名称。箭头的 `ends` 描述两端连接的图形，自由端为 `null`。调整大小的 `corner` 是一个 `BoardCorner`，取值为 `topLeft`、`topRight`、`bottomRight` 或 `bottomLeft`；`picking` 和 `pick` 还收到一个 `BoardPickState`。复制的白板传入：
+`shape`、`aim`、`connecting`、`starting`、`resizing`、`picking` 和 `pick` 收到一个 `BoardShapeDescription`。它的 `kind` 是 `note`、`text`、`geo`、`arrow`、`frame`、`stroke`，或者表示图片图形或应用自定义图形的 `shape`；它的 `text` 是图形的文字或框架的名称。箭头的 `ends` 描述两端连接的图形，自由端为 `null`。调整大小的 `corner` 是一个 `BoardCorner`，取值为 `topLeft`、`topRight`、`bottomRight` 或 `bottomLeft`；`picking` 和 `pick` 还收到一个 `BoardPickState`。复制的白板传入：
 
 ```tsx
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool and one shape selected that is not an arrow, Enter connects it to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected that is not an arrow, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Q keeps the drawing tool picked after each shape until a second Q, and Command+D on a Mac, or Control+D elsewhere, copies the selected shapes. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, text, shape or frame tool, Enter places one, and with the arrow tool and one shape selected that is not an arrow, Enter connects it to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected that is not an arrow, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Q keeps the drawing tool picked after each shape until a second Q, and Command+D on a Mac, or Control+D elsewhere, copies the selected shapes. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
@@ -574,17 +579,18 @@ const value = {
 | 属性 | 图形 | 说明 |
 | --- | --- | --- |
 | `shapeId` | 全部 | 在整个文档中唯一。每次粘贴、拖放和复制都会给副本新 id。 |
-| `zIndex` | 全部 | 决定绘制顺序的分数键。框架绘制在其他图形之后。 |
+| `zIndex` | 全部 | 决定绘制顺序的分数键。框架位于其他图形下方，先绘制。 |
 | `place` | 除箭头外 | `{ x, y }`。在框架内时还包含 `frame` 和 `frameOrigin`，`x` 和 `y` 从框架起算。框架自己的 `place` 包含它的 `origin`。 |
-| `size` | 除箭头外 | `{ width, height }`。对便签而言，`height` 是存储的高度下限；挂载的视图和图片导出会随更高的文字向下扩展便签，且不改变存储的 `size`。 |
-| `start`、`end` | 箭头 | 绑定到图形的端点是 `{ shape, anchor, x, y }`，自由端点是 `{ x, y }`。`x` 和 `y` 保存该端点上次绘制的位置。 |
+| `size` | 除箭头外 | `{ width, height }`。对便签而言，`height` 是存储的高度下限；挂载的视图和图片导出会随更高的文字向下扩展便签，且不改变存储的 `size`。对自由文本（`boardText`）而言，默认尺寸为 `24` 乘 `32`；`autoSize` 为 `true` 时宽高均从该下限扩展而不改变存储的 `size`，设为 `false` 后文字按 `width` 折行，高度仍从 `height` 扩展。 |
+| `autoSize` | 自由文本 | 布尔值，默认为 `true`。为 `true` 时自由文本随内容在宽高上扩展；用文本工具拖动或调用 `resize` 会将其设为 `false`。 |
+| `start`、`end` | 箭头 | 绑定到图形的端点是 `{ shape, anchor, x, y }`，自由端点是 `{ x, y }`。在绑定端点上，`x` 和 `y` 保存绑定时或目标被删除时写入的回退位置；移动目标不会改写箭头，因此保存的位置可能早于当前绘制端点。 |
 | `points` | 笔迹 | 扁平的 `[x, y, pressure]` 三元组，每个值都是笔迹框内的比例。 |
 | `fill` | 便签和几何图形 | 表示无填充的 `'none'`、颜色名称或任意 CSS 颜色。便签默认 `'yellow'`，几何图形默认 `'none'`。 |
 | `strokeColor` | 几何图形、箭头和笔迹 | 颜色名称或任意 CSS 颜色。默认 `'currentColor'`，即文字颜色。 |
 | `dash` | 几何图形和箭头 | `'solid'`、`'dashed'` 或 `'dotted'`。默认 `'solid'`。 |
 | `strokeWidth` | 几何图形和箭头 | `'s'`、`'m'`、`'l'` 或 `'xl'`。默认 `'m'`。 |
 | `opacity` | 除框架和图片图形外 | 0.1 到 1 之间的数。默认 1。 |
-| `textSize` | 便签、几何图形和箭头 | `'s'`、`'m'`、`'l'` 或 `'xl'`。默认 `'m'`，箭头默认 `'s'`。 |
+| `textSize` | 便签、自由文本、几何图形和箭头 | `'s'`、`'m'`、`'l'` 或 `'xl'`。默认 `'m'`，箭头默认 `'s'`。 |
 | `geo` | 几何图形 | 取值为 `'rectangle'`、`'ellipse'`、`'diamond'` 或 `'triangle'`。 |
 | `name` | 框架 | 显示在框架上方。 |
 | `children` | 图片图形 | 最多一个 `image` 元素，其 `url` 和 `alt` 由 `ImagePlugin` 保存；编辑器安装了 `UploadPlugin` 时，也可以是一个上传草稿。 |
@@ -682,8 +688,9 @@ const editor = createEditor({
 - Markdown 按存储顺序保留图形的文字和图片，并报告它丢弃的内容，例如位置和箭头端点。要完整保存白板，请持久化 Plate 值；白板只含内置图形时，也可以持久化 HTML。
 - 没有安装 `UploadPlugin` 时，粘贴或拖放到白板上的图片文件不会落下图形，白板也不会报告任何内容，复制的工具栏中的图片按钮是禁用的。请粘贴图片的链接，或用代码插入。
 - 一次粘贴、拖放或选取的图片超过 `UploadPlugin` 一个批次接受的数量时，一张也不会落下，`onError` 会收到带有该上限的 `too-many-files` 失败。复制的 `UploadKit` 一个批次接受三张图片。
-- 便签在屏幕上和导出图片中都会随文字长高，文字删除后会向存储的 `size` 下限缩回。文字编辑（输入、粘贴、撤销文字编辑和建议模式）都不会写入尺寸变更，只有显式插入或调整大小才会写入 `size`。长高的便签可能会探出所在框架，因为框架按存储的方框判断便签；粘贴时的 24 px 错开以及未包含目标图形时复制的箭头端点同样使用存储方框。存储方框在屏幕外且从未挂载过的便签，在挂载前于 `fit`、裁剪和绑定箭头中仍按存储方框计算（首次挂载时纸张可能在观察器更新索引命中测试与箭头之前先长高）。`exportPicture` 之外的静态渲染（例如使用 `BoardStaticKit` 的 `EditorStatic` 或 `renderStaticHtml`）会按存储方框绘制便签，并在便签阴影边缘处裁切超出纸张的文字。几何图形不会随标签长高，因此较长的标签在屏幕上会超出轮廓，在导出图片中会在方框处被裁切。
-- 把其他图形对齐到长高便签、调整长高便签的大小，或删除带绑定箭头的长高便签时，写入的坐标基于本机屏幕的字体度量；在字体不同的其他设备上可能略有差异。在长高便签中使用系统输入法组合输入尚未验证。
+- 便签和自由文本在屏幕上和导出图片中都会随文字扩展，文字删除后会向存储的 `size` 下限缩回。文字编辑（输入、粘贴、撤销文字编辑和建议模式）都不会写入尺寸变更，只有显式插入或调整大小才会写入 `size`。扩展后的便签或自由文本可能会探出所在框架，因为框架按存储的方框判断；粘贴时的 24 px 错开以及未包含目标图形时复制的箭头端点同样使用存储方框。存储方框在屏幕外且从未挂载过的便签或自由文本，在挂载前于 `fit`、裁剪和绑定箭头中仍按存储方框计算（首次挂载时可能在观察器更新索引命中测试与箭头之前先扩展）。`exportPicture` 之外的静态渲染（例如使用 `BoardStaticKit` 的 `EditorStatic` 或 `renderStaticHtml`）会按存储方框绘制便签和自由文本（便签会在阴影边缘裁切超出的文字，自由文本则可见溢出）。静态图片同样继承 `EditorStatic` 不会在 RTL 段落上自动输出 `dir="rtl"` 属性的限制。几何图形不会随标签长高，因此较长的标签在屏幕上会超出轮廓，在导出图片中会在方框处被裁切。
+- 编辑模式下，离开未修改的空白点击或按 `Enter` 放置的自由文本会移除它且不增加撤销步骤，但最初的插入会清空待重做栈。
+- 把其他图形对齐到扩展后的便签或自由文本、调整其大小，或删除带绑定箭头的此类图形时，写入的坐标基于本机屏幕的字体度量；在字体不同的其他设备上可能略有差异。在扩展后的便签或自由文本中使用系统输入法组合输入尚未验证。
 - 图形属性若与样式标记的键同名，例如 `color`、`backgroundColor`、`fontSize` 或 `fontFamily`，安装该标记的插件后也会改变图形文字的样式。请给属性换个名字，就像便签用 `fill` 一样。
 - 不支持便签内的白板、旋转和裁剪图片，复制的白板也不会在图片下方绘制图注。
 - 用画笔绘制需要指针。用键盘调整大小时只有图片图形保持比例，也不能围绕中心调整，而拖动角时按住 Shift 和 Alt 可以做到。
@@ -695,11 +702,11 @@ const editor = createEditor({
 
 ### `BoardPlugin`
 
-白板块，一个拥有图形内容根的 void 元素。`targetPlugins` 列出白板容纳的图形类型，默认是下面六种。
+白板块，一个拥有图形内容根的 void 元素。`targetPlugins` 列出白板容纳的图形类型，默认是下面七种。
 
-### `BoardNotePlugin`、`BoardGeoPlugin`、`BoardArrowPlugin`、`BoardFramePlugin`、`BoardStrokePlugin`
+### `BoardNotePlugin`、`BoardTextPlugin`、`BoardGeoPlugin`、`BoardArrowPlugin`、`BoardFramePlugin`、`BoardStrokePlugin`
 
-各图形类型：`boardNote`、`boardGeo`、`boardArrow`、`boardFrame` 和 `boardStroke`。框架和笔迹是 void；便签、几何图形和箭头容纳块。
+各图形类型：`boardNote`、`boardText`、`boardGeo`、`boardArrow`、`boardFrame` 和 `boardStroke`。框架和笔迹是 void；便签、自由文本、几何图形和箭头容纳块。
 
 ### `BoardImagePlugin`
 
@@ -709,23 +716,23 @@ const editor = createEditor({
 
 | API | 包 | 用途 |
 | --- | --- | --- |
-| `BaseBoardPlugin`、`BaseBoardNotePlugin`、`BaseBoardGeoPlugin`、`BaseBoardImagePlugin`、`BaseBoardArrowPlugin`、`BaseBoardFramePlugin`、`BaseBoardStrokePlugin` | `platejs/board` | 无头白板和图形插件。 |
+| `BaseBoardPlugin`、`BaseBoardNotePlugin`、`BaseBoardTextPlugin`、`BaseBoardGeoPlugin`、`BaseBoardImagePlugin`、`BaseBoardArrowPlugin`、`BaseBoardFramePlugin`、`BaseBoardStrokePlugin` | `platejs/board` | 无头白板和图形插件。 |
 | `defineBoardShape(name, { properties, size, styles })` | `platejs/board` | 定义一种容纳文字的应用图形，`styles` 给出它所用每种样式的默认值。 |
 | `tx.plugin(BaseBoardPlugin).insert(props?, options?)` | `BaseBoardPlugin` | 在 `options.at` 或选中块之后添加一个带空根的白板，并返回其 key。 |
 | `tx.plugin(BaseBoardNotePlugin).insert(props, { board })` | 各图形插件 | 在 `board` 所有图形之上添加图形并返回其 id。箭头接收 `{ start, end }`，每个端点是图形 id、`{ shape, anchor }` 或白板上的点，并加入其绑定端点所在的白板。图片图形接收 `{ children: [image] }`，除非 `width` 和 `height` 另有指定，大小为 320 × 240。 |
 | `move(ids, delta)` | `BaseBoardPlugin` | 移动图形。图形会加入其中点下方最上层的框架，或离开所在框架。 |
-| `resize(id, { x, y, width, height })` | `BaseBoardPlugin` | 同时设置图形的位置和尺寸。对图片图形，高度随 `width` 变化。缩小到短边为 8 时停止；短边已不足 8 的图片图形只能放大。 |
+| `resize(id, { x, y, width, height })` | `BaseBoardPlugin` | 同时设置图形的位置和尺寸。对自由文本（`boardText`），还会将 `autoSize` 设为 `false`。对图片图形，高度随 `width` 变化。缩小到短边为 8 时停止；短边已不足 8 的图片图形只能放大。 |
 | `restack(ids, direction)` | `BaseBoardPlugin` | `'front'`、`'back'`、`'forward'` 或 `'backward'`，只改变绘制顺序。 |
 | `remove(ids)` | `BaseBoardPlugin` | 删除图形，框架连同其中的图形。提交删除的已挂载视图持有匹配测量值时，绑定到被删图形的箭头会在原绘制处留下自由端点；否则（例如无头删除时）回退到存储方框的边缘。 |
 | `removeFrame(id)` | `BaseBoardPlugin` | 删除框架，图形留在原处。 |
 | `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | 把 `slice` 中图形的副本以新 id 粘贴到 `board`，并返回副本的 id。 |
-| `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`strokePath(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头的两端坐标、笔迹的轮廓，以及复制图形所携带的 slice。id 指向的不是笔迹时，`strokePath` 返回 `null`。在 update 中于 `tx.plugin(BaseBoardPlugin)` 上调用，在 update 之外于 `editor.read.board` 上调用，例如在没有挂载白板的服务器上。除图片导出（`exportPicture`）的第二次绘制阶段会替换为长高便签的实测高度与绑定箭头端点外，`shape` 和 `shapes` 在其他所有位置都返回存储方框，`arrowEnds` 返回由存储方框算出的端点。在屏幕上，绑定到长高便签的箭头会绘制到长高后的轮廓，因此 `arrowEnds` 可能与画板显示的位置不同。 |
+| `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`strokePath(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头的两端坐标、笔迹的轮廓，以及复制图形所携带的 slice。id 指向的不是笔迹时，`strokePath` 返回 `null`。在 update 中于 `tx.plugin(BaseBoardPlugin)` 上调用，在 update 之外于 `editor.read.board` 上调用，例如在没有挂载白板的服务器上。除图片导出（`exportPicture`）的第二次绘制阶段会替换为长高便签的实测高度、自适应或折行自由文本的实测尺寸以及绑定箭头端点外，`shape` 和 `shapes` 在其他所有位置都返回存储方框，`arrowEnds` 返回由存储方框算出的端点。在屏幕上，绑定到扩展后便签或自由文本的箭头会绘制到扩展后的轮廓，因此 `arrowEnds` 可能与画板显示的位置不同。 |
 | `BoardStrokePath` | `platejs/board` | 笔迹的轮廓：一个 SVG `path`，位于 `width` 乘 `height` 的框中，即笔迹存储的尺寸，你需要把它缩放到 `shape(id)` 给出的框。 |
-| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。`BoardShape` 在图形存储的盒子处按其层级和拖动 `translate` 放置一个 `div`，图形的根元素填满该 `div`；请在 `root.parentElement` 上读取图形的内联 `left`、`top`、`width`、`height`、`z-index`、`translate`、`offsetLeft` 和 `offsetTop`。对于便签，根元素会随文字变多向下超出外壳存储的高度，使纸张、轮廓和选区控制点直接由 CSS 跟随扩展；视图同时测量其边框盒以更新命中测试、框选、橡皮擦、对齐、裁剪、`fit`、调整大小和绑定箭头，而不写入文档；自定义实时便签的根元素须保留垂直内边距或 `display: flow-root`，这样子元素的外边距才会计入白板测量的高度。挂载时插入到根部最前的私有 `@layer board-shapes` 规则使该 `div` 不接收按压并在 `[data-board-shape]` 上恢复 `pointer-events: auto`，因此宿主 CSS 图层和类名仍可覆盖 `pointer-events`，隐藏或 `pointer-events: none` 的前置根元素不会挡住对后方含文字图形的按压（框架、笔迹、图片与空白白板的几何挑选依据布局后的盒子；要在白板祖先元素上禁用指针输入请使用 `inert`）。根元素接收 `className`、`style` 和下文的标记。它的 `position` 为 `relative`，`box-sizing` 为 `border-box`，因此其内边距和边框在不超过盒子时绘制在盒子内。`style` 无法更改它的 `all`、`boxSizing`、`height`、`inset`、`margin`、`position`、`width`、它们的各边或逻辑属性、网格定位与自身对齐属性，以及便签上的 `minHeight`、`minBlockSize`、`maxHeight` 和 `maxBlockSize`；`maxWidth`（以及非便签图形上的 `maxHeight`）等约束仍会生效。行内根元素按块绘制。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。橡皮擦将要删除的图形带有 `data-erasing`，复制的白板会让它变淡；挑选光标所在的图形带有 `data-board-cursor`，复制的白板会给它加上虚线环。在可以朝滚轮的主要方向继续滚动的工具栏元素上使用普通滚轮会滚动该元素，而不是平移白板。 |
-| `data-board-text` | `platejs/board/react` | 标记 `board-static.tsx` 中静态便签的文字块，使 `exportPicture` 能测量图片中的每个长高便签，包括从未在屏幕上挂载过的便签。把 `data-board-text=""` 放在包裹便签文字且高度随内容变化的单个块上，绝不要放在固定高度的纸张元素上。它的父元素提供便签的内边距和边框（带有 `box-sizing: border-box`），被标记的块须包含其子元素的外边距（`display: flow-root`，例如 Tailwind 的 `flow-root` 类）。没有 `data-board-text` 的静态便签副本在图片中会按存储的方框绘制每个便签。 |
+| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。`BoardShape` 在图形存储的盒子处按其层级和拖动 `translate` 放置一个 `div`，图形的根元素填满该 `div`；请在 `root.parentElement` 上读取图形的内联 `left`、`top`、`width`、`height`、`z-index`、`translate`、`offsetLeft` 和 `offsetTop`。对于便签，根元素会随文字变多向下超出外壳存储的高度；对于自由文本（`boardText`），`autoSize` 为 `true` 时根元素还会横向扩展（`width: max-content`、`min-width: 100%`、`justify-self: left`），设为 `false` 后按存储宽度折行。视图同时测量每个扩展根元素的边框盒以更新命中测试、框选、橡皮擦、对齐、裁剪、`fit`、调整大小和绑定箭头，而不写入文档；自定义实时便签或自由文本的根元素须保留垂直内边距或 `display: flow-root`，这样子元素的外边距才会计入白板测量的高度。编辑任意图形时，当光标移近白板任意边缘、工具栏或停靠面板（`data-board-dock`）后方，`BoardSurface` 会自动最小幅度平移相机而不写入文档。挂载时插入到根部最前的私有 `@layer board-shapes` 规则使该 `div` 不接收按压并在 `[data-board-shape]` 上恢复 `pointer-events: auto`，因此宿主 CSS 图层和类名仍可覆盖 `pointer-events`，隐藏或 `pointer-events: none` 的前置根元素不会挡住对后方含文字图形的按压（框架、笔迹、图片与空白白板的几何挑选依据布局后的盒子；要在白板祖先元素上禁用指针输入请使用 `inert`）。根元素接收 `className`、`style` 和下文的标记。它的 `position` 为 `relative`，`box-sizing` 为 `border-box`，因此其内边距和边框在不超过盒子时绘制在盒子内。`style` 无法更改它的 `all`、`boxSizing`、`height`、`inset`、`margin`、`position`、`width`、它们的各边或逻辑属性、网格定位与自身对齐属性、便签和自由文本上的 `minHeight`、`minBlockSize`、`maxHeight` 和 `maxBlockSize`，以及自适应自由文本上的 `minWidth`、`minInlineSize`、`maxWidth` 和 `maxInlineSize`；`maxWidth`（在便签、固定宽度自由文本及其他图形上）与 `maxHeight`（在非便签、非自由文本图形上）等约束仍会生效。行内根元素按块绘制。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。橡皮擦将要删除的图形带有 `data-erasing`，复制的白板会让它变淡；挑选光标所在的图形带有 `data-board-cursor`，复制的白板会给它加上虚线环。在可以朝滚轮的主要方向继续滚动的工具栏元素上使用普通滚轮会滚动该元素，而不是平移白板。 |
+| `data-board-text` | `platejs/board/react` | 标记 `board-static.tsx`（`BoardNoteElementStatic` 和 `BoardTextElementStatic`）中静态便签和自由文本的文字块，使 `exportPicture` 能测量图片中的每个长高便签和自由文本，包括从未在屏幕上挂载过的图形。保留 `BoardNoteElementStatic` 或 `BoardTextElementStatic` 外层的 `data-board-picture`、`data-board-box` 与直接子级 `<svg>` 结构，并把 `data-board-text=""` 放在包裹图形文字且尺寸随内容变化的单个块上，绝不要放在固定高度的纸张元素上。它的父元素提供图形的内边距和边框（带有 `box-sizing: border-box`），被标记的块须包含其子元素的外边距（`display: flow-root`，例如 Tailwind 的 `flow-root` 类）。对于自适应自由文本（`element.autoSize` 为 `true`），还需在被标记块上设置 `minWidth: '100%'` 和 `width: 'max-content'`，并在其 `foreignObject` 上设置 `overflow="visible"`，以便图片的第一遍绘制测量未折行的宽度。没有 `data-board-text` 的静态副本在图片中会按存储的方框绘制每个便签或自由文本。 |
 | `data-board-dock` | `platejs/board/react` | 标记白板表面 `toolbar` 顶层中停靠在白板一侧的元素，取值为 `"left"` 或 `"right"`。其他顶层工具栏元素视为白板顶部或底部的一行。通过 `fit` 或 Shift+1 适应视图时，图形会放进工具栏未遮挡的空间；如果这块空间的宽度或高度在 10% 缩放下放不下这些图形，就改用白板在该方向上的整个宽度或高度。两者的缩放都在 10% 到 100% 之间，因此白板在 10% 缩放下也放不下的图形会超出白板边缘。 |
 | `BoardMessages`、`BoardShapeDescription`、`BoardCorner`、`BoardPickState` | `platejs/board/react` | `messages` 的类型、`messages.shape` 所描述的图形、调整大小时移动的角，以及播报 `picking` 或 `pick` 时的挑选状态。 |
-| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`toolLocked`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `styles` 读取一次选取会设置的各个样式，以 `writable` 读取视图能否写入，以 `takesPictureFiles` 读取白板是否接收图片文件。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`、`setToolLocked`、`setStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame`、`focus`、`upload` 和 `exportPicture`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`toolLocked` 表示便签、图形、框架和箭头工具在添加图形后是否保持选中；视图挂载时它是关闭的，也从不存储。`setToolLocked` 像 Q 一样开启或关闭它，不改变工具或选区。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。正在编辑文字的形状会结束编辑并保持选中。`setStyle` 合并到下一个样式。使用选择工具时，它还会把每个样式写入接受该样式的每个选中形状，以及正在编辑文字的形状，作为一个撤销步骤，并保留光标。使用绘制工具时，它只设置下一个形状的样式。`styles` 的每一项在目标的值相同时为 `{ mixed: false, value }`，不同时为 `{ mixed: true }`；没有目标接受的样式没有对应项。只读视图中的 `setStyle` 不做任何更改。`upload(files)` 把图片文件作为图片图形排成一行落下，以视图中心为中心，见[图片文件](#图片文件)。文件列表为空或 `takesPictureFiles` 为 false 时，它不做任何更改。`exportPicture({ format, kit })` 用 `kit` 中的静态插件把选中的图形（没有选中图形时为整个白板）绘制为 `'png'` 或 `'svg'` 图片。`kit` 也可以是一个 promise，例如动态导入，见[导出](#导出)。它在调用时读取选区，并在第一次调用时加载绘制代码。没有可绘制的内容时，它解析为 `null`；白板表面不在页面上，或在图片绘制完成前离开页面时，它会 reject。这两个 hook 在 `BoardSurface` 之外会抛出错误。 |
+| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`toolLocked`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `styles` 读取一次选取会设置的各个样式，以 `writable` 读取视图能否写入，以 `takesPictureFiles` 读取白板是否接收图片文件。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`（例如 `setTool('text')`）、`setToolLocked`、`setStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame`、`focus`、`upload` 和 `exportPicture`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`toolLocked` 表示便签、文本、图形、框架和箭头工具在添加图形后是否保持选中；视图挂载时它是关闭的，也从不存储。`setToolLocked` 像 Q 一样开启或关闭它，不改变工具或选区。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。正在编辑文字的形状会结束编辑并保持选中，但在编辑模式下，通过点击或 `Enter` 创建且未修改的空自由文本会被移除并清空选区。`setStyle` 合并到下一个样式。使用选择工具时，它还会把每个样式写入接受该样式的每个选中形状，以及正在编辑文字的形状，作为一个撤销步骤，并保留光标。使用绘制工具时，它只设置下一个形状的样式。`styles` 的每一项在目标的值相同时为 `{ mixed: false, value }`，不同时为 `{ mixed: true }`；没有目标接受的样式没有对应项。只读视图中的 `setStyle` 不做任何更改。`upload(files)` 把图片文件作为图片图形排成一行落下，以视图中心为中心，见[图片文件](#图片文件)。文件列表为空或 `takesPictureFiles` 为 false 时，它不做任何更改。`exportPicture({ format, kit })` 用 `kit` 中的静态插件把选中的图形（没有选中图形时为整个白板）绘制为 `'png'` 或 `'svg'` 图片。`kit` 也可以是一个 promise，例如动态导入，见[导出](#导出)。它在调用时读取选区，并在第一次调用时加载绘制代码。没有可绘制的内容时，它解析为 `null`；白板表面不在页面上，或在图片绘制完成前离开页面时，它会 reject。这两个 hook 在 `BoardSurface` 之外会抛出错误。 |
 | `BoardPicture`、`BoardPictureOptions`、`BoardPictureWarning` | `platejs/board/react` | `exportPicture` 解析的结果、它接收的选项，以及图片 `warnings` 中的每条警告。警告的 `code` 为 `content-undrawn`、`downscaled`、`font-missing`、`image-unreadable` 或 `shape-undrawn`，后两种还会给出 `shapeId`。 |
-| `BoardArrowPath`、`BoardArrowhead`、`BoardArrowLabel` | `platejs/board/react` | 在箭头的 `BoardShape` 内绘制箭头。`BoardArrowPath` 是 SVG `path`，其 `d` 连接箭头的两端。`BoardArrowhead` 是 SVG `g`，在箭头终点绘制其子元素，并旋转使正 x 轴沿箭头方向。它自己设置 `transform` 和 `display`，因此请通过其子元素设置箭头头部的样式。`BoardArrowLabel` 是容纳箭头文字、居中于箭头中点的绝对定位 `div`。它自己设置 `left` 和 `top`，`style` 可以覆盖其 `position` 和用于居中的 `translate`。图形被移动、拖动或缩放，或便签长高时，三者随之更新，箭头不重新渲染。箭头的 `BoardShape` 是位于白板原点的空盒子，`d` 使用白板坐标。因此请把路径和箭头头部画在宽高均为 1 的 `svg` 中，因为 Firefox 不会在尺寸为零的 `svg` 中绘制任何内容。给该 `svg` 设置溢出可见和 `pointer-events: none`，并把它放在带 `contentEditable={false}` 的元素内。只有按在箭头的某个元素上才会选中箭头，因此请给一条路径设置 `pointerEvents="stroke"`，例如一条宽而透明的 `BoardArrowPath`。箭头尚未绘制时，路径没有 `d`，箭头头部和标签隐藏。在箭头的 `BoardShape` 之外使用时抛出错误。 |
+| `BoardArrowPath`、`BoardArrowhead`、`BoardArrowLabel` | `platejs/board/react` | 在箭头的 `BoardShape` 内绘制箭头。`BoardArrowPath` 是 SVG `path`，其 `d` 连接箭头的两端。`BoardArrowhead` 是 SVG `g`，在箭头终点绘制其子元素，并旋转使正 x 轴沿箭头方向。它自己设置 `transform` 和 `display`，因此请通过其子元素设置箭头头部的样式。`BoardArrowLabel` 是容纳箭头文字、居中于箭头中点的绝对定位 `div`。它自己设置 `left` 和 `top`，`style` 可以覆盖其 `position` 和用于居中的 `translate`。图形被移动、拖动或缩放，或便签与自由文本扩展时，三者随之更新，箭头不重新渲染。箭头的 `BoardShape` 是位于白板原点的空盒子，`d` 使用白板坐标。因此请把路径和箭头头部画在宽高均为 1 的 `svg` 中，因为 Firefox 不会在尺寸为零的 `svg` 中绘制任何内容。给该 `svg` 设置溢出可见和 `pointer-events: none`，并把它放在带 `contentEditable={false}` 的元素内。只有按在箭头的某个元素上才会选中箭头，因此请给一条路径设置 `pointerEvents="stroke"`，例如一条宽而透明的 `BoardArrowPath`。箭头尚未绘制时，路径没有 `d`，箭头头部和标签隐藏。在箭头的 `BoardShape` 之外使用时抛出错误。 |
 | `useStrokePath(element)` | `platejs/board/react` | 已挂载白板中笔迹的绘制路径。返回 `strokePath(id)` 读取的 `BoardStrokePath`；元素不是该白板的笔迹时返回 `undefined`。 |
