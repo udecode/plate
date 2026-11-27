@@ -1235,6 +1235,13 @@ const withViewTransaction = <V extends Value>(
       },
       (id) => readElementById(state.nodes, id)
     ),
+    roots: Object.freeze({
+      ...transaction.roots,
+      fork: (root, options) =>
+        runRootTransform(editor, viewState, () => {
+          transaction.roots.fork(root, options);
+        }),
+    }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
         contains: (target: NodeTarget) => state.selection.contains(target),

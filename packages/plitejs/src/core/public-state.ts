@@ -418,7 +418,11 @@ import {
 } from './representation';
 import { readRootEntries } from './root-entries';
 import { changedRootsOf } from './root-ownership';
-import { flushRootTargets, reportShownChange } from './root-target';
+import {
+  flushRootTargets,
+  querySlotCarryHosts,
+  reportShownChange,
+} from './root-target';
 import {
   areEditorSchemaIdentitiesEqual,
   type CompiledEditorSchema,
@@ -6567,6 +6571,82 @@ type GroupedSliceParent = Readonly<{
   properties: Readonly<Record<string, unknown>>;
 }>;
 
+const prepareCopiedRootContent = (
+  editor: Editor,
+  children: readonly Descendant[],
+  childrenRoot: string,
+  options: Readonly<{
+    exclusiveRoots: Map<string, string>;
+    ownership: Map<string, 'exclusive' | 'shared'>;
+    ownRoots: Map<string, readonly Descendant[]>;
+    readRoot: (root: string) => readonly Descendant[] | undefined;
+    sharedCopyRoots?: Map<string, readonly Descendant[]>;
+    sharedRoots: Map<string, string> | 'keep';
+    usedRoots: Set<string>;
+  }>
+): readonly Descendant[] | null => {
+  const schema = getEditorSchema(editor);
+  const copied = ContentSlice.closed(
+    schema.carryChildren(children, childrenRoot)
+  ).content;
+  const collect = (nodes: readonly Descendant[]): boolean => {
+    for (const node of nodes) {
+      if (!NodeApi.isElement(node)) continue;
+
+      for (const owned of schema.getElementOwnedRoots(node)) {
+        const previousOwnership = options.ownership.get(owned.root);
+
+        if (previousOwnership && previousOwnership !== owned.ownership) {
+          return false;
+        }
+        options.ownership.set(owned.root, owned.ownership);
+
+        if (owned.ownership === 'shared' && options.sharedRoots === 'keep') {
+          continue;
+        }
+
+        const remapped =
+          owned.ownership === 'shared'
+            ? (options.sharedRoots as Map<string, string>)
+            : options.exclusiveRoots;
+
+        if (remapped.has(owned.root)) continue;
+        const content = options.readRoot(owned.root);
+
+        if (!content) return false;
+        const name = nextCopiedRootName(editor, owned.root, options.usedRoots);
+
+        remapped.set(owned.root, name);
+
+        const rootsOfCopy =
+          owned.ownership === 'shared'
+            ? getDefined(options.sharedCopyRoots)
+            : options.ownRoots;
+        const prepared = prepareCopiedRootContent(editor, content, owned.root, {
+          ...options,
+          ownRoots: rootsOfCopy,
+        });
+
+        if (!prepared) return false;
+        rootsOfCopy.set(name, prepared);
+      }
+      if (!collect(node.children)) return false;
+    }
+
+    return true;
+  };
+
+  if (!collect(copied)) return null;
+
+  return rewriteContentRootReferences(editor, copied, (name) =>
+    options.sharedRoots === 'keep'
+      ? (options.exclusiveRoots.get(name) ?? name)
+      : getDefined(
+          options.sharedRoots.get(name) ?? options.exclusiveRoots.get(name)
+        )
+  );
+};
+
 const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
   editor: Editor<V>,
   sourceTile: import('../interfaces/editor').ContentSlice,
@@ -6620,59 +6700,19 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
     childrenRoot: string,
     exclusiveRoots: Map<string, string>,
     ownRoots: Map<string, readonly Descendant[]>
-  ): readonly Descendant[] | null => {
-    const copied = ContentSlice.closed(
-      schema.carryChildren(children, childrenRoot)
-    ).content;
-    const collect = (nodes: readonly Descendant[]): boolean => {
-      for (const node of nodes) {
-        if (!NodeApi.isElement(node)) continue;
-
-        for (const owned of schema.getElementOwnedRoots(node)) {
-          const previousOwnership = ownership.get(owned.root);
-
-          if (previousOwnership && previousOwnership !== owned.ownership) {
-            return false;
-          }
-          ownership.set(owned.root, owned.ownership);
-          const remapped =
-            owned.ownership === 'shared' ? sharedRoots : exclusiveRoots;
-
-          if (remapped.has(owned.root)) continue;
-          const content =
-            source.roots && Object.hasOwn(source.roots, owned.root)
-              ? source.roots[owned.root]
-              : undefined;
-
-          if (!content) return false;
-          const name = nextCopiedRootName(editor, owned.root, usedRoots);
-
-          remapped.set(owned.root, name);
-
-          const rootsOfCopy =
-            owned.ownership === 'shared' ? sharedCopyRoots : ownRoots;
-          const prepared = prepareChildren(
-            content,
-            owned.root,
-            exclusiveRoots,
-            rootsOfCopy
-          );
-
-          if (!prepared) return false;
-          rootsOfCopy.set(name, prepared);
-        }
-        if (!collect(node.children)) return false;
-      }
-
-      return true;
-    };
-
-    if (!collect(copied)) return null;
-
-    return rewriteContentRootReferences(editor, copied, (name) =>
-      getDefined(sharedRoots.get(name) ?? exclusiveRoots.get(name))
-    );
-  };
+  ): readonly Descendant[] | null =>
+    prepareCopiedRootContent(editor, children, childrenRoot, {
+      exclusiveRoots,
+      ownership,
+      ownRoots,
+      readRoot: (name) =>
+        source.roots && Object.hasOwn(source.roots, name)
+          ? source.roots[name]
+          : undefined,
+      sharedCopyRoots,
+      sharedRoots,
+      usedRoots,
+    });
   const closed = (
     content: readonly Descendant[],
     roots: ReadonlyMap<string, readonly Descendant[]>
@@ -9765,6 +9805,310 @@ export const getUpdateView = <
           );
         });
       },
+      fork: (root, options) => {
+        runActive(() => {
+          requireMutableRoot(root);
+          const documentRoots = getEditorDocumentRoots(editor);
+
+          if (
+            Object.hasOwn(documentRoots, root) ||
+            takenRootNames(editor).has(root)
+          ) {
+            throw new Error(`Cannot fork into existing editor root "${root}".`);
+          }
+
+          let resolvedHit = false;
+
+          runTargetMutation({ at: options.at }, (resolved) => {
+            const resolvedAt = resolved?.at;
+            const entry = resolvedAt ? state.nodes.get(resolvedAt) : undefined;
+
+            if (!entry || !NodeApi.isElement(entry[0])) {
+              throw new Error(
+                `Cannot fork content root slot "${options.slot}" without a valid element target.`
+              );
+            }
+
+            resolvedHit = true;
+
+            const [node, path] = entry;
+            const activeRoot = getCurrentChildrenRoot(editor);
+            const schema = getEditorSchema(editor);
+            const owned = schema
+              .getElementOwnedRoots(node)
+              .find((item) => item.slot === options.slot);
+
+            if (!owned) {
+              throw new Error(
+                `Element at [${path.join(', ')}] holds no declared content root in slot "${options.slot}".`
+              );
+            }
+
+            const sourceChildren = Object.hasOwn(documentRoots, owned.root)
+              ? documentRoots[owned.root]
+              : undefined;
+
+            if (sourceChildren === undefined) {
+              throw new Error(
+                `Cannot fork missing content root "${owned.root}".`
+              );
+            }
+
+            const elementKey = getNodeKey(editor, path);
+            const currentSelection = getCurrentSelection(editor);
+            const currentSelectionRoot = getCurrentSelectionRoot(editor);
+            const rootEntries = readRootEntries(editor);
+            const pendingOrphaned = new Set(getPendingOrphanedRoots(editor));
+            const ownedEntry = rootEntries.find(
+              (item) => item.root === owned.root
+            );
+            const hasOtherHolder =
+              ownedEntry?.owners.some(
+                (owner) =>
+                  !pendingOrphaned.has(owner.root ?? MAIN_ROOT_KEY) &&
+                  ((owner.root ?? MAIN_ROOT_KEY) !== activeRoot ||
+                    !PathApi.equals(owner.path, path) ||
+                    owner.slot !== options.slot)
+              ) ?? false;
+            const rootRemap = new Map<string, string>([[owned.root, root]]);
+            let renewedContent: readonly Descendant[] = sourceChildren;
+            let copiedExclusiveRoots: Readonly<
+              Record<string, readonly Descendant[]>
+            > = {};
+
+            if (hasOtherHolder) {
+              const usedRoots = takenRootNames(editor);
+              const exclusiveRoots = new Map<string, string>();
+              const ownRoots = new Map<string, readonly Descendant[]>();
+
+              usedRoots.add(root);
+
+              const preparedContent = prepareCopiedRootContent(
+                editor,
+                sourceChildren,
+                owned.root,
+                {
+                  exclusiveRoots,
+                  ownership: new Map(),
+                  ownRoots,
+                  readRoot: (name) =>
+                    Object.hasOwn(documentRoots, name)
+                      ? documentRoots[name]
+                      : undefined,
+                  sharedRoots: 'keep',
+                  usedRoots,
+                }
+              );
+
+              if (!preparedContent) {
+                throw new Error(`Cannot fork content root "${owned.root}".`);
+              }
+
+              const whole = ContentSlice.fromJSON<V>({
+                content: preparedContent,
+                openEnd: 0,
+                openStart: 0,
+                roots: Object.fromEntries(ownRoots),
+              });
+              const renewed = renewCopy(editor, whole)?.slice ?? whole;
+
+              renewedContent = renewed.content;
+              copiedExclusiveRoots = renewed.roots ?? {};
+              for (const [from, to] of exclusiveRoots) rootRemap.set(from, to);
+            }
+
+            let selectionRoot: string | null = null;
+
+            if (currentSelection) {
+              if (SelectionApi.isNode(currentSelection)) {
+                const candidate = currentSelection.root ?? currentSelectionRoot;
+
+                if (rootRemap.has(candidate)) selectionRoot = candidate;
+              } else if (RangeApi.isRange(currentSelection)) {
+                const anchorRoot =
+                  currentSelection.anchor.root ?? currentSelectionRoot;
+                const focusRoot =
+                  currentSelection.focus.root ?? currentSelectionRoot;
+
+                if (anchorRoot === focusRoot && rootRemap.has(anchorRoot)) {
+                  selectionRoot = anchorRoot;
+                }
+              }
+            }
+
+            const hostDecision =
+              hasOtherHolder && selectionRoot && elementKey
+                ? querySlotCarryHosts(editor, {
+                    elementKey,
+                    oldRoot: owned.root,
+                    selectionRoot,
+                    slot: options.slot,
+                  })
+                : 'unshown';
+
+            withRenewalOff(editor, () => {
+              const snapshot = getTransactionSnapshot(editor);
+              const createCopiedRoot = (
+                name: string,
+                children: readonly Descendant[]
+              ) => {
+                applyDocumentChangeStep(
+                  editor,
+                  getActiveDocumentChangeBuilder(editor).createRoot(
+                    name,
+                    children
+                  )
+                );
+                snapshot?.contentSliceRoots.add(name);
+              };
+
+              for (const [copyName, copyChildren] of Object.entries(
+                copiedExclusiveRoots
+              )) {
+                createCopiedRoot(copyName, copyChildren);
+              }
+              createCopiedRoot(root, renewedContent);
+
+              const rawChildRoots =
+                'childRoots' in node ? node.childRoots : undefined;
+              const existingChildRoots =
+                typeof rawChildRoots === 'object' && rawChildRoots !== null
+                  ? (rawChildRoots as Readonly<Record<string, string>>)
+                  : {};
+
+              applyDocumentChangeStep(
+                editor,
+                getActiveDocumentChangeBuilder(editor).setNodes(activeRoot, [
+                  {
+                    newProperties: {
+                      childRoots: {
+                        ...existingChildRoots,
+                        [options.slot]: root,
+                      },
+                    },
+                    path,
+                    properties:
+                      rawChildRoots === undefined
+                        ? {}
+                        : { childRoots: existingChildRoots },
+                  },
+                ])
+              );
+
+              if (!hasOtherHolder) {
+                applyDocumentChangeStep(
+                  editor,
+                  getActiveDocumentChangeBuilder(editor).deleteRoot(owned.root)
+                );
+              }
+
+              if (renewedContent.length === 0) {
+                applyTransactionSpec(
+                  editor,
+                  createRootFitTransactionSpec(editor, root, [])
+                );
+              }
+            });
+
+            if (currentSelection && selectionRoot) {
+              const nextRoot = rootRemap.get(selectionRoot);
+
+              if (nextRoot && (hostDecision === 'carry' || !hasOtherHolder)) {
+                if (SelectionApi.isNode(currentSelection)) {
+                  const pathsValid = withEditorRootChildren(
+                    editor,
+                    nextRoot,
+                    () =>
+                      currentSelection.paths.every((targetPath) =>
+                        Boolean(state.nodes.get(targetPath))
+                      )
+                  );
+
+                  if (pathsValid) {
+                    tx.selection.set(
+                      SelectionApi.nodes(
+                        currentSelection.paths,
+                        currentSelection.anchorPath &&
+                          currentSelection.focusPath
+                          ? {
+                              anchorPath: currentSelection.anchorPath,
+                              focusPath: currentSelection.focusPath,
+                              mode: currentSelection.mode,
+                              root: nextRoot,
+                            }
+                          : {
+                              mode: currentSelection.mode,
+                              root: nextRoot,
+                            }
+                      )
+                    );
+                  }
+                } else if (RangeApi.isRange(currentSelection)) {
+                  const nextRange = {
+                    anchor: { ...currentSelection.anchor, root: nextRoot },
+                    focus: { ...currentSelection.focus, root: nextRoot },
+                  };
+                  const rangeValid = withEditorRootChildren(
+                    editor,
+                    nextRoot,
+                    () => {
+                      const anchorEntry = state.nodes.get(
+                        nextRange.anchor.path
+                      );
+                      const focusEntry = state.nodes.get(nextRange.focus.path);
+
+                      return (
+                        !!anchorEntry &&
+                        !!focusEntry &&
+                        NodeApi.isText(anchorEntry[0]) &&
+                        NodeApi.isText(focusEntry[0]) &&
+                        nextRange.anchor.offset >= 0 &&
+                        nextRange.anchor.offset <= anchorEntry[0].text.length &&
+                        nextRange.focus.offset >= 0 &&
+                        nextRange.focus.offset <= focusEntry[0].text.length
+                      );
+                    }
+                  );
+
+                  if (rangeValid) {
+                    const marks = SelectionApi.isText(currentSelection)
+                      ? currentSelection.marks
+                      : undefined;
+
+                    tx.selection.set(
+                      SelectionApi.isText(currentSelection)
+                        ? { ...currentSelection, ...nextRange }
+                        : nextRange
+                    );
+                    if (marks) {
+                      setCurrentMarks(editor, marks);
+                    }
+                  } else {
+                    const fallbackStart = withEditorRootChildren(
+                      editor,
+                      nextRoot,
+                      () => state.points.start([])
+                    );
+
+                    if (fallbackStart) {
+                      tx.selection.set({
+                        anchor: { ...fallbackStart, root: nextRoot },
+                        focus: { ...fallbackStart, root: nextRoot },
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          if (!resolvedHit) {
+            throw new Error(
+              `Cannot fork content root slot "${options.slot}" at missing element.`
+            );
+          }
+        });
+      },
       replace: (root, children) => {
         runActive(() => {
           requireMutableRoot(root);
@@ -10457,19 +10801,18 @@ export const finalizeTransactionRepresentation = (editor: Editor) => {
   return step;
 };
 
-const dropOrphanedRoots = (
-  editor: Editor,
-  options: ApplyDocumentChangeOptions = {}
-) => {
+const getPendingOrphanedRoots = (editor: Editor): readonly string[] => {
   const snapshot = getTransactionSnapshot(editor);
 
-  if (!snapshot) return false;
+  if (!snapshot) return [];
+
   const schema: InternalEditorSchemaApi = getEditorSchema(editor);
   const { builder, roots } = snapshot;
   const after = builder.value as EditorDocumentValue;
   const existsAfter = (root: string) =>
     root === MAIN_ROOT_KEY || Object.hasOwn(after.roots ?? {}, root);
-  const orphaned = schema.getOrphanedElementOwnedRoots({
+
+  return schema.getOrphanedElementOwnedRoots({
     after: (root) => (existsAfter(root) ? builder.getIndex(root) : null),
     afterRoots: () => [MAIN_ROOT_KEY, ...Object.keys(after.roots ?? {})],
     before: (root) =>
@@ -10480,6 +10823,18 @@ const dropOrphanedRoots = (
     changedRoots: changedRootsOf(builder.change),
     tracked: snapshot.contentSliceRoots,
   });
+};
+
+const dropOrphanedRoots = (
+  editor: Editor,
+  options: ApplyDocumentChangeOptions = {}
+) => {
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (!snapshot) return false;
+  const { builder, roots } = snapshot;
+  const after = builder.value as EditorDocumentValue;
+  const orphaned = getPendingOrphanedRoots(editor);
   const caret = getTransactionSpecContext(editor)?.caret;
   const landed =
     caret?.selection && orphaned.includes(caret.root)

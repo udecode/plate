@@ -1094,6 +1094,21 @@ export type EditorTransactionRootsApi<V extends Value = Value> = {
     children: V
   ) => void;
   delete: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => void;
+  /**
+   * Give the element at `at` its own root named `root` from the root its
+   * `slot` shows. When another surviving element still holds the old root,
+   * exclusive content roots inside it get copies of their own, shared ones
+   * stay linked, and a caret shown through this element's slot moves into the
+   * copy at the same path and offset. When no other surviving element holds
+   * the old root, the root moves to `root` without renewing unique ids and its
+   * caret follows. Throws without changing the document if `root` is invalid
+   * or already exists, `at` is not an element, or `slot` holds no declared
+   * content root.
+   */
+  fork: <TRoot extends RootKey>(
+    root: NamedRootKey<TRoot>,
+    options: Readonly<{ at: NodeTarget; slot: string }>
+  ) => void;
   replace: <TRoot extends RootKey>(
     root: NamedRootKey<TRoot>,
     children: V

@@ -1,6 +1,7 @@
 import { getViewPresentation } from '../editor-runtime-view';
 import type { Editor, RootKey } from '../interfaces/editor';
 import {
+  type EditorRuntimeCarrier,
   getEditorRuntime,
   getEditorRuntimeOwner,
   type InternalEditorRuntime,
@@ -12,6 +13,17 @@ import type { ViewPresentation } from './view-presentation';
 import { countCoreWork } from './work';
 
 export type RootTarget = Readonly<{ shown: boolean; view: Editor }>;
+
+export type SlotCarryQuery = Readonly<{
+  elementKey: string;
+  oldRoot: RootKey;
+  selectionRoot: RootKey;
+  slot: string;
+}>;
+
+export type SlotCarryHost = Readonly<{
+  shouldCarrySelection: (query: SlotCarryQuery) => boolean | null;
+}>;
 
 type Subscriber = {
   // Per subscriber: one that subscribes while a commit is half applied can read
@@ -65,6 +77,47 @@ const USE_LISTENERS = new WeakMap<Editor, Set<() => void>>();
 let lastUse = 0;
 const PENDING = new Set<Entry>();
 const NOTICES = new WeakMap<ViewPresentation, Notice>();
+const SLOT_CARRY_HOSTS = new WeakMap<Editor, Set<SlotCarryHost>>();
+
+export const registerSlotCarryHost = (
+  editor: EditorRuntimeCarrier,
+  host: SlotCarryHost
+): (() => void) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const hosts = SLOT_CARRY_HOSTS.get(owner) ?? new Set<SlotCarryHost>();
+
+  SLOT_CARRY_HOSTS.set(owner, hosts);
+  hosts.add(host);
+
+  return () => {
+    hosts.delete(host);
+    if (hosts.size === 0 && SLOT_CARRY_HOSTS.get(owner) === hosts) {
+      SLOT_CARRY_HOSTS.delete(owner);
+    }
+  };
+};
+
+export const querySlotCarryHosts = (
+  editor: EditorRuntimeCarrier,
+  query: SlotCarryQuery
+): 'carry' | 'keep' | 'unshown' => {
+  const hosts = SLOT_CARRY_HOSTS.get(getEditorRuntimeOwner(editor));
+
+  if (!hosts || hosts.size === 0) return 'unshown';
+
+  let decision: 'carry' | 'keep' | 'unshown' = 'unshown';
+
+  for (const host of [...hosts]) {
+    if (!hosts.has(host)) continue;
+
+    const answer = host.shouldCarrySelection(query);
+
+    if (answer === true) decision = 'carry';
+    else if (answer === false && decision === 'unshown') decision = 'keep';
+  }
+
+  return decision;
+};
 
 const noticeOf = (presentation: ViewPresentation) => {
   let notice = NOTICES.get(presentation);
