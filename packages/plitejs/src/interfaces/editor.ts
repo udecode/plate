@@ -21,6 +21,7 @@ import type {
   AnchorOptions,
   AnchorValue,
   EditorDocumentRange,
+  ReadonlyAnchor,
 } from '../core/anchor';
 import type { DocumentChange } from '../core/change/document-change';
 import { defineCommand as defineEditorCommand } from '../core/command-definition';
@@ -4018,6 +4019,14 @@ export type EditorCommitRuntimeChangeKind =
 
 /** Lazy commit queries derived from canonical changes and snapshot indexes. */
 export type EditorCommitChanged = {
+  /**
+   * The anchors whose stored value this commit changed, except those released
+   * before commit listeners run. A view's commit lists the stored commit's
+   * anchors.
+   */
+  anchors: () => ReadonlyArray<
+    ReadonlyAnchor<Path> | ReadonlyAnchor<Point> | ReadonlyAnchor<Range>
+  >;
   has: <TRoot extends RootKey>(
     kind: EditorCommitChangeKind,
     root?: NamedRootKey<TRoot>

@@ -138,7 +138,7 @@
           "kind": "interface",
           "name": "Anchor",
           "runtime": false,
-          "signature": "interface Anchor<TValue extends AnchorValue> {\n  readonly association: TValue extends Range ? RangeAnchorAssociation : AnchorAssociation;\n  readonly deletion: AnchorDeletionPolicy;\n  readonly kind: TValue extends Range ? 'range' : TValue extends Point ? 'point' : 'path';\n  readonly root: NamedRootKey | undefined;\n  release(): TValue | null;\n  /**\n   * Resolve in the stored document, or as `view` reads it. `view` must be a\n   * view of the same editor whose root is the anchor's root or the page.\n   */\n  resolve(view?: AnyEditor): TValue | null;\n}",
+          "signature": "interface Anchor<TValue extends AnchorValue> extends ReadonlyAnchor<TValue> {\n  release(): TValue | null;\n}",
           "source": null,
           "typeParameters": [
             "TValue extends AnchorValue"
@@ -2089,7 +2089,7 @@
           "kind": "type",
           "name": "EditorCommitChanged",
           "runtime": false,
-          "signature": "type EditorCommitChanged = {\n  has: <TRoot extends RootKey>(kind: EditorCommitChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /**\n   * Whether any document root has this change kind. A record write counts as\n   * a `document` and `snapshot` change too, since records hold no root.\n   */\n  hasAny: (kind: EditorCommitChangeKind) => boolean;\n  /**\n   * Whether this key has this change kind in `root`, where `undefined` means\n   * the primary document. A key that left the root, or whose root the commit\n   * deleted, reports `'presence'` there, not `'path'`. For `'path'` and\n   * `'presence'`, a root whose children the commit did not change answers\n   * `false` without reading any index.\n   */\n  hasNodeKey: <TRoot extends RootKey>(nodeKey: NodeKey, kind: EditorCommitRuntimeChangeKind, root: NamedRootKey<TRoot> | undefined) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  nodeKeys: <TRoot extends RootKey>(kind: EditorCommitRuntimeChangeKind, root?: NamedRootKey<TRoot>) => readonly NodeKey[];\n  /** Node keys with this change kind across every document root. */\n  nodeKeysAll: (kind: EditorCommitRuntimeChangeKind) => readonly NodeKey[];\n  /**\n   * The named roots whose place this commit changed, as `read.roots()` lists\n   * places: each root whose owners changed, such as the root of a deleted\n   * board or the roots two boards swapped, and each root whose `top` now sits\n   * in another top-level page block, such as the roots of a board moved into\n   * a group. An insert or delete above an owner that adds or removes no owner\n   * only shifts its path, so it names no root and reads no owner.\n   */\n  rootPlacements: () => readonly NamedRootKey[];\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly TopLevelRuntimeRange[];\n};",
+          "signature": "type EditorCommitChanged = {\n  /**\n   * The anchors whose stored value this commit changed, except those released\n   * before commit listeners run. A view's commit lists the stored commit's\n   * anchors.\n   */\n  anchors: () => ReadonlyArray<ReadonlyAnchor<Path> | ReadonlyAnchor<Point> | ReadonlyAnchor<Range>>;\n  has: <TRoot extends RootKey>(kind: EditorCommitChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /**\n   * Whether any document root has this change kind. A record write counts as\n   * a `document` and `snapshot` change too, since records hold no root.\n   */\n  hasAny: (kind: EditorCommitChangeKind) => boolean;\n  /**\n   * Whether this key has this change kind in `root`, where `undefined` means\n   * the primary document. A key that left the root, or whose root the commit\n   * deleted, reports `'presence'` there, not `'path'`. For `'path'` and\n   * `'presence'`, a root whose children the commit did not change answers\n   * `false` without reading any index.\n   */\n  hasNodeKey: <TRoot extends RootKey>(nodeKey: NodeKey, kind: EditorCommitRuntimeChangeKind, root: NamedRootKey<TRoot> | undefined) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  nodeKeys: <TRoot extends RootKey>(kind: EditorCommitRuntimeChangeKind, root?: NamedRootKey<TRoot>) => readonly NodeKey[];\n  /** Node keys with this change kind across every document root. */\n  nodeKeysAll: (kind: EditorCommitRuntimeChangeKind) => readonly NodeKey[];\n  /**\n   * The named roots whose place this commit changed, as `read.roots()` lists\n   * places: each root whose owners changed, such as the root of a deleted\n   * board or the roots two boards swapped, and each root whose `top` now sits\n   * in another top-level page block, such as the roots of a board moved into\n   * a group. An insert or delete above an owner that adds or removes no owner\n   * only shifts its path, so it names no root and reads no owner.\n   */\n  rootPlacements: () => readonly NamedRootKey[];\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly TopLevelRuntimeRange[];\n};",
           "source": null,
           "typeParameters": []
         },
@@ -8021,6 +8021,19 @@
           "signature": "getSelection: (editor: AnyEditor) => Selection",
           "source": null,
           "typeParameters": []
+        },
+        "platejs:ReadonlyAnchor": {
+          "aliases": [],
+          "documentation": "An anchor as a reader that does not own it sees it: the same handle as its\nowner's `Anchor`, without `release()`.",
+          "entrypoint": "platejs",
+          "kind": "interface",
+          "name": "ReadonlyAnchor",
+          "runtime": false,
+          "signature": "interface ReadonlyAnchor<TValue extends AnchorValue> {\n  readonly association: TValue extends Range ? RangeAnchorAssociation : AnchorAssociation;\n  readonly deletion: AnchorDeletionPolicy;\n  readonly kind: TValue extends Range ? 'range' : TValue extends Point ? 'point' : 'path';\n  readonly root: NamedRootKey | undefined;\n  /**\n   * Resolve in the stored document, or as `view` reads it. `view` must be a\n   * view of the same editor whose root is the anchor's root or the page.\n   */\n  resolve(view?: AnyEditor): TValue | null;\n}",
+          "source": null,
+          "typeParameters": [
+            "TValue extends AnchorValue"
+          ]
         },
         "platejs:RemoveMarkCommand": {
           "aliases": [],
@@ -16611,7 +16624,7 @@
           "kind": "interface",
           "name": "Anchor",
           "runtime": false,
-          "signature": "interface Anchor<TValue extends AnchorValue> {\n  readonly association: TValue extends Range ? RangeAnchorAssociation : AnchorAssociation;\n  readonly deletion: AnchorDeletionPolicy;\n  readonly kind: TValue extends Range ? 'range' : TValue extends Point ? 'point' : 'path';\n  readonly root: NamedRootKey | undefined;\n  release(): TValue | null;\n  /**\n   * Resolve in the stored document, or as `view` reads it. `view` must be a\n   * view of the same editor whose root is the anchor's root or the page.\n   */\n  resolve(view?: AnyEditor): TValue | null;\n}",
+          "signature": "interface Anchor<TValue extends AnchorValue> extends ReadonlyAnchor<TValue> {\n  release(): TValue | null;\n}",
           "source": null,
           "typeParameters": [
             "TValue extends AnchorValue"
@@ -19016,7 +19029,7 @@
           "kind": "type",
           "name": "EditorCommitChanged",
           "runtime": false,
-          "signature": "type EditorCommitChanged = {\n  has: <TRoot extends RootKey>(kind: EditorCommitChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /**\n   * Whether any document root has this change kind. A record write counts as\n   * a `document` and `snapshot` change too, since records hold no root.\n   */\n  hasAny: (kind: EditorCommitChangeKind) => boolean;\n  /**\n   * Whether this key has this change kind in `root`, where `undefined` means\n   * the primary document. A key that left the root, or whose root the commit\n   * deleted, reports `'presence'` there, not `'path'`. For `'path'` and\n   * `'presence'`, a root whose children the commit did not change answers\n   * `false` without reading any index.\n   */\n  hasNodeKey: <TRoot extends RootKey>(nodeKey: NodeKey, kind: EditorCommitRuntimeChangeKind, root: NamedRootKey<TRoot> | undefined) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  nodeKeys: <TRoot extends RootKey>(kind: EditorCommitRuntimeChangeKind, root?: NamedRootKey<TRoot>) => readonly NodeKey[];\n  /** Node keys with this change kind across every document root. */\n  nodeKeysAll: (kind: EditorCommitRuntimeChangeKind) => readonly NodeKey[];\n  /**\n   * The named roots whose place this commit changed, as `read.roots()` lists\n   * places: each root whose owners changed, such as the root of a deleted\n   * board or the roots two boards swapped, and each root whose `top` now sits\n   * in another top-level page block, such as the roots of a board moved into\n   * a group. An insert or delete above an owner that adds or removes no owner\n   * only shifts its path, so it names no root and reads no owner.\n   */\n  rootPlacements: () => readonly NamedRootKey[];\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly TopLevelRuntimeRange[];\n};",
+          "signature": "type EditorCommitChanged = {\n  /**\n   * The anchors whose stored value this commit changed, except those released\n   * before commit listeners run. A view's commit lists the stored commit's\n   * anchors.\n   */\n  anchors: () => ReadonlyArray<ReadonlyAnchor<Path> | ReadonlyAnchor<Point> | ReadonlyAnchor<Range>>;\n  has: <TRoot extends RootKey>(kind: EditorCommitChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /**\n   * Whether any document root has this change kind. A record write counts as\n   * a `document` and `snapshot` change too, since records hold no root.\n   */\n  hasAny: (kind: EditorCommitChangeKind) => boolean;\n  /**\n   * Whether this key has this change kind in `root`, where `undefined` means\n   * the primary document. A key that left the root, or whose root the commit\n   * deleted, reports `'presence'` there, not `'path'`. For `'path'` and\n   * `'presence'`, a root whose children the commit did not change answers\n   * `false` without reading any index.\n   */\n  hasNodeKey: <TRoot extends RootKey>(nodeKey: NodeKey, kind: EditorCommitRuntimeChangeKind, root: NamedRootKey<TRoot> | undefined) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  nodeKeys: <TRoot extends RootKey>(kind: EditorCommitRuntimeChangeKind, root?: NamedRootKey<TRoot>) => readonly NodeKey[];\n  /** Node keys with this change kind across every document root. */\n  nodeKeysAll: (kind: EditorCommitRuntimeChangeKind) => readonly NodeKey[];\n  /**\n   * The named roots whose place this commit changed, as `read.roots()` lists\n   * places: each root whose owners changed, such as the root of a deleted\n   * board or the roots two boards swapped, and each root whose `top` now sits\n   * in another top-level page block, such as the roots of a board moved into\n   * a group. An insert or delete above an owner that adds or removes no owner\n   * only shifts its path, so it names no root and reads no owner.\n   */\n  rootPlacements: () => readonly NamedRootKey[];\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly TopLevelRuntimeRange[];\n};",
           "source": null,
           "typeParameters": []
         },
@@ -25791,6 +25804,19 @@
           "signature": "getSelection: (editor: AnyEditor) => Selection",
           "source": null,
           "typeParameters": []
+        },
+        "platejs/react:ReadonlyAnchor": {
+          "aliases": [],
+          "documentation": "An anchor as a reader that does not own it sees it: the same handle as its\nowner's `Anchor`, without `release()`.",
+          "entrypoint": "platejs/react",
+          "kind": "interface",
+          "name": "ReadonlyAnchor",
+          "runtime": false,
+          "signature": "interface ReadonlyAnchor<TValue extends AnchorValue> {\n  readonly association: TValue extends Range ? RangeAnchorAssociation : AnchorAssociation;\n  readonly deletion: AnchorDeletionPolicy;\n  readonly kind: TValue extends Range ? 'range' : TValue extends Point ? 'point' : 'path';\n  readonly root: NamedRootKey | undefined;\n  /**\n   * Resolve in the stored document, or as `view` reads it. `view` must be a\n   * view of the same editor whose root is the anchor's root or the page.\n   */\n  resolve(view?: AnyEditor): TValue | null;\n}",
+          "source": null,
+          "typeParameters": [
+            "TValue extends AnchorValue"
+          ]
         },
         "platejs/react:RemoveMarkCommand": {
           "aliases": [],

@@ -15541,6 +15541,7 @@ export const runEditorTransaction = <R>(
                 });
               }
               profileCoreDuration('notify-listeners', () => {
+                anchorPublication?.freezeAnchors();
                 notifyListeners(editor, change);
               });
               profileCoreDuration('run-after-commit-handlers', () => {

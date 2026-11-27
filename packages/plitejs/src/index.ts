@@ -83,6 +83,7 @@ export type {
   AnchorValue,
   EditorDocumentRange,
   RangeAnchorAssociation,
+  ReadonlyAnchor,
 } from './core/anchor';
 export { DocumentChange } from './core/document-change';
 export type { JsonEditorValue, JsonNode } from './core/document-change';

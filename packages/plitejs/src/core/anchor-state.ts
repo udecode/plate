@@ -1,10 +1,14 @@
 import type {
   AnyEditor as Editor,
   EditorCommit,
+  EditorCommitChanged,
   EditorDocumentValue,
   NodeKey,
 } from '../interfaces/editor';
-import { PointApi } from '../interfaces/point';
+import type { Path } from '../interfaces/path';
+import { type Point, PointApi } from '../interfaces/point';
+import type { Range } from '../interfaces/range';
+import type { ReadonlyAnchor } from './anchor';
 import { getViewCommitSource } from './authored-runtime';
 import {
   type DocumentChange,
@@ -57,12 +61,10 @@ export const RECOVERY_BEFORE_A_FORWARD = 1 << 8;
 export const RECOVERY_BEFORE_B_FORWARD = 1 << 9;
 export const RECOVERY_AFTER_A_FORWARD = 1 << 10;
 export const RECOVERY_AFTER_B_FORWARD = 1 << 11;
-export const RECOVERY_AT_ONCE = 1 << 12;
 
 export type AnchorHistoryRecoveryTarget = 'after' | 'before';
 
 export type AnchorHistoryRecovery = Readonly<{
-  restoresOnCommit: boolean;
   data: Int32Array;
   roots: readonly string[];
 }>;
@@ -71,6 +73,13 @@ export type AnchorHistoryCapture = Readonly<{
   anchorCeiling: number;
   recovery: AnchorHistoryRecovery | null;
 }>;
+
+export type AnchorRestoreTag = -1 | 1 | 2 | 3;
+
+export type ReadonlyCommitAnchor =
+  | ReadonlyAnchor<Path>
+  | ReadonlyAnchor<Point>
+  | ReadonlyAnchor<Range>;
 
 type AnchorHistoryListener = Readonly<{
   capture: (
@@ -93,17 +102,18 @@ type AnchorHistoryListener = Readonly<{
     offset: number,
     target: AnchorHistoryRecoveryTarget,
     value: EditorDocumentValue,
-    memoize: <T>(position: number, side: -1 | 1, read: () => T) => T,
-    defer: boolean
+    memoize: <T>(position: number, tag: AnchorRestoreTag, read: () => T) => T
   ) => boolean;
 }>;
 
 export type AnchorStateListener = {
   begin: () => void;
   change: (context: AnchorChangeContext) => void;
+  changedSinceBegin: () => boolean;
   commit: (value?: EditorDocumentValue, commit?: EditorCommit) => void;
   discard: (value: EditorDocumentValue) => void;
   fallback: () => boolean;
+  handle: () => ReadonlyCommitAnchor;
   history?: AnchorHistoryListener;
   move?: AnchorMoveListener;
   nodeKeys: () => readonly NodeKey[];
@@ -135,11 +145,6 @@ export type AnchorChangeContext = Readonly<{
   change: DocumentChange;
   afterRoot: (root: string) => DocumentIndex;
   beforeRoot: (root: string) => DocumentIndex;
-  mapRecoveryPoint: (
-    root: string,
-    position: number,
-    association: -1 | 1
-  ) => number | null;
   memoize: <T>(key: string, read: () => T) => T;
   replace: boolean;
   /**
@@ -148,7 +153,6 @@ export type AnchorChangeContext = Readonly<{
    * by position.
    */
   runtimePaths: boolean;
-  structural: (root: string) => boolean;
 }>;
 
 export type AnchorStateWork = Readonly<{
@@ -201,6 +205,11 @@ const ANCHOR_RUNTIME_ID = new WeakMap<Editor, number>();
 const ANCHOR_TRANSACTION_CEILING = new WeakMap<Editor, number>();
 const COMMIT_ANCHOR_HISTORY = new WeakMap<EditorCommit, AnchorHistoryCapture>();
 const COMMIT_MOVED_ANCHORS = new WeakMap<EditorCommit, ReadonlySet<number>>();
+const COMMIT_WRITTEN_ANCHORS = new WeakMap<
+  EditorCommitChanged,
+  readonly ReadonlyCommitAnchor[]
+>();
+const NO_ANCHORS: readonly ReadonlyCommitAnchor[] = Object.freeze([]);
 const STAGED_ANCHOR_PLACEMENTS = new WeakMap<object, AnchorPlacement>();
 const STAGED_ANCHOR_HISTORY = new WeakMap<
   Editor,
@@ -301,16 +310,19 @@ const indexAnchorListener = (
 ) => {
   const nodeKeys = Object.freeze([...new Set(listener.nodeKeys())]);
   const previousNodeKeys = state.listenerNodeKeys.get(listener);
+  const fallback = nodeKeys.length === 0 && listener.fallback();
+  const previousFallback =
+    state.fallbackListeners.get(listener.root)?.has(listener) ?? false;
 
   if (
     previousNodeKeys?.length === nodeKeys.length &&
-    previousNodeKeys.every((nodeKey, index) => nodeKey === nodeKeys[index])
+    previousNodeKeys.every((nodeKey, index) => nodeKey === nodeKeys[index]) &&
+    previousFallback === fallback
   ) {
     PREPARING_ANCHOR_STATES.get(state)?.indexes.delete(listener);
     return;
   }
 
-  const fallback = nodeKeys.length === 0 && listener.fallback();
   const preparing = PREPARING_ANCHOR_STATES.get(state);
 
   if (preparing) {
@@ -453,6 +465,9 @@ export const getPublishedAnchorValue = (editor: Editor) =>
 export const getMovedAnchorIds = (commit: EditorCommit) =>
   COMMIT_MOVED_ANCHORS.get(getViewCommitSource(commit));
 
+export const readCommitAnchors = (changed: EditorCommitChanged) =>
+  COMMIT_WRITTEN_ANCHORS.get(changed) ?? NO_ANCHORS;
+
 const indexRoot = (
   value: EditorDocumentValue,
   indexes: Map<string, DocumentIndex>,
@@ -475,17 +490,9 @@ const createAnchorChangeContext = (
   beforeIndexes: Map<string, DocumentIndex>,
   afterIndexes: Map<string, DocumentIndex>,
   replace: boolean,
-  runtimePaths: boolean,
-  commit?: EditorCommit
+  runtimePaths: boolean
 ): AnchorChangeContext => {
   const memo = new Map<string, unknown>();
-  const recoveryPoints = new Map<
-    string,
-    Readonly<{
-      backward: Map<number, number | null>;
-      forward: Map<number, number | null>;
-    }>
-  >();
 
   return {
     after,
@@ -493,37 +500,6 @@ const createAnchorChangeContext = (
     before,
     beforeRoot: (root) => indexRoot(before, beforeIndexes, root),
     change,
-    mapRecoveryPoint: (root, position, association) => {
-      if (
-        position === RECOVERY_NULL_POSITION ||
-        !hasDocumentRoot(after, root)
-      ) {
-        return null;
-      }
-      let rootPoints = recoveryPoints.get(root);
-
-      if (!rootPoints) {
-        rootPoints = {
-          backward: new Map(),
-          forward: new Map(),
-        };
-        recoveryPoints.set(root, rootPoints);
-      }
-      const points =
-        association === -1 ? rootPoints.backward : rootPoints.forward;
-
-      if (points.has(position)) return points.get(position) ?? null;
-      const mapped = mapRecoveryPosition(change, position, association, root);
-      const result =
-        mapped !== null &&
-        indexRoot(after, afterIndexes, root).pointAt(mapped, association)
-          ? mapped
-          : null;
-
-      points.set(position, result);
-
-      return result;
-    },
     memoize: <T>(key: string, read: () => T) => {
       if (memo.has(key)) return memo.get(key) as T;
       const value = read();
@@ -533,8 +509,6 @@ const createAnchorChangeContext = (
     },
     replace,
     runtimePaths,
-    structural: (root) =>
-      commit?.changed.has('structure', toPublicRoot(root)) ?? true,
   };
 };
 
@@ -569,13 +543,11 @@ const withRecoverySide = (flags: number, bit: number, side: -1 | 1) =>
 
 const createAnchorHistoryRecovery = (
   roots: readonly string[],
-  values: ArrayLike<number>,
-  restoresOnCommit: boolean
+  values: ArrayLike<number>
 ): AnchorHistoryRecovery | null =>
   values.length === 0
     ? null
     : Object.freeze({
-        restoresOnCommit,
         data: values instanceof Int32Array ? values : new Int32Array(values),
         roots: Object.freeze([...roots]),
       });
@@ -629,7 +601,6 @@ export const mapAnchorHistoryRecovery = (
   if (!recovery || change.empty) return recovery;
 
   const values = new Int32Array(recovery.data);
-  let { restoresOnCommit } = recovery;
   const carryMaps = new Map<string, CarryMap | null>();
   const carryMap = (root: string) => {
     if (!carryMaps.has(root)) carryMaps.set(root, carryMapOf(facts, root));
@@ -810,11 +781,9 @@ export const mapAnchorHistoryRecovery = (
       const association =
         recoveryAssociation(flags) === RECOVERY_ASSOCIATION_BACKWARD ? -1 : 1;
       const mode = recoveryPathMode(flags);
-      const carriedPosition = carriedPath(root, mode, first);
       const mapped =
-        carriedPosition ?? pathByIdentity(root, mode, first, association);
-
-      restoresOnCommit ||= carriedPosition !== null;
+        carriedPath(root, mode, first) ??
+        pathByIdentity(root, mode, first, association);
       const valid =
         mapped !== null &&
         (mode === RECOVERY_PATH_MODE_NODE
@@ -927,11 +896,9 @@ export const mapAnchorHistoryRecovery = (
       flags = withRecoverySide(flags, secondSideBit, associations[1]);
     }
     values[offset + RECOVERY_FLAGS] = flags;
-    restoresOnCommit ||= endpointCarried;
   }
 
   return Object.freeze({
-    restoresOnCommit,
     data: values,
     roots: recovery.roots,
   });
@@ -1017,8 +984,7 @@ export const mergeAnchorHistoryRecovery = (
       RECOVERY_BEFORE_A_FORWARD |
       RECOVERY_BEFORE_B_FORWARD |
       RECOVERY_AFTER_A_FORWARD |
-      RECOVERY_AFTER_B_FORWARD |
-      RECOVERY_AT_ONCE
+      RECOVERY_AFTER_B_FORWARD
     );
 
     if ((beforeFlags & staticMask) !== (afterFlags & staticMask)) {
@@ -1029,10 +995,7 @@ export const mergeAnchorHistoryRecovery = (
       id,
       appendRoot(beforeRoot),
       (beforeFlags & ~(RECOVERY_AFTER_A_FORWARD | RECOVERY_AFTER_B_FORWARD)) |
-        (afterFlags &
-          (RECOVERY_AFTER_A_FORWARD |
-            RECOVERY_AFTER_B_FORWARD |
-            RECOVERY_AT_ONCE)),
+        (afterFlags & (RECOVERY_AFTER_A_FORWARD | RECOVERY_AFTER_B_FORWARD)),
       beforePacket.data[beforeOffset + RECOVERY_BEFORE_A],
       beforePacket.data[beforeOffset + RECOVERY_BEFORE_B],
       afterPacket.data[afterOffset + RECOVERY_AFTER_A],
@@ -1040,12 +1003,7 @@ export const mergeAnchorHistoryRecovery = (
     );
   }
 
-  return createAnchorHistoryRecovery(
-    roots,
-    data,
-    (previous?.restoresOnCommit ?? false) ||
-      (current?.restoresOnCommit ?? false)
-  );
+  return createAnchorHistoryRecovery(roots, data);
 };
 
 export const consumeAnchorHistoryCapture = (commit: EditorCommit) => {
@@ -1184,6 +1142,21 @@ export const subscribeAnchorState = (
   };
 };
 
+const freezeCommitAnchors = (
+  changed: EditorCommitChanged,
+  state: ActiveAnchorState,
+  written: ReadonlySet<AnchorStateListener>
+) => {
+  COMMIT_WRITTEN_ANCHORS.set(
+    changed,
+    Object.freeze(
+      [...written]
+        .filter((listener) => state.listeners.has(listener))
+        .map((listener) => listener.handle())
+    )
+  );
+};
+
 const addIndexedListeners = (
   target: Set<AnchorStateListener>,
   listeners: ReadonlySet<AnchorStateListener> | undefined
@@ -1264,8 +1237,7 @@ export const notifyAnchorChanges = (
     beforeIndexes,
     afterIndexes,
     options.replace === true,
-    options.runtimePaths !== false,
-    options.commit
+    options.runtimePaths !== false
   );
 
   state.value = after;
@@ -1344,8 +1316,10 @@ export const commitAnchorTransaction = (
   }
 
   const listeners = state?.activeTransaction;
+  const preparing = state && PREPARING_ANCHOR_STATES.get(state);
   const visitedAnchors = listeners?.size ?? 0;
   let recoveredAnchors = 0;
+  let written: Set<AnchorStateListener> | undefined;
 
   if (
     state &&
@@ -1354,19 +1328,10 @@ export const commitAnchorTransaction = (
     commit?.tags.includes('historic')
   ) {
     const { data } = staged.recovery;
-    const deferRecovery =
-      !staged.recovery.restoresOnCommit &&
-      !commit.changed.hasAny('structure') &&
-      !commit.changed.hasAny('replace');
     const restoreMemos = new Map<
       string,
-      <T>(position: number, side: -1 | 1, read: () => T) => T
+      <T>(position: number, tag: AnchorRestoreTag, read: () => T) => T
     >();
-    const deferredMemoize = <T>(
-      _position: number,
-      _side: -1 | 1,
-      read: () => T
-    ) => read();
 
     for (let offset = 0; offset < data.length; offset += RECOVERY_RECORD_SIZE) {
       const listener = state.listenersByRuntimeId.get(
@@ -1374,31 +1339,8 @@ export const commitAnchorTransaction = (
       );
 
       if (!listener?.history) continue;
-      if (
-        deferRecovery &&
-        (data[offset + RECOVERY_FLAGS] & RECOVERY_AT_ONCE) === 0
-      ) {
-        const preparing = PREPARING_ANCHOR_STATES.get(state);
-
-        if (preparing && !preparing.pending.has(listener)) {
-          preparing.pending.add(listener);
-          listener.begin();
-          listeners.add(listener);
-        }
-        listener.history.restore(
-          data,
-          offset,
-          staged.target,
-          state.value,
-          deferredMemoize,
-          true
-        );
-        preparing?.moved.add(listener);
-        recoveredAnchors += 1;
-        continue;
-      }
       if (!listeners.has(listener)) {
-        PREPARING_ANCHOR_STATES.get(state)?.pending.add(listener);
+        preparing?.pending.add(listener);
         listener.begin();
         listeners.add(listener);
       }
@@ -1407,8 +1349,12 @@ export const commitAnchorTransaction = (
       if (!memoize) {
         const values = new Map<number, unknown>();
 
-        memoize = <T>(position: number, side: -1 | 1, read: () => T) => {
-          const key = position * 2 + (side === 1 ? 1 : 0);
+        memoize = <T>(
+          position: number,
+          tag: AnchorRestoreTag,
+          read: () => T
+        ) => {
+          const key = position * 4 + (tag === -1 ? 0 : tag);
 
           if (values.has(key)) return values.get(key) as T;
           const result = read();
@@ -1425,12 +1371,15 @@ export const commitAnchorTransaction = (
           offset,
           staged.target,
           state.value,
-          memoize,
-          false
+          memoize
         )
       ) {
-        PREPARING_ANCHOR_STATES.get(state)?.moved.add(listener);
+        preparing?.moved.add(listener);
         indexAnchorListener(state, listener);
+      }
+      if (preparing && listener.changedSinceBegin()) {
+        preparing.moved.add(listener);
+        (written ??= new Set()).add(listener);
       }
       commitPreparedAnchorListener(state, listener, value, commit);
       listeners.delete(listener);
@@ -1522,8 +1471,7 @@ export const commitAnchorTransaction = (
     roots,
     recoveryOffset === recoveryData.length
       ? recoveryData
-      : recoveryData.slice(0, recoveryOffset),
-    false
+      : recoveryData.slice(0, recoveryOffset)
   );
   const anchorCeiling =
     ANCHOR_TRANSACTION_CEILING.get(editor) ??
@@ -1546,8 +1494,12 @@ export const commitAnchorTransaction = (
     recovery?.data.byteLength ?? staged?.recovery?.data.byteLength ?? 0
   );
   for (const listener of listeners ?? []) {
+    if (preparing && commit && listener.changedSinceBegin()) {
+      (written ??= new Set()).add(listener);
+    }
     commitPreparedAnchorListener(state, listener, value, commit);
   }
+  if (preparing) preparing.written = written;
   if (state) {
     state.activeTransaction = null;
     state.transactionBeforeValue = null;
@@ -1587,6 +1539,7 @@ type PreparedAnchorWork = {
   moved: Set<AnchorStateListener>;
   pending: Set<AnchorStateListener>;
   publications: Array<() => void>;
+  written?: Set<AnchorStateListener>;
 };
 
 const PREPARING_ANCHOR_STATES = new WeakMap<
@@ -1672,6 +1625,13 @@ export const prepareAnchorPublication = (
           run();
         } finally {
           close();
+        }
+      },
+      freezeAnchors() {
+        const { written } = preparing;
+
+        if (state && written) {
+          freezeCommitAnchors(commit.changed, state, written);
         }
       },
       notify() {

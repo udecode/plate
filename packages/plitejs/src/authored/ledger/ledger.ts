@@ -1598,6 +1598,7 @@ export class ReviewLedger {
           (selectionBefore !== null || selectionAfter !== null) &&
           (beforeRoot !== afterRoot ||
             !jsonEqual(selectionBefore, selectionAfter)),
+        storedAnchors: commit.changed.anchors,
         tags: commit.tags,
       },
       { previousVersion: commit.previousVersion, version: commit.version }

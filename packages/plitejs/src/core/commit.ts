@@ -19,6 +19,7 @@ import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { failInvariant } from '../internal/fail-invariant';
+import { readCommitAnchors } from './anchor-state';
 import type { CompletedTextDeletion } from './change/builder';
 import type { CarriedRun } from './change/carried-run';
 import {
@@ -84,6 +85,7 @@ type CommitChangedInput = {
   selectionBeforeRoot: RootKey;
   selectionChanged: boolean;
   stateChanged: boolean;
+  storedAnchors?: EditorCommitChanged['anchors'];
   editor: Editor;
   schemas: SchemaSides;
 };
@@ -112,6 +114,7 @@ type CommitInput<V extends Value> = Omit<
   split?: EditorCommitSplit | null;
   selectionAfterRoot: RootKey;
   selectionBeforeRoot: RootKey;
+  storedAnchors?: EditorCommitChanged['anchors'];
 };
 
 type EditorCommitSnapshotSource = Readonly<{
@@ -611,6 +614,7 @@ const createCommitChanged = ({
   selectionBeforeRoot,
   selectionChanged,
   stateChanged,
+  storedAnchors,
   editor,
   schemas,
 }: CommitChangedInput): EditorCommitChanged => {
@@ -1370,7 +1374,8 @@ const createCommitChanged = ({
     return result;
   };
 
-  return Object.freeze({
+  const changed: EditorCommitChanged = Object.freeze({
+    anchors: storedAnchors ?? (() => readCommitAnchors(changed)),
     has: (kind, root) => hasInRoot(kind, toInternalRoot(root)),
     hasAny: (kind) =>
       (recordsChanged && (kind === 'document' || kind === 'snapshot')) ||
@@ -1393,6 +1398,8 @@ const createCommitChanged = ({
     nodeKeysAll: (kind) => getAggregateNodeKeys(kind),
     topLevelRanges: (root) => getChangedTopLevelRanges(toInternalRoot(root)),
   });
+
+  return changed;
 };
 
 export const createEditorCommit = <V extends Value>(
@@ -1417,6 +1424,7 @@ export const createEditorCommit = <V extends Value>(
     schemas,
     settlement,
     split,
+    storedAnchors,
     ...body
   } = input;
   const commit = {
@@ -1451,6 +1459,7 @@ export const createEditorCommit = <V extends Value>(
       selectionBeforeRoot: body.selectionBeforeRoot,
       selectionChanged: body.selectionChanged,
       stateChanged: body.dirtyStateKeys.length > 0,
+      storedAnchors,
       editor,
       schemas,
     }),

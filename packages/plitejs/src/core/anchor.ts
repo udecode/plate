@@ -1,7 +1,6 @@
 import type {
   BaseEditor,
   AnyEditor as Editor,
-  EditorCommit,
   EditorDocumentValue,
   NamedRootKey,
   RootKey,
@@ -14,10 +13,13 @@ import { PointApi, type Point } from '../interfaces/point';
 import { RangeApi, type Range } from '../interfaces/range';
 import type { Text } from '../interfaces/text';
 import { getDefined } from '../internal/get-defined';
+import { getNodeKeyForNode } from '../utils/node-keys';
 import {
   type AnchorChangeContext,
+  type AnchorRestoreTag,
   getAnchorRootIndex,
   getAnchorStateValue,
+  type ReadonlyCommitAnchor,
   RECOVERY_AFTER_A,
   RECOVERY_AFTER_A_FORWARD,
   RECOVERY_AFTER_B,
@@ -27,7 +29,6 @@ import {
   RECOVERY_ASSOCIATION_INWARD,
   RECOVERY_ASSOCIATION_OUTWARD,
   RECOVERY_ASSOCIATION_SHIFT,
-  RECOVERY_AT_ONCE,
   RECOVERY_BEFORE_A,
   RECOVERY_BEFORE_A_FORWARD,
   RECOVERY_BEFORE_B,
@@ -55,6 +56,7 @@ import {
   mapDocumentRangeReplacement,
 } from './change/document-change';
 import { DocumentIndex, nodeAtPath } from './change/document-index';
+import { jsonEqual } from './change/json';
 import { getRangeEndpointAssociations } from './change/range-association';
 import { coversContent } from './change/range-content';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
@@ -317,7 +319,11 @@ export type AnchorOptions<
   root?: NamedRootKey<TRoot>;
 }>;
 
-export interface Anchor<TValue extends AnchorValue> {
+/**
+ * An anchor as a reader that does not own it sees it: the same handle as its
+ * owner's `Anchor`, without `release()`.
+ */
+export interface ReadonlyAnchor<TValue extends AnchorValue> {
   readonly association: TValue extends Range
     ? RangeAnchorAssociation
     : AnchorAssociation;
@@ -328,12 +334,17 @@ export interface Anchor<TValue extends AnchorValue> {
       ? 'point'
       : 'path';
   readonly root: NamedRootKey | undefined;
-  release(): TValue | null;
   /**
    * Resolve in the stored document, or as `view` reads it. `view` must be a
    * view of the same editor whose root is the anchor's root or the page.
    */
   resolve(view?: Editor): TValue | null;
+}
+
+export interface Anchor<
+  TValue extends AnchorValue,
+> extends ReadonlyAnchor<TValue> {
+  release(): TValue | null;
 }
 
 type PointState = {
@@ -574,7 +585,8 @@ export function createAnchor<TValue extends AnchorValue>(
     (getAnchorStateValue(runtimeEditor) as JsonEditorValue | undefined) ??
     readValue(runtimeEditor);
   let released = false;
-  let current: AnchorValue | null = value;
+  let current: AnchorValue | null =
+    pathValue?.length === 0 && !hasRoot(sourceValue, root) ? null : value;
   let pathNodeKey = pathValue
     ? (() => {
         try {
@@ -646,11 +658,6 @@ export function createAnchor<TValue extends AnchorValue>(
   const checkpoints: Array<{
     current: AnchorValue | null;
     pointStates: PointState[];
-    recoveryActive: boolean;
-    recoveryBefore: boolean;
-    recoveryFirst: number;
-    recoveryFlags: number;
-    recoverySecond: number;
     pathBoundaryParentNodeKey: NodeKey | null;
     pathNodeKey: NodeKey | null;
   }> = [];
@@ -668,12 +675,6 @@ export function createAnchor<TValue extends AnchorValue>(
       focus: { ...anchorValue.focus, path: [...anchorValue.focus.path] },
     };
   };
-
-  const clonePointStates = () =>
-    pointStates.map((state) => ({
-      ...state,
-      point: { ...state.point, path: [...state.point.path] },
-    }));
 
   const recoveryAssociation =
     association === 'backward'
@@ -767,26 +768,7 @@ export function createAnchor<TValue extends AnchorValue>(
     let afterA = RECOVERY_NULL_POSITION;
     let afterB = RECOVERY_NULL_POSITION;
 
-    if (checkpoint.recoveryActive) {
-      beforeA = checkpoint.recoveryFirst;
-      beforeB = checkpoint.recoverySecond;
-      flags |=
-        checkpoint.recoveryFlags &
-        (RECOVERY_INCLUDE_ROOT_A | RECOVERY_INCLUDE_ROOT_B);
-      const firstSideBit = checkpoint.recoveryBefore
-        ? RECOVERY_BEFORE_A_FORWARD
-        : RECOVERY_AFTER_A_FORWARD;
-      const secondSideBit = checkpoint.recoveryBefore
-        ? RECOVERY_BEFORE_B_FORWARD
-        : RECOVERY_AFTER_B_FORWARD;
-
-      if ((checkpoint.recoveryFlags & firstSideBit) !== 0) {
-        flags |= RECOVERY_BEFORE_A_FORWARD;
-      }
-      if ((checkpoint.recoveryFlags & secondSideBit) !== 0) {
-        flags |= RECOVERY_BEFORE_B_FORWARD;
-      }
-    } else if (kind === 'path') {
+    if (kind === 'path') {
       beforeA = recoveryPathPosition(checkpoint.current, beforeDocument);
     } else {
       const beforeStates = checkpoint.pointStates;
@@ -821,26 +803,7 @@ export function createAnchor<TValue extends AnchorValue>(
       }
     }
 
-    if (pendingRecoveryActive) {
-      afterA = pendingRecoveryFirst;
-      afterB = pendingRecoverySecond;
-      flags |=
-        pendingRecoveryFlags &
-        (RECOVERY_INCLUDE_ROOT_A | RECOVERY_INCLUDE_ROOT_B);
-      const firstSideBit = pendingRecoveryBefore
-        ? RECOVERY_BEFORE_A_FORWARD
-        : RECOVERY_AFTER_A_FORWARD;
-      const secondSideBit = pendingRecoveryBefore
-        ? RECOVERY_BEFORE_B_FORWARD
-        : RECOVERY_AFTER_B_FORWARD;
-
-      if ((pendingRecoveryFlags & firstSideBit) !== 0) {
-        flags |= RECOVERY_AFTER_A_FORWARD;
-      }
-      if ((pendingRecoveryFlags & secondSideBit) !== 0) {
-        flags |= RECOVERY_AFTER_B_FORWARD;
-      }
-    } else if (kind === 'path') {
+    if (kind === 'path') {
       afterA = recoveryPathPosition(current, afterDocument);
     } else {
       if (current && pointStates[0]) {
@@ -873,19 +836,6 @@ export function createAnchor<TValue extends AnchorValue>(
       }
     }
 
-    if (
-      placed ||
-      (kind !== 'path' &&
-        checkpoint.current &&
-        pointStates.some(
-          (state, index) =>
-            state.nodeKey !== checkpoint.pointStates[index]?.nodeKey
-        ))
-    ) {
-      flags |= RECOVERY_AT_ONCE;
-    }
-    placed = false;
-
     data[offset + RECOVERY_ID] = id;
     data[offset + RECOVERY_ROOT] = rootIndex;
     data[offset + RECOVERY_FLAGS] = flags;
@@ -896,20 +846,24 @@ export function createAnchor<TValue extends AnchorValue>(
 
     return true;
   };
-  let placed = false;
-  let pendingRecoveryActive = false;
-  let pendingRecoveryBefore = false;
-  let pendingRecoveryFirst = RECOVERY_NULL_POSITION;
-  let pendingRecoveryFlags = 0;
-  let pendingRecoverySecond = RECOVERY_NULL_POSITION;
-  const applyHistoryRecovery = (
-    flags: number,
-    first: number,
-    second: number,
+  const isFallback = () =>
+    kind === 'path' &&
+    current !== null &&
+    (pathMode === 'root' ||
+      (pathMode === 'boundary' && !pathBoundaryParentNodeKey));
+  const restoreHistoryRecovery = (
+    data: Int32Array,
+    offset: number,
+    target: 'after' | 'before',
     documentValue: EditorDocumentValue,
-    memoize: <T>(position: number, side: -1 | 1, read: () => T) => T,
-    before: boolean
+    memoize: <T>(position: number, tag: AnchorRestoreTag, read: () => T) => T
   ) => {
+    const before = target === 'before';
+    const first =
+      data[offset + (before ? RECOVERY_BEFORE_A : RECOVERY_AFTER_A)];
+    const second =
+      data[offset + (before ? RECOVERY_BEFORE_B : RECOVERY_AFTER_B)];
+    const flags = data[offset + RECOVERY_FLAGS];
     const previousNodeKeys =
       kind === 'path'
         ? [pathNodeKey, pathBoundaryParentNodeKey]
@@ -917,6 +871,7 @@ export function createAnchor<TValue extends AnchorValue>(
     const document = getAnchorRootIndex(runtimeEditor, documentValue, root);
 
     if (kind === 'path') {
+      const previousFallback = isFallback();
       const restoredPath =
         first === RECOVERY_NULL_POSITION
           ? null
@@ -925,14 +880,14 @@ export function createAnchor<TValue extends AnchorValue>(
               ? []
               : null
             : pathMode === 'node'
-              ? document.nodeStartingAt(first)?.path
-              : (() => {
+              ? memoize(first, 2, () => document.nodeStartingAt(first)?.path)
+              : memoize(first, 3, () => {
                   const boundary = document.childBoundaryAt(first);
 
                   return boundary
                     ? [...boundary.parentPath, boundary.index]
                     : null;
-                })();
+                });
 
       current = restoredPath ? [...restoredPath] : null;
       pathNodeKey =
@@ -947,7 +902,8 @@ export function createAnchor<TValue extends AnchorValue>(
 
       return (
         previousNodeKeys[0] !== pathNodeKey ||
-        previousNodeKeys[1] !== pathBoundaryParentNodeKey
+        previousNodeKeys[1] !== pathBoundaryParentNodeKey ||
+        previousFallback !== isFallback()
       );
     }
 
@@ -1018,142 +974,6 @@ export function createAnchor<TValue extends AnchorValue>(
         (nodeKey, index) => nodeKey !== pointStates[index]?.nodeKey
       )
     );
-  };
-  const materializeHistoryRecovery = () => {
-    if (!pendingRecoveryActive) return;
-
-    const changedNodeKeys = applyHistoryRecovery(
-      pendingRecoveryFlags,
-      pendingRecoveryFirst,
-      pendingRecoverySecond,
-      sourceValue as EditorDocumentValue,
-      <T>(_position: number, _side: -1 | 1, read: () => T) => read(),
-      pendingRecoveryBefore
-    );
-
-    pendingRecoveryActive = false;
-    if (changedNodeKeys) {
-      throw new Error('Deferred anchor recovery changed its node index.');
-    }
-  };
-  const restoreHistoryRecovery = (
-    data: Int32Array,
-    offset: number,
-    target: 'after' | 'before',
-    documentValue: EditorDocumentValue,
-    memoize: <T>(position: number, side: -1 | 1, read: () => T) => T,
-    defer: boolean
-  ) => {
-    const firstIndex =
-      target === 'before' ? RECOVERY_BEFORE_A : RECOVERY_AFTER_A;
-    const secondIndex =
-      target === 'before' ? RECOVERY_BEFORE_B : RECOVERY_AFTER_B;
-    const flags = data[offset + RECOVERY_FLAGS];
-    const first = data[offset + firstIndex];
-    const second = data[offset + secondIndex];
-
-    if (defer) {
-      pendingRecoveryActive = true;
-      pendingRecoveryBefore = target === 'before';
-      pendingRecoveryFirst = first;
-      pendingRecoveryFlags = flags;
-      pendingRecoverySecond = second;
-      sourceValue = documentValue;
-
-      return false;
-    }
-
-    pendingRecoveryActive = false;
-    const changedNodeKeys = applyHistoryRecovery(
-      flags,
-      first,
-      second,
-      documentValue,
-      memoize,
-      target === 'before'
-    );
-
-    return changedNodeKeys;
-  };
-  const mapPendingHistoryRecovery = (
-    nextValue: JsonEditorValue,
-    context: AnchorChangeContext
-  ) => {
-    if (
-      !pendingRecoveryActive ||
-      kind === 'path' ||
-      context.replace ||
-      context.structural(root)
-    ) {
-      return false;
-    }
-    if (
-      pendingRecoveryFirst === RECOVERY_NULL_POSITION ||
-      (kind === 'range' && pendingRecoverySecond === RECOVERY_NULL_POSITION)
-    ) {
-      pendingRecoveryFirst = RECOVERY_NULL_POSITION;
-      pendingRecoverySecond = RECOVERY_NULL_POSITION;
-      sourceValue = nextValue;
-
-      return true;
-    }
-
-    const associations =
-      kind === 'point'
-        ? ([association === 'backward' ? -1 : 1] as const)
-        : getRangeEndpointAssociations(
-            pendingRecoveryFirst === pendingRecoverySecond
-              ? 'collapsed'
-              : pendingRecoveryFirst < pendingRecoverySecond
-                ? 'forward'
-                : 'backward',
-            association
-          );
-    const replacement =
-      kind === 'range' && options.deletion === 'nearest'
-        ? mapDocumentRangeReplacement(
-            context.change,
-            root,
-            pendingRecoveryFirst,
-            pendingRecoverySecond,
-            associations as readonly [-1 | 1, -1 | 1]
-          )
-        : null;
-    const mappedFirst =
-      replacement?.[0] ??
-      context.mapRecoveryPoint(root, pendingRecoveryFirst, associations[0]);
-    const mappedSecond =
-      kind === 'range'
-        ? (replacement?.[1] ??
-          context.mapRecoveryPoint(
-            root,
-            pendingRecoverySecond,
-            getDefined(associations[1])
-          ))
-        : RECOVERY_NULL_POSITION;
-
-    pendingRecoveryFirst = mappedFirst ?? RECOVERY_NULL_POSITION;
-    pendingRecoverySecond = mappedSecond ?? RECOVERY_NULL_POSITION;
-    const firstSideBit = pendingRecoveryBefore
-      ? RECOVERY_BEFORE_A_FORWARD
-      : RECOVERY_AFTER_A_FORWARD;
-    const secondSideBit = pendingRecoveryBefore
-      ? RECOVERY_BEFORE_B_FORWARD
-      : RECOVERY_AFTER_B_FORWARD;
-
-    pendingRecoveryFlags =
-      associations[0] === 1
-        ? pendingRecoveryFlags | firstSideBit
-        : pendingRecoveryFlags & ~firstSideBit;
-    if (kind === 'range') {
-      pendingRecoveryFlags =
-        getDefined(associations[1]) === 1
-          ? pendingRecoveryFlags | secondSideBit
-          : pendingRecoveryFlags & ~secondSideBit;
-    }
-    sourceValue = nextValue;
-
-    return true;
   };
 
   const syncStableNodeKeys = (nextValue: JsonEditorValue) => {
@@ -1383,13 +1203,10 @@ export function createAnchor<TValue extends AnchorValue>(
 
   const mapTo = (
     nextValue: JsonEditorValue,
-    _commit?: EditorCommit,
     providedChange?: DocumentChange,
     context?: AnchorChangeContext
   ) => {
     if (nextValue === sourceValue) return;
-    if (context && mapPendingHistoryRecovery(nextValue, context)) return;
-    materializeHistoryRecovery();
     if (current == null) {
       sourceValue = nextValue;
       return;
@@ -1465,6 +1282,8 @@ export function createAnchor<TValue extends AnchorValue>(
 
       if (pathWasRemoved && options.deletion === 'drop') {
         current = null;
+        pathNodeKey = null;
+        pathBoundaryParentNodeKey = null;
         sourceValue = nextValue;
         return;
       }
@@ -1496,6 +1315,19 @@ export function createAnchor<TValue extends AnchorValue>(
             : (nextDocument().nodeStartingAt(position)?.path ?? null);
 
       current = nextPath ? [...nextPath] : null;
+      if (context?.runtimePaths !== false) {
+        pathNodeKey =
+          pathMode === 'node' && nextPath
+            ? getNodeKeyForNode(nextDocument().node(nextPath), runtimeEditor)
+            : null;
+        pathBoundaryParentNodeKey =
+          pathMode === 'boundary' && nextPath && nextPath.length > 1
+            ? getNodeKeyForNode(
+                nextDocument().node(nextPath.slice(0, -1)),
+                runtimeEditor
+              )
+            : null;
+      }
     } else {
       const beforeDocument = getSourceDocument();
       const targetWasExpanded =
@@ -1683,7 +1515,9 @@ export function createAnchor<TValue extends AnchorValue>(
   const readMappedTo = <T>(target: JsonEditorValue, read: () => T) => {
     const saved = {
       current: cloneAnchorValue(current),
-      pointStates: clonePointStates(),
+      pathBoundaryParentNodeKey,
+      pathNodeKey,
+      pointStates,
       sourceValue,
     };
 
@@ -1691,7 +1525,13 @@ export function createAnchor<TValue extends AnchorValue>(
       mapTo(target);
       return read();
     } finally {
-      ({ current, pointStates, sourceValue } = saved);
+      ({
+        current,
+        pathBoundaryParentNodeKey,
+        pathNodeKey,
+        pointStates,
+        sourceValue,
+      } = saved);
     }
   };
 
@@ -1699,32 +1539,23 @@ export function createAnchor<TValue extends AnchorValue>(
     runtimeEditor,
     {
       begin() {
-        placed = false;
         checkpoints.push({
           current: cloneAnchorValue(current),
-          pointStates: clonePointStates(),
-          recoveryActive: pendingRecoveryActive,
-          recoveryBefore: pendingRecoveryBefore,
-          recoveryFirst: pendingRecoveryFirst,
-          recoveryFlags: pendingRecoveryFlags,
-          recoverySecond: pendingRecoverySecond,
+          pointStates,
           pathBoundaryParentNodeKey,
           pathNodeKey,
         });
       },
       change(context) {
-        mapTo(context.after, undefined, context.change, context);
+        mapTo(context.after, context.change, context);
       },
+      changedSinceBegin: () =>
+        !jsonEqual(getDefined(checkpoints.at(-1)).current, current),
       prepareCommit() {
         const next = {
           current,
           pathBoundaryParentNodeKey,
           pathNodeKey,
-          pendingRecoveryActive,
-          pendingRecoveryBefore,
-          pendingRecoveryFirst,
-          pendingRecoveryFlags,
-          pendingRecoverySecond,
           pointStates,
           sourceValue,
         };
@@ -1734,36 +1565,22 @@ export function createAnchor<TValue extends AnchorValue>(
             current,
             pathBoundaryParentNodeKey,
             pathNodeKey,
-            pendingRecoveryActive,
-            pendingRecoveryBefore,
-            pendingRecoveryFirst,
-            pendingRecoveryFlags,
-            pendingRecoverySecond,
             pointStates,
             sourceValue,
           } = next);
           checkpoints.length = 0;
         };
       },
-      commit(innerValue, commit) {
-        if (innerValue) mapTo(innerValue, commit);
+      commit(innerValue) {
+        if (innerValue) mapTo(innerValue);
         checkpoints.length = 0;
       },
       discard(innerValue2) {
         const checkpoint = checkpoints.pop();
 
         if (checkpoint) {
-          ({ pathBoundaryParentNodeKey, pathNodeKey } = checkpoint);
-          if (checkpoint.recoveryActive) {
-            pendingRecoveryActive = true;
-            pendingRecoveryBefore = checkpoint.recoveryBefore;
-            pendingRecoveryFirst = checkpoint.recoveryFirst;
-            pendingRecoveryFlags = checkpoint.recoveryFlags;
-            pendingRecoverySecond = checkpoint.recoverySecond;
-          } else {
-            pendingRecoveryActive = false;
-          }
-          ({ current, pointStates } = checkpoint);
+          ({ current, pathBoundaryParentNodeKey, pathNodeKey, pointStates } =
+            checkpoint);
           sourceValue = innerValue2;
           return;
         }
@@ -1771,20 +1588,13 @@ export function createAnchor<TValue extends AnchorValue>(
         // An anchor created inside an aborted transaction cannot safely retain a
         // location that only existed in the discarded draft.
         current = null;
+        pathNodeKey = null;
+        pathBoundaryParentNodeKey = null;
         pointStates = [];
         sourceValue = innerValue2;
       },
-      fallback: () => {
-        if (kind !== 'path') return false;
-        materializeHistoryRecovery();
-
-        return (
-          current !== null &&
-          kind === 'path' &&
-          (pathMode === 'root' ||
-            (pathMode === 'boundary' && !pathBoundaryParentNodeKey))
-        );
-      },
+      fallback: isFallback,
+      handle: () => anchor as ReadonlyCommitAnchor,
       ...(options.deletion === 'nearest'
         ? {
             history: {
@@ -1797,8 +1607,6 @@ export function createAnchor<TValue extends AnchorValue>(
         ? {
             move: {
               span(document, documentValue) {
-                materializeHistoryRecovery();
-
                 return readMappedTo(
                   documentValue as unknown as JsonEditorValue,
                   () =>
@@ -1823,7 +1631,6 @@ export function createAnchor<TValue extends AnchorValue>(
                 });
 
                 if (!anchor || !focus) return false;
-                placed = true;
                 sourceValue = documentValue;
                 pointStates = [anchor, focus].map((point) =>
                   createPointState(
@@ -1882,7 +1689,6 @@ export function createAnchor<TValue extends AnchorValue>(
     resolve(view?: Editor) {
       if (released) return null;
       assertAnchorView(viewEditor, root, view);
-      materializeHistoryRecovery();
 
       const innerValue3 =
         (getAnchorStateValue(runtimeEditor) as JsonEditorValue | undefined) ??
