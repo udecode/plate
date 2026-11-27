@@ -1,0 +1,241 @@
+---
+title: Ink
+description: Pen markup over document text, with margin signs for changed text and AI digitization into edits, suggestions, comments, and answers.
+docs:
+  - route: /docs/components/ink
+    title: Ink Kit
+---
+
+<ComponentPreview name="ink-demo" />
+
+Open [the full-page Ink demo](/blocks/ink-demo) to test second-user and second-view sync, simulated comment save failures, and local persistence. The demo saves its document and comment threads under one local storage key and asks for your own AI Gateway API key before calling Digitize.
+
+<PackageInfo>
+
+## Features
+
+- Pen, highlighter, eraser, and lasso tools stored per mounted view, never in the document. A pen or primary mouse button draws while a finger still scrolls, typing keeps working while Draw is on, and a stroke never moves the caret.
+- Document-backed ink storage (`ink-marks`, `ink-copies`, `ink-digitized`, and `ink-gone` records) that survives reload and syncs across peers. Each mark stores its block copies, line boxes, and touched word runs.
+- Exact word placement while a block's text and inline voids match its saved copy. When words change, a block is deleted, or a margin becomes too narrow for a margin note, affected marks move to a margin sign whose popover shows the original words and ink through `InkCopyView`.
+- AI Digitize over a lasso pick, all live shown marks (**Digitize all**), or a single edit kind (**Digitize by kind**), reading rough handwriting into deletes, replacements, inserts, highlights, handwritten comments, and circled-question answers after confirmation.
+- Writes under the view's current intent: direct edits in Editing, one independent suggestion per kept correction in Suggesting, and comment threads via `CommentsPlugin`, with one undo step restoring text, comments, and ink together.
+- **Show digitized ink** view switch to inspect digitized ink faded over its words (or as digitized signs after later edits) and **Bring back** to restore it, plus `dropDigitized` to permanently remove digitized ink and unreferenced saved copies.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+`InkKit` configures `InkPlugin` with the copied ink UI and installs the Draw and visibility toolbar controls.
+
+<ComponentSource name="ink" />
+
+- `InkKit` (`ink.tsx`): wires `InkContent` with `InkSignButton` in `slots.wrapContent` and `InkDigitizeBar` in `slots.afterEditable`.
+- `DrawToolbarButton` (`draw-toolbar-button.tsx`): split toolbar button that toggles Draw on or off and selects Pen, Highlighter, Eraser, or Lasso.
+- `DigitizeAllToolbarButton` (`ink-digitize-bar.tsx`): toolbar trigger that reads all live shown marks in sequential batches.
+- `InkSwitchToolbarButton`, `ShowDigitizedToolbarButton`, and `DropDigitizedToolbarButton` (`ink-switch-toolbar-button.tsx`): hide ink, preview digitized ink faded, and permanently drop saved digitized ink.
+- `InkSignButton` (`ink-sign-button.tsx`): margin sign button and popover displaying `InkCopyView` with Delete or Bring back actions.
+- `InkDigitizeBar` (`ink-digitize-bar.tsx`): floating lasso action bar and confirmation dialog with kind filter chips, typed re-read instructions, and async comment save and retry handling.
+
+### Add kit
+
+Mount `InkKit` alongside your editor plugins and place the ink controls inside a toolbar under `EditorRoot`.
+
+```tsx
+'use client';
+
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+
+import { DrawToolbarButton } from '@/components/editor/draw-toolbar-button';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+import { FixedToolbar } from '@/components/editor/fixed-toolbar';
+import { InkKit } from '@/components/editor/ink';
+import { DigitizeAllToolbarButton } from '@/components/editor/ink-digitize-bar';
+import {
+  DropDigitizedToolbarButton,
+  InkSwitchToolbarButton,
+  ShowDigitizedToolbarButton,
+} from '@/components/editor/ink-switch-toolbar-button';
+import { EditorKit } from '@/components/editor/plugins';
+
+export function InkEditor() {
+  const editor = useCreateEditor({
+    plugins: [...EditorKit, ...InkKit],
+  });
+
+  return (
+    <EditorRoot editor={editor}>
+      <FixedToolbar>
+        <DrawToolbarButton />
+        <DigitizeAllToolbarButton />
+        <InkSwitchToolbarButton />
+        <ShowDigitizedToolbarButton />
+        <DropDigitizedToolbarButton />
+      </FixedToolbar>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </EditorRoot>
+  );
+}
+```
+
+### Add the Digitize API route
+
+Install `@plate/ink-digitize-api` to copy the route handler (`app/api/ai/ink-digitize/route.ts` and `ink-digitize-route.ts`) into your app.
+
+- The route imports nothing from Plate and sends only passage images, plain word lists, mark boxes, touched word or gap indices, and optional user instructions.
+- By default, the copied route expects `apiKey` in the JSON request body and responds with `401` when missing. It defaults to `google/gemini-3.8-flash` on Vercel AI Gateway and accepts an optional `model` override.
+- To use a server-managed key in your own app, read `process.env.AI_GATEWAY_API_KEY` inside your copied `route.ts` before calling `createGateway`.
+
+</Steps>
+
+## Digitize
+
+### What AI receives
+
+For each contiguous run of marked lines (plus one surrounding line on each side), `InkPlugin.api.images` draws two Canvas 2D PNG images from the live view: `inkAlone` (only the strokes) and `inkOnText` (the strokes over the rendered text). The request sends those PNG data URLs alongside flat numbered words, inline-void display strings, each mark's pixel bounding box, touched word and gap indices, and margin side. It never sends a Plate document tree or node structure.
+
+### Lasso picks, Digitize all, and kind filters
+
+- **Lasso pick:** Encircling marks with the Lasso tool opens a floating bar with **Digitize**. Digitize widens the request to include every live shown mark on touched paragraphs so applying one edit does not silently turn sibling marks on that paragraph into signs. Corrections from the lassoed marks start checked, and sibling corrections on the same paragraph start unchecked.
+- **Digitize all:** Clicking `DigitizeAllToolbarButton` clusters live shown marks by spatial distance (48 px) and stroke time (30 s), then packs them into sequential batches under the 1,000-word cap (`maxSide: 2048` px per passage).
+- **Confirm and Digitize by kind:** Nothing writes to the document before confirmation. Each correction offers up to four candidate meanings and accepts a typed instruction to re-read that correction. Filter chips (**All**, **Delete**, **Replace**, **Insert**, **Highlight**, **Comment**, **Answer**) let you apply one kind at a time while leaving other marks on the page.
+
+### Editing, Suggesting, and Comments
+
+- **Editing and Suggesting:** Confirmed text edits run synchronously from the end of each paragraph backward, one update per kept correction merged into a single undo step. In Suggesting mode, each kept correction becomes its own suggestion that reviewers accept or reject independently.
+- **Handwritten notes and circled questions:** A margin note or inline note reads as a `comment` edit, and a circled passage with a written question reads as an `answer` edit. Confirming them calls `CommentsPlugin`'s `createThread` with `withHistory`, digitizing the marks inside the post-save history update only after the comment save succeeds. One undo removes the comment and brings back the ink; a refused or failed save leaves the ink undigitized and keeps the dialog open for retry.
+- **Stale check:** Before writing, Confirm checks that every passage's saved copy still matches its live block and that shown marks on marked blocks have not changed. If anything changed meanwhile, nothing writes and the dialog prompts you to Digitize again.
+- **Read-only and Authored Preview:** Digitize is disabled in read-only views and in Authored Preview. Switching to either closes an open confirmation dialog without writing.
+
+### Live-mark scope and rejected suggestions
+
+- **Changed-text marks stay in signs:** Digitize reads only live marks whose block text and inline voids still match their saved copy. Marks that have already moved to signs (`changed`, `deleted`, or `narrow`) stay out of Digitize and remain inspectable in `InkSignButton`.
+- **Rejected suggestions keep ink digitized:** When a reviewer rejects a suggestion created by Digitize, the text reverts and the ink stays digitized instead of reappearing automatically. Turn on **Show digitized ink** (`api.setShowDigitized(true)`) to draw digitized marks faded over their words (or as digitized signs) and choose **Bring back** on a lasso pick or sign popover to restore them in one undo step.
+
+## Persistence and compatibility
+
+### Unified document and comment persistence
+
+Ink marks, saved copies, digitized records, and deleted-block places live inside the Plate document value's record store. When your app supports handwritten comments or AI answers, persist the Plate document value and `CommentsPlugin` state (`{ document, comments: { ranges, threads } }`) atomically together so reloading never produces a comment without its digitized ink record or vice versa.
+
+### Older beta peers
+
+Digitized state is stored in its own `ink-digitized` record set rather than mutating `ink-marks`.
+
+- A collaborative peer running an older beta that does not recognize `ink-digitized` ignores that record set and continues painting digitized marks until upgraded.
+- If a peer erases a digitized mark, newer editors automatically drop its orphaned `ink-digitized` record on publish in a history-skipped update, so undoing a prior Digitize never resurrects a mark a teammate erased.
+
+### Dropping saved digitized ink
+
+Digitized marks and their saved block copies (including struck words) remain stored in the document so **Show digitized ink** and **Bring back** work after reload. To permanently purge them, call `dropDigitized` inside `editor.update` (or use `DropDigitizedToolbarButton`):
+
+```ts
+import { BaseInkPlugin } from 'platejs/ink';
+
+editor.update((tx) => {
+  // Drop every digitized mark and every copy no remaining mark references.
+  tx.plugin(BaseInkPlugin).dropDigitized();
+});
+```
+
+Pass an array of mark ids (`dropDigitized(['m_1'])`) to drop only specific digitized marks. Shown marks, missing ids, and copies still referenced by remaining shown marks are never touched. Because `ink-copies` uses `history: 'retain'`, `dropDigitized` calls `tx.history.skip()` so undo cannot restore a mark whose saved copy was permanently deleted.
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add plugins
+
+Configure `InkPlugin` with `InkContent` in `slots.wrapContent`. Keep the Editable inside a positioned ancestor that holds the Editable and its margins so `InkContent` aligns over the text and side margins.
+
+```tsx
+'use client';
+
+import { InkContent, InkPlugin } from 'platejs/ink/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+
+import { Editor, EditorContainer } from '@/components/editor/editor';
+
+export function HeadlessInkEditor() {
+  const editor = useCreateEditor({
+    plugins: [
+      InkPlugin.configure({
+        slots: {
+          wrapContent: (props) => <InkContent {...props} />,
+        },
+      }),
+    ],
+  });
+
+  return (
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </EditorRoot>
+  );
+}
+```
+
+Pass a custom `sign` component to `<InkContent {...props} sign={MySignButton} />` to render margin signs for changed, deleted, or narrow-margin marks, and mount `InkDigitizeBar` in `slots.afterEditable` if you want the lasso bar and confirmation UI.
+
+</Steps>
+
+## Keyboard and pointer
+
+| Input | Result |
+| --- | --- |
+| Drag with Pen or Highlighter | Draws one stroke with a pen or primary mouse button and saves it on pointer up as one undo step, without moving the caret. |
+| Touch drag with a finger | Scrolls the page instead of drawing. |
+| Drag with Eraser | Removes every shown mark whose painted stroke the eraser path touches, in one undo step. Passes over faded digitized marks. |
+| Drag with Lasso | Draws a loop that picks marks with more than half their samples inside it and focuses the Editable. While **Show digitized ink** is on, lassoing digitized marks offers **Bring back**. |
+| `Backspace` or `Delete` with Lasso active | Removes picked shown marks that are not digitized and have no sign, in one undo step. |
+| `Escape` | Clears the current lasso pick, or closes an open Digitize confirmation dialog without writing. |
+| Switching to read-only | Turns the active Draw tool off and closes any open Digitize confirmation dialog without writing. |
+
+## Plugins
+
+### `InkPlugin`
+
+React plugin built on `BaseInkPlugin` (`platejs/ink/react`). Owns each mounted view's `tool`, `hidden`, `showDigitized`, and `picked` state, keyboard handling for lasso picks, and Canvas 2D passage image rendering (`api.images`).
+
+### `BaseInkPlugin`
+
+Headless plugin (`platejs/ink`) that depends on `ElementIdPlugin` and owns the `ink-marks`, `ink-copies`, `ink-digitized`, and `ink-gone` record sets, mark placement and passage reads, and update commands.
+
+## API Reference
+
+| API | Package | Use |
+| --- | --- | --- |
+| `BaseInkPlugin` | `platejs/ink` | Headless ink plugin owning ink records, reads, and update commands. |
+| `tx.plugin(BaseInkPlugin).add(input)` | `BaseInkPlugin` | Saves one `InkMarkInput` and any new block copies as one undo step, returning the new mark id. |
+| `tx.plugin(BaseInkPlugin).remove(ids)` | `BaseInkPlugin` | Drops the named marks and their `ink-digitized` records while leaving copies intact for undo. |
+| `tx.plugin(BaseInkPlugin).setDigitized(ids, value)` | `BaseInkPlugin` | Marks or unmarks existing marks as digitized in `ink-digitized`, skipping missing or unchanged ids. |
+| `tx.plugin(BaseInkPlugin).dropDigitized(ids?)` | `BaseInkPlugin` | Permanently drops digitized marks, their digitized records, and every copy no remaining mark references, skipping undo history. Omit `ids` to drop all digitized marks. Returns the dropped mark ids. |
+| `editor.plugin(BaseInkPlugin).read.marks()` | `BaseInkPlugin` | Returns every saved mark, oldest first, frozen. |
+| `editor.plugin(BaseInkPlugin).read.shownMarks()` | `BaseInkPlugin` | Returns every saved mark with no digitized record, oldest first, frozen. |
+| `editor.plugin(BaseInkPlugin).read.mark(id)`, `read.copy(id)` | `BaseInkPlugin` | Reads one saved mark or saved block copy by id, or `undefined`. |
+| `editor.plugin(BaseInkPlugin).read.place(copyId)` | `BaseInkPlugin` | Returns whether a copy's block is `'live'`, `'changed'`, or `'gone'` (with its nearest surviving sign anchor). |
+| `editor.plugin(BaseInkPlugin).read.passages(ids)` | `BaseInkPlugin` | Returns one `InkPassage` per contiguous run of marked lines (plus one context line on each side), including margin notes, in document order. |
+| `editor.plugin(BaseInkPlugin).read.range({ copy, start, end })` | `BaseInkPlugin` | Resolves character offsets in a saved copy's text to a live `Range`, or `null` once the block is gone or its text or inline voids differ. |
+| `InkMark`, `InkMarkInput`, `InkCopy`, `InkCopyPlace`, `InkSignPlace`, `InkPassage`, `InkPassageMark`, `InkPassageWord`, `InkRangeInput`, `InkTool`, `InkBrush`, `InkSample`, `InkLine`, `InkRun`, `InkMargin`, `InkDirection`, `InkViewState` | `platejs/ink` | Core data and view-state types exported from the headless entrypoint. |
+| `InkPlugin` | `platejs/ink/react` | React ink plugin with view-local tool, visibility, pick, and passage-image APIs. |
+| `editor.plugin(InkPlugin).api.setTool(tool)` | `InkPlugin` | Sets the view's active `InkTool` (`draw`, `erase`, `lasso`) or `null` to turn Draw off. Returns `false` in read-only views or on invalid brush dimensions. |
+| `editor.plugin(InkPlugin).api.setHidden(hidden)` | `InkPlugin` | Hides or shows ink and signs for this view. Hiding clears the pick. |
+| `editor.plugin(InkPlugin).api.setShowDigitized(show)` | `InkPlugin` | Draws digitized marks faded over their words (or as digitized signs) and lets the lasso pick them. Turning it off drops digitized marks from the pick. |
+| `editor.plugin(InkPlugin).api.setPicked(ids)` | `InkPlugin` | Sets the view's picked mark ids, painted with a pick halo. |
+| `editor.plugin(InkPlugin).api.images(passages, { maxSide })` | `InkPlugin` | Renders `inkAlone` and `inkOnText` PNG data URLs, pixel mark boxes, and inline-void visible text for each live passage in Canvas 2D, or `null` if a passage is not live or exceeds `maxSide`. |
+| `InkContent` | `platejs/ink/react` | `wrapContent` slot component that renders the ink canvas overlay and margin sign buttons directly after the Editable. |
+| `InkCopyView` | `platejs/ink/react` | Renders the saved plain-text lines and strokes of one or more marks inside a sign popover. |
+| `InkSign`, `InkImagesOptions`, `InkPassageImages` | `platejs/ink/react` | Types for margin signs and `api.images` inputs and outputs. |

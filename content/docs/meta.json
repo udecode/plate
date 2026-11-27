@@ -69,6 +69,7 @@
     "[Heading](/docs/heading)",
     "[Horizontal Rule](/docs/horizontal-rule)",
     "[Board](/docs/board)",
+    "[Ink](/docs/ink)",
     "[Callout](/docs/callout)",
     "[Code Block](/docs/code-block)",
     "[Column](/docs/column)",
@@ -163,6 +164,7 @@
     "[List](/docs/components/block-list)",
     "[Blockquote Element](/docs/components/blockquote)",
     "[Board Element](/docs/components/board)",
+    "[Ink Kit](/docs/components/ink)",
     "[Callout Node](/docs/components/callout)",
     "[Code Block Nodes](/docs/components/code-block)",
     "[Code Leaf](/docs/components/code)",
@@ -208,6 +210,7 @@
     "[Collaboration Demo](/docs/examples/collaboration)",
     "[Table Nomerge Demo](/docs/examples/table-nomerge)",
     "[Board Demo](/docs/examples/board)",
+    "[Ink Demo](/docs/examples/ink)",
     "[Excalidraw Demo](/docs/examples/excalidraw)",
     "[Single Block Demo](/docs/examples/single-block)",
     "[Find Demo](/docs/examples/find)",
@@ -680,6 +683,12 @@
               "titleCn": "白板"
             },
             {
+              "description": "Pen markup on document text, margin signs, and AI digitization controls.",
+              "href": "/docs/components/ink",
+              "title": "Ink",
+              "titleCn": "墨迹"
+            },
+            {
               "description": "A callout component for highlighting important information with customizable icons and styles.",
               "href": "/docs/components/callout",
               "title": "Callout",
@@ -949,6 +958,12 @@
               "href": "/docs/examples/board",
               "title": "Board Demo",
               "titleCn": "白板演示"
+            },
+            {
+              "description": "Pen markup and AI digitization on a document saved with its comments to local storage, with a second user and a second view.",
+              "href": "/docs/examples/ink",
+              "title": "Ink Demo",
+              "titleCn": "墨迹演示"
             },
             {
               "description": "A drawing component powered by Excalidraw.",
@@ -1608,6 +1623,19 @@
                     "element",
                     "whiteboard",
                     "canvas"
+                  ]
+                },
+                {
+                  "description": "Pen markup over document text, with margin signs and AI digitization.",
+                  "href": "/docs/ink",
+                  "title": "Ink",
+                  "titleCn": "墨迹",
+                  "keywords": [
+                    "element",
+                    "ink",
+                    "draw",
+                    "handwriting",
+                    "digitize"
                   ]
                 },
                 {
@@ -2304,6 +2332,18 @@
         ],
         "title": "Board",
         "titleCn": "白板"
+      },
+      "/docs/ink": {
+        "description": "Pen markup over document text, with margin signs and AI digitization.",
+        "keywords": [
+          "element",
+          "ink",
+          "draw",
+          "handwriting",
+          "digitize"
+        ],
+        "title": "Ink",
+        "titleCn": "墨迹"
       },
       "/docs/callout": {
         "description": "Highlight important information or add special notes.",
