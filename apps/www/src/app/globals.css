@@ -10,7 +10,7 @@
 @source not "../../tests";
 @source not "../**/*.{spec,test}.{ts,tsx}";
 
-@plugin "tailwind-scrollbar-hide";
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant fixed (&:is(.layout-fixed *));

@@ -323,6 +323,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-use-no-scrollbar",
+      "href": "/registry/changelog/2026-11-27-use-no-scrollbar.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Replace tailwind-scrollbar-hide with shadcn no-scrollbar utility",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["fixed-toolbar", "floating-toolbar", "table"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-26-board-arrow-components",
       "href": "/registry/changelog/2026-11-26-board-arrow-components.json",
       "status": "draft",

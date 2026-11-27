@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-use-no-scrollbar",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-use-no-scrollbar.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Replace tailwind-scrollbar-hide with shadcn no-scrollbar utility",
+  "targets": [
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-fixed-toolbar-replace-tailwind-scrollbar-shadcn-03eda0bf",
+      "kind": "behavior",
+      "summary": "Replace tailwind-scrollbar-hide with shadcn no-scrollbar utility",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["fixed-toolbar", "floating-toolbar", "table"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-use-no-scrollbar",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

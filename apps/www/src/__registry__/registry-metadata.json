@@ -1,5 +1,5 @@
 {
-  "generation": "53be943980c28165555f7d31394694b8ecd3a6d29cfbffaf989883ddcf576f96",
+  "generation": "25ed9d1eb37fdf3d1be2d7d5866671262c0493b433234731d8e2579ad42f09bd",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3791,7 +3791,6 @@
           "type": "registry:component",
           "description": "A set of commonly used formatting buttons.",
           "registryDependencies": [
-            "@plate/tailwind-scrollbar-hide",
             "@plate/ai-toolbar-button",
             "@plate/align-toolbar-button",
             "@plate/clear-formatting-toolbar-button",
@@ -3852,7 +3851,6 @@
           "type": "registry:component",
           "description": "A set of formatting buttons for the floating toolbar.",
           "registryDependencies": [
-            "@plate/tailwind-scrollbar-hide",
             "@plate/ai-toolbar-button",
             "@plate/comment-toolbar-button",
             "@plate/equation-toolbar-button",
@@ -4370,7 +4368,6 @@
             ]
           },
           "registryDependencies": [
-            "@plate/tailwind-scrollbar-hide",
             "@plate/dnd",
             "@plate/editor-dropdown-menu",
             "@plate/floating-popover",
@@ -4948,21 +4945,6 @@
           "registryDependencies": [
             "@plate/ink-digitize-api"
           ]
-        },
-        {
-          "dependencies": [
-            "tailwind-scrollbar-hide"
-          ],
-          "files": [],
-          "name": "tailwind-scrollbar-hide",
-          "tailwind": {
-            "config": {
-              "plugins": [
-                "tailwind-scrollbar-hide"
-              ]
-            }
-          },
-          "type": "registry:style"
         },
         {
           "cssVars": {
@@ -11778,7 +11760,6 @@
           "type": "registry:component",
           "description": "A set of commonly used formatting buttons.",
           "registryDependencies": [
-            "@plate/tailwind-scrollbar-hide",
             "@plate/ai-toolbar-button",
             "@plate/align-toolbar-button",
             "@plate/clear-formatting-toolbar-button",
@@ -11839,7 +11820,6 @@
           "type": "registry:component",
           "description": "A set of formatting buttons for the floating toolbar.",
           "registryDependencies": [
-            "@plate/tailwind-scrollbar-hide",
             "@plate/ai-toolbar-button",
             "@plate/comment-toolbar-button",
             "@plate/equation-toolbar-button",
@@ -12357,7 +12337,6 @@
             ]
           },
           "registryDependencies": [
-            "@plate/tailwind-scrollbar-hide",
             "@plate/dnd",
             "@plate/editor-dropdown-menu",
             "@plate/floating-popover",
@@ -12935,21 +12914,6 @@
           "registryDependencies": [
             "@plate/ink-digitize-api"
           ]
-        },
-        {
-          "dependencies": [
-            "tailwind-scrollbar-hide"
-          ],
-          "files": [],
-          "name": "tailwind-scrollbar-hide",
-          "tailwind": {
-            "config": {
-              "plugins": [
-                "tailwind-scrollbar-hide"
-              ]
-            }
-          },
-          "type": "registry:style"
         },
         {
           "cssVars": {

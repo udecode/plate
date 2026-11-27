@@ -345,7 +345,7 @@ function KeyboardToolbar({ children }: { children: React.ReactNode }) {
       data-slot="keyboard-toolbar"
       onOverlayOpenChange={setOwnedOverlayOpen}
       style={{ top: viewportBottom }}
-      className="fixed inset-x-0 z-50 scrollbar-hide -translate-y-full overflow-x-auto border-t bg-popover p-1 whitespace-nowrap print:hidden"
+      className="fixed inset-x-0 z-50 no-scrollbar -translate-y-full overflow-x-auto border-t bg-popover p-1 whitespace-nowrap print:hidden"
     >
       {children}
     </Toolbar>,
@@ -503,7 +503,7 @@ function PositionedFloatingToolbar({
       ref={ref}
       onOverlayOpenChange={onOverlayOpenChange}
       style={floating.style}
-      className="absolute z-50 scrollbar-hide max-w-[80vw] overflow-x-auto rounded-md border bg-popover p-1 whitespace-nowrap opacity-100 shadow-md print:hidden"
+      className="absolute z-50 no-scrollbar max-w-[80vw] overflow-x-auto rounded-md border bg-popover p-1 whitespace-nowrap opacity-100 shadow-md print:hidden"
     >
       {children}
     </Toolbar>

@@ -855,7 +855,6 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'fixed-toolbar',
-    registryDependencies: ['@plate/tailwind-scrollbar-hide'],
     meta: {
       examples: ['basic-nodes-demo'],
     },
@@ -872,7 +871,6 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'floating-toolbar',
-    registryDependencies: ['@plate/tailwind-scrollbar-hide'],
     meta: {
       docs: [
         {
@@ -1176,7 +1174,6 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'table',
-    registryDependencies: ['@plate/tailwind-scrollbar-hide'],
     type: 'registry:component',
     description:
       'A table component with floating toolbar and border customization.',

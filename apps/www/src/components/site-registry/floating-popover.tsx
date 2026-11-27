@@ -2,10 +2,8 @@
 
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import * as BasePopover from '@/registry/bases/base/floating-popover';
 import * as RadixPopover from '@/registry/bases/radix/floating-popover';
-import { PLATE_PREVIEW_STYLE_CLASSES } from '@/registry/styles/preview-style-classes';
 
 import { useSiteRegistryProvider } from './provider';
 
@@ -43,16 +41,6 @@ export function FloatingPopoverContent(
   props: React.ComponentProps<PopoverModule['FloatingPopoverContent']>
 ) {
   const Component = usePopoverModule().FloatingPopoverContent;
-  const styleClasses = PLATE_PREVIEW_STYLE_CLASSES.nova;
 
-  return (
-    <Component
-      {...props}
-      className={cn(
-        styleClasses['cn-popover-content'],
-        styleClasses['cn-popover-content-logical'],
-        props.className
-      )}
-    />
-  );
+  return <Component {...props} />;
 }

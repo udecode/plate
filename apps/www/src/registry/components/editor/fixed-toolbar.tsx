@@ -210,7 +210,7 @@ export function FixedToolbar({
       {...props}
       ref={ref}
       className={cn(
-        'scrollbar-hide z-50 w-full shrink-0 justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur-sm supports-backdrop-blur:bg-background/60',
+        'no-scrollbar z-50 w-full shrink-0 justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur-sm supports-backdrop-blur:bg-background/60',
         className
       )}
       data-slot="fixed-toolbar"

@@ -3731,7 +3731,6 @@
         "platejs"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/tailwind-scrollbar-hide.json",
         "https://platejs.org/r/ai-toolbar-button.json",
         "https://platejs.org/r/align-toolbar-button.json",
         "https://platejs.org/r/clear-formatting-toolbar-button.json",
@@ -3785,7 +3784,6 @@
         "unified@^11.0.5"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/tailwind-scrollbar-hide.json",
         "https://platejs.org/r/ai-toolbar-button.json",
         "https://platejs.org/r/comment-toolbar-button.json",
         "https://platejs.org/r/equation-toolbar-button.json",
@@ -4296,7 +4294,6 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/tailwind-scrollbar-hide.json",
         "https://platejs.org/r/dnd.json",
         "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/floating-popover.json",
@@ -4893,21 +4890,6 @@
         }
       ],
       "type": "registry:lib"
-    },
-    {
-      "name": "tailwind-scrollbar-hide",
-      "dependencies": [
-        "tailwind-scrollbar-hide"
-      ],
-      "files": [],
-      "tailwind": {
-        "config": {
-          "plugins": [
-            "tailwind-scrollbar-hide"
-          ]
-        }
-      },
-      "type": "registry:style"
     },
     {
       "name": "highlight-style",
