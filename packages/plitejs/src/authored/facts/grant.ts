@@ -281,6 +281,8 @@ const dropsUnreached = (write: WriteOf<'reserve'>, judge: Judge) =>
 
 const NEVER = () => false;
 
+const endPlaced = ({ placed }: WriteOf<'end'>) => placed;
+
 const STRUCTURE_KINDS: ReadonlySet<Claim['kind']> = new Set([
   'join',
   'joined',
@@ -303,6 +305,7 @@ const RULES: { [K in OrdinaryKind]: Rule<K> } = {
       isOwnPending(claim, judge) &&
       (claim.kind !== 'insert' || underOwnInsertion(was, judge)),
   },
+  end: { editing: endPlaced, own: endPlaced },
   context: {
     editing: NEVER,
     own: (write, judge) =>

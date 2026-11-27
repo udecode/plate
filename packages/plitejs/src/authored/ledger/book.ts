@@ -86,9 +86,16 @@ type VerdictRead = 'accept' | 'reject' | null;
 
 const namedBy = (node: unknown, facts: ReviewFacts, named: Set<string>) => {
   for (const member of readMembers(node)) {
-    // A spare's change is pending through the claim the spare serves, and
-    // shown values belong to no change.
-    if (member.kind === 'reserve' || member.kind === 'as') continue;
+    // A spare's change is pending through the claim the spare serves, shown
+    // values belong to no change, and a split's end leaves the card to its
+    // split.
+    if (
+      member.kind === 'reserve' ||
+      member.kind === 'as' ||
+      member.kind === 'end'
+    ) {
+      continue;
+    }
     if (member.kind === 'in') {
       for (const inner of membersOf(facts, member.ctx)) {
         named.add(incarnationOf(inner));

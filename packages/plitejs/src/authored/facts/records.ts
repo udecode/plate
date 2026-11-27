@@ -42,6 +42,9 @@ export const linkOf = (
           : [join.change, join.inc, join.key]
       );
 
+export const splitLinkOf = (mark: MarkBase & Readonly<{ key: string }>) =>
+  JSON.stringify([mark.author, linkOf(mark)]);
+
 export const incarnationOfLink = (link: string) =>
   JSON.stringify((JSON.parse(link) as unknown[]).slice(0, 2));
 

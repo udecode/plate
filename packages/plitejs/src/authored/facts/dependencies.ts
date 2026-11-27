@@ -93,7 +93,8 @@ export const createDependencies = (
           (member) =>
             member.kind === 'held' ||
             member.kind === 'reserve' ||
-            member.kind === 'as'
+            member.kind === 'as' ||
+            member.kind === 'end'
         );
 
     return withMembers(target, [

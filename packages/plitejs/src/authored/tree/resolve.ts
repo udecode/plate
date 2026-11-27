@@ -94,7 +94,11 @@ import {
   heldOf,
   isClaim,
   isPlaceChange,
+  isKeyedSplit,
+  isSplitEnd,
   isStructureChange,
+  type SplitEnd,
+  splitNamedBy,
   readAuthoredMarks,
   readMembers,
   dissolveClaimsOf,
@@ -1393,6 +1397,7 @@ const resolveIn = (
       if (member.kind === 'in') {
         return resting.length > 0 && contextIntact ? [member] : [];
       }
+      if (member.kind === 'end') return endStands(member) ? [member] : [];
 
       if (isJoinAside(facts, member)) return stores ? [member] : [];
 
@@ -1546,6 +1551,7 @@ const resolveIn = (
       : isRejected(facts, mark)
         ? ('reject' as const)
         : outcomeOf(mark.change);
+  const endStands = (end: SplitEnd) => decisionOf(splitNamedBy(end)) === 'keep';
   const resultOf = (mark: AuthoredMark) => {
     if (isAccepted(facts, mark)) return 'accept';
 
@@ -1989,7 +1995,7 @@ const resolveIn = (
     for (const mark of pending(node)) {
       const result = resultOf(mark);
 
-      if (mergesUp(mark, result)) {
+      if (mergesUp(mark, result) && !isStranded(node, mark)) {
         join = true;
         if (isEditingChange(mark.change)) editingJoin = true;
       }
@@ -2001,12 +2007,137 @@ const resolveIn = (
       }
     }
 
-    return { editingJoin, join, unwrap };
+    return { editingJoin, join: join || joinsSource.has(node), unwrap };
   };
 
   const outsideTakenPart = ({ ancestors }: TextBlock) =>
     !ancestors.some(takesWhole);
   const blocks = textBlocksOf(children).filter(outsideTakenPart);
+  // A keyed block split names the line it cut by the `end` member it left
+  // there. Rejecting it joins that line with the first block the decision
+  // keeps after it in its parent, when that block is a text block, and a
+  // right half that is not that block stays where it is. Accepting the join
+  // the split follows takes the right half along only while it is that
+  // block. Both read the line and what stands after it, which no other
+  // decision moves.
+  const sourceLines = new Map<string, TextBlock>();
+
+  for (const block of blocks) {
+    for (const member of readMembers(block.node)) {
+      if (isSplitEnd(member) && !sourceLines.has(linkOf(member))) {
+        sourceLines.set(linkOf(member), block);
+      }
+    }
+  }
+  const keptAfter = ({ ancestors, path }: TextBlock) => {
+    const siblings = ancestors.at(-1)?.children ?? children;
+
+    for (let at = getDefined(path.at(-1)) + 1; at < siblings.length; at += 1) {
+      const sibling = getDefined(siblings[at]);
+
+      if (survives(sibling)) return sibling;
+    }
+
+    return null;
+  };
+  const sourceOf = (mark: AuthoredMark) => {
+    const source = isKeyedSplit(mark)
+      ? sourceLines.get(linkOf(mark))
+      : undefined;
+
+    return source && survives(source.node) ? source : undefined;
+  };
+  const movedAway = (mark: AuthoredMark, node: Node) => {
+    const source = sourceOf(mark);
+
+    return !!source && keptAfter(source) !== node;
+  };
+  const strandedOn = new Map<Node, Set<string>>();
+  const joinsSource = new Map<Node, AuthoredMark>();
+  const isStranded = (node: Node, mark: AuthoredMark) =>
+    isKeyedSplit(mark) && (strandedOn.get(node)?.has(linkOf(mark)) ?? false);
+
+  // A pending whole-line claim on the line after the one a rejected split cut
+  // decides which line the cut line joins, so the reject waits for it.
+  const lineAfter = ({ ancestors, path }: TextBlock) =>
+    (ancestors.at(-1)?.children ?? children)[getDefined(path.at(-1)) + 1];
+  // A claim of the line alone, not of the element around it, such as a table
+  // inserted or deleted whole.
+  const ownLineClaims = (line: Node | undefined, { ancestors }: TextBlock) => {
+    const around = new Set(
+      readAuthoredMarks(ancestors.at(-1)).map((mark) => mark.change)
+    );
+
+    return readAuthoredMarks(line).filter((mark) => !around.has(mark.change));
+  };
+  const pendingLineClaims = (line: TextBlock, split: AuthoredMark) =>
+    ownLineClaims(lineAfter(line), line).filter(
+      (mark) =>
+        (mark.kind === 'insert' || mark.kind === 'delete') &&
+        mark.change !== split.change &&
+        isUndecided(facts, mark) &&
+        outcomeOf(mark.change) === 'keep'
+    );
+
+  for (const { node } of blocks) {
+    for (const mark of readAuthoredMarks(node)) {
+      if (
+        !isKeyedSplit(mark) ||
+        !isUndecided(facts, mark) ||
+        outcomeOf(mark.change) !== 'reject'
+      ) {
+        continue;
+      }
+
+      const line = sourceLines.get(linkOf(mark));
+
+      if (!line) continue;
+
+      const waitsOn = pendingLineClaims(line, mark);
+
+      if (waitsOn.length > 0) {
+        for (const claim of waitsOn) waits.add(claim.change);
+        continue;
+      }
+
+      // When a decision removes the line the split cut, the break goes with
+      // it and the right half stays where it stands.
+      const cut = survives(line.node);
+
+      if (cut && !movedAway(mark, node)) continue;
+      strandedOn.set(
+        node,
+        new Set([...(strandedOn.get(node) ?? []), linkOf(mark)])
+      );
+      if (!cut) continue;
+      const next = keptAfter(getDefined(sourceOf(mark)));
+
+      if (next && isTextBlock(next) && !joinsSource.has(next)) {
+        joinsSource.set(next, mark);
+      }
+    }
+  }
+
+  // Accepting the deletion of the line a pending split cut, or a join of the
+  // line after it, removes the break that split made, so that decision waits
+  // for the split.
+  const decidedNow = (mark: AuthoredMark, verdict: 'accept' | 'reject') =>
+    isUndecided(facts, mark) && outcomeOf(mark.change) === verdict;
+
+  for (const line of sourceLines.values()) {
+    const removesBreak =
+      ownLineClaims(line.node, line).some(
+        (mark) => mark.kind === 'delete' && decidedNow(mark, 'accept')
+      ) ||
+      ownLineClaims(lineAfter(line), line).some(
+        (mark) => mark.kind === 'join' && decidedNow(mark, 'accept')
+      );
+
+    if (!removesBreak) continue;
+    for (const member of readMembers(line.node)) {
+      if (isSplitEnd(member) && endStands(member)) waits.add(member.change);
+    }
+  }
 
   // Phase one: where each decided join lands.
   const mergedInto = new Map<Node, Node>();
@@ -2088,9 +2219,13 @@ const resolveIn = (
     gridPart
   );
   const joinOf = (node: Node) => {
-    const marks = pending(node).filter((mark) =>
-      mergesUp(mark, resultOf(mark))
-    );
+    const source = joinsSource.get(node);
+    const marks = [
+      ...pending(node).filter(
+        (mark) => mergesUp(mark, resultOf(mark)) && !isStranded(node, mark)
+      ),
+      ...(source ? [source] : []),
+    ];
 
     return {
       at: Math.min(...marks.map((mark) => mark.at)),
@@ -2099,18 +2234,22 @@ const resolveIn = (
   };
   const rejoinsSplit = (node: Node) =>
     pending(node).some(
-      (mark) => mark.kind === 'split' && resultOf(mark) === 'reject'
+      (mark) =>
+        mark.kind === 'split' &&
+        resultOf(mark) === 'reject' &&
+        !isStranded(node, mark)
     );
   // The rejected split a block rejoins the line before it by, unless an
   // accepted join merges it whatever the halves read.
-  const rejectedSplitOf = (claims: readonly AuthoredMark[]) =>
+  const rejectedSplitOf = (node: Node, claims: readonly AuthoredMark[]) =>
     claims.some((mark) => mark.kind === 'join' && resultOf(mark) === 'accept')
       ? undefined
       : claims.find(
           (mark) =>
             mark.kind === 'split' &&
             mark.cut === undefined &&
-            resultOf(mark) === 'reject'
+            resultOf(mark) === 'reject' &&
+            !isStranded(node, mark)
         );
   // Each rejoined block, with the target's half it was judged against.
   const rejoined = new Map<Node, Half>();
@@ -2316,7 +2455,7 @@ const resolveIn = (
         pending(node).flatMap((mark) => {
           const key = followsOf(mark);
 
-          return key ? [key] : [];
+          return key && !movedAway(mark, node) ? [key] : [];
         })
       );
 
@@ -2492,7 +2631,7 @@ const resolveIn = (
       return;
     }
     const own = pending(node);
-    const cut = rejectedSplitOf(own);
+    const cut = rejectedSplitOf(node, own);
     const left = cut && rejoinOf(cut, node, own, into, intoClaims, ancestors);
 
     // A rejected split waits only on what its verdict reads. An accepted join
@@ -2570,7 +2709,9 @@ const resolveIn = (
   };
 
   for (const { follows, node, order } of followers) {
-    const claims = pending(node).filter((mark) => followsOf(mark));
+    const claims = pending(node).filter(
+      (mark) => followsOf(mark) && !movedAway(mark, node)
+    );
 
     if (
       rejoinsSplit(node) ||
@@ -2616,13 +2757,33 @@ const resolveIn = (
     if (decisionOf(source.mark) === 'keep') retainFollowers(node, accepted);
   }
 
-  const joinedCarriedTo = (node: Node): AuthoredMark[] =>
+  // A merge removes the break at the end of every line but the last, so only
+  // the last merged line's ends stand on the merged line.
+  const lastMerged = (node: Node): Node => {
+    const last = mergedBlocks.get(node)?.at(-1);
+
+    return last ? lastMerged(last) : node;
+  };
+  const joinedOf = (node: Node): AuthoredMember[] =>
     (mergedBlocks.get(node) ?? []).flatMap((block) => [
-      ...readAuthoredMarks(block).filter(
-        (mark) => mark.kind === 'joined' && decisionOf(mark) === 'keep'
+      ...readMembers(block).filter(
+        (member) => member.kind === 'joined' && decisionOf(member) === 'keep'
       ),
-      ...joinedCarriedTo(block),
+      ...joinedOf(block),
     ]);
+  const joinedCarriedTo = (node: Node): AuthoredMember[] => {
+    const last = lastMerged(node);
+
+    return [
+      ...joinedOf(node),
+      ...(last === node
+        ? []
+        : readMembers(last).filter(
+            (member): member is SplitEnd =>
+              isSplitEnd(member) && endStands(member)
+          )),
+    ];
+  };
   const movedWith = (node: Node): Node[] => {
     if (!emptiedTargets.has(node)) {
       return [node, ...(mergedBlocks.get(node) ?? [])];
@@ -3260,10 +3421,14 @@ const resolveIn = (
         ).values(),
       ];
       const carried = joinedCarriedTo(node);
+      const ownKept =
+        lastMerged(node) === node
+          ? kept
+          : kept.filter((member) => !isSplitEnd(member));
       const formatted = {
         kept:
-          outlived.length > 0 || carried.length > 0
-            ? [...kept, ...outlived, ...carried]
+          outlived.length > 0 || carried.length > 0 || ownKept !== kept
+            ? [...ownKept, ...outlived, ...carried]
             : kept,
         props: placedProps,
       };

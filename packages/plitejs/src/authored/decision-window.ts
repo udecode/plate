@@ -1,7 +1,7 @@
 import { valueRootNodes } from '../core/change/document-change';
 import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
 import type { Occurrence } from './changes';
-import { readMembers } from './tree/marks';
+import { isKeyedSplit, readMembers } from './tree/marks';
 import type { AuthoredWindow } from './tree/resolve';
 
 export type SpareGuard = Readonly<{
@@ -38,6 +38,8 @@ export const decisionWindowsOf = (
   for (const id of ids) {
     for (const { mark, path, root } of occurrencesOf(id)) {
       if (path.length < 2 && mark.kind !== 'format') return null;
+      // A keyed split names the line it left, which may sit in another block.
+      if (isKeyedSplit(mark)) return null;
 
       const span = spans.get(root);
 

@@ -70,6 +70,7 @@ import {
   readAuthoredMarks,
   readMembers,
   dissolveClaimsOf,
+  splitNamedBy,
   withMembers,
 } from '../tree/marks';
 import { buildClaimsIn } from '../tree/reserves';
@@ -431,6 +432,14 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
     }
     if (member.kind === 'held' && !pass.returnsHeld) {
       kept.push(member);
+      continue;
+    }
+    if (member.kind === 'end') {
+      if (outcomeOf(facts, splitNamedBy(member)) === 'pending') {
+        kept.push(member);
+      } else {
+        changed = true;
+      }
       continue;
     }
 

@@ -1255,6 +1255,15 @@ export class Level {
 
         return before === 0 ? -1 : this.slots.search(kept, before - 1, false);
       },
+      keptAfter: (rank) => {
+        const after = this.slots.search(
+          kept,
+          this.slots.sumBefore(rank + 1, kept),
+          false
+        );
+
+        return after === this.slots.size ? -1 : after;
+      },
       related: (key) => ({
         followers: ranksOf(this.followers.get(key)),
         joiners: ranksOf(this.joiners.get(key)),

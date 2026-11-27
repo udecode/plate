@@ -7,7 +7,12 @@ import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import { factsOf, marksOf } from './facts/facts';
 import { isCut } from './tree/cuts';
-import { type AuthoredMark, AUTHORED_MARKS_KEY } from './tree/marks';
+import {
+  type AuthoredMark,
+  AUTHORED_MARKS_KEY,
+  isSplitEnd,
+  readMembers,
+} from './tree/marks';
 import type {
   AuthoredChange,
   AuthoredChangeDetails,
@@ -342,11 +347,20 @@ const revisionOf = (list: readonly Occurrence[]) =>
     0
   );
 
+// A split's end claims nothing, so one written beside a structure mark leaves
+// its decision as it was.
 const unorderedShapeOf = (node: Node): string => {
   const { children, ...own } = node;
+  const kept = readMembers(own).filter((member) => !isSplitEnd(member));
 
   return JSON.stringify([
-    own,
+    Object.entries(own).flatMap(([key, value]) =>
+      key !== AUTHORED_MARKS_KEY
+        ? [[key, value]]
+        : kept.length > 0
+          ? [[key, kept]]
+          : []
+    ),
     (children ?? [])
       .filter((child) => !isText(child))
       .map(unorderedShapeOf)

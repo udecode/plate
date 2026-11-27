@@ -22,7 +22,7 @@ import type { ListPart } from '../../core/representation';
 import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
 import type { ReviewFacts } from '../facts/facts';
-import { incarnationOf, incarnationOfLink } from '../facts/records';
+import { incarnationOf, incarnationOfLink, linkOf } from '../facts/records';
 import type { AuthoredFormatProjection } from '../format';
 import {
   acceptedAlignment,
@@ -37,6 +37,8 @@ import {
   type AuthoredMark,
   followsOf,
   isAuthoredSetValued,
+  isKeyedSplit,
+  isSplitEnd,
   readAuthoredMarks,
   readMembers,
 } from '../tree/marks';
@@ -56,10 +58,17 @@ export type BlockFacts = Readonly<{
   /**
    * The pending joins blocks inside follow, and the joins blocks inside hold,
    * by suggestion: a follower lands after its join's line wherever the join
-   * sits, so both resolve together.
+   * sits, so both resolve together. A keyed split follows the `end` it left
+   * on its line the same way, since rejecting it reads that line wherever
+   * its right half sits.
    */
   follows: readonly string[];
   joins: readonly string[];
+  /**
+   * It holds the `end` of a keyed split, which a rejection joins with the
+   * line kept after it once the right half moved away.
+   */
+  endsSplit: boolean;
   /**
    * The incarnations of pending deletions inside. A suggested move strikes
    * its source under the incarnation that inserts its landing copy.
@@ -205,11 +214,13 @@ export const combineFacts = (
 
   const marks = readAuthoredMarks(node);
   const boundary = hasBoundaryMark(node);
+  const ends = members.filter(isSplitEnd);
   const fold = (
     keyOf: (mark: AuthoredMark) => string | undefined,
-    inner: Iterable<string>
+    inner: Iterable<string>,
+    links: readonly string[]
   ) => {
-    const keys = new Set(ownKeys(marks, keyOf));
+    const keys = new Set([...ownKeys(marks, keyOf), ...links]);
     let read = keys.size;
 
     for (const key of inner) {
@@ -220,7 +231,11 @@ export const combineFacts = (
 
     return [...keys];
   };
-  const follows = fold(followKey, children.follows);
+  const follows = fold(
+    followKey,
+    children.follows,
+    marks.filter(isKeyedSplit).map(linkOf)
+  );
   const keepsLine = textBlock
     ? {
         accepted: TEXT_BLOCK_SURVIVAL.accepted.survives(node),
@@ -235,9 +250,10 @@ export const combineFacts = (
 
   return {
     unmarked: false,
-    deletes: fold(deleteKey, children.deletes),
+    deletes: fold(deleteKey, children.deletes, []),
+    endsSplit: ends.length > 0,
     follows,
-    joins: fold(joinKey, children.joins),
+    joins: fold(joinKey, children.joins, ends.map(linkOf)),
     inserted: marks.some((mark) => mark.kind === 'insert'),
     keepsLine,
     opensWithStructure,
@@ -289,6 +305,7 @@ export const isBuilt = (node: JsonNode) => BUILT.has(node);
 const UNMARKED: BlockFacts = Object.freeze({
   unmarked: true,
   deletes: [],
+  endsSplit: false,
   follows: [],
   inserted: false,
   joins: [],

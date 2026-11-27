@@ -68,12 +68,22 @@ export type AsMember = Readonly<{
   values: Readonly<Record<string, EditorJsonValue>>;
 }>;
 
+/**
+ * The end of the line a pending block split cut, which keeps its place there
+ * however the split's right half moves: `key` is the key of that right half's
+ * split. It moves to the line a merge takes its line into and to the right
+ * half a later split of its line opens, and goes once its split is decided.
+ * It claims nothing.
+ */
+export type SplitEnd = MarkBase & Readonly<{ key: string; kind: 'end' }>;
+
 export type AuthoredMember =
   | AsMember
   | AuthoredMark
   | HeldDeletion
   | ReserveMember
-  | RestsOn;
+  | RestsOn
+  | SplitEnd;
 
 /**
  * One half of a pending split of an inline element: `end` on the left half,
@@ -113,10 +123,21 @@ export type AuthoredMark =
           'format' | 'insert' | 'join' | 'joined' | 'split'
         >;
       }>)
-  | (MarkBase & Follows & NoGave & Readonly<{ kind: 'insert' }>)
+  | (MarkBase &
+      Follows &
+      NoGave &
+      Readonly<{ key?: undefined; kind: 'insert' }>)
   | (MarkBase &
       Follows &
       Readonly<{
+        /**
+         * On a suggested block split, the split's identity within its
+         * incarnation, minted once when the recorder writes it, which the
+         * `end` member it leaves on the line it cut names. Absent on a split
+         * an Editing change records and on one stored before keys, which
+         * rejoin the nearest line before them that the decision keeps.
+         */
+        key?: string;
         /**
          * On a block split, what the split gave its new line: for each key a
          * join compares, and `type`, whose value the split did not copy from
@@ -150,7 +171,6 @@ type Follows = Readonly<{
    * holder is a `joined` claim.
    */
   follows?: string;
-  key?: undefined;
 }>;
 
 type NoGave = Readonly<{ gave?: undefined }>;
@@ -315,7 +335,48 @@ export const isClaim = (member: AuthoredMember): member is AuthoredMark =>
   member.kind !== 'in' &&
   member.kind !== 'held' &&
   member.kind !== 'reserve' &&
-  member.kind !== 'as';
+  member.kind !== 'as' &&
+  member.kind !== 'end';
+
+export const splitEndOf = ({
+  at,
+  author,
+  change,
+  inc,
+  key,
+}: MarkBase & Readonly<{ key: string }>): SplitEnd => ({
+  at,
+  author,
+  change,
+  ...(inc === undefined ? {} : { inc }),
+  key,
+  kind: 'end',
+});
+
+export const isSplitEnd = (member: AuthoredMember): member is SplitEnd =>
+  member.kind === 'end';
+
+export const isKeyedSplit = (
+  mark: AuthoredMember
+): mark is Extract<AuthoredMark, Readonly<{ cut?: undefined; kind: 'split' }>> &
+  Readonly<{ key: string }> =>
+  mark.kind === 'split' && mark.cut === undefined && mark.key !== undefined;
+
+/** The split an `end` member names, as its verdict reads it. */
+export const splitNamedBy = ({
+  at,
+  author,
+  change,
+  inc,
+  key,
+}: SplitEnd): AuthoredMark => ({
+  at,
+  author,
+  change,
+  ...(inc === undefined ? {} : { inc }),
+  key,
+  kind: 'split',
+});
 
 const isAsMember = (value: Readonly<Record<string, unknown>>) =>
   isRecord(value.values) &&
@@ -484,9 +545,17 @@ export const parseMember = (value: unknown): AuthoredMember | null => {
     typeof kind !== 'string' ||
     (kind !== 'held' &&
       kind !== 'reserve' &&
+      kind !== 'end' &&
       !ELEMENT_KINDS.has(kind as AuthoredMarkKind))
   ) {
     return null;
+  }
+  if (kind === 'end') {
+    return typeof value.key === 'string' &&
+      value.key.length > 0 &&
+      Object.keys(value).length === 5 + (inc === undefined ? 0 : 1)
+      ? (value as SplitEnd)
+      : null;
   }
   if (kind === 'reserve') {
     return isReserveMember(value) ? (value as ReserveMember) : null;
@@ -500,7 +569,10 @@ export const parseMember = (value: unknown): AuthoredMember | null => {
 
   const follows =
     kind === 'split' || kind === 'insert' ? value.follows : undefined;
-  const key = kind === 'join' || kind === 'joined' ? value.key : undefined;
+  const key =
+    kind === 'join' || kind === 'joined' || kind === 'split'
+      ? value.key
+      : undefined;
   const gave = kind === 'split' ? value.gave : undefined;
 
   if (
@@ -655,9 +727,14 @@ const visitMarks = (
         if (follows && isText) {
           throw new AuthoredMarkError('Only a block follows a join.', at);
         }
-        if (member.kind === 'reserve') {
+        if (member.kind === 'reserve' || member.kind === 'end') {
           if (isText) {
-            throw new AuthoredMarkError('A spare block cannot mark text.', at);
+            throw new AuthoredMarkError(
+              member.kind === 'end'
+                ? 'Only an element holds the end of a split.'
+                : 'A spare block cannot mark text.',
+              at
+            );
           }
         } else if (
           !(isText ? TEXT_KINDS : ELEMENT_KINDS).has(

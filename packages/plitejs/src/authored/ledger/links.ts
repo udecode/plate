@@ -6,6 +6,7 @@ export type BlockLine = Readonly<{
   facts: (rank: number) => BlockFacts;
   headLength: number;
   keptBefore: (rank: number) => number;
+  keptAfter: (rank: number) => number;
   related: (key: string) => Readonly<{
     followers: readonly number[];
     joiners: readonly number[];
@@ -29,6 +30,11 @@ export const spansOf = (line: BlockLine, rank: number): Span[] => {
       at = line.keptBefore(at);
     }
     spans.push([Math.max(at, 0), rank]);
+  }
+  if (facts.endsSplit) {
+    const after = line.keptAfter(rank);
+
+    if (after !== -1) spans.push([rank, after]);
   }
   for (const key of new Set([...facts.follows, ...facts.joins])) {
     const { followers, joiners } = line.related(key);

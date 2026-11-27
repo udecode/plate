@@ -44,6 +44,7 @@ import {
   tokenLength,
 } from '../../core/change/tokens';
 import {
+  canonicalJsonKey,
   normalizeSetValues,
   type PropertyModification,
 } from '../../core/change/transform';
@@ -60,7 +61,12 @@ import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
 import { factsOf, isJoinAside } from '../facts/facts';
-import { incarnationOf, incarnationOfLink, linkOf } from '../facts/records';
+import {
+  incarnationOf,
+  incarnationOfLink,
+  linkOf,
+  splitLinkOf,
+} from '../facts/records';
 import { countLedgerWork } from '../ledger/work';
 import { unrepresentableFor, unrepresentable } from '../refusal';
 import { carriedJudge, type MovedCopy } from './carried';
@@ -73,9 +79,13 @@ import {
   type AuthoredMark,
   type AuthoredMember,
   followsOf,
+  isKeyedSplit,
+  isSplitEnd,
   joinedOf,
   readAuthoredMarks,
   readMembers,
+  type SplitEnd,
+  splitEndOf,
   withMembers,
 } from './marks';
 import { isTextBlock } from './resolve';
@@ -412,6 +422,23 @@ const withoutLinkOutsideCopy = (
 
 const isEditingMoveCopy = (op: Readonly<{ moved?: true }>, change: string) =>
   op.moved === true && isEditingChange(change);
+
+const lastBlockIn = (tokens: readonly JsonToken[]) => {
+  let depth = 0;
+  let last = -1;
+
+  for (const [at, token] of tokens.entries()) {
+    if (token.kind === 'open') {
+      if (depth === 0 && token.nodeKind === 'element') last = at;
+      depth += 1;
+    } else if (token.kind === 'close') {
+      depth -= 1;
+      if (depth < 0) return -1;
+    }
+  }
+
+  return depth === 0 ? last : -1;
+};
 
 const propsOf = (node: unknown): Props => {
   if (typeof node !== 'object' || node === null) return {};
@@ -2823,6 +2850,7 @@ class RootRecorder {
   private readonly pieces: Piece[] = [];
   private readonly freshened = new WeakSet<Op>();
   private readonly splitHalves = new WeakSet<JsonToken>();
+  private readonly movedFrom: Span[] = [];
   private joinIndex: Readonly<{
     followed: ReadonlySet<string>;
     holders: ReadonlyMap<string, number>;
@@ -3029,6 +3057,7 @@ class RootRecorder {
     this.strikeEmptiedWrappers();
     if (this.ops.length > opsBeforeWrappers) this.textStrike = null;
     this.freshCopyKeys();
+    this.keepEndsBeforeRightHalves();
     const recorded = RootChange.create(this.index, this.sections());
     const carries: Carry[] = [];
     const copies = this.copies.map(
@@ -3692,6 +3721,8 @@ class RootRecorder {
     const movedTokens = this.options.storesMoves
       ? this.index.slice(copyFrom, copyTo).tokens
       : null;
+
+    this.movedFrom.push({ from: copyFrom, to: copyTo });
     const stores = movedTokens !== null && this.storesMovedElement(movedTokens);
     const left = stores
       ? []
@@ -4602,6 +4633,7 @@ class RootRecorder {
     // Open tokens of wrappers a pending unwrap dissolves, which a frame's
     // command never saw.
     const unwrappedOpens = new Set<number>();
+    const closedAt = new Map<number, Context>();
     const survivingIndexBefore = (index: number) => {
       let back = index - 1;
 
@@ -4837,6 +4869,7 @@ class RootRecorder {
           });
           this.ops.push({ from: position, kind: 'remove', to: position + 1 });
           emptiedKeptElementAt.delete(previousIndex);
+          this.dropEndsOf(closedAt.get(previousIndex), marks);
           if (mergeTarget) {
             const targetMarks = this.marks(mergeTarget.props);
             const withoutOwnDelete = targetMarks.filter(
@@ -4893,6 +4926,8 @@ class RootRecorder {
 
       const closed = stack.pop();
       const children = closed && keptElementChildren.get(closed);
+
+      if (closed) closedAt.set(index, closed);
 
       if (closed && children?.removed && !children.survived) {
         const whole = wholeElementByClose.get(index);
@@ -5152,6 +5187,36 @@ class RootRecorder {
     // A split closes elements innermost first and its continuations reopen
     // them outermost first, so each continuation pops the element it continues.
     const splitFrom: Context[] = [];
+    // Where each continuation's open token sits in `output`.
+    const halfAt = new Map<Context, number>();
+    const endsOf = (line: Context) => {
+      const index = halfAt.get(line);
+      const token = index === undefined ? undefined : output[index];
+
+      return readMembers(token?.kind === 'open' ? token.props : line.props);
+    };
+    const keepEnds = (line: Context, ends: readonly SplitEnd[]) => {
+      const index = halfAt.get(line);
+      const token = index === undefined ? undefined : output[index];
+      const kept = (props: Props) =>
+        withMembers(props, [
+          ...readMembers(props).filter((member) => !isSplitEnd(member)),
+          ...ends,
+        ]);
+
+      if (index !== undefined && token?.kind === 'open') {
+        const half = openToken(token.nodeKind, kept(token.props));
+
+        this.splitHalves.add(half);
+        output[index] = half;
+      } else if (line.path.length > 0) {
+        this.ops.push({
+          at: line.contentFrom - 1,
+          kind: 'props',
+          props: kept(line.props),
+        });
+      }
+    };
 
     // Text that lands directly in an element holding blocks, or in the root,
     // goes into the block the schema completes it with, recorded as the
@@ -5388,33 +5453,52 @@ class RootRecorder {
             ]
           : inherited;
 
+        const split =
+          suggested && !rightCuts && closedElement
+            ? this.splitOf(
+                continued,
+                claim,
+                token.props,
+                dropped,
+                stack
+                  .slice(0, -1)
+                  .filter((context) => context.kind === 'element')
+              )
+            : null;
+        // The end of the line this split cuts now ends its right half, and a
+        // keyed split leaves its own end on that line.
+        const source =
+          continued && closedElement && !this.options.isInline(continued.props)
+            ? continued
+            : undefined;
+        const ends = source ? endsOf(source).filter(isSplitEnd) : [];
+        const marked = this.withMarks(token.props, [
+          ...this.marks(token.props),
+          ...carried.filter(
+            (mark) => mark.kind !== 'format' || !splitKeys.has(mark.key)
+          ),
+          ...splitTags,
+          ...(rightCuts ?? []),
+          ...(suggested && !rightCuts
+            ? [split ?? this.options.markOf('wrap')]
+            : []),
+        ]);
         const half = openToken(
           'element',
-          this.withMarks(token.props, [
-            ...this.marks(token.props),
-            ...carried.filter(
-              (mark) => mark.kind !== 'format' || !splitKeys.has(mark.key)
-            ),
-            ...splitTags,
-            ...(rightCuts ?? []),
-            ...(suggested && !rightCuts
-              ? [
-                  closedElement
-                    ? this.splitOf(
-                        continued,
-                        claim,
-                        token.props,
-                        dropped,
-                        stack
-                          .slice(0, -1)
-                          .filter((context) => context.kind === 'element')
-                      )
-                    : this.options.markOf('wrap'),
-                ]
-              : []),
-          ])
+          ends.length > 0
+            ? withMembers(marked, [...readMembers(marked), ...ends])
+            : marked
         );
 
+        const end =
+          split?.key === undefined
+            ? null
+            : splitEndOf({ ...split, key: split.key });
+
+        if (source && (ends.length > 0 || end)) {
+          keepEnds(source, end ? [end] : []);
+        }
+        halfAt.set(continuing, output.length);
         this.splitHalves.add(half);
         emit(half);
         continue;
@@ -5687,7 +5771,7 @@ class RootRecorder {
     tail: Props,
     dropped: ReadonlySet<string> | null,
     openElements: readonly Context[]
-  ): AuthoredMark {
+  ): Extract<AuthoredMark, Readonly<{ cut?: undefined; kind: 'split' }>> {
     const { at, author, change, inc } = claim;
     const follows = source ? this.followedBy(source.props) : undefined;
     const place =
@@ -5703,6 +5787,11 @@ class RootRecorder {
       ...(follows === undefined ? {} : { follows }),
       ...(source && place
         ? { gave: this.gaveOf(source.props, tail, dropped, place) }
+        : {}),
+      ...(source &&
+      !isEditingChange(change) &&
+      !this.options.isInline(source.props)
+        ? { key: this.options.createTagId() }
         : {}),
       kind: 'split',
     };
@@ -5965,6 +6054,177 @@ class RootRecorder {
       : null;
   }
 
+  private dropEndsOf(
+    line: Context | undefined,
+    withdrawn: readonly AuthoredMark[]
+  ) {
+    const links = new Set(
+      withdrawn.flatMap((mark) => (isKeyedSplit(mark) ? [linkOf(mark)] : []))
+    );
+    const members = line ? readMembers(line.props) : [];
+    const kept = members.filter(
+      (member) => !isSplitEnd(member) || !links.has(linkOf(member))
+    );
+
+    if (line && line.path.length > 0 && kept.length < members.length) {
+      this.ops.push({
+        at: line.contentFrom - 1,
+        kind: 'props',
+        props: withMembers(line.props, kept),
+      });
+    }
+  }
+
+  /**
+   * Keeps each split's end on the block right before its right half: a block
+   * this write puts there takes the end, and when this write moves the end's
+   * line away, the block left there takes it. A right half this write takes
+   * away leaves its end where it is.
+   */
+  private keepEndsBeforeRightHalves() {
+    const within = (spans: readonly Span[], { from, to }: IndexedNodeRange) =>
+      spans.some((span) => span.from <= from && to <= span.to);
+    const removals = this.ops.flatMap((op) =>
+      op.kind === 'remove' ? [op] : []
+    );
+    const takenAway = (entry: IndexedNodeRange) =>
+      within(this.movedFrom, entry) || within(removals, entry);
+    const holders = new Map<number, IndexedNodeRange>();
+    const note = (entry: IndexedNodeRange) => {
+      if (
+        entry.kind === 'element' &&
+        readMembers(this.propsStartingAt(entry.from)).some(isSplitEnd)
+      ) {
+        holders.set(entry.from, entry);
+      }
+    };
+
+    for (const op of this.ops) {
+      if (op.kind === 'insert' && op.at > 0) {
+        for (const entry of this.index.nodeRangesTouching(op.at - 1, op.at)) {
+          if (entry.to === op.at) note(entry);
+        }
+      }
+    }
+    for (const span of this.movedFrom) {
+      for (const entry of this.index.nodeRangesTouching(span.from, span.to)) {
+        if (within([span], entry)) note(entry);
+      }
+    }
+    for (const holder of holders.values()) {
+      const half = this.index.nodeStartingAt(holder.to);
+
+      if (
+        !half ||
+        half.kind !== 'element' ||
+        half.path.length !== holder.path.length ||
+        takenAway(half)
+      ) {
+        continue;
+      }
+
+      const cut = new Set(
+        readAuthoredMarks(this.propsStartingAt(half.from)).flatMap((mark) =>
+          isKeyedSplit(mark) ? [splitLinkOf(mark)] : []
+        )
+      );
+      const ends = readMembers(this.propsStartingAt(holder.from)).filter(
+        (member): member is SplitEnd =>
+          isSplitEnd(member) && cut.has(splitLinkOf(member))
+      );
+
+      if (ends.length === 0) continue;
+
+      const into = this.ops.findLastIndex(
+        (op) =>
+          op.kind === 'insert' &&
+          op.at === half.from &&
+          lastBlockIn(op.tokens) !== -1
+      );
+      // A suggested move leaves the line it strikes where it stood.
+      const before =
+        into === -1 &&
+        holder.from > 0 &&
+        within(this.movedFrom, holder) &&
+        (isEditingChange(this.options.changeId) || within(removals, holder))
+          ? this.index
+              .nodeRangesTouching(holder.from - 1, holder.from)
+              .find(
+                (entry) =>
+                  entry.kind === 'element' &&
+                  entry.to === holder.from &&
+                  entry.path.length === holder.path.length &&
+                  !takenAway(entry)
+              )
+          : undefined;
+
+      if (into === -1 && !before) continue;
+      this.takeEndsOff(holder, ends, within(removals, holder));
+      if (before) {
+        const props = this.propsStartingAt(before.from);
+
+        this.ops.push({
+          at: before.from,
+          kind: 'props',
+          props: withMembers(props, [...readMembers(props), ...ends]),
+        });
+        continue;
+      }
+
+      const op = getDefined(this.ops[into]);
+
+      if (op.kind !== 'insert') continue;
+
+      const last = lastBlockIn(op.tokens);
+
+      this.ops[into] = {
+        ...op,
+        tokens: op.tokens.map((token, at) =>
+          at === last && token.kind === 'open'
+            ? openToken(
+                token.nodeKind,
+                withMembers(token.props, [...readMembers(token.props), ...ends])
+              )
+            : token
+        ),
+      };
+    }
+  }
+
+  private takeEndsOff(
+    holder: IndexedNodeRange,
+    ends: readonly SplitEnd[],
+    removed: boolean
+  ) {
+    const gone = new Set(ends.map((end) => canonicalJsonKey(end)));
+    const without = (props: Props) => {
+      const members = readMembers(props);
+      const kept = members.filter(
+        (member) => !gone.has(canonicalJsonKey(member))
+      );
+
+      return kept.length < members.length ? withMembers(props, kept) : null;
+    };
+    const props = removed ? null : without(this.propsStartingAt(holder.from));
+
+    if (props) this.ops.push({ at: holder.from, kind: 'props', props });
+    this.ops.forEach((op, index) => {
+      if (op.kind !== 'insert') return;
+
+      let changed = false;
+      const tokens = op.tokens.map((token) => {
+        const stripped = token.kind === 'open' && without(token.props);
+
+        if (!stripped) return token;
+        changed = true;
+
+        return openToken(token.nodeKind, stripped);
+      });
+
+      if (changed) this.ops[index] = { ...op, tokens };
+    });
+  }
+
   private composedProps() {
     const propsAt = new Map<number, Props>();
 
@@ -6010,10 +6270,30 @@ class RootRecorder {
    * join set aside becomes a plain break. Also returns where each join's
    * copies sit.
    */
-  private withCopyMarks(tokens: readonly JsonToken[]): {
+  private withCopyMarks(given: readonly JsonToken[]): {
     links: CopiedLinks;
     tokens: readonly JsonToken[];
   } {
+    // A copy is a new line, so it ends no split the line it copies cut.
+    const endsAt = (token: JsonToken) =>
+      token.kind === 'open' &&
+      !this.splitHalves.has(token) &&
+      readMembers(token.props).some(isSplitEnd);
+    const tokens = given.some(endsAt)
+      ? given.map((token) =>
+          token.kind === 'open' && endsAt(token)
+            ? openToken(
+                token.nodeKind,
+                withMembers(
+                  token.props,
+                  readMembers(token.props).filter(
+                    (member) => !isSplitEnd(member)
+                  )
+                )
+              )
+            : token
+        )
+      : given;
     const joins = new Map<number, Map<AuthoredMark, KeyedJoin>>();
     const links = new Map<string, Array<{ at: number; link: string }>>();
     let dropsAside = false;

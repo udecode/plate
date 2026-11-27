@@ -15,7 +15,7 @@ import {
 } from '../../core/record-store';
 import { withoutStoredElementId } from '../../core/stored-element-id';
 import type { Path } from '../../interfaces/path';
-import { contentRootsOf } from '../ledger/roots';
+import { contentRootsOf, type Roots } from '../ledger/roots';
 import { heldGift } from '../tree/halves';
 import type { FormatTag, LayerValue } from '../tree/layers';
 import {
@@ -25,10 +25,13 @@ import {
   type AuthoredMember,
   AuthoredMarkError,
   type HeldDeletion,
+  isKeyedSplit,
+  isSplitEnd,
   type MarkBase,
   parseMember,
   readMembers,
   type ReserveMember,
+  type SplitEnd,
 } from '../tree/marks';
 import type { WrittenSpare } from '../tree/reserves';
 import { claimsOf, factsOf, holdsBase, type ReviewFacts } from './facts';
@@ -44,6 +47,7 @@ import {
   parseReserve,
   parseVerdict,
   RESERVES,
+  splitLinkOf,
   VERDICTS,
   type VerdictRecord,
 } from './records';
@@ -137,6 +141,12 @@ export type AuthoredWrite =
       site: ReserveSite;
       spare: WrittenSpare;
       stands: boolean;
+    }>
+  | Readonly<{
+      end: SplitEnd;
+      kind: 'end';
+      op: 'drop' | 'move' | 'put' | 'stay';
+      placed: boolean;
     }>
   | (RecordWrite<'context', ContextRecord> &
       Readonly<{
@@ -515,6 +525,213 @@ const compareKeptChildren = (
 const isSplitCopy = (claim: Claim): claim is Exclude<Claim, FormatTag> =>
   claim.kind === 'delete' || claim.kind === 'insert';
 
+type Line = Readonly<{ from: number; root: string; text: string; to: number }>;
+
+type LineLeft = Readonly<{ taker: Carrier | null; whole: boolean }>;
+
+type HeldEnd = Readonly<{
+  count: number;
+  end: SplitEnd;
+  line: Line;
+  slotted: boolean;
+}>;
+
+type Ends = Readonly<{
+  ends: ReadonlyMap<string, HeldEnd>;
+  splits: ReadonlyMap<string, Readonly<{ before: Line | null; line: Line }>>;
+}>;
+
+const endsIn = (roots: Roots): Ends => {
+  const ends = new Map<string, HeldEnd>();
+  const splits = new Map<
+    string,
+    Readonly<{ before: Line | null; line: Line }>
+  >();
+
+  for (const [root, index] of roots) {
+    const lineAt = (from: number) => {
+      const entry = index.nodeStartingAt(from);
+
+      return entry?.kind === 'element'
+        ? {
+            depth: entry.path.length,
+            line: {
+              from,
+              root,
+              text: textOf(index.node(entry.path)),
+              to: entry.to,
+            },
+          }
+        : null;
+    };
+    const splitsOn = (from: number, depth: number) => {
+      const entry = index.nodeStartingAt(from);
+
+      return new Set(
+        entry?.kind === 'element' && entry.path.length === depth
+          ? membersIn(index.node(entry.path)).flatMap((member) =>
+              isKeyedSplit(member) ? [splitLinkOf(member)] : []
+            )
+          : []
+      );
+    };
+
+    index.elementsOpeningIn(0, index.length, (node, from) => {
+      const members = membersIn(node);
+      const held = members.filter(isSplitEnd);
+      const keyed = members.filter(isKeyedSplit);
+      const at = held.length + keyed.length > 0 ? lineAt(from) : null;
+
+      if (!at) return;
+
+      const cut = held.length > 0 ? splitsOn(at.line.to, at.depth) : null;
+
+      for (const end of held) {
+        const key = canonicalJsonKey(end);
+
+        ends.set(key, {
+          count: (ends.get(key)?.count ?? 0) + 1,
+          end,
+          line: at.line,
+          slotted: !!cut?.has(splitLinkOf(end)),
+        });
+      }
+
+      const before =
+        keyed.length > 0 && from > 0
+          ? index
+              .nodeRangesTouching(from - 1, from)
+              .find(
+                (entry) =>
+                  entry.kind === 'element' &&
+                  entry.to === from &&
+                  entry.path.length === at.depth
+              )
+          : undefined;
+
+      for (const split of keyed) {
+        splits.set(splitLinkOf(split), {
+          before: before ? (lineAt(before.from)?.line ?? null) : null,
+          line: at.line,
+        });
+      }
+    });
+  }
+
+  return { ends, splits };
+};
+
+/**
+ * Judges each end a step puts, drops, moves or leaves. An end goes with its
+ * split's verdict or its whole line. It sits on the block right before its
+ * right half once the step writes a block there or takes its line from
+ * there, and otherwise stays on its line, moves with it, goes with it into
+ * the line a merge takes it into, or moves to the right half a split of its
+ * line opens.
+ */
+const endWritesOf = ({
+  change,
+  heads,
+  left,
+  minted,
+  results,
+}: Readonly<{
+  change: DocumentChange;
+  heads: Roots;
+  left: ReadonlyMap<string, LineLeft>;
+  minted: readonly Claim[];
+  results: Roots;
+}>): readonly AuthoredWrite[] => {
+  const head = endsIn(heads);
+  const result = endsIn(results);
+  const mintedSplits = new Set(
+    minted.flatMap((claim) => (isKeyedSplit(claim) ? [splitLinkOf(claim)] : []))
+  );
+  const headLinks = new Set(
+    [...head.ends.values()].map(({ end }) => splitLinkOf(end))
+  );
+  const rootChangeOf = (root: string) =>
+    change.createRoots.has(root) || change.deleteRoots.has(root)
+      ? null
+      : (getInternalDocumentRootChange(change, root) ?? 'same');
+  const headFrom = ({ from, root }: Pick<Line, 'from' | 'root'>) => {
+    const rootChange = rootChangeOf(root);
+
+    if (rootChange === null) return null;
+    if (rootChange === 'same' || rootChange.empty) return from;
+
+    return keptRunsOf(rootChange, from, from + 1)[0]?.at ?? null;
+  };
+  const same = (was: Line, now: Line) =>
+    was.root === now.root && headFrom(now) === was.from;
+  const born = (line: Line) => headFrom(line) === null;
+  const opensAfter = (was: Line, now: Line) => {
+    const rootChange = rootChangeOf(was.root);
+    const at =
+      rootChange === null || was.root !== now.root
+        ? null
+        : rootChange === 'same' || rootChange.empty
+          ? was.from
+          : rootChange.mapPos(was.from, 1);
+
+    return (
+      at !== null &&
+      headFrom({ from: at, root: was.root }) === was.from &&
+      results.get(was.root)?.nodeStartingAt(at)?.to === now.from
+    );
+  };
+  const writes: AuthoredWrite[] = [];
+
+  for (const key of new Set([...head.ends.keys(), ...result.ends.keys()])) {
+    const was = head.ends.get(key);
+    const now = result.ends.get(key);
+    const end = (now ?? was)?.end;
+
+    if (!end) continue;
+
+    const link = splitLinkOf(end);
+    const half = result.splits.get(link);
+    const gone = left.get(key);
+
+    if (was?.count !== now?.count) {
+      const more = (now?.count ?? 0) - (was?.count ?? 0);
+      const placed =
+        more > 0
+          ? mintedSplits.has(link) ||
+            (!headLinks.has(link) && !!half && !!now && born(now.line))
+          : !half || !!gone?.whole;
+
+      for (let each = 0; each < Math.abs(more); each++) {
+        writes.push({
+          end,
+          kind: 'end',
+          op: more > 0 ? 'put' : 'drop',
+          placed,
+        });
+      }
+      continue;
+    }
+    if (!was || !now || was.count !== 1) continue;
+
+    const slot = half?.before;
+    const stays = same(was.line, now.line);
+    const placed =
+      was.slotted && half && slot && !born(half.line) && (gone || born(slot))
+        ? slot.root === now.line.root && slot.from === now.line.from
+        : stays ||
+          (!!gone && born(now.line) && was.line.text === now.line.text) ||
+          (gone?.taker?.root === now.line.root &&
+            gone.taker.at === now.line.from) ||
+          (!gone && born(now.line) && opensAfter(was.line, now.line));
+
+    if (!placed || !stays) {
+      writes.push({ end, kind: 'end', op: stays ? 'stay' : 'move', placed });
+    }
+  }
+
+  return writes;
+};
+
 const AUTHORED_SETS: ReadonlySet<string> = new Set([
   CONTEXTS,
   LANDED,
@@ -539,6 +756,8 @@ export const authoredWritesOf = ({
   const removed = new Map<string, AuthoredWrite[]>();
   const reserves: AuthoredWrite[] = [];
   const recordedBases: MarkBase[] = [];
+  const linesLeft = new Map<string, LineLeft>();
+  let touchesEnds = false;
   const vouchers = new Map<string, Voucher[]>();
   const vouched = new Map<unknown, readonly string[]>();
 
@@ -879,6 +1098,7 @@ export const authoredWritesOf = ({
           for (const claim of ownClaimsOf(node, headFacts)) {
             headClaims.add(claimKeyOf(claim));
           }
+          if (membersIn(node).some(isSplitEnd)) touchesEnds = true;
         }
 
         if (!overlaps(removedAt, entry.from, entry.to)) continue;
@@ -912,7 +1132,18 @@ export const authoredWritesOf = ({
           entry.kind === 'text' ? lettersIn(node, entry.from, removedAt) : ''
         );
 
+        const removedWhole =
+          minus([entry.from, entry.to], removedAt).length === 0;
+        const taker =
+          entry.kind === 'element' ? takerOf(entry.from, entry.path) : null;
+
         if (entry.kind === 'element') {
+          for (const end of membersIn(node).filter(isSplitEnd)) {
+            linesLeft.set(canonicalJsonKey(end), {
+              taker,
+              whole: removedWhole,
+            });
+          }
           removedElements.push(entry.path);
           lostElements.push({
             claims: was,
@@ -926,10 +1157,9 @@ export const authoredWritesOf = ({
           {
             carrier: { at: entry.from, node: entry.kind, root },
             kind: 'removed',
-            taker:
-              entry.kind === 'element' ? takerOf(entry.from, entry.path) : null,
+            taker,
             under: [...was.values()],
-            whole: minus([entry.from, entry.to], removedAt).length === 0,
+            whole: removedWhole,
           },
           entry.kind === 'text' ? headHomeOf(entry.path) : null
         );
@@ -988,7 +1218,7 @@ export const authoredWritesOf = ({
 
         const node = result.index.node(entry.path);
 
-        parsedMembersOf(node);
+        if (parsedMembersOf(node).some(isSplitEnd)) touchesEnds = true;
         for (const claim of ownClaimsOf(node, resultFacts)) {
           resultClaims.set(claimKeyOf(claim), claim);
         }
@@ -1396,6 +1626,17 @@ export const authoredWritesOf = ({
     ),
     writes: [
       ...minted,
+      ...(touchesEnds
+        ? endWritesOf({
+            change,
+            heads,
+            left: linesLeft,
+            minted: minted.flatMap((write) =>
+              write.kind === 'minted' ? [write.claim] : []
+            ),
+            results,
+          })
+        : []),
       ...verdicts,
       ...landed,
       ...contexts,

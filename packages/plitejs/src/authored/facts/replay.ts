@@ -318,7 +318,9 @@ export const claimBasesIn = (document: JsonEditorValue) => {
 // delete its other letters too, so a withdrawal rejects only the ones the
 // batch removes whole.
 const changeHeldBy = (member: AuthoredMember) =>
-  'author' in member && member.kind !== 'reserve' ? [member.change] : [];
+  'author' in member && member.kind !== 'reserve' && member.kind !== 'end'
+    ? [member.change]
+    : [];
 
 const changesHeldIn = (document: JsonEditorValue) => {
   const members = contentMembersOf(document);
