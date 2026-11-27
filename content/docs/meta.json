@@ -250,8 +250,6 @@
     "[Table Demo](/docs/examples/table)",
     "[Table of Contents Demo](/docs/examples/toc)",
     "[Details Demo](/docs/examples/details)",
-    "---Migrations---",
-    "[From Plite to Plate](/docs/migration/plite-to-plate)",
     "---API---",
     "[Overview](/docs/api)",
     "[Plate](/docs/api/plate)",
@@ -1499,17 +1497,6 @@
           ],
           "title": "Guides",
           "titleCn": "指南"
-        },
-        {
-          "items": [
-            {
-              "href": "/docs/migration/plite-to-plate",
-              "title": "From Plite to Plate",
-              "titleCn": "从 Plite 到 Plate"
-            }
-          ],
-          "title": "Migration",
-          "titleCn": "迁移"
         }
       ],
       "plugin": [
@@ -2080,7 +2067,6 @@
       "Plugins": "插件",
       "Components": "组件",
       "Examples": "示例",
-      "Migrations": "迁移",
       "API": "API"
     },
     "items": {
@@ -3274,10 +3260,6 @@
         "description": "Semantic disclosure blocks with nested body content.",
         "title": "Details Demo",
         "titleCn": "详细信息"
-      },
-      "/docs/migration/plite-to-plate": {
-        "title": "From Plite to Plate",
-        "titleCn": "从 Plite 到 Plate"
       },
       "/docs/api": {
         "title": "Overview",

@@ -24,11 +24,7 @@ const codeFenceLanguages = new Set([
   'tsx',
   'typescript',
 ]);
-const skippedDocsDirectoryNames = new Set([
-  'changelog',
-  'migration',
-  'releases',
-]);
+const skippedDocsDirectoryNames = new Set(['changelog', 'releases']);
 const markdownFilePattern = /\.mdx?$/;
 const whitespacePattern = /\s+/;
 const pluginFactoryNamePattern = /^define(?:BasePlugin|Plugin)$/;
@@ -2329,8 +2325,6 @@ const collectMarkdownFiles = (root) => {
 
 const collectCurrentDocs = () => [
   ...collectMarkdownFiles(join(repoRoot, 'content/docs')),
-  join(repoRoot, 'content/docs/migration/plite-to-plate.mdx'),
-  join(repoRoot, 'content/docs/migration/plite-to-plate.cn.mdx'),
   ...readdirSync(join(repoRoot, 'packages'))
     .map((entry) => join(repoRoot, 'packages', entry, 'README.md'))
     .filter(existsSync),

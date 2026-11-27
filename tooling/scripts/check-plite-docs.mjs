@@ -23,15 +23,11 @@ const markdownImagePattern = /!\[[^\]]*\]\(([^)\s]+)/g;
 const inlineCodePattern = /`[^`\n]*`/g;
 const identifierPattern = /[A-Za-z_$][\w$]*/g;
 const migrationGuides = [
-  'content/docs/migration/plite-to-plate.mdx',
-  'content/docs/migration/plite-to-plate.cn.mdx',
+  'content/docs/plite/to-plate.mdx',
+  'content/docs/plite/to-plate.cn.mdx',
 ];
 const absoluteUrlPattern = /^[a-z][a-z\d+.-]*:/i;
-const comparisonDocs = new Set([
-  'content/docs/(guides)/performance.mdx',
-  'content/docs/migration/plite-to-plate.mdx',
-  'content/docs/migration/plite-to-plate.cn.mdx',
-]);
+const comparisonDocs = new Set(['content/docs/(guides)/performance.mdx']);
 const contractPath = join(
   repoRoot,
   'packages/plitejs/test/public-surface-contract.ts'
@@ -69,7 +65,7 @@ const teachingDocs = new Set([
   'content/docs/(guides)/plugin.mdx',
   'content/docs/api/core/plate-plugin.cn.mdx',
   'content/docs/api/core/plate-plugin.mdx',
-  'content/docs/migration/plite-to-plate.mdx',
+  'content/docs/plite/to-plate.mdx',
   'docs/plite/agent-start.md',
   'docs/plite/absolute-architecture-release-claim.md',
   'docs/plite/references/architecture-contract.md',
@@ -301,7 +297,7 @@ const requiredAgentStartManualSoakSignals = [
 const agentTextFilePattern = /\.(md|mdc)$/;
 const isCurrentSchemaAdoptionDoc = (path) =>
   path.startsWith('content/docs/') &&
-  !path.startsWith('content/docs/migration/');
+  !path.startsWith('content/docs/plite/to-plate');
 const yjsResearchLedgerPaths = [
   'docs/plite/research/2026-06-14-yjs-large-doc-import-readback/lead-ledger.tsv',
   'docs/plite/research/2026-06-14-yjs-large-doc-import-readback/promoted-ledger.tsv',

@@ -44,6 +44,8 @@ const pathspecs = [
 const intentionalMentionsOfCutMembers = [
   'apps',
   'content/docs/migration',
+  'content/docs/plite/to-plate.mdx',
+  'content/docs/plite/to-plate.cn.mdx',
   'docs/plans/topics',
 ];
 const memberPathspecs = [
