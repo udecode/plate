@@ -34,13 +34,18 @@ export type InkTextBlock = InkText &
     path: Path;
   }>;
 
+const isInkObjectOrVoid = (
+  schema: Pick<Editor['read']['schema'], 'isInline' | 'isObject' | 'isVoid'>,
+  node: Node
+) => !schema.isInline(node) && (schema.isVoid(node) || schema.isObject(node));
+
 export const inkTextBlockOf = (
   schema: Editor['read']['schema'],
   node: Node
 ): (InkText & Readonly<{ id: string }>) | undefined =>
   ElementApi.isElement(node) &&
   typeof node.id === 'string' &&
-  !schema.isVoid(node) &&
+  !isInkObjectOrVoid(schema, node) &&
   node.children.every(
     (child) => TextApi.isText(child) || schema.isInline(child)
   )
@@ -78,7 +83,7 @@ export const inkVoidBlockOf = (
 ): Readonly<{ id: string; text: '' }> | undefined =>
   ElementApi.isElement(node) &&
   typeof node.id === 'string' &&
-  schema.isVoid(node)
+  isInkObjectOrVoid(schema, node)
     ? { id: node.id, text: '' }
     : undefined;
 
@@ -219,13 +224,6 @@ export const inkElementSpans = (
   return spans;
 };
 
-/**
- * Its lines, and the boxes `line` and `measure` return, sit inside the
- * block's `box`. `line` at the text's end returns the last line, and `measure`
- * of an empty range returns the caret's box, so a point between two words has
- * a place. Returns nothing while the rendered text is not `text`, as when the
- * DOM has not caught up with a commit.
- */
 export const measureInkBlock = (
   element: Element,
   text: string,
@@ -289,9 +287,7 @@ export const measureInkBlock = (
   const box = boxIn(rect, origin);
   const { char, run } = readerAt(rect);
   const size = text.length;
-  // A character with no box at all, as a browser gives one that lays out
-  // nothing, never starts a line and joins the line around it.
-  const shownFrom = (offset: number) => {
+  const firstRenderedOffsetFrom = (offset: number) => {
     let at = offset;
 
     while (at < size) {
@@ -322,19 +318,21 @@ export const measureInkBlock = (
   const lines: InkLine[] = [];
 
   for (let first = 0; first < size;) {
-    const headAt = shownFrom(first);
+    const headAt = firstRenderedOffsetFrom(first);
     let end = size;
 
     if (headAt < size) {
       const head = char(headAt);
       const threshold = (head?.top ?? 0) + (head?.height ?? 0) / 2;
       const below = (offset: number) => {
-        const at = shownFrom(offset);
+        const at = firstRenderedOffsetFrom(offset);
 
         return at < size && (char(at)?.top ?? 0) >= threshold;
       };
 
-      end = shownFrom(firstOffsetBelowByHalving(headAt + 1, below));
+      end = firstRenderedOffsetFrom(
+        firstOffsetBelowByHalving(headAt + 1, below)
+      );
     }
     lines.push({ end, ...run(first, end) });
     first = end;
@@ -437,7 +435,6 @@ export const inkWordBoxes = (
   );
 };
 
-/** Whether two measurements of one block place every word the same: equal box, lines and word boxes. */
 export const sameInkLayout = (
   a: InkMeasuredBlock,
   b: InkMeasuredBlock | undefined

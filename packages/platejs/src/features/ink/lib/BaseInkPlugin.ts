@@ -196,8 +196,8 @@ export type InkTool =
 
 /**
  * What one view shows and does with ink: the tool a pen uses, or `null` when
- * drawing is off, whether ink and signs are hidden, whether digitized marks
- * show faded, and the ids of the marks picked.
+ * drawing is off, whether ink is hidden, whether digitized marks show faded,
+ * and the ids of the marks picked.
  */
 export type InkViewState = {
   hidden: boolean;
@@ -767,7 +767,8 @@ const flushPendingCleanup = (
   tx: {
     nodes: { byId: (id: string) => Readonly<{ node: Node }> | null };
     records: { drop: (set: string, id: string) => void };
-    schema: Parameters<typeof inkText>[0];
+    schema: Parameters<typeof inkText>[0] &
+      Readonly<{ isObject: (node: Node) => boolean }>;
     tags: { has: (tag: string) => boolean };
     value: () => Parameters<typeof getValueRecords>[0];
   }
@@ -803,6 +804,7 @@ const flushPendingCleanup = (
     if (
       holder &&
       !tx.schema.isVoid(holder.node) &&
+      !tx.schema.isObject(holder.node) &&
       inkText(tx.schema, holder.node).text.trim().length === 0
     ) {
       emptiedBlocks.add(id);
@@ -930,13 +932,19 @@ export const BaseInkPlugin = definePlugin('ink', {
             const id = idOf(beforeNode);
 
             if (!id || !beforeNode) continue;
-            if (tx.schema.isVoid(beforeNode)) break;
+            if (
+              tx.schema.isVoid(beforeNode) ||
+              tx.schema.isObject(beforeNode)
+            ) {
+              break;
+            }
             if (inkText(tx.schema, beforeNode).text.trim().length > 0) {
               const afterHolder = tx.nodes.byId(id);
 
               if (
                 afterHolder &&
                 !tx.schema.isVoid(afterHolder.node) &&
+                !tx.schema.isObject(afterHolder.node) &&
                 inkText(tx.schema, afterHolder.node).text.trim().length === 0
               ) {
                 pending.emptiedBlocks.add(id);
@@ -1039,7 +1047,7 @@ export const BaseInkPlugin = definePlugin('ink', {
             return mark.blocks.every((block) => {
               const saved = copy(block.copy);
 
-              if (!saved) return false;
+              if (!saved || saved.lines.length === 0) return false;
 
               const holder = readShownElementById(editor, saved.block);
 
@@ -1351,9 +1359,7 @@ export const BaseInkPlugin = definePlugin('ink', {
       },
       /**
        * Where the block of the copy saved under `copyId` stands now, or
-       * `undefined` for a copy that is not saved. A deleted block's place
-       * follows the saved places of deleted blocks to the nearest block left
-       * before it, then after it.
+       * `undefined` for a copy that is not saved or whose block was deleted.
        */
       place: (copyId: string): InkCopyPlace | undefined =>
         readInkPlace({ copy, editor, state }, copyId),
@@ -1429,10 +1435,7 @@ export const BaseInkPlugin = definePlugin('ink', {
      * milliseconds pass a quarter of `Number.MAX_SAFE_INTEGER`, or a block
      * whose `voids` comes with no inline void in its `text`, writing nothing.
      * A block that leaves `voids` out takes the document block's, as
-     * `InkMarkInput` says. A copy's block deleted by this update, by one of
-     * the last four updates that deleted blocks, or while a stroke that
-     * entered it was still unsaved, gets its place saved too. Each other
-     * copy's block and the block on each side of it get theirs.
+     * `InkMarkInput` says.
      */
     add: txStored((input: InkMarkInput) => {
       const { copies, mark } = encodeMark(

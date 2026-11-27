@@ -71,7 +71,6 @@ type Witness = Readonly<{
 
 type Decided = Readonly<{
   pin: Element | undefined;
-  place: InkCopyPlace | undefined;
   placement: InkPlacement;
 }>;
 
@@ -105,7 +104,6 @@ const metrics = {
   indexRebuilds: 0,
   sampleVisits: 0,
   shownIds: 0,
-  signReads: 0,
 };
 
 export const getInkPlacementMetrics = () => Object.freeze({ ...metrics });
@@ -717,11 +715,10 @@ export const createInkPlacer = ({
         return undefined;
       }
 
-      const { pin, place, placement } = kept;
+      const { pin, placement } = kept;
 
       return {
         pin,
-        place,
         placement: placement
           ? {
               ...placement,
@@ -807,7 +804,6 @@ export const createInkPlacer = ({
         })
           ? null
           : candidate;
-      const place = places.find((at) => at?.kind !== 'live') ?? places[0];
       const firstLeft = first?.box.left ?? 0;
       const firstTop = first?.box.top ?? 0;
       const witnesses = keys.flatMap((key): Witness[] => {
@@ -841,7 +837,6 @@ export const createInkPlacer = ({
           firstLeft,
           firstTop,
           pin,
-          place,
           placement,
           width: rect.width,
           witnesses,
@@ -850,7 +845,7 @@ export const createInkPlacer = ({
         held.delete(mark.id);
       }
 
-      return { pin, place, placement };
+      return { pin, placement };
     };
 
     const visible = new Set(

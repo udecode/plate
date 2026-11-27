@@ -30,19 +30,17 @@ export type InkPassageImages = Readonly<{
   voids: Readonly<Record<number, string>>;
 }>;
 
-// The key whose press acted on each view's pick, until its next fresh press,
-// so the repeats of a held Backspace never reach the text.
 const heldKeys = new WeakMap<object, string>();
 
 /**
  * Pen markup on a document's text, with each view's Draw tool. A view keeps
- * its own tool, whether it hides ink and signs, whether digitized marks show
- * faded, and which marks are picked.
+ * its own tool, whether it hides ink, whether digitized marks show faded, and
+ * which marks are picked.
  * While the lasso is on, Backspace or Delete removes the picked marks that
- * are still shown (not digitized) and show no sign in one undo step, and
- * Escape clears the pick, before the editor handles the key. A key with Alt,
- * Control or Meta, an input method's key, a key another handler took and the
- * repeats of a key held after the press that acted stay out of the pick.
+ * are still shown (not digitized) in one undo step, and Escape clears the
+ * pick, before the editor handles the key. A key with Alt, Control or Meta, an
+ * input method's key, a key another handler took and the repeats of a key held
+ * after the press that acted stay out of the pick.
  */
 export const InkPlugin = toReactPlugin(BaseInkPlugin, {
   api: ({ editor, viewStore }) => ({
@@ -63,7 +61,7 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
         draft.picked = [...ids];
       });
     },
-    /** Hide or show this view's ink and signs. Hiding clears the pick. */
+    /** Hide or show this view's ink. Hiding clears the pick. */
     setHidden: (hidden: boolean) => {
       viewStore.set((draft) => {
         draft.hidden = hidden;
@@ -71,9 +69,8 @@ export const InkPlugin = toReactPlugin(BaseInkPlugin, {
       });
     },
     /**
-     * Draw digitized marks faded over their words, or as their sign once their
-     * text changed, and let the lasso pick them. Turning it off drops digitized
-     * marks from the pick.
+     * Draw digitized marks faded over their words and let the lasso pick them.
+     * Turning it off drops digitized marks from the pick.
      */
     setShowDigitized: (showDigitized: boolean) => {
       viewStore.set((draft) => {

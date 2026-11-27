@@ -157,28 +157,6 @@ const marginOf = (
   return undefined;
 };
 
-/**
- * A stroke whose first sample enters no block is a margin note for the
- * nearest block, picked and measured then, until the line enters a block. A
- * commit that changes a crossed block or a margin note's block, or the
- * structure or layout at or above it, and a report to the returned
- * `layoutChanged` under which one of those blocks moved in `layer`, its box
- * for `boxes` and its box, lines or words for `words`, seal the epoch at its
- * last sample and drop the browser's held samples from before that commit or
- * report, so the next sample starts a new mark. A pointer move that finds one
- * of those blocks' boxes moved with no report seals the epoch the same way,
- * dropping its own samples. While no mark is open, any report drops the held
- * samples from before it. Any other report leaves the mark whole. Any other
- * commit during the contact leaves the mark whole until the line enters a
- * block that commit changed, where a new mark starts with the first sample
- * from after that commit, and a later commit to another block still splits
- * the mark there. A mark saves the direction of the first block it holds, as
- * read when the stroke measured that block. A sealed mark saves through
- * `editor` in an update of its own once the commit's handlers have run, so
- * `add` sees the blocks that commit deleted. A contact's later marks join its
- * first mark's undo step while nothing else enters the undo history between
- * their saves. A press on a `[data-ink-sign]` element is left to the sign.
- */
 export const attachInkCapture = ({
   editor,
   layer,
