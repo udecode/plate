@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-fix-pagination-demo-link-weight",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-fix-pagination-demo-link-weight.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Measure link text at medium weight in the pagination demo",
+  "targets": [
+    {
+      "name": "pagination-demo",
+      "files": ["apps/www/src/registry/examples/pagination-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-pagination-measure-link-text-at-71df9ce7",
+      "kind": "fix",
+      "summary": "Measure link text at medium weight in the pagination demo",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["pagination-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-fix-pagination-demo-link-weight",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

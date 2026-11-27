@@ -346,6 +346,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-fix-pagination-demo-link-weight",
+      "href": "/registry/changelog/2026-11-27-fix-pagination-demo-link-weight.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Measure link text at medium weight in the pagination demo",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["pagination-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-ink-attached-digitize",
       "href": "/registry/changelog/2026-11-27-ink-attached-digitize.json",
       "status": "draft",

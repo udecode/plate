@@ -42,10 +42,12 @@ export type ViewLineLanding = Readonly<{ dom: DOMPoint | null; point: Point }>;
 export type PlacementReach = 'drag' | 'press';
 
 export type ViewLines = Readonly<{
+  hasDisjointLines?: () => boolean;
   lineAfter: (
     query: Readonly<{
       direction: ViewLineDirection;
       from: ViewCaret;
+      nativeLinesReachable?: boolean;
       readX: () => number | null;
     }>
   ) => ViewLineLanding | null;
@@ -313,9 +315,13 @@ export const moveByRenderedLines = ({
   const direction =
     event.key === 'ArrowDown' ? 'down' : event.key === 'ArrowUp' ? 'up' : null;
   const root = event.currentTarget;
+  const nativeLinesReachable = !hasDOMHostQuirk(
+    event.nativeEvent,
+    'line-motion-skips-out-of-flow-lines'
+  );
   const paged =
     !!viewLines &&
-    hasDOMHostQuirk(event.nativeEvent, 'line-motion-skips-out-of-flow-lines');
+    (!nativeLinesReachable || Boolean(viewLines.hasDisjointLines?.()));
   const scrolling = hasDOMHostQuirk(
     event.nativeEvent,
     'line-motion-enters-scroll-container-at-end'
@@ -366,6 +372,7 @@ export const moveByRenderedLines = ({
             point: focus,
             side: resolveSoftLineEndDOMPoint(points.focus)?.side ?? null,
           },
+          nativeLinesReachable,
           readX: () =>
             createDOMGeometryKernel({ root }).verticalNavigationX(points.focus),
         })

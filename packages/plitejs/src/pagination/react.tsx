@@ -155,7 +155,18 @@ const createPagedViewLines = ({
   readVersion: () => number;
   readViewport: () => Viewport | null;
 }>): ViewLines => ({
-  lineAfter: ({ direction, from, readX }) => {
+  hasDisjointLines: () => {
+    const placements = readLayout()?.geometry?.pagePlacements;
+
+    if (!placements) return false;
+    const first = placements[0];
+
+    return (
+      first !== undefined &&
+      placements.some((placement) => placement.left !== first.left)
+    );
+  },
+  lineAfter: ({ direction, from, nativeLinesReachable = false, readX }) => {
     const layout = readLayout();
 
     if (!layout || layout.measuredVersion !== readVersion()) return null;
@@ -189,19 +200,39 @@ const createPagedViewLines = ({
     });
 
     if (!target) return null;
+    const fromLeft =
+      layout.geometry?.pagePlacements[target.fromPageIndex]?.left;
+    const toLeft = layout.geometry?.pagePlacements[target.pageIndex]?.left;
+    const crossesColumn =
+      fromLeft !== undefined && toLeft !== undefined && fromLeft !== toLeft;
+
+    if (nativeLinesReachable && !crossesColumn) return null;
     const root = target.drawn ? layout.root : null;
     const { path } = target;
+    const readTargetX = () => {
+      const x = readX();
+
+      if (x === null || !crossesColumn) return x;
+      const scale = layout.canvas
+        ? getElementTransformScale(
+            layout.canvas,
+            layout.canvas.getBoundingClientRect()
+          ).x
+        : 1;
+
+      return x + (toLeft - fromLeft) * scale;
+    };
 
     return target.kind === 'line'
       ? landOnViewLine({
           editor,
           end: target.end,
           path,
-          readX,
+          readX: readTargetX,
           root,
           start: target.start,
         })
-      : landInViewBlock({ direction, editor, path, readX, root });
+      : landInViewBlock({ direction, editor, path, readX: readTargetX, root });
   },
   placementAt: ({ reach, target, x, y }) => {
     const layout = readLayout();
@@ -605,6 +636,14 @@ const EMPTY_PAGE_MOUNT_PLAN: PagedEditablePageMountPlan = {
   items: [],
 };
 
+const sameViewportSnapshot = (
+  left: ViewportSnapshot,
+  right: ViewportSnapshot
+) =>
+  left.canTrackContentViewport === right.canTrackContentViewport &&
+  left.viewport?.top === right.viewport?.top &&
+  left.viewport?.bottom === right.viewport?.bottom;
+
 const createViewportStore = () => {
   const listeners = new Set<() => void>();
   let root: HTMLDivElement | null = null;
@@ -619,6 +658,7 @@ const createViewportStore = () => {
   }> | null = null;
 
   const publish = (next: ViewportSnapshot, sync = false) => {
+    if (sameViewportSnapshot(snapshot, next)) return;
     const commit = () => {
       snapshot = next;
       listeners.forEach((listener) => listener());
@@ -669,19 +709,45 @@ const createViewportStore = () => {
     const onResize = () => update();
 
     update();
-    scrollRoot.addEventListener('scroll', onScroll, { passive: true });
-    root.ownerDocument.defaultView?.addEventListener('resize', onResize);
-    const observer =
-      typeof ResizeObserver === 'undefined'
-        ? null
-        : new ResizeObserver(onResize);
+    const view = root.ownerDocument.defaultView;
 
-    observer?.observe(root);
-    observer?.observe(scrollRoot);
+    scrollRoot.addEventListener('scroll', onScroll, { passive: true });
+    view?.addEventListener('resize', onResize);
+    const ResizeObserverConstructor =
+      view?.ResizeObserver ??
+      (typeof ResizeObserver === 'undefined' ? null : ResizeObserver);
+    const observer = ResizeObserverConstructor
+      ? new ResizeObserverConstructor(onResize)
+      : null;
+    const MutationObserverConstructor =
+      view?.MutationObserver ??
+      (typeof MutationObserver === 'undefined' ? null : MutationObserver);
+    const attributeObserver = MutationObserverConstructor
+      ? new MutationObserverConstructor(onResize)
+      : null;
+    const observed = new Set<HTMLElement>([root, scrollRoot]);
+
+    if (!root.contains(scrollRoot)) {
+      for (
+        let current = root.parentElement;
+        current && current !== scrollRoot;
+        current = current.parentElement
+      ) {
+        observed.add(current);
+      }
+    }
+    observed.forEach((element) => {
+      observer?.observe(element);
+      attributeObserver?.observe(element, {
+        attributeFilter: ['class', 'style'],
+        attributes: true,
+      });
+    });
     cleanup = () => {
       scrollRoot.removeEventListener('scroll', onScroll);
-      root?.ownerDocument.defaultView?.removeEventListener('resize', onResize);
+      view?.removeEventListener('resize', onResize);
       observer?.disconnect();
+      attributeObserver?.disconnect();
     };
   };
   const getSnapshot = () => snapshot;
@@ -930,6 +996,9 @@ const NATIVE_FLOW_BREAK_RULE = `[${SOFT_LINE_FLAG}='true']::after{content:'\\A';
 
 const SOFT_LINE_END_RULE = `${SOFT_LINE_END_SELECTOR}::after{content:'\\A';white-space:pre}`;
 
+const PROJECTED_TEXT_DECORATION_RULE =
+  '[data-editor-node="text"]:has(>[data-pagination-projected]),[data-pagination-projected]{text-decoration:inherit}';
+
 // Find matches a phrase only within one text flow, so parked text stays in it.
 // At full size a click on a drawn line resolves into the parked text under it
 // despite pointer-events: none.
@@ -1051,6 +1120,7 @@ const createPaginationBuckets = (
                   }
                 : {
                     'data-pagination-line': true,
+                    'data-pagination-projected': true,
                     [RUN_ATTRIBUTE]: runKey,
                     style: Object.freeze({
                       display: 'inline-block',
@@ -1749,6 +1819,12 @@ const PagedEditableInner = <TElement extends Element = Element>({
             </style>
             <style href="editor-pagination-soft-line-end" precedence="editor">
               {SOFT_LINE_END_RULE}
+            </style>
+            <style
+              href="editor-pagination-projected-decoration"
+              precedence="editor"
+            >
+              {PROJECTED_TEXT_DECORATION_RULE}
             </style>
             <ReadOnlyContext value={pagedReadOnly}>
               <ComposingContext value={pagedComposing}>

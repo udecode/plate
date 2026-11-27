@@ -371,6 +371,11 @@
       "2026-11-18-registry-icon-library",
       "2026-08-17-flat-editor-registry"
     ],
+    "pagination-demo": [
+      "2026-11-27-fix-pagination-demo-link-weight",
+      "2026-10-28-pagination-demo-list-callout",
+      "2026-10-28-pagination-demo-named-fonts"
+    ],
     "ink-digitize": ["2026-11-27-ink-attached-digitize"],
     "ink-digitize-api": [
       "2026-11-27-ink-closing-fixes",
@@ -1595,10 +1600,6 @@
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
-    ],
-    "pagination-demo": [
-      "2026-10-28-pagination-demo-list-callout",
-      "2026-10-28-pagination-demo-named-fonts"
     ],
     "code-block-diagram-mermaid": [
       "2026-10-24-mermaid-pele-1-9",

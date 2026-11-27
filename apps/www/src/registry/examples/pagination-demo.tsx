@@ -1,6 +1,6 @@
 'use client';
 
-import { BaseHeadingPlugin } from 'platejs';
+import { BaseHeadingPlugin, NodeApi, type Element, type Path } from 'platejs';
 import type { SavedComments } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
@@ -13,7 +13,7 @@ import {
   type PagedEditorContentRenderPageProps,
   usePageLayout,
 } from 'platejs/pagination/react';
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { EditorRoot, LinkPlugin, useCreateEditor } from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
 import * as React from 'react';
 
@@ -144,6 +144,23 @@ const fontSizes: Record<number, [size: number, lineHeight: number]> = {
   3: [20, 28],
 };
 
+const hasAncestorType = (
+  element: Element,
+  path: Path,
+  type: string
+): boolean => {
+  let current: Element = element;
+
+  for (const index of path.slice(1, -1)) {
+    const child = current.children[index];
+
+    if (!NodeApi.isElement(child)) return false;
+    if (child.type === type) return true;
+    current = child;
+  }
+  return false;
+};
+
 export default function PaginationDemo() {
   const editor = useCreateEditor({
     plugins: [
@@ -164,6 +181,7 @@ export default function PaginationDemo() {
   const [showLines, setShowLines] = React.useState(false);
   const engine = React.useMemo(() => createPretextPageLayoutEngine(), []);
   const headingType = editor.plugin(BaseHeadingPlugin).schema.type;
+  const linkType = editor.plugin(LinkPlugin).schema.type;
   const tableType = editor.plugin(BaseTablePlugin).schema.type;
   const typography = React.useMemo<PageLayoutTypography>(
     () => ({
@@ -177,7 +195,7 @@ export default function PaginationDemo() {
             }
           : { blockSpacing: 8, lineHeight: 24 };
       },
-      text: ({ element, leaf }) => {
+      text: ({ element, leaf, path }) => {
         const level = Number(element.level ?? 0);
         const size =
           element.type === headingType ? (fontSizes[level]?.[0] ?? 18) : 16;
@@ -186,7 +204,9 @@ export default function PaginationDemo() {
             ? (fontWeights[level] ?? 600)
             : leaf.bold
               ? 700
-              : 400;
+              : hasAncestorType(element, path, linkType)
+                ? 500
+                : 400;
 
         return {
           font: `${leaf.italic ? 'italic ' : ''}${weight} ${size}px ${
@@ -195,7 +215,7 @@ export default function PaginationDemo() {
         };
       },
     }),
-    [headingType]
+    [headingType, linkType]
   );
   const fragmentation = React.useMemo<NodeFragmentationProvider>(
     () =>

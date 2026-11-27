@@ -11,8 +11,22 @@ type TextLine = TextFragment['lines'][number];
 type LineEntry = Readonly<{ fragment: TextFragment; line: TextLine }>;
 
 export type PagedLineTarget = Readonly<
-  | { drawn: boolean; end: Point; kind: 'line'; path: Path; start: Point }
-  | { drawn: boolean; kind: 'block'; path: Path }
+  | {
+      drawn: boolean;
+      end: Point;
+      fromPageIndex: number;
+      kind: 'line';
+      pageIndex: number;
+      path: Path;
+      start: Point;
+    }
+  | {
+      drawn: boolean;
+      fromPageIndex: number;
+      kind: 'block';
+      pageIndex: number;
+      path: Path;
+    }
 >;
 
 export const isNativeFlowBlock = (
@@ -90,13 +104,6 @@ export const pagedLineTarget = ({
 }>): PagedLineTarget | null => {
   const isDrawn = (fragment: PageLayoutFragment) =>
     mountedPageIndexes === 'all' || mountedPageIndexes.has(fragment.pageIndex);
-  const toLine = ({ fragment, line }: LineEntry): PagedLineTarget => ({
-    drawn: isDrawn(fragment),
-    end: lineEnd(line),
-    kind: 'line',
-    path: fragment.path,
-    start: lineStart(line),
-  });
   const { fragments } = snapshot;
   const byPath = readFragmentsByPath(snapshot);
   let blockIndexes: readonly number[] | undefined;
@@ -128,6 +135,19 @@ export const pagedLineTarget = ({
   if (lines.length === 0) return null;
   const step = direction === 'down' ? 1 : -1;
   const caretIndex = caretLineIndex(lines, from.point, from.upper);
+  const caretLine = lines[caretIndex];
+
+  if (!caretLine) return null;
+  const fromPageIndex = caretLine.fragment.pageIndex;
+  const toLine = ({ fragment, line }: LineEntry): PagedLineTarget => ({
+    drawn: isDrawn(fragment),
+    end: lineEnd(line),
+    fromPageIndex,
+    kind: 'line',
+    pageIndex: fragment.pageIndex,
+    path: fragment.path,
+    start: lineStart(line),
+  });
   const target = lines[caretIndex + step];
 
   if (target) {
@@ -155,7 +175,9 @@ export const pagedLineTarget = ({
     }
     const block: PagedLineTarget = {
       drawn: isDrawn(neighbor),
+      fromPageIndex,
       kind: 'block',
+      pageIndex: neighbor.pageIndex,
       path: neighbor.path,
     };
 
