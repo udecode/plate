@@ -72,6 +72,49 @@ const COMMAND_REGISTRATION_RUNTIMES = new WeakMap<
   object,
   CommandRegistrationRuntime<any, BaseEditor<any, any>>
 >();
+const IMPLICIT_TARGET_COMMANDS = new WeakMap<
+  object,
+  Readonly<{
+    isImplicit: (input: unknown) => boolean;
+    refusesCrossing: boolean;
+  }>
+>();
+
+/** @internal */
+export const registerImplicitTargetCommand = <
+  Input,
+  TEditor extends BaseEditor<any, any>,
+>(
+  command: EditorCommand<Input, TEditor>,
+  isImplicit: (input: Input) => boolean = () => true,
+  options?: Readonly<{ refusesCrossing?: boolean }>
+) => {
+  IMPLICIT_TARGET_COMMANDS.set(command, {
+    isImplicit: isImplicit as (input: unknown) => boolean,
+    refusesCrossing: options?.refusesCrossing === true,
+  });
+};
+
+/** @internal */
+export const isImplicitTargetCommand = <
+  Input,
+  TEditor extends BaseEditor<any, any>,
+>(
+  command: EditorCommand<Input, TEditor>,
+  input: Input
+): boolean => {
+  const entry = IMPLICIT_TARGET_COMMANDS.get(command);
+
+  return entry ? entry.isImplicit(input) : false;
+};
+
+/** @internal */
+export const commandRefusesSetCrossing = <
+  Input,
+  TEditor extends BaseEditor<any, any>,
+>(
+  command: EditorCommand<Input, TEditor>
+): boolean => IMPLICIT_TARGET_COMMANDS.get(command)?.refusesCrossing === true;
 
 export const createCommandRegistration = <
   TCommand extends EditorCommandDescriptor,

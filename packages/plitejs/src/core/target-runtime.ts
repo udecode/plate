@@ -67,14 +67,18 @@ export const getTargetRuntime = (editor: Editor) =>
 
 export const withEditorTargetRuntime = <T>(
   editor: Editor,
-  runtime: EditorTargetRuntime,
+  runtime: EditorTargetRuntime | null,
   fn: () => T
 ): T => {
   const key = targetRuntimeKey(editor);
   const previousRuntime = TARGET_RUNTIME.get(key);
   const hadPreviousRuntime = TARGET_RUNTIME.has(key);
 
-  TARGET_RUNTIME.set(key, runtime);
+  if (runtime) {
+    TARGET_RUNTIME.set(key, runtime);
+  } else {
+    TARGET_RUNTIME.delete(key);
+  }
 
   try {
     return fn();

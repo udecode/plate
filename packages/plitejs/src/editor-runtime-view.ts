@@ -1642,6 +1642,12 @@ const createViewRuntime = <V extends Value>(
         );
       }
 
+      if (viewState.root !== MAIN_ROOT_KEY) {
+        return withAuthoredUpdateView(editor, getViewEditor() ?? editor, () =>
+          withEditorTargetRuntime(editor, null, runUpdate)
+        );
+      }
+
       return withAuthoredUpdateView(
         editor,
         getViewEditor() ?? editor,

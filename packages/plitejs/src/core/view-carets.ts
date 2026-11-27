@@ -1025,6 +1025,18 @@ export const placeInDraft = (
   return placed;
 };
 
+export const discardPlacement = (editor: Editor, generation: number) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  KEPT.get(owner)?.delete(generation);
+  if (HIGHEST_MINTED.get(owner) === generation) {
+    HIGHEST_MINTED.set(
+      owner,
+      Math.max(getCommittedCarets(owner).generation, generation - 1)
+    );
+  }
+};
+
 const judgePlacement = (
   owner: Editor,
   before: CaretState,

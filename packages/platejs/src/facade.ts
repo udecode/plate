@@ -210,7 +210,7 @@ export {
   recordSetChanges,
   recordSetIds,
 } from 'plitejs/internal';
-export { sameResult } from 'plitejs/internal';
+export { sameResult, setEditorTargetRuntime } from 'plitejs/internal';
 export {
   afterActiveTransactionEnds,
   attachTransactionSpecAfterCommit,

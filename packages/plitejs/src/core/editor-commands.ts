@@ -50,7 +50,10 @@ import {
   typesAtSelection,
 } from '../transforms-text/insert-text';
 import type { TextUnit } from '../types/types';
-import { defineCommand } from './command-definition';
+import {
+  defineCommand,
+  registerImplicitTargetCommand,
+} from './command-definition';
 import { refusesTextStartInStruck, removesAtPlace } from './command-frame';
 import { getActiveCommandEditor } from './command-registry';
 import {
@@ -1333,3 +1336,43 @@ export const editorCommands: EditorCommands = Object.freeze({
     },
   }),
 });
+
+registerImplicitTargetCommand(editorCommands.addMark);
+registerImplicitTargetCommand(editorCommands.delete, undefined, {
+  refusesCrossing: true,
+});
+registerImplicitTargetCommand(editorCommands.insertBreak, undefined, {
+  refusesCrossing: true,
+});
+registerImplicitTargetCommand(editorCommands.insertSoftBreak, undefined, {
+  refusesCrossing: true,
+});
+registerImplicitTargetCommand(editorCommands.removeMark);
+registerImplicitTargetCommand(editorCommands.toggleMark);
+registerImplicitTargetCommand(editorCommands.transposeCharacter);
+registerImplicitTargetCommand(
+  editorCommands.deleteFragment,
+  (input) => input.at === undefined,
+  { refusesCrossing: true }
+);
+registerImplicitTargetCommand(
+  editorCommands.insertNodes,
+  (input) => input.options?.at === undefined
+);
+registerImplicitTargetCommand(
+  editorCommands.insertText,
+  (input) => input.options?.at === undefined,
+  { refusesCrossing: true }
+);
+registerImplicitTargetCommand(
+  editorCommands.removeNodes,
+  (input) => input.options?.at === undefined
+);
+registerImplicitTargetCommand(
+  editorCommands.setNodes,
+  (input) => input.options?.at === undefined
+);
+registerImplicitTargetCommand(
+  editorCommands.toggleBlock,
+  (input) => input.options?.at === undefined
+);

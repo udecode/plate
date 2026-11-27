@@ -507,7 +507,10 @@ import {
   resolveStateFieldValue,
   restoreStateFieldHydration,
 } from './state-fields';
-import { resolveTargetRuntimeImplicitTarget } from './target-runtime';
+import {
+  getTargetRuntime,
+  resolveTargetRuntimeImplicitTarget,
+} from './target-runtime';
 import {
   createEditorEffect,
   defineUpdateAnnotation,
@@ -539,6 +542,7 @@ import {
   carryCarets,
   commitCarets,
   currentPlacement,
+  discardPlacement,
   type CaretPair,
   getCommittedCarets,
   hasBookmarksIn,
@@ -1082,6 +1086,15 @@ export type TransactionSpecContext = {
   >;
   selectionWritten: boolean;
   snapshot: TransactionSnapshot;
+  speculativeCaret?: Readonly<{
+    baseMutationVersion: number;
+    caret: CaretState;
+    changed: boolean;
+    hadTypedRecord: boolean;
+    mintedGeneration: number | undefined;
+    typedRecord: TypedMarks | null;
+    writtenCaret: CaretState;
+  }>;
   strandedCaret?: Readonly<{
     key: NodeKey;
     root: string;
@@ -12865,6 +12878,29 @@ export const getActiveImplicitTarget = (
   return snapshot?.implicitTargetResolved ? snapshot.implicitTarget : undefined;
 };
 
+const getImplicitTargetContext = (editor: Editor, owner: Editor) => {
+  const viewRoot =
+    editor !== owner
+      ? getEditorRuntimeRoot(editor)
+      : getActiveUpdateRoot(owner);
+  const storedRoot = getCurrentSelectionRoot(owner);
+  const storedSelection = getCurrentSelection(owner);
+  const crossRootFallback = viewRoot !== undefined && storedRoot !== viewRoot;
+  const fallback = crossRootFallback ? null : storedSelection;
+  const fallbackRoot = viewRoot ?? storedRoot;
+  const fallbackKey = fallback === null ? `null:${fallbackRoot}` : storedRoot;
+
+  return {
+    crossRootFallback,
+    fallback,
+    fallbackKey,
+    fallbackRoot,
+    storedRoot,
+    storedSelection,
+    viewRoot,
+  };
+};
+
 export const peekImplicitTarget = (editor: Editor): Selection => {
   const owner = getEditorRuntimeOwner(editor);
   const snapshot = getTransactionSnapshot(owner);
@@ -12873,38 +12909,93 @@ export const peekImplicitTarget = (editor: Editor): Selection => {
     return cloneValue(snapshot.implicitTarget);
   }
 
-  const moved = askImplicitTargetOnce(owner);
+  const targetContext = getImplicitTargetContext(editor, owner);
+  const moved = askImplicitTargetOnce(editor, {
+    fallback: targetContext.fallback,
+    fallbackKey: targetContext.fallbackKey,
+  });
 
-  return moved ? cloneValue(moved.target) : getCurrentSelection(owner);
+  return moved ? cloneValue(moved.target) : targetContext.fallback;
 };
+
+const resolveImplicitTargetRuntimeEditor = (
+  editor: Editor,
+  owner: Editor
+): Editor | null => {
+  if (getTargetRuntime(editor)) return editor;
+
+  return getEditorRuntimeRoot(editor) === getEditorRuntimeRoot(owner) &&
+    getTargetRuntime(owner)
+    ? owner
+    : null;
+};
+
+export const hasCommandTargetRuntime = (editor: Editor): boolean =>
+  resolveImplicitTargetRuntimeEditor(editor, getEditorRuntimeOwner(editor)) !==
+  null;
 
 const TARGET_ANSWERS = new WeakMap<
   object,
   Readonly<{
+    fallbackKey: string;
     moved: Readonly<{ target: Selection }> | null;
+    runtime: ReturnType<typeof getTargetRuntime>;
+    runtimeEditor: Editor;
     selection: Selection;
     value: unknown;
   }>
 >();
 
-const askImplicitTargetOnce = (editor: Editor) => {
+const askImplicitTargetOnce = (
+  editor: Editor,
+  options?: Readonly<{
+    fallback?: Selection;
+    fallbackKey?: string;
+    runtimeEditor?: Editor;
+  }>
+) => {
   const owner = getEditorRuntimeOwner(editor);
   const snapshot = getTransactionSnapshot(owner);
+  const runtimeEditor =
+    options?.runtimeEditor ?? resolveImplicitTargetRuntimeEditor(editor, owner);
+
+  if (!runtimeEditor) return null;
+  const runtime = getTargetRuntime(runtimeEditor);
   const selection = readCurrentSelection(owner);
   const value = snapshot?.builder.value;
+  const currentRoot = getCurrentSelectionRoot(owner);
+  const fallbackKey =
+    options?.fallbackKey ??
+    (selection === null ? `null:${currentRoot}` : currentRoot);
   const answered = snapshot && TARGET_ANSWERS.get(snapshot);
 
   if (
     answered &&
+    answered.runtimeEditor === runtimeEditor &&
+    answered.runtime === runtime &&
+    answered.fallbackKey === fallbackKey &&
     answered.selection === selection &&
     answered.value === value
   ) {
     return answered.moved;
   }
 
-  const moved = moveImplicitTarget(owner);
+  const moved = moveImplicitTarget(
+    owner,
+    runtimeEditor,
+    options && 'fallback' in options ? options.fallback : undefined
+  );
 
-  if (snapshot) TARGET_ANSWERS.set(snapshot, { moved, selection, value });
+  if (snapshot) {
+    TARGET_ANSWERS.set(snapshot, {
+      fallbackKey,
+      moved,
+      runtime,
+      runtimeEditor,
+      selection,
+      value,
+    });
+  }
 
   return moved;
 };
@@ -12918,21 +13009,215 @@ export const setActiveImplicitTarget = (editor: Editor, target: Selection) => {
 };
 
 const moveImplicitTarget = (
-  editor: Editor
+  editor: Editor,
+  runtimeEditor: Editor = editor,
+  explicitFallback?: Selection
 ): Readonly<{ target: Selection }> | null => {
   const frame = getTransactionSnapshot(editor)?.implicitTargetFrame;
+  const hasFallback = explicitFallback !== undefined;
 
   if (!frame) {
     return resolveTargetRuntimeImplicitTarget(
-      editor,
-      getCurrentSelection(editor)
+      runtimeEditor,
+      hasFallback ? explicitFallback : getCurrentSelection(editor)
     );
   }
   const moved = withContextsBelow(editor, frame.context, () =>
-    resolveTargetRuntimeImplicitTarget(editor, frame.storedSelection)
+    resolveTargetRuntimeImplicitTarget(
+      runtimeEditor,
+      hasFallback ? explicitFallback : frame.storedSelection
+    )
   );
 
   return moved ? { target: frame.toFrame(moved.target) } : null;
+};
+
+const withSelectionRoot = (
+  selection: Exclude<Selection, null>,
+  root: string
+): Exclude<Selection, null> => {
+  if (root === MAIN_ROOT_KEY || SelectionApi.root(selection) !== undefined) {
+    return selection;
+  }
+  if (SelectionApi.isNode(selection)) {
+    return SelectionApi.nodes(selection.paths, {
+      anchorPath: selection.anchorPath,
+      focusPath: selection.focusPath,
+      mode: selection.mode,
+      root,
+    });
+  }
+
+  return {
+    ...selection,
+    anchor: { ...selection.anchor, root },
+    focus: { ...selection.focus, root },
+  };
+};
+
+const sameTargetPlacement = (
+  left: Selection,
+  leftRoot: string,
+  right: Selection,
+  rightRoot: string
+): boolean => {
+  if (left === null || right === null) return left === right;
+  if (leftRoot !== rightRoot) return false;
+  if (SelectionApi.isNode(left) || SelectionApi.isNode(right)) {
+    return SelectionApi.equals(left, right);
+  }
+
+  return (
+    PointApi.equals(
+      { offset: left.anchor.offset, path: left.anchor.path },
+      { offset: right.anchor.offset, path: right.anchor.path }
+    ) &&
+    PointApi.equals(
+      { offset: left.focus.offset, path: left.focus.path },
+      { offset: right.focus.offset, path: right.focus.path }
+    )
+  );
+};
+
+export const resolveCommandImplicitTarget = (
+  editor: Editor,
+  options?: Readonly<{ refusesCrossing?: boolean }>
+): (() => void) | null => {
+  const owner = getEditorRuntimeOwner(editor);
+  const context = getTransactionSpecContext(owner);
+  const snapshot = context?.snapshot;
+
+  if (!context || !snapshot || snapshot.implicitTargetResolved) return null;
+
+  const runtimeEditor = resolveImplicitTargetRuntimeEditor(editor, owner);
+
+  if (!runtimeEditor) return null;
+
+  const { crossRootFallback, fallback, fallbackKey, fallbackRoot, viewRoot } =
+    getImplicitTargetContext(editor, owner);
+
+  if (SelectionApi.isNode(fallback)) {
+    snapshot.implicitTarget = cloneValue(fallback);
+    snapshot.implicitTargetResolved = true;
+
+    return null;
+  }
+
+  const latchScoped = (target: Selection): (() => void) | null => {
+    const previousTarget = snapshot.implicitTarget;
+    const previousResolved = snapshot.implicitTargetResolved;
+    const beforeCaret = context.caret;
+    const beforeSelectionWritten = context.selectionWritten;
+
+    snapshot.implicitTarget = target;
+    snapshot.implicitTargetResolved = true;
+
+    if (!crossRootFallback) return null;
+
+    return () => {
+      if (
+        context.caret === beforeCaret &&
+        context.selectionWritten === beforeSelectionWritten &&
+        snapshot.implicitTarget === target
+      ) {
+        snapshot.implicitTarget = previousTarget;
+        snapshot.implicitTargetResolved = previousResolved;
+      }
+    };
+  };
+
+  const moved = askImplicitTargetOnce(editor, {
+    fallback,
+    fallbackKey,
+    runtimeEditor,
+  });
+
+  if (!moved?.target || !SelectionApi.isSelection(moved.target)) {
+    return latchScoped(cloneValue(fallback));
+  }
+
+  let explicitTargetRoot: string | undefined;
+
+  try {
+    explicitTargetRoot = SelectionApi.root(moved.target);
+  } catch {
+    return latchScoped(cloneValue(fallback));
+  }
+
+  if (
+    viewRoot !== undefined &&
+    explicitTargetRoot !== undefined &&
+    explicitTargetRoot !== viewRoot
+  ) {
+    return latchScoped(cloneValue(fallback));
+  }
+
+  const targetRoot = explicitTargetRoot ?? viewRoot ?? MAIN_ROOT_KEY;
+  const normalizedTarget = withSelectionRoot(
+    cloneValue(moved.target),
+    targetRoot
+  );
+
+  if (
+    sameTargetPlacement(fallback, fallbackRoot, normalizedTarget, targetRoot)
+  ) {
+    return latchScoped(cloneValue(fallback));
+  }
+
+  const documentValue = getEditorDocumentValue(owner);
+
+  if (
+    (snapshot.reservedRoots.has(targetRoot) &&
+      !Object.hasOwn(snapshot.roots, targetRoot)) ||
+    !isValidEditorSelection(owner, normalizedTarget, documentValue, targetRoot)
+  ) {
+    return latchScoped(cloneValue(fallback));
+  }
+
+  if (
+    options?.refusesCrossing &&
+    RangeApi.isRange(normalizedTarget) &&
+    crossesMembers(getSetSite(owner), normalizedTarget, targetRoot)
+  ) {
+    return latchScoped(normalizedTarget);
+  }
+
+  const beforeCaret = context.caret;
+  const beforeChanged = context.changed;
+  const baseMutationVersion = context.mutationVersion;
+  const hadTypedRecord = DRAFT_TYPED_MARKS.has(context);
+  const typedRecord = DRAFT_TYPED_MARKS.get(context) ?? null;
+
+  setSelectionValue(owner, normalizedTarget, targetRoot);
+
+  const placed = placeInDraft(
+    owner,
+    beforeCaret,
+    context.caret,
+    () => documentValue
+  );
+
+  if (placed) context.caret = placed;
+
+  clearSnapshotCache(owner);
+  markTransactionChanged(owner);
+
+  if (!context.speculativeCaret) {
+    context.speculativeCaret = {
+      baseMutationVersion,
+      caret: beforeCaret,
+      changed: beforeChanged,
+      hadTypedRecord,
+      mintedGeneration: placed?.generation,
+      typedRecord,
+      writtenCaret: context.caret,
+    };
+  }
+
+  snapshot.implicitTarget = cloneValue(getCurrentSelection(owner));
+  snapshot.implicitTargetResolved = true;
+
+  return null;
 };
 
 export const hasInternalEditorState = (value: unknown): value is Editor =>
@@ -15156,6 +15441,37 @@ export const runEditorTransaction = <R>(
               repair: snapshot.admissionRepair,
             })
           : null;
+        const { speculativeCaret } = draftContext;
+
+        if (speculativeCaret) {
+          const hasRealMutation =
+            !snapshot.activeChange.change.empty ||
+            snapshot.effects.length > 0 ||
+            snapshot.annotations.size > 0 ||
+            snapshot.pluginReconfigurations.size > 0 ||
+            snapshot.dirtyStateKeys.size > 0 ||
+            draftContext.selectionWritten ||
+            draftContext.caret !== speculativeCaret.writtenCaret;
+
+          if (!hasRealMutation) {
+            draftContext.caret = speculativeCaret.caret;
+            draftContext.changed = speculativeCaret.changed;
+            if (speculativeCaret.mintedGeneration !== undefined) {
+              discardPlacement(editor, speculativeCaret.mintedGeneration);
+            }
+            if (speculativeCaret.hadTypedRecord) {
+              DRAFT_TYPED_MARKS.set(draftContext, speculativeCaret.typedRecord);
+            } else {
+              DRAFT_TYPED_MARKS.delete(draftContext);
+            }
+          } else if (
+            draftContext.mutationVersion ===
+            speculativeCaret.baseMutationVersion
+          ) {
+            bumpMutationVersion(editor);
+          }
+        }
+
         const changed =
           draftContext.changed &&
           profileCoreDuration('transaction-has-net-changes', () =>

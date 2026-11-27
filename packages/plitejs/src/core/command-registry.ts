@@ -15,8 +15,10 @@ import type {
 } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
 import {
+  commandRefusesSetCrossing,
   getCommandRegistrationRuntime,
   getCommandRuntime,
+  isImplicitTargetCommand,
 } from './command-definition';
 import { getEditorCommandDocument } from './command-document';
 import {
@@ -27,7 +29,7 @@ import {
   runInEditorCommandFrame,
   runSelectionOnlyInEditorUpdate,
 } from './command-frame';
-import { getEditorRuntimeOwner } from './editor-runtime';
+import { getEditorRuntimeOwner, getEditorRuntimeRoot } from './editor-runtime';
 import {
   type CompiledCommandPipeline,
   type CompiledCommandRegistry,
@@ -40,10 +42,14 @@ import {
   enterEditorRead,
   getActiveEditorUpdateTags,
   getActiveEditorTransaction,
+  getTargetRuntime,
+  hasCommandTargetRuntime,
   isBuildingTransactionSpec,
   isInTransaction,
   isTransactionSpec,
   isTransactionSpecContinuation,
+  resolveCommandImplicitTarget,
+  withEditorTargetRuntime,
   withTransactionSpecDraftRead,
 } from './public-state';
 import { withViewPlacement } from './view-carets';
@@ -455,19 +461,55 @@ const runPlacedCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   input: Input
 ): boolean | undefined => {
   const owner = getEditorRuntimeOwner(editor);
-  const run = () => {
-    const located = locateCommandInput(command, input, unframedPlace(editor));
+  const isolatesOwnerRuntime =
+    editor !== owner &&
+    getEditorRuntimeRoot(editor) !== getEditorRuntimeRoot(owner) &&
+    !getTargetRuntime(editor);
+  const runScoped = <T>(fn: () => T): T =>
+    isolatesOwnerRuntime ? withEditorTargetRuntime(owner, null, fn) : fn();
+  const resolvesImplicitTarget =
+    isImplicitTargetCommand(command, input) && hasCommandTargetRuntime(editor);
+  const resolveTarget = () => {
+    if (!resolvesImplicitTarget) return null;
+    if (editor.read((state) => state.view.isReadOnly())) {
+      throw new Error('Cannot update a read-only editor view.');
+    }
 
-    return (
-      located !== null &&
-      applyCommandEvaluation(
-        editor,
-        evaluateCommandChain(editor, command, located)
-      )
-    );
+    return resolveCommandImplicitTarget(editor, {
+      refusesCrossing: commandRefusesSetCrossing(command),
+    });
+  };
+  const run = () => {
+    const restoreTarget = resolveTarget();
+
+    try {
+      const located = locateCommandInput(command, input, unframedPlace(editor));
+
+      return (
+        located !== null &&
+        applyCommandEvaluation(
+          editor,
+          evaluateCommandChain(editor, command, located)
+        )
+      );
+    } finally {
+      restoreTarget?.();
+    }
   };
 
-  if (!getEditorCommandDocument(owner)) return run();
+  if (!getEditorCommandDocument(owner)) {
+    return runScoped(() => {
+      if (resolvesImplicitTarget && !isInTransaction(owner)) {
+        if (editor.read((state) => state.view.isReadOnly())) {
+          throw new Error('Cannot update a read-only editor view.');
+        }
+
+        return editor.update({ tags: 'semantic-command' }, run);
+      }
+
+      return run();
+    });
+  }
 
   const { selection } = getCommandRuntime(command);
 
@@ -492,18 +534,26 @@ const runPlacedCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
       );
     }
 
-    return (
-      runInEditorCommandFrame(owner, (place) => {
-        const located = locateCommandInput(command, input, place);
+    const restoreTarget = resolveTarget();
 
-        return () => located !== null && applyWith(located);
-      }) ?? run()
-    );
+    try {
+      return (
+        runInEditorCommandFrame(owner, (place) => {
+          const located = locateCommandInput(command, input, place);
+
+          return () => located !== null && applyWith(located);
+        }) ?? run()
+      );
+    } finally {
+      restoreTarget?.();
+    }
   };
 
-  if (isInTransaction(owner)) return apply();
+  return runScoped(() => {
+    if (isInTransaction(owner)) return apply();
 
-  return editor.update({ tags: 'semantic-command' }, apply);
+    return editor.update({ tags: 'semantic-command' }, apply);
+  });
 };
 
 const assertCommandLocated = <Input, TEditor extends BaseEditor<any, any>>(
