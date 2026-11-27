@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-media-url-dialog-focus",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-media-url-dialog-focus.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Return editor focus when the Insert via URL dialog closes",
+  "targets": [
+    {
+      "name": "media-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/media-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-media-toolbar-return-editor-focus-when-8be50181",
+      "kind": "fix",
+      "summary": "Return editor focus when the Insert via URL dialog closes",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-media-url-dialog-focus",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

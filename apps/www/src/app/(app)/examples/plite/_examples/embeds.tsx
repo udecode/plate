@@ -146,23 +146,18 @@ const UrlInput = ({
 }: {
   url: string;
   onChange: (url: string) => void;
-}) => {
-  const [value, setValue] = React.useState(url);
-  return (
-    <Input
-      className="mt-[5px]"
-      onChange={(e: ChangeEvent<HTMLInputElement>) => {
-        const newUrl = e.target.value;
-        setValue(newUrl);
-        onChange(newUrl);
-      }}
-      onClick={(e: React.MouseEvent) => {
-        e.stopPropagation();
-      }}
-      type="text"
-      value={value}
-    />
-  );
-};
+}) => (
+  <Input
+    className="mt-[5px]"
+    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+      onChange(e.target.value);
+    }}
+    onClick={(e: React.MouseEvent) => {
+      e.stopPropagation();
+    }}
+    type="text"
+    value={url}
+  />
+);
 
 export default EmbedsExample;

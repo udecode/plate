@@ -569,6 +569,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-media-url-dialog-focus",
+      "href": "/registry/changelog/2026-11-27-media-url-dialog-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Return editor focus when the Insert via URL dialog closes",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["media-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-merge-derived-read-hooks",
       "href": "/registry/changelog/2026-11-27-merge-derived-read-hooks.json",
       "status": "draft",

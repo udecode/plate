@@ -93,6 +93,23 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
   const uploadInstalled = editor.plugin(UploadPlugin).installed;
   const [open, setOpen] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const restoreFocusRef = React.useRef(false);
+
+  const handleDialogOpenChange = React.useCallback((value: boolean) => {
+    restoreFocusRef.current = !value;
+    setDialogOpen(value);
+  }, []);
+
+  const restoreEditorFocus = React.useCallback(() => {
+    if (!restoreFocusRef.current) return;
+
+    queueMicrotask(() => {
+      if (!restoreFocusRef.current) return;
+
+      restoreFocusRef.current = false;
+      editor.api.dom.focus();
+    });
+  }, [editor]);
 
   const { openFilePicker } = useFilePicker({
     accept: currentConfig.accept,
@@ -151,7 +168,7 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => {
-                  setDialogOpen(true);
+                  handleDialogOpenChange(true);
                 }}
               >
                 <LinkIcon />
@@ -162,17 +179,13 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
         </DropdownMenu>
       </ToolbarSplitButton>
 
-      <AlertDialog
-        open={dialogOpen}
-        onOpenChange={(value) => {
-          setDialogOpen(value);
-        }}
-      >
+      <AlertDialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
         <AlertDialogContent className="gap-6">
           <MediaUrlDialogContent
             currentConfig={currentConfig}
+            onCloseUnmount={restoreEditorFocus}
             plugin={plugin}
-            setOpen={setDialogOpen}
+            setOpen={handleDialogOpenChange}
           />
         </AlertDialogContent>
       </AlertDialog>
@@ -182,15 +195,19 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
 
 function MediaUrlDialogContent({
   currentConfig,
+  onCloseUnmount,
   plugin,
   setOpen,
 }: {
   currentConfig: (typeof MEDIA_CONFIG)[string];
+  onCloseUnmount: () => void;
   plugin: MediaPlugin;
   setOpen: (value: boolean) => void;
 }) {
   const editor = useEditor();
   const [url, setUrl] = React.useState('');
+
+  React.useEffect(() => onCloseUnmount, [onCloseUnmount]);
 
   const embedMedia = React.useCallback(() => {
     if (!isUrl(url)) return toast.error('Invalid URL');
@@ -227,7 +244,10 @@ function MediaUrlDialogContent({
             setUrl(e.target.value);
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') embedMedia();
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              embedMedia();
+            }
           }}
           placeholder=""
           type="url"
