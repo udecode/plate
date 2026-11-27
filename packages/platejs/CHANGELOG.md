@@ -1,5 +1,152 @@
 # platejs
 
+## 54.0.0-beta.7
+
+### Minor Changes
+
+- [`fe90073`](https://github.com/udecode/plate/commit/fe9007333bf6eaa697a7d32c942863067f31b5e4) by [@zbeyens](https://github.com/zbeyens) – Re-export `useEditorEditableElement`, `UseEditorSelectorOptions`, and `UseStateFieldValueOptions` by identity from `platejs/react`.
+
+- [`38eb5de`](https://github.com/udecode/plate/commit/38eb5de630efafc070eb1ab102a141a270cbfda6) by [@zbeyens](https://github.com/zbeyens) – Re-export the eight drag and geometry types (`DOMDragApi`, `DOMDragStart`, `DOMDropEdge`, `DOMDropTarget`, `DOMDropTargetInput`, `DOMDropTargetOptions`, `DOMGeometryRect`, `DropIndicator`) from `platejs/dom`, `GaveWrite` and `SplitGave` from `platejs/authored`, and `TypedText` and `TypedTextListener` from `platejs/react` by identity. Rename the internal `inkRecords` plugin name from `'ink-records'` to `'inkRecords'`.
+
+- [`f988d66`](https://github.com/udecode/plate/commit/f988d6695d392e5cb3c56a1e60373b1a661bc64f) by [@zbeyens](https://github.com/zbeyens) – Search every document root in `BaseFindPlugin` in recursive owner reading order, update changed roots incrementally without polling unchanged boards, isolate match decorations and observer notifications per view root, and allow `update.select()` to select matches in any root from any view.
+
+- [`d2cc369`](https://github.com/udecode/plate/commit/d2cc369348f43f57df8b01ef51ba1aeb1dae76e7) by [@zbeyens](https://github.com/zbeyens) – Accept `clipboardFormatKey` on `platejs/react`'s `createEditor` and `useCreateEditor` via `DOMPlugin` store state and chained plugin `activate` stages, validate `editor.install`, `tx.plugins.reconfigure`, and slotted plugin inputs before any cleanup to reject Plate plugins with a `createEditor({ plugins })` and `store.set({ ... })` error, reject unsupported `schema` keys at runtime on both object and factory schemas, and drop `history`, `HistoryOptions`, `HistoryPlugin`, `HistoryPluginTypes`, and `HistoryPluginTypeProvider` from `platejs/history` in favor of `HistoryPlugin.configure(...)`.
+
+- [`353fcec`](https://github.com/udecode/plate/commit/353fcec6ab5b8ad6f3c9a310d20157eeae16f757) by [@zbeyens](https://github.com/zbeyens) – Replace `shouldUpdate` on `useEditorSelector` and `useEditorState` with declarative `dependsOn`, and re-export `EditorSelectorDependency` and `EditorSelectorDependencies` from `platejs/react`.
+
+  - Migrate `UseEditorSelectorOptions` and `UseEditorStateOptions` to `{ dependsOn?, equalityFn? }` and update Plate's built-in hooks, `NodeSelection`, `FieldPlugin`, and `ListPlugin` to declare their dependencies with `dependsOn`.
+  - Commit normalized `dependsOn` changes in a layout effect rather than mutating selector filters during render, and include `equalityFn` in `useEditorSelector`'s snapshot cache key.
+
+### Patch Changes
+
+- [`6f5622e`](https://github.com/udecode/plate/commit/6f5622e79a9967237eb9d8d8bcb26a9de5c408f4) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Block ink tool activation and pen, eraser, or lasso edits while a view is in Authored Preview
+  - Store optional inline-void display labels on `InkCopy` so `InkCopyView` renders mention text instead of raw `U+FFFC`
+  - Translate text marks horizontally when their block shifts, prune unreferenced `ink-gone` records in `dropDigitized`, and restore viewport-scoped ink placement on `afterprint`
+  - Remove experimental `54.0.0-beta.2` ink record compatibility; saved ink uses the packed format only
+
+- [`55025b2`](https://github.com/udecode/plate/commit/55025b2156d4c99270f3aa00841b9c1fd033502d) by [@zbeyens](https://github.com/zbeyens) – Fix `EditorRoot` `onValueChange` to emit commit-scoped `EditorDocumentValue` without replaying commits across React `Activity` reconnects or forcing lazy state codecs on ephemeral writes, export `UseStateFieldValueOptions` from `platejs/react`, and default selector option generics to `unknown`
+
+- [`c06c7de`](https://github.com/udecode/plate/commit/c06c7de445579d1141c7d35c3293b66538861d7f) by [@zbeyens](https://github.com/zbeyens) – Re-export `useEditorRootAreas` and `EditorRootAreas` from `platejs/react`.
+
+- [`42e913d`](https://github.com/udecode/plate/commit/42e913d97de2bbae252c54a1ba648e89de8a34a9) by [@zbeyens](https://github.com/zbeyens) – Add experimental `tx.plugin(BaseInkPlugin).dropDigitized(ids?)` to permanently drop digitized ink marks, their digitized records, and any saved block copies no remaining mark references.
+
+- [`93af01d`](https://github.com/udecode/plate/commit/93af01d1961d61d84b5e404cc5130d5f48d271f3) by [@zbeyens](https://github.com/zbeyens) – Merge derived-read React hooks (`useEditorState`, `useEditorRuntimeState`, `useRuntimeState`, `useRootState`, and `useEditorViewState`) into `useEditorSelector` with both context and explicit-editor overloads plus view-state `dependsOn` tokens (`'authored'`, `'composing'`, `'focused'`, `'readOnly'`, and `'view'`).
+
+- [`c39072c`](https://github.com/udecode/plate/commit/c39072c1c5e99cd73286a48ba1b40c5a7e3dbda9) by [@zbeyens](https://github.com/zbeyens) – Add optional `withHistory` callback to `CreateCommentThreadInput` on `BaseCommentsPlugin` for atomic record-only history writes after comment creation commits, and include margin notes in `BaseInkPlugin.read.passages` with `margin` side metadata on `InkPassageMark`.
+
+- [`132c1ce`](https://github.com/udecode/plate/commit/132c1cee796c088490a851eeb96810f012bc3807) by [@zbeyens](https://github.com/zbeyens) – Rename `platejs/react` plugin attributes type `NodeProps` to `NodeAttributes` so `platejs/react` re-exports core `NodeProps`
+
+  **Migration:** Update plugin `render.attributes` type annotations from `NodeProps` to `NodeAttributes`:
+
+  ```tsx
+  import type { NodeAttributes } from 'platejs/react';
+  ```
+
+- [`99a2bf1`](https://github.com/udecode/plate/commit/99a2bf131186289577856e7a235cf46a5da29c6f) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add free text to boards (`BaseBoardTextPlugin`, `BoardTextPlugin`, `setTool('text')` with the `T` shortcut, and double-clicking an empty spot on the board). Clicking places auto-sized text that grows in width and height as you type (`autoSize: true`); dragging or resizing locks a fixed wrapping width (`autoSize: false`). In Editing mode, leaving an unmodified newly clicked text box discards it without adding an undo step. Typing near a board edge pans the camera to keep the caret in view without changing the document, and `exportPicture` measures both width and height of auto-sized free text.
+
+- [`e6f8893`](https://github.com/udecode/plate/commit/e6f889312c29b350923f0532445c42d67b5375d8) by [@zbeyens](https://github.com/zbeyens) – Keep the caret inside an edited board note or shape when clicking empty paper or padding outside its text
+
+- [`197d09b`](https://github.com/udecode/plate/commit/197d09b39005fad87d1a78f2b3e018d9f05c0159) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Grow board notes with their text while keeping each note's stored size as its height floor, update bound arrows and hit tests to the grown height, preserve dragged heights on resize and drawn arrow ends when a note is removed, and measure static notes marked with `data-board-text` during `exportPicture` so exported notes and arrows draw whole.
+
+- [`78e5525`](https://github.com/udecode/plate/commit/78e5525b3ada54bc21e20c29d5933ecc2c84a4cc) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Place each board shape's root in a `div` that carries the shape's box, stacking rank and drag offset, and make the root fill it. Read a shape's inline `left`, `top`, `width`, `height`, `z-index` or `translate`, and its `offsetLeft` and `offsetTop`, on the root's `parentElement`. A private `@layer board-shapes` style rule prepended to the root makes the wrapper take no press and restores `pointer-events: auto` on `[data-board-shape]` (set `inert` on an ancestor to disable pointer input on a board). The root keeps its `className`, marks and non-placement `style`, uses `box-sizing: border-box`, and ignores `all`, offsets, margins, `width`, `height`, `position` and grid placement or self-alignment keys from `style`.
+
+- [`e63d5c7`](https://github.com/udecode/plate/commit/e63d5c77a1fcd7c446e9a39843b86e43b0c8f45c) by [@zbeyens](https://github.com/zbeyens) – Index DOCX export hosts once per render so comments and review revisions anchor inside rendered named roots without colon-delimited key collisions, fix multi-comment offset shifts on shared text nodes, paint review marks across every rendered copy of a shared named root without spanning v1 review bookmarks over foreign roots, and warn on `named-root` only for stored roots not rendered into the DOCX output.
+
+- [`d0fc717`](https://github.com/udecode/plate/commit/d0fc7171ca593795319fdd92b6814f5e4dd5ef8e) by [@zbeyens](https://github.com/zbeyens) – Support multi-test field conditions (`{ all: FieldConditionTest[] }` and `{ any: FieldConditionTest[] }`) with three-valued evaluation shared by the fill view and `applyFieldValues`. Export `FieldConditionTest`, include other roles waited on by optional fields in `pending`, name the first waiting role in UTF-16 code-unit order in `waiting` refusals, map every test `ref` on paste, duplicate and table fill, compare condition lists in any order across named field groups, and allow `update` to repair broken rules one at a time while refusing newly introduced problems or loops.
+
+  **Migration:**
+
+  - **TypeScript callers:** `FieldCondition` is now a union of `FieldConditionTest`, `{ all: readonly FieldConditionTest[] }`, and `{ any: readonly FieldConditionTest[] }`. Narrow a condition (`'ref' in condition`, `'all' in condition`, or `'any' in condition`) before reading `ref`, `test`, or `value`.
+  - **`pending` on optional fields:** `applyFieldValues` and `startFieldValues` now include any other role waited on by an unsubmitted role's optional field in `pending`, so existing templates where an optional field waits on another role return that role in `pending` until it submits.
+  - **Reserved keys on legacy single-test conditions:** `all` and `any` are now reserved discriminators on `FieldCondition`. If a saved single-test document attached a custom extra key named `all` or `any`, rename that key before loading.
+  - **Schema fingerprint (`validationVersion: 2`):** Widening the `condition` validator changes the derived schema fingerprint for editors using `BaseFieldPlugin` or `FieldPlugin`:
+    - Apps with a named schema: bump `schema.version`, register the previous schema fingerprint, and return each document unchanged (after renaming any custom `all`/`any` key on legacy single tests).
+    - Apps storing `{ document, schema }` envelopes on the default derived identity: reopen each document through `createEditor` and save it again.
+    - Apps storing bare document JSON: no migration required unless a single test holds a custom `all`/`any` key.
+    - Populated Yjs rooms: start a new room seeded with the converted document.
+
+- [`c3f69d6`](https://github.com/udecode/plate/commit/c3f69d625b5dbece417a61d8aea2a3b85703684f) by [@zbeyens](https://github.com/zbeyens) – Add `read.conditionTargets(fieldId)` to `BaseFieldPlugin` to return the field ids in document order that a condition on `fieldId` may target without closing a loop, plus any field the condition already names. Check name-group condition conflicts without recursion so deep chains of named fields do not overflow the stack.
+
+- [`b7b55b5`](https://github.com/udecode/plate/commit/b7b55b538bf4237488dc228dd1a4884a76549d83) by [@zbeyens](https://github.com/zbeyens) – Add the `multiple` field kind with optional `min` (`>= 2`) and `max` (`>= 1`) count bounds, `includes` and `not-includes` condition tests, order-insensitive comparison across name groups, `answer-conflict` and `startFieldValues`, comma-joined option labels in plain text and Word export, `data-field-min` and `data-field-max` HTML attributes (mapping imported `min=1` on `multiple` fields to `required: true`), and `{ kind: 'multiple', value?: readonly string[] }` in `readFieldAnswers`. Remove the unused `defaultValue` field property and `data-field-default-value` HTML attribute.
+
+  **Migration:**
+
+  - **Removed `defaultValue`:** Delete the `defaultValue` key (do not leave `defaultValue: undefined`) from every `field` node before loading documents under the closed schema or passing them to the field helpers. `applyFieldValues` and `startFieldValues` refuse a field carrying `defaultValue` as `malformed`, and `readFieldAnswers` and `fieldSubmission` silently skip malformed fields. Remove `defaultValue` from any `insert` or `update` call. Apps that store application defaults keep them outside the field schema or prefill with `startFieldValues`.
+  - **TypeScript callers:** `FieldValue` now includes `readonly string[]`, `FieldKind` includes `'multiple'`, `FieldTest` includes `'includes'` and `'not-includes'`, and `FieldAnswer` includes `{ kind: 'multiple'; value?: readonly string[] }`. Note that `Array.isArray(value)` does not exclude `readonly string[]` from the false branch in TypeScript; narrow with `typeof value === 'object'` or a `value is readonly string[]` predicate where a scalar value is expected.
+  - **Schema fingerprint:** Adding `'multiple'`, `min`, `max`, widening `value` (`validationVersion: 2`) and `condition` (`validationVersion: 3`), and removing `defaultValue` change the derived schema fingerprint for editors using `BaseFieldPlugin` or `FieldPlugin`:
+    - Apps with a named schema: bump `schema.version`, register the previous schema fingerprint, and delete `defaultValue` from each `field` node in the migration step.
+    - Apps storing `{ document, schema }` envelopes on the default derived identity: verify the previous fingerprint, delete `defaultValue` from each `field` node in `envelope.document`, open with `createEditor({ initialValue: migratedDocument, initialSelection: envelope.selection, plugins })`, and save a fresh envelope.
+    - Apps storing bare document JSON: delete `defaultValue` from each `field` node before calling `createEditor`, `applyFieldValues`, `startFieldValues`, `fieldSubmission`, or `readFieldAnswers`.
+    - Populated Yjs rooms: start a new room seeded with the migrated document.
+
+- [`7b6db1c`](https://github.com/udecode/plate/commit/7b6db1c8ae9646f8463fc2973343e80270f37851) by [@zbeyens](https://github.com/zbeyens) – Scope footnote anchors, HTML serialization, and static rendering by content root, and omit fragment targets for unresolved named-root footnotes.
+
+- [`3a8a547`](https://github.com/udecode/plate/commit/3a8a547f5051ef46bdbea9360149e13da61d3b5f) by [@zbeyens](https://github.com/zbeyens) – Keep ink marks attached to their words across edits elsewhere in the same paragraph and across line wraps with shape-aware reflow (`flow`, `box`, `span`, `rigid`), add `BaseInkPlugin.read.liveMarks()`, and support live-block passages (`InkPassage.block`) and `{ block, start, end }` ranges in `read.range` and `InkPlugin.api.images`.
+
+- [`d77c7d1`](https://github.com/udecode/plate/commit/d77c7d130811bceae182c260b60337a8f949f3fd) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add experimental digitized ink state on `BaseInkPlugin`: the `ink-digitized` record set, `tx.plugin(BaseInkPlugin).setDigitized(ids, value)` and `editor.plugin(BaseInkPlugin).read.shownMarks()`. Digitized marks stay saved without showing signs or deleted signs, leave with `remove`, and drop orphan digitized records on load.
+
+- [`b792254`](https://github.com/udecode/plate/commit/b79225414f950beff240f0c85aab8149ebce6dbe) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add experimental `editor.plugin(InkPlugin).api.images(passages, { maxSide })` (with `InkImagesOptions` and `InkPassageImages` types) to render `inkAlone` and `inkOnText` Canvas 2D PNGs, pixel mark boxes, and inline void text from the live view.
+
+- [`6bed86f`](https://github.com/udecode/plate/commit/6bed86f7cc939a9ddbd1c9601c0d5b8ddea3ad30) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add experimental `read.passages(ids)` and `read.range({ copy, start, end })` on `BaseInkPlugin` (with `InkPassage`, `InkPassageMark`, `InkPassageWord`, and `InkRangeInput` types) to read marked line passages and resolve saved copy character offsets to live ranges.
+
+- [`f7e3f32`](https://github.com/udecode/plate/commit/f7e3f32bf609ca9ad6ffa8d2c2060d13e00ca5f3) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Update `InkPlugin` and `InkContent` placement, lasso, Backspace, and Delete to read shown marks via `read.shownMarks()`, skipping digitized marks on default passes and leaving faded digitized marks untouched by the eraser, Backspace, and Delete.
+  - Add experimental `editor.plugin(InkPlugin).api.setShowDigitized(value)` (with `showDigitized` on `InkViewState` and optional `digitized` on `InkSign`) to show digitized marks faded over their words or as separate digitized signs and let the lasso pick them.
+
+- [`f4f653b`](https://github.com/udecode/plate/commit/f4f653bab32f17bb8307350f1874e191187c9d08) by [@zbeyens](https://github.com/zbeyens) – Preserve another focused field's DOM selection when `NodeSelectionDrag` releases after a focus redirect or receives key events while unfocused
+
+- [`7c07401`](https://github.com/udecode/plate/commit/7c07401a99c99ba5e1451da815cee05bc4b453ab) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Remove `EditableProps`, `LeafNodeProps`, `TextNodeProps`, `RenderElementFn`, `RenderLeafFn` and `RenderTextFn`. Use `EditorContentProps` for `EditorContent` props, and write a plugin's `leafAttributes` and `textAttributes` callbacks inline, where Plate infers their props.
+  - Type `context.editor` as Plate's `Editor` in every `EditorContent` handler that takes a context, such as `onKeyDown`, `onClick` and `onPaste`, and in the handler types, such as `EditableKeyDownHandler`. `scrollSelectionIntoView` gets Plate's `Editor` too. Export `EditablePointerSelectionEndHandler` from `platejs/react`.
+  - Accept a plugin in `PluginPortal` and `BasePluginPortal`, as in `PluginPortal<typeof MyPlugin>`, distribute over unions of plugins, and keep an erased `PluginReference` portal's `schema` optional and kind-dependent.
+  - Export `EditorReference`, type `useRootEditor` to return Plate's `Editor`, and refuse at compile time an `EditorRoot` `editor` typed as a non-editor value or a raw Plite editor or view. A generic component that passes its editor to `EditorRoot` constrains it, as in `<E extends EditorReference>`.
+  - Remove `name` from `PluginDefinitionInput` and `BasePluginDefinitionInput`.
+  - Refuse at compile time a `definePlugin` `schema` key other than `contentRoots`, `element`, `mark` and `properties`, including explicit unions containing Plite-only keys.
+
+- [`1f7b27c`](https://github.com/udecode/plate/commit/1f7b27ced7f71a3f0684f9346dcba63a79cc7940) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Remove `useAnnotationStore`, `useAnnotation`, `useAnnotations`, `UseAnnotationStoreOptions`, `Annotation*` re-exports, and unused `ViewSource*` (`ViewSourceOptions`, `ViewSourceStatus`, `ViewSourceError`, `ViewSourceErrorSink`, `ViewSourcePhase`) exports from `platejs/react`.
+  - Export `CommentAttachmentChange` from `platejs/comments` as the payload type for `subscribeAttachments`.
+
+  **Migration:** Replace `useAnnotation*` with `editor.anchor`, `commit.changed.anchors()`, and `DecorationSource`. Update `subscribeAttachments` listener types from `AnnotationChange` to `CommentAttachmentChange` from `platejs/comments`.
+
+- [`82c983d`](https://github.com/udecode/plate/commit/82c983d464e0ea7f605923b9952c1739cc38cd54) by [@zbeyens](https://github.com/zbeyens) – Remove `ElementIdPlugin` and reserve `id` across every editor schema
+
+  - `plitejs` schemas now refuse declaring an element `id` property (naming the reserved `id` key), and editor readers type returned elements with a required `id: string` while detached inputs (`ElementIn`, `InitialValue`) and element guards (`ElementApi.isElement`) keep `id` optional.
+  - Removed `ElementIdPlugin`, its `generateId` option, `HtmlExportKit` / `HtmlExportSchemaKit`, and the internal `readElementById` helper; Markdown `<block id>`, Ink, HTML export, and document migrations now read core's reserved `id` directly.
+
+- [`39fa61e`](https://github.com/udecode/plate/commit/39fa61e5662eddb51c3df1003ec7e9581bda7c7c) by [@zbeyens](https://github.com/zbeyens) – Remove unused `jotai`, `jotai-x`, `jotai-optics`, and `optics-ts` dependencies so apps using Jotai no longer install duplicate copies
+
+- [`ffb8e06`](https://github.com/udecode/plate/commit/ffb8e065276f5c4bfd009012c8c3ce18fdcc7209) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Move render prop types off root `platejs`: import `RenderElementProps`, `RenderLeafProps`, `RenderTextProps`, `RenderTextHostProps`, and `RenderTextPieceProps` from `platejs/react`, and import `StaticRenderLeafProps`, `RenderStaticNodeWrapper`, `RenderStaticNodeWrapperFunction`, and `RenderStaticNodeWrapperProps` from `platejs/static`.
+  - Pass `attributes` into `render.mark.textAttributes` callbacks during static HTML rendering, matching React rendering.
+
+- [`cc06ae9`](https://github.com/udecode/plate/commit/cc06ae9a7abb2d61da2d951016cd121a5fcd38e5) by [@zbeyens](https://github.com/zbeyens) – Allow whole row, column and table format suggestions in Suggesting mode, preserve displayed column widths when copying across a pending column deletion, and keep merged cells, row moves, container edits around tables, and a second row, column, or format suggestion already visible to the writer refused up front.
+
+- [`170132f`](https://github.com/udecode/plate/commit/170132f8b1a80e2284d33d06b1388432cfaa3a8c) by [@zbeyens](https://github.com/zbeyens) – Enforce zero-argument runtime guards on `useEditor()` and `useOptionalEditor()`, tighten `useCreateEditor()` typing, and rebind `useStateFieldValue` and `useSetStateField` to Plate's `useEditor()`.
+
+  - `useEditor()` and `useOptionalEditor()` in `platejs/react` now throw when passed any argument (including `undefined`), matching `plitejs/react`.
+  - Zero-argument `useCreateEditor()` now returns a non-null default editor and refuses caller-supplied generics without an options object.
+  - `useStateFieldValue` and `useSetStateField` now resolve through Plate's `useEditor()`, so components under a passive `EditorProvider` read and update the provider's editor. Plate's `UseStateFieldValueOptions` omits `deferred` to match `useEditorState` and `useEditorSelector`.
+  - Inside `<EditorContent readOnly>`, Plate's per-node render `readOnly` now reports `true`.
+
 ## 54.0.0-beta.6
 
 ### Patch Changes
