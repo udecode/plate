@@ -46,6 +46,7 @@ export type ZeroWidthOptions = {
   includeSentinel?: boolean;
   isLineBreak?: boolean;
   isMarkPlaceholder?: boolean;
+  isVoid?: boolean;
   length?: number;
 };
 
@@ -99,6 +100,7 @@ export const sameZeroWidth = (
     left.includeSentinel === right.includeSentinel &&
     left.isLineBreak === right.isLineBreak &&
     left.isMarkPlaceholder === right.isMarkPlaceholder &&
+    left.isVoid === right.isVoid &&
     left.length === right.length);
 
 export const RenderCallback = <TProps,>({
@@ -295,6 +297,7 @@ export const renderEmptyTextLeaf = ({
       includeSentinel={empty.zeroWidth?.includeSentinel}
       isLineBreak={empty.zeroWidth?.isLineBreak}
       isMarkPlaceholder={empty.zeroWidth?.isMarkPlaceholder}
+      isVoid={empty.zeroWidth?.isVoid}
       length={empty.zeroWidth?.length}
     />
   );

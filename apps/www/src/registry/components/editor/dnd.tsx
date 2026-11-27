@@ -142,7 +142,14 @@ export function HandleActionsMenu({
           style={style}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side={rtl ? 'right' : 'left'}>
+      <DropdownMenuContent
+        align="start"
+        side={rtl ? 'right' : 'left'}
+        onFinalFocus={(event) => {
+          event.preventDefault();
+          editor.api.dom.focus();
+        }}
+      >
         {actions.map(({ icon, label, run }) => (
           <DropdownMenuItem
             key={label}

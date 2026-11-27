@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { type CSSProperties } from 'react';
+
+// Chromium applies user-select: none to draggable elements (and custom voids
+// may set it explicitly), which inherits into a void's zero-width anchor and
+// causes Blink to snap selections back to the start of the editing host.
+const VOID_ZERO_WIDTH_STYLE: CSSProperties = {
+  caretColor: 'transparent',
+  userSelect: 'text',
+  WebkitUserSelect: 'text',
+};
 
 export const ZeroWidthString = ({
   length = 0,
   isLineBreak = false,
   isMarkPlaceholder = false,
+  isVoid = false,
   includeSentinel = !isLineBreak,
 }: {
   length?: number;
   isLineBreak?: boolean;
   isMarkPlaceholder?: boolean;
+  isVoid?: boolean;
   includeSentinel?: boolean;
 }) => {
   const attributes: {
@@ -40,5 +51,9 @@ export const ZeroWidthString = ({
     );
   }
 
-  return <span {...attributes}>{'\uFEFF'}</span>;
+  return (
+    <span {...attributes} style={isVoid ? VOID_ZERO_WIDTH_STYLE : undefined}>
+      {'\uFEFF'}
+    </span>
+  );
 };

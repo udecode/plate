@@ -863,6 +863,7 @@ const resolveTextZeroWidth = ({
   if (parent && !editorIsEditor(parent) && editor.read.schema.isVoid(parent)) {
     return {
       isLineBreak: false,
+      isVoid: true,
       length: NodeApi.string(parent).length,
     };
   }

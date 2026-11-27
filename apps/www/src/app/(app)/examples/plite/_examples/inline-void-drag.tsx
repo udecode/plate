@@ -12,6 +12,8 @@ import {
   EditorRoot,
   type RenderElementProps,
   useCreateEditor,
+  useEditorFocused,
+  useElementSelected,
 } from 'plitejs/react';
 
 const ChipSchema = defineEditorSchema('inlineVoidDragSchema', {
@@ -33,24 +35,35 @@ const ChipSchema = defineEditorSchema('inlineVoidDragSchema', {
 
 type ChipValueElement = SchemaElementFor<typeof ChipSchema>;
 
-const renderElement = ({
+const Chip = ({
   attributes,
   children,
   element,
-}: RenderElementProps<ChipValueElement>) =>
-  element.type === 'chip' ? (
+}: RenderElementProps<Extract<ChipValueElement, { type: 'chip' }>>) => {
+  const focused = useEditorFocused();
+  const selected = useElementSelected();
+  const isSelected = selected && focused;
+
+  return (
     <span
       {...attributes}
-      className="mx-0.5 cursor-grab rounded-full bg-secondary px-2 py-0.5 text-sm"
+      className={`mx-0.5 inline-block cursor-grab rounded-full bg-secondary px-2 py-0.5 text-sm${isSelected ? ' ring-2 ring-ring' : ''}`}
       contentEditable={false}
       data-chip={element.label}
+      data-selected={isSelected ? 'true' : undefined}
       draggable
     >
       {element.label}
       {children}
     </span>
+  );
+};
+
+const renderElement = (props: RenderElementProps<ChipValueElement>) =>
+  props.element.type === 'chip' ? (
+    <Chip {...props} element={props.element} />
   ) : (
-    <p {...attributes}>{children}</p>
+    <p {...props.attributes}>{props.children}</p>
   );
 
 const InlineVoidDragExample = () => {

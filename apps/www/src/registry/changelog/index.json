@@ -169,6 +169,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-dnd-handle-menu-escape-focus",
+      "href": "/registry/changelog/2026-11-27-dnd-handle-menu-escape-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Restore editor focus when Escape closes the block handle menu",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-field-condition-lists-read",
       "href": "/registry/changelog/2026-11-27-field-condition-lists-read.json",
       "status": "draft",

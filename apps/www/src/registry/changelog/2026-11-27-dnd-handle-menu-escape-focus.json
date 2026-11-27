@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-dnd-handle-menu-escape-focus",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-dnd-handle-menu-escape-focus.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Restore editor focus when Escape closes the block handle menu",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-dnd-restore-editor-focus-when-f8c91010",
+      "kind": "fix",
+      "summary": "Restore editor focus when Escape closes the block handle menu",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-dnd-handle-menu-escape-focus",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1206,7 +1206,18 @@ export const createDOMRepairQueue = ({
 
             return true;
           };
-          return repairDOMPoint(domPoint[0], domPoint[1]);
+          const domOffset =
+            targetElement?.getAttribute('data-editor-zero-width') &&
+            domPoint[1] === 0
+              ? Math.min(
+                  1,
+                  isDOMText(domPoint[0])
+                    ? (domPoint[0].textContent?.length ?? 0)
+                    : domPoint[0].childNodes.length
+                )
+              : domPoint[1];
+
+          return repairDOMPoint(domPoint[0], domOffset);
         });
 
       const readPageSelection = () => {
