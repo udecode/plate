@@ -16,7 +16,11 @@ import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
 import { getDOMRangeSelectionPoints } from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
-import { exportEditableDOMSelection } from './input-state';
+import {
+  beginEditableSelectionUpdate,
+  endEditableSelectionUpdate,
+  exportEditableDOMSelection,
+} from './input-state';
 import { getInnerLineRange } from './line-boundary';
 import {
   above as editorAbove,
@@ -81,36 +85,35 @@ export const exportTripleClickSelectionToDOM = ({
     return;
   }
 
-  const previousUpdating = inputController.state.isUpdatingSelection;
-  const previousOrigin = inputController.state.selectionChangeOrigin;
-
-  inputController.state.isUpdatingSelection = true;
-  inputController.state.selectionChangeOrigin = 'programmatic-export';
-
+  let activeVersion: number | undefined;
   const exported = exportEditableDOMSelection(
     inputController.state,
     editorElement,
     getDOMRangeSelectionPoints(domRange, RangeApi.isBackward(range)),
-    { editor }
+    {
+      editor,
+      onExport: (version) => {
+        activeVersion = version;
+      },
+    }
   );
 
   if (!exported) {
-    inputController.state.isUpdatingSelection = previousUpdating;
-    inputController.state.selectionChangeOrigin = previousOrigin;
     return;
   }
+
+  const settleVersion =
+    activeVersion ?? beginEditableSelectionUpdate(inputController.state);
 
   editorElement.ownerDocument.dispatchEvent(
     new Event('selectionchange', { bubbles: true })
   );
-  const resetUpdatingSelection = () => {
-    inputController.state.isUpdatingSelection = false;
-  };
-
   domPhaseScheduler.schedule(
     'selection-repair',
     'triple-click-selection-settle',
-    resetUpdatingSelection,
+    () => {
+      endEditableSelectionUpdate(inputController.state, settleVersion);
+    },
     { timing: 'timeout' }
   );
 };

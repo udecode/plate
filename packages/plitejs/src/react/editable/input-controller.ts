@@ -65,6 +65,7 @@ export {
   type EditableSelectionController,
   executeEditableSelectionExport,
   executeEditableSelectionImport,
+  exportDOMCoverageSelection,
   isEditableModelSelectionPreferred,
   isEditableModelSelectionPreferredForInput,
   isSelectionInEditorView,

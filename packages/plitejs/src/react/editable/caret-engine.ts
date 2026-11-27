@@ -346,17 +346,22 @@ const moveSelectionAndRespectBoundaries = ({
   writeViewSelection?: boolean;
   viewSelectionRootElement?: HTMLElement;
 }) => {
-  writePliteViewSelection(editor, null);
-  const moved = capturePlacement(editor, () => {
-    if (updatePolicy) {
-      editor.update(updatePolicy, () => {
-        move();
+  let moved = 0;
+
+  writePliteViewSelection(editor, null, {
+    place: () => {
+      moved = capturePlacement(editor, () => {
+        if (updatePolicy) {
+          editor.update(updatePolicy, () => {
+            move();
+          });
+        } else {
+          editor.update(() => {
+            move();
+          });
+        }
       });
-    } else {
-      editor.update(() => {
-        move();
-      });
-    }
+    },
   });
   const placedAt = capturePlacement(
     editor,
@@ -525,11 +530,14 @@ export const collapseNodeSelectionOnEscape = (
 
   if (!target) return false;
 
-  writePliteViewSelection(editor, null);
-  findMountedEditableDOMRuntime(
-    rootElement
-  )?.clearModelSelectionDOMPreference();
-  dispatchCommand(editor, editorCommands.select, { target });
+  writePliteViewSelection(editor, null, {
+    place: () => {
+      findMountedEditableDOMRuntime(
+        rootElement
+      )?.clearModelSelectionDOMPreference();
+      dispatchCommand(editor, editorCommands.select, { target });
+    },
+  });
 
   return true;
 };
@@ -1005,12 +1013,15 @@ const moveEditableCaret = ({
             preferredX
           )
         : null;
-    writePliteViewSelection(editor, null);
-    getMountedEditableDOMRuntime(editor)?.clearModelSelectionDOMPreference();
-    dispatchCommand(editor, editorCommands.select, {
-      target: landing
-        ? SelectionApi.text({ anchor: landing, focus: landing })
-        : target,
+    writePliteViewSelection(editor, null, {
+      place: () => {
+        runtime?.clearModelSelectionDOMPreference();
+        dispatchCommand(editor, editorCommands.select, {
+          target: landing
+            ? SelectionApi.text({ anchor: landing, focus: landing })
+            : target,
+        });
+      },
     });
 
     return caretMovementHandled();

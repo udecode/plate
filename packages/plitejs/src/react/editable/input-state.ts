@@ -23,7 +23,6 @@ import {
 import {
   type DOMSelectionPoints,
   isDOMSelectionWriteEcho,
-  readDOMSelectionPoints,
   sameDOMSelectionPoints,
 } from '../../dom/utils/selection-writes';
 import type { OpenedInput } from '../../dom/utils/weak-maps';
@@ -195,6 +194,8 @@ export type EditableInputControllerState = {
   selectionChangeSeq: number;
   selectionSource: SelectionSource;
   textInputOwnership?: 'model' | 'native' | null;
+  activeUpdatingSelectionToken?: number | null;
+  updatingSelectionVersion?: number;
 };
 
 export type DOMInputRepairTarget = {
@@ -360,6 +361,8 @@ export const createEditableInputControllerState = (
       selectionChangeSeq: 0,
       selectionSource: 'unknown',
       textInputOwnership: null,
+      activeUpdatingSelectionToken: null,
+      updatingSelectionVersion: 0,
     },
     domInputRuntime
   );
@@ -847,46 +850,101 @@ export const finishEditableModelSelectionProjection = (
   inputController.state.isProjectingSelection = false;
 };
 
+export const beginEditableSelectionUpdate = (
+  state: {
+    activeUpdatingSelectionToken?: number | null;
+    isUpdatingSelection: boolean;
+    selectionChangeOrigin?: SelectionChangeOrigin | null;
+    updatingSelectionVersion?: number;
+  },
+  origin: SelectionChangeOrigin = 'programmatic-export'
+) => {
+  const token = (state.updatingSelectionVersion ?? 0) + 1;
+
+  state.updatingSelectionVersion = token;
+  state.activeUpdatingSelectionToken = token;
+  state.isUpdatingSelection = true;
+  state.selectionChangeOrigin = origin;
+
+  return token;
+};
+
+export const endEditableSelectionUpdate = (
+  state: {
+    activeUpdatingSelectionToken?: number | null;
+    isUpdatingSelection: boolean;
+  },
+  token: number
+) => {
+  if (state.activeUpdatingSelectionToken !== token) {
+    return false;
+  }
+
+  state.activeUpdatingSelectionToken = null;
+  state.isUpdatingSelection = false;
+
+  return true;
+};
+
 export const exportEditableDOMSelection = (
   state: {
+    activeUpdatingSelectionToken?: number | null;
     isUpdatingSelection: boolean;
     parkedExport?: ParkedExport | null;
     selectionChangeOrigin?: SelectionChangeOrigin | null;
+    updatingSelectionVersion?: number;
   },
   editable: Element,
   points: DOMSelectionPoints | null,
   options?: {
     clearPolicy?: EditableDOMSelectionClearPolicy;
     editor?: object;
-    onExport?: () => void;
+    onExport?: (token: number) => void;
     writePolicy?: EditableDOMSelectionWritePolicy;
   }
 ) => {
   const previousUpdating = state.isUpdatingSelection;
   const previousOrigin = state.selectionChangeOrigin;
+  const previousToken = state.activeUpdatingSelectionToken ?? null;
   const clearPolicy = options?.clearPolicy ?? options?.writePolicy;
-  let mutatedFlags = false;
-  const beforeChange = () => {
-    mutatedFlags = true;
-    state.isUpdatingSelection = true;
-    state.selectionChangeOrigin = 'programmatic-export';
-    options?.onExport?.();
+  const exportToken = { current: null as number | null };
+  const restorePrevious = () => {
+    if (
+      exportToken.current !== null &&
+      state.activeUpdatingSelectionToken === exportToken.current
+    ) {
+      state.activeUpdatingSelectionToken = previousToken;
+      state.isUpdatingSelection = previousUpdating;
+      state.selectionChangeOrigin = previousOrigin;
+    }
   };
-  const exported = points
-    ? writeEditableDOMSelection(editable, points, {
-        beforeChange,
-        editor: options?.editor,
-        policy: options?.writePolicy,
-      })
-    : clearEditableDOMSelection(editable, {
-        beforeChange,
-        editor: options?.editor,
-        policy: clearPolicy,
-      });
+  const beforeChange = () => {
+    const token = beginEditableSelectionUpdate(state);
 
-  if (!exported && mutatedFlags) {
-    state.isUpdatingSelection = previousUpdating;
-    state.selectionChangeOrigin = previousOrigin;
+    exportToken.current = token;
+    options?.onExport?.(token);
+  };
+  let exported = false;
+
+  try {
+    exported = points
+      ? writeEditableDOMSelection(editable, points, {
+          beforeChange,
+          editor: options?.editor,
+          policy: options?.writePolicy,
+        })
+      : clearEditableDOMSelection(editable, {
+          beforeChange,
+          editor: options?.editor,
+          policy: clearPolicy,
+        });
+  } catch (error) {
+    restorePrevious();
+    throw error;
+  }
+
+  if (!exported) {
+    restorePrevious();
   }
 
   if (
@@ -926,11 +984,8 @@ export const scheduleEditableDOMSelectionClear = ({
 }) => {
   const receipt = getPlacementGeneration(editor);
   const tree = editable.getRootNode() as Document | ShadowRoot;
-  const readPoints = () => {
-    const selection = getSelection(tree);
-
-    return selection ? readDOMSelectionPoints(selection) : null;
-  };
+  const readPoints = () =>
+    readEditableDOMSelectionPoints(editable, getSelection(tree));
   const doClear = () => {
     if (clear) {
       clear();
@@ -1001,6 +1056,7 @@ export const scheduleEditableDOMSelectionClear = ({
 export const beginEditableNativeSelectionImport = (
   inputController: EditableInputController
 ) => {
+  inputController.state.activeUpdatingSelectionToken = null;
   inputController.state.isUpdatingSelection = false;
   inputController.state.selectionChangeOrigin = 'native-user';
 };

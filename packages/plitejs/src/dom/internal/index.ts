@@ -80,6 +80,7 @@ export {
   documentOf,
   DOMRootRuntime,
   type DOMRootRuntimeOptions,
+  type DOMRootSelectionExportOptions,
   type EditableDOMSelectionClearPolicy,
   type EditableDOMSelectionWritePolicy,
   findEditorDOMRootRuntime,

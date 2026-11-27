@@ -48,6 +48,7 @@ import {
 import {
   DOMRootRuntime,
   type DOMRootRuntimeOptions,
+  type DOMRootSelectionExportOptions,
   type DOMPhaseScheduler,
   type DOMIntegrityMutationOwner,
   type DOMIntegrityRepairEvidence,
@@ -114,6 +115,7 @@ import {
   cancelCompositionReceipt,
   captureEditableCompositionRuntimeMarks,
   clearEditableCompositionRuntimeState,
+  endEditableSelectionUpdate,
   endHiddenAnchorPress,
   endSelectionImport,
   type EditableInputController,
@@ -516,6 +518,9 @@ export class EditableDOMRuntime {
   ) => void = () => {};
 
   private selectionExportAfterDOMCommitHandler: () => void = () => {};
+  private selectionExportHandler:
+    | ((options?: DOMRootSelectionExportOptions) => boolean)
+    | null = null;
   readonly compositionLease = new CompositionLease();
 
   private readonly deferredCompositionDOMWrites = new Map<
@@ -701,6 +706,7 @@ export class EditableDOMRuntime {
         );
       },
       nodeSelectionFocus: () => this.nodeSelectionFocus?.current ?? null,
+      exportSelection: (options) => this.selectionExportHandler?.(options),
       focusSelection: (root) => focusSelectionTarget(this.editorValue, root),
       isComposing: () => this.state.isComposing,
       isSelectionHeld: () =>
@@ -857,12 +863,12 @@ export class EditableDOMRuntime {
 
       exportEditableDOMSelection(state, root, null, {
         editor,
-        onExport: () =>
+        onExport: (version) =>
           this.domPhaseScheduler.schedule(
             'selection-repair',
             'clear-node-selection-focus-update',
             () => {
-              state.isUpdatingSelection = false;
+              endEditableSelectionUpdate(state, version);
             },
             { timing: 'timeout' }
           ),
@@ -1463,6 +1469,12 @@ export class EditableDOMRuntime {
 
   updateSelectionExportAfterDOMCommitHandler(handler: () => void) {
     this.selectionExportAfterDOMCommitHandler = handler;
+  }
+
+  updateSelectionExportHandler(
+    handler: ((options?: DOMRootSelectionExportOptions) => boolean) | null
+  ) {
+    this.selectionExportHandler = handler;
   }
 
   get isHistoryReplayInFlight() {

@@ -928,10 +928,13 @@ const applyModelProjectedDragSelection = ({
   } else {
     selectionBridge?.beforeModelSelection();
   }
-  writePliteViewSelection(editor, null);
-  selectShown(editor, {
-    anchor: anchor.point,
-    focus: focus.point,
+  writePliteViewSelection(editor, null, {
+    place: () => {
+      selectShown(editor, {
+        anchor: anchor.point,
+        focus: focus.point,
+      });
+    },
   });
 
   return true;
@@ -1780,8 +1783,11 @@ export const useRootInteractionController = ({
           const selectionEditor = getMountedViewEditor(selectionRoot);
 
           if (selectionEditor) {
-            writePliteViewSelection(focusEditor, null);
-            selectShown(selectionEditor, range);
+            writePliteViewSelection(focusEditor, null, {
+              place: () => {
+                selectShown(selectionEditor, range);
+              },
+            });
             focusPliteEditableAfterEventFrame(selectionEditor, {
               receipt: getPlacementGeneration(selectionEditor),
             });

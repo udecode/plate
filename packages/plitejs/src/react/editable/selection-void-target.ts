@@ -325,8 +325,7 @@ export const selectThenFocusUnlessMoved = (
   const before = root && focusedElementOnPage(root);
   const superseded = watchFocusSuperseded(editor, root);
 
-  writePliteViewSelection(editor, null);
-  select();
+  writePliteViewSelection(editor, null, { place: select });
 
   const after = root && focusedElementOnPage(root);
 

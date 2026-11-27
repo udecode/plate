@@ -8,17 +8,17 @@ import {
 } from '../..';
 import { getEditorRuntime } from '../../core/editor-runtime';
 import { getRangeBreakCount } from '../../core/view-carets';
-import { getSelection } from '../../dom';
+import { containsShadowAware, getSelection } from '../../dom';
 import { isSoftLineTextStale } from '../../dom/dom-soft-line-end';
-import type {
-  DOMCoverageBoundary,
-  DOMCoverageSession,
+import {
+  type DOMCoverageBoundary,
+  type DOMCoverageSession,
+  readEditableDOMSelectionPoints,
 } from '../../dom/internal';
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import {
   type DOMSelectionPoints,
   getDOMRangeSelectionPoints,
-  readDOMSelectionPoints,
   readsSelectionAsHost,
   sameDOMSelectionPoints,
 } from '../../dom/utils/selection-writes';
@@ -305,7 +305,7 @@ export const readParkedSelection = (
   }
 
   const domSelection = getSelection(root);
-  const shown = domSelection && readDOMSelectionPoints(domSelection);
+  const shown = readEditableDOMSelectionPoints(editorElement, domSelection);
   const exported = runtime.inputController.state.parkedExport?.points;
 
   if (exported && sameDOMSelectionPoints(shown, exported)) return 'parked';
@@ -314,7 +314,15 @@ export const readParkedSelection = (
 
   // With no parked caret to compare, a selection the browser invents for the
   // empty export reads the same as one page code places.
-  if (!shown || !parked || readsSelectionAsHost(root)) return 'parked';
+  if (
+    !shown ||
+    !parked ||
+    (readsSelectionAsHost(root) &&
+      (!containsShadowAware(editorElement, shown.anchor[0]) ||
+        !containsShadowAware(editorElement, shown.focus[0])))
+  ) {
+    return 'parked';
+  }
 
   return sameDOMSelectionPoints(shown, parked) ? 'parked' : 'moved';
 };

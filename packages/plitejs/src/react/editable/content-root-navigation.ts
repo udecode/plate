@@ -1782,8 +1782,11 @@ const selectContentRootTarget = ({
     editor;
 
   event.preventDefault();
-  writePliteViewSelection(editor, null);
-  selectContentRoot(targetEditor, rootedRange(target.point, target.root));
+  writePliteViewSelection(editor, null, {
+    place: () => {
+      selectContentRoot(targetEditor, rootedRange(target.point, target.root));
+    },
+  });
 
   if (targetEditor !== editor) {
     focusEditor?.(targetEditor);

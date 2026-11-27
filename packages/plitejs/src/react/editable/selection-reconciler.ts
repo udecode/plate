@@ -45,14 +45,13 @@ import {
 import { resolvePliteNodePath } from '../../dom/plugin/dom-node-path';
 import {
   canWriteDOMSelection,
-  canWriteEditableDOMSelection,
   clearEditableDOMSelection,
   isElementFocused,
+  readEditableDOMSelectionPoints,
 } from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import {
   type DOMSelectionPoints,
-  readDOMSelectionPoints,
   readDOMSelectionRange,
 } from '../../dom/utils/selection-writes';
 import { readOnlyInlineAt } from '../../editor/element-read-only';
@@ -66,13 +65,13 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
-import { applyDOMCoverageSelectionPolicy } from './dom-coverage-selection';
 import { getInputEventTargetRanges } from './dom-input-event';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   type EditableDOMSelectionSyncOptions,
   type EditableInputController,
   executeEditableSelectionExport,
+  exportDOMCoverageSelection,
   isEditableOutsideFocusBoundarySettling,
   isEditableModelSelectionPreferred,
   isInteractiveInternalTarget,
@@ -83,6 +82,8 @@ import {
   syncEditableDOMSelectionToEditor,
 } from './input-controller';
 import {
+  beginEditableNativeSelectionImport,
+  endEditableSelectionUpdate,
   exportEditableDOMSelection,
   isSelectionHeldForPendingImport,
 } from './input-state';
@@ -129,6 +130,7 @@ import {
   selectThenFocusUnlessMoved,
 } from './selection-void-target';
 import { decideSoftLineEndDelete } from './soft-line-end-delete';
+import { reachesRoot } from './view-caret-restore';
 
 export {
   selectEditableSelectableOwnerPath,
@@ -167,10 +169,12 @@ const isDecoratedTextRange = (range: StaticRange | null) =>
     isDecoratedTextHost(getTextHostForDOMPoint(range.endContainer)));
 
 export type EditableSelectionReconcilerState = {
+  activeUpdatingSelectionToken?: number | null;
   isUpdatingSelection: boolean;
   latestElement: DOMElement | null;
   outsideFocusBoundarySettleUntil: number;
   selectionChangeOrigin?: SelectionChangeOrigin | null;
+  updatingSelectionVersion?: number;
 };
 
 type EditableFocusHandler = (
@@ -422,15 +426,18 @@ export const applyEditableClick = ({
         editor.api.dom.resolveEventRange(event.nativeEvent)?.focus ?? null
       );
 
-      writePliteViewSelection(editor, null);
       setEditableModelSelectionPreference({
         inputController,
         preferModelSelection: true,
         selectionSource: 'model-owned',
       });
-      editor.update((tx) => {
-        tx.selection.set(range);
-        if (block) tx.annotations.set(tripleClickedBlock, block);
+      writePliteViewSelection(editor, null, {
+        place: () => {
+          editor.update((tx) => {
+            tx.selection.set(range);
+            if (block) tx.annotations.set(tripleClickedBlock, block);
+          });
+        },
       });
       exportTripleClickSelectionToDOM({
         domPhaseScheduler,
@@ -459,14 +466,17 @@ export const applyEditableClick = ({
           : null;
 
       if (range && clickedInline) {
-        writePliteViewSelection(editor, null);
         setEditableModelSelectionPreference({
           inputController,
           preferModelSelection: true,
           selectionSource: 'model-owned',
         });
-        editor.update((tx) => {
-          tx.selection.set(range);
+        writePliteViewSelection(editor, null, {
+          place: () => {
+            editor.update((tx) => {
+              tx.selection.set(range);
+            });
+          },
         });
         return;
       }
@@ -505,7 +515,7 @@ export const preferNativePressSelection = (
     preferModelSelection: false,
     selectionSource: 'dom-current',
   });
-  inputController.state.selectionChangeOrigin = 'native-user';
+  beginEditableNativeSelectionImport(inputController);
 };
 
 export const applyEditableMouseDown = ({
@@ -803,15 +813,18 @@ export const syncSelectionForBeforeInput = ({
           : softLineEndDelete.collapse;
       const replacing =
         softLineEndDelete.kind === 'nothing' && point && domSelection
-          ? readDOMSelectionPoints(domSelection)
+          ? readEditableDOMSelectionPoints(editorElement, domSelection)
           : null;
 
       if (point) {
         const caret = { anchor: point, focus: point };
 
-        writePliteViewSelection(editor, null);
-        editor.update((tx) => {
-          tx.selection.set(caret);
+        writePliteViewSelection(editor, null, {
+          place: () => {
+            editor.update((tx) => {
+              tx.selection.set(caret);
+            });
+          },
         });
         nextSelection = caret;
       }
@@ -907,9 +920,12 @@ export const syncSelectionForBeforeInput = ({
             deletion: 'nearest',
           });
 
-        writePliteViewSelection(editor, null);
-        editor.update((tx) => {
-          tx.selection.set(range);
+        writePliteViewSelection(editor, null, {
+          place: () => {
+            editor.update((tx) => {
+              tx.selection.set(range);
+            });
+          },
         });
         nextSelection = range;
 
@@ -1019,9 +1035,12 @@ export const syncSelectionForBeforeInput = ({
     ) {
       nextNative = false;
       nativeBlocker = 'dom-selection-import';
-      writePliteViewSelection(editor, null);
-      editor.update((tx) => {
-        tx.selection.set(range);
+      writePliteViewSelection(editor, null, {
+        place: () => {
+          editor.update((tx) => {
+            tx.selection.set(range);
+          });
+        },
       });
       nextSelection = range;
     }
@@ -1043,9 +1062,12 @@ export const syncSelectionForBeforeInput = ({
 
     if (range && (!nextSelection || !RangeApi.equals(nextSelection, range))) {
       nextNative = false;
-      writePliteViewSelection(editor, null);
-      editor.update((tx) => {
-        tx.selection.set(range);
+      writePliteViewSelection(editor, null, {
+        place: () => {
+          editor.update((tx) => {
+            tx.selection.set(range);
+          });
+        },
       });
       nextSelection = range;
     }
@@ -1062,9 +1084,12 @@ export const syncSelectionForBeforeInput = ({
     if (firstText) {
       const [, path] = firstText;
       const range = editorRange(editor, { path, offset: 0 });
-      writePliteViewSelection(editor, null);
-      editor.update((tx) => {
-        tx.selection.set(range);
+      writePliteViewSelection(editor, null, {
+        place: () => {
+          editor.update((tx) => {
+            tx.selection.set(range);
+          });
+        },
       });
       nextSelection = range;
     }
@@ -1082,9 +1107,12 @@ export const syncSelectionForBeforeInput = ({
         : null;
 
     if (range && (!nextSelection || !RangeApi.equals(nextSelection, range))) {
-      writePliteViewSelection(editor, null);
-      editor.update((tx) => {
-        tx.selection.set(range);
+      writePliteViewSelection(editor, null, {
+        place: () => {
+          editor.update((tx) => {
+            tx.selection.set(range);
+          });
+        },
       });
       nextSelection = range;
     }
@@ -1112,9 +1140,12 @@ export const restoreUserSelectionAfterBeforeInput = ({
     toRestore &&
     (!currentRange || !RangeApi.equals(currentRange, toRestore))
   ) {
-    writePliteViewSelection(editor, null);
-    editor.update((tx) => {
-      tx.selection.set(toRestore);
+    writePliteViewSelection(editor, null, {
+      place: () => {
+        editor.update((tx) => {
+          tx.selection.set(toRestore);
+        });
+      },
     });
   }
 };
@@ -1172,13 +1203,16 @@ export const handleWebKitShadowDOMBeforeInput = ({
 
   if (decision.verdict === 'sync' || decision.verdict === 'claim') {
     decision.write(() => {
-      writePliteViewSelection(editor, null);
-      editor.update((tx) => {
-        tx.selection.set(
-          backward
-            ? { anchor: pliteRange.focus, focus: pliteRange.anchor }
-            : pliteRange
-        );
+      writePliteViewSelection(editor, null, {
+        place: () => {
+          editor.update((tx) => {
+            tx.selection.set(
+              backward
+                ? { anchor: pliteRange.focus, focus: pliteRange.anchor }
+                : pliteRange
+            );
+          });
+        },
       });
     });
   }
@@ -1331,8 +1365,12 @@ export const useEditableSelectionReconciler = ({
       // the selection, and clearing it makes Chromium put the next caret at
       // the editable's start. When a view selection is drawing markers, clear
       // any native range so the two highlights never stack.
+      const viewportViewSelection = readPliteViewSelection(editor);
+
       if (
-        !readPliteViewSelection(editor) &&
+        !(
+          viewportViewSelection && reachesRoot(editor, viewportViewSelection)
+        ) &&
         showsDOMSelection(editor, domSelection, projectedSelection)
       ) {
         return undefined;
@@ -1341,12 +1379,20 @@ export const useEditableSelectionReconciler = ({
       return undefined;
     }
 
-    const clearUpdatingSelection = () => {
+    const ensureSelection =
+      androidInputManagerRef.current?.isFlushing() === 'action';
+    const useAndroidReapply = runtime.isAndroidHost && ensureSelection;
+    let latestReapplyVersion: number | undefined;
+    const clearUpdatingSelection = (version: number) => {
+      if (useAndroidReapply) {
+        latestReapplyVersion = version;
+        return;
+      }
       phaseScheduler.schedule(
         'selection-repair',
         'clear-reconciled-selection-update',
         () => {
-          state.isUpdatingSelection = false;
+          endEditableSelectionUpdate(state, version);
         },
         { delay: 80, timing: 'timeout' }
       );
@@ -1356,12 +1402,10 @@ export const useEditableSelectionReconciler = ({
       const hasDomSelection = domSelection.type !== 'None';
       let resolvedDOMSelection: Range | null = null;
 
-      // If the DOM selection is properly unset, we're done.
       if (!selection && !hasDomSelection) {
         return undefined;
       }
 
-      // Get anchorNode and focusNode
       const { focusNode } = domSelection;
       let anchorNode: globalThis.Node | null = null;
 
@@ -1383,7 +1427,6 @@ export const useEditableSelectionReconciler = ({
         ({ anchorNode } = domSelection);
       }
 
-      // verify that the dom selection is in the editor
       const editorElement =
         rootRef.current ?? failInvariant('Expected value to be defined');
       let hasDomSelectionInEditor = false;
@@ -1394,7 +1437,6 @@ export const useEditableSelectionReconciler = ({
         hasDomSelectionInEditor = true;
       }
 
-      // If the DOM selection is in the editor and the editor selection is already correct, we're done.
       if (
         hasDomSelection &&
         hasDomSelectionInEditor &&
@@ -1403,9 +1445,6 @@ export const useEditableSelectionReconciler = ({
       ) {
         const pliteRange = ReactEditor.resolveRange(editor, domSelection, {
           exactMatch: true,
-
-          // domSelection is not necessarily a valid Plite range
-          // (e.g. when clicking on contentEditable:false element)
         });
         resolvedDOMSelection = pliteRange;
         const retainedTextHost = getTextHostForDOMPoint(anchorNode);
@@ -1480,63 +1519,24 @@ export const useEditableSelectionReconciler = ({
         return undefined;
       }
 
-      if (readPliteViewSelection(editor)) {
+      const activeViewSelection = readPliteViewSelection(editor);
+
+      if (activeViewSelection && reachesRoot(editor, activeViewSelection)) {
         return undefined;
       }
 
       if (
         selection &&
         selectionHasDOMCoverage &&
-        applyDOMCoverageSelectionPolicy({
-          editorElement,
+        exportDOMCoverageSelection({
           coverage: runtime.domCoverage,
           editor,
-          exportSelection: (points, modelOwned) => {
-            const policy = skipFocus ? 'focused' : 'editable';
-
-            if (
-              !canWriteEditableDOMSelection(editorElement, { editor, policy })
-            ) {
-              return;
-            }
-
-            if (points) {
-              const exported = exportEditableDOMSelection(
-                state,
-                editorElement,
-                points,
-                {
-                  editor,
-                  onExport: clearUpdatingSelection,
-                  writePolicy: policy,
-                }
-              );
-
-              if (!exported) return;
-            } else {
-              runtime.inputController.state.parkedExport = null;
-              exportEditableDOMSelection(state, editorElement, null, {
-                clearPolicy: policy,
-                editor,
-                onExport: clearUpdatingSelection,
-                writePolicy: policy,
-              });
-            }
-
-            if (
-              modelOwned &&
-              canWriteEditableDOMSelection(editorElement, { editor, policy })
-            ) {
-              setEditableModelSelectionPreference({
-                inputController: runtime.inputController,
-                preferModelSelection: true,
-                reason: 'model-command',
-                selectionSource: 'model-owned',
-              });
-            }
-          },
+          editorElement,
           inputController: runtime.inputController,
+          onExport: clearUpdatingSelection,
+          policy: skipFocus ? 'focused' : 'editable',
           selection: projectedSelection,
+          state,
         })
       ) {
         return undefined;
@@ -1567,6 +1567,7 @@ export const useEditableSelectionReconciler = ({
       const exportSelection = (points: DOMSelectionPoints | null) =>
         exportEditableDOMSelection(state, editorElement, points, {
           editor,
+          onExport: clearUpdatingSelection,
           writePolicy: skipFocus ? 'focused' : 'editable',
         });
       const newDomRange = projectedSelection
@@ -1619,7 +1620,13 @@ export const useEditableSelectionReconciler = ({
         if (!shouldSkipSelectionScroll(editor)) {
           scrollSelectionIntoView(editor, newDomRange);
         }
-        if (readPliteViewSelection(editor) && !selectionHasDOMCoverage) {
+        const postExportViewSelection = readPliteViewSelection(editor);
+
+        if (
+          postExportViewSelection &&
+          reachesRoot(editor, postExportViewSelection) &&
+          !selectionHasDOMCoverage
+        ) {
           writePliteViewSelection(editor, null);
         }
       } else if (
@@ -1638,16 +1645,14 @@ export const useEditableSelectionReconciler = ({
       try {
         setDomSelection();
       } catch {
-        clearUpdatingSelection();
+        if (latestReapplyVersion !== undefined) {
+          endEditableSelectionUpdate(state, latestReapplyVersion);
+        }
         return undefined;
       }
     }
 
-    const ensureSelection =
-      androidInputManagerRef.current?.isFlushing() === 'action';
-
-    if (!runtime.isAndroidHost || !ensureSelection) {
-      clearUpdatingSelection();
+    if (!useAndroidReapply) {
       return undefined;
     }
 
@@ -1685,11 +1690,8 @@ export const useEditableSelectionReconciler = ({
             try {
               const el = rootRef.current;
 
-              if (!el || el !== editable) return;
-              if (shouldSkipSelectionFocus(editor)) {
-                if (!isElementFocused(el)) return;
-              } else {
-                if (!isElementFocused(el)) return;
+              if (!el || el !== editable || !isElementFocused(el)) return;
+              if (!shouldSkipSelectionFocus(editor)) {
                 el.focus();
               }
 
@@ -1699,24 +1701,35 @@ export const useEditableSelectionReconciler = ({
             }
           };
 
-          // Compat: Android IMEs try to force their selection by manually re-applying it even after we set it.
-          // This essentially would make setting the Plite selection during an update meaningless, so we force it
-          // again here. We can't only do it in the setTimeout after the animation frame since that would cause a
-          // visible flicker.
-          ensureDomSelection();
+          try {
+            // Compat: Android IMEs try to force their selection by manually re-applying it even after we set it.
+            // This essentially would make setting the Plite selection during an update meaningless, so we force it
+            // again here. We can't only do it in the setTimeout after the animation frame since that would cause a
+            // visible flicker.
+            ensureDomSelection();
 
-          cancelTimeout = phaseScheduler.schedule(
-            'selection-repair',
-            'android-selection-spellcheck-refresh',
-            () => {
-              // COMPAT: While setting the selection in an animation frame visually correctly sets the selection,
-              // it doesn't update GBoards spellchecker state. We have to manually trigger a selection change after
-              // the animation frame to ensure it displays the correct state.
-              ensureDomSelection(true);
-              state.isUpdatingSelection = false;
-            },
-            { timing: 'timeout' }
-          );
+            cancelTimeout = phaseScheduler.schedule(
+              'selection-repair',
+              'android-selection-spellcheck-refresh',
+              () => {
+                // COMPAT: While setting the selection in an animation frame visually correctly sets the selection,
+                // it doesn't update GBoards spellchecker state. We have to manually trigger a selection change after
+                // the animation frame to ensure it displays the correct state.
+                try {
+                  ensureDomSelection(true);
+                } finally {
+                  if (latestReapplyVersion !== undefined) {
+                    endEditableSelectionUpdate(state, latestReapplyVersion);
+                  }
+                }
+              },
+              { timing: 'timeout' }
+            );
+          } catch {
+            if (latestReapplyVersion !== undefined) {
+              endEditableSelectionUpdate(state, latestReapplyVersion);
+            }
+          }
         }
       },
       { timing: 'animation-frame' }
@@ -1725,15 +1738,20 @@ export const useEditableSelectionReconciler = ({
     return () => {
       cancelAnimationFrame();
       cancelTimeout();
+      if (latestReapplyVersion !== undefined) {
+        endEditableSelectionUpdate(state, latestReapplyVersion);
+      }
       editable?.removeEventListener('pointerdown', notePress, true);
     };
   });
 
   const syncDOMSelectionToEditor = useCallback(
     (options?: EditableDOMSelectionSyncOptions) => {
+      let exported = false;
+
       executeEditableSelectionExport({
         exportSelection: () => {
-          syncEditableDOMSelectionToEditor({
+          exported = syncEditableDOMSelectionToEditor({
             editor,
             editorElement: rootRef.current ?? undefined,
             options,
@@ -1744,6 +1762,8 @@ export const useEditableSelectionReconciler = ({
         },
         selectionPolicy: { kind: 'export-model', reason: 'model-owned' },
       });
+
+      return exported;
     },
     [editor, rootRef, scrollSelectionIntoView, viewportBackedSelection, state]
   );

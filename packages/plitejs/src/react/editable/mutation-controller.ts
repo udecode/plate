@@ -63,9 +63,11 @@ import {
   getEditableRepairPolicy,
 } from './editing-kernel';
 import {
+  beginEditableSelectionUpdate,
   commitUnderCompositionReceipt,
   type EditableInputController,
   type EditableSelectionSourceTransition,
+  endEditableSelectionUpdate,
   getDeferredSelectionWriteStatus,
   getEditableNativeGroupingInput,
 } from './input-state';
@@ -1185,6 +1187,8 @@ export const applyModelOwnedTextInput = ({
     : applyInput();
 };
 
+const SYNC_SELECTION_REPAIR_ID = new WeakMap<object, number>();
+
 export const applyEditableRepairRequest = ({
   domPhaseScheduler,
   domRepairQueue,
@@ -1288,32 +1292,41 @@ export const applyEditableRepairRequest = ({
       }
 
       if (request.kind === 'sync-selection') {
+        const repairId =
+          (SYNC_SELECTION_REPAIR_ID.get(inputController.state) ?? 0) + 1;
+        SYNC_SELECTION_REPAIR_ID.set(inputController.state, repairId);
+        const isCurrentRepair = () =>
+          SYNC_SELECTION_REPAIR_ID.get(inputController.state) === repairId;
+        let selectionUpdateVersion: number | undefined;
         const markProgrammaticSelectionUpdate = () => {
-          inputController.state.isUpdatingSelection = true;
-          inputController.state.selectionChangeOrigin = 'programmatic-export';
+          selectionUpdateVersion = beginEditableSelectionUpdate(
+            inputController.state
+          );
         };
 
         if (request.syncDOMSelection === false) {
           markProgrammaticSelectionUpdate();
+          const version = selectionUpdateVersion;
           const clearProgrammaticSelectionUpdate = () => {
-            if (
-              inputController.state.selectionChangeOrigin ===
-              'programmatic-export'
-            ) {
-              inputController.state.isUpdatingSelection = false;
-            }
+            if (!isCurrentRepair() || version === undefined) return;
+            endEditableSelectionUpdate(inputController.state, version);
           };
 
           domPhaseScheduler.schedule(
             'selection-repair',
             'clear-programmatic-selection-update',
             clearProgrammaticSelectionUpdate,
-            { delay: 160, timing: 'timeout' }
+            {
+              delay: 160,
+              key: 'clear-programmatic-selection-update',
+              timing: 'timeout',
+            }
           );
           return;
         }
 
         const syncProgrammaticDOMSelection = () => {
+          if (!isCurrentRepair()) return;
           if (!isEditableModelSelectionPreferred(inputController)) {
             return;
           }
@@ -1327,6 +1340,7 @@ export const applyEditableRepairRequest = ({
         const receipt = getPlacementGeneration(editor);
         syncProgrammaticDOMSelection();
         const resyncUnlessBlurred = () => {
+          if (!isCurrentRepair()) return;
           // Chromium focuses an editable that gets a DOM selection, so a rerun
           // after the editor blurred would pull focus back into it.
           if (focusedAtCommand && !ReactEditor.isFocused(editor)) return;
@@ -1349,37 +1363,49 @@ export const applyEditableRepairRequest = ({
           syncProgrammaticDOMSelection();
         };
         const clearProgrammaticSelectionUpdate = () => {
-          if (
-            inputController.state.selectionChangeOrigin ===
-            'programmatic-export'
-          ) {
-            inputController.state.isUpdatingSelection = false;
+          if (!isCurrentRepair() || selectionUpdateVersion === undefined) {
+            return;
           }
+          endEditableSelectionUpdate(
+            inputController.state,
+            selectionUpdateVersion
+          );
         };
 
         domPhaseScheduler.schedule(
           'selection-repair',
           'sync-programmatic-selection-microtask',
           resyncUnlessBlurred,
-          { timing: 'microtask' }
+          {
+            key: 'sync-programmatic-selection-microtask',
+            timing: 'microtask',
+          }
         );
         domPhaseScheduler.schedule(
           'selection-repair',
           'sync-programmatic-selection-timeout',
           resyncUnlessBlurred,
-          { timing: 'timeout' }
+          { key: 'sync-programmatic-selection-timeout', timing: 'timeout' }
         );
         domPhaseScheduler.schedule(
           'selection-repair',
           'sync-programmatic-selection-settle',
           resyncUnlessBlurred,
-          { delay: 80, timing: 'timeout' }
+          {
+            delay: 80,
+            key: 'sync-programmatic-selection-settle',
+            timing: 'timeout',
+          }
         );
         domPhaseScheduler.schedule(
           'selection-repair',
           'clear-programmatic-selection-update',
           clearProgrammaticSelectionUpdate,
-          { delay: 160, timing: 'timeout' }
+          {
+            delay: 160,
+            key: 'clear-programmatic-selection-update',
+            timing: 'timeout',
+          }
         );
         return;
       }

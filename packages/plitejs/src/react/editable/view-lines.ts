@@ -390,13 +390,16 @@ export const moveByRenderedLines = ({
   if (!landing) return null;
   event.preventDefault();
   endSelectionImport(inputController);
-  writePliteViewSelection(editor, null);
   const target = {
     anchor: event.shiftKey ? anchor : landing.point,
     focus: landing.point,
   };
 
-  dispatchCommand(editor, editorCommands.select, { target });
+  writePliteViewSelection(editor, null, {
+    place: () => {
+      dispatchCommand(editor, editorCommands.select, { target });
+    },
+  });
   const runtime = findMountedEditableDOMRuntime(root);
   const landingDOM =
     landing.dom ??

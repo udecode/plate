@@ -29,6 +29,7 @@ import {
   isDOMText,
 } from '../../dom';
 import {
+  type DOMCoverageSession,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
   findDOMRootRuntime,
@@ -91,6 +92,7 @@ import type {
   SelectionSource,
 } from './input-state';
 import {
+  endEditableSelectionUpdate,
   exportEditableDOMSelection,
   getDeferredSelectionWriteStatus,
   isEditableOutsideFocusBoundarySettling,
@@ -129,6 +131,7 @@ import {
   shouldSkipSelectionScroll,
 } from './selection-side-effect-policy';
 import { claimPageSelection } from './unread-press';
+import { reachesRoot } from './view-caret-restore';
 
 export type EditableSelectionController = {
   inputController: EditableInputController;
@@ -337,9 +340,85 @@ export type EditableDOMSelectionSyncOptions = {
    * the model.
    */
   compositionCaret?: boolean;
+  coverageMode?: 'all' | 'model-only';
   forceModelExport?: boolean;
   preserveScroll?: boolean;
+  requireFocused?: boolean;
+  skipScroll?: boolean;
 };
+
+export const exportDOMCoverageSelection = ({
+  coverage,
+  editor,
+  editorElement,
+  inputController,
+  onExport,
+  policy,
+  selection,
+  state,
+}: {
+  coverage: DOMCoverageSession;
+  editor: ReactRuntimeEditor;
+  editorElement: HTMLElement;
+  inputController: EditableInputController;
+  onExport?: (version: number) => void;
+  policy: 'editable' | 'focused';
+  selection: Range;
+  state: {
+    activeUpdatingSelectionToken?: number | null;
+    isUpdatingSelection: boolean;
+    parkedExport?: EditableInputController['state']['parkedExport'];
+    selectionChangeOrigin?: SelectionChangeOrigin | null;
+    updatingSelectionVersion?: number;
+  };
+}) =>
+  applyDOMCoverageSelectionPolicy({
+    coverage,
+    editor,
+    editorElement,
+    exportSelection: (points, modelOwned) => {
+      if (!canWriteEditableDOMSelection(editorElement, { editor, policy })) {
+        return;
+      }
+
+      if (points) {
+        const exported = exportEditableDOMSelection(
+          state,
+          editorElement,
+          points,
+          {
+            editor,
+            onExport,
+            writePolicy: policy,
+          }
+        );
+
+        if (!exported) return;
+      } else {
+        inputController.state.parkedExport = null;
+        exportEditableDOMSelection(state, editorElement, null, {
+          clearPolicy: policy,
+          editor,
+          onExport,
+          writePolicy: policy,
+        });
+      }
+
+      if (
+        modelOwned &&
+        canWriteEditableDOMSelection(editorElement, { editor, policy })
+      ) {
+        setEditableModelSelectionPreference({
+          inputController,
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        });
+      }
+    },
+    inputController,
+    selection,
+  });
 
 const preserveScrollAround = (startElement: HTMLElement, write: () => void) => {
   const elements: Array<{
@@ -1715,20 +1794,24 @@ export const syncEditableDOMSelectionToEditor = ({
   ) => void;
   viewportBackedSelection: boolean;
   state: {
+    activeUpdatingSelectionToken?: number | null;
     isUpdatingSelection: boolean;
     outsideFocusBoundarySettleUntil: number;
     selectionChangeOrigin?: SelectionChangeOrigin | null;
+    updatingSelectionVersion?: number;
   };
-}) => {
+}): boolean => {
   const runtime = getMountedEditableDOMRuntime(editor, explicitEditorElement);
 
-  if (!runtime) return;
-  if (!claimPageSelection()) return;
+  if (!runtime) return false;
+  if (!claimPageSelection()) return true;
   const skipFocus = shouldSkipSelectionFocus(editor);
 
-  if (runtime.externalText.focusSelection({ allowFocus: !skipFocus })) return;
-  if (runtime.shouldDeferCompositionSelectionExport()) return;
-  if (runtime.androidInputManagerRef.current?.hasPendingAction()) return;
+  if (runtime.externalText.focusSelection({ allowFocus: !skipFocus })) {
+    return true;
+  }
+  if (runtime.shouldDeferCompositionSelectionExport()) return true;
+  if (runtime.androidInputManagerRef.current?.hasPendingAction()) return true;
   if (
     isSelectionHeldForNativeMove(
       runtime.inputController,
@@ -1736,31 +1819,48 @@ export const syncEditableDOMSelectionToEditor = ({
       explicitEditorElement ?? runtime.rootElement
     )
   ) {
-    return;
+    return true;
   }
   if (
     runtime.inputController.state.isNativeSelectionDragActive &&
     !runtime.inputController.state.isProjectingSelection
   ) {
-    return;
+    return true;
   }
   const { domPhaseScheduler } = runtime;
   const selection = resolveNextKeyCaret(
     editor,
     explicitEditorElement ?? runtime.rootElement
   );
-  const viewSelection = readPliteViewSelection(editor);
+  const rawViewSelection = readPliteViewSelection(editor);
+  const viewSelection =
+    rawViewSelection && reachesRoot(editor, rawViewSelection)
+      ? rawViewSelection
+      : null;
   const collapsedViewSelection =
     viewSelection && isPliteViewSelectionCollapsed(viewSelection);
   const nativeViewSelection =
     viewSelection && canUseNativeViewSelection(editor, viewSelection);
   const projectedSelection = getSelectionDOMRange(editor, selection);
+  const selectionBoundaries =
+    projectedSelection &&
+    (options?.coverageMode !== 'model-only' ||
+      runtime.domCoverage.hasModelBoundaries())
+      ? runtime.domCoverage.getBoundariesForRange(projectedSelection)
+      : [];
   const selectionHasDOMCoverage =
-    !!projectedSelection &&
-    runtime.domCoverage.getBoundariesForRange(projectedSelection).length > 0;
-  const scheduleClearSelectionUpdate = (label: string, delay = 0) => {
+    options?.coverageMode === 'model-only'
+      ? selectionBoundaries.some(
+          (boundary) => boundary.selectionPolicy === 'model'
+        )
+      : selectionBoundaries.length > 0;
+  const scheduleClearSelectionUpdate = (
+    label: string,
+    version: number,
+    delay = 0
+  ) => {
     const clear = () => {
-      state.isUpdatingSelection = false;
+      endEditableSelectionUpdate(state, version);
     };
 
     domPhaseScheduler.schedule('selection-repair', label, clear, {
@@ -1768,25 +1868,27 @@ export const syncEditableDOMSelectionToEditor = ({
       timing: 'timeout',
     });
   };
-  const clearAfter = (label: string, delay?: number) => () =>
-    scheduleClearSelectionUpdate(label, delay);
+  const clearAfter = (label: string, delay?: number) => (version: number) =>
+    scheduleClearSelectionUpdate(label, version, delay);
 
+  if (!selection && !collapsedViewSelection && !nativeViewSelection) {
+    return false;
+  }
   if (
     (viewportBackedSelection && selectionHasDOMCoverage) ||
-    (!selection && !collapsedViewSelection && !nativeViewSelection) ||
     (!collapsedViewSelection &&
       !nativeViewSelection &&
       !isSelectionInEditorView(editor, selection)) ||
     shouldSkipDOMSelection(editor, { force: options?.forceModelExport })
   ) {
-    return;
+    return true;
   }
 
   if (
     !options?.forceModelExport &&
     isEditableOutsideFocusBoundarySettling(state)
   ) {
-    return;
+    return true;
   }
 
   try {
@@ -1795,25 +1897,27 @@ export const syncEditableDOMSelectionToEditor = ({
     const editorElement = explicitEditorElement ?? ReactEditor.editable(editor);
 
     if (!root || !domSelection || !editorElement) {
-      return;
+      return false;
     }
 
     const requireFocused =
-      skipFocus &&
-      (!options?.forceModelExport ||
-        runtime.isHistoryReplayInFlight ||
-        shouldSkipDOMSelection(editor));
+      options?.requireFocused ||
+      (skipFocus &&
+        (!options?.forceModelExport ||
+          runtime.isHistoryReplayInFlight ||
+          shouldSkipDOMSelection(editor)));
 
     if (
       requireFocused
         ? !isElementFocused(editorElement)
         : !canWriteDOMSelection(editorElement, editor)
     ) {
-      return;
+      return true;
     }
 
     const preserveScroll =
       options?.preserveScroll || shouldSkipSelectionScroll(editor);
+    const skipScroll = preserveScroll || options?.skipScroll;
     if (nativeViewSelection) {
       const range = resolveNativeViewSelectionDOMRange(
         editor,
@@ -1821,7 +1925,7 @@ export const syncEditableDOMSelectionToEditor = ({
         editorElement,
         { rejectStaleText: true }
       );
-      if (!range) return;
+      if (!range) return false;
       const points = getDOMRangeSelectionPoints(
         range,
         viewSelection.segments.backward
@@ -1838,7 +1942,7 @@ export const syncEditableDOMSelectionToEditor = ({
       } else {
         writeSelection();
       }
-      return;
+      return true;
     }
     if (collapsedViewSelection) {
       const point = resolveViewBoundaryDOMPoint(
@@ -1847,7 +1951,7 @@ export const syncEditableDOMSelectionToEditor = ({
         undefined,
         { rejectStaleText: true }
       );
-      if (!point) return;
+      if (!point) return false;
       exportEditableDOMSelection(
         state,
         editorElement,
@@ -1858,7 +1962,7 @@ export const syncEditableDOMSelectionToEditor = ({
           writePolicy: requireFocused ? 'focused' : 'editable',
         }
       );
-      return;
+      return true;
     }
     if (viewSelection || !projectedSelection) {
       const label = viewSelection
@@ -1879,6 +1983,7 @@ export const syncEditableDOMSelectionToEditor = ({
       scheduleEditableDOMSelectionClear({
         clear: () =>
           exportEditableDOMSelection(state, editorElement, null, {
+            clearPolicy: requireFocused ? 'focused' : 'editable',
             editor,
             onExport: clearUpdate,
           }),
@@ -1904,7 +2009,7 @@ export const syncEditableDOMSelectionToEditor = ({
           return true;
         },
       });
-      return;
+      return true;
     }
 
     if (
@@ -1914,64 +2019,23 @@ export const syncEditableDOMSelectionToEditor = ({
         selection: projectedSelection,
       })
     ) {
-      return;
+      return true;
     }
 
     if (
       selectionHasDOMCoverage &&
-      applyDOMCoverageSelectionPolicy({
-        editorElement,
+      exportDOMCoverageSelection({
         coverage: runtime.domCoverage,
         editor,
-        exportSelection: (points, modelOwned) => {
-          const policy = requireFocused ? 'focused' : 'editable';
-
-          if (
-            !canWriteEditableDOMSelection(editorElement, { editor, policy })
-          ) {
-            return;
-          }
-
-          if (points) {
-            const exported = exportEditableDOMSelection(
-              state,
-              editorElement,
-              points,
-              {
-                editor,
-                onExport: clearAfter('clear-dom-coverage-selection-update'),
-                writePolicy: policy,
-              }
-            );
-
-            if (!exported) return;
-          } else {
-            runtime.inputController.state.parkedExport = null;
-            exportEditableDOMSelection(state, editorElement, null, {
-              clearPolicy: policy,
-              editor,
-              onExport: clearAfter('clear-dom-coverage-selection-update'),
-              writePolicy: policy,
-            });
-          }
-
-          if (
-            modelOwned &&
-            canWriteEditableDOMSelection(editorElement, { editor, policy })
-          ) {
-            setEditableModelSelectionPreference({
-              inputController: runtime.inputController,
-              preferModelSelection: true,
-              reason: 'model-command',
-              selectionSource: 'model-owned',
-            });
-          }
-        },
+        editorElement,
         inputController: runtime.inputController,
+        onExport: clearAfter('clear-dom-coverage-selection-update'),
+        policy: requireFocused ? 'focused' : 'editable',
         selection: projectedSelection,
+        state,
       })
     ) {
-      return;
+      return true;
     }
 
     const domRange =
@@ -1986,7 +2050,7 @@ export const syncEditableDOMSelectionToEditor = ({
       });
 
     if (!domRange) {
-      return;
+      return false;
     }
 
     if (viewSelection) {
@@ -2012,9 +2076,13 @@ export const syncEditableDOMSelectionToEditor = ({
       preserveScrollAround(editorElement, writeSelection);
     } else {
       writeSelection();
-      scrollSelectionIntoView(editor, domRange);
+      if (!skipScroll) {
+        scrollSelectionIntoView(editor, domRange);
+      }
     }
+    return true;
   } catch {
     // Leave browser selection unchanged if the DOM bridge is between commits.
+    return false;
   }
 };

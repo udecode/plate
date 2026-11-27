@@ -2103,37 +2103,53 @@ const DOMEditorImpl: DOMEditorInterface = {
       : null;
 
     const syncDomSelection = () => {
-      if (findDOMRootRuntime(el)?.isSelectionHeld()) return;
+      const rootRuntime = findDOMRootRuntime(el);
+
+      if (rootRuntime?.isSelectionHeld()) return;
       const innerSelection = resolveNextKeyCaret(editor, el);
 
-      if (innerSelection) {
-        const projectedSelection = getSelectionDOMRange(editor, innerSelection);
+      if (!innerSelection) return;
 
-        if (!projectedSelection) {
-          clearEditableDOMSelection(el, { editor });
-          return;
-        }
-        const view = reachAt(editor, projectedSelection);
-        const domRange =
-          view &&
-          resolveDOMRangeInRoot(view, projectedSelection, undefined, {
-            exportingSelection: true,
-            rejectStaleText: true,
-          });
+      const projectedSelection = getSelectionDOMRange(editor, innerSelection);
+      const view = projectedSelection
+        ? reachAt(editor, projectedSelection)
+        : null;
+      const targetEditable =
+        (view && view !== editor ? DOMEditor.editable(view) : null) ?? el;
+      const targetRuntime = findDOMRootRuntime(targetEditable);
 
-        if (domRange) {
-          const targetEditable =
-            (view && view !== editor ? DOMEditor.editable(view) : null) ?? el;
+      if (targetRuntime?.isSelectionHeld()) return;
+      if (
+        targetRuntime?.exportSelection({
+          coverageMode: 'model-only',
+          forceModelExport: true,
+          requireFocused: true,
+          skipScroll: true,
+        }) !== undefined
+      ) {
+        return;
+      }
 
-          writeEditableDOMSelection(
-            targetEditable,
-            getDOMRangeSelectionPoints(
-              domRange,
-              RangeApi.isBackward(projectedSelection)
-            ),
-            { editor: view ?? editor, policy: 'focused' }
-          );
-        }
+      if (!projectedSelection) {
+        clearEditableDOMSelection(el, { editor });
+        return;
+      }
+      const domRange =
+        view &&
+        resolveDOMRangeInRoot(view, projectedSelection, undefined, {
+          exportingSelection: true,
+          rejectStaleText: true,
+        });
+
+      if (domRange) {
+        writeEditableDOMSelection(
+          targetEditable,
+          getDOMRangeSelectionPoints(
+            domRange,
+            RangeApi.isBackward(projectedSelection)
+          ),
+          { editor: view ?? editor, policy: 'focused' }
+        );
       }
     };
     const trySyncDomSelection = () => {

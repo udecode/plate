@@ -55,7 +55,12 @@ import {
   recordEditableKernelTrace,
 } from './editing-kernel';
 import type { ExternalTextRuntime } from './external-text-runtime';
-import { isPendingDOMSelectionImportFresh } from './input-state';
+import {
+  beginEditableNativeSelectionImport,
+  beginEditableSelectionUpdate,
+  endEditableSelectionUpdate,
+  isPendingDOMSelectionImportFresh,
+} from './input-state';
 import type { EditableInputController } from './input-state';
 import {
   applyEditableCommand,
@@ -300,9 +305,6 @@ export const attachPliteBrowserHandle = ({
     command: EditableCommand,
     { forceRenderAfter = true }: { forceRenderAfter?: boolean } = {}
   ) => {
-    const previousIsUpdatingSelection =
-      inputController.state.isUpdatingSelection;
-
     flushPendingNativeTextInput?.();
     setEditableModelSelectionPreference({
       inputController,
@@ -310,8 +312,10 @@ export const attachPliteBrowserHandle = ({
       reason: 'browser-handle',
       selectionSource: 'model-owned',
     });
-    inputController.state.isUpdatingSelection = true;
-    inputController.state.selectionChangeOrigin = 'browser-handle';
+    const selectionUpdateVersion = beginEditableSelectionUpdate(
+      inputController.state,
+      'browser-handle'
+    );
 
     const selectionBefore = readRuntimeSelection(editor);
     beginEditableEventFrame(editor, {
@@ -377,9 +381,7 @@ export const attachPliteBrowserHandle = ({
     }
 
     const clearBrowserHandleSelectionUpdate = () => {
-      if (inputController.state.selectionChangeOrigin === 'browser-handle') {
-        inputController.state.isUpdatingSelection = previousIsUpdatingSelection;
-      }
+      endEditableSelectionUpdate(inputController.state, selectionUpdateVersion);
     };
 
     domPhaseScheduler.schedule(
@@ -827,13 +829,15 @@ export const attachPliteBrowserHandle = ({
             preferModelSelection: false,
             selectionSource: 'dom-current',
           });
-          writePliteViewSelection(editor, null);
-          inputController.state.isUpdatingSelection = false;
-          inputController.state.selectionChangeOrigin = 'native-user';
-          syncEditorSelectionFromDOM({
-            editor,
-            ignoreModelSelectionPreference: true,
-            inputController,
+          beginEditableNativeSelectionImport(inputController);
+          writePliteViewSelection(editor, null, {
+            place: () => {
+              syncEditorSelectionFromDOM({
+                editor,
+                ignoreModelSelectionPreference: true,
+                inputController,
+              });
+            },
           });
         },
         selectionPolicy: { kind: 'import-dom', reason: 'unknown-selection' },
@@ -916,8 +920,6 @@ export const attachPliteBrowserHandle = ({
     },
     selectRange: (selection) => {
       flushPendingNativeTextInput?.();
-      const previousIsUpdatingSelection =
-        inputController.state.isUpdatingSelection;
       const viewportBackedSelection = isViewportBackedSelection(selection);
       setEditableModelSelectionPreference({
         inputController,
@@ -925,10 +927,15 @@ export const attachPliteBrowserHandle = ({
         reason: 'browser-handle',
         selectionSource: 'model-owned',
       });
-      inputController.state.isUpdatingSelection = true;
-      inputController.state.selectionChangeOrigin = 'browser-handle';
-      writePliteViewSelection(editor, null);
-      setShownSelectionAsView(editor, selection);
+      const selectionUpdateVersion = beginEditableSelectionUpdate(
+        inputController.state,
+        'browser-handle'
+      );
+      writePliteViewSelection(editor, null, {
+        place: () => {
+          setShownSelectionAsView(editor, selection);
+        },
+      });
       setExplicitViewportBackedSelection(viewportBackedSelection);
       if (viewportBackedSelection) {
         scrollPathIntoView?.(RangeApi.start(selection).path, 'center');
@@ -951,10 +958,10 @@ export const attachPliteBrowserHandle = ({
 
       syncDOMSelection();
       const clearBrowserHandleSelectionUpdate = () => {
-        if (inputController.state.selectionChangeOrigin === 'browser-handle') {
-          inputController.state.isUpdatingSelection =
-            previousIsUpdatingSelection;
-        }
+        endEditableSelectionUpdate(
+          inputController.state,
+          selectionUpdateVersion
+        );
       };
 
       domPhaseScheduler.schedule(

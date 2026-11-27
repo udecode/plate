@@ -76,6 +76,14 @@ type DOMRootRuntimeLifecycle<TRoot extends HTMLElement> = {
   onDestroy?: () => void;
 };
 
+export type DOMRootSelectionExportOptions = Readonly<{
+  coverageMode?: 'all' | 'model-only';
+  forceModelExport?: boolean;
+  preserveScroll?: boolean;
+  requireFocused?: boolean;
+  skipScroll?: boolean;
+}>;
+
 export type DOMRootRuntimeOptions<TRoot extends HTMLElement> = Omit<
   DOMIntegrityObserverOptions,
   'consumeOwnedMutation' | 'onDOMChange' | 'schedule' | 'writeSelection'
@@ -83,6 +91,15 @@ export type DOMRootRuntimeOptions<TRoot extends HTMLElement> = Omit<
   DOMRootRuntimeLifecycle<TRoot> & {
     adapter: object;
     editor: AnyEditor;
+    /**
+     * Exports the editor's current selection to this mounted editable through
+     * the React runtime's canonical exporter. Returns `undefined` when no
+     * exporter is registered, `true` when exported or intentionally held, and
+     * `false` when no selection or DOM range could be resolved yet.
+     */
+    exportSelection?: (
+      options?: DOMRootSelectionExportOptions
+    ) => boolean | undefined;
     /**
      * Whether the page's selection belongs to a native move the model has not
      * read yet, so a focus call must not write over it.
@@ -496,10 +513,15 @@ export const readEditableDOMSelectionPoints = (
     const composed = readComposedSelectionRange(editable, selection);
 
     if (composed) {
-      return {
-        anchor: [composed.startContainer, composed.startOffset],
-        focus: [composed.endContainer, composed.endOffset],
-      };
+      return selection.direction === 'backward'
+        ? {
+            anchor: [composed.endContainer, composed.endOffset],
+            focus: [composed.startContainer, composed.startOffset],
+          }
+        : {
+            anchor: [composed.startContainer, composed.startOffset],
+            focus: [composed.endContainer, composed.endOffset],
+          };
     }
   }
 
@@ -1045,6 +1067,10 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   readonly isSelectionHeld: () => boolean;
 
+  readonly exportSelection: (
+    options?: DOMRootSelectionExportOptions
+  ) => boolean | undefined;
+
   readonly focusSelection: (root: HTMLElement) => boolean;
 
   readonly nodeSelectionFocus: () => HTMLElement | null;
@@ -1078,6 +1104,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
   constructor(options: DOMRootRuntimeOptions<TRoot>) {
     this.isComposing = options.isComposing;
     this.isSelectionHeld = options.isSelectionHeld ?? (() => false);
+    this.exportSelection = options.exportSelection ?? (() => undefined);
     this.focusSelection = options.focusSelection ?? (() => false);
     this.nodeSelectionFocus = options.nodeSelectionFocus ?? (() => null);
     this.adapter = options.adapter;

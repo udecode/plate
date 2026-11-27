@@ -231,6 +231,7 @@ export const useEditableRootRuntime = ({
     runtime,
     scrollSelectionIntoView,
   });
+  runtime.updateSelectionExportHandler(syncDOMSelectionToEditor);
   runtime.updateSelectionExportAfterDOMCommitHandler(() => {
     const root = runtime.rootElement;
     const activeElement = root?.ownerDocument.activeElement;

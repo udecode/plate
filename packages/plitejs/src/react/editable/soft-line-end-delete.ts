@@ -9,10 +9,8 @@ import {
 } from '../..';
 import { containsShadowAware, type DOMPoint, getSelection } from '../../dom';
 import { isSoftLineEndBetween } from '../../dom/dom-soft-line-end';
-import {
-  type DOMSelectionPoints,
-  readDOMSelectionPoints,
-} from '../../dom/utils/selection-writes';
+import { readEditableDOMSelectionPoints } from '../../dom/internal';
+import type { DOMSelectionPoints } from '../../dom/utils/selection-writes';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   above as editorAbove,
@@ -49,7 +47,7 @@ export const captureSoftLineEndDeleteSelection = (
   if (!root || !CHARACTER_DELETES.has(inputType)) return null;
   const selection = getSelection(root.getRootNode() as Document | ShadowRoot);
 
-  return selection ? readDOMSelectionPoints(selection) : null;
+  return readEditableDOMSelectionPoints(root, selection);
 };
 
 const samePoint = ([node, offset]: DOMPoint, [other, otherOffset]: DOMPoint) =>

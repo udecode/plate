@@ -26,11 +26,11 @@ import {
 } from '../../dom/plugin/dom-geometry';
 import {
   isElementFocused,
+  readEditableDOMSelectionPoints,
   writeEditableDOMSelection,
 } from '../../dom/plugin/dom-root-runtime';
 import {
   type DOMSelectionPoints,
-  readDOMSelectionPoints,
   readDOMSelectionRange,
   sameDOMSelectionPoints,
 } from '../../dom/utils/selection-writes';
@@ -1221,13 +1221,16 @@ export const createDOMRepairQueue = ({
         });
 
       const readPageSelection = () => {
-        const tree = rootRef.current?.getRootNode() as
+        const editable = rootRef.current;
+        const tree = editable?.getRootNode() as
           | Document
           | ShadowRoot
           | undefined;
         const selection = tree ? getSelection(tree) : null;
 
-        return selection ? readDOMSelectionPoints(selection) : null;
+        return editable
+          ? readEditableDOMSelectionPoints(editable, selection)
+          : null;
       };
       let repairCompleted = false;
       const attemptRepair = () => {

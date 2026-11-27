@@ -1,5 +1,6 @@
 import { type Value, RangeApi, SelectionApi } from '../..';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
+import { toInternalRoot } from '../../core/public-root';
 import { hasOpenDraft } from '../../core/public-state';
 import { getPlacementGeneration, placedSince } from '../../core/view-carets';
 import { getSelection } from '../../dom';
@@ -78,13 +79,19 @@ const syncPreferredModelSelectionToDOM = <
   element: HTMLElement
 ) => {
   try {
-    if (findDOMRootRuntime(element)?.isSelectionHeld()) {
+    const rootRuntime = findDOMRootRuntime(element);
+
+    if (rootRuntime?.isSelectionHeld()) {
       focusEditableElement(editor as unknown as Editor, element);
       return true;
     }
     const selection = resolveNextKeyCaret(editor as unknown as Editor, element);
 
-    if (!selection) {
+    if (
+      !selection ||
+      toInternalRoot(SelectionApi.root(selection)) !==
+        toInternalRoot(editor.read.view.root())
+    ) {
       return false;
     }
 
@@ -92,41 +99,18 @@ const syncPreferredModelSelectionToDOM = <
       editor as unknown as Editor,
       selection
     );
-
-    const superseded = watchFocusSuperseded(
-      editor as unknown as Editor,
-      element
-    );
-
-    if (!projectedSelection) {
-      if (
-        focusEditableElement(editor as unknown as Editor, element) &&
-        !superseded() &&
-        !findDOMRootRuntime(element)?.isSelectionHeld()
-      ) {
-        const currentSelection = resolveNextKeyCaret(
-          editor as unknown as Editor,
-          element
-        );
-        const currentProjected =
-          currentSelection &&
-          getSelectionDOMRange(editor as unknown as Editor, currentSelection);
-
-        if (!currentProjected) {
-          clearEditableDOMSelection(element, { editor });
-        }
-      }
-      return true;
-    }
-
+    const hasModelCoverage =
+      !!projectedSelection && !!rootRuntime?.domCoverage.hasModelBoundaries();
     const domRange =
-      readModelSelectionDOMPreference({
-        editor,
-        editorElement: element,
-        selection: projectedSelection,
-      }) ?? resolveWrittenDOMRange(editor, projectedSelection);
+      projectedSelection && !hasModelCoverage
+        ? (readModelSelectionDOMPreference({
+            editor,
+            editorElement: element,
+            selection: projectedSelection,
+          }) ?? resolveWrittenDOMRange(editor, projectedSelection))
+        : null;
 
-    if (!domRange) {
+    if (projectedSelection && !hasModelCoverage && !domRange) {
       return false;
     }
 
@@ -136,14 +120,29 @@ const syncPreferredModelSelectionToDOM = <
       return false;
     }
 
+    const superseded = watchFocusSuperseded(
+      editor as unknown as Editor,
+      element
+    );
     const receipt = getPlacementGeneration(editor);
 
     if (
       !focusEditableElement(editor as unknown as Editor, element) ||
       superseded() ||
-      findDOMRootRuntime(element)?.isSelectionHeld()
+      rootRuntime?.isSelectionHeld()
     ) {
       return true;
+    }
+
+    const exported = rootRuntime?.exportSelection({
+      coverageMode: 'model-only',
+      forceModelExport: true,
+      requireFocused: true,
+      skipScroll: true,
+    });
+
+    if (exported !== undefined) {
+      return exported;
     }
 
     const currentSelection = resolveNextKeyCaret(
@@ -166,7 +165,9 @@ const syncPreferredModelSelectionToDOM = <
     }
 
     const rangeConnected =
-      domRange.startContainer.isConnected && domRange.endContainer.isConnected;
+      !!domRange &&
+      domRange.startContainer.isConnected &&
+      domRange.endContainer.isConnected;
     const currentRange =
       sameSelection && rangeConnected
         ? domRange

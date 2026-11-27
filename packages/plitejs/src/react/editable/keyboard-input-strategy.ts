@@ -83,6 +83,10 @@ import {
   isNativeTextControlTarget,
   setEditableModelSelectionPreference,
 } from './input-controller';
+import {
+  beginEditableSelectionUpdate,
+  endEditableSelectionUpdate,
+} from './input-state';
 import { findNestedEditable, type NestedEditable } from './interaction-owner';
 import {
   applyEditableCommand,
@@ -833,16 +837,15 @@ export const applyEditableKeyDown = ({
 
     if (isSelectAllHotkey(nativeEvent)) {
       event.preventDefault();
-      const previousIsUpdatingSelection =
-        inputController.state.isUpdatingSelection;
       setEditableModelSelectionPreference({
         inputController,
         preferModelSelection: true,
         reason: 'model-command',
         selectionSource: 'model-owned',
       });
-      inputController.state.isUpdatingSelection = true;
-      inputController.state.selectionChangeOrigin = 'programmatic-export';
+      const selectionUpdateVersion = beginEditableSelectionUpdate(
+        inputController.state
+      );
       applyEditableCommand({ command: { kind: 'select-all' }, editor });
       const isVirtualizedViewport = isViewportRuntime(viewportRuntime);
       if (isVirtualizedViewport) {
@@ -855,12 +858,10 @@ export const applyEditableKeyDown = ({
       setExplicitViewportBackedSelection(isVirtualizedViewport);
       forceRender();
       const clearSelectionUpdate = () => {
-        if (
-          inputController.state.selectionChangeOrigin === 'programmatic-export'
-        ) {
-          inputController.state.isUpdatingSelection =
-            previousIsUpdatingSelection;
-        }
+        endEditableSelectionUpdate(
+          inputController.state,
+          selectionUpdateVersion
+        );
       };
 
       domPhaseScheduler.schedule(
