@@ -19,7 +19,6 @@ import {
   journalEntries,
   publish,
   resolveAll,
-  resolveTop,
   setStore,
   withPublishedHistoryState,
 } from './history-state';
@@ -52,10 +51,6 @@ const FIRST_WRITES = new WeakMap<object, FirstWrite>();
 /** Redo arrays a read handed out while redo was frozen, which encode as no redo. */
 const FROZEN_REDOS = new WeakSet<readonly Batch[]>();
 const RESOLVED_REDOS = new WeakSet<HistoryBranch<Value>>();
-const ANCHORED_SPLICES = new WeakMap<
-  HistoryBranch<Value>,
-  Readonly<{ drops: DropSink; identity: object; splice: Splice | null }>
->();
 
 /** Run app mappers as a read runs them, so a mapper cannot write. */
 const inRead = <T>(editor: AnyEditor, fn: () => T): T => {
@@ -274,12 +269,9 @@ export const withoutFrozenRedos = <H extends Pick<History, 'redos'>>(
   history: H
 ): H => (FROZEN_REDOS.has(history.redos) ? { ...history, redos: [] } : history);
 
-type Splice = Readonly<{
-  below: HistoryBranch<Value> | null;
-  undos: HistoryBranch<Value> | null;
-}>;
+type Splice = Readonly<{ undos: HistoryBranch<Value> | null }>;
 
-const SPLICES = new WeakMap<
+const CHECKED_SPLICES = new WeakMap<
   HistoryBranch<Value>,
   Readonly<{ identity: object; splice: Splice | null }>
 >();
@@ -299,33 +291,20 @@ const relink = (
   });
 };
 
-type Resolve = (
-  step: HistoryBranch<Value> | null
-) => HistoryBranch<Value> | null;
-
-/**
- * Take one step out of the undo list. The steps above keep their entries and
- * the step's mapping journal moves to the step below, which a session step's
- * empty change lets pass unchanged. With `resolve`, each step resolves before
- * the walk passes it, so a step a mapping removed is not found, and so does
- * the step below. A raw walk is shared by a settlement's check and its commit.
- */
 const spliceStep = (
   undos: HistoryBranch<Value> | null,
-  identity: object,
-  resolve: Resolve | null = null
+  identity: object
 ): Splice | null => {
   if (!undos) return null;
 
-  const cached = resolve ? undefined : SPLICES.get(undos);
+  const cached = CHECKED_SPLICES.get(undos);
 
   if (cached?.identity === identity) return cached.splice;
 
-  const advance = resolve ?? ((next) => next);
   const above: Array<HistoryBranch<Value>> = [];
-  let step = advance(undos);
+  let step: HistoryBranch<Value> | null = undos;
 
-  for (; step; step = advance(step.next)) {
+  for (; step; step = step.next) {
     countCoreWork('historyBranchVisits');
     if (step.identity === identity) break;
     above.push(step);
@@ -334,63 +313,19 @@ const spliceStep = (
   let splice: Splice | null = null;
 
   if (step) {
-    let below = resolve ? resolve(step.next) : step.next;
+    let { next } = step;
 
     if (step.mappings) {
       for (const entry of journalEntries(step.mappings)) {
-        below = addMapping(below, entry);
+        next = addMapping(next, entry);
       }
     }
-
-    let next = below;
-
     for (let index = above.length - 1; index >= 0; index -= 1) {
       next = relink(above[index], next);
     }
-    splice = Object.freeze({ below, undos: next });
+    splice = Object.freeze({ undos: next });
   }
-  if (!resolve) SPLICES.set(undos, Object.freeze({ identity, splice }));
-
-  return splice;
-};
-
-/**
- * Splice the step a waiting redo lands above. The list resolves down to the
- * step and the step below it, as a read resolves them, so the redo's anchor
- * lands on a step that survives whether or not a read ran first. A settlement's
- * check and its commit share one walk.
- */
-const spliceAnchor = (
-  editor: AnyEditor,
-  drops: DropSink,
-  undos: HistoryBranch<Value> | null,
-  identity: object
-) => {
-  if (!undos) return null;
-
-  const cached = ANCHORED_SPLICES.get(undos);
-
-  if (cached?.identity === identity) {
-    drops.push(...cached.drops);
-
-    return cached.splice;
-  }
-
-  const resolvedDrops: DropSink = [];
-  let splice: Splice | null;
-
-  try {
-    splice = spliceStep(undos, identity, (step) =>
-      resolveTop(editor, resolvedDrops, step)
-    );
-  } catch {
-    return spliceStep(undos, identity);
-  }
-
-  const kept = splice ? resolvedDrops : [];
-
-  ANCHORED_SPLICES.set(undos, Object.freeze({ drops: kept, identity, splice }));
-  drops.push(...kept);
+  CHECKED_SPLICES.set(undos, Object.freeze({ identity, splice }));
 
   return splice;
 };
@@ -403,8 +338,6 @@ type Settlement = Readonly<{
 }>;
 
 const settlementOf = (
-  editor: AnyEditor,
-  drops: DropSink,
   store: HistoryStore<Value>,
   identity: object,
   end: 'confirmed' | 'withdrawn'
@@ -423,21 +356,15 @@ const settlementOf = (
   }
 
   const pending = store.pendingReplay;
-  const splice =
-    pending?.undoAnchor === identity
-      ? spliceAnchor(editor, drops, store.undos, identity)
-      : spliceStep(store.undos, identity);
+  const splice = spliceStep(store.undos, identity);
   // A claim that a replace, a restore or a schema change dropped stays with
   // its owner, whose answer settles the caller once.
   const endsUndo =
     pending?.direction === 'undo' &&
     pending.phase !== 'dropped' &&
     pending.identity === identity;
-  // An anchor moves only with its splice; one already resolved away stays,
-  // as at the base.
-  const anchored = !!splice && pending?.undoAnchor === identity;
 
-  if (!frozen && !splice && !endsUndo && !anchored) return null;
+  if (!frozen && !splice && !endsUndo) return null;
 
   const steps =
     store.redoFreeze?.steps.filter((step) => step !== identity) ?? [];
@@ -454,15 +381,7 @@ const settlementOf = (
                 : null,
           }
         : {}),
-      pendingReplay:
-        pending && endsUndo
-          ? null
-          : pending && anchored
-            ? Object.freeze({
-                ...pending,
-                undoAnchor: splice?.below?.identity ?? null,
-              })
-            : pending,
+      pendingReplay: pending && endsUndo ? null : pending,
     },
     thaws: frozen && steps.length === 0,
     splice,
@@ -481,11 +400,7 @@ export const firstWriteChanges = (
   withPublishedHistoryState(editor, () => {
     const store = captureHistoryState(editor);
 
-    return (
-      !!store &&
-      inRead(editor, () => settlementOf(editor, [], store, identity, end)) !==
-        null
-    );
+    return !!store && settlementOf(store, identity, end) !== null;
   });
 
 /**
@@ -502,7 +417,7 @@ export const settleFirstWrite = (
 ) => {
   const store = captureHistoryState(editor);
   const drops: DropSink = [];
-  const settlement = store && settlementOf(editor, drops, store, identity, end);
+  const settlement = store && settlementOf(store, identity, end);
 
   if (!store || !settlement) return false;
 

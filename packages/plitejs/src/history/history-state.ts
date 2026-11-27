@@ -67,11 +67,13 @@ import {
   type ReplayRules,
 } from './history-replay';
 import {
+  claimTimeIndex,
   mapSessionReplayEffects,
   placeSettledSessionEntry,
   resolveSessionSettlementBase,
   type SessionReplaySettlementInput,
   settleSessionBranches,
+  trimmedRedoOf,
 } from './history-session-replay';
 import {
   additionalRoot,
@@ -199,7 +201,7 @@ type PendingHistoryReplay<V extends Value> = Readonly<{
   phase: 'attached' | 'detached' | 'dropped';
   replayMappings: MappingJournal<V> | null;
   request: number;
-  undoAnchor: object | null;
+  undosAtClaim: HistoryBranch<V> | 'trimmed' | null;
 }>;
 
 export type HistoryStore<V extends Value> = HistoryStoreBase<
@@ -232,7 +234,7 @@ export const publish = <V extends Value>(
   editor: Editor<V>,
   store: HistoryStore<V>,
   patch: Partial<Omit<HistoryStore<V>, 'revision' | 'snapshot'>>
-) => publishStore(editor, store, patch);
+) => publishStore(editor, store, { ...patch, ...trimmedRedoOf(store, patch) });
 
 const HISTORY_FALLBACKS = new WeakMap<
   Batch,
@@ -1334,14 +1336,10 @@ const replacePendingReplay = <V extends Value>(
 
 export const beginHistoryReplay = <V extends Value>(
   editor: Editor<V>,
-  input: Readonly<{
-    activation: object;
-    claimVersion: number;
-    direction: 'redo' | 'undo';
-    identity: object;
-    request: number;
-    undoAnchor: object | null;
-  }>
+  input: Omit<
+    PendingHistoryReplay<V>,
+    'edited' | 'entry' | 'phase' | 'replayMappings'
+  >
 ) => {
   const store = getStore(editor);
 
@@ -1378,6 +1376,7 @@ export const dropPendingHistoryReplayEntry = (editor: Editor) => {
       ...pending,
       entry: null,
       phase: 'dropped',
+      undosAtClaim: null,
     })
   );
 };
@@ -1506,9 +1505,7 @@ export const settlePendingHistoryReplay = <V extends Value>(
   } else {
     nextRedos = nextRedos.filter((c) => c.identity !== pending.identity);
     if (pending.edited) {
-      insertionIndex = pending.undoAnchor
-        ? nextUndos.findIndex((c) => c.identity === pending.undoAnchor)
-        : nextUndos.length;
+      insertionIndex = claimTimeIndex(nextUndos, pending.undosAtClaim);
 
       if (insertionIndex >= 0 && insertionIndex < store.maxDepth) {
         const latestUndo = nextUndos.at(-1);
@@ -1558,6 +1555,7 @@ export const settlePendingHistoryReplay = <V extends Value>(
   placeSettledSessionEntry({
     direction: pending.direction,
     edited: pending.edited,
+    effects: input.effects,
     insertionIndex,
     maxDepth: store.maxDepth,
     nextRedos,

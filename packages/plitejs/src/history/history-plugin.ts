@@ -170,6 +170,7 @@ import {
   historyFactsOf,
   historyProgramOf,
   historyStepId,
+  type HistoryBranch,
   knownHistoryStepId,
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
@@ -411,12 +412,18 @@ const historyReplayRequest = defineUpdateAnnotation<number>({
   key: 'history.replay-request',
 });
 
+const resolveUndoHead = (editor: Editor) => {
+  peekHistoryEntry(editor, 'undos');
+
+  return captureHistoryState(editor)?.undos ?? null;
+};
+
 type HistoryReplayClaim = Readonly<{
   activation: object;
   direction: HistoryAction;
   identity: object;
   request: number;
-  undoAnchor: object | null;
+  undosAtClaim: HistoryBranch<Value> | null;
 }>;
 
 type HistoryReplaySettlement = Readonly<{
@@ -1816,10 +1823,7 @@ const createHistoryPlugin = <
           direction,
           identity: entry.identity,
           request,
-          undoAnchor:
-            direction === 'redo'
-              ? (peekHistoryEntry(editor, 'undos')?.identity ?? null)
-              : null,
+          undosAtClaim: direction === 'redo' ? resolveUndoHead(editor) : null,
         });
         let claimBlocked;
         try {
