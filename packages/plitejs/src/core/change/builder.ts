@@ -452,6 +452,8 @@ export type DraftStep = Readonly<{
 
 /** @internal */
 export type DraftCheckpoint = Readonly<{
+  accumulatedHasRootLifecycle: boolean;
+  canonical: boolean;
   change: DocumentChange;
   indexedAfter: ReadonlyMap<string, DocumentIndex>;
   letters: NewLetters;
@@ -460,6 +462,7 @@ export type DraftCheckpoint = Readonly<{
   spanStart: number;
   steps: readonly DraftStep[];
   v4: V4RecorderSnapshot;
+  validationPending: boolean;
 }>;
 
 /** @internal */
@@ -824,6 +827,8 @@ export class ChangeDraft {
   /** @internal */
   checkpoint(): DraftCheckpoint {
     return {
+      accumulatedHasRootLifecycle: this.accumulatedHasRootLifecycle,
+      canonical: this.canonical,
       change: this.getAccumulated(),
       indexedAfter: this.indexedAfter(),
       letters: this.marks,
@@ -832,6 +837,7 @@ export class ChangeDraft {
       spanStart: this.spanStart,
       steps: [...this.appliedSteps],
       v4: this.v4Recorder.snapshot(),
+      validationPending: this.validationPending,
     };
   }
 
@@ -844,13 +850,16 @@ export class ChangeDraft {
           v4Recorded: true,
         });
 
+    this.accumulatedHasRootLifecycle = checkpoint.accumulatedHasRootLifecycle;
     this.appliedSteps.length = 0;
     this.appliedSteps.push(...checkpoint.steps);
+    this.canonical = checkpoint.canonical;
     this.marks = checkpoint.letters;
     this.record = checkpoint.record?.clone() ?? null;
     this.sinceValidated = checkpoint.sinceValidated;
     this.pendingSinceValidated = [];
     this.spanStart = checkpoint.spanStart;
+    this.validationPending = checkpoint.validationPending;
     this.v4Recorder.restore(checkpoint.v4);
 
     return step;
@@ -1534,12 +1543,11 @@ export class ChangeDraft {
     if (!this.validate && !this.validateConstructed && !this.assertCanonical) {
       const step = this.apply(change, { facts });
 
-      this.canonical = true;
+      this.standValidated();
 
       return step;
     }
 
-    // Validate an isolated draft, then publish those exact indexed roots.
     // A rejected change must not mutate this builder or its owner indexes.
     const candidateBuilder = new ChangeDraft(this.current, {
       isSetValued: this.isSetValued,
@@ -1583,8 +1591,6 @@ export class ChangeDraft {
       recordsAfter: getValueRecords(candidate.after),
       runtimeCandidates: candidate.runtimeCandidates,
     });
-
-    this.standValidated();
 
     return step;
   }
@@ -1697,7 +1703,7 @@ export class ChangeDraft {
       });
 
       this.runtimeCandidatesByChange.set(step.change, step.runtimeCandidates);
-      this.canonical = true;
+      this.standValidated();
 
       return step;
     }
@@ -1881,8 +1887,8 @@ export class ChangeDraft {
     }
     this.syncExternalV4Change(change, indexedBefore, indexedAfter);
 
-    this.canonical = true;
     this.current = current;
+    this.standValidated();
     if (!options.validated) this.adoptCanonicalBaseline?.(current);
 
     return Object.freeze({
@@ -2002,6 +2008,10 @@ export class ChangeDraft {
     if (accumulated.empty) {
       this.current = this.source;
       this.record = null;
+      this.appliedSteps.length = 0;
+      this.marks = new Map();
+      this.spanStart = 0;
+      this.accumulatedHasRootLifecycle = false;
       if (this.recordV4) this.v4Recorder.resetTo([]);
       this.indexes.clear();
       for (const [root, index] of this.sourceIndexes) {

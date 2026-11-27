@@ -15,7 +15,6 @@ import {
 } from './core/clone';
 import { createCommandDispatch } from './core/command-registry';
 import { getEditorCommitSnapshot } from './core/commit';
-import { ContentSlice } from './core/content-slice';
 import {
   type AdmittedDocument,
   admitEditorDocument,
@@ -33,7 +32,6 @@ import {
   registerDocumentView,
   withDocumentViewRead,
 } from './core/document-view-read';
-import { editorCommands } from './core/editor-commands';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
@@ -68,7 +66,6 @@ import {
   createEditorViewReadState,
   createEditorViewTransactionState,
   doesSelectionIntersect,
-  elementIdOf,
   flushEditorViewState,
   getBaseCallRoot,
   getCurrentSelection,
@@ -96,7 +93,7 @@ import {
   withEditorUpdateRootChildren,
 } from './core/public-state';
 import { getValueRecords, type RecordStore } from './core/record-store';
-import { defineSemanticUpdateMethod } from './core/semantic-update-method';
+import { preserveSemanticUpdateGroup } from './core/semantic-update-method';
 import {
   getEditorJsonArrayItems,
   getEditorJsonRecordEntries,
@@ -113,12 +110,10 @@ import type {
   AnyEditor as Editor,
   EditorAnchorApi,
   EditorElementEntry,
-  ElementIdTarget,
   EditorCommitContext,
   EditorDocumentValue,
   PluginReference,
   EditorKeyApi,
-  EditorNodeGetOptions,
   EditorParentOptions,
   EditorSelectionBlockOptions,
   EditorSnapshot,
@@ -133,7 +128,6 @@ import type {
   EditorView,
   EditorViewOptions,
   NamedRootKey,
-  NodeKey,
   NodeTarget,
   RootKey,
   Selection,
@@ -143,7 +137,7 @@ import type {
 } from './interfaces/editor';
 import type { ElementIn, ElementOrTextIn } from './interfaces/element';
 import type { Location } from './interfaces/location';
-import type { Ancestor, Descendant, Node, NodeEntry } from './interfaces/node';
+import type { Ancestor, Descendant, NodeEntry } from './interfaces/node';
 import { type Range, RangeApi } from './interfaces/range';
 import type { SchemaPropertyHandle } from './interfaces/schema';
 import type { NodeSelection } from './interfaces/selection';
@@ -628,17 +622,6 @@ const withRootChildren = <
     viewState.root === MAIN_ROOT_KEY || entry?.root !== undefined
       ? entry
       : null;
-  const getWithIdInOwnRoot = ((
-    target: ElementIdTarget | Location | NodeKey,
-    options?: EditorNodeGetOptions<Node>
-  ) => {
-    if (elementIdOf(target) === undefined) {
-      return state.nodes.get(target, options);
-    }
-    const path = state.nodes.path(target);
-
-    return path && state.nodes.get(path, options);
-  }) as T['nodes']['get'];
 
   return Object.freeze({
     ...state.nodes,
@@ -653,7 +636,7 @@ const withRootChildren = <
     entries: rootGeneratorMethod(editor, viewState, state.nodes.entries),
     find: rootMethod(editor, viewState, state.nodes.find),
     first: rootMethod(editor, viewState, state.nodes.first),
-    get: rootMethod(editor, viewState, getWithIdInOwnRoot),
+    get: rootMethod(editor, viewState, state.nodes.get),
     last: rootMethod(editor, viewState, state.nodes.last),
     leaf: rootMethod(editor, viewState, state.nodes.leaf),
     levels: rootGeneratorMethod(editor, viewState, state.nodes.levels),
@@ -1059,6 +1042,21 @@ const withViewTransaction = <V extends Value>(
       transaction.blocks.toggle(props, options)
     ) ?? false;
 
+  const deleteViewFragment: typeof transaction.fragment.delete = (
+    options = {}
+  ) => {
+    runImplicitSelectionMutation(options, () => {
+      transaction.fragment.delete(options);
+    });
+  };
+  const replaceViewFragment: typeof transaction.fragment.replace = (
+    content,
+    options
+  ) =>
+    runImplicitSelectionMutation(options, () =>
+      transaction.fragment.replace(content, options)
+    ) ?? false;
+
   const viewTransaction = Object.freeze<EditorUpdateTransaction<V, any>>({
     ...state,
     ...(getViewEditor
@@ -1082,7 +1080,7 @@ const withViewTransaction = <V extends Value>(
       runRootTransform(editor, viewState, () =>
         transaction.anchor(value, anchorOptions)
       ),
-    blocks: Object.freeze<EditorUpdateTransaction<V, any>['blocks']>({
+    blocks: preserveSemanticUpdateGroup(transaction.blocks, {
       duplicate: ((options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
           transaction.blocks.duplicate(options);
@@ -1098,47 +1096,24 @@ const withViewTransaction = <V extends Value>(
         ) ?? false,
       set: setViewBlocks,
       toggle: toggleViewBlocks,
-    }),
-    break: Object.freeze({
+    } satisfies EditorUpdateTransaction<V, any>['blocks']),
+    break: preserveSemanticUpdateGroup(transaction.break, {
       ...transaction.break,
       insert: () => runSelectionMutation(transaction.break.insert),
       insertSoft: () => runSelectionMutation(transaction.break.insertSoft),
     }),
-    fragment: Object.freeze(
+    fragment: preserveSemanticUpdateGroup(
+      transaction.fragment,
       Object.assign(
         (...args: Parameters<typeof state.fragment>) => state.fragment(...args),
         {
-          delete: defineSemanticUpdateMethod<
-            typeof transaction.fragment.delete
-          >(
-            (options = {}) =>
-              runImplicitSelectionMutation(options, () => {
-                transaction.fragment.delete(options);
-              }),
-            (command, [options = {}]) => {
-              command(editorCommands.deleteFragment, {
-                at: options.at,
-                direction: options.direction ?? 'forward',
-              });
-            }
-          ),
-          replace: defineSemanticUpdateMethod<
-            typeof transaction.fragment.replace
-          >(
-            (content, options) =>
-              runImplicitSelectionMutation(options, () =>
-                transaction.fragment.replace(content, options)
-              ) ?? false,
-            (command, [content, options]) =>
-              command(editorCommands.replaceSlice, {
-                slice: ContentSlice.closed(content),
-                options,
-              })
-          ),
+          delete: deleteViewFragment,
+          replace: replaceViewFragment,
         }
       )
     ),
-    marks: Object.freeze(
+    marks: preserveSemanticUpdateGroup(
+      transaction.marks,
       Object.assign(() => state.marks(), {
         add: (key: string, value: unknown) =>
           runSelectionMutation(() => {
@@ -1158,7 +1133,7 @@ const withViewTransaction = <V extends Value>(
           }),
       }) satisfies typeof transaction.marks
     ),
-    nodes: Object.freeze<EditorUpdateTransaction<V, any>['nodes']>({
+    nodes: preserveSemanticUpdateGroup(transaction.nodes, {
       ...state.nodes,
       insert: (
         nodes: ElementOrTextIn<V> | ReadonlyArray<ElementOrTextIn<V>>,
@@ -1222,7 +1197,7 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.wrap(element, options)
         ) ?? false,
-    }),
+    } satisfies EditorUpdateTransaction<V, any>['nodes']),
     roots: Object.freeze({
       ...transaction.roots,
       fork: (root, options) =>
@@ -1230,7 +1205,8 @@ const withViewTransaction = <V extends Value>(
           transaction.roots.fork(root, options);
         }),
     }),
-    selection: Object.freeze(
+    selection: preserveSemanticUpdateGroup(
+      transaction.selection,
       Object.assign(() => state.selection(), {
         contains: (target: NodeTarget) => state.selection.contains(target),
         intersects: (target: NodeTarget) => state.selection.intersects(target),
@@ -1285,19 +1261,15 @@ const withViewTransaction = <V extends Value>(
           }),
       }) satisfies typeof transaction.selection
     ),
-    slice: Object.freeze({
+    slice: preserveSemanticUpdateGroup(transaction.slice, {
       get: (options?: Parameters<typeof transaction.slice.get>[0]) =>
         state.slice.get(options),
-      replace: defineSemanticUpdateMethod<typeof transaction.slice.replace>(
-        (slice, options) =>
-          runImplicitSelectionMutation(options, () =>
-            transaction.slice.replace(slice, options)
-          ) ?? false,
-        (command, [slice, options]) =>
-          command(editorCommands.replaceSlice, { slice, options })
-      ),
+      replace: (slice, options) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.slice.replace(slice, options)
+        ) ?? false,
     }),
-    text: Object.freeze({
+    text: preserveSemanticUpdateGroup(transaction.text, {
       ...state.text,
       delete: (options = {}) =>
         runImplicitSelectionMutation(options, () => {

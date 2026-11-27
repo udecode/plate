@@ -2398,12 +2398,10 @@ const projectedRootDirectory = (
   return directory;
 };
 
-// A state's directory moves on from the one it starts from over the named
-// roots its change has entries for, which include every root the change
-// creates with content. It can name a root that no longer holds a value, such
-// as one the change deleted, one whose edit the state took back or one a
-// command frame's projection hides, but it names every root that does, and a
-// lookup checks each root's own map.
+// A state's directory advances from its start over every root the change
+// creates, deletes or edits. It can still name a root whose edit a command
+// frame's projection hides or that a later step took back, so lookups check
+// each root's own map.
 const transactionRootDirectory = (
   owner: Editor,
   snapshot: TransactionSnapshot
@@ -2417,7 +2415,11 @@ const transactionRootDirectory = (
   const current = start?.uniqueProperties === properties ? start : undefined;
   const named = value.roots ?? {};
   const roots = current
-    ? [...getInternalDocumentChangeEntries(change)].map(([root]) => root)
+    ? new Set([
+        ...change.createRoots,
+        ...change.deleteRoots,
+        ...[...getInternalDocumentChangeEntries(change)].map(([root]) => root),
+      ])
     : visitRootNames(named);
   let directory = current ?? emptyRootDirectory(owner);
 
@@ -3630,7 +3632,13 @@ const routeNodeTarget = <
   }
   const holder = lookupElementId(editor, id);
 
-  return holder && { path: holder.path, root: holder.root, target: holder.key };
+  if (!holder) return null;
+
+  const viewReadRoot = VIEW_READ_ROOTS.get(getEditorRuntimeOwner(editor));
+
+  if (viewReadRoot !== undefined && holder.root !== viewReadRoot) return null;
+
+  return { path: holder.path, root: holder.root, target: holder.key };
 };
 
 export const getNodeTargetRoot = (
@@ -15833,6 +15841,7 @@ export const runEditorTransaction = <R>(
     | undefined;
   let pluginSchemaIdentity: EditorSchemaIdentity | undefined;
   let committed: EditorCommit | null = null;
+  let deferredDrainEntered = false;
   let answer: R | undefined;
   let transactionFailed = false;
   let transactionError: Readonly<{ value: unknown }> | null = null;
@@ -16401,6 +16410,7 @@ export const runEditorTransaction = <R>(
             }
           );
           DEFERRED_DRAINS.set(owner, (DEFERRED_DRAINS.get(owner) ?? 0) + 1);
+          deferredDrainEntered = true;
           PUBLISHING_COMMITS.set(
             owner,
             (PUBLISHING_COMMITS.get(owner) ?? 0) + 1
@@ -16505,7 +16515,7 @@ export const runEditorTransaction = <R>(
     transactionError = { value: error };
   }
   if (options.speculative) options.speculative.committed = committed !== null;
-  if (committed) {
+  if (deferredDrainEntered) {
     const owner = getEditorRuntimeOwner(editor);
 
     DEFERRED_DRAINS.set(owner, (DEFERRED_DRAINS.get(owner) ?? 1) - 1);
@@ -17266,8 +17276,11 @@ const adoptEditorSchemaDocument = (
     if (document.meta === undefined) DOCUMENT_STATE.delete(editor);
     else DOCUMENT_STATE.set(editor, document.meta);
   }
+  const owner = getEditorRuntimeOwner(editor);
+
+  ROOT_DIRECTORIES.delete(owner);
   for (const children of Object.values(roots)) {
-    seedSnapshotIndex(getEditorRuntimeOwner(editor), children, schema);
+    seedSnapshotIndex(owner, children, schema);
   }
   clearSnapshotCache(editor);
 };

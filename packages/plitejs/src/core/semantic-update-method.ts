@@ -56,3 +56,32 @@ export const mapSemanticUpdateMethodArguments = <TMethod extends UpdateMethod>(
 
   return mapped;
 };
+
+/**
+ * Copy semantic one-shot command lowering from each function property of
+ * `source` onto the matching function property of `wrapped`.
+ *
+ * @internal
+ */
+export const preserveSemanticUpdateGroup = <TGroup extends object>(
+  source: TGroup,
+  wrapped: TGroup
+): TGroup => {
+  for (const key of Object.keys(wrapped) as Array<keyof TGroup>) {
+    const baseMethod = source[key];
+    const wrappedMethod = wrapped[key];
+
+    if (
+      typeof baseMethod === 'function' &&
+      typeof wrappedMethod === 'function'
+    ) {
+      const lower = SEMANTIC_UPDATE_METHODS.get(baseMethod as UpdateMethod);
+
+      if (lower) {
+        SEMANTIC_UPDATE_METHODS.set(wrappedMethod as UpdateMethod, lower);
+      }
+    }
+  }
+
+  return Object.freeze(wrapped);
+};
