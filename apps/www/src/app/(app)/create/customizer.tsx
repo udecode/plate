@@ -14,14 +14,19 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+  getPlateAddCommand,
   getPlateCreateCommand,
   getPlateCreateOptions,
   getPlateCreatePreset,
   getShadcnCreateUrl,
   isPlateCreateBase,
   isPlateCreateEditor,
-  type PlateCreateConfig,
   PLATE_CREATE_EDITORS,
+  PLATE_CREATE_PACKAGE_MANAGERS,
+  PLATE_CREATE_TEMPLATES,
+  type PlateCreateConfig,
+  type PlateCreatePackageManager,
+  type PlateCreateTemplate,
 } from '@/lib/plate-create';
 import type { PlateCreateTheme } from '@/lib/plate-create-theme';
 import { PLATE_REGISTRY_BASES } from '@/lib/plate-registry-styles';
@@ -76,7 +81,7 @@ type PickerRow = {
 
 type OptionName = Exclude<
   keyof PlateCreateConfig,
-  'base' | 'chartColor' | 'editor' | 'menuColor'
+  'base' | 'chartColor' | 'editor' | 'menuColor' | 'rtl'
 >;
 
 const optionLabels: Partial<Record<string, Record<string, string>>> = {
@@ -280,6 +285,27 @@ function getPickerRows({
         'Menu accent',
         <AccentSample accent={config.menuAccent} />
       ),
+      {
+        groups: [
+          {
+            choices: [
+              { label: 'LTR', value: 'ltr' },
+              { label: 'RTL', value: 'rtl' },
+            ],
+            patch: (value) => ({ rtl: value === 'rtl' }),
+            value: config.rtl ? 'rtl' : 'ltr',
+          },
+        ],
+        label: 'Direction',
+        name: 'rtl',
+        previews: true,
+        sample: (
+          <span className="font-mono text-xs font-medium">
+            {config.rtl ? 'RTL' : 'LTR'}
+          </span>
+        ),
+        value: config.rtl ? 'RTL' : 'LTR',
+      },
     ],
   ];
 }
@@ -532,7 +558,17 @@ function CopyButton({
 }
 
 function GetCode({ config }: { config: PlateCreateConfig }) {
-  const command = getPlateCreateCommand(config);
+  const [mode, setMode] = React.useState<'add' | 'create'>('create');
+  const [packageManager, setPackageManager] =
+    React.useState<PlateCreatePackageManager>('npm');
+  const [template, setTemplate] = React.useState<PlateCreateTemplate>('next');
+  const command =
+    mode === 'create'
+      ? getPlateCreateCommand(config, {
+          packageManager,
+          template: template === 'next' ? undefined : template,
+        })
+      : getPlateAddCommand(config, { packageManager });
 
   return (
     <Dialog>
@@ -547,27 +583,99 @@ function GetCode({ config }: { config: PlateCreateConfig }) {
           Get Code
         </button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Get Code</DialogTitle>
           <DialogDescription>
-            Run this command to create an app with this editor and preset.
+            {mode === 'create'
+              ? 'Create a new project with this editor, preset, and framework template.'
+              : 'Add this editor to an existing shadcn project.'}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex items-center gap-2 rounded-xl border bg-card p-2 pl-4 shadow-sm">
-          <code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs whitespace-nowrap sm:text-sm">
-            {command}
-          </code>
-          <Button
-            aria-label="Copy command"
-            asChild
-            size="icon-sm"
-            variant="outline"
+        <div className="flex flex-col gap-3">
+          <div
+            className="inline-flex w-fit items-center gap-1 rounded-lg bg-muted p-1 text-xs"
+            role="tablist"
           >
-            <CopyButton text={command}>
-              {(copied) => (copied ? <Check /> : <Copy />)}
-            </CopyButton>
-          </Button>
+            {(
+              [
+                { label: 'New Project', value: 'create' },
+                { label: 'Existing App', value: 'add' },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.value}
+                aria-selected={mode === tab.value}
+                className={cn(
+                  'rounded-md px-2.5 py-1 font-medium transition-colors',
+                  mode === tab.value
+                    ? 'bg-background text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                onClick={() => setMode(tab.value)}
+                role="tab"
+                type="button"
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {mode === 'create' && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {PLATE_CREATE_TEMPLATES.map((item) => (
+                <button
+                  key={item.value}
+                  aria-pressed={template === item.value}
+                  className={cn(
+                    'rounded-md border px-2.5 py-1 text-xs font-medium transition-colors',
+                    template === item.value
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                  )}
+                  onClick={() => setTemplate(item.value)}
+                  type="button"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center gap-1 text-xs">
+            {PLATE_CREATE_PACKAGE_MANAGERS.map((pm) => (
+              <button
+                key={pm}
+                aria-pressed={packageManager === pm}
+                className={cn(
+                  'rounded-md px-2 py-1 font-mono transition-colors',
+                  packageManager === pm
+                    ? 'bg-muted font-medium text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                onClick={() => setPackageManager(pm)}
+                type="button"
+              >
+                {pm}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 rounded-xl border bg-card p-2 pl-4 shadow-sm">
+            <code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs whitespace-nowrap sm:text-sm">
+              {command}
+            </code>
+            <Button
+              aria-label="Copy command"
+              asChild
+              size="icon-sm"
+              variant="outline"
+            >
+              <CopyButton text={command}>
+                {(copied) => (copied ? <Check /> : <Copy />)}
+              </CopyButton>
+            </Button>
+          </div>
         </div>
         <a
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline underline-offset-4"

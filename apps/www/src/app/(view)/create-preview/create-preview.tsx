@@ -61,7 +61,7 @@ export function CreatePreview({
   const [theme, setTheme] = React.useState(initialTheme);
   const [failedPreset, setFailedPreset] = React.useState<string | null>(null);
   const { base, editor } = initialConfig;
-  const { menuColor, style } = config;
+  const { menuColor, rtl, style } = config;
   const preset = getPlateCreatePreset(config);
   const Page = createPreviewPages[`${base}/${editor}`];
 
@@ -125,6 +125,19 @@ export function CreatePreview({
   }, [base, preset, theme?.preset, themeFailed]);
 
   React.useEffect(() => {
+    const previousDir = document.documentElement.getAttribute('dir');
+    document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+
+    return () => {
+      if (previousDir === null) {
+        document.documentElement.removeAttribute('dir');
+      } else {
+        document.documentElement.dir = previousDir;
+      }
+    };
+  }, [rtl]);
+
+  React.useEffect(() => {
     const { classList } = document.body;
     const previous = [...classList].filter((name) => name.startsWith('style-'));
 
@@ -173,7 +186,9 @@ export function CreatePreview({
         className="relative bg-background"
         data-preview-base={base}
         data-preview-editor={editor}
+        data-preview-rtl={rtl ? 'true' : 'false'}
         data-preview-style={style}
+        dir={rtl ? 'rtl' : 'ltr'}
       >
         {themeFailed && (
           <p

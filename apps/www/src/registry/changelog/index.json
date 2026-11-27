@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-27-align-menu-item-padding",
+      "href": "/registry/changelog/2026-11-27-align-menu-item-padding.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Use pl-2 on align toolbar menu items so LTR installs match preview padding",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["align-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-board-free-text",
       "href": "/registry/changelog/2026-11-27-board-free-text.json",
       "status": "draft",

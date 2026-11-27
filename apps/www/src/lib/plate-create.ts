@@ -42,9 +42,39 @@ export type PlateCreateEditor = (typeof PLATE_CREATE_EDITORS)[number]['name'];
 
 export const PLATE_DEFAULT_CREATE_EDITOR: PlateCreateEditor = 'editor-ai';
 
+export const PLATE_CREATE_TEMPLATES = [
+  { label: 'Next.js', value: 'next' },
+  { label: 'Vite', value: 'vite' },
+  { label: 'TanStack Start', value: 'start' },
+  { label: 'React Router', value: 'react-router' },
+  { label: 'Astro', value: 'astro' },
+  { label: 'Laravel', value: 'laravel' },
+] as const;
+
+export type PlateCreateTemplate =
+  (typeof PLATE_CREATE_TEMPLATES)[number]['value'];
+
+export const PLATE_CREATE_PACKAGE_MANAGERS = [
+  'pnpm',
+  'npm',
+  'yarn',
+  'bun',
+] as const;
+
+export type PlateCreatePackageManager =
+  (typeof PLATE_CREATE_PACKAGE_MANAGERS)[number];
+
+const PACKAGE_MANAGER_RUNNERS: Record<PlateCreatePackageManager, string> = {
+  bun: 'bunx --bun',
+  npm: 'npx',
+  pnpm: 'pnpm dlx',
+  yarn: 'yarn dlx',
+};
+
 export type PlateCreateConfig = PresetConfig & {
   base: PlateRegistryBase;
   editor: PlateCreateEditor;
+  rtl: boolean;
 };
 
 type BaseColor = PresetConfig['baseColor'];
@@ -110,6 +140,7 @@ export function createPlateCreateConfig(
     ...DEFAULT_PRESET_CONFIG,
     base: PLATE_DEFAULT_REGISTRY_BASE,
     editor: PLATE_DEFAULT_CREATE_EDITOR,
+    rtl: false,
     ...config,
   });
 }
@@ -120,6 +151,7 @@ export function readPlateCreateConfig({
   base,
   editor,
   preset,
+  rtl,
 }: Record<string, unknown>): PlateCreateConfig {
   return createPlateCreateConfig({
     ...(typeof preset === 'string' ? decodePreset(preset) : null),
@@ -127,25 +159,65 @@ export function readPlateCreateConfig({
     ...(typeof editor === 'string' && isPlateCreateEditor(editor)
       ? { editor }
       : null),
+    ...(rtl === true || rtl === 'true' || rtl === '1' ? { rtl: true } : null),
   });
 }
 
 export function getPlateCreatePreset({
   base: _base,
   editor: _editor,
+  rtl: _rtl,
   ...preset
 }: PlateCreateConfig) {
   return encodePreset(preset);
 }
 
 export function getPlateCreateCommand(
-  config: PlateCreateConfig = PLATE_DEFAULT_CREATE_CONFIG
+  config: PlateCreateConfig = PLATE_DEFAULT_CREATE_CONFIG,
+  options?: {
+    packageManager?: PlateCreatePackageManager;
+    template?: PlateCreateTemplate;
+  }
 ) {
-  return `npx shadcn@latest create @plate/${config.editor} --preset ${getPlateCreatePreset(config)} --base ${config.base}`;
+  const runner = PACKAGE_MANAGER_RUNNERS[options?.packageManager ?? 'npm'];
+  const parts = [
+    `${runner} shadcn@latest create @plate/${config.editor}`,
+    `--preset ${getPlateCreatePreset(config)}`,
+    `--base ${config.base}`,
+  ];
+
+  if (options?.template) {
+    parts.push(`--template ${options.template}`);
+  }
+  if (config.rtl) {
+    parts.push('--rtl');
+  }
+
+  return parts.join(' ');
+}
+
+export function getPlateAddCommand(
+  config: PlateCreateConfig = PLATE_DEFAULT_CREATE_CONFIG,
+  options?: {
+    packageManager?: PlateCreatePackageManager;
+  }
+) {
+  const runner = PACKAGE_MANAGER_RUNNERS[options?.packageManager ?? 'npm'];
+
+  return `${runner} shadcn@latest add @plate/${config.editor}`;
 }
 
 export function getShadcnCreateUrl(config: PlateCreateConfig) {
-  return `https://ui.shadcn.com/create?preset=${getPlateCreatePreset(config)}&base=${config.base}`;
+  const params = new URLSearchParams({
+    base: config.base,
+    preset: getPlateCreatePreset(config),
+  });
+
+  if (config.rtl) {
+    params.set('rtl', 'true');
+  }
+
+  return `https://ui.shadcn.com/create?${params}`;
 }
 
 export function getPlateCreateOptions(config: PlateCreateConfig) {
@@ -168,12 +240,19 @@ export function getPlateCreateOptions(config: PlateCreateConfig) {
   };
 }
 
-const getPlateCreateSearch = (config: PlateCreateConfig) =>
-  new URLSearchParams({
+const getPlateCreateSearch = (config: PlateCreateConfig) => {
+  const params = new URLSearchParams({
     base: config.base,
     editor: config.editor,
     preset: getPlateCreatePreset(config),
   });
+
+  if (config.rtl) {
+    params.set('rtl', 'true');
+  }
+
+  return params;
+};
 
 export function getPlateCreatePath(config: PlateCreateConfig) {
   return `/create?${getPlateCreateSearch(config)}`;

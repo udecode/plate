@@ -25,6 +25,7 @@ function postConfig(
       base: config.base,
       editor: config.editor,
       preset: getPlateCreatePreset(config),
+      rtl: config.rtl,
       type: 'plate-create-config',
     },
     window.location.origin

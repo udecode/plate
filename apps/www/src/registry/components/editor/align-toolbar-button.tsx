@@ -80,7 +80,7 @@ export function AlignToolbarButton() {
           {items.map(({ icon: itemIcon, value: itemValue }) => (
             <DropdownMenuRadioItem
               key={itemValue}
-              className="ps-2 data-[state=checked]:bg-accent *:first:[span]:hidden"
+              className="pl-2 data-[state=checked]:bg-accent *:first:[span]:hidden"
               finalFocus={() => editor.api.dom.focus()}
               value={itemValue}
             >
