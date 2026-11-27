@@ -1,16 +1,16 @@
 import {
+  type Editor,
+  type EditorDocumentValue,
   ElementApi,
   type Path,
   PointApi,
   type Range,
   RangeApi,
   TextApi,
-  type Value,
 } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import { BaseInkPlugin, type InkMark, type InkPassage } from 'platejs/ink';
 import { type InkPassageImages, InkPlugin } from 'platejs/ink/react';
-import type { PlateEditor } from 'platejs/react';
 
 import type {
   InkDigitizeCorrection,
@@ -30,7 +30,7 @@ const PUNCT_ONLY_RE = /^[\p{P}\p{S}]+$/u;
 const requestCounters = new WeakMap<object, number>();
 const latestRequests = new WeakMap<object, string>();
 
-export const nextInkDigitizeRequestId = (view: PlateEditor): string => {
+export const nextInkDigitizeRequestId = (view: Editor): string => {
   const next = (requestCounters.get(view) ?? 0) + 1;
 
   requestCounters.set(view, next);
@@ -41,16 +41,15 @@ export const nextInkDigitizeRequestId = (view: PlateEditor): string => {
   return id;
 };
 
-export const latestInkDigitizeRequestId = (
-  view: PlateEditor
-): string | undefined => latestRequests.get(view);
+export const latestInkDigitizeRequestId = (view: Editor): string | undefined =>
+  latestRequests.get(view);
 
-export const canDigitizeInk = (view: PlateEditor): boolean => {
+export const canDigitizeInk = (view: Editor): boolean => {
   if (view.read.view.isReadOnly()) return false;
   if (view.plugin(AuthoredPlugin).installed) {
     const authoredView = view.plugin(AuthoredPlugin).read.view();
 
-    if (authoredView.preview) return false;
+    if ('preview' in authoredView) return false;
   }
 
   return true;
@@ -106,7 +105,7 @@ const isMarginMark = (mark: InkMark) =>
   mark.margin !== undefined || mark.blocks.every((b) => b.runs.length === 0);
 
 const blockIdsBetween = (
-  view: PlateEditor,
+  view: Editor,
   targetBlockIds: ReadonlySet<string>
 ): readonly string[] => {
   const allBlocks: Array<{ id: string; path: Path }> = [];
@@ -135,7 +134,7 @@ const blockIdsBetween = (
 };
 
 const shownMarkIdsByBlock = (
-  view: PlateEditor,
+  view: Editor,
   blockIds: ReadonlySet<string>
 ): Map<string, readonly string[]> => {
   const { read } = view.plugin(BaseInkPlugin);
@@ -163,7 +162,7 @@ const totalWordsOf = (passages: readonly InkPassage[]) =>
   passages.reduce((sum, passage) => sum + passage.words.length, 0);
 
 export const prepareInkDigitizeRequest = async (
-  view: PlateEditor,
+  view: Editor,
   pickedIds: readonly string[],
   options: Readonly<{
     lassoOnly?: boolean;
@@ -880,14 +879,14 @@ const canonicalizeNode = (node: unknown): unknown => {
   return { ...node, children: merged };
 };
 
-const canonicalValueChanged = (before: Value, after: Value): boolean =>
+const canonicalValueChanged = (
+  before: EditorDocumentValue,
+  after: EditorDocumentValue
+): boolean =>
   JSON.stringify(before.children.map(canonicalizeNode)) !==
   JSON.stringify(after.children.map(canonicalizeNode));
 
-const isStalePick = (
-  view: PlateEditor,
-  prepared: PreparedInkDigitize
-): boolean => {
+const isStalePick = (view: Editor, prepared: PreparedInkDigitize): boolean => {
   const { read } = view.plugin(BaseInkPlugin);
   const blockIds = new Set<string>();
 
@@ -922,7 +921,7 @@ const isStalePick = (
 };
 
 export const confirmInkDigitize = (
-  view: PlateEditor,
+  view: Editor,
   prepared: PreparedInkDigitize,
   validated: Extract<ValidatedDigitizeReading, { ok: true }>,
   choices: readonly ConfirmChoice[],
