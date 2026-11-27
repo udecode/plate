@@ -8,11 +8,11 @@ docs:
     title: 字段工具栏按钮
 ---
 
-字段是文档中由一个角色填写的有类型的空白处，例如租客姓名、起租日期、复选框或签名。每个字段是一个行内 void `field` 元素，带有 `kind`、`role`、`label`，以及文档中其他字段都不持有的 `fieldId`。字段的 `condition` 通过 `fieldId` 检查一个或多个字段。Plate 只检查角色，从不检查用户。由你的应用决定哪个人填写哪个角色。
+字段是文档中由一个角色填写的有类型的空白处，例如租客姓名、起租日期、复选框或签名。每个字段是一个行内 void `field` 元素，带有 `kind`、`role`、`label`，以及文档中唯一的 `fieldId`。Plate 只检查角色，从不检查用户；由你的应用把每个人对应到角色。
 
-<ComponentPreview name="field-demo" height="1340px" />
+<ComponentPreview name="field-authoring-demo" height="420px" />
 
-示例是一份房东、租客和 `应用` 角色之间的租赁合同模板，`应用` 角色持有地址和月租。从工具栏的菜单插入字段，点击字段修改它的设置，并查看编辑器下方的 HTML、Markdown 和 Word 面板。在编辑器上方选择以房东身份填写或以租客身份填写，即可以该角色填写合同。在编辑模板视图中，Fill from sample data 用一条示例记录提交应用的答案，并打开租客的填写视图，其中租客姓名取自同一条记录。Submit 会在之前已提交角色的答案之后检查该角色的答案。随后 Submission 面板显示每条拒绝原因，或者以静态输出显示填写后的文档，以及它仍在等待的角色，Answers 面板按名称列出每个角色的答案。
+从工具栏菜单插入任意类型的字段，或点击字段标签编辑它的标签、角色、`name`、选项和 `Show when` 条件。在这份租赁合同模板中，租客姓名在同一 `name` 下出现两次，宠物名字使用包含两条规则的 `all` 条件，燃气表号在水电燃气包含 `gas` 时适用。
 
 <PackageInfo>
 
@@ -85,6 +85,32 @@ export function FieldToolbar() {
 <ComponentSource name="field-static" />
 
 </Steps>
+
+## 示例
+
+### 按角色填写视图
+
+此示例默认以 `fillRole: '租客'` 打开。点击租客字段填写答案，勾选**我有宠物**以取消**宠物名字**的跳过状态，填写一次**租客姓名**即可看到两处同步填充；尝试修改正文则会被拒绝。**撤销**只撤回当前角色的答案；可切换到**以房东身份填写**或**编辑模板**对比模式。
+
+<ComponentPreview name="field-fill-demo" height="460px" />
+
+有关 `fillRole` 状态、撤销边界与协作规则，见[以一个角色填写](#fill-as-one-role)。
+
+### 应用预填、服务端提交与静态打印
+
+在**编辑模板**模式下，点击**用示例数据填写**即可提交锁定的 `应用` 角色（`address` 和 `rent`），用同一条记录预填租客姓名并打开租客填写视图。以任一角色点击**提交**，可查看 `applyFieldValues` 的拒绝原因（`missing-required`、`waiting`、`skipped`）、静态打印输出（`EditorStatic` 与 `BaseFieldKit`）、仍在等待的角色，以及 `readFieldAnswers` 按角色与名称读回的答案。
+
+<ComponentPreview name="field-submit-demo" height="600px" />
+
+有关服务端校验流程，见[提交答案](#submit-answers)和[应用数据](#app-data)。
+
+### HTML、Markdown 与 Word 序列化
+
+点击任意字段修改答案或设置，即可在标签页中实时查看 `data-field-*` HTML 属性、`<field>` Markdown 标签，以及 Word 导出的 `property-dropped` 诊断计数。HTML 标签页使用 `lossPolicy: 'allow'` 序列化，并报告被丢弃的 `date` 元素。
+
+<ComponentPreview name="field-serialization-demo" height="480px" />
+
+有关具体的属性与诊断规则，见 [HTML](#html)、[Markdown](#markdown) 和 [Word](#word)。
 
 ## 手动配置
 
@@ -467,7 +493,7 @@ applyFieldValues(template, [
 // { ok: false, refusals: [{ code: 'answer-conflict', fieldIds: ['tenant', 'tenant-again'], name: 'tenant_name', role: 'tenant' }] }
 ```
 
-在示例中，宠物名字在房东的允许养宠物为 `yes` 且租客勾选我有宠物时适用。租客勾选我有宠物并在房东之前点击 Submit，会得到一条 `waiting` 拒绝，因为宠物名字在等待房东的允许养宠物。如果租客不勾选我有宠物，`all` 列表无需等待房东就已不成立，宠物名字被跳过，租客可以先提交。房东提交否时，租客仍然输入的宠物名字会被拒绝为 `skipped`，直到清空它。
+在提交示例中，宠物名字在房东的允许养宠物为 `yes` 时适用。租客在房东之前提交会得到一条 `waiting` 拒绝，因为宠物名字在等待房东的允许养宠物。房东提交否时，租客输入的宠物名字会被拒绝为 `skipped`，直到清空它。如果条件使用同时检查租客自身复选框的 `all` 列表，未勾选该复选框就会使 `all` 在无需等待房东的情况下直接不成立，宠物名字被跳过，租客可以先提交。
 
 两个角色互相等待对方的模板可以通过，因为第三个角色的答案可以让链上的某个字段被跳过，从而结束等待。两个字段都仍在等待时，先提交的角色会被拒绝为 `waiting`，等待另一个角色。
 
@@ -609,7 +635,7 @@ if (rent && !('problem' in rent) && rent.kind === 'number') {
 
 解析这段 HTML 会读回每个有效属性，丢弃格式错误的条件并保留该字段，并把导入的 `multiple` 字段上的 `data-field-min="1"` 映射为 `required: true`。span 需要 `data-field-kind`、`data-field-label` 和 `data-field-role` 才会被读成字段。粘贴的 HTML 模板会获得新 id，其中的条件指向副本。
 
-示例的 HTML 面板使用 `lossPolicy: 'allow'` 序列化，因为日期元素没有 HTML 编码器。面板为丢弃的日期列出一行 `html-unsupported-content`。
+序列化示例的 HTML 标签页使用 `lossPolicy: 'allow'` 序列化，因为日期元素没有 HTML 编码器，并为丢弃的日期列出一行 `html-unsupported-content`。
 
 ## Markdown
 
@@ -634,7 +660,7 @@ const dropped = result.diagnostics.filter(
 );
 ```
 
-导出会丢弃每个字段的 id、类型、角色、名称、设置和条件。它用一个 `property-dropped` 警告报告这些损失，消息为 "Word keeps each field answer and drops its name and settings."，`feature` 为 `field`，`count` 为字段数量。无论 `lossPolicy` 是 `'allow'` 还是 `'reject'`，这个警告都不会使导出失败。示例的 Word 面板显示这个警告，插入字段时它的数量随之增加。
+导出会丢弃每个字段的 id、类型、角色、名称、设置和条件。它用一个 `property-dropped` 警告报告这些损失，消息为 "Word keeps each field answer and drops its name and settings."，`feature` 为 `field`，`count` 为字段数量。无论 `lossPolicy` 是 `'allow'` 还是 `'reject'`，这个警告都不会使导出失败。序列化示例的 Word 标签页会显示这个警告及其字段计数。
 
 通过 `platejs` 的 `serializePlainText` 导出的纯文本与 Word 写入的文本相同。
 

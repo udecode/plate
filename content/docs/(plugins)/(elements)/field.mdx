@@ -8,11 +8,11 @@ docs:
     title: Field Toolbar Button
 ---
 
-A field is a typed blank in a document that one role fills, such as a tenant's name, a start date, a checkbox or a signature. Each field is an inline void `field` element with a `kind`, a `role`, a `label` and a `fieldId` that no other field in the document holds. A field's `condition` tests one or more fields by their `fieldId`. Plate checks roles, never users. Your app decides which person fills which role.
+A field is a typed blank in a document that one role fills, such as a tenant's name, a start date, a checkbox or a signature. Each field is an inline void `field` element with a `kind`, a `role`, a `label` and a `fieldId` that no other field in the document holds. Plate checks roles, never users; your app maps each person to a role.
 
-<ComponentPreview name="field-demo" height="1340px" />
+<ComponentPreview name="field-authoring-demo" height="420px" />
 
-The demo is a lease template for a landlord, a tenant and an `app` role that holds the address and the rent. Insert a field from the toolbar's menu, click a field to change its settings, and read the HTML, Markdown and Word panels under the editor. Pick Fill as landlord or Fill as tenant above the editor to fill the lease as that role. In the Author view, Fill from sample data submits the app's answers from a sample record and opens the tenant's view with the tenant's name from the same record. Submit checks that role's answers after the answers of the roles that submitted before it. The Submission panel then shows each refusal, or the filled document as static output with the roles it still waits on, and the Answers panel lists each role's answers by name.
+Insert a field of any kind from the toolbar menu, or click a chip to edit its label, role, `name`, options or `Show when` condition. In this lease template, Tenant name appears twice under one `name`, Pet name uses a two-rule `all` condition, and Gas meter number applies when Utilities includes `gas`.
 
 <PackageInfo>
 
@@ -85,6 +85,32 @@ export function FieldToolbar() {
 <ComponentSource name="field-static" />
 
 </Steps>
+
+## Examples
+
+### Role-scoped fill view
+
+This example starts with `fillRole: 'tenant'`. Click tenant chips to answer them, tick **I have a pet** to unmute **Pet name**, type **Tenant name** once to watch both copies fill together, and try typing in the surrounding prose to see non-field edits refused. **Undo** reverts only the active role's answers; switch to **Fill as landlord** or **Author** to compare modes.
+
+<ComponentPreview name="field-fill-demo" height="460px" />
+
+See [Fill as one role](#fill-as-one-role) for `fillRole` state, undo boundaries and collaboration rules.
+
+### App prefill, server submit, and static print
+
+In **Author** mode, click **Fill from sample data** to submit the locked `app` role (`address` and `rent`), start the tenant with `tenant_name` from the same record, and open the tenant fill view. Click **Submit** as either role to inspect `applyFieldValues` refusals (`missing-required`, `waiting`, `skipped`), the static print output (`EditorStatic` + `BaseFieldKit`), `Waiting on` pending roles, and `readFieldAnswers` grouped by role and name.
+
+<ComponentPreview name="field-submit-demo" height="600px" />
+
+See [Submit answers](#submit-answers) and [App data](#app-data) for the server workflow.
+
+### HTML, Markdown, and Word serialization
+
+Click any field chip to change its answer or settings and watch the live `data-field-*` HTML attributes, `<field>` Markdown tags, and Word export `property-dropped` diagnostics update across tabs. The HTML tab serializes with `lossPolicy: 'allow'` and reports the dropped `date` element.
+
+<ComponentPreview name="field-serialization-demo" height="480px" />
+
+See [HTML](#html), [Markdown](#markdown), and [Word](#word) for exact attribute and diagnostic rules.
 
 ## Manual usage
 
@@ -370,7 +396,7 @@ const editor = useCreateEditor({
 });
 ```
 
-The demo switches one editor between authoring and each role through the plugin store, and `null` returns to authoring:
+The role-scoped fill example switches one editor between authoring and each role through the plugin store, and `null` returns to authoring:
 
 ```tsx
 editor.plugin(FieldPlugin).store.set({ fillRole: 'landlord' });
@@ -433,7 +459,7 @@ await saveFilled(result.document);
 
 The filled document is the template with each accepted answer set as its field's `value`.
 
-On success, `pending` lists each role that has not submitted and holds a required field that applies or waits. It also lists every role needed by any waiting field, required or optional, of a role that has not submitted, taking the farthest unsubmitted role along each waiting path. An optional field never puts its own role in `pending`. The demo shows `pending` as Waiting on.
+On success, `pending` lists each role that has not submitted and holds a required field that applies or waits. It also lists every role needed by any waiting field, required or optional, of a role that has not submitted, taking the farthest unsubmitted role along each waiting path. An optional field never puts its own role in `pending`. The submission example shows `pending` as Waiting on.
 
 ### Refusals
 
@@ -467,7 +493,7 @@ applyFieldValues(template, [
 // { ok: false, refusals: [{ code: 'answer-conflict', fieldIds: ['tenant', 'tenant-again'], name: 'tenant_name', role: 'tenant' }] }
 ```
 
-In the demo, Pet name applies when the landlord's Pets allowed is `yes` and the tenant's I have a pet is ticked. When the tenant ticks I have a pet and submits before the landlord, Submit gets a `waiting` refusal, because Pet name waits on the landlord's Pets allowed. While I have a pet stays unticked, the `all` list fails without waiting on the landlord, so Pet name is skipped and the tenant can submit first. When the landlord submits No, a pet name the tenant types anyway is refused as `skipped` until it is cleared.
+In the submission example, Pet name applies when the landlord's Pets allowed is `yes`. Submitting as the tenant before the landlord gives a `waiting` refusal because Pet name waits on the landlord's Pets allowed. When the landlord submits No, a pet name the tenant typed is refused as `skipped` until it is cleared. When a condition uses an `all` list that also tests the tenant's own checkbox, leaving that checkbox unticked makes `all` fail without waiting on the landlord, so Pet name skips and the tenant can submit first.
 
 A template where two roles each wait on the other passes, because a third role's answer can end the wait by making a field along the chain skip. While both fields still wait, the role that submits first is refused as `waiting` on the other.
 
@@ -609,7 +635,7 @@ In Suggesting mode, a change from a field to a mention shows the field as delete
 
 Parsing that HTML reads every valid property back, dropping a malformed condition while keeping the field, and maps an imported `data-field-min="1"` on a `multiple` field to `required: true`. A span needs `data-field-kind`, `data-field-label` and `data-field-role` to read as a field. A pasted HTML template gets new ids, and its conditions name the copies.
 
-The demo's HTML panel serializes with `lossPolicy: 'allow'`, because the date element has no HTML encoder. The panel lists one `html-unsupported-content` line for the date it drops.
+The serialization example's HTML tab serializes with `lossPolicy: 'allow'`, because the date element has no HTML encoder. It lists one `html-unsupported-content` line for the date it drops.
 
 ## Markdown
 
@@ -634,7 +660,7 @@ const dropped = result.diagnostics.filter(
 );
 ```
 
-The export drops each field's id, kind, role, name, settings and condition. It reports them with one `property-dropped` warning whose message is "Word keeps each field answer and drops its name and settings.", whose `feature` is `field` and whose `count` is the number of fields. The warning never refuses an export, under `lossPolicy: 'allow'` or `'reject'`. The demo's Word panel shows that warning, and its count goes up as you insert fields.
+The export drops each field's id, kind, role, name, settings and condition. It reports them with one `property-dropped` warning whose message is "Word keeps each field answer and drops its name and settings.", whose `feature` is `field` and whose `count` is the number of fields. The warning never refuses an export, under `lossPolicy: 'allow'` or `'reject'`. The serialization example's Word tab shows that warning with the field count.
 
 Plain text, through `serializePlainText` from `platejs`, writes the same text as Word.
 

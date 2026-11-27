@@ -151,6 +151,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-field-focused-demos",
+      "href": "/registry/changelog/2026-11-27-field-focused-demos.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add focused field demos for authoring, filling, submitting and exporting",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "field-authoring-demo",
+        "field-fill-demo",
+        "field-submit-demo",
+        "field-serialization-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-field-multiple-choice-ui",
       "href": "/registry/changelog/2026-11-27-field-multiple-choice-ui.json",
       "status": "draft",

@@ -34,6 +34,10 @@
       }
     ],
     "examples": [
+      "field-authoring-demo",
+      "field-fill-demo",
+      "field-submit-demo",
+      "field-serialization-demo",
       "field-demo"
     ]
   },

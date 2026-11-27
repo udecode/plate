@@ -1163,6 +1163,97 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description:
+        'Author a lease template: insert fields from the toolbar and click a chip to change its kind, role, name or condition.',
+      files: [
+        { path: 'examples/field-authoring-demo.tsx', type: 'registry:example' },
+      ],
+      meta: {
+        docs: [{ route: '/docs/field', title: 'Field' }],
+      },
+      name: 'field-authoring-demo',
+      registryDependencies: [
+        '@plate/basic-blocks',
+        '@plate/basic-marks',
+        '@plate/editor',
+        '@plate/field',
+        '@plate/field-toolbar-button',
+        '@plate/table',
+        '@plate/toolbar',
+      ],
+      type: 'registry:example',
+    },
+    {
+      description:
+        'Fill a lease as one role: only the fields of that role open, the rest of the document stays locked and undo takes back only its answers.',
+      files: [
+        { path: 'examples/field-fill-demo.tsx', type: 'registry:example' },
+      ],
+      meta: {
+        docs: [{ route: '/docs/field', title: 'Field' }],
+      },
+      name: 'field-fill-demo',
+      registryDependencies: [
+        '@plate/basic-blocks',
+        '@plate/basic-marks',
+        '@plate/editor',
+        '@plate/field',
+        '@plate/history-toolbar-button',
+        '@plate/toolbar',
+      ],
+      type: 'registry:example',
+    },
+    {
+      description:
+        'Prefill app data, submit the answers of each role for validation, print the filled lease and read the answers back by name.',
+      files: [
+        { path: 'examples/field-submit-demo.tsx', type: 'registry:example' },
+      ],
+      meta: {
+        docs: [{ route: '/docs/field', title: 'Field' }],
+      },
+      name: 'field-submit-demo',
+      registryDependencies: [
+        '@plate/basic-blocks',
+        '@plate/basic-blocks-static',
+        '@plate/basic-marks',
+        '@plate/basic-marks-static',
+        '@plate/editor',
+        '@plate/field',
+        '@plate/field-static',
+      ],
+      type: 'registry:example',
+    },
+    {
+      description:
+        'Export fields with a mention and a date to HTML, Markdown and Word, and the diagnostics of each format.',
+      files: [
+        {
+          path: 'examples/field-serialization-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [{ route: '/docs/field', title: 'Field' }],
+      },
+      name: 'field-serialization-demo',
+      registryDependencies: [
+        '@plate/basic-blocks',
+        '@plate/basic-blocks-static',
+        '@plate/basic-marks',
+        '@plate/basic-marks-static',
+        '@plate/date',
+        '@plate/date-static',
+        '@plate/editor',
+        '@plate/field',
+        '@plate/field-static',
+        '@plate/markdown',
+        '@plate/mention',
+        '@plate/mention-static',
+      ],
+      type: 'registry:example',
+    },
+    {
       dependencies: ['@platejs/test'],
       description:
         'GFM footnote references and definitions as dedicated editor nodes.',

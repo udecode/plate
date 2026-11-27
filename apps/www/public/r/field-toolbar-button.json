@@ -27,6 +27,7 @@
       }
     ],
     "examples": [
+      "field-authoring-demo",
       "field-demo"
     ]
   },

@@ -693,7 +693,7 @@ export const editorComponents: Registry['items'] = [
     ],
     meta: {
       docs: [{ route: '/docs/field', title: 'Field' }],
-      examples: ['field-demo'],
+      examples: ['field-authoring-demo', 'field-demo'],
     },
     name: 'field-toolbar-button',
     title: 'Field Toolbar Button',

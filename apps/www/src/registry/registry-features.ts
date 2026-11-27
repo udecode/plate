@@ -732,7 +732,13 @@ export const registryFeatures: Registry['items'] = [
     title: 'Field',
     meta: {
       docs: [{ route: '/docs/field', title: 'Field' }],
-      examples: ['field-demo'],
+      examples: [
+        'field-authoring-demo',
+        'field-fill-demo',
+        'field-submit-demo',
+        'field-serialization-demo',
+        'field-demo',
+      ],
     },
   },
   {

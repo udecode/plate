@@ -191,6 +191,10 @@
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
+    "field-authoring-demo": ["2026-11-27-field-focused-demos"],
+    "field-fill-demo": ["2026-11-27-field-focused-demos"],
+    "field-submit-demo": ["2026-11-27-field-focused-demos"],
+    "field-serialization-demo": ["2026-11-27-field-focused-demos"],
     "field-toolbar-button": [
       "2026-11-27-field-multiple-choice-ui",
       "2026-11-23-field-fill-view",

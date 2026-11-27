@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-field-focused-demos",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-field-focused-demos.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add focused field demos for authoring, filling, submitting and exporting",
+  "targets": [
+    {
+      "name": "field-authoring-demo",
+      "files": ["apps/www/src/registry/examples/field-authoring-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-fill-demo",
+      "files": ["apps/www/src/registry/examples/field-fill-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-submit-demo",
+      "files": ["apps/www/src/registry/examples/field-submit-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-serialization-demo",
+      "files": ["apps/www/src/registry/examples/field-serialization-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-field-authoring-focused-demos-filling-submitting-c83da2f9",
+      "kind": "new",
+      "summary": "Add focused Field demos that author a template, fill it as one role, prefill app data and submit with answers read back, and export to HTML, Markdown and Word.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "field-authoring-demo",
+        "field-fill-demo",
+        "field-submit-demo",
+        "field-serialization-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-focused-demos",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
