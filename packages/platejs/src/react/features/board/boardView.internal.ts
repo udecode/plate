@@ -2247,9 +2247,10 @@ export const createBoardView = (
       return {
         editor,
         host,
-        layouts: [...index.layouts()]
+        ids: [...index.layouts()]
           .filter(({ id }) => selected.length === 0 || picked.has(id))
-          .sort((a, b) => a.rank - b.rank),
+          .sort((a, b) => a.rank - b.rank)
+          .map(({ id }) => id),
         projection:
           authored &&
           ('preview' in authored ? authored.preview : ('proposed' as const)),

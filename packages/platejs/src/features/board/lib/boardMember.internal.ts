@@ -196,11 +196,14 @@ export const boardMembersOf = (
      * Where the arrow `id` draws its two ends, or null when `id` names no
      * arrow.
      */
-    arrowEnds: (id: string): BoardArrowEnds | null => {
+    arrowEnds: (
+      id: string,
+      heightOf?: (member: BoardFrameEntry | BoardShapeEntry) => number
+    ): BoardArrowEnds | null => {
       const arrow = member(id);
 
       return arrow?.kind === 'arrow'
-        ? resolveBoardArrow(arrow, boardTargetsOn(member, arrow.root))
+        ? resolveBoardArrow(arrow, boardTargetsOn(member, arrow.root, heightOf))
         : null;
     },
     /** The member whose `shapeId` is `id`, in any board. */

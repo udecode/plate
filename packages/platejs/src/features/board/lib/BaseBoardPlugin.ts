@@ -41,6 +41,7 @@ import { BaseBoardStrokePlugin } from './BaseBoardStrokePlugin';
 import {
   ARROW_SIDES,
   BOARD_ARROW_TYPE,
+  type BoardArrowEnds,
   boardTargetsOn,
   isBoundArrowEnd,
   resolveBoardArrow,
@@ -63,7 +64,10 @@ import {
   isBoardShapePlace,
   placeAmong,
 } from './boardFrame.internal';
-import { lentBoardHeightFor } from './boardHeights.internal';
+import {
+  lentBoardHeightFor,
+  pictureBoardHeightsOf,
+} from './boardHeights.internal';
 import {
   BOARD_ARROW_ATTRIBUTES,
   BOARD_FRAME_ATTRIBUTES,
@@ -345,18 +349,44 @@ export const BaseBoardPlugin = definePlugin('board', {
               !isShape({ ...write.node, type: write.type }))
         ),
       ],
-      read: ({ state }) => {
+      read: ({ editor: view, state }) => {
         const members = boardMembersOf(state, properties);
         const types = boardTypesOf(editor);
+        const sized = (
+          entry: BoardMemberEntry,
+          heights: ReadonlyMap<string, number> | undefined
+        ): BoardMemberEntry => {
+          if (!heights || entry.kind === 'arrow') return entry;
+
+          const height = heights.get(entry.id);
+
+          return height !== undefined && height > entry.size.height
+            ? { ...entry, size: { ...entry.size, height } }
+            : entry;
+        };
 
         return {
           /**
            * Where the arrow `id` draws its two ends, or null when `id` names
            * no arrow.
            */
-          arrowEnds: members.arrowEnds,
+          arrowEnds: (id: string): BoardArrowEnds | null => {
+            const heights = pictureBoardHeightsOf(view);
+
+            return members.arrowEnds(
+              id,
+              heights
+                ? (member) =>
+                    Math.max(member.size.height, heights.get(member.id) ?? 0)
+                : undefined
+            );
+          },
           /** The member whose `shapeId` is `id`, in any board. */
-          shape: members.member,
+          shape: (id: string): BoardMemberEntry | null => {
+            const entry = members.member(id);
+
+            return entry ? sized(entry, pictureBoardHeightsOf(view)) : null;
+          },
           /**
            * The slice a copy of shapes `ids` carries, as the clipboard exports
            * it, or null when no id names a shape or they sit in two boards.
@@ -386,8 +416,14 @@ export const BaseBoardPlugin = definePlugin('board', {
             });
           },
           /** The members of the board block `board`, in stored order. */
-          shapes: (board: NodeKey): BoardMemberEntry[] =>
-            boardShapesOf(state, members, board),
+          shapes: (board: NodeKey): BoardMemberEntry[] => {
+            const entries = boardShapesOf(state, members, board);
+            const heights = pictureBoardHeightsOf(view);
+
+            return heights
+              ? entries.map((entry) => sized(entry, heights))
+              : entries;
+          },
           /**
            * Where the pen line `id` draws its outline within its box, the
            * path the live board draws, or null when `id` names no pen line.

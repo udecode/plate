@@ -91,3 +91,19 @@ export const lentBoardHeightFor = (
     ? Math.max(entry.size.height, lent.height)
     : entry.size.height;
 };
+
+const PICTURE_HEIGHTS = new WeakMap<object, ReadonlyMap<string, number>>();
+
+export const bindBoardPictureHeights = (
+  view: object,
+  heights: ReadonlyMap<string, number>
+) => {
+  if (PICTURE_HEIGHTS.has(view)) {
+    throw new Error('Board picture heights are already bound to this view.');
+  }
+  PICTURE_HEIGHTS.set(view, heights);
+};
+
+export const pictureBoardHeightsOf = (
+  view: object
+): ReadonlyMap<string, number> | undefined => PICTURE_HEIGHTS.get(view);

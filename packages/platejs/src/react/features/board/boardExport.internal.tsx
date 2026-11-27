@@ -1,14 +1,26 @@
 import * as React from 'react';
 
-import { ElementApi } from '../../../core';
+import { type Element as EditorElement, ElementApi } from '../../../core';
 import { createAuthoredEditorView } from '../../../facade';
+import { BaseBoardPlugin } from '../../../features/board/lib';
+import {
+  arrowEndsOf,
+  isBoundArrowEnd,
+} from '../../../features/board/lib/boardArrow.internal';
 import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
-import { type BasePluginInput, getPluginNodeClass } from '../../../lib';
-import { EditorStatic, type EditorStaticProps } from '../../../static';
+import { bindBoardPictureHeights } from '../../../features/board/lib/boardHeights.internal';
+import { isBoardSize } from '../../../features/board/lib/boardShape.internal';
+import { boardTypesOf } from '../../../features/board/lib/boardTypes.internal';
+import {
+  type BasePluginInput,
+  type Editor,
+  getPluginNodeClass,
+} from '../../../lib';
+import { EditorStatic } from '../../../static';
 import { loadStaticRenderer } from '../../../static/internal/renderStaticHtmlWithOverrides';
 import { getStaticRootView } from '../../../static/internal/staticDocumentView';
 import { bindStaticPresentation } from '../../../static/internal/staticPresentation';
-import type { BoardBox } from './boardIndex.internal';
+import { type BoardBox, spanOf } from './boardIndex.internal';
 import {
   PICTURE_ROOT,
   pictureFrameOf,
@@ -36,17 +48,7 @@ const QUOTED = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/u;
 
 type Drawing = Readonly<{ box: BoardBox; drawing: Element | null; id: string }>;
 
-type Shown = Readonly<{
-  id: string;
-  image: HTMLElement | SVGElement;
-  size: DOMRect;
-}>;
-
-function PictureShapes({
-  editor,
-  root,
-}: EditorStaticProps & Readonly<{ root: string }>) {
-  const shapes = getStaticRootView(editor, root);
+function PictureShapes({ shapes }: Readonly<{ shapes: Editor }>) {
   const ids = shapes.read
     .children()
     .map((node) => (ElementApi.isElement(node) ? shapeIdOf(node) : ''));
@@ -487,6 +489,67 @@ const inlinedFace = async (face: string, base: string) => {
 const pageUrlOf = (href: string, base: string) =>
   URL.canParse(href, base) ? new URL(href, base) : null;
 
+const pixelsOf = (value: string) => {
+  const number = Number.parseFloat(value);
+
+  return Number.isFinite(number) ? number : 0;
+};
+
+const SCALE_PROBE_PX = 1000;
+const EMPTY_BOX: BoardBox = { height: 0, width: 0, x: 0, y: 0 };
+
+const scaleProbeOf = (document: Document) => {
+  const probe = document.createElement('div');
+
+  probe.setAttribute(
+    'style',
+    `position: absolute; left: 0px; top: 0px; box-sizing: border-box; border: 0px; margin: 0px; padding: 0px; width: 1px; height: ${SCALE_PROBE_PX}px; pointer-events: none; visibility: hidden;`
+  );
+
+  return probe;
+};
+
+const ownTextOf = (drawing: Element, root: string): Element | null => {
+  for (const candidate of drawing.querySelectorAll('[data-board-text]')) {
+    if (
+      candidate.closest('[data-board-picture]') === drawing &&
+      candidate
+        .closest('[data-editor-root]')
+        ?.getAttribute('data-editor-root') === root
+    ) {
+      return candidate;
+    }
+  }
+
+  return null;
+};
+
+const measuredNoteHeight = (
+  drawing: Element,
+  root: string,
+  scaleY: number
+): number | null => {
+  const text = ownTextOf(drawing, root);
+
+  if (!text) return null;
+
+  const content = text.getBoundingClientRect().height / scaleY;
+
+  if (!Number.isFinite(content)) return null;
+
+  const card = text.parentElement;
+  const viewWindow = card?.ownerDocument.defaultView ?? globalThis;
+  const style = card ? viewWindow.getComputedStyle(card) : null;
+  const chrome = style
+    ? pixelsOf(style.paddingTop) +
+      pixelsOf(style.paddingBottom) +
+      pixelsOf(style.borderTopWidth) +
+      pixelsOf(style.borderBottomWidth)
+    : 0;
+
+  return content + chrome;
+};
+
 export const drawBoardPicture = async (
   view: Pick<BoardView, 'pictureSource'>,
   selected: readonly string[],
@@ -498,111 +561,235 @@ export const drawBoardPicture = async (
 
   if (!source) throw new Error(OFF_PAGE);
 
-  const { editor, host, layouts, projection, root } = source;
+  const { editor, host, ids, projection, root } = source;
   const picture = createAuthoredEditorView(editor, {
     readOnly: true,
     ...(projection && { authored: { preview: projection } }),
   });
   const missing = bindStaticPresentation(picture, { plugins: kit });
-  const data = renderToStaticMarkup(
-    <PictureShapes editor={picture} root={root} />
-  );
+  const shapes = getStaticRootView(picture, root);
+  const noteType = boardTypesOf(picture).note();
   const document = host.ownerDocument;
   const { baseURI } = document;
-  const template = document.createElement('template');
+  const nodesById = new Map<string, EditorElement>();
+  const storedBoxes = new Map<string, BoardBox>();
+  const storedBoxOf = (id: string): BoardBox => {
+    const cached = storedBoxes.get(id);
 
-  template.innerHTML = data;
+    if (cached) return cached;
 
-  const kept = new Set<string>(
-    JSON.parse(
-      template.content
-        .querySelector('[data-board-picture-shapes]')
-        ?.getAttribute('data-board-picture-shapes') ?? '[]'
-    )
-  );
-  const shown = new Map(
-    [
-      ...template.content.querySelectorAll(
-        `[data-editor-root="${CSS.escape(root)}"][data-editor-node="element"]`
-      ),
-    ].flatMap((node) => {
-      const id = node.getAttribute('data-board-picture');
+    const boardRead = picture.plugin(BaseBoardPlugin).read;
+    const entry = boardRead.shape(id);
+    let box = EMPTY_BOX;
 
-      return id === null || node.getAttribute('data-editor-path')?.includes(',')
-        ? []
-        : [[id, node] as const];
-    })
-  );
-  const warnings: BoardPictureWarning[] = [];
-  const drawings: Drawing[] = [];
+    if (entry?.kind === 'arrow') {
+      const ends = boardRead.arrowEnds(id);
 
-  for (const { box, id } of layouts) {
-    if (!kept.has(id)) continue;
+      if (ends) box = spanOf(ends);
+    } else if (entry) {
+      box = { ...entry.place, ...entry.size };
+    }
 
-    const drawing = shown.get(id);
+    storedBoxes.set(id, box);
 
-    if (drawing) {
-      if (inOrUnder(drawing, '[data-board-image-unreadable]')) {
-        warnings.push({ code: 'image-unreadable', shapeId: id });
+    return box;
+  };
+  const renderPass = () => {
+    const data = renderToStaticMarkup(<PictureShapes shapes={shapes} />);
+    const template = document.createElement('template');
+
+    template.innerHTML = data;
+
+    const kept = new Set<string>(
+      JSON.parse(
+        template.content
+          .querySelector('[data-board-picture-shapes]')
+          ?.getAttribute('data-board-picture-shapes') ?? '[]'
+      )
+    );
+    const shown = new Map(
+      [
+        ...template.content.querySelectorAll(
+          `[data-editor-root="${CSS.escape(root)}"][data-editor-node="element"]`
+        ),
+      ].flatMap((node) => {
+        const id = node.getAttribute('data-board-picture');
+
+        return id === null ||
+          node.getAttribute('data-editor-path')?.includes(',')
+          ? []
+          : [[id, node] as const];
+      })
+    );
+    const passWarnings: BoardPictureWarning[] = [];
+    const passDrawings: Drawing[] = [];
+
+    for (const id of ids) {
+      if (!kept.has(id)) continue;
+
+      const drawing = shown.get(id);
+
+      if (drawing) {
+        if (inOrUnder(drawing, '[data-board-image-unreadable]')) {
+          passWarnings.push({ code: 'image-unreadable', shapeId: id });
+        }
+        passDrawings.push({ box: boxIn(drawing), drawing, id });
+      } else {
+        passWarnings.push({ code: 'shape-undrawn', shapeId: id });
+        passDrawings.push({ box: storedBoxOf(id), drawing: null, id });
       }
-      drawings.push({ box: boxIn(drawing), drawing, id });
+    }
+
+    return { drawings: passDrawings, shown, warnings: passWarnings };
+  };
+
+  const firstPass = renderPass();
+  const { shown } = firstPass;
+  let { drawings, warnings } = firstPass;
+
+  if (drawings.length === 0) return null;
+
+  for (const node of shapes.read.children()) {
+    if (!ElementApi.isElement(node)) continue;
+
+    const id = shapeIdOf(node);
+
+    if (id) nodesById.set(id, node);
+  }
+
+  const drawnIds = new Set(drawings.map(({ id }) => id));
+  const measureCandidates = new Map<
+    string,
+    Readonly<{ drawing: Element; storedHeight: number }>
+  >();
+  const extraTargets: Element[] = [];
+  const considerNote = (id: string, drawing: Element, extra: boolean) => {
+    if (measureCandidates.has(id)) return;
+
+    const node = nodesById.get(id);
+
+    if (!node || node.type !== noteType) return;
+
+    const storedHeight = isBoardSize(node.size)
+      ? node.size.height
+      : boxIn(drawing).height;
+
+    measureCandidates.set(id, { drawing, storedHeight });
+    if (extra) extraTargets.push(drawing);
+  };
+
+  for (const { drawing, id } of drawings) {
+    if (!drawing) continue;
+
+    const node = nodesById.get(id);
+
+    if (!node) continue;
+
+    const arrow = arrowEndsOf(node);
+
+    if (arrow) {
+      for (const end of [arrow.start, arrow.end]) {
+        if (!isBoundArrowEnd(end) || drawnIds.has(end.shape)) continue;
+
+        const targetDrawing = shown.get(end.shape);
+
+        if (targetDrawing) considerNote(end.shape, targetDrawing, true);
+      }
     } else {
-      warnings.push({ code: 'shape-undrawn', shapeId: id });
-      drawings.push({ box, drawing: null, id });
+      considerNote(id, drawing, false);
     }
   }
-  if (drawings.length === 0) return null;
-  if (
-    [...missing].some(([name, features]) =>
-      drawings.some(
-        ({ drawing }) =>
-          drawing &&
-          (features.has('slots') ||
-            inOrUnder(drawing, `.${CSS.escape(getPluginNodeClass(name))}`))
-      )
-    )
-  ) {
-    warnings.push({ code: 'content-undrawn' });
-  }
 
-  const placed = drawings.flatMap(({ drawing }) => [
-    ...(drawing?.querySelectorAll<HTMLElement | SVGElement>(
-      ':scope > svg, :scope > [data-board-arrow-label]'
-    ) ?? []),
-  ]);
-  const frame = pictureFrameOf(document);
-
-  host.append(...drawings.flatMap(({ drawing }) => drawing ?? []), frame);
-
-  const origin = host.getBoundingClientRect();
-  const edges = edgesOf(
-    drawings.flatMap(({ box, drawing }) => [
-      box,
-      ...(drawing ? paintedIn(drawing, origin) : []),
-    ])
-  );
-  const styles = readPictureStyles(frame, host, placed);
-  const labels = new Map(
-    placed
-      .filter((element) => element.hasAttribute('data-board-arrow-label'))
-      .map((label) => [label, label.getBoundingClientRect()])
-  );
-  const images: Shown[] = placed.flatMap((drawn) =>
-    [...drawn.querySelectorAll<HTMLElement | SVGElement>('image, img')]
-      .filter((image) => image.getAttribute(sourceOf(image)))
-      .map((image) => ({
-        id:
-          image
-            .closest('[data-board-picture]')
-            ?.getAttribute('data-board-picture') ?? '',
-        image,
-        size: image.getBoundingClientRect(),
-      }))
-  );
   const srgb = srgbOf(document);
-  const background = backgroundOf(host, srgb);
+  const { background, edges, images, labels, placed, styles } = (() => {
+    let frame = pictureFrameOf(document);
+    const probe = scaleProbeOf(document);
 
-  host.replaceChildren();
+    try {
+      host.append(probe);
+      const probed = probe.getBoundingClientRect().height;
+      const scaleY =
+        Number.isFinite(probed) && probed > 0 ? probed / SCALE_PROBE_PX : 1;
+
+      probe.remove();
+      host.append(
+        ...drawings.flatMap(({ drawing }) => drawing ?? []),
+        frame,
+        ...extraTargets
+      );
+
+      const grownHeights = new Map<string, number>();
+
+      for (const [id, { drawing, storedHeight }] of measureCandidates) {
+        const measured = measuredNoteHeight(drawing, root, scaleY);
+
+        if (measured !== null && measured > storedHeight) {
+          grownHeights.set(id, measured);
+        }
+      }
+
+      if (grownHeights.size > 0) {
+        host.replaceChildren();
+        bindBoardPictureHeights(shapes, grownHeights);
+        ({ drawings, warnings } = renderPass());
+        frame = pictureFrameOf(document);
+        host.append(...drawings.flatMap(({ drawing }) => drawing ?? []), frame);
+      } else {
+        for (const extra of extraTargets) extra.remove();
+      }
+
+      if (
+        [...missing].some(([name, features]) =>
+          drawings.some(
+            ({ drawing }) =>
+              drawing &&
+              (features.has('slots') ||
+                inOrUnder(drawing, `.${CSS.escape(getPluginNodeClass(name))}`))
+          )
+        )
+      ) {
+        warnings.push({ code: 'content-undrawn' });
+      }
+
+      const elements = drawings.flatMap(({ drawing }) => [
+        ...(drawing?.querySelectorAll<HTMLElement | SVGElement>(
+          ':scope > svg, :scope > [data-board-arrow-label]'
+        ) ?? []),
+      ]);
+      const origin = host.getBoundingClientRect();
+
+      return {
+        background: backgroundOf(host, srgb),
+        edges: edgesOf(
+          drawings.flatMap(({ box, drawing }) => [
+            box,
+            ...(drawing ? paintedIn(drawing, origin) : []),
+          ])
+        ),
+        images: elements.flatMap((drawn) =>
+          [...drawn.querySelectorAll<HTMLElement | SVGElement>('image, img')]
+            .filter((image) => image.getAttribute(sourceOf(image)))
+            .map((image) => ({
+              id:
+                image
+                  .closest('[data-board-picture]')
+                  ?.getAttribute('data-board-picture') ?? '',
+              image,
+              size: image.getBoundingClientRect(),
+            }))
+        ),
+        labels: new Map(
+          elements
+            .filter((element) => element.hasAttribute('data-board-arrow-label'))
+            .map((label) => [label, label.getBoundingClientRect()])
+        ),
+        placed: elements,
+        styles: readPictureStyles(frame, host, elements),
+      };
+    } finally {
+      host.replaceChildren();
+    }
+  })();
   // A node removed from the editor stays watched until its observer's next
   // delivery, so the attribute removal and the styles wait for that delivery.
   // The reads came first because a page style sheet can match the editor's
