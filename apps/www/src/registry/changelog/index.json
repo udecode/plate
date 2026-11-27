@@ -79,6 +79,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-render-prop-type-imports",
+      "href": "/registry/changelog/2026-11-27-render-prop-type-imports.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Import RenderElementProps from platejs/react and RenderStaticNodeWrapper from platejs/static",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["caption", "block-list-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-26-board-arrow-components",
       "href": "/registry/changelog/2026-11-26-board-arrow-components.json",
       "status": "draft",

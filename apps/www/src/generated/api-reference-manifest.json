@@ -8044,124 +8044,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:RenderElementProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderElementProps",
-          "runtime": false,
-          "signature": "type RenderElementProps<N extends Element = Element> = {\n  attributes: {\n    [key: string]: unknown;\n    'data-editor-node': 'element';\n    ref?: (element: HTMLElement | null) => void;\n    className?: string;\n    'data-editor-inline'?: true;\n    'data-editor-void'?: true;\n    dir?: 'auto' | 'ltr' | 'rtl';\n    style?: any;\n  };\n  children: any;\n  element: N;\n  /** Pre-computed path for static rendering (avoids expensive findPath traversal). */\n  path?: Path;\n  /** Element-owned primary and named content renderers. */\n  slots: RenderElementSlots<N>;\n};",
-          "source": null,
-          "typeParameters": [
-            "N extends Element = Element"
-          ]
-        },
-        "platejs:RenderElementSlots": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderElementSlots",
-          "runtime": false,
-          "signature": "type RenderElementSlots<N extends Element = Element> = {\n  children: (options?: any) => any;\n  contentBoundary: (props: any) => any;\n  contentRoot: (slot: ElementContentRootSlot<N>, options?: any) => any;\n};",
-          "source": null,
-          "typeParameters": [
-            "N extends Element = Element"
-          ]
-        },
-        "platejs:RenderLeafProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderLeafProps",
-          "runtime": false,
-          "signature": "type RenderLeafProps<N extends Text$1 = Text$1, L extends Text$1 = N> = {\n  attributes: {\n    [key: string]: unknown;\n    className?: string;\n    'data-editor-leaf'?: true;\n    style?: any;\n  };\n  children: any;\n  leaf: Omit<L, 'text'>;\n  /** Stable path for the live text node. */\n  path?: Path;\n  text: Omit<N, 'text'>;\n  /** Position of this rendered segment when Decorations split the text node. */\n  leafPosition?: LeafPosition;\n};",
-          "source": null,
-          "typeParameters": [
-            "N extends Text$1 = Text$1",
-            "L extends Text$1 = N"
-          ]
-        },
-        "platejs:RenderStaticNodeWrapper": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderStaticNodeWrapper",
-          "runtime": false,
-          "signature": "type RenderStaticNodeWrapper<TSource extends RenderStaticNodeWrapperSource = any> = {\n  bivarianceHack(props: RenderStaticNodeWrapperProps<TSource>): RenderStaticNodeWrapperFunction<TSource>;\n}['bivarianceHack'];",
-          "source": null,
-          "typeParameters": [
-            "TSource extends RenderStaticNodeWrapperSource = any"
-          ]
-        },
-        "platejs:RenderStaticNodeWrapperFunction": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderStaticNodeWrapperFunction",
-          "runtime": false,
-          "signature": "type RenderStaticNodeWrapperFunction<TSource extends RenderStaticNodeWrapperSource = any> = {\n  bivarianceHack(hocProps: RenderStaticNodeWrapperProps<TSource>): any;\n}['bivarianceHack'] | null | undefined;",
-          "source": null,
-          "typeParameters": [
-            "TSource extends RenderStaticNodeWrapperSource = any"
-          ]
-        },
-        "platejs:RenderStaticNodeWrapperProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderStaticNodeWrapperProps",
-          "runtime": false,
-          "signature": "type RenderStaticNodeWrapperProps<TSource extends RenderStaticNodeWrapperSource = any> = RenderStaticNodeWrapperDefinition<TSource> extends (infer C extends AnyBasePluginDefinition) ? BaseRenderNodeProps<C> & RenderElementProps<0 extends 1 & TSource ? Element : ElementWith<WithAnyName<C>>> & {\n  path: Path;\n} : never;",
-          "source": null,
-          "typeParameters": [
-            "TSource extends RenderStaticNodeWrapperSource = any"
-          ]
-        },
-        "platejs:RenderTextHostProps": {
-          "aliases": [],
-          "documentation": "One call for a whole text, which owns the text's identity.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderTextHostProps",
-          "runtime": false,
-          "signature": "type RenderTextHostProps<N extends Text$1 = Text$1> = {\n  /** The text node being rendered. */\n  text: N;\n  /** Pre-computed path for static rendering. */\n  path?: Path;\n  /** The children (leaves) rendered within this text node. */\n  children: any;\n  /**\n   * HTML attributes to be spread onto the rendered container element. Includes\n   * `data-editor-node=\"text\"` and `ref`.\n   */\n  attributes: {\n    [key: string]: unknown;\n    'data-editor-node': 'text';\n    ref?: ((element: HTMLSpanElement | null) => void) | {\n      current: HTMLSpanElement | null;\n    } | null;\n    className?: string;\n    style?: any;\n  };\n  piece?: undefined;\n};",
-          "source": null,
-          "typeParameters": [
-            "N extends Text$1 = Text$1"
-          ]
-        },
-        "platejs:RenderTextPieceProps": {
-          "aliases": [],
-          "documentation": "One call for one piece of a paged text: a measured run of the text on a\ndrawn page, the lines of a page not drawn yet, or a whole text that no layout\nmeasures. One line can hold several runs of a text.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderTextPieceProps",
-          "runtime": false,
-          "signature": "type RenderTextPieceProps<N extends Text$1 = Text$1> = {\n  /** The whole text node the piece belongs to. */\n  text: N;\n  /** The leaves of this piece alone. */\n  children: any;\n  /**\n   * HTML attributes to be spread onto the rendered element. Includes\n   * `data-editor-text-piece` and the attributes plugins add, never the text's\n   * identity or `ref`.\n   */\n  attributes: {\n    [key: string]: unknown;\n    'data-editor-node'?: never;\n    'data-editor-node-key'?: never;\n    'data-editor-path'?: never;\n    'data-editor-text-piece': true;\n    className?: string;\n    ref?: never;\n    style?: any;\n  };\n  path?: never;\n  /** The piece's position among the text's pieces. */\n  piece: Readonly<{\n    index: number;\n  }>;\n};",
-          "source": null,
-          "typeParameters": [
-            "N extends Text$1 = Text$1"
-          ]
-        },
-        "platejs:RenderTextProps": {
-          "aliases": [],
-          "documentation": "Props of a text renderer. Outside a paged view each text gets one call with\nits host attributes. In a paged view each piece of a text gets its own call\nwith `piece`, so narrow on `piece` before reading `ref` or the text's\nidentity.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "RenderTextProps",
-          "runtime": false,
-          "signature": "type RenderTextProps<N extends Text$1 = Text$1> = RenderTextHostProps<N> | RenderTextPieceProps<N>;",
-          "source": null,
-          "typeParameters": [
-            "N extends Text$1 = Text$1"
-          ]
-        },
         "platejs:ReplaceSliceCommand": {
           "aliases": [],
           "documentation": "",
@@ -9498,20 +9380,6 @@
           "source": null,
           "typeParameters": [
             "TValue"
-          ]
-        },
-        "platejs:StaticRenderLeafProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "StaticRenderLeafProps",
-          "runtime": false,
-          "signature": "type StaticRenderLeafProps<N extends Text$1 = Text$1, L extends Text$1 = N> = {\n  attributes: {\n    [key: string]: unknown;\n    className?: string;\n    'data-editor-leaf'?: true;\n    style?: any;\n  };\n  children: any;\n  leaf: L;\n  /** Pre-computed path for static rendering. */\n  path?: Path;\n  text: N;\n  leafPosition?: LeafPosition;\n};",
-          "source": null,
-          "typeParameters": [
-            "N extends Text$1 = Text$1",
-            "L extends Text$1 = N"
           ]
         },
         "platejs:StrikethroughRules": {
@@ -25866,19 +25734,6 @@
             "TElement extends Element$1 = Element$1"
           ]
         },
-        "platejs/react:RenderElementSlots": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "RenderElementSlots",
-          "runtime": false,
-          "signature": "type RenderElementSlots<N extends Element = Element> = {\n  children: (options?: any) => any;\n  contentBoundary: (props: any) => any;\n  contentRoot: (slot: ElementContentRootSlot<N>, options?: any) => any;\n};",
-          "source": null,
-          "typeParameters": [
-            "N extends Element = Element"
-          ]
-        },
         "platejs/react:RenderLeafProps": {
           "aliases": [],
           "documentation": "",
@@ -25966,70 +25821,27 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/react:RenderStaticNodeWrapper": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "RenderStaticNodeWrapper",
-          "runtime": false,
-          "signature": "type RenderStaticNodeWrapper<TSource extends RenderStaticNodeWrapperSource = any> = {\n  bivarianceHack(props: RenderStaticNodeWrapperProps<TSource>): RenderStaticNodeWrapperFunction<TSource>;\n}['bivarianceHack'];",
-          "source": null,
-          "typeParameters": [
-            "TSource extends RenderStaticNodeWrapperSource = any"
-          ]
-        },
-        "platejs/react:RenderStaticNodeWrapperFunction": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "RenderStaticNodeWrapperFunction",
-          "runtime": false,
-          "signature": "type RenderStaticNodeWrapperFunction<TSource extends RenderStaticNodeWrapperSource = any> = {\n  bivarianceHack(hocProps: RenderStaticNodeWrapperProps<TSource>): any;\n}['bivarianceHack'] | null | undefined;",
-          "source": null,
-          "typeParameters": [
-            "TSource extends RenderStaticNodeWrapperSource = any"
-          ]
-        },
-        "platejs/react:RenderStaticNodeWrapperProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "RenderStaticNodeWrapperProps",
-          "runtime": false,
-          "signature": "type RenderStaticNodeWrapperProps<TSource extends RenderStaticNodeWrapperSource = any> = RenderStaticNodeWrapperDefinition<TSource> extends (infer C extends AnyBasePluginDefinition) ? BaseRenderNodeProps<C> & RenderElementProps<0 extends 1 & TSource ? Element : ElementWith<WithAnyName<C>>> & {\n  path: Path;\n} : never;",
-          "source": null,
-          "typeParameters": [
-            "TSource extends RenderStaticNodeWrapperSource = any"
-          ]
-        },
         "platejs/react:RenderTextHostProps": {
           "aliases": [],
-          "documentation": "One call for a whole text, which owns the text's identity.",
+          "documentation": "One `renderText` call for a whole text, which owns the text's identity.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "RenderTextHostProps",
           "runtime": false,
-          "signature": "type RenderTextHostProps<N extends Text$1 = Text$1> = {\n  /** The text node being rendered. */\n  text: N;\n  /** Pre-computed path for static rendering. */\n  path?: Path;\n  /** The children (leaves) rendered within this text node. */\n  children: any;\n  /**\n   * HTML attributes to be spread onto the rendered container element. Includes\n   * `data-editor-node=\"text\"` and `ref`.\n   */\n  attributes: {\n    [key: string]: unknown;\n    'data-editor-node': 'text';\n    ref?: ((element: HTMLSpanElement | null) => void) | {\n      current: HTMLSpanElement | null;\n    } | null;\n    className?: string;\n    style?: any;\n  };\n  piece?: undefined;\n};",
+          "signature": "type RenderTextHostProps = {\n  attributes: {\n    'data-editor-dom-sync'?: true;\n    'data-editor-node': 'text';\n    'data-editor-dom-sync-reason'?: DOMTextSyncOptOutReason;\n    'data-editor-path'?: string;\n    'data-editor-node-key'?: string;\n    ref?: Ref<HTMLSpanElement>;\n  };\n  children: ReactNode;\n  piece?: undefined;\n  text: Text;\n};",
           "source": null,
-          "typeParameters": [
-            "N extends Text$1 = Text$1"
-          ]
+          "typeParameters": []
         },
         "platejs/react:RenderTextPieceProps": {
           "aliases": [],
-          "documentation": "One call for one piece of a paged text: a measured run of the text on a\ndrawn page, the lines of a page not drawn yet, or a whole text that no layout\nmeasures. One line can hold several runs of a text.",
+          "documentation": "One `renderText` call for one piece of a paged text: a measured run of the\ntext on a drawn page, the lines of a page not drawn yet, or a whole text\nthat no layout measures. One line can hold several runs of a text. Its\nchildren hold only that piece's leaves, and its attributes carry no text\nidentity. `piece.index` is the piece's position among the text's pieces.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "RenderTextPieceProps",
           "runtime": false,
-          "signature": "type RenderTextPieceProps<N extends Text$1 = Text$1> = {\n  /** The whole text node the piece belongs to. */\n  text: N;\n  /** The leaves of this piece alone. */\n  children: any;\n  /**\n   * HTML attributes to be spread onto the rendered element. Includes\n   * `data-editor-text-piece` and the attributes plugins add, never the text's\n   * identity or `ref`.\n   */\n  attributes: {\n    [key: string]: unknown;\n    'data-editor-node'?: never;\n    'data-editor-node-key'?: never;\n    'data-editor-path'?: never;\n    'data-editor-text-piece': true;\n    className?: string;\n    ref?: never;\n    style?: any;\n  };\n  path?: never;\n  /** The piece's position among the text's pieces. */\n  piece: Readonly<{\n    index: number;\n  }>;\n};",
+          "signature": "type RenderTextPieceProps = {\n  attributes: Readonly<{\n    'data-editor-node'?: never;\n    'data-editor-node-key'?: never;\n    'data-editor-path'?: never;\n    'data-editor-text-piece': true;\n    ref?: never;\n  }>;\n  children: ReactNode;\n  piece: Readonly<{\n    index: number;\n  }>;\n  text: Text;\n};",
           "source": null,
-          "typeParameters": [
-            "N extends Text$1 = Text$1"
-          ]
+          "typeParameters": []
         },
         "platejs/react:RenderTextProps": {
           "aliases": [],
@@ -27502,20 +27314,6 @@
           "source": null,
           "typeParameters": [
             "TValue"
-          ]
-        },
-        "platejs/react:StaticRenderLeafProps": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "StaticRenderLeafProps",
-          "runtime": false,
-          "signature": "type StaticRenderLeafProps<N extends Text$1 = Text$1, L extends Text$1 = N> = {\n  attributes: {\n    [key: string]: unknown;\n    className?: string;\n    'data-editor-leaf'?: true;\n    style?: any;\n  };\n  children: any;\n  leaf: L;\n  /** Pre-computed path for static rendering. */\n  path?: Path;\n  text: N;\n  leafPosition?: LeafPosition;\n};",
-          "source": null,
-          "typeParameters": [
-            "N extends Text$1 = Text$1",
-            "L extends Text$1 = N"
           ]
         },
         "platejs/react:StrikethroughPlugin": {
@@ -29653,6 +29451,45 @@
             "T extends EditorStaticProps = EditorStaticProps"
           ]
         },
+        "platejs/static:RenderStaticNodeWrapper": {
+          "aliases": [],
+          "documentation": "Wrapper factory for wrapping rendered elements during static HTML output.",
+          "entrypoint": "platejs/static",
+          "kind": "type",
+          "name": "RenderStaticNodeWrapper",
+          "runtime": false,
+          "signature": "type RenderStaticNodeWrapper<TSource extends RenderStaticNodeWrapperSource = any> = {\n  bivarianceHack(props: RenderStaticNodeWrapperProps<TSource>): RenderStaticNodeWrapperFunction<TSource>;\n}['bivarianceHack'];",
+          "source": null,
+          "typeParameters": [
+            "TSource extends RenderStaticNodeWrapperSource = any"
+          ]
+        },
+        "platejs/static:RenderStaticNodeWrapperFunction": {
+          "aliases": [],
+          "documentation": "Wrapper component returned by a static node wrapper, or nullish to skip wrapping.",
+          "entrypoint": "platejs/static",
+          "kind": "type",
+          "name": "RenderStaticNodeWrapperFunction",
+          "runtime": false,
+          "signature": "type RenderStaticNodeWrapperFunction<TSource extends RenderStaticNodeWrapperSource = any> = {\n  bivarianceHack(hocProps: RenderStaticNodeWrapperProps<TSource>): any;\n}['bivarianceHack'] | null | undefined;",
+          "source": null,
+          "typeParameters": [
+            "TSource extends RenderStaticNodeWrapperSource = any"
+          ]
+        },
+        "platejs/static:RenderStaticNodeWrapperProps": {
+          "aliases": [],
+          "documentation": "Props passed to a static node wrapper and its returned component.",
+          "entrypoint": "platejs/static",
+          "kind": "type",
+          "name": "RenderStaticNodeWrapperProps",
+          "runtime": false,
+          "signature": "type RenderStaticNodeWrapperProps<TSource extends RenderStaticNodeWrapperSource = any> = RenderStaticNodeWrapperDefinition<TSource> extends (infer C extends AnyBasePluginDefinition) ? BaseRenderNodeProps<C> & RenderElementProps<0 extends 1 & TSource ? Element : ElementWith<WithAnyName<C>>> & {\n  path: Path;\n} : never;",
+          "source": null,
+          "typeParameters": [
+            "TSource extends RenderStaticNodeWrapperSource = any"
+          ]
+        },
         "platejs/static:StaticHtmlDiagnostic": {
           "aliases": [],
           "documentation": "",
@@ -29674,6 +29511,20 @@
           "signature": "type StaticHtmlResult = Readonly<{\n  data: string;\n  diagnostics: readonly StaticHtmlDiagnostic[];\n}>;",
           "source": null,
           "typeParameters": []
+        },
+        "platejs/static:StaticRenderLeafProps": {
+          "aliases": [],
+          "documentation": "Props passed to a leaf renderer during static HTML rendering.",
+          "entrypoint": "platejs/static",
+          "kind": "type",
+          "name": "StaticRenderLeafProps",
+          "runtime": false,
+          "signature": "type StaticRenderLeafProps<N extends Text$1 = Text$1, L extends Text$1 = N> = {\n  attributes: {\n    [key: string]: unknown;\n    className?: string;\n    'data-editor-leaf'?: true;\n    style?: any;\n  };\n  children: any;\n  leaf: L;\n  /** Pre-computed path for static rendering. */\n  path?: Path;\n  text: N;\n  leafPosition?: LeafPosition;\n};",
+          "source": null,
+          "typeParameters": [
+            "N extends Text$1 = Text$1",
+            "L extends Text$1 = N"
+          ]
         },
         "platejs/suggestion:BaseSuggestionPlugin": {
           "aliases": [],

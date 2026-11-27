@@ -34,6 +34,8 @@ export type {
   ExternalTextView,
   RenderElementProps,
   RenderLeafProps,
+  RenderTextHostProps,
+  RenderTextPieceProps,
   RenderTextProps,
   RenderVoidProps,
   DecorationAttributes,

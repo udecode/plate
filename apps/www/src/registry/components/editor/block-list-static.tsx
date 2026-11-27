@@ -6,10 +6,10 @@ import {
   type Element,
   isOrderedList,
   ListType,
-  type RenderStaticNodeWrapper,
 } from 'platejs';
 import { BaseDetailsPlugin } from 'platejs/details';
 import { BaseImagePlugin } from 'platejs/media';
+import type { RenderStaticNodeWrapper } from 'platejs/static';
 import * as React from 'react';
 
 type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;

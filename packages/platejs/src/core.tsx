@@ -112,9 +112,6 @@ export type {
   PluginFormatRegistry,
   PluginFormatSchemaView,
   PluginShortcutInput,
-  RenderStaticNodeWrapper,
-  RenderStaticNodeWrapperFunction,
-  RenderStaticNodeWrapperProps,
   TextStaticProps,
   TransformOptions,
 } from './lib/plugin/BasePlugin';
@@ -201,7 +198,12 @@ export * from './lib/plugins/element-state/index';
 export { HtmlPlugin } from './lib/plugins/html/HtmlPlugin';
 export * from './lib/plugins/input-rules/index';
 export * from './lib/plugins/paragraph/index';
-export type * from './lib/types/index';
+export type {
+  AnyObject,
+  ElementContentRootSlot,
+  Nullable,
+  UnknownObject,
+} from './lib/types/index';
 export * from './lib/utils/index';
 export * from './utils/index';
 

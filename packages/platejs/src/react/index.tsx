@@ -18,6 +18,8 @@ export {
   type NodeProps,
   type RenderElementProps,
   type RenderLeafProps,
+  type RenderTextHostProps,
+  type RenderTextPieceProps,
   type RenderTextProps,
   type TransformOptions,
 } from './core';

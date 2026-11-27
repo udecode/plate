@@ -128,6 +128,35 @@
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
+    "caption": [
+      "2026-11-27-render-prop-type-imports",
+      "2026-11-19-rtl-media-align",
+      "2026-11-17-cn-package",
+      "2026-11-09-pass-view-root-to-key-questions",
+      "2026-10-18-layout-style-values",
+      "2026-10-13-media-caption-preview",
+      "2026-08-31-stabilize-hidden-media-captions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "block-list-static": [
+      "2026-11-27-render-prop-type-imports",
+      "2026-11-23-board-export",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-12-fix-list-import-export",
+      "2026-10-10-fix-static-list-indent",
+      "2026-10-10-list-restart-continue",
+      "2026-10-09-export-static-presentation",
+      "2026-09-30-static-list-table-known-paths",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
     "board": [
       "2026-11-26-board-arrow-components",
       "2026-11-26-suggestion-colors",
@@ -487,22 +516,6 @@
       "2026-09-01-plugin-render-contract",
       "2026-08-28-canonical-editor-api-names",
       "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "block-list-static": [
-      "2026-11-23-board-export",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-12-fix-list-import-export",
-      "2026-10-10-fix-static-list-indent",
-      "2026-10-10-list-restart-continue",
-      "2026-10-09-export-static-presentation",
-      "2026-09-30-static-list-table-known-paths",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
     "html-export": [
@@ -1010,17 +1023,6 @@
       "2025-11-20-biome-ultracite"
     ],
     "rtl-demo": ["2026-11-19-rtl-editor-ui"],
-    "caption": [
-      "2026-11-19-rtl-media-align",
-      "2026-11-17-cn-package",
-      "2026-11-09-pass-view-root-to-key-questions",
-      "2026-10-18-layout-style-values",
-      "2026-10-13-media-caption-preview",
-      "2026-08-31-stabilize-hidden-media-captions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-23-rich-media-caption-children"
-    ],
     "caption-static": [
       "2026-11-19-rtl-media-align",
       "2026-11-17-cn-package",

@@ -293,6 +293,7 @@ const editor = useCreateEditor({
 | Plite | Plate | 说明 |
 | --- | --- | --- |
 | `EditableProps` | `EditorContentProps` | Plate 不导出 `EditableProps`。 |
+| `RenderElementProps`、`RenderLeafProps`、`RenderTextProps`、`RenderTextHostProps`、`RenderTextPieceProps` | 来自 `platejs/react` 的同名类型 | 根入口 `platejs` 不再导出渲染属性类型。`StaticRenderLeafProps` 和 `RenderStaticNodeWrapper*` 请从 `platejs/static` 导入。 |
 | `EditableHandlerContext`、`EditableInputEventContext`、`EditableDOMBeforeInputContext`、`EditableDOMBeforeInputHandler`、`EditableKeyDownHandler`、`EditablePointerSelectionEndHandler` | 来自 `platejs/react` 的同名类型 | `context.editor` 为 Plate 的 React `Editor`。 |
 | `PagedEditableProps`、`VirtualizedEditableProps` | `PagedEditorContentProps`、`VirtualizedEditorContentProps` | |
 | `UseEditorOptions` | `CreateEditorOptions` | |

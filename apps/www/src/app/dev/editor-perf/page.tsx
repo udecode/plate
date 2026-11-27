@@ -8,14 +8,9 @@ import {
 import { createAtomStore } from 'jotai-x';
 import { useHydrateAtoms } from 'jotai/utils';
 import { createStore as createJotaiStore } from 'jotai/vanilla';
-import type {
-  Element as ElementNode,
-  Descendant,
-  Path,
-  RenderElementProps,
-  Value,
-} from 'platejs';
+import type { Element as ElementNode, Descendant, Path, Value } from 'platejs';
 import {
+  type RenderElementProps,
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
@@ -1456,9 +1451,8 @@ function getRenderElementPath(
   const { element } = props;
 
   return (
-    props.path ??
     pathMap.get(element) ??
-    parseDataPlitePath((props.attributes as any)['data-editor-path'])
+    parseDataPlitePath(props.attributes['data-editor-path'])
   );
 }
 

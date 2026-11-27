@@ -234,7 +234,8 @@ Low-level renderer infrastructure that has no plugin owner uses the raw render
 contract instead:
 
 ```tsx
-import type { Element, RenderElementProps } from "platejs";
+import type { Element } from "platejs";
+import type { RenderElementProps } from "platejs/react";
 
 export function TypedElement<TElement extends Element>(
   props: RenderElementProps<TElement>

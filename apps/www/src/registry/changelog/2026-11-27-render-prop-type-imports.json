@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-render-prop-type-imports",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-render-prop-type-imports.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Import RenderElementProps from platejs/react and RenderStaticNodeWrapper from platejs/static",
+  "targets": [
+    {
+      "name": "caption",
+      "files": ["apps/www/src/registry/components/editor/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-caption-render-element-props",
+      "kind": "wiring",
+      "summary": "Import `RenderElementProps` from `platejs/react` instead of root `platejs`.",
+      "details": [],
+      "migrationNotes": [
+        "Import `RenderElementProps` from `platejs/react` in `caption.tsx` after upgrading `platejs`."
+      ],
+      "targets": ["caption"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-render-prop-type-imports",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-block-list-static-wrapper-type",
+      "kind": "wiring",
+      "summary": "Import `RenderStaticNodeWrapper` from `platejs/static` instead of root `platejs`.",
+      "details": [],
+      "migrationNotes": [
+        "Import `RenderStaticNodeWrapper` from `platejs/static` in `block-list-static.tsx` after upgrading `platejs`."
+      ],
+      "targets": ["block-list-static"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-render-prop-type-imports",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

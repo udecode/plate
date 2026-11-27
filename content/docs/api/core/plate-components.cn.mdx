@@ -223,7 +223,8 @@ export function QuoteElement(props: EditorElementProps<typeof QuotePlugin>) {
 没有插件所有者的底层 renderer 基础设施使用原始 render contract：
 
 ```tsx
-import type { Element, RenderElementProps } from "platejs";
+import type { Element } from "platejs";
+import type { RenderElementProps } from "platejs/react";
 
 export function TypedElement<TElement extends Element>(
   props: RenderElementProps<TElement>

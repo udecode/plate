@@ -1112,6 +1112,7 @@ type RenderStaticNodeWrapperDefinition<
     ? TSource
     : Extract<InternalPluginDefinitionOf<TSource>, AnyBasePluginDefinition>;
 
+/** Wrapper factory for wrapping rendered elements during static HTML output. */
 export type RenderStaticNodeWrapper<
   TSource extends RenderStaticNodeWrapperSource = any,
 > = {
@@ -1120,6 +1121,7 @@ export type RenderStaticNodeWrapper<
   ): RenderStaticNodeWrapperFunction<TSource>;
 }['bivarianceHack'];
 
+/** Wrapper component returned by a static node wrapper, or nullish to skip wrapping. */
 export type RenderStaticNodeWrapperFunction<
   TSource extends RenderStaticNodeWrapperSource = any,
 > =
@@ -1129,6 +1131,7 @@ export type RenderStaticNodeWrapperFunction<
   | null
   | undefined;
 
+/** Props passed to a static node wrapper and its returned component. */
 export type RenderStaticNodeWrapperProps<
   TSource extends RenderStaticNodeWrapperSource = any,
 > =

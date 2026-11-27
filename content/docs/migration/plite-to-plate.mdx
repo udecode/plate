@@ -308,6 +308,7 @@ them. Every other value keeps its binding, as
 | Plite | Plate | Notes |
 | --- | --- | --- |
 | `EditableProps` | `EditorContentProps` | Plate does not export `EditableProps`. |
+| `RenderElementProps`, `RenderLeafProps`, `RenderTextProps`, `RenderTextHostProps`, `RenderTextPieceProps` | The same names from `platejs/react` | Root `platejs` does not export render prop types. Import `StaticRenderLeafProps` and `RenderStaticNodeWrapper*` from `platejs/static`. |
 | `EditableHandlerContext`, `EditableInputEventContext`, `EditableDOMBeforeInputContext`, `EditableDOMBeforeInputHandler`, `EditableKeyDownHandler`, `EditablePointerSelectionEndHandler` | The same names from `platejs/react` | `context.editor` is Plate's React `Editor`. |
 | `PagedEditableProps`, `VirtualizedEditableProps` | `PagedEditorContentProps`, `VirtualizedEditorContentProps` | |
 | `UseEditorOptions` | `CreateEditorOptions` | |

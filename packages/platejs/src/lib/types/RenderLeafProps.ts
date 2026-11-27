@@ -16,6 +16,7 @@ export type RenderLeafProps<N extends Text = Text, L extends Text = N> = {
   leafPosition?: LeafPosition;
 };
 
+/** Props passed to a leaf renderer during static HTML rendering. */
 export type StaticRenderLeafProps<N extends Text = Text, L extends Text = N> = {
   attributes: {
     [key: string]: unknown;

@@ -2,15 +2,9 @@
 
 import { cva } from 'class-variance-authority';
 import { cn } from 'cn';
+import { NodeApi, PathApi, RangeApi, type Element, type Path } from 'platejs';
 import {
-  NodeApi,
-  PathApi,
-  RangeApi,
-  type Element,
-  type Path,
   type RenderElementProps,
-} from 'platejs';
-import {
   useEditor,
   useEditorSelector,
   useElement,

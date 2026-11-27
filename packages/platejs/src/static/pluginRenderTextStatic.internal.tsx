@@ -106,17 +106,14 @@ export const pipeRenderTextStatic = (
         const textAttributes = plugin.render.mark?.textAttributes;
         const pluginTextProps =
           typeof textAttributes === 'function'
-            ? textAttributes({ ...props, children } as any)
+            ? textAttributes({ attributes, ...props, children } as any)
             : (textAttributes ?? {});
 
         attributes = {
           ...attributes,
           ...pluginTextProps,
           ...(pluginTextProps.className && {
-            className: clsx(
-              (props as any).className,
-              pluginTextProps.className
-            ),
+            className: clsx(attributes?.className, pluginTextProps.className),
           }),
         };
       }
