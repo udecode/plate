@@ -372,15 +372,19 @@ export const registryFeatures: Registry['items'] = [
   {
     dependencies: ['platejs'],
     description:
-      'Pen markup on document text, drawn over the Editable, with a sign for ink that no longer sits on its words: words that changed, a deleted block or a margin too narrow for a note.',
+      'Pen markup on document text, drawn over the Editable, with signs for changed or deleted text and AI digitization into edits, suggestions, comments, and answers.',
     files: [
       {
         path: 'components/editor/ink.tsx',
         type: 'registry:component',
       },
     ],
-    meta: { examples: ['ink-demo'], registry: false },
+    meta: { docs: [{ route: '/docs/ink' }], examples: ['ink-demo'] },
     name: 'ink',
+    registryDependencies: [
+      '@plate/draw-toolbar-button',
+      '@plate/ink-switch-toolbar-button',
+    ],
     title: 'Ink',
     type: 'registry:component',
   },

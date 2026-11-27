@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-ink-digitize",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-ink-digitize.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Publish the Ink kit and add AI Digitize (lasso, Digitize all, kind filters, comments, and drop digitized ink)",
+  "targets": [
+    {
+      "name": "ink",
+      "files": ["apps/www/src/registry/components/editor/ink.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-digitize-bar",
+      "files": ["apps/www/src/registry/components/editor/ink-digitize-bar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-switch-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/ink-switch-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-demo",
+      "files": ["apps/www/src/registry/examples/ink-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-ink-publish-9f31b8e2",
+      "kind": "new",
+      "summary": "Publish the `InkKit` registry item with `InkDigitizeBar`, `InkSignButton`, `DrawToolbarButton`, and `InkSwitchToolbarButton` for pen markup and AI digitization.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-digitize",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-digitize-bar-4b82e10a",
+      "kind": "new",
+      "summary": "Add the floating lasso bar, `DigitizeAllToolbarButton`, kind filter chips, and async comment save/retry confirm dialog backed by `ink-digitize` and `ink-digitize-api`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-digitize-bar"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-digitize",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-switch-drop-7c4d2e91",
+      "kind": "new",
+      "summary": "Add `ShowDigitizedToolbarButton` to preview digitized ink faded and `DropDigitizedToolbarButton` to permanently drop saved digitized ink and unreferenced copies.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-switch-toolbar-button"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-digitize",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-demo-digitize-1a5e8f34",
+      "kind": "behavior",
+      "summary": "Wire Digitize all, kind filtering, comment UI, refuse/delay save controls, and unified single-key local storage persistence for document and comments.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-demo"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-digitize",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

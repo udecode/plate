@@ -1017,6 +1017,136 @@
       "type": "registry:component"
     },
     {
+      "name": "draw-toolbar-button",
+      "title": "Draw Toolbar Button",
+      "description": "A split toolbar button that turns the ink Draw tool on or off and picks the pen, the highlighter, the eraser or the lasso.",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/editor-dropdown-menu.json",
+        "https://platejs.org/r/toolbar.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/draw-toolbar-button.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/draw-toolbar-button.tsx"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/ink"
+          }
+        ],
+        "examples": [
+          "ink-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
+      "name": "ink-switch-toolbar-button",
+      "title": "Ink Switch Toolbar Button",
+      "description": "Toolbar controls to hide or show ink, preview digitized ink faded, and permanently drop saved digitized ink.",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/toolbar.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/ink-switch-toolbar-button.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/ink-switch-toolbar-button.tsx"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/ink"
+          }
+        ],
+        "examples": [
+          "ink-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
+      "name": "ink-sign-button",
+      "title": "Ink Sign Button",
+      "description": "The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes or brings back the marks.",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/floating-popover.json",
+        "button"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/ink-sign-button.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/ink-sign-button.tsx"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/ink"
+          }
+        ],
+        "examples": [
+          "ink-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
+      "name": "ink-digitize-bar",
+      "title": "Ink Digitize Bar",
+      "description": "Floating lasso bar, Digitize all toolbar trigger, and confirm dialog with kind filters and async comment save/retry.",
+      "dependencies": [
+        "platejs",
+        "sonner",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/ink-digitize.json",
+        "https://platejs.org/r/ink-digitize-api.json",
+        "https://platejs.org/r/settings-dialog.json",
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/use-chat.json",
+        "button",
+        "checkbox",
+        "input"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/ink-digitize-bar.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/ink-digitize-bar.tsx"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/ink"
+          }
+        ],
+        "examples": [
+          "ink-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
       "name": "more-toolbar-button",
       "title": "More Toolbar Button",
       "description": "A menu for additional text formatting options.",
@@ -2769,6 +2899,39 @@
       "type": "registry:component"
     },
     {
+      "name": "ink",
+      "title": "Ink",
+      "description": "Pen markup on document text, drawn over the Editable, with signs for changed or deleted text and AI digitization into edits, suggestions, comments, and answers.",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/draw-toolbar-button.json",
+        "https://platejs.org/r/ink-switch-toolbar-button.json",
+        "https://platejs.org/r/ink-digitize-bar.json",
+        "https://platejs.org/r/ink-sign-button.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/ink.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/ink.tsx"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/ink"
+          }
+        ],
+        "examples": [
+          "ink-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
       "name": "callout",
       "title": "Callout",
       "description": "A callout component for highlighting important information with customizable icons and styles.",
@@ -4310,6 +4473,30 @@
       "type": "registry:file"
     },
     {
+      "name": "ink-digitize-api",
+      "title": "Ink Digitize API",
+      "description": "API route that reads handwritten ink passage images into structured document edits, comments, and answers.",
+      "dependencies": [
+        "@ai-sdk/gateway@3",
+        "ai@6",
+        "zod",
+        "next"
+      ],
+      "files": [
+        {
+          "path": "src/registry/app/api/ai/ink-digitize/route.ts",
+          "type": "registry:file",
+          "target": "app/api/ai/ink-digitize/route.ts"
+        },
+        {
+          "path": "src/registry/app/api/ai/ink-digitize/ink-digitize-route.ts",
+          "type": "registry:file",
+          "target": "app/api/ai/ink-digitize/ink-digitize-route.ts"
+        }
+      ],
+      "type": "registry:file"
+    },
+    {
       "name": "files-api",
       "title": "Files Gateway",
       "dependencies": [
@@ -4678,6 +4865,25 @@
       "files": [
         {
           "path": "src/registry/lib/inline-suggestion.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "type": "registry:lib"
+    },
+    {
+      "name": "ink-digitize",
+      "title": "Ink Digitize",
+      "description": "Builds ink digitize requests, groups live marks by distance and time, validates readings, and applies confirmed edits, suggestions, and comments.",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/ink-digitize-api.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/lib/ink-digitize.ts",
           "type": "registry:lib"
         }
       ],

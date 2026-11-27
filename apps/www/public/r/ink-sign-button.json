@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "ink-sign-button",
+  "title": "Ink Sign Button",
+  "description": "The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes or brings back the marks.",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/floating-popover.json",
+    "button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/ink-sign-button.tsx",
+      "content": "'use client';\n\nimport { IconPlaceholder } from '@/components/icon-placeholder';\nimport { InkCopyView, InkPlugin, type InkSign } from 'platejs/ink/react';\nimport { useEditor, useEditorReadOnly } from 'platejs/react';\n\nimport { Button } from '@/components/ui/button';\nimport {\n  FloatingPopover,\n  FloatingPopoverContent,\n  FloatingPopoverTrigger,\n} from '@/registry/components/editor/floating-popover';\n\nconst SIGN_LABEL: Record<InkSign['state'], string> = {\n  changed: 'Ink no longer on its words',\n  deleted: 'Ink on deleted text',\n  narrow: 'Ink outside a narrow margin',\n};\n\nexport function InkSignButton({ sign }: { sign: InkSign }) {\n  const editor = useEditor();\n  const readOnly = useEditorReadOnly();\n  const label = sign.digitized\n    ? `Digitized ink (${SIGN_LABEL[sign.state].toLowerCase()})`\n    : SIGN_LABEL[sign.state];\n\n  return (\n    <FloatingPopover>\n      <FloatingPopoverTrigger>\n        <Button\n          aria-label={`${label}: ${sign.marks.length}`}\n          className=\"ms-1 text-muted-foreground\"\n          data-ink-sign-digitized={sign.digitized ? 'true' : undefined}\n          size=\"icon-xs\"\n          variant=\"outline\"\n        >\n          <IconPlaceholder lucide=\"PenLineIcon\" tabler=\"IconWriting\" hugeicons=\"PencilEdit02Icon\" phosphor=\"PencilLineIcon\" remixicon=\"RiEditLine\" />\n        </Button>\n      </FloatingPopoverTrigger>\n      <FloatingPopoverContent\n        align=\"start\"\n        className=\"flex max-h-[min(80dvh,calc(-24px+var(--floating-popover-available-height)))] w-auto max-w-[min(90vw,48rem)] flex-col\"\n      >\n        <div className=\"mb-2 text-sm font-medium\">{label}</div>\n        <div className=\"min-h-0 flex-1 overflow-auto\">\n          <InkCopyView marks={sign.marks} />\n        </div>\n        {sign.digitized ? (\n          <Button\n            className=\"mt-3 self-start\"\n            disabled={readOnly}\n            onClick={() =>\n              editor.update((tx) =>\n                tx.plugin(InkPlugin).setDigitized(sign.marks, false)\n              )\n            }\n            size=\"sm\"\n            variant=\"outline\"\n          >\n            Bring back\n          </Button>\n        ) : (\n          <Button\n            className=\"mt-3 self-start\"\n            disabled={readOnly}\n            onClick={() =>\n              editor.update((tx) => tx.plugin(InkPlugin).remove(sign.marks))\n            }\n            size=\"sm\"\n            variant=\"destructive\"\n          >\n            Delete\n          </Button>\n        )}\n      </FloatingPopoverContent>\n    </FloatingPopover>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/ink-sign-button.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/ink"
+      }
+    ],
+    "examples": [
+      "ink-demo"
+    ]
+  },
+  "type": "registry:component"
+}

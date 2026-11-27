@@ -169,6 +169,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-ink-digitize",
+      "href": "/registry/changelog/2026-11-27-ink-digitize.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Publish the Ink kit and add AI Digitize (lasso, Digitize all, kind filters, comments, and drop digitized ink)",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "ink",
+        "ink-digitize-bar",
+        "ink-switch-toolbar-button",
+        "ink-demo"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-render-prop-type-imports",
       "href": "/registry/changelog/2026-11-27-render-prop-type-imports.json",
       "status": "draft",

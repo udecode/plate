@@ -558,21 +558,22 @@ export const editorComponents: Registry['items'] = [
         type: 'registry:component',
       },
     ],
-    meta: { examples: ['ink-demo'], registry: false },
+    meta: { docs: [{ route: '/docs/ink' }], examples: ['ink-demo'] },
     name: 'draw-toolbar-button',
     title: 'Draw Toolbar Button',
     type: 'registry:component',
   },
   {
     dependencies: ['platejs'],
-    description: 'A toolbar toggle that hides or shows all ink and signs.',
+    description:
+      'Toolbar controls to hide or show ink, preview digitized ink faded, and permanently drop saved digitized ink.',
     files: [
       {
         path: 'components/editor/ink-switch-toolbar-button.tsx',
         type: 'registry:component',
       },
     ],
-    meta: { examples: ['ink-demo'], registry: false },
+    meta: { docs: [{ route: '/docs/ink' }], examples: ['ink-demo'] },
     name: 'ink-switch-toolbar-button',
     title: 'Ink Switch Toolbar Button',
     type: 'registry:component',
@@ -580,16 +581,31 @@ export const editorComponents: Registry['items'] = [
   {
     dependencies: ['platejs'],
     description:
-      'The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes the marks.',
+      'The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes or brings back the marks.',
     files: [
       {
         path: 'components/editor/ink-sign-button.tsx',
         type: 'registry:component',
       },
     ],
-    meta: { examples: ['ink-demo'], registry: false },
+    meta: { docs: [{ route: '/docs/ink' }], examples: ['ink-demo'] },
     name: 'ink-sign-button',
     title: 'Ink Sign Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'sonner'],
+    description:
+      'Floating lasso bar, Digitize all toolbar trigger, and confirm dialog with kind filters and async comment save/retry.',
+    files: [
+      {
+        path: 'components/editor/ink-digitize-bar.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: { docs: [{ route: '/docs/ink' }], examples: ['ink-demo'] },
+    name: 'ink-digitize-bar',
+    title: 'Ink Digitize Bar',
     type: 'registry:component',
   },
   {

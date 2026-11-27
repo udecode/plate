@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "ink-switch-toolbar-button",
+  "title": "Ink Switch Toolbar Button",
+  "description": "Toolbar controls to hide or show ink, preview digitized ink faded, and permanently drop saved digitized ink.",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/ink-switch-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { IconPlaceholder } from '@/components/icon-placeholder';\nimport { BaseInkPlugin } from 'platejs/ink';\nimport { InkPlugin } from 'platejs/ink/react';\nimport {\n  useEditor,\n  useEditorSelector,\n  useEditorViewState,\n  useViewStore,\n} from 'platejs/react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function InkSwitchToolbarButton() {\n  const editor = useEditor();\n  const hidden = useViewStore(InkPlugin, (state) => state.hidden);\n\n  return (\n    <ToolbarButton\n      onClick={() => editor.plugin(InkPlugin).api.setHidden(!hidden)}\n      pressed={hidden}\n      tooltip=\"Hide ink\"\n    >\n      <IconPlaceholder lucide=\"EyeOffIcon\" tabler=\"IconEyeClosed\" hugeicons=\"ViewOffIcon\" phosphor=\"EyeSlashIcon\" remixicon=\"RiEyeOffLine\" />\n    </ToolbarButton>\n  );\n}\n\nexport function ShowDigitizedToolbarButton() {\n  const editor = useEditor();\n  const showDigitized = useViewStore(InkPlugin, (state) => state.showDigitized);\n\n  return (\n    <ToolbarButton\n      aria-label=\"Show digitized ink\"\n      onClick={() =>\n        editor.plugin(InkPlugin).api.setShowDigitized(!showDigitized)\n      }\n      pressed={showDigitized}\n      tooltip=\"Show digitized ink\"\n    >\n      <IconPlaceholder lucide=\"EyeIcon\" tabler=\"IconEye\" hugeicons=\"EyeIcon\" phosphor=\"EyeIcon\" remixicon=\"RiEyeLine\" />\n    </ToolbarButton>\n  );\n}\n\nexport function DropDigitizedToolbarButton() {\n  const editor = useEditor();\n  const readOnly = useEditorViewState(editor, (state) => state.isReadOnly());\n  const hasDigitized = useEditorSelector((current) => {\n    const ink = current.plugin(BaseInkPlugin);\n\n    return ink.read.marks().length > ink.read.shownMarks().length;\n  });\n\n  return (\n    <ToolbarButton\n      aria-label=\"Drop digitized ink\"\n      disabled={readOnly || !hasDigitized}\n      onClick={() => {\n        editor.update((tx) => {\n          tx.plugin(BaseInkPlugin).dropDigitized();\n        });\n      }}\n      tooltip=\"Drop digitized ink\"\n    >\n      <IconPlaceholder lucide=\"Trash2Icon\" tabler=\"IconTrash\" hugeicons=\"Delete02Icon\" phosphor=\"TrashIcon\" remixicon=\"RiDeleteBinLine\" />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/ink-switch-toolbar-button.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/ink"
+      }
+    ],
+    "examples": [
+      "ink-demo"
+    ]
+  },
+  "type": "registry:component"
+}

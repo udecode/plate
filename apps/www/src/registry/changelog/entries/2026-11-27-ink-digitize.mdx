@@ -1,0 +1,26 @@
+---
+id: 2026-11-27-ink-digitize
+date: 2026-11-27
+status: draft
+kind: new
+summary: 'Publish the Ink kit and add AI Digitize (lasso, Digitize all, kind filters, comments, and drop digitized ink)'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-ink-publish-9f31b8e2","kind":"new","migrationNotes":[]} -->
+
+- **`ink`**: Publish the `InkKit` registry item with `InkDigitizeBar`, `InkSignButton`, `DrawToolbarButton`, and `InkSwitchToolbarButton` for pen markup and AI digitization.
+
+<!-- entry: {"id":"2026-11-27-ink-digitize-bar-4b82e10a","kind":"new","migrationNotes":[]} -->
+
+- **`ink-digitize-bar`**: Add the floating lasso bar, `DigitizeAllToolbarButton`, kind filter chips, and async comment save/retry confirm dialog backed by `ink-digitize` and `ink-digitize-api`.
+
+<!-- entry: {"id":"2026-11-27-ink-switch-drop-7c4d2e91","kind":"new","migrationNotes":[]} -->
+
+- **`ink-switch-toolbar-button`**: Add `ShowDigitizedToolbarButton` to preview digitized ink faded and `DropDigitizedToolbarButton` to permanently drop saved digitized ink and unreferenced copies.
+
+<!-- entry: {"id":"2026-11-27-ink-demo-digitize-1a5e8f34","kind":"behavior","migrationNotes":[]} -->
+
+- **`ink-demo`**: Wire Digitize all, kind filtering, comment UI, refuse/delay save controls, and unified single-key local storage persistence for document and comments.

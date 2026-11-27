@@ -170,6 +170,13 @@
       "2026-11-24-field-static-answers",
       "2026-11-21-add-field"
     ],
+    "ink": ["2026-11-27-ink-digitize"],
+    "ink-digitize-bar": ["2026-11-27-ink-digitize"],
+    "ink-switch-toolbar-button": [
+      "2026-11-27-ink-digitize",
+      "2026-11-25-ink-tools"
+    ],
+    "ink-demo": ["2026-11-27-ink-digitize", "2026-11-25-ink-tools"],
     "caption": [
       "2026-11-27-render-prop-type-imports",
       "2026-11-27-selector-depends-on",
@@ -347,8 +354,6 @@
       "2026-08-25-base-first-registry"
     ],
     "draw-toolbar-button": ["2026-11-25-ink-tools"],
-    "ink-switch-toolbar-button": ["2026-11-25-ink-tools"],
-    "ink-demo": ["2026-11-25-ink-tools"],
     "fixed-toolbar": [
       "2026-11-25-keyboard-bar-keeps-focus",
       "2026-11-20-drop-editor-selection-view",

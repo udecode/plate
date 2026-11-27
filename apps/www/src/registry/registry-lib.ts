@@ -25,4 +25,18 @@ export const registryLib: Registry['items'] = [
     name: 'suggestion-style',
     type: 'registry:lib',
   },
+  {
+    dependencies: ['platejs'],
+    description:
+      'Builds ink digitize requests, groups live marks by distance and time, validates readings, and applies confirmed edits, suggestions, and comments.',
+    files: [
+      {
+        path: 'lib/ink-digitize.ts',
+        type: 'registry:lib',
+      },
+    ],
+    name: 'ink-digitize',
+    title: 'Ink Digitize',
+    type: 'registry:lib',
+  },
 ];

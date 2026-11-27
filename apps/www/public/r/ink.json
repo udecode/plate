@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "ink",
+  "title": "Ink",
+  "description": "Pen markup on document text, drawn over the Editable, with signs for changed or deleted text and AI digitization into edits, suggestions, comments, and answers.",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/draw-toolbar-button.json",
+    "https://platejs.org/r/ink-switch-toolbar-button.json",
+    "https://platejs.org/r/ink-digitize-bar.json",
+    "https://platejs.org/r/ink-sign-button.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/ink.tsx",
+      "content": "'use client';\n\nimport { InkContent, InkPlugin } from 'platejs/ink/react';\n\nimport { InkDigitizeBar } from '@/registry/components/editor/ink-digitize-bar';\nimport { InkSignButton } from '@/registry/components/editor/ink-sign-button';\n\nexport const InkKit = [\n  InkPlugin.configure({\n    slots: {\n      afterEditable: InkDigitizeBar,\n      wrapContent: (props) => <InkContent {...props} sign={InkSignButton} />,\n    },\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/ink.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/ink"
+      }
+    ],
+    "examples": [
+      "ink-demo"
+    ]
+  },
+  "type": "registry:component"
+}

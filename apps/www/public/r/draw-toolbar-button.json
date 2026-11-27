@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "draw-toolbar-button",
+  "title": "Draw Toolbar Button",
+  "description": "A split toolbar button that turns the ink Draw tool on or off and picks the pen, the highlighter, the eraser or the lasso.",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/editor-dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/draw-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { IconPlaceholder } from '@/components/icon-placeholder';\nimport type { InkTool } from 'platejs/ink';\nimport { InkPlugin } from 'platejs/ink/react';\nimport { useEditor, useEditorReadOnly, useViewStore } from 'platejs/react';\nimport * as React from 'react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuRadioGroup,\n  DropdownMenuRadioItem,\n  DropdownMenuTrigger,\n} from '@/registry/components/editor/dropdown-menu';\nimport {\n  ToolbarSplitButton,\n  ToolbarSplitButtonPrimary,\n  ToolbarSplitButtonSecondary,\n} from '@/registry/components/editor/toolbar';\n\nconst TOOLS = {\n  eraser: { size: 16, type: 'erase' },\n  highlighter: {\n    brush: { color: '#facc15', opacity: 0.4, size: 16 },\n    type: 'draw',\n  },\n  lasso: { type: 'lasso' },\n  pen: { brush: { color: '#2563eb', opacity: 1, size: 2.5 }, type: 'draw' },\n} satisfies Record<string, InkTool>;\n\nconst TOOL_ITEMS = [\n  { icon: <IconPlaceholder lucide=\"PenToolIcon\" tabler=\"IconVectorBezier\" hugeicons=\"PenTool03Icon\" phosphor=\"PenNibIcon\" remixicon=\"RiPenNibLine\" />, label: 'Pen', tool: TOOLS.pen },\n  { icon: <IconPlaceholder lucide=\"HighlighterIcon\" tabler=\"IconHighlight\" hugeicons=\"HighlighterIcon\" phosphor=\"HighlighterIcon\" remixicon=\"RiMarkPenLine\" />, label: 'Highlighter', tool: TOOLS.highlighter },\n  { icon: <IconPlaceholder lucide=\"EraserIcon\" tabler=\"IconEraser\" hugeicons=\"EraserIcon\" phosphor=\"EraserIcon\" remixicon=\"RiEraserLine\" />, label: 'Eraser', tool: TOOLS.eraser },\n  { icon: <IconPlaceholder lucide=\"LassoIcon\" tabler=\"IconLasso\" hugeicons=\"LassoIcon\" phosphor=\"LassoIcon\" remixicon=\"RiShapeLine\" />, label: 'Lasso', tool: TOOLS.lasso },\n] as const;\n\nexport function DrawToolbarButton() {\n  const editor = useEditor();\n  const tool = useViewStore(InkPlugin, (state) => state.tool);\n  const readOnly = useEditorReadOnly();\n  const [open, setOpen] = React.useState(false);\n  const [last, setLast] = React.useState<(typeof TOOL_ITEMS)[number]>(\n    TOOL_ITEMS[0]\n  );\n  const on = tool !== null;\n\n  return (\n    <ToolbarSplitButton pressed={open}>\n      <ToolbarSplitButtonPrimary\n        aria-label=\"Draw\"\n        aria-pressed={on}\n        className=\"data-[state=on]:bg-accent data-[state=on]:text-accent-foreground\"\n        disabled={readOnly}\n        onClick={() =>\n          editor.plugin(InkPlugin).api.setTool(on ? null : last.tool)\n        }\n        data-state={on ? 'on' : 'off'}\n      >\n        {last.icon}\n      </ToolbarSplitButtonPrimary>\n\n      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>\n        <DropdownMenuTrigger>\n          <ToolbarSplitButtonSecondary\n            aria-label=\"Draw tools\"\n            disabled={readOnly}\n          />\n        </DropdownMenuTrigger>\n\n        <DropdownMenuContent align=\"start\" alignOffset={-32}>\n          <DropdownMenuRadioGroup value={last.label}>\n            {TOOL_ITEMS.map((item) => (\n              <DropdownMenuRadioItem\n                className=\"*:[svg]:text-muted-foreground\"\n                finalFocus={() => editor.api.dom.focus()}\n                key={item.label}\n                onSelect={() => {\n                  setLast(item);\n                  editor.plugin(InkPlugin).api.setTool(item.tool);\n                }}\n                value={item.label}\n              >\n                {item.icon}\n                {item.label}\n              </DropdownMenuRadioItem>\n            ))}\n          </DropdownMenuRadioGroup>\n        </DropdownMenuContent>\n      </DropdownMenu>\n    </ToolbarSplitButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/draw-toolbar-button.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/ink"
+      }
+    ],
+    "examples": [
+      "ink-demo"
+    ]
+  },
+  "type": "registry:component"
+}

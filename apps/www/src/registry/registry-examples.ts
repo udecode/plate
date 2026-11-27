@@ -519,7 +519,7 @@ export const demoExamples: Registry['items'] = (
     },
     {
       description:
-        'Pen markup on a document saved to local storage, with a second user and a second view of the same document.',
+        'Pen markup and AI digitization on a document saved with its comments to local storage, with a second user and a second view.',
       files: [
         {
           path: 'examples/ink-demo.tsx',
@@ -528,6 +528,12 @@ export const demoExamples: Registry['items'] = (
       ],
       meta: {
         containerClassName: 'h-dvh',
+        docs: [
+          {
+            route: '/docs/ink',
+            title: 'Ink',
+          },
+        ],
       },
       name: 'ink-demo',
       title: 'Ink',

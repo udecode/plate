@@ -70,6 +70,26 @@ const registryApi: Registry['items'] = [
     type: 'registry:file',
   },
   {
+    dependencies: ['@ai-sdk/gateway@3', 'ai@6', 'zod'],
+    description:
+      'API route that reads handwritten ink passage images into structured document edits, comments, and answers.',
+    files: [
+      {
+        path: 'app/api/ai/ink-digitize/route.ts',
+        target: 'app/api/ai/ink-digitize/route.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/ink-digitize/ink-digitize-route.ts',
+        target: 'app/api/ai/ink-digitize/ink-digitize-route.ts',
+        type: 'registry:file',
+      },
+    ],
+    name: 'ink-digitize-api',
+    title: 'Ink Digitize API',
+    type: 'registry:file',
+  },
+  {
     dependencies: ['files-sdk@3.2.0'],
     files: [{ path: 'lib/files.ts', type: 'registry:lib' }],
     name: 'files-api',
