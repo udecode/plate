@@ -29,7 +29,7 @@ export type EditableViewportPlan = {
   items: readonly EditableViewportItem[];
   measureElement?: (element: HTMLElement | null) => void;
   requestMount?: (index: number, path?: Path) => void;
-  revealMounted?: (path: Path, align: 'auto') => void;
+  revealMounted?: (path: Path, align: 'auto') => boolean | void;
   shownTopLevelNodeKeys?: ReadonlySet<NodeKey>;
 };
 

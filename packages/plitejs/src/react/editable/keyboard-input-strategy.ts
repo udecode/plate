@@ -620,7 +620,9 @@ export const applyEditableKeyDown = ({
       return keyDownHandled();
     }
 
-    event.stopPropagation();
+    if (nested?.kind !== 'view') {
+      event.stopPropagation();
+    }
     return keyDownHandled();
   }
 

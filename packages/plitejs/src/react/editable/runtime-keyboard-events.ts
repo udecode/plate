@@ -33,7 +33,10 @@ import {
 } from './dom-coverage-vertical-selection';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableKeyDownKernel } from './editing-kernel';
-import { isPlainVerticalDocumentBoundary } from './input-controller';
+import {
+  isInteractiveInternalTarget,
+  isPlainVerticalDocumentBoundary,
+} from './input-controller';
 import { useEditableKeyboardHandler } from './input-router';
 import {
   type EditableInputController,
@@ -418,6 +421,7 @@ export const useRuntimeKeyboardEvents = ({
         !modelOwnsContentRootVerticalMove &&
         !modelOwnsPlainVerticalDocumentBoundary &&
         isVerticalArrowKey &&
+        !isInteractiveInternalTarget(editor, event.target) &&
         (nativeMountedVerticalShift ||
           isNativeVerticalKeyFastPathFullyMounted({
             viewportRuntime,

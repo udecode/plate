@@ -1,5 +1,5 @@
 {
-  "generation": "1026e8f035182d6e0ce2db2a9e1de1aa19ee807d4181d42451dbc0b906c69ac2",
+  "generation": "6119b17d7d7df7d1419b625ae5ace3d8f470ccd2450bf0545460f4b9fc39b3ec",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -5958,7 +5958,8 @@
             "@plate/editor",
             "@plate/ai",
             "@plate/discussion",
-            "@plate/dnd"
+            "@plate/dnd",
+            "@plate/find"
           ],
           "title": "Board",
           "type": "registry:example"
@@ -13919,7 +13920,8 @@
             "@plate/editor",
             "@plate/ai",
             "@plate/discussion",
-            "@plate/dnd"
+            "@plate/dnd",
+            "@plate/find"
           ],
           "title": "Board",
           "type": "registry:example"

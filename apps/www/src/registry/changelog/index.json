@@ -264,6 +264,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-find-nested-roots",
+      "href": "/registry/changelog/2026-11-27-find-nested-roots.json",
+      "status": "draft",
+      "kind": "feat",
+      "summary": "Open Find from nested roots and scroll rooted matches inside the active presentation",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find", "board-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-fix-base-and-phosphor-installs",
       "href": "/registry/changelog/2026-11-27-fix-base-and-phosphor-installs.json",
       "status": "draft",

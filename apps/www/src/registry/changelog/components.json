@@ -47,6 +47,7 @@
     "highlight-style": ["2026-11-27-dark-highlight-token"],
     "find": [
       "2026-11-27-dark-mode-editor-chrome",
+      "2026-11-27-find-nested-roots",
       "2026-11-22-find-bar-clears-matches",
       "2026-11-22-find-touch-opener",
       "2026-11-19-rtl-editor-ui",
@@ -234,6 +235,13 @@
       "2026-11-27-fix-base-and-phosphor-installs",
       "2026-11-24-field-static-answers",
       "2026-11-21-add-field"
+    ],
+    "board-demo": [
+      "2026-11-27-find-nested-roots",
+      "2026-11-20-board-demo-browser-uploads",
+      "2026-11-19-board-images",
+      "2026-11-18-ai-menu-acts-on-board-note-text",
+      "2026-11-18-comments-on-board-note-text"
     ],
     "comment-toolbar-button": [
       "2026-11-27-fix-base-and-phosphor-installs",
@@ -913,12 +921,6 @@
       "2026-07-26-plugin-store-state",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
-    ],
-    "board-demo": [
-      "2026-11-20-board-demo-browser-uploads",
-      "2026-11-19-board-images",
-      "2026-11-18-ai-menu-acts-on-board-note-text",
-      "2026-11-18-comments-on-board-note-text"
     ],
     "code-block": [
       "2026-11-20-code-syntax-style",

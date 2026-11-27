@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-find-nested-roots",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-find-nested-roots.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "feat",
+  "summary": "Open Find from nested roots and scroll rooted matches inside the active presentation",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "board-demo",
+      "files": [
+        "apps/www/src/registry/examples/board-demo.tsx",
+        "apps/www/src/registry/examples/values/board-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-find-nested-roots-4f8b92c1",
+      "kind": "feat",
+      "summary": "Open the Find bar from `Mod+F` inside nested editable roots (such as board notes), seed the search from the originating root's selection, restore focus to that root on close, and scroll rooted matches within the current presentation.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["find"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-find-nested-roots",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-find-nested-roots-2",
+      "kind": "wiring",
+      "summary": "Wire `FindKit` into the Board example so `Mod+F` searches across page text and board notes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board-demo"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-find-nested-roots",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

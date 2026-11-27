@@ -11,6 +11,7 @@ import {
   EditorContainer,
   EditorFrame,
 } from '@/registry/components/editor/editor';
+import { FindKit } from '@/registry/components/editor/find';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { createBrowserUploadKit } from '@/registry/components/editor/upload/browser';
 import { aiUser } from '@/registry/components/editor/use-chat';
@@ -25,6 +26,7 @@ export default function BoardDemo() {
       ...BoardKit,
       ...BoardImageKit,
       ...DiscussionKit,
+      ...FindKit,
       CommentsPlugin.configure({
         initialState: {
           users: {

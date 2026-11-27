@@ -1503,14 +1503,18 @@ const EditableInner = <TElement extends ElementNode>({
     [viewportPlan]
   );
   const revealMounted = viewportPlan?.revealMounted;
+  const hasViewportPlan = Boolean(viewportPlan);
 
   useIsomorphicLayoutEffect(() => {
     const root = inactiveSelectionEditableRef.current;
 
-    if (!root || !revealMounted) return undefined;
+    if (!root || (!revealMounted && !hasViewportPlan)) return undefined;
 
-    return setEditableRootReveal(root, revealMounted);
-  }, [revealMounted]);
+    return setEditableRootReveal(root, {
+      revealCulled: revealMounted ?? scrollViewportPathIntoView,
+      revealMounted,
+    });
+  }, [hasViewportPlan, revealMounted, scrollViewportPathIntoView]);
   const materializeViewportBoundary = React.useCallback(
     (boundary: DOMCoverageBoundary, targetRange?: ModelRange) => {
       const path = targetRange?.anchor.path;

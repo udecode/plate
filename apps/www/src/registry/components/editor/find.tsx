@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown, ChevronUp, Search, X } from 'lucide-react';
-import { NodeApi } from 'platejs';
+import { createEditorView, NodeApi, SelectionApi } from 'platejs';
 import { isHotkey } from 'platejs/dom';
 import { BaseFindPlugin } from 'platejs/find';
 import {
@@ -9,6 +9,8 @@ import {
   type WrapRootProps,
   toReactPlugin,
   useEditor,
+  useEditorRootAreas,
+  useEditorSelector,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -52,59 +54,194 @@ const getSelectedText = (editor: Editor) => {
     .join('\n');
 };
 
+const FORM_CONTROL_TAGS = new Set(['INPUT', 'OPTION', 'SELECT', 'TEXTAREA']);
+
+const getParentShadowAware = (node: Node): Node | null =>
+  node.parentNode ?? (node instanceof ShadowRoot ? node.host : null);
+
+const containsShadowAware = (container: Node, target: Node): boolean => {
+  let current: Node | null = target;
+
+  while (current) {
+    if (current === container) return true;
+    current = getParentShadowAware(current);
+  }
+
+  return false;
+};
+
+const isIgnoredKeyTarget = (target: Node, rootElement: Element): boolean => {
+  let current: Node | null = target;
+
+  while (current && current !== rootElement) {
+    if (current instanceof Element) {
+      if (FORM_CONTROL_TAGS.has(current.tagName)) return true;
+      if (current.hasAttribute('data-editor-root')) return false;
+      const contentEditable = current
+        .getAttribute('contenteditable')
+        ?.toLowerCase();
+      if (
+        contentEditable === '' ||
+        contentEditable === 'true' ||
+        contentEditable === 'plaintext-only'
+      ) {
+        return true;
+      }
+    }
+    current = getParentShadowAware(current);
+  }
+
+  return false;
+};
+
+const closestEditorRoot = (target: Node): Element | null => {
+  let current: Node | null = target;
+
+  while (current) {
+    if (
+      current instanceof Element &&
+      current.hasAttribute('data-editor-root')
+    ) {
+      return current;
+    }
+    current = getParentShadowAware(current);
+  }
+
+  return null;
+};
+
+const getDeepActiveElement = (
+  doc: Document | null | undefined
+): Element | null => {
+  let active = doc?.activeElement ?? null;
+
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+
+  return active;
+};
+
 function FindRoot({ children, editableRef }: WrapRootProps) {
   const editor = useEditor();
+  const areas = useEditorRootAreas(editor);
   const [state, setState] = React.useState<{
     draft: { query: string } | null;
   } | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const originRef = React.useRef<{ element: Element; view: Editor } | null>(
+    null
+  );
+
+  const resolveOrigin = React.useCallback(
+    (target: Node | null): { element: Element; view: Editor } | null => {
+      const element = editableRef.current;
+
+      if (
+        !element ||
+        !target ||
+        !containsShadowAware(element, target) ||
+        isIgnoredKeyTarget(target, element)
+      ) {
+        return null;
+      }
+
+      const rootElement = closestEditorRoot(target);
+
+      if (!rootElement) return null;
+      if (rootElement === element) return { element, view: editor };
+
+      const rootName = rootElement.getAttribute('data-editor-root');
+      const nested =
+        rootName && rootName !== 'main' ? areas.nestedView(rootName) : null;
+
+      return nested && nested.api.dom.editable() === rootElement
+        ? { element: rootElement, view: nested }
+        : null;
+    },
+    [areas, editableRef, editor]
+  );
+
+  const openFromOrigin = React.useCallback(
+    (origin: { element: Element; view: Editor } | null, query?: string) => {
+      originRef.current = origin;
+      setState({ draft: query === undefined ? null : { query } });
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    },
+    []
+  );
+
   const commands = React.useMemo(
     () => ({
       close: () => {
         setState(null);
         editor.plugin(BaseFindPlugin).api.search('');
-        editor.api.dom.focus();
+        const origin = originRef.current;
+        originRef.current = null;
+        const focusTarget =
+          origin &&
+          origin.element.isConnected &&
+          origin.view.api.dom.editable() === origin.element
+            ? origin.view
+            : editor;
+        if (focusTarget.api.dom.editable()) {
+          focusTarget.api.dom.focus();
+        }
       },
       open: (query?: string) => {
-        setState({ draft: query === undefined ? null : { query } });
-        inputRef.current?.focus();
-        inputRef.current?.select();
+        const active = getDeepActiveElement(editableRef.current?.ownerDocument);
+        openFromOrigin(resolveOrigin(active), query);
       },
     }),
-    [editor]
+    [editableRef, editor, openFromOrigin, resolveOrigin]
   );
 
-  React.useEffect(() => {
-    const element = editableRef.current;
-    if (!element) return undefined;
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (
+      event.isDefaultPrevented() ||
+      event.nativeEvent.defaultPrevented ||
+      event.nativeEvent.isComposing ||
+      // oxlint-disable-next-line typescript/no-deprecated -- Safari can clear isComposing before the final IME key event.
+      event.keyCode === 229 ||
+      !isHotkey('mod+f', event.nativeEvent)
+    ) {
+      return;
+    }
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.target !== element ||
-        event.isComposing ||
-        // oxlint-disable-next-line typescript/no-deprecated -- Safari can clear isComposing before the final IME key event.
-        event.keyCode === 229 ||
-        !isHotkey('mod+f', event)
-      ) {
-        return;
-      }
+    const rawTarget = event.nativeEvent.composedPath?.()[0] ?? event.target;
+    const origin = rawTarget instanceof Node ? resolveOrigin(rawTarget) : null;
 
-      event.preventDefault();
-      commands.open(getSelectedText(editor));
-    };
-    element.addEventListener('keydown', onKeyDown);
-    return () => element.removeEventListener('keydown', onKeyDown);
-  }, [commands, editableRef, editor]);
+    if (!origin) return;
+
+    event.preventDefault();
+    openFromOrigin(origin, getSelectedText(origin.view));
+  };
 
   return (
     <FindContext.Provider value={commands}>
-      {state && (
-        <FindBar draft={state.draft} inputRef={inputRef} setState={setState} />
-      )}
-      {children}
-      {!state && (
-        <FindButton onOpen={() => commands.open(getSelectedText(editor))} />
-      )}
+      {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- Catches Mod+F bubbling from the mounted Editable and its nested content roots, which own the textbox role. */}
+      <div className="contents" onKeyDown={onKeyDown}>
+        {state && (
+          <FindBar
+            draft={state.draft}
+            inputRef={inputRef}
+            setState={setState}
+          />
+        )}
+        {children}
+        {!state && (
+          <FindButton
+            onOpen={() => {
+              const active = getDeepActiveElement(
+                editableRef.current?.ownerDocument
+              );
+              const origin = resolveOrigin(active);
+              openFromOrigin(origin, getSelectedText(origin?.view ?? editor));
+            }}
+          />
+        )}
+      </div>
     </FindContext.Provider>
   );
 }
@@ -143,6 +280,8 @@ function FindBar({
   >;
 }) {
   const editor = useEditor();
+  const viewRoot = useEditorSelector((current) => current.read.view.root());
+  const areas = useEditorRootAreas(editor);
   const { api } = editor.plugin(BaseFindPlugin);
   const { close } = useFind();
   const query = usePluginStore(BaseFindPlugin, 'query');
@@ -171,14 +310,21 @@ function FindBar({
   React.useEffect(() => {
     if (!activeMatch || !focused) return undefined;
 
+    const matchRoot = SelectionApi.root(activeMatch.range);
+    const target =
+      matchRoot === viewRoot
+        ? editor
+        : ((matchRoot ? areas.nestedView(matchRoot) : null) ??
+          createEditorView(editor, { readOnly: true, root: matchRoot }));
+
     // 'if-needed' ignores the match's scroll margin, so it would leave a
     // match under the stuck bar in place.
-    return editor.api.dom.scrollIntoView(activeMatch.range, {
+    return target.api.dom.scrollIntoView(activeMatch.range, {
       block: 'nearest',
       inline: 'nearest',
       scrollMode: 'always',
     });
-  }, [activeMatch, editor, focused]);
+  }, [activeMatch, areas, editor, focused, viewRoot]);
 
   const countLabel =
     count === 0 ? 'No results' : `${activeIndex + 1} of ${count}`;

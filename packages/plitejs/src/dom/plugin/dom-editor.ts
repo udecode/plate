@@ -1186,18 +1186,41 @@ export const setEditorDOMScrollElement = (
   }
 };
 
-type EditableRootReveal = (path: Path, align: 'auto') => void;
+type EditableRootReveal = (path: Path, align: 'auto') => boolean | void;
 
-const ELEMENT_TO_ROOT_REVEAL = new WeakMap<Element, EditableRootReveal>();
+type EditableRootRevealRegistration = Readonly<{
+  revealCulled: EditableRootReveal;
+  revealMounted?: EditableRootReveal;
+}>;
+
+const ELEMENT_TO_ROOT_REVEAL = new WeakMap<
+  Element,
+  EditableRootRevealRegistration
+>();
+
+const VIEW_TO_SCROLL_TOKEN = new WeakMap<object, number>();
+
+const nextScrollIntoViewToken = (view: object) => {
+  const token = (VIEW_TO_SCROLL_TOKEN.get(view) ?? 0) + 1;
+
+  VIEW_TO_SCROLL_TOKEN.set(view, token);
+
+  return token;
+};
 
 export const setEditableRootReveal = (
   element: Element,
-  reveal: EditableRootReveal
+  reveal: EditableRootReveal | EditableRootRevealRegistration
 ) => {
-  ELEMENT_TO_ROOT_REVEAL.set(element, reveal);
+  const registration: EditableRootRevealRegistration =
+    typeof reveal === 'function'
+      ? { revealCulled: reveal, revealMounted: reveal }
+      : reveal;
+
+  ELEMENT_TO_ROOT_REVEAL.set(element, registration);
 
   return () => {
-    if (ELEMENT_TO_ROOT_REVEAL.get(element) === reveal) {
+    if (ELEMENT_TO_ROOT_REVEAL.get(element) === registration) {
       ELEMENT_TO_ROOT_REVEAL.delete(element);
     }
   };
@@ -1206,7 +1229,7 @@ export const setEditableRootReveal = (
 const revealInEditableRoot = (element: Element, path: Path) => {
   const root = element.closest('[data-editor-root]');
 
-  if (root) ELEMENT_TO_ROOT_REVEAL.get(root)?.(path, 'auto');
+  if (root) ELEMENT_TO_ROOT_REVEAL.get(root)?.revealMounted?.(path, 'auto');
 };
 
 export const getEditorDOMHostScrollElement = (editor: object) =>
@@ -2381,75 +2404,197 @@ const DOMEditorImpl: DOMEditorInterface = {
       options.behavior === undefined &&
       options.boundary === undefined &&
       options.skipOverflowHiddenElements === undefined;
-    const requestedScrollMarginTop = PathApi.isPath(target)
-      ? (() => {
-          const node = editor.read((state) => state.nodes.get(target)?.[0]);
-          const element = node ? DOMEditor.resolveDOMNode(editor, node) : null;
-          const window = element?.ownerDocument?.defaultView;
+    const readScrollMarginTop = (element: HTMLElement) => {
+      const window = element.ownerDocument?.defaultView;
 
-          if (!element || !window) return 0;
+      if (!window) return 0;
 
-          const style = window.getComputedStyle(element);
+      const style = window.getComputedStyle(element);
 
-          return (
-            Number.parseFloat(
-              element.style.scrollMarginTop || style.scrollMarginTop
-            ) || 0
-          );
-        })()
+      return (
+        Number.parseFloat(
+          element.style.scrollMarginTop || style.scrollMarginTop
+        ) || 0
+      );
+    };
+    const canReadEditor = typeof editor.read === 'function';
+    const resolvedView = canReadEditor
+      ? PathApi.isPath(target) ||
+        PointApi.isPoint(target) ||
+        RangeApi.isRange(target)
+        ? reachAt(editor, target)
+        : hasMountedDocumentView(editor)
+          ? resolveDOMReach(editor)
+          : editor
+      : editor;
+
+    if (!resolvedView) return () => {};
+
+    const pinnedView = resolvedView;
+    const scrollToken = nextScrollIntoViewToken(pinnedView);
+    const isStale = () =>
+      cancelled || VIEW_TO_SCROLL_TOKEN.get(pinnedView) !== scrollToken;
+    const canReadPinnedView = typeof pinnedView.read === 'function';
+    const initialPathElement =
+      PathApi.isPath(target) && canReadPinnedView
+        ? (() => {
+            const node = pinnedView.read(
+              (state) => state.nodes.get(target)?.[0]
+            );
+
+            return node ? DOMEditor.resolveDOMNode(pinnedView, node) : null;
+          })()
+        : null;
+    const initialScrollMarginTop = initialPathElement
+      ? readScrollMarginTop(initialPathElement)
       : 0;
+    const resolveCulledPaths = (): Path[] => {
+      if (PathApi.isPath(target)) return [target];
+      if (PointApi.isPoint(target)) return [target.path];
+      if (!RangeApi.isRange(target)) return [];
+
+      const startPath = RangeApi.start(target).path;
+      const endPath = RangeApi.end(target).path;
+
+      if (PathApi.equals(startPath, endPath) || !canReadPinnedView) {
+        return [startPath];
+      }
+
+      const missing: Path[] = [];
+      const startNode = pinnedView.read(
+        (state) => state.nodes.get(startPath)?.[0]
+      );
+      const endNode = pinnedView.read((state) => state.nodes.get(endPath)?.[0]);
+
+      if (!startNode || !DOMEditor.resolveDOMNode(pinnedView, startNode)) {
+        missing.push(startPath);
+      }
+      if (!endNode || !DOMEditor.resolveDOMNode(pinnedView, endNode)) {
+        missing.push(endPath);
+      }
+
+      return missing.length > 0 ? missing : [startPath];
+    };
+
+    const alwaysMode =
+      typeof options === 'object' && options?.scrollMode === 'always';
+    const schedulePhase = (label: string, callback: () => void) =>
+      scheduleEditorDOMPhase(
+        pinnedView,
+        alwaysMode ? 'post-selection' : 'dom-write',
+        label,
+        callback,
+        {
+          key: 'dom-editor-scroll-into-view',
+          timing: 'animation-frame',
+        }
+      );
+
+    let cancelled = false;
+    let retried = false;
+    let cancelRetry: (() => void) | undefined;
+
+    const revealCulledTarget = (paths: readonly Path[]) => {
+      if (paths.length === 0) return false;
+      const editable =
+        EDITOR_TO_ELEMENT.get(pinnedView) ??
+        (canReadPinnedView ? DOMEditorImpl.editable(pinnedView) : null);
+      const reveal = editable
+        ? ELEMENT_TO_ROOT_REVEAL.get(editable)?.revealCulled
+        : undefined;
+
+      if (!reveal) return false;
+
+      let revealed = false;
+
+      for (const path of paths) {
+        if (reveal(path, 'auto') === true) revealed = true;
+        if (isStale()) return false;
+      }
+
+      return revealed;
+    };
+
+    const retryAfterReveal = () => {
+      if (isStale() || retried) return;
+      const paths = resolveCulledPaths();
+      if (!revealCulledTarget(paths) || isStale()) return;
+      retried = true;
+      cancelRetry = schedulePhase('dom-editor-scroll-into-view-retry', run);
+    };
+
     const run = () => {
+      if (isStale()) return;
+
       if (PathApi.isPath(target)) {
-        const node = editor.read((state) => state.nodes.get(target)?.[0]);
-        const element = node ? DOMEditor.resolveDOMNode(editor, node) : null;
+        const node = canReadPinnedView
+          ? pinnedView.read((state) => state.nodes.get(target)?.[0])
+          : undefined;
+        const element = node
+          ? DOMEditor.resolveDOMNode(pinnedView, node)
+          : null;
 
-        if (element) {
-          revealInEditableRoot(element, target);
-          const scrollElement = getRegisteredScrollElement(editor);
-          const usesRegisteredStartAlignment =
-            scrollElement &&
-            requestedScrollMarginTop > 0 &&
-            typeof options === 'object' &&
-            options.block === 'start' &&
-            options.scrollMode === 'always';
+        if (!element) {
+          retryAfterReveal();
 
-          if (usesRegisteredStartAlignment) {
-            const elementRect = element.getBoundingClientRect();
-            const scrollRect = scrollElement.getBoundingClientRect();
+          return;
+        }
 
-            scrollElement.scroll({
-              behavior: options.behavior ?? 'auto',
-              left: scrollElement.scrollLeft,
-              top:
-                scrollElement.scrollTop +
-                elementRect.top -
-                scrollRect.top -
-                requestedScrollMarginTop,
+        revealInEditableRoot(element, target);
+        const scrollElement = getRegisteredScrollElement(pinnedView);
+        const requestedScrollMarginTop = initialPathElement
+          ? initialScrollMarginTop
+          : readScrollMarginTop(element);
+        const usesRegisteredStartAlignment =
+          scrollElement &&
+          requestedScrollMarginTop > 0 &&
+          typeof options === 'object' &&
+          options.block === 'start' &&
+          options.scrollMode === 'always';
+
+        if (usesRegisteredStartAlignment) {
+          const elementRect = element.getBoundingClientRect();
+          const scrollRect = scrollElement.getBoundingClientRect();
+
+          scrollElement.scroll({
+            behavior: options.behavior ?? 'auto',
+            left: scrollElement.scrollLeft,
+            top:
+              scrollElement.scrollTop +
+              elementRect.top -
+              scrollRect.top -
+              requestedScrollMarginTop,
+          });
+        } else if (usesDefaultReveal) {
+          const rect = element.getBoundingClientRect();
+
+          if (isUsableScrollRect(rect)) {
+            scrollRectIntoViewIfNeeded({
+              rect: toScrollRect(rect),
+              startElement: element,
             });
-          } else if (usesDefaultReveal) {
-            const rect = element.getBoundingClientRect();
-
-            if (isUsableScrollRect(rect)) {
-              scrollRectIntoViewIfNeeded({
-                rect: toScrollRect(rect),
-                startElement: element,
-              });
-            }
-          } else {
-            scrollIntoViewIfNeeded(element, options);
           }
+        } else {
+          scrollIntoViewIfNeeded(element, options);
         }
 
         return;
       }
 
       const domRange = PointApi.isPoint(target)
-        ? DOMEditor.resolveDOMRange(editor, { anchor: target, focus: target })
+        ? DOMEditor.resolveDOMRange(pinnedView, {
+            anchor: target,
+            focus: target,
+          })
         : RangeApi.isRange(target)
-          ? DOMEditor.resolveDOMRange(editor, target)
+          ? DOMEditor.resolveDOMRange(pinnedView, target)
           : target;
 
-      if (!domRange) return;
+      if (!domRange) {
+        retryAfterReveal();
+
+        return;
+      }
 
       const leafElement = (
         isDOMElement(domRange.startContainer)
@@ -2503,36 +2648,30 @@ const DOMEditorImpl: DOMEditorInterface = {
       }
     };
 
-    if (typeof options !== 'object' || options.scrollMode !== 'always') {
-      return scheduleEditorDOMPhase(
-        editor,
-        'dom-write',
-        'dom-editor-scroll-into-view',
-        run,
-        {
-          key: 'dom-editor-scroll-into-view',
-          timing: 'animation-frame',
-        }
-      );
+    if (!alwaysMode) {
+      const cancelInitial = schedulePhase('dom-editor-scroll-into-view', run);
+
+      return () => {
+        cancelled = true;
+        cancelInitial();
+        cancelRetry?.();
+      };
     }
 
-    const scheduleNavigation = (label: string, callback: () => void) =>
-      scheduleEditorDOMPhase(editor, 'post-selection', label, callback, {
-        key: 'dom-editor-scroll-into-view',
-        timing: 'animation-frame',
-      });
-
     let cancelScroll: (() => void) | undefined;
-    const cancelSettle = scheduleNavigation(
+    const cancelSettle = schedulePhase(
       'dom-editor-scroll-into-view-settle',
       () => {
-        cancelScroll = scheduleNavigation('dom-editor-scroll-into-view', run);
+        if (cancelled) return;
+        cancelScroll = schedulePhase('dom-editor-scroll-into-view', run);
       }
     );
 
     return () => {
+      cancelled = true;
       cancelSettle();
       cancelScroll?.();
+      cancelRetry?.();
     };
   },
 

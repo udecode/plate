@@ -478,6 +478,7 @@ export const demoExamples: Registry['items'] = (
         '@plate/ai',
         '@plate/discussion',
         '@plate/dnd',
+        '@plate/find',
       ],
       title: 'Board',
       type: 'registry:example',

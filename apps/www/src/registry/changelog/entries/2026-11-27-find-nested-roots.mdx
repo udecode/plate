@@ -1,0 +1,15 @@
+---
+id: 2026-11-27-find-nested-roots
+date: 2026-11-27
+status: draft
+kind: feat
+summary: 'Open Find from nested roots and scroll rooted matches inside the active presentation'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-find-nested-roots-4f8b92c1","kind":"feat","migrationNotes":[]} -->
+
+- **`find`**: Open the Find bar from `Mod+F` inside nested editable roots (such as board notes), seed the search from the originating root's selection, restore focus to that root on close, and scroll rooted matches within the current presentation.
+- **`board-demo`**: Wire `FindKit` into the Board example so `Mod+F` searches across page text and board notes.
