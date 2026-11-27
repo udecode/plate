@@ -1303,8 +1303,12 @@ export const useEditableSelectionReconciler = ({
     ) {
       // A range the browser drew across the unmounted blocks already shows
       // the selection, and clearing it makes Chromium put the next caret at
-      // the editable's start.
-      if (showsDOMSelection(editor, domSelection, projectedSelection)) {
+      // the editable's start. When a view selection is drawing markers, clear
+      // any native range so the two highlights never stack.
+      if (
+        !readPliteViewSelection(editor) &&
+        showsDOMSelection(editor, domSelection, projectedSelection)
+      ) {
         return undefined;
       }
       writeDOMSelection(root, null);

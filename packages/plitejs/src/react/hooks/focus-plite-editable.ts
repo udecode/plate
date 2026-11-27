@@ -142,6 +142,21 @@ const syncPreferredModelSelectionToDOM = <
   }
 };
 
+export const hasExpandedViewSelection = <
+  V extends Value = Value,
+  TPlugins extends readonly unknown[] = readonly [],
+>(
+  editor: ReactRuntimeEditor<V, TPlugins>
+) => {
+  const viewSelection = readPliteViewSelection(editor);
+
+  return (
+    !!viewSelection &&
+    !isPliteViewSelectionCollapsed(viewSelection) &&
+    reachesRoot(editor, viewSelection)
+  );
+};
+
 export const focusSelectionTarget = <
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly [],
@@ -153,13 +168,7 @@ export const focusSelectionTarget = <
     return true;
   }
 
-  const viewSelection = readPliteViewSelection(editor);
-
-  if (
-    !viewSelection ||
-    isPliteViewSelectionCollapsed(viewSelection) ||
-    !reachesRoot(editor, viewSelection)
-  ) {
+  if (!hasExpandedViewSelection(editor)) {
     return false;
   }
 

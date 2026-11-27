@@ -69,6 +69,7 @@ import { readHistoryStepUndoRange } from '../history-step-views';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import {
   focusSelectionTarget,
+  hasExpandedViewSelection,
   supersedeEditableFocusRequests,
 } from '../hooks/focus-plite-editable';
 import {
@@ -678,6 +679,7 @@ export class EditableDOMRuntime {
       focusSelection: (root) => focusSelectionTarget(this.editorValue, root),
       isComposing: () => this.state.isComposing,
       isSelectionHeld: () =>
+        hasExpandedViewSelection(this.editorValue) ||
         isSelectionHeldForPendingImport(
           this.inputController,
           this.editorValue,

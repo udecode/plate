@@ -1869,6 +1869,7 @@ const DOMEditorImpl: DOMEditorInterface = {
 
     if (superseded()) return;
 
+    const focusPlacement = getPlacementGeneration(editor);
     const selectionAtFocus = selection
       ? getSelectionDOMRange(editor, selection)
       : null;
@@ -1932,6 +1933,7 @@ const DOMEditorImpl: DOMEditorInterface = {
         (root === el.ownerDocument ? null : el.ownerDocument.activeElement);
 
       if (activeElement === el) {
+        if (placedSince(editor, focusPlacement)) return;
         trySyncDomSelection();
         return;
       }
