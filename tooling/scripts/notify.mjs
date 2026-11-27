@@ -28,7 +28,7 @@ import {
 } from './private-files.mjs';
 
 const USAGE =
-  'usage: notify send --to <login|dev|channel> [--file <png|jpg|gif|mp4|webm>]... <text...> | notify team <revision-range> | notify check';
+  'usage: notify send --to <login|dev|channel> [--file <png|jpg|gif|mp4|webm>]... [--no-media <reason>] <text...> | notify team <revision-range> | notify check';
 const DAY = 24 * 60 * 60 * 1000;
 const MAX_SHOT_AGE = 2 * 60 * 60 * 1000;
 const LIMIT = 2000;
@@ -63,6 +63,27 @@ const commandSpans = (text) =>
     .filter((span) => SHELL.test(span));
 
 const BETA = 'https://beta.platejs.org/';
+const BETA_URL = /https:\/\/beta\.platejs\.org\/[^\s)>\]"'`]*/u;
+const VISUAL_PATH =
+  /^(?:apps\/(?:www|plite)\/src\/|packages\/(?:platejs\/src\/react|plitejs\/src\/(?:react|pagination))\/)/u;
+const NON_VISUAL_PATH =
+  /\.(?:spec|test)\.[^/]+$|(?:^|\/)(?:__tests__|generated|__registry__)\/|\.(?:mdx?)$/iu;
+
+const isVisualPath = (file) =>
+  VISUAL_PATH.test(file) && !NON_VISUAL_PATH.test(file);
+
+const requiresMedia = ({ commitFiles = [], text }) => {
+  const triggers = [];
+  const betaUrl = BETA_URL.exec(text)?.[0].replace(/[.,;:!?]+$/u, '');
+  if (betaUrl) triggers.push(betaUrl);
+  for (const { files, label } of commitFiles) {
+    if (files.some(isVisualPath) && !triggers.includes(label)) {
+      triggers.push(label);
+    }
+  }
+  return triggers;
+};
+
 const unlinkedPage = (text) =>
   /\b(?:demos?|docs pages?)\b/iu.test(text) && !text.includes(BETA);
 const PAGE_FIX = `link each page it names on ${BETA}, such as ${BETA}blocks/field-demo, and say clip when it means a clip, not a page`;
@@ -97,14 +118,43 @@ const originRepo = (dir) =>
     git(dir, ['remote', 'get-url', 'origin'])
   )?.[1];
 
+const COMMIT_URL_HASH = /\/commit\/([0-9a-f]{7,40})(?![0-9a-f])/giu;
+
 const linkCommits = (text) => {
   const repos = gitDirs().flatMap((dir) => {
     const repo = originRepo(dir);
     return repo ? [{ dir, repo }] : [];
   });
   const missing = [];
+  const commits = [];
+  const seen = new Set();
+  const remember = (dir, sha, label) => {
+    const key = `${dir.join(' ')}:${sha}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    commits.push({ dir, label, sha });
+  };
   const linked = text.replace(MENTION, (whole, kept, hash) => {
-    if (kept || !namesCommit(hash)) return whole;
+    if (kept) {
+      if (!kept.startsWith('`')) {
+        for (const [, urlHash] of kept.matchAll(COMMIT_URL_HASH)) {
+          for (const { dir } of repos) {
+            const sha = git(dir, [
+              'rev-parse',
+              '--verify',
+              '--quiet',
+              `${urlHash}^{commit}`,
+            ]);
+            if (sha) {
+              remember(dir, sha, urlHash);
+              break;
+            }
+          }
+        }
+      }
+      return whole;
+    }
+    if (!namesCommit(hash)) return whole;
     for (const { dir, repo } of repos) {
       const sha = git(dir, [
         'rev-parse',
@@ -121,12 +171,15 @@ const linkCommits = (text) => {
           sha,
           'refs/remotes/origin',
         ]);
-      if (pushed) return commitLink(repo, sha, hash);
+      if (pushed) {
+        remember(dir, sha, hash);
+        return commitLink(repo, sha, hash);
+      }
     }
     missing.push(hash);
     return whole;
   });
-  return { linked, missing };
+  return { commits, linked, missing };
 };
 
 const TEAM_START = /^(?<kind>Team|Team-Action):[ \t]*(?<text>\S.*?)[ \t]*$/u;
@@ -284,15 +337,22 @@ const send = async (args) => {
       allowPositionals: true,
       options: {
         file: { type: 'string', multiple: true },
+        'no-media': { type: 'string' },
         to: { type: 'string' },
       },
     });
   } catch {
     fail(2, USAGE);
   }
-  const { file: files = [], to } = parsed.values;
+  const { file: files = [], 'no-media': noMedia, to } = parsed.values;
   const text = parsed.positionals.join(' ').trim();
   if (!to || !text) fail(2, USAGE);
+  if (noMedia !== undefined && !noMedia.trim()) {
+    fail(
+      2,
+      '--no-media needs a non-empty reason, such as --no-media "iOS hardware only"'
+    );
+  }
   if (files.length > MAX_FILES) fail(2, `attach at most ${MAX_FILES} files`);
   for (const file of files) {
     if (!MEDIA.test(file) || !existsSync(file)) {
@@ -335,12 +395,34 @@ const send = async (args) => {
       `the text names a demo or docs page without its link; ${PAGE_FIX}, then send again.`
     );
   }
-  const { linked, missing } = linkCommits(text);
+  const { commits, linked, missing } = linkCommits(text);
   if (missing.length > 0) {
     fail(
       1,
       `the text names ${missing.join(', ')}, but neither this checkout nor its companion has pushed a commit with that hash; write each as a link, [<hash>](https://github.com/<owner>/<repo>/commit/<sha>), or put a word that names no commit in backticks, then send again.`
     );
+  }
+  if (files.length === 0 && !noMedia) {
+    const commitFiles = commits.map(({ dir, label, sha }) => ({
+      files: git(dir, [
+        'diff-tree',
+        '--root',
+        '--no-commit-id',
+        '--name-only',
+        '-r',
+        sha,
+      ])
+        .split('\n')
+        .filter(Boolean),
+      label,
+    }));
+    const triggers = requiresMedia({ commitFiles, text });
+    if (triggers.length > 0) {
+      fail(
+        1,
+        `this notice names a beta page or UI commit (${triggers.join(', ')}); attach a before-and-after clip or still with --file via the clip skill, or pass --no-media "<reason>" if genuinely non-visual.`
+      );
+    }
   }
 
   const config = readConfig();
