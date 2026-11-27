@@ -12013,7 +12013,7 @@
           "kind": "type",
           "name": "CreateCommentThreadInput",
           "runtime": false,
-          "signature": "type CreateCommentThreadInput = Readonly<{\n  body: Value;\n  /** App data for the new thread; its first message gets none. */\n  data?: CommentData;\n  excerpt?: string;\n  id?: string;\n  target: Readonly<{\n    range: Range;\n    type: 'range';\n  }> | Readonly<{\n    id: string;\n    type: 'change';\n  }>;\n}>;",
+          "signature": "type CreateCommentThreadInput = Readonly<{\n  body: Value;\n  /** App data for the new thread; its first message gets none. */\n  data?: CommentData;\n  excerpt?: string;\n  id?: string;\n  target: Readonly<{\n    range: Range;\n    type: 'range';\n  }> | Readonly<{\n    id: string;\n    type: 'change';\n  }>;\n  /**\n   * Record-only writes recorded in the same history batch as the created thread\n   * once `mutate` commits. Skipped on rejection, throw, or a read-only view.\n   */\n  withHistory?: (tx: EditorUpdateTransaction, thread: CommentThread) => void;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -14301,12 +14301,12 @@
         },
         "platejs/ink:InkPassageMark": {
           "aliases": [],
-          "documentation": "One mark's touched words and point gaps inside an `InkPassage`.",
+          "documentation": "One mark's touched words and point gaps inside an `InkPassage`, plus its\nmargin side when the mark is a margin note beside the passage's lines.",
           "entrypoint": "platejs/ink",
           "kind": "type",
           "name": "InkPassageMark",
           "runtime": false,
-          "signature": "type InkPassageMark = Readonly<{\n  gaps: readonly number[];\n  id: string;\n  words: readonly number[];\n}>;",
+          "signature": "type InkPassageMark = Readonly<{\n  gaps: readonly number[];\n  id: string;\n  margin?: InkMargin['side'];\n  words: readonly number[];\n}>;",
           "source": null,
           "typeParameters": []
         },

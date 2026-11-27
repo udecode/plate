@@ -228,10 +228,14 @@ export type InkPassageWord = Readonly<{
   start: number;
 }>;
 
-/** One mark's touched words and point gaps inside an `InkPassage`. */
+/**
+ * One mark's touched words and point gaps inside an `InkPassage`, plus its
+ * margin side when the mark is a margin note beside the passage's lines.
+ */
 export type InkPassageMark = Readonly<{
   gaps: readonly number[];
   id: string;
+  margin?: InkMargin['side'];
   words: readonly number[];
 }>;
 
@@ -883,6 +887,50 @@ export const BaseInkPlugin = definePlugin('ink', {
        * on each side, joining runs that touch or overlap on one copy.
        */
       passages: (ids: readonly string[]): readonly InkPassage[] => {
+        const marginLineSpan = (
+          lines: readonly InkLine[],
+          mark: InkMark,
+          blockTop: number
+        ): readonly [from: number, to: number] => {
+          let minY = Number.POSITIVE_INFINITY;
+          let maxY = Number.NEGATIVE_INFINITY;
+
+          for (const sample of mark.samples) {
+            const y = sample[1] - blockTop;
+
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+          if (!Number.isFinite(minY)) return [0, lines.length - 1];
+
+          let from = -1;
+          let to = -1;
+          let nearest = 0;
+          let bestDist = Number.POSITIVE_INFINITY;
+
+          for (const [index, line] of lines.entries()) {
+            const lineBottom = line.top + line.height;
+
+            if (line.top <= maxY && lineBottom >= minY) {
+              if (from === -1) from = index;
+              to = index;
+            }
+            const dist =
+              maxY < line.top
+                ? line.top - maxY
+                : minY > lineBottom
+                  ? minY - lineBottom
+                  : 0;
+
+            if (dist < bestDist) {
+              bestDist = dist;
+              nearest = index;
+            }
+          }
+
+          return from === -1 ? [nearest, nearest] : [from, to];
+        };
+
         const spansByCopy = new Map<
           string,
           {
@@ -891,7 +939,7 @@ export const BaseInkPlugin = definePlugin('ink', {
               hi: number;
               lo: number;
               mark: InkMark;
-              run: InkRun;
+              run: InkRun | null;
             }>;
           }
         >();
@@ -901,11 +949,29 @@ export const BaseInkPlugin = definePlugin('ink', {
 
           if (!mark) continue;
           for (const block of mark.blocks) {
-            if (block.runs.length === 0) continue;
-
             const saved = copy(block.copy);
 
             if (!saved || saved.lines.length === 0) continue;
+
+            if (block.runs.length === 0) {
+              if (mark.margin === undefined) continue;
+
+              let bucket = spansByCopy.get(saved.id);
+
+              if (!bucket) {
+                bucket = { copy: saved, entries: [] };
+                spansByCopy.set(saved.id, bucket);
+              }
+              const [from, to] = marginLineSpan(saved.lines, mark, block.top);
+
+              bucket.entries.push({
+                hi: Math.min(saved.lines.length - 1, to + 1),
+                lo: Math.max(0, from - 1),
+                mark,
+                run: null,
+              });
+              continue;
+            }
 
             let bucket = spansByCopy.get(saved.id);
 
@@ -976,6 +1042,7 @@ export const BaseInkPlugin = definePlugin('ink', {
                 item = { gaps: new Set(), mark, words: new Set() };
                 byId.set(mark.id, item);
               }
+              if (!run) continue;
               if (run.end > run.start) {
                 let touched = false;
 
@@ -1002,6 +1069,7 @@ export const BaseInkPlugin = definePlugin('ink', {
               .map(({ gaps, mark, words: markWords }): InkPassageMark => ({
                 gaps: [...gaps].sort((a, b) => a - b),
                 id: mark.id,
+                ...(mark.margin ? { margin: mark.margin.side } : {}),
                 words: [...markWords].sort((a, b) => a - b),
               }));
 

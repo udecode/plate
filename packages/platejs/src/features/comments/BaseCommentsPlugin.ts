@@ -22,6 +22,7 @@ import {
   type Value,
 } from '../../core';
 import {
+  type EditorUpdateTransaction,
   getAnchorRuntimeId,
   notifyObservers,
   readDocumentRange,
@@ -184,6 +185,11 @@ export type CreateCommentThreadInput = Readonly<{
   target:
     | Readonly<{ range: Range; type: 'range' }>
     | Readonly<{ id: string; type: 'change' }>;
+  /**
+   * Record-only writes recorded in the same history batch as the created thread
+   * once `mutate` commits. Skipped on rejection, throw, or a read-only view.
+   */
+  withHistory?: (tx: EditorUpdateTransaction, thread: CommentThread) => void;
 }>;
 
 export type CommentOperation =
@@ -1520,6 +1526,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
                     commandEditor.read.view.isReadOnly();
                   if (!canonical || viewRefuses) return;
                   commandEditor.update((tx) => {
+                    input.withHistory?.(tx, canonical);
                     tx.effects.emit(commentCreationHistoryEffect, {
                       anchorId: anchor ? getAnchorRuntimeId(anchor) : null,
                       attachment: anchor
