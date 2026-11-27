@@ -247,9 +247,6 @@
     "packages/plitejs/src/react/editable/runtime-selection-engine.ts": [
       "if (point && PointApi.equals(point, caret)) clearAfterInsertCaret(editor);"
     ],
-    "packages/plitejs/src/react/editable/selection-controller.ts": [
-      "if (selectionRange && RangeApi.equals(selectionRange, range)) return;"
-    ],
     "packages/plitejs/src/react/editable/selection-reconciler.ts": [
       "(!nextSelection || !RangeApi.equals(nextSelection, range))",
       "if (range && (!nextSelection || !RangeApi.equals(nextSelection, range))) {",
