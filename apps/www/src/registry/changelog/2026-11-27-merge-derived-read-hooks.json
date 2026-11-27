@@ -57,9 +57,15 @@
     },
     {
       "name": "ink-digitize-bar",
-      "files": ["apps/www/src/registry/components/editor/ink-digitize-bar.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ink-digitize-bar."
+        }
+      ]
     },
     {
       "name": "fixed-toolbar",

@@ -1019,13 +1019,12 @@
     {
       "name": "draw-toolbar-button",
       "title": "Draw Toolbar Button",
-      "description": "A split toolbar button that turns the ink Draw tool on or off and picks the pen, the highlighter, the eraser or the lasso.",
+      "description": "A toolbar button that turns the ink Draw tool on or off with the last tool used, and the brush preferences each tool remembers per editor.",
       "dependencies": [
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/toolbar.json"
       ],
       "files": [
@@ -1085,6 +1084,7 @@
       "description": "The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes or brings back the marks.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -1111,15 +1111,17 @@
       "type": "registry:component"
     },
     {
-      "name": "ink-digitize-bar",
-      "title": "Ink Digitize Bar",
-      "description": "Floating lasso bar, Digitize all toolbar trigger, and confirm dialog with kind filters and async comment save/retry.",
+      "name": "ink-dock",
+      "title": "Ink Dock",
+      "description": "Floating ink dock with Pen, Highlighter, Eraser and Lasso, color swatches, a width flyout, lasso Digitize, Delete and Bring back actions, the Digitize all toolbar trigger, and the confirm dialog with kind filters and async comment save/retry.",
       "dependencies": [
         "platejs",
         "sonner",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/draw-toolbar-button.json",
+        "https://platejs.org/r/floating-popover.json",
         "https://platejs.org/r/ink-digitize.json",
         "https://platejs.org/r/ink-digitize-api.json",
         "https://platejs.org/r/settings-dialog.json",
@@ -1131,9 +1133,9 @@
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/ink-digitize-bar.tsx",
+          "path": "src/registry/components/editor/ink-dock.tsx",
           "type": "registry:component",
-          "target": "@components/editor/ink-digitize-bar.tsx"
+          "target": "@components/editor/ink-dock.tsx"
         }
       ],
       "meta": {
@@ -2912,7 +2914,7 @@
       "registryDependencies": [
         "https://platejs.org/r/draw-toolbar-button.json",
         "https://platejs.org/r/ink-switch-toolbar-button.json",
-        "https://platejs.org/r/ink-digitize-bar.json",
+        "https://platejs.org/r/ink-dock.json",
         "https://platejs.org/r/ink-sign-button.json"
       ],
       "files": [

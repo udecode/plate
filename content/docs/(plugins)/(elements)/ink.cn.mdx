@@ -33,12 +33,12 @@ docs:
 
 <ComponentSource name="ink" />
 
-- `InkKit`（`ink.tsx`）：在 `slots.wrapContent` 中挂载带 `InkSignButton` 的 `InkContent`，在 `slots.afterEditable` 中挂载 `InkDigitizeBar`。
-- `DrawToolbarButton`（`draw-toolbar-button.tsx`）：拆分式工具栏按钮，用于开关绘制模式并选择画笔、荧光笔、橡皮擦或套索。
-- `DigitizeAllToolbarButton`（`ink-digitize-bar.tsx`）：工具栏按钮，分批读取页面上所有实时显示的笔迹。
+- `InkKit`（`ink.tsx`）：在 `slots.wrapContent` 中挂载带 `InkSignButton` 的 `InkContent`，在 `slots.afterEditable` 中挂载 `InkDock`。
+- `DrawToolbarButton`（`draw-toolbar-button.tsx`）：工具栏按钮，用上次使用的工具开关绘制模式，并按编辑器记住每种工具的笔刷设置。
+- `DigitizeAllToolbarButton`（`ink-dock.tsx`）：工具栏按钮，分批读取页面上所有实时显示的笔迹。
 - `InkSwitchToolbarButton`（`ink-switch-toolbar-button.tsx`）：墨迹可见性下拉菜单，包含 **Hide ink**、**Show digitized ink** 开关，以及带二次确认的 **Drop digitized ink** 操作。
 - `InkSignButton`（`ink-sign-button.tsx`）：页边标记按钮与弹窗，展示 `InkCopyView` 并提供删除或恢复操作。
-- `InkDigitizeBar`（`ink-digitize-bar.tsx`）：套索浮动操作条与确认弹窗，包含类型筛选按钮、手动补充说明重新识别，以及异步评论保存与重试。
+- `InkDock`（`ink-dock.tsx`）：浮动工具栏，包含画笔、荧光笔、橡皮擦和套索，颜色色板、线宽弹出面板，套索的数字化、删除与恢复操作，以及确认弹窗（类型筛选按钮、手动补充说明重新识别、异步评论保存与重试）。
 
 ### 添加套件
 
@@ -53,7 +53,7 @@ import { DrawToolbarButton } from '@/components/editor/draw-toolbar-button';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { InkKit } from '@/components/editor/ink';
-import { DigitizeAllToolbarButton } from '@/components/editor/ink-digitize-bar';
+import { DigitizeAllToolbarButton } from '@/components/editor/ink-dock';
 import { InkSwitchToolbarButton } from '@/components/editor/ink-switch-toolbar-button';
 import { EditorKit } from '@/components/editor/plugins';
 
@@ -181,7 +181,7 @@ export function HeadlessInkEditor() {
 }
 ```
 
-向 `<InkContent {...props} sign={MySignButton} />` 传入自定义 `sign` 组件即可渲染改动、删除或窄页边标记；如需套索操作条和确认弹窗，可在 `slots.afterEditable` 中挂载 `InkDigitizeBar`。
+向 `<InkContent {...props} sign={MySignButton} />` 传入自定义 `sign` 组件即可渲染改动、删除或窄页边标记；如需浮动工具栏和确认弹窗，可在 `slots.afterEditable` 中挂载 `InkDock`。
 
 </Steps>
 

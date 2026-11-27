@@ -369,6 +369,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-ink-dock",
+      "href": "/registry/changelog/2026-11-27-ink-dock.json",
+      "status": "draft",
+      "kind": "breaking",
+      "summary": "Replace ink-digitize-bar with the floating ink-dock, make Draw a one-click toggle, and show each ink sign state with a count badge",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ink-dock", "draw-toolbar-button", "ink-sign-button", "ink"],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-ink-toolbar-and-digitize",
       "href": "/registry/changelog/2026-11-27-ink-toolbar-and-digitize.json",
       "status": "draft",

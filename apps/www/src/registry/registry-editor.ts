@@ -551,7 +551,7 @@ export const editorComponents: Registry['items'] = [
   {
     dependencies: ['platejs'],
     description:
-      'A split toolbar button that turns the ink Draw tool on or off and picks the pen, the highlighter, the eraser or the lasso.',
+      'A toolbar button that turns the ink Draw tool on or off with the last tool used, and the brush preferences each tool remembers per editor.',
     files: [
       {
         path: 'components/editor/draw-toolbar-button.tsx',
@@ -596,16 +596,16 @@ export const editorComponents: Registry['items'] = [
   {
     dependencies: ['platejs', 'sonner'],
     description:
-      'Floating lasso bar, Digitize all toolbar trigger, and confirm dialog with kind filters and async comment save/retry.',
+      'Floating ink dock with Pen, Highlighter, Eraser and Lasso, color swatches, a width flyout, lasso Digitize, Delete and Bring back actions, the Digitize all toolbar trigger, and the confirm dialog with kind filters and async comment save/retry.',
     files: [
       {
-        path: 'components/editor/ink-digitize-bar.tsx',
+        path: 'components/editor/ink-dock.tsx',
         type: 'registry:component',
       },
     ],
     meta: { docs: [{ route: '/docs/ink' }], examples: ['ink-demo'] },
-    name: 'ink-digitize-bar',
-    title: 'Ink Digitize Bar',
+    name: 'ink-dock',
+    title: 'Ink Dock',
     type: 'registry:component',
   },
   {

@@ -10,13 +10,13 @@
   "registryDependencies": [
     "https://platejs.org/r/draw-toolbar-button.json",
     "https://platejs.org/r/ink-switch-toolbar-button.json",
-    "https://platejs.org/r/ink-digitize-bar.json",
+    "https://platejs.org/r/ink-dock.json",
     "https://platejs.org/r/ink-sign-button.json"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/ink.tsx",
-      "content": "'use client';\n\nimport { InkContent, InkPlugin } from 'platejs/ink/react';\n\nimport { InkDigitizeBar } from '@/registry/components/editor/ink-digitize-bar';\nimport { InkSignButton } from '@/registry/components/editor/ink-sign-button';\n\nexport const InkKit = [\n  InkPlugin.configure({\n    slots: {\n      afterEditable: InkDigitizeBar,\n      wrapContent: (props) => <InkContent {...props} sign={InkSignButton} />,\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport type { InkTool } from 'platejs/ink';\nimport { InkContent, InkPlugin } from 'platejs/ink/react';\nimport { useViewStore } from 'platejs/react';\nimport type * as React from 'react';\n\nimport { InkDock } from '@/registry/components/editor/ink-dock';\nimport { InkSignButton } from '@/registry/components/editor/ink-sign-button';\n\nconst svgCursor = (svg: string, x: number, y: number) =>\n  `url(\"data:image/svg+xml,${encodeURIComponent(svg)}\") ${x} ${y}, crosshair`;\n\nconst inkCursorFor = (tool: InkTool | null) => {\n  if (!tool) return undefined;\n  if (tool.type === 'lasso') return 'crosshair';\n  if (tool.type === 'erase') {\n    const side = Math.min(48, Math.max(8, Math.round(tool.size)));\n    const middle = side / 2;\n\n    return svgCursor(\n      `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${side}\" height=\"${side}\" viewBox=\"0 0 ${side} ${side}\"><circle cx=\"${middle}\" cy=\"${middle}\" r=\"${middle - 1}\" fill=\"rgba(255,255,255,0.55)\" stroke=\"#52525b\" stroke-width=\"1\"/></svg>`,\n      middle,\n      middle\n    );\n  }\n\n  const { color, opacity } = tool.brush;\n\n  if (opacity < 1) {\n    return svgCursor(\n      `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 20 20\"><rect x=\"4\" y=\"7\" width=\"12\" height=\"6\" rx=\"1.5\" fill=\"${color}\" fill-opacity=\"${opacity}\" stroke=\"#52525b\" stroke-opacity=\"0.6\"/></svg>`,\n      10,\n      10\n    );\n  }\n\n  return svgCursor(\n    `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\"><circle cx=\"8\" cy=\"8\" r=\"3.5\" fill=\"${color}\" stroke=\"#ffffff\" stroke-width=\"1.5\"/></svg>`,\n    8,\n    8\n  );\n};\n\nfunction InkLayerContent(props: { children: React.ReactNode }) {\n  const tool = useViewStore(InkPlugin, (state) => state.tool);\n\n  return (\n    <InkContent\n      {...props}\n      sign={InkSignButton}\n      style={{ '--ink-cursor': inkCursorFor(tool) } as React.CSSProperties}\n    />\n  );\n}\n\nexport const InkKit = [\n  InkPlugin.configure({\n    slots: {\n      afterEditable: InkDock,\n      wrapContent: InkLayerContent,\n    },\n  }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/ink.tsx"
     }

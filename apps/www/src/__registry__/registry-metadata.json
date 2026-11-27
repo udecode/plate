@@ -1,5 +1,5 @@
 {
-  "generation": "8b862d39d36811719a43cb3af0719d35f01453c93f7c442987a6a3658d2a9e4f",
+  "generation": "59277be8f813e5636f8937ec682d89038e15803feb05bf440d61931db13dff25",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1044,7 +1044,7 @@
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "A split toolbar button that turns the ink Draw tool on or off and picks the pen, the highlighter, the eraser or the lasso.",
+          "description": "A toolbar button that turns the ink Draw tool on or off with the last tool used, and the brush preferences each tool remembers per editor.",
           "files": [
             {
               "path": "components/editor/draw-toolbar-button.tsx",
@@ -1066,7 +1066,6 @@
           "title": "Draw Toolbar Button",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/editor-dropdown-menu",
             "@plate/toolbar"
           ]
         },
@@ -1106,6 +1105,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1142,12 +1142,12 @@
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "Floating lasso bar, Digitize all toolbar trigger, and confirm dialog with kind filters and async comment save/retry.",
+          "description": "Floating ink dock with Pen, Highlighter, Eraser and Lasso, color swatches, a width flyout, lasso Digitize, Delete and Bring back actions, the Digitize all toolbar trigger, and the confirm dialog with kind filters and async comment save/retry.",
           "files": [
             {
-              "path": "components/editor/ink-digitize-bar.tsx",
+              "path": "components/editor/ink-dock.tsx",
               "type": "registry:component",
-              "target": "@components/editor/ink-digitize-bar.tsx"
+              "target": "@components/editor/ink-dock.tsx"
             }
           ],
           "meta": {
@@ -1160,10 +1160,12 @@
               "ink-demo"
             ]
           },
-          "name": "ink-digitize-bar",
-          "title": "Ink Digitize Bar",
+          "name": "ink-dock",
+          "title": "Ink Dock",
           "type": "registry:component",
           "registryDependencies": [
+            "@plate/draw-toolbar-button",
+            "@plate/floating-popover",
             "@plate/ink-digitize",
             "@plate/ink-digitize-api",
             "@plate/settings-dialog",
@@ -2968,7 +2970,7 @@
           "registryDependencies": [
             "@plate/draw-toolbar-button",
             "@plate/ink-switch-toolbar-button",
-            "@plate/ink-digitize-bar",
+            "@plate/ink-dock",
             "@plate/ink-sign-button"
           ]
         },
@@ -9009,7 +9011,7 @@
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "A split toolbar button that turns the ink Draw tool on or off and picks the pen, the highlighter, the eraser or the lasso.",
+          "description": "A toolbar button that turns the ink Draw tool on or off with the last tool used, and the brush preferences each tool remembers per editor.",
           "files": [
             {
               "path": "components/editor/draw-toolbar-button.tsx",
@@ -9031,7 +9033,6 @@
           "title": "Draw Toolbar Button",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/editor-dropdown-menu",
             "@plate/toolbar"
           ]
         },
@@ -9071,6 +9072,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -9107,12 +9109,12 @@
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "Floating lasso bar, Digitize all toolbar trigger, and confirm dialog with kind filters and async comment save/retry.",
+          "description": "Floating ink dock with Pen, Highlighter, Eraser and Lasso, color swatches, a width flyout, lasso Digitize, Delete and Bring back actions, the Digitize all toolbar trigger, and the confirm dialog with kind filters and async comment save/retry.",
           "files": [
             {
-              "path": "components/editor/ink-digitize-bar.tsx",
+              "path": "components/editor/ink-dock.tsx",
               "type": "registry:component",
-              "target": "@components/editor/ink-digitize-bar.tsx"
+              "target": "@components/editor/ink-dock.tsx"
             }
           ],
           "meta": {
@@ -9125,10 +9127,12 @@
               "ink-demo"
             ]
           },
-          "name": "ink-digitize-bar",
-          "title": "Ink Digitize Bar",
+          "name": "ink-dock",
+          "title": "Ink Dock",
           "type": "registry:component",
           "registryDependencies": [
+            "@plate/draw-toolbar-button",
+            "@plate/floating-popover",
             "@plate/ink-digitize",
             "@plate/ink-digitize-api",
             "@plate/settings-dialog",
@@ -10930,7 +10934,7 @@
           "registryDependencies": [
             "@plate/draw-toolbar-button",
             "@plate/ink-switch-toolbar-button",
-            "@plate/ink-digitize-bar",
+            "@plate/ink-dock",
             "@plate/ink-sign-button"
           ]
         },

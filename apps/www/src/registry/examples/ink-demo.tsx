@@ -22,7 +22,7 @@ import {
   FixedToolbarPlugin,
 } from '@/registry/components/editor/fixed-toolbar';
 import { InkKit } from '@/registry/components/editor/ink';
-import { DigitizeAllToolbarButton } from '@/registry/components/editor/ink-digitize-bar';
+import { DigitizeAllToolbarButton } from '@/registry/components/editor/ink-dock';
 import { InkSwitchToolbarButton } from '@/registry/components/editor/ink-switch-toolbar-button';
 import { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-button';
 import { EditorKit } from '@/registry/components/editor/plugins';
@@ -173,7 +173,7 @@ function InkDemoEditor({ initialState }: { initialState: SavedInkDemoState }) {
   }, [editor, persist]);
 
   return (
-    <div className="flex h-dvh flex-col">
+    <div className="flex h-full flex-col">
       <EditorRoot editor={editor} onValueChange={persist}>
         <FixedToolbar className="justify-start rounded-none">
           <ToolbarGroup>

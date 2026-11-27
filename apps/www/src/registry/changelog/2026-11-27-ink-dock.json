@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-ink-dock",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-ink-dock.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "breaking",
+  "summary": "Replace ink-digitize-bar with the floating ink-dock, make Draw a one-click toggle, and show each ink sign state with a count badge",
+  "targets": [
+    {
+      "name": "ink-dock",
+      "files": ["apps/www/src/registry/components/editor/ink-dock.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "draw-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/draw-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-sign-button",
+      "files": ["apps/www/src/registry/components/editor/ink-sign-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink",
+      "files": ["apps/www/src/registry/components/editor/ink.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-ink-dock",
+      "kind": "breaking",
+      "summary": "Adds a floating bottom dock with Pen, Highlighter, Eraser and Lasso, color swatches, a custom color input, a width flyout, a Done button and a collapse toggle, plus lasso Digitize, Delete, Bring back and Clear pick actions. One Digitize run holds every view of the editor, and the Digitize all toolbar button reads the focused split pane.",
+      "details": [],
+      "migrationNotes": [
+        "Replace the `ink-digitize-bar` item with `ink-dock`: import `InkDock` and `DigitizeAllToolbarButton` from `@/components/editor/ink-dock` instead of `InkDigitizeBar` and `DigitizeAllToolbarButton` from `@/components/editor/ink-digitize-bar`, then delete `ink-digitize-bar.tsx`."
+      ],
+      "targets": ["ink-dock"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-dock",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-dock-draw-toggle",
+      "kind": "behavior",
+      "summary": "Turns Draw on with the last tool used in one click, remembers each tool's brush per editor, and stays disabled in Authored Preview.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["draw-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-dock",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-dock-sign-states",
+      "kind": "behavior",
+      "summary": "Tints changed and deleted signs, shows a margin icon for narrow-margin signs, dashes digitized signs, adds a mark count badge, and disables Delete and Bring back in Authored Preview.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-sign-button"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-dock",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-dock-kit",
+      "kind": "wiring",
+      "summary": "Mounts `InkDock` after the editable and sets a per-tool `--ink-cursor` on the ink layer, sized to the eraser.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-dock",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

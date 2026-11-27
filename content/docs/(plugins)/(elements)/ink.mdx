@@ -33,12 +33,12 @@ Open [the full-page Ink demo](/blocks/ink-demo) to test drawing, margin signs, a
 
 <ComponentSource name="ink" />
 
-- `InkKit` (`ink.tsx`): wires `InkContent` with `InkSignButton` in `slots.wrapContent` and `InkDigitizeBar` in `slots.afterEditable`.
-- `DrawToolbarButton` (`draw-toolbar-button.tsx`): split toolbar button that toggles Draw on or off and selects Pen, Highlighter, Eraser, or Lasso.
-- `DigitizeAllToolbarButton` (`ink-digitize-bar.tsx`): toolbar trigger that reads all live shown marks in sequential batches.
+- `InkKit` (`ink.tsx`): wires `InkContent` with `InkSignButton` in `slots.wrapContent` and `InkDock` in `slots.afterEditable`.
+- `DrawToolbarButton` (`draw-toolbar-button.tsx`): toolbar button that toggles Draw on or off with the last tool used, plus the brush preferences each tool remembers per editor.
+- `DigitizeAllToolbarButton` (`ink-dock.tsx`): toolbar trigger that reads all live shown marks in sequential batches.
 - `InkSwitchToolbarButton` (`ink-switch-toolbar-button.tsx`): ink visibility menu with toggles for **Hide ink** and **Show digitized ink**, plus a confirmation-gated **Drop digitized ink** action.
 - `InkSignButton` (`ink-sign-button.tsx`): margin sign button and popover displaying `InkCopyView` with Delete or Bring back actions.
-- `InkDigitizeBar` (`ink-digitize-bar.tsx`): floating lasso action bar and confirmation dialog with kind filter chips, typed re-read instructions, and async comment save and retry handling.
+- `InkDock` (`ink-dock.tsx`): floating dock with Pen, Highlighter, Eraser, and Lasso, color swatches, a width flyout, lasso Digitize, Delete, and Bring back actions, and the confirmation dialog with kind filter chips, typed re-read instructions, and async comment save and retry handling.
 
 ### Add kit
 
@@ -53,7 +53,7 @@ import { DrawToolbarButton } from '@/components/editor/draw-toolbar-button';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { InkKit } from '@/components/editor/ink';
-import { DigitizeAllToolbarButton } from '@/components/editor/ink-digitize-bar';
+import { DigitizeAllToolbarButton } from '@/components/editor/ink-dock';
 import { InkSwitchToolbarButton } from '@/components/editor/ink-switch-toolbar-button';
 import { EditorKit } from '@/components/editor/plugins';
 
@@ -181,7 +181,7 @@ export function HeadlessInkEditor() {
 }
 ```
 
-Pass a custom `sign` component to `<InkContent {...props} sign={MySignButton} />` to render margin signs for changed, deleted, or narrow-margin marks, and mount `InkDigitizeBar` in `slots.afterEditable` if you want the lasso bar and confirmation UI.
+Pass a custom `sign` component to `<InkContent {...props} sign={MySignButton} />` to render margin signs for changed, deleted, or narrow-margin marks, and mount `InkDock` in `slots.afterEditable` if you want the floating dock and confirmation UI.
 
 </Steps>
 
