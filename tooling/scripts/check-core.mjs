@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+// TypeScript 7 exposes its parser only under `typescript/unstable/*`, so this
+// check uses the pinned TypeScript 6 compiler API.
+const require = createRequire(import.meta.url);
+const ts = require('@typescript/typescript6');
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -14,8 +20,30 @@ const compareStrings = (left, right) => {
 const root = process.cwd();
 const TEST_FILE_RE = /\.(?:spec|test)\.[cm]?[tj]sx?$/;
 const CONTRACT_FILE_RE = /-contract(?:\.(?:spec|test))?\.[cm]?[tj]sx?$/;
-const TOP_LEVEL_AMBIENT_VALUE_RE =
-  /^declare\s+(?:const|let|var|function|class)\b/m;
+const DECLARE_KEYWORD_RE = /\bdeclare\b/;
+
+const isAmbientValueStatement = (statement) =>
+  (ts.isVariableStatement(statement) ||
+    ts.isFunctionDeclaration(statement) ||
+    ts.isClassDeclaration(statement)) &&
+  ts.canHaveModifiers(statement) &&
+  (ts
+    .getModifiers(statement)
+    ?.some((modifier) => modifier.kind === ts.SyntaxKind.DeclareKeyword) ??
+    false);
+
+const hasTopLevelAmbientValueDeclaration = (file, source) => {
+  if (!DECLARE_KEYWORD_RE.test(source)) return false;
+
+  const sourceFile = ts.createSourceFile(
+    file,
+    source,
+    ts.ScriptTarget.Latest,
+    false
+  );
+
+  return sourceFile.statements.some(isAmbientValueStatement);
+};
 
 const packageSlugs = ['plitejs', 'platejs', 'test', 'cli'];
 
@@ -186,7 +214,9 @@ export const collectPackageTestFiles = (target, genericTypeFiles = new Set()) =>
     .filter((file) => {
       if (genericTypeFiles.has(file)) return false;
 
-      if (TOP_LEVEL_AMBIENT_VALUE_RE.test(readFileSync(file, 'utf-8'))) {
+      if (
+        hasTopLevelAmbientValueDeclaration(file, readFileSync(file, 'utf-8'))
+      ) {
         throw new Error(
           `Runtime test contract ${toPosixPath(relative(root, file))} contains a top-level ambient value declaration. Declare it in the owning package's test/tsconfig.generic-types.json files array.`
         );
