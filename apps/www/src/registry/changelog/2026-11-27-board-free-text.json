@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-board-free-text",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-board-free-text.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add free text to the board UI",
+  "targets": [
+    {
+      "name": "board",
+      "files": [
+        "apps/www/src/registry/components/editor/board-static.tsx",
+        "apps/www/src/registry/components/editor/board-styles.tsx",
+        "apps/www/src/registry/components/editor/board.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-board-free-text-c8f12e4b",
+      "kind": "new",
+      "summary": "Add `BoardTextElement`, the Text (`T`) toolbar tool (click for auto-sized text, drag for fixed-width wrapping text, or double-click an empty spot), and `BoardTextElementStatic` for SVG and PNG export.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` and copy the `board` registry item again to add `BoardTextElement`, the Text (`T`) toolbar button, and `BoardTextElementStatic` for free text picture export."
+      ],
+      "targets": ["board"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-board-free-text",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

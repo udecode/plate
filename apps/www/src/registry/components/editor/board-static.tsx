@@ -8,6 +8,7 @@ import {
   BaseBoardNotePlugin,
   BaseBoardPlugin,
   BaseBoardStrokePlugin,
+  BaseBoardTextPlugin,
   type BoardMemberEntry,
 } from 'platejs/board';
 import { BaseImagePlugin, type ImageElement } from 'platejs/media';
@@ -129,6 +130,51 @@ export function BoardNoteElementStatic(
               className={cn('relative flow-root', SHAPE_HEADINGS)}
               data-board-text=""
               style={{ opacity: element.opacity }}
+            >
+              {props.children}
+            </div>
+          </div>
+        </foreignObject>
+      </svg>
+    </EditorElement>
+  );
+}
+
+export function BoardTextElementStatic(
+  props: EditorElementProps<typeof BaseBoardTextPlugin>
+) {
+  const { editor, element } = props;
+  const box = boxOf(editor.plugin(BaseBoardPlugin).read.shape(idOf(element)));
+
+  if (!box) return <EditorElement {...props} />;
+
+  return (
+    <EditorElement {...placed(props, box)}>
+      <svg
+        height={box.height}
+        overflow="visible"
+        style={{ inset: 0, position: 'absolute' }}
+        width={box.width}
+      >
+        <foreignObject height={box.height} overflow="visible" width={box.width}>
+          <div
+            className="relative px-1.5 py-0.5 leading-snug text-foreground"
+            style={{
+              boxSizing: 'border-box',
+              fontSize: TEXT_SIZES[element.textSize],
+              height: box.height,
+              width: box.width,
+            }}
+          >
+            <div
+              className={cn('relative flow-root', SHAPE_HEADINGS)}
+              data-board-text=""
+              style={{
+                opacity: element.opacity,
+                ...(element.autoSize
+                  ? { minWidth: '100%', width: 'max-content' }
+                  : {}),
+              }}
             >
               {props.children}
             </div>
@@ -375,6 +421,7 @@ export function BoardImageElementStatic(
 export const BoardStaticKit = [
   BaseBoardPlugin.configure({ component: BoardElementStatic }),
   BaseBoardNotePlugin.configure({ component: BoardNoteElementStatic }),
+  BaseBoardTextPlugin.configure({ component: BoardTextElementStatic }),
   BaseBoardGeoPlugin.configure({ component: BoardGeoElementStatic }),
   BaseBoardArrowPlugin.configure({ component: BoardArrowElementStatic }),
   BaseBoardFramePlugin.configure({ component: BoardFrameElementStatic }),

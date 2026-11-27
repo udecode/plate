@@ -29,6 +29,7 @@ import {
   type BoardShapeDescription,
   BoardStrokePlugin,
   BoardSurface,
+  BoardTextPlugin,
 } from '../../../../packages/platejs/src/react/features/board';
 import {
   type BoardView as ShippedView,
@@ -719,6 +720,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
           : Board) as never,
       targetPlugins: [
         BoardNotePlugin,
+        BoardTextPlugin,
         BoardGeoPlugin,
         BoardArrowPlugin,
         BoardFramePlugin,
@@ -727,6 +729,10 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     }),
     BoardNotePlugin.configure({
       component: NoteShape as never,
+      targetPlugins: NOTE_TARGETS,
+    }),
+    BoardTextPlugin.configure({
+      component: ShapeComponent as never,
       targetPlugins: NOTE_TARGETS,
     }),
     BoardGeoPlugin.configure({ component: ShapeComponent as never }),

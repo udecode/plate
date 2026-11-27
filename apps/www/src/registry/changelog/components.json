@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "components": {
     "board": [
+      "2026-11-27-board-free-text",
       "2026-11-27-board-static-note-text-mark",
       "2026-11-27-selector-depends-on",
       "2026-11-26-board-arrow-components",

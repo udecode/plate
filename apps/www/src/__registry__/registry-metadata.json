@@ -1,5 +1,5 @@
 {
-  "generation": "0a31b3a68bae54a47eb1d399629d4d9b38c792bebb5b08d57d0303d5eb0aa772",
+  "generation": "240091011d0c45f045c5e3f94f02f7767e8e35555f2fc98940e25458c86b0d4a",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2847,7 +2847,7 @@
           ],
           "name": "board",
           "type": "registry:component",
-          "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
+          "description": "A whiteboard block whose notes, free text, shapes, arrows, frames and pen lines are document blocks.",
           "title": "Board",
           "meta": {
             "docs": [
@@ -10586,7 +10586,7 @@
           ],
           "name": "board",
           "type": "registry:component",
-          "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
+          "description": "A whiteboard block whose notes, free text, shapes, arrows, frames and pen lines are document blocks.",
           "title": "Board",
           "meta": {
             "docs": [

@@ -20,6 +20,7 @@ import {
   SquareIcon,
   StickyNoteIcon,
   TriangleIcon,
+  TypeIcon,
   UngroupIcon,
   ZoomInIcon,
   ZoomOutIcon,
@@ -45,6 +46,7 @@ import {
   BoardStrokePlugin,
   type BoardStyle,
   BoardSurface,
+  BoardTextPlugin,
   type BoardTool,
   useBoardActions,
   useBoardView,
@@ -101,6 +103,7 @@ const TOOLS: ReadonlyArray<
   { icon: <MousePointer2Icon />, key: 'V', label: 'Select', tool: 'select' },
   { icon: <HandIcon />, key: 'H', label: 'Hand', tool: 'hand' },
   { icon: <StickyNoteIcon />, key: 'N', label: 'Note', tool: 'note' },
+  { icon: <TypeIcon />, key: 'T', label: 'Text', tool: 'text' },
   { icon: <SquareIcon />, key: 'R', label: 'Shape', tool: 'geo' },
   { icon: <MoveUpRightIcon />, key: 'A', label: 'Arrow', tool: 'arrow' },
   { icon: <FrameIcon />, key: 'F', label: 'Frame', tool: 'frame' },
@@ -275,7 +278,7 @@ const pickOf = (
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool and one shape selected that is not an arrow, Enter connects it to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected that is not an arrow, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Q keeps the drawing tool picked after each shape until a second Q, and Command+D on a Mac, or Control+D elsewhere, copies the selected shapes. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, text, shape or frame tool, Enter places one, and with the arrow tool and one shape selected that is not an arrow, Enter connects it to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected that is not an arrow, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Q keeps the drawing tool picked after each shape until a second Q, and Command+D on a Mac, or Control+D elsewhere, copies the selected shapes. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
@@ -349,7 +352,7 @@ function BoardPictureButton() {
 
   return (
     <ToolbarButton
-      className="px-1.5"
+      className="min-w-6 px-1"
       disabled={!takesPictureFiles}
       tooltip="Image"
       onClick={() => openFilePicker()}
@@ -491,7 +494,7 @@ function BoardToolLock() {
 
   return (
     <ToolbarButton
-      className="px-1.5"
+      className="min-w-6 px-1"
       pressed={locked}
       tooltip="Keep the tool after drawing (Q)"
       onClick={() => setToolLocked(!locked)}
@@ -547,7 +550,7 @@ export function BoardToolbar() {
           ) : (
             <ToolbarButton
               key={itemTool}
-              className="px-1.5"
+              className="min-w-6 px-1"
               pressed={tool === itemTool}
               tooltip={`${label} (${key})`}
               onClick={() => setTool(itemTool)}
@@ -562,7 +565,7 @@ export function BoardToolbar() {
       </BoardToolbarGroup>
       <BoardToolbarGroup>
         <ToolbarButton
-          className="px-1.5"
+          className="min-w-6 px-1"
           tooltip="Zoom out (-)"
           onClick={zoomOut}
         >
@@ -570,14 +573,14 @@ export function BoardToolbar() {
         </ToolbarButton>
         <BoardZoomLevel />
         <ToolbarButton
-          className="px-1.5"
+          className="min-w-6 px-1"
           tooltip="Zoom in (+)"
           onClick={zoomIn}
         >
           <ZoomInIcon />
         </ToolbarButton>
         <ToolbarButton
-          className="px-1.5"
+          className="min-w-6 px-1"
           tooltip="Fit every shape in view"
           onClick={fit}
         >
@@ -585,7 +588,7 @@ export function BoardToolbar() {
         </ToolbarButton>
         {frame && (
           <ToolbarButton
-            className="px-1.5"
+            className="min-w-6 px-1"
             tooltip="Remove the frame and keep its shapes"
             onClick={() => removeFrame(frame)}
           >
@@ -872,6 +875,30 @@ export function BoardNoteElement(
   );
 }
 
+export function BoardTextElement(
+  props: EditorElementProps<typeof BoardTextPlugin>
+) {
+  const { element } = props;
+
+  return (
+    <BoardShape
+      {...props}
+      className={cn(
+        CURSOR_RING,
+        'rounded-sm px-1.5 py-0.5 leading-snug text-foreground data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-[color:var(--suggestion-fg,var(--editor-primary,_var(--primary)))] data-[editor-authored-change]:outline-dashed'
+      )}
+      style={{ fontSize: TEXT_SIZES[element.textSize] }}
+    >
+      <div
+        className={cn('relative flow-root', SHAPE_HEADINGS)}
+        style={{ opacity: element.opacity }}
+      >
+        {props.children}
+      </div>
+    </BoardShape>
+  );
+}
+
 export function BoardGeoElement(
   props: EditorElementProps<typeof BoardGeoPlugin>
 ) {
@@ -1111,6 +1138,7 @@ export function BoardImageElement(
 
 const BoardShapeKit = [
   BoardNotePlugin.configure({ component: BoardNoteElement }),
+  BoardTextPlugin.configure({ component: BoardTextElement }),
   BoardGeoPlugin.configure({ component: BoardGeoElement }),
   BoardArrowPlugin.configure({ component: BoardArrowElement }),
   BoardFramePlugin.configure({ component: BoardFrameElement }),

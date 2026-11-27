@@ -362,7 +362,7 @@ export const registryFeatures: Registry['items'] = [
     name: 'board',
     type: 'registry:component',
     description:
-      'A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.',
+      'A whiteboard block whose notes, free text, shapes, arrows, frames and pen lines are document blocks.',
     title: 'Board',
     meta: {
       docs: [{ route: '/docs/board' }],

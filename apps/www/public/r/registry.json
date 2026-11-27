@@ -2719,7 +2719,7 @@
     {
       "name": "board",
       "title": "Board",
-      "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
+      "description": "A whiteboard block whose notes, free text, shapes, arrows, frames and pen lines are document blocks.",
       "dependencies": [
         "platejs",
         "sonner",
