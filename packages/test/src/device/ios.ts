@@ -51,6 +51,7 @@ export type RunnerReply = {
   keys?: string[];
   /** The key label the runner tapped, which Shift can capitalize. */
   label?: string;
+  minimized?: boolean;
   ok: boolean;
   panelSwitch?: string;
   shown?: boolean;

@@ -8,7 +8,12 @@ import {
   isIgnoredRuntimeError,
 } from '../playwright/runtime-errors';
 import type { DeviceLanguage } from './android';
-import { type IosRunner, type RunnerReply, startIosRunner } from './ios';
+import {
+  type IosRunner,
+  type RunnerCommand,
+  type RunnerReply,
+  startIosRunner,
+} from './ios';
 import type {
   DeviceDriver,
   DeviceQuery,
@@ -394,12 +399,10 @@ export const connectIos = async (
   }
 };
 
-export const createIosDriver = ({
-  inset,
-  page: inspector,
-  runner,
-  state,
-}: IosConnection): DeviceDriver => {
+export const createIosDriver = (
+  { inset, page: inspector, runner, state }: IosConnection,
+  options?: { showSoftKeyboard?: () => Promise<void> }
+): DeviceDriver => {
   const caseStart = inspector.log.length;
   let { origin } = new URL(state.appURL);
 
@@ -454,9 +457,28 @@ export const createIosDriver = ({
     }),
     errors,
     keyboard: ({ gesture }) => {
+      const restoreSoftKeyboard = async () => {
+        if (!options?.showSoftKeyboard) return false;
+        await options.showSoftKeyboard();
+        for (const deadline = Date.now() + 2000; Date.now() < deadline;) {
+          const reply = await send({ action: 'keyboard' });
+
+          if (reply.shown) return true;
+          await sleep(100);
+        }
+        return false;
+      };
+      const sendKeyboard = async (command: RunnerCommand) => {
+        const reply = await runner.send(command);
+
+        if (!reply.ok && reply.minimized && (await restoreSoftKeyboard())) {
+          return checked(await runner.send(command));
+        }
+        return checked(reply);
+      };
       const tapKey = (label: string, key: DeviceWitnessKey) =>
         gesture({ key, kind: 'key', label }, async () => {
-          const { label: tapped = label } = await send({
+          const { label: tapped = label } = await sendKeyboard({
             action: 'key',
             label,
           });
@@ -470,7 +492,7 @@ export const createIosDriver = ({
       // does and sends Shift's keydown.
       const press = async (label: string, key: DeviceWitnessKey) => {
         for (let switches = 0; switches < 2; switches++) {
-          const { panelSwitch } = await send({ action: 'find', label });
+          const { panelSwitch } = await sendKeyboard({ action: 'find', label });
 
           if (!panelSwitch) break;
           await tapKey(panelSwitch, panelSwitch === 'symbols' ? 'Shift' : null);
@@ -487,7 +509,9 @@ export const createIosDriver = ({
           return shown === true;
         },
         strip: async (candidate) => {
-          const { candidates = [] } = await send({ action: 'candidates' });
+          const { candidates = [] } = await sendKeyboard({
+            action: 'candidates',
+          });
           const label = candidates.find((word) =>
             typeof candidate === 'string'
               ? word === candidate
@@ -501,7 +525,7 @@ export const createIosDriver = ({
           }
 
           await gesture({ kind: 'strip', label }, async () => {
-            await send({ action: 'candidate', label });
+            await sendKeyboard({ action: 'candidate', label });
           });
 
           return label;
@@ -524,7 +548,17 @@ export const createIosDriver = ({
           const seen: string[] = [];
 
           for (let taps = 0; taps <= IOS_LANGUAGES.length; taps++) {
-            const { deleteLabel, shown } = await send({ action: 'keyboard' });
+            let reply = await send({ action: 'keyboard' });
+
+            if (
+              !reply.shown &&
+              reply.minimized &&
+              (await restoreSoftKeyboard())
+            ) {
+              reply = await send({ action: 'keyboard' });
+            }
+
+            const { deleteLabel, shown } = reply;
 
             if (!shown) {
               throw new Error(
@@ -534,7 +568,7 @@ export const createIosDriver = ({
             if (iosKeyboardLanguage(deleteLabel) === language) return;
             seen.push(describeIosKeyboard(deleteLabel));
             if (taps === IOS_LANGUAGES.length) break;
-            await send({ action: 'nextKeyboard' });
+            await sendKeyboard({ action: 'nextKeyboard' });
           }
           throw new Error(
             `The iPhone keyboard never switched to ${language}; passed ${seen.join(', ')}.`
