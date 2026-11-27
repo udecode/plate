@@ -519,7 +519,7 @@ export const demoExamples: Registry['items'] = (
     },
     {
       description:
-        'Pen markup and AI digitization on a document saved with its comments to local storage, with a second user and a second view.',
+        'Pen markup and AI digitization over editable text, saved with comments to local storage.',
       files: [
         {
           path: 'examples/ink-demo.tsx',

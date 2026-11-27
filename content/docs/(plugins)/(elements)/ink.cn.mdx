@@ -8,7 +8,7 @@ docs:
 
 <ComponentPreview name="ink-demo" />
 
-打开[完整页面墨迹演示](/blocks/ink-demo)可测试第二用户与第二视图同步、模拟评论保存失败以及本地持久化。该演示把文档和评论线程保存在同一个本地存储键下，并在调用数字化前要求输入你自己的 AI Gateway API 密钥。
+打开[完整页面墨迹演示](/blocks/ink-demo)可体验手写批注、页边标记与 AI 数字化及本地持久化。该演示把文档和评论线程保存在同一个本地存储键下；如果服务端未配置 `AI_GATEWAY_API_KEY`，调用数字化前会提示在设置中输入你自己的 AI Gateway API 密钥。
 
 <PackageInfo>
 
@@ -36,7 +36,7 @@ docs:
 - `InkKit`（`ink.tsx`）：在 `slots.wrapContent` 中挂载带 `InkSignButton` 的 `InkContent`，在 `slots.afterEditable` 中挂载 `InkDigitizeBar`。
 - `DrawToolbarButton`（`draw-toolbar-button.tsx`）：拆分式工具栏按钮，用于开关绘制模式并选择画笔、荧光笔、橡皮擦或套索。
 - `DigitizeAllToolbarButton`（`ink-digitize-bar.tsx`）：工具栏按钮，分批读取页面上所有实时显示的笔迹。
-- `InkSwitchToolbarButton`、`ShowDigitizedToolbarButton` 和 `DropDigitizedToolbarButton`（`ink-switch-toolbar-button.tsx`）：隐藏墨迹、淡化预览已数字化墨迹，以及永久清除已数字化墨迹。
+- `InkSwitchToolbarButton`（`ink-switch-toolbar-button.tsx`）：墨迹可见性下拉菜单，包含 **Hide ink**、**Show digitized ink** 开关，以及带二次确认的 **Drop digitized ink** 操作。
 - `InkSignButton`（`ink-sign-button.tsx`）：页边标记按钮与弹窗，展示 `InkCopyView` 并提供删除或恢复操作。
 - `InkDigitizeBar`（`ink-digitize-bar.tsx`）：套索浮动操作条与确认弹窗，包含类型筛选按钮、手动补充说明重新识别，以及异步评论保存与重试。
 
@@ -54,11 +54,7 @@ import { Editor, EditorContainer } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { InkKit } from '@/components/editor/ink';
 import { DigitizeAllToolbarButton } from '@/components/editor/ink-digitize-bar';
-import {
-  DropDigitizedToolbarButton,
-  InkSwitchToolbarButton,
-  ShowDigitizedToolbarButton,
-} from '@/components/editor/ink-switch-toolbar-button';
+import { InkSwitchToolbarButton } from '@/components/editor/ink-switch-toolbar-button';
 import { EditorKit } from '@/components/editor/plugins';
 
 export function InkEditor() {
@@ -72,8 +68,6 @@ export function InkEditor() {
         <DrawToolbarButton />
         <DigitizeAllToolbarButton />
         <InkSwitchToolbarButton />
-        <ShowDigitizedToolbarButton />
-        <DropDigitizedToolbarButton />
       </FixedToolbar>
       <EditorContainer>
         <Editor />
@@ -88,8 +82,7 @@ export function InkEditor() {
 安装 `@plate/ink-digitize-api`，将路由处理器（`app/api/ai/ink-digitize/route.ts` 和 `ink-digitize-route.ts`）复制到你的应用中。
 
 - 该路由不导入 Plate 任何模块，只发送段落图片、扁平词语列表、笔迹像素框、触及的词或间隙索引，以及可选的补充说明。
-- 默认情况下，复制的路由从 JSON 请求体读取 `apiKey`，缺少时返回 `401`。它默认调用 Vercel AI Gateway 上的 `google/gemini-3.8-flash`，也支持通过 `model` 字段覆盖。
-- 如需在自己的应用中使用服务端密钥，可在复制后的 `route.ts` 中调用 `createGateway` 之前读取 `process.env.AI_GATEWAY_API_KEY`。
+- 该路由优先读取 JSON 请求体中的 `apiKey`，未提供时回退到服务端环境变量 `process.env.AI_GATEWAY_API_KEY`，两者均缺失时返回 `401`。它默认调用 Vercel AI Gateway 上的 `google/gemini-3.8-flash`，也支持通过 `model` 字段覆盖。
 
 </Steps>
 
@@ -132,7 +125,7 @@ export function InkEditor() {
 
 ### 永久清除已数字化墨迹
 
-为了支持刷新后的 **Show digitized ink** 与 **Bring back**，已数字化的笔迹及其保存的块副本（包括被划掉的原文）仍保留在文档中。如需永久清理，请在 `editor.update` 中调用 `dropDigitized`（或使用 `DropDigitizedToolbarButton`）：
+为了支持刷新后的 **Show digitized ink** 与 **Bring back**，已数字化的笔迹及其保存的块副本（包括被划掉的原文）仍保留在文档中。如需永久清理，请在 `editor.update` 中调用 `dropDigitized`（或在 `InkSwitchToolbarButton` 菜单中选择 **Drop digitized ink**）：
 
 ```ts
 import { BaseInkPlugin } from 'platejs/ink';
@@ -202,7 +195,7 @@ export function HeadlessInkEditor() {
 | 使用套索拖动 | 画圈选中超过一半采样点落在圈内的笔迹，并聚焦 Editable。开启 **Show digitized ink** 时，圈选已数字化笔迹会提供 **Bring back**。 |
 | 套索激活时按 `Backspace` 或 `Delete` | 在一步撤销中删除已选中、未数字化且无页边标记的显示笔迹。 |
 | `Escape` | 清除当前套索选中，或在不写入的情况下关闭已打开的数字化确认弹窗。 |
-| 切换到只读模式 | 关闭当前绘制工具，并在不写入的情况下关闭已打开的数字化确认弹窗。 |
+| 切换到只读模式或 Authored Preview | 关闭当前绘制工具，阻止绘制、擦除和套索删除，并在不写入的情况下关闭已打开的数字化确认弹窗。 |
 
 ## 插件
 
@@ -231,7 +224,7 @@ export function HeadlessInkEditor() {
 | `editor.plugin(BaseInkPlugin).read.range({ copy, start, end })` | `BaseInkPlugin` | 将保存副本文字中的字符偏移解析为实时 `Range`；块已删除或文字与行内 void 不一致时返回 `null`。 |
 | `InkMark`、`InkMarkInput`、`InkCopy`、`InkCopyPlace`、`InkSignPlace`、`InkPassage`、`InkPassageMark`、`InkPassageWord`、`InkRangeInput`、`InkTool`、`InkBrush`、`InkSample`、`InkLine`、`InkRun`、`InkMargin`、`InkDirection`、`InkViewState` | `platejs/ink` | 无界面入口导出的核心数据与视图状态类型。 |
 | `InkPlugin` | `platejs/ink/react` | React 墨迹插件，提供视图级工具、可见性、选中与段落绘图 API。 |
-| `editor.plugin(InkPlugin).api.setTool(tool)` | `InkPlugin` | 设置视图当前的 `InkTool`（`draw`、`erase`、`lasso`），传 `null` 关闭绘制。在只读视图或画笔尺寸非法时返回 `false`。 |
+| `editor.plugin(InkPlugin).api.setTool(tool)` | `InkPlugin` | 设置视图当前的 `InkTool`（`draw`、`erase`、`lasso`），传 `null` 关闭绘制。在只读视图、Authored Preview 或画笔尺寸非法时返回 `false`。 |
 | `editor.plugin(InkPlugin).api.setHidden(hidden)` | `InkPlugin` | 隐藏或显示当前视图的墨迹与标记；隐藏时会清空选中。 |
 | `editor.plugin(InkPlugin).api.setShowDigitized(show)` | `InkPlugin` | 以淡化方式显示已数字化笔迹（或显示为已数字化标记），并允许套索选中。关闭时会从选中中移出已数字化笔迹。 |
 | `editor.plugin(InkPlugin).api.setPicked(ids)` | `InkPlugin` | 设置当前视图选中的笔迹 id，绘制选中光晕。 |

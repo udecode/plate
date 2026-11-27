@@ -1050,13 +1050,15 @@
     {
       "name": "ink-switch-toolbar-button",
       "title": "Ink Switch Toolbar Button",
-      "description": "Toolbar controls to hide or show ink, preview digitized ink faded, and permanently drop saved digitized ink.",
+      "description": "Ink visibility dropdown menu to hide ink, preview digitized ink faded, and permanently drop saved digitized ink after confirmation.",
       "dependencies": [
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/editor-dropdown-menu.json",
+        "https://platejs.org/r/toolbar.json",
+        "alert-dialog"
       ],
       "files": [
         {

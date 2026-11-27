@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-ink-toolbar-and-digitize",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-ink-toolbar-and-digitize.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Consolidate ink visibility controls, simplify the ink demo, and fix Digitize key fallback and filtering",
+  "targets": [
+    {
+      "name": "ink-switch-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/ink-switch-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-digitize-bar",
+      "files": ["apps/www/src/registry/components/editor/ink-digitize-bar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-digitize-api",
+      "files": [
+        "apps/www/src/registry/app/api/ai/ink-digitize/ink-digitize-route.ts",
+        "apps/www/src/registry/app/api/ai/ink-digitize/route.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-demo",
+      "files": ["apps/www/src/registry/examples/ink-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-ink-switch-menu-7a3c9e12",
+      "kind": "behavior",
+      "summary": "Consolidate ink visibility toggles (Hide ink, Show digitized ink) and confirmation-gated Drop digitized ink into one `InkSwitchToolbarButton` dropdown menu.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-switch-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-toolbar-and-digitize",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-digitize-fixes-4b8d2f05",
+      "kind": "fix",
+      "summary": "Fall back to `process.env.AI_GATEWAY_API_KEY` on the server, filter confirmation rows by selected kind while preserving manual toggles on All, scope Digitize all per editor view, lock typing while confirmation is open, and preserve text edits on mixed text-and-comment corrections.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-digitize-bar", "ink-digitize-api"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-toolbar-and-digitize",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-ink-demo-cleanup-9c1f6a40",
+      "kind": "behavior",
+      "summary": "Simplify the public Ink demo to focus on drawing, mentions, margin signs, and AI Digitize without internal QA controls.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ink-demo"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-ink-toolbar-and-digitize",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

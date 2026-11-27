@@ -1,5 +1,5 @@
 {
-  "generation": "8ae3c26319b3e907c6c229f4e8ceb81db3635e2be028527a15faf9ea6f713b44",
+  "generation": "757ca6682e54bfb21d0b5c75e9f8b6dfc8d2266eaed2789c27c1226e5470706b",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1076,7 +1076,7 @@
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "Toolbar controls to hide or show ink, preview digitized ink faded, and permanently drop saved digitized ink.",
+          "description": "Ink visibility dropdown menu to hide ink, preview digitized ink faded, and permanently drop saved digitized ink after confirmation.",
           "files": [
             {
               "path": "components/editor/ink-switch-toolbar-button.tsx",
@@ -1098,7 +1098,9 @@
           "title": "Ink Switch Toolbar Button",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/toolbar"
+            "@plate/editor-dropdown-menu",
+            "@plate/toolbar",
+            "alert-dialog"
           ]
         },
         {
@@ -6007,7 +6009,7 @@
           "type": "registry:example"
         },
         {
-          "description": "Pen markup and AI digitization on a document saved with its comments to local storage, with a second user and a second view.",
+          "description": "Pen markup and AI digitization over editable text, saved with comments to local storage.",
           "files": [
             {
               "path": "examples/ink-demo.tsx",
@@ -9048,7 +9050,7 @@
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
-          "description": "Toolbar controls to hide or show ink, preview digitized ink faded, and permanently drop saved digitized ink.",
+          "description": "Ink visibility dropdown menu to hide ink, preview digitized ink faded, and permanently drop saved digitized ink after confirmation.",
           "files": [
             {
               "path": "components/editor/ink-switch-toolbar-button.tsx",
@@ -9070,7 +9072,9 @@
           "title": "Ink Switch Toolbar Button",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/toolbar"
+            "@plate/editor-dropdown-menu",
+            "@plate/toolbar",
+            "alert-dialog"
           ]
         },
         {
@@ -13976,7 +13980,7 @@
           "type": "registry:example"
         },
         {
-          "description": "Pen markup and AI digitization on a document saved with its comments to local storage, with a second user and a second view.",
+          "description": "Pen markup and AI digitization over editable text, saved with comments to local storage.",
           "files": [
             {
               "path": "examples/ink-demo.tsx",

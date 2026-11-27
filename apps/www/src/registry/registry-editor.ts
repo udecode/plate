@@ -566,7 +566,7 @@ export const editorComponents: Registry['items'] = [
   {
     dependencies: ['platejs'],
     description:
-      'Toolbar controls to hide or show ink, preview digitized ink faded, and permanently drop saved digitized ink.',
+      'Ink visibility dropdown menu to hide ink, preview digitized ink faded, and permanently drop saved digitized ink after confirmation.',
     files: [
       {
         path: 'components/editor/ink-switch-toolbar-button.tsx',

@@ -1,0 +1,22 @@
+---
+id: 2026-11-27-ink-toolbar-and-digitize
+date: 2026-11-27
+status: draft
+kind: behavior
+summary: 'Consolidate ink visibility controls, simplify the ink demo, and fix Digitize key fallback and filtering'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-ink-switch-menu-7a3c9e12","kind":"behavior","migrationNotes":[]} -->
+
+- **`ink-switch-toolbar-button`**: Consolidate ink visibility toggles (**Hide ink**, **Show digitized ink**) and confirmation-gated **Drop digitized ink** into one `InkSwitchToolbarButton` dropdown menu.
+
+<!-- entry: {"id":"2026-11-27-ink-digitize-fixes-4b8d2f05","kind":"fix","migrationNotes":[]} -->
+
+- **`ink-digitize-bar`**, **`ink-digitize-api`**: Fall back to `process.env.AI_GATEWAY_API_KEY` on the server, filter confirmation rows by selected kind while preserving manual toggles on **All**, scope **Digitize all** per editor view, lock typing while confirmation is open, and preserve text edits on mixed text-and-comment corrections.
+
+<!-- entry: {"id":"2026-11-27-ink-demo-cleanup-9c1f6a40","kind":"behavior","migrationNotes":[]} -->
+
+- **`ink-demo`**: Simplify the public Ink demo to focus on drawing, mentions, margin signs, and AI Digitize without internal QA controls.

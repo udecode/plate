@@ -281,12 +281,21 @@
       "2026-08-17-flat-editor-registry"
     ],
     "ink": ["2026-11-27-ink-digitize"],
-    "ink-digitize-bar": ["2026-11-27-ink-digitize"],
+    "ink-digitize-bar": [
+      "2026-11-27-ink-digitize",
+      "2026-11-27-ink-toolbar-and-digitize"
+    ],
     "ink-switch-toolbar-button": [
       "2026-11-27-ink-digitize",
+      "2026-11-27-ink-toolbar-and-digitize",
       "2026-11-25-ink-tools"
     ],
-    "ink-demo": ["2026-11-27-ink-digitize", "2026-11-25-ink-tools"],
+    "ink-demo": [
+      "2026-11-27-ink-digitize",
+      "2026-11-27-ink-toolbar-and-digitize",
+      "2026-11-25-ink-tools"
+    ],
+    "ink-digitize-api": ["2026-11-27-ink-toolbar-and-digitize"],
     "caption": [
       "2026-11-27-render-prop-type-imports",
       "2026-11-27-selector-depends-on",

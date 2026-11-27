@@ -8,7 +8,7 @@ docs:
 
 <ComponentPreview name="ink-demo" />
 
-Open [the full-page Ink demo](/blocks/ink-demo) to test second-user and second-view sync, simulated comment save failures, and local persistence. The demo saves its document and comment threads under one local storage key and asks for your own AI Gateway API key before calling Digitize.
+Open [the full-page Ink demo](/blocks/ink-demo) to test drawing, margin signs, and AI Digitize with local persistence. The demo saves its document and comment threads under one local storage key. If the server does not configure `AI_GATEWAY_API_KEY`, the demo prompts for your own AI Gateway API key in Settings before calling Digitize.
 
 <PackageInfo>
 
@@ -36,7 +36,7 @@ Open [the full-page Ink demo](/blocks/ink-demo) to test second-user and second-v
 - `InkKit` (`ink.tsx`): wires `InkContent` with `InkSignButton` in `slots.wrapContent` and `InkDigitizeBar` in `slots.afterEditable`.
 - `DrawToolbarButton` (`draw-toolbar-button.tsx`): split toolbar button that toggles Draw on or off and selects Pen, Highlighter, Eraser, or Lasso.
 - `DigitizeAllToolbarButton` (`ink-digitize-bar.tsx`): toolbar trigger that reads all live shown marks in sequential batches.
-- `InkSwitchToolbarButton`, `ShowDigitizedToolbarButton`, and `DropDigitizedToolbarButton` (`ink-switch-toolbar-button.tsx`): hide ink, preview digitized ink faded, and permanently drop saved digitized ink.
+- `InkSwitchToolbarButton` (`ink-switch-toolbar-button.tsx`): ink visibility menu with toggles for **Hide ink** and **Show digitized ink**, plus a confirmation-gated **Drop digitized ink** action.
 - `InkSignButton` (`ink-sign-button.tsx`): margin sign button and popover displaying `InkCopyView` with Delete or Bring back actions.
 - `InkDigitizeBar` (`ink-digitize-bar.tsx`): floating lasso action bar and confirmation dialog with kind filter chips, typed re-read instructions, and async comment save and retry handling.
 
@@ -54,11 +54,7 @@ import { Editor, EditorContainer } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { InkKit } from '@/components/editor/ink';
 import { DigitizeAllToolbarButton } from '@/components/editor/ink-digitize-bar';
-import {
-  DropDigitizedToolbarButton,
-  InkSwitchToolbarButton,
-  ShowDigitizedToolbarButton,
-} from '@/components/editor/ink-switch-toolbar-button';
+import { InkSwitchToolbarButton } from '@/components/editor/ink-switch-toolbar-button';
 import { EditorKit } from '@/components/editor/plugins';
 
 export function InkEditor() {
@@ -72,8 +68,6 @@ export function InkEditor() {
         <DrawToolbarButton />
         <DigitizeAllToolbarButton />
         <InkSwitchToolbarButton />
-        <ShowDigitizedToolbarButton />
-        <DropDigitizedToolbarButton />
       </FixedToolbar>
       <EditorContainer>
         <Editor />
@@ -88,8 +82,7 @@ export function InkEditor() {
 Install `@plate/ink-digitize-api` to copy the route handler (`app/api/ai/ink-digitize/route.ts` and `ink-digitize-route.ts`) into your app.
 
 - The route imports nothing from Plate and sends only passage images, plain word lists, mark boxes, touched word or gap indices, and optional user instructions.
-- By default, the copied route expects `apiKey` in the JSON request body and responds with `401` when missing. It defaults to `google/gemini-3.8-flash` on Vercel AI Gateway and accepts an optional `model` override.
-- To use a server-managed key in your own app, read `process.env.AI_GATEWAY_API_KEY` inside your copied `route.ts` before calling `createGateway`.
+- The route reads `apiKey` from the JSON request body and falls back to `process.env.AI_GATEWAY_API_KEY` on the server, returning `401` when neither is set. It defaults to `google/gemini-3.8-flash` on Vercel AI Gateway and accepts an optional `model` override.
 
 </Steps>
 
@@ -132,7 +125,7 @@ Digitized state is stored in its own `ink-digitized` record set rather than muta
 
 ### Dropping saved digitized ink
 
-Digitized marks and their saved block copies (including struck words) remain stored in the document so **Show digitized ink** and **Bring back** work after reload. To permanently purge them, call `dropDigitized` inside `editor.update` (or use `DropDigitizedToolbarButton`):
+Digitized marks and their saved block copies (including struck words) remain stored in the document so **Show digitized ink** and **Bring back** work after reload. To permanently purge them, call `dropDigitized` inside `editor.update` (or choose **Drop digitized ink** from `InkSwitchToolbarButton`):
 
 ```ts
 import { BaseInkPlugin } from 'platejs/ink';
@@ -202,7 +195,7 @@ Pass a custom `sign` component to `<InkContent {...props} sign={MySignButton} />
 | Drag with Lasso | Draws a loop that picks marks with more than half their samples inside it and focuses the Editable. While **Show digitized ink** is on, lassoing digitized marks offers **Bring back**. |
 | `Backspace` or `Delete` with Lasso active | Removes picked shown marks that are not digitized and have no sign, in one undo step. |
 | `Escape` | Clears the current lasso pick, or closes an open Digitize confirmation dialog without writing. |
-| Switching to read-only | Turns the active Draw tool off and closes any open Digitize confirmation dialog without writing. |
+| Switching to read-only or Authored Preview | Turns the active Draw tool off, blocks pen, eraser, and lasso deletion, and closes any open Digitize confirmation dialog without writing. |
 
 ## Plugins
 
@@ -231,7 +224,7 @@ Headless plugin (`platejs/ink`) that depends on `ElementIdPlugin` and owns the `
 | `editor.plugin(BaseInkPlugin).read.range({ copy, start, end })` | `BaseInkPlugin` | Resolves character offsets in a saved copy's text to a live `Range`, or `null` once the block is gone or its text or inline voids differ. |
 | `InkMark`, `InkMarkInput`, `InkCopy`, `InkCopyPlace`, `InkSignPlace`, `InkPassage`, `InkPassageMark`, `InkPassageWord`, `InkRangeInput`, `InkTool`, `InkBrush`, `InkSample`, `InkLine`, `InkRun`, `InkMargin`, `InkDirection`, `InkViewState` | `platejs/ink` | Core data and view-state types exported from the headless entrypoint. |
 | `InkPlugin` | `platejs/ink/react` | React ink plugin with view-local tool, visibility, pick, and passage-image APIs. |
-| `editor.plugin(InkPlugin).api.setTool(tool)` | `InkPlugin` | Sets the view's active `InkTool` (`draw`, `erase`, `lasso`) or `null` to turn Draw off. Returns `false` in read-only views or on invalid brush dimensions. |
+| `editor.plugin(InkPlugin).api.setTool(tool)` | `InkPlugin` | Sets the view's active `InkTool` (`draw`, `erase`, `lasso`) or `null` to turn Draw off. Returns `false` in read-only views, in Authored Preview, or on invalid brush dimensions. |
 | `editor.plugin(InkPlugin).api.setHidden(hidden)` | `InkPlugin` | Hides or shows ink and signs for this view. Hiding clears the pick. |
 | `editor.plugin(InkPlugin).api.setShowDigitized(show)` | `InkPlugin` | Draws digitized marks faded over their words (or as digitized signs) and lets the lasso pick them. Turning it off drops digitized marks from the pick. |
 | `editor.plugin(InkPlugin).api.setPicked(ids)` | `InkPlugin` | Sets the view's picked mark ids, painted with a pick halo. |

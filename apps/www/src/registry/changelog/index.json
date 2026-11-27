@@ -296,6 +296,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-ink-toolbar-and-digitize",
+      "href": "/registry/changelog/2026-11-27-ink-toolbar-and-digitize.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Consolidate ink visibility controls, simplify the ink demo, and fix Digitize key fallback and filtering",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "ink-switch-toolbar-button",
+        "ink-digitize-bar",
+        "ink-digitize-api",
+        "ink-demo"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-render-prop-type-imports",
       "href": "/registry/changelog/2026-11-27-render-prop-type-imports.json",
       "status": "draft",
