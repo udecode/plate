@@ -24,6 +24,7 @@ import {
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
+  useModelEditor,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -69,7 +70,7 @@ const TEST_LABELS: Record<FieldTest, string> = {
 const PROBLEMS: Record<FieldProblem, string> = {
   'answer-conflict': 'The fields of its name hold different answers.',
   'condition-loop': 'Its condition leads back to this field.',
-  'invalid-value': 'A value does not fit this kind of field.',
+  'invalid-value': 'A setting or value does not fit this field.',
   'missing-target': 'The field its condition names is gone.',
   'name-conflict':
     'The fields of its name differ in kind, options, counts or condition.',
@@ -154,6 +155,70 @@ const keepExtra = (
 
 type FieldNode = EditorElementProps<typeof FieldPlugin>['element'];
 
+const openSettingsGuards = new WeakMap<
+  ReturnType<typeof useEditor>,
+  { close: () => boolean; fieldId: string }
+>();
+
+export const closeFieldSettings = (editor: ReturnType<typeof useEditor>) =>
+  openSettingsGuards.get(editor)?.close() ?? true;
+
+const optionLabel = (option: FieldOption, index: number) =>
+  option.label.trim().length > 0 ? option.label : `Option ${index + 1}`;
+
+const labelForOption = (
+  options: readonly FieldOption[] | undefined,
+  entry: unknown
+) => {
+  if (!options) return undefined;
+
+  const index = options.findIndex((option) => option.value === entry);
+
+  return index === -1 ? undefined : optionLabel(options[index], index);
+};
+
+// A stored selection can be a new array, and the field plugin counts two
+// selections of the same options in any order as one answer.
+const sameFieldValue = (left?: FieldValue, right?: FieldValue) => {
+  if (!Array.isArray(left) || !Array.isArray(right)) {
+    return Object.is(left, right);
+  }
+  if (left.length !== right.length) return false;
+
+  const counts = new Map<string, number>();
+
+  for (const entry of left) {
+    counts.set(entry, (counts.get(entry) ?? 0) + 1);
+  }
+  for (const entry of right) {
+    const count = counts.get(entry);
+
+    if (!count) return false;
+    if (count === 1) counts.delete(entry);
+    else counts.set(entry, count - 1);
+  }
+
+  return counts.size === 0;
+};
+
+const countHint = ({ max, min, required }: FieldNode) => {
+  const least = min ?? (required ? 1 : undefined);
+
+  if (least === undefined) {
+    return max === undefined ? undefined : `Pick up to ${max}`;
+  }
+  if (max !== undefined && least > max) return undefined;
+
+  const range =
+    max === undefined
+      ? `at least ${least}`
+      : least === max
+        ? `exactly ${max}`
+        : `${least} to ${max}`;
+
+  return required ? `Pick ${range}` : `Leave blank, or pick ${range}`;
+};
+
 const saveAnswer = (
   editor: ReturnType<typeof useEditor>,
   fieldId: string,
@@ -164,7 +229,10 @@ const saveAnswer = (
 
     return true;
   }) === true &&
-  Object.is(editor.plugin(FieldPlugin).read.field(fieldId)?.node.value, value);
+  sameFieldValue(
+    editor.plugin(FieldPlugin).read.field(fieldId)?.node.value,
+    value
+  );
 
 const useWaitsForReview = (element: FieldNode, watches: boolean) => {
   const editor = useEditor();
@@ -185,6 +253,7 @@ const useWaitsForReview = (element: FieldNode, watches: boolean) => {
 export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   const { element } = props;
   const editor = useEditor();
+  const modelEditor = useModelEditor();
   const readOnly = useEditorReadOnly();
   const fillRole = usePluginStore(FieldPlugin, 'fillRole') ?? null;
   const field = useFieldRead(element.fieldId);
@@ -208,42 +277,60 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   if (
     refusedToggle &&
     (refusedToggle.role !== fillRole ||
-      !Object.is(refusedToggle.stored, element.value))
+      !sameFieldValue(refusedToggle.stored, element.value))
   ) {
     setRefusedToggle(null);
   }
 
   const answer = Array.isArray(element.value)
     ? element.value
-        .map(
-          (entry) =>
-            element.options?.find((option) => option.value === entry)?.label ??
-            entry
-        )
+        .map((entry) => labelForOption(element.options, entry) ?? entry)
         .join(', ')
     : String(
-        element.options?.find((option) => option.value === element.value)
-          ?.label ??
-          element.value ??
-          ''
+        labelForOption(element.options, element.value) ?? element.value ?? ''
       );
-  const writeName = React.useRef<() => 'refused' | 'written'>(null);
+  const beforeClose = React.useRef<() => 'refused' | 'written'>(null);
   let form: React.ReactNode = null;
 
   if (!filling && !readOnly) {
-    form = <FieldSettingsForm element={element} writeName={writeName} />;
+    form = <FieldSettingsForm beforeClose={beforeClose} element={element} />;
   }
-  if (fills && !toggles && element.kind !== 'multiple') {
+  if (fills && !toggles) {
     form = <FieldAnswerForm element={element} />;
   }
 
   const openAtPointerDownRef = React.useRef(false);
+  const suppressCloseFocusRef = React.useRef(false);
   const [openAs, setOpenAs] = React.useState<{ role: string | null } | null>(
     null
   );
   const open = form !== null && openAs?.role === fillRole;
 
   if (openAs && !open) setOpenAs(null);
+
+  React.useEffect(() => {
+    if (!open || filling || readOnly) return undefined;
+
+    const guard = {
+      close: () => {
+        if (beforeClose.current?.() === 'refused') return false;
+
+        suppressCloseFocusRef.current = true;
+        setOpenAs(null);
+
+        return true;
+      },
+      fieldId: element.fieldId,
+    };
+
+    openSettingsGuards.set(modelEditor, guard);
+
+    return () => {
+      if (openSettingsGuards.get(modelEditor) === guard) {
+        openSettingsGuards.delete(modelEditor);
+      }
+    };
+  }, [element.fieldId, filling, modelEditor, open, readOnly]);
 
   const chip = {
     className: cn(
@@ -269,6 +356,16 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
         event.detail === 0 ? open : openAtPointerDownRef.current;
 
       if (!form || beganOpen) return;
+
+      if (!filling && !readOnly) {
+        const active = openSettingsGuards.get(modelEditor);
+
+        if (active && active.fieldId !== element.fieldId && !active.close()) {
+          event.preventDefault();
+
+          return;
+        }
+      }
 
       event.preventDefault();
       setOpenAs({ role: fillRole });
@@ -326,7 +423,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
         <Popover
           open={open}
           onOpenChange={(nextOpen) => {
-            if (!nextOpen && writeName.current?.() === 'refused') return;
+            if (!nextOpen && beforeClose.current?.() === 'refused') return;
 
             setOpenAs(nextOpen ? { role: fillRole } : null);
           }}
@@ -337,11 +434,19 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
             </button>
           </PopoverTrigger>
           <PopoverContent
-            className={
-              filling
-                ? 'w-64'
-                : 'max-h-[min(80vh,var(--radix-popover-content-available-height,80vh))] w-[26rem] max-w-[calc(100vw-2rem)] overflow-y-auto'
-            }
+            className={cn(
+              'max-h-[min(80vh,var(--radix-popover-content-available-height,80vh))] max-w-[calc(100vw-2rem)] overflow-y-auto',
+              filling ? 'w-64' : 'w-[26rem]'
+            )}
+            onCloseAutoFocus={(event) => {
+              if (!suppressCloseFocusRef.current) return;
+
+              suppressCloseFocusRef.current = false;
+              event.preventDefault();
+            }}
+            onInteractOutside={(event) => {
+              if (beforeClose.current?.() === 'refused') event.preventDefault();
+            }}
           >
             {form}
           </PopoverContent>
@@ -363,26 +468,84 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
 
 function FieldAnswerForm({ element }: { element: FieldNode }) {
   const editor = useEditor();
-  const { fieldId, kind, label, options, value } = element;
+  const { fieldId, kind, label, max, options = [], value } = element;
   const [refusal, setRefusal] = React.useState<{
     stored?: FieldValue;
   } | null>(null);
 
-  if (refusal && !Object.is(refusal.stored, value)) setRefusal(null);
+  if (refusal && !sameFieldValue(refusal.stored, value)) setRefusal(null);
 
   const setValue = (next?: FieldValue) =>
     setRefusal(saveAnswer(editor, fieldId, next) ? null : { stored: value });
+  const selected = Array.isArray(value) ? value : [];
+  const selectedSet = new Set(selected);
+  const checkedCount = options.filter((entry) =>
+    selectedSet.has(entry.value)
+  ).length;
+  const hint = countHint(element);
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-2">
-        <FieldValueInput
-          kind={kind}
-          label={label}
-          options={options}
-          value={typeof value === 'object' ? undefined : value}
-          onChange={setValue}
-        />
+      <div
+        className={cn(
+          'flex gap-2',
+          kind === 'multiple' ? 'items-start' : 'items-center'
+        )}
+      >
+        {kind === 'multiple' ? (
+          <div
+            aria-describedby={hint ? `${fieldId}-count` : undefined}
+            aria-label={label}
+            className="flex flex-1 flex-col gap-2"
+            role="group"
+          >
+            {hint && (
+              <p
+                id={`${fieldId}-count`}
+                className="text-xs text-muted-foreground"
+              >
+                {hint}
+              </p>
+            )}
+            {options.map((option, index) => {
+              const checked = selectedSet.has(option.value);
+
+              return (
+                <div key={option.value} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`${fieldId}-pick-${index}`}
+                    checked={checked}
+                    disabled={
+                      !checked && max !== undefined && checkedCount >= max
+                    }
+                    onCheckedChange={(next) => {
+                      const picked = options
+                        .filter((entry) =>
+                          entry === option
+                            ? next === true
+                            : selectedSet.has(entry.value)
+                        )
+                        .map((entry) => entry.value);
+
+                      setValue(picked.length > 0 ? picked : undefined);
+                    }}
+                  />
+                  <Label htmlFor={`${fieldId}-pick-${index}`}>
+                    {optionLabel(option, index)}
+                  </Label>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <FieldValueInput
+            kind={kind}
+            label={label}
+            options={options}
+            value={typeof value === 'object' ? undefined : value}
+            onChange={setValue}
+          />
+        )}
         <Button size="sm" variant="ghost" onClick={() => setValue()}>
           Clear
         </Button>
@@ -395,14 +558,30 @@ function FieldAnswerForm({ element }: { element: FieldNode }) {
 }
 
 function FieldSettingsForm({
+  beforeClose,
   element,
-  writeName,
 }: {
+  beforeClose: React.Ref<() => 'refused' | 'written'>;
   element: FieldNode;
-  writeName: React.Ref<() => 'refused' | 'written'>;
 }) {
   const editor = useEditor();
   const { condition, fieldId, kind, options = [] } = element;
+  const writeName = React.useRef<() => 'refused' | 'written'>(null);
+  const writeCounts =
+    React.useRef<(focusOnRefusal: boolean) => 'refused' | 'written'>(null);
+
+  React.useImperativeHandle(beforeClose, () => () => {
+    const nameResult = writeName.current?.() ?? 'written';
+    const countsResult =
+      kind === 'multiple'
+        ? (writeCounts.current?.(nameResult !== 'refused') ?? 'written')
+        : 'written';
+
+    return nameResult === 'refused' || countsResult === 'refused'
+      ? 'refused'
+      : 'written';
+  });
+
   const update = (patch: FieldPatch) =>
     editor.update((tx) => tx.plugin(FieldPlugin).update(fieldId, patch));
   const { fields, targetIds } = useEditorSelector(
@@ -539,13 +718,11 @@ function FieldSettingsForm({
           if (isKind(event.target.value)) update({ kind: event.target.value });
         }}
       >
-        {Object.entries(KINDS)
-          .filter(([value]) => value !== 'multiple' || kind === 'multiple')
-          .map(([value, label]) => (
-            <NativeSelectOption key={value} value={value}>
-              {label}
-            </NativeSelectOption>
-          ))}
+        {Object.entries(KINDS).map(([value, label]) => (
+          <NativeSelectOption key={value} value={value}>
+            {label}
+          </NativeSelectOption>
+        ))}
       </NativeSelect>
       <Label htmlFor={`${fieldId}-role`}>Role</Label>
       <Input
@@ -568,7 +745,7 @@ function FieldSettingsForm({
           update({ required: checked === true || undefined })
         }
       />
-      {kind === 'choice' && (
+      {(kind === 'choice' || kind === 'multiple') && (
         <>
           <Label className="self-start pt-2">Options</Label>
           <div className="flex flex-col gap-1">
@@ -623,6 +800,9 @@ function FieldSettingsForm({
             </Button>
           </div>
         </>
+      )}
+      {kind === 'multiple' && (
+        <FieldCountsInput element={element} writeCounts={writeCounts} />
       )}
       <Label
         className="self-start pt-1.5"
@@ -769,11 +949,16 @@ function FieldNameInput({
 }) {
   const editor = useEditor();
   const { fieldId, name } = element;
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const [draft, setDraft] = React.useState<{
-    refused: boolean;
+    refused: 'invalid' | 'write' | false;
+    stored?: string;
     text: string;
   } | null>(null);
-  const write = () => {
+
+  if (draft && draft.stored !== name) setDraft(null);
+
+  const write = (focusOnRefusal = false) => {
     if (!draft) return 'written';
 
     const next = draft.text === '' ? undefined : draft.text;
@@ -785,38 +970,53 @@ function FieldNameInput({
     }
 
     try {
-      editor.update((tx) =>
-        tx.plugin(FieldPlugin).update(fieldId, { name: next })
-      );
+      const committed =
+        editor.update((tx) => {
+          tx.plugin(FieldPlugin).update(fieldId, { name: next });
+
+          return true;
+        }) === true;
+
+      if (!committed) {
+        setDraft({ ...draft, refused: 'write' });
+        if (focusOnRefusal) inputRef.current?.focus();
+
+        return 'refused';
+      }
+
       setDraft(null);
 
       return 'written';
     } catch (error) {
       if (!(error instanceof EditorSchemaValidationError)) throw error;
 
-      setDraft({ ...draft, refused: true });
+      setDraft({ ...draft, refused: 'invalid' });
+      if (focusOnRefusal) inputRef.current?.focus();
 
       return 'refused';
     }
   };
 
-  React.useImperativeHandle(writeName, () => write);
+  React.useImperativeHandle(writeName, () => () => write(true));
 
   return (
     <>
       <Label htmlFor={`${fieldId}-name`}>Name</Label>
       <Input
+        ref={inputRef}
         id={`${fieldId}-name`}
         className="h-8"
         aria-describedby={draft?.refused ? `${fieldId}-name-error` : undefined}
-        aria-invalid={draft?.refused || undefined}
+        aria-invalid={Boolean(draft?.refused) || undefined}
         value={draft?.text ?? name ?? ''}
-        onBlur={write}
+        onBlur={() => write(false)}
         onChange={(event) =>
-          setDraft({ refused: false, text: event.target.value })
+          setDraft({ refused: false, stored: name, text: event.target.value })
         }
         onKeyDown={(event) => {
-          if (event.key === 'Enter' && !event.nativeEvent.isComposing) write();
+          if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+            write(true);
+          }
         }}
       />
       {draft?.refused && (
@@ -825,10 +1025,334 @@ function FieldNameInput({
           className="col-start-2 text-xs text-destructive"
           role="alert"
         >
-          A name cannot start or end with a space or hold a tab, a line break or
-          another control character.
+          {draft.refused === 'write'
+            ? 'Not saved.'
+            : 'A name cannot start or end with a space or hold a tab, a line break or another control character.'}
         </p>
       )}
+    </>
+  );
+}
+
+type CountDraft = Readonly<{ badInput: boolean; text: string }>;
+
+const parseCount = (
+  draft: CountDraft | null,
+  stored: number | undefined
+): { invalid: boolean; value?: number } => {
+  if (!draft || draft.badInput) return { invalid: false, value: stored };
+  if (draft.text.trim() === '') return { invalid: false, value: undefined };
+
+  const parsed = Number(draft.text);
+
+  return Number.isInteger(parsed)
+    ? { invalid: false, value: parsed }
+    : { invalid: true };
+};
+
+const evaluateCounts = (
+  minDraft: CountDraft | null,
+  maxDraft: CountDraft | null,
+  storedMin: number | undefined,
+  storedMax: number | undefined,
+  target?: 'max' | 'min'
+) => {
+  const minParsed = parseCount(minDraft, storedMin);
+  const maxParsed = parseCount(maxDraft, storedMax);
+  const minOwnBad =
+    minParsed.invalid || (minParsed.value !== undefined && minParsed.value < 2);
+  const maxOwnBad =
+    maxParsed.invalid || (maxParsed.value !== undefined && maxParsed.value < 1);
+  const minAgainst = maxOwnBad ? storedMax : maxParsed.value;
+  const maxAgainst = minOwnBad ? storedMin : minParsed.value;
+  const minCrossed =
+    !minOwnBad &&
+    minParsed.value !== undefined &&
+    minAgainst !== undefined &&
+    minParsed.value > minAgainst;
+  const maxCrossed =
+    !maxOwnBad &&
+    maxParsed.value !== undefined &&
+    maxAgainst !== undefined &&
+    maxParsed.value < maxAgainst;
+  const bothValidIndividually = !minOwnBad && !maxOwnBad;
+  const onlyMinEdited = minDraft !== null && maxDraft === null;
+  const onlyMaxEdited = maxDraft !== null && minDraft === null;
+  const blameMin = onlyMinEdited || (!onlyMaxEdited && target !== 'max');
+  const minBad =
+    minOwnBad || (bothValidIndividually ? minCrossed && blameMin : minCrossed);
+  const maxBad =
+    maxOwnBad || (bothValidIndividually ? minCrossed && !blameMin : maxCrossed);
+
+  return {
+    maxBad,
+    maxCrossed,
+    maxOwnBad,
+    maxValue: maxParsed.value,
+    minBad,
+    minCrossed,
+    minOwnBad,
+    minValue: minParsed.value,
+  };
+};
+
+type CountError = 'invalid' | 'write' | false;
+
+function FieldCountsInput({
+  element,
+  writeCounts,
+}: {
+  element: FieldNode;
+  writeCounts: React.Ref<(focusOnRefusal: boolean) => 'refused' | 'written'>;
+}) {
+  const editor = useEditor();
+  const { fieldId, max, min } = element;
+  const minInputRef = React.useRef<HTMLInputElement>(null);
+  const maxInputRef = React.useRef<HTMLInputElement>(null);
+  const focusAfterResetRef = React.useRef<'max' | 'min' | null>(null);
+  const [drafts, setDrafts] = React.useState<{
+    max: CountDraft | null;
+    min: CountDraft | null;
+    storedMax?: number;
+    storedMin?: number;
+  }>({ max: null, min: null, storedMax: max, storedMin: min });
+  const [errors, setErrors] = React.useState<{
+    max: CountError;
+    min: CountError;
+  }>({
+    max: false,
+    min: false,
+  });
+  const [resets, setResets] = React.useState<{ max: number; min: number }>({
+    max: 0,
+    min: 0,
+  });
+
+  React.useLayoutEffect(() => {
+    const target = focusAfterResetRef.current;
+
+    if (!target) return;
+
+    focusAfterResetRef.current = null;
+    (target === 'min' ? minInputRef : maxInputRef).current?.focus();
+  }, [resets]);
+
+  if (!Object.is(drafts.storedMin, min) || !Object.is(drafts.storedMax, max)) {
+    const minChanged = !Object.is(drafts.storedMin, min);
+    const maxChanged = !Object.is(drafts.storedMax, max);
+    const nextMinDraft = minChanged ? null : drafts.min;
+    const nextMaxDraft = maxChanged ? null : drafts.max;
+
+    setDrafts({
+      max: nextMaxDraft,
+      min: nextMinDraft,
+      storedMax: max,
+      storedMin: min,
+    });
+    if (errors.min || errors.max) {
+      const check = evaluateCounts(nextMinDraft, nextMaxDraft, min, max);
+
+      setErrors({
+        max: maxChanged
+          ? false
+          : errors.max === 'invalid' && (check.maxOwnBad || check.maxCrossed)
+            ? 'invalid'
+            : false,
+        min: minChanged
+          ? false
+          : errors.min === 'invalid' && (check.minOwnBad || check.minCrossed)
+            ? 'invalid'
+            : false,
+      });
+    }
+  }
+
+  const commit = (
+    reason: 'blur' | 'close' | 'enter',
+    target?: 'max' | 'min',
+    focusOnRefusal = false
+  ): 'refused' | 'written' => {
+    const clearMinBad =
+      drafts.min?.badInput === true && (reason !== 'blur' || target === 'min');
+    const clearMaxBad =
+      drafts.max?.badInput === true && (reason !== 'blur' || target === 'max');
+
+    if (clearMinBad || clearMaxBad) {
+      if (reason === 'enter' && target) {
+        focusAfterResetRef.current = target;
+      }
+      setResets((current) => ({
+        max: current.max + (clearMaxBad ? 1 : 0),
+        min: current.min + (clearMinBad ? 1 : 0),
+      }));
+    }
+
+    const nextMinDraft = clearMinBad ? null : drafts.min;
+    const nextMaxDraft = clearMaxBad ? null : drafts.max;
+
+    if (!nextMinDraft && !nextMaxDraft) {
+      if (clearMinBad || clearMaxBad) {
+        setDrafts({ max: null, min: null, storedMax: max, storedMin: min });
+      }
+      if (errors.min || errors.max) setErrors({ max: false, min: false });
+
+      return 'written';
+    }
+
+    const check = evaluateCounts(nextMinDraft, nextMaxDraft, min, max, target);
+
+    if (check.minBad || check.maxBad) {
+      if (clearMinBad || clearMaxBad) {
+        setDrafts({
+          max: nextMaxDraft,
+          min: nextMinDraft,
+          storedMax: max,
+          storedMin: min,
+        });
+      }
+      setErrors({
+        max: check.maxBad ? 'invalid' : false,
+        min: check.minBad ? 'invalid' : false,
+      });
+      if (focusOnRefusal) {
+        (check.minBad ? minInputRef : maxInputRef).current?.focus();
+      }
+
+      return 'refused';
+    }
+
+    const patch: { max?: number; min?: number } = {};
+
+    if (!Object.is(check.minValue, min)) patch.min = check.minValue;
+    if (!Object.is(check.maxValue, max)) patch.max = check.maxValue;
+
+    if ('min' in patch || 'max' in patch) {
+      const committed =
+        editor.update((tx) => {
+          tx.plugin(FieldPlugin).update(fieldId, patch);
+
+          return true;
+        }) === true;
+
+      if (!committed) {
+        const minFailed = 'min' in patch;
+        const maxFailed = 'max' in patch;
+
+        setErrors({
+          max: maxFailed ? 'write' : false,
+          min: minFailed ? 'write' : false,
+        });
+        if (focusOnRefusal) {
+          (minFailed ? minInputRef : maxInputRef).current?.focus();
+        }
+
+        return 'refused';
+      }
+    }
+
+    setDrafts({
+      max: null,
+      min: null,
+      storedMax: check.maxValue,
+      storedMin: check.minValue,
+    });
+    setErrors({ max: false, min: false });
+
+    return 'written';
+  };
+
+  React.useImperativeHandle(
+    writeCounts,
+    () => (focusOnRefusal) => commit('close', undefined, focusOnRefusal)
+  );
+
+  const renderInput = (setting: 'max' | 'min') => {
+    const id = `${fieldId}-${setting}`;
+    const draft = drafts[setting];
+    const stored = setting === 'min' ? min : max;
+    const refused = errors[setting];
+
+    return (
+      <React.Fragment key={setting}>
+        <Label htmlFor={id}>{setting === 'min' ? 'Min' : 'Max'}</Label>
+        <Input
+          key={resets[setting]}
+          ref={setting === 'min' ? minInputRef : maxInputRef}
+          id={id}
+          className="h-8"
+          aria-describedby={refused ? `${id}-error` : undefined}
+          aria-invalid={Boolean(refused) || undefined}
+          min={setting === 'min' ? 2 : 1}
+          step={1}
+          type="number"
+          value={draft?.text ?? (stored === undefined ? '' : String(stored))}
+          onBlur={() => commit('blur', setting, false)}
+          onInput={(event) => {
+            const input = event.currentTarget;
+            const nextDraft: CountDraft = {
+              badInput: input.validity.badInput,
+              text: input.value,
+            };
+            const nextMinDraft = setting === 'min' ? nextDraft : drafts.min;
+            const nextMaxDraft = setting === 'max' ? nextDraft : drafts.max;
+
+            setDrafts((current) => ({
+              ...current,
+              [setting]: nextDraft,
+            }));
+            setErrors((current) => {
+              if (!current.min && !current.max) return current;
+
+              const other = setting === 'min' ? 'max' : 'min';
+              const check = evaluateCounts(
+                nextMinDraft,
+                nextMaxDraft,
+                min,
+                max
+              );
+              const keepOther: CountError =
+                current[other] === 'invalid' &&
+                (other === 'min'
+                  ? check.minOwnBad || check.minCrossed
+                  : check.maxOwnBad || check.maxCrossed)
+                  ? 'invalid'
+                  : current[other] === 'write'
+                    ? 'write'
+                    : false;
+
+              return {
+                max: setting === 'max' ? false : keepOther,
+                min: setting === 'min' ? false : keepOther,
+              };
+            });
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+              commit('enter', setting, true);
+            }
+          }}
+        />
+        {refused && (
+          <p
+            id={`${id}-error`}
+            className="col-start-2 text-xs text-destructive"
+            role="alert"
+          >
+            {refused === 'write'
+              ? 'Not saved.'
+              : setting === 'min'
+                ? 'Min takes a whole number of at least 2 and no more than Max, or tick Required for at least 1.'
+                : 'Max takes a whole number of at least 1 and no less than Min.'}
+          </p>
+        )}
+      </React.Fragment>
+    );
+  };
+
+  return (
+    <>
+      {renderInput('min')}
+      {renderInput('max')}
     </>
   );
 }
@@ -911,9 +1435,9 @@ function FieldValueInput({
         {(clearable || !picked) && (
           <NativeSelectOption value={NO_OPTION}>None</NativeSelectOption>
         )}
-        {options?.map((option) => (
+        {options?.map((option, index) => (
           <NativeSelectOption key={option.value} value={optionToken(option)}>
-            {option.label}
+            {optionLabel(option, index)}
           </NativeSelectOption>
         ))}
       </NativeSelect>

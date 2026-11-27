@@ -40,7 +40,10 @@ import {
   EditorContainer,
   EditorFrame,
 } from '@/registry/components/editor/editor';
-import { FieldKit } from '@/registry/components/editor/field';
+import {
+  closeFieldSettings,
+  FieldKit,
+} from '@/registry/components/editor/field';
 import { BaseFieldKit } from '@/registry/components/editor/field-static';
 import { FieldToolbarButton } from '@/registry/components/editor/field-toolbar-button';
 import { MarkdownKit } from '@/registry/components/editor/markdown';
@@ -98,17 +101,19 @@ function FillRoleSwitch({
   labels: Readonly<Record<string, string>>;
 }) {
   const editor = useEditor();
+  const modelEditor = useModelEditor();
   const fillRole = usePluginStore(FieldPlugin, 'fillRole') ?? null;
 
   return (
     <ToggleGroup
       aria-label="Fill role"
       onValueChange={(value) => {
-        if (value) {
-          editor
-            .plugin(FieldPlugin)
-            .store.set({ fillRole: value === AUTHOR ? null : value });
-        }
+        if (!value) return;
+        if (!closeFieldSettings(modelEditor)) return;
+
+        editor
+          .plugin(FieldPlugin)
+          .store.set({ fillRole: value === AUTHOR ? null : value });
       }}
       size="sm"
       type="single"
@@ -163,6 +168,43 @@ type Shown = Readonly<{ children: unknown }> &
     | { refusals: ReadonlyArray<{ key: string; line: string }> }
   );
 
+const sameAnswer = (left: unknown, right: unknown) => {
+  if (!Array.isArray(left) || !Array.isArray(right)) {
+    return Object.is(left, right);
+  }
+  if (left.length !== right.length) return false;
+
+  const counts = new Map<unknown, number>();
+
+  for (const entry of left) {
+    counts.set(entry, (counts.get(entry) ?? 0) + 1);
+  }
+  for (const entry of right) {
+    const count = counts.get(entry);
+
+    if (!count) return false;
+    if (count === 1) counts.delete(entry);
+    else counts.set(entry, count - 1);
+  }
+
+  return counts.size === 0;
+};
+
+const sameSubmission = (left: FieldSubmission, right: FieldSubmission) => {
+  if (left.role !== right.role) return false;
+
+  const leftKeys = Object.keys(left.values);
+  const rightKeys = Object.keys(right.values);
+
+  if (leftKeys.length !== rightKeys.length) return false;
+
+  return leftKeys.every(
+    (key) =>
+      Object.hasOwn(right.values, key) &&
+      sameAnswer(left.values[key], right.values[key])
+  );
+};
+
 const acceptedPrefix = (
   accepted: Accepted,
   templateJson: string,
@@ -172,7 +214,8 @@ const acceptedPrefix = (
   if (accepted.templateJson !== templateJson) return [];
 
   const firstStale = accepted.submissions.findIndex(
-    (entry) => entry.role === role || json(entry) !== json(answers(entry.role))
+    (entry) =>
+      entry.role === role || !sameSubmission(entry, answers(entry.role))
   );
 
   return firstStale === -1
@@ -222,6 +265,7 @@ function FieldSubmit({
   tenant: string;
 }) {
   const editor = useEditor();
+  const modelEditor = useModelEditor();
   const fillRole = usePluginStore(FieldPlugin, 'fillRole') ?? null;
   const value = useEditorValue();
   const [accepted, setAccepted] = React.useState<Accepted>({
@@ -278,6 +322,8 @@ function FieldSubmit({
   };
 
   const prefill = () => {
+    if (!closeFieldSettings(modelEditor)) return;
+
     const template = withoutAnswers(editor.read.value());
     const appSubmission = fieldSubmission(template, app, sample);
     const start = startFieldValues(
@@ -357,7 +403,9 @@ function FieldSubmit({
                   {role} › {name}:{' '}
                   {'problem' in answer
                     ? answer.problem
-                    : String(answer.value ?? '')}
+                    : Array.isArray(answer.value)
+                      ? answer.value.join(', ')
+                      : String(answer.value ?? '')}
                 </li>
               ))
             )}

@@ -3327,7 +3327,7 @@
     {
       "name": "field",
       "title": "Field",
-      "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
+      "description": "A form field chip that one role fills, with a settings popover for its kind, options, counts and condition.",
       "dependencies": [
         "platejs",
         "cn",

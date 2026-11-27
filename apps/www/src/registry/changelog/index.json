@@ -133,6 +133,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-27-field-multiple-choice-ui",
+      "href": "/registry/changelog/2026-11-27-field-multiple-choice-ui.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Author and fill multiple-choice fields",
+      "change": {
+        "type": "source",
+        "date": "2026-11-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field", "field-toolbar-button", "field-demo"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-field-remove-default",
       "href": "/registry/changelog/2026-11-27-field-remove-default.json",
       "status": "draft",

@@ -1,0 +1,22 @@
+---
+id: 2026-11-27-field-multiple-choice-ui
+date: 2026-11-27
+status: draft
+kind: new
+summary: 'Author and fill multiple-choice fields'
+change: { 'type': 'source', 'date': '2026-11-27', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-27-field-multiple-choice-ui","kind":"new","migrationNotes":["Update `platejs` with the copied `field` component, because its settings now write `multiple` fields with `min` and `max`."]} -->
+
+- **`field`**: The Kind select offers Multiple choice, with an Options list and Min and Max inputs that save on blur, Enter, or close. A count the settings refuse keeps the settings open with its text and error. The signer picks options from a checkbox list that says how many to pick and disables unticked options once the field holds `max` of them. Unticking the last option clears the answer.
+
+<!-- entry: {"id":"2026-11-27-field-toolbar-multiple","kind":"new","migrationNotes":["Update `platejs` with `field-toolbar-button`, because its insert menu now creates `multiple` fields."]} -->
+
+- **`field-toolbar-button`**: The insert menu adds a Multiple choice item after Choice.
+
+<!-- entry: {"id":"2026-11-27-field-demo-utilities","kind":"behavior","migrationNotes":["Update `platejs` with `field-demo`, because the lease now stores a `multiple` field and an `includes` condition."]} -->
+
+- **`field-demo`**: The lease asks the tenant which utilities they pay, at least one and at most two, and asks for a gas meter number only when Gas is among them. The Answers panel lists a multiple-choice answer as its option values joined by commas.

@@ -138,6 +138,7 @@
       "2026-11-27-field-condition-lists-read",
       "2026-11-27-field-condition-lists-ui",
       "2026-11-27-field-condition-targets",
+      "2026-11-27-field-multiple-choice-ui",
       "2026-11-27-field-remove-default",
       "2026-11-27-selector-depends-on",
       "2026-11-26-suggestion-colors",
@@ -150,11 +151,17 @@
     ],
     "field-demo": [
       "2026-11-27-field-condition-lists-ui",
+      "2026-11-27-field-multiple-choice-ui",
       "2026-11-27-selector-depends-on",
       "2026-11-26-field-demo-app-data",
       "2026-11-25-field-demo-answer-conflict",
       "2026-11-25-field-name-input",
       "2026-11-24-field-static-answers",
+      "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
+    "field-toolbar-button": [
+      "2026-11-27-field-multiple-choice-ui",
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
@@ -599,10 +606,6 @@
       "2026-10-18-math-katex-import",
       "2026-10-13-static-editor-previews",
       "2026-09-13-rename-html-export-files"
-    ],
-    "field-toolbar-button": [
-      "2026-11-23-field-fill-view",
-      "2026-11-21-add-field"
     ],
     "turn-into-toolbar-button": [
       "2026-11-23-fix-toolbar-menu-checks",

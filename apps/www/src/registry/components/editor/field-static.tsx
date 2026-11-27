@@ -3,6 +3,23 @@ import { BaseFieldPlugin, fillsField } from 'platejs/field';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
+const optionLabel = (
+  options:
+    | ReadonlyArray<Readonly<{ label: string; value: string }>>
+    | undefined,
+  entry: unknown
+) => {
+  if (!options) return undefined;
+
+  const index = options.findIndex((option) => option.value === entry);
+
+  if (index === -1) return undefined;
+
+  const { label } = options[index];
+
+  return label.trim().length > 0 ? label : `Option ${index + 1}`;
+};
+
 export function FieldElementStatic(
   props: EditorElementProps<typeof BaseFieldPlugin>
 ) {
@@ -28,14 +45,9 @@ export function FieldElementStatic(
     );
   } else if (fillsField(element, value)) {
     shown = Array.isArray(value)
-      ? value
-          .map(
-            (entry) =>
-              options?.find((option) => option.value === entry)?.label ?? entry
-          )
-          .join(', ')
+      ? value.map((entry) => optionLabel(options, entry) ?? entry).join(', ')
       : kind === 'choice'
-        ? options?.find((option) => option.value === value)?.label
+        ? optionLabel(options, value)
         : String(value);
   }
 

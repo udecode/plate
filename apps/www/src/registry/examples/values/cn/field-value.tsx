@@ -97,6 +97,25 @@ export const fieldValue: Value = (
       })}
     </hp>
     <hp>
+      由租客支付的水电燃气：
+      {field('utilities', 'multiple', '水电燃气', '租客', {
+        max: 2,
+        name: 'utilities',
+        options: [
+          { label: '水', value: 'water' },
+          { label: '燃气', value: 'gas' },
+          { label: '电', value: 'electric' },
+        ],
+        required: true,
+      })}{' '}
+      燃气表号：
+      {field('gas-meter', 'text', '燃气表号', '租客', {
+        condition: { ref: 'utilities', test: 'includes', value: 'gas' },
+        name: 'gas_meter',
+        required: true,
+      })}
+    </hp>
+    <hp>
       {field('rules', 'checkbox', '房屋守则', '租客', {
         name: 'house_rules',
         required: true,

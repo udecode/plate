@@ -117,6 +117,25 @@ export const fieldValue: Value = (
       })}
     </hp>
     <hp>
+      Utilities paid by the tenant:{' '}
+      {field('utilities', 'multiple', 'Utilities', 'tenant', {
+        max: 2,
+        name: 'utilities',
+        options: [
+          { label: 'Water', value: 'water' },
+          { label: 'Gas', value: 'gas' },
+          { label: 'Electric', value: 'electric' },
+        ],
+        required: true,
+      })}{' '}
+      Gas meter number:{' '}
+      {field('gas-meter', 'text', 'Gas meter number', 'tenant', {
+        condition: { ref: 'utilities', test: 'includes', value: 'gas' },
+        name: 'gas_meter',
+        required: true,
+      })}
+    </hp>
+    <hp>
       {field('rules', 'checkbox', 'House rules', 'tenant', {
         name: 'house_rules',
         required: true,

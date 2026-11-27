@@ -19,6 +19,7 @@ const KINDS = [
   { kind: 'date', label: 'Date' },
   { kind: 'checkbox', label: 'Checkbox' },
   { kind: 'choice', label: 'Choice' },
+  { kind: 'multiple', label: 'Multiple choice' },
   { kind: 'signature', label: 'Signature' },
 ] as const;
 

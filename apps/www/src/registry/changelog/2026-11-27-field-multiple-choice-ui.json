@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-27-field-multiple-choice-ui",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-27-field-multiple-choice-ui.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Author and fill multiple-choice fields",
+  "targets": [
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/field-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-demo",
+      "files": [
+        "apps/www/src/registry/examples/field-demo.tsx",
+        "apps/www/src/registry/examples/values/cn/field-value.tsx",
+        "apps/www/src/registry/examples/values/field-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-27-field-multiple-choice-ui",
+      "kind": "new",
+      "summary": "The Kind select offers Multiple choice, with an Options list and Min and Max inputs that save on blur, Enter, or close. A count the settings refuse keeps the settings open with its text and error. The signer picks options from a checkbox list that says how many to pick and disables unticked options once the field holds `max` of them. Unticking the last option clears the answer.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with the copied `field` component, because its settings now write `multiple` fields with `min` and `max`."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-multiple-choice-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-field-toolbar-multiple",
+      "kind": "new",
+      "summary": "The insert menu adds a Multiple choice item after Choice.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with `field-toolbar-button`, because its insert menu now creates `multiple` fields."
+      ],
+      "targets": ["field-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-multiple-choice-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-27-field-demo-utilities",
+      "kind": "behavior",
+      "summary": "The lease asks the tenant which utilities they pay, at least one and at most two, and asks for a gas meter number only when Gas is among them. The Answers panel lists a multiple-choice answer as its option values joined by commas.",
+      "details": [],
+      "migrationNotes": [
+        "Update `platejs` with `field-demo`, because the lease now stores a `multiple` field and an `includes` condition."
+      ],
+      "targets": ["field-demo"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-27",
+          "entry": "2026-11-27-field-multiple-choice-ui",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

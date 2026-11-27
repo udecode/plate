@@ -1,5 +1,5 @@
 {
-  "generation": "240091011d0c45f045c5e3f94f02f7767e8e35555f2fc98940e25458c86b0d4a",
+  "generation": "647819cfa21dd10c94813af52310469bc13d96f865053c2be875eae67003c755",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3472,7 +3472,7 @@
           ],
           "name": "field",
           "type": "registry:component",
-          "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
+          "description": "A form field chip that one role fills, with a settings popover for its kind, options, counts and condition.",
           "title": "Field",
           "meta": {
             "docs": [
@@ -11211,7 +11211,7 @@
           ],
           "name": "field",
           "type": "registry:component",
-          "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
+          "description": "A form field chip that one role fills, with a settings popover for its kind, options, counts and condition.",
           "title": "Field",
           "meta": {
             "docs": [
