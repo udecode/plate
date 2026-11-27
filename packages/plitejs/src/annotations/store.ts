@@ -2,6 +2,7 @@ import {
   type Anchor,
   type Editor as EditorType,
   type EditorCommit,
+  type NamedRootKey,
   type NodeKey,
   RangeApi,
   type Range,
@@ -25,7 +26,9 @@ import {
 import { createStableIdMappedSource } from '../internal/view/stable-id-mapped-source';
 import type { ViewSourceErrorSink } from '../internal/view/view-source';
 
-export type AnnotationAnchor = Pick<Anchor<Range>, 'resolve'>;
+export type AnnotationAnchor = Pick<Anchor<Range>, 'resolve'> & {
+  readonly root?: NamedRootKey;
+};
 
 export interface Annotation<TData = unknown> {
   anchor: AnnotationAnchor;
@@ -132,10 +135,13 @@ const projectAnnotationRange = (editor: EditorType, range: Range) => {
   }
 };
 
-const shouldRefreshForEditorChange = (change: EditorCommit | undefined) =>
+const shouldRefreshForEditorChange = (
+  change: EditorCommit | undefined,
+  root: NamedRootKey | undefined
+) =>
   !change ||
-  change.changed.hasAny('document') ||
-  change.changed.hasAny('marks');
+  change.changed.has('document', root) ||
+  change.changed.has('marks', root);
 
 const areAnnotationInputsEqual = <TData>(
   left: Annotation<TData>,
@@ -169,6 +175,7 @@ const createPliteAnnotationStoreInternal = <TData>(
   dormant: boolean
 ): PliteAnnotationStoreOwner<TData> => {
   const editor = editorInput as EditorType;
+  const viewRoot = editor.read.view.root();
   const getAnnotations = typeof source === 'function' ? source : () => source;
   const faultBoundary = createViewSourceFaultBoundary({
     id: options.id ?? 'annotations',
@@ -186,13 +193,32 @@ const createPliteAnnotationStoreInternal = <TData>(
       isItemEqual: areAnnotationInputsEqual,
       isOutputEqual: Object.is,
       map: (annotation) => {
+        if (
+          'root' in annotation.anchor &&
+          annotation.anchor.root !== viewRoot
+        ) {
+          return {
+            entity: Object.freeze({
+              data: annotation.data,
+              id: annotation.id,
+              range: null,
+            }),
+            outputs: [],
+          };
+        }
         mappedResolveCount += 1;
         const resolvedRange = annotation.anchor.resolve(editor);
-        const mappedRange = resolvedRange
+        const sameRoot =
+          resolvedRange !== null &&
+          resolvedRange.anchor.root === resolvedRange.focus.root &&
+          (resolvedRange.anchor.root === viewRoot ||
+            (resolvedRange.anchor.root === undefined &&
+              viewRoot !== undefined));
+        const mappedRange = sameRoot
           ? projectAnnotationRange(editor, resolvedRange)
           : null;
         const range =
-          resolvedRange &&
+          sameRoot &&
           mappedRange &&
           !(options.hideEmpty && editor.read.ranges.isEmpty(resolvedRange))
             ? resolvedRange
@@ -353,13 +379,27 @@ const createPliteAnnotationStoreInternal = <TData>(
     byRuntimeId: ReadonlyMap<number, readonly string[]>;
     unidentified: readonly string[];
   }> | null = null;
-  const idsOfMovedAnchors = (moved: ReadonlySet<number> | undefined) => {
-    if (!moved || !currentAnnotations) return [];
+  const idsOfMovedAnchors = (change: EditorCommit | undefined) => {
+    if (!change || !currentAnnotations) return [];
+    const moved = getMovedAnchorIds(change);
+    if (!moved) return [];
+    const movedRuntimeIds: number[] = [];
+
+    for (const anchor of change.changed.anchors()) {
+      if (anchor.root !== viewRoot) continue;
+      const runtimeId = getAnchorRuntimeId(anchor);
+
+      if (runtimeId !== null && moved.has(runtimeId)) {
+        movedRuntimeIds.push(runtimeId);
+      }
+    }
+    if (movedRuntimeIds.length === 0) return [];
     if (anchorIds?.annotations !== currentAnnotations) {
       const byRuntimeId = new Map<number, string[]>();
       const unidentified: string[] = [];
 
       for (const { anchor, id } of currentAnnotations) {
+        if ('root' in anchor && anchor.root !== viewRoot) continue;
         const runtimeId = getAnchorRuntimeId(anchor);
 
         if (runtimeId === null) {
@@ -383,7 +423,9 @@ const createPliteAnnotationStoreInternal = <TData>(
 
     return [
       ...unidentified,
-      ...[...moved].flatMap((runtimeId) => byRuntimeId.get(runtimeId) ?? []),
+      ...movedRuntimeIds.flatMap(
+        (runtimeId) => byRuntimeId.get(runtimeId) ?? []
+      ),
     ];
   };
   const subscribeToEditor = () => {
@@ -393,9 +435,14 @@ const createPliteAnnotationStoreInternal = <TData>(
         refreshCandidates(null, true, 'editor');
         return;
       }
-      const moved = change ? idsOfMovedAnchors(getMovedAnchorIds(change)) : [];
+      const moved = idsOfMovedAnchors(change);
 
-      if (!shouldRefreshForEditorChange(change) && moved.length === 0) return;
+      if (
+        !shouldRefreshForEditorChange(change, viewRoot) &&
+        moved.length === 0
+      ) {
+        return;
+      }
       if (authoredPreview(editor) !== lastProjection) {
         refreshCandidates(null, true, 'editor');
         return;
@@ -405,10 +452,10 @@ const createPliteAnnotationStoreInternal = <TData>(
         ? Array.from(
             new Set([
               ...mappedSource.getIdsForOutputKeys(
-                change.changed.nodeKeysAll('decoration')
+                change.changed.nodeKeys('decoration', viewRoot)
               ),
               ...moved,
-              ...(change.changed.hasAny('document')
+              ...(change.changed.has('document', viewRoot)
                 ? mappedSource.getIdsWithoutOutputs()
                 : []),
             ])

@@ -35,6 +35,7 @@ export {
 
 export type {
   Anchor,
+  AnchorValue,
   BlockInsertOptions as PliteBlockInsertOptions,
   DefinitionOf,
   TransferApi,
@@ -138,6 +139,7 @@ export type {
   PropertyValueDescriptor,
   PropertyValueOf,
   Range,
+  ReadonlyAnchor,
   RootKey,
   SchemaBlockContentOptions,
   SchemaContent,
@@ -317,6 +319,8 @@ export {
   isDocumentView,
   configureAuthoredView,
   getAuthoredUpdateView,
+  getAuthoredViewCommit,
+  getViewCommitSource,
   readShownPreview,
   readAuthoredView,
   withStoredAuthoredRead,

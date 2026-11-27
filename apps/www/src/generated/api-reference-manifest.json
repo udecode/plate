@@ -16697,7 +16697,7 @@
           "kind": "type",
           "name": "AnnotationAnchor",
           "runtime": false,
-          "signature": "type AnnotationAnchor = Pick<Anchor<Range>, 'resolve'>;",
+          "signature": "type AnnotationAnchor = Pick<Anchor<Range>, 'resolve'> & {\n  readonly root?: NamedRootKey;\n};",
           "source": null,
           "typeParameters": []
         },

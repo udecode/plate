@@ -383,6 +383,8 @@ export {
 export {
   configureAuthoredView,
   getAuthoredUpdateView,
+  getAuthoredViewCommit,
+  getViewCommitSource,
   readShownPreview,
   readAuthoredView,
   withStoredAuthoredRead,
