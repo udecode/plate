@@ -12,7 +12,11 @@ import {
   waitForDevTools,
 } from './android';
 import { findOwnedPage } from './android-lane';
-import { type GuardedEndpoint, startGuardedEndpoint } from './guard';
+import {
+  devToolsCommand,
+  type GuardedEndpoint,
+  startGuardedEndpoint,
+} from './guard';
 
 export type DeviceRun = {
   close: () => Promise<GuardedEndpoint['refused']>;
@@ -45,23 +49,23 @@ export const openDeviceRun = async (
 
   const forwards: string[] = [];
   const reverses: string[] = [];
+  let devtoolsPort: number | null = null;
   let guard: GuardedEndpoint | null = null;
   let browser: Browser | null = null;
   let targetId: string | null = null;
 
   const close = async () => {
-    let closed = false;
+    const closed = Boolean(
+      devtoolsPort &&
+      targetId &&
+      (await devToolsCommand(devtoolsPort, 'Target.closeTarget', {
+        targetId,
+      }).then(
+        () => true,
+        () => false
+      ))
+    );
 
-    if (browser && targetId) {
-      const session = await browser.newBrowserCDPSession().catch(() => null);
-
-      closed = Boolean(
-        await session
-          ?.send('Target.closeTarget', { targetId })
-          .then(() => true)
-          .catch(() => false)
-      );
-    }
     await browser?.close().catch(() => {});
     await guard?.close();
     releaseRunResources(serial, {
@@ -76,22 +80,25 @@ export const openDeviceRun = async (
   try {
     showChrome(serial);
 
-    const devtoolsPort = forwardDevTools(serial);
-
+    devtoolsPort = forwardDevTools(serial);
     forwards.push(`tcp:${devtoolsPort}`);
     for (const port of ports) reverses.push(reversePort(serial, port));
     await waitForDevTools(devtoolsPort);
-    guard = await startGuardedEndpoint({ upstreamPort: devtoolsPort });
+    ({ targetId } = await devToolsCommand<{ targetId: string }>(
+      devtoolsPort,
+      'Target.createTarget',
+      { url }
+    ));
+    recordOwnedTarget(serial, targetId);
+    guard = await startGuardedEndpoint({
+      targetIds: [targetId],
+      upstreamPort: devtoolsPort,
+    });
     browser = await chromium.connectOverCDP(guard.endpoint, {
       noDefaults: true,
     });
 
-    const session = await browser.newBrowserCDPSession();
-    ({ targetId } = await session.send('Target.createTarget', { url }));
-    recordOwnedTarget(serial, targetId);
-    await session.detach();
-
-    const page = await findOwnedPage(browser, targetId, 50);
+    const page = await findOwnedPage(browser, targetId);
 
     await page.waitForLoadState('load');
 

@@ -133,21 +133,80 @@ const parseCommand = (text: string): RelayedCommand | null => {
     : null;
 };
 
+export const devToolsCommand = <T>(
+  upstreamPort: number,
+  method: string,
+  params: object
+) =>
+  new Promise<T>((resolve, reject) => {
+    const socket = new WebSocket(
+      `ws://127.0.0.1:${upstreamPort}/devtools/browser`
+    );
+    const fail = (error: Error) => {
+      clearTimeout(timer);
+      socket.close();
+      reject(error);
+    };
+    const timer = setTimeout(() => {
+      fail(new Error(`Chrome did not answer ${method} within 10 s.`));
+    }, 10_000);
+
+    socket.addEventListener('open', () => {
+      socket.send(JSON.stringify({ id: 1, method, params }));
+    });
+    socket.addEventListener('message', (event) => {
+      const reply = JSON.parse(String(event.data)) as {
+        error?: { message: string };
+        id?: number;
+        result?: T;
+      };
+
+      if (reply.id !== 1) return;
+      if (reply.error) {
+        fail(new Error(`${method}: ${reply.error.message}`));
+        return;
+      }
+      clearTimeout(timer);
+      socket.close();
+      resolve(reply.result as T);
+    });
+    socket.addEventListener('error', () => {
+      fail(new Error(`The DevTools socket failed during ${method}.`));
+    });
+  });
+
+type DeviceMessage = {
+  id?: number;
+  method?: string;
+  params?: {
+    sessionId?: string;
+    targetInfo?: { openerId?: string; targetId: string; type: string };
+    waitingForDebugger?: boolean;
+  };
+  sessionId?: string;
+};
+
 /**
  * Serve a DevTools endpoint that forwards to `upstreamPort` and refuses every
  * `Input.*` command on every session, plus the two channels that could carry
  * one past the relay: the legacy `Target.sendMessageToTarget` wrapper and
  * `Target.exposeDevToolsProtocol`, which gives page script its own DevTools
  * connection.
+ *
+ * Playwright's connectOverCDP waits for every page it attaches to, so one hung
+ * tab the run does not own would stall the connect.
  */
 export const startGuardedEndpoint = async ({
   port = 0,
+  targetIds,
   upstreamPort,
 }: {
   port?: number;
+  targetIds: string[];
   upstreamPort: number;
 }): Promise<GuardedEndpoint> => {
   const upstream = `http://127.0.0.1:${upstreamPort}`;
+  const owned = new Set(targetIds);
   const refused: GuardedEndpoint['refused'] = [];
   const sockets = new Set<Duplex>();
   const proxy = async (request: IncomingMessage, response: ServerResponse) => {
@@ -199,17 +258,74 @@ export const startGuardedEndpoint = async ({
       `ws://127.0.0.1:${upstreamPort}${request.url}`
     );
     const pending: string[] = [];
+    const foreignSessions = new Set<string>();
+    const relayIds = new Set<number>();
+    // Playwright numbers its commands up from 1.
+    let nextRelayId = 2 ** 30;
     const close = () => {
       sockets.delete(socket);
       socket.destroy();
       device.close();
+    };
+    const sendFromRelay = (
+      method: string,
+      params: object,
+      sessionId?: string
+    ) => {
+      const id = nextRelayId;
+
+      nextRelayId += 1;
+      relayIds.add(id);
+      device.send(
+        JSON.stringify({ id, method, params, ...(sessionId && { sessionId }) })
+      );
+    };
+    const dropForeign = (text: string) => {
+      if (
+        relayIds.size === 0 &&
+        foreignSessions.size === 0 &&
+        !text.includes('"Target.attachedToTarget"')
+      ) {
+        return false;
+      }
+
+      const message = JSON.parse(text) as DeviceMessage;
+
+      if (message.id !== undefined) return relayIds.delete(message.id);
+      if (message.sessionId) return foreignSessions.has(message.sessionId);
+      if (message.method === 'Target.detachedFromTarget') {
+        return foreignSessions.delete(message.params?.sessionId ?? '');
+      }
+      if (message.method !== 'Target.attachedToTarget' || !message.params) {
+        return false;
+      }
+
+      const { sessionId, targetInfo, waitingForDebugger } = message.params;
+
+      if (!sessionId || !targetInfo || targetInfo.type === 'browser') {
+        return false;
+      }
+      if (owned.has(targetInfo.targetId)) return false;
+      if (targetInfo.openerId && owned.has(targetInfo.openerId)) {
+        owned.add(targetInfo.targetId);
+        return false;
+      }
+      foreignSessions.add(sessionId);
+      if (waitingForDebugger) {
+        sendFromRelay('Runtime.runIfWaitingForDebugger', {}, sessionId);
+      }
+      sendFromRelay('Target.detachFromTarget', { sessionId });
+      return true;
     };
 
     device.addEventListener('open', () => {
       for (const message of pending.splice(0)) device.send(message);
     });
     device.addEventListener('message', (event) => {
-      socket.write(encodeFrame(Buffer.from(String(event.data), 'utf-8')));
+      const text = String(event.data);
+
+      if (dropForeign(text)) return;
+      socket.write(encodeFrame(Buffer.from(text, 'utf-8')));
     });
     device.addEventListener('close', close);
     device.addEventListener('error', close);
