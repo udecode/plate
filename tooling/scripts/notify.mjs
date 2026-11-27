@@ -128,7 +128,7 @@ const linkCommits = (text) => {
 const TEAM_START = /^(?<kind>Team|Team-Action):[ \t]*(?<text>\S.*?)[ \t]*$/u;
 const TRAILER = /^(?:[A-Z][\w-]*|Beyond the ask|Not checked):[ \t]/u;
 
-const teamLines = (message) => {
+const rawTeamLines = (message) => {
   const lines = [];
   let open = null;
   for (const line of message.split('\n').slice(1)) {
@@ -142,8 +142,16 @@ const teamLines = (message) => {
       open = null;
     }
   }
-  return lines.filter(({ text }) => text.toLowerCase() !== 'none');
+  return lines;
 };
+
+const teamLines = (message) =>
+  rawTeamLines(message).filter(({ text }) => text.toLowerCase() !== 'none');
+
+const hasTeamTrailer = (message) =>
+  rawTeamLines(message).some(
+    ({ kind, text }) => kind === 'Team' || text.toLowerCase() !== 'none'
+  );
 
 const PRIVATE_ISSUE = /\bplate-private#(\d+)\b/gu;
 
@@ -498,6 +506,31 @@ const demoProblems = (bodies) => {
     });
 };
 
+const TEAM_AFFECTING_PATHS = new Set([
+  '.agents/pstack.json',
+  'AGENTS.md',
+  '.claude/settings.json',
+  '.agents/rules/verify/references/sweep.md',
+  '.agents/playbooks/triage.md',
+  'package.json',
+]);
+
+const workflowTeamProblems = (bodies) => {
+  if (process.env[LAND_CHECK] !== '1') return [];
+  if (bodies.some((body) => hasTeamTrailer(body))) return [];
+  const root = process.cwd();
+  const base = gitAt(root, ['merge-base', 'HEAD', UPSTREAM]).stdout.trim();
+  const changed = base ? changedSince(root, base, { pair: landingPair }) : null;
+  if (!changed) return [];
+  const touched = [...new Set(changed)].filter((path) =>
+    TEAM_AFFECTING_PATHS.has(path)
+  );
+  if (touched.length === 0) return [];
+  return [
+    `this landing changes teammate-affecting workflow/config paths (${touched.join(', ')}) without a Team: or Team-Action: trailer. Add a Team: or Team-Action: line explaining what changed for teammates (or Team: none for a silent internal tweak), then run land.mjs again with --message.`,
+  ];
+};
+
 // land.mjs runs this as a land check, after it squashes the task's commit and
 // before it pushes, so a Team line that would hand teammates a command never posts.
 const check = (args) => {
@@ -553,7 +586,10 @@ const check = (args) => {
       `a Team line names a demo or docs page without its link:\n${unlinked.map(({ kind, text }) => `  ${kind}: ${text}`).join('\n')}\nIn it, ${PAGE_FIX}, then run land.mjs again with --message.`
     );
   }
-  const missing = demoProblems([...landing]);
+  const missing = [
+    ...demoProblems([...landing]),
+    ...workflowTeamProblems([...landing]),
+  ];
   if (missing.length > 0) fail(1, missing.join('\n'));
 };
 

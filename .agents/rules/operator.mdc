@@ -18,7 +18,7 @@ Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/ne
 - Three starts of one failure in 7d offer a P3 `red-recurrence` task (`red-recurrence.mjs`) to add an earlier guard via `/pstack:correct`.
 - `beta-release.mjs wake` emits `release` after green when a daily beta is due. Nothing here posts to Discord.
 
-Run from `<main>` (`.claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` for CI; `<main>/tooling/scripts/local-ci.mjs` for `friction`). `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skip due check); `status`, `rerun`, `install`, `uninstall` -> below.
+Run from `<main>` (`.claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` for CI; `<main>/tooling/scripts/local-ci.mjs` for fallback `friction`). `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skip due check); `status`, `rerun`, `install`, `uninstall` -> below.
 
 ## status
 
@@ -44,7 +44,7 @@ Keep one pinned `operator` T3 Code thread (own worktree, commands prefixed `cd <
 
 ## watch
 
-Never edit or land directly. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `check.mjs` step with `light`), 1 release, 1 friction judge. Spawn workers via `invoke_subagent` (or `delegate_task` for an isolated thread) in the background, inheriting the lead's model and effort (escalate a failed 1st fix attempt once to Neon `@xhigh`). Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
+Never edit or land directly. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `check.mjs` step with `light`), 1 release, 1 friction worker. Spawn workers via `invoke_subagent` (or `delegate_task` for an isolated thread) in the background, inheriting the lead's model and effort (escalate a failed 1st fix attempt once to Neon `@xhigh`). Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
 
 1. First loop: note ISO time, run step 3, then start `<ci> wait --after <last-at>` in background.
 2. Handle each waking JSON event, then run step 3:
@@ -54,15 +54,15 @@ Never edit or land directly. Caps: 3 fix agents (max 1 heavy: `plite-browser` or
    - `dry: true`: spawn **Dry brief**.
    - `broken`: check `output` and `plate-local-ci/launchd.log`; if install broke, run `pnpm install --frozen-lockfile` in `.claude/worktrees/local-ci`, else report without Discord.
    - `release`: main CI only (drop if `config.json` exists or release runs); spawn **Release brief**.
-   - `friction`: continue to step 3.
-   - **Agent friction (`FRICTION [tooling|skill|pstack|t3]`):** handle incoming worker reports alongside the `local-ci` friction loop. Deduplicate by failure signature (file/command/error): if a fix for that signature is already running, append any new `blocking: yes` reporter `threadId` to its wakeup list instead of spawning a duplicate worker. For fixable `plate` or `ustack` friction, dispatch an **Agent friction fix brief** subagent (never edit directly in `operator`), land on `origin/next` (or push `ustack` `main`), and wake every paused `blocking: yes` reporter via `t3_thread_send` (`"Fixed in <sha>, pull origin/next and resume"`). For external T3 app bugs that `operator` cannot fix in `plate` or `ustack`, record once in `<main>/docs/plans/artifacts/local-ci/<day>/t3-friction.md` for the owner instead of looping, and immediately reply via `t3_thread_send` to any `blocking: yes` reporter with a fallback or clean stop.
+   - `friction`: fallback queue event from `events.jsonl` (only when `t3 thread send` fails); continue to step 3.
+   - **Friction (`FRICTION [tooling|skill|pstack|t3|zbot]`):** `FRICTION [zbot]` arrives on the same `FRICTION` pipe as T3 workers. Deduplicate every report by `(file, error)` for 24h in `<main>/docs/plans/artifacts/local-ci/friction-seen.json`: if an active or <24h entry matches, skip spawning a duplicate worker (append any `blocking: yes` reporter `threadId` to its wakeup list, or reply immediately if already fixed). Otherwise record it and spawn one bounded `self` subagent (`Model: "inherit"`) with **Friction fix brief** to verify, fix, test, and land (or drop as invalid) in a single pass. Once fixed, wake every paused `blocking: yes` reporter via `t3_thread_send` (`"Fixed in <sha>, pull origin/next and resume"`). For external T3 app bugs outside `plate` and `ustack`, record once in `<main>/docs/plans/artifacts/local-ci/<day>/t3-friction.md` and immediately reply to any `blocking: yes` reporter with a fallback or clean stop.
+   - **Friction safety rail:** auto-fix broken scripts/tests, stale rules/skills, hook false positives, and `zbot-shot`/`clip` bugs. Never auto-fix sandbox or security loosening (`bot-settings.json`, `fetch-guard.mjs`, access lists) or product architecture calls; flag `🟠` for the owner instead.
 3. Dispatch:
    - Fill up to 3 fix agents from the red queue (1 per step, max 1 heavy) using **Fix brief**.
-   - If 0 fixes run and red queue is empty, run `<friction> next`; if `item`, run `<friction> start --item <id>` and spawn **Friction fix brief**.
-   - If no judge runs and `<friction> next` shows `unjudged`/`stuck` (first loop, after `friction`, or after `<friction> failed`), spawn **Friction brief**.
+   - If no friction worker runs and `<friction> next` holds a fallback `events.jsonl` item or unjudged report, spawn one bounded `self` subagent (`Model: "inherit"`) with **Friction fix brief**.
 4. Repeat from step 1 with newest handled event's `at`.
 
-Save reports to `<main>/docs/plans/artifacts/local-ci/<day>/` (`fix-<task-or-step>.md`, `fix-friction-<id>-<HHMMSS>.md`, `release-<day>.md`, `friction-<HHMMSS>.md`), run `<friction> failed --item <id>` after friction fixes, run step 3, and reply with 1 line per finished agent plus active steps and queued reds.
+Save reports to `<main>/docs/plans/artifacts/local-ci/<day>/` (`fix-<task-or-step>.md`, `fix-friction-<id>-<HHMMSS>.md`, `release-<day>.md`), run `<friction> failed --item <id>` after fallback queue friction fixes, run step 3, and reply with 1 line per finished agent plus active steps and queued reds.
 
 ### Fix brief
 
@@ -86,27 +86,10 @@ Save reports to `<main>/docs/plans/artifacts/local-ci/<day>/` (`fix-<task-or-ste
 > 3. Run `node tooling/scripts/beta-release.mjs ship --force` in background (`release.yml` closes fixed public issues; `ship` runs `close-released-issues.mjs` fallback; retry on exit 75).
 > 4. Send no team message. End with 1 line: beta and closed issues, or why none shipped.
 
-### Friction brief
-
-> Judge zbot friction via `node <main>/tooling/scripts/local-ci.mjs friction`. Work from `<main>`; edit no files, land nothing, send no messages.
-> 1. Run `friction list` and `git -C <main> fetch --quiet origin next`; read files via `git show origin/next:<path>`.
-> 2. Classify each `unjudged` line (`<report>-<n>`): `fixed` (`same`/`commit`/`fix`), `chip` (product bug, zbot/zstack, owner call), or `dropped` (`reason`).
-> 3. Offer each `chip` via `chips` (`via: hook`, `session: none`, dedupe against `suggested-tasks.decisions.tsv`; never card).
-> 4. Submit all verdicts in one `friction judged` stdin JSON call (`{"verdicts":[...]}`).
-> 5. Offer any `stuck` item as a chip and run `friction done --item <id> --task <task-id>`.
-> 6. End with 1 line per judged line and stuck item.
-
 ### Friction fix brief
 
-> Fix queued zbot friction `<item JSON>` via `node <main>/tooling/scripts/local-ci.mjs friction`.
-> 1. Cut worktree from `origin/next` (or owning repo's main). If fixed, run `friction done --item <id> --commit <sha>` and stop.
-> 2. If `after` is set and persists, run `/pstack:correct` on its class; else fix the skill/rule/script/helper.
-> 3. Land via `land.mjs` (or owning repo rules), then run `friction done --item <id> --commit <sha>` (if unlandable, offer chip `via: hook`, `session: none` and run `friction done --item <id> --task <task-id>`).
-> 4. Send no team message. End with 1 line: commit or task, and why.
-
-### Agent friction fix brief
-
-> Fix agent-reported friction `<FRICTION message>` (signature `<sig>`). Work from `<main>`; read `AGENTS.md` and `operator` first.
-> 1. If the failure is an external T3 app bug outside `plate` and `ustack`, edit nothing and reply `external-t3: <summary and fallback>`.
-> 2. Otherwise cut a fresh worktree from `origin/next` (or edit `ustack` in place on `main` per `ustack/AGENTS.md` and sync `plate` via `sync-pstack.mjs apply`). Fix the root cause with a focused test and verify all affected checks.
-> 3. Land via `land.mjs` (or push `ustack` `main`). Send no team message. End with 1 line: `fixed: <sha>` (plus synced `plate` SHA if applicable) or `blocked: <why>`.
+> Verify and resolve `<FRICTION message or fallback item>` (keyed by `(file, error)`) in one pass as a `self` subagent (`Model: "inherit"`). Work from `<main>`; read `AGENTS.md` and `operator` first.
+> 1. **Safety rail:** auto-fix only broken scripts/tests, stale rules/skills, hook false positives, and `zbot-shot`/`clip` bugs. Never loosen sandbox or security controls (`bot-settings.json`, `fetch-guard.mjs`, access lists) or make product architecture calls; edit nothing and reply `owner-call: <why>` so `operator` flags `🟠`. For external T3 app bugs outside `plate` and `ustack`, edit nothing and reply `external-t3: <summary and fallback>`.
+> 2. Verify against `origin/next` (or owning repo `main`). If invalid, already fixed, or ruled out by an owner decision, edit nothing and reply `dropped: <reason or commit>`.
+> 3. Cut a fresh worktree from `origin/next` (or edit `ustack` in place on `main` per `ustack/AGENTS.md` and sync `plate` via `sync-pstack.mjs apply`, or `zstack` on `main` for `zbot-shot`/`clip`). Fix the root cause, verify with a focused test and affected checks, and land via `land.mjs` (or owning repo rules). Close any fallback `<friction>` queue item via `<friction> done --item <id> --commit <sha>`.
+> 4. Send no team message. End with 1 line: `fixed: <sha>`, `dropped: <reason>`, `owner-call: <why>`, or `external-t3: <summary>`.
