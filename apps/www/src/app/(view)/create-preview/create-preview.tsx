@@ -12,6 +12,7 @@ import {
 } from '@/lib/plate-create';
 import type { PlateCreateTheme } from '@/lib/plate-create-theme';
 
+import { CreatePreviewConfigContext } from './create-preview-context';
 import { IconLibraryContext } from './icon-placeholder';
 
 const createSinkPages = {
@@ -261,11 +262,13 @@ export function CreatePreview({
             shows the default theme.
           </p>
         )}
-        <IconLibraryContext value={config.iconLibrary}>
-          <React.Suspense fallback={null}>
-            <Page />
-          </React.Suspense>
-        </IconLibraryContext>
+        <CreatePreviewConfigContext value={config}>
+          <IconLibraryContext value={config.iconLibrary}>
+            <React.Suspense fallback={null}>
+              <Page />
+            </React.Suspense>
+          </IconLibraryContext>
+        </CreatePreviewConfigContext>
       </div>
     </>
   );

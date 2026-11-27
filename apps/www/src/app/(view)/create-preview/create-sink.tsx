@@ -1,6 +1,6 @@
 'use client';
 
-import type { EditorReference, PluginReference, Value } from 'platejs';
+import { BaseDetailsPlugin } from 'platejs/details';
 import {
   BoldPlugin,
   CodePlugin,
@@ -12,508 +12,39 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
   useCreateEditor,
+  useEditor,
 } from 'platejs/react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-
+import {
+  AIAssistantCard,
+  BlockMenuCard,
+  CalendarCard,
+  CollaboratorsCard,
+  ColorPaletteCard,
+  IconPreviewGridCard,
+  ReviewCard,
+  SelectEditorCard,
+  ShortcutsCard,
+  SlashCommandCard,
+  TypographySpecimenCard,
+  UIElementsCard,
+} from './create-sink-cards';
+import type { CreateSinkKit } from './create-sink-types';
+import {
+  CALLOUT_DETAILS_VALUE,
+  CODE_VALUE,
+  COLUMN_TOC_VALUE,
+  DOC_VALUE,
+  FOOTNOTE_VALUE,
+  MATH_VALUE,
+  MEDIA_VALUE,
+  SUGGESTION_VALUE,
+  TABLE_VALUE,
+} from './create-sink-values';
 import { IconPlaceholder } from './icon-placeholder';
 
-type BooleanMarkPlugin =
-  | typeof BoldPlugin
-  | typeof CodePlugin
-  | typeof HighlightPlugin
-  | typeof ItalicPlugin
-  | typeof StrikethroughPlugin
-  | typeof UnderlinePlugin;
-
-export type CreateSinkKit = {
-  AIToolbarButton: React.ComponentType<{
-    children?: React.ReactNode;
-    tooltip?: React.ReactNode;
-  }>;
-  AlignToolbarButton: React.ComponentType;
-  Avatar: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-    size?: 'default' | 'lg' | 'sm';
-  }>;
-  AvatarFallback: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  AvatarGroup: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  BulletedListToolbarButton: React.ComponentType;
-  Button: React.ComponentType<{
-    'aria-label'?: string;
-    children?: React.ReactNode;
-    className?: string;
-    disabled?: boolean;
-    onClick?: () => void;
-    size?:
-      | 'default'
-      | 'icon'
-      | 'icon-lg'
-      | 'icon-sm'
-      | 'icon-xs'
-      | 'lg'
-      | 'sm'
-      | 'xs';
-    type?: 'button' | 'reset' | 'submit';
-    variant?:
-      | 'default'
-      | 'destructive'
-      | 'ghost'
-      | 'link'
-      | 'outline'
-      | 'secondary';
-  }>;
-  codePlugins: readonly PluginReference[];
-  Command: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  CommandEmpty: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  CommandGroup: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-    heading?: React.ReactNode;
-  }>;
-  CommandInput: React.ComponentType<{
-    className?: string;
-    placeholder?: string;
-  }>;
-  CommandItem: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-    onSelect?: (value: string) => void;
-    value?: string;
-  }>;
-  CommandList: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  CommandShortcut: React.ComponentType<{
-    children?: React.ReactNode;
-    className?: string;
-  }>;
-  CommentToolbarButton: React.ComponentType;
-  defaultColors: ReadonlyArray<{
-    isBrightColor: boolean;
-    name: string;
-    value: string;
-  }>;
-  docPlugins: readonly PluginReference[];
-  Editor: React.ComponentType<{
-    className?: string;
-    variant?: 'default' | 'demo' | 'fullWidth' | 'none' | 'select';
-  }>;
-  FixedToolbar: React.ComponentType<
-    React.PropsWithChildren<{ className?: string }>
-  >;
-  FontColorToolbarButton: React.ComponentType<{
-    children: React.ReactNode;
-    colors: ReadonlyArray<{
-      isBrightColor: boolean;
-      name: string;
-      value: string;
-    }>;
-    plugin: typeof FontBackgroundColorPlugin | typeof FontColorPlugin;
-    tooltip?: string;
-  }>;
-  FontSizeToolbarButton: React.ComponentType;
-  Input: React.ComponentType<{
-    'aria-label'?: string;
-    className?: string;
-    onChange?: React.ChangeEventHandler<HTMLInputElement>;
-    onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
-    placeholder?: string;
-    type?: string;
-    value?: string;
-  }>;
-  InsertToolbarButton: React.ComponentType;
-  LinkToolbarButton: React.ComponentType;
-  MarkToolbarButton: React.ComponentType<{
-    children?: React.ReactNode;
-    plugin: BooleanMarkPlugin;
-    tooltip?: React.ReactNode;
-  }>;
-  ModeToolbarButton: React.ComponentType;
-  RedoToolbarButton: React.ComponentType;
-  Separator: React.ComponentType<{
-    className?: string;
-    orientation?: 'horizontal' | 'vertical';
-  }>;
-  suggestionPlugins: readonly PluginReference[];
-  tablePlugins: readonly PluginReference[];
-  TableToolbarButton: React.ComponentType;
-  TodoListToolbarButton: React.ComponentType;
-  Toolbar: React.ComponentType<React.PropsWithChildren<{ className?: string }>>;
-  ToolbarGroup: React.ComponentType<
-    React.PropsWithChildren<{ className?: string }>
-  >;
-  TooltipProvider: React.ComponentType<{ children: React.ReactNode }>;
-  TurnIntoToolbarButton: React.ComponentType;
-  UndoToolbarButton: React.ComponentType;
-};
-
-const DOC_VALUE: Value = [
-  {
-    children: [{ text: 'Plate v2 architecture' }],
-    level: 1,
-    type: 'heading',
-  },
-  {
-    children: [
-      { text: 'Owner ' },
-      {
-        children: [{ text: '' }],
-        label: 'Alice Chen',
-        ref: 'alice',
-        type: 'mention',
-      },
-      { text: ' · Target ' },
-      {
-        children: [{ text: '' }],
-        type: 'date',
-        value: '2026-11-27',
-      },
-      { text: ' · ' },
-      {
-        children: [{ text: 'platejs.org' }],
-        type: 'link',
-        url: 'https://platejs.org',
-      },
-    ],
-    type: 'paragraph',
-  },
-  {
-    children: [
-      { text: 'Compose ' },
-      { bold: true, text: 'headless plugins' },
-      { text: ', ' },
-      { highlight: true, text: 'token-driven UI' },
-      { text: ', ' },
-      { code: true, text: 'createEditor()' },
-      { text: ', and ' },
-      { kbd: true, text: '⌘J' },
-      { text: ' without custom CSS.' },
-    ],
-    type: 'paragraph',
-  },
-  {
-    children: [
-      {
-        children: [
-          {
-            text: 'Keep primitives composable so every theme, radius, and icon set flows through automatically.',
-          },
-        ],
-        type: 'paragraph',
-      },
-    ],
-    type: 'blockquote',
-  },
-  {
-    checked: true,
-    children: [{ text: 'Ship Base UI and Radix editor kits' }],
-    indent: 1,
-    listType: 'task',
-    type: 'paragraph',
-  },
-  {
-    checked: false,
-    children: [{ text: 'Verify light, dark, and RTL contrast' }],
-    indent: 1,
-    listType: 'task',
-    type: 'paragraph',
-  },
-  {
-    children: [
-      {
-        text: 'Type / anywhere or click the toolbar above to format this document live.',
-      },
-    ],
-    icon: '💡',
-    type: 'callout',
-    variant: 'info',
-  },
-];
-
-const CODE_VALUE: Value = [
-  {
-    children: [
-      {
-        text: [
-          "import { createEditor } from 'platejs';",
-          '',
-          'export const editor = createEditor({',
-          '  plugins: [BlocksKit, AIKit],',
-          "  userId: 'alice',",
-          '});',
-        ].join('\n'),
-      },
-    ],
-    language: 'typescript',
-    type: 'codeBlock',
-  },
-];
-
-const SUGGESTION_VALUE: Value = [
-  {
-    children: [
-      { text: 'Migrate ' },
-      {
-        authored: [{ at: 1, author: 'bob', change: 's-1', kind: 'delete' }],
-        text: 'legacy ',
-      },
-      {
-        authored: [{ at: 2, author: 'bob', change: 's-1', kind: 'insert' }],
-        text: 'composable ',
-      },
-      { text: 'editor plugins with ' },
-      {
-        authored: [{ at: 3, author: 'alice', change: 's-2', kind: 'insert' }],
-        text: 'multi-author review',
-      },
-      { text: ' built in.' },
-    ],
-    type: 'paragraph',
-  },
-];
-
-const TABLE_VALUE: Value = [
-  {
-    children: [
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Package' }], type: 'paragraph' }],
-            header: true,
-            type: 'tableCell',
-          },
-          {
-            children: [{ children: [{ text: 'Role' }], type: 'paragraph' }],
-            header: true,
-            type: 'tableCell',
-          },
-          {
-            children: [{ children: [{ text: 'Status' }], type: 'paragraph' }],
-            header: true,
-            type: 'tableCell',
-          },
-        ],
-        type: 'tableRow',
-      },
-      {
-        children: [
-          {
-            children: [
-              {
-                children: [{ code: true, text: 'plitejs' }],
-                type: 'paragraph',
-              },
-            ],
-            type: 'tableCell',
-          },
-          {
-            children: [
-              { children: [{ text: 'Core engine' }], type: 'paragraph' },
-            ],
-            type: 'tableCell',
-          },
-          {
-            children: [{ children: [{ text: 'Stable' }], type: 'paragraph' }],
-            type: 'tableCell',
-          },
-        ],
-        type: 'tableRow',
-      },
-      {
-        children: [
-          {
-            children: [
-              {
-                children: [{ code: true, text: 'platejs' }],
-                type: 'paragraph',
-              },
-            ],
-            type: 'tableCell',
-          },
-          {
-            children: [
-              { children: [{ text: 'Plugin kit' }], type: 'paragraph' },
-            ],
-            type: 'tableCell',
-          },
-          {
-            children: [{ children: [{ text: 'Beta' }], type: 'paragraph' }],
-            type: 'tableCell',
-          },
-        ],
-        type: 'tableRow',
-      },
-      {
-        children: [
-          {
-            children: [
-              {
-                children: [{ code: true, text: 'registry' }],
-                type: 'paragraph',
-              },
-            ],
-            type: 'tableCell',
-          },
-          {
-            children: [
-              { children: [{ text: 'Shadcn UI' }], type: 'paragraph' },
-            ],
-            type: 'tableCell',
-          },
-          {
-            children: [{ children: [{ text: 'Ready' }], type: 'paragraph' }],
-            type: 'tableCell',
-          },
-        ],
-        type: 'tableRow',
-      },
-    ],
-    columnWidths: [104, 126, 86],
-    type: 'table',
-  },
-];
-
-const SLASH_COMMANDS = [
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="SparklesIcon"
-        lucide="SparklesIcon"
-        phosphor="SparkleIcon"
-        remixicon="RiSparklingLine"
-        tabler="IconSparkles"
-      />
-    ),
-    label: 'Ask AI',
-    shortcut: '⌘J',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="Heading01Icon"
-        lucide="Heading1Icon"
-        phosphor="TextHOneIcon"
-        remixicon="RiH1"
-        tabler="IconH1"
-      />
-    ),
-    label: 'Heading 1',
-    shortcut: '#',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="Menu01Icon"
-        lucide="ListIcon"
-        phosphor="ListIcon"
-        remixicon="RiListUnordered"
-        tabler="IconListDetails"
-      />
-    ),
-    label: 'Bulleted list',
-    shortcut: '-',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="BulbIcon"
-        lucide="LightbulbIcon"
-        phosphor="LightbulbIcon"
-        remixicon="RiLightbulbLine"
-        tabler="IconBulb"
-      />
-    ),
-    label: 'Callout',
-    shortcut: '/cal',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="TableIcon"
-        lucide="Table"
-        phosphor="TableIcon"
-        remixicon="RiTableLine"
-        tabler="IconTable"
-      />
-    ),
-    label: 'Table',
-    shortcut: '/tbl',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="SourceCodeIcon"
-        lucide="Code2"
-        phosphor="CodeIcon"
-        remixicon="RiCodeSSlashLine"
-        tabler="IconCode"
-      />
-    ),
-    label: 'Code block',
-    shortcut: '```',
-  },
-] as const;
-
-const TURN_INTO_OPTIONS = [
-  {
-    icon: (
-      <IconPlaceholder
-        className="size-4"
-        hugeicons="ParagraphIcon"
-        lucide="PilcrowIcon"
-        phosphor="ParagraphIcon"
-        remixicon="RiParagraph"
-        tabler="IconPilcrow"
-      />
-    ),
-    label: 'Text',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        className="size-4"
-        hugeicons="Heading01Icon"
-        lucide="Heading1Icon"
-        phosphor="TextHOneIcon"
-        remixicon="RiH1"
-        tabler="IconH1"
-      />
-    ),
-    label: 'Heading 1',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        className="size-4"
-        hugeicons="QuoteDownIcon"
-        lucide="Quote"
-        phosphor="QuotesIcon"
-        remixicon="RiDoubleQuotesL"
-        tabler="IconQuote"
-      />
-    ),
-    label: 'Blockquote',
-  },
-] as const;
-
-const INITIAL_AI_DRAFT =
-  'Plate compiles every editor primitive against your shadcn theme tokens so styles, icons, and radius stay in sync.';
+export type { CreateSinkKit } from './create-sink-types';
 
 function SinkFixedToolbarButtons({ kit }: { kit: CreateSinkKit }) {
   const {
@@ -748,436 +279,24 @@ function SinkFloatingToolbarButtons({ kit }: { kit: CreateSinkKit }) {
   );
 }
 
-function SlashCommandCard({
-  kit,
-  onPickCommand,
-}: {
-  kit: CreateSinkKit;
-  onPickCommand: (label: string) => void;
-}) {
-  const {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-    CommandShortcut,
-  } = kit;
+function ExpandFirstDetails() {
+  const editor = useEditor();
 
-  return (
-    <div
-      className="cn-popover-content cn-menu-target overflow-hidden rounded-xl border bg-popover p-0 text-popover-foreground shadow-sm"
-      data-menu-translucent=""
-      data-slot="sink-slash-menu"
-    >
-      <Command className="bg-transparent">
-        <CommandInput placeholder="Filter commands..." />
-        <CommandList className="max-h-none">
-          <CommandEmpty>No matching commands.</CommandEmpty>
-          <CommandGroup heading="Insert">
-            {SLASH_COMMANDS.map((item) => (
-              <CommandItem
-                key={item.label}
-                onSelect={() => onPickCommand(item.label)}
-                value={item.label}
-              >
-                <span className="flex size-4 shrink-0 items-center justify-center">
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
-                <CommandShortcut>{item.shortcut}</CommandShortcut>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </Command>
-    </div>
-  );
-}
+  React.useEffect(() => {
+    const firstDetails = editor.read
+      .children()
+      .find((node) => 'type' in node && node.type === 'details');
 
-function AIAssistantCard({
-  kit,
-  onInsert,
-}: {
-  kit: CreateSinkKit;
-  onInsert: (text: string) => void;
-}) {
-  const { Button, Input } = kit;
-  const [prompt, setPrompt] = React.useState('');
-  const [draft, setDraft] = React.useState(INITIAL_AI_DRAFT);
-  const [status, setStatus] = React.useState<'accepted' | 'ready'>('ready');
+    if (!firstDetails) return;
 
-  const submitPrompt = () => {
-    const trimmed = prompt.trim();
-    if (!trimmed) return;
+    const detailsKey = editor.key(firstDetails);
 
-    setDraft(trimmed);
-    setStatus('ready');
-    setPrompt('');
-  };
+    if (detailsKey !== undefined) {
+      editor.plugin(BaseDetailsPlugin).api.setOpen(detailsKey, true);
+    }
+  }, [editor]);
 
-  return (
-    <section
-      className="cn-card flex flex-col gap-3 bg-card p-4 text-card-foreground"
-      data-slot="card"
-    >
-      <div className="flex items-center gap-2 text-xs font-medium">
-        <IconPlaceholder
-          className="size-3.5 text-primary"
-          hugeicons="SparklesIcon"
-          lucide="SparklesIcon"
-          phosphor="SparkleIcon"
-          remixicon="RiSparklingLine"
-          tabler="IconSparkles"
-        />
-        <span>Rewrite concisely</span>
-        <span
-          className={cn(
-            'cn-badge ms-auto inline-flex items-center',
-            status === 'accepted'
-              ? 'cn-badge-variant-default'
-              : 'cn-badge-variant-secondary'
-          )}
-        >
-          {status === 'accepted' ? 'Applied' : 'Ready'}
-        </span>
-      </div>
-
-      <div className="rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed text-foreground">
-        {draft}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        <Button
-          onClick={() => {
-            onInsert(draft);
-            setStatus('accepted');
-          }}
-          size="sm"
-          type="button"
-          variant="default"
-        >
-          <IconPlaceholder
-            className="size-3.5"
-            hugeicons="Tick02Icon"
-            lucide="Check"
-            phosphor="CheckIcon"
-            remixicon="RiCheckLine"
-            tabler="IconCheck"
-          />
-          Accept
-        </Button>
-        <Button
-          onClick={() => onInsert(draft)}
-          size="sm"
-          type="button"
-          variant="outline"
-        >
-          <IconPlaceholder
-            className="size-3.5"
-            hugeicons="PencilEdit02Icon"
-            lucide="PenLine"
-            phosphor="PencilLineIcon"
-            remixicon="RiEditLine"
-            tabler="IconWriting"
-          />
-          Insert below
-        </Button>
-        <Button
-          onClick={() => {
-            setDraft(INITIAL_AI_DRAFT);
-            setStatus('ready');
-          }}
-          size="sm"
-          type="button"
-          variant="ghost"
-        >
-          Discard
-        </Button>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Input
-          aria-label="Ask AI prompt"
-          className="h-8 text-sm"
-          onChange={(event) => setPrompt(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              submitPrompt();
-            }
-          }}
-          placeholder="Ask AI anything..."
-          type="text"
-          value={prompt}
-        />
-        <Button
-          onClick={submitPrompt}
-          size="sm"
-          type="button"
-          variant="default"
-        >
-          Run
-        </Button>
-      </div>
-    </section>
-  );
-}
-
-function BlockMenuCard() {
-  const [selectedBlock, setSelectedBlock] = React.useState('Heading 1');
-
-  return (
-    <div
-      className="grid grid-cols-1 gap-2 sm:grid-cols-[1.05fr_0.95fr]"
-      data-slot="sink-block-menu"
-    >
-      <div
-        className="cn-dropdown-menu-content cn-menu-target flex flex-col gap-0.5"
-        data-menu-translucent=""
-      >
-        <div className="cn-dropdown-menu-item flex items-center bg-accent text-accent-foreground">
-          <IconPlaceholder
-            className="size-4"
-            hugeicons="MagicWand01Icon"
-            lucide="Wand"
-            phosphor="MagicWandIcon"
-            remixicon="RiMagicLine"
-            tabler="IconWand"
-          />
-          <span>Ask AI</span>
-        </div>
-        <div className="cn-dropdown-menu-sub-trigger flex items-center">
-          <IconPlaceholder
-            className="size-4"
-            hugeicons="ParagraphIcon"
-            lucide="PilcrowIcon"
-            phosphor="ParagraphIcon"
-            remixicon="RiParagraph"
-            tabler="IconPilcrow"
-          />
-          <span>Turn into</span>
-          <IconPlaceholder
-            className="ms-auto size-4 rtl:rotate-180"
-            hugeicons="ArrowRight01Icon"
-            lucide="ChevronRightIcon"
-            phosphor="CaretRightIcon"
-            remixicon="RiArrowRightSLine"
-            tabler="IconChevronRight"
-          />
-        </div>
-        <div className="cn-dropdown-menu-item flex items-center">
-          <IconPlaceholder
-            className="size-4"
-            hugeicons="PlayListAddIcon"
-            lucide="ListPlus"
-            phosphor="ListPlusIcon"
-            remixicon="RiMenuAddLine"
-            tabler="IconPlaylistAdd"
-          />
-          <span>Duplicate</span>
-          <span className="cn-dropdown-menu-shortcut">⌘D</span>
-        </div>
-        <div className="cn-dropdown-menu-separator" />
-        <div
-          className="cn-dropdown-menu-item flex items-center text-destructive"
-          data-variant="destructive"
-        >
-          <IconPlaceholder
-            className="size-4"
-            hugeicons="Cancel01Icon"
-            lucide="X"
-            phosphor="XIcon"
-            remixicon="RiCloseLine"
-            tabler="IconX"
-          />
-          <span>Delete</span>
-          <span className="cn-dropdown-menu-shortcut">⌫</span>
-        </div>
-      </div>
-
-      <div
-        className="cn-dropdown-menu-sub-content cn-menu-target flex flex-col gap-0.5 self-start"
-        data-menu-translucent=""
-      >
-        <div className="cn-dropdown-menu-label">Turn into</div>
-        {TURN_INTO_OPTIONS.map((option) => {
-          const active = selectedBlock === option.label;
-          return (
-            <button
-              key={option.label}
-              className={cn(
-                'cn-dropdown-menu-item flex w-full items-center text-start',
-                active && 'bg-accent text-accent-foreground'
-              )}
-              onClick={() => setSelectedBlock(option.label)}
-              type="button"
-            >
-              {option.icon}
-              <span>{option.label}</span>
-              {active && (
-                <IconPlaceholder
-                  className="ms-auto size-3.5"
-                  hugeicons="Tick02Icon"
-                  lucide="Check"
-                  phosphor="CheckIcon"
-                  remixicon="RiCheckLine"
-                  tabler="IconCheck"
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function ReviewCard({
-  kit,
-  suggestionEditor,
-}: {
-  kit: CreateSinkKit;
-  suggestionEditor: EditorReference;
-}) {
-  const { Avatar, AvatarFallback, Button, Editor, Input, Separator } = kit;
-  const [decision, setDecision] = React.useState<
-    'accepted' | 'pending' | 'rejected'
-  >('pending');
-  const [replyText, setReplyText] = React.useState('');
-  const [replies, setReplies] = React.useState<string[]>([]);
-
-  const submitReply = () => {
-    const trimmed = replyText.trim();
-    if (!trimmed) return;
-
-    setReplies((prev) => [...prev, trimmed]);
-    setReplyText('');
-  };
-
-  return (
-    <section
-      className="cn-card flex flex-col gap-3 bg-card p-4 text-card-foreground"
-      data-slot="card"
-    >
-      <EditorRoot editor={suggestionEditor} readOnly>
-        <Editor className="min-h-0 px-0 py-0 text-sm" variant="none" />
-      </EditorRoot>
-
-      <Separator />
-
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-center gap-2">
-          <Avatar size="sm">
-            <AvatarFallback className="bg-primary/15 text-xs font-medium text-primary">
-              BL
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className="font-medium text-foreground">Bob Lee</span>
-              <span className="text-muted-foreground">2m ago</span>
-            </div>
-          </div>
-          {decision === 'pending' ? (
-            <div className="flex items-center gap-1">
-              <Button
-                aria-label="Accept suggestion"
-                onClick={() => setDecision('accepted')}
-                size="icon-xs"
-                type="button"
-                variant="ghost"
-              >
-                <IconPlaceholder
-                  className="size-3.5"
-                  hugeicons="Tick02Icon"
-                  lucide="Check"
-                  phosphor="CheckIcon"
-                  remixicon="RiCheckLine"
-                  tabler="IconCheck"
-                />
-              </Button>
-              <Button
-                aria-label="Reject suggestion"
-                onClick={() => setDecision('rejected')}
-                size="icon-xs"
-                type="button"
-                variant="ghost"
-              >
-                <IconPlaceholder
-                  className="size-3.5"
-                  hugeicons="Cancel01Icon"
-                  lucide="X"
-                  phosphor="XIcon"
-                  remixicon="RiCloseLine"
-                  tabler="IconX"
-                />
-              </Button>
-            </div>
-          ) : (
-            <button
-              className={cn(
-                'cn-badge cursor-pointer',
-                decision === 'accepted'
-                  ? 'cn-badge-variant-default'
-                  : 'cn-badge-variant-secondary'
-              )}
-              onClick={() => setDecision('pending')}
-              type="button"
-            >
-              {decision === 'accepted' ? 'Accepted' : 'Rejected'}
-            </button>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="rounded-sm bg-editor-delete/15 px-1.5 py-0.5 text-editor-delete line-through">
-            legacy
-          </span>
-          <span className="text-muted-foreground">to</span>
-          <span className="rounded-sm bg-editor-insert/15 px-1.5 py-0.5 text-editor-insert">
-            composable
-          </span>
-        </div>
-
-        {replies.map((reply, index) => (
-          <div
-            key={`${reply}-${index}`}
-            className="rounded-md bg-muted/50 px-2.5 py-1.5 text-xs text-foreground"
-          >
-            <span className="font-medium">You: </span>
-            {reply}
-          </div>
-        ))}
-
-        <div className="flex items-center gap-2">
-          <Input
-            aria-label="Reply to thread"
-            className="h-8 text-xs"
-            onChange={(event) => setReplyText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                submitReply();
-              }
-            }}
-            placeholder="Reply..."
-            type="text"
-            value={replyText}
-          />
-          <Button
-            onClick={submitReply}
-            size="xs"
-            type="button"
-            variant="default"
-          >
-            Reply
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
+  return null;
 }
 
 export function CreateSink({ kit }: { kit: CreateSinkKit }) {
@@ -1186,10 +305,15 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
     AvatarFallback,
     AvatarGroup,
     Button,
+    calloutDetailsPlugins,
     codePlugins,
+    columnTocPlugins,
     docPlugins,
     Editor,
     FixedToolbar,
+    footnotePlugins,
+    mathPlugins,
+    mediaPlugins,
     suggestionPlugins,
     tablePlugins,
     Toolbar,
@@ -1207,6 +331,18 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
     initialValue: CODE_VALUE,
     plugins: [...codePlugins],
   });
+  const mathEditor = useCreateEditor({
+    initialValue: MATH_VALUE,
+    plugins: [...mathPlugins],
+  });
+  const calloutDetailsEditor = useCreateEditor({
+    initialValue: CALLOUT_DETAILS_VALUE,
+    plugins: [...calloutDetailsPlugins],
+  });
+  const footnoteEditor = useCreateEditor({
+    initialValue: FOOTNOTE_VALUE,
+    plugins: [...footnotePlugins],
+  });
   const suggestionEditor = useCreateEditor({
     initialValue: SUGGESTION_VALUE,
     plugins: [...suggestionPlugins],
@@ -1215,6 +351,14 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
   const tableEditor = useCreateEditor({
     initialValue: TABLE_VALUE,
     plugins: [...tablePlugins],
+  });
+  const columnTocEditor = useCreateEditor({
+    initialValue: COLUMN_TOC_VALUE,
+    plugins: [...columnTocPlugins],
+  });
+  const mediaEditor = useCreateEditor({
+    initialValue: MEDIA_VALUE,
+    plugins: [...mediaPlugins],
   });
 
   const appendParagraph = React.useCallback(
@@ -1250,6 +394,18 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
         return;
       }
 
+      if (label === 'Equation') {
+        docEditor.update.nodes.insert(
+          {
+            children: [{ text: '' }],
+            latex: 'E = mc^2',
+            type: 'equation',
+          },
+          { at: [docEditor.read.children().length] }
+        );
+        return;
+      }
+
       appendParagraph(`Inserted ${label.toLowerCase()} block.`);
     },
     [appendParagraph, docEditor]
@@ -1258,11 +414,11 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
   return (
     <TooltipProvider>
       <div
-        className="min-h-screen bg-muted/40 p-4 pb-16 sm:p-5 sm:pb-16 dark:bg-background"
+        className="min-h-screen bg-muted/40 p-4 pb-20 sm:p-5 sm:pb-20 dark:bg-background"
         data-slot="create-sink"
       >
         <EditorRoot editor={docEditor}>
-          <div className="mx-auto flex max-w-[1440px] flex-col gap-4">
+          <div className="mx-auto flex max-w-[1520px] flex-col gap-4">
             <div
               className="cn-card gap-0 overflow-hidden bg-card py-0 text-card-foreground"
               data-slot="card"
@@ -1324,6 +480,53 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                     />
                   </EditorRoot>
                 </section>
+
+                <section
+                  className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-4 text-card-foreground"
+                  data-slot="card"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium">Math &amp; LaTeX</span>
+                    <span className="text-muted-foreground">Click to edit</span>
+                  </div>
+                  <EditorRoot editor={mathEditor}>
+                    <Editor
+                      className="min-h-0 px-0 py-0 text-sm"
+                      variant="none"
+                    />
+                  </EditorRoot>
+                </section>
+
+                <section
+                  className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-4 text-card-foreground"
+                  data-slot="card"
+                >
+                  <div className="text-xs font-medium">
+                    Callouts &amp; details
+                  </div>
+                  <EditorRoot editor={calloutDetailsEditor}>
+                    <ExpandFirstDetails />
+                    <Editor
+                      className="min-h-0 px-0 py-0 text-sm"
+                      variant="none"
+                    />
+                  </EditorRoot>
+                </section>
+
+                <TypographySpecimenCard kit={kit} />
+
+                <section
+                  className="cn-card flex flex-col gap-2 bg-card p-4 text-card-foreground"
+                  data-slot="card"
+                >
+                  <div className="text-xs font-medium">Footnotes</div>
+                  <EditorRoot editor={footnoteEditor} readOnly>
+                    <Editor
+                      className="min-h-0 px-0 py-1 text-sm"
+                      variant="none"
+                    />
+                  </EditorRoot>
+                </section>
               </div>
 
               <div className="flex flex-col gap-4">
@@ -1333,9 +536,33 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                   </Toolbar>
                 </div>
 
+                <IconPreviewGridCard />
+
                 <AIAssistantCard kit={kit} onInsert={appendParagraph} />
 
                 <SlashCommandCard kit={kit} onPickCommand={handlePickCommand} />
+
+                <UIElementsCard kit={kit} />
+
+                <ColorPaletteCard kit={kit} />
+
+                <ShortcutsCard />
+
+                <section
+                  className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-4 text-card-foreground"
+                  data-slot="card"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium">Attachments</span>
+                    <span className="text-muted-foreground">MediaKit</span>
+                  </div>
+                  <EditorRoot editor={mediaEditor} readOnly>
+                    <Editor
+                      className="min-h-0 px-0 py-0 text-sm"
+                      variant="none"
+                    />
+                  </EditorRoot>
+                </section>
               </div>
 
               <div className="flex flex-col gap-4 md:col-span-2 lg:col-span-1">
@@ -1354,6 +581,27 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
                     />
                   </EditorRoot>
                 </section>
+
+                <section
+                  className="cn-card flex flex-col gap-2 overflow-hidden bg-card p-4 text-card-foreground"
+                  data-slot="card"
+                >
+                  <div className="text-xs font-medium">
+                    Outline &amp; columns
+                  </div>
+                  <EditorRoot editor={columnTocEditor} readOnly>
+                    <Editor
+                      className="min-h-0 px-0 py-0 text-sm [&_h2]:mt-0 [&_h2]:text-base [&_h3]:mt-0 [&_h3]:text-sm"
+                      variant="none"
+                    />
+                  </EditorRoot>
+                </section>
+
+                <CalendarCard kit={kit} />
+
+                <SelectEditorCard kit={kit} />
+
+                <CollaboratorsCard kit={kit} />
               </div>
             </div>
           </div>
