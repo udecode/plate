@@ -594,9 +594,9 @@ export type HistoryResult =
 export type HistoryRecordOptions<TValue = unknown> = Readonly<{
   /**
    * The owner's first write of the step while it still runs, resolved to the
-   * replay result. Until it settles, the redo steps this record would clear
-   * stay in `read.history().redos`, `hasRedo()` reads false, and redo replays
-   * nothing. Only a `blocked` answer takes the step back; `applied` or a
+   * replay result. Until it settles, unless another replay waits on its owner,
+   * the redo steps this record would clear stay in `read.history().redos`,
+   * `hasRedo()` reads false, and redo replays nothing. Only a `blocked` answer takes the step back; `applied` or a
    * rejection keeps it.
    */
   firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;

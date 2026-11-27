@@ -18,7 +18,8 @@ Return whether the undo branch has a surviving mapped batch.
 
 #### `editor.read.history.hasRedo(): boolean`
 
-Return whether the redo branch has a surviving mapped batch.
+Return whether the redo branch has a surviving mapped batch. It returns `false`
+while a first write holds the redo, which `redos` still lists.
 
 #### `editor.read.history.pending(): "undo" | "redo" | null`
 
@@ -58,14 +59,53 @@ batch has applied when the call returns. A live-session batch whose owner is
 still working returns `pending` and publishes its pending direction until
 `settled` resolves; `settled` never rejects. Document edits, selection updates,
 and collaborative imports continue during that wait; another replay returns
-`busy` without claiming a batch.
+`busy` without claiming a batch. Redo also returns `busy` while a first write
+holds the redo it cleared.
 
 `blocked` reports a refusal from the live-session owner. `failed` means the owner or the settlement threw; the error
 goes to the editor's `lifecycleErrorSink`. With no sink, it goes to
 `reportError`, or to `console.error` where `reportError` does not exist.
-`blocked` and `failed` both keep that batch at the branch head. Invalid runtime
-use, such as a replay inside an active read or update, throws. Replay always applies the
-complete document-wide batch, including changes in other roots.
+`blocked` and `failed` both keep that batch at the branch head, except that a
+first write that resolves `blocked` takes its step back even while an undo of
+that step waits. Invalid runtime use, such as a replay inside an active read or
+update, throws. Replay always applies the complete document-wide batch,
+including changes in other roots.
+
+#### `editor.api.history.record(effect, value, options?): HistoryRecordResult`
+
+Record one live-session step in its own update, outside any read or update,
+and return `recorded`. A read-only view returns `blocked` with `read-only`, and
+a guard that refuses the update returns its reason. `record` throws for an
+effect without a `replay` owner or that no installed plugin registers, and for
+a first write without a `then` method.
+
+`options.firstWrite` takes the promise of the owner's write while it still
+runs. Until it answers, the step stays in undo. When the record cleared a redo
+and no other live-session replay is pending, History holds that redo: `redos`
+still lists it, `hasRedo()` returns `false` and redo returns `busy`.
+`History.toJSON(editor)` leaves it out, and so does a restore of a read taken
+while History holds it. A later record with its own first write shares the
+hold. An edit that History records, a record without a first write, or an
+undo that applies drops the held redo. A skipped edit maps it like any other
+redo, and redo returns `empty` when no entry survives.
+
+A first write that resolves `blocked` takes the step back and gives back the
+redo it held, once no other first write still holds it. One that resolves
+`applied` or rejects keeps the step and drops the held redo. A rejection, or
+an answer of any other shape, reports with phase `apply` the way a failure
+does. Each undo of the step gets a promise of that answer as `firstWrite` in
+its replay context until an undo of the step applies. A redo, and a step
+recorded without a first write, get `null`.
+
+```typescript
+type HistoryRecordOptions<TValue> = Readonly<{
+  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;
+}>;
+
+type HistoryRecordResult =
+  | Readonly<{ reason: string; status: "blocked" }>
+  | Readonly<{ status: "recorded" }>;
+```
 
 ## Transaction API
 

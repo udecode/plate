@@ -4667,7 +4667,7 @@
           "kind": "type",
           "name": "HistoryRecordOptions",
           "runtime": false,
-          "signature": "type HistoryRecordOptions<TValue = unknown> = Readonly<{\n  /**\n   * The owner's first write of the step while it still runs, resolved to the\n   * replay result. Until it settles, the redo steps this record would clear\n   * stay in `read.history().redos`, `hasRedo()` reads false, and redo replays\n   * nothing. Only a `blocked` answer takes the step back; `applied` or a\n   * rejection keeps it.\n   */\n  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;\n}>;",
+          "signature": "type HistoryRecordOptions<TValue = unknown> = Readonly<{\n  /**\n   * The owner's first write of the step while it still runs, resolved to the\n   * replay result. Until it settles, unless another replay waits on its owner,\n   * the redo steps this record would clear stay in `read.history().redos`,\n   * `hasRedo()` reads false, and redo replays nothing. Only a `blocked` answer takes the step back; `applied` or a\n   * rejection keeps it.\n   */\n  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;\n}>;",
           "source": null,
           "typeParameters": [
             "TValue = unknown"
@@ -22215,7 +22215,7 @@
           "kind": "type",
           "name": "HistoryRecordOptions",
           "runtime": false,
-          "signature": "type HistoryRecordOptions<TValue = unknown> = Readonly<{\n  /**\n   * The owner's first write of the step while it still runs, resolved to the\n   * replay result. Until it settles, the redo steps this record would clear\n   * stay in `read.history().redos`, `hasRedo()` reads false, and redo replays\n   * nothing. Only a `blocked` answer takes the step back; `applied` or a\n   * rejection keeps it.\n   */\n  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;\n}>;",
+          "signature": "type HistoryRecordOptions<TValue = unknown> = Readonly<{\n  /**\n   * The owner's first write of the step while it still runs, resolved to the\n   * replay result. Until it settles, unless another replay waits on its owner,\n   * the redo steps this record would clear stay in `read.history().redos`,\n   * `hasRedo()` reads false, and redo replays nothing. Only a `blocked` answer takes the step back; `applied` or a\n   * rejection keeps it.\n   */\n  firstWrite?: Promise<EditorEffectHistoryReplayResult<TValue>>;\n}>;",
           "source": null,
           "typeParameters": [
             "TValue = unknown"

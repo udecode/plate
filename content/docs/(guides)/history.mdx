@@ -100,16 +100,152 @@ const editor = createEditor({ plugins: [ExternalValuePlugin] });
 
 const previous = externalValue.current;
 externalValue.current = "saved";
-editor.update((tx) => {
-  tx.effects.emit(externalValueEffect, { previous, value: "saved" });
-});
+editor.api.history.record(externalValueEffect, { previous, value: "saved" });
 ```
 
-The effect is local, effect-only, excluded from serialized History, and never
-merged with another batch. Return `{ status: "blocked", reason }` when the
-external owner cannot apply the transition. An applied result returns the exact
+Record the step with `editor.api.history.record` outside `editor.read(...)` and
+`editor.update(...)`, once the external value has changed. `tx.effects.emit` throws on an effect that
+owns a replay. The effect is local, effect-only, excluded from serialized
+History, and never merged with another batch. Return
+`{ status: "blocked", reason }` when the external owner cannot apply the
+transition. An applied result returns the exact
 transition the owner applied, including any canonical value returned by that
 owner.
+
+## Record a write that is still running
+
+When the external write is still running, such as a database save that the
+server can refuse, pass its promise as `firstWrite`. `writeCell` stands for the
+app's own save, and resolves to History's replay result. The server here
+answers 409 when it refuses the edit, so `writeCell` resolves `blocked` only
+then. It rejects when the outcome is unknown, because the save may still have
+landed. A save that lands answers with the value it replaced, so `writeCell`
+returns the exact transition the server applied.
+
+```typescript
+import {
+  createEditor,
+  defineEffect,
+  definePlugin,
+  type EditorEffectHistoryReplayResult,
+} from "platejs";
+
+type CellEdit = Readonly<{ cellId: string; previous: string; value: string }>;
+
+const invertCellEdit = ({ cellId, previous, value }: CellEdit): CellEdit => ({
+  cellId,
+  previous: value,
+  value: previous,
+});
+
+const writeCell = async (
+  edit: CellEdit
+): Promise<EditorEffectHistoryReplayResult<CellEdit>> => {
+  const response = await fetch(`/api/cells/${edit.cellId}`, {
+    body: JSON.stringify({ value: edit.value }),
+    method: "PUT",
+  });
+
+  if (response.status === 409) {
+    return { reason: "server-refused", status: "blocked" };
+  }
+  if (!response.ok) {
+    throw new Error(`Cell save failed with ${response.status}.`);
+  }
+
+  const { previous } = (await response.json()) as { previous: string };
+
+  return { status: "applied", value: { ...edit, previous } };
+};
+
+const cellEditEffect = defineEffect<CellEdit>({
+  history: {
+    replay: async (_editor, edit, { firstWrite }) => {
+      const first = await firstWrite?.catch(() => null);
+
+      if (first?.status === "blocked") {
+        return { status: "applied", value: edit };
+      }
+
+      return writeCell(first ? invertCellEdit(first.value) : edit);
+    },
+  },
+  invert: invertCellEdit,
+  key: "database.cell-edit",
+});
+const CellEditPlugin = definePlugin("cellEdit", {
+  effectTypes: [cellEditEffect],
+});
+const editor = createEditor({ plugins: [CellEditPlugin] });
+
+const edit = { cellId: "a1", previous: "Draft", value: "Final" };
+
+editor.api.history.record(cellEditEffect, edit, { firstWrite: writeCell(edit) });
+```
+
+`record` returns `{ status: "recorded" }` at once, because the app already
+started the write, and History watches the promise without waiting for it. A
+read-only view or a guard that refuses the update makes `record` return
+`blocked`, and the save then runs with no step to undo it.
+
+While the first write runs, the step stays in undo. When the record cleared a
+redo and no other live-session replay is pending, History holds that redo.
+`editor.read.history().redos` still lists it, `hasRedo()` returns `false`, and
+`redo()` returns `{ status: "busy" }`. `History.toJSON(editor)` leaves it out,
+and so does a restore of a read taken while History holds it. A later record
+with its own first write shares the hold. An edit that History records, a
+record without a first write, or an undo that applies drops the held redo. A
+skipped edit maps it like any other redo, and `redo()` returns
+`{ status: "empty" }` when no entry survives.
+
+The first write's answer decides the step:
+
+- `{ status: "blocked", reason }` takes the step back and gives back the redo
+  it held, once no other first write still holds it. An undo of the step that
+  is still waiting settles `{ status: "blocked", reason }` with that reason.
+  After an undo of the step applies, a blocked answer changes nothing.
+- `{ status: "applied", value }` keeps the step and drops the held redo.
+  History keeps the recorded value and hands the answer to the replay through
+  `firstWrite`.
+- A rejection keeps the step and drops the held redo too. History reports the
+  error once, with phase `apply`, to the editor's `lifecycleErrorSink`, or to
+  `reportError` or `console.error` when the editor has no sink. An applied
+  answer without `value`, or any other shape, counts as a rejection.
+
+Each undo of the step hands the replay a promise of the first write's answer
+as `firstWrite`, until an undo of the step applies. A redo, and a step recorded
+without a first write, get `null`. The replay above waits for that answer, so
+it sends its undo write only after the first write has answered:
+
+- An applied save carries the value the server replaced, so the undo writes
+  that value back.
+- A refused save never landed, so the undo applies without writing. When
+  History has already withdrawn the step, it settles the undo `blocked` and
+  drops this answer.
+- A rejected save may have landed, so the undo writes the recorded previous
+  value. The replay catches the rejection only because History already
+  reported it.
+
+The replay orders the two writes only on the client. When a save whose answer
+was lost can still land later, the server must order a cell's writes, for
+example by a version that each write sends, so that the undo lands last.
+
+When the editor may run without History, start the write before an optional
+`record` call, so the save runs either way. Without History nothing watches
+the save, so the app handles its rejection:
+
+```typescript
+import { HistoryPlugin } from "platejs";
+
+const firstWrite = writeCell(edit);
+const history = editor.plugin(HistoryPlugin);
+
+if (history.installed) {
+  history.api.record(cellEditEffect, edit, { firstWrite });
+} else {
+  firstWrite.catch(console.error);
+}
+```
 
 ## History object
 
@@ -176,7 +312,8 @@ type guard.
 
 #### `History.toJSON(editor): HistoryJSON`
 
-Encode the installed undo and redo stacks as validated JSON at version 7. The
+Encode the installed undo and redo stacks as validated JSON at version 7,
+leaving out a redo that a running first write holds. The
 envelope records the editor's schema identity, and each batch stores its `id`,
 canonical `DocumentChange`, registered effects, selection envelopes, and
 `unsettle`, `rest`, `carried` and `record` when it has them. `record` lists
@@ -246,7 +383,8 @@ Return whether the undo branch has a surviving mapped batch.
 
 #### `editor.read.history.hasRedo(): boolean`
 
-Return whether the redo branch has a surviving mapped batch.
+Return whether the redo branch has a surviving mapped batch. It returns `false`
+while a first write holds the redo, which `redos` still lists.
 
 #### `editor.read.history.pending(): "undo" | "redo" | null`
 
@@ -265,7 +403,8 @@ Replay the current redo batch.
 Both methods return `{ status: "applied" }` after a replay and
 `{ status: "empty" }` when no surviving batch exists. A replay requested while
 another live-session replay is pending returns `{ status: "busy" }` without
-claiming another batch.
+claiming another batch. Redo also returns `{ status: "busy" }` while a first
+write holds the redo it cleared.
 
 A live-session batch returns `{ status: "pending", settled }` while its
 external owner works, unless the owner answers synchronously.
@@ -279,9 +418,10 @@ external owner works, unless the owner answers synchronously.
   `reportError`, or `console.error` where `reportError` does not exist.
 
 A blocked or failed live-session replay leaves the same batch at the branch
-head. A document replay that throws while it resolves or applies its batch,
-for example because the schema rejects the restored document, reports the
-error the same way, drops that batch and returns `{ status: "failed" }`, so
+head, except that a first write that resolves `blocked` takes its step back
+even while an undo of that step waits. A document replay that throws while it
+resolves or applies its batch, for example because the schema rejects the
+restored document, reports the error the same way, drops that batch and returns `{ status: "failed" }`, so
 the next call replays the batch below. A batch below the head that can no
 longer map onto the document is dropped and reported the same way. The batch
 right below a dropped batch maps by comparing documents, so it can drop too
@@ -296,6 +436,20 @@ history batch can cover several document roots; replay always applies the
 complete batch. Live-session batches are effect-only, local to the current
 session, excluded from serialized History, and never merged with another
 batch.
+
+#### `editor.api.history.record(effect, value, options?): HistoryRecordResult`
+
+Record one live-session step in its own update and return
+`{ status: "recorded" }`. A read-only view returns
+`{ status: "blocked", reason: "read-only" }`, and a guard that refuses the
+update returns its reason. `options.firstWrite` takes the promise of a write
+that is still running, as
+[Record a write that is still running](#record-a-write-that-is-still-running)
+shows. `record` throws inside `editor.read(...)` or `editor.update(...)`, for
+an effect without a `replay` owner or that no installed plugin registers, and
+for a first write without a `then` method. History watches a first write
+before any other check, so its rejection still reports when `record` returns
+`blocked` or throws.
 
 #### `tx.history.restore(history): void`
 

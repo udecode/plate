@@ -262,8 +262,10 @@ element.
 
 `history.undo()` and `history.redo()` dispatch mounted UI actions and return
 `void`. `history.pending` is `"undo"`, `"redo"`, or `null`; `canUndo` and
-`canRedo` are both `false` while a live-session replay is pending. A repeated
-shortcut during that wait is consumed and reports a `busy` result.
+`canRedo` are both `false` while a live-session replay is pending, and
+`canRedo` is `false` while a first write holds the redo. A repeated shortcut
+while a replay is pending is consumed and reports a `busy` result, and so is a
+redo shortcut in the editor while a first write holds the redo.
 
 Use the model service when application code needs the outcome itself. It skips
 the rule above, so it replays a change no view shows. It returns synchronously;

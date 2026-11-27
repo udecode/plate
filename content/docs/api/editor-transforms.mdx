@@ -663,9 +663,11 @@ State-field writes emit the field's typed effect and list the field key in
 
 #### `tx.effects.emit(type, value)`
 
-Emit a typed effect. Installed state fields reduce effects during the same
-transaction. Effect descriptors define history inversion, collaboration policy,
-and mapping through canonical document changes.
+Emit a typed `push` or `skip` effect. Installed state fields reduce effects
+during the same transaction. Effect descriptors define history inversion,
+collaboration policy, and mapping through canonical document changes. An effect
+defined with `history: { replay }` records through
+`editor.api.history.record` outside any update, and `emit` throws on it.
 
 ## Correction methods
 

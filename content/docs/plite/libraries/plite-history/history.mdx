@@ -173,7 +173,8 @@ Return whether the undo branch has a surviving mapped batch.
 
 #### `editor.read.history.hasRedo(): boolean`
 
-Return whether the redo branch has a surviving mapped batch.
+Return whether the redo branch has a surviving mapped batch. It returns `false`
+while a first write holds the redo, which `redos` still lists.
 
 #### `editor.read.history.pending(): "undo" | "redo" | null`
 
@@ -192,7 +193,8 @@ Claim and replay the current redo batch.
 Both methods return `{ status: "applied" }` after a replay and
 `{ status: "empty" }` when no surviving batch exists. A replay requested while
 another live-session replay is pending returns `{ status: "busy" }` and does
-not claim another batch.
+not claim another batch. Redo also returns `{ status: "busy" }` while a first
+write holds the redo it cleared.
 
 A live-session batch returns `{ status: "pending", settled }` while its owner
 works, unless the owner answers synchronously. `settled` never rejects; it
@@ -201,8 +203,9 @@ owner refuses, or to `{ status: "failed" }` when the owner or the settlement
 threw. A failure goes to the editor's `lifecycleErrorSink`. With no sink, it
 goes to `reportError`, or to `console.error` where `reportError` does not
 exist. A blocked or failed live-session replay leaves the same batch at the
-branch head. A document replay that throws while it resolves or applies its
-batch, for example because the schema rejects the restored document, reports
+branch head, except that a first write that resolves `blocked` takes its step
+back even while an undo of that step waits. A document replay that throws
+while it resolves or applies its batch, for example because the schema rejects the restored document, reports
 the error the same way, drops that batch and returns `{ status: "failed" }`,
 so the next call replays the batch below. A batch below the head that can no
 longer map onto the document is dropped and reported the same way. The batch
@@ -223,6 +226,35 @@ history batch can cover several document roots; replay always applies the
 complete batch. A live-session batch is effect-only, local to the current
 session, excluded from serialized History, and never merged with another
 batch.
+
+#### `editor.api.history.record(effect, value, options?): HistoryRecordResult`
+
+Record one live-session step in its own update and return
+`{ status: "recorded" }`. Call it outside `editor.read(...)` and
+`editor.update(...)`. A read-only view returns
+`{ status: "blocked", reason: "read-only" }`, and a guard that refuses the
+update returns its reason. `record` throws for an effect without a `replay`
+owner or that no installed plugin registers, and for a first write without a
+`then` method.
+
+`options.firstWrite` takes the promise of the owner's write while it still
+runs. Until it answers, the step stays in undo. When the record cleared a redo
+and no other live-session replay is pending, History holds that redo: `redos`
+still lists it, `hasRedo()` returns `false` and redo returns
+`{ status: "busy" }`. `History.toJSON(editor)` leaves it out, and so does a
+restore of a read taken while History holds it. A later record with its own
+first write shares the hold. An edit that History records, a record without a
+first write, or an undo that applies drops the held redo. A skipped edit maps
+it like any other redo, and redo returns `{ status: "empty" }` when no entry
+survives.
+
+A first write that resolves `blocked` takes the step back and gives back the
+redo it held, once no other first write still holds it. One that resolves
+`applied` or rejects keeps the step and drops the held redo. A rejection, or
+an answer of any other shape, reports with phase `apply` the way a failure
+does. Each undo of the step gets a promise of that answer as `firstWrite` in
+its replay context until an undo of the step applies. A redo, and a step
+recorded without a first write, get `null`.
 
 #### `tx.history.restore(history): void`
 
