@@ -16933,7 +16933,8 @@ export const replaceTransformedSnapshot = (
       applyDocumentChangeStep(
         editor,
         builder.apply(
-          createInternalDocumentChange(new Map([[root, rootChange]]))
+          createInternalDocumentChange(new Map([[root, rootChange]])),
+          { origin: 'slice' }
         )
       );
     }

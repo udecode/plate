@@ -1,7 +1,12 @@
-import type { AnyEditor, NodeKey, RootKey } from '../interfaces/editor';
+import type {
+  AnyEditor,
+  EditorDocumentValue,
+  NodeKey,
+  RootKey,
+} from '../interfaces/editor';
 import { ElementApi, type Element } from '../interfaces/element';
 import type { Location } from '../interfaces/location';
-import { NodeApi } from '../interfaces/node';
+import { type Descendant, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
@@ -10,7 +15,10 @@ import { getEditorSchema } from './editor-runtime';
 import { definePluginPoint } from './plugin-point';
 import { getPluginContributions } from './plugin-registry';
 import { MAIN_ROOT_KEY } from './public-root';
-import { resolveLocationRoot } from './public-state';
+import {
+  getActiveEditorTransaction,
+  resolveLocationRoot,
+} from './public-state';
 import { readRootEntries } from './root-entries';
 
 export type NonWritableContentPredicate = (
@@ -66,15 +74,13 @@ export const isElementNonWritable = (
 
 const hasNonWritableElementInAncestors = (
   editor: AnyEditor,
+  value: EditorDocumentValue,
   path: Path,
   root: RootKey,
   includeReadOnly: boolean
 ): boolean => {
-  const children =
-    root === MAIN_ROOT_KEY
-      ? editor.read.value().children
-      : (editor.read.value().roots?.[root] ?? []);
-  let current = children;
+  let current: readonly Descendant[] =
+    root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
 
   for (const index of path) {
     const node = current[index];
@@ -89,6 +95,7 @@ const hasNonWritableElementInAncestors = (
 
 const hasNonWritableOwnerRoot = (
   editor: AnyEditor,
+  value: EditorDocumentValue,
   root: RootKey,
   includeReadOnly: boolean
 ): boolean => {
@@ -121,6 +128,7 @@ const hasNonWritableOwnerRoot = (
       if (
         hasNonWritableElementInAncestors(
           editor,
+          value,
           owner.path,
           ownerRoot,
           includeReadOnly
@@ -158,14 +166,12 @@ export const hasNonWritableDescendant = (
 };
 
 const getNodeInRoot = (
-  editor: AnyEditor,
+  value: EditorDocumentValue,
   root: RootKey,
   path: Path
 ): Element | undefined => {
-  let siblings =
-    root === MAIN_ROOT_KEY
-      ? editor.read.value().children
-      : (editor.read.value().roots?.[root] ?? []);
+  let siblings: readonly Descendant[] =
+    root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
   let current: unknown;
 
   for (const index of path) {
@@ -179,12 +185,13 @@ const getNodeInRoot = (
 
 const checkPathAndAncestors = (
   editor: AnyEditor,
+  value: EditorDocumentValue,
   path: Path,
   root: RootKey,
   includeReadOnly: boolean
 ): boolean =>
-  hasNonWritableOwnerRoot(editor, root, includeReadOnly) ||
-  hasNonWritableElementInAncestors(editor, path, root, includeReadOnly);
+  hasNonWritableOwnerRoot(editor, value, root, includeReadOnly) ||
+  hasNonWritableElementInAncestors(editor, value, path, root, includeReadOnly);
 
 /**
  * Return `true` when `at` (a `Location`, `NodeSelection`, or `NodeKey`) lies
@@ -200,28 +207,40 @@ export const hasNonWritableAt = (
   if (at == null) return false;
   if (!includeReadOnly && !hasNonWritableContributors(editor)) return false;
 
+  const state = getActiveEditorTransaction(editor) ?? editor.read;
+  const value = state.value();
   const targetRoot = resolveLocationRoot(editor, at);
 
-  if (hasNonWritableOwnerRoot(editor, targetRoot, includeReadOnly)) return true;
+  if (hasNonWritableOwnerRoot(editor, value, targetRoot, includeReadOnly)) {
+    return true;
+  }
 
   if (typeof at === 'string') {
-    const entry = editor.read.nodes.get(at);
+    const entry = state.nodes.get(at);
 
     if (!entry) return false;
 
-    return checkPathAndAncestors(editor, entry[1], targetRoot, includeReadOnly);
+    return checkPathAndAncestors(
+      editor,
+      value,
+      entry[1],
+      targetRoot,
+      includeReadOnly
+    );
   }
 
   if (SelectionApi.isNode(at)) {
     const checkContributors = hasNonWritableContributors(editor);
 
     for (const path of at.paths) {
-      if (checkPathAndAncestors(editor, path, targetRoot, includeReadOnly)) {
+      if (
+        checkPathAndAncestors(editor, value, path, targetRoot, includeReadOnly)
+      ) {
         return true;
       }
 
       if (checkContributors) {
-        const node = getNodeInRoot(editor, targetRoot, path);
+        const node = getNodeInRoot(value, targetRoot, path);
 
         if (node && hasNonWritableDescendant(editor, node, false)) {
           return true;
@@ -233,28 +252,47 @@ export const hasNonWritableAt = (
   }
 
   if (PathApi.isPath(at)) {
-    return checkPathAndAncestors(editor, at, targetRoot, includeReadOnly);
+    return checkPathAndAncestors(
+      editor,
+      value,
+      at,
+      targetRoot,
+      includeReadOnly
+    );
   }
 
   if (PointApi.isPoint(at)) {
-    return checkPathAndAncestors(editor, at.path, targetRoot, includeReadOnly);
+    return checkPathAndAncestors(
+      editor,
+      value,
+      at.path,
+      targetRoot,
+      includeReadOnly
+    );
   }
 
   if (RangeApi.isRange(at)) {
     if (
       checkPathAndAncestors(
         editor,
+        value,
         at.anchor.path,
         targetRoot,
         includeReadOnly
       ) ||
-      checkPathAndAncestors(editor, at.focus.path, targetRoot, includeReadOnly)
+      checkPathAndAncestors(
+        editor,
+        value,
+        at.focus.path,
+        targetRoot,
+        includeReadOnly
+      )
     ) {
       return true;
     }
 
     if (RangeApi.isExpanded(at) && hasNonWritableContributors(editor)) {
-      return editor.read.nodes.some({
+      return state.nodes.some({
         at,
         match: (node) =>
           NodeApi.isElement(node) &&

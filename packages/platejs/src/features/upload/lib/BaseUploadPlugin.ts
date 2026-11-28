@@ -1576,7 +1576,16 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                       'Upload fill takes the key of a live upload draft of its file kind.'
                     );
                   }
-                  if (hasNonWritableAt(updateEditor, key)) {
+                  if (tx.nodes.elementReadOnly({ at: key })) {
+                    throw new Error(
+                      'Upload fill cannot give a file to a draft inside a read-only element.'
+                    );
+                  }
+                  if (
+                    hasNonWritableAt(updateEditor, key, {
+                      includeReadOnly: false,
+                    })
+                  ) {
                     throw new Error(
                       'Upload fill cannot give a file to a draft inside a non-writable element.'
                     );
