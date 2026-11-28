@@ -41,12 +41,14 @@ import {
 import {
   isSelectableDOMSelection,
   resolveDOMRangeInRoot,
+  supersedeFocusRequest,
 } from '../../dom/plugin/dom-editor';
 import { resolvePliteNodePath } from '../../dom/plugin/dom-node-path';
 import {
   canWriteDOMSelection,
   clearEditableDOMSelection,
   isElementFocused,
+  isInactivePageFocus,
   readEditableDOMSelectionPoints,
 } from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
@@ -293,6 +295,14 @@ export const applyEditableBlur = ({
 
   if (isWebKitDOMHost(root)) {
     clearEditableDOMSelection(el, { editor, policy: 'owned' });
+  }
+
+  if (
+    isDOMElement(relatedTarget) &&
+    !containsShadowAware(el, relatedTarget) &&
+    !isInactivePageFocus(el, relatedTarget)
+  ) {
+    supersedeFocusRequest(editor);
   }
 
   IS_FOCUSED.delete(editor);

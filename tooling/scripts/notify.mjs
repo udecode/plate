@@ -156,7 +156,6 @@ const linkCommits = (text) => {
       }
       return whole;
     }
-    if (!namesCommit(hash)) return whole;
     for (const { dir, repo } of repos) {
       const sha = git(dir, [
         'rev-parse',
@@ -178,7 +177,7 @@ const linkCommits = (text) => {
         return commitLink(repo, sha, hash);
       }
     }
-    missing.push(hash);
+    if (namesCommit(hash)) missing.push(hash);
     return whole;
   });
   return { commits, linked, missing };

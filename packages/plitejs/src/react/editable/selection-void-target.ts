@@ -6,6 +6,7 @@ import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
 import {
   clearEditableDOMSelection,
   focusedElementOnPage,
+  isInactivePageFocus,
 } from '../../dom/plugin/dom-root-runtime';
 import { containsShadowAware } from '../../dom/utils/dom';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
@@ -332,7 +333,7 @@ export const selectThenFocusUnlessMoved = (
 
   if (
     !superseded() &&
-    (!after || after === before || after === after.ownerDocument.body)
+    (!after || after === before || isInactivePageFocus(root, after))
   ) {
     ReactEditor.focus(editor);
   }

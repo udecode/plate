@@ -443,6 +443,23 @@ const isReadOnlyRoot = (editable: Element, editor?: object) => {
   );
 };
 
+export const isInactivePageFocus = (
+  node: Node,
+  active: Element | null
+): boolean => {
+  if (!active) return true;
+
+  for (
+    let doc: Document | null = node.ownerDocument ?? (node as Document);
+    doc;
+    doc = doc.defaultView?.frameElement?.ownerDocument ?? null
+  ) {
+    if (active === doc.body || active === doc.documentElement) return true;
+  }
+
+  return false;
+};
+
 export const canWriteDOMSelection = (editable: Element, editor?: object) => {
   if (isElementFocused(editable)) return true;
   if (!isReadOnlyRoot(editable, editor)) return false;
@@ -451,8 +468,7 @@ export const canWriteDOMSelection = (editable: Element, editor?: object) => {
 
   return (
     !active ||
-    active === active.ownerDocument.body ||
-    active === active.ownerDocument.documentElement ||
+    isInactivePageFocus(editable, active) ||
     (containsShadowAware(editable, active) &&
       !isNestedEditableOrInput(editable, active))
   );
@@ -1041,15 +1057,7 @@ export const movedFocusElsewhere = (
     return false;
   }
 
-  const ownDoc = element.ownerDocument;
-  const topDoc = pageOf(ownDoc);
-
-  return (
-    after !== ownDoc.body &&
-    after !== ownDoc.documentElement &&
-    after !== topDoc.body &&
-    after !== topDoc.documentElement
-  );
+  return !isInactivePageFocus(element, after);
 };
 
 const outerElementOf = (element: Element) => {

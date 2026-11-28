@@ -158,6 +158,7 @@ import {
   hasMountedDOMRoot,
   hasMountedDocumentView,
   isElementFocused,
+  isInactivePageFocus,
   listenEditorDOMScope,
   movedFocusElsewhere,
   notifyEditorDOMScopeListeners,
@@ -2159,14 +2160,14 @@ const DOMEditorImpl: DOMEditorInterface = {
 
       const pageActive = focusedElementOnPage(el);
       const lostToInactiveHost =
-        pageActive === null ||
-        pageActive === pageActive.ownerDocument.body ||
+        isInactivePageFocus(el, pageActive) ||
         (rootActiveElement === null && activeElement === shadowHost) ||
         (activeElement !== null &&
           activeElement === ownedActiveElement &&
           !activeElement.isConnected);
 
       if (!lostToInactiveHost) {
+        supersedeFocusRequest(editor);
         return;
       }
 
