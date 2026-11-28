@@ -117,6 +117,8 @@ export interface NodeWrapNodesOptions<
   match?: NodeMatch<T>;
   type?: TType;
   mode?: MaximizeMode;
+  /** Unwrap existing wrappers of the same type atomically per block before wrapping. */
+  replace?: boolean;
   split?: boolean;
   voids?: boolean;
 }

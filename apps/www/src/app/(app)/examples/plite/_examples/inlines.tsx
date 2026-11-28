@@ -138,16 +138,6 @@ const inline = () =>
 
         let wrapped = true;
         const transaction = state.transaction((tx) => {
-          if (
-            tx.nodes.some({
-              match: (node) => NodeApi.isElement(node) && node.type === 'link',
-            })
-          ) {
-            tx.nodes.unwrap({
-              match: (node) => NodeApi.isElement(node) && node.type === 'link',
-            });
-          }
-
           const currentSelection = tx.selection();
 
           if (!currentSelection) return;
@@ -160,10 +150,21 @@ const inline = () =>
           };
 
           if (isCollapsed) {
+            if (
+              tx.nodes.some({
+                match: (node) =>
+                  NodeApi.isElement(node) && node.type === 'link',
+              })
+            ) {
+              tx.nodes.unwrap({
+                match: (node) =>
+                  NodeApi.isElement(node) && node.type === 'link',
+              });
+            }
             tx.nodes.insert(link);
             tx.selection.move({ unit: 'offset' });
           } else {
-            wrapped = tx.nodes.wrap(link, { split: true });
+            wrapped = tx.nodes.wrap(link, { replace: true, split: true });
           }
         });
 
@@ -258,16 +259,6 @@ const insertLinkText = (tx: EditorTransactionSpecBuilder, url: string) => {
 
   if (!selection) return false;
 
-  if (
-    tx.nodes.some({
-      match: (n) => NodeApi.isElement(n) && n.type === 'link',
-    })
-  ) {
-    tx.nodes.unwrap({
-      match: (n) => NodeApi.isElement(n) && n.type === 'link',
-    });
-  }
-
   const isCollapsed = RangeApi.isCollapsed(selection);
   const link: LinkElement = {
     type: 'link',
@@ -276,8 +267,17 @@ const insertLinkText = (tx: EditorTransactionSpecBuilder, url: string) => {
   };
 
   if (isCollapsed) {
+    if (
+      tx.nodes.some({
+        match: (n) => NodeApi.isElement(n) && n.type === 'link',
+      })
+    ) {
+      tx.nodes.unwrap({
+        match: (n) => NodeApi.isElement(n) && n.type === 'link',
+      });
+    }
     tx.nodes.insert(link);
-  } else if (tx.nodes.wrap(link, { split: true })) {
+  } else if (tx.nodes.wrap(link, { replace: true, split: true })) {
     tx.selection.collapse({ edge: 'end' });
   } else {
     return false;
@@ -357,16 +357,6 @@ const unwrapLink = (editor: Editor) => {
 
 const wrapLink = (editor: Editor, url: string) => {
   editor.update((tx) => {
-    if (
-      tx.nodes.some({
-        match: (node) => NodeApi.isElement(node) && node.type === 'link',
-      })
-    ) {
-      tx.nodes.unwrap({
-        match: (node) => NodeApi.isElement(node) && node.type === 'link',
-      });
-    }
-
     const selection = tx.selection();
 
     if (!selection) return;
@@ -379,10 +369,19 @@ const wrapLink = (editor: Editor, url: string) => {
     };
 
     if (isCollapsed) {
+      if (
+        tx.nodes.some({
+          match: (node) => NodeApi.isElement(node) && node.type === 'link',
+        })
+      ) {
+        tx.nodes.unwrap({
+          match: (node) => NodeApi.isElement(node) && node.type === 'link',
+        });
+      }
       tx.nodes.insert(link);
       tx.selection.move({ unit: 'offset' });
     } else {
-      tx.nodes.wrap(link, { split: true });
+      tx.nodes.wrap(link, { replace: true, split: true });
     }
   });
 

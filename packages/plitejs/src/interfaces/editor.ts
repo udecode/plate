@@ -1655,6 +1655,8 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
           at?: NodeSelectionTarget;
           match?: NodeMatch<NodeForTypeSelector<TType>>;
           mode?: MaximizeMode;
+          /** Unwrap existing wrappers of the same type atomically per block before wrapping. */
+          replace?: boolean;
           split?: boolean;
           type: TType;
           voids?: boolean;
@@ -1666,6 +1668,8 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
           at?: NodeSelectionTarget;
           match?: NodeMatch<NodeIn<V>>;
           mode?: MaximizeMode;
+          /** Unwrap existing wrappers of the same type atomically per block before wrapping. */
+          replace?: boolean;
           split?: boolean;
           type?: NodeTypeSelector;
           voids?: boolean;
@@ -1865,6 +1869,21 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
       at: Path;
       replace?: boolean;
       root?: NamedRootKey<TRoot>;
+    }>
+  ) => boolean;
+  /**
+   * Whether `element` can wrap the target location (or current selection when
+   * `at` is omitted) without violating schema content, non-writable guards, or
+   * write vetoes. On collapsed targets, tests whether an inline `element` can
+   * land in the containing block.
+   */
+  canWrap: <TRoot extends RootKey>(
+    element: Element,
+    options?: Readonly<{
+      at?: Location;
+      replace?: boolean;
+      root?: NamedRootKey<TRoot>;
+      split?: boolean;
     }>
   ) => boolean;
   /**

@@ -84,7 +84,7 @@ import {
 import { getPluginRegistry, type PluginRegistry } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
 import { verdictOf } from './property-validity';
-import { getEditorDocumentValue } from './public-state';
+import { evaluateSchemaCanWrap, getEditorDocumentValue } from './public-state';
 import { getValueRecords } from './record-store';
 import { assertValidElementId, isValidElementId } from './reserved-element-id';
 import {
@@ -308,11 +308,16 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root?: RootKey
     ) => boolean;
     canContainAtRoot: (child: Descendant, root?: RootKey) => boolean;
-    canWrap: (
+    canWrapChildren: (
       parent: Element | null,
       wrapper: Element,
       index?: number,
       root?: RootKey
+    ) => boolean;
+    holdsElementChildren: (
+      parent: Element,
+      children: readonly Descendant[],
+      options?: Readonly<{ ancestors?: readonly Element[]; root?: RootKey }>
     ) => boolean;
     emptyTextDrops: (
       at: Readonly<{
@@ -2332,7 +2337,33 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
-  const canWrap: InternalEditorSchemaApi<V>['canWrap'] = (
+  const holdsElementChildren: InternalEditorSchemaApi<V>['holdsElementChildren'] =
+    (parent, children, options = {}) => {
+      const schema = getDeclarativeSchema();
+      const content = getCompiledElement(parent)?.content;
+
+      if (!schema || !content) {
+        return children.every((child) => canContain(parent, child));
+      }
+
+      if (
+        children.length < content.min ||
+        (content.max !== null && children.length > content.max)
+      ) {
+        return false;
+      }
+
+      const context = {
+        ancestors: options.ancestors ?? [parent],
+        root: options.root ?? 'main',
+      };
+
+      return children.every((child, index) =>
+        contentAllowsAt(schema, content, child, index, context)
+      );
+    };
+
+  const canWrapChildren: InternalEditorSchemaApi<V>['canWrapChildren'] = (
     parent,
     wrapper,
     index,
@@ -2342,6 +2373,9 @@ export const createEditorSchema = <V extends Value = Value>(
       ? !!parent && canContain(parent, wrapper)
       : canContainAt(parent, wrapper, index, root)) &&
     wrapper.children.every((child) => canContain(wrapper, child));
+
+  const canWrap: EditorStateSchemaApi<V>['canWrap'] = (element, options) =>
+    evaluateSchemaCanWrap(getEditor(), element, options);
 
   const canPlaceIn = (
     ancestors: readonly Element[],
@@ -6379,6 +6413,8 @@ export const createEditorSchema = <V extends Value = Value>(
     canPlaceAt,
     canPlaceAtPath,
     canWrap,
+    canWrapChildren,
+    holdsElementChildren,
     canonicalizeTextPropertiesAt,
     canonicalizeTextPropertiesIn,
     canonicalizeChildren,

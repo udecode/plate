@@ -1,4 +1,9 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import {
+  contentPaths,
+  planInlineWrap,
+  trimToContent,
+} from '../core/inline-wrap';
 import { refuseVetoedWrite } from '../core/node-write-veto';
 import {
   applyBuiltDocumentChange,
@@ -11,11 +16,11 @@ import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
   type Element,
+  ElementApi,
   type Location,
   LocationApi,
   NodeApi,
   type Point,
-  type Range,
   RangeApi,
   SelectionApi,
 } from '../interfaces';
@@ -26,8 +31,9 @@ import {
   before as editorBefore,
   isBlock as editorIsBlock,
   isEdge as editorIsEdge,
+  isEnd as editorIsEnd,
+  isStart as editorIsStart,
   leaf as editorLeaf,
-  point as editorPoint,
   range as editorRange,
 } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
@@ -40,52 +46,27 @@ import { MAIN_ROOT_KEY, stripLocationRoots } from '../internal/root-location';
 import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
+import { mergeNodes } from './merge-nodes';
 import { splitNodesKeepingType } from './split-nodes';
 
-function* contentPaths(editor: Editor, range: Range) {
-  const [start, end] = RangeApi.edges(range);
-  const schema = getEditorSchema(editor);
+const mergeAdjacentTextRunsIn = (editor: Editor, parentPath: Path) => {
+  const [parent] = getNode(editor, parentPath);
 
-  for (const [node, path] of getNodes(editor, {
-    at: range,
-    match: (candidate) =>
-      NodeApi.isText(candidate) ||
-      (NodeApi.isElement(candidate) &&
-        schema.isInline(candidate) &&
-        schema.isVoid(candidate)),
-    mode: 'lowest',
-  })) {
+  if (!ElementApi.isElement(parent)) return;
+
+  for (let index = parent.children.length - 1; index > 0; index--) {
+    const [node] = getNode(editor, [...parentPath, index]);
+    const [previous] = getNode(editor, [...parentPath, index - 1]);
+
     if (
-      !NodeApi.isText(node) ||
-      (PathApi.equals(path, end.path) ? end.offset : node.text.length) >
-        (PathApi.equals(path, start.path) ? start.offset : 0)
+      NodeApi.isText(node) &&
+      NodeApi.isText(previous) &&
+      JSON.stringify(NodeApi.extractProps(node)) ===
+        JSON.stringify(NodeApi.extractProps(previous))
     ) {
-      yield path;
+      mergeNodes(editor, { at: [...parentPath, index] });
     }
   }
-}
-
-const trimToContent = (editor: Editor, range: Range): Range | null => {
-  let first: Path | undefined;
-  let last: Path | undefined;
-
-  for (const path of contentPaths(editor, range)) {
-    first ??= path;
-    last = path;
-  }
-
-  if (!first || !last) return null;
-
-  const [start, end] = RangeApi.edges(range);
-
-  return {
-    anchor: PathApi.equals(first, start.path)
-      ? start
-      : editorPoint(editor, first, { edge: 'start' }),
-    focus: PathApi.equals(last, end.path)
-      ? end
-      : editorPoint(editor, last, { edge: 'end' }),
-  };
 };
 
 export const wrapNodes = ((
@@ -96,6 +77,7 @@ export const wrapNodes = ((
   runEditorTransaction(editor, (tx) => {
     let target = tx.resolveTarget({ at: options.at });
     const mode = options.mode ?? 'lowest';
+    const replace = options.replace ?? false;
     const split = options.split ?? false;
     const schema = getEditorSchema(editor);
     const wrapsInline = schema.isInline(element);
@@ -138,6 +120,169 @@ export const wrapNodes = ((
 
         if (path) wrapNodes(editor, element, { ...options, at: path });
       }
+      return;
+    }
+
+    if (replace && trimsToContent && RangeApi.isRange(target)) {
+      const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
+      const plans = planInlineWrap(editor, wrapper, target, {
+        replace: true,
+        root,
+        split: true,
+      });
+
+      for (const plan of plans) {
+        if (plan.status === 'veto' && plan.vetoInput) {
+          refuseVetoedWrite(editor, plan.vetoInput);
+        }
+      }
+
+      const fitting = plans.filter((plan) => plan.status === 'fit');
+
+      if (fitting.length === 0) return;
+
+      const wasBackward = RangeApi.isBackward(target);
+      const selectionAnchor =
+        options.at == null
+          ? editor.anchor(target, {
+              association: 'inward',
+              deletion: 'nearest',
+            })
+          : null;
+      const blockAnchors = fitting
+        .map((plan) => ({
+          parentAnchor: editor.anchor(plan.parentPath, {
+            association: 'forward',
+            deletion: 'drop',
+          }),
+          rangeAnchor: editor.anchor(plan.range, {
+            association: 'inward',
+            deletion: 'nearest',
+          }),
+        }))
+        .toReversed();
+
+      for (const { parentAnchor, rangeAnchor } of blockAnchors) {
+        const currentParentPath = parentAnchor.resolve();
+        const currentRange = rangeAnchor.resolve();
+
+        if (!currentParentPath || !currentRange) {
+          parentAnchor.release();
+          rangeAnchor.release();
+          continue;
+        }
+
+        const [blockStart, blockEnd] = RangeApi.edges(currentRange);
+        const depth = currentParentPath.length;
+        const endChildPath = blockEnd.path.slice(0, depth + 1);
+
+        if (!editorIsEnd(editor, blockEnd, endChildPath)) {
+          const [endChild] = getNode(editor, endChildPath);
+
+          if (
+            NodeApi.isText(endChild) ||
+            (ElementApi.isElement(endChild) && endChild.type === wrapper.type)
+          ) {
+            splitNodesKeepingType(editor, {
+              always: true,
+              at: blockEnd,
+              match: (_node, path) => PathApi.equals(path, endChildPath),
+            });
+          }
+        }
+
+        const startChildPath = blockStart.path.slice(0, depth + 1);
+
+        if (!editorIsStart(editor, blockStart, startChildPath)) {
+          const [startChild] = getNode(editor, startChildPath);
+
+          if (
+            NodeApi.isText(startChild) ||
+            (ElementApi.isElement(startChild) &&
+              startChild.type === wrapper.type)
+          ) {
+            splitNodesKeepingType(editor, {
+              always: true,
+              at: blockStart,
+              match: (_node, path) => PathApi.equals(path, startChildPath),
+            });
+          }
+        }
+
+        const postSplitRange = rangeAnchor.resolve();
+        const postSplitParent = parentAnchor.resolve();
+        const trimmedAfterSplit = postSplitRange
+          ? trimToContent(editor, postSplitRange)
+          : null;
+
+        if (trimmedAfterSplit && postSplitParent) {
+          const [splitStart, splitEnd] = RangeApi.edges(trimmedAfterSplit);
+          const firstIndex = splitStart.path[postSplitParent.length];
+          const lastIndex = splitEnd.path[postSplitParent.length];
+          const replacePaths = Array.from(
+            getNodes(editor, {
+              at: trimmedAfterSplit,
+              match: (node, path) =>
+                ElementApi.isElement(node) &&
+                node.type === wrapper.type &&
+                path.length > postSplitParent.length &&
+                PathApi.isAncestor(postSplitParent, path) &&
+                path[postSplitParent.length] >= firstIndex &&
+                path[postSplitParent.length] <= lastIndex,
+              mode: 'all',
+            }),
+            ([, path]) => path
+          ).toReversed();
+
+          for (const replacePath of replacePaths) {
+            applyBuiltDocumentChange(editor, (builder, activeRoot) =>
+              builder.unwrapNode(activeRoot, replacePath)
+            );
+          }
+        }
+
+        const finalParentPath = parentAnchor.release();
+        const postUnwrapRange = rangeAnchor.release();
+        const finalRange = postUnwrapRange
+          ? trimToContent(editor, postUnwrapRange)
+          : null;
+
+        if (!finalParentPath || !finalRange) continue;
+
+        const [finalStart, finalEnd] = RangeApi.edges(finalRange);
+        const firstChildIndex = finalStart.path[finalParentPath.length];
+        const lastChildIndex = finalEnd.path[finalParentPath.length];
+        const count = lastChildIndex - firstChildIndex + 1;
+
+        applyBuiltDocumentChange(editor, (builder, activeRoot) =>
+          builder.wrapChildren(
+            activeRoot,
+            finalParentPath,
+            firstChildIndex,
+            count,
+            shell
+          )
+        );
+        if (count > 1) {
+          mergeAdjacentTextRunsIn(editor, [
+            ...finalParentPath,
+            firstChildIndex,
+          ]);
+        }
+      }
+
+      if (selectionAnchor) {
+        const mapped = selectionAnchor.release();
+
+        if (mapped) {
+          const directed = wasBackward
+            ? { anchor: mapped.focus, focus: mapped.anchor }
+            : mapped;
+
+          withoutPlacement(editor, () => select(editor, directed));
+        }
+      }
+
       return;
     }
 
@@ -213,7 +358,7 @@ export const wrapNodes = ((
       const depth = span.commonPath.length;
 
       return NodeApi.isElement(parent) &&
-        schema.canWrap(parent, {
+        schema.canWrapChildren(parent, {
           ...wrapper,
           children: parent.children.slice(
             span.firstPath[depth],

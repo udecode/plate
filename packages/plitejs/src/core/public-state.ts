@@ -361,6 +361,7 @@ import {
   topologyHolding,
 } from './identity-owner';
 import { normalizeEditorValue } from './initial-value';
+import { canWrapAtTarget } from './inline-wrap';
 import {
   getInsertRemainingLength,
   limitNodeInsert,
@@ -9450,7 +9451,7 @@ export const getUpdateView = <
             const [first] = run;
             const parent = state.nodes.parent(first)?.[0];
 
-            return schema.canWrap(
+            return schema.canWrapChildren(
               ElementApi.isElement(parent) ? parent : null,
               { ...props, children },
               first.at(-1) ?? 0,
@@ -10323,7 +10324,7 @@ export const getUpdateView = <
             const schema = getEditorSchema(editor);
 
             if (
-              !schema.canWrap(
+              !schema.canWrapChildren(
                 ElementApi.isElement(parent) ? parent : null,
                 wrapper,
                 at.at(-1) ?? 0,
@@ -12743,6 +12744,63 @@ const readCurrentSelection = (editor: Editor): SettledSelection => {
     : frame
       ? settleShown(getSetSite(owner), frame.root, frame.selection())
       : getSelectionStateCaret(owner).selection;
+};
+
+export const evaluateSchemaCanWrap = <V extends Value>(
+  editor: Editor<V>,
+  element: Element,
+  options: Readonly<{
+    at?: Location;
+    replace?: boolean;
+    root?: RootKey;
+    split?: boolean;
+  }> = {}
+): boolean => {
+  const target = options.at ?? getCurrentSelection(editor);
+
+  if (!target || SelectionApi.isNode(target)) return false;
+
+  if (options.root !== undefined) {
+    const explicitRoot = options.root;
+
+    assertDocumentRootKey(explicitRoot);
+
+    return withRoutedCallerScope(editor, () =>
+      withEditorRootChildren(editor, explicitRoot, () =>
+        hasLocationPath(editor, target)
+          ? canWrapAtTarget(
+              editor as unknown as Editor,
+              element,
+              stripLocationRoots(target),
+              {
+                replace: options.replace,
+                root: explicitRoot,
+                split: options.split,
+              }
+            )
+          : false
+      )
+    );
+  }
+
+  return withLocationRootRead(
+    editor,
+    target,
+    () =>
+      hasLocationPath(editor, target)
+        ? canWrapAtTarget(
+            editor as unknown as Editor,
+            element,
+            stripLocationRoots(target),
+            {
+              replace: options.replace,
+              root: getCurrentChildrenRoot(editor),
+              split: options.split,
+            }
+          )
+        : false,
+    { selectionFallback: options.at === undefined }
+  );
 };
 
 export const getCurrentSelection = (editor: Editor): SettledSelection =>
