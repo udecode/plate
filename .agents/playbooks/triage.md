@@ -78,9 +78,9 @@ Record with `--repo discussions`: `answered` (`--why`), `outdated` (`--why`, sta
 ## Fix
 
 1. **Claim first:** `pnpm triage claim` (`<N>`, `plate-private#<N>`, `--domain <scope> --repo plate-private`, or `--next --repo plate-private`) + `--session <id>`. Checks live holds (claims, assignees, PRs, 30d claim comments; 48h quiet prints `stale` and still holds) and auto-assigns `@me`. `--domain` never blocks on unrelated untriaged issues; `--next` skips untriaged issues with a one-line warning and claims the highest-priority triaged domain. Exit 1 stops the run. `--take <holds> --why "<words>"` requires owner authorization (only maintainers take others' holds).
-2. **Triage claimed group:** record any missing or stale issues in the group; re-claim if grouping changed.
-3. **Fix together:** one Bug fix run over all claimed kinds (2+ kinds on one owner = Redesign run; tag `[plate#N]`/`[plate-private#N]`; follow formal check skills).
-4. **Record fix or release:** after landing, record `fixed` (`--commit <sha>`, `--retest none` only for exact non-device browser replay, else `--retest "<steps>"`), post comments, or run `pnpm triage release <N>... --why "<reason>"`.
+2. **Triage claimed group:** record any missing or stale issues in the group; re-claim if grouping changed. Check `docs/plans/artifacts/queue.tsv` for matching-scope P0/P1 rows on the same owner and pull them into the run.
+3. **Fix together:** one Bug fix run over all claimed kinds and pulled `queue.tsv` rows (2+ failure kinds on one owner = Redesign run; tag `[plate#N]`/`[plate-private#N]`; follow formal check skills).
+4. **Record fix or release:** after landing, drop fixed `queue.tsv` rows. For any `plate-private` / team-reported issue, post one Discord notice via `notify` with a before-and-after `clip` attached (`--to <reporter>` when retest is needed, `--to channel` when `--retest none`, unless the commit carries a `Team:` trailer for `zbot`) before `pnpm triage record --outcome fixed` (`--commit <sha>`, `--retest none` only for exact non-device browser replay, else `--retest "<steps>"`), post comments, or run `pnpm triage release <N>... --why "<reason>"`.
 
 ## Steps
 

@@ -40,6 +40,7 @@ import {
   readLocalCiEvents,
   readLocalCiState,
   searchFirstBad,
+  settleCheckCommand,
   startsBrokenStreak,
 } from './local-ci-events.mjs';
 import {
@@ -67,6 +68,8 @@ const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
              latest events
   wait       block until an event the operator acts on, print it and exit
              --after <iso time>   only events written after that time
+  settle-check  judge which threads can be settled against state.tip
+             [--stdin | --session <id>...] [--ref <ref>]
   friction   queue what got in a zbot session's way for the operator;
              friction alone prints its commands
   install    start the launchd job that runs it every 20 minutes, as the
@@ -1041,10 +1044,87 @@ const wait = async (args) => {
   }
 };
 
+const isAncestor = (ancestor, descendant) =>
+  ancestor === descendant ||
+  git(main, ['merge-base', '--is-ancestor', ancestor, descendant]).status === 0;
+
+const parseCommitLines = (stdout) =>
+  stdout
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const [sha, rawSessions = ''] = line.split('\u001F');
+      return {
+        sessions: rawSessions
+          .split(',')
+          .map((value) => value.trim())
+          .filter(Boolean),
+        sha,
+      };
+    });
+
+const listSessionCommits = (state, ref) => {
+  const format = '%H%x1f%(trailers:key=Session,valueonly,separator=,)';
+  const recent = git(main, ['log', '-n', '50', `--format=${format}`, ref]);
+  if (recent.status !== 0) {
+    throw new Error(`git log ${ref}: ${recent.stderr.trim()}`);
+  }
+  const bySha = new Map();
+  for (const commit of parseCommitLines(recent.stdout)) {
+    bySha.set(commit.sha, commit);
+  }
+  for (const base of [state.green, state.tip]) {
+    if (!base || bySha.has(base) || !isAncestor(base, ref)) continue;
+    const range = git(main, ['log', `--format=${format}`, `${base}..${ref}`]);
+    if (range.status !== 0) continue;
+    for (const commit of parseCommitLines(range.stdout)) {
+      if (!bySha.has(commit.sha)) bySha.set(commit.sha, commit);
+    }
+  }
+  return [...bySha.values()];
+};
+
+const settleCheck = (args) => {
+  const fileCache = new Map();
+  const commitFiles = (sha) => {
+    if (!fileCache.has(sha)) {
+      const result = git(main, [
+        'diff-tree',
+        '--no-commit-id',
+        '--name-only',
+        '-r',
+        '-m',
+        '--first-parent',
+        '--root',
+        sha,
+      ]);
+      fileCache.set(
+        sha,
+        result.status === 0 ? result.stdout.split('\n').filter(Boolean) : []
+      );
+    }
+    return fileCache.get(sha);
+  };
+  return settleCheckCommand(common, args, {
+    commitFiles,
+    input: () => readFileSync(0, 'utf-8'),
+    isAncestor,
+    listCommits: listSessionCommits,
+  });
+};
+
 const friction = (args) =>
   frictionCommand(common, args, () => readFileSync(0, 'utf-8'));
 
-const commands = { friction, install, run, status, uninstall, wait };
+const commands = {
+  friction,
+  install,
+  run,
+  'settle-check': settleCheck,
+  status,
+  uninstall,
+  wait,
+};
 const [command, ...rest] = process.argv.slice(2);
 if (!commands[command]) {
   console.error(USAGE);
