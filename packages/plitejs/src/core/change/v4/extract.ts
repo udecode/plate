@@ -6,7 +6,7 @@ import {
   readRecord,
   recordSetIds,
 } from '../../record-store';
-import type { DocumentIndex } from '../document-index';
+import { DocumentIndex } from '../document-index';
 import { cloneJson, isRecord, jsonEqual, type JsonRecord } from '../json';
 import { lazyRootOf, visitRootNames } from '../lazy-root';
 import type {
@@ -750,7 +750,20 @@ const extractV4BetweenSparse = (
       deletedRoots.push(root);
       continue;
     }
-    if (!entry.beforeIndex || !entry.afterIndex) {
+    let { afterIndex, beforeIndex } = entry;
+
+    if (!beforeIndex && afterIndex) {
+      const beforeArr =
+        root === 'main' ? before.children : before.roots?.[root];
+
+      if (beforeArr) beforeIndex = DocumentIndex.fromValue(beforeArr);
+    } else if (beforeIndex && !afterIndex) {
+      const afterArr = root === 'main' ? after.children : after.roots?.[root];
+
+      if (afterArr) afterIndex = DocumentIndex.fromValue(afterArr);
+    }
+
+    if (!beforeIndex || !afterIndex) {
       // Plain array root alongside indexed roots: skip cheaply if identical by
       // reference, otherwise fall back to full extraction.
       const beforeArr =
@@ -771,9 +784,9 @@ const extractV4BetweenSparse = (
       return null;
     }
 
-    if (entry.beforeIndex === entry.afterIndex) continue;
+    if (beforeIndex === afterIndex) continue;
 
-    const ranges = entry.beforeIndex.changedChildren(entry.afterIndex);
+    const ranges = beforeIndex.changedChildren(afterIndex);
 
     if (ranges.length === 0) continue;
 
@@ -782,19 +795,18 @@ const extractV4BetweenSparse = (
     const offsets: number[] = [];
 
     for (const [fromBefore, toBefore, fromAfter, toAfter] of ranges) {
-      const wholeBefore =
-        fromBefore === 0 && toBefore === entry.beforeIndex.size;
-      const wholeAfter = fromAfter === 0 && toAfter === entry.afterIndex.size;
+      const wholeBefore = fromBefore === 0 && toBefore === beforeIndex.size;
+      const wholeAfter = fromAfter === 0 && toAfter === afterIndex.size;
 
       beforeSlices.push(
         wholeBefore
-          ? entry.beforeIndex.value
-          : entry.beforeIndex.nodes.slice(fromBefore, toBefore)
+          ? beforeIndex.value
+          : beforeIndex.nodes.slice(fromBefore, toBefore)
       );
       afterSlices.push(
         wholeAfter
-          ? entry.afterIndex.value
-          : entry.afterIndex.nodes.slice(fromAfter, toAfter)
+          ? afterIndex.value
+          : afterIndex.nodes.slice(fromAfter, toAfter)
       );
       offsets.push(fromAfter);
     }

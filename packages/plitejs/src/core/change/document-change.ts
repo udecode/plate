@@ -60,6 +60,7 @@ import {
   type JsonEditorValue,
   type JsonNode,
   type JsonPoint,
+  type JsonToken,
 } from './tokens';
 import type { PropertyModification } from './transform';
 import { applyV4RegisterSteps } from './v4/apply';
@@ -3051,6 +3052,182 @@ export const rebaseDocumentChange = (
   return { kind: 'pair', ...rebasedPair(a, b, value, options, records) };
 };
 
+const isBalancedElements = (tokens: readonly JsonToken[]) => {
+  if (
+    tokens.length < 2 ||
+    tokens[0].kind !== 'open' ||
+    tokens.at(-1)?.kind !== 'close'
+  ) {
+    return false;
+  }
+
+  let depth = 0;
+
+  for (const token of tokens) {
+    if (token.kind === 'open') depth += 1;
+    else if (token.kind === 'close') {
+      depth -= 1;
+      if (depth < 0) return false;
+    }
+  }
+
+  return depth === 0;
+};
+
+const isPureElementRemovalRootChange = (
+  change: RootChange,
+  document: DocumentIndex
+) => {
+  if (change.propertyChanges().length > 0) return false;
+
+  let sawRange = false;
+  let valid = true;
+
+  change.iterChangedRanges((fromA, toA, fromB, toB) => {
+    sawRange = true;
+    if (
+      !valid ||
+      toB !== fromB ||
+      toA <= fromA ||
+      !isBalancedElements(document.slice(fromA, toA).tokens)
+    ) {
+      valid = false;
+    }
+  });
+
+  return sawRange && valid;
+};
+
+const overlapsWithStructuralBoundaryRemoval = (
+  removal: RootChange,
+  edit: RootChange,
+  document: DocumentIndex
+) => {
+  const removalRanges: Array<readonly [number, number]> = [];
+
+  removal.iterChangedRanges((fromA, toA) => {
+    removalRanges.push([fromA, toA]);
+  });
+
+  let overlaps = false;
+  let removedClose = false;
+  let removedOpen = false;
+
+  edit.iterChangedRanges((fromA, toA) => {
+    if (
+      !overlaps &&
+      removalRanges.some(([rFrom, rTo]) => !(toA < rFrom || rTo < fromA))
+    ) {
+      overlaps = true;
+    }
+    if (toA <= fromA || (removedClose && removedOpen)) return;
+
+    for (const token of document.slice(fromA, toA).tokens) {
+      if (token.kind === 'close') removedClose = true;
+      else if (token.kind === 'open') removedOpen = true;
+      if (removedClose && removedOpen) break;
+    }
+  });
+
+  return overlaps && removedClose && removedOpen;
+};
+
+const isPureElementRemovalCandidate = (
+  change: DocumentChange,
+  value: JsonEditorValue
+) => {
+  const cached = DOCUMENT_CHANGE_V4_STEPS.get(change);
+
+  if (cached) {
+    return (
+      cached.length > 0 && cached.every((step) => step.op === 'remove_node')
+    );
+  }
+  if (
+    UNBOUND_V4_CHANGES.has(change) ||
+    change.createRoots.size > 0 ||
+    change.deleteRoots.size > 0 ||
+    getV4RegisterSteps(change).length > 0
+  ) {
+    return false;
+  }
+
+  const entries = [...getInternalDocumentChangeEntries(change)];
+
+  return (
+    entries.length > 0 &&
+    entries.every(([root, rootChange]) =>
+      isPureElementRemovalRootChange(rootChange, valueRootIndex(value, root))
+    )
+  );
+};
+
+const hasJoinOverlapCandidate = (
+  removal: DocumentChange,
+  edit: DocumentChange,
+  value: JsonEditorValue
+) => {
+  const cachedEdit = DOCUMENT_CHANGE_V4_STEPS.get(edit);
+
+  if (cachedEdit && !cachedEdit.some((step) => step.op === 'join_nodes')) {
+    return false;
+  }
+  if (UNBOUND_V4_CHANGES.has(removal) || UNBOUND_V4_CHANGES.has(edit)) {
+    return true;
+  }
+
+  for (const [root, removalRoot] of getInternalDocumentChangeEntries(removal)) {
+    const editRoot = getInternalDocumentRootChange(edit, root);
+
+    if (
+      editRoot &&
+      overlapsWithStructuralBoundaryRemoval(
+        removalRoot,
+        editRoot,
+        valueRootIndex(value, root)
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const rootsHaveIds = (
+  value: JsonEditorValue,
+  a: DocumentChange,
+  b: DocumentChange
+) => {
+  if (UNBOUND_V4_CHANGES.has(a) || UNBOUND_V4_CHANGES.has(b)) {
+    return allElementsHaveIds(value);
+  }
+
+  const roots = new Set([
+    ...[...getInternalDocumentChangeEntries(a)].map(([root]) => root),
+    ...[...getInternalDocumentChangeEntries(b)].map(([root]) => root),
+  ]);
+
+  for (const root of roots) {
+    const nodes = root === 'main' ? value.children : value.roots?.[root];
+
+    if (nodes && !nodesHaveIds(nodes)) return false;
+  }
+
+  return true;
+};
+
+const mayJoinOverSiblingRemoval = (
+  a: DocumentChange,
+  b: DocumentChange,
+  value: JsonEditorValue
+) =>
+  ((isPureElementRemovalCandidate(a, value) &&
+    hasJoinOverlapCandidate(a, b, value)) ||
+    (isPureElementRemovalCandidate(b, value) &&
+      hasJoinOverlapCandidate(b, a, value))) &&
+  rootsHaveIds(value, a, b);
+
 /** @internal */
 export const transformInternalDocumentChange = (
   a: DocumentChange,
@@ -3073,7 +3250,7 @@ export const transformInternalDocumentChange = (
       }
     : recordsRebasedOf(a, b);
 
-  if (options.replay && allElementsHaveIds(value)) {
+  if (options.replay && mayJoinOverSiblingRemoval(a, b, value)) {
     const aSteps = tryV4StepsOf(a, value, options.isSetValued);
     const bSteps = tryV4StepsOf(b, value, options.isSetValued);
 
