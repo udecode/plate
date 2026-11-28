@@ -4,19 +4,20 @@ import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   getSelectionRoot,
+  readEditor,
   runEditorTransaction,
+  withEditorRootChildren,
   withTransactionSpecDraftRead,
 } from '../core/public-state';
 import type {
   AnyEditor as Editor,
   EditorStaticApi,
 } from '../interfaces/editor';
-import { parent as editorParent } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
 import { PathApi } from '../interfaces/path';
-import { PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
+import { stripLocationRoots } from '../internal/root-location';
 import { applyAddMark } from './add-mark';
 import { applyRemoveMark } from './remove-mark';
 
@@ -37,22 +38,31 @@ export const applyToggleMark = (
       const schema = getEditorSchema(editor);
       const root = getSelectionRoot(editor, selection);
       const entries = withTransactionSpecDraftRead(editor, () =>
-        editor.read.selection.ranges().flatMap((range) =>
-          editor.read.nodes.toArray({
-            at: range,
-            match: NodeApi.isText,
-            voids: true,
-          })
-        )
-      ).filter(([, path]) => {
-        const [parentNode] = editorParent(editor, path);
+        withEditorRootChildren(editor, root, () =>
+          readEditor(editor, (state) =>
+            state.selection
+              .ranges()
+              .flatMap((range) =>
+                state.nodes.toArray({
+                  at: range,
+                  match: NodeApi.isText,
+                  voids: true,
+                })
+              )
+              .filter(([, path]) => {
+                const parentEntry = state.nodes.parent(path);
 
-        return (
-          NodeApi.isElement(parentNode) &&
-          schema.isTextPropertyAllowedAt(key, path, root) &&
-          (!schema.isVoid(parentNode) || schema.isMarkableVoid(parentNode))
-        );
-      });
+                return (
+                  !!parentEntry &&
+                  NodeApi.isElement(parentEntry[0]) &&
+                  schema.isTextPropertyAllowedAt(key, path, root) &&
+                  (!schema.isVoid(parentEntry[0]) ||
+                    schema.isMarkableVoid(parentEntry[0]))
+                );
+              })
+          )
+        )
+      );
       if (
         entries.length > 0 &&
         entries.every(([node]) => isActive(node[key as keyof typeof node]))
@@ -91,40 +101,50 @@ export const applyToggleMark = (
     let canonicalPath = selection.focus.path;
 
     if (!marks && RangeApi.isExpanded(selection)) {
-      const [rawStart, rawEnd] = RangeApi.edges(selection);
-      const eligible = withTransactionSpecDraftRead(editor, () => {
-        let start = rawStart;
-        const startEnd = editor.read.points.end(start.path);
+      const [rawStart, rawEnd] = RangeApi.edges(stripLocationRoots(selection));
+      const eligible = withTransactionSpecDraftRead(editor, () =>
+        withEditorRootChildren(editor, root, () =>
+          readEditor(editor, (state) => {
+            let start = rawStart;
+            const startEnd = state.points.end(start.path);
 
-        if (startEnd && PointApi.equals(start, startEnd)) {
-          const after = editor.read.points.after(start);
-
-          if (after) start = after;
-        }
-
-        return editor.read.nodes
-          .toArray({
-            at: { anchor: start, focus: rawEnd },
-            match: NodeApi.isText,
-            voids: true,
-          })
-          .filter(([, path]) => {
             if (
-              rawEnd.offset === 0 &&
-              PathApi.equals(path, rawEnd.path) &&
-              !PathApi.equals(start.path, rawEnd.path)
+              startEnd &&
+              start.offset === startEnd.offset &&
+              PathApi.equals(start.path, startEnd.path)
             ) {
-              return false;
-            }
-            const [parentNode] = editorParent(editor, path);
+              const after = state.points.after(start);
 
-            return (
-              NodeApi.isElement(parentNode) &&
-              schema.isTextPropertyAllowedAt(key, path, root) &&
-              (!schema.isVoid(parentNode) || schema.isMarkableVoid(parentNode))
-            );
-          });
-      });
+              if (after) start = stripLocationRoots(after);
+            }
+
+            return state.nodes
+              .toArray({
+                at: { anchor: start, focus: rawEnd },
+                match: NodeApi.isText,
+                voids: true,
+              })
+              .filter(([, path]) => {
+                if (
+                  rawEnd.offset === 0 &&
+                  PathApi.equals(path, rawEnd.path) &&
+                  !PathApi.equals(start.path, rawEnd.path)
+                ) {
+                  return false;
+                }
+                const parentEntry = state.nodes.parent(path);
+
+                return (
+                  !!parentEntry &&
+                  NodeApi.isElement(parentEntry[0]) &&
+                  schema.isTextPropertyAllowedAt(key, path, root) &&
+                  (!schema.isVoid(parentEntry[0]) ||
+                    schema.isMarkableVoid(parentEntry[0]))
+                );
+              });
+          })
+        )
+      );
 
       if (eligible.length === 0) return;
 
