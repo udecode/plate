@@ -16,6 +16,7 @@ import type {
   RegisteredPlugin,
   ValueOf,
 } from '../interfaces/editor';
+import { assertEditorNotDestroyed } from './editor-lifetime';
 import type { CompiledEditorSchema } from './schema-compiler';
 import {
   createSchemaContributionRegistry,
@@ -95,7 +96,10 @@ export type PluginRegistry<TEditor extends Editor = Editor> = {
   txGroups: Map<string, EditorTxGroupRegistration<TEditor>>;
 };
 
+type PluginTeardownState = { destroyRequested: boolean };
+
 type PluginRegistryStore = {
+  acquiring: boolean;
   base: PluginRegistry;
   baseInitialized: boolean;
   candidate: Readonly<{
@@ -105,6 +109,7 @@ type PluginRegistryStore = {
   configured: PluginRegistry;
   current: PluginRegistry;
   publishing: boolean;
+  teardown: PluginTeardownState | null;
 };
 
 export type EditorEffectTypeRegistration = Readonly<{
@@ -576,12 +581,14 @@ const createPluginRegistryStore = (): PluginRegistryStore => {
   const configured = finalizePluginRegistry(createPluginRegistry());
 
   return {
+    acquiring: false,
     base,
     baseInitialized: false,
     candidate: null,
     configured,
     current: mergeRegistries(configured, base),
     publishing: false,
+    teardown: null,
   };
 };
 
@@ -596,8 +603,49 @@ const getPluginRegistryStore = (editor: Editor) => {
   return store;
 };
 
+export const isPluginPublicationActive = (editor: Editor): boolean =>
+  getPluginRegistryStore(editor).publishing;
+
+export const isPluginAcquiring = (editor: Editor): boolean =>
+  getPluginRegistryStore(editor).acquiring;
+
+export const setPluginAcquiring = (editor: Editor, acquiring: boolean) => {
+  getPluginRegistryStore(editor).acquiring = acquiring;
+};
+
+export const getPluginTeardown = (editor: Editor): PluginTeardownState | null =>
+  getPluginRegistryStore(editor).teardown;
+
+export const setPluginTeardown = (
+  editor: Editor,
+  teardown: PluginTeardownState | null
+) => {
+  getPluginRegistryStore(editor).teardown = teardown;
+};
+
+export const assertCanMutatePlugins = (
+  editor: Editor,
+  action: 'install' | 'reconfigure' = 'install'
+) => {
+  assertEditorNotDestroyed(editor);
+  const store = getPluginRegistryStore(editor);
+
+  if (store.teardown) {
+    throw new Error(
+      store.teardown.destroyRequested
+        ? `Cannot ${action} plugins while destroying an editor.`
+        : `Cannot ${action} plugins while releasing an editor.`
+    );
+  }
+  if (store.acquiring) {
+    throw new Error(
+      `Cannot ${action} plugins while acquiring plugin resources.`
+    );
+  }
+};
+
 export const assertPluginPublicationInactive = (editor: Editor) => {
-  if (getPluginRegistryStore(editor).publishing) {
+  if (isPluginPublicationActive(editor)) {
     throw new Error(
       'editor writes cannot be started during plugin lifecycle publication'
     );

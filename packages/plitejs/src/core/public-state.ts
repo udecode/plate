@@ -399,6 +399,7 @@ import {
   PLUGIN_UPDATE_ORIGIN,
 } from './plugin-dispatch';
 import {
+  assertCanMutatePlugins,
   assertPluginPublicationInactive,
   type PluginRegistry,
   getCompiledEditorSchema,
@@ -2910,9 +2911,16 @@ const admitTransactionDraft = (editor: Editor) => {
   snapshot.settlement = { admitted, change };
 };
 
-/** Reject an external side effect while an editor transaction is speculative. */
+/** Reject an external side effect while an editor transaction or plugin publication is active. */
 export const assertEditorExternalMutationAllowed = (editor: Editor): void => {
-  if (getEditorTransactionDepth(getEditorRuntimeOwner(editor)) > 0) {
+  const owner = getEditorRuntimeOwner(editor);
+
+  assertEditorNotDestroyed(owner);
+  assertPluginPublicationInactive(owner);
+  if (
+    getEditorTransactionDepth(owner) > 0 ||
+    (TRANSACTION_SPEC_CONTEXTS.get(owner)?.length ?? 0) > 0
+  ) {
     throw new Error(
       'Yjs API mutations cannot run inside an editor update or transaction spec.'
     );
@@ -4959,6 +4967,8 @@ export const stagePluginCandidate = (
   options: PluginReconfigureOptions = {}
 ) => {
   const owner = getEditorRuntimeOwner(editor);
+
+  assertCanMutatePlugins(owner, 'reconfigure');
   const snapshot = getTransactionSnapshot(owner);
 
   if (!snapshot) {
@@ -12091,6 +12101,10 @@ export const updateEditor = <
 
   assertEditorNotDestroyed(owner);
   if (isInTransaction(owner)) {
+    throw new Error('editor.update cannot be nested inside another update');
+  }
+  assertPluginPublicationInactive(owner);
+  if ((TRANSACTION_SPEC_CONTEXTS.get(owner)?.length ?? 0) > 0) {
     throw new Error('editor.update cannot be nested inside another update');
   }
 

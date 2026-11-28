@@ -5669,7 +5669,13 @@ export const compileSliceFitter = <V extends Value>(
           const content = getRootContent(root, innerInput2);
 
           if (!content?.min) continue;
-          const children = fitDirectContent(schema, content, [], [], { root });
+          const provided = Object.hasOwn(inputRoots, root)
+            ? inputRoots[root]
+            : undefined;
+          const children =
+            (provided && provided.length > 0
+              ? fitDirectContent(schema, content, provided, [], { root })
+              : null) ?? fitDirectContent(schema, content, [], [], { root });
 
           if (!children) {
             throw new Error(

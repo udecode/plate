@@ -47,11 +47,7 @@ import {
   readDocumentRecord,
   rejectEditorRecord,
 } from './document-shape';
-import {
-  assertEditorNotDestroyed,
-  getEditorLifetime,
-  setEditorLifetime,
-} from './editor-lifetime';
+import { getEditorLifetime, setEditorLifetime } from './editor-lifetime';
 import {
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
@@ -72,12 +68,16 @@ import {
 import { callPluginUpdateMethod, resolvePluginMethod } from './plugin-dispatch';
 import { getPluginContributionValue } from './plugin-point';
 import {
+  assertCanMutatePlugins,
   createPluginRegistry,
   finalizePluginRegistry,
   getConfiguredPluginRegistry,
   getPluginContributions,
   getPluginRegistry,
+  getPluginTeardown,
   getRegistryContributions,
+  isPluginAcquiring,
+  isPluginPublicationActive,
   type PluginRegistry,
   type PublishedConfiguredPluginRegistry,
   publishConfiguredPluginRegistry,
@@ -94,6 +94,8 @@ import {
   registerTextChangeListenerInRegistry,
   registerTransactionChangeListenerInRegistry,
   registerTxGroupInRegistry,
+  setPluginAcquiring,
+  setPluginTeardown,
   validateConfiguredPluginRegistry,
 } from './plugin-registry';
 import { getPluginSlotInput } from './plugin-slot';
@@ -288,13 +290,11 @@ type PluginRuntimeDefinition = PluginDefinitionInput &
   Readonly<{ name: string }>;
 
 type PluginState = {
-  acquiring: boolean;
   afterAcquisition: Array<
     Readonly<{ callback: () => void; pluginName: string }>
   >;
   nextOrder: number;
   records: Map<string, PluginRecord>;
-  teardown: { destroyRequested: boolean } | null;
 };
 
 type PluginCleanup = (context: PluginCleanupContext) => void;
@@ -303,7 +303,7 @@ type PluginActivation = {
   abortController: AbortController;
   active: boolean;
   afterPublishCallbacks: Array<() => void>;
-  beforePublishCallbacks: Array<() => void>;
+  beforePublishCallbacks: Array<() => unknown>;
   beforePublishCalled: boolean;
   cleanups: PluginCleanup[];
   published: boolean;
@@ -407,11 +407,9 @@ const getPluginState = (editor: Editor) => {
 
   if (!state) {
     state = {
-      acquiring: false,
       afterAcquisition: [],
       nextOrder: 0,
       records: new Map(),
-      teardown: null,
     };
     PLUGIN_STATE.set(owner, state);
   }
@@ -596,6 +594,7 @@ const getPluginSlotId = (pluginName: string, slot: string) =>
 
 const resolveLatestPluginEntries = (entriesInput: readonly PluginEntry[]) => {
   const entries = new Map<string, PluginEntry | null>();
+  const identities = new Map<string, PluginReference>();
   const fields = new Map<string, EditorStateField<any>>();
 
   for (const entry of entriesInput) {
@@ -609,14 +608,16 @@ const resolveLatestPluginEntries = (entriesInput: readonly PluginEntry[]) => {
         ).join(', ')}).`
       );
     }
-    if (definition.enabled === false) {
-      const known = entries.get(descriptor.name);
+    const knownIdentity = identities.get(descriptor.name);
 
-      if (known && known.descriptor !== descriptor) {
-        throw new Error(
-          `Editor plugin "${descriptor.name}" has multiple descriptor identities in the same configuration.`
-        );
-      }
+    if (knownIdentity && knownIdentity !== descriptor) {
+      throw new Error(
+        `Editor plugin "${descriptor.name}" has multiple descriptor identities in the same configuration.`
+      );
+    }
+    identities.set(descriptor.name, descriptor);
+
+    if (definition.enabled === false) {
       entries.delete(descriptor.name);
       entries.set(descriptor.name, null);
       continue;
@@ -633,12 +634,6 @@ const resolveLatestPluginEntries = (entriesInput: readonly PluginEntry[]) => {
     }
 
     const known = entries.get(descriptor.name);
-
-    if (known && known.descriptor !== descriptor) {
-      throw new Error(
-        `Editor plugin "${descriptor.name}" has multiple descriptor identities in the same configuration.`
-      );
-    }
     const merged = known
       ? {
           ...known,
@@ -1557,10 +1552,9 @@ const acquirePluginRecords = (
   editor: Editor,
   records: readonly PluginRecord[]
 ) => {
-  const state = getPluginState(editor);
   const touched: PluginRecord[] = [];
 
-  state.acquiring = true;
+  setPluginAcquiring(editor, true);
   try {
     for (const record of records) {
       const { activation } = record;
@@ -1591,7 +1585,7 @@ const acquirePluginRecords = (
       }
     }
   } finally {
-    state.acquiring = false;
+    setPluginAcquiring(editor, false);
   }
 };
 
@@ -1601,7 +1595,12 @@ const flushAfterAcquisition = (editor: Editor) => {
 
   state.afterAcquisition = [];
   for (const { callback, pluginName } of callbacks) {
-    if (getEditorLifetime(editor) === 'destroyed' || state.teardown) break;
+    if (
+      getEditorLifetime(editor) === 'destroyed' ||
+      getPluginTeardown(editor)
+    ) {
+      break;
+    }
     try {
       callback();
     } catch (error) {
@@ -1654,22 +1653,31 @@ export const startEditor = (editor: Editor) => {
 const runEditorTeardown = (editor: Editor, destroy: boolean) => {
   const state = getPluginState(editor);
 
-  if (state.acquiring) {
+  if (isPluginAcquiring(editor)) {
     throw new Error(
       destroy
         ? 'Cannot destroy an editor while acquiring plugin resources.'
         : 'Cannot release an editor while acquiring plugin resources.'
     );
   }
+  if (isPluginPublicationActive(editor)) {
+    throw new Error(
+      destroy
+        ? 'Cannot destroy an editor during plugin lifecycle publication.'
+        : 'Cannot release an editor during plugin lifecycle publication.'
+    );
+  }
   if (getEditorLifetime(editor) === 'destroyed') return;
-  if (state.teardown) {
-    if (destroy) state.teardown.destroyRequested = true;
+  const activeTeardown = getPluginTeardown(editor);
+
+  if (activeTeardown) {
+    if (destroy) activeTeardown.destroyRequested = true;
     return;
   }
 
   const teardown = { destroyRequested: destroy };
 
-  state.teardown = teardown;
+  setPluginTeardown(editor, teardown);
   try {
     setEditorLifetime(editor, 'released');
     releasePluginRecords(getInstalledRecordsInOrder(state), 'remove');
@@ -1688,7 +1696,7 @@ const runEditorTeardown = (editor: Editor, destroy: boolean) => {
       setEditorLifetime(editor, 'destroyed');
     }
   } finally {
-    state.teardown = null;
+    setPluginTeardown(editor, null);
   }
 };
 
@@ -2965,9 +2973,19 @@ const prepareRecordPublication = <TEditor extends Editor>(
   let beforePublishCalled = false;
   let registryPublication: PublishedConfiguredPluginRegistry | null = null;
 
+  const runGuardedRollback = (fn: () => void) => {
+    if (isPluginPublicationActive(editor)) {
+      fn();
+      return;
+    }
+    runWithPluginPublicationGuard(editor, fn);
+  };
+
   const rollbackPublication = () => {
     if (phase === 'prepared') {
-      reportRollbackErrors(rollbackStagedActivations());
+      runGuardedRollback(() => {
+        reportRollbackErrors(rollbackStagedActivations());
+      });
       disposeDraftFields();
       phase = 'cancelled';
       return;
@@ -2998,7 +3016,6 @@ const prepareRecordPublication = <TEditor extends Editor>(
             try {
               for (const callback of activation.beforePublishCallbacks) {
                 assertSynchronousLifecycleResult(
-                  // oxlint-disable-next-line typescript/no-confusing-void-expression -- Runtime plugins can return a Promise despite the declared void contract.
                   callback(),
                   `Editor plugin "${record.descriptor.name}" before-publish callback`
                 );
@@ -3042,7 +3059,9 @@ const prepareRecordPublication = <TEditor extends Editor>(
         getConfiguredPluginRegistry(editor) !== previousRegistry ||
         getPluginRegistry(editor) !== previousCurrentRegistry
       ) {
-        reportRollbackErrors(rollbackStagedActivations());
+        runGuardedRollback(() => {
+          reportRollbackErrors(rollbackStagedActivations());
+        });
         disposeDraftFields();
         phase = 'cancelled';
         throw new Error(
@@ -3062,7 +3081,9 @@ const prepareRecordPublication = <TEditor extends Editor>(
         );
         phase = 'published';
       } catch (error) {
-        reportRollbackErrors(rollbackStagedActivations());
+        runGuardedRollback(() => {
+          reportRollbackErrors(rollbackStagedActivations());
+        });
         restorePreviousApis();
         state.records = previousRecords;
         state.nextOrder = previousNextOrder;
@@ -3122,7 +3143,12 @@ const prepareRecordPublication = <TEditor extends Editor>(
 
       flushAfterAcquisition(editor);
       for (const record of activatedRecords) {
-        if (getEditorLifetime(editor) === 'destroyed' || state.teardown) break;
+        if (
+          getEditorLifetime(editor) === 'destroyed' ||
+          getPluginTeardown(editor)
+        ) {
+          break;
+        }
         runPluginAfterPublish(record.editor, record);
       }
     },
@@ -3481,19 +3507,7 @@ export const extendEditor = (
   input: PluginInput,
   options: PluginReconfigureOptions = {}
 ): ReturnType<Editor['install']> => {
-  assertEditorNotDestroyed(editor);
-  const pluginState = getPluginState(editor);
-
-  if (pluginState.teardown) {
-    throw new Error(
-      pluginState.teardown.destroyRequested
-        ? 'Cannot install plugins while destroying an editor.'
-        : 'Cannot install plugins while releasing an editor.'
-    );
-  }
-  if (pluginState.acquiring) {
-    throw new Error('Cannot install plugins while acquiring plugin resources.');
-  }
+  assertCanMutatePlugins(editor, 'install');
   assertNoOpenDraft(editor, INSTALL_REFUSAL);
 
   let cleanup: ReturnType<Editor['install']> = () => {};
@@ -3515,7 +3529,7 @@ export const extendEditor = (
   return (uninstallOptions) => {
     if (
       getEditorLifetime(editor) === 'destroyed' ||
-      getPluginState(editor).teardown !== null
+      getPluginTeardown(editor) !== null
     ) {
       return;
     }
