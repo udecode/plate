@@ -2,6 +2,7 @@ import type {
   AnyEditor as Editor,
   EditorUpdateTag,
 } from '../interfaces/editor';
+import { getEditorRuntimeOwner } from './editor-runtime';
 import { reduceEditorUpdateTags } from './update-policy';
 
 const UPDATE_TAG_CONTEXT = new WeakMap<Editor, EditorUpdateTag[][]>();
@@ -12,16 +13,18 @@ export const pushUpdateTagContext = (
   editor: Editor,
   tags: readonly EditorUpdateTag[]
 ) => {
-  const stack = UPDATE_TAG_CONTEXT.get(editor) ?? [];
+  const owner = getEditorRuntimeOwner(editor);
+  const stack = UPDATE_TAG_CONTEXT.get(owner) ?? [];
   const nextTags = [
     ...reduceEditorUpdateTags([...(stack.at(-1) ?? []), ...tags]),
   ];
   stack.push(nextTags);
-  UPDATE_TAG_CONTEXT.set(editor, stack);
+  UPDATE_TAG_CONTEXT.set(owner, stack);
 };
 
 export const popUpdateTagContext = (editor: Editor) => {
-  const stack = UPDATE_TAG_CONTEXT.get(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const stack = UPDATE_TAG_CONTEXT.get(owner);
 
   if (!stack) {
     return;
@@ -30,23 +33,24 @@ export const popUpdateTagContext = (editor: Editor) => {
   stack.pop();
 
   if (stack.length === 0) {
-    UPDATE_TAG_CONTEXT.delete(editor);
+    UPDATE_TAG_CONTEXT.delete(owner);
   }
 };
 
 export const withoutUpdateTagContext = <T>(editor: Editor, fn: () => T): T => {
-  const stack = UPDATE_TAG_CONTEXT.get(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const stack = UPDATE_TAG_CONTEXT.get(owner);
 
   if (!stack) return fn();
 
-  UPDATE_TAG_CONTEXT.delete(editor);
+  UPDATE_TAG_CONTEXT.delete(owner);
 
   try {
     return fn();
   } finally {
-    UPDATE_TAG_CONTEXT.set(editor, stack);
+    UPDATE_TAG_CONTEXT.set(owner, stack);
   }
 };
 
 export const getCurrentUpdateTags = (editor: Editor) =>
-  UPDATE_TAG_CONTEXT.get(editor)?.at(-1) ?? [];
+  UPDATE_TAG_CONTEXT.get(getEditorRuntimeOwner(editor))?.at(-1) ?? [];

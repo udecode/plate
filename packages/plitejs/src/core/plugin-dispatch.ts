@@ -12,7 +12,7 @@ import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import {
   callAtElementIds,
-  COMMAND_FRAMES,
+  isInCommandFrame,
   placeElementIdIn,
   runInEditorCommandFrame,
   runSelectionOnlyInEditorUpdate,
@@ -242,7 +242,7 @@ export const dispatchPluginUpdate = (
     return named;
   };
   const opensFrame =
-    !COMMAND_FRAMES.has(editor) && (!isView || locatesElementId());
+    !isInCommandFrame(editor) && (!isView || locatesElementId());
 
   if (opensFrame) {
     let result: unknown;

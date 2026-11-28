@@ -7,9 +7,14 @@ import {
   withEditorUpdateRoot,
 } from '../core/public-state';
 import { refuseCrossing } from '../core/set-root';
-import type { EditorStaticApi } from '../interfaces/editor';
+import type {
+  AnyEditor,
+  EditorFragmentDeletionOptions,
+  EditorStaticApi,
+} from '../interfaces/editor';
+import type { Location } from '../interfaces/location';
 import { RangeApi } from '../interfaces/range';
-import { SelectionApi } from '../interfaces/selection';
+import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
 import { deleteText } from '../transforms-text/delete-text';
 import { applyDelete } from './delete-backward';
@@ -18,9 +23,16 @@ import {
   refusesReadOnlyWrite,
 } from './element-read-only';
 
-export const applyDeleteFragment: EditorStaticApi['deleteFragment'] = (
-  editor,
-  { at, direction = 'forward' } = {}
+export type InternalFragmentDeletionOptions = Omit<
+  EditorFragmentDeletionOptions,
+  'at'
+> & {
+  at?: Location | NodeSelection;
+};
+
+export const applyDeleteFragment = (
+  editor: AnyEditor,
+  { at, direction = 'forward' }: InternalFragmentDeletionOptions = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
     const selection = tx.resolveTarget({ at });

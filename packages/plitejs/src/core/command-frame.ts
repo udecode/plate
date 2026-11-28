@@ -126,7 +126,11 @@ import { countCoreWork } from './work';
  *
  * @internal
  */
-export const COMMAND_FRAMES = new WeakSet<Editor>();
+const COMMAND_FRAMES = new WeakSet<Editor>();
+
+/** @internal */
+export const isInCommandFrame = (editor: Editor): boolean =>
+  COMMAND_FRAMES.has(getEditorRuntimeOwner(editor));
 
 type FramedOn = Readonly<{
   children: readonly Descendant[];
@@ -203,7 +207,7 @@ export const probeInEditorCommandFrame = <T>(
 }> | null => {
   const document = getEditorCommandDocument(editor);
 
-  if (!document || COMMAND_FRAMES.has(editor)) return null;
+  if (!document || isInCommandFrame(editor)) return null;
 
   const stored = (getTransactionSnapshot(editor)?.builder.value ??
     getEditorDocumentValue(editor)) as EditorDocumentValue;
@@ -262,7 +266,9 @@ export const probeInEditorCommandFrame = <T>(
   const frame = createTransactionSpecContext(editor);
   const { snapshot } = frame;
 
-  COMMAND_FRAMES.add(editor);
+  const frameOwner = getEditorRuntimeOwner(editor);
+
+  COMMAND_FRAMES.add(frameOwner);
   try {
     enterFrameDraft(
       editor,
@@ -288,7 +294,7 @@ export const probeInEditorCommandFrame = <T>(
 
     return { located: placed.located(), moved, stored, value };
   } finally {
-    COMMAND_FRAMES.delete(editor);
+    COMMAND_FRAMES.delete(frameOwner);
     disposeTransactionSpecContext(editor, frame);
   }
 };
@@ -421,7 +427,7 @@ export const unframedPlace = (editor: Editor): EditorCommandPlace =>
       if (id !== undefined) return lookupElementId(editor, id)?.key ?? null;
 
       const hiddenFromFrame =
-        COMMAND_FRAMES.has(getEditorRuntimeOwner(editor)) &&
+        isInCommandFrame(editor) &&
         (typeof at === 'string' || NodeApi.isDescendant(at)) &&
         getNodeTargetRoot(editor, at) === undefined;
 
@@ -1394,7 +1400,7 @@ export const runInEditorCommandFrame = (
     !document ||
     !recorder ||
     outer?.kind !== 'update' ||
-    COMMAND_FRAMES.has(editor)
+    isInCommandFrame(editor)
   ) {
     return null;
   }
@@ -1478,7 +1484,9 @@ export const runInEditorCommandFrame = (
       spans: readonly DraftSpan[];
     }> | null = null;
 
-    COMMAND_FRAMES.add(editor);
+    const frameOwner = getEditorRuntimeOwner(editor);
+
+    COMMAND_FRAMES.add(frameOwner);
     try {
       enterFrameDraft(
         editor,
@@ -1690,7 +1698,7 @@ export const runInEditorCommandFrame = (
       }
       typedAfter = getTypedMarks(editor);
     } finally {
-      COMMAND_FRAMES.delete(editor);
+      COMMAND_FRAMES.delete(frameOwner);
       disposeTransactionSpecContext(editor, frame);
     }
     if (!recorded) {

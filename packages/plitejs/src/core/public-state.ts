@@ -270,8 +270,8 @@ import {
 } from './clone';
 import { unplacedIn } from './command-document';
 import {
-  COMMAND_FRAMES,
   FRAMED_SPECS,
+  isInCommandFrame,
   runInEditorCommandFrame,
 } from './command-frame';
 import { createEditorCommit, type EditorCommitSettlement } from './commit';
@@ -1326,7 +1326,7 @@ export const readEditorHistoryReplayReceipt = (result: object) =>
   EDITOR_HISTORY_REPLAY_RECEIPTS.get(result);
 
 export const getTransactionSpecContext = (editor: Editor) =>
-  TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(-1);
+  TRANSACTION_SPEC_CONTEXTS.get(getEditorRuntimeOwner(editor))?.at(-1);
 
 export const getReadProjection = (editor: Editor) => {
   const owner = getEditorRuntimeOwner(editor);
@@ -1441,35 +1441,37 @@ export const withTransactionSpecDraftRead = <T>(
   editor: Editor,
   fn: () => T
 ): T => {
-  const depth = TRANSACTION_SPEC_DRAFT_READ_DEPTH.get(editor) ?? 0;
+  const owner = getEditorRuntimeOwner(editor);
+  const depth = TRANSACTION_SPEC_DRAFT_READ_DEPTH.get(owner) ?? 0;
 
-  TRANSACTION_SPEC_DRAFT_READ_DEPTH.set(editor, depth + 1);
+  TRANSACTION_SPEC_DRAFT_READ_DEPTH.set(owner, depth + 1);
 
   try {
     return fn();
   } finally {
-    if (depth === 0) TRANSACTION_SPEC_DRAFT_READ_DEPTH.delete(editor);
-    else TRANSACTION_SPEC_DRAFT_READ_DEPTH.set(editor, depth);
+    if (depth === 0) TRANSACTION_SPEC_DRAFT_READ_DEPTH.delete(owner);
+    else TRANSACTION_SPEC_DRAFT_READ_DEPTH.set(owner, depth);
   }
 };
 
 const suspendTransactionSpecDraft = (editor: Editor) => {
-  const contexts = TRANSACTION_SPEC_CONTEXTS.get(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const contexts = TRANSACTION_SPEC_CONTEXTS.get(owner);
 
   if (!contexts || contexts.length === 0) return () => {};
 
-  TRANSACTION_SPEC_CONTEXTS.delete(editor);
-  const restoreAnchorScopes = suspendAnchorScopes(editor);
+  TRANSACTION_SPEC_CONTEXTS.delete(owner);
+  const restoreAnchorScopes = suspendAnchorScopes(owner);
 
   return () => {
-    if ((TRANSACTION_SPEC_CONTEXTS.get(editor)?.length ?? 0) > 0) {
+    if ((TRANSACTION_SPEC_CONTEXTS.get(owner)?.length ?? 0) > 0) {
       throw new Error(
         'Transaction spec contexts leaked from an ambient editor read.'
       );
     }
 
     restoreAnchorScopes();
-    TRANSACTION_SPEC_CONTEXTS.set(editor, contexts);
+    TRANSACTION_SPEC_CONTEXTS.set(owner, contexts);
   };
 };
 
@@ -1478,14 +1480,15 @@ const withContextsBelow = <T>(
   context: TransactionSpecContext,
   fn: () => T
 ): T => {
-  const contexts = getDefined(TRANSACTION_SPEC_CONTEXTS.get(editor));
+  const owner = getEditorRuntimeOwner(editor);
+  const contexts = getDefined(TRANSACTION_SPEC_CONTEXTS.get(owner));
   const above = contexts.splice(contexts.indexOf(context));
 
   try {
     return fn();
   } finally {
     contexts.push(...above);
-    TRANSACTION_SPEC_CONTEXTS.set(editor, contexts);
+    TRANSACTION_SPEC_CONTEXTS.set(owner, contexts);
   }
 };
 
@@ -1493,7 +1496,7 @@ export const getTransactionSnapshot = (editor: Editor) =>
   getTransactionSpecContext(editor)?.snapshot;
 
 export const getUpdateStartSnapshot = (editor: Editor) =>
-  TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(0)?.snapshot;
+  TRANSACTION_SPEC_CONTEXTS.get(getEditorRuntimeOwner(editor))?.at(0)?.snapshot;
 
 export const getUpdateStartValue = (
   editor: Editor
@@ -1821,11 +1824,11 @@ export const isInTransaction = (editor: Editor) =>
   getEditorTransactionDepth(editor) > 0;
 
 export const getEditorReadDepth = (editor: Editor) =>
-  READ_DEPTH.get(editor) ?? 0;
+  READ_DEPTH.get(getEditorRuntimeOwner(editor)) ?? 0;
 
 export const getEditorTransactionDepth = (editor: Editor) =>
   getTransactionSpecContext(editor)?.depth ??
-  TRANSACTION_DEPTH.get(editor) ??
+  TRANSACTION_DEPTH.get(getEditorRuntimeOwner(editor)) ??
   0;
 
 /** Register an internal acceptance guard that runs before a draft publishes. */
@@ -1873,18 +1876,13 @@ export const trackEditorLetters = (editor: Editor) => {
   };
 };
 
-// A view's transaction runs on its runtime owner.
-const getDraftSnapshot = (editor: Editor) =>
-  getTransactionSnapshot(editor) ??
-  getTransactionSnapshot(getEditorRuntimeOwner(editor));
-
 /** @internal */
 export const withDraftMove = <T>(
   editor: Editor,
   move: DraftStepMove,
   run: () => T
 ): T => {
-  const snapshot = getDraftSnapshot(editor);
+  const snapshot = getTransactionSnapshot(editor);
   const moved = () => withRenewalOff(editor, run);
 
   return snapshot ? snapshot.builder.withMove(move, moved) : moved();
@@ -1896,7 +1894,7 @@ export const withDraftSource = <T>(
   source: DraftStepSource,
   run: () => T
 ): T => {
-  const snapshot = getDraftSnapshot(editor);
+  const snapshot = getTransactionSnapshot(editor);
 
   return snapshot ? snapshot.builder.withSource(source, run) : run();
 };
@@ -2952,15 +2950,16 @@ const runEditorTransactionGuards = (
 };
 
 export const enterEditorRead = (editor: Editor) => {
-  const depth = getEditorReadDepth(editor);
-  READ_DEPTH.set(editor, depth + 1);
+  const owner = getEditorRuntimeOwner(editor);
+  const depth = getEditorReadDepth(owner);
+  READ_DEPTH.set(owner, depth + 1);
 
   return () => {
     if (depth === 0) {
-      READ_DEPTH.delete(editor);
-      drainAfterOpenDrafts(editor);
+      READ_DEPTH.delete(owner);
+      drainAfterOpenDrafts(owner);
     } else {
-      READ_DEPTH.set(editor, depth);
+      READ_DEPTH.set(owner, depth);
     }
   };
 };
@@ -2969,26 +2968,28 @@ export const incrementEditorTransactionDepth = (
   editor: Editor,
   depth: number
 ) => {
-  const context = getTransactionSpecContext(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const context = getTransactionSpecContext(owner);
 
   if (context) {
     context.depth = depth + 1;
     return;
   }
 
-  TRANSACTION_DEPTH.set(editor, depth + 1);
+  TRANSACTION_DEPTH.set(owner, depth + 1);
 };
 
 export const decrementEditorTransactionDepth = (editor: Editor) => {
-  const context = getTransactionSpecContext(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const context = getTransactionSpecContext(owner);
 
   if (context) {
     context.depth -= 1;
     return context.depth;
   }
 
-  const nextDepth = (TRANSACTION_DEPTH.get(editor) ?? 1) - 1;
-  TRANSACTION_DEPTH.set(editor, nextDepth);
+  const nextDepth = (TRANSACTION_DEPTH.get(owner) ?? 1) - 1;
+  TRANSACTION_DEPTH.set(owner, nextDepth);
 
   return nextDepth;
 };
@@ -2997,14 +2998,23 @@ export const assertCanStartEditorWrite = (
   editor: Editor,
   authority?: TransactionAuthority
 ) => {
-  assertPluginPublicationInactive(editor);
+  const owner = getEditorRuntimeOwner(editor);
 
-  if (isInTransaction(editor)) {
+  assertEditorNotDestroyed(owner);
+  assertPluginPublicationInactive(owner);
+
+  if (isInTransaction(owner)) {
     return;
   }
 
-  if (getEditorReadDepth(editor) > 0) {
+  if (getEditorReadDepth(owner) > 0) {
     throw new Error('editor writes cannot be started inside editor.read');
+  }
+  assertNoDocumentViewRead(owner);
+  if (READ_PROJECTIONS.has(owner)) {
+    throw new Error(
+      'editor writes cannot be started while an editor view projection is active'
+    );
   }
 
   if (!authority) {
@@ -5075,16 +5085,17 @@ export const getEditorDocumentRoots = (
   if (projection) {
     return { [MAIN_ROOT_KEY]: projection.children, ...projection.roots };
   }
-  const context = getTransactionSpecContext(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const context = getTransactionSpecContext(owner);
 
   if (context) return rootsOfValue(context.snapshot.builder.value);
 
-  const children = getStoredChildrenSource(editor);
-  const storedRoots = ROOTS.get(editor);
+  const children = getStoredChildrenSource(owner);
+  const storedRoots = ROOTS.get(owner);
 
   if (!storedRoots) return withRoot({}, MAIN_ROOT_KEY, children);
 
-  const currentRoot = getCurrentChildrenRoot(editor);
+  const currentRoot = getCurrentChildrenRoot(owner);
 
   if (!Object.hasOwn(storedRoots, currentRoot)) {
     return storedRoots;
@@ -5106,18 +5117,19 @@ const getEditorRootChildren = (
   if (value) {
     return root === MAIN_ROOT_KEY ? value.children : value.roots?.[root];
   }
-  const storedRoots = ROOTS.get(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const storedRoots = ROOTS.get(owner);
 
   if (!storedRoots) {
     return root === MAIN_ROOT_KEY
-      ? childrenOf(getStoredChildrenSource(editor))
+      ? childrenOf(getStoredChildrenSource(owner))
       : undefined;
   }
   if (!Object.hasOwn(storedRoots, root)) return undefined;
 
   return childrenOf(
-    root === getCurrentChildrenRoot(editor)
-      ? getStoredChildrenSource(editor)
+    root === getCurrentChildrenRoot(owner)
+      ? getStoredChildrenSource(owner)
       : rootSourceOf(storedRoots, root)
   );
 };
@@ -6369,7 +6381,7 @@ const fitReadingFor = (
   if (!fitsByLook) return undefined;
   // A command frame runs on the document with every suggestion accepted,
   // which shows no marks, so a fit inside one reads as marked.
-  if (COMMAND_FRAMES.has(editor)) return 'commit';
+  if (isInCommandFrame(editor)) return 'commit';
 
   const snapshot = getTransactionSnapshot(editor);
   const stored = snapshot
@@ -10103,7 +10115,7 @@ export const getUpdateView = <
             EditorTransactionFragmentApi<V>['delete']
           >(
             (options) =>
-              runTargetMutation(options, (resolvedOptions) => {
+              runNodeTargetMutation(options, (resolvedOptions) => {
                 applyDeleteFragment(editor, resolvedOptions);
               }),
             (command, [options = {}]) => {
@@ -11119,13 +11131,15 @@ export const getActiveUpdateView = <
 >(
   editor: Editor<V, TPlugins>
 ): EditorUpdateTransaction<V, TPlugins> => {
-  if (!isInTransaction(editor)) {
+  const owner = getEditorRuntimeOwner(editor) as Editor<V, TPlugins>;
+
+  if (!isInTransaction(owner)) {
     throw new Error(
       'The active transaction is only available during editor.update'
     );
   }
 
-  return getUpdateView(editor);
+  return getUpdateView(owner);
 };
 
 export const getActiveEditorTransaction = <
@@ -11278,15 +11292,16 @@ export const createTransactionSpecContext = (
     selectionWritten: false,
     snapshot,
   };
-  const contexts = TRANSACTION_SPEC_CONTEXTS.get(editor) ?? [];
+  const owner = getEditorRuntimeOwner(editor);
+  const contexts = TRANSACTION_SPEC_CONTEXTS.get(owner) ?? [];
 
   contexts.push(context);
-  TRANSACTION_SPEC_CONTEXTS.set(editor, contexts);
+  TRANSACTION_SPEC_CONTEXTS.set(owner, contexts);
   try {
-    context.exitAnchorScope = enterAnchorScope(editor, anchorValue);
+    context.exitAnchorScope = enterAnchorScope(owner, anchorValue);
   } catch (error) {
     contexts.pop();
-    if (contexts.length === 0) TRANSACTION_SPEC_CONTEXTS.delete(editor);
+    if (contexts.length === 0) TRANSACTION_SPEC_CONTEXTS.delete(owner);
     throw error;
   }
 
@@ -11297,9 +11312,11 @@ export const disposeTransactionSpecContext = (
   editor: Editor,
   context: TransactionSpecContext
 ) => {
+  const owner = getEditorRuntimeOwner(editor);
+
   closeScopedTransactionAnchors(context.snapshot);
-  dropDeferredNodeKeys(getEditorRuntimeOwner(editor), context.id);
-  const contexts = TRANSACTION_SPEC_CONTEXTS.get(editor);
+  dropDeferredNodeKeys(owner, context.id);
+  const contexts = TRANSACTION_SPEC_CONTEXTS.get(owner);
 
   if (contexts?.at(-1) !== context) {
     throw new Error('Transaction spec contexts must close in stack order.');
@@ -11308,9 +11325,9 @@ export const disposeTransactionSpecContext = (
   context.exitAnchorScope();
   contexts.pop();
   if (contexts.length === 0) {
-    TRANSACTION_SPEC_CONTEXTS.delete(editor);
+    TRANSACTION_SPEC_CONTEXTS.delete(owner);
     // An update drains once it has published, at the end of its transaction.
-    if (context.kind !== 'update') drainAfterOpenDrafts(editor);
+    if (context.kind !== 'update') drainAfterOpenDrafts(owner);
   }
 };
 
@@ -11372,17 +11389,19 @@ const assertTransactionSpecBase = (editor: Editor, spec: TransactionSpec) => {
   if (!base) {
     throw new Error('Transaction spec is missing its opaque base.');
   }
-  if (base.editor !== editor) {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (base.editor !== owner) {
     throw new Error('Cannot apply a transaction spec to a different editor.');
   }
-  const context = getTransactionSpecContext(editor);
+  const context = getTransactionSpecContext(owner);
   const validContext =
     base.context === context?.id ||
     (context?.kind === 'update' && base.context === undefined);
 
   const currentViewDocument =
-    TRANSACTION_SPEC_CONTEXTS.get(editor)?.[0]?.baseViewDocument ??
-    getReadProjection(editor);
+    TRANSACTION_SPEC_CONTEXTS.get(owner)?.[0]?.baseViewDocument ??
+    getReadProjection(owner);
 
   if (
     (!validContext && (base.context !== undefined || context !== undefined)) ||
@@ -11564,7 +11583,7 @@ const finalizeTransactionSpecContext = (
   TRANSACTION_SPEC_BASE.set(spec, {
     ...(context.parentId ? { context: context.parentId } : {}),
     draftEpoch: context.baseDraftEpoch,
-    editor,
+    editor: getEditorRuntimeOwner(editor),
     revision: context.baseRevision,
     ...(context.baseViewDocument
       ? { viewDocument: context.baseViewDocument }
@@ -11964,7 +11983,7 @@ export const applyTransactionSpec = <V extends Value>(
   }
   const framed = FRAMED_SPECS.get(spec);
 
-  if (framed && !COMMAND_FRAMES.has(editor)) {
+  if (framed && !isInCommandFrame(editor)) {
     const applied = runInEditorCommandFrame(
       editor,
       () => () => {
@@ -12032,10 +12051,11 @@ export const readEditor = <
   editor: Editor<V, TPlugins>,
   fn: (state: EditorStateView<V, TPlugins>) => T
 ): T => {
-  const exitRead = enterEditorRead(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const exitRead = enterEditorRead(owner);
   const restoreDraft =
-    (TRANSACTION_SPEC_DRAFT_READ_DEPTH.get(editor) ?? 0) === 0
-      ? suspendTransactionSpecDraft(editor)
+    (TRANSACTION_SPEC_DRAFT_READ_DEPTH.get(owner) ?? 0) === 0
+      ? suspendTransactionSpecDraft(owner)
       : () => {};
 
   try {
@@ -12060,18 +12080,20 @@ export const updateEditor = <
   ) => R,
   options: InternalEditorUpdateOptions = {}
 ): R | undefined => {
-  assertEditorNotDestroyed(editor);
-  if (isInTransaction(editor)) {
+  const owner = getEditorRuntimeOwner(editor);
+
+  assertEditorNotDestroyed(owner);
+  if (isInTransaction(owner)) {
     throw new Error('editor.update cannot be nested inside another update');
   }
 
-  if (getEditorReadDepth(editor) > 0) {
+  if (getEditorReadDepth(owner) > 0) {
     throw new Error(
       'editor.update cannot be started inside editor.read outside an active update'
     );
   }
-  assertNoDocumentViewRead(editor);
-  if (READ_PROJECTIONS.has(getEditorRuntimeOwner(editor))) {
+  assertNoDocumentViewRead(owner);
+  if (READ_PROJECTIONS.has(owner)) {
     throw new Error(
       'editor.update cannot be started while an editor view projection is active'
     );
@@ -14504,7 +14526,7 @@ export const getActiveTransactionDocumentChange = (editor: Editor) => {
 };
 
 export const getActiveDocumentChangeBuilder = (editor: Editor) => {
-  const snapshot = getDraftSnapshot(editor);
+  const snapshot = getTransactionSnapshot(editor);
 
   if (!snapshot) {
     throw new Error('Document change builders require an active transaction.');
@@ -16146,16 +16168,17 @@ const createEditorUpdateDraftContext = (
     selectionWritten: false,
     snapshot,
   };
-  const contexts = TRANSACTION_SPEC_CONTEXTS.get(editor) ?? [];
+  const owner = getEditorRuntimeOwner(editor);
+  const contexts = TRANSACTION_SPEC_CONTEXTS.get(owner) ?? [];
 
   contexts.push(context);
-  TRANSACTION_SPEC_CONTEXTS.set(editor, contexts);
+  TRANSACTION_SPEC_CONTEXTS.set(owner, contexts);
   try {
     context.exitAnchorScope = enterAnchorScope(
-      editor,
+      owner,
       createEditorDocumentValue({
-        editor,
-        fields: getStateFieldIdentityMap(editor),
+        editor: owner,
+        fields: getStateFieldIdentityMap(owner),
         meta: documentState,
         records,
         roots: transactionRoots,
@@ -16163,7 +16186,7 @@ const createEditorUpdateDraftContext = (
     );
   } catch (error) {
     contexts.pop();
-    if (contexts.length === 0) TRANSACTION_SPEC_CONTEXTS.delete(editor);
+    if (contexts.length === 0) TRANSACTION_SPEC_CONTEXTS.delete(owner);
     throw error;
   }
 
