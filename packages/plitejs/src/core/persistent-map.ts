@@ -1,5 +1,21 @@
 import { getDefined } from '../internal/get-defined';
 
+/** @internal */
+export type PersistentMapObserver = Readonly<{
+  onChanges?: (count: number) => void;
+  onCopied?: (value: unknown) => void;
+  onRead?: (value: unknown) => void;
+}>;
+
+let persistentMapObserver: PersistentMapObserver | null = null;
+
+/** @internal */
+export const setPersistentMapObserver = (
+  observer: PersistentMapObserver | null
+) => {
+  persistentMapObserver = observer;
+};
+
 /**
  * A persistent ordered map from strings to values: an AVL tree whose versions
  * share every node a write does not touch. Nodes stay unfrozen because
@@ -87,7 +103,11 @@ export const persistentMapGet = <T>(
   let current = node;
 
   while (current) {
-    if (key === current.key) return current.value;
+    if (key === current.key) {
+      persistentMapObserver?.onRead?.(current.value);
+
+      return current.value;
+    }
     current = key < current.key ? current.left : current.right;
   }
 
@@ -103,7 +123,11 @@ export const persistentMapCeiling = <T>(
   let found: PersistentMapNode<T> | null = null;
 
   while (current) {
-    if (key === current.key) return [current.key, current.value];
+    if (key === current.key) {
+      persistentMapObserver?.onRead?.(current.value);
+
+      return [current.key, current.value];
+    }
     if (key < current.key) {
       found = current;
       current = current.left;
@@ -112,7 +136,13 @@ export const persistentMapCeiling = <T>(
     }
   }
 
-  return found ? [found.key, found.value] : undefined;
+  if (found) {
+    persistentMapObserver?.onRead?.(found.value);
+
+    return [found.key, found.value];
+  }
+
+  return undefined;
 };
 
 export const persistentMapSet = <T>(
@@ -188,6 +218,9 @@ export const persistentMapFromSorted = <T>(
   from = 0,
   to = entries.length
 ): PersistentMapNode<T> | null => {
+  if (persistentMapObserver?.onCopied && from === 0 && to === entries.length) {
+    for (const [, value] of entries) persistentMapObserver.onCopied(value);
+  }
   if (from >= to) return null;
   const middle = (from + to) >>> 1;
   const [key, value] = entries[middle];
@@ -205,6 +238,7 @@ export function* persistentMapEntries<T>(
 ): Generator<readonly [string, T]> {
   if (!node) return;
   yield* persistentMapEntries(node.left);
+  persistentMapObserver?.onCopied?.(node.value);
   yield [node.key, node.value];
   yield* persistentMapEntries(node.right);
 }
@@ -277,6 +311,10 @@ export const persistentMapChanges = <T>(
         expandMapUnit(rest);
       }
     }
+  }
+
+  if (persistentMapObserver?.onChanges) {
+    persistentMapObserver.onChanges(changed.length);
   }
 
   return changed;

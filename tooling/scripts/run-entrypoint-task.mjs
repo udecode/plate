@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import path from 'node:path';
 
@@ -16,6 +16,7 @@ import {
   getPackageRuntimeTestFiles,
   repoRoot,
 } from '../entrypoints/entrypoint-turbo.mjs';
+import { commonDir } from './check-steps.mjs';
 import { usesMockModule } from './import-graph.mjs';
 import { runTraced } from './load-trace.mjs';
 
@@ -164,9 +165,9 @@ const runTests = async (runtimeTestFiles, partitionOf, traceEnv) => {
     // Turbo runs multiple partitions concurrently, so bound per-batch workers
     // tightly under Turbo to avoid CPU oversubscription and test timeouts, and
     // stay single-process on <= 4-core runners.
-    const turboCap = isolated ? 2 : fileCount >= 40 ? 3 : 2;
+    const turboCap = isolated ? 2 : fileCount >= 35 ? 3 : 2;
     const maxWorkers = process.env.TURBO_HASH
-      ? Math.min(turboCap, Math.floor(cpus / (isolated ? 6 : 4)))
+      ? Math.min(turboCap, Math.floor(cpus / 6))
       : Math.min(6, Math.floor(cpus / 2));
 
     if (maxWorkers <= 1) return 1;
@@ -242,12 +243,47 @@ const runTests = async (runtimeTestFiles, partitionOf, traceEnv) => {
     ]);
   };
 
+  const recordedTimes = (() => {
+    const common = commonDir(repoRoot);
+    if (!common) return {};
+    try {
+      return JSON.parse(
+        readFileSync(path.join(common, 'plate-test-times.json'), 'utf-8')
+      );
+    } catch {
+      return {};
+    }
+  })();
+
+  // Schedule slowest files first (LPT) so large late-alphabet specs do not
+  // create tail latency at the end of a `--parallel` Bun batch.
+  const orderByWeight = (testFiles) =>
+    [...testFiles].sort((left, right) => {
+      const leftKey = path.join(definition.packageRoot, left);
+      const rightKey = path.join(definition.packageRoot, right);
+      const leftTime = recordedTimes[leftKey] ?? 0;
+      const rightTime = recordedTimes[rightKey] ?? 0;
+
+      if (leftTime !== rightTime) return rightTime - leftTime;
+
+      const leftSize =
+        statSync(path.join(packageRoot, left), { throwIfNoEntry: false })
+          ?.size ?? 0;
+      const rightSize =
+        statSync(path.join(packageRoot, right), { throwIfNoEntry: false })
+          ?.size ?? 0;
+
+      return rightSize - leftSize || left.localeCompare(right);
+    });
+
   const queueBunTests = (testFiles) => {
-    const isolatedFiles = testFiles.filter((filename) =>
-      usesMockModule(path.join(packageRoot, filename))
+    const isolatedFiles = orderByWeight(
+      testFiles.filter((filename) =>
+        usesMockModule(path.join(packageRoot, filename))
+      )
     );
-    const sharedFiles = testFiles.filter(
-      (filename) => !isolatedFiles.includes(filename)
+    const sharedFiles = orderByWeight(
+      testFiles.filter((filename) => !isolatedFiles.includes(filename))
     );
 
     if (sharedFiles.length > 0) queueBunTestBatch(sharedFiles);

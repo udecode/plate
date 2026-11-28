@@ -66,6 +66,7 @@
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
@@ -96,6 +97,7 @@
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
@@ -126,6 +128,7 @@
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
@@ -156,6 +159,7 @@
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
@@ -186,6 +190,7 @@
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
@@ -234,6 +239,7 @@
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
@@ -386,6 +392,7 @@
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
@@ -431,6 +438,7 @@
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
@@ -474,6 +482,7 @@
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
@@ -538,6 +547,7 @@
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/check-steps.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
