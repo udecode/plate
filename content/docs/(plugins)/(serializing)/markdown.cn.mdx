@@ -590,8 +590,12 @@ markdown: {
   `priority` 从高到低运行。Mention 以这种方式先于 Link 解码 `mention:` link。
 - `marks` 包含继承的持久化文本 mark。嵌套内容需要保留这些 mark 时，把它传给
   `decode` 或 `decodeNodes`。
-- `previousSibling` 是当前 node 之前的 Markdown node。List 用它把紧跟在另一个
-  list 之后的 list 读取为重新开始编号。
+- `previousSibling` 是当前 node 同级中的前一个 Markdown node。
+- 在 mark mapping 上，当 `node`、`tag`、`value` 或 `style` 无法表达所需输出时，
+  `wrap` 返回不含 children 的行内包装节点（`strong`、`emphasis`、`delete` 或
+  `mdxJsxTextElement`）或 `refuse(message)`，由 Markdown 填充编码后的 children。
+  element `encode` 与 mark `wrap` 都必须返回输出或 `refuse(message)`（不能返回
+  `undefined`）。
 - `readTagAttributes(tag?)` 返回 `{ attributes, properties }`：按原样写出的全部
   attribute，以及按声明式 tag 的规则解码的 node property。
 - `refuse(message)` 把 feature 无法表示的内容报告为 `markdown-unsupported-node`。
@@ -617,8 +621,8 @@ markdown: {
 
 传入数组可以为一个 plugin 声明多个 mapping。Self mapping 使用
 `defineFormats(map)`；foreign target 使用 `defineFormats(TargetPlugin, map)`。
-Plugin 的 `formats` 只接受 `html`、`markdown` 和 `plainText` key；MIME payload
-属于 `dataTransferFormats`。
+Plugin 的 `formats` 接受 `html`、`markdown`、`plainText` 和 `docx` key；MIME
+payload 属于 `dataTransferFormats`。
 
 ### Content root
 

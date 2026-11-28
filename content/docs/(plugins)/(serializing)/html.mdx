@@ -198,11 +198,13 @@ const NotePlugin = definePlugin('note', {
 });
 ```
 
-- `match` selects source elements. `decode` returns the element's properties,
-  and optionally its `children`; `undefined` declines the element so the next
+- `match` selects source elements, and `priority` orders overlapping rules
+  (higher runs first). `decode` returns the element's properties, and
+  optionally its `children`; `undefined` declines the element so the next
   mapping runs.
 - `encode` returns a node spec: `tag`, `attributes`, `style`, and `children`,
-  where `content` places the node's children. `null` omits the element.
+  where `content` places the node's children. `null` omits the element. Set
+  `decodeOnly: true` and omit `encode` for a parse-only rule.
 - `preserve(...keys)` claims that the returned output carries these properties
   of the mapping's target. Claims count only when `encode` returns output.
   Reading a property claims nothing.

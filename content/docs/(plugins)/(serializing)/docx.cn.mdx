@@ -248,6 +248,50 @@ export async function downloadEditorDocx() {
 
 Review 文件包含 Word 显示的内容：文本、批注，以及带作者信息的修订。它还会在 custom XML part 中保存每个含有待处理 change 的主根顶层 block 以及文档的审阅记录，并在该 block 单独渲染一次、且未与其他主根 block 或外部根共用外层表格或容器时，用书签把它绑定到 Word 段落（无法安全绑定的 block 回退为 Word 修订）。导入该文件时，Word 未修改的已绑定 block 会被恢复，详见[导入修订](#导入修订)。由静态组件（例如 `slots.contentRoot`）渲染的命名根会将其文本、批注和修订导出到 Word；未渲染的命名根和文档元数据会被省略。需要完整保留命名根和文档元数据以供往返时，按 [Serializing](/docs/serializing) 所述，把 `editor.read.value()` 以 JSON 形式与文件一起保存。
 
+### 定义 DOCX 回退
+
+当自定义 element 或 element property 在 Word 中没有原生形式时，通过 `defineFormats` 声明 `formats.docx`：
+
+```ts
+import { definePlugin, property, schema, target } from 'platejs';
+
+const BadgePlugin = definePlugin('badge', {
+  schema: {
+    element: {
+      properties: { label: property.string({ required: true }) },
+      void: 'inline',
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      docx: {
+        dropped: 'Word keeps each badge label and drops its badge settings.',
+        text: ({ node }) => `[${node.label}]`,
+      },
+    }),
+});
+
+const LockPlugin = definePlugin('lock', {
+  schema: {
+    properties: {
+      locked: schema.elementProperty(property.boolean(), {
+        target: target.not(target.group('inline')),
+      }),
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      docx: {
+        dropped: 'Block lock settings are not exported to Word documents.',
+      },
+    }),
+});
+```
+
+- Element mapping 使用 `{ dropped, text }`，即使没有静态组件，也会把 `text({ node })` 写入文档。
+- Element-property mapping 使用 `{ dropped, property? }`（当插件拥有多个没有主 key 的 element property 时，`property` 为必填项）。纯 mark plugin 不能声明 `formats.docx`。
+- `exportDocx` 为每个插件发出一条 `property-dropped` 警告，仅统计正文、已渲染的命名根和已锚定批注正文中的匹配数量。
+
 ### 内容损失
 
 `exportDocx` 默认拒绝内容损失。图片无法嵌入、传入的批注没有可表示的范围，或节点在 `presentation` 中没有绘制方式时，结果为 `ok: false`，并以错误 diagnostic 报告该损失。设置 `lossPolicy: "allow"` 可以下载文件，并以警告形式接收相同的损失：

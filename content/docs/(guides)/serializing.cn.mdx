@@ -62,7 +62,29 @@ const result = serializePlainText(editor, { projection: 'accepted' });
 ```
 
 Feature plugin 通过 `formats`/`defineFormats` 提供 structural `plainText`
-mapping。Plain text 是单向输出，不是 universal parser 或 persistence format。
+mapping。Plain text 是单向输出，不是 universal parser 或 persistence format。非
+void element 默认会回退到其子节点的序列化文本及自有 content root，因此只在节点需要自定义文本输出时声明 `plainText`：
+
+```ts
+import { definePlugin, property, schema } from 'platejs';
+
+const MentionPlugin = definePlugin('mention', {
+  schema: {
+    element: {
+      properties: { label: property.string(), ref: property.string({ required: true }) },
+      void: 'inline',
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      plainText: {
+        encode: ({ node }) => `@${node.label ?? node.ref}`,
+      },
+    }),
+});
+```
+
+`encode` 接收 `{ children, node, rootText, document, parent, path, previousSibling, root, pluginState, registry, schema }` 并返回字符串，或返回 `undefined` 以回退到较低优先级（较高 `priority` 先运行）的 mapping 或默认序列化。纯 mark plugin 不能声明 `plainText` mapping。
 
 ## 转换 HTML
 
@@ -158,8 +180,8 @@ downloadMarkdown(result.data);
 ## 定义 feature mapping
 
 Feature plugin 通过 `formats` 与 `defineFormats` 声明语义 mapping，key 为
-`html`、`markdown` 与 `plainText`。窄 authoring callback 不能读取 live editor
-或 store。
+`html`、`markdown`、`plainText` 与 `docx`。窄 authoring callback 不能读取 live
+editor 或 store。
 
 完整 browser MIME payload 使用 `DataTransferFormat`，不使用 feature mapping。
 Clipboard insertion 保留 destination authority，并可保留 native open edge 与

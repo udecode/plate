@@ -136,7 +136,6 @@ initialViewState: (): BaseDetailsViewState => ({
 
 <APIItem name="component" type="NodeComponent | keyof HTMLElementTagNameMap" optional>
   The ordinary component or intrinsic HTML tag for this plugin's node. Declare it in
-  `definePlugin(name, { component })` or
   `definePlugin(name, { component })` for
   static/RSC and live rendering. Replace it with one terminal
   `.configure({component})`. Base `.extend()` does not accept it. Use
@@ -149,7 +148,7 @@ initialViewState: (): BaseDetailsViewState => ({
   name="formats"
   type="PluginFormatMapDeclaration | ((context: PluginFormatAuthoringContext<D>) => PluginFormatMapDeclaration)"
 >
-  Schema-aware HTML, Markdown, and plain-text node mappings. The authoring
+  Schema-aware HTML, Markdown, plain-text, and DOCX node mappings. The authoring
   context exposes `defineFormats` and static schema bindings. Use
   `defineFormats(map)` for self mappings or
   `defineFormats(TargetPlugin, map)` for foreign contributions.
@@ -740,12 +739,12 @@ native capabilities at their root.
 
 Use `defineFormats(map)` for self mappings and
 `defineFormats(TargetPlugin, map)` for foreign mappings. The helper injects the
-foreign target. The semantic keys are `html`, `markdown`, and `plainText`;
-`html` accepts one schema-aware rule or a non-empty ordered rule tuple.
+foreign target. The semantic keys are `html`, `markdown`, `plainText`, and
+`docx`; `html` accepts one schema-aware rule or a non-empty ordered rule tuple.
 Whole-payload MIME handling belongs to `dataTransferFormats`. Do not author
 direct maps, add a manual `target`, or annotate mapping callback parameters.
 
-`definePlugin()` / `definePlugin()` own every independent declaration
+`definePlugin()` owns every independent declaration
 field, including `api`, `read`, `selectors`, `update`, editor fields, and
 `formats`.
 

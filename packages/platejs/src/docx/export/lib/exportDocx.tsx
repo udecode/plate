@@ -290,6 +290,9 @@ type DocxPropertyFormat = Readonly<{
   property: string;
 }>;
 
+const DOCX_ELEMENT_FIELDS = new Set(['dropped', 'text']);
+const DOCX_PROPERTY_FIELDS = new Set(['dropped', 'property']);
+
 const docxFormatsOf = (
   editor: Editor
 ): Readonly<{
@@ -301,6 +304,7 @@ const docxFormatsOf = (
 
   for (const {
     declaration,
+    ownedPropertyKeys,
     owner,
     targetKey,
     targetPlugin,
@@ -313,6 +317,13 @@ const docxFormatsOf = (
     }
 
     if (targetType !== null) {
+      for (const field of Object.keys(declaration)) {
+        if (!DOCX_ELEMENT_FIELDS.has(field)) {
+          throw new Error(
+            `DOCX node mapping "${owner}" has unknown element field "${field}".`
+          );
+        }
+      }
       if (typeof declaration.text !== 'function') {
         throw new Error(
           `DOCX node mapping "${owner}" must define dropped and text for an element.`
@@ -328,14 +339,35 @@ const docxFormatsOf = (
       continue;
     }
 
+    if (ownedPropertyKeys.length === 0) {
+      throw new Error(
+        `DOCX node mapping "${owner}" must target an element type or element property.`
+      );
+    }
+    for (const field of Object.keys(declaration)) {
+      if (!DOCX_PROPERTY_FIELDS.has(field)) {
+        throw new Error(
+          `DOCX node mapping "${owner}" has unknown property field "${field}".`
+        );
+      }
+    }
+    if (
+      declaration.property !== undefined &&
+      typeof declaration.property !== 'string'
+    ) {
+      throw new Error(
+        `DOCX node mapping "${owner}" property must be a string.`
+      );
+    }
+
     const property =
       typeof declaration.property === 'string'
         ? declaration.property
         : targetKey;
 
-    if (!property) {
+    if (!property || !ownedPropertyKeys.includes(property)) {
       throw new Error(
-        `DOCX node mapping "${owner}" must target an element type or element property.`
+        `DOCX node mapping "${owner}" must name an element property owned by "${targetPlugin}".`
       );
     }
 
@@ -374,18 +406,34 @@ const countElementsWithProperty = (
     0
   );
 
+const exportedStoriesOf = (
+  document: EditorDocumentValue,
+  renderedRoots: ReadonlySet<string> | undefined,
+  commentBodies: ReadonlyArray<readonly Descendant[]>
+): ReadonlyArray<readonly Descendant[]> => {
+  const stories: Array<readonly Descendant[]> = [document.children];
+
+  if (renderedRoots && document.roots) {
+    for (const rootKey of renderedRoots) {
+      const rootNodes = document.roots[rootKey];
+
+      if (rootNodes) stories.push(rootNodes);
+    }
+  }
+  for (const body of commentBodies) stories.push(body);
+
+  return stories;
+};
+
 const propertyFormatDiagnostics = (
   propertyFormats: readonly DocxPropertyFormat[],
-  document: EditorDocumentValue
+  stories: ReadonlyArray<readonly Descendant[]>
 ): readonly DocxDiagnostic[] =>
   propertyFormats.flatMap(({ dropped, plugin, property }) => {
-    const count =
-      countElementsWithProperty(document.children, property) +
-      Object.values(document.roots ?? {}).reduce(
-        (total, rootNodes) =>
-          total + countElementsWithProperty(rootNodes, property),
-        0
-      );
+    const count = stories.reduce(
+      (total, nodes) => total + countElementsWithProperty(nodes, property),
+      0
+    );
 
     return count > 0
       ? [
@@ -403,10 +451,13 @@ const propertyFormatDiagnostics = (
 
 const textFormatDiagnostics = (
   textFormats: readonly DocxTextFormat[],
-  document: EditorDocumentValue
+  stories: ReadonlyArray<readonly Descendant[]>
 ): readonly DocxDiagnostic[] =>
   textFormats.flatMap(({ dropped, plugin, type }) => {
-    const count = countElements(document.children, type);
+    const count = stories.reduce(
+      (total, nodes) => total + countElements(nodes, type),
+      0
+    );
 
     return count > 0
       ? [
@@ -871,8 +922,6 @@ export async function exportDocx(
   const diagnostics: DocxDiagnostic[] = [
     ...sourceResolution.diagnostics,
     ...metadata,
-    ...textFormatDiagnostics(textFormats, capture.document),
-    ...propertyFormatDiagnostics(propertyFormats, capture.document),
     ...listDiagnostics(capture.document),
     ...quoteDiagnostics(editor, capture.document.children),
     ...capture.comments.flatMap(({ body, id, target }) =>
@@ -925,7 +974,15 @@ export async function exportDocx(
         ? applyReviewProjection(mainDocument, hostIndex, capture.review)
         : undefined;
 
+    const exportedStories = exportedStoriesOf(
+      capture.document,
+      hostIndex?.renderedRoots,
+      anchored.comments.map(({ comment }) => comment.body)
+    );
+
     diagnostics.push(
+      ...textFormatDiagnostics(textFormats, exportedStories),
+      ...propertyFormatDiagnostics(propertyFormats, exportedStories),
       ...(review?.diagnostics ?? []),
       ...missingDrawings([main, ...commentRenders])
     );

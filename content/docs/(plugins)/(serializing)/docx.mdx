@@ -250,6 +250,50 @@ Choose `accepted` to omit pending changes, `proposed` to apply them, or `review`
 
 A review file contains what Word displays: text, comments, and tracked revisions with their authors. It also stores each main-root top-level block that holds a pending change, with the document's review records, in a custom XML part, and binds each block to its Word paragraphs with a bookmark when that block renders once on its own without sharing an enclosing table or container with a foreign root or another main block (blocks that cannot bind safely fall back to Word tracked revisions). Importing the file restores the bound blocks Word left unchanged, as [Import tracked revisions](#import-tracked-revisions) describes. Named roots rendered by a static component (such as `slots.contentRoot`) export their text, comments, and tracked revisions to Word, while unrendered named roots and document metadata are omitted. To keep named roots and document metadata intact for round-trip, save `editor.read.value()` as JSON beside the file, as [Serializing](/docs/serializing) describes.
 
+### Define DOCX fallbacks
+
+When a custom element or element property has no native Word form, declare `formats.docx` through `defineFormats`:
+
+```ts
+import { definePlugin, property, schema, target } from 'platejs';
+
+const BadgePlugin = definePlugin('badge', {
+  schema: {
+    element: {
+      properties: { label: property.string({ required: true }) },
+      void: 'inline',
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      docx: {
+        dropped: 'Word keeps each badge label and drops its badge settings.',
+        text: ({ node }) => `[${node.label}]`,
+      },
+    }),
+});
+
+const LockPlugin = definePlugin('lock', {
+  schema: {
+    properties: {
+      locked: schema.elementProperty(property.boolean(), {
+        target: target.not(target.group('inline')),
+      }),
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      docx: {
+        dropped: 'Block lock settings are not exported to Word documents.',
+      },
+    }),
+});
+```
+
+- Element mappings take `{ dropped, text }` and write `text({ node })` in place of the element even without a static component.
+- Element-property mappings take `{ dropped, property? }` (`property` is required when the plugin owns multiple element properties without a primary key). Mark-only plugins cannot declare `formats.docx`.
+- `exportDocx` emits one `property-dropped` warning per plugin, counting matches across the main body, rendered named roots, and anchored comment bodies.
+
 ### Content loss
 
 `exportDocx` rejects content loss by default. When an image cannot be embedded, a supplied comment has no representable range, or a node has no drawing in `presentation`, the result is `ok: false` with the loss as an error diagnostic. Set `lossPolicy: "allow"` to download the file and receive the same loss as warnings:

@@ -1795,12 +1795,12 @@
         },
         "platejs:DocxNodeMapping": {
           "aliases": [],
-          "documentation": "How Word export handles an element or element property Word has no form for.\nElement mappings provide `text` to write a fallback run; element-property\nmappings provide `dropped` alone to report a `property-dropped` warning.",
+          "documentation": "How Word export handles an element or element property Word has no form for.\nElement mappings provide `text` to write a fallback run; element-property\nmappings provide `dropped` (and `property` when the plugin owns multiple\nelement properties without a primary key) to report a `property-dropped`\nwarning.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "DocxNodeMapping",
           "runtime": false,
-          "signature": "type DocxNodeMapping<D extends AnyBasePluginDefinition> = Readonly<{\n  /**\n   * What Word keeps and drops of each element, such as \"Word keeps each\n   * field answer and drops its name and settings.\" It is the warning's\n   * message.\n   */\n  dropped: string;\n  /** The text Word export writes in place of `node`. */\n  text: (context: Readonly<{\n    node: PluginFormatNode<D>;\n  }>) => string;\n}> | Readonly<{\n  /** Warning message reported when an element property is omitted on export. */\n  dropped: string;\n  /** Optional element property key to scan (defaults to the plugin's primary property key). */\n  property?: string;\n}>;",
+          "signature": "type DocxNodeMapping<D extends AnyBasePluginDefinition> = string extends D['name'] ? DocxElementNodeMapping<D> | DocxPropertyNodeMapping<string, true> : PluginFormatHasElement<D> extends true ? DocxElementNodeMapping<D> : [PluginFormatElementPropertyKey<D>] extends [never] ? never : DocxPropertyNodeMapping<PluginFormatElementPropertyKey<D>, IsUnion$1<PluginFormatElementPropertyKey<D>> extends false ? true : D['name'] extends PluginFormatElementPropertyKey<D> ? true : false>;",
           "source": null,
           "typeParameters": [
             "D extends AnyBasePluginDefinition"
@@ -5828,7 +5828,7 @@
           "kind": "type",
           "name": "MarkdownNodeMapping",
           "runtime": false,
-          "signature": "type MarkdownNodeMapping<D extends AnyBasePluginDefinition> = EncodeOnlyMarkdownNodeMapping<D> | NodeMarkdownNodeMapping<D> | TagMarkdownNodeMapping<D>;",
+          "signature": "type MarkdownNodeMapping<D extends AnyBasePluginDefinition> = string extends D['name'] ? EncodeOnlyMarkdownNodeMapping<D> | NodeMarkdownNodeMapping<D> | TagMarkdownNodeMapping<D> : PluginFormatHasElement<D> extends false ? PluginFormatHasTextProperty<D> extends false ? never : EncodeOnlyMarkdownNodeMapping<D> | NodeMarkdownNodeMapping<D> | TagMarkdownNodeMapping<D> : EncodeOnlyMarkdownNodeMapping<D> | NodeMarkdownNodeMapping<D> | TagMarkdownNodeMapping<D>;",
           "source": null,
           "typeParameters": [
             "D extends AnyBasePluginDefinition"
@@ -5836,7 +5836,7 @@
         },
         "platejs:MarkdownNodeMappingInput": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "One Markdown mapping or a non-empty tuple of Markdown mappings for a plugin.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "MarkdownNodeMappingInput",
@@ -6914,12 +6914,12 @@
         },
         "platejs:PlainTextEncodeContext": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Context supplied to a plugin's `formats.plainText` encoder.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "PlainTextEncodeContext",
           "runtime": false,
-          "signature": "type PlainTextEncodeContext<TNode, D extends AnyBasePluginDefinition> = Readonly<{\n  children: string;\n  node: TNode;\n  rootText: (slot: string) => string;\n}> & PluginFormatContext<D> & Omit<PluginFormatModelView, 'node'>;",
+          "signature": "type PlainTextEncodeContext<TNode, D extends AnyBasePluginDefinition> = Readonly<{\n  /** Serialized plain text of the element's own children. */\n  children: string;\n  /** The element being serialized. */\n  node: TNode;\n  /** Serialized plain text of a named content-root slot on `node`, including slots contributed by other plugins. */\n  rootText: (slot: string) => string;\n}> & PluginFormatContext<D> & Omit<PluginFormatModelView, 'node'>;",
           "source": null,
           "typeParameters": [
             "TNode",
@@ -6928,12 +6928,12 @@
         },
         "platejs:PlainTextNodeMapping": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Schema-bound plain-text encoder owned by an element or element-property plugin.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "PlainTextNodeMapping",
           "runtime": false,
-          "signature": "type PlainTextNodeMapping<D extends AnyBasePluginDefinition> = Readonly<{\n  encode: (context: PlainTextEncodeContext<PluginFormatNode<D>, D>) => string | undefined;\n  priority?: number;\n}>;",
+          "signature": "type PlainTextNodeMapping<D extends AnyBasePluginDefinition> = PluginFormatIsMark<D> extends true ? never : Readonly<{\n  /** Return plain text for `node`, or `undefined` to fall through to lower-priority mappings or default serialization. */\n  encode: (context: PlainTextEncodeContext<PluginFormatNode<D>, D>) => string | undefined;\n  /** Higher runs first among plain-text mappings that match `node`. */\n  priority?: number;\n}>;",
           "source": null,
           "typeParameters": [
             "D extends AnyBasePluginDefinition"
@@ -6941,7 +6941,7 @@
         },
         "platejs:PlainTextNodeMappingInput": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "One plain-text mapping or a non-empty tuple of plain-text mappings for a plugin.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "PlainTextNodeMappingInput",
@@ -18609,12 +18609,12 @@
         },
         "platejs/react:DocxNodeMapping": {
           "aliases": [],
-          "documentation": "How Word export handles an element or element property Word has no form for.\nElement mappings provide `text` to write a fallback run; element-property\nmappings provide `dropped` alone to report a `property-dropped` warning.",
+          "documentation": "How Word export handles an element or element property Word has no form for.\nElement mappings provide `text` to write a fallback run; element-property\nmappings provide `dropped` (and `property` when the plugin owns multiple\nelement properties without a primary key) to report a `property-dropped`\nwarning.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "DocxNodeMapping",
           "runtime": false,
-          "signature": "type DocxNodeMapping<D extends AnyBasePluginDefinition> = Readonly<{\n  /**\n   * What Word keeps and drops of each element, such as \"Word keeps each\n   * field answer and drops its name and settings.\" It is the warning's\n   * message.\n   */\n  dropped: string;\n  /** The text Word export writes in place of `node`. */\n  text: (context: Readonly<{\n    node: PluginFormatNode<D>;\n  }>) => string;\n}> | Readonly<{\n  /** Warning message reported when an element property is omitted on export. */\n  dropped: string;\n  /** Optional element property key to scan (defaults to the plugin's primary property key). */\n  property?: string;\n}>;",
+          "signature": "type DocxNodeMapping<D extends AnyBasePluginDefinition> = string extends D['name'] ? DocxElementNodeMapping<D> | DocxPropertyNodeMapping<string, true> : PluginFormatHasElement<D> extends true ? DocxElementNodeMapping<D> : [PluginFormatElementPropertyKey<D>] extends [never] ? never : DocxPropertyNodeMapping<PluginFormatElementPropertyKey<D>, IsUnion$1<PluginFormatElementPropertyKey<D>> extends false ? true : D['name'] extends PluginFormatElementPropertyKey<D> ? true : false>;",
           "source": null,
           "typeParameters": [
             "D extends AnyBasePluginDefinition"
@@ -23443,7 +23443,7 @@
           "kind": "type",
           "name": "MarkdownNodeMapping",
           "runtime": false,
-          "signature": "type MarkdownNodeMapping<D extends AnyBasePluginDefinition> = EncodeOnlyMarkdownNodeMapping<D> | NodeMarkdownNodeMapping<D> | TagMarkdownNodeMapping<D>;",
+          "signature": "type MarkdownNodeMapping<D extends AnyBasePluginDefinition> = string extends D['name'] ? EncodeOnlyMarkdownNodeMapping<D> | NodeMarkdownNodeMapping<D> | TagMarkdownNodeMapping<D> : PluginFormatHasElement<D> extends false ? PluginFormatHasTextProperty<D> extends false ? never : EncodeOnlyMarkdownNodeMapping<D> | NodeMarkdownNodeMapping<D> | TagMarkdownNodeMapping<D> : EncodeOnlyMarkdownNodeMapping<D> | NodeMarkdownNodeMapping<D> | TagMarkdownNodeMapping<D>;",
           "source": null,
           "typeParameters": [
             "D extends AnyBasePluginDefinition"
@@ -23451,7 +23451,7 @@
         },
         "platejs/react:MarkdownNodeMappingInput": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "One Markdown mapping or a non-empty tuple of Markdown mappings for a plugin.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "MarkdownNodeMappingInput",
@@ -24656,12 +24656,12 @@
         },
         "platejs/react:PlainTextEncodeContext": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Context supplied to a plugin's `formats.plainText` encoder.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "PlainTextEncodeContext",
           "runtime": false,
-          "signature": "type PlainTextEncodeContext<TNode, D extends AnyBasePluginDefinition> = Readonly<{\n  children: string;\n  node: TNode;\n  rootText: (slot: string) => string;\n}> & PluginFormatContext<D> & Omit<PluginFormatModelView, 'node'>;",
+          "signature": "type PlainTextEncodeContext<TNode, D extends AnyBasePluginDefinition> = Readonly<{\n  /** Serialized plain text of the element's own children. */\n  children: string;\n  /** The element being serialized. */\n  node: TNode;\n  /** Serialized plain text of a named content-root slot on `node`, including slots contributed by other plugins. */\n  rootText: (slot: string) => string;\n}> & PluginFormatContext<D> & Omit<PluginFormatModelView, 'node'>;",
           "source": null,
           "typeParameters": [
             "TNode",
@@ -24670,12 +24670,12 @@
         },
         "platejs/react:PlainTextNodeMapping": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Schema-bound plain-text encoder owned by an element or element-property plugin.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "PlainTextNodeMapping",
           "runtime": false,
-          "signature": "type PlainTextNodeMapping<D extends AnyBasePluginDefinition> = Readonly<{\n  encode: (context: PlainTextEncodeContext<PluginFormatNode<D>, D>) => string | undefined;\n  priority?: number;\n}>;",
+          "signature": "type PlainTextNodeMapping<D extends AnyBasePluginDefinition> = PluginFormatIsMark<D> extends true ? never : Readonly<{\n  /** Return plain text for `node`, or `undefined` to fall through to lower-priority mappings or default serialization. */\n  encode: (context: PlainTextEncodeContext<PluginFormatNode<D>, D>) => string | undefined;\n  /** Higher runs first among plain-text mappings that match `node`. */\n  priority?: number;\n}>;",
           "source": null,
           "typeParameters": [
             "D extends AnyBasePluginDefinition"
@@ -24683,7 +24683,7 @@
         },
         "platejs/react:PlainTextNodeMappingInput": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "One plain-text mapping or a non-empty tuple of plain-text mappings for a plugin.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "PlainTextNodeMappingInput",

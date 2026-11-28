@@ -666,8 +666,12 @@ markdown: {
   `mention:` links this way before Link.
 - `marks` contains the inherited persisted text marks. Pass it to `decode` or
   `decodeNodes` when nested content must keep those marks.
-- `previousSibling` is the Markdown node before this one. Lists use it to read
-  a list right after another as restarted numbering.
+- `previousSibling` is the Markdown node before this one among its siblings.
+- On a mark mapping, `wrap` returns a childless inline wrapper (`strong`,
+  `emphasis`, `delete`, or `mdxJsxTextElement`) or `refuse(message)` when a
+  mark needs custom output beyond `node`, `tag`, `value`, or `style`; Markdown
+  supplies the encoded children. Both element `encode` and mark `wrap` must
+  return output or `refuse(message)` (never `undefined`).
 - `readTagAttributes(tag?)` returns `{ attributes, properties }`: every
   attribute as written, and the node's properties decoded as a declared tag
   decodes them.
@@ -697,8 +701,8 @@ markdown: {
 
 Pass an array to declare several mappings for one plugin. Use
 `defineFormats(map)` for self mappings and `defineFormats(TargetPlugin, map)`
-for a foreign target. A plugin's `formats` accept only the `html`, `markdown`,
-and `plainText` keys; MIME payloads belong in `dataTransferFormats`.
+for a foreign target. A plugin's `formats` accept `html`, `markdown`,
+`plainText`, and `docx`; MIME payloads belong in `dataTransferFormats`.
 
 ### Content roots
 

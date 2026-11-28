@@ -1,5 +1,5 @@
 import type { AnyBasePlugin } from '../../lib/plugin';
-import { failInvariant } from '../failInvariant';
+import { getPluginSchemaFamily } from '../utils/mergePlugins';
 import {
   type CompiledModelBinding,
   getCompiledPlateModelBinding,
@@ -34,7 +34,7 @@ const getTargetPlugin = (
   editor: object,
   owner: AnyBasePlugin,
   target: unknown
-) => {
+): AnyBasePlugin | null => {
   if (target === undefined) return owner;
   if (!isRecord(target) || typeof target.name !== 'string') {
     throw new Error(
@@ -42,10 +42,20 @@ const getTargetPlugin = (
     );
   }
 
-  return (
-    getCompiledPlatePlugin(editor, target.name) ??
-    failInvariant('Expected value to be defined')
-  );
+  const installed = getCompiledPlatePlugin(editor, target.name);
+
+  if (!installed || installed.enabled === false) return null;
+
+  const authoredFamily = getPluginSchemaFamily(target);
+  const installedFamily = getPluginSchemaFamily(installed);
+
+  if (authoredFamily && installedFamily && authoredFamily !== installedFamily) {
+    throw new Error(
+      `Plate node mapping "${owner.name}" target "${target.name}" belongs to a different schema family than its authored descriptor.`
+    );
+  }
+
+  return installed;
 };
 
 const collect = (editor: object) => {
@@ -69,6 +79,9 @@ const collect = (editor: object) => {
         }
 
         const target = getTargetPlugin(editor, owner, declaration.target);
+
+        if (!target) return;
+
         const binding = getCompiledPlateModelBinding(editor, target);
         const targetKey =
           binding?.propertyKey ??
@@ -76,7 +89,12 @@ const collect = (editor: object) => {
             ? binding.elementPropertyKeys[0]
             : null);
 
-        if (!binding || (!binding.elementType && !targetKey)) {
+        if (
+          !binding ||
+          (!binding.elementType &&
+            !targetKey &&
+            binding.elementPropertyKeys.length === 0)
+        ) {
           throw new Error(
             `Plate node mapping target "${target.name}" must own an element type or property key.`
           );

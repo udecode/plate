@@ -82,6 +82,19 @@ const compile = (editor: Editor) => {
             `Plain-text node mapping owner "${contribution.owner}" is not installed.`
           );
         }
+        if (contribution.targetKind === 'mark') {
+          throw new Error(
+            `Plain-text node mapping "${contribution.owner}" cannot target mark plugin "${contribution.targetPlugin}".`
+          );
+        }
+        if (
+          contribution.targetType === null &&
+          contribution.targetKey === null
+        ) {
+          throw new Error(
+            `Plain-text node mapping target "${contribution.targetPlugin}" must own an element type or single property key.`
+          );
+        }
 
         return Object.freeze({
           mapping: validateMapping(

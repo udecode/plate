@@ -280,7 +280,10 @@ const applyFormats = (
       }
     }
 
-    currentFormats = mergePlugins(currentFormats ?? {}, productMappings);
+    currentFormats = Object.freeze({
+      ...(isObjectRecord(currentFormats) ? currentFormats : {}),
+      ...productMappings,
+    });
     Reflect.set(plugin, 'formats', currentFormats);
   }
   if (htmlMapping === undefined) return;

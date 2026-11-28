@@ -44,6 +44,8 @@ import type {
   PluginFormatRegistry,
 } from './PluginFormatContext';
 import type {
+  PluginFormatHasElement,
+  PluginFormatHasTextProperty,
   PluginFormatIsMark,
   PluginFormatNode,
   PluginFormatOwnedPropertyKey,
@@ -262,11 +264,11 @@ type MarkdownElementMappingBase<
   ) => Descendant | Descendant[] | MarkdownRefusal | undefined;
   /**
    * Return the Markdown node that stands for the node, several to write it as
-   * a run of siblings, `undefined` to decline, or `refuse(message)`.
+   * a run of siblings, or `refuse(message)`.
    */
   encode?: (
     context: MarkdownEncodeContext<PluginFormatNode<D>, D>
-  ) => RootContent | readonly RootContent[] | MarkdownRefusal | undefined;
+  ) => RootContent | readonly RootContent[] | MarkdownRefusal;
   /** Higher runs first among claim mappings on one selector. */
   priority?: number;
   style?: never;
@@ -287,37 +289,33 @@ type MarkdownMarkMappingBase<
   priority?: never;
   /** The mark value this tag or node stands for; defaults to `true`. */
   value?: PluginFormatTextValue<D>;
-  /** Write the inline wrapper yourself; Markdown supplies its encoded children. */
+  /** Write the inline wrapper yourself, or `refuse(message)`; Markdown supplies its encoded children. */
   wrap?: (
     context: MarkdownMarkWrapContext<D>
-  ) => MarkdownMarkWrapper | MarkdownRefusal | undefined;
+  ) => MarkdownMarkWrapper | MarkdownRefusal;
 }>;
 
-/**
- * Element or mark fields, selected by the target's schema contribution: a
- * plugin that contributes a text property maps a mark.
- */
-type MarkdownMappingBase<
-  D extends AnyBasePluginDefinition,
-  TSource extends UnistNode,
-> =
-  PluginFormatIsMark<D> extends true
-    ? MarkdownMarkMappingBase<D, TSource> & Readonly<{ style?: never }>
-    : PluginFormatIsMark<D> extends false
-      ? MarkdownElementMappingBase<D, TSource> &
-          Readonly<{ attributes?: never }>
-      :
-          | (MarkdownElementMappingBase<D, TSource> &
-              Readonly<{ attributes?: never }>)
-          | (MarkdownMarkMappingBase<D, TSource> & Readonly<{ style?: never }>);
+type MarkdownMarkContainerKind =
+  | 'delete'
+  | 'emphasis'
+  | 'inlineCode'
+  | 'strong';
+
+type MarkdownMarkTagFields<D extends AnyBasePluginDefinition> =
+  | (Omit<MarkdownMarkMappingBase<D, MarkdownTagNode>, 'value'> &
+      Readonly<{
+        /** CSS property that carries the mark value, such as `color`. */
+        style: string;
+        value?: never;
+      }>)
+  | (MarkdownMarkMappingBase<D, MarkdownTagNode> &
+      Readonly<{
+        style?: never;
+      }>);
 
 type MarkdownTagMappingBase<D extends AnyBasePluginDefinition> =
   PluginFormatIsMark<D> extends true
-    ? MarkdownMarkMappingBase<D, MarkdownTagNode> &
-        Readonly<{
-          /** CSS property that carries the mark value, such as `color`. */
-          style?: string;
-        }>
+    ? MarkdownMarkTagFields<D>
     : PluginFormatIsMark<D> extends false
       ? MarkdownElementMappingBase<D, MarkdownTagNode> &
           Readonly<{
@@ -336,25 +334,90 @@ type MarkdownTagMappingBase<D extends AnyBasePluginDefinition> =
                   Partial<Record<PluginFormatOwnedPropertyKey<D>, string>>
                 >;
               }>)
-          | (MarkdownMarkMappingBase<D, MarkdownTagNode> &
-              Readonly<{ style?: string }>);
+          | MarkdownMarkTagFields<D>;
 
-type EncodeOnlyMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
-  MarkdownMappingBase<D, never> &
+type EncodeOnlyElementMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
+  MarkdownElementMappingBase<D, never> &
     Readonly<{
+      attributes?: never;
       decode?: never;
+      encode: NonNullable<MarkdownElementMappingBase<D, never>['encode']>;
       nestedTags?: never;
       node?: never;
       tag?: never;
     }>;
 
-type NodeMarkdownNodeMapping<D extends AnyBasePluginDefinition> = {
-  [TKind in MarkdownNodeKind]: MarkdownMappingBase<
-    D,
-    MarkdownNodeKinds[TKind]
-  > &
-    Readonly<{ nestedTags?: never; node: TKind; tag?: never }>;
+type EncodeOnlyMarkMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
+  MarkdownMarkMappingBase<D, never> &
+    Readonly<{
+      decode?: never;
+      nestedTags?: never;
+      node?: never;
+      style?: never;
+      tag?: never;
+      wrap: NonNullable<MarkdownMarkMappingBase<D, never>['wrap']>;
+    }>;
+
+type EncodeOnlyMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
+  PluginFormatIsMark<D> extends true
+    ? EncodeOnlyMarkMarkdownNodeMapping<D>
+    : PluginFormatIsMark<D> extends false
+      ? EncodeOnlyElementMarkdownNodeMapping<D>
+      :
+          | EncodeOnlyElementMarkdownNodeMapping<D>
+          | EncodeOnlyMarkMarkdownNodeMapping<D>;
+
+type ElementNodeMarkdownNodeMapping<D extends AnyBasePluginDefinition> = {
+  [TKind in MarkdownNodeKind]:
+    | (MarkdownElementMappingBase<D, MarkdownNodeKinds[TKind]> &
+        Readonly<{
+          attributes?: never;
+          decode: NonNullable<
+            MarkdownElementMappingBase<D, MarkdownNodeKinds[TKind]>['decode']
+          >;
+          nestedTags?: never;
+          node: TKind;
+          tag?: never;
+        }>)
+    | (MarkdownElementMappingBase<D, MarkdownNodeKinds[TKind]> &
+        Readonly<{
+          attributes?: never;
+          encode: NonNullable<
+            MarkdownElementMappingBase<D, MarkdownNodeKinds[TKind]>['encode']
+          >;
+          nestedTags?: never;
+          node: TKind;
+          tag?: never;
+        }>);
 }[MarkdownNodeKind];
+
+type MarkNodeMarkdownNodeMapping<D extends AnyBasePluginDefinition> = {
+  [TKind in MarkdownNodeKind]: TKind extends MarkdownMarkContainerKind
+    ? MarkdownMarkMappingBase<D, MarkdownNodeKinds[TKind]> &
+        Readonly<{
+          nestedTags?: never;
+          node: TKind;
+          style?: never;
+          tag?: never;
+        }>
+    : MarkdownMarkMappingBase<D, MarkdownNodeKinds[TKind]> &
+        Readonly<{
+          decode: NonNullable<
+            MarkdownMarkMappingBase<D, MarkdownNodeKinds[TKind]>['decode']
+          >;
+          nestedTags?: never;
+          node: TKind;
+          style?: never;
+          tag?: never;
+        }>;
+}[MarkdownNodeKind];
+
+type NodeMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
+  PluginFormatIsMark<D> extends true
+    ? MarkNodeMarkdownNodeMapping<D>
+    : PluginFormatIsMark<D> extends false
+      ? ElementNodeMarkdownNodeMapping<D>
+      : ElementNodeMarkdownNodeMapping<D> | MarkNodeMarkdownNodeMapping<D>;
 
 type TagMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
   MarkdownTagMappingBase<D> &
@@ -374,10 +437,24 @@ type TagMarkdownNodeMapping<D extends AnyBasePluginDefinition> =
  * `tag`, `node`, `value` and `style`.
  */
 export type MarkdownNodeMapping<D extends AnyBasePluginDefinition> =
-  | EncodeOnlyMarkdownNodeMapping<D>
-  | NodeMarkdownNodeMapping<D>
-  | TagMarkdownNodeMapping<D>;
+  string extends D['name']
+    ?
+        | EncodeOnlyMarkdownNodeMapping<D>
+        | NodeMarkdownNodeMapping<D>
+        | TagMarkdownNodeMapping<D>
+    : PluginFormatHasElement<D> extends false
+      ? PluginFormatHasTextProperty<D> extends false
+        ? never
+        :
+            | EncodeOnlyMarkdownNodeMapping<D>
+            | NodeMarkdownNodeMapping<D>
+            | TagMarkdownNodeMapping<D>
+      :
+          | EncodeOnlyMarkdownNodeMapping<D>
+          | NodeMarkdownNodeMapping<D>
+          | TagMarkdownNodeMapping<D>;
 
+/** One Markdown mapping or a non-empty tuple of Markdown mappings for a plugin. */
 export type MarkdownNodeMappingInput<D extends AnyBasePluginDefinition> =
   | MarkdownNodeMapping<D>
   | readonly [MarkdownNodeMapping<D>, ...Array<MarkdownNodeMapping<D>>];

@@ -922,6 +922,7 @@ type PluginSelfHtmlElementPropertyMappingMap<
             Exclude<HtmlContributionProperties<C>, SchemaElementProperty>,
           ] extends [never]
         ? Readonly<{
+            docx?: DocxNodeMapping<C>;
             html:
               | PluginHtmlMappingInput<C, TRule>
               | readonly [
@@ -929,6 +930,7 @@ type PluginSelfHtmlElementPropertyMappingMap<
                   ...Array<PluginHtmlMappingInput<C, TRule>>,
                 ];
             markdown?: never;
+            plainText?: PlainTextNodeMappingInput<C>;
           }>
         : never
     : never;
@@ -945,6 +947,7 @@ type PluginSelfHtmlMappingMapForRule<
         ...Array<PluginHtmlMappingInput<C, TRule>>,
       ];
   markdown?: never;
+  plainText?: PlainTextNodeMappingInput<C>;
 }>;
 
 type PluginTargetedHtmlCreateMappingMap<C extends AnyBasePluginDefinition> =
@@ -955,12 +958,14 @@ type PluginTargetedHtmlCreateMappingMap<C extends AnyBasePluginDefinition> =
 type PluginTargetedHtmlMixedMappingMap<C extends AnyBasePluginDefinition> =
   C extends Readonly<{ targetPlugins: ReadonlyArray<PluginReference | string> }>
     ? Readonly<{
+        docx?: DocxNodeMapping<C>;
         html: readonly [
           PluginHtmlMappingInput<C, HtmlElementPropertyCreateRule<C>>,
           PluginHtmlMappingInput<C, HtmlSelfNonCreatingRule<C>>,
           ...Array<PluginHtmlMappingInput<C, HtmlSelfNonCreatingRule<C>>>,
         ];
         markdown?: never;
+        plainText?: PlainTextNodeMappingInput<C>;
       }>
     : never;
 
@@ -1046,11 +1051,16 @@ export type DefinePluginFormats<C extends AnyBasePluginDefinition> = {
   ): PluginFormatMapDeclaration;
   bivarianceHack<const TTarget extends AnyBasePlugin & PluginReference>(
     target: TTarget,
-    formats:
-      | PluginForeignHtmlMappingInput<C, TTarget>
-      | PluginProductNodeMappingMap<
-          ForeignFormatDefinition<C, NoInfer<TTarget>>
-        >
+    formats: TTarget['name'] extends C['name']
+      ? never
+      :
+          | (PluginForeignHtmlMappingInput<C, TTarget> &
+              PluginProductNodeMappingMap<
+                ForeignFormatDefinition<C, NoInfer<TTarget>>
+              >)
+          | PluginProductNodeMappingOnlyMap<
+              ForeignFormatDefinition<C, NoInfer<TTarget>>
+            >
   ): PluginFormatMapDeclaration;
 }['bivarianceHack'];
 

@@ -123,8 +123,7 @@ initialViewState: (): BaseDetailsViewState => ({
 </APIItem>
 
 <APIItem name="component" type="NodeComponent | keyof HTMLElementTagNameMap" optional>
-  插件普通节点使用的组件或原生 HTML 标签。在 `definePlugin(name, { component })` 或
-  `definePlugin(name, { component })` 中声明，可用于 static/RSC 和 live rendering；
+  插件普通节点使用的组件或原生 HTML 标签。在 `definePlugin(name, { component })` 中声明，可用于 static/RSC 和 live rendering；
   使用一次最终 `.configure({component})` 替换。Base `.extend()` 不接受该字段。
   `toReactPlugin()` 只在所属 React adapter 中发布可复用 Plate-layer descriptor
   或添加 Plate-only authoring；terminal consumer 不为设置 `component` 而转换。
@@ -134,7 +133,7 @@ initialViewState: (): BaseDetailsViewState => ({
   name="formats"
   type="PluginFormatMapDeclaration | ((context: PluginFormatAuthoringContext<D>) => PluginFormatMapDeclaration)"
 >
-  Schema-aware HTML、Markdown 与 plain-text node mapping。Authoring context
+  Schema-aware HTML、Markdown、plain-text 与 DOCX node mapping。Authoring context
   暴露 `defineFormats` 与静态 schema binding。Self mapping 使用
   `defineFormats(map)`；foreign contribution 使用
   `defineFormats(TargetPlugin, map)`。
@@ -661,7 +660,7 @@ factory，或使用前一阶段新增类型。
 
 Self mapping 使用 `defineFormats(map)`；foreign mapping 使用
 `defineFormats(TargetPlugin, map)`，helper 会注入 foreign target。Map 保持
-语义 key `html`、`markdown` 与 `plainText`；`html` 接受单个 schema-aware
+语义 key `html`、`markdown`、`plainText` 与 `docx`；`html` 接受单个 schema-aware
 rule 或非空有序 tuple。Whole-payload MIME 处理属于 `dataTransferFormats`。
 不要直接声明 format map、手动添加 `target` 或标注 mapping callback 参数。
 

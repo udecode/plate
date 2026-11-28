@@ -223,9 +223,6 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
   component: 'pre',
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
-      plainText: {
-        encode: ({ children }) => children,
-      },
       html: {
         decode: ({ element, preserve, report }) => {
           if (element.querySelector('math')) {
@@ -255,7 +252,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           return {
             children: [{ text }],
             ...(language ? { language } : {}),
-            ...(meta ? { meta } : {}),
+            ...(meta !== undefined ? { meta } : {}),
           };
         },
         encode: ({ content, node, preserve }) => {

@@ -30,7 +30,7 @@ but the editor type is `Editor`.
 | `store` | Read, update, or subscribe to the current plugin's editor-local state. |
 | `viewStore` | Read, update, or subscribe to the current plugin's state in one view. Available in the `api` factory and on the plugin portal. |
 | `viewStoreOf(state)`, `viewStoreOf(tx)` | Read or write the current plugin's state in the view a read state or transaction runs in. Available in `.extend` callbacks. |
-| `defineFormats(map)` | Bind self-owned HTML, Markdown, and plain-text mappings to this plugin's inferred schema. |
+| `defineFormats(map)` | Bind self-owned HTML, Markdown, plain-text, and DOCX mappings to this plugin's inferred schema. |
 | `defineFormats(TargetPlugin, map)` | Bind a foreign mapping to an exact descriptor and inject its target. |
 
 ## Plugin methods
@@ -159,7 +159,7 @@ export const StrongPlugin = definePlugin('strong', {
 
 The one-argument form owns self mappings. For a foreign contribution, call
 `defineFormats(TargetPlugin, map)`; Plate injects the target into every HTML
-rule. The semantic keys are `html`, `markdown`, and `plainText`. Use one HTML
+rule. The semantic keys are `html`, `markdown`, `plainText`, and `docx`. Use one HTML
 rule or a non-empty ordered rule tuple. Register whole-payload browser MIME
 handling through `dataTransferFormats`, not `defineFormats`. Do not annotate
 mapping callback parameters.

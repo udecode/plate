@@ -772,7 +772,7 @@ export const BaseLockPlugin = definePlugin('lock', {
       html: {
         decode: ({ element, preserve }) => {
           if (element.dataset.locked === 'true') {
-            preserve(LOCK_KEY);
+            preserve('data-locked');
             return true;
           }
 

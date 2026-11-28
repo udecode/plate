@@ -65,7 +65,30 @@ const result = serializePlainText(editor, { projection: 'accepted' });
 
 Feature plugins contribute structural `plainText` mappings through
 `formats`/`defineFormats`. Plain text is one-way output; it does not become a
-universal parser or persistence format.
+universal parser or persistence format. Non-void elements fall back to their
+serialized children and owned content roots automatically, so declare
+`plainText` only when an element needs custom text:
+
+```ts
+import { definePlugin, property, schema } from 'platejs';
+
+const MentionPlugin = definePlugin('mention', {
+  schema: {
+    element: {
+      properties: { label: property.string(), ref: property.string({ required: true }) },
+      void: 'inline',
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      plainText: {
+        encode: ({ node }) => `@${node.label ?? node.ref}`,
+      },
+    }),
+});
+```
+
+`encode` receives `{ children, node, rootText, document, parent, path, previousSibling, root, pluginState, registry, schema }` and returns a string, or `undefined` to fall through to lower-priority mappings (higher `priority` runs first) or default serialization. Mark-only plugins cannot declare `plainText` mappings.
 
 ## Convert HTML
 
@@ -164,8 +187,8 @@ accepts the exact reported loss.
 ## Define feature mappings
 
 Feature plugins declare semantic mappings through `formats` and
-`defineFormats` using the `html`, `markdown`, and `plainText` keys. The narrow
-authoring callback cannot read a live editor or store.
+`defineFormats` using the `html`, `markdown`, `plainText`, and `docx` keys. The
+narrow authoring callback cannot read a live editor or store.
 
 Whole browser MIME payloads use `DataTransferFormat`, not feature mappings.
 Clipboard insertion remains destination-aware and can preserve native open

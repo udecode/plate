@@ -54,9 +54,6 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
   }),
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
-      plainText: {
-        encode: ({ children }) => children,
-      },
       markdown: { tag: type },
     }),
 })
@@ -157,9 +154,6 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
   },
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
-      plainText: {
-        encode: ({ children }) => children,
-      },
       markdown: { tag: type },
     }),
 }).extend(({ editor, plugin, schema: { type } }) => ({

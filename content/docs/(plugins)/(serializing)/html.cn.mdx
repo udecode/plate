@@ -186,10 +186,12 @@ const NotePlugin = definePlugin('note', {
 });
 ```
 
-- `match` 选择 source 元素。`decode` 返回该元素的 property，也可以返回
-  `children`；返回 `undefined` 表示放弃该元素，由下一个 mapping 处理。
+- `match` 选择 source 元素，`priority` 决定重叠规则的顺序（数值越高越先运行）。
+  `decode` 返回该元素的 property，也可以返回 `children`；返回 `undefined` 表示
+  放弃该元素，由下一个 mapping 处理。
 - `encode` 返回 node spec：`tag`、`attributes`、`style` 与 `children`，其中
-  `content` 表示 node 的 children 所在位置。返回 `null` 会省略该元素。
+  `content` 表示 node 的 children 所在位置。返回 `null` 会省略该元素。仅用于解析
+  的规则可设置 `decodeOnly: true` 并省略 `encode`。
 - `preserve(...keys)` 声明返回的输出承载了 mapping target 的这些 property。只有
   `encode` 返回输出时声明才生效。读取 property 不算声明。
 - `decode` 接收自己的 `preserve(...names)`，声明解码结果承载了 `element` 或其读取的
