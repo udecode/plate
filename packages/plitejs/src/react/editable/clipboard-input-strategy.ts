@@ -20,6 +20,7 @@ import {
 } from '../../core/moved-anchors';
 import { hasNonWritableAt } from '../../core/non-writable';
 import { toInternalRoot } from '../../core/public-root';
+import { checkTransfer } from '../../core/transfer';
 import {
   isDOMElement,
   isDOMNode,
@@ -742,16 +743,27 @@ const followDOMDropTargetOnScroll = (
   });
 };
 
+const resolveSessionTextDropPoint = (
+  editor: ReactRuntimeEditor,
+  event: DragEvent<HTMLDivElement>,
+  viewLines: ViewLines | null
+) =>
+  (viewLines && resolvePlacedDropPoint(editor, viewLines, event.nativeEvent)) ??
+  resolveTextDropRangeFromEvent(editor, event)?.anchor ??
+  pointAt(editor, dropInputOf(event));
+
 export const applyEditableDragOver = ({
   editor,
   event,
   onDragOver,
   state,
+  viewLines = null,
 }: {
   editor: ReactRuntimeEditor;
   event: DragEvent<HTMLDivElement>;
   onDragOver?: EditableDragHandler;
   state: EditableDragState;
+  viewLines?: ViewLines | null;
 }): 'block' | boolean => {
   const session = readDragSession(
     ReactEditor.getWindow(editor).document,
@@ -800,7 +812,33 @@ export const applyEditableDragOver = ({
     return 'block';
   }
 
-  if (state.isDraggingInternally) {
+  if (session && !session.draggedBlock && session.source.kind === 'text') {
+    const copy = copyIntentOf(dropInputOf(event), session);
+    const range = session.source.anchor.resolve();
+    const dropPoint = resolveSessionTextDropPoint(editor, event, viewLines);
+
+    if (
+      range &&
+      !RangeApi.isCollapsed(range) &&
+      dropPoint &&
+      !checkTransfer(
+        editor,
+        {
+          from: session.sourceEditor,
+          range,
+          to: { point: dropPoint },
+        },
+        copy ? 'copy' : 'move'
+      ).admitted
+    ) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'none';
+
+      return false;
+    }
+
+    event.dataTransfer.dropEffect = copy ? 'copy' : 'move';
+  } else if (state.isDraggingInternally) {
     event.dataTransfer.dropEffect = copyIntentOf(dropInputOf(event), session)
       ? 'copy'
       : 'move';
@@ -964,10 +1002,7 @@ const applySessionDrop = ({
       : { range: range as Range };
   const dropPoint = session.draggedBlock
     ? null
-    : ((viewLines &&
-        resolvePlacedDropPoint(editor, viewLines, event.nativeEvent)) ??
-      resolveTextDropRangeFromEvent(editor, event)?.anchor ??
-      pointAt(editor, dropInputOf(event)));
+    : resolveSessionTextDropPoint(editor, event, viewLines);
   const resolved = session.draggedBlock
     ? resolveDOMDropTarget(editor, dropInputOf(event), {
         copy,

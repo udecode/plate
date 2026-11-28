@@ -153,6 +153,50 @@ const pairRoots = (pairs: RootPairs, aName: string, bName: string) => {
   return 'new';
 };
 
+const sameOwnedRoots = (
+  aChildRoots: Record<string, string> | undefined,
+  aRoots: JsonValue['roots'],
+  bChildRoots: Record<string, string> | undefined,
+  bRoots: JsonValue['roots'],
+  dropped: DroppedKeys,
+  held: ReadonlySet<string>,
+  pairs: RootPairs,
+  mapExpectedName?: (name: string) => string
+): boolean => {
+  const aRootNames = Object.keys(aChildRoots ?? {}).sort();
+  const bRootNames = Object.keys(bChildRoots ?? {}).sort();
+
+  if (aRootNames.join(',') !== bRootNames.join(',')) return false;
+
+  for (const slot of aRootNames) {
+    const rawAName = aChildRoots?.[slot] as string;
+    const aName = mapExpectedName ? mapExpectedName(rawAName) : rawAName;
+    const bName = bChildRoots?.[slot] as string;
+
+    if (mapExpectedName && aName !== bName) return false;
+
+    const pairing = pairRoots(pairs, aName, bName);
+
+    if (pairing === 'clash') return false;
+    if (pairing === 'seen' || (aName === bName && held.has(aName))) continue;
+    if (
+      !sameContents(
+        aRoots?.[aName] ?? [],
+        aRoots,
+        bRoots?.[bName] ?? [],
+        bRoots,
+        dropped,
+        held,
+        pairs
+      )
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 const sameContents = (
   a: readonly Descendant[],
   aRoots: JsonValue['roots'],
@@ -194,22 +238,18 @@ const sameContents = (
       return false;
     }
 
-    const aRootNames = Object.keys(aChildRoots ?? {}).sort();
-    const bRootNames = Object.keys(bChildRoots ?? {}).sort();
-
-    if (aRootNames.join(',') !== bRootNames.join(',')) return false;
-
-    for (const slot of aRootNames) {
-      const aName = aChildRoots?.[slot] as string;
-      const bName = bChildRoots?.[slot] as string;
-
-      const pairing = pairRoots(pairs, aName, bName);
-
-      if (pairing === 'clash') return false;
-      if (pairing === 'seen' || (aName === bName && held.has(aName))) continue;
-      if (!sameList(aRoots?.[aName] ?? [], bRoots?.[bName] ?? [])) {
-        return false;
-      }
+    if (
+      !sameOwnedRoots(
+        aChildRoots,
+        aRoots,
+        bChildRoots,
+        bRoots,
+        dropped,
+        held,
+        pairs
+      )
+    ) {
+      return false;
     }
 
     return sameList(aChildren, bChildren);
@@ -404,28 +444,71 @@ const belowCarried = (
       };
 };
 
-const shellOf = (
-  element: Element,
-  skip: (key: string) => boolean,
-  landedNameBySource?: ReadonlyMap<string, string>
-) => {
-  const { children: _children, ...props } = element;
-  const { childRoots } = props as { childRoots?: Record<string, string> };
-  const normalized =
-    childRoots && landedNameBySource && landedNameBySource.size > 0
-      ? {
-          ...props,
-          childRoots: Object.fromEntries(
-            Object.entries(childRoots).map(([slot, name]) => [
-              slot,
-              landedNameBySource.get(name) ?? name,
-            ])
-          ),
+const sameOwnedRootsOfTextCopy = (
+  fragment: readonly Descendant[],
+  wantRoots: JsonValue['roots'],
+  gotRoots: JsonValue['roots'],
+  closed: ClosedEdges,
+  kind: LandedKind,
+  held: ReadonlySet<string>
+): boolean => {
+  const pairs = rootPairs();
+  const visit = (
+    nodes: readonly Descendant[],
+    onStart: boolean,
+    onEnd: boolean
+  ): boolean => {
+    const list = nonEmpty(nodes);
+
+    for (let index = 0; index < list.length; index += 1) {
+      const node = list[index];
+
+      if (NodeApi.isText(node)) continue;
+
+      const atStart = onStart && index === 0;
+      const atEnd = onEnd && index === list.length - 1;
+      const open = openAtEdge(node, atStart, atEnd, closed);
+
+      if (!open) {
+        const { childRoots } = node as Element & {
+          childRoots?: Record<string, string>;
+        };
+
+        if (
+          childRoots &&
+          !sameOwnedRoots(
+            childRoots,
+            wantRoots,
+            childRoots,
+            gotRoots,
+            noDroppedKeys,
+            held,
+            pairs
+          )
+        ) {
+          return false;
         }
-      : props;
+      }
+      if (kind(node) !== 'void' && !visit(node.children, atStart, atEnd)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  return visit(fragment, true, true);
+};
+
+const shellOf = (element: Element, skip: (key: string) => boolean) => {
+  const {
+    childRoots: _childRoots,
+    children: _children,
+    ...props
+  } = element as Element & { childRoots?: Record<string, string> };
 
   return canonicalJsonKey(
-    Object.fromEntries(Object.entries(normalized).filter(([key]) => !skip(key)))
+    Object.fromEntries(Object.entries(props).filter(([key]) => !skip(key)))
   );
 };
 
@@ -488,12 +571,18 @@ export const landsMoved = (
     landedNameBySource,
     sources,
   }: MovedPayload,
-  dropped: DroppedKeys = noDroppedKeys
+  dropped: DroppedKeys = noDroppedKeys,
+  expectedRoots?: JsonValue['roots'],
+  landedRoots?: JsonValue['roots'],
+  held: ReadonlySet<string> = NO_KEYS
 ) => {
   const below = belowCarried(landed, kind, carried);
 
   if (!below) return false;
 
+  const pairs = rootPairs();
+  const mapExpectedName = (name: string) =>
+    landedNameBySource.get(name) ?? name;
   const droppedFrom = (node: object) => {
     const source = sources.get(node);
 
@@ -534,16 +623,35 @@ export const landsMoved = (
       );
       const dropsHere = droppedFrom(expected.element);
 
-      return (
-        shellOf(item.element, (key) => skip(key) || landedInherits(key)) ===
+      if (
+        shellOf(item.element, (key) => skip(key) || landedInherits(key)) !==
         shellOf(
           expected.element,
           (key) =>
             skip(key) ||
             expectedInherits(key) ||
-            (dropsHere.has(key) && !Object.hasOwn(item.element, key)),
-          landedNameBySource
+            (dropsHere.has(key) && !Object.hasOwn(item.element, key))
         )
+      ) {
+        return false;
+      }
+
+      const { childRoots: expectedChildRoots } = expected.element as Element & {
+        childRoots?: Record<string, string>;
+      };
+      const { childRoots: itemChildRoots } = item.element as Element & {
+        childRoots?: Record<string, string>;
+      };
+
+      return sameOwnedRoots(
+        expectedChildRoots,
+        expectedRoots,
+        itemChildRoots,
+        landedRoots,
+        dropped,
+        held,
+        pairs,
+        mapExpectedName
       );
     })
   );
@@ -589,7 +697,13 @@ export type LandingExpectation =
       roots: JsonValue['roots'];
       sourceRoots: JsonValue['roots'];
     }>
-  | Readonly<{ kind: 'range-move'; moved: MovedPayload }>;
+  | Readonly<{
+      aliased: ReadonlySet<string>;
+      independent: boolean;
+      kind: 'range-move';
+      moved: MovedPayload;
+      roots: JsonValue['roots'];
+    }>;
 
 export type DraftLanding = Readonly<{
   expected: LandingExpectation;
@@ -889,7 +1003,14 @@ export const landingHolds = (
   const landed = fragmentOf(children, range);
 
   if (expected.kind === 'range-move') {
-    return landsMoved(landed, expected.moved, dropped);
+    return landsMoved(
+      landed,
+      expected.moved,
+      dropped,
+      { ...roots, ...expected.roots },
+      roots,
+      expected.independent ? NO_KEYS : expected.aliased
+    );
   }
 
   const {
@@ -906,6 +1027,23 @@ export const landingHolds = (
     { ...roots, ...expected.roots },
     { aliased, closed }
   );
+
+  if (
+    textTokens(got.nodes, closed, landedKind) !==
+      textTokens(want.nodes, closed, landedKind) ||
+    !sameOwnedRootsOfTextCopy(
+      want.nodes,
+      want.roots,
+      got.roots,
+      closed,
+      landedKind,
+      independent ? NO_KEYS : aliased
+    )
+  ) {
+    return false;
+  }
+  if (!independent) return true;
+
   const pairs = rootPairs();
   const keepsSource = (name: string) => {
     const source = asCopied(sourceRoots?.[name] ?? [], sourceRoots);
@@ -922,13 +1060,6 @@ export const landingHolds = (
     );
   };
 
-  if (
-    textTokens(got.nodes, closed, landedKind) !==
-    textTokens(want.nodes, closed, landedKind)
-  ) {
-    return false;
-  }
-  if (!independent) return true;
   for (const [source, name] of landedNameBySource) {
     pairRoots(pairs, source, name);
   }
@@ -992,8 +1123,14 @@ export const rebaseLanding = (
   });
 
   return {
-    kind: 'range-move',
-    moved: { ...moved, ...below, sources },
+    ...expected,
+    moved: {
+      ...moved,
+      ...below,
+      landedNameBySource: EMPTY_ROOT_NAMES,
+      sources,
+    },
+    roots: value.roots,
   };
 };
 

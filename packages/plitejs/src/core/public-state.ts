@@ -1,3 +1,7 @@
+import {
+  createEditorViewRuntime,
+  getViewPresentation,
+} from '../editor-runtime-view';
 import { applyAddMark } from '../editor/add-mark';
 import { correctDocument } from '../editor/correct-document';
 import { applyDelete } from '../editor/delete-backward';
@@ -376,6 +380,7 @@ import {
   type RenewedCopy,
   withRenewalOff,
 } from './landed-names';
+import { readLanding } from './landing';
 import {
   notifyObservers,
   reportEditorLifecycleError,
@@ -518,7 +523,7 @@ import {
   type RenewedContentSlice,
   renewContentSlice,
 } from './slice-identities';
-import { readSliceLanding, readTransferLanding } from './slice-landing';
+import { readSliceLanding } from './slice-landing';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
   advancePathStableSnapshotIndex,
@@ -9610,7 +9615,11 @@ export const getUpdateView = <
     if (lastKey) {
       const defaultEdge = { edge: 'after' as const, key: lastKey };
       const placement = getTransactionSpecContext(editor)?.placement;
-      const resolvedEdge = readTransferLanding(
+      const landingRoot = root === MAIN_ROOT_KEY ? undefined : root;
+      const editorPresentation = getViewPresentation(editor);
+      const activePresentation =
+        placement && placement !== 'base' ? placement : editorPresentation;
+      const resolvedEdge = readLanding(
         editor,
         {
           edge: 'after',
@@ -9627,8 +9636,15 @@ export const getUpdateView = <
           target: lastEntry as NodeEntry<Element>,
         },
         defaultEdge,
-        root === MAIN_ROOT_KEY ? undefined : root,
-        placement && placement !== 'base' ? placement : undefined
+        landingRoot === editor.read.view.root() &&
+          activePresentation === editorPresentation
+          ? editor
+          : () =>
+              createEditorViewRuntime(
+                editor,
+                landingRoot === undefined ? {} : { root: landingRoot },
+                activePresentation
+              )
       );
       const landedTarget =
         resolvedEdge.key !== lastKey || resolvedEdge.edge !== 'after'

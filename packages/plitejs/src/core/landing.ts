@@ -1,4 +1,10 @@
-import type { AnyEditor, NodeKey, RootKey } from '../interfaces/editor';
+import type {
+  AnyEditor,
+  Editor,
+  NodeKey,
+  RootKey,
+  Value,
+} from '../interfaces/editor';
 import { ElementApi, type Element } from '../interfaces/element';
 import { NodeApi, type Descendant, type NodeEntry } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
@@ -237,17 +243,18 @@ const landingInput = (
   target,
 });
 
-const readLanding = (
-  editor: AnyEditor,
+export const readLanding = <V extends Value>(
+  editor: Editor<V>,
   input: TransferLandingInput,
-  edge: TransferEdge
+  edge: TransferEdge,
+  view: Editor<V> | (() => Editor<V>) = editor
 ): TransferEdge =>
   executeEditorRead(
     editor,
     editorReads.transfer.landing,
     input,
     () => edge,
-    editor
+    view
   );
 
 const sameEdge = (a: TransferEdge, b: TransferEdge) =>

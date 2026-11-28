@@ -46,6 +46,7 @@ import {
   transferVeto,
 } from './landing';
 import { collectMovedAnchors, placeMovedAnchors } from './moved-anchors';
+import { hasNonWritableAt } from './non-writable';
 import { definePlugin } from './plugin';
 import {
   getCompiledEditorSchema,
@@ -355,6 +356,10 @@ const checkTextLanding = (
 ) => {
   const { source, intent, relation } = admission;
 
+  if (hasNonWritableAt(editor, point, { includeReadOnly: false })) {
+    refuse('policy');
+  }
+
   checkEndMatterPoint(
     editor,
     getEditorStateView(editor),
@@ -548,6 +553,9 @@ const admit = (
 
     if (!deleted) refuse('lossy');
     else if (RangeApi.isCollapsed(deleted)) refuse('no-op');
+    else if (hasNonWritableAt(from, deleted, { includeReadOnly: false })) {
+      refuse('policy');
+    }
   }
 
   const slice =
@@ -969,6 +977,8 @@ const runTransfer = (
               sourceRoots: copied.roots,
             }
           : {
+              aliased: aliasedRoots(written.renewed),
+              independent: relation === 'independent',
               kind: 'range-move',
               moved:
                 carryMove({
@@ -983,6 +993,7 @@ const runTransfer = (
                   sources: sources?.nodes,
                   written: written.written,
                 }) ?? refuse('lossy'),
+              roots: written.renewed.slice.roots,
             };
 
         return { expected, spec: written.spec };
@@ -1295,11 +1306,14 @@ export const checkFilesLanding = (
 /** The `editor.read.transfer` group. */
 export type TransferRead = Readonly<{
   /**
-   * Whether a move would be admitted, without running it: the dry run the
-   * drop indicator paints from. A refusal at commit time, such as a lossy
-   * landing, is not predicted.
+   * Whether a move (or copy, with `{ intent: 'copy' }`) would be admitted,
+   * without running it: the dry run the drop indicator paints from. A refusal
+   * at commit time, such as a lossy landing, is not predicted.
    */
-  check: (input: TransferInput) => TransferCheck;
+  check: (
+    input: TransferInput,
+    options?: Readonly<{ intent?: TransferIntent }>
+  ) => TransferCheck;
   /**
    * The blocks a transfer carries, after feature expansion such as list
    * families, without nested duplicates, in document order. With `node`, a
@@ -1349,10 +1363,10 @@ const resolveTransferTarget = (
 
 const TRANSFER_PLUGIN = definePlugin('transfer', {
   read: ({ editor }): TransferRead => ({
-    check: (input) =>
+    check: (input, options) =>
       checkTransfer(
         ...resolveTransferTarget(editor as AnyEditor, input),
-        'move'
+        options?.intent ?? 'move'
       ),
     nodes: (options) => {
       const reader =
