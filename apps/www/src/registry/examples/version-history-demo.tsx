@@ -1,7 +1,7 @@
 'use client';
 
 import type { EditorStateSchemaApi, Value } from 'platejs';
-import { compare, type TwoWayComparison } from 'platejs/diff';
+import { compare, type Comparison } from 'platejs/diff';
 import {
   EditorRoot,
   EditorContent,
@@ -39,7 +39,7 @@ function VersionDiff({
 }) {
   const [result, setResult] = React.useState<{
     after: unknown;
-    comparison: TwoWayComparison | null;
+    comparison: Comparison | null;
     error: string | null;
   } | null>(null);
 

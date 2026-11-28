@@ -6,10 +6,7 @@ export {
   type AuthoredTestOptions,
 } from './authored';
 export { authoredRecords } from './facts/records';
-export {
-  proposeAuthoredComparison,
-  type AuthoredComparisonImportResult,
-} from './comparison';
+export type { AuthoredComparisonImportResult } from './comparison';
 export {
   projectAuthoredDocument,
   projectAuthoredRange,

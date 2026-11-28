@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-28-diff-two-way-only",
+      "href": "/registry/changelog/2026-11-28-diff-two-way-only.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Remove three-way conflict and branch UI from Diff and use Comparison in version-history-demo",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["diff", "version-history-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-add-lock-kit",
       "href": "/registry/changelog/2026-11-27-add-lock-kit.json",
       "status": "draft",

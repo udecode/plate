@@ -89,7 +89,7 @@ ai.update((tx) => {
 将固定草稿与已接受文档比较，然后把其 canonical change 发布为一个原生 proposal：
 
 ```tsx
-import { proposeAuthoredComparison } from "platejs/authored";
+import { AuthoredPlugin } from "platejs/authored";
 import { compare } from "platejs/diff";
 
 const incomingDraft = [
@@ -100,12 +100,14 @@ const comparison = await compare({
   after: incomingDraft,
   schema: editor.read.schema,
 });
-const imported = proposeAuthoredComparison(editor, { comparison });
+const imported = editor
+  .plugin(AuthoredPlugin)
+  .api.proposeComparison({ comparison });
 ```
 
-`groupIds` 选择比较 group，并包含它们必需的 group。导入会写入每一段所有 group 都被选中的变更内容。每一段都落在两个文档都保持原位的同样两个块之间，与它来源的文档一致。在同一段中有编辑的 group 互相依赖，例如被移动的块和块内的编辑，所以选择其中一个会同时导入两者。一次移动、拆分或合并的各个部分属于同一个 group，或互相依赖。把一个在每个文档中都只出现一次的词从一段移到另一段的 group 属于同一个 group。如果一个编辑删除了某个三个或更多字母的词，而另一个编辑添加了它，即使是在更长的词内部，这两个编辑也会成为同一个 group，例如删除 `the` 的同时把 `brea` 改成 `breathe`。只有当没有其他编辑改动的字母包含这个词时才会这样。比较读取的是改动的字母，而不是词。在 `two` 前添加 `the` 可能只改动 `he t`，所以这个编辑不算在内。其他移动文本，例如不含字母的文本或文档中重复出现的短词，不会合并任何 group，所以单独导入其中一个 group，或 `resolveComparison` 的冲突选择只保留其中一个，可能丢失或重复这段文本。重复块内编辑的 group，例如应用到整个引用块的粗体，依赖这些编辑，而这些编辑仍可单独导入。如果选择会漏掉某个没有 group 覆盖、且改变文本或标记的差异，会返回 `blocked`，原因为 `ambiguous-selection`。
+`groupIds` 选择比较 group，并包含它们必需的 group。导入会写入每一段所有 group 都被选中的变更内容。每一段都落在两个文档都保持原位的同样两个块之间，与它来源的文档一致。在同一段中有编辑的 group 互相依赖，例如被移动的块和块内的编辑，所以选择其中一个会同时导入两者。一次移动、拆分或合并的各个部分属于同一个 group，或互相依赖。把一个在每个文档中都只出现一次的词从一段移到另一段的 group 属于同一个 group。如果一个编辑删除了某个三个或更多字母的词，而另一个编辑添加了它，即使是在更长的词内部，这两个编辑也会成为同一个 group，例如删除 `the` 的同时把 `brea` 改成 `breathe`。只有当没有其他编辑改动的字母包含这个词时才会这样。比较读取的是改动的字母，而不是词。在 `two` 前添加 `the` 可能只改动 `he t`，所以这个编辑不算在内。其他移动文本，例如不含字母的文本或文档中重复出现的短词，不会合并任何 group，所以单独导入其中一个 group 可能丢失或重复这段文本。重复块内编辑的 group，例如应用到整个引用块的粗体，依赖这些编辑，而这些编辑仍可单独导入。如果选择会漏掉某个没有 group 覆盖、且改变文本或标记的差异，会返回 `blocked`，原因为 `ambiguous-selection`。
 
-只有当单独接受该 proposal 得到只应用所选 group 的文档、单独拒绝它得到导入开始时的文档，并且其他所有 suggestion 仍保持待处理时，导入才返回 `applied`。否则它返回 `blocked`，原因为 `dependency`，并且不写入任何内容，例如删除命名 root 的整体导入，Suggesting 无法记录它。如果只应用所选 group 的文档只是重述了你自己的待处理 suggestion，也就是接受其中它不再标记的那些、其他 suggestion 都保持待处理，就已经得到该文档，导入返回 `unchanged`，并且不写入任何内容。在已应用 proposal 等待的待处理变更被决定之前，审阅仍可能暂缓该 proposal 的决定。proposal 写入后从更新中抛出的错误会继续传播，proposal 仍会保留。结果把选中的 group ID 映射到原生 change ID。导入会在写入前检查 schema、已接受内容和 authored frontier；处理 `stale`、`blocked`、`invalid` 和 `unavailable` 时，不要把它们当作已应用的 proposal。比较必须是针对当前已接受文档的双向比较。
+只有当单独接受该 proposal 得到只应用所选 group 的文档、单独拒绝它得到导入开始时的文档，并且其他所有 suggestion 仍保持待处理时，导入才返回 `applied`。否则它返回 `blocked`，原因为 `dependency`，并且不写入任何内容，例如删除命名 root 的整体导入，Suggesting 无法记录它。如果只应用所选 group 的文档只是重述了你自己的待处理 suggestion，也就是接受其中它不再标记的那些、其他 suggestion 都保持待处理，就已经得到该文档，导入返回 `unchanged`，并且不写入任何内容。在已应用 proposal 等待的待处理变更被决定之前，审阅仍可能暂缓该 proposal 的决定。proposal 写入后从更新中抛出的错误会继续传播，proposal 仍会保留。结果把选中的 group ID 映射到原生 change ID。导入会读取完整文档（`editor.read.value()`），并在写入前检查 schema、已接受内容和 authored frontier（`meta` 和 `records`），并以调用视图的作者写入；处理 `stale`、`blocked`、`invalid` 和 `unavailable` 时，不要把它们当作已应用的 proposal。在命名 root 视图上，导入仍会与完整文档值比较；如果比较仅由单个 root 的 children 构建，会返回 `stale`，原因为 `document`。
 
 ## 配置 view
 
@@ -403,6 +405,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 | `authored.read.reviewOf(node)`             | 读取存储 node 的待处理 mark，以及这些 mark 所格式化属性的已接受值。    |
 | `authored.update.decide(decision)`         | 接受或拒绝 change 或卡片；决定数组会一起决定。                         |
 | `authored.update.withdraw(changes)`        | 移除写入视图作者自己的待处理 change，不记录决定。                      |
+| `authored.api.proposeComparison(input)`    | 将通过校验的比较结果或选中的 group 发布为一个原生 proposal。           |
 | `authored.api.setView(view)`               | 修改该精确 view 的 policy。                                            |
 | `authored.api.subscribeChanges(listener)`  | 每次改变审阅的 commit 都会收到一个共享 delta。                         |
 | `authored.api.subscribeRefusals(listener)` | 接收编辑器拒绝的每个 proposal 写入或 view 切换。                       |
@@ -411,7 +414,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 
 ### 类型和格式辅助函数
 
-`platejs/authored` 导出 authored plugin 描述符，`AuthoredPlaceError`，change、卡片、query、page、delta、decision、result 和 outcome 类型，`proposeAuthoredComparison`，以及下面的格式辅助函数。
+`platejs/authored` 导出 authored plugin 描述符，`AuthoredPlaceError`，change、卡片、query、page、delta、decision、result、比较导入结果和 outcome 类型，以及下面的格式辅助函数。
 
 `projectAuthoredDocument(document, { projection })` 为 `accepted` 或 `proposed` projection 返回 `{ ok, document, diagnostics, pending }`。它是纯 document operation：不会构造、激活或订阅 editor runtime。同时传入 `editor` 时，会用该 editor 的 schema 补全结果，因此被决定清空的容器会得到默认内容。传入 `editor` 时，若 schema 的生成属性会让 `propose` view 拒绝，含有待处理 change 的 document 会改为返回代码为 `authored-generated-values` 的 `AuthoredProjectionRefusal`。若 projection 需要构建一个带生成值的元素，而 document 没有为它存储备用 block（例如由其他工具写入的 document），也会返回代码为 `authored-uncovered` 的拒绝。
 

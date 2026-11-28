@@ -1,6 +1,27 @@
 {
   "schemaVersion": 1,
   "components": {
+    "diff": [
+      "2026-11-28-diff-two-way-only",
+      "2026-11-27-diff-and-cursor-colors",
+      "2026-11-23-fix-diff-paragraph-text",
+      "2026-11-20-fix-reduced-motion-scroll",
+      "2026-11-17-cn-package",
+      "2026-09-15-structural-diff"
+    ],
+    "version-history-demo": [
+      "2026-11-28-diff-two-way-only",
+      "2026-11-27-diff-and-cursor-colors",
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-07-editor-user",
+      "2026-09-15-structural-diff",
+      "2026-08-31-inline-component-props",
+      "2026-08-20-format-version-history-values",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite"
+    ],
     "lock": ["2026-11-27-add-lock-kit"],
     "lock-static": ["2026-11-27-add-lock-kit"],
     "dnd": [
@@ -237,25 +258,6 @@
       "2026-10-13-lint"
     ],
     "diff-colors": ["2026-11-27-diff-and-cursor-colors"],
-    "diff": [
-      "2026-11-27-diff-and-cursor-colors",
-      "2026-11-23-fix-diff-paragraph-text",
-      "2026-11-20-fix-reduced-motion-scroll",
-      "2026-11-17-cn-package",
-      "2026-09-15-structural-diff"
-    ],
-    "version-history-demo": [
-      "2026-11-27-diff-and-cursor-colors",
-      "2026-11-27-fix-base-and-phosphor-installs",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-07-editor-user",
-      "2026-09-15-structural-diff",
-      "2026-08-31-inline-component-props",
-      "2026-08-20-format-version-history-values",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-12-canonical-node-props",
-      "2025-11-20-biome-ultracite"
-    ],
     "remote-cursor-overlay": [
       "2026-11-27-diff-and-cursor-colors",
       "2026-11-19-rtl-editor-ui",

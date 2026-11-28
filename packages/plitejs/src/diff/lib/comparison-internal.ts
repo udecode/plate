@@ -76,13 +76,28 @@ export const detachComparisonEnvelope = (input: unknown): string | null => {
   if (Array.isArray(input) || typeof input !== 'object' || input === null) {
     return null;
   }
-  const { meta } = input as Readonly<{ meta?: unknown }>;
+  const { meta, records } = input as Readonly<{
+    meta?: unknown;
+    records?: unknown;
+  }>;
 
-  if (meta === undefined) return null;
+  if (meta === undefined && records === undefined) return null;
 
-  return fingerprintEditorJson(
-    snapshotEditorJsonValue(meta, 'Comparison document metadata')
-  );
+  return fingerprintEditorJson({
+    ...(meta === undefined
+      ? {}
+      : {
+          meta: snapshotEditorJsonValue(meta, 'Comparison document metadata'),
+        }),
+    ...(records === undefined
+      ? {}
+      : {
+          records: snapshotEditorJsonValue(
+            records,
+            'Comparison document records'
+          ),
+        }),
+  });
 };
 
 export const detachComparisonDocument = <V extends Value>(

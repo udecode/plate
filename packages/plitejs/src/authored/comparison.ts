@@ -34,25 +34,22 @@ import type { SpeculativeUpdate } from '../core/update-policy';
 import {
   COMPARISON_POLICY,
   comparisonChangeHashPayload,
+  detachComparisonEnvelope,
 } from '../diff/lib/comparison-internal';
 import {
   closeOverRequired,
   comparisonPlanOf,
 } from '../diff/lib/comparison-plan';
-import type { TwoWayComparison } from '../diff/lib/comparison-types';
-import type {
-  AnyEditor,
-  EditorStateSchemaApi,
-  Value,
-} from '../interfaces/editor';
+import type { Comparison } from '../diff/lib/comparison-types';
+import type { Editor, EditorStateSchemaApi, Value } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
-import { authoredProposerOf } from './authored';
 import { factsOf, membersOf, type ReviewFacts } from './facts/facts';
 import { unrepresentable } from './refusal';
 import { authoredResolveSchemaOf } from './resolve-schema';
 import { AUTHORED_MARKS_KEY, readMembers } from './tree/marks';
 import { resolveAuthoredValue } from './tree/resolve';
 
+/** Outcome of proposing a validated document comparison as one native change. */
 export type AuthoredComparisonImportResult =
   | Readonly<{
       ids: readonly string[];
@@ -71,21 +68,26 @@ export type AuthoredComparisonImportResult =
       reason: 'comparison' | 'selection';
       status: 'invalid';
     }>
-  | Readonly<{ reason: 'actor' | 'plugin'; status: 'unavailable' }>;
+  | Readonly<{ reason: 'actor'; status: 'unavailable' }>;
 
-const validComparison = (comparison: TwoWayComparison): boolean => {
-  if (
-    comparison.kind !== 'two-way' ||
-    !jsonEqual(comparison.policy, COMPARISON_POLICY) ||
-    !DocumentChange.isDocumentChange(comparison.change) ||
-    !Array.isArray(comparison.changes) ||
-    !Array.isArray(comparison.diagnostics) ||
-    comparison.before.projection !== 'accepted'
-  ) {
-    return false;
-  }
+export type AuthoredComparisonProposer = Readonly<{
+  authorId: () => string | null;
+  createChangeId: () => string;
+  pendingIds: (authorId: string) => ReadonlySet<string>;
+}>;
 
+const validComparison = (comparison: Comparison): boolean => {
   try {
+    if (
+      !jsonEqual(comparison.policy, COMPARISON_POLICY) ||
+      !DocumentChange.isDocumentChange(comparison.change) ||
+      !Array.isArray(comparison.changes) ||
+      !Array.isArray(comparison.diagnostics) ||
+      comparison.before.projection !== 'accepted'
+    ) {
+      return false;
+    }
+
     const prefix = `comparison:${fingerprintEditorJson({
       after: comparison.after.fingerprint,
       before: comparison.before.fingerprint,
@@ -118,31 +120,17 @@ const validComparison = (comparison: TwoWayComparison): boolean => {
   }
 };
 
-/**
- * Publish the selected groups of a validated fixed-revision comparison as one
- * native proposal. Returns `unchanged`, writing nothing, when accepting the
- * importer's own pending changes that the selection's document no longer marks,
- * and keeping every other pending change, already gives that document.
- * Otherwise returns `applied` only when accepting the proposal alone gives the
- * selection's document and rejecting it alone gives the document it started
- * from, with every other suggestion left pending. When it cannot, it writes
- * nothing and returns `blocked`. Review can still hold the proposal's decision
- * until a pending change it waits on is decided. An error that escapes the
- * update after the proposal commits propagates.
- */
 export const proposeAuthoredComparison = <V extends Value>(
-  editor: AnyEditor<V>,
+  editor: Editor<V>,
   input: Readonly<{
-    comparison: TwoWayComparison<V>;
+    comparison: Comparison<V>;
     groupIds?: readonly string[];
-  }>
+  }>,
+  proposer: AuthoredComparisonProposer
 ): AuthoredComparisonImportResult => {
   const { comparison } = input;
   if (!validComparison(comparison)) {
     return { reason: 'comparison', status: 'invalid' };
-  }
-  if (typeof editor.read.authored?.change !== 'function') {
-    return { reason: 'plugin', status: 'unavailable' };
   }
   const schema: EditorStateSchemaApi<V> = editor.read.schema;
   // A plan derived under a changed schema can fail and report `invalid`, so it
@@ -188,8 +176,7 @@ export const proposeAuthoredComparison = <V extends Value>(
   if (!jsonEqual(document, comparison.before.document)) {
     return { reason: 'document', status: 'stale' };
   }
-  const envelopeFingerprint =
-    current.meta === undefined ? null : fingerprintEditorJson(current.meta);
+  const envelopeFingerprint = detachComparisonEnvelope(current);
   if (envelopeFingerprint !== comparison.before.envelopeFingerprint) {
     return { reason: 'authored-frontier', status: 'stale' };
   }
@@ -209,8 +196,8 @@ export const proposeAuthoredComparison = <V extends Value>(
   if (change.empty) {
     return { ids: [], mappings: [], status: 'unchanged' };
   }
-  const proposer = authoredProposerOf(editor);
-  if (!proposer) {
+  const authorId = proposer.authorId();
+  if (authorId === null) {
     return { reason: 'actor', status: 'unavailable' };
   }
   const compare = compareDecided(
@@ -219,7 +206,7 @@ export const proposeAuthoredComparison = <V extends Value>(
     comparison.before.document,
     target
   );
-  const { authorId, pending } = proposer;
+  const pending = proposer.pendingIds(authorId);
   const draftRestatesOwnChanges = () => {
     try {
       const marked = changesMarkedIn(target, factsOf(current));
@@ -298,8 +285,8 @@ export const proposeAuthoredComparison = <V extends Value>(
   return { reason: 'dependency', status: 'blocked' };
 };
 
-const renewInsertedIds = (
-  editor: AnyEditor,
+const renewInsertedIds = <V extends Value>(
+  editor: Editor<V>,
   before: JsonEditorValue,
   change: DocumentChange
 ): DocumentChange => {
@@ -657,8 +644,8 @@ const droppedQuietBlocks = (
   return dropped;
 };
 
-const compareDecided = (
-  editor: AnyEditor,
+const compareDecided = <V extends Value>(
+  editor: Editor<V>,
   live: JsonEditorValue,
   copy: JsonEditorValue,
   target: JsonEditorValue

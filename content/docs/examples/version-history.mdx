@@ -25,7 +25,7 @@ For application revision previews and restores with comments, see [Comments and 
 
 ## Compare saved revisions
 
-The demo captures an initial snapshot. Edit the document and select **Save revision** to compare the two latest snapshots. Saving another revision starts a new comparison and cancels the obsolete one. The comparison is read-only. To turn a validated comparison into a pending proposal, use [`proposeAuthoredComparison(...)`](/docs/authored-changes#import-a-compared-revision).
+The demo captures an initial snapshot. Edit the document and select **Save revision** to compare the two latest snapshots. Saving another revision starts a new comparison and cancels the obsolete one. The comparison is read-only. To turn a validated comparison into a pending proposal, call [`editor.plugin(AuthoredPlugin).api.proposeComparison(...)`](/docs/authored-changes#import-a-compared-revision).
 
 ## Restore a revision
 

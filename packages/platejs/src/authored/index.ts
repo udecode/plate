@@ -2,7 +2,6 @@ export {
   AuthoredPlaceError,
   projectAuthoredDocument,
   projectAuthoredRange,
-  proposeAuthoredComparison,
   type AuthoredChange,
   type AuthoredChangeDetails,
   type AuthoredChangeGroup,

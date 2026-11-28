@@ -625,7 +625,6 @@
     ],
     "platejs/authored": [
       "AuthoredChangeKind",
-      "AuthoredComparisonImportResult",
       "AuthoredDocumentProjection",
       "AuthoredMark",
       "AuthoredOptions",
@@ -685,20 +684,6 @@
       "DetailsSummaryElement"
     ],
     "platejs/details/react": ["DetailsPlugin", "DetailsSummaryPlugin"],
-    "platejs/diff": [
-      "Comparison",
-      "ComparisonBranch",
-      "ComparisonConflict",
-      "ComparisonConflictAlternative",
-      "ComparisonDiagnostic",
-      "ComparisonEffect",
-      "ComparisonEvidence",
-      "ComparisonResolution",
-      "ComparisonResolutionResult",
-      "ComparisonSnapshot",
-      "ThreeWayComparison",
-      "TwoWayComparison"
-    ],
     "platejs/docx/export": [
       "DocxComment",
       "DocxDiagnostic",

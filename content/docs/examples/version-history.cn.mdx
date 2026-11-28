@@ -25,7 +25,7 @@ description: 保存文档版本、比较它们，并恢复其中一个。
 
 ## 比较保存的版本
 
-演示会先捕获初始快照。编辑文档后点击 **Save revision**，即可比较最近两个快照。再次保存会开始新的比较，并取消过时的那一个。比较结果只供读取。如需将通过校验的比较结果转成待审 proposal，使用 [`proposeAuthoredComparison(...)`](/cn/docs/authored-changes#导入比较得到的版本)。
+演示会先捕获初始快照。编辑文档后点击 **Save revision**，即可比较最近两个快照。再次保存会开始新的比较，并取消过时的那一个。比较结果只供读取。如需将通过校验的比较结果转成待审 proposal，调用 [`editor.plugin(AuthoredPlugin).api.proposeComparison(...)`](/cn/docs/authored-changes#导入比较得到的版本)。
 
 ## 恢复版本
 

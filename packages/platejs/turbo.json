@@ -4936,6 +4936,7 @@
         "source-hash:partition:authored",
         "source-hash:partition:comments",
         "source-hash:partition:core",
+        "source-hash:partition:proxies",
         "source-hash:partition:react-core",
         "source-hash:partition:root",
         "source-hash:partition:standard-basic-nodes",

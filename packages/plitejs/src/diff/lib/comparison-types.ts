@@ -13,6 +13,7 @@ export type ComparisonSpan = Readonly<{
   to: number;
 }>;
 
+/** Detached document snapshot captured at one side of a comparison. */
 export type ComparisonSnapshot<V extends Value = Value> = Readonly<{
   document: Pick<EditorDocumentValue<V>, 'children' | 'roots'>;
   /** Exact non-content input envelope used only for stale-import detection. */
@@ -22,6 +23,7 @@ export type ComparisonSnapshot<V extends Value = Value> = Readonly<{
   schema: EditorSchemaIdentity;
 }>;
 
+/** Warning or informational notice produced while comparing two documents. */
 export type ComparisonDiagnostic = Readonly<{
   code:
     | 'ambiguous'
@@ -29,7 +31,6 @@ export type ComparisonDiagnostic = Readonly<{
     | 'expired-lineage'
     | 'identity-hint-rejected'
     | 'incompatible-schema'
-    | 'invalid-resolution'
     | 'unsupported-structure'
     | 'work-limit';
   message: string;
@@ -37,6 +38,7 @@ export type ComparisonDiagnostic = Readonly<{
   spans?: readonly ComparisonSpan[];
 }>;
 
+/** Provenance describing how a correspondence or group was established. */
 export type ComparisonEvidence =
   | Readonly<{
       kind: 'inferred';
@@ -63,6 +65,7 @@ type ComparisonEffectBase = Readonly<{
   id: string;
 }>;
 
+/** Typed semantic edit recorded inside a compared change group. */
 export type ComparisonEffect = ComparisonEffectBase &
   (
     | Readonly<{ kind: 'structure' }>
@@ -128,8 +131,6 @@ export type ComparisonEffect = ComparisonEffectBase &
 export type ComparedChange = Readonly<{
   after: readonly ComparisonSpan[];
   before: readonly ComparisonSpan[];
-  /** Three-way branch contribution. Omitted for ordinary two-way results. */
-  branches?: readonly ComparisonBranch[];
   correspondence: readonly ComparisonCorrespondence[];
   effects: readonly ComparisonEffect[];
   evidence: ComparisonEvidence;
@@ -144,71 +145,13 @@ export type ComparedChange = Readonly<{
   requiredChangeIds: readonly string[];
 }>;
 
-export type TwoWayComparison<V extends Value = Value> = Readonly<{
+/** Immutable structural comparison between two schema-valid documents. */
+export type Comparison<V extends Value = Value> = Readonly<{
   after: ComparisonSnapshot<V>;
   before: ComparisonSnapshot<V>;
   change: DocumentChange;
   changes: readonly ComparedChange[];
   diagnostics: readonly ComparisonDiagnostic[];
   id: string;
-  kind: 'two-way';
   policy: Readonly<{ id: 'structural-diff'; version: 1 }>;
 }>;
-
-export type ComparisonBranch = 'local' | 'remote';
-
-export type ComparisonConflictAlternative = Readonly<{
-  branch: ComparisonBranch;
-  /**
-   * This branch's groups in the conflict, with every group of the branch that
-   * one of them requires or that requires one of them, transitively.
-   */
-  changeIds: readonly string[];
-  spans: readonly ComparisonSpan[];
-}>;
-
-export type ComparisonConflict = Readonly<{
-  base: readonly ComparisonSpan[];
-  changeIds: readonly string[];
-  id: string;
-  kind: 'delete-edit' | 'grid' | 'order' | 'placement' | 'root' | 'structure';
-  local: ComparisonConflictAlternative;
-  remote: ComparisonConflictAlternative;
-  requiredChangeIds: readonly string[];
-}>;
-
-export type ThreeWayComparison<V extends Value = Value> = Readonly<{
-  base: ComparisonSnapshot<V>;
-  changes: readonly ComparedChange[];
-  conflicts: readonly ComparisonConflict[];
-  diagnostics: readonly ComparisonDiagnostic[];
-  id: string;
-  kind: 'three-way';
-  local: ComparisonSnapshot<V>;
-  policy: Readonly<{ id: 'structural-diff'; version: 1 }>;
-  remote: ComparisonSnapshot<V>;
-}>;
-
-export type Comparison<V extends Value = Value> =
-  | ThreeWayComparison<V>
-  | TwoWayComparison<V>;
-
-export type ComparisonResolution = Readonly<{
-  comparisonId: string;
-  conflictId: string;
-  choice: ComparisonBranch | Readonly<{ document: unknown; kind: 'custom' }>;
-}>;
-
-export type ComparisonResolutionResult<V extends Value = Value> =
-  | Readonly<{
-      comparison: TwoWayComparison<V>;
-      status: 'resolved';
-    }>
-  | Readonly<{
-      conflicts: readonly ComparisonConflict[];
-      status: 'unresolved';
-    }>
-  | Readonly<{
-      diagnostics: readonly ComparisonDiagnostic[];
-      status: 'invalid';
-    }>;

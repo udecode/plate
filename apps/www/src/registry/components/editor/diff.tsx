@@ -4,10 +4,8 @@ import { cn } from 'cn';
 import type {
   ComparedChange,
   Comparison,
-  ComparisonBranch,
   ComparisonEffect,
   ComparisonEvidence,
-  ComparisonResolution,
   ComparisonSpan,
 } from 'platejs/diff';
 import * as React from 'react';
@@ -228,32 +226,21 @@ export function Diff({
   className,
   comparison,
   locale,
-  onResolutionsChange,
   onSelectionChange,
 }: {
   className?: string;
   comparison: Comparison;
   locale?: string;
-  onResolutionsChange?: (resolutions: readonly ComparisonResolution[]) => void;
   onSelectionChange?: (changeIds: readonly string[]) => void;
 }) {
   const [filter, setFilter] = React.useState<'all' | ComparisonEffect['kind']>(
     'all'
   );
-  const [branch, setBranch] = React.useState<'all' | ComparisonBranch>('all');
   const [granularity, setGranularity] = React.useState<DiffGranularity>('word');
-  const [resolutionDraft, setResolutionDraft] = React.useState<{
-    comparisonId: string;
-    values: ReadonlyMap<string, ComparisonBranch>;
-  }>(() => ({ comparisonId: comparison.id, values: new Map() }));
   const [selectionDraft, setSelectionDraft] = React.useState<{
     comparisonId: string;
     picks: ReadonlySet<string>;
   }>(() => ({ comparisonId: comparison.id, picks: new Set() }));
-  const resolutions =
-    resolutionDraft.comparisonId === comparison.id
-      ? resolutionDraft.values
-      : new Map<string, ComparisonBranch>();
   const picks =
     selectionDraft.comparisonId === comparison.id
       ? selectionDraft.picks
@@ -272,11 +259,10 @@ export function Diff({
   const visibleChanges = React.useMemo(
     () =>
       comparison.changes.filter(
-        ({ branches, effects }) =>
-          (filter === 'all' || effects.some(({ kind }) => kind === filter)) &&
-          (branch === 'all' || branches?.includes(branch))
+        ({ effects }) =>
+          filter === 'all' || effects.some(({ kind }) => kind === filter)
       ),
-    [branch, comparison, filter]
+    [comparison, filter]
   );
   const [selectedChangeId, setSelectedChangeId] = React.useState<string | null>(
     null
@@ -329,29 +315,6 @@ export function Diff({
     );
   };
 
-  const chooseConflict = (conflictId: string, choice: ComparisonBranch) => {
-    if (comparison.kind !== 'three-way') return;
-    const next = new Map(resolutions);
-
-    next.set(conflictId, choice);
-    setResolutionDraft({ comparisonId: comparison.id, values: next });
-    onResolutionsChange?.(
-      comparison.conflicts.flatMap(({ id }) => {
-        const selected = next.get(id);
-
-        return selected
-          ? [
-              Object.freeze({
-                choice: selected,
-                comparisonId: comparison.id,
-                conflictId: id,
-              }),
-            ]
-          : [];
-      })
-    );
-  };
-
   const navigate = (direction: -1 | 1) => {
     if (visibleChanges.length === 0) return;
     const nextIndex =
@@ -401,23 +364,6 @@ export function Diff({
               ))}
             </select>
           </label>
-          {comparison.kind === 'three-way' && (
-            <label className="text-xs text-muted-foreground">
-              Branch{' '}
-              <select
-                aria-label="Filter comparison branches"
-                className="rounded-md border bg-background px-2 py-1 text-foreground"
-                value={branch}
-                onChange={(event) =>
-                  setBranch(event.target.value as 'all' | ComparisonBranch)
-                }
-              >
-                <option value="all">All</option>
-                <option value="local">Local</option>
-                <option value="remote">Remote</option>
-              </select>
-            </label>
-          )}
           <label className="text-xs text-muted-foreground">
             Detail{' '}
             <select
@@ -497,51 +443,6 @@ export function Diff({
         </div>
       )}
 
-      {comparison.kind === 'three-way' && comparison.conflicts.length > 0 && (
-        <div aria-label="Comparison conflicts" className="space-y-2">
-          {comparison.conflicts.map((conflict, index) => {
-            const selected = resolutions.get(conflict.id);
-
-            return (
-              <article
-                key={conflict.id}
-                className="space-y-2 rounded-md border border-amber-500/40 bg-amber-500/12 p-3 text-foreground"
-                data-comparison-conflict={conflict.id}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h3 className="text-sm font-medium">
-                      Conflict {index + 1} · {conflict.kind}
-                    </h3>
-                    <p className="text-xs">
-                      {conflict.base.map(formatSpan).join(', ')}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      aria-pressed={selected === 'local'}
-                      onClick={() => chooseConflict(conflict.id, 'local')}
-                      size="sm"
-                      variant={selected === 'local' ? 'default' : 'outline'}
-                    >
-                      Use local
-                    </Button>
-                    <Button
-                      aria-pressed={selected === 'remote'}
-                      onClick={() => chooseConflict(conflict.id, 'remote')}
-                      size="sm"
-                      variant={selected === 'remote' ? 'default' : 'outline'}
-                    >
-                      Use remote
-                    </Button>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
-
       {visibleChanges.length === 0 ? (
         <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
           {comparison.changes.length === 0
@@ -587,15 +488,6 @@ export function Diff({
                     </button>
                   </div>
                   <div className="flex flex-wrap items-center gap-1">
-                    {change.branches?.map((value) => (
-                      <span
-                        key={value}
-                        className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground capitalize"
-                        data-comparison-branch={value}
-                      >
-                        {value}
-                      </span>
-                    ))}
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                       {evidenceLabel(change.evidence)}
                     </span>

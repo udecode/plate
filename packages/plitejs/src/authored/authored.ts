@@ -140,6 +140,7 @@ import {
   type ViewPresentation,
 } from '../core/view-presentation';
 import { countCoreWork } from '../core/work';
+import type { Comparison } from '../diff';
 import { getViewAuthor, getViewPresentation } from '../editor-runtime-view';
 import type {
   AnyEditor as Editor,
@@ -163,6 +164,10 @@ import {
   readAuthoredDetails,
   readAuthoredGroupDetails,
 } from './changes';
+import {
+  type AuthoredComparisonImportResult,
+  proposeAuthoredComparison,
+} from './comparison';
 import {
   claimOf,
   coveredDeletionsOf,
@@ -358,6 +363,26 @@ type AuthoredUpdate = {
 export type AuthoredPlugin = Plugin<{
   activate: true;
   api: {
+    /**
+     * Publish the selected groups of a validated fixed-revision comparison as
+     * one native proposal under the calling view's author. Reads the whole
+     * document (`editor.read.value()`), validates its schema, content, and
+     * envelope (`meta` and `records`), and returns `unchanged` without writing
+     * when accepting the importer's own pending changes unmarked in the
+     * selection's document already yields that document. Otherwise returns
+     * `applied` only when accepting the proposal alone gives the selection's
+     * document and rejecting it alone gives the document it started from, with
+     * every other suggestion left pending; writes nothing and returns `blocked`
+     * when it cannot. Review can still hold the proposal's decision until a
+     * pending change it waits on is decided. An error that escapes the update
+     * after the proposal commits propagates.
+     */
+    proposeComparison: (
+      input: Readonly<{
+        comparison: Comparison;
+        groupIds?: readonly string[];
+      }>
+    ) => AuthoredComparisonImportResult;
     setView: (view: AuthoredView) => void;
     /**
      * Calls the listener once for each commit that changes the review, with
@@ -407,6 +432,7 @@ type AuthoredState = {
   /** Updates whose writes record under one change, by update id. */
   forced: WeakMap<object, Forced>;
   marks: ReturnType<typeof createDocumentMarksValidator>;
+  ownerPlugin: symbol;
   /** Updates that decide changes and record nothing, by update id. */
   passThrough: WeakSet<object>;
   pending: WeakMap<ViewPresentation, AuthoredView>;
@@ -416,19 +442,6 @@ type AuthoredState = {
 };
 
 const STATES = new WeakMap<object, AuthoredState>();
-
-export const authoredProposerOf = (editor: Editor) => {
-  const state = STATES.get(getEditorRuntimeOwner(editor));
-  const authorId = state?.authorId(editor) ?? null;
-
-  if (!state || authorId === null) return null;
-
-  return {
-    authorId,
-    createChangeId: state.createChangeId,
-    pending: changesOf(editor, storedValue(editor)).idsAuthoredBy(authorId),
-  };
-};
 
 const elementOf = (props: Readonly<Record<string, unknown>>): Element => ({
   ...props,
@@ -1368,6 +1381,11 @@ const writtenNamedRoots = (steps: readonly DraftStep[]) => {
 export const createAuthoredPlugin = (
   options: AuthoredTestOptions
 ): AuthoredPlugin => {
+  const pluginToken = Symbol('authored');
+  const awaitingActivation = new WeakMap<
+    object,
+    Array<(state: AuthoredState) => void>
+  >();
   const createChangeId = options.createChangeId ?? (() => crypto.randomUUID());
   // Every saved tag, cut and `over` link carries an id, so ids stay short: a
   // format tag's only has to differ from the other tags on its key, and a
@@ -1648,89 +1666,123 @@ export const createAuthoredPlugin = (
         spareRoot,
       }),
     ],
-    api: ({ editor }) => ({
-      setView: (view: AuthoredView) => {
-        if (
-          ('preview' in view || view.intent === 'propose') &&
-          !storesGeneratedValues(getCompiledEditorSchema(editor))
-        ) {
-          publishEditorRefusal(editor, GENERATED_VALUES_REFUSAL);
-          return;
-        }
-        requestView(editor, view);
-      },
-      subscribeRefusals: (listener: (refusal: AuthoredRefusal) => void) =>
-        subscribeEditorRefusals(editor, (refusal) => {
-          if (isAuthoredRefusal(refusal)) listener(refusal);
-        }),
-      subscribeChanges: (listener: (delta: AuthoredChangesDelta) => void) => {
-        const runtime = getEditorRuntime(editor);
-        let publisher = PUBLISHERS.get(runtime);
+    api: ({ editor }) => {
+      const owner = getEditorRuntimeOwner(editor);
+      const existing = STATES.get(owner);
+      let bound = existing?.ownerPlugin === pluginToken ? existing : undefined;
 
-        if (!publisher) {
-          const ledger = ledgerOf(editor);
-          const listeners = new Set<(delta: AuthoredChangesDelta) => void>();
+      if (!bound) {
+        const waiters = awaitingActivation.get(owner) ?? [];
 
-          const sink = ledger.subscribe(
-            storedValue(editor),
-            previewModeOf(editor)
-          );
-          const publish = () =>
-            ledger.publish(
-              storedValue(editor),
-              sink,
-              previewModeOf(editor),
-              getEditorRuntimeRoot(editor)
-            );
-          let delivered = publish().delta;
-          const stop = runtime.subscribe(() => {
-            const { delta, ranks } = publish();
-            const fresh = delta !== delivered;
-            const blocks = ranks.flatMap((rank) => {
-              const key = editor.key([rank]);
+        waiters.push((state) => {
+          bound = state;
+        });
+        awaitingActivation.set(owner, waiters);
+      }
 
-              return key ? [key] : [];
-            });
+      return {
+        proposeComparison: (
+          input: Readonly<{
+            comparison: Comparison;
+            groupIds?: readonly string[];
+          }>
+        ) => {
+          const active = STATES.get(owner);
 
-            delivered = delta;
-            if (
-              blocks.length === 0 &&
-              (!fresh ||
-                (delta.changed.length === 0 &&
-                  delta.groups.length === 0 &&
-                  delta.removed.length === 0))
-            ) {
-              return;
-            }
+          if (!bound || active !== bound) {
+            throw new Error('Authored changes are not installed.');
+          }
 
-            const view: AuthoredChangesDelta = Object.freeze({
-              blocks: Object.freeze(blocks),
-              changed: fresh ? delta.changed : [],
-              groups: fresh ? delta.groups : [],
-              removed: fresh ? delta.removed : [],
-            });
-
-            notifyObservers(editor, listeners, 'snapshot-listener', (each) =>
-              each(view)
-            );
+          return proposeAuthoredComparison(editor, input, {
+            authorId: () => active.authorId(editor),
+            createChangeId: active.createChangeId,
+            pendingIds: (authorId) =>
+              changesOf(editor, storedValue(editor)).idsAuthoredBy(authorId),
           });
+        },
+        setView: (view: AuthoredView) => {
+          if (
+            ('preview' in view || view.intent === 'propose') &&
+            !storesGeneratedValues(getCompiledEditorSchema(editor))
+          ) {
+            publishEditorRefusal(editor, GENERATED_VALUES_REFUSAL);
+            return;
+          }
+          requestView(editor, view);
+        },
+        subscribeRefusals: (listener: (refusal: AuthoredRefusal) => void) =>
+          subscribeEditorRefusals(editor, (refusal) => {
+            if (isAuthoredRefusal(refusal)) listener(refusal);
+          }),
+        subscribeChanges: (listener: (delta: AuthoredChangesDelta) => void) => {
+          const runtime = getEditorRuntime(editor);
+          let publisher = PUBLISHERS.get(runtime);
 
-          publisher = { ledger, listeners, sink, stop };
-          PUBLISHERS.set(runtime, publisher);
-        }
+          if (!publisher) {
+            const ledger = ledgerOf(editor);
+            const listeners = new Set<(delta: AuthoredChangesDelta) => void>();
 
-        const { ledger, listeners, sink, stop } = publisher;
+            const sink = ledger.subscribe(
+              storedValue(editor),
+              previewModeOf(editor)
+            );
+            const publish = () =>
+              ledger.publish(
+                storedValue(editor),
+                sink,
+                previewModeOf(editor),
+                getEditorRuntimeRoot(editor)
+              );
+            let delivered = publish().delta;
+            const stop = runtime.subscribe(() => {
+              const { delta, ranks } = publish();
+              const fresh = delta !== delivered;
+              const blocks = ranks.flatMap((rank) => {
+                const key = editor.key([rank]);
 
-        listeners.add(listener);
+                return key ? [key] : [];
+              });
 
-        return () => {
-          if (!listeners.delete(listener) || listeners.size > 0) return;
-          stop();
-          ledger.unsubscribe(sink);
-          PUBLISHERS.delete(runtime);
-        };
-      },
-    }),
+              delivered = delta;
+              if (
+                blocks.length === 0 &&
+                (!fresh ||
+                  (delta.changed.length === 0 &&
+                    delta.groups.length === 0 &&
+                    delta.removed.length === 0))
+              ) {
+                return;
+              }
+
+              const view: AuthoredChangesDelta = Object.freeze({
+                blocks: Object.freeze(blocks),
+                changed: fresh ? delta.changed : [],
+                groups: fresh ? delta.groups : [],
+                removed: fresh ? delta.removed : [],
+              });
+
+              notifyObservers(editor, listeners, 'snapshot-listener', (each) =>
+                each(view)
+              );
+            });
+
+            publisher = { ledger, listeners, sink, stop };
+            PUBLISHERS.set(runtime, publisher);
+          }
+
+          const { ledger, listeners, sink, stop } = publisher;
+
+          listeners.add(listener);
+
+          return () => {
+            if (!listeners.delete(listener) || listeners.size > 0) return;
+            stop();
+            ledger.unsubscribe(sink);
+            PUBLISHERS.delete(runtime);
+          };
+        },
+      };
+    },
     read: ({ editor }) => ({
       view: () => viewOf(editor),
       change: (id: string) => changesOf(editor, storedValue(editor)).change(id),
@@ -1986,11 +2038,17 @@ export const createAuthoredPlugin = (
     },
     activate: ({ afterPublish, beforePublish, editor, onCleanup }) => {
       const owner = getEditorRuntimeOwner(editor);
+
+      if (STATES.has(owner)) {
+        throw new Error('Authored changes are already installed.');
+      }
+
       const state: AuthoredState = {
         authorId: authorOf,
         createChangeId,
         forced: new WeakMap(),
         marks: createDocumentMarksValidator(),
+        ownerPlugin: pluginToken,
         passThrough: new WeakSet(),
         pending: new WeakMap(),
         refused: new WeakMap(),
@@ -2003,7 +2061,15 @@ export const createAuthoredPlugin = (
         });
       }
       STATES.set(owner, state);
-      onCleanup(() => STATES.delete(owner));
+      const waiters = awaitingActivation.get(owner);
+
+      if (waiters) {
+        awaitingActivation.delete(owner);
+        for (const bind of waiters) bind(state);
+      }
+      onCleanup(() => {
+        if (STATES.get(owner) === state) STATES.delete(owner);
+      });
       const ledger = createReviewLedger(
         owner,
         () => authoredResolveSchemaOf(editor),

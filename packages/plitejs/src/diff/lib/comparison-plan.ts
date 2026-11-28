@@ -36,8 +36,8 @@ import {
 import { movedWordTies } from './comparison-moves';
 import type {
   ComparedChange,
+  Comparison,
   ComparisonEffect,
-  TwoWayComparison,
 } from './comparison-types';
 
 type Range = Readonly<{ from: number; to: number }>;
@@ -964,7 +964,7 @@ const sameChanges = (
 ) => plan.changes === changes || jsonEqual(plan.changes, changes);
 
 export const comparisonPlanOf = (
-  comparison: TwoWayComparison,
+  comparison: Comparison,
   schema: EditorStateSchemaApi
 ): ComparisonPlan | null => {
   const cached = PLANS.get(comparison.change);
