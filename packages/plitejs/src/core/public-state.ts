@@ -5119,16 +5119,19 @@ export const didCommitChangePersistedValue = (
 
 export const getEditorDocumentValue = <V extends Value>(
   editor: Editor<V>
-): EditorDocumentValue<V> =>
-  withEditorRootChildren(editor, MAIN_ROOT_KEY, () =>
+): EditorDocumentValue<V> => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  return withEditorRootChildren(owner, MAIN_ROOT_KEY, () =>
     createEditorDocumentValue({
-      editor,
-      fields: getStateFieldIdentityMap(editor),
-      meta: getDocumentState(editor),
-      records: getEditorDocumentRecords(editor),
-      roots: getEditorDocumentRoots(editor),
+      editor: owner,
+      fields: getStateFieldIdentityMap(owner),
+      meta: getDocumentState(owner),
+      records: getEditorDocumentRecords(owner),
+      roots: getEditorDocumentRoots(owner),
     })
   );
+};
 
 export const getLiveNode = (
   editor: Editor,
@@ -12369,7 +12372,8 @@ export const getCurrentMarks = (editor: Editor): EditorMarks | null => {
 };
 
 export const setCurrentMarks = (editor: Editor, marks: EditorMarks | null) => {
-  const selection = getCurrentSelection(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const selection = getCurrentSelection(owner);
 
   if (!SelectionApi.isText(selection) || !RangeApi.isCollapsed(selection)) {
     if (marks === null) return;
@@ -12386,12 +12390,12 @@ export const setCurrentMarks = (editor: Editor, marks: EditorMarks | null) => {
 
   if (SelectionApi.equals(selection, nextSelection)) return;
 
-  const context = getTransactionSpecContext(editor);
+  const context = getTransactionSpecContext(owner);
 
   // Marks belong to the caret where it is, so changing them places nothing.
   if (context) context.selectionWritten = true;
-  setCurrentSelection(editor, nextSelection, getCurrentSelectionRoot(editor));
-  syncImplicitTargetToCurrentSelection(editor);
+  setCurrentSelection(owner, nextSelection, getCurrentSelectionRoot(owner));
+  syncImplicitTargetToCurrentSelection(owner);
 };
 
 const readTypedRecord = (owner: Editor) => {
@@ -13394,31 +13398,40 @@ export const viewStateFactsChanged = (
   return false;
 };
 
-export const getPublicSelection = (editor: Editor): Range | null =>
-  getSelectionRange(
-    editor,
-    getCurrentSelection(editor),
-    getEditorDocumentValue(editor)
+export const getPublicSelection = (editor: Editor): Range | null => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  return getSelectionRange(
+    owner,
+    getCurrentSelection(owner),
+    getEditorDocumentValue(owner)
   );
+};
 
 export const setCurrentSelection = (
   editor: Editor,
   selection: Selection,
-  root = getActiveUpdateRoot(editor) ?? getCurrentSelectionRoot(editor)
+  root?: string
 ) => {
   const owner = getEditorRuntimeOwner(editor);
+  const targetRoot =
+    root ?? getActiveUpdateRoot(owner) ?? getCurrentSelectionRoot(owner);
   const snapshot = getTransactionSnapshot(owner);
 
   if (snapshot && selection) {
-    assertRootPlaced(owner, snapshot, SelectionApi.root(selection) ?? root);
+    assertRootPlaced(
+      owner,
+      snapshot,
+      SelectionApi.root(selection) ?? targetRoot
+    );
   }
   assertSelectionSupported(
-    editor,
+    owner,
     selection,
-    getEditorDocumentValue(editor),
-    root
+    getEditorDocumentValue(owner),
+    targetRoot
   );
-  setSelectionValue(owner, selection, root);
+  setSelectionValue(owner, selection, targetRoot);
   bumpMutationVersion(owner);
   clearSnapshotCache(owner);
   markTransactionChanged(owner);
@@ -13440,9 +13453,9 @@ const setCurrentCaret = (editor: Editor, caret: SettledCaret) => {
     );
   }
   assertSelectionSupported(
-    editor,
+    owner,
     caret.selection,
-    getEditorDocumentValue(editor),
+    getEditorDocumentValue(owner),
     caret.root
   );
   storeCaret(owner, caret);
@@ -13493,13 +13506,14 @@ export const invalidateEditorTransactionSpecs = (editor: Editor) => {
 };
 
 export const syncImplicitTargetToCurrentSelection = (editor: Editor) => {
-  const snapshot = getTransactionSnapshot(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const snapshot = getTransactionSnapshot(owner);
 
   if (!snapshot) {
     return;
   }
 
-  snapshot.implicitTarget = cloneValue(getCurrentSelection(editor));
+  snapshot.implicitTarget = cloneValue(getCurrentSelection(owner));
   snapshot.implicitTargetResolved = true;
 };
 

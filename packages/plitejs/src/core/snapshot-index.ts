@@ -388,7 +388,8 @@ const REGISTERED = new WeakMap<Editor, WeakMap<object, SnapshotIndex>>();
 const VERSION_DOCUMENTS = new WeakMap<
   SnapshotIndex,
   Readonly<{
-    document: DocumentIndex;
+    document: WeakRef<DocumentIndex>;
+    length: number;
     movedFrom: WeakSet<DocumentIndex> | null;
   }>
 >();
@@ -398,14 +399,14 @@ const sequenceOf = (index: SnapshotIndex, before: DocumentIndex) => {
 
   if (
     !known ||
-    known.document === before ||
-    (known.document.length === 0 && before.length === 0)
+    known.document.deref() === before ||
+    (known.length === 0 && before.length === 0)
   ) {
     return 'next';
   }
   if (known.movedFrom?.has(before)) return 'fork';
   throw new Error(
-    `Snapshot index mappings are not sequential: previous target length ${known.document.length}, next source length ${before.length}.`
+    `Snapshot index mappings are not sequential: previous target length ${known.length}, next source length ${before.length}.`
   );
 };
 
@@ -433,7 +434,11 @@ const versionOf = (
 
   TOPOLOGIES.set(index, topology);
   if (document) {
-    VERSION_DOCUMENTS.set(index, { document, movedFrom: null });
+    VERSION_DOCUMENTS.set(index, {
+      document: new WeakRef(document),
+      length: document.length,
+      movedFrom: null,
+    });
   }
   NODE_KEY_MARKS.set(index, getNodeKeyMark(editor));
   KNOWN_LOOKUPS.set(index, { keyAt, pathOf });
@@ -2194,12 +2199,14 @@ const MAPPED = new WeakMap<
   SnapshotIndex,
   WeakMap<
     RootChange,
-    Readonly<{
-      after: DocumentIndex;
-      before: DocumentIndex;
-      binding: NodeKeyBinding;
-      result: SnapshotIndex;
-    }>
+    WeakMap<
+      DocumentIndex,
+      Readonly<{
+        before: WeakRef<DocumentIndex>;
+        binding: NodeKeyBinding;
+        result: SnapshotIndex;
+      }>
+    >
   >
 >();
 
@@ -2216,14 +2223,11 @@ export const mapSnapshotIndexThroughChange = (
   assertMappingLengths(before, after, change);
   const repeatable =
     discardedNodeKeys.size === 0 && (runtimeCandidates?.length ?? 0) === 0;
-  const known = repeatable ? MAPPED.get(index)?.get(change) : undefined;
+  const known = repeatable
+    ? MAPPED.get(index)?.get(change)?.get(after)
+    : undefined;
 
-  if (
-    known &&
-    known.before === before &&
-    known.after === after &&
-    known.binding === binding
-  ) {
+  if (known && known.before.deref() === before && known.binding === binding) {
     return known.result;
   }
   sequenceOf(index, before);
@@ -2548,7 +2552,17 @@ export const mapSnapshotIndexThroughChange = (
       byChange = new WeakMap();
       MAPPED.set(index, byChange);
     }
-    byChange.set(change, { after, before, binding, result: mapped });
+    let byAfter = byChange.get(change);
+
+    if (!byAfter) {
+      byAfter = new WeakMap();
+      byChange.set(change, byAfter);
+    }
+    byAfter.set(after, {
+      before: new WeakRef(before),
+      binding,
+      result: mapped,
+    });
   }
 
   return mapped;
@@ -2648,6 +2662,10 @@ export const advancePathStableSnapshotIndex = (
     new WeakSet<DocumentIndex>();
 
   movedFrom.add(before);
-  VERSION_DOCUMENTS.set(advanced, { document: after, movedFrom });
+  VERSION_DOCUMENTS.set(advanced, {
+    document: new WeakRef(after),
+    length: after.length,
+    movedFrom,
+  });
   return advanced;
 };

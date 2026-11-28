@@ -1138,7 +1138,7 @@ export class ReviewLedger {
   >();
   private readonly modes = new Map<AuthoredFormatProjection, ModeProjection>();
   private lastFrame: Readonly<{
-    frame: CommandProjection | null;
+    frame: CommandProjection;
     value: JsonEditorValue;
   }> | null = null;
 
@@ -1434,28 +1434,31 @@ export class ReviewLedger {
   frame(stored: JsonEditorValue): CommandProjection | null {
     const projection = this.modeOf('proposed');
     const synced = projection.sync(stored, this.schemaOf());
+    const changed = [...synced.roots].filter(
+      ([root, state]) => state.changed && !synced.dropped.has(root)
+    );
+
+    if (changed.length === 0 && synced.dropped.size === 0) {
+      this.lastFrame = null;
+      return null;
+    }
+
     const value = valueOf(synced);
 
     if (this.lastFrame?.value === value) return this.lastFrame.frame;
 
-    const changed = [...synced.roots].filter(
-      ([root, state]) => state.changed && !synced.dropped.has(root)
-    );
     const carried = new Map(
       changed.flatMap(([root]) => {
         const previous = projection.carried(root);
         return previous ? [[root, previous] as const] : [];
       })
     );
-    const frame: CommandProjection | null =
-      changed.length === 0 && synced.dropped.size === 0
-        ? null
-        : {
-            carried,
-            indexes: new Map(changed.map(([root, { index }]) => [root, index])),
-            map: mapOf(projection, synced),
-            value: value as EditorDocumentValue,
-          };
+    const frame: CommandProjection = {
+      carried,
+      indexes: new Map(changed.map(([root, { index }]) => [root, index])),
+      map: mapOf(projection, synced),
+      value: value as EditorDocumentValue,
+    };
 
     this.lastFrame = { frame, value };
 
