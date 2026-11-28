@@ -202,6 +202,14 @@ class ComboboxOwner {
 
   syncAria() {
     const popup = this.match ? this.occurrence?.popup : undefined;
+    const currentLabel = this.element.getAttribute('aria-label');
+    const hasAppLabel =
+      this.element.hasAttribute('aria-labelledby') ||
+      (currentLabel !== null &&
+        !(
+          this.replaced.has('aria-label') &&
+          currentLabel === this.written.get('aria-label')
+        ));
     const next: Record<string, string | null> = popup
       ? {
           'aria-autocomplete': 'list',
@@ -209,6 +217,7 @@ class ComboboxOwner {
           'aria-haspopup': 'listbox',
           'aria-multiline': null,
           role: 'combobox',
+          ...(hasAppLabel ? {} : { 'aria-label': 'Autocomplete' }),
           ...(popup.open
             ? {
                 'aria-controls': popup.listboxId,
