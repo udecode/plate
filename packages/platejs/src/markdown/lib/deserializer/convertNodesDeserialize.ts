@@ -37,7 +37,7 @@ export const buildSlateNode = (
     const tag = mdastNode.name ?? '';
     const repair = getMarkdownTagRepair(mdastNode);
 
-    if (repair && !(options.partial && repair.atEnd)) {
+    if (repair && !(options.suppressEndTagRepair && repair.atEnd)) {
       options.report({
         code: 'markdown-tag-repair',
         message: `Markdown tag <${tag}> is ${repair.repair} and was closed at the end of its container.`,

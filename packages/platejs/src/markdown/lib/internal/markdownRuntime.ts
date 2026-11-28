@@ -27,6 +27,8 @@ import type {
 import {
   materializeMarkdownSettings,
   materializeRemarkPlugins,
+  unwrapRemarkPlugin,
+  unwrapRemarkTransformer,
 } from '../utils/remarkPlugins';
 import {
   createMarkdownModelLocator,
@@ -48,7 +50,6 @@ import {
   getRegisteredMarkdownMappings,
   registerMarkdownMappings,
 } from './markdownMappings';
-import { remarkOpenTail } from './markdownOpenTail';
 import { remarkResolveMarkdownReferences } from './markdownReferences';
 import { type MarkdownReader, readMathSafely } from './markdownSafety';
 import {
@@ -223,10 +224,13 @@ export const getMergedOptionsDeserialize = (
     diagnostics?: MarkdownDiagnostics;
     positionsReferToSource?: boolean;
     source?: string;
+    sourceOffset?: number;
+    suppressEndTagRepair?: boolean;
   }> = {}
 ): DeserializeMdContext => {
   const diagnostics = operation.diagnostics ?? new MarkdownDiagnostics();
   const source = operation.source ?? '';
+  const sourceOffset = operation.sourceOffset ?? 0;
 
   return {
     ...createConversionContext(runtime),
@@ -236,16 +240,17 @@ export const getMergedOptionsDeserialize = (
     }),
     lossPolicy: options.lossPolicy ?? 'reject',
     mappings: runtime.formats,
-    partial: options.partial,
     remarkPlugins: getCachedRemarkPlugins(runtime),
     report: diagnostics.report,
     sourceLocation: (node) =>
       createMarkdownSourceLocation(
         node,
         source,
-        operation.positionsReferToSource ?? false
+        operation.positionsReferToSource ?? false,
+        sourceOffset
       ),
     state: runtime.state,
+    suppressEndTagRepair: operation.suppressEndTagRepair,
   };
 };
 
@@ -283,27 +288,179 @@ export const getMergedOptionsSerialize = (
   };
 };
 
+type UnifiedFreezeInternals = {
+  attachers?: ReadonlyArray<readonly [unknown, ...unknown[]]>;
+  freezeIndex?: number;
+  transformers?: { use: (fn: unknown) => unknown };
+};
+
+const readMathSafelyPlugin: UnifiedPlugin<[], Root> = () => readMathSafely;
+
+const BUILTIN_PARSER_ATTACHERS = new Set<unknown>([
+  readMathSafelyPlugin,
+  remarkJoinEscapedTexts,
+  remarkMarkdownTags,
+  remarkParse,
+  remarkResolveMarkdownReferences,
+  remarkSeparateEscapes,
+]);
+
+const isRemarkEmojiAttacher = (
+  attacher: unknown,
+  options: readonly unknown[],
+  transformer: unknown
+): boolean => {
+  if (
+    typeof attacher !== 'function' ||
+    typeof transformer !== 'function' ||
+    transformer.length !== 1
+  ) {
+    return false;
+  }
+  const firstOption = options[0];
+
+  if (
+    typeof firstOption === 'object' &&
+    firstOption !== null &&
+    'emoticon' in firstOption &&
+    Boolean((firstOption as { emoticon?: unknown }).emoticon)
+  ) {
+    return false;
+  }
+  const source = Function.prototype.toString.call(attacher);
+
+  return (
+    source.includes('padSpaceAfter') &&
+    source.includes('emoticon') &&
+    source.includes('accessible') &&
+    source.includes('ariaLabel')
+  );
+};
+
+const collectFromMarkdownTransforms = (extensions: unknown): unknown[] => {
+  if (!extensions) return [];
+  if (Array.isArray(extensions)) {
+    return extensions.flatMap(collectFromMarkdownTransforms);
+  }
+  if (typeof extensions === 'object' && 'transforms' in extensions) {
+    const { transforms } = extensions as { transforms?: unknown };
+
+    return Array.isArray(transforms) ? transforms : [];
+  }
+
+  return [];
+};
+
+const isKnownLocalFromMarkdownTransform = (fn: unknown): boolean => {
+  if (typeof fn !== 'function' || fn.name !== 'transformGfmAutolinkLiterals') {
+    return false;
+  }
+  const source = Function.prototype.toString.call(fn);
+
+  return source.includes('findUrl') && source.includes('findEmail');
+};
+
 const buildMarkdownParser = (
   remarkPlugins: DeserializeMdContext['remarkPlugins'],
   tags: MarkdownTagRegistry
-) =>
-  unified()
+) => {
+  const hasUserPlugins = remarkPlugins.length > 0;
+  let localOnly = true;
+  let checkpointRan = false;
+  let verifyRan = false;
+  let builtinParser: unknown;
+  const builtinFromTransforms = new Set<unknown>();
+
+  const captureBuiltinPlugin: UnifiedPlugin<[], Root> = function () {
+    checkpointRan = true;
+    builtinParser = this.parser;
+    for (const fn of collectFromMarkdownTransforms(
+      this.data('fromMarkdownExtensions')
+    )) {
+      builtinFromTransforms.add(fn);
+    }
+  };
+
+  const verifyUserPlugins: UnifiedPlugin<[], Root> = function () {
+    verifyRan = true;
+    if (this.parser !== builtinParser) {
+      localOnly = false;
+    }
+    for (const fn of collectFromMarkdownTransforms(
+      this.data('fromMarkdownExtensions')
+    )) {
+      if (
+        !builtinFromTransforms.has(fn) &&
+        !isKnownLocalFromMarkdownTransform(fn)
+      ) {
+        localOnly = false;
+      }
+    }
+  };
+
+  const processor = unified()
     .use(remarkParse)
     .use(remarkSeparateEscapes)
     .use(remarkMarkdownTags, { tags })
     .use(remarkResolveMarkdownReferences)
-    .use(remarkOpenTail)
+    .use(captureBuiltinPlugin)
     .use(remarkPlugins)
+    .use(verifyUserPlugins)
     .use(remarkJoinEscapedTexts)
-    .use(() => readMathSafely)
-    .freeze();
+    .use(readMathSafelyPlugin);
 
-export type FrozenMarkdownParser = ReturnType<typeof buildMarkdownParser>;
+  const internals = processor as unknown as UnifiedFreezeInternals;
+  const origUse = internals.transformers?.use;
+
+  if (internals.transformers && origUse && Array.isArray(internals.attachers)) {
+    internals.transformers.use = (fn: unknown) => {
+      const idx = internals.freezeIndex ?? -1;
+      const entry = idx >= 0 ? internals.attachers?.[idx] : undefined;
+      const attacher = entry?.[0];
+
+      if (!attacher) {
+        localOnly = false;
+      } else if (!BUILTIN_PARSER_ATTACHERS.has(attacher)) {
+        const rawAttacher = unwrapRemarkPlugin(attacher) ?? attacher;
+        const rawFn = unwrapRemarkTransformer(fn) ?? fn;
+        const opts = entry ? entry.slice(1) : [];
+
+        if (!isRemarkEmojiAttacher(rawAttacher, opts, rawFn)) {
+          localOnly = false;
+        }
+      }
+
+      return origUse.call(internals.transformers, fn);
+    };
+  } else if (hasUserPlugins) {
+    // Fail closed if unified internals are unavailable for user plugins.
+    localOnly = false;
+  }
+
+  let parser: ReturnType<typeof processor.freeze>;
+
+  try {
+    parser = processor.freeze();
+  } finally {
+    if (internals.transformers && origUse) {
+      internals.transformers.use = origUse;
+    }
+  }
+
+  if (hasUserPlugins && (!checkpointRan || !verifyRan)) {
+    localOnly = false;
+  }
+
+  return { localOnly, parser };
+};
+
+type FrozenMarkdownParser = ReturnType<typeof buildMarkdownParser>['parser'];
 
 const parserCache = new WeakMap<
   CompiledMarkdownMappings,
   {
     extraBlockTagParsers: Map<string, FrozenMarkdownParser>;
+    localOnly: boolean;
     parser: FrozenMarkdownParser;
     remarkPlugins: readonly unknown[];
   }
@@ -311,26 +468,34 @@ const parserCache = new WeakMap<
 
 const MAX_CACHED_EXTRA_TAG_PARSERS = 8;
 
-export const getMarkdownParser = (
-  runtime: MarkdownRuntime,
-  extraBlockTag?: string
-): FrozenMarkdownParser => {
+const getCachedParserEntry = (runtime: MarkdownRuntime) => {
   const { remarkPlugins } = runtime.options;
   let cached = parserCache.get(runtime.formats);
 
   if (!cached || !samePlugins(cached, remarkPlugins)) {
-    const parser = buildMarkdownParser(
+    const { localOnly, parser } = buildMarkdownParser(
       getCachedRemarkPlugins(runtime),
       runtime.formats.tags
     );
 
     cached = {
       extraBlockTagParsers: new Map(),
+      localOnly,
       parser,
       remarkPlugins,
     };
     parserCache.set(runtime.formats, cached);
   }
+
+  return cached;
+};
+
+export const getMarkdownParser = (
+  runtime: MarkdownRuntime,
+  extraBlockTag?: string
+): FrozenMarkdownParser => {
+  const cached = getCachedParserEntry(runtime);
+
   if (!extraBlockTag) return cached.parser;
 
   const existing = cached.extraBlockTagParsers.get(extraBlockTag);
@@ -339,7 +504,10 @@ export const getMarkdownParser = (
   const callTags = new Map(runtime.formats.tags);
 
   callTags.set(extraBlockTag, 'block');
-  const parser = buildMarkdownParser(getCachedRemarkPlugins(runtime), callTags);
+  const { parser } = buildMarkdownParser(
+    getCachedRemarkPlugins(runtime),
+    callTags
+  );
 
   if (cached.extraBlockTagParsers.size >= MAX_CACHED_EXTRA_TAG_PARSERS) {
     const oldest = cached.extraBlockTagParsers.keys().next().value;
@@ -350,6 +518,10 @@ export const getMarkdownParser = (
 
   return parser;
 };
+
+export const hasOnlyKnownLocalRemarkPlugins = (
+  runtime: MarkdownRuntime
+): boolean => getCachedParserEntry(runtime).localOnly;
 
 const COMMONMARK = unified().use(remarkParse).freeze();
 export const readCommonMark: MarkdownReader = (source) =>
@@ -403,52 +575,6 @@ const isParseOnlyEmojiPlugin = (
   } catch {
     return false;
   }
-};
-
-const localTransformerPluginsCache = new WeakMap<
-  CompiledMarkdownMappings,
-  Readonly<{
-    localOnly: boolean;
-    remarkPlugins: readonly unknown[];
-  }>
->();
-
-const isKnownLocalRemarkPlugin = (
-  plugin: DeserializeMdContext['remarkPlugins'][number]
-): boolean => {
-  if (isParseOnlyEmojiPlugin(plugin)) return true;
-  try {
-    const fn = Array.isArray(plugin) ? plugin[0] : plugin;
-    const args = Array.isArray(plugin) ? plugin.slice(1) : [];
-    const probe = unified().use(remarkParse);
-    const transformer = (fn as (...params: unknown[]) => unknown).apply(
-      probe,
-      args
-    );
-
-    return typeof transformer !== 'function';
-  } catch {
-    return false;
-  }
-};
-
-export const hasOnlyKnownLocalRemarkPlugins = (
-  runtime: MarkdownRuntime
-): boolean => {
-  const { remarkPlugins } = runtime.options;
-  const cached = localTransformerPluginsCache.get(runtime.formats);
-
-  if (cached && samePlugins(cached, remarkPlugins)) return cached.localOnly;
-  const localOnly = getCachedRemarkPlugins(runtime).every(
-    isKnownLocalRemarkPlugin
-  );
-
-  localTransformerPluginsCache.set(runtime.formats, {
-    localOnly,
-    remarkPlugins,
-  });
-
-  return localOnly;
 };
 
 const remarkEscapeEmojiShortcodes: UnifiedPlugin<[], Root> = function () {

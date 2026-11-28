@@ -55,8 +55,28 @@ type MarkdownTransformerBoundary = (
   file: Parameters<MarkdownSyncTransformer>[1]
 ) => ReturnType<MarkdownSyncTransformer>;
 
-const wrapSyncPlugin = (plugin: MarkdownSyncPlugin, index: number): Plugin =>
-  function syncPlugin(...parameters: unknown[]) {
+const wrappedToOriginalPlugin = new WeakMap<Plugin, MarkdownSyncPlugin>();
+const wrappedToOriginalTransformer = new WeakMap<
+  object,
+  MarkdownSyncTransformer
+>();
+
+export const unwrapRemarkPlugin = (
+  plugin: unknown
+): MarkdownSyncPlugin | undefined =>
+  typeof plugin === 'function'
+    ? wrappedToOriginalPlugin.get(plugin as Plugin)
+    : undefined;
+
+export const unwrapRemarkTransformer = (
+  transformer: unknown
+): MarkdownSyncTransformer | undefined =>
+  typeof transformer === 'function'
+    ? wrappedToOriginalTransformer.get(transformer)
+    : undefined;
+
+const wrapSyncPlugin = (plugin: MarkdownSyncPlugin, index: number): Plugin => {
+  const syncPlugin: Plugin = function syncPlugin(...parameters: unknown[]) {
     const transformer = (plugin as MarkdownPluginBoundary).apply(
       this,
       parameters
@@ -79,10 +99,10 @@ const wrapSyncPlugin = (plugin: MarkdownSyncPlugin, index: number): Plugin =>
       );
     }
 
-    return (tree, file) => {
+    const wrappedTransformer = (tree: unknown, file: unknown) => {
       const result = (transformer as MarkdownTransformerBoundary)(
         tree as Parameters<MarkdownSyncTransformer>[0],
-        file
+        file as Parameters<MarkdownSyncTransformer>[1]
       );
 
       if (isThenable(result)) {
@@ -93,13 +113,34 @@ const wrapSyncPlugin = (plugin: MarkdownSyncPlugin, index: number): Plugin =>
 
       return result;
     };
+
+    wrappedToOriginalTransformer.set(wrappedTransformer, transformer);
+
+    return wrappedTransformer;
   };
+
+  wrappedToOriginalPlugin.set(syncPlugin, plugin);
+
+  return syncPlugin;
+};
 
 const materializePluggable = (
   value: MarkdownSyncPluggable,
-  index: number
+  index: number,
+  wrappers: Map<MarkdownSyncPlugin, Plugin>
 ): Pluggable => {
-  if (typeof value === 'function') return wrapSyncPlugin(value, index);
+  const getWrapped = (plugin: MarkdownSyncPlugin): Plugin => {
+    let wrapped = wrappers.get(plugin);
+
+    if (!wrapped) {
+      wrapped = wrapSyncPlugin(plugin, index);
+      wrappers.set(plugin, wrapped);
+    }
+
+    return wrapped;
+  };
+
+  if (typeof value === 'function') return getWrapped(value);
   if (!Array.isArray(value) || typeof value[0] !== 'function') {
     throw new MarkdownPluginConfigurationError(
       `Markdown remark plugin at index ${index} must be a function or plugin tuple.`
@@ -107,10 +148,15 @@ const materializePluggable = (
   }
   const [plugin, ...parameters] = value;
 
-  return [wrapSyncPlugin(plugin, index), ...parameters] as Pluggable;
+  return [getWrapped(plugin), ...parameters] as Pluggable;
 };
 
 export const materializeRemarkPlugins = (
   plugins: readonly MarkdownSyncPluggable[]
-): Pluggable[] =>
-  plugins.map((plugin, index) => materializePluggable(plugin, index));
+): Pluggable[] => {
+  const wrappers = new Map<MarkdownSyncPlugin, Plugin>();
+
+  return plugins.map((plugin, index) =>
+    materializePluggable(plugin, index, wrappers)
+  );
+};

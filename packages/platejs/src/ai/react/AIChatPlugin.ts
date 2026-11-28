@@ -52,7 +52,7 @@ import { resolveInsertionAnchor } from '../../internal/plugin/insertionAnchor';
 import { isInputRuleVetoed } from '../../lib/plugins/input-rules/inputRuleVeto.internal';
 import {
   type MarkdownEditorSerializeOptions,
-  type MarkdownSliceParseResult,
+  type MarkdownStream,
   MarkdownPlugin,
 } from '../../markdown';
 import { type Editor, definePlugin } from '../../react/core';
@@ -269,11 +269,18 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     final: boolean;
     requestId: string | null;
   }> | null = null;
-  // The latest partial parse, which the next preview of the same stream
-  // continues, with the store's copies of its blocks.
-  let previewParse:
-    | Readonly<{ result: MarkdownSliceParseResult; stored: Value }>
+  let previewStream:
+    | Readonly<{
+        editor: Editor;
+        nodes: readonly Descendant[];
+        stored: Value;
+        stream: MarkdownStream;
+      }>
     | undefined;
+  const resetPreviewStream = () => {
+    previewStream?.stream.reset();
+    previewStream = undefined;
+  };
   // The stored blocks a draft chunk left, so the next chunk can tell whether
   // anyone wrote since.
   let suggestion: Readonly<{
@@ -591,7 +598,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     previewAnchor?.release();
     previewAnchor = null;
     previewOwner = null;
-    previewParse = undefined;
+    resetPreviewStream();
     suggestion = null;
     suggestionTarget = null;
     tableDraft.clear();
@@ -1896,6 +1903,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         publishedChangeId = changeId;
         suggestion = { children, response: unlockedResponse };
         suggestionTarget = target;
+        resetPreviewStream();
         context.store.set({
           _changeId: changeId,
           previewValue: [],
@@ -2060,6 +2068,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       publishedChangeId = changeId;
       suggestion = { children, response };
       suggestionTarget = target;
+      resetPreviewStream();
       context.store.set({
         _changeId: changeId,
         previewValue: [],
@@ -2483,7 +2492,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         suggestion = null;
         suggestionTarget = null;
         previewOwner = null;
-        previewParse = undefined;
+        resetPreviewStream();
         context.store.set({
           _blockKey: null,
           _lockedBlockRefs: {},
@@ -2574,7 +2583,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         const ownerRequestId = requestId ?? state._requestId;
         const invalidatePreview = () => {
           previewOwner = { final: false, requestId: ownerRequestId };
-          previewParse = undefined;
+          resetPreviewStream();
           context.store.set({ previewValue: [] });
         };
         let targetKey = state._blockKey;
@@ -2612,29 +2621,33 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           invalidatePreview();
           return undefined;
         }
-        const previous = previewParse;
-        const parsed = content
-          ? commandEditor.api.markdown.parseSlice(
-              content,
-              // Previews show unsupported content as text; the final parse is
-              // strict and invalidates a response it cannot represent. Both
-              // continue the latest partial result.
-              final
-                ? { previous: previous?.result }
-                : {
-                    lossPolicy: 'allow',
-                    partial: true,
-                    previous: previous?.result,
-                  }
-            )
-          : null;
+        if (!content) {
+          resetPreviewStream();
+          previewOwner = { final, requestId: ownerRequestId };
+          context.store.set({
+            _blockKey: targetKey,
+            previewValue: [],
+          });
+          return undefined;
+        }
+        const previous = previewStream;
+        const activeStream =
+          previous && previous.editor === commandEditor
+            ? previous.stream
+            : (previous?.stream.reset(), commandEditor.api.markdown.stream());
+        const snap = final
+          ? (activeStream.source !== content && activeStream.set(content),
+            activeStream.finish())
+          : activeStream.set(content);
 
-        previewParse = undefined;
-        if (parsed && !parsed.ok) {
+        if (final) {
+          resetPreviewStream();
+        }
+        if (!snap.ok) {
           invalidatePreview();
           return undefined;
         }
-        const previewValue = parsed?.slice.content ?? [];
+        const previewValue = snap.nodes;
 
         if (
           !previewValue.every((node): node is Element =>
@@ -2644,21 +2657,23 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           invalidatePreview();
           return undefined;
         }
-        const reused = previous?.result.ok ? previous.result.slice.content : [];
+        const reused = previous?.nodes ?? [];
 
         previewOwner = { final, requestId: ownerRequestId };
         // The store keeps its own copy of each value. Handing back its copy of
-        // every block the parser reused keeps that block's identity for readers.
+        // every block the stream reused keeps that block's identity for readers.
         context.store.set({
           _blockKey: targetKey,
           previewValue: previewValue.map((node, index) =>
             node === reused[index] ? (previous?.stored[index] ?? node) : node
           ),
         });
-        if (parsed && !final) {
-          previewParse = {
-            result: parsed,
+        if (snap && !final) {
+          previewStream = {
+            editor: commandEditor,
+            nodes: snap.nodes,
             stored: context.store.get('previewValue'),
+            stream: activeStream,
           };
         }
         return undefined;
@@ -2732,6 +2747,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           table[1]
         );
         if (!ElementApi.isElement(preview)) return;
+        resetPreviewStream();
         context.store.set({
           _blockKey: actionEditor.key(table[0]),
           previewValue: [preview],
@@ -2767,7 +2783,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         suggestion = null;
         suggestionTarget = null;
         previewOwner = null;
-        previewParse = undefined;
+        resetPreviewStream();
         context.store.set({
           _blockKey: null,
           _lockedBlockRefs: {},
@@ -2989,7 +3005,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       onCleanup(() => {
         previewAnchor?.release();
         previewAnchor = null;
-        previewParse = undefined;
+        resetPreviewStream();
         tableDraft.clear();
       });
     },

@@ -481,6 +481,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-streaming-markdown-engine",
+      "href": "/registry/changelog/2026-11-28-streaming-markdown-engine.json",
+      "status": "draft",
+      "kind": "update",
+      "summary": "Replace partial/previous Markdown streaming with editor.api.markdown.stream()",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["markdown-streaming-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-add-lock-kit",
       "href": "/registry/changelog/2026-11-27-add-lock-kit.json",
       "status": "draft",

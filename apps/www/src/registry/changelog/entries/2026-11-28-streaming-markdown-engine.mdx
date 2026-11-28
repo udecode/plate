@@ -1,0 +1,14 @@
+---
+id: 2026-11-28-streaming-markdown-engine
+date: 2026-11-28
+status: draft
+kind: update
+summary: 'Replace partial/previous Markdown streaming with editor.api.markdown.stream()'
+change: { 'type': 'source', 'date': '2026-11-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-28-streaming-markdown-engine","kind":"update","migrationNotes":["Upgrade `platejs` to the release that adds `editor.api.markdown.stream()` and removes `partial` and `previous` from `parse`, `parseSlice`, and `parseInline`.","Replace `editor.api.markdown.parseSlice(source, { lossPolicy: 'allow', partial: true, previous })` loops with a stateful `const stream = editor.api.markdown.stream()`, calling `stream.append(chunk)` (or `stream.set(source)`) for previews and `stream.finish()` when the stream ends or stops.","Update `markdown-streaming-demo` if you copied it into your app to use `editor.api.markdown.stream()` with revision-checked anchored updates."]} -->
+
+- **`markdown-streaming-demo`**: Use stateful `editor.api.markdown.stream()` with single-pass bounded tail healing, incremental GFM table and code-fence updates, and revision-checked anchored live updates.

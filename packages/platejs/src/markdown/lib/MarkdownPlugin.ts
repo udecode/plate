@@ -27,7 +27,6 @@ import {
 import { groupMarkdownInlineRuns } from './internal/markdownDocument';
 import { markdownMappingsRegistryKey } from './internal/markdownMappings';
 import {
-  type MarkdownReuse,
   parseMarkdownDocumentWithRuntime,
   parseMarkdownInlineWithRuntime,
   parseMarkdownPlaceholdersWithRuntime,
@@ -90,21 +89,7 @@ export type MarkdownApi<V extends Value = Value> = {
   ) => MarkdownPlaceholderParseResult<V>;
   parseSlice: (
     source: string,
-    options?: MarkdownParsePolicy &
-      Readonly<{
-        /**
-         * The previous result of a growing source. When it came from this
-         * editor's `parseSlice`, for a prefix of `source`, under unchanged
-         * plugins and limits, only the text after its last complete block is
-         * converted again, and complete blocks keep their node objects, so a
-         * preview or the final parse can publish just the changed tail. Under
-         * another `lossPolicy`, only complete blocks that reported nothing
-         * are kept. Any other hint parses the whole source, and so does a
-         * source with a link reference or footnote definition, which can
-         * change blocks before it.
-         */
-        previous?: MarkdownSliceParseResult<V>;
-      }>
+    options?: MarkdownParsePolicy
   ) => MarkdownSliceParseResult<V>;
   serialize: (
     options?: MarkdownEditorSerializeOptions<V>
@@ -136,10 +121,7 @@ const markdownStateOwners = new WeakMap<object, readonly string[]>();
 
 // A mapping callback sees only its owner's state, and parsing reads Markdown's
 // own remark plugins; no other plugin's state can change a conversion.
-const getMarkdownReuse = (
-  editor: Editor,
-  previous: object | undefined
-): MarkdownReuse => {
+const getMarkdownOwnerStates = (editor: Editor): readonly unknown[] => {
   let owners = markdownStateOwners.get(editor);
 
   if (!owners) {
@@ -154,13 +136,9 @@ const getMarkdownReuse = (
     markdownStateOwners.set(editor, owners);
   }
 
-  return {
-    editor,
-    pluginStates: owners.map(
-      (name) => getPluginStore(editor, name)?.public.get() ?? null
-    ),
-    previous,
-  };
+  return owners.map(
+    (name) => getPluginStore(editor, name)?.public.get() ?? null
+  );
 };
 
 const toMarkdownBlocks = (
@@ -367,16 +345,9 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
       withMarkdownRuntime(editor, store.get(), (runtime) =>
         parseMarkdownPlaceholdersWithRuntime(runtime, source, options)
       ),
-    parseSlice: (source, { previous, ...options } = {}) =>
+    parseSlice: (source, options) =>
       withMarkdownRuntime(editor, store.get(), (runtime) =>
-        parseMarkdownSliceWithRuntime(
-          runtime,
-          source,
-          options,
-          options.partial || previous
-            ? getMarkdownReuse(editor, previous)
-            : undefined
-        )
+        parseMarkdownSliceWithRuntime(runtime, source, options)
       ),
     serialize: (options = {}) => {
       const projected = projectPlateFormatDocument(
@@ -398,7 +369,7 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
       createMarkdownStream(
         editor,
         () => store.get(),
-        () => getMarkdownReuse(editor, undefined).pluginStates,
+        () => getMarkdownOwnerStates(editor),
         options
       ),
   }),

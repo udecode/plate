@@ -137,14 +137,15 @@ const pointFromPosition = (point: Position['start']) =>
 export const createMarkdownSourceLocation = (
   node: UnistNode,
   source: string,
-  positionsReferToSource: boolean
+  positionsReferToSource: boolean,
+  sourceOffset = 0
 ): MarkdownSourceLocation | undefined => {
   if (!positionsReferToSource || !node.position) return undefined;
   const { end, start } = node.position;
   const excerpt =
     start.offset === undefined || end.offset === undefined
       ? undefined
-      : source.slice(start.offset, end.offset);
+      : source.slice(start.offset - sourceOffset, end.offset - sourceOffset);
 
   return Object.freeze({
     end: pointFromPosition(end),

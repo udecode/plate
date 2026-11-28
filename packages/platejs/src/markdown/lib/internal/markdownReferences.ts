@@ -11,6 +11,11 @@ import type {
 import type { Plugin as UnifiedPlugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
+const rootsWithDefinitions = new WeakSet<Root>();
+
+export const hasMarkdownDefinitions = (tree: Root): boolean =>
+  rootsWithDefinitions.has(tree);
+
 /**
  * Resolve reference-style links and images against their definitions within
  * one conversion. micromark only creates a reference when its definition
@@ -20,12 +25,25 @@ import { visit } from 'unist-util-visit';
 export const remarkResolveMarkdownReferences: UnifiedPlugin<[], Root> =
   () => (tree) => {
     const definitions = new Map<string, Definition>();
+    let hasFootnoteDefinition = false;
 
-    visit(tree, 'definition', (node) => {
-      if (!definitions.has(node.identifier)) {
-        definitions.set(node.identifier, node);
+    visit(
+      tree,
+      (node) =>
+        node.type === 'definition' || node.type === 'footnoteDefinition',
+      (node) => {
+        if (node.type === 'definition') {
+          if (!definitions.has(node.identifier)) {
+            definitions.set(node.identifier, node);
+          }
+        } else {
+          hasFootnoteDefinition = true;
+        }
       }
-    });
+    );
+    if (definitions.size > 0 || hasFootnoteDefinition) {
+      rootsWithDefinitions.add(tree);
+    }
     if (definitions.size === 0) return;
 
     // The node test keeps `visit` from looking up every node's sibling index,

@@ -24,11 +24,10 @@ export type MarkdownTailHealOptions = Readonly<{
 
 export type HealedMarkdownTail = Readonly<{
   healed: string;
+  heldSuffix: string;
   modified: boolean;
 }>;
 
-// Probes installed remark syntax extensions once per (mappings, remarkPlugins):
-// CJK-friendly vs CommonMark attention/strikethrough, inline math, and GFM tables.
 const TAIL_GRAMMAR_PROBE =
   'a**「b」**\n\n**b**\n\na~~「b」~~\n\n~~b~~\n\n$a$\n\n| a |\n| - |\n| b |';
 
@@ -100,20 +99,83 @@ const MAX_INCOMPLETE_TAG_LENGTH = 256;
 const MAX_INLINE_HEAL_WINDOW = 4096;
 const MAX_HELD_MARKERS = 3;
 
+const isInsideInlineCodeAt = (
+  source: string,
+  limit: number,
+  blockStart = 0
+): boolean => {
+  const start = Math.max(0, blockStart);
+  let openTicks = 0;
+
+  for (let i = start; i < limit; i++) {
+    const ch = source[i];
+
+    // Blank lines end any CommonMark paragraph and reset open inline code spans.
+    if (ch === '\n') {
+      let next = i + 1;
+
+      while (
+        next < limit &&
+        (source[next] === ' ' || source[next] === '\t' || source[next] === '>')
+      ) {
+        next += 1;
+      }
+      if (next < limit && source[next] === '\n') {
+        openTicks = 0;
+        i = next;
+        continue;
+      }
+    }
+
+    if (openTicks > 0) {
+      if (ch === '`') {
+        let end = i;
+
+        while (end < limit && source[end] === '`') end += 1;
+        if (end - i === openTicks) openTicks = 0;
+        i = end - 1;
+      }
+      continue;
+    }
+    if (ch === '\\') {
+      i += 1;
+      continue;
+    }
+    if (ch === '`') {
+      let end = i;
+
+      while (end < limit && source[end] === '`') end += 1;
+      openTicks = end - i;
+      i = end - 1;
+    }
+  }
+
+  return openTicks > 0;
+};
+
 /** Streaming preview only: hide a bounded trailing `<...` that may still become a registered tag. */
 export const trimIncompleteRegisteredTag = (
   source: string,
-  tags: MarkdownTagRegistry
+  tags: MarkdownTagRegistry,
+  blockStart = 0
 ): string => {
   const lt = source.lastIndexOf('<');
 
   if (
     lt === -1 ||
     source.length - lt > MAX_INCOMPLETE_TAG_LENGTH ||
-    /[>\n\r]/.test(source.slice(lt))
+    /[>\n\r]/.test(source.slice(lt)) ||
+    isInsideInlineCodeAt(source, lt, blockStart)
   ) {
     return source;
   }
+  let backslashes = 0;
+
+  for (let i = lt - 1; i >= blockStart && source[i] === '\\'; i--) {
+    backslashes += 1;
+  }
+  if (backslashes % 2 === 1) return source;
+
   const match = /^<\/?([A-Za-z][\w-]*)?/.exec(source.slice(lt));
 
   if (!match) return source;
@@ -127,6 +189,11 @@ export const trimIncompleteRegisteredTag = (
 };
 
 const FENCE_RE = /^ {0,3}(`{3,}|~{3,})/;
+const CONTAINER_PREFIX_RE =
+  /^(?:[ \t]*>[ \t]?|[ \t]*(?:[*+-]|\d{1,9}[.)])[ \t]+)*/;
+const BLOCK_START_RE =
+  /^ {0,3}(?:#{1,6}(?:[ \t]|$)|>|(?:[*+-]|\d{1,9}[.)])[ \t])/;
+const INDENTED_CODE_RE = /^(?: {4}|\t)/;
 const MATH_FENCE_RE = /^ {0,3}\$\$[ \t]*$/;
 const BLANK_RE = /^[ \t]*$/;
 const RAW_HTML_BLOCKS: ReadonlyArray<readonly [RegExp, RegExp]> = [
@@ -135,79 +202,238 @@ const RAW_HTML_BLOCKS: ReadonlyArray<readonly [RegExp, RegExp]> = [
     /<\/(?:pre|script|style|textarea)>/i,
   ],
   [/^ {0,3}<!--/, /-->/],
+  [/^ {0,3}<\?/, /\?>/],
+  [/^ {0,3}<!\[CDATA\[/, /\]\]>/],
+  [/^ {0,3}<![A-Za-z]/, />/],
 ];
-const PARTIAL_TABLE_SEPARATOR_RE =
-  /^[ \t]*\|?(?:[ \t]*:?-{1,}:?[ \t]*\|)*[ \t]*:?-{0,}:?[ \t]*$/;
+const TYPE6_HTML_TAG_RE =
+  /^ {0,3}<\/?(address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul)(?=[ \t/>]|$)/i;
+const THEMATIC_BREAK_LINE_RE =
+  /^[ \t]{0,3}(?:(?:\*[ \t]*){3,}|(?:_[ \t]*){3,}|(?:-[ \t]*){3,})$/;
+
+// Linear character scan to avoid quadratic regex backtracking on long lines.
+const parseType7HtmlTagName = (line: string): string | null => {
+  let i = 0;
+
+  while (i < 3 && i < line.length && line[i] === ' ') i += 1;
+  if (line[i] !== '<') return null;
+  i += 1;
+  const closing = line[i] === '/';
+
+  if (closing) i += 1;
+  const nameStart = i;
+
+  if (i >= line.length || !/[A-Za-z]/.test(line[i])) return null;
+  i += 1;
+  while (i < line.length && /[A-Za-z0-9-]/.test(line[i])) i += 1;
+  const name = line.slice(nameStart, i);
+
+  if (closing) {
+    while (i < line.length && (line[i] === ' ' || line[i] === '\t')) i += 1;
+  } else if (i < line.length && line[i] !== '>' && line[i] !== '/') {
+    if (!/[ \t]/.test(line[i])) return null;
+    while (i < line.length && line[i] !== '>' && line[i] !== '<') i += 1;
+  } else if (line[i] === '/') {
+    i += 1;
+  }
+  if (line[i] !== '>') return null;
+  i += 1;
+
+  while (i < line.length && (line[i] === ' ' || line[i] === '\t')) i += 1;
+
+  return i === line.length ? name : null;
+};
+
+const isPartialTableSeparator = (line: string): boolean => {
+  const trimmed = line.trim();
+
+  if (!trimmed) return true;
+  const inner = trimmed.startsWith('|') ? trimmed.slice(1) : trimmed;
+  const parts = inner.split('|');
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i].trim();
+    const isLast = i === parts.length - 1;
+
+    if (isLast) {
+      if (!/^:?-{0,}:?$/.test(part)) return false;
+    } else if (!/^:?-{1,}:?$/.test(part)) {
+      return false;
+    }
+  }
+
+  return true;
+};
 
 type BlockScanResult = Readonly<{
   activeBlockStart: number;
   inFence: boolean;
+  inIndentedCode: boolean;
   inMathBlock: boolean;
   inRawHtml: boolean;
   mathBodyStart: number;
 }>;
 
-const scanBlocks = (source: string, allowMath: boolean): BlockScanResult => {
+const startsType6Or7HtmlBlock = (
+  line: string,
+  tags: MarkdownTagRegistry
+): boolean => {
+  const m6 = TYPE6_HTML_TAG_RE.exec(line);
+
+  if (m6) return !tags.has(m6[1]) && !tags.has(m6[1].toLowerCase());
+  const name7 = parseType7HtmlTagName(line);
+
+  if (name7) return !tags.has(name7) && !tags.has(name7.toLowerCase());
+
+  return false;
+};
+
+export const scanMarkdownTailBlocks = (
+  source: string,
+  allowMath: boolean,
+  tags: MarkdownTagRegistry
+): BlockScanResult => {
   let offset = 0;
-  let fence: { char: string; length: number } | null = null;
-  let inMathBlock = false;
-  let mathBodyStart = -1;
-  let rawEnd: RegExp | null = null;
+  const state: {
+    fence: { char: string; inContainer: boolean; length: number } | null;
+    inMathBlock: boolean;
+    inType6Html: boolean;
+    mathBodyStart: number;
+    rawEnd: RegExp | null;
+    singleLineRawHtml: boolean;
+  } = {
+    fence: null,
+    inMathBlock: false,
+    inType6Html: false,
+    mathBodyStart: -1,
+    rawEnd: null,
+    singleLineRawHtml: false,
+  };
+  let inIndentedCode = false;
   let activeBlockStart = 0;
   let afterBlank = true;
+
+  const stripContainerPrefix = (line: string): string => {
+    const match = CONTAINER_PREFIX_RE.exec(line);
+
+    return match ? line.slice(match[0].length) : line;
+  };
+
+  const enterLineBlock = (line: string, nl: number) => {
+    state.singleLineRawHtml = false;
+    const inner = stripContainerPrefix(line);
+    const directFence = FENCE_RE.exec(line);
+    const openFence = directFence ?? FENCE_RE.exec(inner);
+    const fenceLine = directFence ? line : inner;
+
+    if (
+      openFence &&
+      (openFence[1].startsWith('~') ||
+        !fenceLine.slice(openFence[0].length).includes(openFence[1][0]))
+    ) {
+      state.fence = {
+        char: openFence[1][0],
+        inContainer: !directFence,
+        length: openFence[1].length,
+      };
+    } else if (allowMath && MATH_FENCE_RE.test(line)) {
+      state.inMathBlock = true;
+      state.mathBodyStart = nl === -1 ? source.length : nl + 1;
+    } else {
+      const raw = RAW_HTML_BLOCKS.find(([start]) => start.test(line));
+
+      if (raw) {
+        if (raw[1].test(line)) {
+          state.singleLineRawHtml = true;
+        } else {
+          state.rawEnd = raw[1];
+        }
+      } else if (startsType6Or7HtmlBlock(line, tags)) {
+        state.inType6Html = true;
+      }
+    }
+  };
 
   while (offset < source.length) {
     const nl = source.indexOf('\n', offset);
     const lineEnd = nl === -1 ? source.length : nl;
     const line = source.slice(offset, lineEnd);
 
-    if (fence) {
-      const close = FENCE_RE.exec(line);
+    if (state.fence) {
+      state.singleLineRawHtml = false;
+      const closeTarget = state.fence.inContainer
+        ? stripContainerPrefix(line)
+        : line;
+      const close = FENCE_RE.exec(closeTarget);
 
       if (
-        close?.[1][0] === fence.char &&
-        close[1].length >= fence.length &&
-        BLANK_RE.test(line.slice(close[0].length))
+        close &&
+        close[1].startsWith(state.fence.char) &&
+        close[1].length >= state.fence.length &&
+        BLANK_RE.test(closeTarget.slice(close[0].length))
       ) {
-        fence = null;
+        state.fence = null;
         afterBlank = true;
+        activeBlockStart = nl === -1 ? source.length : nl + 1;
       }
-    } else if (inMathBlock) {
+    } else if (state.inMathBlock) {
+      state.singleLineRawHtml = false;
       if (MATH_FENCE_RE.test(line)) {
-        inMathBlock = false;
-        mathBodyStart = -1;
+        state.inMathBlock = false;
+        state.mathBodyStart = -1;
         afterBlank = true;
+        activeBlockStart = nl === -1 ? source.length : nl + 1;
       }
-    } else if (rawEnd) {
-      if (rawEnd.test(line)) {
-        rawEnd = null;
+    } else if (state.rawEnd) {
+      state.singleLineRawHtml = false;
+      if (state.rawEnd.test(line)) {
+        state.rawEnd = null;
+        state.singleLineRawHtml = true;
         afterBlank = true;
+        activeBlockStart = nl === -1 ? source.length : nl + 1;
+      }
+    } else if (state.inType6Html) {
+      state.singleLineRawHtml = false;
+      if (BLANK_RE.test(line)) {
+        state.inType6Html = false;
+        afterBlank = true;
+        activeBlockStart = nl === -1 ? source.length : nl + 1;
+      }
+    } else if (inIndentedCode) {
+      state.singleLineRawHtml = false;
+      const inner = stripContainerPrefix(line);
+
+      if (!BLANK_RE.test(inner) && !INDENTED_CODE_RE.test(inner)) {
+        inIndentedCode = false;
+        activeBlockStart = offset;
+        afterBlank = false;
+        enterLineBlock(line, nl);
       }
     } else if (BLANK_RE.test(line)) {
+      state.singleLineRawHtml = false;
       afterBlank = true;
+      if (nl !== -1) {
+        activeBlockStart = nl + 1;
+      }
     } else {
       if (afterBlank) {
         activeBlockStart = offset;
         afterBlank = false;
-      }
-      const openFence = FENCE_RE.exec(line);
+        const inner = stripContainerPrefix(line);
 
-      if (
-        openFence &&
-        (openFence[1].startsWith('~') ||
-          !line.slice(openFence[0].length).includes(openFence[1][0]))
-      ) {
-        fence = { char: openFence[1][0], length: openFence[1].length };
-      } else if (allowMath && MATH_FENCE_RE.test(line)) {
-        inMathBlock = true;
-        mathBodyStart = nl === -1 ? source.length : nl + 1;
-      } else {
-        const raw = RAW_HTML_BLOCKS.find(([start]) => start.test(line));
-
-        if (raw && !raw[1].test(line)) {
-          rawEnd = raw[1];
+        if (INDENTED_CODE_RE.test(line) || INDENTED_CODE_RE.test(inner)) {
+          inIndentedCode = true;
+          offset = nl === -1 ? source.length : nl + 1;
+          continue;
         }
+      } else if (
+        BLOCK_START_RE.test(line) ||
+        THEMATIC_BREAK_LINE_RE.test(line) ||
+        state.singleLineRawHtml
+      ) {
+        activeBlockStart = offset;
       }
+      enterLineBlock(line, nl);
     }
 
     offset = nl === -1 ? source.length : nl + 1;
@@ -215,10 +441,12 @@ const scanBlocks = (source: string, allowMath: boolean): BlockScanResult => {
 
   return {
     activeBlockStart,
-    inFence: fence !== null,
-    inMathBlock,
-    inRawHtml: rawEnd !== null,
-    mathBodyStart,
+    inFence: state.fence !== null,
+    inIndentedCode,
+    inMathBlock: state.inMathBlock,
+    inRawHtml:
+      state.rawEnd !== null || state.inType6Html || state.singleLineRawHtml,
+    mathBodyStart: state.mathBodyStart,
   };
 };
 
@@ -262,7 +490,7 @@ const healIncompleteTableSeparator = (
   if (!sepLine.includes('---') && !/\|[ \t]*:?-{1,}:?[ \t]*\|/.test(sepLine)) {
     return null;
   }
-  if (!PARTIAL_TABLE_SEPARATOR_RE.test(sepLine)) {
+  if (!isPartialTableSeparator(sepLine)) {
     return null;
   }
   const headerCols = countTableCells(headerLine);
@@ -274,7 +502,14 @@ const healIncompleteTableSeparator = (
   const inner = hasLeadingPipe ? trimmedSep.slice(1) : trimmedSep;
   const parts = inner.split('|');
 
-  if (parts.length > headerCols + 1) return null;
+  // Only heal once the separator already has all columns (avoid inventing
+  // columns before they arrive, which false-triggers on mismatched tables).
+  const activeCols =
+    parts.length > 1 && parts.at(-1)?.trim() === ''
+      ? parts.length - 1
+      : parts.length;
+
+  if (activeCols !== headerCols) return null;
 
   const completed = Array.from({ length: headerCols }, (_, index) => {
     const part = parts[index]?.trim() ?? '';
@@ -285,7 +520,9 @@ const healIncompleteTableSeparator = (
     return '---';
   });
 
-  return `${source.slice(0, activeBlockStart)}${headerLine}\n| ${completed.join(' | ')} |`;
+  const rebuilt = `${source.slice(0, activeBlockStart)}${headerLine}\n| ${completed.join(' | ')} |`;
+
+  return rebuilt === source ? null : rebuilt;
 };
 
 const UNICODE_WS = /[\s\u00A0]/u;
@@ -347,6 +584,7 @@ type DelimiterEntry = {
   char: '*' | '_' | '~';
   count: number;
   index: number;
+  initialCount: number;
 };
 
 const classifyFlanking = (
@@ -384,26 +622,17 @@ const classifyFlanking = (
 const healInlineRegion = (
   region: string,
   options: MarkdownTailHealOptions
-): string => {
-  if (!region) return region;
+): Readonly<{ healed: string; heldSuffix: string }> => {
+  if (!region) return { healed: region, heldSuffix: '' };
 
   const { grammar, incompleteLinks } = options;
   let working = region;
 
-  // Hold back a single trailing unescaped backslash so `\*` does not flash raw `\`.
-  let trailingBackslashes = 0;
-  for (let i = working.length - 1; i >= 0 && working[i] === '\\'; i--) {
-    trailingBackslashes += 1;
-  }
-  let heldCount = 0;
-  if (trailingBackslashes % 2 === 1) {
-    working = working.slice(0, -1);
-    heldCount = 1;
-  }
-
-  // First pass: find open code span, inline math, or incomplete inline link/image.
+  // Scan raw input before trimming a trailing backslash because backslashes
+  // inside code spans are literal.
   let codeSpan: { start: number; ticks: number } | null = null;
   let mathStart = -1;
+  let mathIsCurrency = false;
   let linkOpen: {
     bracket: number;
     destStart: number;
@@ -411,9 +640,16 @@ const healInlineRegion = (
     labelEnd: number;
   } | null = null;
   let openBracket: { index: number; isImage: boolean } | null = null;
-  let inAngleTag = false;
+  let inUnclosedHtml = false;
+  let inUnclosedAutolink = false;
   let lastMatchedCloserEnd = -1;
   const delimiters: DelimiterEntry[] = [];
+
+  let trailingBackslashes = 0;
+  for (let i = region.length - 1; i >= 0 && region[i] === '\\'; i--) {
+    trailingBackslashes += 1;
+  }
+  let hasTrailingBackslash = trailingBackslashes % 2 === 1;
 
   for (let i = 0; i < working.length; i++) {
     const ch = working[i];
@@ -436,19 +672,19 @@ const healInlineRegion = (
       continue;
     }
 
-    if (inAngleTag) {
-      if (ch === '>') inAngleTag = false;
-      continue;
-    }
-
     if (linkOpen) {
-      if (ch === ')' || ch === '\n') {
+      if (ch === ')') {
+        for (const d of delimiters) {
+          if (d.index > linkOpen.bracket) d.count = 0;
+        }
+        linkOpen = null;
+      } else if (ch === '\n') {
         linkOpen = null;
       }
       continue;
     }
 
-    if (ch === '`') {
+    if (ch === '`' && !inUnclosedAutolink) {
       let end = i;
 
       while (end < working.length && working[end] === '`') end += 1;
@@ -457,34 +693,109 @@ const healInlineRegion = (
       continue;
     }
 
-    if (ch === '<' && /^<\/?[A-Za-z]/.test(working.slice(i))) {
-      const closeIdx = working.indexOf('>', i + 1);
+    if (ch === '<') {
+      if (working.startsWith('<!--', i)) {
+        const closeIdx = working.indexOf('-->', i + 4);
 
-      if (closeIdx !== -1 && !working.slice(i, closeIdx).includes('\n')) {
-        inAngleTag = true;
+        if (closeIdx === -1) {
+          inUnclosedHtml = true;
+          break;
+        }
+        i = closeIdx + 2;
         continue;
+      }
+      if (working.startsWith('<?', i)) {
+        const closeIdx = working.indexOf('?>', i + 2);
+
+        if (closeIdx === -1) {
+          inUnclosedHtml = true;
+          break;
+        }
+        i = closeIdx + 1;
+        continue;
+      }
+      if (working.startsWith('<![CDATA[', i)) {
+        const closeIdx = working.indexOf(']]>', i + 9);
+
+        if (closeIdx === -1) {
+          inUnclosedHtml = true;
+          break;
+        }
+        i = closeIdx + 2;
+        continue;
+      }
+      if (/^<(?:https?:\/\/|mailto:)/i.test(working.slice(i))) {
+        const closeIdx = working.indexOf('>', i + 1);
+
+        if (closeIdx === -1 || working.slice(i, closeIdx).includes('\n')) {
+          inUnclosedAutolink = true;
+          continue;
+        }
+        i = closeIdx;
+        continue;
+      }
+      if (/^<\/?[A-Za-z!]/.test(working.slice(i))) {
+        let quote: '"' | "'" | null = null;
+        let closeIdx = -1;
+
+        for (let j = i + 1; j < working.length; j++) {
+          const c = working[j];
+
+          if (quote) {
+            if (c === quote) quote = null;
+            continue;
+          }
+          if (c === '"' || c === "'") {
+            quote = c;
+            continue;
+          }
+          if (c === '>') {
+            closeIdx = j;
+            break;
+          }
+          if (c === '\n' && working[j + 1] === '\n') break;
+        }
+        if (closeIdx !== -1) {
+          i = closeIdx;
+          continue;
+        }
       }
     }
 
-    if (grammar.math && ch === '$' && working[i + 1] !== '$') {
+    if (
+      grammar.math &&
+      ch === '$' &&
+      working[i + 1] !== '$' &&
+      working[i - 1] !== '$'
+    ) {
       if (mathStart === -1) {
         const next = working[i + 1];
         const prev = working[i - 1];
+        const closesEmphasisAroundDollar =
+          prev !== undefined &&
+          (prev === '*' || prev === '_' || prev === '~') &&
+          next === prev;
 
-        if (next && !isWhitespace(next) && prev !== '$') {
+        if (!closesEmphasisAroundDollar) {
+          // Track every unescaped single `$` toggle to match micromark's
+          // parity, while marking currency-like openers so they neither skip
+          // emphasis healing nor inject a synthetic closing `$`.
           mathStart = i;
+          mathIsCurrency =
+            !next ||
+            isWhitespace(next) ||
+            /^\d[\d,]*(?:\.\d+)?(?:[kKmMbBtT%]|(?:\s*(?:[-–]|\/)\s*\d[\d,]*(?:\.\d+)?[kKmMbBtT%]?))?(?=\s|[.,;:!?)/-]|$)/.test(
+              working.slice(i + 1)
+            );
         }
       } else {
-        const prev = working[i - 1];
-
-        if (prev && !isWhitespace(prev)) {
-          mathStart = -1;
-        }
+        mathStart = -1;
+        mathIsCurrency = false;
       }
       continue;
     }
 
-    if (mathStart !== -1) continue;
+    if (mathStart !== -1 && !mathIsCurrency) continue;
 
     if (ch === '!' && working[i + 1] === '[') {
       openBracket = { index: i, isImage: true };
@@ -499,9 +810,6 @@ const healInlineRegion = (
 
     if (ch === ']' && openBracket) {
       if (working[i + 1] === '(') {
-        for (const d of delimiters) {
-          if (d.index > openBracket.index) d.count = 0;
-        }
         linkOpen = {
           bracket: openBracket.index,
           destStart: i + 2,
@@ -537,9 +845,16 @@ const healInlineRegion = (
         continue;
       }
 
-      const { canClose, canOpen } = classifyFlanking(ch, before, after, cjk);
-
-      // Try to pair closing run with matching open run on the stack.
+      const flanking = classifyFlanking(ch, before, after, cjk);
+      const openingPunctAtEof =
+        end === working.length &&
+        before !== undefined &&
+        /[([{]/.test(before) &&
+        !delimiters.some(
+          (d) => d.char === ch && d.count === count && d.canOpen
+        );
+      const { canOpen } = flanking;
+      const canClose = openingPunctAtEof ? false : flanking.canClose;
       let remaining = count;
 
       if (canClose) {
@@ -567,8 +882,7 @@ const healInlineRegion = (
 
           opener.count -= used;
           remaining -= used;
-          lastMatchedCloserEnd = end;
-          // Drop any unmatched inner delimiters crossed by this pair.
+          lastMatchedCloserEnd = end - remaining;
           for (let inner = d + 1; inner < delimiters.length; inner++) {
             delimiters[inner].count = 0;
           }
@@ -583,6 +897,7 @@ const healInlineRegion = (
           char: ch,
           count: remaining,
           index: end - remaining,
+          initialCount: count,
         });
       }
 
@@ -590,190 +905,441 @@ const healInlineRegion = (
     }
   }
 
-  // Case 1: Open inline code span at EOF — close it, then still close outer emphasis!
-  let closedInlineSpan = false;
+  if (inUnclosedHtml) return { healed: region, heldSuffix: '' };
 
   if (codeSpan) {
-    const body = working.slice(codeSpan.start + codeSpan.ticks);
+    hasTrailingBackslash = false;
+  } else if (hasTrailingBackslash) {
+    working = working.slice(0, -1);
+  }
+
+  // Skip space-padded spans: CommonMark strips spaces only once both ends have space.
+  let closedInlineSpan = false;
+  let heldBackticks = '';
+
+  if (codeSpan && codeSpan.ticks === 1) {
+    const body = working.slice(codeSpan.start + 1);
+    const charBeforeTick =
+      codeSpan.start > 0 ? working[codeSpan.start - 1] : undefined;
+    const allowsMultiline =
+      charBeforeTick === undefined || !/[A-Za-z0-9]/.test(charBeforeTick);
 
     if (body.length === 0) {
-      const hold = Math.min(codeSpan.ticks, MAX_HELD_MARKERS - heldCount);
+      heldBackticks = '`';
+    } else if (
+      !body.includes('`') &&
+      !body.startsWith(' ') &&
+      (!body.includes('\n') ||
+        (allowsMultiline && body.length <= 200 && !/\n {0,3}-/.test(body)))
+    ) {
+      let codeEnd = working.length;
 
-      if (hold > 0) {
-        working = working.slice(0, -hold);
-        heldCount += hold;
-      }
-    } else {
-      let trailingTicks = 0;
-
-      for (
-        let i = working.length - 1;
-        i >= codeSpan.start + codeSpan.ticks;
-        i--
+      while (
+        codeEnd > codeSpan.start + 1 &&
+        (working[codeEnd - 1] === ' ' || working[codeEnd - 1] === '\n')
       ) {
-        if (working[i] === '`') trailingTicks += 1;
-        else break;
+        codeEnd -= 1;
       }
-      const needed = Math.max(1, codeSpan.ticks - trailingTicks);
-
-      working = `${working}${'`'.repeat(needed)}`;
-      closedInlineSpan = true;
+      if (codeEnd > codeSpan.start + 1) {
+        working = `${working.slice(0, codeEnd)}\`${working.slice(codeEnd)}`;
+        closedInlineSpan = true;
+      }
     }
   }
 
-  // Case 2: Open inline math span at EOF — close it, then still close outer emphasis!
-  if (!codeSpan && mathStart !== -1 && grammar.math) {
+  // Require math-like start and an ASCII letter or backslash so currency
+  // (`$50`) and punctuation (`$.;'`) stay literal.
+  if (!codeSpan && mathStart !== -1 && !mathIsCurrency && grammar.math) {
     const body = working.slice(mathStart + 1);
 
     if (
       body.length > 0 &&
-      !/^\s/.test(body) &&
+      !body.includes('\n') &&
+      /^[A-Za-z0-9(\\[{-]/.test(body) &&
       !/\s$/.test(body) &&
-      !/^\d+(?:[.,]\d+)?$/.test(body)
+      /[A-Za-z\\]/.test(body)
     ) {
       working = `${working}$`;
       closedInlineSpan = true;
     }
   }
 
-  // Case 3: Incomplete inline link or image `[label](url` at EOF.
   let suffix = '';
+  let linkHealed = false;
+  let linkLabelHasMarkers = false;
 
   if (linkOpen) {
     const dest = working.slice(linkOpen.destStart);
+    const label = working.slice(linkOpen.bracket + 1, linkOpen.labelEnd);
 
-    if (isStreamingUrlPrefix(dest)) {
+    if (isStreamingUrlPrefix(dest) && (linkOpen.isImage || label.length > 0)) {
+      for (const d of delimiters) {
+        if (d.index > linkOpen.bracket) d.count = 0;
+      }
       if (!linkOpen.isImage && incompleteLinks === 'text') {
-        const label = working.slice(linkOpen.bracket + 1, linkOpen.labelEnd);
-
+        linkLabelHasMarkers = /[*_~]/.test(label);
         working = `${working.slice(0, linkOpen.bracket)}${label}`;
       } else {
         const safeDest = safeStreamingDestination(dest);
 
         working = `${working.slice(0, linkOpen.destStart)}${safeDest})`;
       }
+      linkHealed = true;
     }
   }
 
-  // Case 4: Hold back up to MAX_HELD_MARKERS trailing bare emphasis/strikethrough
-  // markers at EOF so `Use **` does not flash literal `**`. Never strip a marker
-  // that already matched an opener (`lastMatchedCloserEnd === working.length`).
+  // Hold trailing bare markers for post-parse trimming so `Use **`, `  Foo *`,
+  // `- [ ] *`, and `- a\n**` hide markers without stripping preceding spaces.
   const activeDelims = delimiters.filter((d) => d.count > 0 && d.canOpen);
+  const lastNlIdx = working.lastIndexOf('\n');
+  const lastLine = lastNlIdx === -1 ? working : working.slice(lastNlIdx + 1);
+  const isThematicLine = THEMATIC_BREAK_LINE_RE.test(lastLine);
+  let heldCount = (hasTrailingBackslash ? 1 : 0) + heldBackticks.length;
+  let heldMarkers = '';
 
-  while (activeDelims.length > 0 && heldCount < MAX_HELD_MARKERS) {
-    const last = activeDelims.at(-1);
+  const openHiddenCount = activeDelims.reduce(
+    (sum, d) =>
+      sum + (d.char === '~' ? (d.count === 2 ? 2 : 0) : Math.min(d.count, 3)),
+    0
+  );
 
-    if (!last || last.index + last.count !== working.length) break;
-    const take = Math.min(last.count, MAX_HELD_MARKERS - heldCount);
+  if (!isThematicLine && !closedInlineSpan && !heldBackticks) {
+    let cursor = working.length;
+    let remainingOpenHidden = openHiddenCount;
 
-    working = working.slice(0, -take);
-    heldCount += take;
-    last.count -= take;
-    if (last.count === 0) activeDelims.pop();
-  }
-
-  // Also check if working itself ends in trailing unstacked markers (e.g., `Use **`
-  // where `**` was not left-flanking because EOF followed it), skipping markers
-  // that already paired as closers.
-  if (!closedInlineSpan) {
-    while (
-      heldCount < MAX_HELD_MARKERS &&
-      working.length > 0 &&
-      working.length > lastMatchedCloserEnd
-    ) {
-      const tailChar = working.at(-1);
+    while (cursor > lastMatchedCloserEnd) {
+      const tailChar = working[cursor - 1];
       const allowed =
         (tailChar === '*' && grammar.attention !== null) ||
         (tailChar === '_' && grammar.attention !== null) ||
         (tailChar === '~' && grammar.strikethrough !== null);
 
       if (!allowed) break;
-      // Do not hold an escaped marker.
+
+      let runStart = cursor - 1;
+
+      while (
+        runStart > lastMatchedCloserEnd &&
+        working[runStart - 1] === tailChar
+      ) {
+        runStart -= 1;
+      }
+      const runLen = cursor - runStart;
       let bs = 0;
-      for (let j = working.length - 2; j >= 0 && working[j] === '\\'; j--) {
+      for (let j = runStart - 1; j >= 0 && working[j] === '\\'; j--) {
         bs += 1;
       }
       if (bs % 2 === 1) break;
-      // Only hold if preceded by whitespace, punctuation, another marker, or CJK (not mid-word `_`).
-      const before = working.at(-2);
-      if (
+
+      const before = runStart > 0 ? working[runStart - 1] : undefined;
+      const midWordUnderscore =
         tailChar === '_' &&
-        before &&
+        before !== undefined &&
         !isWhitespace(before) &&
-        !isPunctuation(before)
-      ) {
-        break;
-      }
-      working = working.slice(0, -1);
-      heldCount += 1;
+        !isPunctuation(before);
+
+      if (midWordUnderscore) break;
+
+      const top = activeDelims.at(-1);
+      const onStack = top && top.index === runStart && top.count === runLen;
+      const isPartialDoubleCloser =
+        !onStack &&
+        runLen === 1 &&
+        (tailChar === '_' || tailChar === '*') &&
+        before !== undefined &&
+        !isWhitespace(before) &&
+        activeDelims.some(
+          (d) =>
+            d.char === tailChar &&
+            d.count === 2 &&
+            d.initialCount === 2 &&
+            runStart > d.index + 2
+        );
+
+      if (isPartialDoubleCloser) break;
+
+      const otherOpenHidden = onStack
+        ? remainingOpenHidden -
+          (top.char === '~'
+            ? top.count === 2
+              ? 2
+              : 0
+            : Math.min(top.count, 3))
+        : remainingOpenHidden;
+
+      if (runLen + heldCount + otherOpenHidden > MAX_HELD_MARKERS) break;
+
+      heldMarkers = working.slice(runStart, cursor) + heldMarkers;
+      heldCount += runLen;
+      remainingOpenHidden = otherOpenHidden;
+      if (onStack) activeDelims.pop();
+      cursor = runStart;
     }
   }
 
-  // Close remaining open emphasis/strikethrough runs in LIFO order.
-  // Place closers BEFORE any trailing whitespace so `Use **a ` stays bolded
-  // (`Use **a** `) instead of flashing raw `**` on every space.
-  let wsStart = working.length;
-  while (wsStart > 0 && isWhitespace(working[wsStart - 1])) {
+  // Place closers before trailing whitespace and before unheld space-preceded
+  // marker runs like `**foo bar **\n` so `"foo bar "` stays a prefix without
+  // flashing raw `**` at the opener.
+  const heldTailLen = heldBackticks.length + heldMarkers.length;
+  const scanForClosers =
+    heldTailLen > 0 ? working.slice(0, working.length - heldTailLen) : working;
+  let outerWsStart = scanForClosers.length;
+  while (outerWsStart > 0 && isWhitespace(scanForClosers[outerWsStart - 1])) {
+    outerWsStart -= 1;
+  }
+  let closeRegion = scanForClosers.slice(0, outerWsStart);
+  const outerTrailingWs = scanForClosers.slice(outerWsStart);
+  let unheldTail = '';
+  let markerEnd = closeRegion.length;
+
+  while (
+    markerEnd > 0 &&
+    (closeRegion[markerEnd - 1] === '*' ||
+      closeRegion[markerEnd - 1] === '_' ||
+      closeRegion[markerEnd - 1] === '~')
+  ) {
+    markerEnd -= 1;
+  }
+  if (markerEnd < closeRegion.length) {
+    let wsBeforeMarker = markerEnd;
+
+    while (
+      wsBeforeMarker > 0 &&
+      isWhitespace(closeRegion[wsBeforeMarker - 1])
+    ) {
+      wsBeforeMarker -= 1;
+    }
+    if (
+      wsBeforeMarker < markerEnd &&
+      activeDelims.some(
+        (d) => d.char === closeRegion[markerEnd] && wsBeforeMarker > d.index
+      )
+    ) {
+      unheldTail = closeRegion.slice(wsBeforeMarker);
+      closeRegion = closeRegion.slice(0, wsBeforeMarker);
+    }
+  }
+
+  // Never inject a closer directly after `[label]:` (even inside blockquotes or
+  // lists; doing so synthesizes a fake link definition whose URL is the closer).
+  let colonTail = '';
+  if (
+    /(?:^|\n)(?:[ \t>]|[*+-][ \t]|\d{1,9}[.)][ \t])*\[(?:[^[\]\\]|\\[\s\S])+\]:$/.test(
+      closeRegion
+    )
+  ) {
+    colonTail = ':';
+    closeRegion = closeRegion.slice(0, -1);
+  }
+
+  let wsStart = closeRegion.length;
+  while (wsStart > 0 && isWhitespace(closeRegion[wsStart - 1])) {
     wsStart -= 1;
   }
-  const core = working.slice(0, wsStart);
-  const trailingSpaces = working.slice(wsStart);
+  let core = closeRegion.slice(0, wsStart);
+  const trailingSpaces = `${closeRegion.slice(wsStart)}${colonTail}${unheldTail}${outerTrailingWs}`;
 
-  for (let i = activeDelims.length - 1; i >= 0; i--) {
-    const opener = activeDelims[i];
+  // If `core` ends with an unescaped trailing backslash before whitespace/newline
+  // (e.g. `*foo\\\n`), drop that backslash before injecting emphasis closers so
+  // `\` does not escape the injected closer (`*foo\*`).
+  let coreEndBackslashes = 0;
+  for (let i = core.length - 1; i >= 0 && core[i] === '\\'; i--) {
+    coreEndBackslashes += 1;
+  }
+  const coreEndsWithEscape = coreEndBackslashes % 2 === 1;
 
-    if (opener.count <= 0) continue;
-    const afterOpener = core.slice(opener.index + opener.count);
+  // Complete partial 2-char closers blocked by CommonMark rule-of-3 at EOF (e.g. `foo __*_` -> `foo __*__`).
+  let trailingCoreBs = 0;
+  for (let i = core.length - 2; i >= 0 && core[i] === '\\'; i--) {
+    trailingCoreBs += 1;
+  }
+  const partialClosingMatch =
+    !heldMarkers &&
+    !trailingSpaces &&
+    working.length > lastMatchedCloserEnd &&
+    trailingCoreBs % 2 === 0 &&
+    activeDelims.length > 0 &&
+    (core.endsWith('_') || core.endsWith('*'));
+  let partialCloserChar: '*' | '_' | null = null;
 
-    if (!afterOpener || BLANK_RE.test(afterOpener)) continue;
-    if (opener.char === '~') {
-      if (opener.count === 2) suffix += '~~';
-    } else {
-      suffix += opener.char.repeat(Math.min(opener.count, 3));
+  if (partialClosingMatch) {
+    const ch = core.at(-1) as '*' | '_';
+    const matching = activeDelims.findLast(
+      (d) => d.char === ch && d.count === 2 && d.initialCount === 2
+    );
+
+    if (
+      matching &&
+      !core.endsWith(ch + ch) &&
+      core.length > matching.index + 2
+    ) {
+      partialCloserChar = ch;
     }
   }
 
-  return `${core}${suffix}${trailingSpaces}`;
+  let closedMarkers = heldCount;
+  let escapedCloserPrefix = '';
+
+  if (partialCloserChar) {
+    suffix = partialCloserChar;
+    closedMarkers += 1;
+  } else if (!linkLabelHasMarkers) {
+    // Pick delimiters outermost-first within MAX_HELD_MARKERS so earlier closed
+    // spans do not un-close when a deeper nested delimiter arrives, then emit
+    // their closers in LIFO order.
+    let closeCore = coreEndsWithEscape ? core.slice(0, -1) : core;
+    let escapeWs = '';
+
+    if (coreEndsWithEscape) {
+      let wsBeforeEscape = closeCore.length;
+
+      while (
+        wsBeforeEscape > 0 &&
+        isWhitespace(closeCore[wsBeforeEscape - 1])
+      ) {
+        wsBeforeEscape -= 1;
+      }
+      escapeWs = closeCore.slice(wsBeforeEscape);
+      closeCore = closeCore.slice(0, wsBeforeEscape);
+    }
+    const chosen: DelimiterEntry[] = [];
+
+    for (const opener of activeDelims) {
+      if (opener.initialCount > 3) {
+        continue;
+      }
+      const afterOpener = closeCore.slice(opener.index + opener.count);
+
+      if (!afterOpener || BLANK_RE.test(afterOpener)) continue;
+      const addLen =
+        opener.char === '~' ? (opener.count === 2 ? 2 : 0) : opener.count;
+
+      if (addLen === 0 || closedMarkers + addLen > MAX_HELD_MARKERS) continue;
+      chosen.push(opener);
+      closedMarkers += addLen;
+    }
+    if (chosen.length > 0) {
+      for (let i = chosen.length - 1; i >= 0; i--) {
+        suffix += chosen[i].char.repeat(chosen[i].count);
+      }
+      if (coreEndsWithEscape) {
+        core = closeCore;
+        escapedCloserPrefix = `${escapeWs}\\`;
+      }
+    }
+  }
+
+  // If we injected a closer (emphasis, code, math, or link), keep any trailing
+  // held markers or backslash after `trailingSpaces` and trim them post-parse
+  // so preceding spaces (e.g. `__foo _` or `**a \\`) survive CommonMark trimming.
+  const heldSuffix = `${heldBackticks}${heldMarkers}${hasTrailingBackslash ? '\\' : ''}`;
+
+  if (suffix || closedInlineSpan || linkHealed) {
+    if (heldSuffix && trailingSpaces) {
+      return {
+        healed: `${core}${suffix}${escapedCloserPrefix}${trailingSpaces}${heldSuffix}`,
+        heldSuffix,
+      };
+    }
+
+    return {
+      healed: `${core}${suffix}${escapedCloserPrefix}${trailingSpaces}`,
+      heldSuffix: '',
+    };
+  }
+
+  return {
+    healed: region,
+    heldSuffix,
+  };
 };
 
 export const healMarkdownTail = (
   source: string,
   options: MarkdownTailHealOptions
 ): HealedMarkdownTail => {
-  if (!source) return { healed: source, modified: false };
+  if (!source) return { healed: source, heldSuffix: '', modified: false };
 
-  const trimmed = trimIncompleteRegisteredTag(source, options.tags);
+  const blockState = scanMarkdownTailBlocks(
+    source,
+    options.grammar.math,
+    options.tags
+  );
 
-  if (options.mode === 'inline') {
-    const windowStart = Math.max(0, trimmed.length - MAX_INLINE_HEAL_WINDOW);
-    const prefix = trimmed.slice(0, windowStart);
-    const healedRegion = healInlineRegion(trimmed.slice(windowStart), options);
-    const healed = `${prefix}${healedRegion}`;
-
-    return { healed, modified: healed !== source };
-  }
-
-  const blockState = scanBlocks(trimmed, options.grammar.math);
-
-  if (blockState.inFence || blockState.inRawHtml) {
-    return { healed: trimmed, modified: trimmed !== source };
+  if (blockState.inFence || blockState.inIndentedCode || blockState.inRawHtml) {
+    return { healed: source, heldSuffix: '', modified: false };
   }
 
   if (blockState.inMathBlock && options.grammar.math) {
-    let body = trimmed.slice(blockState.mathBodyStart);
+    const body = source.slice(blockState.mathBodyStart);
 
-    // Hold a lone trailing `$` on a fresh line while closing `$$` arrives.
-    if (body.endsWith('\n$')) {
-      body = body.slice(0, -1);
-    }
-    if (body.trim().length > 0) {
+    if (body.trim().length > 0 && !body.endsWith('\n$')) {
       const sep = body.endsWith('\n') ? '' : '\n';
-      const healed = `${trimmed.slice(0, blockState.mathBodyStart)}${body}${sep}$$`;
+      const healed = `${source.slice(0, blockState.mathBodyStart)}${body}${sep}$$`;
 
-      return { healed, modified: healed !== source };
+      return { healed, heldSuffix: '', modified: healed !== source };
     }
 
-    return { healed: trimmed, modified: trimmed !== source };
+    return { healed: source, heldSuffix: '', modified: false };
+  }
+
+  if (options.mode === 'blocks' && options.grammar.table) {
+    const activeBlock = source.slice(blockState.activeBlockStart);
+    const firstNl = activeBlock.indexOf('\n');
+
+    if (firstNl !== -1) {
+      const secondNl = activeBlock.indexOf('\n', firstNl + 1);
+
+      if (secondNl !== -1) {
+        const headerLine = activeBlock.slice(0, firstNl);
+        const sepLine = activeBlock.slice(firstNl + 1, secondNl);
+
+        if (
+          headerLine.includes('|') &&
+          isPartialTableSeparator(sepLine) &&
+          sepLine.includes('-')
+        ) {
+          const lastNl = source.lastIndexOf('\n');
+
+          if (lastNl >= blockState.activeBlockStart + secondNl) {
+            const lastLine = source.slice(lastNl + 1);
+            const healedRow = healTableRowTail(lastLine, options);
+            const healed = `${source.slice(0, lastNl + 1)}${healedRow.healed}`;
+
+            return {
+              healed,
+              heldSuffix: healedRow.heldSuffix,
+              modified: healed !== source || healedRow.heldSuffix.length > 0,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  const trimmed = trimIncompleteRegisteredTag(
+    source,
+    options.tags,
+    blockState.activeBlockStart
+  );
+
+  if (options.mode === 'inline') {
+    const windowStart = Math.max(
+      blockState.activeBlockStart,
+      trimmed.length - MAX_INLINE_HEAL_WINDOW
+    );
+    const prefix = trimmed.slice(0, windowStart);
+    const { healed: healedRegion, heldSuffix } = healInlineRegion(
+      trimmed.slice(windowStart),
+      options
+    );
+    const healed = `${prefix}${healedRegion}`;
+
+    return {
+      healed,
+      heldSuffix,
+      modified: healed !== source || heldSuffix.length > 0,
+    };
   }
 
   if (options.grammar.table) {
@@ -783,7 +1349,11 @@ export const healMarkdownTail = (
     );
 
     if (tableHealed !== null) {
-      return { healed: tableHealed, modified: tableHealed !== source };
+      return {
+        healed: tableHealed,
+        heldSuffix: '',
+        modified: tableHealed !== source,
+      };
     }
   }
 
@@ -791,8 +1361,53 @@ export const healMarkdownTail = (
     blockState.activeBlockStart,
     trimmed.length - MAX_INLINE_HEAL_WINDOW
   );
-  const healedTail = healInlineRegion(trimmed.slice(tailStart), options);
+  const { healed: healedTail, heldSuffix } = healInlineRegion(
+    trimmed.slice(tailStart),
+    options
+  );
   const healed = `${trimmed.slice(0, tailStart)}${healedTail}`;
 
-  return { healed, modified: healed !== source };
+  return {
+    healed,
+    heldSuffix,
+    modified: healed !== source || heldSuffix.length > 0,
+  };
+};
+
+// GFM splits table cells on every unescaped `|` before inline code parsing, so
+// heal only the active cell after the last unescaped `|`.
+export const healTableRowTail = (
+  line: string,
+  options: MarkdownTailHealOptions
+): HealedMarkdownTail => {
+  if (!line) return { healed: line, heldSuffix: '', modified: false };
+
+  let lastPipe = -1;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (ch === '\\') {
+      i += 1;
+      continue;
+    }
+    if (ch === '|') lastPipe = i;
+  }
+
+  const prefix = lastPipe === -1 ? '' : line.slice(0, lastPipe + 1);
+  const activeCell = lastPipe === -1 ? line : line.slice(lastPipe + 1);
+
+  if (!activeCell || BLANK_RE.test(activeCell)) {
+    return { healed: line, heldSuffix: '', modified: false };
+  }
+  const healedCell = healMarkdownTail(activeCell, {
+    ...options,
+    mode: 'inline',
+  });
+
+  return {
+    healed: `${prefix}${healedCell.healed}`,
+    heldSuffix: healedCell.heldSuffix,
+    modified: healedCell.modified,
+  };
 };

@@ -316,80 +316,53 @@ comment 的 block 按 CommonMark 读取。
 
 ## 流式预览
 
-用 `partial: true` 与上一次 result 解析每个未完成的 stream prefix，然后用同一个
-hint 严格解析完整 source：
+使用 `editor.api.markdown.stream()` 创建有状态的 stream，用 `append()` 传入到达的
+chunk（或用 `set()` 传入完整前缀），在流结束或用户停止时调用 `finish()`：
 
 ```ts
-const preview = editor.api.markdown.parseSlice(accumulated, {
-  lossPolicy: 'allow',
-  partial: true,
-  previous,
-});
-previous = preview.ok ? preview : undefined;
+const stream = editor.api.markdown.stream();
+
+// Chunk 到达时：
+const snapshot = stream.append(chunk);
+if (snapshot.ok) {
+  renderPreview(snapshot.nodes);
+}
 
 // Stream 结束或用户停止时：
-const result = editor.api.markdown.parseSlice(accumulated, { previous });
-previous = undefined;
+const final = stream.finish();
+if (final.ok && final.slice) {
+  applyFinalSlice(final.slice);
+}
 ```
 
-`partial: true` 会隐藏尚未完整到达的末尾 tag（例如 `Before <callo`），也不会报告
-source 末尾仍未闭合的 tag。`lossPolicy: 'allow'` 让 stream 未完成时不支持的内容以文本形式可见。`previous` 必须来自同一
-editor 的同一 method。当 source 在上一次 result 的
-source 之后继续增长，且 plugin 与 limits 未变时，它已完成的 block 保留其 node object；其他
-hint 都会解析整个 source。在另一个 `lossPolicy` 下的解析（例如严格的最终解析）只保留未报告任何 diagnostic
-的已完成 block。包含链接引用定义或脚注定义（`[id]: url`、`[^1]: note`）的
-source 总是完整解析，因为定义会改变它之前的 block。
+每次调用都返回 `MarkdownStreamSnapshot`，包含单调递增的 `revision`、带类型的
+`delta`（`reset`、`splice`、`append-text`、`append-code`、`append-table-row` 或
+`replace-table-row`），成功时附带 `nodes`。`slice` 仅在 `done` 为 `true` 且 `ok` 为
+`true` 时提供。
 
-`partial` 解析还会把尚未闭合的粗体、斜体和删除线显示为带样式的文本，因此 `Use **bold`
-的 preview 把 `bold` 显示为粗体。它给未完成的 block 补上所需的闭合标记，生成一份 closed
-copy。这份 copy 经过同样的 plugin 与 schema，只有它保留了每个已收到的字符时，preview
-才显示它。末尾最多三个仍可能开启样式的 `*`、`_` 或 `~`，或末尾的一个反斜杠，会保持隐藏，直到下一个字符到达。不能开启样式的标记按原样显示，例如 `2*3`
-中的星号和 `foo_bar` 中的下划线。未完成的 block 超过 2,000 个字符，或 source
-包含链接引用定义或脚注定义、或以 byte order mark 开头时，解析不生成 closed copy。在 1,000
-个字符之前开启的样式也不补闭合标记。这样的 block 会显示这些标记，直到它们闭合。Code
-span、链接、图片、数学公式以及表格行等 block 语法在完成前按原样显示，链接文本内或未闭合反引号之后的样式也是如此。
+流式预览始终在 `lossPolicy: 'allow'` 下运行，让未完成的语法保持可见。单遍有界尾部修复器会闭合尚未结束的粗体、斜体、删除线、行内代码、行内与块级数学公式、链接、图片和 GFM 表格分隔行，隐藏末尾最多三个样式标记或单个反斜杠，并裁剪末尾有界长度的半个已注册 tag（例如 `Before <callo`），且不报告源码末尾未闭合的 tag。未完成的链接默认使用占位链接（`incompleteLinks: 'placeholder'`），在 URL 闭合前以安全占位目标预览标签；传入 `incompleteLinks: 'text'` 可改为纯文本预览。
 
-`partial` 解析只转换保留的 block 之后的文本。每个保留的 block 都来自对它自己那一段
-source 的解析，因此读取整棵树的 remark plugin（例如给 block 编号或合并 block 的 plugin）可能让
-preview 与全新解析不同。不带 `partial` 的解析会把整个 source 转换一次：保留的 block
-除列表 id 外与这次转换的开头一致时，result 由保留的 block 和这次转换的其余部分组成，否则
-result 就是这次转换。无论运行哪些 remark plugin，最终 result 除列表 id 外都与全新解析一致。
+在 plugin 与 limits 未变时，已提交的 block 跨 chunk 保留其 node object 与 `listId`。普通段落、未闭合代码块以及固定列数的 GFM 表格行按增量推进，无需重解析前面已提交的 block。当后续 chunk 引入链接引用定义、脚注定义、更宽的表格行或全树 remark plugin 的状态变化时，stream 会自动使受影响前缀失效并重新对齐。
 
-只读 preview 以解析得到的 block 组成的文档来渲染；editor 提供插件，本身不会被编辑：
+`finish()` 使用 stream 配置的 `lossPolicy`（默认严格 `'reject'`）。使用本地 remark plugin 时，未报告 diagnostic 的已提交 block 只要在 `listId` 之外与最终严格结果一致就会保留引用；存在全树 remark transformer 时，`finish()` 会对完整源码做一次对齐解析，确保最终结果在 `listId` 之外始终与 `editor.api.markdown.parseSlice(source)` 一致。传入 `mode: 'inline'` 可流式解析行内内容，其 `finish()` 与 `editor.api.markdown.parseInline(source)` 一致。
+
+只读 preview 以 `snapshot.nodes` 组成的文档来渲染；editor 提供插件，本身不会被编辑：
 
 ```tsx
-<EditorStatic editor={editor} document={{ children: nodes }} />
+<EditorStatic editor={editor} document={{ children: snapshot.nodes }} />
 ```
 
-若要在可编辑的 editor 中显示 stream，则在 undo history 之外发布每个 result。只替换第一个
-变化的 block 之后的 block；没有保持不变的开头 block 时替换整个 value：
+若要在可编辑的 editor 中以不写入 undo history 的方式发布 stream，请先检查
+`snapshot.delta.baseRevision` 是否等于上次发布的 revision，并确认目标 `NodeKey`
+仍然存在，再应用增量更新（`splice`、`append-text`、`append-code`、
+`append-table-row`、`replace-table-row`）。如果用户的并发编辑移动或删除了流式锚点，请回退到整篇替换或停止应用 delta。启用 authored changes 的 editor 会把每次 node 写入记录为 authored change，因此启用 authored changes 的可编辑 preview 总是替换整个 value。
 
-```ts
-let start = 0;
+Transport、abort signal、stream 生命周期与渲染节奏由调用方负责：
 
-while (start < nodes.length && published[start] === nodes[start]) start += 1;
-
-if (start === 0) {
-  editor.update({ history: 'skip' }).value.replace({ children: nodes });
-} else {
-  editor.update({ history: 'skip' }, (tx) => {
-    tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
-  });
-}
-published = nodes;
-```
-
-启用 authored changes 的 editor 会把每次 node 写入记录为 authored change，因此启用
-authored changes 的可编辑 preview 总是替换整个 value。
-
-Source、abort signal、hint 与 preview 节奏由调用方负责：
-
-- 第一个 chunk 立即发布，之后最多每 32 ms 发布一次最新的累计 source。
-- 只把最新的 partial result 保留为 `previous`；stream 完成、被取消或替换、或卸载
-  时丢弃它。
-- Stream 完成或用户停止时，不带 `partial` 解析当前 source 一次，并延续最新的
-  preview。最终解析失败会清空 preview。
-- 取消、替换与卸载会中止 stream，并丢弃待发布的 preview，不做最终解析。
+- 第一个 chunk 立即发布，之后最多每 32 ms 刷新一次新到达的 chunk。
+- 每个活跃响应维护一个 `MarkdownStream`；在响应完成、取消、被替换或卸载时调用 `reset()` 或丢弃它。
+- 响应完成或用户停止时调用一次 `finish()`；最终结果失败会清空 preview。
+- 取消、替换与卸载会中止 transport 并丢弃 stream，不调用 `finish()`。
 
 AI chat preview 遵循相同规则；参阅 [AI 流式传输](/docs/ai#streaming)。
 
@@ -397,7 +370,7 @@ AI chat preview 遵循相同规则；参阅 [AI 流式传输](/docs/ai#streaming
 
 ## 列表标识
 
-Markdown 没有列表标识，因此每次解析都会给每个 Markdown 列表新的 `listId`。同一来源的两次解析在列表 id 之外相等。继续 `previous` 结果的解析会保留它复用的块的 id，重新转换的列表会得到新的 id。比较两次解析时，按首次出现的顺序重命名每个 `listId`。Plate 如何读取和写出列表，参见 [List](/cn/docs/list#html-和-markdown)。
+Markdown 没有列表标识，因此每次解析都会给每个 Markdown 列表新的 `listId`。同一来源的两次解析在列表 id 之外相等。`MarkdownStream` 跨 chunk 和 `finish()` 保留它复用的已提交块的 `listId`，重新转换的列表会得到新的 id。比较两次解析时，按首次出现的顺序重命名每个 `listId`。Plate 如何读取和写出列表，参见 [List](/cn/docs/list#html-和-markdown)。
 
 ## Authored content
 
@@ -610,17 +583,14 @@ const plugins = [
 Standalone function 从 `plugins` 中读取已配置的 `MarkdownPlugin`。Remark plugin
 必须是同步的。Attacher 或 transformer 返回 Promise 属于配置错误，会直接抛出。
 同步 function 不会返回 `Result | Promise<Result>`。Remark plugin
-也不能在两次解析之间保存状态，因为 `partial` 解析除了已收到的文本，还会在未完成 block 的 closed
-copy 上运行它们。参阅[流式预览](#流式预览)。
+也不能在两次解析之间保存状态，因为 `MarkdownStream` 会在 chunk 到达时解析修复后的未完成尾部。参阅[流式预览](#流式预览)。
 
 ### remark-frontmatter
 
 文件的 [front matter](#front-matter) 不需要 `remark-frontmatter`。如果列表中仍有
 它，它会读取每个 slice，以及 Plate reader 拒绝的每个 block。除非某个 mapping
 decode 它生成的 `yaml` 或 `toml` node，该 node 是有损的
-`markdown-unsupported-node`，在默认 policy 下会使 parse 失败。接续上一次 result
-的[流式预览](#流式预览)在该 plugin 添加 front matter 语法时会重新读取整个源文本，
-它的默认 options 就会添加该语法，因此与对同一文本的全新 parse 一致。
+`markdown-unsupported-node`，在默认 policy 下会使 parse 失败。[流式预览](#流式预览)在该 plugin 添加 front matter 语法时会重新读取整个源文本（它的默认 options 就会添加该语法），因此与对同一文本的全新 parse 一致。
 
 ### CJK 强调
 
@@ -696,6 +666,7 @@ node/depth admission 在 parser 返回后执行。
 | `editor.api.markdown.parse(source, options?)` | 使用已安装 target 解析完整 document。 |
 | `editor.api.markdown.parseSlice(source, options?)` | 闭合、无 root 的 block `ContentSlice`。 |
 | `editor.api.markdown.parseInline(source, options?)` | 闭合、无 root 的 inline `ContentSlice`。 |
+| `editor.api.markdown.stream(options?)` | 有状态 `MarkdownStream`（`append`、`set`、`finish`、`reset`），用于流式预览与严格最终切片。 |
 | `editor.api.markdown.serialize(options?)` | 使用已安装 target 序列化当前或指定 document。 |
 
 `MarkdownPlugin`、standalone function 及其 result、diagnostic 与 option type 从
@@ -705,8 +676,13 @@ node/depth admission 在 parser 返回后执行。
 | --- | --- |
 | `limits` | 覆盖 `maxBytes`、`maxNodes` 或 `maxDepth`。 |
 | `lossPolicy` | `'reject'`（默认）或 `'allow'`。 |
-| `partial` | 为 preview 解析未完成的 stream prefix。 |
-| `previous` | 仅 `editor.api.markdown.parseSlice`：要延续的增长中 source 的上一次 result。 |
+
+| Stream option | 用途 |
+| --- | --- |
+| `incompleteLinks` | `'placeholder'`（默认）以安全占位目标预览未完成链接；`'text'` 以纯文本预览。 |
+| `limits` | 覆盖 `maxBytes`、`maxNodes` 或 `maxDepth`。 |
+| `lossPolicy` | `finish()` 使用的策略：`'reject'`（默认）或 `'allow'`。预览始终允许未完成语法。 |
+| `mode` | `'blocks'`（默认）或 `'inline'`。 |
 
 | Serialize option | 用途 |
 | --- | --- |

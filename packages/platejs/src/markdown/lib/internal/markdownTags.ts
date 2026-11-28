@@ -1138,25 +1138,3 @@ export const remarkMarkdownTagWriter: UnifiedPlugin<[], Root> = function (
 
   (data.toMarkdownExtensions ??= []).push(toMarkdown);
 };
-
-/** Streaming preview only: hide a trailing `<…` that may still become a tag. */
-export const trimIncompleteMarkdownTag = (
-  source: string,
-  tags: MarkdownTagRegistry
-) => {
-  const lt = source.lastIndexOf('<');
-
-  if (lt === -1 || /[>\n\r]/.test(source.slice(lt))) {
-    return source;
-  }
-  const match = /^<\/?([A-Za-z][\w-]*)?/.exec(source.slice(lt));
-
-  if (!match) return source;
-  const name = match[1] ?? '';
-  const typingName = match[0].length === source.length - lt;
-  const couldBeTag = typingName
-    ? [...tags.keys()].some((tag) => tag.startsWith(name))
-    : tags.has(name);
-
-  return couldBeTag ? source.slice(0, lt) : source;
-};

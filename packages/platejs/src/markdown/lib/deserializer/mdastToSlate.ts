@@ -22,7 +22,6 @@ export const mdastToSlate = (
   options.onRootChildren?.(root.children);
   const marks = {};
   const nodes: Descendant[] = [];
-  const counts: number[] = [];
 
   root.children.forEach((child, index) => {
     const converted = buildSlateNode(
@@ -34,10 +33,8 @@ export const mdastToSlate = (
         : root.children[index - 1]
     );
 
-    counts.push(converted.length);
     for (const node of converted) nodes.push(node);
   });
-  options.onRootBlocks?.(counts);
 
   return nodes;
 };

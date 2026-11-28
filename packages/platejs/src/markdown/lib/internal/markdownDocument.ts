@@ -16,6 +16,7 @@ import type {
 import { ElementApi, TextApi } from '../../../core';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import type { MarkdownConversionContext } from '../types';
+import { getMarkdownTagRepair } from './markdownTags';
 
 export type MarkdownSerializeDocumentValue = EditorDocumentValue;
 
@@ -81,9 +82,10 @@ export const serializeUnknownMdxNode = (
 ) => {
   const attrs = serializeUnknownMdxAttributes(mdastNode.attributes);
   const openTag = `<${mdastNode.name}${attrs}`;
+  const unclosed = getMarkdownTagRepair(mdastNode)?.repair === 'unclosed';
 
   if (!mdastNode.children?.length) {
-    return `${openTag} />`;
+    return unclosed ? `${openTag}>` : `${openTag} />`;
   }
 
   const inner = mdastNode.children
@@ -91,10 +93,14 @@ export const serializeUnknownMdxNode = (
     .join(mdastNode.type === 'mdxJsxFlowElement' ? '\n' : '');
 
   if (mdastNode.type === 'mdxJsxFlowElement') {
-    return `${openTag}>\n${inner}\n</${mdastNode.name}>`;
+    return unclosed
+      ? `${openTag}>\n${inner}`
+      : `${openTag}>\n${inner}\n</${mdastNode.name}>`;
   }
 
-  return `${openTag}>${inner}</${mdastNode.name}>`;
+  return unclosed
+    ? `${openTag}>${inner}`
+    : `${openTag}>${inner}</${mdastNode.name}>`;
 };
 
 export const groupMarkdownInlineRuns = (

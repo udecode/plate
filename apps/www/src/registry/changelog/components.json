@@ -756,6 +756,19 @@
       "2026-11-18-registry-icon-library",
       "2026-08-13-fix-registry-install-dependencies"
     ],
+    "markdown-streaming-demo": [
+      "2026-11-28-streaming-markdown-engine",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-13-static-editor-previews",
+      "2026-09-30-streaming-preview-deferred-render",
+      "2026-09-28-markdown-streaming-demo-lifecycle",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-08-14-author-editor-runtime",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
     "lock": ["2026-11-27-add-lock-kit"],
     "lock-static": ["2026-11-27-add-lock-kit"],
     "dnd": [
@@ -1510,18 +1523,6 @@
     "format-painter-toolbar-button": [
       "2026-11-18-registry-icon-library",
       "2026-11-17-format-painter"
-    ],
-    "markdown-streaming-demo": [
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-13-static-editor-previews",
-      "2026-09-30-streaming-preview-deferred-render",
-      "2026-09-28-markdown-streaming-demo-lifecycle",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-08-14-author-editor-runtime",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "slash-command-items-demo": ["2026-11-18-slash-app-items"],
     "ai-demo": [

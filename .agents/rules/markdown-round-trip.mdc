@@ -7,7 +7,7 @@ argument-hint: '[check | deep | lower | case <identity> | update]'
 
 Handle `$ARGUMENTS`. Active Local CI gate running the real Markdown codec (`createTestEditor` + `BaseIndentPlugin`, math, GFM, CJK-friendly, emoji) over small generated sources and CommonMark/GFM spec examples.
 
-**The property.** Every accepted Markdown source round-trips (`parse -> serialize -> parse`) to the same document across LF/CRLF/CR while preserving front matter and code-fence info strings, and every streamed `parseSlice` continuation matches a fresh parse without unexpected take-backs, hidden text, or lossless drift.
+**The property.** Every accepted Markdown source round-trips (`parse -> serialize -> parse`) to the same document across LF/CRLF/CR while preserving front matter and code-fence info strings, and every `editor.api.markdown.stream()` incremental chunking matches a fresh stream preview and strict `parseSlice` on `finish()` without unexpected take-backs, hidden text, or lossless drift.
 
 **The harm.** Round-trip drift corrupts saved/AI Markdown, and streaming drift makes streamed AI replies flicker, hide arrived text, or change on finish.
 
@@ -32,8 +32,8 @@ Exit 0 passes, 1 reports findings, 2 reports bad flag, crashed worker, unreadabl
 
 ## Coverage record
 
-Synced at Step 1 of `docs/plans/2026-11-28-markdown-codec-hard-cut.md`. Check drift with `git log --oneline <commit>..HEAD -- packages/platejs/src/markdown/lib packages/platejs/scripts/markdown-round-trip*`; move sync commit only after confirming script and passing `pnpm check:markdown-round-trip`.
+Synced at Step 2 of `docs/plans/2026-11-28-streaming-markdown-engine.md`. Check drift with `git log --oneline <commit>..HEAD -- packages/platejs/src/markdown/lib packages/platejs/scripts/markdown-round-trip*`; move sync commit only after confirming script and passing `pnpm check:markdown-round-trip`.
 
-Covered paths: `packages/platejs/src/markdown/lib/MarkdownPlugin.ts`, `packages/platejs/src/markdown/lib/internal/{markdownRuntime,markdownParse,markdownSerialize,markdownSegments,markdownTags,markdownOpenTail}.ts`, `packages/platejs/src/markdown/lib/{deserializer,serializer}/`, `packages/platejs/src/features/indent/`, `apps/www/src/registry/components/editor/indent-static.tsx`, `packages/platejs/scripts/markdown-round-trip{-gfm,-previews}.ts`.
+Covered paths: `packages/platejs/src/markdown/lib/MarkdownPlugin.ts`, `packages/platejs/src/markdown/lib/internal/{markdownRuntime,markdownParse,markdownSerialize,markdownStream,markdownTailHeal,markdownTags}.ts`, `packages/platejs/src/markdown/lib/{deserializer,serializer}/`, `packages/platejs/src/features/indent/`, `apps/www/src/registry/components/editor/indent-static.tsx`, `packages/platejs/scripts/markdown-round-trip{-gfm,-previews}.ts`.
 
 Use `/pstack:maintain-formal-verification-skill` after changes that skipped this check.

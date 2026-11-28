@@ -289,21 +289,21 @@ Everything under `chatOptions.body` arrives in the route handler, letting you sw
 ## Streaming
 
 Publish the accumulated Markdown response with
-`aiChat.api.setPreview(content, { final, requestId })`. The plugin parses it with
-the editor's installed Markdown mappings and stores the result in
-`previewValue`. With `final: false`, the parse uses
-`{ lossPolicy: 'allow', partial: true }`: an unfinished trailing tag stays hidden
-and unsupported content previews as text. Bold, italic and strikethrough preview
-styled before their closing markers arrive. `final` defaults to `true`; that parse
-is strict, and a response that Markdown cannot represent clears the draft.
-Each parse, the final one included, continues the latest partial parse of the
-same response. After a final parse, `hide()`, `reset()`, `reload()` or
-`submit()`, the next parse starts over. `stop()` ends
-the request and publishes the current response as the final draft. `hide()`,
-`reset()` and `reload()` cancel it without publishing.
-`useAIChat` handles this publication for AI SDK transports. Structured table
-responses use `aiChat.api.setTablePreview({ ref, content }, { requestId })`.
-See [Markdown streaming previews](/docs/markdown#streaming-previews).
+`aiChat.api.setPreview(content, { final, requestId })`. The plugin feeds an
+internal `editor.api.markdown.stream()` backed by the editor's installed
+Markdown mappings and stores the result in `previewValue`. With `final: false`,
+the stream heals unfinished inline styling, code spans, math, links, images,
+and GFM tables while keeping unsupported content visible as text and hiding
+bounded trailing tags. `final` defaults to `true`, calling `finish()` under the
+strict `'reject'` policy so a response Markdown cannot represent clears the
+draft. Committed blocks keep their identity across chunks and into the final
+draft. After a final parse, `hide()`, `reset()`, `reload()`, or `submit()`, the
+stream resets for the next response. `stop()` ends the request and publishes
+the current response as the final draft. `hide()`, `reset()`, and `reload()`
+cancel it without publishing. `useAIChat` handles this publication for AI SDK
+transports. Structured table responses use
+`aiChat.api.setTablePreview({ ref, content }, { requestId })`. See
+[Markdown streaming previews](/docs/markdown#streaming-previews).
 
 The draft does not modify the document, history, or editing mode. `accept()`
 applies it in one history batch. `reset()` drops it and restores the mapped

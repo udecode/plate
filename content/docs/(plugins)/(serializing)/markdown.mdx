@@ -349,99 +349,85 @@ comments reads as CommonMark.
 
 ## Streaming previews
 
-Parse each unfinished stream prefix with `partial: true` and the previous
-result, then parse the complete source strictly with the same hint:
+Create a stateful stream with `editor.api.markdown.stream()`, feed arriving
+chunks with `append()` (or full prefixes with `set()`), and call `finish()`
+when the stream ends or the user stops it:
 
 ```ts
-const preview = editor.api.markdown.parseSlice(accumulated, {
-  lossPolicy: 'allow',
-  partial: true,
-  previous,
-});
-previous = preview.ok ? preview : undefined;
+const stream = editor.api.markdown.stream();
+
+// As chunks arrive:
+const snapshot = stream.append(chunk);
+if (snapshot.ok) {
+  renderPreview(snapshot.nodes);
+}
 
 // When the stream finishes or the user stops it:
-const result = editor.api.markdown.parseSlice(accumulated, { previous });
-previous = undefined;
+const final = stream.finish();
+if (final.ok && final.slice) {
+  applyFinalSlice(final.slice);
+}
 ```
 
-`partial: true` hides a trailing tag that has not finished arriving, such as
-`Before <callo`, and does not report tags left open at the end of the source.
-`lossPolicy: 'allow'` keeps unsupported content visible as text while the
-stream is incomplete. `previous` must come from the same method of the same
-editor. When the source extends the previous result's source and the plugins
-and limits are unchanged, blocks it already completed keep their node objects;
-any other hint parses the whole source. A parse under another `lossPolicy`,
-such as the strict final parse, keeps only the completed blocks that reported
-nothing. A source with a link reference or footnote definition (`[id]: url`,
-`[^1]: note`) always parses whole, because a definition can change blocks
-before it.
+Each call returns a `MarkdownStreamSnapshot` with a monotonic `revision`, a
+typed `delta` (`reset`, `splice`, `append-text`, `append-code`,
+`append-table-row`, or `replace-table-row`), and `nodes` on success. `slice` is
+attached only when `done` is `true` and `ok` is `true`.
 
-A `partial` parse also shows bold, italic and strikethrough that have not
-closed yet, so the preview of `Use **bold` shows `bold` in bold. It parses a
-closed copy of the unfinished block, with the closers that block needs. The
-copy goes through the same plugins and schema, and the preview shows it only
-when it keeps every received character. Up to three trailing `*`, `_` or `~`
-that could still open styling, or one trailing backslash, stay hidden until the
-next character arrives. Markers that cannot open styling show as received, such
-as the star in `2*3` and the underscore in `foo_bar`. The parse makes no closed
-copy when the unfinished block holds more than 2,000 characters, or when the
-source has a link reference or footnote definition or starts with a byte order
-mark. Styling that opened more than 1,000 characters back gets no closer
-either. Such a block shows its markers until they close. Code spans, links,
-images, math and block syntax such as table rows show as received until they
-finish, and so does styling inside link text or after an unclosed backtick.
+During streaming, the preview runs under `lossPolicy: 'allow'` so incomplete
+constructs stay visible instead of failing the preview. A single-pass bounded
+tail healer closes unfinished emphasis (`**`, `*`, `_`, `~~`), inline code,
+inline and block math, links, images, and GFM table separator rows, hides up to
+three trailing emphasis markers or a single trailing backslash, and trims a
+bounded half-typed registered tag (such as `Before <callo`) without reporting
+unclosed tags at the end of the source. Unfinished links default to placeholder links (`incompleteLinks: 'placeholder'`),
+previewing the label with a safe destination until the URL closes; pass
+`incompleteLinks: 'text'` to preview them as plain text instead.
 
-A `partial` parse converts only the text after the kept blocks. Each kept block
-came from a parse of its own part of the source, so a remark plugin that reads
-the whole tree, such as one that numbers or joins blocks, can make a preview
-differ from a fresh parse. A parse without `partial` converts the whole source
-once. When the kept blocks match the start of that conversion apart from list
-ids, the result holds the kept blocks and the rest of the conversion; otherwise
-the result is the conversion. Whatever remark plugins run, the final result
-matches a fresh parse apart from list ids.
+Committed blocks keep their node objects and list ids across chunks while the
+plugins and limits stay unchanged. Plain prose paragraphs, open code fences,
+and fixed-width GFM table rows advance incrementally without reparsing earlier
+committed blocks. When a later chunk introduces a link reference definition,
+footnote definition, wider table row, or state change from a whole-document
+remark plugin, the stream invalidates the affected prefix and reconciles
+automatically.
 
-Render a read-only preview as a document of the parsed blocks; the editor
+`finish()` parses under the stream's configured `lossPolicy` (strict
+`'reject'` by default). For local remark plugins, committed blocks that
+reported no diagnostics keep their identity when they match the final strict
+result up to list ids; for custom whole-tree remark transformers, `finish()`
+reconciles against a full parse so the final result always matches
+`editor.api.markdown.parseSlice(source)` up to list ids. Pass
+`mode: 'inline'` to stream inline content whose `finish()` matches
+`editor.api.markdown.parseInline(source)`.
+
+Render a read-only preview as a document of `snapshot.nodes`; the editor
 supplies the plugins and is not edited:
 
 ```tsx
-<EditorStatic editor={editor} document={{ children: nodes }} />
+<EditorStatic editor={editor} document={{ children: snapshot.nodes }} />
 ```
 
-To show the stream in an editable editor instead, publish each result outside
-the undo history. Replace only the blocks after the first one that changed, or
-the whole value when no leading block is unchanged:
+To publish a stream into an editable editor outside undo history, check
+`snapshot.delta.baseRevision` against the last published revision and verify
+each target `NodeKey` still exists before applying incremental edits (`splice`,
+`append-text`, `append-code`, `append-table-row`, `replace-table-row`). If
+user edits moved or removed a streamed anchor, fall back to a full document
+replace or stop applying deltas. An editor with authored changes records every
+node write as an authored change, so an editable preview with authored changes
+always replaces the value.
 
-```ts
-let start = 0;
-
-while (start < nodes.length && published[start] === nodes[start]) start += 1;
-
-if (start === 0) {
-  editor.update({ history: 'skip' }).value.replace({ children: nodes });
-} else {
-  editor.update({ history: 'skip' }, (tx) => {
-    tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
-  });
-}
-published = nodes;
-```
-
-An editor with authored changes records every node write as an authored
-change, so an editable preview with authored changes always replaces the value.
-
-The consumer owns the source, the abort signal, the hint and the preview
+The consumer owns the transport, abort signal, stream lifetime, and render
 cadence:
 
-- Publish the first chunk at once, then the latest accumulated source at most
-  every 32 ms.
-- Keep only the latest partial result as `previous`. Drop it when the stream
-  finishes, is cancelled or replaced, or unmounts.
-- When the stream finishes or the user stops it, parse the current source once
-  without `partial`, continuing the latest preview. A failed final parse clears
-  the preview.
-- Cancel, replacement and unmount abort the stream and drop the pending
-  preview without a final parse.
+- Publish the first chunk at once, then flush arriving chunks at most every
+  32 ms.
+- Keep one `MarkdownStream` per active response. Call `reset()` or discard it
+  when the response finishes, cancels, is replaced, or unmounts.
+- Call `finish()` once when the response completes or the user stops it. A
+  failed final result clears the preview.
+- Cancel, replacement, and unmount abort the transport and drop the stream
+  without calling `finish()`.
 
 AI chat previews follow the same rules; see [AI streaming](/docs/ai#streaming).
 
@@ -450,11 +436,11 @@ AI chat previews follow the same rules; see [AI streaming](/docs/ai#streaming).
 ## List identity
 
 Markdown has no list identity, so each parse gives every Markdown list a new
-`listId`. Two parses of one source are equal up to their list ids. A parse that
-continues a `previous` result keeps the ids of the blocks it reuses, and a list
-it converts again gets new ids. To compare parses, rename each `listId` in
-order of first appearance. See [List](/docs/list#html-and-markdown) for how
-Plate reads and writes lists.
+`listId`. Two parses of one source are equal up to their list ids. A
+`MarkdownStream` keeps the list ids of committed blocks it reuses across chunks
+and `finish()`, and gives new ids to any list it converts again. To compare
+parses, rename each `listId` in order of first appearance. See
+[List](/docs/list#html-and-markdown) for how Plate reads and writes lists.
 
 ## Authored content
 
@@ -681,9 +667,8 @@ Standalone functions read the configured `MarkdownPlugin` from `plugins`.
 Remark plugins must be synchronous. An attacher or transformer that returns a
 Promise is a configuration error and throws. The synchronous functions never
 return `Result | Promise<Result>`. Remark plugins must also keep no state
-between parses, because a `partial` parse runs them on the closed copy of an
-unfinished block as well as on the received text. See
-[Streaming previews](#streaming-previews).
+between parses, because a `MarkdownStream` parses healed unfinished tails as
+chunks arrive. See [Streaming previews](#streaming-previews).
 
 ### remark-frontmatter
 
@@ -691,10 +676,9 @@ Files need no `remark-frontmatter` for their [front matter](#front-matter).
 When the list still holds it, it reads every slice and every block Plate's
 reader refuses. Unless a mapping decodes the `yaml` or `toml` node it makes,
 that node is a lossy `markdown-unsupported-node`, which fails the parse under
-the default policy. A [streaming preview](#streaming-previews) that continues
-its previous result reads the whole source again while the plugin adds front
-matter syntax, as it does with its default options, so it matches a fresh parse
-of the same text.
+the default policy. A [streaming preview](#streaming-previews) parses the whole
+source while the plugin adds front matter syntax, as it does with its default
+options, so it matches a fresh parse of the same text.
 
 ### CJK emphasis
 
@@ -773,6 +757,7 @@ parser returns because mdast does not expose a bounded construction hook.
 | `editor.api.markdown.parse(source, options?)` | Complete document using the installed target. |
 | `editor.api.markdown.parseSlice(source, options?)` | Closed, rootless block `ContentSlice`. |
 | `editor.api.markdown.parseInline(source, options?)` | Closed, rootless inline `ContentSlice`. |
+| `editor.api.markdown.stream(options?)` | Stateful `MarkdownStream` (`append`, `set`, `finish`, `reset`) for incremental previews and strict final slices. |
 | `editor.api.markdown.serialize(options?)` | Current or supplied document using the installed target. |
 
 Import `MarkdownPlugin`, the standalone functions, and their result, diagnostic,
@@ -782,8 +767,13 @@ and option types from `platejs/markdown`.
 | --- | --- |
 | `limits` | Override `maxBytes`, `maxNodes`, or `maxDepth`. |
 | `lossPolicy` | `'reject'` (default) or `'allow'`. |
-| `partial` | Parse an unfinished stream prefix for a preview. |
-| `previous` | `editor.api.markdown.parseSlice` only: the previous result of a growing source to continue. |
+
+| Stream option | Use |
+| --- | --- |
+| `incompleteLinks` | `'placeholder'` (default) previews unfinished links with a safe placeholder destination; `'text'` previews them as plain text. |
+| `limits` | Override `maxBytes`, `maxNodes`, or `maxDepth`. |
+| `lossPolicy` | Policy used by `finish()`: `'reject'` (default) or `'allow'`. Previews always allow incomplete syntax. |
+| `mode` | `'blocks'` (default) or `'inline'`. |
 
 | Serialize option | Use |
 | --- | --- |

@@ -14,8 +14,9 @@ import {
   type EditorDocumentValue,
   type Element as PlateElement,
   ElementApi,
+  type NodeKey,
 } from 'platejs';
-import type { MarkdownSliceParseResult } from 'platejs/markdown';
+import type { MarkdownStream, MarkdownStreamSnapshot } from 'platejs/markdown';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import {
   type HTMLAttributes,
@@ -330,15 +331,19 @@ const scenarios = {
 type Scenario = keyof typeof scenarios | 'custom';
 type StreamStatus = 'finished' | 'idle' | 'paused' | 'stopped' | 'streaming';
 
-// One streamed response. The demo owns its source, abort signal, preview
-// cadence and parse hint; the Markdown API only parses the accumulated draft.
 type Stream = {
   controller: AbortController;
   draft: string;
-  /** The latest partial result, which the next preview continues. */
-  previous: MarkdownSliceParseResult | undefined;
+  markdownStream: MarkdownStream;
   published: boolean;
   timer: ReturnType<typeof setTimeout> | null;
+};
+
+type LiveAdapterState = {
+  keys: NodeKey[];
+  nodes: readonly Descendant[];
+  revision: number;
+  stream: MarkdownStream | null;
 };
 
 const statusLabels: Record<StreamStatus, string> = {
@@ -360,7 +365,12 @@ export default function MarkdownStreamingDemo() {
   const [status, setStatus] = useState<StreamStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const streamRef = useRef<Stream | null>(null);
-  const published = useRef<readonly Descendant[]>([]);
+  const liveAdapter = useRef<LiveAdapterState>({
+    keys: [],
+    nodes: [],
+    revision: -1,
+    stream: null,
+  });
   const pausedRef = useRef(false);
   const delayRef = useRef(delay);
 
@@ -413,34 +423,28 @@ export default function MarkdownStreamingDemo() {
 
   useEffect(() => () => cancelStream(streamRef), []);
 
-  // Previews parse the unfinished prefix and the final parse is strict. Both
-  // continue the stream's latest preview and publish outside the undo history.
-  const publish = (
-    draft: string,
-    final: boolean,
-    previous?: MarkdownSliceParseResult
+  const publishSnapshot = (
+    snap: MarkdownStreamSnapshot,
+    owner: MarkdownStream
   ) => {
-    const target = preview === 'static' ? editorStatic : editor;
-    const result = target.api.markdown.parseSlice(
-      draft,
-      final ? { previous } : { lossPolicy: 'allow', partial: true, previous }
-    );
-    const nodes: readonly Descendant[] = result.ok ? result.slice.content : [];
+    const nodes: readonly Descendant[] = snap.ok ? snap.nodes : [];
 
     if (preview === 'static') {
-      // Parsed slices hold top-level blocks.
       const blocks = nodes.filter((node): node is PlateElement =>
         ElementApi.isElement(node)
       );
 
       setStaticDocument(blocks.length > 0 ? { children: blocks } : undefined);
     } else {
-      splice(editor, published.current, nodes);
-      published.current = nodes;
+      liveAdapter.current = applyStreamSnapshot(
+        editor,
+        liveAdapter.current,
+        owner,
+        snap,
+        nodes
+      );
     }
-    setError(result.ok ? null : result.diagnostics[0].message);
-
-    return result.ok ? result : undefined;
+    setError(snap.ok ? null : (snap.diagnostics[0]?.message ?? null));
   };
 
   const cancel = () => {
@@ -448,13 +452,18 @@ export default function MarkdownStreamingDemo() {
     pausedRef.current = false;
   };
 
-  // Finish and deliberate stop parse the current draft once, strictly.
   const finalize = (stream: Stream, nextStatus: 'finished' | 'stopped') => {
     if (streamRef.current !== stream) return;
-    const { previous } = stream;
 
-    cancel();
-    publish(stream.draft, true, previous);
+    streamRef.current = null;
+    pausedRef.current = false;
+    stream.controller.abort();
+    if (stream.timer) clearTimeout(stream.timer);
+    if (stream.markdownStream.source !== stream.draft) {
+      stream.markdownStream.set(stream.draft);
+    }
+    publishSnapshot(stream.markdownStream.finish(), stream.markdownStream);
+    stream.markdownStream.reset();
     setStatus(nextStatus);
   };
 
@@ -462,7 +471,7 @@ export default function MarkdownStreamingDemo() {
     cancel();
     editor.update({ history: 'skip' }).value.replace({ children: [] });
     setStaticDocument(undefined);
-    published.current = [];
+    liveAdapter.current = { keys: [], nodes: [], revision: -1, stream: null };
     setPosition(0);
     setStatus('idle');
     setError(null);
@@ -471,10 +480,22 @@ export default function MarkdownStreamingDemo() {
   const run = async (from: number) => {
     cancel();
 
+    const target = preview === 'static' ? editorStatic : editor;
+    const markdownStream = target.api.markdown.stream();
+    const initialDraft = chunks.slice(0, from).join('');
+
+    liveAdapter.current = {
+      ...liveAdapter.current,
+      revision: -1,
+      stream: null,
+    };
+    if (initialDraft) {
+      markdownStream.set(initialDraft);
+    }
     const stream: Stream = {
       controller: new AbortController(),
-      draft: chunks.slice(0, from).join(''),
-      previous: undefined,
+      draft: initialDraft,
+      markdownStream,
       published: false,
       timer: null,
     };
@@ -482,7 +503,10 @@ export default function MarkdownStreamingDemo() {
     const publishPreview = () => {
       stream.timer = null;
       if (!signal.aborted) {
-        stream.previous = publish(stream.draft, false, stream.previous);
+        publishSnapshot(
+          stream.markdownStream.set(stream.draft),
+          stream.markdownStream
+        );
       }
     };
 
@@ -499,7 +523,6 @@ export default function MarkdownStreamingDemo() {
 
       stream.draft += chunks[index];
       setPosition(index + 1);
-      // Publish the first chunk at once, then the latest draft every 32 ms.
       if (stream.published) {
         stream.timer ??= setTimeout(publishPreview, 32);
       } else {
@@ -517,15 +540,21 @@ export default function MarkdownStreamingDemo() {
     if (stream) finalize(stream, 'stopped');
   };
 
-  // Moving to a chunk replaces the stream with that prefix. The complete
-  // source takes the strict parse.
   const navigate = (index: number) => {
     if (index < 0 || index > chunks.length) return;
 
     const complete = index === chunks.length;
+    const target = preview === 'static' ? editorStatic : editor;
+    const prefix = chunks.slice(0, index).join('');
+    const oneShot = target.api.markdown.stream();
 
     cancel();
-    publish(chunks.slice(0, index).join(''), complete);
+    liveAdapter.current = { keys: [], nodes: [], revision: -1, stream: null };
+    const snap = complete
+      ? (oneShot.set(prefix), oneShot.finish())
+      : oneShot.set(prefix);
+
+    publishSnapshot(snap, oneShot);
     setPosition(index);
     setStatus(complete ? 'finished' : 'idle');
   };
@@ -670,9 +699,9 @@ export default function MarkdownStreamingDemo() {
 
         <p className="text-sm text-muted-foreground">
           Previews publish the first chunk at once, then the latest draft every
-          32 ms, each continuing the previous partial parse. Finishing or
-          stopping parses the draft strictly; reset and other changes cancel the
-          stream without a final parse.
+          32 ms, each advancing the stateful Markdown stream. Finishing or
+          stopping validates the draft strictly; reset and other changes cancel
+          the stream without a final parse.
         </p>
 
         <div className="my-4 h-2 w-full rounded bg-gray-200">
@@ -745,37 +774,126 @@ export default function MarkdownStreamingDemo() {
   );
 }
 
-// The editable preview is a live editor, so each parse is an edit. A continued
-// parse returns unchanged leading blocks as the same objects: keep them and
-// replace only the tail. With nothing shared, replacing the value is cheaper.
-function splice(
+// Verify stream identity, baseRevision, and anchored block NodeKeys before
+// applying incremental deltas so concurrent edits never mutate the wrong block.
+function applyStreamSnapshot(
   editor: PlateEditor,
-  published: readonly Descendant[],
+  prev: LiveAdapterState,
+  owner: MarkdownStream,
+  snap: MarkdownStreamSnapshot,
   nodes: readonly Descendant[]
-) {
-  let start = 0;
+): LiveAdapterState {
+  const { delta } = snap;
+  const currentChildren = editor.read.children();
+  const anchorsIntact =
+    prev.stream === owner &&
+    delta.kind !== 'reset' &&
+    delta.baseRevision === prev.revision &&
+    currentChildren.length === prev.keys.length &&
+    prev.keys.every((key, index) => editor.key(currentChildren[index]) === key);
 
-  while (start < nodes.length && published[start] === nodes[start]) {
-    start += 1;
-  }
-  if (start === 0) {
-    editor.update({ history: 'skip' }).value.replace({ children: nodes });
+  if (
+    anchorsIntact &&
+    delta.kind === 'splice' &&
+    delta.from > 0 &&
+    delta.from <= currentChildren.length
+  ) {
+    if (delta.from < currentChildren.length || nodes.length > delta.from) {
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.replaceChildren(nodes.slice(delta.from), {
+          at: [],
+          index: delta.from,
+        });
+      });
+    }
+  } else if (
+    anchorsIntact &&
+    (delta.kind === 'append-table-row' || delta.kind === 'replace-table-row') &&
+    delta.blockIndex < currentChildren.length
+  ) {
+    const currentTable = currentChildren[delta.blockIndex];
+    const targetBlock = nodes[delta.blockIndex];
+    const isReplace = delta.kind === 'replace-table-row';
+    const validRowIndex =
+      ElementApi.isElement(currentTable) &&
+      ElementApi.isElement(targetBlock) &&
+      currentTable.type === targetBlock.type &&
+      (isReplace
+        ? delta.rowIndex >= 0 && delta.rowIndex < currentTable.children.length
+        : delta.rowIndex === currentTable.children.length);
+
+    if (validRowIndex) {
+      // Update only the target row inside the anchored table so untouched
+      // header and body cells preserve their NodeKeys and editor selection.
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.replaceChildren([delta.row], {
+          at: [delta.blockIndex],
+          count: isReplace ? 1 : 0,
+          index: delta.rowIndex,
+        });
+      });
+    } else if (targetBlock) {
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.replaceChildren([targetBlock], {
+          at: [],
+          index: delta.blockIndex,
+          count: 1,
+        });
+      });
+    }
+  } else if (
+    anchorsIntact &&
+    (delta.kind === 'append-text' || delta.kind === 'append-code') &&
+    delta.blockIndex < currentChildren.length
+  ) {
+    const targetBlock = nodes[delta.blockIndex];
+
+    if (targetBlock) {
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.replaceChildren([targetBlock], {
+          at: [],
+          index: delta.blockIndex,
+          count: 1,
+        });
+      });
+    }
   } else {
-    editor.update({ history: 'skip' }, (tx) => {
-      tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
-    });
+    let start = 0;
+
+    while (
+      start < nodes.length &&
+      start < currentChildren.length &&
+      prev.nodes[start] === nodes[start] &&
+      editor.key(currentChildren[start]) === prev.keys[start]
+    ) {
+      start += 1;
+    }
+    if (start === 0) {
+      editor.update({ history: 'skip' }).value.replace({ children: nodes });
+    } else {
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.replaceChildren(nodes.slice(start), { at: [], index: start });
+      });
+    }
   }
+
+  const nextChildren = editor.read.children();
+
+  return {
+    keys: nextChildren.map((child) => editor.key(child)),
+    nodes,
+    revision: snap.revision,
+    stream: owner,
+  };
 }
 
-// Cancel, replacement and unmount abort arrivals and drop the pending
-// preview and the parse hint. Nothing is parsed or published.
 function cancelStream(streamRef: { current: Stream | null }) {
   const stream = streamRef.current;
 
   streamRef.current = null;
   if (!stream) return;
   stream.controller.abort();
-  stream.previous = undefined;
+  stream.markdownStream.reset();
   if (stream.timer) clearTimeout(stream.timer);
 }
 
@@ -800,7 +918,6 @@ type TChunks = {
     index: number;
     text: string;
   }>;
-  linebreaks: number;
 };
 
 function splitChunksByLinebreak(chunks: readonly string[]) {
@@ -811,22 +928,14 @@ function splitChunksByLinebreak(chunks: readonly string[]) {
     const chunk = chunks[i];
     current.push({ index: i, text: chunk });
 
-    const match = TRAILING_NEWLINES_REGEX.exec(chunk);
-    if (match) {
-      const linebreaks = match[1].length;
-      result.push({
-        chunks: [...current],
-        linebreaks,
-      });
+    if (TRAILING_NEWLINES_REGEX.test(chunk)) {
+      result.push({ chunks: [...current] });
       current = [];
     }
   }
 
   if (current.length > 0) {
-    result.push({
-      chunks: [...current],
-      linebreaks: 0,
-    });
+    result.push({ chunks: [...current] });
   }
 
   return result;
