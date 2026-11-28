@@ -116,19 +116,17 @@ const safeRealpath = (filePath) => {
 };
 
 const createRawSelectionWriterMatcher = (root) => {
-  const canonicalCandidates = CANONICAL_WRITER_FILES.map((relative) =>
-    path.resolve(root, relative)
-  );
-  const hasCanonical = canonicalCandidates.some((candidate) =>
-    existsSync(candidate)
+  const realRoot = safeRealpath(root);
+  const hasCanonical = CANONICAL_WRITER_FILES.some((relative) =>
+    existsSync(path.resolve(root, relative))
   );
   const allowed = new Set();
 
-  for (const candidate of hasCanonical
-    ? canonicalCandidates
-    : [path.resolve(root, 'selection-writes.ts')]) {
-    allowed.add(candidate);
-    allowed.add(safeRealpath(candidate));
+  for (const relative of hasCanonical
+    ? CANONICAL_WRITER_FILES
+    : ['selection-writes.ts']) {
+    allowed.add(path.resolve(root, relative));
+    allowed.add(path.resolve(realRoot, relative));
   }
 
   return (fileName) => {
