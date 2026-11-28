@@ -5,6 +5,10 @@ export type FilterWordsOptions = {
 };
 
 const DEFAULT_WORD_BOUNDARY = /\s+/;
+const collator = new Intl.Collator(undefined, {
+  sensitivity: 'base',
+  usage: 'search',
+});
 
 export const filterWords = (
   haystack: string,
@@ -21,33 +25,16 @@ export const filterWords = (
   const quantifier = wordQuantifier === 'match-all' ? 'every' : 'some';
 
   return needleWords[quantifier]((needleWord, i) => {
-    const allowPrefix = (() => {
-      switch (prefixMode) {
-        case 'all-words': {
-          return true;
-        }
-        case 'last-word': {
-          return i === needleWords.length - 1;
-        }
-        case 'none': {
-          return false;
-        }
-      }
-
-      return undefined;
-    })();
+    const allowPrefix =
+      prefixMode === 'all-words' ||
+      (prefixMode === 'last-word' && i === needleWords.length - 1);
 
     return haystackWords.some((unslicedHaystackWord) => {
       const haystackWord = allowPrefix
         ? unslicedHaystackWord.slice(0, needleWord.length)
         : unslicedHaystackWord;
 
-      return (
-        haystackWord.localeCompare(needleWord, undefined, {
-          sensitivity: 'base',
-          usage: 'search',
-        }) === 0
-      );
+      return collator.compare(haystackWord, needleWord) === 0;
     });
   });
 };

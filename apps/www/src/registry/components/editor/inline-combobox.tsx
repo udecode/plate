@@ -27,6 +27,10 @@ import * as React from 'react';
 type InlineComboboxContextValue = {
   box: UseComboboxReturn;
   match: ComboboxMatch | null;
+  onOptionPointerMove: (
+    id: string,
+    event: React.PointerEvent<HTMLDivElement>
+  ) => void;
   open: boolean;
   setHasEmpty: (hasEmpty: boolean) => void;
 };
@@ -161,13 +165,41 @@ const InlineCombobox = <P extends PluginReference>({
   const store = useComboboxStore({ includesBaseElement: false });
   const activeId = useStoreState(store, 'activeId');
   const items = useStoreState(store, 'items');
-  const moves = useStoreState(store, 'moves');
   const renderedItems = useStoreState(store, 'renderedItems');
-  // Stands in for Ariakit's autoSelect, which lives on the Combobox input the
-  // editor replaces: each query activates the first result until an arrow key
-  // or a scroll of the list moves away from it.
-  const autoSelect = React.useRef(true);
+  const followFirstOption = React.useRef(true);
+  const lastPointer = React.useRef<{ x: number; y: number } | null>(null);
+  const prevQuery = React.useRef('');
   const contentElement = useStoreState(store, 'contentElement');
+  const activateOption = React.useCallback(
+    (option: HTMLElement, scroll: boolean) => {
+      if (store.getState().activeId !== option.id) {
+        store.setActiveId(option.id);
+      }
+      if (scroll) {
+        option.scrollIntoView({
+          block: 'nearest',
+          inline: 'nearest',
+        });
+      }
+    },
+    [store]
+  );
+  const onOptionPointerMove = React.useCallback(
+    (id: string, event: React.PointerEvent<HTMLDivElement>) => {
+      if (!id || event.pointerType === 'touch') return;
+
+      const prev = lastPointer.current;
+
+      if (prev && prev.x === event.clientX && prev.y === event.clientY) {
+        return;
+      }
+
+      lastPointer.current = { x: event.clientX, y: event.clientY };
+      followFirstOption.current = false;
+      activateOption(event.currentTarget, false);
+    },
+    [activateOption]
+  );
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (loading) {
@@ -184,8 +216,8 @@ const InlineCombobox = <P extends PluginReference>({
             ? (options[index + 1] ?? options[0])
             : (options[index - 1] ?? options.at(-1));
 
-        autoSelect.current = false;
-        if (next) store.move(next.id);
+        followFirstOption.current = false;
+        if (next) activateOption(next, true);
 
         return true;
       }
@@ -195,7 +227,7 @@ const InlineCombobox = <P extends PluginReference>({
 
       return true;
     },
-    [loading, store]
+    [activateOption, loading, store]
   );
   const [shown, setShown] = React.useState(false);
   const box = useCombobox({
@@ -222,68 +254,70 @@ const InlineCombobox = <P extends PluginReference>({
   React.useEffect(() => {
     if (!contentElement) return undefined;
 
-    const stopAutoSelect = () => {
-      autoSelect.current = false;
+    const stopFollowingFirst = () => {
+      followFirstOption.current = false;
     };
     const options = { capture: true, passive: true };
 
-    contentElement.addEventListener('wheel', stopAutoSelect, options);
-    contentElement.addEventListener('touchmove', stopAutoSelect, options);
+    contentElement.addEventListener('wheel', stopFollowingFirst, options);
+    contentElement.addEventListener('touchmove', stopFollowingFirst, options);
 
     return () => {
-      contentElement.removeEventListener('wheel', stopAutoSelect, options);
-      contentElement.removeEventListener('touchmove', stopAutoSelect, options);
+      contentElement.removeEventListener('wheel', stopFollowingFirst, options);
+      contentElement.removeEventListener(
+        'touchmove',
+        stopFollowingFirst,
+        options
+      );
     };
   }, [contentElement]);
 
   React.useEffect(() => {
-    autoSelect.current = true;
+    if (!open) store.getState().contentElement?.scrollTo({ top: 0 });
+  }, [open, store]);
+
+  React.useEffect(() => {
+    followFirstOption.current = true;
   }, [query]);
 
-  // A query commits its options before this runs; renderedItems marks a list
-  // that changed without a new query, such as one that finished loading.
   React.useEffect(() => {
+    const queryChanged = prevQuery.current !== query;
+
+    prevQuery.current = query;
+
+    if (renderedItems.length === 0) return;
+
     const { activeId: id, contentElement: content } = store.getState();
     const options = getOptions(content);
-    const first = options[0]?.id;
+    const first = options[0];
 
-    if (!first || id === first) return;
+    if (!first) return;
     if (!id) {
-      store.setActiveId(first);
+      activateOption(first, false);
+    } else if (id === first.id) {
+      if (queryChanged) activateOption(first, true);
     } else if (
-      autoSelect.current ||
+      followFirstOption.current ||
       !options.some((option) => option.id === id)
     ) {
-      // A move scrolls the first option back into view; opening stays still.
-      store.move(first);
+      activateOption(first, true);
     }
-  }, [query, renderedItems, store]);
-
-  // Ariakit scrolls on move only from its own Combobox input, which the
-  // editor replaces. Scroll without focusing so the editor keeps focus.
-  React.useEffect(() => {
-    if (!moves) return;
-
-    const { activeId: id, contentElement: content } = store.getState();
-
-    getOptions(content)
-      .find((option) => option.id === id)
-      ?.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-      });
-  }, [moves, store]);
+  }, [activateOption, query, renderedItems, store]);
 
   const queryBecameProse =
-    !!match && !match.composing && items.length === 0 && /\s$/.test(query);
+    !!match &&
+    !match.composing &&
+    !loading &&
+    items.length === 0 &&
+    /\s$/.test(query);
 
   React.useEffect(() => {
     if (queryBecameProse) dismiss();
   }, [dismiss, queryBecameProse]);
 
   const contextValue = React.useMemo<InlineComboboxContextValue>(
-    () => ({ box, match, open, setHasEmpty }),
-    [box, match, open]
+    () => ({ box, match, onOptionPointerMove, open, setHasEmpty }),
+    [box, match, onOptionPointerMove, open]
   );
 
   return (
@@ -349,13 +383,14 @@ const InlineComboboxContent = ({
 };
 
 const comboboxItemVariants = cva(
-  'cn-command-item mx-1 h-7 cursor-pointer text-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-[active-item=true]:bg-accent data-[active-item=true]:text-accent-foreground'
+  'cn-command-item mx-1 h-7 cursor-pointer text-foreground transition-colors data-[active-item=true]:bg-accent data-[active-item=true]:text-accent-foreground'
 );
 
 const InlineComboboxItem = ({
   className,
   focusEditor = true,
   onClick,
+  onPointerMove,
   onSelect,
   ...props
 }: Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect'> & {
@@ -364,7 +399,7 @@ const InlineComboboxItem = ({
   onSelect?: Parameters<UseComboboxReturn['complete']>[1];
 }) => {
   const editor = useEditor();
-  const { box, match } = useInlineComboboxContext();
+  const { box, match, onOptionPointerMove } = useInlineComboboxContext();
 
   if (!match) return null;
 
@@ -377,6 +412,10 @@ const InlineComboboxItem = ({
         if (!box.complete(match, (tx) => onSelect?.(tx))) return;
         if (focusEditor) editor.api.dom.focus();
         onClick?.(event);
+      }}
+      onPointerMove={(event) => {
+        onOptionPointerMove(event.currentTarget.id, event);
+        onPointerMove?.(event);
       }}
       {...props}
     />

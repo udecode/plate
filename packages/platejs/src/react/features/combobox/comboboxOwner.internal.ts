@@ -129,7 +129,10 @@ class ComboboxOwner {
           !selection ||
           !RangeApi.isCollapsed(selection) ||
           !this.isEditable() ||
-          hasNonWritableAt(this.view, RangeApi.start(trigger)) ||
+          hasNonWritableAt(this.view, {
+            anchor: RangeApi.start(trigger),
+            focus: selection.focus,
+          }) ||
           readComboboxQuery(
             tx,
             {
@@ -367,7 +370,11 @@ class ComboboxOwner {
       !selection ||
       !RangeApi.isCollapsed(selection) ||
       !this.isEditable() ||
-      this.isAnotherEditorFocused()
+      this.isAnotherEditorFocused() ||
+      hasNonWritableAt(this.view, {
+        anchor: RangeApi.start(trigger),
+        focus: selection.focus,
+      })
     ) {
       return null;
     }

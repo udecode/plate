@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-inline-combobox-hover-scroll",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-inline-combobox-hover-scroll.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Sync hovered inline combobox options with keyboard selection, reset scroll on query updates, and keep loading menus open on spaces",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-inline-combobox-sync-hovered-options-keyboard-8fe53190",
+      "kind": "fix",
+      "summary": "Sync hovered inline combobox options with keyboard selection, reset scroll on query updates, and keep loading menus open on spaces",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["inline-combobox"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-inline-combobox-hover-scroll",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

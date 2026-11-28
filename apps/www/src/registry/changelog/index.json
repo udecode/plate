@@ -116,6 +116,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-inline-combobox-hover-scroll",
+      "href": "/registry/changelog/2026-11-28-inline-combobox-hover-scroll.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Sync hovered inline combobox options with keyboard selection, reset scroll on query updates, and keep loading menus open on spaces",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-add-lock-kit",
       "href": "/registry/changelog/2026-11-27-add-lock-kit.json",
       "status": "draft",
