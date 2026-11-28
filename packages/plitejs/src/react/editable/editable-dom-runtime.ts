@@ -12,6 +12,7 @@ import {
   type Range,
   RangeApi,
   type RootKey,
+  SelectionApi,
   type TransferOutcome,
   type Value,
 } from '../..';
@@ -69,6 +70,7 @@ import {
 import {
   focusedElementOnPage,
   isElementFocused,
+  isSelectionOwnedByEditable,
 } from '../../dom/plugin/dom-root-runtime';
 import { isDOMNode } from '../../dom/utils/dom';
 import type {
@@ -2114,6 +2116,29 @@ export class EditableDOMRuntime {
     const cancelPressOnKey = (event: KeyboardEvent) => {
       if (!MODIFIER_KEYS.has(event.key)) cancelPress();
     };
+    // Chromium plants a collapsed DOM caret at the editable start before keyup
+    // whenever rangeCount is 0 on a focused contenteditable under a node pick.
+    const clearNodeSelectionDOMRangeOnKeyUp = (event: KeyboardEvent) => {
+      if (
+        !isElementFocused(node) ||
+        getEditableInteractionOwner(node, event.target) !== 'editor' ||
+        !SelectionApi.isNode(readRuntimeSelection(this.editorValue))
+      ) {
+        return;
+      }
+
+      const domSelection = getSelection(
+        node.getRootNode() as Document | ShadowRoot
+      );
+
+      if (!isSelectionOwnedByEditable(node, domSelection)) return;
+
+      this.rootRuntime.exportSelection({
+        forceModelExport: true,
+        requireFocused: true,
+        skipScroll: true,
+      });
+    };
     const ownerWindow = node.ownerDocument.defaultView;
     const claims = new SelectionClaims(
       this.editorValue,
@@ -2148,6 +2173,7 @@ export class EditableDOMRuntime {
     node.addEventListener('input', handleInput);
     node.addEventListener('pointerdown', clearCaret, true);
     node.addEventListener('keydown', cancelPressOnKey, true);
+    node.addEventListener('keyup', clearNodeSelectionDOMRangeOnKeyUp, true);
     node.addEventListener('dragstart', cancelPress, true);
     node.addEventListener('blur', cancelPress);
     ownerWindow?.addEventListener('pointerdown', notePointerPress, true);
@@ -2160,6 +2186,11 @@ export class EditableDOMRuntime {
       releaseCommits();
       node.removeEventListener('pointerdown', clearCaret, true);
       node.removeEventListener('keydown', cancelPressOnKey, true);
+      node.removeEventListener(
+        'keyup',
+        clearNodeSelectionDOMRangeOnKeyUp,
+        true
+      );
       node.removeEventListener('dragstart', cancelPress, true);
       node.removeEventListener('blur', cancelPress);
       claims.destroy();
