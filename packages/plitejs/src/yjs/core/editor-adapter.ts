@@ -6,6 +6,10 @@ import {
   valueRootNodes,
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
+import {
+  getInternalDocumentChangeStepFirstAt,
+  withInternalDocumentChangeStepFirstAt,
+} from '../../core/change/replay-step-order';
 import { withoutRepairOrphans } from '../../core/document-admission';
 import {
   getEditorRuntimeOwner,
@@ -200,7 +204,13 @@ export const createYjsEditorAdapter = (
             value: change.apply(currentValue),
           })
         : null;
-    const publishable = imported?.change ?? change;
+    const stepFirstAt = change
+      ? getInternalDocumentChangeStepFirstAt(change)
+      : undefined;
+    const publishable =
+      imported && stepFirstAt
+        ? withInternalDocumentChangeStepFirstAt(imported.change, stepFirstAt)
+        : (imported?.change ?? change);
     const wasSetRoot = (root: string) =>
       getEditorSchema(editor).isSetRoot(root, {
         rootChildren: (name: string) => valueRoot(currentValue, name),

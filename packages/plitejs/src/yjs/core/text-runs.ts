@@ -943,6 +943,29 @@ export const yjsTextLength = (node: Y.XmlText): number => {
   return to - from;
 };
 
+export const isLetterAfterDeletedCut = (
+  source: Y.XmlText,
+  at: number
+): boolean => {
+  const { doc } = source;
+  if (!doc) return false;
+  const index = markIndexOf(source);
+  const letter = index.live[at];
+  if (!letter) return false;
+  const item = Y.getItem(doc.store, Y.createID(letter.id[0], letter.id[1]));
+  if (
+    !(item instanceof Y.Item) ||
+    item.id.clock !== letter.id[1] ||
+    !item.origin
+  ) {
+    return false;
+  }
+  const origin = index.byId.get(
+    letterKey([item.origin.client, item.origin.clock])
+  );
+  return origin?.cut === true && !origin.live;
+};
+
 /** Whether a Yjs text is a cut view or the source of a cut. */
 export const hasYjsCut = (node: Y.XmlText): boolean => {
   const { source, to } = textPieceOf(node);

@@ -244,6 +244,10 @@ import {
   historyFollowsAllFacts,
   UNKNOWN_FACTS,
 } from './change/record';
+import {
+  getInternalDocumentChangeStepFirstAt,
+  withInternalDocumentChangeStepFirstAt,
+} from './change/replay-step-order';
 import type { RootChange } from './change/root-change';
 import type {
   JsonEditorValue,
@@ -695,6 +699,7 @@ type TransactionSnapshot = {
   selection: Selection;
   selectionRoot: string;
   skipCorrections: boolean;
+  stepFirstAt?: ReadonlyMap<string, ReadonlySet<number>>;
 };
 
 const requireCommittedTransactionSnapshot = (
@@ -15388,6 +15393,9 @@ export const applyDocumentChange = (
     throw new Error('Document changes require an active transaction draft.');
   }
 
+  const stepFirstAt = getInternalDocumentChangeStepFirstAt(change);
+  if (stepFirstAt) snapshot.stepFirstAt = stepFirstAt;
+
   const bound = isUnboundV4DocumentChange(change)
     ? bindV4DocumentChange(change, snapshot.builder.value)
     : change;
@@ -16162,6 +16170,12 @@ export const runEditorTransaction = <R>(
                     )
                   )
                 : undefined;
+            if (snapshot.stepFirstAt) {
+              withInternalDocumentChangeStepFirstAt(
+                canonicalChanges,
+                snapshot.stepFirstAt
+              );
+            }
             const change = profileCoreDuration('build-change', () =>
               createEditorCommit(
                 {

@@ -41,6 +41,12 @@ import {
 } from './lazy-root';
 import type { ReadBack } from './read-back';
 import {
+  getInternalDocumentChangeStepFirstAt,
+  propagateRootStepFirstAt,
+  withInternalDocumentChangeStepFirstAt,
+  withRootChangeStepFirstAt,
+} from './replay-step-order';
+import {
   collapseElementPropertyWrites,
   type KeptWrap,
   RootChange,
@@ -2385,13 +2391,20 @@ const rebasedPair = (
   ]);
   const aChanges = new Map<string, RootChange>();
   const bChanges = new Map<string, RootChange>();
+  const stepFirstAt = replay
+    ? getInternalDocumentChangeStepFirstAt(a)
+    : undefined;
+  let restStepFirstAt: Map<string, ReadonlySet<number>> | undefined;
   let keptWrap: KeptWrap | null = null;
 
   for (const root of roots) {
     const aChange = getInternalDocumentRootChange(a, root);
     const bChange = getInternalDocumentRootChange(b, root);
+    const rootStepFirstAt = stepFirstAt?.get(root);
 
     if (aChange && bChange) {
+      if (rootStepFirstAt) withRootChangeStepFirstAt(aChange, rootStepFirstAt);
+
       const document = valueRootIndex(value, root);
       const transformed = RootChange.transformInDocument(
         aChange,
@@ -2413,21 +2426,43 @@ const rebasedPair = (
       );
 
       keptWrap ??= transformed.keptWrap ?? null;
-      if (!transformed.a.empty) aChanges.set(root, transformed.a);
+      if (!transformed.a.empty) {
+        aChanges.set(root, transformed.a);
+        const nextRootStepFirstAt = propagateRootStepFirstAt(
+          aChange,
+          bChange,
+          rootStepFirstAt
+        );
+
+        if (nextRootStepFirstAt?.size) {
+          restStepFirstAt ??= new Map();
+          restStepFirstAt.set(root, nextRootStepFirstAt);
+        }
+      }
       if (!transformed.b.empty) bChanges.set(root, transformed.b);
     } else if (aChange) {
       aChanges.set(root, aChange);
+      if (rootStepFirstAt?.size) {
+        restStepFirstAt ??= new Map();
+        restStepFirstAt.set(root, rootStepFirstAt);
+      }
     } else if (bChange) {
       bChanges.set(root, bChange);
     }
   }
 
+  const rebasedA = createInternalDocumentChange(aChanges, {
+    createRoots: a.createRoots,
+    deleteRoots: a.deleteRoots,
+    records: records.first,
+  });
+
+  if (restStepFirstAt?.size) {
+    withInternalDocumentChangeStepFirstAt(rebasedA, restStepFirstAt);
+  }
+
   return {
-    a: createInternalDocumentChange(aChanges, {
-      createRoots: a.createRoots,
-      deleteRoots: a.deleteRoots,
-      records: records.first,
-    }),
+    a: rebasedA,
     b: createInternalDocumentChange(bChanges, {
       createRoots: b.createRoots,
       deleteRoots: b.deleteRoots,

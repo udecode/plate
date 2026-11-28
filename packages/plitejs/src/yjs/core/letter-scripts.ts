@@ -16,11 +16,17 @@ import {
 import type { Descendant } from '../../index';
 import type { YjsNode } from './attributes';
 import { getYjsVisibleChildren } from './document';
-import { YJS_CUT_KEY } from './keys';
-import { alignYjsChildren, textPieceOf } from './text-runs';
+import { YJS_CUT_KEY, YJS_JOINED_AFTER_KEY, YJS_JOINED_END_KEY } from './keys';
+import {
+  alignYjsChildren,
+  isLetterAfterDeletedCut,
+  textPieceOf,
+} from './text-runs';
 
 /** Keep, delete or insert `count` letters. */
-type LetterStep = readonly [kind: 'delete' | 'insert' | 'keep', count: number];
+type LetterStep =
+  | readonly [kind: 'delete' | 'insert' | 'keep', count: number]
+  | readonly [kind: 'insert', count: number, afterJoin: true];
 
 /**
  * How the letters of one text run went from before a batch to after it, as
@@ -32,13 +38,26 @@ type TextDelta = ReadonlyArray<
   Readonly<{ delete?: number; insert?: unknown; retain?: number }>
 >;
 
-const pushStep = (steps: LetterStep[], kind: LetterStep[0], count: number) => {
+const pushStep = (
+  steps: LetterStep[],
+  kind: LetterStep[0],
+  count: number,
+  afterJoin?: true
+) => {
   if (count === 0) return;
 
   const top = steps.at(-1);
 
-  if (top?.[0] === kind) steps[steps.length - 1] = [kind, top[1] + count];
-  else steps.push([kind, count]);
+  if (top?.[0] === kind && (!afterJoin || (kind === 'insert' && top[2]))) {
+    steps[steps.length - 1] =
+      kind === 'insert' && top[2]
+        ? ['insert', top[1] + count, true]
+        : [kind, top[1] + count];
+  } else {
+    steps.push(
+      kind === 'insert' && afterJoin ? ['insert', count, true] : [kind, count]
+    );
+  }
 };
 
 const INSERTED = -1;
@@ -251,7 +270,24 @@ export const readLineScripts = (
           if (end !== undefined && start !== end) return false;
           ends.set(source, beforeBoundary(letters, to));
         }
-        for (const [kind, count] of script) pushStep(steps, kind, count);
+        const joinedText =
+          text.parent instanceof Y.XmlElement &&
+          text.parent !== element &&
+          (typeof text.parent.getAttribute(YJS_JOINED_AFTER_KEY) === 'string' ||
+            typeof text.parent.getAttribute(YJS_JOINED_END_KEY) === 'string');
+        let pieceAfter = from;
+
+        for (const [stepIndex, [kind, count]] of script.entries()) {
+          const afterJoin =
+            kind === 'insert' &&
+            ((joinedText && stepIndex === 0) ||
+              (!inserted && isLetterAfterDeletedCut(source, pieceAfter)))
+              ? (true as const)
+              : undefined;
+
+          pushStep(steps, kind, count, afterJoin);
+          if (kind !== 'delete') pieceAfter += count;
+        }
       }
       scripts.push(steps);
 
@@ -319,7 +355,8 @@ const lineItemsOf = (line: JsonNode) => {
 const flatLineAnchors = (
   before: JsonNode,
   after: JsonNode,
-  script: LetterScript
+  script: LetterScript,
+  afterJoin?: Set<number>
 ): Anchor[] | null => {
   const left = lineItemsOf(before);
   const right = lineItemsOf(after);
@@ -327,13 +364,21 @@ const flatLineAnchors = (
   let beforeLetter = 0;
   let afterLetter = 0;
 
-  for (const [kind, count] of script) {
+  for (const step of script) {
+    const [kind, count] = step;
+
     if (kind === 'keep') {
       for (let index = 0; index < count; index++) {
         kept.push([
           left.letters[beforeLetter + index],
           right.letters[afterLetter + index],
         ]);
+      }
+    } else if (kind === 'insert' && step[2] && afterJoin) {
+      const itemIndex = right.letters[afterLetter];
+
+      if (itemIndex !== undefined) {
+        afterJoin.add(right.items[itemIndex].position);
       }
     }
     if (kind !== 'insert') beforeLetter += count;
@@ -466,7 +511,8 @@ const runAnchors = (
   before: readonly JsonTextNode[],
   after: readonly JsonTextNode[],
   script: LetterScript,
-  start: Readonly<{ after: number; before: number }>
+  start: Readonly<{ after: number; before: number }>,
+  afterJoin?: Set<number>
 ) => {
   const left = itemsOf(before, start.before);
   const right = itemsOf(after, start.after);
@@ -474,13 +520,21 @@ const runAnchors = (
   let beforeLetter = 0;
   let afterLetter = 0;
 
-  for (const [kind, count] of script) {
+  for (const step of script) {
+    const [kind, count] = step;
+
     if (kind === 'keep') {
       for (let index = 0; index < count; index++) {
         kept.push([
           left.letters[beforeLetter + index],
           right.letters[afterLetter + index],
         ]);
+      }
+    } else if (kind === 'insert' && step[2] && afterJoin) {
+      const itemIndex = right.letters[afterLetter];
+
+      if (itemIndex !== undefined) {
+        afterJoin.add(right.items[itemIndex].position);
       }
     }
     if (kind !== 'insert') beforeLetter += count;
@@ -600,7 +654,8 @@ const tokenLength = (node: JsonNode): number =>
 const lineAnchors = (
   before: JsonNode,
   after: JsonNode,
-  scripts: readonly LetterScript[]
+  scripts: readonly LetterScript[],
+  afterJoin?: Set<number>
 ): Anchor[] | null => {
   const anchors: Anchor[] = [];
   let script = 0;
@@ -636,7 +691,8 @@ const lineAnchors = (
         segment.leaves,
         other.leaves,
         scripts[script],
-        position
+        position,
+        afterJoin
       );
 
       script += 1;
@@ -666,12 +722,14 @@ export const linesChangeByLetters = (
   before: readonly JsonNode[],
   after: readonly JsonNode[],
   scriptsOf: (index: number) => readonly LetterScript[] | null,
-  isSetValued: (node: JsonNode, key: string) => boolean
+  isSetValued: (node: JsonNode, key: string) => boolean,
+  stepFirstAt?: Set<number>
 ): RootChange | null => {
   if (before.length !== after.length) return null;
 
   const document = DocumentIndex.fromValue(before);
   const sections: RootChangeSection[] = [];
+  const marked = stepFirstAt ? new Set<number>() : undefined;
   let lineFrom = 0;
 
   for (const [index, left] of before.entries()) {
@@ -679,10 +737,13 @@ export const linesChangeByLetters = (
 
     if (left !== right && !jsonEqual(left, right)) {
       const scripts = scriptsOf(index);
-      const anchors =
-        scripts &&
-        (lineAnchors(left, right, scripts) ??
-          flatLineAnchors(left, right, scripts.flat()));
+      const lineAfterJoin = marked ? new Set<number>() : undefined;
+      let anchors = scripts && lineAnchors(left, right, scripts, lineAfterJoin);
+
+      if (scripts && !anchors) {
+        lineAfterJoin?.clear();
+        anchors = flatLineAnchors(left, right, scripts.flat(), lineAfterJoin);
+      }
 
       if (!anchors) return null;
 
@@ -694,11 +755,30 @@ export const linesChangeByLetters = (
           anchor.before > previous.before + 1 ||
           anchor.after > previous.after + 1
         ) {
+          const slice = target.slice(previous.after + 1, anchor.after);
+
           sections.push({
             from: lineFrom + previous.before + 1,
-            insert: target.slice(previous.after + 1, anchor.after),
+            insert: slice,
             to: lineFrom + anchor.before,
           });
+          if (
+            marked &&
+            lineAfterJoin &&
+            lineAfterJoin.size > 0 &&
+            anchor.before === previous.before + 1
+          ) {
+            const firstTextOffset = slice.tokens.findIndex(
+              (token) => token.kind === 'text'
+            );
+
+            if (
+              firstTextOffset !== -1 &&
+              lineAfterJoin.has(previous.after + 1 + firstTextOffset)
+            ) {
+              marked.add(lineFrom + previous.before + 1);
+            }
+          }
         }
 
         const { opens } = anchor;
@@ -722,5 +802,10 @@ export const linesChangeByLetters = (
 
   const change = RootChange.create(document, sections);
 
-  return jsonEqual(change.apply(document).value, after) ? change : null;
+  if (!jsonEqual(change.apply(document).value, after)) return null;
+  if (stepFirstAt && marked) {
+    for (const position of marked) stepFirstAt.add(position);
+  }
+
+  return change;
 };

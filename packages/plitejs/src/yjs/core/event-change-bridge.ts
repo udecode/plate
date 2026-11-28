@@ -15,6 +15,7 @@ import {
   getExactDocumentChangeRelocation,
   hasIndexedPathAncestor,
 } from '../../core/change/mapping';
+import { withInternalDocumentChangeStepFirstAt } from '../../core/change/replay-step-order';
 import {
   ancestorType,
   type DocumentPropertyContext,
@@ -2136,19 +2137,27 @@ const createEventDocumentChange = (
   const byLetters = (
     left: readonly JsonNode[],
     right: readonly JsonNode[],
-    scriptsAt: (index: number) => readonly LetterScript[] | null
+    scriptsAt: (index: number) => readonly LetterScript[] | null,
+    localStepFirstAt?: Set<number>
   ) => {
     if (left.length !== right.length) return null;
 
     const lines = left.filter(
       (line, index) => line !== right[index] && !jsonEqual(line, right[index])
     ).length;
-    const change = linesChangeByLetters(left, right, scriptsAt, resolve);
+    const change = linesChangeByLetters(
+      left,
+      right,
+      scriptsAt,
+      resolve,
+      localStepFirstAt
+    );
 
     countCoreWork(change ? 'yjsLetterLines' : 'yjsValueDiffLines', lines);
 
     return change;
   };
+  const stepFirstAt = new Set<number>();
   const sectionInputs = regions.flatMap((region, regionIndex) => {
     const regionAfter = Object.freeze(after(region.afterFrom, region.afterTo));
     const regionBefore = Object.freeze(
@@ -2183,16 +2192,21 @@ const createEventDocumentChange = (
                 getDefined(right[index]) as Descendant
               )
         ));
+    const localStepFirstAt = new Set<number>();
     const local =
       inside.length === 0
         ? cuts.length === 0 && heals.length === 0
           ? scriptsOf &&
-            byLetters(regionBefore, regionAfter, (index) =>
-              scriptsOf(
-                region.afterFrom + index,
-                getDefined(regionAfter[index]),
-                region.beforeFrom + index
-              )
+            byLetters(
+              regionBefore,
+              regionAfter,
+              (index) =>
+                scriptsOf(
+                  region.afterFrom + index,
+                  getDefined(regionAfter[index]),
+                  region.beforeFrom + index
+                ),
+              localStepFirstAt
             )
           : splitChangeTo(
               DocumentIndex.fromValue(regionBefore),
@@ -2229,6 +2243,9 @@ const createEventDocumentChange = (
           );
 
     const from = lengths.prefix(region.beforeFrom);
+    if (local) {
+      for (const position of localStepFirstAt) stepFirstAt.add(from + position);
+    }
     const block = refine?.keptBlockByRegion[regionIndex];
 
     if (
@@ -2322,8 +2339,16 @@ const createEventDocumentChange = (
     );
   });
 
+  const change =
+    stepFirstAt.size > 0
+      ? withInternalDocumentChangeStepFirstAt(
+          result.change,
+          new Map([[root, stepFirstAt]])
+        )
+      : result.change;
+
   return {
-    change: result.change,
+    change,
     changedChildren,
     changedRanges: changedSections.size,
   };
@@ -6249,30 +6274,46 @@ export class YjsEventChangeBridge {
     const scripts =
       readLineScripts(this.root, line.node, next, letters) ??
       readLineScripts(this.root, line.node, next, letters, true);
+    const localStepFirstAt = new Set<number>();
     const local = linesChangeByLetters(
       [previous],
       [next],
       () => scripts,
-      resolve
+      resolve,
+      localStepFirstAt
     );
 
     if (!jsonEqual(previous, next)) {
       countCoreWork(local ? 'yjsLetterLines' : 'yjsValueDiffLines');
     }
 
-    const { change, changedSections } = createDocumentChangeFromRootSections(
-      this.rootKey,
-      this.lengths.total(),
-      [
-        {
-          after: [next],
-          before: [previous],
-          from: index.childPosition(parent, at),
-          ...(local ? { local } : {}),
-        },
-      ],
-      resolve
-    );
+    const from = index.childPosition(parent, at);
+    const { change: rootChange, changedSections } =
+      createDocumentChangeFromRootSections(
+        this.rootKey,
+        this.lengths.total(),
+        [
+          {
+            after: [next],
+            before: [previous],
+            from,
+            ...(local ? { local } : {}),
+          },
+        ],
+        resolve
+      );
+    const change =
+      local && localStepFirstAt.size > 0
+        ? withInternalDocumentChangeStepFirstAt(
+            rootChange,
+            new Map([
+              [
+                this.rootKey,
+                new Set([...localStepFirstAt].map((pos) => from + pos)),
+              ],
+            ])
+          )
+        : rootChange;
     const grown =
       measureTokenLength(next).length - measureTokenLength(previous).length;
     const ticket = this.generation;

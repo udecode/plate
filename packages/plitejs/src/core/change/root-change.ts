@@ -31,6 +31,10 @@ import {
 } from './json';
 import { markReadBack, type ReadBack } from './read-back';
 import {
+  getRootChangeStepFirstAt,
+  replayStepWinsTie,
+} from './replay-step-order';
+import {
   isRetainedFromOtherRange,
   shiftMergedEmptyTextPair,
 } from './text-leaf-boundary';
@@ -1470,25 +1474,25 @@ const landingOrder = (
   return opensEnclosure(side.slice) ? landing.afterPeer : landing.tie;
 };
 
-/**
- * Whether `b`'s insertion goes before `a`'s at one position. A replayed insert
- * split off as own lands before the other side's whole blocks, unless the
- * other side's insert just before it here left an element open. Content one
- * side inserts at the lead of an element the other wraps stays outside it, as
- * it was before the wrap; otherwise `before` breaks the tie.
- */
 const bLandsFirst = (
   a: SectionIterator,
   b: SectionIterator,
   ownA: ReadonlySet<number> | undefined,
   ownB: ReadonlySet<number> | undefined,
   before: boolean,
-  leftOpen: 'a' | 'b' | null
+  leftOpen: 'a' | 'b' | null,
+  position: number,
+  replayStepFirst: ReadonlySet<number> | undefined | false
 ) => {
   const aOrder = landingOrder(a, ownA, b, leftOpen === 'b');
   const bOrder = landingOrder(b, ownB, a, leftOpen === 'a');
 
-  return aOrder === bOrder ? !before : bOrder < aOrder;
+  if (aOrder !== bOrder) return bOrder < aOrder;
+
+  return replayStepFirst !== false &&
+    replayStepWinsTie(a.slice, b.slice, position, replayStepFirst)
+    ? before
+    : !before;
 };
 
 export const transformChange = (
@@ -1511,25 +1515,20 @@ export const transformChange = (
 
   if (fidelity) markReadBack(readBack);
   const replayA =
-    !fidelity && replayBase && replaySectionsOf(changeA, changeB, replayBase);
+    !fidelity && replayBase
+      ? replaySectionsOf(changeA, changeB, replayBase)
+      : null;
   const replayB =
-    !fidelity && replayBase && replaySectionsOf(changeB, changeA, replayBase);
-  const a = new SectionIterator(
-    fidelity
-      ? fidelity.a.sections
-      : replayA
-        ? replayA.sections
-        : changeA.sections,
-    fidelity ? fidelity.a.data : replayA ? replayA.data : changeA.data
-  );
-  const b = new SectionIterator(
-    fidelity
-      ? fidelity.b.sections
-      : replayB
-        ? replayB.sections
-        : changeB.sections,
-    fidelity ? fidelity.b.data : replayB ? replayB.data : changeB.data
-  );
+    !fidelity && replayBase
+      ? replaySectionsOf(changeB, changeA, replayBase)
+      : null;
+  const sourceA = fidelity ? fidelity.a : (replayA ?? changeA);
+  const sourceB = fidelity ? fidelity.b : (replayB ?? changeB);
+  const a = new SectionIterator(sourceA.sections, sourceA.data);
+  const b = new SectionIterator(sourceB.sections, sourceB.data);
+  const replayStepFirst = replayBase
+    ? getRootChangeStepFirstAt(before ? changeA : changeB)
+    : false;
   let inserted = -1;
   let position = 0;
   let leftOpen: 'a' | 'b' | null = null;
@@ -1574,10 +1573,12 @@ export const transformChange = (
                   : bLandsFirst(
                       a,
                       b,
-                      replayA ? replayA.ownCloses : undefined,
-                      replayB ? replayB.ownCloses : undefined,
+                      replayA?.ownCloses,
+                      replayB?.ownCloses,
                       before,
-                      leftOpen
+                      leftOpen,
+                      position,
+                      replayStepFirst
                     )
                 : !before)))))
     ) {
@@ -1615,20 +1616,13 @@ export const transformChange = (
       let length = 0;
 
       while (position < end) {
-        if (b.keep) {
-          const piece = Math.min(end - position, b.length);
+        if (!b.keep && b.inserted !== 0) break;
 
-          position += piece;
-          length += piece;
-          b.forward(piece);
-        } else if (b.inserted === 0) {
-          const piece = Math.min(end - position, b.length);
+        const piece = Math.min(end - position, b.length);
 
-          position += piece;
-          b.forward(piece);
-        } else {
-          break;
-        }
+        position += piece;
+        if (b.keep) length += piece;
+        b.forward(piece);
       }
 
       if (inserted < a.index) {
@@ -1682,12 +1676,7 @@ export const getDocumentPropertyContext = (
     ),
     placement,
     root,
-    type:
-      placement === 'text'
-        ? (parent ?? 'text')
-        : typeof node.type === 'string'
-          ? node.type
-          : 'element',
+    type: placement === 'text' ? (parent ?? 'text') : ancestorType(node.type),
   });
 };
 

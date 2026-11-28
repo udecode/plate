@@ -28,6 +28,7 @@ import {
 } from '../core/change/document-change';
 import { jsonEqual, type JsonRecord } from '../core/change/json';
 import type { ChangeFacts } from '../core/change/record';
+import { hasInternalDocumentChangeStepFirstAt } from '../core/change/replay-step-order';
 import type { KeptWrap } from '../core/change/root-change';
 import { isElementNode, type JsonNode, nodeProps } from '../core/change/tokens';
 import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
@@ -2309,6 +2310,7 @@ export const completeHistoryAction = <V extends Value>(
 const isTextOnlyMapping = (change: DocumentChange) =>
   change.createRoots.size === 0 &&
   change.deleteRoots.size === 0 &&
+  !hasInternalDocumentChangeStepFirstAt(change) &&
   isInternalTextOnlyDocumentChange(change);
 
 const ELEMENT_SCHEMAS = new WeakMap<object, ElementSchema>();

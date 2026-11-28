@@ -27,6 +27,7 @@
   ],
   "uncounted": {
     "packages/plitejs/src/core/change/range-content.ts": "It reads whether a range covers a letter or a whole void. It works out no move, split, join or wrap.",
+    "packages/plitejs/src/core/change/replay-step-order.ts": "It carries recorded Yjs join-boundary insert positions on changes across replay steps and breaks replay insertion ties without inferring moves, splits, joins, wraps or restored letters from positions.",
     "packages/plitejs/src/core/change/text-leaf-boundary.ts": "It checks whether a change retained a token span verbatim and aligns a deletion across an adjacent empty text leaf of equal properties. It works out no move, split, join or wrap.",
     "packages/plitejs/src/core/change/v4/apply.ts": "It applies closed ID-addressed v4 steps directly by element id and UTF-16 text offset. It works out no move, split, join or wrap from positions.",
     "packages/plitejs/src/core/change/v4/builder-recorder.ts": "It records closed ID-addressed v4 steps directly from transaction builder primitives as they run. It works out no move, split, join or wrap from positions.",
