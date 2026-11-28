@@ -4,7 +4,7 @@ import { RichTextEditor } from '@/registry/blocks/editor-ai/components/editor/ri
 
 export default function Page() {
   return (
-    <div className="h-screen w-full">
+    <div className="h-dvh w-full">
       <RichTextEditor />
 
       <Toaster />

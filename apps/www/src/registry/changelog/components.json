@@ -136,6 +136,61 @@
       "2026-11-09-pass-view-root-to-key-questions",
       "2026-10-16-code-block-diagrams"
     ],
+    "fixed-toolbar": [
+      "2026-11-28-fixed-toolbar-overflow-and-scroll-layout",
+      "2026-11-27-merge-derived-read-hooks",
+      "2026-11-27-use-no-scrollbar",
+      "2026-11-25-keyboard-bar-keeps-focus",
+      "2026-11-20-drop-editor-selection-view",
+      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
+      "2026-11-18-registry-icon-library",
+      "2026-11-18-toolbars-act-on-board-note-text",
+      "2026-11-17-cn-package",
+      "2026-11-17-format-painter",
+      "2026-11-16-clear-formatting",
+      "2026-11-13-platform-shortcut-labels",
+      "2026-10-19-strikethrough-shortcut-hint",
+      "2026-09-18-comment-discovery",
+      "2026-09-16-fixed-toolbar-caret-scroll",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-17-flat-editor-registry",
+      "2025-11-20-biome-ultracite"
+    ],
+    "multiple-editors-demo": [
+      "2026-11-28-fixed-toolbar-overflow-and-scroll-layout",
+      "2026-09-08-editor-ui-lifetime",
+      "2026-08-13-fix-registry-install-dependencies"
+    ],
+    "editor-ai": [
+      "2026-11-28-fixed-toolbar-overflow-and-scroll-layout",
+      "2026-11-28-floating-discussion-block-switch-and-width",
+      "2026-11-17-ai-comment-author",
+      "2026-11-16-save-comment-ranges",
+      "2026-10-08-registry-install-dependencies",
+      "2026-10-07-editor-user",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-13-rename-rich-text-editor",
+      "2026-09-13-suggestion-examples",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-02-comments-ownership",
+      "2026-08-28-rename-plate-editor",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-14-author-editor-runtime",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-13-use-runtime-keys-for-toc-docx",
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-24-decouple-suggestion-trailing-block",
+      "2026-03-28-render-url-videos-media-node"
+    ],
+    "editor-basic": [
+      "2026-11-28-fixed-toolbar-overflow-and-scroll-layout",
+      "2026-09-13-rename-rich-text-editor",
+      "2026-08-28-rename-plate-editor",
+      "2026-08-25-base-first-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-03-28-render-url-videos-media-node"
+    ],
     "floating-popover": [
       "2026-11-28-floating-discussion-block-switch-and-width",
       "2026-11-27-fix-base-and-phosphor-installs",
@@ -231,26 +286,6 @@
       "2026-08-24-single-selection-authority",
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
-    ],
-    "editor-ai": [
-      "2026-11-28-floating-discussion-block-switch-and-width",
-      "2026-11-17-ai-comment-author",
-      "2026-11-16-save-comment-ranges",
-      "2026-10-08-registry-install-dependencies",
-      "2026-10-07-editor-user",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-13-rename-rich-text-editor",
-      "2026-09-13-suggestion-examples",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-02-comments-ownership",
-      "2026-08-28-rename-plate-editor",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-14-author-editor-runtime",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-13-use-runtime-keys-for-toc-docx",
-      "2026-07-24-compose-markdown-footnotes",
-      "2026-07-24-decouple-suggestion-trailing-block",
-      "2026-03-28-render-url-videos-media-node"
     ],
     "footnote": [
       "2026-11-28-footnote-combobox-keyboard-and-perf",
@@ -796,26 +831,6 @@
       "2026-09-13-suggestion-package-behavior",
       "2026-08-17-flat-editor-registry",
       "2026-07-26-plugin-store-state"
-    ],
-    "fixed-toolbar": [
-      "2026-11-27-merge-derived-read-hooks",
-      "2026-11-27-use-no-scrollbar",
-      "2026-11-25-keyboard-bar-keeps-focus",
-      "2026-11-20-drop-editor-selection-view",
-      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
-      "2026-11-18-registry-icon-library",
-      "2026-11-18-toolbars-act-on-board-note-text",
-      "2026-11-17-cn-package",
-      "2026-11-17-format-painter",
-      "2026-11-16-clear-formatting",
-      "2026-11-13-platform-shortcut-labels",
-      "2026-10-19-strikethrough-shortcut-hint",
-      "2026-09-18-comment-discovery",
-      "2026-09-16-fixed-toolbar-caret-scroll",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-17-flat-editor-registry",
-      "2025-11-20-biome-ultracite"
     ],
     "suggestion-view-demo": [
       "2026-11-27-merge-derived-read-hooks",
@@ -1819,13 +1834,6 @@
       "2026-08-18-isolate-docx-file-io"
     ],
     "plate": ["2026-09-18-ui-commands-and-installation"],
-    "editor-basic": [
-      "2026-09-13-rename-rich-text-editor",
-      "2026-08-28-rename-plate-editor",
-      "2026-08-25-base-first-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-03-28-render-url-videos-media-node"
-    ],
     "copilot": [
       "2026-09-08-ai-session",
       "2026-08-17-colocate-editor-component-families",
@@ -1841,10 +1849,6 @@
       "2026-04-23-redesign-blockquotes-container-blocks",
       "2026-01-28-add-code-drawing-node",
       "2025-11-20-biome-ultracite"
-    ],
-    "multiple-editors-demo": [
-      "2026-09-08-editor-ui-lifetime",
-      "2026-08-13-fix-registry-install-dependencies"
     ],
     "suggestion-static": [
       "2026-09-08-suggestion-reviews",

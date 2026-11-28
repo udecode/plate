@@ -14,7 +14,7 @@
   "files": [
     {
       "path": "src/registry/blocks/editor-basic/page.tsx",
-      "content": "import { RichTextEditor } from '@/registry/blocks/editor-basic/components/editor/rich-text-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\">\n      <RichTextEditor />\n    </div>\n  );\n}\n",
+      "content": "import { RichTextEditor } from '@/registry/blocks/editor-basic/components/editor/rich-text-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-dvh w-full\">\n      <RichTextEditor />\n    </div>\n  );\n}\n",
       "type": "registry:page",
       "target": "app/editor/page.tsx"
     },

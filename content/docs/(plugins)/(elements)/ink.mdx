@@ -49,28 +49,45 @@ Mount `InkKit` alongside your editor plugins and place the ink controls inside a
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { DrawToolbarButton } from '@/components/editor/draw-toolbar-button';
-import { Editor, EditorContainer } from '@/components/editor/editor';
-import { FixedToolbar } from '@/components/editor/fixed-toolbar';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/components/editor/editor';
+import {
+  FixedToolbar,
+  FixedToolbarButtons,
+  FixedToolbarPlugin,
+} from '@/components/editor/fixed-toolbar';
 import { InkKit } from '@/components/editor/ink';
 import { DigitizeAllToolbarButton } from '@/components/editor/ink-dock';
 import { InkSwitchToolbarButton } from '@/components/editor/ink-switch-toolbar-button';
 import { EditorKit } from '@/components/editor/plugins';
 
+const InkEditorKit = [
+  ...EditorKit.filter((plugin) => plugin !== FixedToolbarPlugin),
+  ...InkKit,
+];
+
 export function InkEditor() {
   const editor = useCreateEditor({
-    plugins: [...EditorKit, ...InkKit],
+    plugins: InkEditorKit,
   });
 
   return (
     <EditorRoot editor={editor}>
-      <FixedToolbar>
-        <DrawToolbarButton />
-        <DigitizeAllToolbarButton />
-        <InkSwitchToolbarButton />
-      </FixedToolbar>
-      <EditorContainer>
-        <Editor />
-      </EditorContainer>
+      <EditorFrame className="h-[650px]">
+        <FixedToolbar>
+          <FixedToolbarButtons>
+            <DrawToolbarButton />
+            <DigitizeAllToolbarButton />
+            <InkSwitchToolbarButton />
+          </FixedToolbarButtons>
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

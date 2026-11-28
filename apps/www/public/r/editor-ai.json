@@ -23,7 +23,7 @@
   "files": [
     {
       "path": "src/registry/blocks/editor-ai/page.tsx",
-      "content": "import { Toaster } from 'sonner';\n\nimport { RichTextEditor } from '@/registry/blocks/editor-ai/components/editor/rich-text-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\">\n      <RichTextEditor />\n\n      <Toaster />\n    </div>\n  );\n}\n",
+      "content": "import { Toaster } from 'sonner';\n\nimport { RichTextEditor } from '@/registry/blocks/editor-ai/components/editor/rich-text-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-dvh w-full\">\n      <RichTextEditor />\n\n      <Toaster />\n    </div>\n  );\n}\n",
       "type": "registry:page",
       "target": "app/editor/page.tsx"
     },

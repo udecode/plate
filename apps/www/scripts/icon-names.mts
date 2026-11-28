@@ -164,6 +164,13 @@ const ICON_NAMES: Record<string, IconNames> = {
     remixicon: 'RiSkipRightLine',
     tabler: 'IconChevronRightPipe',
   },
+  ChevronLeft: {
+    hugeicons: 'ArrowLeft01Icon',
+    lucide: 'ChevronLeft',
+    phosphor: 'CaretLeftIcon',
+    remixicon: 'RiArrowLeftSLine',
+    tabler: 'IconChevronLeft',
+  },
   ChevronRight: {
     hugeicons: 'ArrowRight01Icon',
     lucide: 'ChevronRight',

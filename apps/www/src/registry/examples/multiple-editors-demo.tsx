@@ -12,7 +12,11 @@ import { Separator } from '@/components/ui/separator';
 import { AlignKit } from '@/registry/components/editor/align';
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
 import { DndKit } from '@/registry/components/editor/dnd';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
 import { MediaKit } from '@/registry/components/editor/media';
 import { TurnIntoToolbarButton } from '@/registry/components/editor/turn-into-toolbar-button';
@@ -47,27 +51,29 @@ export default function MultipleEditorsDemo() {
 
   return (
     <EditorController>
-      <SharedToolbar />
+      <EditorFrame className="h-[650px]">
+        <SharedToolbar />
 
-      <div>
-        <EditorRoot editor={editor}>
-          <EditorContainer>
-            <Editor />
-          </EditorContainer>
-        </EditorRoot>
-        <Separator />
-        <EditorRoot editor={editorMarks}>
-          <EditorContainer>
-            <Editor />
-          </EditorContainer>
-        </EditorRoot>
-        <Separator />
-        <EditorRoot editor={editorImage}>
-          <EditorContainer>
-            <Editor />
-          </EditorContainer>
-        </EditorRoot>
-      </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <EditorRoot editor={editor}>
+            <EditorContainer>
+              <Editor />
+            </EditorContainer>
+          </EditorRoot>
+          <Separator />
+          <EditorRoot editor={editorMarks}>
+            <EditorContainer>
+              <Editor />
+            </EditorContainer>
+          </EditorRoot>
+          <Separator />
+          <EditorRoot editor={editorImage}>
+            <EditorContainer>
+              <Editor />
+            </EditorContainer>
+          </EditorRoot>
+        </div>
+      </EditorFrame>
     </EditorController>
   );
 }

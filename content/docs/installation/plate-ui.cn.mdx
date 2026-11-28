@@ -139,6 +139,7 @@ npx shadcn@latest add @plate/fixed-toolbar @plate/mark-toolbar-button
 
 ```tsx showLineNumbers title="components/editor.tsx"
 import { BoldPlugin, EditorRoot } from "platejs/react";
+import { Editor, EditorContainer, EditorFrame } from "@/components/editor/editor";
 import { FixedToolbar } from "@/components/editor/fixed-toolbar";
 import { MarkToolbarButton } from "@/components/editor/mark-toolbar-button";
 // ... other imports
@@ -147,11 +148,15 @@ export function MyEditor() {
   // ... editor setup
   return (
     <EditorRoot editor={editor}>
-      <FixedToolbar>
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
-        {/* ... other toolbar buttons ... */}
-      </FixedToolbar>
-      {/* ... Editor component ... */}
+      <EditorFrame className="h-[650px]">
+        <FixedToolbar>
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
+          {/* ... other toolbar buttons ... */}
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

@@ -67,7 +67,7 @@ export function SinkFixedToolbarButtons({ kit }: { kit: SinkKit }) {
   } = kit;
 
   return (
-    <div className="flex w-full items-center">
+    <div className="flex w-max min-w-full shrink-0 items-center">
       <ToolbarGroup>
         <UndoToolbarButton />
         <RedoToolbarButton />

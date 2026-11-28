@@ -92,6 +92,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-fixed-toolbar-overflow-and-scroll-layout",
+      "href": "/registry/changelog/2026-11-28-fixed-toolbar-overflow-and-scroll-layout.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Add horizontal scroll controls to FixedToolbar and pin shared multi-editor toolbar",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "fixed-toolbar",
+        "multiple-editors-demo",
+        "editor-ai",
+        "editor-basic"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-floating-discussion-block-switch-and-width",
       "href": "/registry/changelog/2026-11-28-floating-discussion-block-switch-and-width.json",
       "status": "draft",
