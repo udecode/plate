@@ -1,19 +1,6 @@
 'use client';
 
-import { BaseDetailsPlugin } from 'platejs/details';
-import {
-  BoldPlugin,
-  CodePlugin,
-  EditorRoot,
-  FontBackgroundColorPlugin,
-  FontColorPlugin,
-  HighlightPlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-  useCreateEditor,
-  useEditor,
-} from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
 import * as React from 'react';
 
@@ -21,18 +8,16 @@ import {
   AIAssistantCard,
   BlockMenuCard,
   BoardCard,
-  EmojiPickerCard,
+  ExpandFirstDetails,
   FindReplaceCard,
   InkMarkupCard,
-  LinkFloatingCard,
   LintCard,
   MarkdownOutputCard,
   ReviewCard,
-  SelectEditorCard,
+  SinkFixedToolbarButtons,
+  SinkFloatingToolbarButtons,
   SlashCommandCard,
-  TablePickerCard,
-} from './create-sink-cards';
-import type { CreateSinkKit, SinkEmojiPick } from './create-sink-types';
+} from '@/components/sink/sink-cards';
 import {
   BOARD_VALUE,
   CALLOUT_DETAILS_VALUE,
@@ -46,263 +31,17 @@ import {
   MEDIA_VALUE,
   SUGGESTION_VALUE,
   TABLE_VALUE,
-} from './create-sink-values';
-import { IconPlaceholder } from './icon-placeholder';
+} from '@/components/sink/sink-values';
+
+import {
+  EmojiPickerCard,
+  LinkFloatingCard,
+  SelectEditorCard,
+  TablePickerCard,
+} from './create-sink-cards';
+import type { CreateSinkKit, SinkEmojiPick } from './create-sink-types';
 
 export type { CreateSinkKit } from './create-sink-types';
-
-export function SinkFixedToolbarButtons({ kit }: { kit: CreateSinkKit }) {
-  const {
-    AIToolbarButton,
-    AlignToolbarButton,
-    BulletedListToolbarButton,
-    CommentToolbarButton,
-    defaultColors,
-    FontColorToolbarButton,
-    FontSizeToolbarButton,
-    InsertToolbarButton,
-    LinkToolbarButton,
-    MarkToolbarButton,
-    ModeToolbarButton,
-    RedoToolbarButton,
-    TableToolbarButton,
-    TodoListToolbarButton,
-    ToolbarGroup,
-    TurnIntoToolbarButton,
-    UndoToolbarButton,
-  } = kit;
-
-  return (
-    <div className="flex w-full items-center">
-      <ToolbarGroup>
-        <UndoToolbarButton />
-        <RedoToolbarButton />
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <AIToolbarButton tooltip="AI commands">
-          <IconPlaceholder
-            hugeicons="MagicWand01Icon"
-            lucide="WandSparklesIcon"
-            phosphor="MagicWandIcon"
-            remixicon="RiMagicLine"
-            tabler="IconWand"
-          />
-        </AIToolbarButton>
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <InsertToolbarButton />
-        <TurnIntoToolbarButton />
-        <FontSizeToolbarButton />
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">
-          <IconPlaceholder
-            hugeicons="TextBoldIcon"
-            lucide="BoldIcon"
-            phosphor="TextBIcon"
-            remixicon="RiBold"
-            tabler="IconBold"
-          />
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">
-          <IconPlaceholder
-            hugeicons="TextItalicIcon"
-            lucide="ItalicIcon"
-            phosphor="TextItalicIcon"
-            remixicon="RiItalic"
-            tabler="IconItalic"
-          />
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">
-          <IconPlaceholder
-            hugeicons="TextUnderlineIcon"
-            lucide="UnderlineIcon"
-            phosphor="TextUnderlineIcon"
-            remixicon="RiUnderline"
-            tabler="IconUnderline"
-          />
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={StrikethroughPlugin} tooltip="Strikethrough">
-          <IconPlaceholder
-            hugeicons="TextStrikethroughIcon"
-            lucide="StrikethroughIcon"
-            phosphor="TextStrikethroughIcon"
-            remixicon="RiStrikethrough"
-            tabler="IconStrikethrough"
-          />
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={CodePlugin} tooltip="Code">
-          <IconPlaceholder
-            hugeicons="SourceCodeIcon"
-            lucide="Code2Icon"
-            phosphor="CodeIcon"
-            remixicon="RiCodeSSlashLine"
-            tabler="IconCode"
-          />
-        </MarkToolbarButton>
-        <FontColorToolbarButton
-          colors={defaultColors}
-          plugin={FontColorPlugin}
-          tooltip="Text color"
-        >
-          <IconPlaceholder
-            hugeicons="TextColorIcon"
-            lucide="BaselineIcon"
-            phosphor="TextAUnderlineIcon"
-            remixicon="RiFontColor"
-            tabler="IconBaseline"
-          />
-        </FontColorToolbarButton>
-        <FontColorToolbarButton
-          colors={defaultColors}
-          plugin={FontBackgroundColorPlugin}
-          tooltip="Background color"
-        >
-          <IconPlaceholder
-            hugeicons="PaintBucketIcon"
-            lucide="PaintBucketIcon"
-            phosphor="PaintBucketIcon"
-            remixicon="RiPaintLine"
-            tabler="IconBucketDroplet"
-          />
-        </FontColorToolbarButton>
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <AlignToolbarButton />
-        <BulletedListToolbarButton />
-        <TodoListToolbarButton />
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <LinkToolbarButton />
-        <TableToolbarButton />
-      </ToolbarGroup>
-
-      <div className="grow" />
-
-      <ToolbarGroup>
-        <MarkToolbarButton plugin={HighlightPlugin} tooltip="Highlight">
-          <IconPlaceholder
-            hugeicons="HighlighterIcon"
-            lucide="HighlighterIcon"
-            phosphor="HighlighterIcon"
-            remixicon="RiMarkPenLine"
-            tabler="IconHighlight"
-          />
-        </MarkToolbarButton>
-        <CommentToolbarButton />
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <ModeToolbarButton />
-      </ToolbarGroup>
-    </div>
-  );
-}
-
-export function SinkFloatingToolbarButtons({ kit }: { kit: CreateSinkKit }) {
-  const {
-    AIToolbarButton,
-    CommentToolbarButton,
-    LinkToolbarButton,
-    MarkToolbarButton,
-    ToolbarGroup,
-  } = kit;
-
-  return (
-    <>
-      <ToolbarGroup>
-        <AIToolbarButton tooltip="AI commands">
-          <IconPlaceholder
-            hugeicons="MagicWand01Icon"
-            lucide="WandSparklesIcon"
-            phosphor="MagicWandIcon"
-            remixicon="RiMagicLine"
-            tabler="IconWand"
-          />
-          Ask AI
-        </AIToolbarButton>
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">
-          <IconPlaceholder
-            hugeicons="TextBoldIcon"
-            lucide="BoldIcon"
-            phosphor="TextBIcon"
-            remixicon="RiBold"
-            tabler="IconBold"
-          />
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">
-          <IconPlaceholder
-            hugeicons="TextItalicIcon"
-            lucide="ItalicIcon"
-            phosphor="TextItalicIcon"
-            remixicon="RiItalic"
-            tabler="IconItalic"
-          />
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">
-          <IconPlaceholder
-            hugeicons="TextUnderlineIcon"
-            lucide="UnderlineIcon"
-            phosphor="TextUnderlineIcon"
-            remixicon="RiUnderline"
-            tabler="IconUnderline"
-          />
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={StrikethroughPlugin} tooltip="Strikethrough">
-          <IconPlaceholder
-            hugeicons="TextStrikethroughIcon"
-            lucide="StrikethroughIcon"
-            phosphor="TextStrikethroughIcon"
-            remixicon="RiStrikethrough"
-            tabler="IconStrikethrough"
-          />
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={CodePlugin} tooltip="Code">
-          <IconPlaceholder
-            hugeicons="SourceCodeIcon"
-            lucide="Code2Icon"
-            phosphor="CodeIcon"
-            remixicon="RiCodeSSlashLine"
-            tabler="IconCode"
-          />
-        </MarkToolbarButton>
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <LinkToolbarButton />
-        <CommentToolbarButton />
-      </ToolbarGroup>
-    </>
-  );
-}
-
-export function ExpandFirstDetails() {
-  const editor = useEditor();
-
-  React.useEffect(() => {
-    const firstDetails = editor.read
-      .children()
-      .find((node) => 'type' in node && node.type === 'details');
-
-    if (!firstDetails) return;
-
-    const detailsKey = editor.key(firstDetails);
-
-    if (detailsKey !== undefined) {
-      editor.plugin(BaseDetailsPlugin).api.setOpen(detailsKey, true);
-    }
-  }, [editor]);
-
-  return null;
-}
 
 export function CreateSink({ kit }: { kit: CreateSinkKit }) {
   const {
@@ -626,7 +365,7 @@ export function CreateSink({ kit }: { kit: CreateSinkKit }) {
 
                 <BoardCard boardEditor={boardEditor} kit={kit} />
 
-                <BlockMenuCard />
+                <BlockMenuCard kit={kit} />
 
                 <LinkFloatingCard kit={kit} onInsertLink={handleInsertLink} />
 

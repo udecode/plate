@@ -1,9 +1,6 @@
-'use client';
-
 import type { Value } from 'platejs';
 
-import type { SinkSelectItem } from './create-sink-types';
-import { IconPlaceholder } from './icon-placeholder';
+import type { SinkIconName, SinkSelectItem } from './sink-types';
 
 export const DOC_VALUE: Value = [
   {
@@ -507,154 +504,29 @@ export const LINT_VALUE: Value = [
   },
 ];
 
-export const SLASH_COMMANDS = [
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="SparklesIcon"
-        lucide="SparklesIcon"
-        phosphor="SparkleIcon"
-        remixicon="RiSparklingLine"
-        tabler="IconSparkles"
-      />
-    ),
-    label: 'Ask AI',
-    shortcut: '⌘J',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="Heading01Icon"
-        lucide="Heading1Icon"
-        phosphor="TextHOneIcon"
-        remixicon="RiH1"
-        tabler="IconH1"
-      />
-    ),
-    label: 'Heading 1',
-    shortcut: '#',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="Menu01Icon"
-        lucide="ListIcon"
-        phosphor="ListIcon"
-        remixicon="RiListUnordered"
-        tabler="IconListDetails"
-      />
-    ),
-    label: 'Bulleted list',
-    shortcut: '-',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="BulbIcon"
-        lucide="LightbulbIcon"
-        phosphor="LightbulbIcon"
-        remixicon="RiLightbulbLine"
-        tabler="IconBulb"
-      />
-    ),
-    label: 'Callout',
-    shortcut: '/cal',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="TableIcon"
-        lucide="TableIcon"
-        phosphor="TableIcon"
-        remixicon="RiTableLine"
-        tabler="IconTable"
-      />
-    ),
-    label: 'Table',
-    shortcut: '/tbl',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="SourceCodeIcon"
-        lucide="Code2Icon"
-        phosphor="CodeIcon"
-        remixicon="RiCodeSSlashLine"
-        tabler="IconCode"
-      />
-    ),
-    label: 'Code block',
-    shortcut: '```',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        hugeicons="SquareRootSquareIcon"
-        lucide="RadicalIcon"
-        phosphor="RadicalIcon"
-        remixicon="RiSquareRoot"
-        tabler="IconSquareRoot"
-      />
-    ),
-    label: 'Equation',
-    shortcut: '$$',
-  },
-] as const;
+export const SLASH_COMMANDS: ReadonlyArray<{
+  icon: SinkIconName;
+  label: string;
+  shortcut: string;
+}> = [
+  { icon: 'sparkles', label: 'Ask AI', shortcut: '⌘J' },
+  { icon: 'heading1', label: 'Heading 1', shortcut: '#' },
+  { icon: 'list', label: 'Bulleted list', shortcut: '-' },
+  { icon: 'lightbulb', label: 'Callout', shortcut: '/cal' },
+  { icon: 'table', label: 'Table', shortcut: '/tbl' },
+  { icon: 'code', label: 'Code block', shortcut: '```' },
+  { icon: 'radical', label: 'Equation', shortcut: '$$' },
+];
 
-export const TURN_INTO_OPTIONS = [
-  {
-    icon: (
-      <IconPlaceholder
-        className="size-4"
-        hugeicons="ParagraphIcon"
-        lucide="PilcrowIcon"
-        phosphor="ParagraphIcon"
-        remixicon="RiParagraph"
-        tabler="IconPilcrow"
-      />
-    ),
-    label: 'Text',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        className="size-4"
-        hugeicons="Heading01Icon"
-        lucide="Heading1Icon"
-        phosphor="TextHOneIcon"
-        remixicon="RiH1"
-        tabler="IconH1"
-      />
-    ),
-    label: 'Heading 1',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        className="size-4"
-        hugeicons="QuoteDownIcon"
-        lucide="Quote"
-        phosphor="QuotesIcon"
-        remixicon="RiDoubleQuotesL"
-        tabler="IconQuote"
-      />
-    ),
-    label: 'Blockquote',
-  },
-  {
-    icon: (
-      <IconPlaceholder
-        className="size-4"
-        hugeicons="SourceCodeIcon"
-        lucide="Code2Icon"
-        phosphor="CodeIcon"
-        remixicon="RiCodeSSlashLine"
-        tabler="IconCode"
-      />
-    ),
-    label: 'Code block',
-  },
-] as const;
+export const TURN_INTO_OPTIONS: ReadonlyArray<{
+  icon: SinkIconName;
+  label: string;
+}> = [
+  { icon: 'pilcrow', label: 'Text' },
+  { icon: 'heading1', label: 'Heading 1' },
+  { icon: 'quote', label: 'Blockquote' },
+  { icon: 'code', label: 'Code block' },
+];
 
 export const SELECT_LABELS: readonly SinkSelectItem[] = [
   { value: 'Editor' },

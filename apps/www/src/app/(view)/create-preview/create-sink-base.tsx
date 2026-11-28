@@ -73,8 +73,9 @@ import { InkKit } from '@/registry/components/editor/ink';
 import { LintKit } from '@/registry/components/editor/lint';
 
 import { CreateSink, type CreateSinkKit } from './create-sink';
+import { CREATE_SINK_SURFACE, CreateSinkIcon } from './create-sink-icon';
 
-export const BASE_SINK_KIT: CreateSinkKit = {
+const BASE_SINK_KIT: CreateSinkKit = {
   AIToolbarButton,
   AlignToolbarButton,
   Avatar,
@@ -113,6 +114,7 @@ export const BASE_SINK_KIT: CreateSinkKit = {
   FontColorToolbarButton,
   FontSizeToolbarButton,
   footnotePlugins: [...BasicMarksKit, ...FootnoteKit],
+  Icon: CreateSinkIcon,
   inkPlugins: [...BasicMarksKit, ...InkKit],
   Input,
   InsertToolbarButton,
@@ -127,6 +129,7 @@ export const BASE_SINK_KIT: CreateSinkKit = {
   SelectEditor,
   Separator,
   suggestionPlugins: [...SuggestionKit],
+  surface: CREATE_SINK_SURFACE,
   tablePlugins: [...BasicMarksKit, ...TableKit],
   TableToolbarButton,
   TodoListToolbarButton,
