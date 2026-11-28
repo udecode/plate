@@ -158,6 +158,18 @@ export const migratePlateV54Urls = ({
       return [withoutSourceUrl];
     }
 
+    const urlProperty = conversionTarget.schema.property({
+      key: 'url',
+      placement: 'element',
+      type: element.type,
+    });
+
+    if (urlProperty && !urlProperty.value.required && rejects(element, 'url')) {
+      const { url: _url, ...withoutUrl } = element;
+
+      return [withoutUrl];
+    }
+
     return [element];
   };
 

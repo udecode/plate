@@ -145,6 +145,30 @@ const DEFAULT_ALLOWED_SCHEMES: readonly string[] = [
   'tel',
 ];
 
+const validateStoredLinkUrl = isStoredUrl('navigation');
+
+/**
+ * Schema property validation contract for a stored navigation destination.
+ * Accepts the empty placeholder string, relative URLs outside `//`, and valid
+ * absolute URLs outside the script-capable floor (`javascript:`, `vbscript:`,
+ * `data:`, `blob:`, `filesystem:`), rejecting control characters and
+ * backslashes. Pass it to `property.string(linkUrlValidation)` so the schema
+ * fingerprint tracks `validationVersion`. Call `getLinkHref` to check whether a
+ * stored URL renders as an active link under `allowedSchemes`.
+ */
+export const linkUrlValidation: Readonly<{
+  validate: (
+    value: unknown
+  ) => value is string & { readonly '~storedLinkUrl': true };
+  validationVersion: number;
+}> = Object.freeze({
+  validate: (
+    value: unknown
+  ): value is string & { readonly '~storedLinkUrl': true } =>
+    validateStoredLinkUrl(value),
+  validationVersion: 1,
+});
+
 /**
  * Returns the href a link may navigate to, or `undefined` when the link
  * feature refuses `url`. Surrounding spaces are trimmed. Relative URLs are
@@ -242,8 +266,7 @@ export const BaseLinkPlugin = definePlugin('link', {
         target: property.string(),
         url: property.string({
           required: true,
-          validate: isStoredUrl('navigation'),
-          validationVersion: 1,
+          ...linkUrlValidation,
         }),
       },
     },
