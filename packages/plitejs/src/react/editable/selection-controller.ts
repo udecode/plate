@@ -1251,7 +1251,12 @@ export const resolveEditableImplicitTarget = ({
 
   const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
 
-  if (!root || inputController.state.isReplayingAndroidCommand) {
+  if (
+    !root ||
+    inputController.state.isReplayingAndroidCommand ||
+    inputController.state.isComposing ||
+    ReactEditor.isComposing(editor)
+  ) {
     return request.fallback;
   }
 
