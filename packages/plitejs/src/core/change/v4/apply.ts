@@ -39,7 +39,7 @@ export type V4TextStream = Readonly<{
 }>;
 
 export const isTextBearingElement = (node: JsonElementNode): boolean =>
-  node.children.length === 0 || node.children.some(isTextNode);
+  node.children.some(isTextNode);
 
 export const toV4TextStream = (children: readonly JsonNode[]): V4TextStream => {
   const units: V4TextUnit[] = [];

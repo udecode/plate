@@ -1,4 +1,14 @@
-import { type EditorCommit, RangeApi, type RootKey, type Selection } from '..';
+import {
+  type Descendant,
+  type EditorCommit,
+  ElementApi,
+  type NodeKey,
+  RangeApi,
+  type RootKey,
+  type Selection,
+  SelectionApi,
+  TextApi,
+} from '..';
 import {
   documentChangePropertyOnlyWrites,
   getInternalDocumentChangeRanges,
@@ -127,18 +137,39 @@ const getCollapsedPoint = (
     : null;
 };
 
-const selectionIsExpandedInRoot = (
+const getTextAtPath = (
+  nodes: readonly Descendant[],
+  path: readonly number[]
+): string | null => {
+  if (path.length === 0) return null;
+
+  let current: Descendant | undefined = nodes[path[0]];
+
+  for (let index = 1; index < path.length; index += 1) {
+    if (!current || !ElementApi.isElement(current)) return null;
+    current = current.children[path[index]];
+  }
+
+  return current && TextApi.isText(current) ? current.text : null;
+};
+
+const selectionReplacesContentInRoot = (
   selection: Selection,
   fallbackRoot: RootKey,
   root: RootKey
-) =>
-  Boolean(
-    selection &&
+) => {
+  if (!selection) return false;
+  if (SelectionApi.isNode(selection)) {
+    return (SelectionApi.root(selection) ?? fallbackRoot) === root;
+  }
+
+  return Boolean(
     RangeApi.isRange(selection) &&
     !RangeApi.isCollapsed(selection) &&
     (selection.anchor.root ?? fallbackRoot) === root &&
     (selection.focus.root ?? fallbackRoot) === root
   );
+};
 
 const getTarget = (
   commit: EditorCommit,
@@ -273,7 +304,7 @@ export const createHistoryBatchGroup = (
   const range = ranges.length === 1 ? ranges[0] : null;
   const changedSpan = getChangedSpan(ranges);
   const changedPath = getDeepestChangedPath(commit.changed.paths(publicRoot));
-  const replacedSelection = selectionIsExpandedInRoot(
+  const replacedSelection = selectionReplacesContentInRoot(
     commit.selectionBefore,
     commit.selectionBeforeRoot ?? MAIN_ROOT_KEY,
     root
@@ -337,17 +368,59 @@ export const createHistoryBatchGroup = (
   const selectionStart = RangeApi.isRange(commit.selectionBefore)
     ? RangeApi.edges(commit.selectionBefore)[0]
     : null;
-  const structuralReplacementInsertedText = Boolean(
-    selectionStart &&
-    afterPoint &&
-    (selectionStart.root ?? commit.selectionBeforeRoot ?? MAIN_ROOT_KEY) ===
-      root &&
-    isSameHistoryPath(selectionStart.path, afterPoint.path) &&
-    afterPoint.offset > selectionStart.offset
-  );
   const textChanged = commit.changed.has('text', publicRoot);
   const structureChanged = commit.changed.has('structure', publicRoot);
   const propertiesChanged = commit.changed.has('properties', publicRoot);
+  const textNodeKeys = commit.changed.nodeKeys('text', publicRoot);
+  const opened = structureChanged
+    ? commit.changed.nodeKeys('presence', publicRoot)
+    : [];
+  let afterLeafKey: NodeKey | null = null;
+  let structuralReplacementInsertedText = false;
+
+  if (replacedSelection && structureChanged && afterPoint) {
+    const afterSnapshot = getEditorCommitSnapshot(commit, root, 'after');
+
+    afterLeafKey = afterSnapshot.index.keyAt(afterPoint.path);
+
+    if (
+      selectionStart &&
+      (selectionStart.root ?? commit.selectionBeforeRoot ?? MAIN_ROOT_KEY) ===
+        root &&
+      isSameHistoryPath(selectionStart.path, afterPoint.path) &&
+      afterPoint.offset > selectionStart.offset
+    ) {
+      structuralReplacementInsertedText = true;
+    } else if (
+      afterPoint.offset > 0 &&
+      afterLeafKey &&
+      textNodeKeys.includes(afterLeafKey) &&
+      (SelectionApi.isNode(commit.selectionBefore)
+        ? textNodeKeys.length === 1
+        : opened.every((key) => textNodeKeys.includes(key)))
+    ) {
+      const afterText = getTextAtPath(afterSnapshot.children, afterPoint.path);
+
+      if (afterText !== null) {
+        if (opened.includes(afterLeafKey)) {
+          structuralReplacementInsertedText = true;
+        } else {
+          const beforeSnapshot = getEditorCommitSnapshot(
+            commit,
+            root,
+            'before'
+          );
+          const beforeLeafPath = beforeSnapshot.index.pathOf(afterLeafKey);
+          const beforeText = beforeLeafPath
+            ? getTextAtPath(beforeSnapshot.children, beforeLeafPath)
+            : null;
+
+          structuralReplacementInsertedText =
+            beforeText !== null && afterText.length > beforeText.length;
+        }
+      }
+    }
+  }
   const textTarget = getTarget(
     commit,
     root,
@@ -370,9 +443,10 @@ export const createHistoryBatchGroup = (
       mode: 'structural-replace',
       replacedSelection: true,
       root,
-      target:
-        getTarget(commit, root, afterPoint.path) ??
-        failInvariant('Expected value to be defined'),
+      target: Object.freeze({
+        path: pathKey(afterPoint.path),
+        ...(afterLeafKey ? { nodeKey: afterLeafKey } : {}),
+      }),
       toAfter: changedSpan[3],
       toBefore: changedSpan[1],
     });
@@ -380,15 +454,10 @@ export const createHistoryBatchGroup = (
 
   // Typing a suggested letter opens a text leaf of its own and splits the
   // text it lands in; adding only new text leaves still reads as typing.
-  const opened = structureChanged
-    ? commit.changed.nodeKeys('presence', publicRoot)
-    : [];
   const opensLeaf =
     !replacedSelection &&
     opened.length > 0 &&
-    opened.every((key) =>
-      commit.changed.nodeKeys('text', publicRoot).includes(key)
-    );
+    opened.every((key) => textNodeKeys.includes(key));
 
   if (
     range &&

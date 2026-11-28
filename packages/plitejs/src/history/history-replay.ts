@@ -44,7 +44,7 @@ import {
   valueRootIndex,
   withInternalDocumentRootChange,
 } from '../core/change/document-change';
-import type { DocumentIndex, NodeList } from '../core/change/document-index';
+import type { DocumentIndex } from '../core/change/document-index';
 import { jsonEqual, type JsonRecord } from '../core/change/json';
 import { markReadBack, type ReadBack } from '../core/change/read-back';
 import {
@@ -61,13 +61,9 @@ import {
   type JsonToken,
 } from '../core/change/tokens';
 import { normalizeSetValues } from '../core/change/transform';
-import { getEditorSchema } from '../core/editor-runtime';
-import { constructCanonicalDocumentChange } from '../core/representation';
 import { mapSelectionThroughChange } from '../core/selection-protocol';
 import { countCoreWork } from '../core/work';
-import type { Descendant, Element } from '../interfaces';
 import type { AnyEditor, EditorDocumentValue } from '../interfaces/editor';
-import { ElementApi } from '../interfaces/element';
 import { SelectionApi, type Selection } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import {
@@ -75,6 +71,12 @@ import {
   textHostAt,
   type CharacterSpan,
 } from './history-character-map';
+import {
+  type HistoryReplaySchema,
+  historyReplaySchemaOf,
+} from './history-replay-schema';
+
+export { historyReplaySchemaOf };
 
 type TextKeyWrite =
   | Readonly<{ key: string; kind: 'value'; expect: unknown; value: unknown }>
@@ -86,7 +88,6 @@ type TextKeyWrite =
     }>;
 type TextFormatSpan = CharacterSpan &
   Readonly<{ writes: readonly TextKeyWrite[] }>;
-type HistoryReplaySchema = ReturnType<typeof historyReplaySchemaOf>;
 type RecordedHistoryReplay<T extends JsonEditorValue> = Readonly<{
   structure: DocumentChange;
   format: ReadonlyMap<string, readonly TextFormatSpan[]>;
@@ -121,86 +122,6 @@ export type HistoryReplayParts = Readonly<{
   unsettle: DocumentChange;
 }>;
 
-export const historyReplaySchemaOf = (editor: AnyEditor) => {
-  const schema = getEditorSchema(editor);
-  return {
-    canonicalize: (
-      properties: JsonRecord,
-      path: readonly number[],
-      root: string,
-      key: string,
-      value: JsonEditorValue
-    ) =>
-      schema.canonicalizeTextPropertiesAt(
-        properties,
-        [...path],
-        root,
-        key,
-        value as EditorDocumentValue
-      ),
-    allows: (
-      key: string,
-      path: readonly number[],
-      root: string,
-      value: JsonEditorValue
-    ) =>
-      schema.isTextPropertyAllowedAt(
-        key,
-        [...path],
-        root,
-        value as EditorDocumentValue
-      ),
-    lines: {
-      isInline: (node: JsonNode) =>
-        ElementApi.isElement(node) && schema.isInline(node),
-      isVoid: (node: JsonNode) =>
-        ElementApi.isElement(node) && schema.isVoid(node),
-      splitProps: (
-        node: JsonNode,
-        ancestors: readonly JsonNode[],
-        root: string
-      ) =>
-        ElementApi.isElement(node)
-          ? {
-              ...schema.elementPropertiesForSplitUnder(
-                node,
-                ancestors as readonly Element[],
-                root
-              ),
-              type: node.type,
-            }
-          : {},
-    },
-    pieceProps: (
-      node: JsonNode,
-      path: readonly number[],
-      root: string,
-      nodes: NodeList
-    ) =>
-      ElementApi.isElement(node)
-        ? {
-            ...schema.elementPropertiesForSplitAt(
-              node,
-              [...path],
-              root,
-              nodes as NodeList<Descendant>
-            ),
-            type: node.type,
-          }
-        : {},
-    isSetValued: schema.isSetValuedProperty,
-    repairCanonical: (
-      before: JsonEditorValue,
-      change: DocumentChange,
-      after: JsonEditorValue
-    ) =>
-      constructCanonicalDocumentChange(editor, after, change, {
-        before,
-        displacement: 'none',
-      }),
-  };
-};
-
 /** @internal */
 export type ReplayRules = Readonly<{ anchor: boolean; readBack: boolean }>;
 
@@ -223,6 +144,7 @@ const replayOver = (
     keepRecordWrites: true,
     replay: {
       anchor,
+      canContain: schema.canContain,
       carriesLift,
       pieceProps: (element, parent, root, nodes) =>
         schema.pieceProps(element, [...parent, 0], root, nodes),

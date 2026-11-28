@@ -67,6 +67,7 @@ import { extractRegisterSteps, extractV4Between } from './v4/extract';
 import { invertV4RegisterSteps, invertV4Steps } from './v4/invert';
 import { lowerV4Steps } from './v4/lower';
 import { rebaseV4Changes } from './v4/rebase';
+import { rebaseV4JoinOverSiblingRemoval } from './v4/replay-join-over-remove';
 import type { V4EscalationReason, V4StepOutcome } from './v4/text-ot';
 import {
   assertV4Steps,
@@ -2666,6 +2667,7 @@ type RebaseOptions = Readonly<{
   keepEqualMoves?: boolean;
   replay?: Readonly<{
     anchor?: boolean;
+    canContain?: (parent: JsonNode, child: JsonNode) => boolean;
     carriesLift?: boolean;
     readBack?: ReadBack | null;
     pieceProps: (
@@ -2900,6 +2902,7 @@ const rebasedPair = (
           keepEqualMoves,
           replay: replay && {
             anchor: replay.anchor,
+            canContain: replay.canContain,
             carriesLift: replay.carriesLift,
             pieceProps: (element, parent, nodes) =>
               replay.pieceProps(element, parent, root, nodes),
@@ -3063,18 +3066,31 @@ export const transformInternalDocumentChange = (
     );
   }
 
-  return rebasedPair(
-    a,
-    b,
-    value,
-    options,
-    options.keepRecordWrites
-      ? {
-          first: getInternalDocumentChangeRecords(a),
-          second: getInternalDocumentChangeRecords(b),
-        }
-      : recordsRebasedOf(a, b)
-  );
+  const records = options.keepRecordWrites
+    ? {
+        first: getInternalDocumentChangeRecords(a),
+        second: getInternalDocumentChangeRecords(b),
+      }
+    : recordsRebasedOf(a, b);
+
+  if (options.replay && allElementsHaveIds(value)) {
+    const aSteps = tryV4StepsOf(a, value, options.isSetValued);
+    const bSteps = tryV4StepsOf(b, value, options.isSetValued);
+
+    if (aSteps !== null && bSteps !== null) {
+      const joined = rebaseV4JoinOverSiblingRemoval(value, aSteps, bSteps);
+
+      if (joined) {
+        return {
+          a: createV4DocumentChange(joined.aPrime, { records: records.first }),
+          b: createV4DocumentChange(joined.bPrime, { records: records.second }),
+          keptWrap: null,
+        };
+      }
+    }
+  }
+
+  return rebasedPair(a, b, value, options, records);
 };
 
 export const applyDocumentChangeValue = <T extends JsonEditorValue>(

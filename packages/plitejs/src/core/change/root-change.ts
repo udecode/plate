@@ -34,6 +34,7 @@ import {
   getRootChangeStepFirstAt,
   replayStepWinsTie,
 } from './replay-step-order';
+import * as containment from './schema-containment';
 import {
   isRetainedFromOtherRange,
   shiftMergedEmptyTextPair,
@@ -2370,21 +2371,22 @@ const putBackOver = (
   });
 };
 
-/** Whether a positional transform gives one document from both sides. */
 const convergesOn = (
   transformed: Readonly<{ a: RootChange; b: RootChange }>,
   afterA: DocumentIndex,
-  afterB: DocumentIndex
+  afterB: DocumentIndex,
+  canContain?: containment.CanContain
 ) => {
-  try {
-    return sameChangedChildren(
-      transformed.b.apply(afterA),
-      transformed.a.apply(afterB),
-      jsonEqual
-    );
-  } catch {
-    return false;
-  }
+  const mergedA = containment.tryApply(transformed.b, afterA);
+  const mergedB = mergedA && containment.tryApply(transformed.a, afterB);
+
+  return Boolean(
+    mergedA &&
+    mergedB &&
+    sameChangedChildren(mergedA, mergedB, jsonEqual) &&
+    (!canContain ||
+      containment.hasValidTextContainment(mergedB, afterB, canContain))
+  );
 };
 
 const depthChange = (token: JsonToken) =>
@@ -3113,7 +3115,8 @@ const mergeNestedChangeThroughStructuralRelocation = (
   structural: RootChange,
   before: DocumentIndex,
   afterNested: DocumentIndex,
-  afterStructural: DocumentIndex
+  afterStructural: DocumentIndex,
+  canContain?: (parent: JsonNode, child: JsonNode) => boolean
 ): DocumentIndex | null => {
   if (
     sameDocumentStructure(before.value, afterStructural.value) ||
@@ -3223,19 +3226,18 @@ const mergeNestedChangeThroughStructuralRelocation = (
 
     if (targetIndex === undefined) continue;
 
-    const merged = afterStructural.withSplicedNodes(
-      targetPath.slice(0, -1),
+    const merged = containment.spliceRelocated(
+      afterStructural,
+      targetPath,
       targetIndex,
-      1,
-      equal === storedIds.alike
-        ? storedIds.remapAlikeElementIds(
-            candidate.node,
-            targets[0].node,
-            edited
-          )
-        : edited
+      edited,
+      candidate.node,
+      targets[0].node,
+      equal,
+      canContain
     );
 
+    if (!merged) continue;
     if (at === end) return merged;
     partial ??= merged;
   }
@@ -4573,6 +4575,7 @@ export class RootChange {
       keepEqualMoves?: boolean;
       replay?: Readonly<{
         anchor?: boolean;
+        canContain?: (parent: JsonNode, child: JsonNode) => boolean;
         carriesLift?: boolean;
         pieceProps: PieceProps;
         readBack?: ReadBack | null;
@@ -4766,7 +4769,13 @@ export class RootChange {
 
       const parts = edit.partition(move.from, move.to - 1);
 
-      if (!parts || parts.inside.empty) return null;
+      if (
+        !parts ||
+        parts.inside.empty ||
+        !containment.keepsTokenBalance(document, parts.inside.replacements())
+      ) {
+        return null;
+      }
 
       let touchesNode = false;
 
@@ -4796,13 +4805,16 @@ export class RootChange {
           carried
         ).a
       );
+      const afterEditAndMove = containment.applyIfBalanced(
+        editAfterMove,
+        afterMove
+      );
+
+      if (!afterEditAndMove) return null;
 
       return {
         edit: editAfterMove,
-        move: RootChange.betweenWhole(
-          afterEdit,
-          editAfterMove.apply(afterMove)
-        ),
+        move: RootChange.betweenWhole(afterEdit, afterEditAndMove),
       };
     };
 
@@ -4914,6 +4926,18 @@ export class RootChange {
         wrapperNode.children.length !== 1 ||
         target === null ||
         (wrapper.from <= target && target <= wrapper.to)
+      ) {
+        return null;
+      }
+
+      if (
+        replay?.canContain &&
+        !containment.canPlaceWrapperAtBoundary(
+          afterEdit,
+          target,
+          wrapperNode,
+          replay.canContain
+        )
       ) {
         return null;
       }
@@ -5034,7 +5058,7 @@ export class RootChange {
       ) &&
       !addsInsideEnclosure(aReplacements, bReplacements) &&
       !addsInsideEnclosure(bReplacements, aReplacements) &&
-      convergesOn(transformed, afterA, afterB)
+      convergesOn(transformed, afterA, afterB, replay?.canContain)
     ) {
       return transformed;
     }
@@ -5089,7 +5113,8 @@ export class RootChange {
         primary.change,
         document,
         other.after,
-        primary.after
+        primary.after,
+        replay?.canContain
       );
 
       if (relocated !== null) {
@@ -5100,7 +5125,9 @@ export class RootChange {
       }
     }
 
-    if (convergesOn(transformed, afterA, afterB)) return transformed;
+    if (convergesOn(transformed, afterA, afterB, replay?.canContain)) {
+      return transformed;
+    }
 
     for (const [primary, other, flip] of pairs) {
       const { move } = primary;
