@@ -47,6 +47,7 @@ import { isFrozenWithRoots, visitRootNames } from './change/lazy-root';
 import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import { normalizeSetValues } from './change/transform';
+import { V4_REGISTER_SET } from './change/v4/types';
 import { cloneFrozen, isImmutable, isOwnedJsonValue } from './clone';
 import { completeContent } from './content-completion';
 import { ContentSlice as ContentSliceValue } from './content-slice';
@@ -1294,7 +1295,7 @@ export const createEditorSchema = <V extends Value = Value>(
     schema: CompiledEditorSchema
   ) => {
     for (const set of sets) {
-      if (!schema.recordSets.has(set)) {
+      if (set !== V4_REGISTER_SET && !schema.recordSets.has(set)) {
         throw createEditorSchemaValidationError(
           'invalid-document',
           `Undeclared record set "${set}" in editor schema.`,

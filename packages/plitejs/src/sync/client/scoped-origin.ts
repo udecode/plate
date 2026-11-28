@@ -549,7 +549,7 @@ const buildScopedBase = (origin: BatchOrigin): JsonEditorValue => {
     }
   }
 
-  const base: JsonEditorValue = {
+  const base: Record<string, unknown> = {
     children,
     ...(Object.keys(roots).length > 0 ? { roots } : {}),
   };
@@ -559,15 +559,12 @@ const buildScopedBase = (origin: BatchOrigin): JsonEditorValue => {
       EMPTY_RECORD_STORE,
       recordOpsFromJson(records)
     );
-    const mutable: Record<string, unknown> = { ...base };
 
-    withValueRecords(mutable, store);
-    showValueRecords(mutable, store);
-
-    return mutable as JsonEditorValue;
+    withValueRecords(base, store);
+    showValueRecords(base, store);
   }
 
-  return base;
+  return base as JsonEditorValue;
 };
 
 const indexNonStubElements = (

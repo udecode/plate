@@ -24,6 +24,7 @@ import {
   applyPropDeltaToRecord,
   assertV4Step,
   type V4Place,
+  type V4RegisterStep,
   type V4Step,
 } from './types';
 
@@ -1210,7 +1211,7 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
 
 const applyV4RegisterStep = (
   records: RecordStore,
-  step: Extract<V4Step, { op: 'set_register' }>
+  step: V4RegisterStep
 ): RecordStore => {
   const current = readRecord(getRecordSetVersion(records, step.set), step.id);
   const currentWriteId =

@@ -11,13 +11,15 @@ import { carriesRun, type CarriedRun } from '../core/change/carried-run';
 import {
   attachV4Steps,
   bindV4DocumentChange,
+  copyV4StepsMetadata,
   createInternalDocumentChange,
   documentChangeWritesOnlyElementProperties,
-  getAttachedV4Steps,
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
+  getV4RegisterSteps,
+  getV4Steps,
   valueRootIndex,
   withoutRetainedRecordSets,
 } from '../core/change/document-change';
@@ -111,19 +113,24 @@ const ensureV4ChangeJson = (
   change: DocumentChange,
   base?: EditorDocumentValue
 ) => {
-  if (
-    !change.empty &&
-    getAttachedV4Steps(change) === null &&
-    base !== undefined
-  ) {
+  if (!change.empty && getV4Steps(change) === null && base !== undefined) {
     const compiled = getCompiledEditorSchema(editor);
     const isSetValued = compiled
       ? schemaSetValuedResolver(compiled)
       : undefined;
+    const explicitRegisters = getV4RegisterSteps(change);
+    const extracted = extractV4Between(base, change.apply(base), {
+      isSetValued,
+    });
 
     attachV4Steps(
       change,
-      extractV4Between(base, change.apply(base), { isSetValued })
+      explicitRegisters.length > 0
+        ? [
+            ...extracted.filter((step) => step.op !== 'set_register'),
+            ...explicitRegisters,
+          ]
+        : extracted
     );
   }
 
@@ -525,9 +532,8 @@ const checkBatch = <V extends Value>(
         deleteRoots: bound.change.deleteRoots,
         records: getInternalDocumentChangeRecords(bound.change),
       });
-      const attached = getAttachedV4Steps(bound.change);
 
-      if (attached) attachV4Steps(alignedDocChange, attached);
+      copyV4StepsMetadata(bound.change, alignedDocChange);
 
       const reboundAligned: Batch<V> = freezeHistoryBatch({
         ...bound,

@@ -32,6 +32,7 @@ import {
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys,
   getInternalDocumentRootChange,
+  getV4RegisterSteps,
   isInternalRecordsOnlyChange,
   rootsComposeRebuilds,
   valueRootIndex,
@@ -1455,9 +1456,7 @@ export class ChangeDraft {
     );
     const attachedSteps = getAttachedV4Steps(change);
 
-    if (attachedSteps && !classifiedChange.empty) {
-      attachV4Steps(classifiedChange, attachedSteps);
-    }
+    copyV4StepsMetadata(change, classifiedChange);
     const frozenRuntimeCandidates = freezeReadonlyMap(runtimeCandidates);
 
     if (options.classify !== false) {
@@ -1646,16 +1645,18 @@ export class ChangeDraft {
     change: DocumentChange,
     facts: ChangeFacts = UNKNOWN_FACTS
   ): DocumentChangeStep {
+    const bound = bindV4DocumentChange(change, this.current);
+
     if (
-      isInternalRecordsOnlyChange(change) &&
+      isInternalRecordsOnlyChange(bound) &&
       (this.validateRecordsOnlyChange || !this.canonical)
     ) {
-      this.validateRecordsOnlyChange?.(change);
+      this.validateRecordsOnlyChange?.(bound);
 
-      return this.applyRecords(change, facts);
+      return this.applyRecords(bound, facts);
     }
 
-    return this.applyCanonical(change, facts);
+    return this.applyCanonical(bound, facts);
   }
 
   applyPropertyWrites(change: DocumentChange): DocumentChangeStep {
@@ -1688,6 +1689,11 @@ export class ChangeDraft {
   ): DocumentChangeStep {
     const before = this.current;
     const current = applyDocumentChangeWithIndexes(change, before, NO_INDEXES);
+    const registerSteps = getV4RegisterSteps(change);
+
+    if (registerSteps.length > 0) {
+      this.v4Recorder.appendRaw(registerSteps);
+    }
 
     this.appendAccumulated(change);
     this.composeSinceValidated(change);
@@ -1891,6 +1897,8 @@ export class ChangeDraft {
       deleteRoots: change.deleteRoots,
       records: getInternalDocumentChangeRecords(change),
     });
+
+    copyV4StepsMetadata(change, canonicalChange);
     const frozenRuntimeCandidates = freezeReadonlyMap(runtimeCandidates);
     const current = applyDocumentChangeWithIndexes(
       canonicalChange,

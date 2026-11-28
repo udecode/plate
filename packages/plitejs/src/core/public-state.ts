@@ -202,11 +202,13 @@ import {
   assertDocumentRootKey,
   bindV4DocumentChange,
   createInternalDocumentChange,
+  createRegisterDocumentChange,
   documentChangeWritesOnlyElementProperties,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
+  getV4RegisterSteps,
   DocumentChange,
   isInternalRecordsOnlyChange,
   isUnboundV4DocumentChange,
@@ -256,7 +258,10 @@ import type {
   OpenToken,
 } from './change/tokens';
 import type { PropertyModification } from './change/transform';
+import { applyV4RegisterSteps } from './change/v4/apply';
+import { extractRegisterSteps } from './change/v4/extract';
 import { registerValueIdLookup } from './change/v4/lower';
+import { V4_REGISTER_SET } from './change/v4/types';
 import {
   cloneFrozen,
   cloneValue,
@@ -412,13 +417,17 @@ import {
   usesImplicitSelectionLocation,
 } from './public-root';
 import {
+  canonicalRecordJson,
   deriveValue,
   EMPTY_RECORD_STORE,
+  filterRecordOps,
+  getRecordSetVersion,
   getValueRecords,
   hasValueRecords,
   NO_RECORD_OPS,
   collectRecordStore,
   collectValueRecords,
+  readRecord,
   recordDrop,
   recordOpsBetween,
   recordPut,
@@ -4140,21 +4149,166 @@ const readRangeFromEntries = (
   return readRange(editor, first[1], last[1]);
 };
 
+const readSharedFieldFromRecords = <TValue>(
+  field: EditorStateField<TValue>,
+  records: RecordStore
+): Readonly<{ found: boolean; value: TValue }> => {
+  const entry = readRecord(
+    getRecordSetVersion(records, V4_REGISTER_SET),
+    field.key
+  );
+
+  if (
+    isRecord(entry) &&
+    typeof entry.encoded === 'string' &&
+    typeof entry.writeId === 'string'
+  ) {
+    return {
+      found: true,
+      value: cloneFrozen(field.deserialize(JSON.parse(entry.encoded))),
+    };
+  }
+
+  return { found: false, value: resolveStateFieldInitial(field) as TValue };
+};
+
+const seedSharedFieldRecord = <TValue>(
+  records: RecordStore,
+  field: EditorStateField<TValue>,
+  value: TValue
+): RecordStore =>
+  applyV4RegisterSteps(records, [
+    {
+      after: canonicalRecordJson(field.serialize(value)),
+      id: field.key,
+      op: 'set_register',
+      set: V4_REGISTER_SET,
+      writeId: `init:${field.key}`,
+    },
+  ]);
+
+const syncSharedStateFieldsFromRecords = (
+  editor: Editor,
+  records: RecordStore,
+  mode: 'adopt' | 'transaction'
+) => {
+  const fields = getStateFieldMap(editor);
+
+  if (fields.size === 0) return;
+
+  let nextRecords = records;
+
+  for (const field of fields.values()) {
+    if (field.collab !== 'shared') continue;
+
+    const { found, value: decoded } = readSharedFieldFromRecords(
+      field,
+      nextRecords
+    );
+
+    if (mode === 'adopt') {
+      const existingState = getDocumentState(editor);
+
+      if (found) {
+        setDocumentState(editor, {
+          ...existingState,
+          [field.key]: decoded,
+        });
+        markStateFieldHydrated(editor, field.key);
+        continue;
+      }
+
+      if (existingState && Object.hasOwn(existingState, field.key)) {
+        const value = isStateFieldHydrated(editor, field.key)
+          ? existingState[field.key]
+          : cloneFrozen(field.deserialize(existingState[field.key]));
+
+        setDocumentState(editor, {
+          ...existingState,
+          [field.key]: value,
+        });
+        markStateFieldHydrated(editor, field.key);
+        nextRecords = seedSharedFieldRecord(nextRecords, field, value);
+        continue;
+      }
+
+      if (decoded === undefined) continue;
+
+      setDocumentState(editor, {
+        ...existingState,
+        [field.key]: cloneFrozen(decoded),
+      });
+      markStateFieldHydrated(editor, field.key);
+      continue;
+    }
+
+    const currentValue = getStateFieldValue(editor, field);
+
+    if (field.compare(currentValue, decoded)) continue;
+
+    const snapshot = getTransactionSnapshot(editor);
+    const shouldEmitEffect =
+      snapshot !== undefined &&
+      !snapshot.tags.has('collaboration') &&
+      !snapshot.effects.some((effect) => effect.type === field.effect);
+
+    if (shouldEmitEffect) {
+      emitEditorEffectInternal(
+        editor,
+        field.effect,
+        {
+          previousValue: currentValue,
+          value: decoded,
+        },
+        { recordRegister: false }
+      );
+    } else {
+      setStateValueByKey(editor, field.key, decoded, currentValue);
+    }
+  }
+
+  if (mode === 'adopt' && nextRecords !== records) {
+    RECORDS.set(editor, nextRecords);
+  }
+};
+
 export const activateStateField = <TValue>(
   editor: Editor,
   field: EditorStateField<TValue>
 ) => {
   const previousState = getDocumentState(editor);
+  const previousRecords = getEditorDocumentRecords(editor);
   const wasHydrated = isStateFieldHydrated(editor, field.key);
   const rollback = () => {
     setDocumentState(editor, previousState);
+    RECORDS.set(editor, previousRecords);
     restoreStateFieldHydration(editor, field.key, wasHydrated);
   };
 
   try {
+    if (field.collab === 'shared') {
+      const { found, value: decoded } = readSharedFieldFromRecords(
+        field,
+        previousRecords
+      );
+
+      if (found) {
+        const existingState = getDocumentState(editor);
+
+        setDocumentState(editor, {
+          ...existingState,
+          [field.key]: decoded,
+        });
+        markStateFieldHydrated(editor, field.key);
+        return rollback;
+      }
+    }
+
     const existingState = getDocumentState(editor);
 
     if (existingState && Object.hasOwn(existingState, field.key)) {
+      let hydratedValue: TValue;
+
       if (!isStateFieldHydrated(editor, field.key)) {
         if (!field.persist) {
           throw new Error(
@@ -4162,13 +4316,30 @@ export const activateStateField = <TValue>(
           );
         }
 
-        const decoded = field.deserialize(existingState[field.key]);
+        const decoded = cloneFrozen(
+          field.deserialize(existingState[field.key])
+        );
         setDocumentState(editor, {
           ...existingState,
-          [field.key]: cloneFrozen(decoded),
+          [field.key]: decoded,
         });
         markStateFieldHydrated(editor, field.key);
+        hydratedValue = decoded;
+      } else {
+        hydratedValue = existingState[field.key] as TValue;
       }
+
+      if (field.collab === 'shared') {
+        RECORDS.set(
+          editor,
+          seedSharedFieldRecord(
+            getEditorDocumentRecords(editor),
+            field,
+            hydratedValue
+          )
+        );
+      }
+
       return rollback;
     }
 
@@ -4210,7 +4381,7 @@ const setStateFieldValue = <TValue>(
   editor: Editor,
   field: EditorStateField<TValue>,
   value: StateFieldValueInput<TValue>,
-  options?: { emitEffect?: boolean }
+  options?: { emitEffect?: boolean; recordRegister?: boolean }
 ) => {
   getInstalledStateField(editor, field);
 
@@ -4275,6 +4446,24 @@ const setStateFieldValue = <TValue>(
   }
 
   setStateValueByKey(editor, field.key, storedValue, previousValue);
+
+  if (field.collab === 'shared' && options?.recordRegister !== false) {
+    const writeId = getCompiledEditorSchema(editor).elementIdMint.next();
+    const encoded = canonicalRecordJson(field.serialize(storedValue));
+
+    applyRecordChange(
+      editor,
+      createRegisterDocumentChange([
+        {
+          after: encoded,
+          id: field.key,
+          op: 'set_register',
+          set: V4_REGISTER_SET,
+          writeId,
+        },
+      ])
+    );
+  }
 };
 
 const getOwnStateValue = (
@@ -4321,12 +4510,12 @@ const setStateValueByKey = (
   markTransactionChanged(editor);
 };
 
-/** @internal */
-export function emitAnyEditorEffect<TValue>(
+const emitEditorEffectInternal = <TValue>(
   editor: Editor,
   type: EditorEffectType<TValue>,
-  value: TValue
-) {
+  value: TValue,
+  options: Readonly<{ recordRegister?: boolean }> = {}
+) => {
   const snapshot = getTransactionSnapshot(editor);
   const installed = getPluginRegistry(editor).effectTypes.get(type.key);
 
@@ -4355,10 +4544,52 @@ export function emitAnyEditorEffect<TValue>(
     const previous = getStateFieldValue(editor, field);
     const next = field.reduce(previous, effect);
 
-    setStateFieldValue(editor, field, next, { emitEffect: false });
+    if (
+      field.collab === 'shared' &&
+      options.recordRegister !== false &&
+      Object.is(effect.type, field.effect) &&
+      field.compare(previous, next)
+    ) {
+      const alreadyRecorded = getV4RegisterSteps(snapshot.builder.change).some(
+        (step) => step.id === field.key
+      );
+
+      if (!alreadyRecorded) {
+        const writeId = getCompiledEditorSchema(editor).elementIdMint.next();
+        const encoded = canonicalRecordJson(field.serialize(cloneFrozen(next)));
+
+        applyRecordChange(
+          editor,
+          createRegisterDocumentChange([
+            {
+              after: encoded,
+              id: field.key,
+              op: 'set_register',
+              set: V4_REGISTER_SET,
+              writeId,
+            },
+          ])
+        );
+      }
+      continue;
+    }
+
+    setStateFieldValue(editor, field, next, {
+      emitEffect: false,
+      recordRegister: options.recordRegister,
+    });
   }
 
   markTransactionChanged(editor);
+};
+
+/** @internal */
+export function emitAnyEditorEffect<TValue>(
+  editor: Editor,
+  type: EditorEffectType<TValue>,
+  value: TValue
+) {
+  emitEditorEffectInternal(editor, type, value);
 }
 
 export const getCollabEffects = (
@@ -9930,6 +10161,11 @@ export const getUpdateView = <
     records: Object.freeze({
       drop: (set: string, id: string) => {
         runActive(() => {
+          if (set === V4_REGISTER_SET) {
+            throw new Error(
+              `Record set "${V4_REGISTER_SET}" is reserved for shared state fields.`
+            );
+          }
           applyRecordChange(
             editor,
             createInternalDocumentChange(new Map(), {
@@ -9944,6 +10180,11 @@ export const getUpdateView = <
         record: Readonly<Record<string, unknown>>
       ) => {
         runActive(() => {
+          if (set === V4_REGISTER_SET) {
+            throw new Error(
+              `Record set "${V4_REGISTER_SET}" is reserved for shared state fields.`
+            );
+          }
           applyRecordChange(
             editor,
             createInternalDocumentChange(new Map(), {
@@ -15214,6 +15455,16 @@ const applyTransactionSpecDocumentChangeStep = (
   }
 
   snapshot.activeChange = { change: snapshot.builder.change };
+  const beforeSharedRecords = getRecordSetVersion(
+    getValueRecords(before),
+    V4_REGISTER_SET
+  );
+  const afterRecords = getValueRecords(after);
+  const afterSharedRecords = getRecordSetVersion(afterRecords, V4_REGISTER_SET);
+
+  if (beforeSharedRecords !== afterSharedRecords) {
+    syncSharedStateFieldsFromRecords(editor, afterRecords, 'transaction');
+  }
   notifyAnchorChanges(editor, step.change, step.indexedAfter, {
     replace: snapshot.reason === 'replace',
   });
@@ -16970,11 +17221,14 @@ export const replaceTransformedSnapshot = (
       // writes at the same time can still name them, so a replacement's
       // records add to the editor's.
       if (hasValueRecords(snapshotInput)) {
+        const allOps = recordOpsBetween(
+          getEditorDocumentRecords(editor),
+          getValueRecords(snapshotInput)
+        );
         const records = recordPutsOf(
-          recordOpsBetween(
-            getEditorDocumentRecords(editor),
-            getValueRecords(snapshotInput)
-          )
+          allOps.has(V4_REGISTER_SET)
+            ? filterRecordOps(allOps, (set) => set !== V4_REGISTER_SET)
+            : allOps
         );
 
         if (records.size > 0) {
@@ -16982,6 +17236,20 @@ export const replaceTransformedSnapshot = (
             editor,
             createInternalDocumentChange(new Map(), { records })
           );
+        }
+
+        if (allOps.has(V4_REGISTER_SET)) {
+          const registerSteps = extractRegisterSteps(
+            getActiveDocumentChangeBuilder(editor).value,
+            snapshotInput
+          );
+
+          if (registerSteps.length > 0) {
+            applyRecordChange(
+              editor,
+              createRegisterDocumentChange(registerSteps)
+            );
+          }
         }
       }
 
@@ -17354,6 +17622,7 @@ const adoptEditorSchemaDocument = (
   if (!preserveState) {
     if (document.meta === undefined) DOCUMENT_STATE.delete(editor);
     else DOCUMENT_STATE.set(editor, document.meta);
+    syncSharedStateFieldsFromRecords(editor, records, 'adopt');
   }
   const owner = getEditorRuntimeOwner(editor);
 

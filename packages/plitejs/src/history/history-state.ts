@@ -25,6 +25,7 @@ import {
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys,
   hasV4StepsSource,
+  isInternalRecordsOnlyChange,
   isInternalTextOnlyDocumentChange,
   transformInternalDocumentChange,
   valueRoot,
@@ -679,7 +680,9 @@ const mapHead = <V extends Value>(
       continue;
     }
 
-    mappedDocument = true;
+    if (!isInternalRecordsOnlyChange(mapping.change)) {
+      mappedDocument = true;
+    }
 
     const crossed = mapping.crossing
       ? crossOrDrop(

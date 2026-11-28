@@ -34,6 +34,7 @@ import {
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRecords,
+  invertDocumentChangeWithMint,
   getInternalDocumentRootChange,
   valueRootIndex,
   valueRootNodes,
@@ -1533,8 +1534,10 @@ export const createEditorCommit = <V extends Value>(
     enumerable: true,
     get: () =>
       (inverseChanges ??= bindInverseNodeKeys(
-        body.changes.invert(beforeValue as JsonEditorValue),
-        beforeValue as JsonEditorValue,
+        invertDocumentChangeWithMint(body.changes, beforeValue, () =>
+          getCompiledEditorSchema(editor).elementIdMint.next()
+        ),
+        beforeValue,
         editor,
         beforeIndexAt
       )),

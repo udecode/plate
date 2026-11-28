@@ -36,6 +36,7 @@ import {
   V4_REGISTER_SET,
   type V4Place,
   type V4PropDelta,
+  type V4RegisterStep,
   type V4Step,
 } from './types';
 
@@ -633,10 +634,10 @@ const shiftTopLevelSteps = (
   });
 };
 
-const extractRegisterSteps = (
+export const extractRegisterSteps = (
   before: JsonEditorValue,
   after: JsonEditorValue
-): V4Step[] => {
+): readonly V4RegisterStep[] => {
   if (!hasValueRecords(after)) return [];
 
   const beforeStore = getValueRecords(before);
@@ -646,7 +647,7 @@ const extractRegisterSteps = (
 
   if (beforeVer === afterVer) return [];
 
-  const steps: V4Step[] = [];
+  const steps: V4RegisterStep[] = [];
   const regKeys = new Set([
     ...recordSetIds(beforeVer),
     ...recordSetIds(afterVer),

@@ -66,6 +66,8 @@ export type V4Step =
       writeId: string;
     }>;
 
+export type V4RegisterStep = Extract<V4Step, { op: 'set_register' }>;
+
 export type DocumentChangeJson = Readonly<{
   records?: RecordOpsJson;
   steps?: readonly V4Step[];

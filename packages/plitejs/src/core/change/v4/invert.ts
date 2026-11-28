@@ -3,6 +3,7 @@ import {
   getRecordSetVersion,
   getValueRecords,
   readRecord,
+  type RecordStore,
 } from '../../record-store';
 import { DocumentIndex, rootIndexOf } from '../document-index';
 import { cloneJson, isRecord, jsonEqual, type JsonRecord } from '../json';
@@ -14,6 +15,7 @@ import {
   nodeProps,
 } from '../tokens';
 import {
+  applyV4RegisterSteps,
   applyV4StepToState,
   createMutableV4State,
   elementStreamLength,
@@ -27,6 +29,7 @@ import {
   invertPropDelta,
   isEmptyPropDelta,
   type V4Place,
+  type V4RegisterStep,
   type V4Step,
 } from './types';
 
@@ -388,28 +391,7 @@ const invertOneStep = (state: MutableV4State, step: V4Step): V4Step[] => {
     }
 
     case 'set_register': {
-      const current = readRecord(
-        getRecordSetVersion(state.records, step.set),
-        step.id
-      );
-      const prevEncoded =
-        isRecord(current) && typeof current.encoded === 'string'
-          ? current.encoded
-          : null;
-      const prevWriteId =
-        isRecord(current) && typeof current.writeId === 'string'
-          ? current.writeId
-          : `${step.writeId}:inv`;
-
-      return [
-        {
-          after: prevEncoded,
-          id: step.id,
-          op: 'set_register',
-          set: step.set,
-          writeId: prevWriteId,
-        },
-      ];
+      return [];
     }
   }
   return [];
@@ -746,26 +728,131 @@ const flattenInverses = (
   return result;
 };
 
+const readRegisterEntry = (
+  records: RecordStore,
+  set: string,
+  id: string
+): Readonly<{ encoded: string | null; writeId: string | null }> => {
+  const current = readRecord(getRecordSetVersion(records, set), id);
+
+  if (
+    isRecord(current) &&
+    typeof current.encoded === 'string' &&
+    typeof current.writeId === 'string'
+  ) {
+    return { encoded: current.encoded, writeId: current.writeId };
+  }
+
+  return { encoded: null, writeId: null };
+};
+
+const fallbackInverseWriteId = (
+  afterWriteId: string | null,
+  beforeWriteId: string | null,
+  stepWriteId: string
+): string => {
+  const base = `${afterWriteId ?? stepWriteId}:inv`;
+
+  if (base !== afterWriteId && base !== beforeWriteId) return base;
+
+  return `${base}:1`;
+};
+
+export const invertV4RegisterSteps = (
+  beforeRecords: RecordStore,
+  registerSteps: readonly V4RegisterStep[],
+  mintWriteId?: () => string
+): readonly V4RegisterStep[] => {
+  if (registerSteps.length === 0) return [];
+
+  const afterRecords = applyV4RegisterSteps(beforeRecords, registerSteps);
+  const seen = new Map<string, V4RegisterStep>();
+
+  for (const step of registerSteps) {
+    seen.set(`${step.set}\u0000${step.id}`, step);
+  }
+
+  const result: V4RegisterStep[] = [];
+
+  for (const step of seen.values()) {
+    const beforeEntry = readRegisterEntry(beforeRecords, step.set, step.id);
+    const afterEntry = readRegisterEntry(afterRecords, step.set, step.id);
+
+    if (
+      beforeEntry.encoded === afterEntry.encoded &&
+      beforeEntry.writeId === afterEntry.writeId
+    ) {
+      continue;
+    }
+
+    const writeId = mintWriteId
+      ? mintWriteId()
+      : fallbackInverseWriteId(
+          afterEntry.writeId,
+          beforeEntry.writeId,
+          step.writeId
+        );
+
+    result.push({
+      after: beforeEntry.encoded,
+      expectedWriteId: afterEntry.writeId,
+      id: step.id,
+      op: 'set_register',
+      set: step.set,
+      writeId,
+    });
+  }
+
+  return result;
+};
+
 export const invertV4Steps = (
   before: JsonEditorValue,
   steps: readonly V4Step[],
-  options?: Readonly<{ lookup?: ValueIdLookup }>
+  options?: Readonly<{
+    lookup?: ValueIdLookup;
+    mintWriteId?: () => string;
+  }>
 ): readonly V4Step[] => {
   if (steps.length === 0) return [];
 
-  const sparse = invertV4StepsSparsely(before, steps, options?.lookup);
+  const registerSteps: V4RegisterStep[] = [];
+  const docSteps: V4Step[] = [];
 
-  if (sparse !== null) return sparse;
+  for (const step of steps) {
+    if (step.op === 'set_register') registerSteps.push(step);
+    else docSteps.push(step);
+  }
+
+  const invertedRegisters = invertV4RegisterSteps(
+    getValueRecords(before),
+    registerSteps,
+    options?.mintWriteId
+  );
+
+  if (docSteps.length === 0) return invertedRegisters;
+
+  const sparse = invertV4StepsSparsely(before, docSteps, options?.lookup);
+
+  if (sparse !== null) {
+    return invertedRegisters.length > 0
+      ? [...sparse, ...invertedRegisters]
+      : sparse;
+  }
 
   const state = createMutableV4State(before);
   const perStepInverses: V4Step[][] = [];
 
-  for (const step of steps) {
+  for (const step of docSteps) {
     const inverse = invertOneStep(state, step);
 
     applyV4StepToState(state, step);
     perStepInverses.push(inverse);
   }
 
-  return flattenInverses(steps, perStepInverses);
+  const invertedDoc = flattenInverses(docSteps, perStepInverses);
+
+  return invertedRegisters.length > 0
+    ? [...invertedDoc, ...invertedRegisters]
+    : invertedDoc;
 };

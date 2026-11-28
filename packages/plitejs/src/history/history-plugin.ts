@@ -44,9 +44,12 @@ import {
 import {
   collapseDocumentElementPropertyWrites,
   createInternalDocumentChange,
+  filterDocumentChangeRegisterKeys,
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys,
   getInternalDocumentRootChange,
+  getV4RegisterSteps,
+  hasV4RegisterSteps,
   isInternalDocumentChangeNoop,
   valueRootIndex,
   withoutRetainedRecordSets,
@@ -648,7 +651,8 @@ const runHistoricUpdate = <V extends Value>(
   fn: () => void
 ) => {
   const stateOnly =
-    isRecordOnlyChange(batch.change) && batch.effects.length > 0;
+    isRecordOnlyChange(batch.change) &&
+    (batch.effects.length > 0 || hasV4RegisterSteps(batch.change));
   const preserveSelection =
     stateOnly || shouldPreserveHistoricDOMSelection(root, batch);
 
@@ -1190,16 +1194,32 @@ const createHistoryPlugin = <
     }
 
     const { recordSets } = getCompiledEditorSchema(editor);
+    const { stateFields } = getPluginRegistry(editor);
+    const keepSharedRegisterKey = (key: string) =>
+      stateFields.get(key)?.field.history !== 'skip';
     const kept = (change: DocumentChange) =>
-      withoutRetainedRecordSets(change, recordSets);
+      filterDocumentChangeRegisterKeys(
+        withoutRetainedRecordSets(change, recordSets),
+        keepSharedRegisterKey
+      );
     const changes = kept(commit.changes);
     const inverse = kept(commit.inverseChanges);
     const facts = getEditorCommitFacts(commit);
     const inverseFacts = (change: DocumentChange) =>
       change === inverse ? flipFacts(facts) : undefined;
+    const registerFieldEffects = new Set<EditorEffectType>();
+
+    for (const step of getV4RegisterSteps(changes)) {
+      const entry = stateFields.get(step.id);
+
+      if (entry?.field.collab === 'shared') {
+        registerFieldEffects.add(entry.field.effect);
+      }
+    }
 
     const effects = commit.effects.filter(
-      (effect) => effect.type.history !== 'skip'
+      (effect) =>
+        effect.type.history !== 'skip' && !registerFieldEffects.has(effect.type)
     );
     const action = commit.annotations[historyAction.key] as
       | HistoryAction
