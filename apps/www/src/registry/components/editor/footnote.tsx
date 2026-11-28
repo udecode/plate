@@ -70,7 +70,8 @@ const sameDefinitionState = (
   left: FootnoteDefinitionState | null,
   right: FootnoteDefinitionState
 ) =>
-  left?.duplicateReplacementRef === right.duplicateReplacementRef &&
+  left !== null &&
+  left.duplicateReplacementRef === right.duplicateReplacementRef &&
   left.isDuplicateDefinition === right.isDuplicateDefinition &&
   left.referenceCount === right.referenceCount;
 
@@ -86,7 +87,8 @@ const sameReferenceItems = (
   );
 
 const sameOptions = (left: FootnoteOptions | null, right: FootnoteOptions) =>
-  left?.nextRef === right.nextRef &&
+  left !== null &&
+  left.nextRef === right.nextRef &&
   left.footnotes.length === right.footnotes.length &&
   left.footnotes.every(
     (footnote, index) =>
