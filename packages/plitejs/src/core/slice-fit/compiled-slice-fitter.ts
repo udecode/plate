@@ -3836,9 +3836,8 @@ export const compileSliceFitter = <V extends Value>(
           ElementApi.isElement(inputSlice.content[0]) &&
           getElementType(targetParent) ===
             getElementType(inputSlice.content[0]) &&
-          ((start.offset === 0 && start.path.at(-1) === 0) ||
-            (end.offset === targetText.text.length &&
-              start.path.at(-1) === targetParent.children.length - 1))) ||
+          end.offset === targetText.text.length &&
+          start.path.at(-1) === targetParent.children.length - 1) ||
         (inputSlice.openStart > 0 &&
           inputSlice.openEnd > 0 &&
           !opensIntoInline(inputSlice) &&
@@ -4783,8 +4782,8 @@ export const compileSliceFitter = <V extends Value>(
                           state.family.priority < 0 ||
                             (inputSlice.openStart === 0 &&
                               inputSlice.openEnd === 0 &&
-                              state.family.maxOpenStart !==
-                                state.family.maxOpenEnd)
+                              (state.family.maxOpenStart === 0) !==
+                                (state.family.maxOpenEnd === 0))
                         )
                     );
 

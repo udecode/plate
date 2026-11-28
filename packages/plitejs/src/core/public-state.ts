@@ -7005,29 +7005,19 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     return fitted;
   };
 
-  if (internal?.childrenAt === undefined) {
-    const explicitNodeTarget = SelectionApi.isNode(options?.at)
+  const explicitNodeTarget =
+    internal?.childrenAt === undefined && SelectionApi.isNode(options?.at)
       ? options.at
       : null;
-    const implicitTarget =
-      options?.at === undefined
-        ? getTransactionView(editor).resolveTarget({})
-        : null;
-    const nodeTarget =
-      explicitNodeTarget ??
-      (SelectionApi.isNode(implicitTarget) ? implicitTarget : null);
 
-    if (nodeTarget) {
-      const root = getNodeSelectionRoot(
-        editor,
-        nodeTarget,
-        explicitNodeTarget ? 'target' : 'stored'
-      );
+  if (explicitNodeTarget) {
+    const root = getNodeSelectionRoot(editor, explicitNodeTarget, 'target');
 
-      return runWithMutationRoot(editor, root, () =>
-        runAtPlace(resolveSliceFitPlace(editor, nodeTarget, root, options))
-      );
-    }
+    return runWithMutationRoot(editor, root, () =>
+      runAtPlace(
+        resolveSliceFitPlace(editor, explicitNodeTarget, root, options)
+      )
+    );
   }
 
   return withSliceFitTarget(
