@@ -63,7 +63,12 @@ import {
 import { getReplaceableEmptyBlock, holdsNoContent } from '../is-empty-element';
 import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
-import { recordStoreFromJson, showValueRecords } from '../record-store';
+import {
+  getValueRecords,
+  recordStoreFromJson,
+  showValueRecords,
+  withValueRecords,
+} from '../record-store';
 import {
   bindCanonicalFitPreparation,
   bindCanonicalFitPreparations,
@@ -5395,13 +5400,17 @@ export const compileSliceFitter = <V extends Value>(
 
     if (records !== undefined) {
       snapshotEditorJsonValue(records, 'Editor schema document');
+
+      return Object.freeze(
+        showValueRecords({ ...owned }, getValueRecords(raw))
+      ) as unknown as EditorDocumentValue<V>;
     }
 
-    return (records === undefined
-      ? owned
-      : Object.freeze(
-          showValueRecords({ ...owned }, recordStoreFromJson(records))
-        )) as unknown as EditorDocumentValue<V>;
+    const store = getValueRecords(raw);
+
+    return (Object.keys(store).length > 0
+      ? withValueRecords(owned, store)
+      : owned) as unknown as EditorDocumentValue<V>;
   };
 
   const reuseCanonicalDocument = (
@@ -5525,11 +5534,14 @@ export const compileSliceFitter = <V extends Value>(
         )
       : undefined;
 
-    return {
-      ...document,
-      children,
-      ...(roots === undefined ? {} : { roots }),
-    };
+    return withValueRecords(
+      {
+        ...document,
+        children,
+        ...(roots === undefined ? {} : { roots }),
+      },
+      getValueRecords(document)
+    );
   };
 
   const fitDocumentInput = <TValue extends Value>(
