@@ -1347,7 +1347,8 @@ export const compileSliceFitter = <V extends Value>(
   const getSliceEdgeOpenDepth = (
     content: readonly Descendant[],
     edge: 'end' | 'start',
-    canOpenPreservedContext: (element: Element) => boolean = () => false
+    canOpenPreservedContext: (element: Element) => boolean = () => false,
+    preserveObjects = false
   ) => {
     let children = content;
     let depth = 0;
@@ -1361,7 +1362,8 @@ export const compileSliceFitter = <V extends Value>(
 
       if (
         behavior.void ||
-        (getElementSlicePolicy(node).preserveContext &&
+        (((preserveObjects && behavior.object) ||
+          getElementSlicePolicy(node).preserveContext) &&
           !canOpenPreservedContext(node))
       ) {
         break;
@@ -1814,13 +1816,25 @@ export const compileSliceFitter = <V extends Value>(
             canOpenInTargetContext) &&
           (canOpenAtRoot || canOpenInTargetContext);
         const maxOpenStart = canOpenContent
-          ? getSliceEdgeOpenDepth(content, 'start', (element) =>
-              targetTypes.has(getElementType(element))
+          ? Math.max(
+              baseOpenStart,
+              getSliceEdgeOpenDepth(
+                content,
+                'start',
+                (element) => targetTypes.has(getElementType(element)),
+                true
+              )
             )
           : baseOpenStart;
         const maxOpenEnd = canOpenContent
-          ? getSliceEdgeOpenDepth(content, 'end', (element) =>
-              targetTypes.has(getElementType(element))
+          ? Math.max(
+              baseOpenEnd,
+              getSliceEdgeOpenDepth(
+                content,
+                'end',
+                (element) => targetTypes.has(getElementType(element)),
+                true
+              )
             )
           : baseOpenEnd;
 
@@ -3348,10 +3362,32 @@ export const compileSliceFitter = <V extends Value>(
         | Readonly<{ from: number; length: number }>
         | null
         | undefined;
+      const canTrimClosedObjectStart =
+        collapsed &&
+        variant.openStart === 0 &&
+        inputSlice.openStart === 0 &&
+        ElementApi.isElement(variant.content[0]) &&
+        getElementBehavior(variant.content[0]).object &&
+        ElementApi.isElement(targetParent) &&
+        !getElementBehavior(targetParent).object &&
+        !getElementBehavior(targetParent).void &&
+        (getCompiledElement(targetParent)?.contentRoots.size ?? 0) === 0;
       const findStartBlock = () => {
         for (const boundary of boundaries) {
-          if (boundary.from >= exactFrom || boundary.to !== exactTo) continue;
+          const isCollapsedObjectBoundary =
+            canTrimClosedObjectStart && boundary.to === boundary.from;
+
+          if (
+            boundary.from >= exactFrom ||
+            (boundary.to !== exactTo && !isCollapsedObjectBoundary)
+          ) {
+            continue;
+          }
           const opened = document.tokens.slice(boundary.from, exactFrom).tokens;
+
+          if (isCollapsedObjectBoundary && opened.length !== output.length) {
+            continue;
+          }
 
           if (
             opened.length > 0 &&
@@ -3738,13 +3774,20 @@ export const compileSliceFitter = <V extends Value>(
     const sourceEdges = [inputSlice.content[0], inputSlice.content.at(-1)];
     const sourceSharesTargetContent =
       ElementApi.isElement(targetParent) &&
-      sourceEdges.some(
-        (edge) =>
-          ElementApi.isElement(edge) &&
-          (getElementType(edge) === getElementType(targetParent) ||
-            (NodeApi.string(edge).length > 0 &&
-              contextsShareContent(targetParent, edge)))
-      );
+      sourceEdges.some((edge, index) => {
+        if (!ElementApi.isElement(edge)) return false;
+        if (getElementType(edge) === getElementType(targetParent)) return true;
+
+        const edgeOpen =
+          index === 0 ? inputSlice.openStart : inputSlice.openEnd;
+
+        if (edgeOpen === 0 && getElementBehavior(edge).object) return false;
+
+        return (
+          NodeApi.string(edge).length > 0 &&
+          contextsShareContent(targetParent, edge)
+        );
+      });
     const hasContextualStructuralVariant = () =>
       getTargetVariantFamilies().some((family) => family.priority < 0);
     const preserveClosedInlineBoundary =
@@ -3774,6 +3817,20 @@ export const compileSliceFitter = <V extends Value>(
         (inputSlice.openStart === 1 &&
           inputSlice.openEnd === 1 &&
           start.path.length === 2) ||
+        (collapsed &&
+          inputSlice.openStart === 1 &&
+          inputSlice.openEnd > 0 &&
+          !opensIntoInline(inputSlice) &&
+          start.path.length === 2 &&
+          sameTextPath &&
+          NodeApi.isText(targetText) &&
+          ElementApi.isElement(targetParent) &&
+          ElementApi.isElement(inputSlice.content[0]) &&
+          getElementType(targetParent) ===
+            getElementType(inputSlice.content[0]) &&
+          ((start.offset === 0 && start.path.at(-1) === 0) ||
+            (end.offset === targetText.text.length &&
+              start.path.at(-1) === targetParent.children.length - 1))) ||
         (inputSlice.openStart > 0 &&
           inputSlice.openEnd > 0 &&
           !opensIntoInline(inputSlice) &&
@@ -4715,7 +4772,11 @@ export const compileSliceFitter = <V extends Value>(
                         createLocalTextCandidate(
                           variant.slice,
                           state.cost,
-                          state.family.priority < 0
+                          state.family.priority < 0 ||
+                            (inputSlice.openStart === 0 &&
+                              inputSlice.openEnd === 0 &&
+                              state.family.maxOpenStart !==
+                                state.family.maxOpenEnd)
                         )
                     );
 

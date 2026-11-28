@@ -5,6 +5,7 @@ import {
   definePlugin,
   type Editor,
   editorCommands,
+  editorReads,
   type EditorCoreStateView,
   type EditorUpdateTransaction,
   ElementApi,
@@ -52,7 +53,7 @@ const getDetailsOfTitle = (
   state: Pick<EditorCoreStateView, 'nodes'>,
   { path, type }: Readonly<{ path: Path; type: string }>
 ) => {
-  if (path.at(-1) !== 0) return undefined;
+  if (path.length < 2 || path.at(-1) !== 0) return undefined;
 
   const container = state.nodes.parent(path, { type });
   const title = container?.[0].children[0];
@@ -561,6 +562,28 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
     },
   }))
   .extend(({ editor, plugin, viewStoreOf }) => ({
+    readMiddleware: ({ around }) => [
+      around(editorReads.transfer.landing, ({ input, next, state }) => {
+        if (
+          input.edge === 'after' &&
+          input.intent === 'copy' &&
+          input.payload.kind === 'nodes' &&
+          input.payload.nodes.at(-1) === input.target[0]
+        ) {
+          const container = getDetailsOfTitle(state, {
+            path: input.target[1],
+            type: editor.plugin(plugin).schema.type,
+          });
+          const key = container && state.key(container[1]);
+
+          if (key && !viewStoreOf(state).get('openKeys').has(key)) {
+            return { edge: 'after' as const, key };
+          }
+        }
+
+        return next();
+      }),
+    ],
     commands: ({ around, handle }) => [
       ...[editorCommands.delete, editorCommands.deleteFragment].map((command) =>
         around(command, ({ state, next }) => {

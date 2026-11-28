@@ -1,4 +1,7 @@
-import { createEditorViewRuntime } from '../editor-runtime-view';
+import {
+  createEditorViewRuntime,
+  getViewPresentation,
+} from '../editor-runtime-view';
 import type {
   ContentSlice,
   Editor,
@@ -35,6 +38,8 @@ import type {
   SliceLandingInput,
   SliceLandingTarget,
 } from './slice-landing-types';
+import type { TransferEdge, TransferLandingInput } from './transfer-types';
+import type { ViewPresentation } from './view-presentation';
 
 export type PastePlan = Readonly<{
   copy: RenewedCopy | null;
@@ -61,6 +66,33 @@ export const readSliceLanding = <V extends Value>(
       ? editor
       : () =>
           createEditorViewRuntime(editor, root === undefined ? {} : { root })
+  );
+};
+
+export const readTransferLanding = <V extends Value>(
+  editor: Editor<V>,
+  input: TransferLandingInput,
+  edge: TransferEdge,
+  root?: string,
+  presentation?: ViewPresentation
+): TransferEdge => {
+  const editorPresentation = getViewPresentation(editor);
+  const activePresentation = presentation ?? editorPresentation;
+
+  return executeEditorRead(
+    editor,
+    editorReads.transfer.landing,
+    input,
+    () => edge,
+    root === editor.read.view.root() &&
+      activePresentation === editorPresentation
+      ? editor
+      : () =>
+          createEditorViewRuntime(
+            editor,
+            root === undefined ? {} : { root },
+            activePresentation
+          )
   );
 };
 

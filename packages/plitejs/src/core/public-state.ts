@@ -507,7 +507,7 @@ import {
   type RenewedContentSlice,
   renewContentSlice,
 } from './slice-identities';
-import { readSliceLanding } from './slice-landing';
+import { readSliceLanding, readTransferLanding } from './slice-landing';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
   advancePathStableSnapshotIndex,
@@ -9421,12 +9421,54 @@ export const getUpdateView = <
   let txRecord!: EditorUpdateTransaction<V, TPlugins>;
   const duplicateNodes = (
     entries: ReadonlyArray<NodeEntry<ElementOrTextIn<V>>>,
-    options: NodeDuplicateOptions = {}
+    options: NodeDuplicateOptions = {},
+    redirectLanding = false
   ) => {
     if (entries.length === 0) return;
 
+    const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
     const lastEntry = getDefined(entries.at(-1));
-    const insertPath = PathApi.next(lastEntry[1]);
+    let insertPath = PathApi.next(lastEntry[1]);
+    const lastKey =
+      redirectLanding && NodeApi.isElement(lastEntry[0])
+        ? state.key(lastEntry[1])
+        : null;
+
+    if (lastKey) {
+      const defaultEdge = { edge: 'after' as const, key: lastKey };
+      const placement = getTransactionSpecContext(editor)?.placement;
+      const resolvedEdge = readTransferLanding(
+        editor,
+        {
+          edge: 'after',
+          from: editor,
+          intent: 'copy',
+          payload: {
+            kind: 'nodes',
+            nodes: entries.map(([node]) => node),
+            parentKeys: entries.map(([, path]) =>
+              path.length > 1 ? state.key(PathApi.parent(path)) : null
+            ),
+          },
+          relation: 'document',
+          target: lastEntry as NodeEntry<Element>,
+        },
+        defaultEdge,
+        root === MAIN_ROOT_KEY ? undefined : root,
+        placement && placement !== 'base' ? placement : undefined
+      );
+      const landedTarget =
+        resolvedEdge.key !== lastKey || resolvedEdge.edge !== 'after'
+          ? state.nodes.get(resolvedEdge.key)
+          : undefined;
+
+      if (landedTarget) {
+        insertPath =
+          resolvedEdge.edge === 'before'
+            ? landedTarget[1]
+            : PathApi.next(landedTarget[1]);
+      }
+    }
     const roots: Record<string, readonly Descendant[]> = {};
     const visited = new Set<string>();
     const document = getActiveDocumentChangeBuilder(editor)
@@ -9435,21 +9477,20 @@ export const getUpdateView = <
       for (const node of nodes) {
         if (!NodeApi.isElement(node)) continue;
 
-        for (const { root } of getEditorSchema(editor).getElementOwnedRoots(
-          node
-        )) {
-          if (visited.has(root)) continue;
-          const children = document.roots?.[root];
+        for (const { root: ownedRoot } of getEditorSchema(
+          editor
+        ).getElementOwnedRoots(node)) {
+          if (visited.has(ownedRoot)) continue;
+          const children = document.roots?.[ownedRoot];
 
           if (!children) continue;
-          visited.add(root);
-          roots[root] = children;
+          visited.add(ownedRoot);
+          roots[ownedRoot] = children;
           collect(children);
         }
         collect(node.children);
       }
     };
-    const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
     const schema = getEditorSchema(editor);
     const source = entries.map(([node, path]) =>
       schema.carryNodeAt(node, path, root)
@@ -9615,7 +9656,8 @@ export const getUpdateView = <
             hanging,
             select: innerSelect,
             voids,
-          }
+          },
+          explicitAt === undefined
         );
       },
       undefined
@@ -11352,11 +11394,15 @@ const assertTransactionSpecBase = (editor: Editor, spec: TransactionSpec) => {
 };
 
 /**
- * Publish the canonical representation of the active draft.
+ * Publish the canonical representation of the active draft, validating unless
+ * `options.validate` is `false`.
  *
  * @internal
  */
-export const finalizeTransactionRepresentation = (editor: Editor) => {
+export const finalizeTransactionRepresentation = (
+  editor: Editor,
+  options: Readonly<{ validate?: boolean }> = {}
+) => {
   const snapshot = getTransactionSnapshot(editor);
 
   if (!snapshot) {
@@ -11364,7 +11410,7 @@ export const finalizeTransactionRepresentation = (editor: Editor) => {
   }
 
   const step = profileCoreDuration('transaction-finalize-representation', () =>
-    snapshot.builder.finalize()
+    snapshot.builder.finalize(undefined, options)
   );
 
   if (step) {

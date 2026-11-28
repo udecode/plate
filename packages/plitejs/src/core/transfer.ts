@@ -918,6 +918,12 @@ const runTransfer = (
         }
         applyTransactionSpec(getEditorRuntimeOwner(editor), written.spec);
 
+        const landedNameBySource = new Map(
+          [...written.renewed.bySliceKey].map(([root, { landsAs }]) => [
+            root,
+            landsAs,
+          ])
+        );
         const expected: LandingExpectation = copy
           ? {
               aliased: aliasedRoots(written.renewed),
@@ -926,12 +932,7 @@ const runTransfer = (
               independent: relation === 'independent',
               kind: 'range-copy',
               landedKind,
-              landedNameBySource: new Map(
-                [...written.renewed.bySliceKey].map(([root, { landsAs }]) => [
-                  root,
-                  landsAs,
-                ])
-              ),
+              landedNameBySource,
               roots: written.renewed.slice.roots,
               sourceRoots: copied.roots,
             }
@@ -941,6 +942,7 @@ const runTransfer = (
                 carryMove({
                   followsDrop,
                   kind: landedKind,
+                  landedNameBySource,
                   moved: copied,
                   replaced:
                     written.written === plan.emptyBlockReplacement
@@ -976,11 +978,12 @@ const runTransfer = (
         const moved = collectMoved();
 
         removeSource();
-        // Canonicalize the source's leftovers as their own step. When one
-        // canonical step spans them and the landing, `reconcileChildrenStep` can
-        // diff everything between as one replace, and every landed position
-        // inside it then maps to the replace's ends.
-        finalizeTransactionRepresentation(getEditorRuntimeOwner(editor));
+        // Canonicalize the source's leftovers as their own step so
+        // `reconcileChildrenStep` does not diff them with the landing as one
+        // replace, while deferring validation until the moved owner lands.
+        finalizeTransactionRepresentation(getEditorRuntimeOwner(editor), {
+          validate: false,
+        });
 
         const point = drop.resolve();
         const pasted =

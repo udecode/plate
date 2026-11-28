@@ -4,6 +4,7 @@ import {
   above as editorAbove,
   isElementReadOnly as editorIsElementReadOnly,
   isInline as editorIsInline,
+  point as editorPoint,
 } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
 import { NodeApi } from '../interfaces/node';
@@ -22,13 +23,26 @@ export const elementReadOnly: EditorStaticApi['elementReadOnly'] = (
   });
 
 export const refusesReadOnlyWrite = (editor: AnyEditor, at: Point | Range) => {
-  const readOnly = elementReadOnly(editor, { at });
+  const readOnly = elementReadOnly(editor, { at, mode: 'highest' });
+
+  if (!readOnly) return false;
 
   if (RangeApi.isRange(at) && RangeApi.isExpanded(at)) {
-    return !!readOnly && editorIsInline(editor, readOnly[0]);
+    if (editorIsInline(editor, readOnly[0])) return true;
+
+    const [start, end] = RangeApi.edges(at);
+    const blockStart = editorPoint(editor, readOnly[1], { edge: 'start' });
+    const blockEnd = editorPoint(editor, readOnly[1], { edge: 'end' });
+
+    return !(
+      start.offset === blockStart.offset &&
+      PathApi.equals(start.path, blockStart.path) &&
+      end.offset === blockEnd.offset &&
+      PathApi.equals(end.path, blockEnd.path)
+    );
   }
 
-  return !!readOnly;
+  return true;
 };
 
 export const readOnlyInlineAt = (editor: AnyEditor, point: Point) => {

@@ -266,12 +266,56 @@ export const OverridePlugin = definePlugin('override', {}).extend(
 
           const block = state.nodes.block({ at: selection.focus });
 
+          const findAdjacentBlockVoid = (
+            startBlock: readonly [Element, Path],
+            direction: 'backward' | 'forward',
+            includeDirect: boolean
+          ) => {
+            let current = startBlock;
+            let checkedDirect = false;
+
+            while (true) {
+              if (state.schema.isIsolating(current[0])) return null;
+
+              const atEdge =
+                direction === 'forward'
+                  ? state.points.isEnd(selection.anchor, current[1])
+                  : state.points.isStart(selection.anchor, current[1]);
+
+              if (!atEdge) return null;
+
+              if (includeDirect || checkedDirect) {
+                const sibling =
+                  direction === 'forward'
+                    ? state.nodes.next({ at: current[1] })
+                    : state.nodes.previous({ at: current[1] });
+
+                if (sibling) {
+                  return selectAdjacentBlockVoid(sibling, current);
+                }
+              }
+
+              checkedDirect = true;
+
+              if (current[1].length <= 1) return null;
+
+              const parent = state.nodes.get(PathApi.parent(current[1]));
+
+              if (
+                !parent ||
+                !ElementApi.isElement(parent[0]) ||
+                state.schema.isIsolating(parent[0])
+              ) {
+                return null;
+              }
+
+              current = parent as readonly [Element, Path];
+            }
+          };
+
           if (input.direction === 'forward') {
-            if (block && state.points.isEnd(selection.anchor, block[1])) {
-              const transaction = selectAdjacentBlockVoid(
-                state.nodes.next({ at: block[1] }),
-                block
-              );
+            if (block) {
+              const transaction = findAdjacentBlockVoid(block, 'forward', true);
 
               if (transaction) return transaction;
             }
@@ -301,10 +345,9 @@ export const OverridePlugin = definePlugin('override', {}).extend(
                 });
               }
 
-              const selectAdjacent = selectAdjacentBlockVoid(previous, [
-                blockNode,
-                blockPath,
-              ]);
+              const selectAdjacent = state.schema.isIsolating(blockNode)
+                ? null
+                : selectAdjacentBlockVoid(previous, [blockNode, blockPath]);
 
               if (selectAdjacent) return selectAdjacent;
 
@@ -314,6 +357,14 @@ export const OverridePlugin = definePlugin('override', {}).extend(
               );
 
               if (ruleTransaction) return ruleTransaction;
+
+              const ancestorVoid = findAdjacentBlockVoid(
+                block,
+                'backward',
+                false
+              );
+
+              if (ancestorVoid) return ancestorVoid;
             }
 
             if (

@@ -1957,15 +1957,25 @@ export class ChangeDraft {
   }
 
   /**
-   * Construct and validate the canonical result of the accumulated draft.
-   * Primitive edits may temporarily produce non-canonical structure; only the
-   * transaction boundary is a publishable document.
+   * Construct and, unless `options.validate` is `false`, validate the canonical
+   * result of the accumulated draft. Primitive edits may temporarily produce
+   * non-canonical structure; only the transaction boundary is a publishable
+   * document.
    */
   finalize(
     preparation?: object,
-    options: Readonly<{ classify?: boolean; origin?: DraftStepOrigin }> = {}
+    options: Readonly<{
+      classify?: boolean;
+      origin?: DraftStepOrigin;
+      validate?: boolean;
+    }> = {}
   ): DocumentChangeStep | null {
-    if (this.canonical && !this.validationPending) return null;
+    if (
+      this.canonical &&
+      (options.validate === false || !this.validationPending)
+    ) {
+      return null;
+    }
 
     let constructionChange: DocumentChange | undefined;
     const drops: CarriedDrop[] = [];
@@ -2110,22 +2120,27 @@ export class ChangeDraft {
       });
     }
 
-    if (this.validateConstructed) {
-      const input = this.validationInput();
+    if (options.validate !== false) {
+      if (this.validateConstructed) {
+        const input = this.validationInput();
 
-      if (
-        this.validate &&
-        this.hasUnindexedRootChange(input.after, input.indexedAfter)
-      ) {
-        this.validate(this.current, accumulated);
+        if (
+          this.validate &&
+          this.hasUnindexedRootChange(input.after, input.indexedAfter)
+        ) {
+          this.validate(this.current, accumulated);
+        } else {
+          this.validateConstructed(input);
+        }
       } else {
-        this.validateConstructed(input);
+        this.validate?.(this.current, accumulated);
       }
+      this.standValidated();
+      this.validationPending = false;
     } else {
-      this.validate?.(this.current, accumulated);
+      this.canonical = true;
+      this.validationPending = true;
     }
-    this.standValidated();
-    this.validationPending = false;
 
     return step;
   }

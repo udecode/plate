@@ -25,7 +25,10 @@ import {
 } from '../core/writable-text';
 import { contentAfter } from '../editor/after';
 import { contentBefore } from '../editor/before';
-import { hasEdgeInReadOnlyInline } from '../editor/element-read-only';
+import {
+  hasEdgeInReadOnlyInline,
+  refusesReadOnlyWrite,
+} from '../editor/element-read-only';
 import { nodes as getNodes } from '../editor/nodes';
 import { readTextEdge } from '../editor/point';
 import { structuralPrevious } from '../editor/previous';
@@ -2420,7 +2423,10 @@ export const deleteText: TextMutationMethods['delete'] = (
     if (
       !options.voids &&
       !LocationApi.isPath(site.at) &&
-      hasEdgeInReadOnlyInline(editor, site.at)
+      (hasEdgeInReadOnlyInline(editor, site.at) ||
+        (RangeApi.isRange(site.at) &&
+          RangeApi.isExpanded(site.at) &&
+          refusesReadOnlyWrite(editor, site.at)))
     ) {
       return null;
     }

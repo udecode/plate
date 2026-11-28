@@ -328,6 +328,7 @@ export type MovedPayload = Readonly<{
   inherited: Readonly<Record<string, unknown>> | null;
   items: readonly PayloadItem[];
   kind: LandedKind;
+  landedNameBySource: ReadonlyMap<string, string>;
   sources: SourceByPayloadNode;
 }>;
 
@@ -403,17 +404,37 @@ const belowCarried = (
       };
 };
 
-const shellOf = (element: Element, skip: (key: string) => boolean) => {
+const shellOf = (
+  element: Element,
+  skip: (key: string) => boolean,
+  landedNameBySource?: ReadonlyMap<string, string>
+) => {
   const { children: _children, ...props } = element;
+  const { childRoots } = props as { childRoots?: Record<string, string> };
+  const normalized =
+    childRoots && landedNameBySource && landedNameBySource.size > 0
+      ? {
+          ...props,
+          childRoots: Object.fromEntries(
+            Object.entries(childRoots).map(([slot, name]) => [
+              slot,
+              landedNameBySource.get(name) ?? name,
+            ])
+          ),
+        }
+      : props;
 
   return canonicalJsonKey(
-    Object.fromEntries(Object.entries(props).filter(([key]) => !skip(key)))
+    Object.fromEntries(Object.entries(normalized).filter(([key]) => !skip(key)))
   );
 };
+
+const EMPTY_ROOT_NAMES: ReadonlyMap<string, string> = new Map();
 
 export const carryMove = ({
   followsDrop,
   kind,
+  landedNameBySource = EMPTY_ROOT_NAMES,
   moved,
   replaced,
   sources = new Map(),
@@ -421,6 +442,7 @@ export const carryMove = ({
 }: Readonly<{
   followsDrop: FollowsDrop;
   kind: LandedKind;
+  landedNameBySource?: ReadonlyMap<string, string>;
   moved: ContentSlice;
   replaced: Element | null;
   sources?: SourceByPayloadNode;
@@ -449,13 +471,23 @@ export const carryMove = ({
         : null,
     items: payloadItems(moved.content, new Set(movedChain.slice(0, uncarried))),
     kind,
+    landedNameBySource,
     sources,
   };
 };
 
 export const landsMoved = (
   landed: readonly Descendant[],
-  { carried, followsDrop, head, inherited, items, kind, sources }: MovedPayload,
+  {
+    carried,
+    followsDrop,
+    head,
+    inherited,
+    items,
+    kind,
+    landedNameBySource,
+    sources,
+  }: MovedPayload,
   dropped: DroppedKeys = noDroppedKeys
 ) => {
   const below = belowCarried(landed, kind, carried);
@@ -509,7 +541,8 @@ export const landsMoved = (
           (key) =>
             skip(key) ||
             expectedInherits(key) ||
-            (dropsHere.has(key) && !Object.hasOwn(item.element, key))
+            (dropsHere.has(key) && !Object.hasOwn(item.element, key)),
+          landedNameBySource
         )
       );
     })
