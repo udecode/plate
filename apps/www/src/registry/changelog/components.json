@@ -55,6 +55,41 @@
       "2026-11-17-cn-package",
       "2026-11-12-add-board"
     ],
+    "suggestion": [
+      "2026-11-28-code-block-suggesting",
+      "2026-11-27-suggestion-table-rows-columns",
+      "2026-11-26-suggestion-author-colors",
+      "2026-11-26-suggestion-colors",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-suggestion-whole-tables",
+      "2026-10-29-paged-suggestion-lines",
+      "2026-10-18-discussion-preview-block-reads",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-07-editor-user",
+      "2026-09-14-suggestion-author-colors",
+      "2026-09-14-suggestion-content-attributes",
+      "2026-09-13-suggestion-examples",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-02-comments-ownership",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-30-fix-annotation-hover-scroll",
+      "2026-08-17-flat-editor-registry",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
+    "code-block-codemirror": [
+      "2026-11-28-code-block-suggesting",
+      "2026-11-24-editor-primary-color",
+      "2026-11-24-install-plate-ui-color",
+      "2026-11-20-codemirror-code-keys",
+      "2026-10-16-code-block-diagrams",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-11-codemirror-selection",
+      "2026-09-08-codemirror-adapter",
+      "2026-09-04-code-block-editing-and-syntax",
+      "2026-09-03-huge-code-block-demo"
+    ],
     "code-block": [
       "2026-11-28-code-block-webkit-word-selection",
       "2026-11-20-code-syntax-style",
@@ -853,28 +888,6 @@
       "2026-08-16-direct-react-component-families",
       "2026-07-23-rich-media-caption-children"
     ],
-    "suggestion": [
-      "2026-11-27-suggestion-table-rows-columns",
-      "2026-11-26-suggestion-author-colors",
-      "2026-11-26-suggestion-colors",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-suggestion-whole-tables",
-      "2026-10-29-paged-suggestion-lines",
-      "2026-10-18-discussion-preview-block-reads",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-07-editor-user",
-      "2026-09-14-suggestion-author-colors",
-      "2026-09-14-suggestion-content-attributes",
-      "2026-09-13-suggestion-examples",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-02-comments-ownership",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-30-fix-annotation-hover-scroll",
-      "2026-08-17-flat-editor-registry",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
     "floating-toolbar": [
       "2026-11-27-use-no-scrollbar",
       "2026-11-26-keyboard-bar-keeps-caret-above",
@@ -999,17 +1012,6 @@
       "2026-06-15-editor-fix-preserved-space-wrapping",
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
-    ],
-    "code-block-codemirror": [
-      "2026-11-24-editor-primary-color",
-      "2026-11-24-install-plate-ui-color",
-      "2026-11-20-codemirror-code-keys",
-      "2026-10-16-code-block-diagrams",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-11-codemirror-selection",
-      "2026-09-08-codemirror-adapter",
-      "2026-09-04-code-block-editing-and-syntax",
-      "2026-09-03-huge-code-block-demo"
     ],
     "media": [
       "2026-11-24-media-paste-embed",

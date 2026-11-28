@@ -86,7 +86,7 @@ Word 导出使用 `docx-export.tsx` 中自己的样式表为代码着色，它�
 
 ## 大型代码块
 
-`CodeBlockKit` 将代码保留在原生编辑器 DOM 中。当单个代码块的文本或语法标记使 DOM 变得昂贵时，请显式使用 `CodeBlockCodeMirrorElement`。Plate 仍然拥有规范文本、选择、历史记录、装饰和协作状态；CodeMirror 只拥有代码块挂载后的 DOM 和输入界面。
+`CodeBlockKit` 将代码保留在原生编辑器 DOM 中。当单个代码块的文本或语法标记使 DOM 变得昂贵时，请显式使用 `CodeBlockCodeMirrorElement`。Plate 仍然拥有规范文本、选择、历史记录、装饰和协作状态；CodeMirror 只拥有代码块挂载后的 DOM 和输入界面。当 view 处于建议模式或代码块持有待处理建议时，`CodeBlockCodeMirrorElement` 会切回原生渲染以显示并编辑建议标记，待建议决定后再切回 CodeMirror。
 
 ### 原生 Plate DOM
 

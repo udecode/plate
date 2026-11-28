@@ -1,5 +1,4 @@
 import {
-  authoredVeto,
   BaseParagraphPlugin,
   ContentSlice,
   DebugPlugin,
@@ -16,6 +15,7 @@ import {
   type NodeKey,
   type NodeSelection,
   PathApi,
+  PointApi,
   type BlockInsertOptions,
   type BlockUpsertOptions,
   PLUGINS,
@@ -80,6 +80,7 @@ type CodeHighlightCache = {
   attributes: ReadonlyMap<string, CodeBlockDecoration['attributes']>;
   decorations: readonly CodeBlockDecoration[];
   language: string | null;
+  leafLengths: readonly number[];
   lowlight: CodeHighlightLowlight;
   text: string;
 };
@@ -165,6 +166,53 @@ const offsetToLinePoint = (text: string, offset: number) => {
   return { line, offset: offset - lineStart };
 };
 
+const pointToCodeOffset = (
+  codeBlock: Element,
+  point: { offset: number; path: readonly number[] }
+) => {
+  const leafIndex = point.path.at(-1) ?? 0;
+  let offset = 0;
+
+  for (
+    let index = 0;
+    index < leafIndex && index < codeBlock.children.length;
+    index += 1
+  ) {
+    offset += NodeApi.string(codeBlock.children[index]).length;
+  }
+
+  return offset + point.offset;
+};
+
+const codeOffsetToPoint = (
+  codeBlock: Element,
+  blockPath: readonly number[],
+  targetOffset: number
+) => {
+  let remaining = targetOffset;
+
+  for (let index = 0; index < codeBlock.children.length; index += 1) {
+    const { length } = NodeApi.string(codeBlock.children[index]);
+
+    if (remaining <= length || index === codeBlock.children.length - 1) {
+      return {
+        offset: Math.max(0, Math.min(remaining, length)),
+        path: [...blockPath, index],
+      };
+    }
+
+    remaining -= length;
+  }
+
+  return { offset: 0, path: [...blockPath, 0] };
+};
+
+const getLeafLengths = (block: Element) =>
+  block.children.map((child) => NodeApi.string(child).length);
+
+const sameLeafLengths = (a: readonly number[], b: readonly number[]) =>
+  a.length === b.length && a.every((length, index) => length === b[index]);
+
 export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
   read: ({ plugin, state }) => {
     const entry = ({
@@ -197,23 +245,19 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
         return getIndentDepth(
           NodeApi.string(codeBlock[0]),
-          selection.anchor.offset
+          pointToCodeOffset(codeBlock[0], selection.anchor)
         );
       },
       isEmpty: () => {
         const codeBlock = entry()?.codeBlock[0];
 
-        if (!codeBlock) return false;
-        if (codeBlock.children.length === 0) return true;
-        if (codeBlock.children.length > 1) return false;
-
-        return !NodeApi.string(codeBlock.children[0]);
+        return !!codeBlock && NodeApi.string(codeBlock).length === 0;
       },
     };
   },
   schema: {
     element: {
-      content: schema.content.text({ default: 'text', min: 1, max: 1 }),
+      content: schema.content.text({ default: 'text', min: 1 }),
       ownsExit: true,
       properties: { language: property.string(), meta: property.string() },
       slice: { preserveContext: true },
@@ -324,11 +368,15 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           point: { path: readonly number[] }
         ) => PathApi.isAncestor(blockPath, point.path);
         const mapPointToParagraph = (
+          codeBlock: Element,
           blockPath: readonly number[],
           code: string,
           point: { offset: number; path: readonly number[]; root?: string }
         ) => {
-          const mapped = offsetToLinePoint(code, point.offset);
+          const mapped = offsetToLinePoint(
+            code,
+            pointToCodeOffset(codeBlock, point)
+          );
           const blockIndex = blockPath.at(-1);
 
           if (blockIndex === undefined) return point;
@@ -363,11 +411,13 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
               pointInBlock(codeBlockPath, selection.focus)
                 ? {
                     anchor: mapPointToParagraph(
+                      codeBlock,
                       codeBlockPath,
                       code,
                       selection.anchor
                     ),
                     focus: mapPointToParagraph(
+                      codeBlock,
                       codeBlockPath,
                       code,
                       selection.focus
@@ -507,14 +557,17 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           }
 
           const text = NodeApi.string(codeBlock[0]);
-          const textPath = codeBlockTextPath(codeBlock[1]);
           const value = '  ';
 
           if (!tx.selection.isExpanded()) {
-            const lineStart = getLineStartOffset(text, selection.anchor.offset);
-            const beforeCursor = text.slice(lineStart, selection.anchor.offset);
+            const anchorOffset = pointToCodeOffset(
+              codeBlock[0],
+              selection.anchor
+            );
+            const lineStart = getLineStartOffset(text, anchorOffset);
+            const beforeCursor = text.slice(lineStart, anchorOffset);
             const offset = NON_WHITESPACE.test(beforeCursor)
-              ? selection.anchor.offset
+              ? anchorOffset
               : lineStart;
 
             if (reverse) {
@@ -526,12 +579,25 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
               tx.text.delete({
                 at: {
-                  anchor: { offset: lineStart, path: textPath },
-                  focus: { offset: lineStart + removable, path: textPath },
+                  anchor: codeOffsetToPoint(
+                    codeBlock[0],
+                    codeBlock[1],
+                    lineStart
+                  ),
+                  focus: codeOffsetToPoint(
+                    codeBlock[0],
+                    codeBlock[1],
+                    lineStart + removable
+                  ),
                 },
               });
             } else {
-              tx.text.insert(value, { at: { offset, path: textPath } });
+              tx.text.insert(value, {
+                at:
+                  offset === anchorOffset
+                    ? selection.anchor
+                    : codeOffsetToPoint(codeBlock[0], codeBlock[1], offset),
+              });
             }
 
             return true;
@@ -540,11 +606,17 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           const [start, end] = RangeApi.edges(selection);
           const lineStarts = getSelectedLineStarts(
             text,
-            start.offset,
-            end.offset
+            pointToCodeOffset(codeBlock[0], start),
+            pointToCodeOffset(codeBlock[0], end)
           ).reverse();
 
           for (const lineStart of lineStarts) {
+            const currentEntry = tx.nodes.get(codeBlock[1]);
+            const currentBlock =
+              currentEntry && ElementApi.isElement(currentEntry[0])
+                ? currentEntry[0]
+                : codeBlock[0];
+
             if (reverse) {
               const removable = text
                 .slice(lineStart, lineStart + value.length)
@@ -554,13 +626,21 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
               tx.text.delete({
                 at: {
-                  anchor: { offset: lineStart, path: textPath },
-                  focus: { offset: lineStart + removable, path: textPath },
+                  anchor: codeOffsetToPoint(
+                    currentBlock,
+                    codeBlock[1],
+                    lineStart
+                  ),
+                  focus: codeOffsetToPoint(
+                    currentBlock,
+                    codeBlock[1],
+                    lineStart + removable
+                  ),
                 },
               });
             } else {
               tx.text.insert(value, {
-                at: { offset: lineStart, path: textPath },
+                at: codeOffsetToPoint(currentBlock, codeBlock[1], lineStart),
               });
             }
           }
@@ -756,12 +836,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
     };
   })
   .extend((context) => ({
-    contributions: [
-      authoredVeto.of((element) =>
-        element.type === context.schema.type ? 'code-block' : null
-      ),
-      inputRuleVeto.of(context.schema.type),
-    ],
+    contributions: [inputRuleVeto.of(context.schema.type)],
     dataTransferFormats: [
       {
         accept: ({ state }) => {
@@ -821,20 +896,82 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         return next();
       }),
       handle(editorCommands.delete, ({ input, state }) => {
-        if (input.direction !== 'backward') return false;
-
         const selection = state.selection();
 
         if (!selection || state.selection.isExpanded()) {
           return false;
         }
 
+        if (input.direction === 'forward') {
+          if (input.unit && input.unit !== 'character') return false;
+
+          const currentBlock = state.nodes.block({ at: selection.anchor });
+
+          if (!currentBlock || NodeApi.string(currentBlock[0]).length === 0) {
+            return false;
+          }
+
+          const blockEnd = state.points.end(currentBlock[1]);
+
+          if (!blockEnd || !PointApi.equals(selection.anchor, blockEnd)) {
+            return false;
+          }
+
+          const nextPath = PathApi.next(currentBlock[1]);
+          const nextEntry = state.nodes.get(nextPath);
+
+          if (
+            !nextEntry ||
+            !ElementApi.isElement(nextEntry[0]) ||
+            nextEntry[0].type !== context.schema.type
+          ) {
+            return false;
+          }
+
+          const nextCodeBlock = nextEntry[0];
+          const newlineIndex = NodeApi.string(nextCodeBlock).indexOf('\n');
+
+          if (newlineIndex === -1) return false;
+
+          if (newlineIndex === 0) {
+            return state.transaction((tx) => {
+              tx.text.delete({
+                at: {
+                  anchor: codeOffsetToPoint(nextCodeBlock, nextPath, 0),
+                  focus: codeOffsetToPoint(nextCodeBlock, nextPath, 1),
+                },
+              });
+            });
+          }
+
+          return state.transaction((tx) => {
+            tx.nodes.split({
+              always: true,
+              at: codeOffsetToPoint(nextCodeBlock, nextPath, newlineIndex),
+              match: (_node, path) => PathApi.equals(path, nextPath),
+            });
+            const secondEntry = tx.nodes.get(PathApi.next(nextPath));
+
+            if (secondEntry && ElementApi.isElement(secondEntry[0])) {
+              tx.text.delete({
+                at: {
+                  anchor: codeOffsetToPoint(secondEntry[0], secondEntry[1], 0),
+                  focus: codeOffsetToPoint(secondEntry[0], secondEntry[1], 1),
+                },
+              });
+            }
+            tx.nodes.merge({ at: nextPath });
+          });
+        }
+
+        if (input.direction !== 'backward') return false;
+
         const codeBlock = state.nodes.above({ type: context.plugin });
 
         if (
           !codeBlock ||
           codeBlock[0].type !== context.schema.type ||
-          selection.anchor.offset !== 0
+          pointToCodeOffset(codeBlock[0], selection.anchor) !== 0
         ) {
           return false;
         }
@@ -872,9 +1009,11 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
         const code = NodeApi.string(codeBlock[0]);
         const [start, end] = RangeApi.edges(selection);
-        const indentDepth = getIndentDepth(code, start.offset);
+        const startOffset = pointToCodeOffset(codeBlock[0], start);
+        const endOffset = pointToCodeOffset(codeBlock[0], end);
+        const indentDepth = getIndentDepth(code, startOffset);
         const suffixIndent =
-          code.slice(end.offset).match(/^[ \t]*/)?.[0].length ?? 0;
+          code.slice(endOffset).match(/^[ \t]*/)?.[0].length ?? 0;
         const indent = ' '.repeat(Math.max(0, indentDepth - suffixIndent));
 
         return state.transaction((tx) => {
@@ -1010,7 +1149,17 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
           const cachedPath = cached.decorations[0]?.range.anchor.path;
 
           if (cachedPath && !PathApi.isParent(blockPath, cachedPath)) {
-            const textPath = Object.freeze([...blockPath, 0]);
+            const leafPaths = new Map<number, readonly number[]>();
+            const resolveLeafPath = (leafIndex: number) => {
+              let path = leafPaths.get(leafIndex);
+
+              if (!path) {
+                path = Object.freeze([...blockPath, leafIndex]);
+                leafPaths.set(leafIndex, path);
+              }
+
+              return path;
+            };
 
             cached.decorations = Object.freeze(
               cached.decorations.map((decoration) =>
@@ -1019,11 +1168,15 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
                   range: Object.freeze({
                     anchor: Object.freeze({
                       ...decoration.range.anchor,
-                      path: textPath,
+                      path: resolveLeafPath(
+                        decoration.range.anchor.path.at(-1) ?? 0
+                      ),
                     }),
                     focus: Object.freeze({
                       ...decoration.range.focus,
-                      path: textPath,
+                      path: resolveLeafPath(
+                        decoration.range.focus.path.at(-1) ?? 0
+                      ),
                     }),
                   }),
                 })
@@ -1043,6 +1196,7 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
         }
 
         const text = NodeApi.string(block);
+        const leafLengths = getLeafLengths(block);
         // A key follows a block across the live editor's edits. Nodes of a
         // document view get new keys, and resolving one indexes the whole
         // document, so there only identity finds a block's highlighting.
@@ -1054,7 +1208,8 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
         if (
           previous?.language === language &&
           previous.text === text &&
-          previous.lowlight === lowlight
+          previous.lowlight === lowlight &&
+          sameLeafLengths(previous.leafLengths, leafLengths)
         ) {
           decorationsByBlock.set(block, previous);
 
@@ -1083,11 +1238,20 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
           string,
           CodeBlockDecoration['attributes']
         >();
+        const singleLeaf = leafLengths.length <= 1;
         const textPath = Object.freeze([...blockPath, 0]);
-        const previousTokens = previous?.decorations ?? [];
+        const leafPaths = singleLeaf
+          ? [textPath]
+          : leafLengths.map((_, index) => Object.freeze([...blockPath, index]));
+        const previousTokens =
+          singleLeaf && (previous?.leafLengths.length ?? 0) <= 1
+            ? (previous?.decorations ?? [])
+            : [];
         let retainedPrefix = 0;
-        let matchingPrefix = true;
+        let matchingPrefix = singleLeaf;
         let start = 0;
+        let leafIndex = 0;
+        let leafStart = 0;
 
         for (const token of parseNodes(highlighted.children)) {
           const end = start + token.text.length;
@@ -1102,28 +1266,66 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
                 Object.freeze({ className, 'data-code-block-syntax': '' });
               attributesByClass.set(className, attributes);
             }
-            const before = previousTokens[decorations.length];
+            if (singleLeaf) {
+              const before = previousTokens[decorations.length];
 
-            if (
-              matchingPrefix &&
-              before &&
-              before.attributes === attributes &&
-              before.range.anchor.offset === start &&
-              before.range.focus.offset === end &&
-              PathApi.equals(before.range.anchor.path, textPath)
-            ) {
-              decorations.push(before);
-              retainedPrefix += 1;
+              if (
+                matchingPrefix &&
+                before &&
+                before.attributes === attributes &&
+                before.range.anchor.offset === start &&
+                before.range.focus.offset === end &&
+                PathApi.equals(before.range.anchor.path, textPath)
+              ) {
+                decorations.push(before);
+                retainedPrefix += 1;
+              } else {
+                matchingPrefix = false;
+                decorations.push({
+                  attributes,
+                  key: '',
+                  range: {
+                    anchor: { offset: start, path: textPath },
+                    focus: { offset: end, path: textPath },
+                  },
+                });
+              }
             } else {
-              matchingPrefix = false;
-              decorations.push({
-                attributes,
-                key: '',
-                range: {
-                  anchor: { offset: start, path: textPath },
-                  focus: { offset: end, path: textPath },
-                },
-              });
+              while (
+                leafIndex < leafLengths.length - 1 &&
+                leafStart + leafLengths[leafIndex] <= start
+              ) {
+                leafStart += leafLengths[leafIndex];
+                leafIndex += 1;
+              }
+
+              let cursor = start;
+              let spanLeaf = leafIndex;
+              let spanLeafStart = leafStart;
+
+              while (cursor < end && spanLeaf < leafLengths.length) {
+                const spanLeafEnd = spanLeafStart + leafLengths[spanLeaf];
+                const sliceEnd = Math.min(end, spanLeafEnd);
+
+                if (sliceEnd > cursor) {
+                  const path = leafPaths[spanLeaf];
+
+                  decorations.push({
+                    attributes,
+                    key: '',
+                    range: {
+                      anchor: { offset: cursor - spanLeafStart, path },
+                      focus: { offset: sliceEnd - spanLeafStart, path },
+                    },
+                  });
+                }
+
+                cursor = sliceEnd;
+                if (cursor >= spanLeafEnd) {
+                  spanLeafStart = spanLeafEnd;
+                  spanLeaf += 1;
+                }
+              }
             }
           }
           start = end;
@@ -1133,23 +1335,26 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
         let beforeEnd = previousTokens.length;
         let afterEnd = decorations.length;
 
-        while (beforeEnd > retainedPrefix && afterEnd > retainedPrefix) {
-          const before = previousTokens[beforeEnd - 1];
-          const after = decorations[afterEnd - 1];
+        if (singleLeaf) {
+          while (beforeEnd > retainedPrefix && afterEnd > retainedPrefix) {
+            const before = previousTokens[beforeEnd - 1];
+            const after = decorations[afterEnd - 1];
 
-          if (
-            before.attributes !== after.attributes ||
-            before.range.anchor.offset + delta !== after.range.anchor.offset ||
-            before.range.focus.offset + delta !== after.range.focus.offset
-          ) {
-            break;
+            if (
+              before.attributes !== after.attributes ||
+              before.range.anchor.offset + delta !==
+                after.range.anchor.offset ||
+              before.range.focus.offset + delta !== after.range.focus.offset
+            ) {
+              break;
+            }
+            decorations[afterEnd - 1] =
+              delta === 0 && PathApi.equals(before.range.anchor.path, textPath)
+                ? before
+                : { ...after, key: before.key };
+            beforeEnd -= 1;
+            afterEnd -= 1;
           }
-          decorations[afterEnd - 1] =
-            delta === 0 && PathApi.equals(before.range.anchor.path, textPath)
-              ? before
-              : { ...after, key: before.key };
-          beforeEnd -= 1;
-          afterEnd -= 1;
         }
         for (let index = retainedPrefix; index < afterEnd; index++) {
           decorations[index] = {
@@ -1172,6 +1377,7 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
           attributes: attributesByClass,
           decorations,
           language,
+          leafLengths,
           lowlight,
           text,
         };

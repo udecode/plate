@@ -189,7 +189,7 @@ The first proposal makes a sentence bold and the second inserts a paragraph. Ope
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. List edits and cell content record as proposals, while code blocks refuse edits in suggesting mode.
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. List edits, code blocks, and cell content record as proposals.
 
 A `propose` view refuses a write it cannot record as a proposal and rolls it back, and both modes refuse some edits beside a paragraph a pending join shows away from where it is saved; see [Authored Changes](/docs/authored-changes#configure-a-view). Formatting in Editing mode over a pending format suggestion applies directly and leaves the suggestion pending, so rejecting it later keeps the direct edit. If a collaborator decides or withdraws that suggestion while the edit syncs, the direct edit can be lost.
 
@@ -206,7 +206,6 @@ Whole rows, whole columns, whole tables, and formatting on tables, rows, and cel
 - adding, deleting, wrapping, or unwrapping a block or outer table that holds a table
 - pasting a table into a cell, or pasting over a selection across cells
 - an undo or a redo that crosses another author's waiting row or column change, or that changes a table after another edit or decision while a pending mark waits or the replayed step held one
-- any edit inside a code block, or a row, column, or table deletion that reaches one
 
 ### Accepted, proposed, and markup
 

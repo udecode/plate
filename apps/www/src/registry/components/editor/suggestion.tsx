@@ -95,27 +95,12 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   );
 }
 
-const REFUSED = new Map([
-  [
-    'code-block',
-    "Suggesting can't change a code block yet, or a row, column or table that holds one. Switch to Editing to change them.",
-  ],
-]);
 const refusedPlaces = new Intl.ListFormat('en');
 
 function vetoMessage(reasons: readonly string[]) {
-  const places = reasons.filter((reason) => !REFUSED.has(reason));
-  const sentences =
-    places.length > 0
-      ? [
-          `Suggesting is off in ${refusedPlaces.format(places)} for now. Switch to Editing to change them.`,
-        ]
-      : [];
-
-  return [
-    ...sentences,
-    ...reasons.flatMap((reason) => REFUSED.get(reason) ?? []),
-  ].join(' ');
+  return reasons.length > 0
+    ? `Suggesting is off in ${refusedPlaces.format(reasons)} for now. Switch to Editing to change them.`
+    : 'Suggesting cannot record this change yet. Switch to Editing to make it.';
 }
 
 function SuggestionRefusals() {

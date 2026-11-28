@@ -49,7 +49,6 @@ export const assertExternalTextElement = (
     content.allowsUnknownElements ||
     content.allowedElementTypes.length !== 0 ||
     content.min !== 1 ||
-    content.max !== 1 ||
     facts.behavior.void ||
     facts.behavior.inline ||
     facts.behavior.atom ||
@@ -57,7 +56,7 @@ export const assertExternalTextElement = (
     !TextApi.isText(element.children[0])
   ) {
     throw new Error(
-      'externalText requires a nonvoid block whose schema permits exactly one Text. Render rich or partially marked children natively.'
+      'externalText requires a nonvoid text-only block with min 1 holding exactly one Text. Render rich or partially marked children natively.'
     );
   }
 };

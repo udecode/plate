@@ -113,7 +113,7 @@ editor.update.formatting.clear({
 | An inline void | A mention loses its text styles. An inline void that takes no text styles, such as a date, keeps what it stores. |
 | A block selection | Clears every selected block as if its whole text were selected. |
 | A caret | Removes the pending styles, so the next typed text is plain. The document does not change and no undo step is added. |
-| Suggesting mode | Records the removed styles as suggestions. A code block refuses changes while suggesting, so a clear whose selection reaches one is refused and changes nothing. |
+| Suggesting mode | Records the removed styles as suggestions. |
 
 One clear is one undo step, whatever it removes.
 

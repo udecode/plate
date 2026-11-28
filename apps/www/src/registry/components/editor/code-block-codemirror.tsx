@@ -26,7 +26,9 @@ import { EditorState } from '@codemirror/state';
 // oxlint-disable-next-line react-doctor/prefer-dynamic-import -- This opt-in component is the loading boundary; extensions must exist when its adapter mounts.
 import { EditorView, keymap, runScopeHandlers } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
+import { AuthoredPlugin } from 'platejs/authored';
 import { createCodeMirrorAdapter } from 'platejs/code-block/codemirror';
+import { useEditorSelector } from 'platejs/react';
 
 import {
   CodeBlockContainer,
@@ -143,6 +145,27 @@ export function CodeBlockCodeMirrorElement({
   showLanguageLabel = true,
   ...props
 }: CodeBlockElementProps) {
+  const authoredNative = useEditorSelector(
+    (current) => {
+      const authored = current.plugin(AuthoredPlugin);
+
+      if (!authored.installed) return false;
+
+      const view = authored.read.view();
+
+      if ('intent' in view && view.intent === 'propose') return true;
+      if ('preview' in view) return false;
+
+      const path = current.read.nodes.path(props.element);
+
+      return Boolean(
+        path && authored.read.changes({ at: path, limit: 1 }).items.length > 0
+      );
+    },
+    { dependsOn: 'authored' }
+  );
+  const useNative = props.element.children.length !== 1 || authoredNative;
+
   return (
     <CodeBlockContainer
       addon={addon}
@@ -150,11 +173,17 @@ export function CodeBlockCodeMirrorElement({
       languageOptions={codeMirrorLanguages}
       showLanguageLabel={showLanguageLabel}
     >
-      {props.slots.externalText({
-        adapter: codeMirrorAdapter,
-        ariaLabel: 'Code block',
-        config: { language: props.element.language },
-      })}
+      {useNative ? (
+        <pre className="overflow-x-auto p-8 pe-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
+          <code>{props.children}</code>
+        </pre>
+      ) : (
+        props.slots.externalText({
+          adapter: codeMirrorAdapter,
+          ariaLabel: 'Code block',
+          config: { language: props.element.language },
+        })
+      )}
     </CodeBlockContainer>
   );
 }

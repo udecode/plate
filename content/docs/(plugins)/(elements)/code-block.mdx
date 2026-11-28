@@ -95,7 +95,7 @@ Change those too when you change the light values.
 `CodeBlockCodeMirrorElement` explicitly when one code block can contain enough
 text or syntax tokens to make that DOM expensive. Plate still owns the
 canonical text, selection, history, decorations, and collaboration state;
-CodeMirror owns the block's mounted DOM, input surface, and incremental syntax parser.
+CodeMirror owns the block's mounted DOM, input surface, and incremental syntax parser. While the view is in Suggesting mode or the block holds pending suggestions, `CodeBlockCodeMirrorElement` renders natively so suggestion marks stay editable and visible, then returns to CodeMirror once those suggestions are decided.
 
 ### Native Plate DOM
 

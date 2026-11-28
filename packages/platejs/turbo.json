@@ -8496,6 +8496,7 @@
       "dependsOn": [
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:details",
         "source-hash:partition:markdown",
@@ -8505,6 +8506,7 @@
         "source-hash:partition:standard-code-block",
         "source-hash:partition:standard-link",
         "source-hash:partition:standard-list",
+        "source-hash:partition:table",
         "source-hash:partition:testing"
       ],
       "inputs": [

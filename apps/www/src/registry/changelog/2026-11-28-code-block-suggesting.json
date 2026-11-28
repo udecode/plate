@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-code-block-suggesting",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-code-block-suggesting.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Record code block edits in Suggesting mode and fall back CodeMirror blocks to native rendering while suggesting or holding pending suggestions.",
+  "targets": [
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-suggestion-record-code-block-edits-4264a439",
+      "kind": "fix",
+      "summary": "Record code block edits in Suggesting mode and fall back CodeMirror blocks to native rendering while suggesting or holding pending suggestions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion", "code-block-codemirror"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-code-block-suggesting",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

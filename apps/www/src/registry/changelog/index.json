@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-code-block-suggesting",
+      "href": "/registry/changelog/2026-11-28-code-block-suggesting.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Record code block edits in Suggesting mode and fall back CodeMirror blocks to native rendering while suggesting or holding pending suggestions.",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion", "code-block-codemirror"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-code-block-webkit-word-selection",
       "href": "/registry/changelog/2026-11-28-code-block-webkit-word-selection.json",
       "status": "draft",
