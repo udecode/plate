@@ -800,10 +800,13 @@ const isOverLetterBefore = (
   y: number
 ) => {
   if (offset === 0) return false;
+  const boundaries = getGraphemeBoundaryOffsets(textNode.textContent ?? '');
+  const start = boundaries.findLast((boundary) => boundary < offset) ?? 0;
+  const end = boundaries.find((boundary) => boundary >= offset) ?? offset;
   const letter = document.createRange();
 
-  letter.setStart(textNode, offset - 1);
-  letter.setEnd(textNode, offset);
+  letter.setStart(textNode, start);
+  letter.setEnd(textNode, end);
   return getUsableRangeRects(letter).some(
     (candidate) =>
       x >= candidate.left &&

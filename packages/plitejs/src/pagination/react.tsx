@@ -65,12 +65,14 @@ import {
   createContainerDecorationSlice,
   type DecorationSlice,
 } from '../react/decoration-source';
+import {
+  landInViewBlock,
+  landOnViewLine,
+} from '../react/editable/rendered-line-motion';
 import { useDescendantCaretOwnerPaths } from '../react/editable/root-selector-sources';
 import { toInternalRoot } from '../react/editable/runtime-editor-api';
 import {
   getPliteStringDirectPlacement,
-  landInViewBlock,
-  landOnViewLine,
   nearestViewText,
   placeOnViewText,
   type ViewLines,
