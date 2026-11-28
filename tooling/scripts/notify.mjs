@@ -90,6 +90,36 @@ const unlinkedPage = (text) =>
   /\b(?:demos?|docs pages?)\b/iu.test(text) && !text.includes(BETA);
 const PAGE_FIX = `link each page it names on ${BETA}, such as ${BETA}blocks/field-demo, and say clip when it means a clip, not a page`;
 
+const MARKDOWN_BETA_LINK =
+  /\[[^\]\n]+\]\(<?https:\/\/beta\.platejs\.org\/[^\s)>]+>?\)/gu;
+const FULL_URL = /https?:\/\/[^\s)>\]"'`]+/gu;
+const BARE_ROUTE =
+  /(?:^|[\s(`"'[])(?<route>\/(?:(?:cn\/)?docs|blocks|examples|editors)(?:\/[^\s`"'()[\],.;:!?]+)?)/gu;
+
+const bareRoutes = (text) => {
+  const stripped = text.replace(MARKDOWN_BETA_LINK, ' ').replace(FULL_URL, ' ');
+  return [...stripped.matchAll(BARE_ROUTE)].map(({ groups }) => groups.route);
+};
+
+const startsWithTry = (text) => /^try\b/iu.test(text.trim());
+
+const BEFORE_AFTER =
+  /(?:before[-_/\s]+(?:and[-_/\s]+|vs\.?[-_/\s]+)?after|\bstacked\b|\bside[-_\s]+by[-_\s]+side\b|\bpaired\b)/iu;
+
+const isExistingUiPath = (file) =>
+  isVisualPath(file) &&
+  !/^apps\/www\/src\/(?:app\/api|registry\/changelog)\//u.test(file) &&
+  !/\.json$/iu.test(file);
+
+const modifiedExistingUiPaths = (root, base) => {
+  const diff = gitAt(root, ['diff', '--name-only', '--diff-filter=M', base]);
+  if (diff.status !== 0 || !diff.stdout) return [];
+  return diff.stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((file) => file && isExistingUiPath(file));
+};
+
 const gitDirs = () => {
   const { companion } = readProject();
   return [
@@ -399,6 +429,13 @@ const send = async (args) => {
       `the text names a demo or docs page without its link; ${PAGE_FIX}, then send again.`
     );
   }
+  const routes = bareRoutes(text);
+  if (routes.length > 0) {
+    fail(
+      1,
+      `the text uses bare relative path(s) (${routes.join(', ')}) without a full ${BETA} link; write each as ${BETA}${routes[0].replace(/^\//u, '')}, then send again.`
+    );
+  }
   const { commits, linked, missing } = linkCommits(text);
   if (missing.length > 0) {
     fail(
@@ -593,7 +630,11 @@ const parseSteps = (text) => {
 
 // zbot posts a landing's Team line with the files that this folder's shots.md
 // names, and posts none when one lies outside the folder or it names more than four.
-const shotsProblem = (path, id, { bodies, root }) => {
+const shotsProblem = (
+  path,
+  id,
+  { bodies, demoLine, modifiedUi = [], root }
+) => {
   const session =
     sessionFromBodies(bodies) ||
     process.env.CLAUDE_CODE_HOST_SESSION_ID ||
@@ -606,10 +647,9 @@ const shotsProblem = (path, id, { bodies, root }) => {
   }
   const dir = join(homedir(), '.local/share/plate-bot/shots/landed', session);
   const file = join(dir, 'shots.md');
-  const shots = existsSync(file)
-    ? [...readFileSync(file, 'utf-8').matchAll(SHOT)].map(({ groups }) =>
-        groups.path.trim()
-      )
+  const shotsRaw = existsSync(file) ? readFileSync(file, 'utf-8') : '';
+  const shots = shotsRaw
+    ? [...shotsRaw.matchAll(SHOT)].map(({ groups }) => groups.path.trim())
     : [];
   const posts = (shot) =>
     MEDIA.test(shot) &&
@@ -635,6 +675,13 @@ const shotsProblem = (path, id, { bodies, root }) => {
   if (expired) {
     return `${demo}, but ${expired.path} was last modified at ${new Date(expired.mtimeMs).toISOString()}, which is more than 2 hours old. Record a fresh clip for this landing and overwrite ${file}, as AGENTS.md's Team section says.`;
   }
+  if (
+    modifiedUi.length > 0 &&
+    !BEFORE_AFTER.test(shotsRaw) &&
+    !BEFORE_AFTER.test(demoLine ?? '')
+  ) {
+    return `${demo}, and this landing modifies existing UI (${modifiedUi.slice(0, 3).join(', ')}). Record a stacked before-and-after clip or paired image via the clip skill and note before-and-after in ${file} (filename or caption) or the plan's Demo line.`;
+  }
   return null;
 };
 
@@ -648,6 +695,7 @@ const demoProblems = (bodies) => {
       `notify check cannot diff the plans against where HEAD meets ${UPSTREAM}`,
     ];
   }
+  const modifiedUi = modifiedExistingUiPaths(root, base);
   const committed = process.env[LAND_CHECK] === '1';
   const announced =
     bodies.some((body) => teamLines(body).length > 0) ||
@@ -690,7 +738,7 @@ const demoProblems = (bodies) => {
         return [];
       }
       return [
-        shotsProblem(path, step, { bodies, root }),
+        shotsProblem(path, step, { bodies, demoLine: demo, modifiedUi, root }),
         committed && !announced
           ? `step ${step} of ${path} is the plan's Demo step, and the land message has no Team line. Say what teammates can now try, then run land.mjs again with --message.`
           : null,
@@ -855,6 +903,23 @@ const check = (args) => {
     fail(
       1,
       `a Team line names a demo or docs page without its link:\n${unlinked.map(({ kind, text }) => `  ${kind}: ${text}`).join('\n')}\nIn it, ${PAGE_FIX}, then run land.mjs again with --message.`
+    );
+  }
+  const relativeRoutes = lines.flatMap(({ kind, text }) => {
+    const routes = bareRoutes(text);
+    return routes.length > 0 ? [`${kind}: ${text} (${routes.join(', ')})`] : [];
+  });
+  if (relativeRoutes.length > 0) {
+    fail(
+      1,
+      `a Team line uses a bare relative docs/demo path instead of a full ${BETA} link:\n${relativeRoutes.map((line) => `  ${line}`).join('\n')}\nLink each page as a full ${BETA}... URL, then run land.mjs again with --message.`
+    );
+  }
+  const tryLead = lines.filter(({ text }) => startsWithTry(text));
+  if (tryLead.length > 0) {
+    fail(
+      1,
+      `a Team line starts with "Try" without saying what changed first:\n${tryLead.map(({ kind, text }) => `  ${kind}: ${text}`).join('\n')}\nLead with what changed vs before, then say what teammates can try, then run land.mjs again with --message.`
     );
   }
   const missing = [
