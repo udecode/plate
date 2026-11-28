@@ -563,15 +563,16 @@ export const steps = [
   },
   {
     name: 'plite-browser',
-    holds: ['packages/*/dist', 'apps/plite/.next'],
+    cores: 4,
+    holds: ['packages/test/dist', 'apps/plite/.next'],
     private: true,
     run: 'pnpm --filter plite test:plite-browser:chromium',
     optIn: '--browser',
   },
   {
     name: 'www-tokens-browser',
-    holds: ['apps/www/.source'],
-    run: 'pnpm --filter www test:www-browser:chromium tests/browser/suggestion-colors.spec.ts tests/browser/diff-and-cursor-colors.spec.ts tests/browser/dark-mode-chrome-contrast.spec.ts',
+    holds: ['apps/www/.source-dev', 'apps/www/.next'],
+    run: 'PLATE_WWW_SKIP_REGISTRY_BUILD=1 pnpm --filter www test:www-browser:chromium tests/browser/suggestion-colors.spec.ts tests/browser/diff-and-cursor-colors.spec.ts tests/browser/dark-mode-chrome-contrast.spec.ts',
     optIn: '--browser',
     affected: touches(
       'apps/www/src/app/globals.css',
@@ -789,7 +790,12 @@ export const steps = [
   {
     name: 'public-types',
     cores: 2,
-    holds: ['packages/*/dist'],
+    holds: [
+      'packages/plitejs/dist',
+      'packages/platejs/dist',
+      'packages/cli/dist',
+      'packages/test/dist',
+    ],
     private: true,
     run: 'pnpm plite:public-types',
     affected: source,
@@ -799,7 +805,12 @@ export const steps = [
   {
     name: 'cli-test',
     cores: 2,
-    holds: ['packages/cli/tmp-*', 'packages/*/dist'],
+    holds: [
+      'packages/cli/tmp-*',
+      'packages/plitejs/dist',
+      'packages/platejs/dist',
+      'packages/cli/dist',
+    ],
     after: ['public-types'],
     private: true,
     run: `pnpm --filter @platejs/cli run test --timeout=${TEST_TIMEOUT_MS}`,
@@ -1060,7 +1071,11 @@ export const steps = [
   },
   {
     name: 'toolbar-variants',
-    holds: ['packages/*/dist'],
+    holds: [
+      'packages/plitejs/dist',
+      'packages/platejs/dist',
+      'packages/cli/dist',
+    ],
     after: ['public-types'],
     run: 'pnpm --filter www check:toolbar-variants',
     affected: source,
@@ -1076,10 +1091,11 @@ export const steps = [
     key: [],
   },
   {
-    // The manifest records the types platejs re-exports, so a package type
-    // change that lands without it leaves the www step red after landing.
+    // Builds and packs platejs to verify the exported API manifest and JSDoc
+    // baseline (p90 > 60s), so Local CI runs it rather than per-commit land.mjs.
     name: 'api-reference',
-    land: true,
+    cores: 2,
+    holds: ['packages/plitejs/dist', 'packages/platejs/dist'],
     run: 'pnpm --filter www api-reference:check',
     fix: 'pnpm --filter www api-reference',
     affected: (files) =>
@@ -1097,7 +1113,13 @@ export const steps = [
   {
     name: 'www',
     cores: 2,
-    holds: ['packages/*/dist', 'apps/www/.source'],
+    holds: [
+      'packages/plitejs/dist',
+      'packages/platejs/dist',
+      'packages/cli/dist',
+      'apps/www/.source',
+      'apps/www/.next',
+    ],
     run: 'pnpm turbo run build --filter=@platejs/cli && pnpm --filter www typecheck',
     affected: touches(
       'apps/www/',
