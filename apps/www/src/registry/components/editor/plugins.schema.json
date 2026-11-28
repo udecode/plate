@@ -797,6 +797,7 @@
           "selectable": true,
           "void": false,
           "voidKind": null,
+          "contentMarks": false,
           "ownsExit": true
         },
         "content": {
@@ -3860,10 +3861,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:c4d401b459fdd23a",
+  "fingerprint": "fnv1a64:b9a55ce4a3f68fea",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:c4d401b459fdd23a",
+    "fingerprint": "fnv1a64:b9a55ce4a3f68fea",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -7550,19 +7551,7 @@
       [
         "codeBlock",
         [
-          "text:authored@2b7320c75af17567",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:color@6093816ecb087592",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:underline@e3a9db819714dd91"
+          "text:authored@2b7320c75af17567"
         ]
       ],
       [

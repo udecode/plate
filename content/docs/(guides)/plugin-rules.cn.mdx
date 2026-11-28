@@ -267,6 +267,7 @@ const plugins = [
 **带自定义空块处理的代码块：**
 
 ```tsx
+import { NodeApi } from 'platejs';
 import { CodeBlockPlugin } from 'platejs/react';
 
 const plugins = [
@@ -274,7 +275,8 @@ const plugins = [
   CodeBlockPlugin.configure({
     rules: {
       delete: {
-        empty: ({ read }) => (read.isEmpty() ? 'reset' : undefined),
+        empty: ({ node }) =>
+          NodeApi.string(node).length === 0 ? 'reset' : undefined,
       },
     },
   }),
@@ -584,6 +586,7 @@ const plugins = [
 把 resolver 放在需要条件判断的具体行为上：
 
 ```tsx
+import { NodeApi } from 'platejs';
 import { CodeBlockPlugin } from 'platejs/react';
 
 const plugins = [
@@ -591,7 +594,8 @@ const plugins = [
   CodeBlockPlugin.configure({
     rules: {
       delete: {
-        empty: ({ read }) => (read.isEmpty() ? 'reset' : undefined),
+        empty: ({ node }) =>
+          NodeApi.string(node).length === 0 ? 'reset' : undefined,
       },
       merge: {
         removeEmpty: ({ node }) =>

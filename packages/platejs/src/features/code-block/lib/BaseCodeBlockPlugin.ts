@@ -214,50 +214,10 @@ const sameLeafLengths = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((length, index) => length === b[index]);
 
 export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
-  read: ({ plugin, state }) => {
-    const entry = ({
-      at,
-    }: {
-      at?: Location | null;
-    } = {}) => {
-      const selection = state.selection();
-      const target = at === undefined ? selection : at;
-
-      if (!target) return undefined;
-
-      const codeBlock = state.nodes.above({
-        at: target,
-        type: plugin,
-      });
-
-      if (!codeBlock) return undefined;
-
-      return { codeBlock };
-    };
-
-    return {
-      entry,
-      indentDepth: () => {
-        const selection = state.selection();
-        const codeBlock = entry()?.codeBlock;
-
-        if (!selection || !codeBlock) return 0;
-
-        return getIndentDepth(
-          NodeApi.string(codeBlock[0]),
-          pointToCodeOffset(codeBlock[0], selection.anchor)
-        );
-      },
-      isEmpty: () => {
-        const codeBlock = entry()?.codeBlock[0];
-
-        return !!codeBlock && NodeApi.string(codeBlock).length === 0;
-      },
-    };
-  },
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
+      contentMarks: false,
       ownsExit: true,
       properties: { language: property.string(), meta: property.string() },
       slice: { preserveContext: true },
@@ -656,11 +616,6 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
               options: BlockInsertOptions = {}
             ) => applyCodeBlockInsertion('insert', input, options)
           ),
-          resetBlock: () => {
-            if (!tx.nodes.block({ type: plugin })) return false;
-
-            return unwrap();
-          },
           selectAll: () => {
             const codeBlock = tx.nodes.above({
               type: plugin,
@@ -844,7 +799,10 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
           return (
             !!selection &&
-            state.nodes.some({ at: selection, type: context.schema.type })
+            !!state.nodes.block({
+              at: selection,
+              type: context.schema.type,
+            })
           );
         },
         decode: ({ data, snapshot }) => {
@@ -1227,7 +1185,7 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
           const languageName = language ?? 'unknown';
 
           warning =
-            language && lowlight.listLanguages().includes(language)
+            language && lowlight.registered(language)
               ? { error, kind: 'highlight', language: languageName }
               : { kind: 'missing-language', language: languageName };
           highlighted = { children: [], type: 'root' };

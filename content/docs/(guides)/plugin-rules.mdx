@@ -266,6 +266,7 @@ After (line break):
 **Code block with custom empty handling:**
 
 ```tsx
+import { NodeApi } from 'platejs';
 import { CodeBlockPlugin } from 'platejs/react';
 
 const plugins = [
@@ -273,7 +274,8 @@ const plugins = [
   CodeBlockPlugin.configure({
     rules: {
       delete: {
-        empty: ({ read }) => (read.isEmpty() ? 'reset' : undefined),
+        empty: ({ node }) =>
+          NodeApi.string(node).length === 0 ? 'reset' : undefined,
       },
     },
   }),
@@ -594,6 +596,7 @@ contributor decide it. Boolean `false` is a terminal value for boolean leaves.
 Use a resolver on the exact behavior that needs a condition:
 
 ```tsx
+import { NodeApi } from 'platejs';
 import { CodeBlockPlugin } from 'platejs/react';
 
 const plugins = [
@@ -601,7 +604,8 @@ const plugins = [
   CodeBlockPlugin.configure({
     rules: {
       delete: {
-        empty: ({ read }) => (read.isEmpty() ? 'reset' : undefined),
+        empty: ({ node }) =>
+          NodeApi.string(node).length === 0 ? 'reset' : undefined,
       },
       merge: {
         removeEmpty: ({ node }) =>
@@ -621,18 +625,19 @@ break, delete, merge, or normalize behavior.
 
 The `reset` rule action converts the current block to Plate's default block type. If a feature needs a different structural change, expose that behavior as a plugin transaction command and call it explicitly.
 
-`CodeBlockPlugin` ships `codeBlock.resetBlock()`, which unwraps the current code block:
+`CodeBlockPlugin` ships `codeBlock.toggle()`, which unwraps a selected code block into paragraphs:
 
 ```tsx
-import { CodeBlockPlugin } from 'platejs/react';
-import { createEditor } from 'platejs/react';
+import { CodeBlockPlugin, createEditor } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [CodeBlockPlugin],
 });
 
 editor.update((tx) => {
-  tx.codeBlock.resetBlock();
+  if (tx.nodes.block({ type: CodeBlockPlugin })) {
+    tx.codeBlock.toggle();
+  }
 });
 ```
 

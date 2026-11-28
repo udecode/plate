@@ -504,7 +504,6 @@ editor.update.codeBlock.insert();
 editor.update.codeBlock.toggle();
 editor.update.codeBlock.tab();
 editor.update.codeBlock.untab();
-editor.update.codeBlock.resetBlock();
 editor.update.codeBlock.selectAll();
 ```
 
@@ -517,21 +516,4 @@ editor.update.codeBlock.selectAll();
   selection holds the title and more blocks, and when the selection is in a
   named root that the editor or view running it does not edit.
 - `tab()` and `untab()` indent or outdent selected physical lines by two spaces.
-- `resetBlock()` unwraps the selected code block into paragraphs.
 - `selectAll()` selects the containing code block.
-
-## Queries
-
-Read code-block state through the installed descriptor:
-
-```tsx
-const codeBlock = editor.plugin(CodeBlockPlugin);
-
-codeBlock.read.entry();
-codeBlock.read.isEmpty();
-codeBlock.read.indentDepth();
-```
-
-- `entry({ at? })` returns `{ codeBlock: [element, path] }` for the containing code block, or `undefined`. It uses the current selection when `at` is omitted.
-- `isEmpty()` returns whether the containing code block has no text. It returns `false` outside a code block.
-- `indentDepth()` returns the number of leading whitespace characters on the anchor's physical line, or `0` outside a code block.

@@ -1,3 +1,4 @@
+import type { AuthoredMark } from '../authored';
 import {
   type Descendant,
   ElementApi,
@@ -8,6 +9,7 @@ import {
   type Point,
   RangeApi,
   SelectionApi,
+  type Text,
   TextApi,
 } from '../facade';
 import type { DocumentMigrationContext } from './documentMigrations';
@@ -62,6 +64,43 @@ export const migratePlateV54CodeBlocks = ({
       offset
     );
   };
+  const isAllowedCodeTextProperty = (key: string) =>
+    Boolean(
+      conversionTarget.schema.property({
+        key,
+        placement: 'text',
+        type: codeBlockType,
+      })
+    );
+  const stripDisallowedCodeText = (child: Text): Text => {
+    let changed = false;
+    const next: Record<string, unknown> = { text: child.text };
+
+    for (const [key, value] of Object.entries(child)) {
+      if (key === 'text') continue;
+      if (!isAllowedCodeTextProperty(key)) {
+        changed = true;
+        continue;
+      }
+      if (key === 'authored' && Array.isArray(value)) {
+        const filtered = (value as readonly AuthoredMark[]).filter(
+          (mark) =>
+            mark.kind !== 'format' || isAllowedCodeTextProperty(mark.key)
+        );
+
+        if (filtered.length !== value.length) {
+          changed = true;
+        }
+        if (filtered.length > 0) {
+          next[key] = filtered;
+        }
+        continue;
+      }
+      next[key] = value;
+    }
+
+    return changed ? (next as Text) : child;
+  };
   const migrateDescendant = (
     input: Descendant,
     location: string,
@@ -71,8 +110,20 @@ export const migratePlateV54CodeBlocks = ({
     if (TextApi.isText(input)) return input;
 
     if (input.type === codeBlockType) {
-      if (input.children.length === 1 && TextApi.isText(input.children[0])) {
-        return input;
+      if (
+        input.children.length > 0 &&
+        input.children.every((child) => TextApi.isText(child))
+      ) {
+        let changed = false;
+        const children = input.children.map((child) => {
+          const nextChild = stripDisallowedCodeText(child);
+
+          if (nextChild !== child) changed = true;
+
+          return nextChild;
+        });
+
+        return changed ? { ...input, children } : input;
       }
 
       if (!input.children.every((child) => ElementApi.isElement(child))) {

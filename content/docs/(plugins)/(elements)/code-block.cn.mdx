@@ -414,30 +414,10 @@ editor.update.codeBlock.insert();
 editor.update.codeBlock.toggle();
 editor.update.codeBlock.tab();
 editor.update.codeBlock.untab();
-editor.update.codeBlock.resetBlock();
 editor.update.codeBlock.selectAll();
 ```
 
 - `insert()` 原地转换选中的空块；对于非空或展开选区，在选区末尾块之后插入段落并转换。无选区时不执行操作。
 - `toggle()` 在普通块和代码块之间切换，并返回是否修改了文档。在 Details 标题上，它只转换标题，正文保留在代码块之后。选区包含标题和其他块，或者选区位于运行它的编辑器或视图不编辑的命名根中时，返回 `false`。
 - `tab()` 与 `untab()` 将选中的物理行缩进或减少两个空格。
-- `resetBlock()` 将代码块解包为段落。
 - `selectAll()` 选择当前代码块。
-
-## 查询
-
-### `isCodeBlockEmpty`
-
-<API name="isCodeBlockEmpty">
-<APIReturns type="boolean">
-  判断选区是否在空代码块中。
-</APIReturns>
-</API>
-
-### `isSelectionAtCodeBlockStart`
-
-<API name="isSelectionAtCodeBlockStart">
-<APIReturns type="boolean">
-  判断选区是否位于代码块的绝对开头。
-</APIReturns>
-</API>
