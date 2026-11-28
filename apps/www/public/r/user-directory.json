@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "user-directory",
+  "title": "User Directory",
+  "description": "Writable React context for resolving comment and suggestion author profiles.",
+  "files": [
+    {
+      "path": "src/registry/components/editor/user-directory.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nexport type UserProfile = Readonly<{\n  id: string;\n  name: string;\n  avatarUrl?: string;\n}>;\n\nexport type UserDirectory = Readonly<{\n  getUser: (id: string | null | undefined) => UserProfile | undefined;\n  getUsers: () => Readonly<Record<string, UserProfile>>;\n  mergeUsers: (next: Readonly<Record<string, UserProfile>>) => void;\n  writable: boolean;\n}>;\n\nconst EMPTY_USERS: Readonly<Record<string, UserProfile>> = Object.freeze({});\n\nconst FALLBACK_DIRECTORY: UserDirectory = Object.freeze({\n  getUser: () => undefined,\n  getUsers: () => EMPTY_USERS,\n  mergeUsers: () => {},\n  writable: false,\n});\n\nconst UserDirectoryContext =\n  React.createContext<UserDirectory>(FALLBACK_DIRECTORY);\n\nexport function UserDirectoryProvider({\n  children,\n  initialUsers,\n}: {\n  children: React.ReactNode;\n  initialUsers?: Readonly<Record<string, UserProfile>>;\n}) {\n  const [users, setUsers] = React.useState<\n    Readonly<Record<string, UserProfile>>\n  >(() => (initialUsers ? Object.freeze({ ...initialUsers }) : EMPTY_USERS));\n\n  const mergeUsers = React.useCallback(\n    (next: Readonly<Record<string, UserProfile>>) => {\n      if (Object.keys(next).length === 0) return;\n\n      setUsers((previous) => Object.freeze({ ...previous, ...next }));\n    },\n    []\n  );\n\n  const directory = React.useMemo<UserDirectory>(\n    () =>\n      Object.freeze({\n        getUser: (id) => (id ? users[id] : undefined),\n        getUsers: () => users,\n        mergeUsers,\n        writable: true,\n      }),\n    [mergeUsers, users]\n  );\n\n  return (\n    <UserDirectoryContext value={directory}>{children}</UserDirectoryContext>\n  );\n}\n\nexport const useUserDirectory = (): UserDirectory =>\n  React.useContext(UserDirectoryContext);\n\nexport const useUser = (\n  id: string | null | undefined\n): UserProfile | undefined => useUserDirectory().getUser(id);\n",
+      "type": "registry:component",
+      "target": "@components/editor/user-directory.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

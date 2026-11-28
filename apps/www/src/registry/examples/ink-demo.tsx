@@ -1,7 +1,7 @@
 'use client';
 
 import type { EditorValueInput, Value } from 'platejs';
-import type { CommentUser, SavedComments } from 'platejs/comments';
+import type { SavedComments } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
@@ -28,10 +28,14 @@ import { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-but
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
 import { ToolbarGroup } from '@/registry/components/editor/toolbar';
+import {
+  UserDirectoryProvider,
+  type UserProfile,
+} from '@/registry/components/editor/user-directory';
 
 const VALUE_KEY = 'ink-demo-value';
 
-const INK_USERS: Readonly<Record<string, CommentUser>> = {
+const INK_USERS: Readonly<Record<string, UserProfile>> = {
   alice: { id: 'alice', name: 'Alice' },
 };
 
@@ -159,7 +163,6 @@ function InkDemoEditor({ initialState }: { initialState: SavedInkDemoState }) {
       CommentsPlugin.configure({
         initialState: {
           initialComments: initialState.comments,
-          users: INK_USERS,
         },
       }),
       ...InkKit,
@@ -195,24 +198,26 @@ function InkDemoEditor({ initialState }: { initialState: SavedInkDemoState }) {
 
   return (
     <div className="flex h-full flex-col">
-      <EditorRoot editor={editor} onValueChange={persist}>
-        <FixedToolbar className="justify-start rounded-none">
-          <ToolbarGroup>
-            <DrawToolbarButton />
-            <DigitizeAllToolbarButton />
-            <InkSwitchToolbarButton />
-            <ModeToolbarButton />
-            <CommentToolbarButton />
-            <AllCommentsButton />
-          </ToolbarGroup>
-        </FixedToolbar>
-        <EditorFrame className="min-h-0 flex-1">
-          <EditorContainer>
-            <Editor />
-          </EditorContainer>
-        </EditorFrame>
-        <SettingsDialog />
-      </EditorRoot>
+      <UserDirectoryProvider initialUsers={INK_USERS}>
+        <EditorRoot editor={editor} onValueChange={persist}>
+          <FixedToolbar className="justify-start rounded-none">
+            <ToolbarGroup>
+              <DrawToolbarButton />
+              <DigitizeAllToolbarButton />
+              <InkSwitchToolbarButton />
+              <ModeToolbarButton />
+              <CommentToolbarButton />
+              <AllCommentsButton />
+            </ToolbarGroup>
+          </FixedToolbar>
+          <EditorFrame className="min-h-0 flex-1">
+            <EditorContainer>
+              <Editor />
+            </EditorContainer>
+          </EditorFrame>
+          <SettingsDialog />
+        </EditorRoot>
+      </UserDirectoryProvider>
     </div>
   );
 }

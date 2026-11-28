@@ -1,15 +1,8 @@
-export {
-  AuthoredPlaceError,
-  authored,
-  createAuthoredPlugin,
-  type AuthoredPlugin,
-  type AuthoredTestOptions,
-} from './authored';
+export { AuthoredPlaceError, authored, type AuthoredPlugin } from './authored';
 export { authoredRecords } from './facts/records';
 export type { AuthoredComparisonImportResult } from './comparison';
 export {
   projectAuthoredDocument,
-  projectAuthoredRange,
   type AuthoredFormatProjection,
 } from './format';
 export type { AuthoredMark, GaveWrite, SplitGave } from './tree/marks';

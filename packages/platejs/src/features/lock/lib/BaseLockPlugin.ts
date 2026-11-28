@@ -90,6 +90,7 @@ export type LockWriteExemptionInput = Readonly<{
       key: string;
       type: string;
       value?: unknown;
+      values?: readonly unknown[];
     }>
   >;
   /** Path of `element` inside `root`. */

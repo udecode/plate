@@ -21,6 +21,9 @@
   "include": ["../src/hyperscript/**/*", "../src/testing/**/*"],
   "references": [
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./core.json"
     }
   ]

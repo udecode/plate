@@ -18,6 +18,7 @@ import {
   UndoToolbarButton,
 } from '@/registry/components/editor/history-toolbar-button';
 import { Toolbar } from '@/registry/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
 import { commentUsers } from '@/registry/examples/values/comment-value';
 
 export default function CommentOverlapDemo() {
@@ -27,7 +28,6 @@ export default function CommentOverlapDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          users: commentUsers,
           initialComments,
         },
       }),
@@ -37,21 +37,23 @@ export default function CommentOverlapDemo() {
   });
 
   return (
-    <EditorRoot editor={editor}>
-      <EditorContainer className="h-[360px]">
-        <Toolbar className="border-b px-3 py-1">
-          <UndoToolbarButton aria-label="Undo" />
-          <RedoToolbarButton aria-label="Redo" />
-          <CommentToolbarButton />
-          <AllCommentsButton />
-        </Toolbar>
-        <Editor
-          aria-label="Overlapping comments document"
-          className="h-auto min-h-[280px] ps-[clamp(24px,8%,48px)] pe-13 pb-16"
-          variant="demo"
-        />
-      </EditorContainer>
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={commentUsers}>
+      <EditorRoot editor={editor}>
+        <EditorContainer className="h-[360px]">
+          <Toolbar className="border-b px-3 py-1">
+            <UndoToolbarButton aria-label="Undo" />
+            <RedoToolbarButton aria-label="Redo" />
+            <CommentToolbarButton />
+            <AllCommentsButton />
+          </Toolbar>
+          <Editor
+            aria-label="Overlapping comments document"
+            className="h-auto min-h-[280px] ps-[clamp(24px,8%,48px)] pe-13 pb-16"
+            variant="demo"
+          />
+        </EditorContainer>
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }
 

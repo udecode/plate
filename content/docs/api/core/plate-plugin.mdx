@@ -225,7 +225,7 @@ Properties used by Plate to inject props into node components. Queries and
 transforms are pure synchronous functions and cannot call React hooks. A text
 injection with a transform, or one keyed on `text`, runs on every text, so
 typing in any text re-renders it. Set `textScope: 'nodeKey'` to run the injection only on text whose node key
-value is not null or undefined, as `SuggestionPlugin` does. A plugin that
+value is not null or undefined, as `AuthoredPlugin` does. A plugin that
 extends such a plugin and paints other text sets `textScope: 'all'`.
 </APISubListItem>
 
@@ -388,9 +388,9 @@ root. Accepts `className`, `style`, and primitive `data-*` or `aria-*` values.
 Use this field for feature-owned content styling without a wrapper:
 
 ```tsx
-import { SuggestionPlugin } from 'platejs/suggestion/react';
+import { AuthoredReactPlugin } from 'platejs/authored/react';
 
-SuggestionPlugin.configure({
+AuthoredReactPlugin.configure({
   render: {
     contentAttributes: {
       className: '[&_[data-editor-authored-kind~=delete]]:line-through',

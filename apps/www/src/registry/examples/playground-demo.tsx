@@ -28,6 +28,26 @@ import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { createBrowserUploadKit } from '@/registry/components/editor/upload/browser';
 import { aiUser } from '@/registry/components/editor/use-chat';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
+
+const PLAYGROUND_USERS = {
+  [aiUser.id]: aiUser,
+  alice: {
+    id: 'alice',
+    name: 'Alice',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
+  },
+  bob: {
+    id: 'bob',
+    name: 'Bob',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
+  },
+  charlie: {
+    id: 'charlie',
+    name: 'Charlie',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
+  },
+};
 
 const diagramCodeBlockPlugin = createCodeBlockPlugin(
   withDiagrams(CodeBlockElement, {
@@ -145,28 +165,6 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
         plugin.name === CodeBlockPlugin.name ? diagramCodeBlockPlugin : plugin
       ),
       ...DiscussionKit,
-      CommentsPlugin.configure({
-        initialState: {
-          users: {
-            [aiUser.id]: aiUser,
-            alice: {
-              id: 'alice',
-              name: 'Alice',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
-            },
-            bob: {
-              id: 'bob',
-              name: 'Bob',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
-            },
-            charlie: {
-              id: 'charlie',
-              name: 'Charlie',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
-            },
-          },
-        },
-      }),
       ...ExcalidrawKit,
       ...(browserUploads?.plugins ?? []),
     ];
@@ -266,9 +264,11 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
   const { editor } = session;
 
   return (
-    <EditorRoot editor={editor} key={editor.id} authored={{ intent: 'edit' }}>
-      <PlaygroundDemoContent className={className} />
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={PLAYGROUND_USERS}>
+      <EditorRoot editor={editor} key={editor.id} authored={{ intent: 'edit' }}>
+        <PlaygroundDemoContent className={className} />
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }
 

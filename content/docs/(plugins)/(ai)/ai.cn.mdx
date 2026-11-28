@@ -127,18 +127,25 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `caret` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置 `initialComments: { ranges, threads }`，即应用表中的线程行和对应文档版本保存的范围。AI 评论是普通线程，`api.ranges()` 同样会保存它们的范围。请把复制的 `use-chat` 中的 `aiUser` 加入评论用户：
+`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `caret` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置 `initialComments: { ranges, threads }`，即应用表中的线程行和对应文档版本保存的范围。AI 评论是普通线程，`api.ranges()` 同样会保存它们的范围。请在 `EditorRoot` 上方的 `UserDirectoryProvider` 中加入复制的 `use-chat` 中的 `aiUser`：
 
 ```tsx
 import { CommentsPlugin } from 'platejs/comments/react';
+import { EditorRoot } from 'platejs/react';
+
 import { aiUser } from '@/components/editor/use-chat';
+import { UserDirectoryProvider } from '@/components/editor/user-directory';
 
 CommentsPlugin.configure({
   initialState: {
     initialComments: { ranges, threads },
-    users: { ...users, [aiUser.id]: aiUser },
   },
 });
+
+// 挂载在 EditorRoot 上方，让评论卡片解析 AI 资料：
+<UserDirectoryProvider initialUsers={{ ...users, [aiUser.id]: aiUser }}>
+  <EditorRoot editor={editor}>{/* ... */}</EditorRoot>
+</UserDirectoryProvider>;
 ```
 
 复制的 `AIChatTransportPlugin` 设置了 `authorId: aiUser.id`，因此 AI 评论和建议以 AI 作为作者。复制的 `use-chat` 通过带该作者的视图创建每条生成评论，`data.requestedBy` 为编辑器用户，`data.model` 为路由随该评论流式返回的模型。复制的评论卡片允许 `requestedBy` 中的用户解决、重新打开、编辑和删除 AI 的消息，就像线程创建者对自己的线程一样。

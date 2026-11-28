@@ -1199,6 +1199,19 @@ export const registryFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    files: [
+      {
+        path: 'components/editor/user-directory.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'user-directory',
+    type: 'registry:component',
+    description:
+      'Writable React context for resolving comment and suggestion author profiles.',
+    title: 'User Directory',
+  },
+  {
     dependencies: ['platejs'],
     files: [
       {

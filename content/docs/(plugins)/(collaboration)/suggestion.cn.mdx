@@ -45,14 +45,13 @@ npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.or
 
 <ComponentSource name="suggestion" />
 
-`SuggestionKit` 通过 `render.contentAttributes` 配置包中 `SuggestionPlugin` 的默认样式。包负责语义属性、活动卡片行为和 authored-change hooks。Core 将 kit 的类名应用到现有内容根节点，直接使用 `EditorContent` 时也适用。`DiscussionKit` 添加区块按钮、接受和拒绝卡片以及评论回复。
+`SuggestionKit` 通过 `render.contentAttributes` 配置 `AuthoredReactPlugin` 的默认样式。`platejs/authored` 提供语义属性，`platejs/authored/react` 提供活动卡片行为和 authored-change hooks。Core 将 kit 的类名应用到现有内容根节点，直接使用 `EditorContent` 时也适用。`DiscussionKit` 添加区块按钮、接受和拒绝卡片以及评论回复。
 
 ### 添加套件
 
 ```tsx title="components/editor/suggestion-editor.tsx" showLineNumbers
 'use client';
 
-import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
@@ -65,19 +64,11 @@ import {
 import { SuggestionKit } from '@/components/editor/suggestion';
 import { SuggestionToolbarButton } from '@/components/editor/suggestion-toolbar-button';
 import { Toolbar } from '@/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/components/editor/user-directory';
 
 export function SuggestionEditor() {
   const editor = useCreateEditor({
-    plugins: [
-      ...BasicBlocksKit,
-      ...SuggestionKit,
-      ...DiscussionKit,
-      CommentsPlugin.configure({
-        initialState: {
-          users: { alice: { id: 'alice', name: 'Alice' } },
-        },
-      }),
-    ],
+    plugins: [...BasicBlocksKit, ...SuggestionKit, ...DiscussionKit],
     initialValue: [
       { type: 'paragraph', children: [{ text: 'Edit this sentence.' }] },
     ],
@@ -85,23 +76,25 @@ export function SuggestionEditor() {
   });
 
   return (
-    <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
-      <EditorContainer>
-        <Toolbar>
-          <UndoToolbarButton />
-          <RedoToolbarButton />
-          <SuggestionToolbarButton />
-        </Toolbar>
-        <Editor />
-      </EditorContainer>
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={{ alice: { id: 'alice', name: 'Alice' } }}>
+      <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
+        <EditorContainer>
+          <Toolbar>
+            <UndoToolbarButton />
+            <RedoToolbarButton />
+            <SuggestionToolbarButton />
+          </Toolbar>
+          <Editor />
+        </EditorContainer>
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }
 ```
 
-将 `'alice'` 替换为已认证用户的 ID。编辑器的 `userId` 记录文档修改和评论的作者；`users` 提供姓名和可选头像。单人编辑器可以省略 `userId`，此时以本地用户 `'local'` 提出建议和评论。要以其他作者身份提出建议或评论，例如 AI，请通过 `createEditorView(editor, { authorId })` 创建的视图写入，见 [Authored Changes](/cn/docs/authored-changes#以其他作者身份写入)。
+将 `'alice'` 替换为已认证用户的 ID。编辑器的 `userId` 记录文档修改和评论的作者；`UserDirectoryProvider` 提供姓名和可选头像。单人编辑器可以省略 `userId`，此时以本地用户 `'local'` 提出建议和评论。要以其他作者身份提出建议或评论，例如 AI，请通过 `createEditorView(editor, { authorId })` 创建的视图写入，见 [Authored Changes](/cn/docs/authored-changes#以其他作者身份写入)。
 
-`SuggestionPlugin` 依赖 `AuthoredPlugin`，后者在每个写入 transaction 中读取一次写入视图的作者；视图没有作者时读取 editor 的 `userId`。不要在套件旁安装第二个 authored 描述符。
+`AuthoredReactPlugin` 扩展了 `AuthoredPlugin`，后者在每个写入 transaction 中读取一次写入视图的作者；视图没有作者时读取 editor 的 `userId`。不要在套件旁安装第二个 authored 描述符。
 
 </Steps>
 
@@ -157,27 +150,23 @@ authored.api.setView({ preview: 'proposed' });
 
 Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更；`read.view()` 返回该 preview，例如 `{ preview: 'proposed' }`，它没有 intent。切换到 preview 不会接受或拒绝 change。不同 view 的坐标可能不同，因此请通过产生 selection 的 view 读取 selection 并应用编辑。用 `setView` 设置一个 intent 即可离开 preview。
 
-在 preview 下，每个区块读取它所显示的存储内容上的卡片和 change，包括 preview 隐藏在其中的内容，以及 preview 去掉的外层元素上的卡片和 change，例如 preview 应用了待处理解除包裹的 quote。Preview 只按 node 的 key 或 path 读取它们，下面的 hook 就是这样读取的；传入 point 或 range 会抛出 `platejs/authored` 导出的 `AuthoredPlaceError`。被 preview 隐藏的顶层区块，其卡片不会显示在任何区块上；要查看并决定这些卡片，请切换到编辑模式。例外是被合并的行，它会显示其两半之间被隐藏区块的卡片。Preview 为补全文档而添加的顶层区块，例如某个建议删除了唯一区块时 preview 显示的空段落，不显示任何卡片。它在容器内添加的区块，例如某个建议删除了 quote 中唯一的段落时，可能显示它所替代的隐藏段落的卡片。在 preview 下，复制的 discussion 会把建议或 change 讨论的弹出层锚定在最后按下触发按钮的段落上，并且只在该段落显示该讨论时才打开它。
+在 preview 下，每个区块读取它所显示的存储内容上的卡片和 change，包括 preview 隐藏在其中的内容，以及 preview 去掉的外层元素上的卡片和 change，例如 preview 应用了待处理解除包裹的 quote。Preview 只按 node 的 key 或 path 读取它们，`useAuthoredGroups` 就是这样读取的；传入 point 或 range 会抛出 `platejs/authored` 导出的 `AuthoredPlaceError`。被 preview 隐藏的顶层区块，其卡片不会显示在任何区块上；要查看并决定这些卡片，请切换到编辑模式。例外是被合并的行，它会显示其两半之间被隐藏区块的卡片。Preview 为补全文档而添加的顶层区块，例如某个建议删除了唯一区块时 preview 显示的空段落，不显示任何卡片。它在容器内添加的区块，例如某个建议删除了 quote 中唯一的段落时，可能显示它所替代的隐藏段落的卡片。在 preview 下，复制的 discussion 会把建议或 change 讨论的弹出层锚定在最后按下触发按钮的段落上，并且只在该段落显示该讨论时才打开它。
 
 ## 读取 view 状态
 
-React 入口提供用于自定义控件和审阅 UI 的 hooks：
+`platejs/authored/react` 提供用于自定义控件和审阅 UI 的 hooks：
 
 ```tsx
 import {
-  useActiveSuggestion,
-  useSuggestionChanges,
-  useSuggestionGroups,
-} from 'platejs/suggestion/react';
+  useActiveAuthored,
+  useAuthoredGroups,
+} from 'platejs/authored/react';
 
-const changes = useSuggestionChanges(path);
-const cards = useSuggestionGroups(blockKey);
-const { activeId, setActiveId } = useActiveSuggestion();
+const cards = useAuthoredGroups(blockKey);
+const { activeId, setActiveId } = useActiveAuthored();
 ```
 
-`useSuggestionChanges(path)` 返回已挂载 view 中该 path 处区块的原生 `AuthoredChange` 记录。嵌套区块的 path 返回它自己的 change，以及 preview 去掉的外层容器的 change。它绝不返回 view 仍然显示的外层容器的待处理包裹或解除包裹，那由该容器自己的 path 返回。每个改变文档或其状态的 commit，以及指名该 path 顶层区块的审阅 delta，都会让它重新读取；这些记录未变化时，结果保持稳定。Change 的 `ranges` 在每个 view 上都仍是存储文档中的位置。
-
-`useSuggestionGroups(blockKey)` 以 `read.groups` 摘要的形式，返回该 key 对应区块的审阅卡片。嵌套区块的 key 读取该区块自己的卡片。调用它的组件重新渲染时，以及审阅 delta 指名该区块时，它会重新读取：某个 change 进入或离开了该区块，或它的某个 change 移到了另一张卡片。delta 只指名顶层区块，因此对嵌套区块的 key，它只在该组件重新渲染时重新读取。同一张卡片在其他区块中的编辑两者都不会引发，因此摘要中的 `changeCount` 或 `revision` 可能滞后；控件需要当前摘要时，请读取 `editor.plugin(AuthoredPlugin).read.groupOf(card.id)`。用 `read.changes({ group: card.id })` 逐页读取卡片中的 change，或用 `read.groupDetails(card.id, { limit })` 读取审阅卡片显示的 change 及其 part。
+`useAuthoredGroups(blockKey)` 以 `read.groups` 摘要的形式，返回该 key 对应区块的审阅卡片。嵌套区块的 key 读取该区块自己的卡片。调用它的组件重新渲染时，以及审阅 delta 指名该区块或其当前任一卡片时，它会重新读取。delta 只指名顶层区块，因此对嵌套区块的 key，它只在该组件重新渲染或当前卡片变化时重新读取。控件需要某张卡片 ID 的最新摘要时，请读取 `editor.plugin(AuthoredPlugin).read.groupOf(card.id)`。用 `read.changes({ group: card.id })` 逐页读取卡片中的 change，或用 `read.groupDetails(card.id, { limit })` 读取审阅卡片显示的 change 及其 part。
 
 点击带标记的元素会在当前 view 中激活其 `data-editor-authored-groups` 属性列出的第一张卡片。点击未标记的编辑器内容会清除活动项。在 Safari 中使用 WeType 等输入法时，轻点不会产生自己的 click，因此由轻点的按下来激活或清除。拖动时，一旦指针下的卡片与拖动起点处的不同，或指针离开编辑器，就会清除活动卡片。卸载 view、把它切换到其他 intent 或 preview，或决定该卡片时，也会清除失效的活动状态。自定义卡片或控件可调用 `setActiveId` 直接激活卡片。
 
@@ -304,15 +293,14 @@ const savedRanges = editor.plugin(CommentsPlugin).api.ranges();
 
 ## Headless 用法
 
-使用 `BaseSuggestionPlugin` 可在不安装 React、Comments 或复制 UI 的情况下获得语义 decoration。通过它安装的 `AuthoredPlugin` 设置建议模式：
+使用 `AuthoredPlugin` 可在不安装 React、Comments 或复制 UI 的情况下获得语义 decoration，并通过其 API 设置建议模式：
 
 ```tsx title="suggestion-editor.ts" showLineNumbers
 import { BaseParagraphPlugin, createEditor } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
-import { BaseSuggestionPlugin } from 'platejs/suggestion';
 
 const editor = createEditor({
-  plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
+  plugins: [BaseParagraphPlugin, AuthoredPlugin],
   initialValue: [
     { type: 'paragraph', children: [{ text: 'Edit this sentence.' }] },
   ],
@@ -322,7 +310,7 @@ const editor = createEditor({
 editor.plugin(AuthoredPlugin).api.setView({ intent: 'propose' });
 ```
 
-带标记的文本和元素提供 `data-editor-authored-change`、`data-editor-authored-kind`、`data-editor-authored-author`、`data-editor-authored-groups` 和 `data-editor-authored-color`。除 `color` 外，每个属性都是以空格分隔的列表；`color` 是该元素所绘制修改的作者的调色板槽位，因此每位作者无论修改在哪张卡片上都只用一种颜色，取值 0 到 6。待处理删除的 `kind` 包含 `delete`。通过 plugin 的 `render.contentAttributes` 为这些属性配置样式。静态 preset 可以为 `BaseSuggestionPlugin` 配置服务端安全的属性对象；`SuggestionKit` 提供交互编辑器的默认样式。
+带标记的文本和元素提供 `data-editor-authored-change`、`data-editor-authored-kind`、`data-editor-authored-author`、`data-editor-authored-groups` 和 `data-editor-authored-color`。除 `color` 外，每个属性都是以空格分隔的列表；`color` 是该元素所绘制修改的作者的调色板槽位，因此每位作者无论修改在哪张卡片上都只用一种颜色，取值 0 到 6。待处理删除的 `kind` 包含 `delete`。通过 plugin 的 `render.contentAttributes` 为这些属性配置样式。静态 preset 可以为 `AuthoredPlugin` 配置服务端安全的属性对象；`SuggestionKit` 提供交互编辑器的默认样式。
 
 ## Discussion 审阅
 
@@ -350,22 +338,21 @@ if (result.status === 'applied') {
 
 ## API 参考
 
-### `BaseSuggestionPlugin`
+### `AuthoredPlugin`
 
-从 `platejs/suggestion` 导入。它提供无 CSS 的语义 decoration，并依赖 `AuthoredPlugin`，后者管理 change record、身份和 view 的 intent。
+从 `platejs/authored` 导入。它管理 change record、身份、view 的 intent，以及无 CSS 的语义 `data-editor-authored-*` 属性。`platejs/authored` 还导出用于作者颜色槽位的 `suggestionColorOf` 和 `AUTHORED_COLOR_COUNT`。
 
-### `SuggestionPlugin`
+### `AuthoredReactPlugin`
 
-从 `platejs/suggestion/react` 导入。它在 `BaseSuggestionPlugin` 上添加精确 view 的活动状态和指针激活。
+从 `platejs/authored/react` 导入。它在 `AuthoredPlugin` 上添加精确 view 的活动状态和指针激活。
 
 ### React hooks
 
 | Hook | 结果 |
 | --- | --- |
-| `useSuggestionChanges(path)` | `path` 处区块的原生 `AuthoredChange` 记录。 |
-| `useSuggestionGroups(blockKey)` | 该 key 对应区块的审阅卡片摘要。 |
-| `useActiveSuggestion()` | View 局部活动卡片的 `activeId` 和 `setActiveId` 函数。 |
+| `useAuthoredGroups(blockKey)` | 该 key 对应区块的审阅卡片摘要。 |
+| `useActiveAuthored()` | View 局部活动卡片的 `activeId` 和 `setActiveId` 函数。 |
 
 ### `SuggestionKit`
 
-复制的 registry kit 为 `SuggestionPlugin` 配置内容根节点样式。通用 editor 组件与建议功能保持独立。审阅卡片、Comments 集成、工具栏和 popover 保留在 registry 代码中。
+复制的 registry kit 为 `AuthoredReactPlugin` 配置内容根节点样式。通用 editor 组件与建议功能保持独立。审阅卡片、Comments 集成、工具栏和 popover 保留在 registry 代码中。

@@ -2,6 +2,10 @@ import type { DocumentIndex } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
 import { getRangeEndpointAssociations } from '../../core/change/range-association';
 import type { CommandProjectionMap } from '../../core/command-document';
+import {
+  type AuthoredLocationMap,
+  locationMapOver,
+} from '../../core/project-range';
 import { toInternalRoot, toPublicRoot } from '../../core/public-root';
 import {
   mapSelectionWithContext,
@@ -24,7 +28,6 @@ import {
   type TextSelection,
 } from '../../interfaces/selection';
 import { getDefined } from '../../internal/get-defined';
-import { type AuthoredLocationMap, locationMapOver } from '../format';
 
 export type PreviewLensInput = Readonly<{
   map: CommandProjectionMap;

@@ -1,6 +1,5 @@
 'use client';
 
-import { CommentsPlugin } from 'platejs/comments/react';
 import { BoldPlugin, createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
@@ -17,6 +16,11 @@ import { MarkToolbarButton } from '@/registry/components/editor/mark-toolbar-but
 import { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-button';
 import { SuggestionKit } from '@/registry/components/editor/suggestion';
 import { Toolbar } from '@/registry/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
+
+const demoUsers = {
+  alice: { id: 'alice', name: 'Alice' },
+};
 
 export default function SuggestionFormatDemo() {
   const [editor] = React.useState(() => {
@@ -26,11 +30,6 @@ export default function SuggestionFormatDemo() {
         ...BasicMarksKit,
         ...SuggestionKit,
         ...DiscussionKit,
-        CommentsPlugin.configure({
-          initialState: {
-            users: { alice: { id: 'alice', name: 'Alice' } },
-          },
-        }),
       ],
       userId: 'alice',
       initialValue: [
@@ -70,9 +69,11 @@ export default function SuggestionFormatDemo() {
   });
 
   return (
-    <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
-      <SuggestionFormatContent />
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={demoUsers}>
+      <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
+        <SuggestionFormatContent />
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }
 

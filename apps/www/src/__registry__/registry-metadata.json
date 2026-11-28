@@ -1,5 +1,5 @@
 {
-  "generation": "9ec719739fadc92fa651efdc8d9cdd5f534fb89556cb45d2bda6bc1e9ca3f06a",
+  "generation": "54e82f0f7d549f145a67e0ec2d8ab64b5b1b3823bface6390042f726f81eb839",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -344,7 +344,8 @@
           "registryDependencies": [
             "@plate/docx-source",
             "@plate/editor-dropdown-menu",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -395,7 +396,8 @@
             "@plate/editor-dropdown-menu",
             "@plate/editor-plugins-static",
             "@plate/editor-static",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -3315,6 +3317,7 @@
             "@plate/editor",
             "@plate/editor-dropdown-menu",
             "@plate/highlight-style",
+            "@plate/user-directory",
             "avatar",
             "button"
           ]
@@ -3381,6 +3384,7 @@
             "@plate/comment",
             "@plate/floating-popover",
             "@plate/use-visible-anchor",
+            "@plate/user-directory",
             "avatar",
             "button",
             "separator"
@@ -4360,6 +4364,19 @@
           "type": "registry:component"
         },
         {
+          "files": [
+            {
+              "path": "components/editor/user-directory.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/user-directory.tsx"
+            }
+          ],
+          "name": "user-directory",
+          "type": "registry:component",
+          "description": "Writable React context for resolving comment and suggestion author profiles.",
+          "title": "User Directory"
+        },
+        {
           "dependencies": [
             "platejs",
             "cn",
@@ -4707,7 +4724,8 @@
           "name": "use-chat",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/comment"
+            "@plate/comment",
+            "@plate/user-directory"
           ]
         },
         {
@@ -4750,6 +4768,7 @@
             "@plate/editor-plugins",
             "@plate/settings-dialog",
             "@plate/use-chat",
+            "@plate/user-directory",
             "tooltip"
           ]
         },
@@ -5197,7 +5216,8 @@
             "@plate/mark-toolbar-button",
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -5234,7 +5254,8 @@
             "@plate/suggestion",
             "@plate/table",
             "@plate/table-toolbar-button",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -5307,6 +5328,7 @@
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
             "@plate/toolbar",
+            "@plate/user-directory",
             "button"
           ]
         },
@@ -5341,7 +5363,8 @@
             "@plate/history-toolbar-button",
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -5412,7 +5435,8 @@
             "@plate/discussion",
             "@plate/editor",
             "@plate/link",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -5450,7 +5474,8 @@
             "@plate/discussion",
             "@plate/editor",
             "@plate/history-toolbar-button",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -5489,6 +5514,7 @@
             "@plate/editor",
             "@plate/link",
             "@plate/toolbar",
+            "@plate/user-directory",
             "button"
           ]
         },
@@ -5531,7 +5557,8 @@
             "@plate/editor-static",
             "@plate/link",
             "@plate/link-static",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -8401,7 +8428,8 @@
           "registryDependencies": [
             "@plate/docx-source",
             "@plate/editor-dropdown-menu",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -8452,7 +8480,8 @@
             "@plate/editor-dropdown-menu",
             "@plate/editor-plugins-static",
             "@plate/editor-static",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -11369,6 +11398,7 @@
             "@plate/editor",
             "@plate/editor-dropdown-menu",
             "@plate/highlight-style",
+            "@plate/user-directory",
             "avatar",
             "button"
           ]
@@ -11435,6 +11465,7 @@
             "@plate/comment",
             "@plate/floating-popover",
             "@plate/use-visible-anchor",
+            "@plate/user-directory",
             "avatar",
             "button",
             "separator"
@@ -12414,6 +12445,19 @@
           "type": "registry:component"
         },
         {
+          "files": [
+            {
+              "path": "components/editor/user-directory.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/user-directory.tsx"
+            }
+          ],
+          "name": "user-directory",
+          "type": "registry:component",
+          "description": "Writable React context for resolving comment and suggestion author profiles.",
+          "title": "User Directory"
+        },
+        {
           "dependencies": [
             "platejs",
             "cn",
@@ -12761,7 +12805,8 @@
           "name": "use-chat",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/comment"
+            "@plate/comment",
+            "@plate/user-directory"
           ]
         },
         {
@@ -12804,6 +12849,7 @@
             "@plate/editor-plugins",
             "@plate/settings-dialog",
             "@plate/use-chat",
+            "@plate/user-directory",
             "tooltip"
           ]
         },
@@ -13251,7 +13297,8 @@
             "@plate/mark-toolbar-button",
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -13288,7 +13335,8 @@
             "@plate/suggestion",
             "@plate/table",
             "@plate/table-toolbar-button",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -13361,6 +13409,7 @@
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
             "@plate/toolbar",
+            "@plate/user-directory",
             "button"
           ]
         },
@@ -13395,7 +13444,8 @@
             "@plate/history-toolbar-button",
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -13466,7 +13516,8 @@
             "@plate/discussion",
             "@plate/editor",
             "@plate/link",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -13504,7 +13555,8 @@
             "@plate/discussion",
             "@plate/editor",
             "@plate/history-toolbar-button",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {
@@ -13543,6 +13595,7 @@
             "@plate/editor",
             "@plate/link",
             "@plate/toolbar",
+            "@plate/user-directory",
             "button"
           ]
         },
@@ -13585,7 +13638,8 @@
             "@plate/editor-static",
             "@plate/link",
             "@plate/link-static",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/user-directory"
           ]
         },
         {

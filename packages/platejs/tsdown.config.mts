@@ -2,6 +2,7 @@ import { createPlatePackageConfig } from '../../tooling/config/tsdown.config.ts'
 
 export const plateAdditionalEntries = [
   'src/authored/index.ts',
+  'src/react/authored/index.ts',
   'src/code-block/codemirror/index.ts',
   'src/ai/index.ts',
   'src/ai/react/index.ts',
@@ -20,7 +21,6 @@ export const plateAdditionalEntries = [
   'src/features/lock/index.ts',
   'src/features/media/index.ts',
   'src/features/mention/index.ts',
-  'src/features/suggestion/index.ts',
   'src/features/table/index.ts',
   'src/features/toc/index.ts',
   'src/react/features/board/index.ts',
@@ -39,7 +39,6 @@ export const plateAdditionalEntries = [
   'src/react/features/media/index.ts',
   'src/react/features/mention/index.ts',
   'src/react/features/resizable/index.ts',
-  'src/react/features/suggestion/index.ts',
   'src/react/features/table/index.ts',
   'src/react/features/toc/index.ts',
   'src/react/virtualized.tsx',

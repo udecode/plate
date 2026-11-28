@@ -13,9 +13,9 @@ import {
   AuthoredPlugin,
   type AuthoredView,
 } from 'platejs/authored';
+import { AuthoredReactPlugin } from 'platejs/authored/react';
 import { BaseLockPlugin } from 'platejs/lock';
 import { useEditor, useEditorSelector } from 'platejs/react';
-import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -51,7 +51,7 @@ const proposes = (view: AuthoredView) =>
 
 export function ModeToolbarButton() {
   const suggestionsAvailable = useEditorSelector(
-    (editor) => editor.plugin(SuggestionPlugin).installed
+    (editor) => editor.plugin(AuthoredReactPlugin).installed
   );
 
   return suggestionsAvailable ? (

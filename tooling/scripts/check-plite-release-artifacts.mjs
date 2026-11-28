@@ -886,7 +886,7 @@ export const PLATE_FACADE_DIFFS = {
     rebound: ['createEditor', 'definePlugin'],
   },
   'platejs/authored': {
-    dropped: ['authored', 'authoredRecords', 'createAuthoredPlugin'],
+    dropped: ['authored', 'authoredRecords'],
     rebound: [],
   },
   'platejs/react': {

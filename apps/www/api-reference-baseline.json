@@ -644,7 +644,6 @@
       "CommentResolution",
       "CommentsPluginState",
       "CommentsSnapshot",
-      "CommentUser",
       "CreateCommentThreadInput",
       "PendingComment"
     ],

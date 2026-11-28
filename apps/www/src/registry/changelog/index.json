@@ -20,6 +20,35 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-authored-user-directory-and-discussion-cleanup",
+      "href": "/registry/changelog/2026-11-28-authored-user-directory-and-discussion-cleanup.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Move suggestion UI to AuthoredReactPlugin, add UserDirectoryProvider, and simplify Discussion",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "user-directory",
+        "suggestion",
+        "discussion",
+        "comment",
+        "mode-toolbar-button",
+        "suggestion-toolbar-button",
+        "import-toolbar-button",
+        "export-toolbar-button",
+        "use-chat",
+        "ink-digitize"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-board-keyboard-ergonomics",
       "href": "/registry/changelog/2026-11-28-board-keyboard-ergonomics.json",
       "status": "draft",

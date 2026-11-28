@@ -1,7 +1,6 @@
 import { dequal } from 'dequal';
 
 import type { AuthoredProjectionDiagnostic } from '../../../authored';
-import { projectAuthoredRange } from '../../../authored';
 import {
   BaseParagraphPlugin,
   type BasePluginInput,
@@ -14,6 +13,7 @@ import {
   type Path,
   type Range,
 } from '../../../core';
+import { projectAuthoredRange } from '../../../facade';
 import { BaseBlockquotePlugin } from '../../../features/basic-nodes';
 import { getPlateNodeMappingContributions } from '../../../internal/plugin/collectPlateNodeMappings';
 import { projectPlateFormatDocument } from '../../../lib/editor/withPlite';

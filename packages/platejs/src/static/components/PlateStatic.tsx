@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 import React from 'react';
 
+import { AuthoredPlugin } from '../../authored';
 import {
   type Descendant,
   type EditorDocumentValue,
@@ -77,6 +78,7 @@ type ContentRootInput = Readonly<{
 }>;
 
 type BlockInputs = Readonly<{
+  authoredKey: string;
   contentRoots: readonly ContentRootInput[];
   decorations: readonly Decoration[];
   documentKeys: readonly string[];
@@ -86,6 +88,7 @@ type BlockInputs = Readonly<{
 const EMPTY_DOCUMENT_KEYS: readonly string[] = Object.freeze([]);
 
 const EMPTY_BLOCK_INPUTS: BlockInputs = Object.freeze({
+  authoredKey: '',
   contentRoots: Object.freeze([]),
   decorations: EMPTY_DECORATIONS,
   documentKeys: EMPTY_DOCUMENT_KEYS,
@@ -111,6 +114,7 @@ const areBlockInputsEqual = (left: BlockInputs, right: BlockInputs) => {
 
   if (equal === undefined) {
     equal =
+      left.authoredKey === right.authoredKey &&
       left.readsDocument === right.readsDocument &&
       left.documentKeys.length === right.documentKeys.length &&
       left.documentKeys.every(
@@ -176,7 +180,18 @@ const readBlockInputs = (
   const decorations: Decoration[] = [...own];
   const contentRoots: ContentRootInput[] = [];
   const documentKeys: string[] = [];
+  const authored = editor.plugin(AuthoredPlugin);
+  const authoredParts: string[] = [];
   let readsDocument = readsDocumentWithin(editor, block);
+
+  if (authored.installed) {
+    const groups = authored.read.groups({ at: path });
+    if (groups.length > 0) {
+      authoredParts.push(
+        groups.map((group) => `${group.id}:${group.revision}`).join(',')
+      );
+    }
+  }
   const collectDocumentKey = (
     reader: Editor,
     readerRoot: string,
@@ -213,6 +228,16 @@ const readBlockInputs = (
           readsDocumentWithin(rootReader, node)
         ) {
           readsDocument = true;
+        }
+        if (authored.installed) {
+          const groups = rootReader
+            .plugin(AuthoredPlugin)
+            .read.groups({ at: [index] });
+          if (groups.length > 0) {
+            authoredParts.push(
+              `${contentRoot}:${index}:${groups.map((group) => `${group.id}:${group.revision}`).join(',')}`
+            );
+          }
         }
         visit(
           rootReader,
@@ -283,17 +308,20 @@ const readBlockInputs = (
     readsDocument || documentKeys.length === 0
       ? EMPTY_DOCUMENT_KEYS
       : documentKeys;
+  const authoredKey = authoredParts.join('|');
 
   if (
     contentRoots.length === 0 &&
     decorations.length === 0 &&
     effectiveDocumentKeys.length === 0 &&
-    !readsDocument
+    !readsDocument &&
+    authoredKey === ''
   ) {
     return EMPTY_BLOCK_INPUTS;
   }
 
   return {
+    authoredKey,
     contentRoots,
     decorations: decorations.length === 0 ? EMPTY_DECORATIONS : decorations,
     documentKeys: effectiveDocumentKeys,
@@ -548,8 +576,8 @@ const documentReaders = new WeakMap<object, WeakMap<Element, boolean>>();
 const staticReuseKeyReaders = new WeakMap<object, WeakMap<Element, boolean>>();
 
 // A reused element skips its whole subtree, so it reads the document when it
-// or any element inside it declares `render.readsDocument`, such as a table
-// of contents inside a table cell. Cached per block and published plugins.
+// or any element inside it declares `render.readsDocument` (such as a table of
+// contents inside a table cell). Cached per block and published plugins.
 const readsDocumentWithin = (editor: Editor, element: Element): boolean => {
   const runtime = getPlateRuntime(editor);
   let readers = documentReaders.get(runtime);
@@ -626,12 +654,14 @@ const ElementStatic = React.memo(
 );
 
 function BaseLeafStatic({
+  authoredKey: _authoredKey,
   decorations,
   editor,
   path,
   rootStack,
   text,
 }: {
+  authoredKey: string;
   decorations: readonly Decoration[];
   editor: Editor;
   path: Path;
@@ -706,6 +736,7 @@ const LeafStatic = React.memo(
   BaseLeafStatic,
   (prev, next) =>
     prev.editor === next.editor &&
+    prev.authoredKey === next.authoredKey &&
     prev.path.join(',') === next.path.join(',') &&
     prev.rootStack.at(-1) === next.rootStack.at(-1) &&
     TextApi.equals(next.text, prev.text) &&
@@ -813,6 +844,7 @@ function Children({
         ) : (
           <LeafStatic
             key={p.join('.')}
+            authoredKey={block.authoredKey}
             decorations={ds}
             editor={editor}
             path={p}

@@ -556,7 +556,10 @@
     },
     "source-hash:partition:testing": {
       "cache": true,
-      "dependsOn": ["source-hash:partition:core"],
+      "dependsOn": [
+        "source-hash:partition:authored",
+        "source-hash:partition:core"
+      ],
       "inputs": [
         "src/hyperscript/**",
         "src/testing/**",
@@ -1173,6 +1176,7 @@
     "test:partition:testing": {
       "cache": true,
       "dependsOn": [
+        "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:testing"
       ],

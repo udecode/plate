@@ -426,11 +426,13 @@ export {
   getAuthoredUpdateView,
   getAuthoredViewCommit,
   getViewCommitSource,
+  isAuthoredFormatOnlyPropertyWrite,
   readAuthoredViewKey,
   readShownPreview,
   readAuthoredView,
   withStoredAuthoredRead,
 } from '../core/authored-runtime';
+export { projectAuthoredRange } from '../core/project-range';
 export { normalizeSetValues } from '../core/change/transform';
 export {
   isDocumentView,

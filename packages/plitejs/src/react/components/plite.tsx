@@ -47,6 +47,7 @@ import {
   createViewLockScope,
   flushViewLockScope,
   getCarriedMount,
+  getViewAuthor,
   getViewPresentation,
   joinViewLockScope,
   linkViewLockScope,
@@ -193,6 +194,7 @@ export type EditorRootProps<
 
 type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
   authored?: EditorViewOptions['authored'];
+  authorId?: string;
   children: React.ReactNode;
   decorations?: ReadonlyArray<DecorationSource<E>> | null;
   directEditor?: E;
@@ -285,6 +287,7 @@ const EditorRootContent = <
 
     return {
       authored: readAuthoredView(editor),
+      authorId: getViewAuthor(editor),
       readOnly: editor.read((state) => state.view.isReadOnly()),
       root: initialRoot === 'main' ? undefined : initialRoot,
     };
@@ -297,6 +300,7 @@ const EditorRootContent = <
       {...viewProps}
       // A carried presentation already holds its editor root's mode.
       authored={carried ? undefined : (props.authored ?? defaults.authored)}
+      authorId={defaults.authorId}
       lifetime={editor}
       lockLink={followsEnclosingLock ? enclosingLock : undefined}
       mountedIn={carried?.mountedIn}
@@ -319,6 +323,7 @@ export const EditorRuntimeView = <
   E extends ReactEditorType<any, any> = ReactEditorType<any, any>,
 >({
   authored,
+  authorId,
   children,
   decorations = null,
   onCommit,
@@ -354,7 +359,12 @@ export const EditorRuntimeView = <
     }
 
     return createReactRuntimeViewEditor(
-      getView({ authored, readOnly, root }, presentation, undefined, mountedIn)
+      getView(
+        { authored, authorId, readOnly, root },
+        presentation,
+        undefined,
+        mountedIn
+      )
     ) as unknown as E;
     // Authored and read-only policy updates reconcile below without replacing
     // the view. Their current values seed only a new input/root lifetime.

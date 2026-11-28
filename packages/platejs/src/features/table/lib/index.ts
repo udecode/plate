@@ -3,4 +3,5 @@
  */
 
 export * from './BaseTablePlugin';
+export * from './describeTableSuggestion';
 export * from './types';

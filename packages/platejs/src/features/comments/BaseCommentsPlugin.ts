@@ -22,12 +22,16 @@ import {
   type AnchorValue,
   type EditorUpdateTransaction,
   getAnchorRuntimeId,
+  getViewPresentation,
+  isDocumentView,
   notifyObservers,
+  onPresentationRelease,
   type ReadonlyAnchor,
   readDocumentRange,
   recordEditorHistoryEffect,
   restoreAnchor,
   runEditorObserver,
+  type ViewPresentation,
   withStoredAuthoredRead,
 } from '../../facade';
 import { readEditorAuthor } from '../../lib/editor/editorUser.internal';
@@ -37,12 +41,6 @@ import {
 } from './comment-thread-index.internal';
 
 export type { CommentAttachmentChange };
-
-export type CommentUser = Readonly<{
-  id: string;
-  name: string;
-  avatarUrl?: string;
-}>;
 
 /** A JSON value inside comment app data. */
 export type CommentDataValue =
@@ -238,21 +236,24 @@ export type CommentsChange = Readonly<{
 }>;
 
 export type CommentsPluginState = {
-  activeIds: readonly string[];
   /** Loaded once, before mount, against the matching initial document. */
   initialComments: SavedComments | null;
   /** Authorize and persist before publication. Throws preserve the previous state. */
   mutate: (
     request: CommentMutationRequest
   ) => CommentMutationDecision | Promise<CommentMutationDecision>;
-  users: Readonly<Record<string, CommentUser>>;
 };
 
+/** Per-presentation comment interaction state owned by `BaseCommentsPlugin`. */
+export type CommentsPluginViewState = Readonly<{
+  activeIds: readonly string[];
+}>;
+
+const EMPTY_IDS: readonly string[] = Object.freeze([]);
+
 const initialState: CommentsPluginState = {
-  activeIds: [],
   initialComments: null,
   mutate: ({ proposed }) => ({ status: 'commit', thread: proposed }),
-  users: {},
 };
 
 const record = (value: unknown): value is Record<string, unknown> =>
@@ -462,6 +463,9 @@ const freezeComment = <T>(value: T): T => {
 export const BaseCommentsPlugin = definePlugin('comments', {
   effectTypes: [commentCreationHistoryEffect],
   initialState,
+  initialViewState: (): CommentsPluginViewState => ({
+    activeIds: EMPTY_IDS,
+  }),
 }).extend(({ editor, store }) => {
   const runtimeOwner = getEditorRuntimeOwner(editor);
   let threads = new Map<string, CommentThread>();
@@ -522,11 +526,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     if (dropped) releaseIfUnheld(dropped.id, dropped.anchor);
   };
   const threadListeners = new Map<string, Set<() => void>>();
-  const visibleListeners = new Set<() => void>();
-  const draftListeners = new Set<() => void>();
-  const pendingListeners = new Set<() => void>();
+  const snapshotListeners = new Set<() => void>();
   const dataListeners = new Set<(change: CommentsChange) => void>();
   const rangeListeners = new Set<() => void>();
+  let lastNotifiedSnapshot = snapshot;
   let savedRanges = new Map<string, Anchor<Range>>();
   let loadIssues: readonly CommentsLoadIssue[] = [];
   let snapshotOrphanIds: readonly string[] = [];
@@ -601,9 +604,15 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       ...snapshotOrphanIds.map((id) => ({ code: 'orphan-range' as const, id })),
     ]);
   };
+  const notifySnapshotIfChanged = () => {
+    if (destroyed || snapshot === lastNotifiedSnapshot) return;
+    lastNotifiedSnapshot = snapshot;
+    deliver(snapshotListeners, 'snapshot-listener');
+  };
   const refreshIssues = () => {
     if (!sameIds([...orphans.keys()], snapshotOrphanIds)) {
       snapshot = Object.freeze({ ...snapshot, issues: currentIssues() });
+      notifySnapshotIfChanged();
     }
   };
   const announceRanges = () => {
@@ -621,31 +630,88 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     savedRanges = next;
     deliver(rangeListeners, 'snapshot-listener');
   };
-  const publish = (changes: {
-    draft?: boolean;
-    pending?: boolean;
-    threads?: readonly string[];
-    visible?: boolean;
-  }) => {
+  const publish = (changes: { threads?: readonly string[] } = {}) => {
     refreshIssues();
-    if (changes.draft) deliver(draftListeners, 'snapshot-listener');
-    if (changes.pending) deliver(pendingListeners, 'snapshot-listener');
-    if (changes.visible) deliver(visibleListeners, 'snapshot-listener');
+    notifySnapshotIfChanged();
     if (changes.threads) notifyThreads(changes.threads);
     announceRanges();
   };
-  let active: readonly string[] = [];
-  let unsubscribeActive: (() => void) | null = null;
-  const repaintActive = () => {
-    const next = store.get('activeIds');
-    if (next === active) return;
-    const previous = active;
-    active = next;
-    refreshIds([...previous, ...next]);
+  type CommentsViewStore = Readonly<{
+    get: (key: 'activeIds') => readonly string[];
+    set: (next: Partial<CommentsPluginViewState>) => void;
+    subscribe: (listener: () => void) => () => void;
+  }>;
+  let maskedSnapshot: Readonly<{
+    masked: CommentsSnapshot;
+    source: CommentsSnapshot;
+  }> | null = null;
+  const documentViewSnapshot = (): CommentsSnapshot => {
+    if (snapshot.pending === null) return snapshot;
+    if (maskedSnapshot?.source !== snapshot) {
+      maskedSnapshot = {
+        masked: Object.freeze({ ...snapshot, pending: null }),
+        source: snapshot,
+      };
+    }
+    return maskedSnapshot.masked;
   };
-  const setActive = (ids: readonly string[]) => {
-    if (destroyed) return;
-    store.set({ activeIds: Object.freeze([...new Set(ids)]) });
+  const activeStores = new Map<
+    ViewPresentation,
+    Readonly<{
+      get: () => readonly string[];
+      set: (ids: readonly string[]) => void;
+    }>
+  >();
+  const registerPresentation = (view: Editor, viewStore: CommentsViewStore) => {
+    const presentation = getViewPresentation(view);
+    if (!activeStores.has(presentation)) {
+      activeStores.set(presentation, {
+        get: () => viewStore.get('activeIds'),
+        set: (ids) => viewStore.set({ activeIds: ids }),
+      });
+      onPresentationRelease(presentation, () => {
+        activeStores.delete(presentation);
+      });
+    }
+    return presentation;
+  };
+  const activeIdsOf = (view: Editor, viewStore: CommentsViewStore) => {
+    if (destroyed || isDocumentView(view)) return EMPTY_IDS;
+    return viewStore.get('activeIds');
+  };
+  const setActiveFor = (
+    view: Editor,
+    ids: readonly string[],
+    viewStore: CommentsViewStore
+  ) => {
+    if (destroyed || isDocumentView(view)) return;
+    const presentation = registerPresentation(view, viewStore);
+    const previous = viewStore.get('activeIds');
+    const live = [...new Set(ids)].filter((id) => {
+      const thread = threads.get(id);
+      return Boolean(thread && !thread.resolution);
+    });
+    const next = live.length === 0 ? EMPTY_IDS : Object.freeze(live);
+    if (sameIds(previous, next)) return;
+    viewStore.set({ activeIds: next });
+    threadIndex.refreshIds([...previous, ...next], presentation);
+  };
+  const clearAllActive = () => {
+    for (const [presentation, entry] of [...activeStores]) {
+      const previous = entry.get();
+      if (previous.length === 0) continue;
+      entry.set(EMPTY_IDS);
+      threadIndex.refreshIds(previous, presentation);
+    }
+  };
+  const pruneActiveId = (id: string) => {
+    for (const [presentation, entry] of [...activeStores]) {
+      const previous = entry.get();
+      if (!previous.includes(id)) continue;
+      const next = previous.filter((key) => key !== id);
+      entry.set(next.length === 0 ? EMPTY_IDS : Object.freeze(next));
+      threadIndex.refreshIds([id], presentation);
+    }
   };
   const storedText = (anchor: Anchor<Range>) =>
     withStoredAuthoredRead(editor, () => textIn(editor, anchor.resolve()));
@@ -688,6 +754,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         .map((thread) => thread.id)
     ),
   });
+  lastNotifiedSnapshot = snapshot;
   const assertTextRange = (reader: Editor, range: Range | null) => {
     if (!range) throw new Error('Invalid comment range');
     const root = SelectionApi.root(range);
@@ -760,11 +827,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     }
     initialComments = null;
     announcedOrphanIds = snapshotOrphanIds;
+    lastNotifiedSnapshot = snapshot;
     savedRanges = rangesToSave();
     syncSource();
     refreshViews()();
-    active = store.get('activeIds');
-    unsubscribeActive = store.subscribe(repaintActive);
   };
   const replaceComments = (value: SavedComments) => {
     if (destroyed) return false;
@@ -772,7 +838,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     const admitted = admitThreads(value);
     const loaded = admitRanges(admitted, orphans);
     const changedIds = new Set([...threads.keys(), ...admitted.threads.keys()]);
-    const previousSnapshot = snapshot;
     const retiredQueues = [...queues];
     const next = {
       draftThreadIds: Object.freeze([]),
@@ -810,13 +875,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     loadIssues = loaded.issues;
     snapshot = Object.freeze({ ...next, issues: currentIssues() });
     const announce = refreshViews();
-    setActive([]);
+    clearAllActive();
     announce();
     publish({
-      draft: previousSnapshot.draftThreadIds.length > 0,
-      pending: previousSnapshot.pending !== null,
       threads: [...changedIds],
-      visible: true,
     });
 
     return true;
@@ -847,7 +909,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     const retiredComposer = thread && composer?.id === id ? composer : null;
     const handoff = retiredComposer !== null;
     if (handoff) composer = null;
-    refreshIssues();
+    const issuesChanged = !sameIds([...orphans.keys()], snapshotOrphanIds);
+    const nextIssues = issuesChanged ? currentIssues() : snapshot.issues;
     const threadIds =
       previous && thread
         ? snapshot.threadIds
@@ -871,6 +934,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       : snapshot.draftThreadIds;
     if (
       handoff ||
+      issuesChanged ||
       threadIds !== snapshot.threadIds ||
       visibleThreadIds !== snapshot.visibleThreadIds ||
       draftThreadIds !== snapshot.draftThreadIds
@@ -878,6 +942,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       snapshot = Object.freeze({
         ...snapshot,
         draftThreadIds,
+        issues: nextIssues,
         pending: handoff ? null : snapshot.pending,
         threadIds,
         visibleThreadIds,
@@ -898,20 +963,12 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     if (afterWrite) {
       runEditorObserver(editor, 'after-commit', afterWrite, 'comments');
     }
-    announce();
     const current = threads.get(id);
-    if (
-      (!current || current.resolution) &&
-      store.get('activeIds').includes(id)
-    ) {
-      setActive(store.get('activeIds').filter((key) => key !== id));
+    if (!current || current.resolution) {
+      pruneActiveId(id);
     }
-    publish({
-      draft: draftChanged,
-      pending: handoff,
-      threads: [id],
-      visible: visibilityChanged,
-    });
+    announce();
+    publish({ threads: [id] });
   };
   const enqueue = <T>(
     id: string,
@@ -1205,11 +1262,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       if (proposed === undefined) return { status: 'invalid' };
       return commitMutation(id, operation, proposed && freezeComment(proposed));
     });
-  const cancel = () => {
+  const cancelComposer = () => {
     if (!composer) return;
     dropComposer();
     snapshot = Object.freeze({ ...snapshot, pending: null });
-    publish({ pending: true });
+    publish();
   };
   const destroy = () => {
     if (destroyed) return;
@@ -1219,7 +1276,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     ) {
       COMMENT_CREATION_HISTORY_REPLAYERS.delete(runtimeOwner);
     }
-    unsubscribeActive?.();
+    activeStores.clear();
     threadIndex.destroy();
     new Set([
       ...(composer ? [composer.anchor] : []),
@@ -1247,11 +1304,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       threadIds: Object.freeze([]),
       visibleThreadIds: Object.freeze([]),
     });
+    lastNotifiedSnapshot = snapshot;
     threadListeners.forEach((listeners) => listeners.clear());
     threadListeners.clear();
-    visibleListeners.clear();
-    draftListeners.clear();
-    pendingListeners.clear();
+    snapshotListeners.clear();
     dataListeners.clear();
     rangeListeners.clear();
   };
@@ -1263,7 +1319,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       onCleanup(destroy);
       beforePublish(initialize);
     },
-    api: ({ editor: commandEditor }) => {
+    api: ({ editor: commandEditor, viewStore }) => {
       const prepareCreation = (
         input: CreateCommentThreadInput,
         status: CommentThread['status'],
@@ -1368,12 +1424,14 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         }
       };
       return {
+        /** Active unresolved thread IDs owned by this view's presentation. */
+        activeIds: () => activeIdsOf(commandEditor, viewStore),
         /**
          * Start a comment at a range, or expand a caret to its text block. A
          * range without a root is in this view's root.
          */
         begin: (at: Range | null = commandEditor.read.selection()) => {
-          if (!at || destroyed) return false;
+          if (!at || destroyed || isDocumentView(commandEditor)) return false;
           let range: Range | null = commandRange(commandEditor, at);
           if (commandEditor.read.ranges.isEmpty(range)) {
             const block = commandEditor.read.nodes.block({
@@ -1395,17 +1453,21 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             ...snapshot,
             pending: Object.freeze({ excerpt }),
           });
-          setActive([]);
-          publish({ pending: true });
+          setActiveFor(commandEditor, EMPTY_IDS, viewStore);
+          publish();
           return true;
         },
         /**
          * Dismiss the pending composer. A create already saving keeps its
          * range until it settles.
          */
-        cancel,
+        cancel: () => {
+          if (isDocumentView(commandEditor)) return;
+          cancelComposer();
+        },
         /** Publish from the pending selection; failure preserves the composer. */
         create: async (body: Value): Promise<CommentMutationResult<string>> => {
+          if (isDocumentView(commandEditor)) return { status: 'invalid' };
           const claimed = composer;
           const range = claimed && resolveIn(commandEditor, claimed.anchor);
           return claimed && range
@@ -1488,7 +1550,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           );
         },
         /** Stable membership and pending-composer state for targeted UI reads. */
-        getSnapshot: () => snapshot,
+        getSnapshot: () =>
+          isDocumentView(commandEditor) ? documentViewSnapshot() : snapshot,
         /** Read immutable conversation data; document mapping preserves identity. */
         getThread: (id: string) => threads.get(id),
         /** Read live semantic records. Save ranges() with the document. */
@@ -1542,11 +1605,13 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         },
         /** Resolve the pending selection without exposing its native handle. */
         pendingRange: () =>
-          freezeComment(
-            structuredClone(
-              composer ? resolveIn(commandEditor, composer.anchor) : null
-            )
-          ),
+          isDocumentView(commandEditor)
+            ? null
+            : freezeComment(
+                structuredClone(
+                  composer ? resolveIn(commandEditor, composer.anchor) : null
+                )
+              ),
         /** Persist a local draft; discard during the request fences late completion. */
         publishDraft: (id: string) =>
           mutateThread(id, 'publishDraft', (thread) => ({
@@ -1663,22 +1728,20 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             dataListeners.delete(listener);
           };
         },
-        subscribeVisibleThreadIds: (listener: () => void) => {
-          visibleListeners.add(listener);
-          return () => {
-            visibleListeners.delete(listener);
-          };
+        /** Observe active comment IDs owned by this view's presentation. */
+        subscribeActive: (listener: () => void) => {
+          if (destroyed || isDocumentView(commandEditor)) return () => {};
+          registerPresentation(commandEditor, viewStore);
+          return viewStore.subscribe(() => {
+            listener();
+          });
         },
-        subscribeDraftThreadIds: (listener: () => void) => {
-          draftListeners.add(listener);
+        /** Observe any change to `getSnapshot()` (threads, visibility, drafts, pending, or issues). */
+        subscribeSnapshot: (listener: () => void) => {
+          if (destroyed) return () => {};
+          snapshotListeners.add(listener);
           return () => {
-            draftListeners.delete(listener);
-          };
-        },
-        subscribePending: (listener: () => void) => {
-          pendingListeners.add(listener);
-          return () => {
-            pendingListeners.delete(listener);
+            snapshotListeners.delete(listener);
           };
         },
         idsAt: (location: Location) =>
@@ -1698,7 +1761,9 @@ export const BaseCommentsPlugin = definePlugin('comments', {
               })
             : Object.freeze({ type: 'range', status: 'unavailable' });
         },
-        setActive,
+        /** Set the active comment IDs for this view's presentation. */
+        setActive: (ids: readonly string[]) =>
+          setActiveFor(commandEditor, ids, viewStore),
         /** Observe mapped attachments without rewriting semantic thread records. */
         subscribeAttachments: (
           listener: (change: CommentAttachmentChange) => void
@@ -1717,7 +1782,9 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           ? view.read.ranges.get(path)
           : undefined;
         if (!textRange) return [];
-        const activeIds = store.get('activeIds');
+        const activeIds = isDocumentView(view)
+          ? EMPTY_IDS
+          : (activeStores.get(getViewPresentation(view))?.get() ?? EMPTY_IDS);
         return entries.flatMap(({ id, range }) => {
           const intersection = RangeApi.intersection(range, textRange);
           return !intersection || RangeApi.isCollapsed(intersection)

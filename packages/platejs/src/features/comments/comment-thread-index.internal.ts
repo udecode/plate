@@ -15,11 +15,13 @@ import {
   type EditorCommit,
   getAuthoredViewCommit,
   getViewCommitSource,
+  getViewPresentation,
   isDocumentView,
   notifyObservers,
   type ReadonlyAnchor,
   readShownPreview,
   subscribeEditorViewState,
+  type ViewPresentation,
   withStoredAuthoredRead,
 } from '../../facade';
 
@@ -209,7 +211,7 @@ export type CommentThreadIndexController = {
     view: Editor,
     nodeKey: NodeKey
   ) => ReadonlyArray<Readonly<{ id: string; range: Range }>>;
-  refreshIds: (ids: readonly string[]) => void;
+  refreshIds: (ids: readonly string[], presentation?: ViewPresentation) => void;
   refreshViews: (ids?: readonly string[]) => () => void;
   subscribeAttachments: (
     view: Editor,
@@ -1416,9 +1418,12 @@ export const createCommentThreadIndex = ({
       }
       return entries;
     },
-    refreshIds: (ids) => {
+    refreshIds: (ids, presentation) => {
       for (const [view, state] of [...observedViews]) {
         if (observedViews.get(view) !== state || !state.paintRefreshers.size) {
+          continue;
+        }
+        if (presentation && getViewPresentation(view) !== presentation) {
           continue;
         }
         const viewRoot = view.read.view.root();

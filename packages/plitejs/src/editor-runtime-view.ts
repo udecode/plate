@@ -1944,6 +1944,9 @@ export const getViewFollowTarget = (editor: Editor) =>
 export const getOwnViewReadOnly = (editor: Editor) =>
   VIEW_STATES.get(getEditorRuntime(editor))?.readOnly;
 
+export const getViewDocument = (editor: Editor) =>
+  VIEW_STATES.get(getEditorRuntime(editor))?.document;
+
 export const readShownDocument = (editor: Editor) => {
   const viewState = VIEW_STATES.get(getEditorRuntime(editor));
   const shown = () => getReadProjection(editor) ?? null;

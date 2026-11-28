@@ -20,6 +20,7 @@ import {
 import { ImportToolbarButton } from '@/registry/components/editor/import-toolbar-button';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { ToolbarGroup } from '@/registry/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
 import { deserializeDocxValue } from '@/registry/examples/values/deserialize-docx-value';
 
 const docxPluginNames = new Set<string>(DocxKit.map((plugin) => plugin.name));
@@ -66,8 +67,10 @@ function DocxEditor() {
 
 export default function DocxDemo() {
   return (
-    <DocxSourceProvider>
-      <DocxEditor />
-    </DocxSourceProvider>
+    <UserDirectoryProvider>
+      <DocxSourceProvider>
+        <DocxEditor />
+      </DocxSourceProvider>
+    </UserDirectoryProvider>
   );
 }

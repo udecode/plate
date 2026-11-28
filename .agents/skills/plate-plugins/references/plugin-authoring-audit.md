@@ -58,7 +58,7 @@ snapshots; copied UI does not bind native handles or provide another data owner.
 
 ## Owner-First Production Colocation
 
-- [BaseSuggestionPlugin.ts](../../../../packages/platejs/src/features/suggestion/BaseSuggestionPlugin.ts)
+- [AuthoredPlugin.ts](../../../../packages/platejs/src/authored/AuthoredPlugin.ts)
 - [BaseTablePlugin.ts](../../../../packages/platejs/src/features/table/lib/BaseTablePlugin.ts)
 - [BaseMediaEmbedPlugin.ts](../../../../packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts)
 

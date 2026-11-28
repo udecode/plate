@@ -65,6 +65,7 @@ import {
   carryRootEditors,
   createEditorViewRuntime,
   getOwnViewReadOnly,
+  getViewAuthor,
   getViewPresentation,
 } from '../../editor-runtime-view';
 import type { Editor } from '../../interfaces/editor';
@@ -970,8 +971,10 @@ function createPliteRootEditor(
   const { getView, mountedEditor, presentation } = lookups;
   const shownRoot = root ?? MAIN_ROOT_KEY;
 
+  const authorId = mountedEditor ? getViewAuthor(mountedEditor) : undefined;
+
   return createReactRuntimeViewEditor(
-    getView({ readOnly, root }, presentation ?? undefined, {
+    getView({ authorId, readOnly, root }, presentation ?? undefined, {
       current: () =>
         findRootViewEditor(lookups, shownRoot) ?? mountedEditor ?? undefined,
       subscribe: (listener) => {

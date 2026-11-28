@@ -141,7 +141,11 @@ import {
 } from '../core/view-presentation';
 import { countCoreWork } from '../core/work';
 import type { Comparison } from '../diff';
-import { getViewAuthor, getViewPresentation } from '../editor-runtime-view';
+import {
+  getViewAuthor,
+  getViewDocument,
+  getViewPresentation,
+} from '../editor-runtime-view';
 import type {
   AnyEditor as Editor,
   EditorDocumentValue,
@@ -207,7 +211,7 @@ import {
   projectAuthoredBlocks,
   projectAuthoredDocumentUnder,
 } from './format';
-import type { BookSink, BookView } from './ledger/book';
+import { type BookSink, type BookView, ChangeBook } from './ledger/book';
 import {
   createReviewLedger,
   getReviewLedger,
@@ -803,8 +807,15 @@ const storedRead = <T>(editor: Editor, read: (owner: Editor) => T): T => {
   }
 };
 
-const storedValue = (editor: Editor) =>
-  storedRead(editor, (owner) => owner.read.value() as JsonEditorValue);
+const FOREIGN_DOCUMENT_BOOKS = new WeakMap<JsonEditorValue, BookView>();
+
+const storedValue = (editor: Editor): JsonEditorValue => {
+  const viewDocument = getViewDocument(editor);
+
+  if (viewDocument) return viewDocument;
+
+  return storedRead(editor, (owner) => owner.read.value() as JsonEditorValue);
+};
 
 // A cursor is the query it pages, the next change and the last one read.
 const readCursor = (cursor: string): readonly [string, string, string] => {
@@ -908,8 +919,20 @@ const placeIds = (
 const ledgerOf = (editor: Editor) =>
   getDefined(getReviewLedger(getEditorRuntimeOwner(editor)));
 
-const changesOf = (editor: Editor, value: JsonEditorValue) =>
-  ledgerOf(editor).changes(value);
+const changesOf = (editor: Editor, value: JsonEditorValue): BookView => {
+  if (isDocumentView(editor)) {
+    let book = FOREIGN_DOCUMENT_BOOKS.get(value);
+
+    if (!book) {
+      book = new ChangeBook((node) => node).sync(value);
+      FOREIGN_DOCUMENT_BOOKS.set(value, book);
+    }
+
+    return book;
+  }
+
+  return ledgerOf(editor).changes(value);
+};
 
 const lookupOf = (book: BookView) => ({
   changes: { get: (id: string) => book.change(id) ?? undefined },
@@ -1487,6 +1510,8 @@ export const createAuthoredPlugin = (
     }
   };
   const previewModeOf = (editor: Editor) => {
+    if (isDocumentView(editor)) return null;
+
     const view = viewOf(editor);
 
     return 'preview' in view && !STORED_READS.has(getEditorRuntimeOwner(editor))
@@ -1716,6 +1741,8 @@ export const createAuthoredPlugin = (
             if (isAuthoredRefusal(refusal)) listener(refusal);
           }),
         subscribeChanges: (listener: (delta: AuthoredChangesDelta) => void) => {
+          if (isDocumentView(editor)) return () => {};
+
           const runtime = getEditorRuntime(editor);
           let publisher = PUBLISHERS.get(runtime);
 

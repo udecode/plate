@@ -1,6 +1,5 @@
 'use client';
 
-import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
@@ -18,6 +17,12 @@ import { SuggestionKit } from '@/registry/components/editor/suggestion';
 import { TableKit } from '@/registry/components/editor/table';
 import { TableToolbarButton } from '@/registry/components/editor/table-toolbar-button';
 import { Toolbar } from '@/registry/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
+
+const demoUsers = {
+  alice: { id: 'alice', name: 'Alice' },
+  bob: { id: 'bob', name: 'Bob' },
+};
 
 export default function SuggestionTableDemo() {
   const [editor] = React.useState(() => {
@@ -28,14 +33,6 @@ export default function SuggestionTableDemo() {
         ...TableKit,
         ...SuggestionKit,
         ...DiscussionKit,
-        CommentsPlugin.configure({
-          initialState: {
-            users: {
-              alice: { id: 'alice', name: 'Alice' },
-              bob: { id: 'bob', name: 'Bob' },
-            },
-          },
-        }),
       ],
       userId: 'alice',
       initialValue: [
@@ -116,9 +113,11 @@ export default function SuggestionTableDemo() {
   });
 
   return (
-    <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
-      <SuggestionTableContent />
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={demoUsers}>
+      <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
+        <SuggestionTableContent />
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }
 

@@ -133,7 +133,7 @@ export function SuggestionEditor() {
 }
 ```
 
-The editor must install an authored plugin, either directly or through `SuggestionPlugin`. Changing the `authored` prop updates this view. Rerendering with an equivalent value preserves later mode changes made through the mounted view's portal.
+The editor must install `AuthoredPlugin` or `AuthoredReactPlugin`. Changing the `authored` prop updates this view. Rerendering with an equivalent value preserves later mode changes made through the mounted view's portal.
 
 For an interactive mode control, set the intent on the mounted view, which `useEditor()` returns inside `EditorRoot`. The mounted view keeps its own mode, so `setView` on the editor passed to `EditorRoot` does not change what it shows:
 
@@ -413,7 +413,7 @@ See [Collaboration](/docs/yjs) for setup.
 
 ### `AuthoredPlugin`
 
-Import the standard descriptor from `platejs/authored`. It records each change as the author of the view that writes it, else as the Plate editor's `userId`, or as the local user, `'local'`, when the editor has none. It takes no options. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
+Import `AuthoredPlugin` from `platejs/authored` for headless editors, or `AuthoredReactPlugin` from `platejs/authored/react` for mounted React views. `AuthoredPlugin` records each change as the author of the view that writes it, else as the Plate editor's `userId`, or as the local user, `'local'`, when the editor has none. It takes no options. `AIChatPlugin` depends on `AuthoredPlugin`, and `AuthoredReactPlugin` adds React pointer interaction and view state on top of it.
 
 ### Transaction, reads, and updates
 
@@ -439,13 +439,14 @@ After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 | `authored.api.subscribeChanges(listener)`  | Receive one shared delta for each commit that changes the review.                      |
 | `authored.api.subscribeRefusals(listener)` | Receive each proposal write or view switch the editor refused.                         |
 
-`subscribeChanges` passes `{ blocks, changed, groups, removed }`: the top-level blocks of the view whose cards or changes may read differently, the changes that began or whose revision changed, the cards whose summary changed, began, or ended, and the changes no longer pending. `blocks` names each block a change reached or left and each block holding a change whose card ID changed; under a preview, they are the blocks it shows. A change to a card's summary alone names no block, so a block's copy of a card's `changeCount` or `revision` can trail until it reads again. It is a low-level integration hook; suggestion UI uses `useSuggestionChanges(path)` and `useSuggestionGroups(blockKey)` instead.
+`subscribeChanges` passes `{ blocks, changed, groups, removed }`: the top-level blocks of the view whose cards or changes may read differently, the changes that began or whose revision changed, the cards whose summary changed, began, or ended, and the changes no longer pending. `blocks` names each block a change reached or left and each block holding a change whose card ID changed; under a preview, they are the blocks it shows. A change to a card's summary alone names no block, so a block's copy of a card's `changeCount` or `revision` can trail until it reads again. It is a low-level integration hook; React review UI uses `useAuthoredGroups(blockKey)` and `useActiveAuthored()` from `platejs/authored/react` instead.
 
-### Types and format helpers
+### Types and format helper
 
-`platejs/authored` exports the authored plugin descriptor, `AuthoredPlaceError`,
-the change, card, query, page, delta, decision, result, comparison-import result,
-and outcome types, and the format helpers below.
+`platejs/authored` exports `AuthoredPlugin`, `suggestionColorOf`,
+`AUTHORED_COLOR_COUNT`, `AuthoredPlaceError`, the change, card, query, page,
+delta, decision, result, comparison-import result, and outcome types, and
+`projectAuthoredDocument`.
 
 `projectAuthoredDocument(document, { projection })` returns
 `{ ok, document, diagnostics, pending }` for an `accepted` or `proposed`
@@ -458,7 +459,3 @@ content. With `editor`, a document with pending changes returns an
 returns one, with the code `authored-uncovered`, when the projection builds an
 element that needs a generated value and the document stores no spare block for
 it, such as a document another tool wrote.
-
-`projectAuthoredRange(document, projected, range)` maps a range of the stored
-document onto one of its projections, or returns `null` when the projection
-keeps none of its content.

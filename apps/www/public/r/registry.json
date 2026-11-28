@@ -317,7 +317,8 @@
       "registryDependencies": [
         "https://platejs.org/r/docx-source.json",
         "https://platejs.org/r/editor-dropdown-menu.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {
@@ -367,7 +368,8 @@
         "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/editor-plugins-static.json",
         "https://platejs.org/r/editor-static.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {
@@ -3250,6 +3252,7 @@
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/highlight-style.json",
+        "https://platejs.org/r/user-directory.json",
         "avatar",
         "button"
       ],
@@ -3321,6 +3324,7 @@
         "https://platejs.org/r/comment.json",
         "https://platejs.org/r/floating-popover.json",
         "https://platejs.org/r/use-visible-anchor.json",
+        "https://platejs.org/r/user-directory.json",
         "avatar",
         "button",
         "separator"
@@ -4309,6 +4313,19 @@
       "type": "registry:component"
     },
     {
+      "name": "user-directory",
+      "title": "User Directory",
+      "description": "Writable React context for resolving comment and suggestion author profiles.",
+      "files": [
+        {
+          "path": "src/registry/components/editor/user-directory.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/user-directory.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
       "name": "table",
       "title": "Table",
       "description": "A table component with floating toolbar and border customization.",
@@ -4645,7 +4662,8 @@
         "unified@^11.0.5"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/comment.json"
+        "https://platejs.org/r/comment.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {
@@ -4675,6 +4693,7 @@
         "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/settings-dialog.json",
         "https://platejs.org/r/use-chat.json",
+        "https://platejs.org/r/user-directory.json",
         "tooltip"
       ],
       "files": [
@@ -5128,7 +5147,8 @@
         "https://platejs.org/r/mark-toolbar-button.json",
         "https://platejs.org/r/mode-toolbar-button.json",
         "https://platejs.org/r/suggestion.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {
@@ -5165,7 +5185,8 @@
         "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/table.json",
         "https://platejs.org/r/table-toolbar-button.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {
@@ -5234,6 +5255,7 @@
         "https://platejs.org/r/mode-toolbar-button.json",
         "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json",
         "button"
       ],
       "files": [
@@ -5272,7 +5294,8 @@
         "https://platejs.org/r/history-toolbar-button.json",
         "https://platejs.org/r/mode-toolbar-button.json",
         "https://platejs.org/r/suggestion.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {
@@ -5339,7 +5362,8 @@
         "https://platejs.org/r/discussion.json",
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/link.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {
@@ -5377,7 +5401,8 @@
         "https://platejs.org/r/discussion.json",
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/history-toolbar-button.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {
@@ -5416,6 +5441,7 @@
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/link.json",
         "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json",
         "button"
       ],
       "files": [
@@ -5458,7 +5484,8 @@
         "https://platejs.org/r/editor-static.json",
         "https://platejs.org/r/link.json",
         "https://platejs.org/r/link-static.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/user-directory.json"
       ],
       "files": [
         {

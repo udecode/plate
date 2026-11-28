@@ -1010,12 +1010,20 @@ export const confirmInkDigitize = (
   const metaIndexById = new Map(
     prepared.passages.map((meta, index) => [meta.id, { index, meta }])
   );
-  const pendingRanges: Range[] = view.plugin(AuthoredPlugin).installed
-    ? view
-        .plugin(AuthoredPlugin)
-        .read.changes()
-        .items.flatMap((item) => item.ranges)
-    : [];
+  const pendingRanges: Range[] = [];
+  const authored = view.plugin(AuthoredPlugin);
+
+  if (authored.installed) {
+    for (let cursor: string | undefined; ;) {
+      const page = authored.read.changes({ cursor, limit: 200 });
+
+      for (const item of page.items) {
+        pendingRanges.push(...item.ranges);
+      }
+      if (!page.cursor) break;
+      ({ cursor } = page);
+    }
+  }
 
   type PlannedCorrection = {
     correctionIndex: number;

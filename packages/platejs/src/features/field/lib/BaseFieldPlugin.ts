@@ -24,6 +24,7 @@ import {
   getEditorRuntimeOwner,
   getMutationVersion,
   getSnapshotVersion,
+  isAuthoredFormatOnlyPropertyWrite,
   readElementPropertyWrites,
   readRootEntries,
   readViewPage,
@@ -626,37 +627,6 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
 
           if (role !== null && element.role !== role) return false;
 
-          const isValueFormatMark = (entry: unknown): boolean =>
-            typeof entry === 'object' &&
-            entry !== null &&
-            (entry as Record<string, unknown>).kind === 'format' &&
-            (entry as Record<string, unknown>).key === 'value';
-
-          const isValueOnlyAuthored = (
-            modification: Readonly<{ type: string; value?: unknown }>
-          ): boolean => {
-            const beforeRaw = (element as Record<string, unknown>).authored;
-            const before = Array.isArray(beforeRaw) ? beforeRaw : [];
-            const after =
-              modification.type === 'set' && Array.isArray(modification.value)
-                ? modification.value
-                : [];
-            const beforeNonValue = before.filter(
-              (entry) => !isValueFormatMark(entry)
-            );
-            const afterNonValue = after.filter(
-              (entry) => !isValueFormatMark(entry)
-            );
-
-            return (
-              beforeNonValue.length === afterNonValue.length &&
-              beforeNonValue.every(
-                (entry, index) =>
-                  JSON.stringify(entry) === JSON.stringify(afterNonValue[index])
-              )
-            );
-          };
-
           return modifications.every(
             (modification) =>
               (modification.key === 'value' &&
@@ -664,8 +634,9 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                   (modification.type === 'set' &&
                     fitsField(element, modification.value)))) ||
               (role === null &&
-                modification.key === 'authored' &&
-                isValueOnlyAuthored(modification))
+                isAuthoredFormatOnlyPropertyWrite(element, modification, [
+                  'value',
+                ]))
           );
         }),
       ],

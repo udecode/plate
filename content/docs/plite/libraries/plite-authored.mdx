@@ -154,9 +154,9 @@ Save `editor.read.value()` as one document, including node review marks and docu
 
 Install `yjs` from `plitejs/yjs` on every peer to synchronize marked content and document records through the ordinary Yjs binding.
 
-## Format helpers
+## Format helper
 
-`plitejs/authored` exports pure document transforms. Use `projectAuthoredDocument(document, { projection })` for a result containing `document`, `diagnostics`, `pending`, and `ok`, with projection `accepted` or `proposed`. Use `projectAuthoredRange(document, projectedDocument, range)` to map a stored-document range onto a projected document; it returns `null` when the projection keeps none of that content.
+`plitejs/authored` exports `projectAuthoredDocument(document, { projection })`, a pure document transform that returns `document`, `diagnostics`, `pending`, and `ok` for an `accepted` or `proposed` projection.
 
 ## API reference
 

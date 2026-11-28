@@ -2,15 +2,15 @@
 
 import { PencilLineIcon } from 'lucide-react';
 import { AuthoredPlugin } from 'platejs/authored';
+import { AuthoredReactPlugin } from 'platejs/authored/react';
 import { useEditor, useEditorSelector } from 'platejs/react';
-import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 export function SuggestionToolbarButton() {
   const installed = useEditorSelector(
-    (editor) => editor.plugin(SuggestionPlugin).installed
+    (editor) => editor.plugin(AuthoredReactPlugin).installed
   );
 
   if (!installed) return null;

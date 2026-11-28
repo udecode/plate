@@ -1,5 +1,5 @@
-/** How many palette slots the copied suggestion kit paints. */
-export const SUGGESTION_COLOR_COUNT = 7;
+/** How many palette slots the authored review palette paints. */
+export const AUTHORED_COLOR_COUNT = 7;
 
 /**
  * The palette slot of a suggestion author: a hash of their id, so every peer
@@ -8,7 +8,7 @@ export const SUGGESTION_COLOR_COUNT = 7;
  */
 export const suggestionColorOf = (
   authorId: string,
-  count = SUGGESTION_COLOR_COUNT
+  count = AUTHORED_COLOR_COUNT
 ) => {
   let value = 0x81_1c_9d_c5;
 

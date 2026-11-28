@@ -16,6 +16,26 @@ import {
 } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { aiUser } from '@/registry/components/editor/use-chat';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
+
+const demoUsers = {
+  [aiUser.id]: aiUser,
+  alice: {
+    id: 'alice',
+    name: 'Alice',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
+  },
+  bob: {
+    id: 'bob',
+    name: 'Bob',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
+  },
+  charlie: {
+    id: 'charlie',
+    name: 'Charlie',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
+  },
+};
 
 export default function DiscussionDemo() {
   const editor = useCreateEditor({
@@ -24,24 +44,6 @@ export default function DiscussionDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          users: {
-            [aiUser.id]: aiUser,
-            alice: {
-              id: 'alice',
-              name: 'Alice',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
-            },
-            bob: {
-              id: 'bob',
-              name: 'Bob',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
-            },
-            charlie: {
-              id: 'charlie',
-              name: 'Charlie',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
-            },
-          },
           initialComments,
         },
       }),
@@ -50,13 +52,15 @@ export default function DiscussionDemo() {
     initialValue: fixture.read.value(),
   });
   return (
-    <EditorRoot editor={editor}>
-      <EditorFrame className="h-[650px]">
-        <EditorContainer>
-          <Editor className="min-w-0" variant="demo" />
-        </EditorContainer>
-      </EditorFrame>
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={demoUsers}>
+      <EditorRoot editor={editor}>
+        <EditorFrame className="h-[650px]">
+          <EditorContainer>
+            <Editor className="min-w-0" variant="demo" />
+          </EditorContainer>
+        </EditorFrame>
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }
 

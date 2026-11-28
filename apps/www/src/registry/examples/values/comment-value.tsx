@@ -4,15 +4,12 @@ import {
   createEditor,
   type Value,
 } from 'platejs';
-import type {
-  CommentThread,
-  CommentUser,
-  SavedComments,
-} from 'platejs/comments';
+import type { CommentThread, SavedComments } from 'platejs/comments';
 
 import { createCommentValue } from '@/registry/components/editor/comment';
+import type { UserProfile } from '@/registry/components/editor/user-directory';
 
-export const commentUsers: Record<string, CommentUser> = {
+export const commentUsers: Record<string, UserProfile> = {
   alice: {
     id: 'alice',
     name: 'Alice',

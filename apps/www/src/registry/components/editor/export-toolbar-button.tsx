@@ -25,6 +25,7 @@ import {
 } from '@/registry/components/editor/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
+import { useUserDirectory } from '@/registry/components/editor/user-directory';
 
 import { EditorStatic } from './editor-static';
 
@@ -115,6 +116,7 @@ export function ExportToolbarButton() {
   const model = useModelEditor();
   const commentsInstalled = editor.plugin(CommentsPlugin).installed;
   const docxSource = useDocxSource();
+  const userDirectory = useUserDirectory();
   const [open, setOpen] = React.useState(false);
   const [projectionChoice, setProjectionChoice] =
     React.useState<CleanProjection>();
@@ -195,7 +197,7 @@ export function ExportToolbarButton() {
 
       if (commentsInstalled) {
         const comments = model.plugin(CommentsPlugin);
-        const users = comments.store.get('users');
+        const users = userDirectory.getUsers();
 
         comments.api.getThreads().forEach((thread) => {
           if (thread.status !== 'published') return;

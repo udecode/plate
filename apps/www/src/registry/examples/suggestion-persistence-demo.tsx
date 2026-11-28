@@ -18,7 +18,10 @@ import {
 import { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-button';
 import { SuggestionKit } from '@/registry/components/editor/suggestion';
 import { Toolbar } from '@/registry/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
 import { createSuggestionDocument } from '@/registry/examples/values/suggestion-document';
+
+const USERS = { alice: { id: 'alice', name: 'Alice' } };
 
 type SuggestionSnapshot = {
   document: EditorValueInput<Value>;
@@ -42,7 +45,6 @@ export default function SuggestionPersistenceDemo() {
         ...DiscussionKit,
         CommentsPlugin.configure({
           initialState: {
-            users: { alice: { id: 'alice', name: 'Alice' } },
             initialComments: loaded.comments,
           },
         }),
@@ -95,13 +97,15 @@ export default function SuggestionPersistenceDemo() {
       <p aria-live="polite" className="text-sm text-muted-foreground">
         {status}
       </p>
-      <EditorRoot
-        editor={editor}
-        key={editor.id}
-        authored={{ intent: 'propose' }}
-      >
-        <SuggestionPersistenceContent />
-      </EditorRoot>
+      <UserDirectoryProvider initialUsers={USERS}>
+        <EditorRoot
+          editor={editor}
+          key={editor.id}
+          authored={{ intent: 'propose' }}
+        >
+          <SuggestionPersistenceContent />
+        </EditorRoot>
+      </UserDirectoryProvider>
     </div>
   );
 }

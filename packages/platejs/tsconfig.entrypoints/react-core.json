@@ -12,6 +12,7 @@
     "tsBuildInfoFile": "../.turbo/entrypoint-types/react-core.tsbuildinfo"
   },
   "exclude": [
+    "../src/react/authored/**/*",
     "../src/react/virtualized.*",
     "../src/react/index.*",
     "../src/react/features/basic-nodes/**/*",
@@ -33,7 +34,6 @@
     "../src/react/features/lock/**/*",
     "../src/react/features/media/**/*",
     "../src/react/features/mention/**/*",
-    "../src/react/features/suggestion/**/*",
     "../src/react/features/table/**/*",
     "../src/react/features/toc/**/*",
     "../src/react/features/combobox/**/*",

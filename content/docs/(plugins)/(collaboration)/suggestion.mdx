@@ -45,14 +45,13 @@ npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.or
 
 <ComponentSource name="suggestion" />
 
-`SuggestionKit` configures the package `SuggestionPlugin` with `render.contentAttributes` for its default styles. The package supplies semantic attributes, active-card behavior, and authored-change hooks. Core applies the kit's classes to the existing content root, including when you render `EditorContent` directly. `DiscussionKit` adds block buttons, Accept and Reject cards, and comment replies.
+`SuggestionKit` configures `AuthoredReactPlugin` with `render.contentAttributes` for its default styles. `platejs/authored` supplies semantic attributes, and `platejs/authored/react` supplies active-card behavior and authored-change hooks. Core applies the kit's classes to the existing content root, including when you render `EditorContent` directly. `DiscussionKit` adds block buttons, Accept and Reject cards, and comment replies.
 
 ### Add the kits
 
 ```tsx title="components/editor/suggestion-editor.tsx" showLineNumbers
 'use client';
 
-import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
@@ -65,19 +64,11 @@ import {
 import { SuggestionKit } from '@/components/editor/suggestion';
 import { SuggestionToolbarButton } from '@/components/editor/suggestion-toolbar-button';
 import { Toolbar } from '@/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/components/editor/user-directory';
 
 export function SuggestionEditor() {
   const editor = useCreateEditor({
-    plugins: [
-      ...BasicBlocksKit,
-      ...SuggestionKit,
-      ...DiscussionKit,
-      CommentsPlugin.configure({
-        initialState: {
-          users: { alice: { id: 'alice', name: 'Alice' } },
-        },
-      }),
-    ],
+    plugins: [...BasicBlocksKit, ...SuggestionKit, ...DiscussionKit],
     initialValue: [
       { type: 'paragraph', children: [{ text: 'Edit this sentence.' }] },
     ],
@@ -85,23 +76,25 @@ export function SuggestionEditor() {
   });
 
   return (
-    <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
-      <EditorContainer>
-        <Toolbar>
-          <UndoToolbarButton />
-          <RedoToolbarButton />
-          <SuggestionToolbarButton />
-        </Toolbar>
-        <Editor />
-      </EditorContainer>
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={{ alice: { id: 'alice', name: 'Alice' } }}>
+      <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
+        <EditorContainer>
+          <Toolbar>
+            <UndoToolbarButton />
+            <RedoToolbarButton />
+            <SuggestionToolbarButton />
+          </Toolbar>
+          <Editor />
+        </EditorContainer>
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }
 ```
 
-Replace `'alice'` with the authenticated user's ID. The editor's `userId` attributes document changes and comments, and `users` supplies names and optional avatars. A solo editor can omit `userId`; it then suggests and comments as the local user, `'local'`. To suggest or comment as another author, such as an AI, write through a view made with `createEditorView(editor, { authorId })`, as [Authored Changes](/docs/authored-changes#write-as-another-author) shows.
+Replace `'alice'` with the authenticated user's ID. The editor's `userId` attributes document changes and comments, and `UserDirectoryProvider` supplies names and optional avatars. A solo editor can omit `userId`; it then suggests and comments as the local user, `'local'`. To suggest or comment as another author, such as an AI, write through a view made with `createEditorView(editor, { authorId })`, as [Authored Changes](/docs/authored-changes#write-as-another-author) shows.
 
-`SuggestionPlugin` depends on `AuthoredPlugin`, which reads the author of the writing view, else the editor's `userId`, once per write transaction. Do not install a second authored descriptor alongside the kit.
+`AuthoredReactPlugin` extends `AuthoredPlugin`, which reads the author of the writing view, else the editor's `userId`, once per write transaction. Do not install a second authored descriptor alongside the kit.
 
 </Steps>
 
@@ -157,27 +150,23 @@ authored.api.setView({ preview: 'proposed' });
 
 A preview throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. `read.view()` returns the preview, such as `{ preview: 'proposed' }`, which has no intent. Switching to a preview does not accept or reject changes. Coordinates can differ between views, so read selections and apply edits through the view that produced them. Set an intent with `setView` to leave the preview.
 
-Under a preview, each block reads the cards and changes of the stored content it shows, with what the preview hides inside it, and those of an element around it that the preview takes away, such as a quote whose pending unwrap the preview applies. A preview reads them by a node's key or path only, as the hooks below do; a point or a range throws `AuthoredPlaceError`, which `platejs/authored` exports. The cards of a top-level block the preview hides show on no block, so switch to Editing to see and decide them. The exception is a joined line, which shows the cards of a hidden block between its two halves. A top-level block the preview adds to complete the document, such as the empty paragraph it shows when a suggestion deletes the only block, shows no cards. One it adds inside a container, as when a suggestion deletes the only paragraph of a quote, can show the cards of the hidden paragraph it replaces. Under a preview, the copied discussion anchors the popover of a suggestion or a change thread on the paragraph whose trigger was pressed last, and opens it only when that paragraph shows the thread.
+Under a preview, each block reads the cards and changes of the stored content it shows, with what the preview hides inside it, and those of an element around it that the preview takes away, such as a quote whose pending unwrap the preview applies. A preview reads them by a node's key or path only, as `useAuthoredGroups` does; a point or a range throws `AuthoredPlaceError`, which `platejs/authored` exports. The cards of a top-level block the preview hides show on no block, so switch to Editing to see and decide them. The exception is a joined line, which shows the cards of a hidden block between its two halves. A top-level block the preview adds to complete the document, such as the empty paragraph it shows when a suggestion deletes the only block, shows no cards. One it adds inside a container, as when a suggestion deletes the only paragraph of a quote, can show the cards of the hidden paragraph it replaces. Under a preview, the copied discussion anchors the popover of a suggestion or a change thread on the paragraph whose trigger was pressed last, and opens it only when that paragraph shows the thread.
 
 ## Read view state
 
-The React entrypoint exposes focused hooks for custom controls and review UI:
+`platejs/authored/react` exposes focused hooks for custom controls and review UI:
 
 ```tsx
 import {
-  useActiveSuggestion,
-  useSuggestionChanges,
-  useSuggestionGroups,
-} from 'platejs/suggestion/react';
+  useActiveAuthored,
+  useAuthoredGroups,
+} from 'platejs/authored/react';
 
-const changes = useSuggestionChanges(path);
-const cards = useSuggestionGroups(blockKey);
-const { activeId, setActiveId } = useActiveSuggestion();
+const cards = useAuthoredGroups(blockKey);
+const { activeId, setActiveId } = useActiveAuthored();
 ```
 
-`useSuggestionChanges(path)` returns the native `AuthoredChange` records of the block at that path of the mounted view. A nested block's path returns its own changes and those of a container around it that the preview takes away. It never returns the pending wrap or unwrap of a container the view still shows, which that container's own path returns. It rereads on each commit that changes the document or its state and when the review delta names the path's top-level block, and keeps its result stable while those records are unchanged. A change's `ranges` stay places of the stored document on every view.
-
-`useSuggestionGroups(blockKey)` returns the review cards of the block with that key, as `read.groups` summaries. A nested block's key reads that block's own cards. It rereads when the component that calls it renders and when the review delta names the block, which happens when a change reaches or leaves that block or one of its changes moves to another card. A delta names top-level blocks only, so for a nested block's key it rereads only when that component renders. An edit to the same card in another block does neither, so a summary's `changeCount` or `revision` can trail; read `editor.plugin(AuthoredPlugin).read.groupOf(card.id)` when a control needs the current one. Read a card's changes a page at a time with `read.changes({ group: card.id })`, or the changes and parts a review card shows with `read.groupDetails(card.id, { limit })`.
+`useAuthoredGroups(blockKey)` returns the review cards of the block with that key, as `read.groups` summaries. A nested block's key reads that block's own cards. It rereads when the component that calls it renders and when the review delta names the block or one of its current cards. A delta names top-level blocks only, so for a nested block's key it rereads when that component renders or when one of its current cards changes. Read `editor.plugin(AuthoredPlugin).read.groupOf(card.id)` when a control needs the latest summary for a card ID. Read a card's changes a page at a time with `read.changes({ group: card.id })`, or the changes and parts a review card shows with `read.groupDetails(card.id, { limit })`.
 
 In the current view, clicking a marked element activates the first card its `data-editor-authored-groups` attribute names. Clicking unmarked editor content clears it. In Safari with an input method such as WeType, a tap gets no click of its own, so its press activates or clears instead. A drag clears the active card when the card under the pointer changes from the one where the drag started, or when the pointer leaves the editor. Unmounting the view, switching it to another intent or preview, or deciding the card also clears stale active state. Use `setActiveId` when a custom card or control needs to activate a card directly.
 
@@ -307,15 +296,14 @@ for Word revisions.
 
 ## Headless usage
 
-Use `BaseSuggestionPlugin` for semantic decorations without React, Comments, or copied UI. Set Suggestion mode through `AuthoredPlugin`, which it installs:
+Use `AuthoredPlugin` for semantic decorations without React, Comments, or copied UI, and set Suggestion mode through its API:
 
 ```tsx title="suggestion-editor.ts" showLineNumbers
 import { BaseParagraphPlugin, createEditor } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
-import { BaseSuggestionPlugin } from 'platejs/suggestion';
 
 const editor = createEditor({
-  plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
+  plugins: [BaseParagraphPlugin, AuthoredPlugin],
   initialValue: [
     { type: 'paragraph', children: [{ text: 'Edit this sentence.' }] },
   ],
@@ -325,7 +313,7 @@ const editor = createEditor({
 editor.plugin(AuthoredPlugin).api.setView({ intent: 'propose' });
 ```
 
-Marked text and elements expose `data-editor-authored-change`, `data-editor-authored-kind`, `data-editor-authored-author`, `data-editor-authored-groups`, and `data-editor-authored-color`. Each holds a space-separated list, except `color`, which holds the palette slot, 0 to 6, of the author whose change the element paints, so each author paints one color whatever card holds the change. A pending deletion has `delete` in its `kind`. Add application styles against these attributes through the plugin's `render.contentAttributes`. Static presets can configure `BaseSuggestionPlugin` with a server-safe attribute object; `SuggestionKit` supplies the live default styles.
+Marked text and elements expose `data-editor-authored-change`, `data-editor-authored-kind`, `data-editor-authored-author`, `data-editor-authored-groups`, and `data-editor-authored-color`. Each holds a space-separated list, except `color`, which holds the palette slot, 0 to 6, of the author whose change the element paints, so each author paints one color whatever card holds the change. A pending deletion has `delete` in its `kind`. Add application styles against these attributes through the plugin's `render.contentAttributes`. Static presets can configure `AuthoredPlugin` with a server-safe attribute object; `SuggestionKit` supplies the live default styles.
 
 ## Discussion review
 
@@ -353,22 +341,21 @@ Preserve input for non-applied results and thrown errors. Comments authorizes du
 
 ## API Reference
 
-### `BaseSuggestionPlugin`
+### `AuthoredPlugin`
 
-Import from `platejs/suggestion`. It supplies CSS-free semantic decorations and depends on `AuthoredPlugin`, which owns change records, identity and the view's intent.
+Import from `platejs/authored`. It owns change records, identity, the view's intent, and CSS-free semantic `data-editor-authored-*` attributes. `platejs/authored` also exports `suggestionColorOf` and `AUTHORED_COLOR_COUNT` for author color slots.
 
-### `SuggestionPlugin`
+### `AuthoredReactPlugin`
 
-Import from `platejs/suggestion/react`. It extends `BaseSuggestionPlugin` with exact-view active state and pointer activation.
+Import from `platejs/authored/react`. It extends `AuthoredPlugin` with exact-view active state and pointer activation.
 
 ### React hooks
 
 | Hook | Result |
 | --- | --- |
-| `useSuggestionChanges(path)` | Native `AuthoredChange` records of the block at `path`. |
-| `useSuggestionGroups(blockKey)` | Summaries of the review cards of the block with that key. |
-| `useActiveSuggestion()` | The view-local active card's `activeId` and the `setActiveId` function. |
+| `useAuthoredGroups(blockKey)` | Summaries of the review cards of the block with that key. |
+| `useActiveAuthored()` | The view-local active card's `activeId` and the `setActiveId` function. |
 
 ### `SuggestionKit`
 
-The copied registry kit configures `SuggestionPlugin` with content-root styles. Generic editor components remain independent of suggestions. Review cards, Comments integration, toolbars, and popovers remain in registry code.
+The copied registry kit configures `AuthoredReactPlugin` with content-root styles. Generic editor components remain independent of suggestions. Review cards, Comments integration, toolbars, and popovers remain in registry code.

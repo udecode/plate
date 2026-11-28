@@ -94,7 +94,6 @@ export const publicFeatureDependencies = Object.freeze({
   lock: [],
   media: ['dom'],
   mention: [],
-  suggestion: ['authored'],
   table: ['authored', 'dom'],
   toc: ['standard/basic-nodes'],
 });
@@ -113,7 +112,6 @@ export const publicFeatureReactEntrypoints = Object.freeze([
   'lock',
   'media',
   'mention',
-  'suggestion',
   'table',
   'toc',
 ]);
@@ -127,7 +125,6 @@ export const publicReactOnlyEntrypoints = Object.freeze([
 const standardReactDependencies = {
   board: ['dom', 'static'],
   'format-painter': ['standard/basic-styles'],
-  suggestion: ['authored'],
   table: ['authored', 'dom'],
 };
 
@@ -135,12 +132,12 @@ const standardReactPeerDependencies = {
   'basic-nodes': ['react'],
   board: ['react', 'react-dom'],
   combobox: ['react'],
+  comments: ['react'],
   'format-painter': ['react'],
   ink: ['react'],
   list: ['react'],
   lock: ['react'],
   resizable: ['react'],
-  suggestion: ['react'],
   table: ['react'],
   details: ['react'],
 };
@@ -270,6 +267,12 @@ export const entrypointDags = {
         )
       ),
       authored: headless(directory('authored', ['core'], ['plitejs/authored'])),
+      'authored/react': client(
+        directory('react/authored', ['authored', 'core', 'react-core'], [], {
+          peerDependencies: ['react'],
+          runtimeProof: 'plate-plugin-client',
+        })
+      ),
       core: headless(
         privateRoot(['dom', 'history'], ['plitejs', 'plitejs/internal'])
       ),
@@ -506,6 +509,7 @@ export const entrypointDags = {
         'ai',
         'ai/react',
         'authored',
+        'authored/react',
         'board',
         'board/react',
         'code-block/codemirror',
@@ -573,7 +577,9 @@ export const entrypointDags = {
         })
       ),
       root: headless(root()),
-      testing: headless(directory('testing', ['root', 'hyperscript'])),
+      testing: headless(
+        directory('testing', ['root', 'hyperscript', 'authored'])
+      ),
       yjs: headless(
         directory('yjs', ['root'], [], {
           peerDependencies: ['diff-match-patch-ts', 'yjs'],

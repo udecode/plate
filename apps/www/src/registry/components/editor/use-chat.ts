@@ -3,7 +3,6 @@
 import { type UIMessage, DefaultChatTransport } from 'ai';
 import { createEditorView, NodeApi } from 'platejs';
 import { AIChatPlugin, useAIChat } from 'platejs/ai/react';
-import type { CommentUser } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { useEditor, usePluginStore } from 'platejs/react';
@@ -11,8 +10,9 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { createCommentValue } from '@/registry/components/editor/comment';
+import type { UserProfile } from '@/registry/components/editor/user-directory';
 
-export const aiUser: CommentUser = {
+export const aiUser: UserProfile = {
   id: 'ai',
   name: 'AI',
   avatarUrl: 'https://api.dicebear.com/9.x/bottts/svg?seed=ai',
@@ -196,7 +196,7 @@ export function useEditorChat(
               );
               return;
             }
-            comments.api.setActive([id]);
+            editor.plugin(CommentsPlugin).api.setActive([id]);
           } catch (error) {
             discard();
             // The SDK does not await onData promises, so rejection must terminate here.

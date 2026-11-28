@@ -12,23 +12,27 @@ import {
   ElementApi,
   type NamedRootKey,
   type NodeKey,
-  type Path,
-  PathApi,
   type Point,
   type Range,
   RangeApi,
 } from 'platejs';
 import type {
-  AuthoredChange,
   AuthoredChangeGroup,
-  AuthoredChangePart,
   AuthoredGroupDetails,
   AuthoredGroupPart,
   AuthoredResult,
 } from 'platejs/authored';
 import { AuthoredPlugin } from 'platejs/authored';
-import { CommentsPlugin } from 'platejs/comments/react';
-import { BaseLockPlugin } from 'platejs/lock';
+import {
+  AuthoredReactPlugin,
+  useActiveAuthored,
+  useAuthoredGroups,
+} from 'platejs/authored/react';
+import {
+  CommentsPlugin,
+  type CommentThreadIndex,
+  useCommentThreadIndex,
+} from 'platejs/comments/react';
 import {
   type EditableSiblingProps,
   type RenderNodeWrapperDescriptor,
@@ -40,18 +44,8 @@ import {
   useEditorSelector,
   useModelEditor,
   usePath,
-  usePluginStore,
 } from 'platejs/react';
-import {
-  SuggestionPlugin,
-  useActiveSuggestion,
-  useSuggestionGroups,
-} from 'platejs/suggestion/react';
-import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from 'platejs/table';
+import { describeTableSuggestionGroup } from 'platejs/table';
 import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -59,18 +53,18 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
   CommentComposer,
+  CommentKit,
   CommentThreadCard,
   formatCommentDate,
-  useCommentUser,
-  CommentKit,
+  useActiveCommentIds,
   usePendingComment,
-  useVisibleCommentThreadIds,
 } from '@/registry/components/editor/comment';
 import {
   FloatingPopover,
   FloatingPopoverAnchor,
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
+import { useUser } from '@/registry/components/editor/user-directory';
 import { useVisibleAnchor } from '@/registry/hooks/use-visible-anchor';
 
 type RuntimeEditor = ReturnType<typeof useEditor>;
@@ -187,82 +181,6 @@ const blockThreadCount = (
   return count;
 };
 
-type AreaOwner = Readonly<{ path: Path; root?: NamedRootKey | undefined }>;
-
-type AreaPlaces = Readonly<{
-  owners: ReadonlyMap<string, readonly AreaOwner[]>;
-  root: NamedRootKey | undefined;
-  standaloneRoots: ReadonlySet<NamedRootKey>;
-}>;
-
-const areaPlaces = (
-  editor: RuntimeEditor,
-  standaloneRoots: readonly NamedRootKey[]
-): AreaPlaces => ({
-  owners: new Map(
-    editor.read.roots().map(({ owners, root }) => [root, owners])
-  ),
-  root: editor.read.view.root(),
-  standaloneRoots: new Set(standaloneRoots),
-});
-
-const areaIndicesOf = (
-  { owners, root: areaRoot, standaloneRoots }: AreaPlaces,
-  point: Point
-): readonly number[] => {
-  if (point.root === areaRoot) return [point.path[0] ?? 0];
-  if (point.root === undefined || standaloneRoots.has(point.root)) return [];
-
-  const indices = new Set<number>();
-  const visited = new Set<string>([point.root]);
-  const stack: NamedRootKey[] = [point.root];
-
-  while (stack.length > 0) {
-    const current = stack.pop();
-    if (!current) continue;
-
-    for (const owner of owners.get(current) ?? []) {
-      if (owner.root === areaRoot) {
-        const blockIndex = owner.path[0];
-        if (blockIndex !== undefined) indices.add(blockIndex);
-      } else if (
-        owner.root !== undefined &&
-        !standaloneRoots.has(owner.root) &&
-        !visited.has(owner.root)
-      ) {
-        visited.add(owner.root);
-        stack.push(owner.root);
-      }
-    }
-  }
-
-  return [...indices].sort((left, right) => left - right);
-};
-
-const areaIndexOf = (places: AreaPlaces, point: Point) =>
-  areaIndicesOf(places, point)[0];
-
-const discussionBlocks = (
-  editor: RuntimeEditor,
-  places: AreaPlaces,
-  range: Range
-) => {
-  const [start, end] = RangeApi.edges(range);
-
-  if (start.root === places.root && end.root === places.root) {
-    const first = start.path[0] ?? 0;
-    const last = end.path[0] ?? 0;
-
-    return Array.from({ length: last - first + 1 }).flatMap(
-      (_, offset) => editor.key([first + offset]) ?? []
-    );
-  }
-
-  return areaIndicesOf(places, start).flatMap(
-    (index) => editor.key([index]) ?? []
-  );
-};
-
 const sameBlockSnapshot = (
   left: DiscussionBlockSnapshot | undefined,
   right: DiscussionBlockSnapshot
@@ -275,6 +193,7 @@ const createDiscussionStore = () => {
   const blockTriggerElements = new Set<HTMLElement>();
   const blockSnapshots = new Map<NodeKey, DiscussionBlockSnapshot>();
   const threadListeners = new Set<() => void>();
+  let areaBlockIndexOf: (point: Point) => number | undefined = () => undefined;
   let commentBlocks = new Map<NodeKey, readonly CommentItem[]>();
   let commentsById = new Map<string, CommentItem>();
   let notifyQueued = false;
@@ -334,6 +253,7 @@ const createDiscussionStore = () => {
   };
 
   return {
+    areaBlockIndexOf: (point: Point) => areaBlockIndexOf(point),
     clearTarget() {
       publishTarget(null);
     },
@@ -410,24 +330,36 @@ const createDiscussionStore = () => {
         blockTriggers.delete(key);
       }
     },
-    update(
-      items: readonly CommentItem[],
-      threads: ReadonlyMap<string, readonly string[]>
+    syncIndex(
+      index: CommentThreadIndex,
+      getCreatedAt: (id: string) => Date | null
     ) {
+      ({ areaBlockIndexOf } = index);
       const previousKeys = new Set(commentBlocks.keys());
       const nextBlocks = new Map<NodeKey, CommentItem[]>();
+      const nextById = new Map<string, CommentItem>();
 
-      commentsById = new Map(items.map((item) => [item.id, item]));
-      items.forEach((item) => {
-        item.blockKeys.forEach((blockKey) => {
+      index.threadBlocks.forEach((blockKeys, id) => {
+        const createdAt = getCreatedAt(id);
+        if (!createdAt) return;
+        const item: CommentItem = {
+          blockKeys,
+          createdAt,
+          id,
+          kind: 'comment',
+        };
+
+        nextById.set(id, item);
+        blockKeys.forEach((blockKey) => {
           const block = nextBlocks.get(blockKey);
 
           if (block) block.push(item);
           else nextBlocks.set(blockKey, [item]);
         });
       });
+      commentsById = nextById;
       commentBlocks = nextBlocks;
-      suggestionThreads = new Map(threads);
+      suggestionThreads = index.changeThreads;
       threadListeners.forEach((listener) => {
         listener();
       });
@@ -465,95 +397,19 @@ const readAuthoredViewMode = (editor: RuntimeEditor) => {
 
 const useDiscussionController = () => {
   const editor = useEditor();
-  const { standaloneRoots } = useEditorRootAreas(editor);
-  const authoredView = useEditorSelector(readAuthoredViewMode, {
-    dependsOn: 'authored',
-  });
-  const viewRoot = useEditorSelector((current) => current.read.view.root(), {
-    dependsOn: 'readOnly',
-  });
-  const presentationView = React.useMemo(
-    () =>
-      viewRoot === undefined
-        ? editor
-        : createEditorView(editor, { readOnly: true }),
-    [editor, viewRoot]
-  );
-  const { api: comments } = presentationView.plugin(CommentsPlugin);
-  const visibleThreadIds = useVisibleCommentThreadIds();
+  const threadIndex = useCommentThreadIndex();
   const [store] = React.useState(createDiscussionStore);
-  React.useEffect(() => {
-    const areaRoot = editor.read.view.root();
-    const locate = (
-      id: string,
-      thread: ReturnType<typeof comments.getThread>,
-      places: AreaPlaces
-    ) => {
-      if (!thread || thread.resolution) return null;
-      const attachment = comments.attachment(id);
-      if (thread.target.type === 'change') return null;
-      if (attachment?.type !== 'range' || attachment.status !== 'attached') {
-        return null;
-      }
-      const blockKeys = discussionBlocks(editor, places, attachment.range);
 
-      return blockKeys.length > 0
-        ? {
-            blockKeys,
-            createdAt: new Date(thread.createdAt),
-            id,
-            kind: 'comment' as const,
-          }
-        : null;
-    };
-    const publish = () => {
-      const suggestionThreads = new Map<string, string[]>();
-      const commentItems: CommentItem[] = [];
-      const visible = new Set(visibleThreadIds);
-      const places = areaPlaces(editor, standaloneRoots);
+  React.useLayoutEffect(() => {
+    const portal = editor.plugin(CommentsPlugin);
+    const comments = portal.installed ? portal.api : null;
 
-      comments.getThreads().forEach((thread) => {
-        if (thread.resolution) return;
-        if (thread.target.type === 'change') {
-          const ids = suggestionThreads.get(thread.target.id) ?? [];
+    store.syncIndex(threadIndex, (id) => {
+      const thread = comments?.getThread(id);
 
-          ids.push(thread.id);
-          suggestionThreads.set(thread.target.id, ids);
-          return;
-        }
-        if (!visible.has(thread.id)) return;
-        const item = locate(thread.id, thread, places);
-        if (item) commentItems.push(item);
-      });
-      store.update(commentItems, suggestionThreads);
-    };
-    const unsubscribeAttachments = comments.subscribeAttachments(publish);
-    const unsubscribeThreads = comments.subscribeThreads(publish);
-    const unsubscribeCommits = editor.subscribeCommit((commit) => {
-      if (
-        !commit ||
-        commit.changed.has('structure', areaRoot) ||
-        commit.changed.has('properties', areaRoot) ||
-        commit.changed.has('replace', areaRoot)
-      ) {
-        publish();
-      }
+      return thread ? new Date(thread.createdAt) : null;
     });
-
-    publish();
-    return () => {
-      unsubscribeAttachments();
-      unsubscribeThreads();
-      unsubscribeCommits();
-    };
-  }, [
-    authoredView,
-    comments,
-    editor,
-    standaloneRoots,
-    store,
-    visibleThreadIds,
-  ]);
+  }, [editor, store, threadIndex]);
 
   return store;
 };
@@ -561,9 +417,7 @@ const useDiscussionController = () => {
 function DiscussionRoot({ children }: WrapRootProps) {
   const store = useDiscussionController();
   const suggestions = useEditorSelector(
-    (current) =>
-      current.plugin(AuthoredPlugin).installed &&
-      current.plugin(SuggestionPlugin).installed
+    (current) => current.plugin(AuthoredReactPlugin).installed
   );
 
   return (
@@ -732,185 +586,6 @@ const describeSuggestion = (details: AuthoredGroupDetails | null) => {
   ];
 };
 
-const partPaths = (part: AuthoredChangePart): readonly Path[] =>
-  part.kind === 'boundary'
-    ? [part.at.path]
-    : part.kind === 'content'
-      ? [part.range.anchor.path, part.range.focus.path]
-      : [part.path];
-
-const changeName = (
-  kind: 'delete' | 'insert',
-  noun: 'column' | 'row' | 'table',
-  count: number
-) =>
-  `${kind === 'insert' ? 'Add' : 'Delete'} ${
-    count === 1 ? noun : `${count} ${noun}s`
-  }`;
-
-const tableChangeName = (
-  current: RuntimeEditor,
-  { id: changeId, ranges }: AuthoredChange
-) => {
-  const table = current.plugin(BaseTablePlugin);
-  const viewRoot = current.read.view.root();
-  const inView = ({ root }: Point) => root === viewRoot;
-
-  if (
-    !table.installed ||
-    !ranges.every(({ anchor, focus }) => inView(anchor) && inView(focus))
-  ) {
-    return null;
-  }
-  const path = ranges[0]?.anchor.path ?? [];
-  const tables = path.flatMap((_, index) => {
-    const tablePath = path.slice(0, index + 1);
-    const node = current.read.nodes.get(tablePath)?.[0];
-
-    return ElementApi.isElement(node) && node.type === table.schema.type
-      ? [{ node, tablePath }]
-      : [];
-  });
-  const { read } = current.plugin(AuthoredPlugin);
-  const details = tables.length > 0 ? read.details(changeId) : null;
-
-  if (!details) return null;
-  const rowType = current.plugin(BaseTableRowPlugin).schema.type;
-  const cellType = current.plugin(BaseTableCellPlugin).schema.type;
-  const kindOf = (node: unknown) =>
-    read
-      .reviewOf(node)
-      .marks.flatMap((mark) =>
-        mark.change === changeId &&
-        (mark.kind === 'delete' || mark.kind === 'insert')
-          ? [mark.kind]
-          : []
-      )[0] ?? null;
-  const markedAt = (depth: number) => {
-    const node =
-      path.length >= depth
-        ? current.read.nodes.get(path.slice(0, depth))?.[0]
-        : undefined;
-
-    return node ? kindOf(node) : null;
-  };
-  const covers = (tablePath: Path, members: readonly Path[], column = false) =>
-    details.parts.every((part) =>
-      part.kind === 'properties' && PathApi.equals(part.path, tablePath)
-        ? column &&
-          Object.keys({ ...part.before, ...part.after }).every(
-            (key) => key === 'columnWidths'
-          )
-        : partPaths(part).every((partPath) =>
-            members.some((member) => PathApi.isCommon(member, partPath))
-          )
-    );
-
-  for (const { node, tablePath } of tables) {
-    const tableKind = kindOf(node);
-
-    // A column change's width write on the table can be its first range.
-    if (
-      !read.reviewOf(node).marks.some((mark) => mark.change === changeId) &&
-      !markedAt(tablePath.length + 1) &&
-      !markedAt(tablePath.length + 2)
-    ) {
-      continue;
-    }
-    if (tableKind) {
-      return covers(tablePath, [tablePath])
-        ? changeName(tableKind, 'table', 1)
-        : null;
-    }
-    const rows = node.children.flatMap((row, index) =>
-      ElementApi.isElement(row) && row.type === rowType
-        ? [{ path: [...tablePath, index], row }]
-        : []
-    );
-
-    if (
-      rows.some(({ row }) =>
-        row.children.some(
-          (cell) =>
-            ElementApi.isElement(cell) &&
-            [cell.colSpan, cell.rowSpan].some(
-              (span) => typeof span === 'number' && span > 1
-            )
-        )
-      )
-    ) {
-      return null;
-    }
-    const markedRows = rows.flatMap((entry) => {
-      const kind = kindOf(entry.row);
-
-      return kind ? [{ kind, path: entry.path }] : [];
-    });
-
-    if (markedRows.length > 0) {
-      const { kind } = markedRows[0];
-
-      return markedRows.every((row) => row.kind === kind) &&
-        covers(
-          tablePath,
-          markedRows.map((row) => row.path)
-        )
-        ? changeName(kind, 'row', markedRows.length)
-        : null;
-    }
-    const markedCells = rows.map((entry) =>
-      entry.row.children.flatMap((cell, index) => {
-        const kind =
-          ElementApi.isElement(cell) && cell.type === cellType
-            ? kindOf(cell)
-            : null;
-
-        return kind ? [{ index, kind, path: [...entry.path, index] }] : [];
-      })
-    );
-    const cells = markedCells.flat();
-
-    if (cells.length === 0) continue;
-    const { kind } = cells[0];
-    const columns = markedCells[0].map((cell) => cell.index);
-    const wholeColumns = markedCells.every(
-      (rowCells) =>
-        rowCells.length === columns.length &&
-        rowCells.every((cell, index) => cell.index === columns[index])
-    );
-
-    return wholeColumns &&
-      cells.every((cell) => cell.kind === kind) &&
-      covers(
-        tablePath,
-        cells.map((cell) => cell.path),
-        true
-      )
-      ? changeName(kind, 'column', columns.length)
-      : null;
-  }
-
-  return null;
-};
-
-const everyTableChangeName = (
-  current: RuntimeEditor,
-  groupId: string,
-  details: AuthoredGroupDetails | null,
-  shown: number
-) => {
-  const changes =
-    details?.changes.length === shown
-      ? (current.plugin(AuthoredPlugin).read.groupDetails(groupId)?.changes ??
-        [])
-      : (details?.changes ?? []);
-  const names = changes.map((change) => tableChangeName(current, change));
-
-  return names.length > 0 && names.every((name) => name !== null)
-    ? names.slice(0, shown)
-    : null;
-};
-
 const sameLines = (left: readonly string[], right: readonly string[]) =>
   left.length === right.length &&
   left.every((line, index) => line === right[index]);
@@ -932,7 +607,7 @@ function SuggestionDiscussionCard({
     (current) => current.read.view.isReadOnly(),
     { dependsOn: 'readOnly' }
   );
-  const user = useCommentUser(group.authorId);
+  const user = useUser(group.authorId);
   const groupKey = `${group.id}:${group.revision}`;
   const [outcomeState, setOutcomeState] = React.useState<{
     groupKey: string;
@@ -953,8 +628,9 @@ function SuggestionDiscussionCard({
       const details = read.groupDetails(group.id, { limit: shown });
 
       return (
-        everyTableChangeName(current, group.id, details, shown) ??
-        describeSuggestion(details)
+        describeTableSuggestionGroup(current, group.id, {
+          limit: shown,
+        }) ?? describeSuggestion(details)
       );
     },
     [group.id, shown]
@@ -965,29 +641,6 @@ function SuggestionDiscussionCard({
   });
   const setOutcome = (result: AuthoredResult | { status: 'locked' }) =>
     setOutcomeState({ groupKey, result });
-  const touchesLockedBlock = (related: readonly AuthoredChange[]) => {
-    const lock = editor.plugin(BaseLockPlugin);
-
-    if (!lock.installed) return false;
-
-    const changes = [...related];
-
-    for (let cursor: string | undefined; ;) {
-      const page = authored.read.changes({
-        cursor,
-        group: group.id,
-        limit: 200,
-      });
-
-      changes.push(...page.items);
-      if (!page.cursor) break;
-      ({ cursor } = page);
-    }
-
-    return changes.some((change) =>
-      change.ranges.some((range) => lock.read.isLocked(range))
-    );
-  };
 
   const decide = (
     action: 'accept' | 'reject',
@@ -997,11 +650,6 @@ function SuggestionDiscussionCard({
       const change = authored.read.change(id);
       return change ? [change] : [];
     });
-
-    if (touchesLockedBlock(relatedChanges)) {
-      setOutcome({ status: 'locked' });
-      return;
-    }
 
     const result = authored.update.decide([
       { action, groups: [group] },
@@ -1231,7 +879,7 @@ function SuggestionDiscussionBlock({
 }: React.PropsWithChildren<{ blockKey: NodeKey }>) {
   const editor = useEditor();
   const store = useDiscussionStore();
-  const cards = useSuggestionGroups(blockKey);
+  const cards = useAuthoredGroups(blockKey);
   const threads = React.useSyncExternalStore(
     store.subscribeThreads,
     store.getThreads,
@@ -1349,8 +997,7 @@ function DiscussionPopover({
 }) {
   const editor = useEditor();
   const model = useModelEditor();
-  const { isPrimaryForRoot, nestedView, standaloneRoots } =
-    useEditorRootAreas(editor);
+  const { isPrimaryForRoot, nestedView } = useEditorRootAreas(editor);
   const viewRoot = useEditorSelector((current) => current.read.view.root(), {
     dependsOn: 'readOnly',
   });
@@ -1373,7 +1020,7 @@ function DiscussionPopover({
   // the popover until the pointer is released.
   const pressingRef = React.useRef(false);
   const releasedPendingRef = React.useRef<typeof rawPending>(null);
-  const rawActiveCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
+  const rawActiveCommentIds = useActiveCommentIds();
   const activeCommentIds = isPrimaryForRoot ? rawActiveCommentIds : [];
   const activeOrder = new Map(activeCommentIds.map((id, index) => [id, index]));
   const suggestions = React.useContext(SuggestionsInstalledContext);
@@ -1390,14 +1037,13 @@ function DiscussionPopover({
       if (!isPrimaryForRoot) return null;
 
       const authored = current.plugin(AuthoredPlugin);
-      let places: AreaPlaces | undefined;
 
       for (const id of activeCommentIds) {
         const attachment = comments.attachment(id);
         if (attachment?.type === 'range' && attachment.status === 'attached') {
-          places ??= areaPlaces(current, standaloneRoots);
           if (
-            areaIndexOf(places, RangeApi.start(attachment.range)) !== undefined
+            store.areaBlockIndexOf(RangeApi.start(attachment.range)) !==
+            undefined
           ) {
             return { changeId: null, range: attachment.range };
           }
@@ -1406,11 +1052,11 @@ function DiscussionPopover({
         if (attachment?.type === 'change' && authored.installed) {
           const range = authored.read.change(attachment.id)?.ranges[0];
 
-          if (range) {
-            places ??= areaPlaces(current, standaloneRoots);
-            if (areaIndexOf(places, RangeApi.start(range)) !== undefined) {
-              return { changeId: attachment.id, range };
-            }
+          if (
+            range &&
+            store.areaBlockIndexOf(RangeApi.start(range)) !== undefined
+          ) {
+            return { changeId: attachment.id, range };
           }
         }
       }
@@ -1424,15 +1070,30 @@ function DiscussionPopover({
   // thread opened alone, such as from a list, opens its change's card.
   const activeGroups = useEditorSelector(
     (current) => {
-      if (!isPrimaryForRoot) return NO_GROUPS;
+      if (!isPrimaryForRoot || !suggestions) return NO_GROUPS;
 
-      const id = activeSuggestionId ?? changeId;
-      const group =
-        suggestions && id
-          ? current.plugin(AuthoredPlugin).read.groupOf(id)
-          : null;
+      const { read } = current.plugin(AuthoredPlugin);
+      const activeGroup = activeSuggestionId
+        ? read.groupOf(activeSuggestionId)
+        : null;
 
-      return group ? [group] : NO_GROUPS;
+      if (activeGroup) {
+        const range = read.changes({
+          group: activeGroup.id,
+          limit: 1,
+        }).items[0]?.ranges[0];
+
+        if (
+          !range ||
+          store.areaBlockIndexOf(RangeApi.start(range)) !== undefined
+        ) {
+          return [activeGroup];
+        }
+      }
+
+      const commentGroup = changeId ? read.groupOf(changeId) : null;
+
+      return commentGroup ? [commentGroup] : NO_GROUPS;
     },
     { equalityFn: sameGroups }
   );
@@ -1475,16 +1136,13 @@ function DiscussionPopover({
       ])
     : [];
   const pendingRange = useEditorSelector(
-    (current) => {
+    () => {
       if (!rawPending || !isPrimaryForRoot) return null;
 
       const range = comments.pendingRange();
 
       return range &&
-        areaIndexOf(
-          areaPlaces(current, standaloneRoots),
-          RangeApi.start(range)
-        ) !== undefined
+        store.areaBlockIndexOf(RangeApi.start(range)) !== undefined
         ? range
         : null;
     },
@@ -1540,7 +1198,6 @@ function DiscussionPopover({
   const anchorRange = previewHidesRange
     ? null
     : (pendingRange ?? commentAnchor?.range ?? activeSuggestionRange ?? null);
-  const anchorRangeJson = anchorRange ? JSON.stringify(anchorRange) : null;
   const focusEditor = () => {
     const selection = model.read.selection();
     const root = selection ? RangeApi.start(selection).root : undefined;
@@ -1556,10 +1213,7 @@ function DiscussionPopover({
   const anchorRangeKey = useEditorSelector((current) => {
     if (!anchorRange) return null;
 
-    const index = areaIndexOf(
-      areaPlaces(current, standaloneRoots),
-      RangeApi.start(anchorRange)
-    );
+    const index = store.areaBlockIndexOf(RangeApi.start(anchorRange));
 
     return index === undefined ? null : current.key([index]);
   });
@@ -1568,9 +1222,7 @@ function DiscussionPopover({
   const measureAnchor = React.useMemo(() => {
     if (targetElement) return () => [targetElement.getBoundingClientRect()];
 
-    const range = anchorRangeJson
-      ? (JSON.parse(anchorRangeJson) as Range)
-      : null;
+    const range = anchorRange;
 
     if (!range) {
       if (!anchorBlockKey) return null;
@@ -1618,7 +1270,7 @@ function DiscussionPopover({
     };
   }, [
     anchorBlockKey,
-    anchorRangeJson,
+    anchorRange,
     editor,
     nestedView,
     store,
@@ -1825,7 +1477,7 @@ function SuggestionDiscussion({
   editableRef,
   snapshot,
 }: EditableSiblingProps & { snapshot: DiscussionSnapshot }) {
-  const { activeId, setActiveId } = useActiveSuggestion();
+  const { activeId, setActiveId } = useActiveAuthored();
 
   return (
     <DiscussionPopover

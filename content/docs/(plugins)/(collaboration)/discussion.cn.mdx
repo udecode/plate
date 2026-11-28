@@ -10,19 +10,19 @@ docs:
 
 <ComponentPreview name="discussion-demo" />
 
-Discussion 是复制的 UI，用于在一个锚定 popover 中打开区块的评论和 authored change。Suggestion 包提供可复用的 change 状态和激活行为。Comments 是可选功能，并管理自己的 thread record。
+Discussion 是复制的 UI，用于在一个锚定 popover 中打开区块的评论和 authored change。Authored 提供可复用的 change 状态和激活行为。Comments 是可选功能，并管理自己的 thread record。
 
 ## 所有权
 
 | 所有者 | 职责 |
 | --- | --- |
-| `platejs/suggestion` 和 `platejs/suggestion/react` | 提供语义 change 属性、精确 view 激活，以及 change 和卡片 hooks |
-| `platejs/authored` | 在文档中保存拟议编辑及其身份，把它们分组为审阅卡片，并决定它们 |
-| `platejs/comments` 和 `platejs/comments/react` | 管理评论记录、操作、映射范围、decoration 和激活状态 |
-| 复制的 `suggestion` 项 | 配置包中 plugin 的内容属性，并组合 `SuggestionKit` |
+| `platejs/authored` 和 `platejs/authored/react` | 在文档中保存拟议编辑及其身份，输出语义 change 属性，将它们分组为审阅卡片并决定它们，并提供精确 view 激活和卡片 hooks |
+| `platejs/comments` 和 `platejs/comments/react` | 管理评论记录、操作、映射范围、decoration、激活状态和 `useCommentThreadIndex` |
+| 复制的 `user-directory` 项 | 提供 `UserDirectoryProvider`、`useUser` 和 `useUserDirectory`，用于显示作者姓名和头像 |
+| 复制的 `suggestion` 项 | 配置 `AuthoredReactPlugin` 的内容属性，并组合 `SuggestionKit` |
 | 复制的 `discussion` 项 | 将 authored change 与可选评论 thread 关联，再渲染区块触发器、卡片和 Floating Discussion |
 
-应用把线程行存于自己的表，随每个文档版本保存 `api.ranges()`，提供用户，并通过 `initialState.mutate` 授权持久化写入。审阅 mark 保存在文档的 node 上，审阅记录保存在 document envelope 中。评论 thread 包含语义目标，通过 `attachment(id)` 读取当前位置；目标也可以是稳定的 authored change ID。
+应用把线程行存于自己的表，随每个文档版本保存 `api.ranges()`，通过 `UserDirectoryProvider` 提供作者资料，并通过 `initialState.mutate` 授权持久化写入。审阅 mark 保存在文档的 node 上，审阅记录保存在 document envelope 中。评论 thread 包含语义目标，通过 `attachment(id)` 读取当前位置；目标也可以是稳定的 authored change ID。
 
 ## 安装
 
@@ -42,7 +42,7 @@ npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/
 'use client';
 
 import type { EditorValueInput } from 'platejs';
-import type { CommentRanges, CommentThread, CommentUser } from 'platejs/comments';
+import type { CommentRanges, CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
@@ -51,6 +51,10 @@ import { DiscussionKit } from '@/components/editor/discussion';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 import { EditorKit } from '@/components/editor/plugins';
 import { Toolbar } from '@/components/editor/toolbar';
+import {
+  UserDirectoryProvider,
+  type UserProfile,
+} from '@/components/editor/user-directory';
 
 export function DiscussionEditor({
   initialValue,
@@ -62,7 +66,7 @@ export function DiscussionEditor({
   initialValue: EditorValueInput;
   ranges: CommentRanges;
   threads: readonly CommentThread[];
-  users: Record<string, CommentUser>;
+  users: Record<string, UserProfile>;
   userId: string;
 }) {
   const editor = useCreateEditor({
@@ -70,7 +74,7 @@ export function DiscussionEditor({
       ...EditorKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
-        initialState: { initialComments: { ranges, threads }, users },
+        initialState: { initialComments: { ranges, threads } },
       }),
     ],
     initialValue,
@@ -78,19 +82,21 @@ export function DiscussionEditor({
   });
 
   return (
-    <EditorRoot editor={editor}>
-      <EditorContainer>
-        <Toolbar>
-          <AllCommentsButton />
-        </Toolbar>
-        <Editor />
-      </EditorContainer>
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={users}>
+      <EditorRoot editor={editor}>
+        <EditorContainer>
+          <Toolbar>
+            <AllCommentsButton />
+          </Toolbar>
+          <Editor />
+        </EditorContainer>
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }
 ```
 
-较小的 editor 组合可以配置 `platejs/suggestion/react` 的 `SuggestionPlugin`，也可以使用包含默认样式的 `SuggestionKit`。`DiscussionSlots` 从包 hooks 读取 suggestion 状态，不需要 registry 局部的语义 plugin。
+较小的 editor 组合可以配置 `platejs/authored/react` 的 `AuthoredReactPlugin`，也可以使用包含默认样式的 `SuggestionKit`。`DiscussionSlots` 从包 hooks 读取 suggestion 状态，不需要 registry 局部的语义 plugin。
 
 ## 审阅模型
 
@@ -104,7 +110,7 @@ Discussion 按区块组合未解决的记录，并在每个区块内按时间排
 - 文档 undo 撤销接受或拒绝决定，保留消息和 thread 的解决状态；
 - 解决或重新打开 thread 不进入文档 undo。
 
-`useSuggestionGroups(blockKey)` 为每个区块提供它的审阅卡片。在 preview 下，这些是该区块所显示内容上的卡片，详见[建议](/docs/suggestion)。卡片正文用 `read.groupDetails(card.id, { limit })` 读取它显示的 change 及其 part，每次文档变化后重新读取，并把这些 part 写成卡片的文字行。Discussion 在复制的 registry 代码中派生日期、标签、range 和卡片文本，再关联来自 Comments 的 change-targeted thread。
+`useAuthoredGroups(blockKey)` 为每个区块提供它的审阅卡片。在 preview 下，这些是该区块所显示内容上的卡片，详见[建议](/docs/suggestion)。卡片正文用 `read.groupDetails(card.id, { limit })` 读取它显示的 change 及其 part，每次文档变化后重新读取，并把这些 part 写成卡片的文字行。Discussion 在复制的 registry 代码中派生日期、标签、range 和卡片文本，再关联来自 Comments 的 change-targeted thread。
 
 审阅卡片决定它所显示的卡片：
 
@@ -155,7 +161,7 @@ if (result.status === 'applied') {
 
 ## 不使用 Comments
 
-`SuggestionPlugin` 不依赖 Comments。编辑器无需安装 `CommentsPlugin` 或 `DiscussionKit`，也可以通过 `AuthoredPlugin` 的 `api.setView` 在编辑和建议之间切换，并使用语义 decoration、活动卡片状态、`useSuggestionChanges(path)` 和 `useSuggestionGroups(blockKey)`。
+`AuthoredReactPlugin` 不依赖 Comments。编辑器无需安装 `CommentsPlugin` 或 `DiscussionKit`，也可以通过 `AuthoredPlugin` 的 `api.setView` 在编辑和建议之间切换，并使用语义 decoration、活动卡片状态（`useActiveAuthored`）和 `useAuthoredGroups(blockKey)`。
 
 只有产品需要卡片、回复、作者、日期或 popover 时才添加 Discussion。这些展示和 thread 关联逻辑保留在复制的 registry 代码中。
 
@@ -169,7 +175,7 @@ if (result.status === 'applied') {
 
 ### `DiscussionKit`
 
-将复制的 kit 加入 editor plugin 列表。它包含 `CommentKit` 和完整的 `DiscussionSlots` 组合。审阅 authored change 的编辑器还会安装 `SuggestionKit` 或配置后的 `SuggestionPlugin`。
+将复制的 kit 加入 editor plugin 列表。它包含 `CommentKit` 和完整的 `DiscussionSlots` 组合。审阅 authored change 的编辑器还会安装 `SuggestionKit` 或配置后的 `AuthoredReactPlugin`。
 
 ### `DiscussionSlots`
 

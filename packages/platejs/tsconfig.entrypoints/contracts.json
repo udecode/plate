@@ -5,6 +5,9 @@
       "path": "./authored.json"
     },
     {
+      "path": "./authored-react.json"
+    },
+    {
       "path": "./board.json"
     },
     {
@@ -84,12 +87,6 @@
     },
     {
       "path": "./static.json"
-    },
-    {
-      "path": "./suggestion.json"
-    },
-    {
-      "path": "./suggestion-react.json"
     },
     {
       "path": "./table.json"

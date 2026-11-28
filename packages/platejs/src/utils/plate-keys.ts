@@ -56,7 +56,6 @@ export const PLUGINS = {
   singleBlock: 'singleBlock',
   singleLine: 'singleLine',
   strikethrough: 'strikethrough',
-  suggestion: 'suggestion',
   tabbable: 'tabbable',
   table: 'table',
   tableCell: 'tableCell',

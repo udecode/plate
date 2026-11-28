@@ -156,7 +156,7 @@ if (card) {
 
 ## Format helper
 
-`plitejs/authored` 导出纯文档转换。使用 `projectAuthoredDocument(document, { projection })` 获取包含 `document`、`diagnostics`、`pending` 和 `ok` 的结果；projection 为 `accepted` 或 `proposed`。使用 `projectAuthoredRange(document, projectedDocument, range)` 把存储文档中的 range 映射到投影文档；若投影不保留该内容，返回 `null`。
+`plitejs/authored` 导出纯文档转换 `projectAuthoredDocument(document, { projection })`，为 `accepted` 或 `proposed` projection 返回 `document`、`diagnostics`、`pending` 和 `ok`。
 
 ## API 参考
 

@@ -8,6 +8,7 @@ import type {
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
+import { jsonEqual } from './change/json';
 import { isDocumentView } from './document-view-read';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { definePluginPoint } from './plugin-point';
@@ -188,4 +189,75 @@ export const registerAuthoredRuntime = (
       AUTHORED_RUNTIMES.delete(owner);
     }
   };
+};
+
+const AUTHORED_MARKS_PROPERTY_KEY = 'authored';
+
+const isAllowedFormatMark = (
+  entry: unknown,
+  allowedKeys: readonly string[]
+): boolean => {
+  if (typeof entry !== 'object' || entry === null) return false;
+
+  const record = entry as Record<string, unknown>;
+
+  return (
+    record.kind === 'format' &&
+    typeof record.key === 'string' &&
+    allowedKeys.includes(record.key)
+  );
+};
+
+/**
+ * Check whether an uncommitted element property modification only adds, updates,
+ * or removes authored `format` marks on `allowedKeys` while leaving every other
+ * raw authored member (including context members) unchanged.
+ *
+ * @internal
+ */
+export const isAuthoredFormatOnlyPropertyWrite = (
+  element: object,
+  modification: Readonly<{
+    key: string;
+    type: string;
+    value?: unknown;
+    values?: readonly unknown[];
+  }>,
+  allowedKeys: readonly string[]
+): boolean => {
+  if (modification.key !== AUTHORED_MARKS_PROPERTY_KEY) return false;
+
+  if (modification.type === 'add' || modification.type === 'remove') {
+    return (
+      Array.isArray(modification.values) &&
+      modification.values.every((entry) =>
+        isAllowedFormatMark(entry, allowedKeys)
+      )
+    );
+  }
+
+  const beforeRaw = (element as Record<string, unknown>)[
+    AUTHORED_MARKS_PROPERTY_KEY
+  ];
+  const before = Array.isArray(beforeRaw) ? beforeRaw : [];
+  const after =
+    modification.type === 'set' && Array.isArray(modification.value)
+      ? modification.value
+      : modification.type === 'unset'
+        ? []
+        : null;
+
+  if (after === null) return false;
+
+  const beforeRest = before.filter(
+    (entry) => !isAllowedFormatMark(entry, allowedKeys)
+  );
+  const afterRest = after.filter(
+    (entry) => !isAllowedFormatMark(entry, allowedKeys)
+  );
+
+  return (
+    beforeRest.length === afterRest.length &&
+    beforeRest.every((entry, index) => jsonEqual(entry, afterRest[index]))
+  );
 };

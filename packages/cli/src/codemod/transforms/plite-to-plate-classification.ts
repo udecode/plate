@@ -172,10 +172,6 @@ export const AST_REWRITTEN_SYMBOLS: Readonly<
 export const PLITE_ONLY_DIAGNOSTICS: Readonly<Record<string, string>> = {
   'plitejs/authored#AuthoredPlugin':
     'AuthoredPlugin in platejs/authored is a runtime plugin value; use typeof AuthoredPlugin for its type.',
-  'plitejs/authored#AuthoredTestOptions':
-    'AuthoredTestOptions is Plite-internal test API and is not re-exported by platejs/authored.',
-  'plitejs/authored#createAuthoredPlugin':
-    'Replace createAuthoredPlugin with AuthoredPlugin from platejs/authored.',
   'plitejs/dom#CAN_USE_DOM':
     'Check typeof window !== "undefined" directly instead of importing CAN_USE_DOM from plitejs/dom.',
   'plitejs/dom#DOMClipboardInsertDataHandler':

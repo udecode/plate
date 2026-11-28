@@ -1,7 +1,6 @@
 export {
   AuthoredPlaceError,
   projectAuthoredDocument,
-  projectAuthoredRange,
   type AuthoredChange,
   type AuthoredChangeDetails,
   type AuthoredChangeGroup,
@@ -29,3 +28,4 @@ export {
   type SplitGave,
 } from 'plitejs/authored';
 export * from './AuthoredPlugin';
+export * from './suggestionColorOf';

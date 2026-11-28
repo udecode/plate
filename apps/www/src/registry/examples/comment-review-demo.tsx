@@ -14,6 +14,7 @@ import { EditorStatic } from '@/registry/components/editor/editor-static';
 import { LinkKit } from '@/registry/components/editor/link';
 import { BaseLinkKit } from '@/registry/components/editor/link-static';
 import { Toolbar } from '@/registry/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
 import {
   createCommentSnapshot,
   commentUsers,
@@ -30,7 +31,6 @@ export default function CommentReviewDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          users: commentUsers,
           initialComments: snapshot.comments,
         },
       }),
@@ -51,40 +51,42 @@ export default function CommentReviewDemo() {
   });
 
   return (
-    <div className="flex w-full flex-col gap-6 p-4 sm:p-6">
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">Read-only document</h3>
-        <p className="text-sm text-muted-foreground">
-          Open highlights to read and reply. The document itself cannot be
-          edited.
-        </p>
-        <EditorRoot editor={editor} readOnly>
-          <EditorContainer className="h-auto rounded-md border">
-            <Toolbar className="border-b px-3 py-1">
-              <AllCommentsButton />
-            </Toolbar>
-            <Editor
-              aria-label="Read-only comments document"
-              className="h-auto ps-[clamp(24px,8%,48px)] pe-13 pb-6"
-              readOnly
-              variant="demo"
+    <UserDirectoryProvider initialUsers={commentUsers}>
+      <div className="flex w-full flex-col gap-6 p-4 sm:p-6">
+        <section className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium">Read-only document</h3>
+          <p className="text-sm text-muted-foreground">
+            Open highlights to read and reply. The document itself cannot be
+            edited.
+          </p>
+          <EditorRoot editor={editor} readOnly>
+            <EditorContainer className="h-auto rounded-md border">
+              <Toolbar className="border-b px-3 py-1">
+                <AllCommentsButton />
+              </Toolbar>
+              <Editor
+                aria-label="Read-only comments document"
+                className="h-auto ps-[clamp(24px,8%,48px)] pe-13 pb-6"
+                readOnly
+                variant="demo"
+              />
+            </EditorContainer>
+          </EditorRoot>
+        </section>
+        <section className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium">Static snapshot</h3>
+          <p className="text-sm text-muted-foreground">
+            The same initial document and ranges, rendered without editing or
+            thread controls.
+          </p>
+          <div className="rounded-md border px-8 py-4">
+            <EditorStatic
+              aria-label="Static comments document"
+              editor={staticEditor}
             />
-          </EditorContainer>
-        </EditorRoot>
-      </section>
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">Static snapshot</h3>
-        <p className="text-sm text-muted-foreground">
-          The same initial document and ranges, rendered without editing or
-          thread controls.
-        </p>
-        <div className="rounded-md border px-8 py-4">
-          <EditorStatic
-            aria-label="Static comments document"
-            editor={staticEditor}
-          />
-        </div>
-      </section>
-    </div>
+          </div>
+        </section>
+      </div>
+    </UserDirectoryProvider>
   );
 }

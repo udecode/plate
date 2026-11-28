@@ -127,18 +127,25 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `caret` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit`, create the editor with the current user as `createEditor({ userId })`, and configure `CommentsPlugin` with `initialComments: { ranges, threads }`, the thread rows from your tables and the ranges saved with the matching revision. AI comments are ordinary threads, so `api.ranges()` saves their ranges too. List `aiUser` from the copied `use-chat` among the comment users:
+`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `caret` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit`, create the editor with the current user as `createEditor({ userId })`, and configure `CommentsPlugin` with `initialComments: { ranges, threads }`, the thread rows from your tables and the ranges saved with the matching revision. AI comments are ordinary threads, so `api.ranges()` saves their ranges too. Include `aiUser` from the copied `use-chat` in `UserDirectoryProvider` above `EditorRoot`:
 
 ```tsx
 import { CommentsPlugin } from 'platejs/comments/react';
+import { EditorRoot } from 'platejs/react';
+
 import { aiUser } from '@/components/editor/use-chat';
+import { UserDirectoryProvider } from '@/components/editor/user-directory';
 
 CommentsPlugin.configure({
   initialState: {
     initialComments: { ranges, threads },
-    users: { ...users, [aiUser.id]: aiUser },
   },
 });
+
+// Mount above EditorRoot so comment cards resolve the AI profile:
+<UserDirectoryProvider initialUsers={{ ...users, [aiUser.id]: aiUser }}>
+  <EditorRoot editor={editor}>{/* ... */}</EditorRoot>
+</UserDirectoryProvider>;
 ```
 
 The copied `AIChatTransportPlugin` sets `authorId: aiUser.id`, so AI comments and suggestions name the AI as their author. The copied `use-chat` creates each generated comment through a view with that author, with `data.requestedBy` set to the editor's user and `data.model` set to the model the route streams with that comment. The copied comment card lets the user in `requestedBy` resolve, reopen, edit and delete the AI's messages, as the thread's creator can for their own thread.

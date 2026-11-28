@@ -1,16 +1,16 @@
 'use client';
 
-import { AuthoredPlugin } from 'platejs/authored';
+import {
+  AUTHORED_COLOR_COUNT,
+  AuthoredPlugin,
+  suggestionColorOf,
+} from 'platejs/authored';
+import { AuthoredReactPlugin, useActiveAuthored } from 'platejs/authored/react';
 import {
   type EditableSiblingProps,
   useEditor,
   useEditorSelector,
 } from 'platejs/react';
-import { SUGGESTION_COLOR_COUNT, suggestionColorOf } from 'platejs/suggestion';
-import {
-  SuggestionPlugin,
-  useActiveSuggestion,
-} from 'platejs/suggestion/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -46,7 +46,7 @@ const activeDeclarations = (slot: number) => {
 
 function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   const scopeId = React.useId();
-  const { activeId } = useActiveSuggestion();
+  const { activeId } = useActiveAuthored();
   // The active change's card, read again after each review commit, so the
   // active rule follows the card through a merge or a new oldest change.
   const activeCard = useEditorSelector((editor) => {
@@ -74,7 +74,7 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   const rules = [
     `${scope} :where([data-editor-authored-change]){${restingDeclarations(0)}}`,
     ...Array.from(
-      { length: SUGGESTION_COLOR_COUNT },
+      { length: AUTHORED_COLOR_COUNT },
       (_, slot) =>
         `${scope} [data-editor-authored-color="${slot}"]{${restingDeclarations(slot)}}`
     ),
@@ -150,7 +150,7 @@ const WHOLE_TABLE_TINT =
   '[&_:is(td,th):is([data-editor-authored-kind~=insert],[data-editor-authored-kind~=delete])]:bg-[var(--suggestion-bg,color-mix(in_oklab,var(--editor-suggestion-1)_14%,var(--background)))] [&_:is(tr,td,th)[data-editor-node=element]:is([data-editor-authored-kind~=insert],[data-editor-authored-kind~=delete]):not([data-editor-inline],[data-editor-authored-kind~=format])]:after:content-none [&_:is(td,th):is([data-editor-authored-kind~=insert],[data-editor-authored-kind~=delete])_[data-editor-node=element][data-editor-authored-change]:not([data-editor-authored-kind~=split],[data-editor-authored-kind~=join],[data-editor-authored-kind~=format])]:after:content-none';
 
 export const SuggestionKit = [
-  SuggestionPlugin.configure(() => ({
+  AuthoredReactPlugin.configure(() => ({
     render: {
       contentAttributes: {
         className: [

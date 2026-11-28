@@ -26,6 +26,9 @@ import { DndKit } from '@/registry/components/editor/dnd';
 import { LinkKit } from '@/registry/components/editor/link';
 import { ListKit } from '@/registry/components/editor/list';
 import { TableKit } from '@/registry/components/editor/table';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
+
+const PAGINATION_USERS = { ada: { id: 'ada', name: 'Ada' } };
 
 const plugins = [
   ...BasicBlocksKit,
@@ -168,7 +171,6 @@ export default function PaginationDemo() {
       CommentsPlugin.configure({
         initialState: {
           initialComments,
-          users: { ada: { id: 'ada', name: 'Ada' } },
         },
       }),
     ],
@@ -289,25 +291,27 @@ export default function PaginationDemo() {
         </output>
       </div>
       <div className="flex min-h-0 flex-1 justify-center overflow-auto py-6">
-        <EditorRoot editor={editor}>
-          <PagedEditorContent
-            aria-label="Paged document"
-            className="px-16 pt-4 pb-72 text-base outline-none [&_*]:[font-family:inherit] [&_code]:[font-family:var(--page-code-font)] [&_kbd]:[font-family:var(--page-code-font)] [&_strong]:font-bold"
-            engine={engine}
-            fragmentation={fragmentation}
-            page={{ margins: 72, preset: 'letter' }}
-            pageView={{ gap: 24, mode: spread ? 'spread' : 'single' }}
-            ref={editableRef}
-            renderPage={renderPage}
-            style={
-              {
-                '--page-code-font': PAGE_CODE_FONT,
-                fontFamily: PAGE_TEXT_FONT,
-              } as React.CSSProperties
-            }
-            typography={typography}
-          />
-        </EditorRoot>
+        <UserDirectoryProvider initialUsers={PAGINATION_USERS}>
+          <EditorRoot editor={editor}>
+            <PagedEditorContent
+              aria-label="Paged document"
+              className="px-16 pt-4 pb-72 text-base outline-none [&_*]:[font-family:inherit] [&_code]:[font-family:var(--page-code-font)] [&_kbd]:[font-family:var(--page-code-font)] [&_strong]:font-bold"
+              engine={engine}
+              fragmentation={fragmentation}
+              page={{ margins: 72, preset: 'letter' }}
+              pageView={{ gap: 24, mode: spread ? 'spread' : 'single' }}
+              ref={editableRef}
+              renderPage={renderPage}
+              style={
+                {
+                  '--page-code-font': PAGE_CODE_FONT,
+                  fontFamily: PAGE_TEXT_FONT,
+                } as React.CSSProperties
+              }
+              typography={typography}
+            />
+          </EditorRoot>
+        </UserDirectoryProvider>
       </div>
     </div>
   );

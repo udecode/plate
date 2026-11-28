@@ -131,7 +131,7 @@ export function SuggestionEditor() {
 }
 ```
 
-编辑器必须安装 authored plugin，可以直接安装，也可以通过 `SuggestionPlugin` 安装。修改 `authored` prop 会更新这个 view。以等价值重新渲染时，会保留之后通过已挂载 view 的 portal 做出的模式修改。
+编辑器必须安装 `AuthoredPlugin` 或 `AuthoredReactPlugin`。修改 `authored` prop 会更新这个 view。以等价值重新渲染时，会保留之后通过已挂载 view 的 portal 做出的模式修改。
 
 交互式模式控件请在已挂载的 view 上设置 intent。在 `EditorRoot` 内，`useEditor()` 返回这个 view。已挂载的 view 保留自己的模式，所以在传给 `EditorRoot` 的 editor 上调用 `setView` 不会改变它显示的内容：
 
@@ -384,7 +384,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 
 ### `AuthoredPlugin`
 
-从 `platejs/authored` 导入标准描述符。它以写入视图的作者记录每个 change；视图没有作者时以 Plate editor 的 `userId` 记录；编辑器没有 `userId` 时，以本地用户 `'local'` 记录。它不接受选项。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
+无头编辑器从 `platejs/authored` 导入 `AuthoredPlugin`，已挂载的 React 视图从 `platejs/authored/react` 导入 `AuthoredReactPlugin`。`AuthoredPlugin` 以写入视图的作者记录每个 change；视图没有作者时以 Plate editor 的 `userId` 记录；编辑器没有 `userId` 时，以本地用户 `'local'` 记录。它不接受选项。`AIChatPlugin` 依赖 `AuthoredPlugin`，`AuthoredReactPlugin` 在此之上添加 React 指针交互和视图状态。
 
 ### Transaction、读取和更新
 
@@ -410,12 +410,10 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 | `authored.api.subscribeChanges(listener)`  | 每次改变审阅的 commit 都会收到一个共享 delta。                         |
 | `authored.api.subscribeRefusals(listener)` | 接收编辑器拒绝的每个 proposal 写入或 view 切换。                       |
 
-`subscribeChanges` 传入 `{ blocks, changed, groups, removed }`：卡片或 change 读取结果可能不同的 view 顶层 block、开始或 revision 变化的 change、摘要变化、开始或结束的卡片，以及不再待处理的 change。`blocks` 包含 change 进入或离开的每个 block，以及其中有 change 的卡片 ID 发生变化的每个 block；在 preview 下，它们是 preview 所显示的 block。仅卡片摘要变化不会指名任何 block，因此 block 上卡片的 `changeCount` 或 `revision` 可能落后，直到它再次读取。它是底层集成 hook；suggestion UI 改用 `useSuggestionChanges(path)` 和 `useSuggestionGroups(blockKey)`。
+`subscribeChanges` 传入 `{ blocks, changed, groups, removed }`：卡片或 change 读取结果可能不同的 view 顶层 block、开始或 revision 变化的 change、摘要变化、开始或结束的卡片，以及不再待处理的 change。`blocks` 包含 change 进入或离开的每个 block，以及其中有 change 的卡片 ID 发生变化的每个 block；在 preview 下，它们是 preview 所显示的 block。仅卡片摘要变化不会指名任何 block，因此 block 上卡片的 `changeCount` 或 `revision` 可能落后，直到它再次读取。它是底层集成 hook；React 审阅 UI 改用 `platejs/authored/react` 的 `useAuthoredGroups(blockKey)` 和 `useActiveAuthored()`。
 
 ### 类型和格式辅助函数
 
-`platejs/authored` 导出 authored plugin 描述符，`AuthoredPlaceError`，change、卡片、query、page、delta、decision、result、比较导入结果和 outcome 类型，以及下面的格式辅助函数。
+`platejs/authored` 导出 `AuthoredPlugin`、`suggestionColorOf`、`AUTHORED_COLOR_COUNT`、`AuthoredPlaceError`，change、卡片、query、page、delta、decision、result、比较导入结果和 outcome 类型，以及 `projectAuthoredDocument`。
 
 `projectAuthoredDocument(document, { projection })` 为 `accepted` 或 `proposed` projection 返回 `{ ok, document, diagnostics, pending }`。它是纯 document operation：不会构造、激活或订阅 editor runtime。同时传入 `editor` 时，会用该 editor 的 schema 补全结果，因此被决定清空的容器会得到默认内容。传入 `editor` 时，若 schema 的生成属性会让 `propose` view 拒绝，含有待处理 change 的 document 会改为返回代码为 `authored-generated-values` 的 `AuthoredProjectionRefusal`。若 projection 需要构建一个带生成值的元素，而 document 没有为它存储备用 block（例如由其他工具写入的 document），也会返回代码为 `authored-uncovered` 的拒绝。
-
-`projectAuthoredRange(document, projected, range)` 把存储文档的 range 映射到它的某个 projection；若 projection 不保留其中任何内容，则返回 `null`。

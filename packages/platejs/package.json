@@ -192,6 +192,11 @@
       "import": "./dist/authored/index.js",
       "default": "./dist/authored/index.js"
     },
+    "./authored/react": {
+      "types": "./dist/react/authored/index.d.ts",
+      "import": "./dist/react/authored/index.js",
+      "default": "./dist/react/authored/index.js"
+    },
     "./history": {
       "types": "./dist/history/index.d.ts",
       "import": "./dist/history/index.js",
@@ -318,16 +323,6 @@
       "import": "./dist/static/index.js",
       "default": "./dist/static/index.js"
     },
-    "./suggestion": {
-      "types": "./dist/features/suggestion/index.d.ts",
-      "import": "./dist/features/suggestion/index.js",
-      "default": "./dist/features/suggestion/index.js"
-    },
-    "./suggestion/react": {
-      "types": "./dist/react/features/suggestion/index.d.ts",
-      "import": "./dist/react/features/suggestion/index.js",
-      "default": "./dist/react/features/suggestion/index.js"
-    },
     "./tabbable": {
       "types": "./dist/tabbable/index.d.ts",
       "import": "./dist/tabbable/index.js",
@@ -387,6 +382,7 @@
     "lint:partition:ai": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ai",
     "lint:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ai-react",
     "lint:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs authored",
+    "lint:partition:authored-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs authored-react",
     "lint:partition:board": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs board",
     "lint:partition:board-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs board-react",
     "lint:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout",
@@ -451,8 +447,6 @@
     "lint:partition:standard-list": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-list",
     "lint:partition:standard-list-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-list-react",
     "lint:partition:static": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs static",
-    "lint:partition:suggestion": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs suggestion",
-    "lint:partition:suggestion-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs suggestion-react",
     "lint:partition:tabbable": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tabbable",
     "lint:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tabbable-react",
     "lint:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs table",
@@ -469,6 +463,7 @@
     "test:partition:ai": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai",
     "test:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai-react",
     "test:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs authored",
+    "test:partition:authored-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs authored-react",
     "test:partition:board": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs board",
     "test:partition:board-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs board-react",
     "test:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs callout",
@@ -521,8 +516,6 @@
     "test:partition:standard-list": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-list",
     "test:partition:standard-list-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-list-react",
     "test:partition:static": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs static",
-    "test:partition:suggestion": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs suggestion",
-    "test:partition:suggestion-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs suggestion-react",
     "test:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tabbable-react",
     "test:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs table",
     "test:partition:table-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs table-react",

@@ -13,11 +13,31 @@ import {
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
 import { aiUser } from '@/registry/components/editor/use-chat';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
 
 import {
   richTextEditorComments,
   richTextEditorValue,
 } from './rich-text-editor-value';
+
+const RICH_TEXT_EDITOR_USERS = {
+  [aiUser.id]: aiUser,
+  alice: {
+    id: 'alice',
+    name: 'Alice',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
+  },
+  bob: {
+    id: 'bob',
+    name: 'Bob',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
+  },
+  charlie: {
+    id: 'charlie',
+    name: 'Charlie',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
+  },
+};
 
 export function RichTextEditor() {
   const editor = useCreateEditor({
@@ -26,24 +46,6 @@ export function RichTextEditor() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          users: {
-            [aiUser.id]: aiUser,
-            alice: {
-              id: 'alice',
-              name: 'Alice',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
-            },
-            bob: {
-              id: 'bob',
-              name: 'Bob',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
-            },
-            charlie: {
-              id: 'charlie',
-              name: 'Charlie',
-              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
-            },
-          },
           initialComments: richTextEditorComments,
         },
       }),
@@ -54,14 +56,16 @@ export function RichTextEditor() {
 
   return (
     <TooltipProvider>
-      <EditorRoot editor={editor} authored={{ intent: 'edit' }}>
-        <EditorFrame>
-          <EditorContainer>
-            <Editor className="min-w-0" variant="demo" />
-          </EditorContainer>
-        </EditorFrame>
-        <SettingsDialog />
-      </EditorRoot>
+      <UserDirectoryProvider initialUsers={RICH_TEXT_EDITOR_USERS}>
+        <EditorRoot editor={editor} authored={{ intent: 'edit' }}>
+          <EditorFrame>
+            <EditorContainer>
+              <Editor className="min-w-0" variant="demo" />
+            </EditorContainer>
+          </EditorFrame>
+          <SettingsDialog />
+        </EditorRoot>
+      </UserDirectoryProvider>
     </TooltipProvider>
   );
 }

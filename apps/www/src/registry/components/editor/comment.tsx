@@ -23,12 +23,7 @@ import type {
   CommentThread,
 } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import {
-  EditorRoot,
-  useCreateEditor,
-  useEditor,
-  usePluginStore,
-} from 'platejs/react';
+import { EditorRoot, useCreateEditor, useEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -44,6 +39,7 @@ import {
 } from '@/registry/components/editor/dropdown-menu';
 
 import { Editor, EditorContainer, EditorView } from './editor';
+import { useUser } from './user-directory';
 
 export const commentDecorationAttributes: DecorationAttributes = {
   className:
@@ -68,14 +64,26 @@ const normalizeBody = (body: Value) =>
 
 const EMPTY_COMMENT_IDS = Object.freeze([]) as readonly string[];
 
-export const useCommentUser = (id: string | null) =>
-  usePluginStore(CommentsPlugin, (state) => (id ? state.users[id] : undefined));
+export const useActiveCommentIds = () => {
+  const portal = useEditor().plugin(CommentsPlugin);
+  const comments = portal.installed ? portal.api : null;
+  const subscribe = React.useCallback(
+    (listener: () => void) => comments?.subscribeActive(listener) ?? (() => {}),
+    [comments]
+  );
+
+  return React.useSyncExternalStore(
+    subscribe,
+    () => comments?.activeIds() ?? EMPTY_COMMENT_IDS,
+    () => comments?.activeIds() ?? EMPTY_COMMENT_IDS
+  );
+};
 
 export const usePendingComment = () => {
   const { api: comments } = useEditor().plugin(CommentsPlugin);
 
   return React.useSyncExternalStore(
-    comments.subscribePending,
+    comments.subscribeSnapshot,
     () => comments.getSnapshot().pending,
     () => comments.getSnapshot().pending
   );
@@ -100,7 +108,7 @@ export const useVisibleCommentThreadIds = () => {
   const comments = portal.installed ? portal.api : null;
   const subscribe = React.useCallback(
     (listener: () => void) =>
-      comments?.subscribeVisibleThreadIds(listener) ?? (() => {}),
+      comments?.subscribeSnapshot(listener) ?? (() => {}),
     [comments]
   );
 
@@ -145,7 +153,7 @@ function CommentInput({
   onCancel?: () => void;
   onInteractionChange?: (blocked: boolean) => void;
 }) {
-  const currentUser = useCommentUser(useEditor().userId);
+  const currentUser = useUser(useEditor().userId);
   const initialValue = React.useMemo(
     () => cloneCommentValue(initialBody ?? createCommentValue()),
     [initialBody]
@@ -491,7 +499,7 @@ function CommentMessageRow({
   const [saving, setSaving] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const submitting = React.useRef(false);
-  const user = useCommentUser(message.userId);
+  const user = useUser(message.userId);
   const mutate = async (operation: 'resolve' | 'reopen' | 'remove') => {
     if (submitting.current) return;
     submitting.current = true;

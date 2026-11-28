@@ -9,7 +9,7 @@ import {
   type EditorDocumentValue,
   type Range,
 } from 'platejs';
-import type { CommentThread, CommentUser } from 'platejs/comments';
+import type { CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import type { DocxComment } from 'platejs/docx/import';
 import { MarkdownPlugin } from 'platejs/markdown';
@@ -27,6 +27,10 @@ import {
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
+import {
+  type UserProfile,
+  useUserDirectory,
+} from '@/registry/components/editor/user-directory';
 
 const plural = (count: number, noun: string) =>
   `${count} ${noun}${count === 1 ? '' : 's'}`;
@@ -83,7 +87,7 @@ const docxCommentText = (comment: DocxComment) =>
 
 const docxCommentUser = (
   comment: DocxComment,
-  users: Record<string, CommentUser>
+  users: Record<string, UserProfile>
 ) => {
   const name = comment.author?.name.trim() || 'Unknown';
   const id = `word:${JSON.stringify([name, comment.author?.initials ?? ''])}`;
@@ -126,7 +130,7 @@ const importDocxComments = (editor: Editor, source: readonly DocxComment[]) => {
     groups.set(root.id, group);
   });
 
-  const users: Record<string, CommentUser> = {};
+  const users: Record<string, UserProfile> = {};
   const threads: CommentThread[] = [];
   const ranges: Record<string, Range> = {};
   let imported = 0;
@@ -209,25 +213,15 @@ export function ImportToolbarButton({
   const model = useModelEditor();
   const [open, setOpen] = React.useState(false);
   const docxSource = useDocxSource();
+  const userDirectory = useUserDirectory();
   const markdownApi = editor.plugin(MarkdownPlugin).api;
   const commentsInstalled = editor.plugin(CommentsPlugin).installed;
-  const createImportedEditor = (initialValue: EditorDocumentValue) => {
-    const importedEditor = createEditor({
+  const createImportedEditor = (initialValue: EditorDocumentValue) =>
+    createEditor({
       initialValue,
       plugins,
       userId: model.userId,
     });
-
-    if (commentsInstalled) {
-      const currentComments = model.plugin(CommentsPlugin);
-
-      importedEditor.plugin(CommentsPlugin).store.set({
-        users: currentComments.store.get('users'),
-      });
-    }
-
-    return importedEditor;
-  };
 
   const { openFilePicker: openMdFilePicker } = useFilePicker({
     accept: ['.md', '.mdx'],
@@ -320,9 +314,6 @@ export function ImportToolbarButton({
           const comments = importedEditor.plugin(CommentsPlugin);
 
           comments.api.replace(adopted.comments);
-          comments.store.set({
-            users: { ...comments.store.get('users'), ...adopted.users },
-          });
         }
       } catch {
         if ('source' in result) result.source?.dispose();
@@ -333,9 +324,22 @@ export function ImportToolbarButton({
         return;
       }
 
+      const adoptedUsers = adopted?.users ?? {};
+      const hasAdoptedUsers = Object.keys(adoptedUsers).length > 0;
+
+      if (hasAdoptedUsers && userDirectory.writable) {
+        userDirectory.mergeUsers(adoptedUsers);
+      }
+
       onImport(importedEditor);
       if (docxSource && 'source' in result) {
         docxSource.replaceSource(result.source);
+      }
+
+      if (hasAdoptedUsers && !userDirectory.writable) {
+        toast.warning(
+          'Word comment author names could not be saved without a UserDirectoryProvider.'
+        );
       }
 
       toastLosses(

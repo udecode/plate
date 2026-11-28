@@ -12,6 +12,7 @@ import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { LinkKit } from '@/registry/components/editor/link';
 import { Toolbar } from '@/registry/components/editor/toolbar';
+import { UserDirectoryProvider } from '@/registry/components/editor/user-directory';
 import {
   createCommentSnapshot,
   commentUsers,
@@ -27,7 +28,6 @@ export default function CommentDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          users: commentUsers,
           initialComments: snapshot.comments,
         },
       }),
@@ -37,18 +37,20 @@ export default function CommentDemo() {
   });
 
   return (
-    <EditorRoot editor={editor}>
-      <EditorContainer className="h-[420px]">
-        <Toolbar className="border-b px-3 py-1">
-          <CommentToolbarButton />
-          <AllCommentsButton />
-        </Toolbar>
-        <Editor
-          aria-label="Comments document"
-          className="h-auto min-h-[280px] ps-[clamp(24px,8%,48px)] pe-13 pb-16"
-          variant="demo"
-        />
-      </EditorContainer>
-    </EditorRoot>
+    <UserDirectoryProvider initialUsers={commentUsers}>
+      <EditorRoot editor={editor}>
+        <EditorContainer className="h-[420px]">
+          <Toolbar className="border-b px-3 py-1">
+            <CommentToolbarButton />
+            <AllCommentsButton />
+          </Toolbar>
+          <Editor
+            aria-label="Comments document"
+            className="h-auto min-h-[280px] ps-[clamp(24px,8%,48px)] pe-13 pb-16"
+            variant="demo"
+          />
+        </EditorContainer>
+      </EditorRoot>
+    </UserDirectoryProvider>
   );
 }

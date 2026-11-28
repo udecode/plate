@@ -32,6 +32,9 @@
       "platejs/ai": ["../../packages/platejs/src/ai/index.ts"],
       "platejs/ai/react": ["../../packages/platejs/src/ai/react/index.ts"],
       "platejs/authored": ["../../packages/platejs/src/authored/index.ts"],
+      "platejs/authored/react": [
+        "../../packages/platejs/src/react/authored/index.ts"
+      ],
       "platejs/board": ["../../packages/platejs/src/features/board/index.ts"],
       "platejs/board/react": [
         "../../packages/platejs/src/react/features/board/index.ts"
@@ -139,12 +142,6 @@
         "../../packages/platejs/src/react/features/resizable/index.ts"
       ],
       "platejs/static": ["../../packages/platejs/src/static/index.ts"],
-      "platejs/suggestion": [
-        "../../packages/platejs/src/features/suggestion/index.ts"
-      ],
-      "platejs/suggestion/react": [
-        "../../packages/platejs/src/react/features/suggestion/index.ts"
-      ],
       "platejs/tabbable": ["../../packages/platejs/src/tabbable/index.ts"],
       "platejs/tabbable/react": [
         "../../packages/platejs/src/tabbable/react/index.ts"
