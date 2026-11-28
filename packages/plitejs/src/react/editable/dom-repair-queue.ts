@@ -315,26 +315,50 @@ export const createDOMRepairQueue = ({
 
       if (offset === insert.offset) {
         node.deleteData(start, insert.text.length);
+        const stringElement = node.parentElement?.closest(
+          '[data-editor-string]'
+        );
+        const lengthAttribute =
+          stringElement?.getAttribute('data-editor-length');
+        const expectedLength =
+          lengthAttribute == null ? null : Number(lengthAttribute);
+
+        if (
+          expectedLength !== null &&
+          Number.isFinite(expectedLength) &&
+          node.data.length === expectedLength &&
+          node.data.endsWith('\n')
+        ) {
+          node.appendData('\n');
+        }
         return;
       }
     }
 
     if (textHost && editorText !== undefined) {
+      const targetString =
+        (isDOMText(node) && textHost.contains(node)
+          ? node.parentElement?.closest('[data-editor-string]')
+          : null) ?? textHost.querySelector('[data-editor-string]');
+      const hasTrailingDisplayNewline =
+        editorText.endsWith('\n') &&
+        targetString?.hasAttribute('data-editor-length') === true;
+      const expectedText = hasTrailingDisplayNewline
+        ? `${editorText}\n`
+        : editorText;
+      const expectedData = editorText === '' ? '\uFEFF' : expectedText;
       const currentText = textHost.textContent?.replace(/\uFEFF/g, '') ?? '';
 
-      if (currentText !== editorText) {
+      if (currentText !== expectedText) {
         if (isDOMText(node) && textHost.contains(node)) {
-          node.data = editorText === '' ? '\uFEFF' : editorText;
+          node.data = expectedData;
         } else {
-          const textNode = textHost.querySelector(
-            '[data-editor-string="true"]'
-          );
-          const firstChild = textNode?.firstChild;
+          const firstChild = targetString?.firstChild;
 
           if (isDOMText(firstChild)) {
-            firstChild.data = editorText === '' ? '\uFEFF' : editorText;
-          } else if (textNode) {
-            textNode.textContent = editorText === '' ? '\uFEFF' : editorText;
+            firstChild.data = expectedData;
+          } else if (targetString) {
+            targetString.textContent = expectedData;
           }
         }
       }
@@ -491,7 +515,12 @@ export const createDOMRepairQueue = ({
       )
     );
     if (!committed) {
-      giveBackRefusedTextInsert({ insert, path: target.path, textHost });
+      giveBackRefusedTextInsert({
+        editorText: editorNode.text,
+        insert,
+        path: target.path,
+        textHost,
+      });
     }
     if (!isInsideVirtualizedDOM(textHost)) {
       setEditableModelSelectionPreference({

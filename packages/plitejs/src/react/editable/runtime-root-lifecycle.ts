@@ -10,6 +10,7 @@ import {
   type DOMPhaseScheduler,
   IS_FOCUSED,
 } from '../../dom/internal';
+import { focusedElementOnPage } from '../../dom/plugin/dom-root-runtime';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -50,8 +51,11 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     }
 
     let hadRootOwnedNativeState = false;
-    const { activeElement } = targetDocument;
     const root = rootElement.getRootNode() as Document | ShadowRoot;
+    const activeElement =
+      root === targetDocument
+        ? focusedElementOnPage(rootElement)
+        : root.activeElement;
     const selection = getSelection(root);
 
     if (
@@ -121,6 +125,19 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     return true;
   };
 
+  const insideMouseDownEvents = new WeakSet<Event>();
+  const isEventInRoot = (event: Event, rootElement: HTMLElement) =>
+    insideMouseDownEvents.has(event) ||
+    event.composedPath().includes(rootElement) ||
+    (isDOMNode(event.target) && containsShadowAware(rootElement, event.target));
+  const markInsideMouseDown = (event: Event) => {
+    const rootElement = rootRef.current;
+
+    if (rootElement && event.composedPath().includes(rootElement)) {
+      insideMouseDownEvents.add(event);
+    }
+  };
+
   // A touch or pen tap also sends a compatibility mousedown before its click,
   // so every pointer decides here, where a control keeps the editor's focus
   // by preventing mousedown.
@@ -131,10 +148,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
       return;
     }
 
-    if (
-      isDOMNode(event.target) &&
-      containsShadowAware(rootElement, event.target)
-    ) {
+    if (isEventInRoot(event, rootElement)) {
       return;
     }
 
@@ -157,19 +171,23 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     );
   };
 
-  const handleFocusIn = (event: FocusEvent) => {
+  const handleFocusIn = (event: Event) => {
     const rootElement = rootRef.current;
 
-    if (
-      rootElement &&
-      isDOMNode(event.target) &&
-      containsShadowAware(rootElement, event.target)
-    ) {
+    if (rootElement && isEventInRoot(event, rootElement)) {
       outsideFocusBoundaryRevision += 1;
       state.outsideFocusBoundarySettleUntil = 0;
     }
   };
 
+  const rootNode = rootRef.current?.getRootNode();
+  const shadowRoot =
+    rootNode && rootNode !== targetDocument && 'host' in rootNode
+      ? (rootNode as ShadowRoot)
+      : null;
+
+  shadowRoot?.addEventListener('mousedown', markInsideMouseDown, true);
+  shadowRoot?.addEventListener('focusin', handleFocusIn, true);
   targetDocument.addEventListener('mousedown', handleOutsideMouseDown);
   // Capture, so a refocus ends the window before the editor's own focus
   // handler, which React runs at its root, reads it.
@@ -177,6 +195,8 @@ export const attachEditableOutsideFocusBoundaryListener = ({
 
   return () => {
     outsideFocusBoundaryRevision += 1;
+    shadowRoot?.removeEventListener('mousedown', markInsideMouseDown, true);
+    shadowRoot?.removeEventListener('focusin', handleFocusIn, true);
     targetDocument.removeEventListener('mousedown', handleOutsideMouseDown);
     targetDocument.removeEventListener('focusin', handleFocusIn, true);
   };

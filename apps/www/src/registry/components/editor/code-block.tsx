@@ -174,9 +174,7 @@ export function CodeBlockElement({
       showLanguageLabel={showLanguageLabel}
     >
       <pre className="overflow-x-auto p-8 pe-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
-        <code className="[&>[data-editor-node=text]]:contents">
-          {props.children}
-        </code>
+        <code>{props.children}</code>
       </pre>
     </CodeBlockContainer>
   );

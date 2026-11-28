@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-code-block-webkit-word-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-code-block-webkit-word-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix WebKit double-click selection on code block tokens",
+  "targets": [
+    {
+      "name": "code-block",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-code-block-fix-webkit-double-click-1d435f9c",
+      "kind": "fix",
+      "summary": "Fix WebKit double-click selection on code block tokens",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-code-block-webkit-word-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

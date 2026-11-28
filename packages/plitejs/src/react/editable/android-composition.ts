@@ -456,7 +456,10 @@ const listenForLeave = (
     if (document.visibilityState === 'hidden') end('visibility');
   };
   const onPointerDown = (event: PointerEvent) => {
-    if (!(isDOMNode(event.target) && root.contains(event.target))) {
+    if (
+      !event.composedPath().includes(root) &&
+      !(isDOMNode(event.target) && root.contains(event.target))
+    ) {
       end('pointer');
     }
   };

@@ -71,8 +71,13 @@ import {
   focusedElementOnPage,
   isElementFocused,
   isSelectionOwnedByEditable,
+  readEditableDOMSelectionPoints,
 } from '../../dom/plugin/dom-root-runtime';
 import { isDOMNode } from '../../dom/utils/dom';
+import {
+  type DOMSelectionPoints,
+  sameDOMSelectionPoints,
+} from '../../dom/utils/selection-writes';
 import type {
   EditableHandlerContext,
   EditableViewportRuntime,
@@ -123,6 +128,7 @@ import {
   type EditableInputController,
   exportEditableDOMSelection,
   isSelectionHeldForPendingImport,
+  markPendingDOMSelectionImport,
   restoreEditableCompositionRuntimeMarks,
 } from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
@@ -554,6 +560,7 @@ export class EditableDOMRuntime {
   private cancelPressTask: (() => void) | null = null;
   private inEditableMouseUp = false;
   private nonMousePressHeld = false;
+  private nonMousePressStartSelection: DOMSelectionPoints | null = null;
 
   private readonly nativeInputHandlers: {
     beforeInput: ((event: InputEvent) => void) | null;
@@ -1339,6 +1346,44 @@ export class EditableDOMRuntime {
     );
   }
 
+  private claimNonMouseLongPressSelection() {
+    const root = this.rootElement;
+
+    if (!this.nonMousePressHeld || !root) return false;
+
+    const selection = getSelection(root.getRootNode() as Document | ShadowRoot);
+
+    if (
+      !selection ||
+      selection.isCollapsed ||
+      !containsShadowAware(root, selection.anchorNode) ||
+      !containsShadowAware(root, selection.focusNode)
+    ) {
+      return false;
+    }
+
+    const points = readEditableDOMSelectionPoints(root, selection);
+
+    if (
+      !points ||
+      (this.nonMousePressStartSelection &&
+        sameDOMSelectionPoints(points, this.nonMousePressStartSelection))
+    ) {
+      return false;
+    }
+
+    this.nonMousePressStartSelection = points;
+    this.inputController.state.modelOwnedTextInputGuard = 0;
+    setEditableModelSelectionPreference({
+      inputController: this.inputController,
+      preferModelSelection: false,
+      selectionSource: 'dom-current',
+    });
+    beginEditableNativeSelectionImport(this.inputController);
+    markPendingDOMSelectionImport(this.inputController.state, this.editorValue);
+    return true;
+  }
+
   /**
    * The browser's focus and selection for a press land within one task of its
    * mousedown, so the press window closes at the next zero-delay timeout.
@@ -2084,20 +2129,22 @@ export class EditableDOMRuntime {
     // A page's document-capture pointerdown can focus the Editable and prevent
     // the mousedown, so the press opens here, before any document listener.
     const notePointerPress = (event: PointerEvent) => {
-      const inRoot = event.composedPath().includes(node);
+      const composedPath = event.composedPath();
+      const inRoot = composedPath.includes(node);
+      const target = inRoot ? (composedPath[0] ?? event.target) : event.target;
 
       this.unreadPress.pointerDown(
         inRoot &&
           this.readOnlyValue &&
-          getEditableInteractionOwner(node, event.target) === 'editor'
+          getEditableInteractionOwner(node, target) === 'editor'
       );
       if (inRoot) this.beginMousePress();
       if (
         this.pointerSelectionEndHandler &&
         event.pointerType === 'mouse' &&
         event.button === 0 &&
-        getEditableInteractionOwner(node, event.target) === 'editor' &&
-        !isInteractiveInternalTarget(this.editorValue, event.target)
+        getEditableInteractionOwner(node, target) === 'editor' &&
+        !isInteractiveInternalTarget(this.editorValue, target)
       ) {
         this.pressFence.open();
       } else {
@@ -2106,10 +2153,22 @@ export class EditableDOMRuntime {
       this.nonMousePressHeld =
         event.pointerType !== 'mouse' &&
         inRoot &&
-        !isInteractiveInternalTarget(this.editorValue, event.target);
+        !isInteractiveInternalTarget(this.editorValue, target);
+      this.nonMousePressStartSelection = this.nonMousePressHeld
+        ? readEditableDOMSelectionPoints(
+            node,
+            getSelection(node.getRootNode() as Document | ShadowRoot)
+          )
+        : null;
     };
     const endPress = () => {
+      const claimed = this.claimNonMouseLongPressSelection();
+
       this.nonMousePressHeld = false;
+      this.nonMousePressStartSelection = null;
+      if (claimed) {
+        this.scheduleOnDOMSelectionChange?.();
+      }
     };
     const releasePress = () => this.pressFence.release();
     const cancelPress = () => this.pressFence.cancel();
@@ -2157,6 +2216,7 @@ export class EditableDOMRuntime {
         editor: this.editorValue,
         root: node,
         scheduleOnDOMSelectionChange: () => {
+          this.claimNonMouseLongPressSelection();
           claims.observeSelection();
           this.scheduleOnDOMSelectionChange?.();
         },
@@ -2168,6 +2228,12 @@ export class EditableDOMRuntime {
       noteAfterInsertCaret(this.editorValue, commit)
     );
 
+    const nodeRoot = node.getRootNode();
+    const closedShadowRoot =
+      'host' in nodeRoot && (nodeRoot as ShadowRoot).mode === 'closed'
+        ? (nodeRoot as ShadowRoot)
+        : null;
+
     node.addEventListener('compositionstart', handleCompositionStart);
     node.addEventListener('beforeinput', handleBeforeInput);
     node.addEventListener('input', handleInput);
@@ -2177,6 +2243,11 @@ export class EditableDOMRuntime {
     node.addEventListener('dragstart', cancelPress, true);
     node.addEventListener('blur', cancelPress);
     ownerWindow?.addEventListener('pointerdown', notePointerPress, true);
+    closedShadowRoot?.addEventListener(
+      'pointerdown',
+      notePointerPress as EventListener,
+      true
+    );
     ownerWindow?.addEventListener('pointerup', endPress, true);
     ownerWindow?.addEventListener('pointercancel', endPress, true);
     ownerWindow?.addEventListener('pointercancel', cancelPress, true);
@@ -2200,6 +2271,11 @@ export class EditableDOMRuntime {
       node.removeEventListener('beforeinput', handleBeforeInput);
       node.removeEventListener('input', handleInput);
       ownerWindow?.removeEventListener('pointerdown', notePointerPress, true);
+      closedShadowRoot?.removeEventListener(
+        'pointerdown',
+        notePointerPress as EventListener,
+        true
+      );
       ownerWindow?.removeEventListener('pointerup', endPress, true);
       ownerWindow?.removeEventListener('pointercancel', endPress, true);
       ownerWindow?.removeEventListener('pointercancel', cancelPress, true);
@@ -2207,6 +2283,7 @@ export class EditableDOMRuntime {
       ownerWindow?.removeEventListener('blur', cancelPress);
       this.pressFence.cancel();
       this.nonMousePressHeld = false;
+      this.nonMousePressStartSelection = null;
     };
   }
 

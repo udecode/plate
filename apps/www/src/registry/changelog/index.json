@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-code-block-webkit-word-selection",
+      "href": "/registry/changelog/2026-11-28-code-block-webkit-word-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix WebKit double-click selection on code block tokens",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-diff-two-way-only",
       "href": "/registry/changelog/2026-11-28-diff-two-way-only.json",
       "status": "draft",

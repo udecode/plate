@@ -39,6 +39,7 @@ import {
   clamp,
   getPathElement,
   isPointOnVisualBoundaryLine,
+  resolveVerticalNavigationPoint,
 } from './content-root-vertical-geometry';
 import {
   getPlainVerticalDOMCoveragePlugin,
@@ -542,6 +543,35 @@ export const collapseNodeSelectionOnEscape = (
   return true;
 };
 
+const stepTextLineOffset = (
+  text: string,
+  offset: number,
+  reverse: boolean
+): number | null => {
+  const lineStart = offset === 0 ? 0 : text.lastIndexOf('\n', offset - 1) + 1;
+  const rawLineEnd = text.indexOf('\n', offset);
+  const lineEnd = rawLineEnd === -1 ? text.length : rawLineEnd;
+  const col = offset - lineStart;
+
+  if (!reverse) {
+    if (lineEnd >= text.length) return null;
+
+    const nextLineStart = lineEnd + 1;
+    const rawNextEnd = text.indexOf('\n', nextLineStart);
+    const nextLineEnd = rawNextEnd === -1 ? text.length : rawNextEnd;
+
+    return Math.min(nextLineStart + col, nextLineEnd);
+  }
+
+  if (lineStart === 0) return null;
+
+  const prevLineEnd = lineStart - 1;
+  const prevLineStart =
+    prevLineEnd === 0 ? 0 : text.lastIndexOf('\n', prevLineEnd - 1) + 1;
+
+  return Math.min(prevLineStart + col, prevLineEnd);
+};
+
 export const getSelectableOwnerVerticalNavigationTarget = ({
   editor,
   event,
@@ -632,6 +662,31 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
   };
 
   const getAdjacentTarget = (reverse: boolean) => {
+    const coverage = getMountedEditableDOMRuntime(
+      editor,
+      event.currentTarget
+    )?.domCoverage;
+    const focusInModelSelectedText =
+      coverage?.getBoundaryForPoint(selection.focus)?.selectionPolicy ===
+      'model';
+
+    if (extend && focusInModelSelectedText) {
+      const nextOffset = editor.read((state) => {
+        const node = state.nodes.get(selection.focus.path)?.[0];
+
+        return NodeApi.isText(node)
+          ? stepTextLineOffset(node.text, selection.focus.offset, reverse)
+          : null;
+      });
+
+      if (nextOffset !== null) {
+        return SelectionApi.text({
+          anchor: selection.anchor,
+          focus: { ...selection.focus, offset: nextOffset },
+        });
+      }
+    }
+
     const adjacent = editor.read((state) => {
       const block = state.nodes.block({ at: selection.focus });
       const edge =
@@ -647,10 +702,6 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     });
 
     if (!adjacent) return null;
-    const coverage = getMountedEditableDOMRuntime(
-      editor,
-      event.currentTarget
-    )?.domCoverage;
     const hidden = adjacent.point
       ? coverage?.getBoundaryForPoint(adjacent.point)
       : null;
@@ -671,7 +722,23 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
 
     if (holderStep && !point) return selection;
     if (extend) {
-      return holderStep &&
+      if (focusInModelSelectedText) {
+        return point
+          ? SelectionApi.text({ anchor: selection.anchor, focus: point })
+          : selection;
+      }
+
+      const anchorInModelSelectedText =
+        coverage?.getBoundaryForPoint(selection.anchor)?.selectionPolicy ===
+        'model';
+      const pointInModelSelectedText =
+        !anchorInModelSelectedText &&
+        !!point &&
+        coverage
+          ?.getBoundariesForRange({ anchor: point, focus: point })
+          .some(({ selectionPolicy }) => selectionPolicy === 'model');
+
+      return (holderStep || pointInModelSelectedText) &&
         point &&
         leavesBlock(adjacent.blockPath, adjacent.edge, reverse)
         ? SelectionApi.text({ anchor: selection.anchor, focus: point })
@@ -1002,24 +1069,51 @@ const moveEditableCaret = ({
     );
 
     if (!target) return caretMovementHandled();
-    const landing =
-      (nativeEvent.key === 'ArrowDown' || nativeEvent.key === 'ArrowUp') &&
-      preferredX !== undefined &&
+    const isVerticalArrow =
+      nativeEvent.key === 'ArrowDown' || nativeEvent.key === 'ArrowUp';
+    const enteringDifferentText =
       SelectionApi.isText(target) &&
-      RangeApi.isCollapsed(target)
-        ? runtime?.externalText.verticalEntryPoint(
-            target.focus,
-            nativeEvent.key === 'ArrowDown' ? 'start' : 'end',
-            preferredX
-          )
+      (!SelectionApi.isText(selection) ||
+        !PathApi.equals(selection.focus.path, target.focus.path));
+    const canResolveVerticalLanding =
+      isVerticalArrow && preferredX !== undefined && enteringDifferentText;
+    const externalLanding = canResolveVerticalLanding
+      ? runtime?.externalText.verticalEntryPoint(
+          target.focus,
+          nativeEvent.key === 'ArrowDown' ? 'start' : 'end',
+          preferredX
+        )
+      : null;
+    const paragraphLanding =
+      canResolveVerticalLanding &&
+      !externalLanding &&
+      runtime &&
+      SelectionApi.isText(selection) &&
+      coverage?.getBoundaryForPoint(selection.focus)?.selectionPolicy ===
+        'model'
+        ? resolveVerticalNavigationPoint({
+            direction: nativeEvent.key === 'ArrowUp' ? 'backward' : 'forward',
+            fallbackPoint: target.focus,
+            preferredX,
+            targetEditor: editor,
+            targetRoot: toInternalRoot(
+              editor.read((state) => state.view.root())
+            ),
+            targetRuntime: runtime,
+          })
         : null;
+    const landing = externalLanding ?? paragraphLanding;
     writePliteViewSelection(editor, null, {
       place: () => {
         runtime?.clearModelSelectionDOMPreference();
         dispatchCommand(editor, editorCommands.select, {
-          target: landing
-            ? SelectionApi.text({ anchor: landing, focus: landing })
-            : target,
+          target:
+            landing && SelectionApi.isText(target)
+              ? SelectionApi.text({
+                  anchor: nativeEvent.shiftKey ? target.anchor : landing,
+                  focus: landing,
+                })
+              : target,
         });
       },
     });
