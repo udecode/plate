@@ -347,10 +347,10 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   });
   const insertFloating = useFloatingRect(geometry, {
     hideWhenClipped: false,
-    onOpenChange: (nextOpen) => {
+    onOpenChange: (nextOpen, _event, reason) => {
       if (nextOpen) return;
       api.hide();
-      editor.api.dom.focus();
+      if (reason !== 'outside-press') editor.api.dom.focus();
     },
     open: !readOnly && open && mode === 'insert',
     ...linkFloatingOptions,

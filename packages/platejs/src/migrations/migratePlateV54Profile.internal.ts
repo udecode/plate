@@ -4,9 +4,14 @@ import {
   type EditorDocumentValue,
   type Element,
   ElementApi,
+  MAIN_ROOT_KEY,
   type NodeEntry,
   type Path,
   PathApi,
+  type Point,
+  type Range,
+  RangeApi,
+  type Selection,
   TextApi,
   type Value,
 } from '../facade';
@@ -37,6 +42,45 @@ const isAbsentCaption = (children: readonly Descendant[]) =>
     children[0].text === '' &&
     Object.keys(children[0]).every((key) => key === 'text'));
 
+type ReplacementPoint = Readonly<{ offset: number; path: Path }>;
+type CaptionReplacement = Readonly<{
+  first: ReplacementPoint;
+  last: ReplacementPoint;
+}>;
+type PointEdge = 'caret' | 'end' | 'start';
+
+export type PlateV54ProfileMigrationResult = Readonly<{
+  document: EditorDocumentValue;
+  mapRange?: (range: Range) => Range;
+  mapSelection?: (selection: Selection) => Selection;
+}>;
+
+const pathKey = (root: string, path: readonly number[]) =>
+  `${root}:${path.join('.')}`;
+
+const edgeTextPoint = (
+  children: readonly Descendant[],
+  parentPath: Path,
+  edge: 'first' | 'last'
+): ReplacementPoint => {
+  const path = [...parentPath];
+  let current = children;
+
+  while (current.length > 0) {
+    const index = edge === 'first' ? 0 : current.length - 1;
+    const node = current[index];
+
+    path.push(index);
+    if (TextApi.isText(node)) {
+      return { offset: edge === 'first' ? 0 : node.text.length, path };
+    }
+    if (!ElementApi.isElement(node)) break;
+    current = node.children;
+  }
+
+  return { offset: 0, path };
+};
+
 /** Upgrade the frozen first-party profile inside the Plate v54 migration. */
 export const migratePlateV54Profile = ({
   document,
@@ -44,7 +88,8 @@ export const migratePlateV54Profile = ({
 }: Pick<
   DocumentMigrationContext,
   'document' | 'target'
->): EditorDocumentValue => {
+>): PlateV54ProfileMigrationResult => {
+  const captionReplacements = new Map<string, CaptionReplacement>();
   const { declares, ownsProperty, ownsTextProperty } =
     createPropertyOwnership(conversionTarget);
   const { declared, elementType, mediaTypes, scriptKey } =
@@ -191,6 +236,7 @@ export const migratePlateV54Profile = ({
   const migrateDescendant = (
     input: unknown,
     location: string,
+    path: Path,
     context: NodeContext
   ): Descendant => {
     if (TextApi.isText(input)) return migrateText(input, location, context);
@@ -232,6 +278,7 @@ export const migratePlateV54Profile = ({
       const migrated = migrateDescendant(
         child,
         `${location}.children.${index}`,
+        [...path, index],
         childContext
       );
 
@@ -674,7 +721,12 @@ export const migratePlateV54Profile = ({
       (ElementApi.isElement(child) && conversionTarget.schema.isInline(child));
     const direct = element.children;
     const migratedLegacy = legacyCaption.map((child, index) =>
-      migrateDescendant(child, `${location}.caption.${index}`, childContext)
+      migrateDescendant(
+        child,
+        `${location}.caption.${index}`,
+        [...path, index],
+        childContext
+      )
     );
     let legacy: Descendant[];
 
@@ -708,10 +760,36 @@ export const migratePlateV54Profile = ({
     }
 
     const { caption: _caption, ...migratedElement } = element;
+    const rootKey = context.root ?? MAIN_ROOT_KEY;
+    let nextChildren: readonly Descendant[];
+
+    if (nonEmptySources[0] === direct) {
+      nextChildren = direct;
+    } else if (nonEmptySources[0] === legacy) {
+      nextChildren = legacy;
+      captionReplacements.set(pathKey(rootKey, path), {
+        first: edgeTextPoint(legacy, path, 'first'),
+        last: edgeTextPoint(legacy, path, 'last'),
+      });
+    } else if (
+      direct.length === 1 &&
+      TextApi.isText(direct[0]) &&
+      direct[0].text === ''
+    ) {
+      nextChildren = direct;
+    } else {
+      nextChildren = [{ text: '' }];
+      const start = { offset: 0, path: [...path, 0] };
+
+      captionReplacements.set(pathKey(rootKey, path), {
+        first: start,
+        last: start,
+      });
+    }
 
     return {
       ...migratedElement,
-      children: nonEmptySources[0] ?? [{ text: '' }],
+      children: nextChildren,
     };
   };
 
@@ -845,10 +923,15 @@ export const migratePlateV54Profile = ({
   ): Value => {
     let changed = false;
     const next = children.map((child, index) => {
-      const migrated = migrateDescendant(child, `${location}.${index}`, {
-        ancestors: [],
-        root,
-      });
+      const migrated = migrateDescendant(
+        child,
+        `${location}.${index}`,
+        [index],
+        {
+          ancestors: [],
+          root,
+        }
+      );
 
       if (migrated !== child) changed = true;
 
@@ -877,13 +960,52 @@ export const migratePlateV54Profile = ({
     if (changed) roots = next;
   }
 
-  if (children === document.children && roots === document.roots) {
-    return document;
-  }
+  const migratedDocument =
+    children === document.children && roots === document.roots
+      ? document
+      : {
+          ...document,
+          children,
+          ...(roots ? { roots } : {}),
+        };
+
+  if (captionReplacements.size === 0) return { document: migratedDocument };
+
+  const mapPoint = (point: Point, edge: PointEdge): Point => {
+    const root = point.root ?? MAIN_ROOT_KEY;
+
+    for (let depth = 1; depth < point.path.length; depth++) {
+      const replacement = captionReplacements.get(
+        pathKey(root, point.path.slice(0, depth))
+      );
+
+      if (!replacement) continue;
+
+      const landing = edge === 'start' ? replacement.last : replacement.first;
+
+      return { ...point, offset: landing.offset, path: [...landing.path] };
+    }
+
+    return point;
+  };
 
   return {
-    ...document,
-    children,
-    ...(roots ? { roots } : {}),
+    document: migratedDocument,
+    mapRange: (range) => {
+      const backward = RangeApi.isBackward(range);
+
+      return {
+        anchor: mapPoint(range.anchor, backward ? 'end' : 'start'),
+        focus: mapPoint(range.focus, backward ? 'start' : 'end'),
+      };
+    },
+    mapSelection: (selection) =>
+      RangeApi.isRange(selection)
+        ? {
+            ...selection,
+            anchor: mapPoint(selection.anchor, 'caret'),
+            focus: mapPoint(selection.focus, 'caret'),
+          }
+        : selection,
   };
 };

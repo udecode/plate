@@ -8,7 +8,6 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import type {
-  CodeBlockAddon,
   CodeBlockComponent,
   CodeBlockElementProps,
 } from '@/registry/components/editor/code-block';
@@ -60,41 +59,80 @@ export function withDiagrams(
 
   return function DiagramCodeBlockElement(props: CodeBlockElementProps) {
     const renderer = rendererByLanguage.get(props.element.language ?? '');
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const [view, setView] = React.useState<DiagramView>('both');
+    const [exportState, setExportState] = React.useState<Readonly<{
+      renderer: DiagramRenderer;
+      url: string;
+    }> | null>(null);
     const outerOptions = props.addon?.languageOptions;
-    const addon = {
-      ...props.addon,
-      languageOptions: outerOptions
-        ? [...outerOptions, ...languageOptions]
-        : languageOptions,
-    };
-
-    if (!renderer) return <Element {...props} addon={addon} />;
+    const outerWrapSource = props.addon?.wrapSource;
+    const exportUrl =
+      renderer && exportState?.renderer === renderer ? exportState.url : null;
 
     return (
-      <DiagramCodeBlock
-        addon={addon}
-        Element={Element}
-        elementProps={props}
-        renderer={renderer}
+      <Element
+        {...props}
+        addon={{
+          ...props.addon,
+          languageOptions: outerOptions
+            ? [...outerOptions, ...languageOptions]
+            : languageOptions,
+          toolbar: renderer ? (
+            <>
+              {props.addon?.toolbar}
+              <DiagramViewToggle view={view} onPick={setView} />
+              {exportUrl && <DiagramExportButton url={exportUrl} />}
+            </>
+          ) : (
+            props.addon?.toolbar
+          ),
+          wrapSource: (body) => (
+            <div ref={containerRef}>
+              {outerWrapSource ? outerWrapSource(body) : body}
+              {/* The editor restores child nodes added or removed beside the
+                  source, so the picture area stays mounted and only hides. */}
+              <div
+                className="border-t border-border/60 px-8 py-4"
+                contentEditable={false}
+                hidden={!renderer || view === 'code'}
+              >
+                {renderer && (
+                  <DiagramPreview
+                    containerRef={containerRef}
+                    element={props.element}
+                    onExportUrl={setExportState}
+                    renderer={renderer}
+                    view={view}
+                  />
+                )}
+              </div>
+            </div>
+          ),
+        }}
       />
     );
   };
 }
 
-function DiagramCodeBlock({
-  addon,
-  Element,
-  elementProps,
+function DiagramPreview({
+  containerRef,
+  element,
+  onExportUrl,
   renderer,
+  view,
 }: {
-  addon: CodeBlockAddon;
-  Element: CodeBlockComponent;
-  elementProps: CodeBlockElementProps;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  element: CodeBlockElementProps['element'];
+  onExportUrl: React.Dispatch<
+    React.SetStateAction<Readonly<{
+      renderer: DiagramRenderer;
+      url: string;
+    }> | null>
+  >;
   renderer: DiagramRenderer;
+  view: DiagramView;
 }) {
-  const { element } = elementProps;
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [view, setView] = React.useState<DiagramView>('both');
   const nearViewport = useNearViewport(containerRef);
   const source = useLiveSource(element);
   const picture = useDiagramPicture(
@@ -103,50 +141,31 @@ function DiagramCodeBlock({
     view === 'both' && nearViewport
   );
 
+  React.useEffect(() => {
+    onExportUrl(picture.url ? { renderer, url: picture.url } : null);
+  }, [onExportUrl, picture.url, renderer]);
+
+  React.useEffect(() => () => onExportUrl(null), [onExportUrl]);
+
+  if (view !== 'both') return null;
+
   return (
-    <Element
-      {...elementProps}
-      addon={{
-        ...addon,
-        toolbar: (
-          <>
-            {addon.toolbar}
-            <DiagramViewToggle view={view} onPick={setView} />
-            {picture.url && <DiagramExportButton url={picture.url} />}
-          </>
-        ),
-        wrapSource: (body) => (
-          <div ref={containerRef}>
-            {addon.wrapSource ? addon.wrapSource(body) : body}
-            {/* The editor restores child nodes added or removed beside the
-                source, so the picture area stays mounted and only hides. */}
-            <div
-              className="border-t border-border/60 px-8 py-4"
-              contentEditable={false}
-              hidden={view === 'code'}
-            >
-              {view === 'both' &&
-                picture.url && (
-                  // oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] toDataUrl turns every rendered SVG into a data URL; optimization and remote loading do not apply.
-                  <img
-                    alt={element.language ?? renderer.label}
-                    className="mx-auto max-h-96 max-w-full"
-                    draggable={false}
-                    src={picture.url}
-                  />
-                )}
-              {view === 'both' && (
-                <DiagramStatus
-                  empty={source.trim().length === 0}
-                  error={picture.error}
-                  loading={!picture.url && !picture.error}
-                />
-              )}
-            </div>
-          </div>
-        ),
-      }}
-    />
+    <>
+      {picture.url && (
+        // oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] toDataUrl turns every rendered SVG into a data URL; optimization and remote loading do not apply.
+        <img
+          alt={element.language ?? renderer.label}
+          className="mx-auto max-h-96 max-w-full"
+          draggable={false}
+          src={picture.url}
+        />
+      )}
+      <DiagramStatus
+        empty={source.trim().length === 0}
+        error={picture.error}
+        loading={!picture.url && !picture.error}
+      />
+    </>
   );
 }
 

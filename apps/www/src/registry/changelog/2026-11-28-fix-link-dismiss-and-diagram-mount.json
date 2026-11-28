@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-fix-link-dismiss-and-diagram-mount",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-fix-link-dismiss-and-diagram-mount.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep outside-press dismiss active without geometry and keep code blocks mounted when switching to diagram languages.",
+  "targets": [
+    {
+      "name": "use-floating-rect",
+      "files": ["apps/www/src/registry/hooks/use-floating-rect.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-hooks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-diagram",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-diagram.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-use-floating-rect-keep-outside-press-dismiss-f6995505",
+      "kind": "fix",
+      "summary": "Keep outside-press dismiss active without geometry and keep code blocks mounted when switching to diagram languages.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["use-floating-rect", "link", "code-block-diagram"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-fix-link-dismiss-and-diagram-mount",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

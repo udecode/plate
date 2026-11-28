@@ -3,6 +3,14 @@ import {
   type EditorDocumentValue,
   type Element,
   ElementApi,
+  MAIN_ROOT_KEY,
+  type Path,
+  PathApi,
+  type Point,
+  type Range,
+  RangeApi,
+  type Selection,
+  SelectionApi,
   TextApi,
   type Value,
 } from '../facade';
@@ -55,6 +63,28 @@ const safeInteger = (value: unknown) => {
   return Number.isSafeInteger(integer) ? integer : undefined;
 };
 
+type ReplacementPoint = Readonly<{ offset: number; path: Path }>;
+type AstReplacement = Readonly<{
+  caret: ReplacementPoint;
+  endEdge: ReplacementPoint;
+  startEdge: ReplacementPoint;
+}>;
+type AstChildItem = Readonly<{
+  from: Path;
+  location: string;
+  node: Descendant;
+}>;
+type PointEdge = 'caret' | 'end' | 'start';
+
+export type PlateV54AstMigrationResult = Readonly<{
+  document: EditorDocumentValue;
+  mapRange?: (range: Range) => Range;
+  mapSelection?: (selection: Selection) => Selection;
+}>;
+
+const pathKey = (root: string, path: readonly number[]) =>
+  `${root}:${path.join('.')}`;
+
 /** Apply the final AST contracts inside the Plate v54 migration. */
 export const migratePlateV54Ast = ({
   document,
@@ -62,7 +92,10 @@ export const migratePlateV54Ast = ({
 }: Pick<
   DocumentMigrationContext,
   'document' | 'target'
->): EditorDocumentValue => {
+>): PlateV54AstMigrationResult => {
+  const leafTargets = new Map<string, Path>();
+  const elementTargets = new Map<string, Path | null>();
+  const replacements = new Map<string, AstReplacement>();
   const {
     declared,
     detailsSummaryType,
@@ -126,12 +159,14 @@ export const migratePlateV54Ast = ({
       children,
     };
   };
-  const convertLegacyToggle = (
+  const splitLegacyToggleProperties = (
     input: Element,
-    body: readonly Descendant[],
     location: string,
     context: NodeContext
-  ): Element => {
+  ): Readonly<{
+    detailsProperties: Record<string, unknown>;
+    summaryProperties: Record<string, unknown>;
+  }> => {
     if (!detailsType || !detailsSummaryType) {
       throw new Error(
         `Plate v54 migration cannot convert legacy Toggle at ${location}: Details and DetailsSummary must be installed.`
@@ -183,18 +218,7 @@ export const migratePlateV54Ast = ({
       );
     }
 
-    return {
-      ...detailsProperties,
-      children: [
-        {
-          ...summaryProperties,
-          children: input.children,
-          type: detailsSummaryType,
-        },
-        ...body,
-      ],
-      type: detailsType,
-    };
+    return { detailsProperties, summaryProperties };
   };
   const occupiedFootnoteRefs = new Set<string>();
   const collectFootnoteRefs = (input: Descendant) => {
@@ -232,25 +256,12 @@ export const migratePlateV54Ast = ({
     return candidate;
   };
 
-  let migrateChildren: (
-    children: Value,
-    location: string,
-    context: NodeContext
-  ) => Value;
-  const migrateDescendant = (
-    input: Descendant,
+  const normalizeElementProperties = (
+    input: Element,
     location: string,
     context: NodeContext
   ): Descendant => {
-    if (TextApi.isText(input)) return input;
-
-    const children = migrateChildren(
-      input.children as Value,
-      `${location}.children`,
-      { ancestors: [input.type, ...context.ancestors], root: context.root }
-    );
-    let element: Element =
-      children === input.children ? input : { ...input, children };
+    let element: Element = input;
     const properties = () => element as Record<string, unknown>;
     const without = (...keys: string[]) => {
       if (!keys.some((key) => Object.hasOwn(element, key))) return;
@@ -670,53 +681,173 @@ export const migratePlateV54Ast = ({
     return element;
   };
 
-  migrateChildren = (
-    children: Value,
+  let migrateChildren: (
+    items: readonly AstChildItem[],
+    original: Value | null,
+    toParent: Path,
+    toStart: number,
+    context: NodeContext
+  ) => Value;
+
+  const migrateDescendant = (
+    input: Descendant,
+    fromPath: Path,
+    toPath: Path,
     location: string,
     context: NodeContext
+  ): Descendant => {
+    const rootKey = context.root ?? MAIN_ROOT_KEY;
+
+    if (TextApi.isText(input)) {
+      if (!PathApi.equals(fromPath, toPath)) {
+        leafTargets.set(pathKey(rootKey, fromPath), toPath);
+      }
+
+      return input;
+    }
+
+    const childItems: AstChildItem[] = input.children.map((child, index) => ({
+      from: [...fromPath, index],
+      location: `${location}.children.${index}`,
+      node: child,
+    }));
+    const children = migrateChildren(
+      childItems,
+      input.children as Value,
+      toPath,
+      0,
+      { ancestors: [input.type, ...context.ancestors], root: context.root }
+    );
+    const updated =
+      children === input.children ? input : { ...input, children };
+    const normalized = normalizeElementProperties(updated, location, context);
+
+    if (TextApi.isText(normalized)) {
+      const end = { offset: normalized.text.length, path: toPath };
+
+      replacements.set(pathKey(rootKey, fromPath), {
+        caret: end,
+        endEdge: { offset: 0, path: toPath },
+        startEdge: end,
+      });
+      elementTargets.set(pathKey(rootKey, fromPath), null);
+
+      return normalized;
+    }
+
+    if (!PathApi.equals(fromPath, toPath)) {
+      elementTargets.set(pathKey(rootKey, fromPath), toPath);
+    }
+
+    return normalized;
+  };
+
+  migrateChildren = (
+    items: readonly AstChildItem[],
+    original: Value | null,
+    toParent: Path,
+    toStart: number,
+    context: NodeContext
   ): Value => {
+    const rootKey = context.root ?? MAIN_ROOT_KEY;
     let changed = false;
     const next: Descendant[] = [];
 
-    for (let index = 0; index < children.length; index++) {
-      const child = children[index];
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index];
+      const child = item?.node;
 
-      if (!child) continue;
+      if (!item || !child) continue;
+
+      const toPath = [...toParent, toStart + next.length];
 
       if (ElementApi.isElement(child) && child.type === 'toggle') {
-        const depth = legacyDepth(child, `${location}.${index}`);
+        const depth = legacyDepth(child, item.location);
         let end = index + 1;
 
-        for (; end < children.length; end++) {
-          const candidate = children[end];
+        for (; end < items.length; end++) {
+          const candidate = items[end];
 
           if (!candidate) break;
 
-          if (!ElementApi.isElement(candidate)) {
+          if (!ElementApi.isElement(candidate.node)) {
             throw new Error(
-              `Plate v54 migration cannot group legacy Toggle at ${location}.${index}: sibling ${location}.${end} is not an element.`
+              `Plate v54 migration cannot group legacy Toggle at ${item.location}: sibling ${candidate.location} is not an element.`
             );
           }
-          if (legacyDepth(candidate, `${location}.${end}`) <= depth) break;
+          if (legacyDepth(candidate.node, candidate.location) <= depth) break;
         }
 
-        const body = children
-          .slice(index + 1, end)
-          .map((candidate, offset) =>
-            consumeLegacyEnclosureDepth(
-              candidate,
-              `${location}.${index + 1 + offset}`
-            )
+        const { detailsProperties, summaryProperties } =
+          splitLegacyToggleProperties(child, item.location, context);
+
+        if (!detailsType || !detailsSummaryType) {
+          throw new Error(
+            `Plate v54 migration cannot convert legacy Toggle at ${item.location}: Details and DetailsSummary must be installed.`
           );
-        const converted = convertLegacyToggle(
-          child,
-          body,
-          `${location}.${index}`,
-          context
+        }
+
+        if (!PathApi.equals(item.from, toPath)) {
+          elementTargets.set(pathKey(rootKey, item.from), toPath);
+        }
+
+        const summaryPath = [...toPath, 0];
+        const summaryLocation = `${item.location}.children.0`;
+        const summaryContext = {
+          ancestors: [detailsType, ...context.ancestors],
+          root: context.root,
+        };
+        const summaryChildren = migrateChildren(
+          child.children.map((summaryChild, summaryIndex) => ({
+            from: [...item.from, summaryIndex],
+            location: `${summaryLocation}.children.${summaryIndex}`,
+            node: summaryChild,
+          })),
+          null,
+          summaryPath,
+          0,
+          {
+            ancestors: [detailsSummaryType, detailsType, ...context.ancestors],
+            root: context.root,
+          }
+        );
+        const summary = normalizeElementProperties(
+          {
+            ...summaryProperties,
+            children: summaryChildren,
+            type: detailsSummaryType,
+          },
+          summaryLocation,
+          summaryContext
+        );
+        const bodyItems: AstChildItem[] = items
+          .slice(index + 1, end)
+          .map((candidate, offset) => ({
+            from: candidate.from,
+            location: `${item.location}.children.${1 + offset}`,
+            node: consumeLegacyEnclosureDepth(
+              candidate.node,
+              candidate.location
+            ),
+          }));
+        const migratedBody = migrateChildren(
+          bodyItems,
+          null,
+          toPath,
+          1,
+          summaryContext
         );
 
         next.push(
-          migrateDescendant(converted, `${location}.${index}`, context)
+          normalizeElementProperties(
+            {
+              ...detailsProperties,
+              children: [summary, ...migratedBody],
+              type: detailsType,
+            },
+            item.location,
+            context
+          )
         );
         changed = true;
         index = end - 1;
@@ -725,7 +856,9 @@ export const migratePlateV54Ast = ({
 
       const migrated = migrateDescendant(
         child,
-        `${location}.${index}`,
+        item.from,
+        toPath,
+        item.location,
         context
       );
 
@@ -733,22 +866,40 @@ export const migratePlateV54Ast = ({
       next.push(migrated);
     }
 
-    return changed ? (next as Value) : children;
+    return changed || original === null ? (next as Value) : original;
   };
-  const children = migrateChildren(document.children, 'main', {
-    ancestors: [],
-    root: null,
-  });
+  const rootItems = (children: Value, location: string): AstChildItem[] =>
+    children.map((node, index) => ({
+      from: [index],
+      location: `${location}.${index}`,
+      node,
+    }));
+  const children = migrateChildren(
+    rootItems(document.children, 'main'),
+    document.children,
+    [],
+    0,
+    {
+      ancestors: [],
+      root: null,
+    }
+  );
   let { roots } = document;
 
   if (roots) {
     let changed = false;
     const next = Object.fromEntries(
       Object.entries(roots).map(([root, rootChildren]) => {
-        const migrated = migrateChildren(rootChildren, `roots.${root}`, {
-          ancestors: [],
-          root,
-        });
+        const migrated = migrateChildren(
+          rootItems(rootChildren, `roots.${root}`),
+          rootChildren,
+          [],
+          0,
+          {
+            ancestors: [],
+            root,
+          }
+        );
 
         if (migrated !== rootChildren) changed = true;
 
@@ -759,13 +910,127 @@ export const migratePlateV54Ast = ({
     if (changed) roots = next;
   }
 
-  if (children === document.children && roots === document.roots) {
-    return document;
+  const migratedDocument =
+    children === document.children && roots === document.roots
+      ? document
+      : {
+          ...document,
+          children,
+          ...(roots ? { roots } : {}),
+        };
+
+  if (
+    leafTargets.size === 0 &&
+    elementTargets.size === 0 &&
+    replacements.size === 0
+  ) {
+    return { document: migratedDocument };
   }
 
+  const mapPoint = (point: Point, edge: PointEdge): Point => {
+    const root = point.root ?? MAIN_ROOT_KEY;
+
+    for (let depth = 1; depth <= point.path.length; depth++) {
+      const replacement = replacements.get(
+        pathKey(root, point.path.slice(0, depth))
+      );
+
+      if (!replacement) continue;
+
+      const landing =
+        edge === 'caret'
+          ? replacement.caret
+          : edge === 'start'
+            ? replacement.startEdge
+            : replacement.endEdge;
+
+      return { ...point, offset: landing.offset, path: [...landing.path] };
+    }
+
+    const leafTarget = leafTargets.get(pathKey(root, point.path));
+
+    return leafTarget ? { ...point, path: [...leafTarget] } : point;
+  };
+
   return {
-    ...document,
-    children,
-    ...(roots ? { roots } : {}),
+    document: migratedDocument,
+    mapRange: (range) => {
+      const backward = RangeApi.isBackward(range);
+
+      return {
+        anchor: mapPoint(range.anchor, backward ? 'end' : 'start'),
+        focus: mapPoint(range.focus, backward ? 'start' : 'end'),
+      };
+    },
+    mapSelection: (selection) => {
+      if (!selection) return selection;
+      if (RangeApi.isRange(selection)) {
+        return {
+          ...selection,
+          anchor: mapPoint(selection.anchor, 'caret'),
+          focus: mapPoint(selection.focus, 'caret'),
+        };
+      }
+      if (SelectionApi.isNode(selection)) {
+        const selectionRoot = SelectionApi.root(selection);
+        const root = selectionRoot ?? MAIN_ROOT_KEY;
+        const mappedEntries = selection.paths.map((source) => {
+          const key = pathKey(root, source);
+
+          return {
+            mapped: elementTargets.has(key)
+              ? (elementTargets.get(key) ?? null)
+              : source,
+            source,
+          };
+        });
+        const paths = mappedEntries.flatMap(({ mapped }) =>
+          mapped ? [[...mapped]] : []
+        );
+        const first = paths[0];
+
+        if (!first) return null;
+
+        const rootOptions =
+          selectionRoot === undefined ? ({} as const) : { root: selectionRoot };
+        const canonical = SelectionApi.nodes([first, ...paths.slice(1)], {
+          mode: 'block',
+          ...rootOptions,
+        });
+        const backward =
+          PathApi.compare(selection.anchorPath, selection.focusPath) > 0;
+        const firstPath = canonical.paths[0];
+        const lastPath = canonical.paths.at(-1) ?? firstPath;
+        const resolveEndpoint = (source: Path, fallback: Path) => {
+          const mapped = mappedEntries.find(({ source: candidate }) =>
+            PathApi.equals(candidate, source)
+          )?.mapped;
+
+          if (!mapped) return fallback;
+
+          return (
+            canonical.paths.find(
+              (path) =>
+                PathApi.equals(path, mapped) || PathApi.isAncestor(path, mapped)
+            ) ?? fallback
+          );
+        };
+
+        return SelectionApi.nodes(canonical.paths, {
+          anchorPath: resolveEndpoint(
+            selection.anchorPath,
+            backward ? lastPath : firstPath
+          ),
+          focusPath: resolveEndpoint(
+            selection.focusPath,
+            backward ? firstPath : lastPath
+          ),
+          mode: selection.mode,
+          ...rootOptions,
+        });
+      }
+
+      return selection;
+    },
   };
 };

@@ -1,12 +1,15 @@
 import {
   type BasePluginDefinitionInput,
+  type Descendant,
   type Element,
+  ElementApi,
   defineInputRule,
   definePlugin,
   matchBlockStart,
   type InsertTextInputRuleReadContext,
   property,
   schema,
+  TextApi,
   PLUGINS,
   txLocate,
 } from '../../../core';
@@ -66,14 +69,52 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
 
       markdown: {
         node: 'heading',
-        decode: ({ decode, marks, node }) =>
-          isHeadingLevel(node.depth)
-            ? {
-                children: decode(node.children, marks),
+        decode: ({ decode, marks, node, schema: formatSchema }) => {
+          if (!isHeadingLevel(node.depth)) return undefined;
+
+          const children = decode(node.children, marks);
+          const isDisallowedBlock = (child: Descendant) =>
+            ElementApi.isElement(child) &&
+            !formatSchema.getElementBehavior(child)?.inline &&
+            !formatSchema.allowsElementType(type, child.type);
+
+          if (!children.some(isDisallowedBlock)) {
+            return {
+              children,
+              level: node.depth,
+              type,
+            };
+          }
+
+          const nodes: Descendant[] = [];
+          let run: Descendant[] = [];
+          const flush = () => {
+            if (
+              run.some(
+                (child) => !TextApi.isText(child) || child.text.trim() !== ''
+              )
+            ) {
+              nodes.push({
+                children: run,
                 level: node.depth,
                 type,
-              }
-            : undefined,
+              });
+            }
+            run = [];
+          };
+
+          for (const child of children) {
+            if (isDisallowedBlock(child)) {
+              flush();
+              nodes.push(child);
+            } else {
+              run.push(child);
+            }
+          }
+          flush();
+
+          return nodes;
+        },
         encode: ({ encodePhrasing, node, preserve }) => {
           preserve('level');
 

@@ -34,11 +34,11 @@ import { migratePlateV54Suggestions } from './migratePlateV54Suggestions.interna
 import { migratePlateV54Urls } from './migratePlateV54Urls.internal';
 
 type PlateV54Shape = Readonly<{
-  ast: EditorDocumentValue;
+  ast: ReturnType<typeof migratePlateV54Ast>;
   codeBlocks: ReturnType<typeof migratePlateV54CodeBlocks>;
   document: EditorDocumentValue;
   inputs: ReturnType<typeof migratePlateV54Inputs>;
-  profile: EditorDocumentValue;
+  profile: ReturnType<typeof migratePlateV54Profile>;
   urls: ReturnType<typeof migratePlateV54Urls>;
 }>;
 
@@ -141,8 +141,8 @@ const shapeDocument = (
     ...context,
     document: inputs.document,
   });
-  const ast = migratePlateV54Ast({ ...context, document: profile });
-  const urls = migratePlateV54Urls({ ...context, document: ast });
+  const ast = migratePlateV54Ast({ ...context, document: profile.document });
+  const urls = migratePlateV54Urls({ ...context, document: ast.document });
   const codeBlocks = migratePlateV54CodeBlocks({
     ...context,
     document: urls.document,
@@ -173,9 +173,7 @@ export const migrateV54: PlateV54Migration = (context) => {
   const legacy = migratePlateV54Suggestions(source);
   const shapedSource = shapeDocument(context, source);
   const { ast, codeBlocks, inputs, profile, urls } = shapedSource;
-  const toProfile = createStageMapper(schema, inputs.document, profile);
-  const toAst = createStageMapper(schema, profile, ast);
-  const toUrls = createStageMapper(schema, ast, urls.document);
+  const toUrls = createStageMapper(schema, ast.document, urls.document);
   const toCodeBlocks = createStageMapper(
     schema,
     urls.document,
@@ -188,14 +186,10 @@ export const migrateV54: PlateV54Migration = (context) => {
       association: StageAssociation
     ) => Selection
   ): Pick<DocumentMigrationStepResult, 'mapRanges' | 'mapSelection'> => {
-    const mapStages = (
-      inputSelection: Exclude<Selection, null>,
+    const mapTailStages = (
+      astSelection: Exclude<Selection, null>,
       association: StageAssociation
     ) => {
-      const astSelection = toAst(
-        toProfile(inputSelection, association),
-        association
-      );
       const urlDiff = () => toUrls(astSelection, association);
       const urlSelection = urls.mapSelection
         ? urls.mapSelection(astSelection, urlDiff)
@@ -213,10 +207,10 @@ export const migrateV54: PlateV54Migration = (context) => {
     return {
       mapRanges: ({ ranges }) =>
         ranges.map((range) => {
-          const mapped = mapStages(
-            SelectionApi.text(inputs.mapRange?.(range) ?? range),
-            'inward'
-          );
+          const afterInputs = inputs.mapRange?.(range) ?? range;
+          const afterProfile = profile.mapRange?.(afterInputs) ?? afterInputs;
+          const afterAst = ast.mapRange?.(afterProfile) ?? afterProfile;
+          const mapped = mapTailStages(SelectionApi.text(afterAst), 'inward');
 
           return RangeApi.isRange(mapped)
             ? { anchor: mapped.anchor, focus: mapped.focus }
@@ -224,10 +218,14 @@ export const migrateV54: PlateV54Migration = (context) => {
         }),
       mapSelection: ({ selection: original }) => {
         const selection = historicalSelectionGeometry(original);
-        const mapped = mapStages(
-          inputs.mapSelection?.(selection) ?? selection,
-          'backward'
-        );
+        const afterInputs = inputs.mapSelection?.(selection) ?? selection;
+        const afterProfile = afterInputs
+          ? (profile.mapSelection?.(afterInputs) ?? afterInputs)
+          : null;
+        const afterAst = afterProfile
+          ? (ast.mapSelection?.(afterProfile) ?? afterProfile)
+          : null;
+        const mapped = afterAst ? mapTailStages(afterAst, 'backward') : null;
         const marks = retainedSelectionMarks(context.target, original);
         const unmoved =
           mapped === selection ||

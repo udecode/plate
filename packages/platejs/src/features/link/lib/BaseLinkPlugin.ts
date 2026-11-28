@@ -1,7 +1,9 @@
 import {
   type DefinitionOf,
+  type Descendant,
   type Editor,
   type Element,
+  ElementApi,
   type ElementOf,
   type InsertBreakInputRuleReadContext,
   type InsertDataInputRuleReadContext,
@@ -13,6 +15,7 @@ import {
   type Range,
   RangeApi,
   type Text,
+  TextApi,
   type TextInsertFragmentOptions,
   defineInputRule,
   definePlugin,
@@ -301,7 +304,14 @@ export const BaseLinkPlugin = definePlugin('link', {
       },
       markdown: {
         node: 'link',
-        decode: ({ decode, marks, node, pluginState, report }) => {
+        decode: ({
+          decode,
+          marks,
+          node,
+          pluginState,
+          report,
+          schema: formatSchema,
+        }) => {
           const children = decode(node.children, marks);
 
           // Unsafe destinations are already removed; this is the app's
@@ -322,7 +332,60 @@ export const BaseLinkPlugin = definePlugin('link', {
             return children;
           }
 
-          return { children, type, url: node.url };
+          const isAllowedChild = (child: Descendant) =>
+            TextApi.isText(child) ||
+            (ElementApi.isElement(child) &&
+              formatSchema.allowsElementType(type, child.type));
+
+          if (children.every(isAllowedChild)) {
+            return { children, type, url: node.url };
+          }
+
+          const nodes: Descendant[] = [];
+          let run: Descendant[] = [];
+          let liftedBlock = false;
+          let firstDisallowedType: string | undefined;
+
+          const flush = () => {
+            if (run.length === 0) return;
+
+            if (
+              run.some(
+                (child) => !TextApi.isText(child) || child.text.trim() !== ''
+              )
+            ) {
+              nodes.push({ children: run, type, url: node.url });
+            } else if (!liftedBlock) {
+              nodes.push(...run);
+            }
+            run = [];
+          };
+
+          for (const child of children) {
+            if (isAllowedChild(child)) {
+              run.push(child);
+              continue;
+            }
+
+            if (ElementApi.isElement(child)) {
+              firstDisallowedType ??= child.type;
+              if (!formatSchema.getElementBehavior(child)?.inline) {
+                liftedBlock = true;
+              }
+            }
+            flush();
+            nodes.push(child);
+          }
+          flush();
+
+          report({
+            action: 'unwrapped',
+            kind: 'property',
+            message: `Markdown link cannot wrap "${firstDisallowedType ?? 'content'}"; its link destination was omitted for that content.`,
+            nodeType: 'link',
+          });
+
+          return nodes;
         },
         encode: ({ encodePhrasing, node, preserve, resourceLink }) => {
           const children = encodePhrasing(node.children);

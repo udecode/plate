@@ -81,6 +81,44 @@
       "2026-08-12-canonical-node-props",
       "2025-11-20-biome-ultracite"
     ],
+    "use-floating-rect": [
+      "2026-11-28-fix-link-dismiss-and-diagram-mount",
+      "2026-11-18-floating-rect-hides-clipped-text"
+    ],
+    "link": [
+      "2026-11-28-fix-link-dismiss-and-diagram-mount",
+      "2026-11-27-selector-depends-on",
+      "2026-11-20-caret-slot-toolbars",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-floating-rect-hides-clipped-text",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-13-ime-confirm-enter",
+      "2026-11-04-fix-popovers-sandboxed-frame",
+      "2026-10-22-edit-link-text",
+      "2026-10-12-link-code-block-form",
+      "2026-10-12-link-draft-addresses",
+      "2026-10-12-link-shortcut-view",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-07-link-submission",
+      "2026-09-04-decouple-link-floating-ui",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-consolidate-platejs-dependencies",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-26-fix-link-popover-rows",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "code-block-diagram": [
+      "2026-11-28-fix-link-dismiss-and-diagram-mount",
+      "2026-11-27-selector-depends-on",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-09-pass-view-root-to-key-questions",
+      "2026-10-16-code-block-diagrams"
+    ],
     "floating-popover": [
       "2026-11-28-floating-discussion-block-switch-and-width",
       "2026-11-27-fix-base-and-phosphor-installs",
@@ -699,38 +737,6 @@
       "2026-08-16-direct-react-component-families",
       "2026-07-23-rich-media-caption-children"
     ],
-    "code-block-diagram": [
-      "2026-11-27-selector-depends-on",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-09-pass-view-root-to-key-questions",
-      "2026-10-16-code-block-diagrams"
-    ],
-    "link": [
-      "2026-11-27-selector-depends-on",
-      "2026-11-20-caret-slot-toolbars",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-floating-rect-hides-clipped-text",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-13-ime-confirm-enter",
-      "2026-11-04-fix-popovers-sandboxed-frame",
-      "2026-10-22-edit-link-text",
-      "2026-10-12-link-code-block-form",
-      "2026-10-12-link-draft-addresses",
-      "2026-10-12-link-shortcut-view",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-07-link-submission",
-      "2026-09-04-decouple-link-floating-ui",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-consolidate-platejs-dependencies",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-26-fix-link-popover-rows",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
-    ],
     "suggestion": [
       "2026-11-27-suggestion-table-rows-columns",
       "2026-11-26-suggestion-author-colors",
@@ -1277,7 +1283,6 @@
       "2026-10-13-media-caption-preview",
       "2026-08-17-flat-editor-registry"
     ],
-    "use-floating-rect": ["2026-11-18-floating-rect-hides-clipped-text"],
     "import-toolbar-button": [
       "2026-11-18-html-markdown-import-keeps-the-rest",
       "2026-11-18-registry-icon-library",

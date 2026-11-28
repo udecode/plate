@@ -56,6 +56,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-fix-link-dismiss-and-diagram-mount",
+      "href": "/registry/changelog/2026-11-28-fix-link-dismiss-and-diagram-mount.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep outside-press dismiss active without geometry and keep code blocks mounted when switching to diagram languages.",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["use-floating-rect", "link", "code-block-diagram"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-floating-discussion-block-switch-and-width",
       "href": "/registry/changelog/2026-11-28-floating-discussion-block-switch-and-width.json",
       "status": "draft",

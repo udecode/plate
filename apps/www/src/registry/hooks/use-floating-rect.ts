@@ -47,7 +47,8 @@ export function useFloatingRect(
   const virtualRef = React.useRef<VirtualElement>({
     getBoundingClientRect: () => rectRef.current,
   });
-  const open = options.open !== false && rect !== null;
+  const open = options.open !== false;
+  const positioned = open && rect !== null;
   const { floatingStyles, isPositioned, ...floating } =
     useFloating<VirtualElement>({ ...options, open });
   const { elements, middlewareData, refs, update } = floating;
@@ -56,22 +57,22 @@ export function useFloatingRect(
     rectRef.current = rect ?? HIDDEN_RECT;
     refs.setReference(rect ? virtualRef.current : null);
 
-    if (open) update();
-  }, [open, rect, refs, update]);
+    if (positioned) update();
+  }, [positioned, rect, refs, update]);
 
   useContainerMoves(elements.floating, update, rectRef);
 
   const textHidden =
     (hideWhenClipped && !geometry?.visible) ||
     middlewareData.hide?.referenceHidden === true;
-  const shown = open && isPositioned && !textHidden;
+  const shown = positioned && isPositioned && !textHidden;
 
   return {
     ...floating,
     shown,
     style: {
       ...floatingStyles,
-      display: open ? undefined : 'none',
+      display: positioned ? undefined : 'none',
       visibility: shown ? undefined : 'hidden',
     },
   };
@@ -96,7 +97,9 @@ function useContainerMoves(
 
     if (!popup || !view?.ResizeObserver) return undefined;
 
-    const recheck = () => updateRef.current();
+    const recheck = () => {
+      if (rectRef.current !== HIDDEN_RECT) updateRef.current();
+    };
     const observer = new view.ResizeObserver(recheck);
     const listening = new AbortController();
     const options = { passive: true, signal: listening.signal };
