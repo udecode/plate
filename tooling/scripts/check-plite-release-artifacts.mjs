@@ -536,6 +536,13 @@ function collectAstImportSpecifiers(source, plugins = []) {
     ) {
       imports.add(node.arguments[0].value);
     } else if (
+      node.type === 'CallExpression' &&
+      node.callee?.type === 'Identifier' &&
+      node.callee.name === 'require' &&
+      node.arguments?.[0]?.type === 'StringLiteral'
+    ) {
+      imports.add(node.arguments[0].value);
+    } else if (
       node.type === 'ImportExpression' &&
       node.source?.type === 'StringLiteral'
     ) {
@@ -863,10 +870,24 @@ function createPliteRuntimeIdentityConsumerSource() {
   ].join('\n');
 }
 
+export const PLATE_DOM_EXPORTS = [
+  'DOMResolutionError',
+  'ariaKeyShortcuts',
+  'dataTransferFormats',
+  'domCommands',
+  'isHotkey',
+  'usesAppleDOMHotkeys',
+  'writeDataTransferFragment',
+];
+
 export const PLATE_FACADE_DIFFS = {
   platejs: {
     dropped: [],
     rebound: ['createEditor', 'definePlugin'],
+  },
+  'platejs/authored': {
+    dropped: ['authored', 'authoredRecords', 'createAuthoredPlugin'],
+    rebound: [],
   },
   'platejs/react': {
     rebound: [
@@ -921,6 +942,7 @@ function createPlateRuntimeIdentityConsumerSource() {
   return [
     "import { deepStrictEqual as releasePlateDeepEqual, strictEqual as releasePlateIdentityEqual } from 'node:assert/strict';",
     "import * as releasePliteRoot from 'plitejs';",
+    "import * as releasePliteAuthored from 'plitejs/authored';",
     "import * as releasePliteDiff from 'plitejs/diff';",
     "import * as releasePliteDOM from 'plitejs/dom';",
     "import * as releasePliteHistory from 'plitejs/history';",
@@ -929,9 +951,11 @@ function createPlateRuntimeIdentityConsumerSource() {
     "import * as releasePliteLayoutReact from 'plitejs/pagination/react';",
     "import * as releasePliteReact from 'plitejs/react';",
     "import * as releasePliteReactVirtualized from 'plitejs/react/virtualized';",
+    "import * as releasePliteTesting from 'plitejs/testing';",
     "import * as releasePliteYjs from 'plitejs/yjs';",
     "import * as releasePliteYjsReact from 'plitejs/yjs/react';",
     "import * as releasePlateRoot from 'platejs';",
+    "import * as releasePlateAuthored from 'platejs/authored';",
     "import * as releasePlateDiff from 'platejs/diff';",
     "import * as releasePlateDOM from 'platejs/dom';",
     "import * as releasePlateHistory from 'platejs/history';",
@@ -940,6 +964,7 @@ function createPlateRuntimeIdentityConsumerSource() {
     "import * as releasePlateLayoutReact from 'platejs/pagination/react';",
     "import * as releasePlateReact from 'platejs/react';",
     "import * as releasePlateReactVirtualized from 'platejs/react/virtualized';",
+    "import * as releasePlateTesting from 'platejs/testing';",
     "import * as releasePlateYjs from 'platejs/yjs';",
     "import * as releasePlateYjsReact from 'platejs/yjs/react';",
     '',
@@ -952,16 +977,9 @@ function createPlateRuntimeIdentityConsumerSource() {
     '    .sort(),',
     '});',
     `releasePlateDeepEqual(releaseFacadeDiff(releasePliteRoot, releasePlateRoot), ${JSON.stringify(PLATE_FACADE_DIFFS.platejs)});`,
+    `releasePlateDeepEqual(releaseFacadeDiff(releasePliteAuthored, releasePlateAuthored), ${JSON.stringify(PLATE_FACADE_DIFFS['platejs/authored'])});`,
     `releasePlateDeepEqual(releaseFacadeDiff(releasePliteReact, releasePlateReact), ${JSON.stringify(PLATE_FACADE_DIFFS['platejs/react'])});`,
-    'releasePlateDeepEqual(Object.keys(releasePlateDOM).sort(), [',
-    "  'DOMResolutionError',",
-    "  'ariaKeyShortcuts',",
-    "  'dataTransferFormats',",
-    "  'domCommands',",
-    "  'isHotkey',",
-    "  'usesAppleDOMHotkeys',",
-    "  'writeDataTransferFragment',",
-    ']);',
+    `releasePlateDeepEqual(Object.keys(releasePlateDOM).sort(), ${JSON.stringify(PLATE_DOM_EXPORTS)});`,
     'for (const name of Object.keys(releasePlateDOM)) {',
     '  releasePlateIdentityEqual(releasePlateDOM[name], releasePliteDOM[name]);',
     '}',
@@ -969,6 +987,7 @@ function createPlateRuntimeIdentityConsumerSource() {
     '  [releasePliteDiff, releasePlateDiff],',
     '  [releasePliteHyperscript, releasePlateHyperscript],',
     '  [releasePliteLayout, releasePlateLayout],',
+    '  [releasePliteTesting, releasePlateTesting],',
     '  [releasePliteYjs, releasePlateYjs],',
     '  [releasePliteYjsReact, releasePlateYjsReact],',
     ']) {',

@@ -31,7 +31,9 @@ const parseMigrationSource = (value: string): number | 'current' => {
 const program = new Command()
   .name('plate')
   .version(packageJson.version)
-  .description('Generate exact Plate editor schema contracts.');
+  .description(
+    'Generate exact Plate editor schema contracts, migrations, codemods, and dependency updates.'
+  );
 
 registerDepsCommand(program);
 registerCodemodCommand(program);

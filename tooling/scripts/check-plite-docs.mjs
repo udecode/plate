@@ -3,6 +3,10 @@ import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import {
+  PLATE_DOM_EXPORTS,
+  PLATE_FACADE_DIFFS,
+} from './check-plite-release-artifacts.mjs';
 import { readPackageEntrypoints } from './export-targets.mjs';
 
 const require = createRequire(import.meta.url);
@@ -749,6 +753,7 @@ function auditSlateV2Docs() {
     );
   }
 
+  failures.push(...checkFacadeDiffsCoverage(pairedDiffs));
   failures.push(...auditLowerCamelPluginNames(repoRoot));
 
   return failures;
@@ -776,7 +781,7 @@ const readTsconfig = (root) => {
   return ts.parseJsonConfigFileContent(config, ts.sys, root);
 };
 
-const symbolDeclarationKeys = (checker, symbol) => {
+const resolveAliasedSymbol = (checker, symbol) => {
   let target = symbol;
   const seen = new Set();
 
@@ -787,12 +792,65 @@ const symbolDeclarationKeys = (checker, symbol) => {
       checker.getAliasedSymbol(target);
   }
 
+  return target;
+};
+
+const symbolDeclarationKeys = (checker, symbol) => {
+  const target = resolveAliasedSymbol(checker, symbol);
+
   return (target?.declarations ?? [])
     .map(
       (declaration) =>
         `${declaration.getSourceFile().fileName}:${declaration.pos}`
     )
     .sort(compareStrings);
+};
+
+const isTypeOnlyExportDeclaration = (declaration) => {
+  if (ts.isExportSpecifier(declaration)) {
+    return Boolean(
+      declaration.isTypeOnly || declaration.parent?.parent?.isTypeOnly
+    );
+  }
+  if (ts.isNamespaceExport(declaration)) {
+    return Boolean(declaration.parent?.isTypeOnly);
+  }
+
+  return false;
+};
+
+const isRuntimeValueSymbol = (checker, symbol) => {
+  let current = symbol;
+  const seen = new Set();
+
+  while (
+    current &&
+    current.flags & ts.SymbolFlags.Alias &&
+    !seen.has(current)
+  ) {
+    const declarations = current.declarations ?? [];
+
+    if (
+      declarations.length > 0 &&
+      declarations.every(isTypeOnlyExportDeclaration)
+    ) {
+      return false;
+    }
+
+    seen.add(current);
+    current =
+      checker.getImmediateAliasedSymbol(current) ??
+      checker.getAliasedSymbol(current);
+  }
+
+  if (!current || !(current.flags & ts.SymbolFlags.Value)) return false;
+
+  return (current.declarations ?? []).some(
+    (declaration) =>
+      !declaration.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.DeclareKeyword
+      )
+  );
 };
 
 const sameKeys = (left, right) =>
@@ -841,22 +899,45 @@ export function comparePairedEntrypoints(root = repoRoot) {
     if (!pliteModule || !plateModule) continue;
 
     const plateExports = new Map(
-      checker
-        .getExportsOfModule(plateModule)
-        .map((exported) => [
-          exported.name,
-          symbolDeclarationKeys(checker, exported),
-        ])
+      checker.getExportsOfModule(plateModule).map((exported) => [
+        exported.name,
+        {
+          isValue: isRuntimeValueSymbol(checker, exported),
+          keys: symbolDeclarationKeys(checker, exported),
+        },
+      ])
     );
+
+    if (plateSpecifier === 'platejs/dom') {
+      const actualDomExports = [...plateExports.entries()]
+        .filter(([, entry]) => entry.isValue)
+        .map(([name]) => name)
+        .sort(compareStrings);
+      const expectedDomExports = [...PLATE_DOM_EXPORTS].sort(compareStrings);
+
+      if (!sameKeys(actualDomExports, expectedDomExports)) {
+        diffs.push({
+          actualDomExports,
+          change: 'runtime exports differ from PLATE_DOM_EXPORTS',
+          entrypoint: plateSpecifier,
+          expectedDomExports,
+          isValue: true,
+          kind: 'dom-exports',
+          name: 'PLATE_DOM_EXPORTS',
+        });
+      }
+    }
 
     for (const exported of checker.getExportsOfModule(pliteModule)) {
       const { name } = exported;
-      const plateKeys = plateExports.get(name);
+      const isValue = isRuntimeValueSymbol(checker, exported);
+      const plateExport = plateExports.get(name);
 
-      if (!plateKeys) {
+      if (!plateExport) {
         diffs.push({
           change: 'does not export',
           entrypoint: plateSpecifier,
+          isValue,
           kind: 'dropped',
           name,
         });
@@ -865,10 +946,22 @@ export function comparePairedEntrypoints(root = repoRoot) {
 
       const pliteKeys = symbolDeclarationKeys(checker, exported);
 
-      if (!sameKeys(pliteKeys, plateKeys)) {
+      if (isValue && !plateExport.isValue) {
+        diffs.push({
+          change: 'does not export',
+          entrypoint: plateSpecifier,
+          isValue: true,
+          kind: 'dropped',
+          name,
+        });
+        continue;
+      }
+
+      if (!sameKeys(pliteKeys, plateExport.keys)) {
         diffs.push({
           change: 'rebinds',
           entrypoint: plateSpecifier,
+          isValue,
           kind: 'rebound',
           name,
         });
@@ -957,7 +1050,9 @@ const checkGuideCoverage = (source, diffs) => {
     )
   );
 
-  return diffs.filter(({ name }) => !listed.has(name));
+  return diffs.filter(
+    ({ kind, name }) => kind !== 'dom-exports' && !listed.has(name)
+  );
 };
 
 const checkReboundContractCoverage = (source, diffs) => {
@@ -966,6 +1061,70 @@ const checkReboundContractCoverage = (source, diffs) => {
   return diffs.filter(
     ({ kind, name }) => kind === 'rebound' && !identifiers.has(name)
   );
+};
+
+export const checkFacadeDiffsCoverage = (
+  diffs,
+  facadeDiffs = PLATE_FACADE_DIFFS
+) => {
+  const failures = [];
+  const runtimeDiffsByEntrypoint = new Map();
+
+  for (const diff of diffs) {
+    if (diff.kind === 'dom-exports') {
+      failures.push(
+        `tooling/scripts/check-plite-release-artifacts.mjs: PLATE_DOM_EXPORTS (${diff.expectedDomExports.join(', ')}) differs from live platejs/dom runtime exports (${diff.actualDomExports.join(', ')})`
+      );
+      continue;
+    }
+
+    if (!diff.isValue || diff.entrypoint === 'platejs/dom') continue;
+
+    let entry = runtimeDiffsByEntrypoint.get(diff.entrypoint);
+
+    if (!entry) {
+      entry = { dropped: [], rebound: [] };
+      runtimeDiffsByEntrypoint.set(diff.entrypoint, entry);
+    }
+
+    entry[diff.kind].push(diff.name);
+  }
+
+  const entrypoints = new Set([
+    ...Object.keys(facadeDiffs),
+    ...runtimeDiffsByEntrypoint.keys(),
+  ]);
+
+  for (const entrypoint of [...entrypoints].sort(compareStrings)) {
+    const actual = runtimeDiffsByEntrypoint.get(entrypoint) ?? {
+      dropped: [],
+      rebound: [],
+    };
+    const expected = facadeDiffs[entrypoint] ?? { dropped: [], rebound: [] };
+
+    for (const kind of ['dropped', 'rebound']) {
+      const actualNames = [...actual[kind]].sort(compareStrings);
+      const expectedNames = [...(expected[kind] ?? [])].sort(compareStrings);
+
+      if (!sameKeys(actualNames, expectedNames)) {
+        const missing = actualNames.filter(
+          (name) => !expectedNames.includes(name)
+        );
+        const stale = expectedNames.filter(
+          (name) => !actualNames.includes(name)
+        );
+        const parts = [];
+
+        if (missing.length > 0) parts.push(`missing [${missing.join(', ')}]`);
+        if (stale.length > 0) parts.push(`stale [${stale.join(', ')}]`);
+        failures.push(
+          `tooling/scripts/check-plite-release-artifacts.mjs: PLATE_FACADE_DIFFS[${JSON.stringify(entrypoint)}].${kind} is out of date (${parts.join('; ')})`
+        );
+      }
+    }
+  }
+
+  return failures;
 };
 
 function runAudit() {

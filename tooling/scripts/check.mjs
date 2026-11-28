@@ -849,9 +849,36 @@ export const steps = [
         'content/docs/',
         'docs/plite/',
         'packages/platejs/type-tests/plite-rebound-contracts.tsx',
-        'packages/plitejs/README.md'
+        'packages/plitejs/README.md',
+        'tooling/scripts/check-plite-release-artifacts.mjs'
       )(files),
     key: [],
+  },
+  {
+    name: 'release-artifacts',
+    cores: 2,
+    holds: [
+      'packages/plitejs/dist',
+      'packages/platejs/dist',
+      'packages/cli/dist',
+      'packages/test/dist',
+    ],
+    after: ['public-types'],
+    run: 'pnpm plite:release:packages',
+    affected: (files) =>
+      touches(
+        'content/docs/',
+        'tooling/config/tsdown.config.ts',
+        'tooling/entrypoints/',
+        'tooling/scripts/build-package-docs.mjs',
+        'tooling/scripts/check-plite-release-artifacts.mjs'
+      )(files) ||
+      files.some(
+        (file) =>
+          /^packages\/[^/]+\/(?:package\.json$|README\.md$|THIRD_PARTY_NOTICES\.md$|tsdown\.config\.|src\/)/u.test(
+            file
+          ) && !TEST.test(file)
+      ),
   },
   {
     name: 'plite-bridge',
