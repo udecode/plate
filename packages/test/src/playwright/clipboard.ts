@@ -8,7 +8,7 @@ import type { SurfaceTarget } from './surface';
 import type { ClipboardPayloadSnapshot } from './types';
 
 const CLIPBOARD_LOCK_PATH = `${process.cwd()}/.editor-browser-clipboard.lock`;
-const CLIPBOARD_LOCK_RETRY_MS = 50;
+const CLIPBOARD_LOCK_RETRY_MS = 10;
 const CLIPBOARD_LOCK_TIMEOUT_MS = 30_000;
 const clipboardLockContext = new AsyncLocalStorage<boolean>();
 

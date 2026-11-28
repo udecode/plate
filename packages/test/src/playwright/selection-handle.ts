@@ -71,7 +71,18 @@ export const waitForSelectionRange = async (root: Locator) => {
       })
     )
     .toBe(true);
-  await root.page().waitForTimeout(100);
+  await root.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              resolve();
+            });
+          }, 0);
+        });
+      })
+  );
 };
 
 export const waitForSelectionIfPresent = async (root: Locator) => {

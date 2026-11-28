@@ -130,31 +130,37 @@ const pasteThroughTransport = async ({
   page.on('pageerror', onPageError);
 
   try {
+    const waitForApplied = () =>
+      expect
+        .poll(
+          async () => {
+            const after = await harness.get.lastPasteVersion();
+
+            return (
+              typeof after === 'number' &&
+              after !== before &&
+              (pasteReachedRoot === null || (await pasteReachedRoot()))
+            );
+          },
+          { message: `The ${transport} paste did not apply`, timeout: 2000 }
+        )
+        .toBe(true);
+
     if (transport === 'handle') {
       await insertDataThroughHandle(root, payload);
+      await waitForApplied();
     } else if (transport === 'event') {
       await pastePayloadThroughEvent(root, payload);
+      await waitForApplied();
     } else {
-      await (payload.html
-        ? writeClipboardHtml(surface, payload.html, payload.text)
-        : writeClipboardText(surface, payload.text));
-      await page.keyboard.press('ControlOrMeta+V');
+      await withExclusiveClipboardAccess(async () => {
+        await (payload.html
+          ? writeClipboardHtml(surface, payload.html, payload.text)
+          : writeClipboardText(surface, payload.text));
+        await page.keyboard.press('ControlOrMeta+V');
+        await waitForApplied();
+      });
     }
-
-    await expect
-      .poll(
-        async () => {
-          const after = await harness.get.lastPasteVersion();
-
-          return (
-            typeof after === 'number' &&
-            after !== before &&
-            (pasteReachedRoot === null || (await pasteReachedRoot()))
-          );
-        },
-        { message: `The ${transport} paste did not apply`, timeout: 2000 }
-      )
-      .toBe(true);
   } finally {
     page.off('pageerror', onPageError);
   }
@@ -251,30 +257,28 @@ export const createEditorHarnessClipboard = ({
     });
   },
   pasteText: async (text: string) => {
-    await withExclusiveClipboardAccess(async () => {
-      await pasteThroughTransport({
-        getHarness,
-        page,
-        payload: { text },
-        root,
-        surface,
-        transport: clipboardTransport,
-      });
+    await pasteThroughTransport({
+      getHarness,
+      page,
+      payload: { text },
+      root,
+      surface,
+      transport: clipboardTransport,
     });
   },
   pasteHtml: async (html: string, plainText?: string) => {
-    await withExclusiveClipboardAccess(async () => {
-      await pasteThroughTransport({
-        getHarness,
-        page,
-        payload: {
-          html,
-          text: plainText ?? (await toPlainText(surface, html)),
-        },
-        root,
-        surface,
-        transport: clipboardTransport,
-      });
+    const text = plainText ?? (await toPlainText(surface, html));
+
+    await pasteThroughTransport({
+      getHarness,
+      page,
+      payload: {
+        html,
+        text,
+      },
+      root,
+      surface,
+      transport: clipboardTransport,
     });
   },
   assert: {
