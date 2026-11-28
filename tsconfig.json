@@ -17,7 +17,6 @@
       "platejs/code-block/codemirror": [
         "./packages/platejs/src/code-block/codemirror/index.ts"
       ],
-      "platejs/combobox": ["./packages/platejs/src/features/combobox/index.ts"],
       "platejs/combobox/react": [
         "./packages/platejs/src/react/features/combobox/index.ts"
       ],

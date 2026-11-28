@@ -325,6 +325,7 @@
     "footnote": [
       "2026-11-28-footnote-combobox-keyboard-and-perf",
       "2026-11-28-inline-combobox-floating-ui",
+      "2026-11-28-inline-combobox-trigger-props",
       "2026-11-27-dark-mode-editor-chrome",
       "2026-11-23-footnote-create-definition-focus",
       "2026-11-17-cn-package",
@@ -344,6 +345,7 @@
     "inline-combobox": [
       "2026-11-28-inline-combobox-floating-ui",
       "2026-11-28-inline-combobox-hover-scroll",
+      "2026-11-28-inline-combobox-trigger-props",
       "2026-11-22-inline-combobox-menu-color",
       "2026-11-17-cn-package",
       "2026-11-13-ios-keyboard-menus-comment",
@@ -365,6 +367,50 @@
       "2025-12-15-add-option-editor-collaborative-features",
       "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
       "2025-11-20-biome-ultracite"
+    ],
+    "emoji": [
+      "2026-11-28-inline-combobox-trigger-props",
+      "2026-11-13-rank-menu-matches",
+      "2026-10-19-slash-local-plugin",
+      "2026-10-08-emoji-frimousse",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "mention": [
+      "2026-11-28-inline-combobox-trigger-props",
+      "2026-11-17-cn-package",
+      "2026-11-13-rank-menu-matches",
+      "2026-10-19-slash-local-plugin",
+      "2026-10-14-block-void-selection",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "prompt-editor": [
+      "2026-11-28-inline-combobox-trigger-props",
+      "2026-11-21-prompt-editor"
+    ],
+    "slash": [
+      "2026-11-28-inline-combobox-trigger-props",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-11-18-slash-app-items",
+      "2026-11-13-rank-menu-matches",
+      "2026-10-19-slash-local-plugin",
+      "2026-10-18-layout-style-values",
+      "2026-10-18-math-katex-import",
+      "2026-10-16-code-block-diagrams",
+      "2026-10-15-slash-keeps-query-on-refusal",
+      "2026-10-13-details-heading-titles",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-17-flat-editor-registry"
     ],
     "list-toolbar-button": [
       "2026-11-28-list-toolbar-and-menu-ergonomics",
@@ -1114,7 +1160,6 @@
     ],
     "floating-toolbar-demo": ["2026-11-22-ui-sweep-fixes"],
     "demo": ["2026-11-22-ui-sweep-fixes"],
-    "prompt-editor": ["2026-11-21-prompt-editor"],
     "prompt-editor-demo": ["2026-11-21-prompt-editor"],
     "use-chat": [
       "2026-11-20-ai-comment-excerpt-slice",
@@ -1277,23 +1322,6 @@
       "2026-09-05-bound-editor-selection-styles",
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state"
-    ],
-    "slash": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-11-18-slash-app-items",
-      "2026-11-13-rank-menu-matches",
-      "2026-10-19-slash-local-plugin",
-      "2026-10-18-layout-style-values",
-      "2026-10-18-math-katex-import",
-      "2026-10-16-code-block-diagrams",
-      "2026-10-15-slash-keeps-query-on-refusal",
-      "2026-10-13-details-heading-titles",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-17-flat-editor-registry"
     ],
     "rtl-demo": ["2026-11-19-rtl-editor-ui"],
     "caption-static": [
@@ -1506,17 +1534,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "mention": [
-      "2026-11-17-cn-package",
-      "2026-11-13-rank-menu-matches",
-      "2026-10-19-slash-local-plugin",
-      "2026-10-14-block-void-selection",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
-    ],
     "paragraph-static": [
       "2026-11-17-cn-package",
       "2026-08-17-flat-editor-registry"
@@ -1625,15 +1642,6 @@
       "2026-11-13-platform-shortcut-labels",
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-24-feature-toolbar-plugin-portals"
-    ],
-    "emoji": [
-      "2026-11-13-rank-menu-matches",
-      "2026-10-19-slash-local-plugin",
-      "2026-10-08-emoji-frimousse",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
     ],
     "docs": ["2026-11-13-remove-docs-items"],
     "fumadocs": [

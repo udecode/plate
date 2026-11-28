@@ -74,7 +74,7 @@ and ranks searches. The popup and every picker share one load.
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `emoji` | Registry | Defines `EmojiPlugin`, its trigger policy and code-block veto, and `EmojiCombobox`. |
+| `emoji` | Registry | Defines `EmojiPlugin` and `EmojiCombobox` (with its `:` trigger policy and code-block veto). |
 | `emoji-data` | Registry | Loads Emojibase once, joins GitHub shortcodes and ranks searches. |
 | `emoji-picker` | Registry UI | Owns the popover, search results, frimousse grid and frequent picks. |
 | `emoji-toolbar-button` | Registry UI | Opens `EmojiPicker` from the toolbar and inserts the pick. |
@@ -105,8 +105,7 @@ npx shadcn@latest add @plate/emoji @plate/emoji-picker @plate/emoji-toolbar-butt
 
 ### Add plugins
 
-`EmojiPlugin` holds only the trigger policy. Mount the popup in its
-`afterEditable` slot.
+Mount `EmojiCombobox` in `EmojiPlugin`'s `afterEditable` slot. `EmojiCombobox` passes the `:` trigger policy to `InlineCombobox`.
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -139,7 +138,7 @@ The inline path is a [combobox](/docs/combobox) flow.
 
 | Step | Source |
 |------|--------|
-| Type `:` | `EmojiPlugin` trigger. |
+| Type `:` | `EmojiCombobox` `trigger` prop. |
 | Previous character must match `/^\s?$/` | Start of block or whitespace by default. |
 | Not inside a code block | `triggerQuery` refuses the trigger when the selection is in a code block. |
 | Type the shortcode | `queryPattern` admits letters, digits, `_`, `+`, `-` and `:`; a space closes the popup. |
@@ -208,7 +207,7 @@ Launch 🔥 soon
 
 | API | Source | Use |
 |-----|--------|-----|
-| `EmojiPlugin` | `emoji` registry | Edit-only plugin whose state holds the `:` trigger policy. |
+| `EmojiPlugin` | `emoji` registry | Edit-only slot host plugin for `EmojiCombobox`. |
 | `EmojiKit` | `emoji` registry | `EmojiPlugin` with `EmojiCombobox` in its `afterEditable` slot. |
 | `useEmojiSearch(query)` | `emoji-data` registry | Starts the shared load for a non-null query and returns `{ results, status }`, where `status` is `'loading'`, `'ready'` or `'failed'`. |
 | `searchEmojis(entries, query)` | `emoji-data` registry | Ranks entries for a query and returns at most 60. |

@@ -1,5 +1,4 @@
 import {
-  type Editor,
   PathApi,
   type Point,
   PointApi,
@@ -7,9 +6,18 @@ import {
   RangeApi,
   TextApi,
 } from '../../../core';
-import type { ComboboxState } from './combobox';
+import type { Editor } from '../../editor';
 
 type ComboboxRead = Pick<Editor['read'], 'nodes' | 'text'>;
+
+export type ComboboxPolicy = Readonly<{
+  label: string;
+  maxQueryLength: number;
+  queryPattern: RegExp | null;
+  trigger: string;
+  triggerPreviousCharPattern: RegExp | null;
+  triggerQuery: ((editor: Editor) => boolean) | null;
+}>;
 
 export type TypedInsertion = Readonly<{ caret: Point; length: number }>;
 
@@ -66,12 +74,12 @@ const readTextBeforeCaret = (
   return { pointAt, text };
 };
 
-export const isComboboxQuery = (query: string, state: ComboboxState) => {
+export const isComboboxQuery = (query: string, policy: ComboboxPolicy) => {
   const triggerWasProse = /^\s/.test(query);
 
-  if (query.length > state.maxQueryLength || triggerWasProse) return false;
+  if (query.length > policy.maxQueryLength || triggerWasProse) return false;
 
-  const pattern = state.queryPattern ? stateless(state.queryPattern) : null;
+  const pattern = policy.queryPattern ? stateless(policy.queryPattern) : null;
 
   for (const char of query) {
     if (char === '\n' || (pattern && !pattern.test(char))) return false;
@@ -79,11 +87,6 @@ export const isComboboxQuery = (query: string, state: ComboboxState) => {
 
   return true;
 };
-
-const longestTrigger = (trigger: ComboboxState['trigger']) =>
-  trigger instanceof RegExp
-    ? 1
-    : Math.max(0, ...[trigger].flat().map((candidate) => candidate.length));
 
 const readTriggerAndQuery = (
   read: ComboboxRead,
@@ -129,68 +132,44 @@ const readTriggerAndQuery = (
   };
 };
 
-const findLastTrigger = (
-  text: string,
-  typedFrom: number,
-  trigger: ComboboxState['trigger']
-) => {
-  if (trigger instanceof RegExp) {
-    const pattern = stateless(trigger);
-    let end = text.length;
+const findLastTrigger = (text: string, typedFrom: number, trigger: string) => {
+  if (!trigger) return null;
 
-    for (const char of Array.from(text.slice(typedFrom)).reverse()) {
-      end -= char.length;
-      if (pattern.test(char)) return { end: end + char.length, start: end };
-    }
+  const start = text.lastIndexOf(trigger);
+  const end = start + trigger.length;
 
-    return null;
-  }
-
-  let best: { end: number; start: number } | null = null;
-
-  for (const candidate of [trigger].flat()) {
-    const start = candidate ? text.lastIndexOf(candidate) : -1;
-    const end = start + candidate.length;
-
-    if (
-      start >= 0 &&
-      end > typedFrom &&
-      (!best || start > best.start || (start === best.start && end > best.end))
-    ) {
-      best = { end, start };
-    }
-  }
-
-  return best;
+  return start !== -1 && end > typedFrom ? { end, start } : null;
 };
 
 export const findTypedTrigger = (
   read: ComboboxRead,
   { caret, length }: TypedInsertion,
-  state: ComboboxState
+  policy: ComboboxPolicy
 ): Range | null => {
+  if (!policy.trigger) return null;
+
   const run = readTextBeforeCaret(
     read,
     caret,
-    length + longestTrigger(state.trigger) + 1
+    length + policy.trigger.length + 1
   );
   const found = findLastTrigger(
     run.text,
     Math.max(0, run.text.length - length),
-    state.trigger
+    policy.trigger
   );
 
   if (!found) return null;
 
   const start = run.pointAt(found.start);
 
-  if (state.triggerPreviousCharPattern) {
+  if (policy.triggerPreviousCharPattern) {
     // The run stops at a block start or an inline element's edge, where the
     // previous character is ''.
     const previousChar =
       found.start > 0 ? run.text.slice(found.start - 1, found.start) : '';
 
-    if (!stateless(state.triggerPreviousCharPattern).test(previousChar)) {
+    if (!stateless(policy.triggerPreviousCharPattern).test(previousChar)) {
       return null;
     }
   }
@@ -211,11 +190,12 @@ export const readComboboxQuery = (
     trigger: Range;
     triggerText: string;
   }>,
-  state: ComboboxState
+  policy: ComboboxPolicy
 ): string | null => {
   const [start, end] = RangeApi.edges(trigger);
 
   if (
+    policy.trigger !== triggerText ||
     rootOf(start) !== rootOf(caret) ||
     !PathApi.equals(PathApi.parent(start.path), PathApi.parent(caret.path)) ||
     PointApi.isBefore(caret, end) ||
@@ -229,10 +209,10 @@ export const readComboboxQuery = (
     start,
     end,
     caret,
-    triggerText.length + state.maxQueryLength
+    triggerText.length + policy.maxQueryLength
   );
 
   if (!run || run.trigger !== triggerText) return null;
 
-  return isComboboxQuery(run.query, state) ? run.query : null;
+  return isComboboxQuery(run.query, policy) ? run.query : null;
 };

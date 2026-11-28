@@ -21,9 +21,6 @@
   "include": ["../src/react/features/combobox/**/*"],
   "references": [
     {
-      "path": "./combobox.json"
-    },
-    {
       "path": "./core.json"
     },
     {

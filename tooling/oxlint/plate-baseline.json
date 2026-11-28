@@ -202,9 +202,6 @@
   "plate/no-fixed-sleep": {},
   "plate/no-one-off-editor-type": {
     "packages/cli/src/generate.ts": ["type CompiledEditor = Readonly<{"],
-    "packages/platejs/src/features/combobox/lib/combobox.ts": [
-      "export type ComboboxEditor = Pick<Editor, 'plugin'> & {"
-    ],
     "packages/platejs/src/lib/plugin/PluginDefinition.ts": [
       "export type StructuralRuleEditor = Omit<RuntimeEditor, 'plugin'> & {"
     ],

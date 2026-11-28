@@ -429,7 +429,11 @@ export function FootnoteDefinitionElement(
 
 export function FootnoteCombobox({ editableRef }: EditableSiblingProps) {
   return (
-    <InlineCombobox editableRef={editableRef} plugin={FootnotePlugin}>
+    <InlineCombobox
+      editableRef={editableRef}
+      trigger="[^"
+      triggerPreviousCharPattern={null}
+    >
       <FootnoteComboboxContent />
     </InlineCombobox>
   );

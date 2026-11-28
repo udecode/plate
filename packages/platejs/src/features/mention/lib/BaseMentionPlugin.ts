@@ -12,9 +12,7 @@ import {
   getCaretInline,
   selectAfterInline,
 } from '../../../internal/plugin/inlineInsertion';
-import type { ComboboxState } from '../../combobox';
 
-const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
 const MENTION_URL_PREFIX = 'mention:';
 
 const isNonBlankRef = (value: unknown): value is string =>
@@ -25,7 +23,7 @@ export type TMentionItemBase<TRef = string> = {
   ref: TRef;
 };
 
-export type MentionPluginState = ComboboxState & {
+export type MentionPluginState = {
   insertSpaceAfterMention: boolean;
 };
 
@@ -46,11 +44,6 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
   },
   initialState: (): MentionPluginState => ({
     insertSpaceAfterMention: false,
-    maxQueryLength: 75,
-    queryPattern: null,
-    trigger: '@',
-    triggerQuery: null,
-    triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
   }),
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({

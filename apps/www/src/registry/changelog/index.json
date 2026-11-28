@@ -211,6 +211,31 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-inline-combobox-trigger-props",
+      "href": "/registry/changelog/2026-11-28-inline-combobox-trigger-props.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Pass combobox trigger policy directly to InlineCombobox and drop platejs/combobox",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "emoji",
+        "footnote",
+        "inline-combobox",
+        "mention",
+        "prompt-editor",
+        "slash"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-list-toolbar-and-menu-ergonomics",
       "href": "/registry/changelog/2026-11-28-list-toolbar-and-menu-ergonomics.json",
       "status": "draft",

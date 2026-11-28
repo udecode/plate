@@ -7,7 +7,6 @@ export const plateAdditionalEntries = [
   'src/ai/react/index.ts',
   'src/features/board/index.ts',
   'src/features/callout/index.ts',
-  'src/features/combobox/index.ts',
   'src/features/comments/index.ts',
   'src/features/date/index.ts',
   'src/features/details/index.ts',

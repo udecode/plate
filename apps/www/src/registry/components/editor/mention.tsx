@@ -76,9 +76,15 @@ export function MentionElement(
   );
 }
 
+const MENTION_PREVIOUS_CHAR_PATTERN = /^$|^[\s"']$/;
+
 export function MentionCombobox({ editableRef }: EditableSiblingProps) {
   return (
-    <InlineCombobox editableRef={editableRef} plugin={MentionPlugin}>
+    <InlineCombobox
+      editableRef={editableRef}
+      trigger="@"
+      triggerPreviousCharPattern={MENTION_PREVIOUS_CHAR_PATTERN}
+    >
       <MentionComboboxContent />
     </InlineCombobox>
   );
@@ -190,9 +196,6 @@ const MENTIONABLES = [
 export const MentionKit = [
   MentionPlugin.configure({
     component: MentionElement,
-    initialState: {
-      triggerPreviousCharPattern: /^$|^[\s"']$/,
-    },
     slots: { afterEditable: MentionCombobox },
   }),
 ];

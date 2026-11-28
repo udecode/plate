@@ -14,9 +14,8 @@ import {
 } from '@floating-ui/react';
 import { cva } from 'class-variance-authority';
 import { cn } from 'cn';
-import type { PluginReference } from 'platejs';
-import { filterWords } from 'platejs/combobox';
 import {
+  type ComboboxCompletion,
   type ComboboxMatch,
   type UseComboboxOptions,
   type UseComboboxReturn,
@@ -97,9 +96,19 @@ const startsWithWords = (text: string, words: readonly string[]) => {
   });
 };
 
+const matchesWords = (text: string, words: readonly string[]) => {
+  const textWords = toWords(text);
+  const last = words.length - 1;
+
+  return words.every((word, i) =>
+    textWords.some((textWord) =>
+      sameText(i === last ? textWord.slice(0, word.length) : textWord, word)
+    )
+  );
+};
+
 const matchBand = (
   { group, keywords = [], label }: RankedOption,
-  query: string,
   words: readonly string[]
 ) => {
   if (
@@ -108,12 +117,12 @@ const matchBand = (
   ) {
     return 0;
   }
-  if (filterWords(label, query)) {
+  if (matchesWords(label, words)) {
     return startsWithWords(label, words) ? 1 : 2;
   }
-  if (keywords.some((keyword) => filterWords(keyword, query))) return 3;
+  if (keywords.some((keyword) => matchesWords(keyword, words))) return 3;
 
-  return group !== undefined && filterWords(group, query) ? 3 : null;
+  return group !== undefined && matchesWords(group, words) ? 3 : null;
 };
 
 /**
@@ -134,7 +143,7 @@ const rankOptions = <T extends RankedOption>(
 
   return options
     .flatMap((option) => {
-      const band = matchBand(option, search, words);
+      const band = matchBand(option, words);
 
       return band === null ? [] : [{ band, option }];
     })
@@ -162,24 +171,34 @@ const getOptions = (contentElement: HTMLElement | null) =>
     ) ?? []
   );
 
-const InlineCombobox = <P extends PluginReference>({
+const InlineCombobox = ({
   children,
   editableRef,
   hideWhenNoValue = false,
+  label,
   loading = false,
-  plugin,
+  maxQueryLength,
+  queryPattern,
+  trigger,
+  triggerPreviousCharPattern,
+  triggerQuery,
 }: {
   children: React.ReactNode;
-  editableRef: UseComboboxOptions<P>['editableRef'];
-  plugin: UseComboboxOptions<P>['plugin'];
+  editableRef: UseComboboxOptions['editableRef'];
+  trigger: UseComboboxOptions['trigger'];
   hideWhenNoValue?: boolean;
+  label?: UseComboboxOptions['label'];
   /** Options are still loading: Enter and Tab do nothing. */
   loading?: boolean;
+  maxQueryLength?: UseComboboxOptions['maxQueryLength'];
+  queryPattern?: UseComboboxOptions['queryPattern'];
+  triggerPreviousCharPattern?: UseComboboxOptions['triggerPreviousCharPattern'];
+  triggerQuery?: UseComboboxOptions['triggerQuery'];
 }) => {
   const [items, setItems] = React.useState({ count: 0, version: 0 });
+  const [contentVersion, setContentVersion] = React.useState(0);
   const [hasEmpty, setHasEmpty] = React.useState(false);
   const [activeId, setActiveId] = React.useState<string | null>(null);
-  const [shown, setShown] = React.useState(false);
   const activeIdRef = React.useRef<string | null>(null);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
   const followFirstOption = React.useRef(true);
@@ -199,6 +218,7 @@ const InlineCombobox = <P extends PluginReference>({
 
   const registerContent = React.useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
+    if (node) setContentVersion((version) => version + 1);
   }, []);
 
   const onUserScroll = React.useCallback(() => {
@@ -277,20 +297,25 @@ const InlineCombobox = <P extends PluginReference>({
     [activateOption, loading]
   );
 
-  const effectiveActiveId = shown ? activeId : null;
   const box = useCombobox({
-    activeOptionId: effectiveActiveId,
     editableRef,
+    label,
+    maxQueryLength,
     onKeyDown,
-    open: shown,
-    plugin,
+    queryPattern,
+    trigger,
+    triggerPreviousCharPattern,
+    triggerQuery,
   });
-  const { dismiss, match } = box;
+  const { dismiss, match, syncPopup } = box;
   const query = match?.query ?? '';
   const active = !!match && (!hideWhenNoValue || query.length > 0);
   const open = active && (items.count > 0 || hasEmpty);
+  const effectiveActiveId = open ? activeId : null;
 
-  if (shown !== open) setShown(open);
+  React.useLayoutEffect(() => {
+    syncPopup({ activeOptionId: effectiveActiveId, open });
+  }, [effectiveActiveId, open, syncPopup]);
 
   React.useLayoutEffect(() => {
     const queryChanged = prevQuery.current !== query;
@@ -298,7 +323,7 @@ const InlineCombobox = <P extends PluginReference>({
     prevQuery.current = query;
 
     if (!open) {
-      activeIdRef.current = null;
+      setActiveOptionId(null);
       followFirstOption.current = true;
       lastPointer.current = null;
       contentRef.current?.scrollTo({ top: 0 });
@@ -342,7 +367,7 @@ const InlineCombobox = <P extends PluginReference>({
 
     if (!content) return;
     if (getOptions(content).length === 0) dismiss();
-  }, [dismiss, items.version, query, trailingSpace]);
+  }, [contentVersion, dismiss, items.version, query, trailingSpace]);
 
   const contextValue = React.useMemo<InlineComboboxContextValue>(
     () => ({
@@ -574,19 +599,20 @@ const InlineComboboxItem = ({
 }: Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect'> & {
   focusEditor?: boolean;
   /** Insert the completion. Return false to refuse and keep the query. */
-  onSelect?: Parameters<UseComboboxReturn['complete']>[1];
+  onSelect?: ComboboxCompletion;
 }) => {
   const editor = useEditor();
   const generatedId = React.useId();
   const id = providedId ?? generatedId;
   const { activeId, box, match, onOptionPointerMove, registerItem } =
     useInlineComboboxContext();
+  const hasMatch = Boolean(match);
 
   React.useLayoutEffect(() => {
-    if (!match) return undefined;
+    if (!hasMatch) return undefined;
 
     return registerItem();
-  }, [match, registerItem]);
+  }, [hasMatch, id, registerItem]);
 
   if (!match) return null;
 

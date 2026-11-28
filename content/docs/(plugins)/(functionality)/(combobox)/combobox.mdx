@@ -46,21 +46,13 @@ npx shadcn@latest add @plate/inline-combobox
 
 ### Create the plugin
 
-Keep the trigger policy in the plugin state and the inserted node in the plugin schema:
+Keep the inserted node in the plugin schema:
 
 ```tsx showLineNumbers
 import { property } from 'platejs';
-import type { ComboboxState } from 'platejs/combobox';
 import { definePlugin } from 'platejs/react';
 
 export const HashtagPlugin = definePlugin('hashtag', {
-  initialState: (): ComboboxState => ({
-    maxQueryLength: 50,
-    queryPattern: /^[\p{L}\p{N}_-]$/u,
-    trigger: '#',
-    triggerPreviousCharPattern: /^\s?$/,
-    triggerQuery: null,
-  }),
   schema: {
     element: {
       properties: { value: property.string({ required: true }) },
@@ -71,13 +63,9 @@ export const HashtagPlugin = definePlugin('hashtag', {
 });
 ```
 
-- `trigger`: Text that opens the popup when typed (`#`).
-- `triggerPreviousCharPattern`: Must match the character before the trigger. `/^\s?$/` allows the start of a line or a space.
-- `queryPattern`: Tested against each query character. A space ends a hashtag query here.
-
 ### Create the popup
 
-The popup renders next to the editor. Its content reads the query typed after the trigger and ranks the tags with `rankOptions`, best match first:
+The popup renders next to the editor and owns the trigger policy. Its content reads the query typed after the trigger and ranks the tags with `rankOptions`, best match first:
 
 ```tsx showLineNumbers
 import {
@@ -99,9 +87,16 @@ const tags = ['Frontend', 'Backend', 'Design', 'Urgent'].map((label) => ({
   label,
 }));
 
+const HASHTAG_QUERY_PATTERN = /^[\p{L}\p{N}_-]$/u;
+
 export function HashtagCombobox({ editableRef }: EditableSiblingProps) {
   return (
-    <InlineCombobox editableRef={editableRef} plugin={HashtagPlugin}>
+    <InlineCombobox
+      editableRef={editableRef}
+      maxQueryLength={50}
+      queryPattern={HASHTAG_QUERY_PATTERN}
+      trigger="#"
+    >
       <HashtagComboboxContent />
     </InlineCombobox>
   );
@@ -176,54 +171,41 @@ const editor = createEditor({
 - Completion deletes the trigger and query and runs your insertion in one transaction. Undo restores the typed text.
 - While an IME composes, the query previews the visible preedit. Enter confirms the composition and never selects an option.
 
-## Options
-
-### ComboboxState
-
-Trigger policy kept in a feature plugin's state. Override it with `.configure({ initialState })`.
-
-<API name="ComboboxState">
-<APIOptions>
-  <APIItem name="trigger" type="RegExp | readonly string[] | string">
-    Text that opens the popup when typed. Strings may be longer than one character, such as `'[^'`. A pattern is tested against the typed character.
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp | null">
-    Tested against the character before the trigger, or `''` at the start of a text. `null` allows any character.
-  </APIItem>
-  <APIItem name="triggerQuery" type="((editor: ComboboxEditor) => boolean) | null">
-    Return `false` to keep a typed trigger as plain text, for example inside code.
-  </APIItem>
-  <APIItem name="queryPattern" type="RegExp | null">
-    Tested against each query character; the first failure closes the popup. `null` allows any character except a line break.
-  </APIItem>
-  <APIItem name="maxQueryLength" type="number">
-    The popup closes once the query is longer.
-  </APIItem>
-</APIOptions>
-</API>
-
 ## Hooks
 
 ### useCombobox
 
 Connects a popup to one editor. Import it from `platejs/combobox/react` and call it inside an `afterEditable` slot component.
 
-While a typed trigger's query is open, the editor reports itself as a combobox. It gets `role="combobox"`, `aria-haspopup="listbox"`, `aria-autocomplete="list"` and `aria-expanded`, and drops `aria-multiline`. It gets its own attributes back when the query closes.
+While a typed trigger's query is open, the editor reports itself as a combobox. It gets `role="combobox"`, `aria-haspopup="listbox"`, `aria-autocomplete="list"`, `aria-expanded`, and a fallback `aria-label` when the editor has no accessible name, and drops `aria-multiline`. It gets its own attributes back when the query closes.
 
 <API name="useCombobox">
 <APIParameters>
   <APIItem name="editableRef" type="React.RefObject<HTMLDivElement | null>">
     The editor the popup serves, as passed to the slot.
   </APIItem>
-  <APIItem name="plugin" type="PluginReference">
-    The feature plugin whose state holds the `ComboboxState`.
+  <APIItem name="trigger" type="string">
+    Text that opens the popup when typed, such as `'@'`, `'/'`, or `'[^'`.
   </APIItem>
-  <APIItem name="activeOptionId" type="string | null" optional>
-    The active option's id, mirrored as the editor's `aria-activedescendant`.
+  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
+    Tested against the character before the trigger, or `''` at the start of a text. `null` allows any character.
+    - **Default:** `/^\s?$/`
   </APIItem>
-  <APIItem name="open" type="boolean" optional>
-    Whether the popup is showing. Keys, `aria-controls` and `aria-activedescendant` attach only while it shows, and `aria-expanded` follows it, so a popup hidden with no results leaves arrows and Escape to the editor.
-    - **Default:** `true`
+  <APIItem name="triggerQuery" type="((editor: Editor) => boolean) | null" optional>
+    Return `false` to keep a typed trigger as plain text, for example inside code.
+    - **Default:** `null`
+  </APIItem>
+  <APIItem name="queryPattern" type="RegExp | null" optional>
+    Tested against each query character; the first failure closes the popup. `null` allows any character except a line break.
+    - **Default:** `null`
+  </APIItem>
+  <APIItem name="maxQueryLength" type="number" optional>
+    The popup closes once the query is longer.
+    - **Default:** `75`
+  </APIItem>
+  <APIItem name="label" type="string" optional>
+    Fallback `aria-label` written to the editor root while `role="combobox"` is active and neither `aria-label` nor `aria-labelledby` is set.
+    - **Default:** `'Autocomplete'`
   </APIItem>
   <APIItem name="onKeyDown" type="(event: React.KeyboardEvent<HTMLDivElement>) => boolean" optional>
     Receives Enter, Tab, ArrowUp, ArrowDown and Escape while the popup is open, before editor shortcuts. Return `true` when handled. An unhandled Escape closes the popup.
@@ -236,11 +218,14 @@ While a typed trigger's query is open, the editor reports itself as a combobox. 
   <APIItem name="listboxId" type="string">
     Id for the popup's listbox, mirrored as the editor's `aria-controls`.
   </APIItem>
-  <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => boolean | void) => boolean">
+  <APIItem name="complete" type="(match: ComboboxMatch, callback: ComboboxCompletion) => boolean">
     Replace the trigger and query through one synchronous transaction. Pass the match that offered the option. The callback can return a command's `true` or `false`; only `false` refuses and keeps the query. A match from an earlier query, a newer query, an active composition or a refused callback changes nothing and returns `false`; a thrown callback rolls back everything.
   </APIItem>
   <APIItem name="dismiss" type="() => void">
     Close the popup and keep the typed text.
+  </APIItem>
+  <APIItem name="syncPopup" type="(state: ComboboxPopupState) => void">
+    Report the popup's current `open` flag and `activeOptionId` to the editor ARIA writer from a layout effect without re-passing them into `useCombobox`. Keys, `aria-controls`, and `aria-activedescendant` attach only while `open` is `true`, and `aria-expanded` follows it.
   </APIItem>
 </APIReturns>
 </API>

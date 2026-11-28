@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-inline-combobox-trigger-props",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-inline-combobox-trigger-props.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Pass combobox trigger policy directly to InlineCombobox and drop platejs/combobox",
+  "targets": [
+    {
+      "name": "emoji",
+      "files": ["apps/www/src/registry/components/editor/emoji.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention",
+      "files": ["apps/www/src/registry/components/editor/mention.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "prompt-editor",
+      "files": ["apps/www/src/registry/components/editor/prompt-editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-emoji-pass-combobox-trigger-policy-4846112e",
+      "kind": "behavior",
+      "summary": "Pass combobox trigger policy directly to InlineCombobox and drop platejs/combobox",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "emoji",
+        "footnote",
+        "inline-combobox",
+        "mention",
+        "prompt-editor",
+        "slash"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-inline-combobox-trigger-props",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

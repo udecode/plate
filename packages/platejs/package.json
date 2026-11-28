@@ -72,11 +72,6 @@
       "import": "./dist/code-block/codemirror/index.js",
       "default": "./dist/code-block/codemirror/index.js"
     },
-    "./combobox": {
-      "types": "./dist/features/combobox/index.d.ts",
-      "import": "./dist/features/combobox/index.js",
-      "default": "./dist/features/combobox/index.js"
-    },
     "./combobox/react": {
       "types": "./dist/react/features/combobox/index.d.ts",
       "import": "./dist/react/features/combobox/index.js",
@@ -397,7 +392,6 @@
     "lint:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout",
     "lint:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout-react",
     "lint:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-block-codemirror",
-    "lint:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox",
     "lint:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox-react",
     "lint:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments",
     "lint:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments-react",
@@ -479,7 +473,6 @@
     "test:partition:board-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs board-react",
     "test:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs callout",
     "test:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-block-codemirror",
-    "test:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox",
     "test:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox-react",
     "test:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments",
     "test:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments-react",

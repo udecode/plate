@@ -8,18 +8,16 @@ import {
   RangeApi,
   subscribeEditorViewState,
 } from '../../../facade';
-import type { ComboboxState } from '../../../features/combobox/lib/combobox';
+import type { Editor } from '../../editor';
+import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
+import { claimEditableKeyDown } from '../../utils/editableKeyDown.internal';
 import {
+  type ComboboxPolicy,
   findTypedTrigger,
   isComboboxQuery,
   readComboboxQuery,
   type TypedInsertion,
-} from '../../../features/combobox/lib/combobox.internal';
-import { getPluginStore } from '../../../internal/plugin/pluginStore';
-import type { PluginReference } from '../../../lib';
-import type { Editor } from '../../editor';
-import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
-import { claimEditableKeyDown } from '../../utils/editableKeyDown.internal';
+} from './combobox.internal';
 
 /** The open query an autocomplete popup offers options for. */
 export type ComboboxMatch = Readonly<{
@@ -33,6 +31,7 @@ export type ComboboxMatch = Readonly<{
   trigger: string;
 }>;
 
+/** Synchronous completion callback run inside the combobox transaction. Return false to refuse. */
 export type ComboboxCompletion = (tx: PluginTransaction) => boolean | void;
 
 export type ComboboxPopup = Readonly<{
@@ -40,7 +39,7 @@ export type ComboboxPopup = Readonly<{
   listboxId: string;
   onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => boolean;
   open: boolean;
-  plugin: PluginReference;
+  policy: ComboboxPolicy;
 }>;
 
 type Occurrence = Readonly<{
@@ -108,9 +107,7 @@ class ComboboxOwner {
       return false;
     }
 
-    const state = this.stateOf(popup);
-
-    if (!state) return false;
+    const { policy } = popup;
 
     try {
       this.view.update({ history: 'new-batch' }, (tx) => {
@@ -136,7 +133,7 @@ class ComboboxOwner {
               trigger,
               triggerText: occurrence.triggerText,
             },
-            state
+            policy
           ) !== expected.query
         ) {
           throw refused;
@@ -212,7 +209,9 @@ class ComboboxOwner {
           'aria-haspopup': 'listbox',
           'aria-multiline': null,
           role: 'combobox',
-          ...(hasAppLabel ? {} : { 'aria-label': 'Autocomplete' }),
+          ...(hasAppLabel
+            ? {}
+            : { 'aria-label': popup.policy.label || 'Autocomplete' }),
           ...(popup.open
             ? {
                 'aria-controls': popup.listboxId,
@@ -294,20 +293,17 @@ class ComboboxOwner {
       let latest: { popup: ComboboxPopup; trigger: Range } | null = null;
 
       for (const popup of this.popups) {
-        const state = this.stateOf(popup);
-        const trigger = state
-          ? findTypedTrigger(this.view.read, insertion, state)
-          : null;
+        const { policy } = popup;
+        const trigger = findTypedTrigger(this.view.read, insertion, policy);
 
         if (
-          state &&
           trigger &&
           (!latest ||
             PointApi.isAfter(
               RangeApi.start(trigger),
               RangeApi.start(latest.trigger)
             )) &&
-          (!state.triggerQuery || state.triggerQuery(this.view))
+          (!policy.triggerQuery || policy.triggerQuery(this.view))
         ) {
           latest = { popup, trigger };
         }
@@ -364,13 +360,13 @@ class ComboboxOwner {
     const trigger = occurrence?.trigger.resolve(this.view);
     const typedExtent = occurrence?.typedExtent.resolve(this.view);
     const selection = this.view.read.selection();
-    const state = occurrence && this.stateOf(occurrence.popup);
+    const policy = occurrence?.popup.policy;
 
     if (
       !occurrence ||
       !trigger ||
       !typedExtent ||
-      !state ||
+      !policy ||
       !selection ||
       !RangeApi.isCollapsed(selection) ||
       !this.isEditable() ||
@@ -392,7 +388,7 @@ class ComboboxOwner {
         trigger,
         triggerText: occurrence.triggerText,
       },
-      state
+      policy
     );
 
     if (query === null) {
@@ -410,7 +406,7 @@ class ComboboxOwner {
     return this.offer(occurrence, {
       composing,
       query:
-        preview !== null && isComboboxQuery(preview, state) ? preview : query,
+        preview !== null && isComboboxQuery(preview, policy) ? preview : query,
       range: { anchor: RangeApi.start(trigger), focus: selection.focus },
       trigger: occurrence.triggerText,
     });
@@ -422,7 +418,7 @@ class ComboboxOwner {
     return match;
   }
 
-  private refresh() {
+  refresh() {
     const next = this.read();
 
     if (!next) {
@@ -474,12 +470,6 @@ class ComboboxOwner {
       ownerDocument.removeEventListener('focusin', refresh);
       this.close();
     };
-  }
-
-  private stateOf(popup: ComboboxPopup) {
-    return getPluginStore(this.view, popup.plugin)?.public.get() as
-      | ComboboxState
-      | undefined;
   }
 }
 

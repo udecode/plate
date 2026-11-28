@@ -21,9 +21,6 @@
   "include": ["../src/features/footnote/**/*"],
   "references": [
     {
-      "path": "./combobox.json"
-    },
-    {
       "path": "./core.json"
     }
   ]

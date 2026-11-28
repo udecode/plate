@@ -63,7 +63,7 @@ npx shadcn@latest add @plate/slash
 
 ### 添加插件
 
-复制的 `slash` 文件定义了 `SlashPlugin`，它保存触发策略和应用添加的选项。在它的 `afterEditable` 插槽中挂载弹出框：
+复制的 `slash` 文件定义了 `SlashPlugin`（保存应用添加的选项）和 `SlashCombobox`（在 `InlineCombobox` 上配置 `/` 触发器和代码块限制）。在 `SlashPlugin` 的 `afterEditable` 插槽中挂载弹出框：
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -78,7 +78,7 @@ const editor = createEditor({
 });
 ```
 
-它的状态是 [`ComboboxState`](/docs/combobox#comboboxstate) 加上 `items`。在行首或空格后输入 `/` 会打开菜单，`triggerQuery` 会让代码块中输入的 `/` 保持为普通文本。要修改这两点，请编辑复制文件中的 `SlashPlugin`。
+在行首或空格后输入 `/` 会打开菜单，`triggerQuery` 会让代码块中输入的 `/` 保持为普通文本。要修改这两点，请编辑复制文件中的 `SlashCombobox`。
 
 </Steps>
 
@@ -147,7 +147,7 @@ const editor = createEditor({
 
 | API | 来源 | 用途 |
 |-----|------|------|
-| `SlashPlugin` | `slash` registry | 仅在编辑时启用的插件，其状态保存 `/` 触发策略、代码块检查和应用的 `items`。 |
+| `SlashPlugin` | `slash` registry | 仅在编辑时启用的插件，其状态保存应用的 `items`。 |
 | `SlashItem` | `slash` registry | 一个应用选项：内置选项的字段（`icon` 为函数），加上它加入的 `group`。 |
 | `SlashKit` | `slash` registry | 在 `afterEditable` 插槽中挂载 `SlashCombobox` 的 `SlashPlugin`。 |
-| `SlashCombobox` | `slash` registry | 斜杠菜单，先由文件中的 `groups` 列表构建，再加上插件的 `items`。编辑 `groups` 来移除或重新排序内置选项。输入查询时，菜单把最佳匹配排在最前，只在同等匹配之间保留列表顺序。 |
+| `SlashCombobox` | `slash` registry | 斜杠菜单，向 `InlineCombobox` 传入 `trigger="/"` 与代码块 `triggerQuery`，先由文件中的 `groups` 列表构建，再加上插件的 `items`。编辑 `groups` 来移除或重新排序内置选项。输入查询时，菜单把最佳匹配排在最前，只在同等匹配之间保留列表顺序。 |

@@ -31,7 +31,6 @@ import {
 } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { BaseCalloutPlugin } from 'platejs/callout';
-import type { ComboboxState } from 'platejs/combobox';
 import { BaseDatePlugin } from 'platejs/date';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
@@ -295,9 +294,22 @@ const groups: Group[] = [
   },
 ];
 
+const isNotInCodeBlock = (editor: Editor) => {
+  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+  return (
+    !codeBlock.installed ||
+    !editor.read.nodes.some({ type: codeBlock.schema.type })
+  );
+};
+
 export function SlashCombobox({ editableRef }: EditableSiblingProps) {
   return (
-    <InlineCombobox editableRef={editableRef} plugin={SlashPlugin}>
+    <InlineCombobox
+      editableRef={editableRef}
+      trigger="/"
+      triggerQuery={isNotInCodeBlock}
+    >
       <SlashComboboxContent />
     </InlineCombobox>
   );
@@ -368,22 +380,8 @@ function SlashComboboxContent() {
 
 export const SlashPlugin = definePlugin('slashCommand', {
   editOnly: true,
-  initialState: (): ComboboxState & { items: readonly SlashItem[] } => ({
+  initialState: (): { items: readonly SlashItem[] } => ({
     items: [],
-    maxQueryLength: 75,
-    queryPattern: null,
-    trigger: '/',
-    triggerPreviousCharPattern: /^\s?$/,
-    triggerQuery: (editor) => {
-      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-
-      return (
-        !codeBlock.installed ||
-        !editor.read.nodes.some({
-          type: codeBlock.schema.type,
-        })
-      );
-    },
   }),
 });
 

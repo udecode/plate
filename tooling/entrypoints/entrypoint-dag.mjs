@@ -81,20 +81,19 @@ export const rootFeatureDependencies = Object.freeze({
 export const publicFeatureDependencies = Object.freeze({
   board: [],
   callout: [],
-  combobox: [],
   comments: [],
   date: [],
   details: ['standard/basic-nodes'],
   upload: ['dom'],
   field: ['lock'],
   find: [],
-  footnote: ['combobox'],
+  footnote: [],
   ink: [],
   layout: [],
   lint: [],
   lock: [],
   media: ['dom'],
-  mention: ['combobox'],
+  mention: [],
   suggestion: ['authored'],
   table: ['authored', 'dom'],
   toc: ['standard/basic-nodes'],
@@ -127,7 +126,6 @@ export const publicReactOnlyEntrypoints = Object.freeze([
 
 const standardReactDependencies = {
   board: ['dom', 'static'],
-  combobox: ['combobox'],
   'format-painter': ['standard/basic-styles'],
   suggestion: ['authored'],
   table: ['authored', 'dom'],
@@ -196,18 +194,11 @@ const publicFeatureEntrypoints = Object.fromEntries([
   ...Object.entries(publicFeatureDependencies).map(([name, dependencies]) => [
     name,
     headless(
-      directory(
-        `features/${name}`,
-        ['core', ...dependencies],
-        [],
-        name === 'combobox'
-          ? {}
-          : {
-              ...(name === 'upload' ? { peerDependencies: ['files-sdk'] } : {}),
-              ...runtimeProofPeersOf(name, ''),
-              runtimeProof: 'plate-plugin',
-            }
-      )
+      directory(`features/${name}`, ['core', ...dependencies], [], {
+        ...(name === 'upload' ? { peerDependencies: ['files-sdk'] } : {}),
+        ...runtimeProofPeersOf(name, ''),
+        runtimeProof: 'plate-plugin',
+      })
     ),
   ]),
   ...publicFeatureReactEntrypoints.map((name) => [

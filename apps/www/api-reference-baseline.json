@@ -649,8 +649,6 @@
     ],
     "platejs/callout": ["BaseCalloutPlugin", "CalloutElement"],
     "platejs/callout/react": ["CalloutPlugin"],
-    "platejs/combobox": ["ComboboxEditor", "filterWords", "FilterWordsOptions"],
-    "platejs/combobox/react": ["UseComboboxOptions", "UseComboboxReturn"],
     "platejs/comments": [
       "CommentAttachment",
       "CommentMessage",

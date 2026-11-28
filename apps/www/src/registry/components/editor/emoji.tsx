@@ -1,8 +1,11 @@
 'use client';
 
 import { BaseCodeBlockPlugin } from 'platejs';
-import type { ComboboxState } from 'platejs/combobox';
-import { type EditableSiblingProps, definePlugin } from 'platejs/react';
+import {
+  type EditableSiblingProps,
+  type Editor,
+  definePlugin,
+} from 'platejs/react';
 
 import { useEmojiSearch } from '@/registry/lib/emoji-data';
 
@@ -15,15 +18,28 @@ import {
   useInlineComboboxQuery,
 } from './inline-combobox';
 
+const EMOJI_QUERY_PATTERN = /^[\p{L}\p{N}_+\-:]$/u;
+
+const isNotInCodeBlock = (editor: Editor) => {
+  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+  return (
+    !codeBlock.installed ||
+    !editor.read.nodes.some({ type: codeBlock.schema.type })
+  );
+};
+
 export function EmojiCombobox({ editableRef }: EditableSiblingProps) {
   const { status } = useEmojiSearch(null);
 
   return (
     <InlineCombobox
       editableRef={editableRef}
-      plugin={EmojiPlugin}
       hideWhenNoValue
       loading={status === 'loading'}
+      queryPattern={EMOJI_QUERY_PATTERN}
+      trigger=":"
+      triggerQuery={isNotInCodeBlock}
     >
       <EmojiComboboxContent />
     </InlineCombobox>
@@ -62,20 +78,6 @@ function EmojiComboboxContent() {
 
 export const EmojiPlugin = definePlugin('emoji', {
   editOnly: true,
-  initialState: (): ComboboxState => ({
-    maxQueryLength: 75,
-    queryPattern: /^[\p{L}\p{N}_+\-:]$/u,
-    trigger: ':',
-    triggerPreviousCharPattern: /^\s?$/,
-    triggerQuery: (editor) => {
-      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-
-      return (
-        !codeBlock.installed ||
-        !editor.read.nodes.some({ type: codeBlock.schema.type })
-      );
-    },
-  }),
 });
 
 export const EmojiKit = [

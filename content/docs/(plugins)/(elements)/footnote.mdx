@@ -261,32 +261,9 @@ The package owns node semantics, ref allocation, and navigation helpers. App-lev
 
 ### `FootnotePlugin`
 
-Inline void node rendered as `<sup>`. Owns the `[^` trigger policy, ref registry, navigation transforms, and query API. Its state is a [ComboboxState](/docs/combobox#comboboxstate).
+Inline void node rendered as `<sup>`. Owns the ref registry, navigation transforms, and query API. The `[^` trigger policy (`trigger="[^"`, `triggerPreviousCharPattern={null}`) lives on `FootnoteCombobox` through [Combobox](/docs/combobox).
 
-<API name="FootnotePlugin">
-<APIOptions>
-  <APIItem name="maxQueryLength" type="number" optional>
-    Maximum query length after `trigger` before the combobox stops matching.
-    - **Default:** `75`
-  </APIItem>
-  <APIItem name="queryPattern" type="RegExp | null" optional>
-    Extra pattern each query must match after `trigger`. `null` allows any query text.
-    - **Default:** `null`
-  </APIItem>
-  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
-    Text that opens the footnote picker. Completion replaces the whole `[^` and query, so `claim[^1` works after a word.
-    - **Default:** `'[^'`
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
-    Only trigger when the previous character matches. `null` allows any character.
-    - **Default:** `null`
-  </APIItem>
-  <APIItem name="triggerQuery" type="((editor: ComboboxEditor) => boolean) | null" optional>
-    Extra predicate gating the picker. Return `false` to keep a typed `[^` as text.
-    - **Default:** `null`
-  </APIItem>
-</APIOptions>
-</API>
+<API name="FootnotePlugin" />
 
 ### `FootnoteDefinitionPlugin`
 

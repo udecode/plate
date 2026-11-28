@@ -68,7 +68,7 @@ export const editor = createEditor({
 
 | 层 | 所有者 | 作用 |
 |----|--------|------|
-| `emoji` | Registry | 定义 `EmojiPlugin`、它的触发规则和代码块限制，以及 `EmojiCombobox`。 |
+| `emoji` | Registry | 定义 `EmojiPlugin` 和 `EmojiCombobox`（包含 `:` 触发规则和代码块限制）。 |
 | `emoji-data` | Registry | 加载一次 Emojibase，合并 GitHub 短代码并对搜索排序。 |
 | `emoji-picker` | Registry UI | 负责弹出层、搜索结果、frimousse 网格和常用表情。 |
 | `emoji-toolbar-button` | Registry UI | 在工具栏中打开 `EmojiPicker` 并插入所选表情。 |
@@ -98,7 +98,7 @@ npx shadcn@latest add @plate/emoji @plate/emoji-picker @plate/emoji-toolbar-butt
 
 ### 添加插件
 
-`EmojiPlugin` 只包含触发规则。把弹出框挂载到它的 `afterEditable` 插槽。
+把 `EmojiCombobox` 挂载到 `EmojiPlugin` 的 `afterEditable` 插槽。`EmojiCombobox` 将 `:` 触发规则传给 `InlineCombobox`。
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -130,7 +130,7 @@ export function EditorToolbar() {
 
 | 步骤 | 来源 |
 |------|------|
-| 输入 `:` | `EmojiPlugin` 触发器。 |
+| 输入 `:` | `EmojiCombobox` 的 `trigger` 属性。 |
 | 前一个字符必须匹配 `/^\s?$/` | 默认为块的开头或空白字符。 |
 | 不在代码块内 | 选区位于代码块时，`triggerQuery` 拒绝触发。 |
 | 输入短代码 | `queryPattern` 允许字母、数字、`_`、`+`、`-` 和 `:`；空格会关闭弹出框。 |
@@ -182,7 +182,7 @@ Launch 🔥 soon
 
 | API | 来源 | 用途 |
 |-----|------|------|
-| `EmojiPlugin` | `emoji` registry | 只在编辑模式下生效的插件，其状态保存 `:` 触发规则。 |
+| `EmojiPlugin` | `emoji` registry | 仅在编辑模式下挂载 `EmojiCombobox` 的插槽宿主插件。 |
 | `EmojiKit` | `emoji` registry | 在 `afterEditable` 插槽中挂载 `EmojiCombobox` 的 `EmojiPlugin`。 |
 | `useEmojiSearch(query)` | `emoji-data` registry | 查询不为 null 时开始共享加载，返回 `{ results, status }`，其中 `status` 为 `'loading'`、`'ready'` 或 `'failed'`。 |
 | `searchEmojis(entries, query)` | `emoji-data` registry | 按查询对条目排序，最多返回 60 个。 |

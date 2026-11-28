@@ -32,7 +32,6 @@ import {
   type StaticReuseKeyReader,
   withStaticReuseKey,
 } from '../../../internal/plugin/staticReuseKey.internal';
-import type { ComboboxState } from '../../combobox';
 import { getFootnoteTarget } from './internal/getFootnoteTarget';
 
 const NUMERIC_REF_REGEX = /^\d+$/;
@@ -496,13 +495,6 @@ type CreateFootnoteDefinitionOptions = {
 export const BaseFootnotePlugin = withStaticReuseKey(
   definePlugin('footnote', {
     dependencies: [BaseFootnoteDefinitionPlugin],
-    initialState: (): ComboboxState => ({
-      maxQueryLength: 75,
-      queryPattern: null,
-      trigger: '[^',
-      triggerQuery: null,
-      triggerPreviousCharPattern: null,
-    }),
     formats: ({ defineFormats, schema: { type } }) =>
       defineFormats({
         html: {

@@ -13,6 +13,7 @@ import { MentionPlugin } from 'platejs/mention/react';
 import {
   definePlugin,
   type EditableSiblingProps,
+  type Editor,
   EditorContent,
   EditorRoot,
   useCreateEditor,
@@ -179,9 +180,19 @@ const PromptEditorPlugin = definePlugin('promptEditor', {
   }),
 }));
 
+const MENTION_PREVIOUS_CHAR_PATTERN = /^$|^[\s"']$/;
+
+const hasPromptItems = (editor: Editor) =>
+  editor.plugin(PromptEditorPlugin).store.get().items.length > 0;
+
 function PromptEditorCombobox({ editableRef }: EditableSiblingProps) {
   return (
-    <InlineCombobox editableRef={editableRef} plugin={MentionPlugin}>
+    <InlineCombobox
+      editableRef={editableRef}
+      trigger="@"
+      triggerPreviousCharPattern={MENTION_PREVIOUS_CHAR_PATTERN}
+      triggerQuery={hasPromptItems}
+    >
       <PromptEditorOptions />
     </InlineCombobox>
   );
@@ -260,9 +271,6 @@ export function PromptEditor({
           component: MentionElement,
           initialState: {
             insertSpaceAfterMention: true,
-            triggerPreviousCharPattern: /^$|^[\s"']$/,
-            triggerQuery: (current) =>
-              current.plugin(PromptEditorPlugin).store.get().items.length > 0,
           },
           slots: { afterEditable: PromptEditorCombobox },
         }),

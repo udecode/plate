@@ -63,7 +63,7 @@ npx shadcn@latest add @plate/slash
 
 ### Add plugins
 
-The copied `slash` file defines `SlashPlugin`, which holds the trigger policy and the items your app adds. Mount the popup in its `afterEditable` slot:
+The copied `slash` file defines `SlashPlugin`, which holds the items your app adds, and `SlashCombobox`, which configures the `/` trigger and code-block guard on `InlineCombobox`. Mount the popup in `SlashPlugin`'s `afterEditable` slot:
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -78,7 +78,7 @@ const editor = createEditor({
 });
 ```
 
-Its state is a [`ComboboxState`](/docs/combobox#comboboxstate) plus `items`. A `/` opens the menu at the start of a line or after a space, and `triggerQuery` keeps a `/` typed in a code block as plain text. Edit `SlashPlugin` in the copied file to change either.
+A `/` opens the menu at the start of a line or after a space, and `triggerQuery` keeps a `/` typed in a code block as plain text. Edit `SlashCombobox` in the copied file to change either.
 
 </Steps>
 
@@ -147,7 +147,7 @@ Available options include:
 
 | API | Source | Use |
 |-----|--------|-----|
-| `SlashPlugin` | `slash` registry | Edit-only plugin whose state holds the `/` trigger policy, the code-block check and the app's `items`. |
+| `SlashPlugin` | `slash` registry | Edit-only plugin whose state holds the app's `items`. |
 | `SlashItem` | `slash` registry | One app item: a built-in item's fields, with `icon` as a function, plus the `group` it joins. |
 | `SlashKit` | `slash` registry | `SlashPlugin` with `SlashCombobox` in its `afterEditable` slot. |
-| `SlashCombobox` | `slash` registry | The slash menu, built from the file's `groups` list and then the plugin's `items`. Edit `groups` to remove or reorder built-in options. While you type, the menu lists matches best first and keeps the list's order only between equal matches. |
+| `SlashCombobox` | `slash` registry | The slash menu, passing `trigger="/"` and the code-block `triggerQuery` to `InlineCombobox`, built from the file's `groups` list and then the plugin's `items`. Edit `groups` to remove or reorder built-in options. While you type, the menu lists matches best first and keeps the list's order only between equal matches. |

@@ -12,7 +12,7 @@ docs:
     title: Prompt Editor
 ---
 
-Typing `@` opens a popup that filters on the text typed after it. Selecting an item replaces that text with a markable void `mention` node. The package owns the trigger policy, mention insertion, selection movement and Markdown mention serialization. The registry owns the demo item list and the popup UI.
+Typing `@` opens a popup that filters on the text typed after it. Selecting an item replaces that text with a markable void `mention` node. The package owns mention insertion, selection movement and Markdown mention serialization. The registry owns the `@` trigger policy, the demo item list and the popup UI.
 
 <ComponentPreview name="mention-demo" />
 
@@ -22,7 +22,7 @@ Typing `@` opens a popup that filters on the text typed after it. Selecting an i
 
 - Inline void `mention` nodes with required `ref` and optional `label`.
 - A popup over the text typed after `@`, through [Combobox](/docs/combobox).
-- Configurable trigger strings, regexes, and trigger queries.
+- Configurable trigger strings, previous-character rules, and trigger queries on `InlineCombobox`.
 - Markable void rendering so bold, italic, and underline can style a mention.
 - Optional trailing space after selected mention items.
 - Markdown format through `[display text](mention:ref)` links.
@@ -103,9 +103,6 @@ export const editor = createEditor({
   plugins: [
     MentionPlugin.configure({
       component: MentionElement,
-      initialState: {
-        triggerPreviousCharPattern: /^$|^[\s"']$/,
-      },
       slots: { afterEditable: MentionCombobox },
     }),
   ],
@@ -170,8 +167,8 @@ The popup opens when the user types `@` and the [combobox rules](/docs/combobox#
 
 | Gate | Source |
 |------|--------|
-| Typed text matches `trigger` | `string`, `string[]`, or `RegExp`. |
-| Previous character matches `triggerPreviousCharPattern` | Defaults to `/^\s?$/`; registry kit uses `/^$\|^[\s"']$/`. |
+| Typed text matches `trigger` | `string` prop on `InlineCombobox` (`'@'` in `MentionCombobox`). |
+| Previous character matches `triggerPreviousCharPattern` | Defaults to `/^\s?$/`; `MentionCombobox` uses `/^$\|^[\s"']$/`. |
 | `triggerQuery(editor)` returns true | Optional app veto for custom contexts. |
 
 Until an item is selected, `@` and the query are ordinary text in the document. Escape closes the popup and keeps that text.
@@ -190,7 +187,7 @@ Parsing reads `mention:` links back into mention nodes. Other links such as `[@d
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseMentionPlugin` | `platejs` | Headless inline markable void mention plugin with a `ComboboxState` trigger policy. |
+| `BaseMentionPlugin` | `platejs` | Headless inline markable void mention plugin with insertion and codec rules. |
 | `MentionPlugin` | `platejs/react` | React mention plugin. |
 | `editor.plugin(MentionPlugin).update.insert({ ref, label? })` | `BaseMentionPlugin` update | Inserts the mention node at the current selection. |
 | `useCombobox` | `platejs/combobox/react` | Opens the popup on a typed `@` and completes the query. |

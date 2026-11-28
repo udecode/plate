@@ -17,7 +17,7 @@ docs:
 
 - 输入 `@` 打开弹出框，按 `@` 之后输入的文本过滤
 - 选中后用带 `ref` 和可选 `label` 的行内 void `mention` 节点替换输入的文本
-- 可配置的触发字符串、正则表达式和触发查询
+- 可在 `InlineCombobox` 上配置的触发字符串、前置字符规则和触发查询
 - 可标记的 void 渲染，加粗、斜体和下划线可以作用于提及
 - 可选的提及后空格
 - 通过 `[显示文本](mention:ref)` 链接支持 Markdown
@@ -79,8 +79,6 @@ const editor = createEditor({
       component: MentionElement,
       initialState: {
         insertSpaceAfterMention: false,
-        trigger: '@',
-        triggerPreviousCharPattern: /^$|^[\s"']$/,
       },
       slots: { afterEditable: MentionCombobox },
     }),
@@ -88,10 +86,8 @@ const editor = createEditor({
 });
 ```
 
-- `initialState.trigger`：打开提及弹出框的字符
-- `initialState.triggerPreviousCharPattern`：触发字符前一个字符的正则表达式。套件使用 `/^$|^[\s"']$/`，允许在行首、空白符后或引号后触发
 - `initialState.insertSpaceAfterMention`：提及位于块末尾时是否在其后插入空格
-- `slots.afterEditable`：渲染弹出框的组件
+- `slots.afterEditable`：渲染弹出框的组件（`MentionCombobox` 通过 `InlineCombobox` 传入 `trigger="@"` 和 `triggerPreviousCharPattern={/^$|^[\s"']$/}`）
 
 ### 选择条目
 
@@ -116,21 +112,13 @@ const editor = createEditor({
 
 ### MentionPlugin
 
-提供提及功能的插件。其状态包含 [ComboboxState](/docs/combobox#comboboxstate) 触发策略。
+提供提及功能的插件，包含节点 schema、插入更新和序列化规则。触发策略由 `MentionCombobox` 传给 `InlineCombobox`（`useCombobox`）。
 
 <API name="MentionPlugin">
 <APIOptions>
   <APIItem name="insertSpaceAfterMention" type="boolean" optional>
     提及位于块末尾时是否在其后插入空格。
     - **默认值:** `false`
-  </APIItem>
-  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
-    打开提及弹出框的文本。
-    - **默认值:** `'@'`
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
-    匹配触发字符前一个字符的模式。
-    - **默认值:** `/^\s?$/`
   </APIItem>
 </APIOptions>
 </API>

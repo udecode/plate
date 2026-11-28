@@ -46,21 +46,13 @@ npx shadcn@latest add @plate/inline-combobox
 
 ### 创建插件
 
-将触发策略放在插件状态中，将插入的节点放在插件 schema 中：
+将插入的节点放在插件 schema 中：
 
 ```tsx showLineNumbers
 import { property } from 'platejs';
-import type { ComboboxState } from 'platejs/combobox';
 import { definePlugin } from 'platejs/react';
 
 export const HashtagPlugin = definePlugin('hashtag', {
-  initialState: (): ComboboxState => ({
-    maxQueryLength: 50,
-    queryPattern: /^[\p{L}\p{N}_-]$/u,
-    trigger: '#',
-    triggerPreviousCharPattern: /^\s?$/,
-    triggerQuery: null,
-  }),
   schema: {
     element: {
       properties: { value: property.string({ required: true }) },
@@ -71,13 +63,9 @@ export const HashtagPlugin = definePlugin('hashtag', {
 });
 ```
 
-- `trigger`：输入后打开弹出框的文本（`#`）。
-- `triggerPreviousCharPattern`：必须匹配触发字符之前的字符。`/^\s?$/` 允许行首或空格之后。
-- `queryPattern`：逐个检查查询字符。这里空格会结束标签查询。
-
 ### 创建弹出框
 
-弹出框渲染在编辑器旁边。其内容读取触发字符之后输入的查询，并用 `rankOptions` 对标签排序，最佳匹配排在最前：
+弹出框渲染在编辑器旁边并负责触发策略。其内容读取触发字符之后输入的查询，并用 `rankOptions` 对标签排序，最佳匹配排在最前：
 
 ```tsx showLineNumbers
 import {
@@ -99,9 +87,16 @@ const tags = ['Frontend', 'Backend', 'Design', 'Urgent'].map((label) => ({
   label,
 }));
 
+const HASHTAG_QUERY_PATTERN = /^[\p{L}\p{N}_-]$/u;
+
 export function HashtagCombobox({ editableRef }: EditableSiblingProps) {
   return (
-    <InlineCombobox editableRef={editableRef} plugin={HashtagPlugin}>
+    <InlineCombobox
+      editableRef={editableRef}
+      maxQueryLength={50}
+      queryPattern={HASHTAG_QUERY_PATTERN}
+      trigger="#"
+    >
       <HashtagComboboxContent />
     </InlineCombobox>
   );
@@ -176,54 +171,41 @@ const editor = createEditor({
 - 补全在一个事务中删除触发字符和查询并执行插入。撤销会恢复输入的文本。
 - IME 组字期间，查询会预览可见的预编辑文本。Enter 只确认组字，从不选中选项。
 
-## 配置选项
-
-### ComboboxState
-
-保存在功能插件状态中的触发策略。使用 `.configure({ initialState })` 覆盖。
-
-<API name="ComboboxState">
-<APIOptions>
-  <APIItem name="trigger" type="RegExp | readonly string[] | string">
-    输入后打开弹出框的文本。字符串可以多于一个字符，例如 `'[^'`。正则表达式针对输入的字符进行测试。
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp | null">
-    针对触发字符之前的字符进行测试，在文本开头时为 `''`。`null` 允许任意字符。
-  </APIItem>
-  <APIItem name="triggerQuery" type="((editor: ComboboxEditor) => boolean) | null">
-    返回 `false` 时将输入的触发字符保留为普通文本，例如在代码中。
-  </APIItem>
-  <APIItem name="queryPattern" type="RegExp | null">
-    逐个测试查询字符；第一个不匹配的字符会关闭弹出框。`null` 允许除换行外的任意字符。
-  </APIItem>
-  <APIItem name="maxQueryLength" type="number">
-    查询长度超过该值时关闭弹出框。
-  </APIItem>
-</APIOptions>
-</API>
-
 ## Hooks
 
 ### useCombobox
 
 把弹出框连接到一个编辑器。从 `platejs/combobox/react` 导入，并在 `afterEditable` 插槽组件中调用。
 
-键入的触发字符所打开的查询存在期间，编辑器会以组合框的身份呈现。它获得 `role="combobox"`、`aria-haspopup="listbox"`、`aria-autocomplete="list"` 和 `aria-expanded`，并移除 `aria-multiline`。查询关闭后，编辑器恢复自己原有的属性。
+键入的触发字符所打开的查询存在期间，编辑器会以组合框的身份呈现。它获得 `role="combobox"`、`aria-haspopup="listbox"`、`aria-autocomplete="list"`、`aria-expanded`，并在编辑器没有可访问名称时写入回退 `aria-label`，同时移除 `aria-multiline`。查询关闭后，编辑器恢复自己原有的属性。
 
 <API name="useCombobox">
 <APIParameters>
   <APIItem name="editableRef" type="React.RefObject<HTMLDivElement | null>">
     弹出框服务的编辑器，即传给插槽的 ref。
   </APIItem>
-  <APIItem name="plugin" type="PluginReference">
-    状态中保存 `ComboboxState` 的功能插件。
+  <APIItem name="trigger" type="string">
+    输入后打开弹出框的文本，例如 `'@'`、`'/'` 或 `'[^'`。
   </APIItem>
-  <APIItem name="activeOptionId" type="string | null" optional>
-    当前选项的 id，同步为编辑器的 `aria-activedescendant`。
+  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
+    针对触发字符之前的字符进行测试，在文本开头时为 `''`。`null` 允许任意字符。
+    - **默认值:** `/^\s?$/`
   </APIItem>
-  <APIItem name="open" type="boolean" optional>
-    弹出框是否正在显示。只有显示时才接管按键并写入 `aria-controls` 和 `aria-activedescendant`，`aria-expanded` 跟随它变化，因此没有结果而隐藏的弹出框会把方向键和 Escape 留给编辑器。
-    - **默认值:** `true`
+  <APIItem name="triggerQuery" type="((editor: Editor) => boolean) | null" optional>
+    返回 `false` 时将输入的触发字符保留为普通文本，例如在代码中。
+    - **默认值:** `null`
+  </APIItem>
+  <APIItem name="queryPattern" type="RegExp | null" optional>
+    逐个测试查询字符；第一个不匹配的字符会关闭弹出框。`null` 允许除换行外的任意字符。
+    - **默认值:** `null`
+  </APIItem>
+  <APIItem name="maxQueryLength" type="number" optional>
+    查询长度超过该值时关闭弹出框。
+    - **默认值:** `75`
+  </APIItem>
+  <APIItem name="label" type="string" optional>
+    编辑器以 `role="combobox"` 呈现且未设置 `aria-label` 或 `aria-labelledby` 时的回退 `aria-label`。
+    - **默认值:** `'Autocomplete'`
   </APIItem>
   <APIItem name="onKeyDown" type="(event: React.KeyboardEvent<HTMLDivElement>) => boolean" optional>
     弹出框打开时，在编辑器快捷键之前接收 Enter、Tab、ArrowUp、ArrowDown 和 Escape。处理后返回 `true`。未处理的 Escape 会关闭弹出框。
@@ -236,11 +218,14 @@ const editor = createEditor({
   <APIItem name="listboxId" type="string">
     弹出框列表的 id，同步为编辑器的 `aria-controls`。
   </APIItem>
-  <APIItem name="complete" type="(match: ComboboxMatch, callback: (tx) => boolean | void) => boolean">
+  <APIItem name="complete" type="(match: ComboboxMatch, callback: ComboboxCompletion) => boolean">
     通过一个同步事务替换触发字符和查询。传入提供该选项的 match。回调可以返回命令的 `true` 或 `false`；只有 `false` 表示拒绝并保留查询。来自更早查询的 match、更新的查询、进行中的组字或被拒绝的回调都不会产生更改并返回 `false`；回调抛出异常时会回滚全部更改。
   </APIItem>
   <APIItem name="dismiss" type="() => void">
     关闭弹出框并保留输入的文本。
+  </APIItem>
+  <APIItem name="syncPopup" type="(state: ComboboxPopupState) => void">
+    在 layout effect 中向编辑器的 ARIA 写入器同步弹出框当前的 `open` 状态和 `activeOptionId`。只有 `open` 为 `true` 时才接管按键并写入 `aria-controls` 和 `aria-activedescendant`，`aria-expanded` 跟随它变化。
   </APIItem>
 </APIReturns>
 </API>
