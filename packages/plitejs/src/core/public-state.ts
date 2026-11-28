@@ -4900,7 +4900,9 @@ const normalizeCallerMatch = <T extends PliteNode>(
 ) => normalizeNodeMatch(type, match && inCallerScope(editor, match));
 
 const getCurrentRuntimeIndex = (editor: Editor): SnapshotIndex => {
-  if (getReadProjection(editor)) return getSnapshot(editor).index;
+  if (getReadProjection(editor)) {
+    return getEditorProjectionSnapshotIndex(editor, getChildrenSource(editor));
+  }
   const root = getCurrentChildrenRoot(editor);
   const transactionSnapshot = getTransactionSnapshot(editor);
 
@@ -5086,7 +5088,7 @@ export const getEditorDocumentRoots = (
 ): Readonly<Record<string, readonly Descendant[]>> => {
   const projection = getReadProjection(editor);
   if (projection) {
-    return { [MAIN_ROOT_KEY]: projection.children, ...projection.roots };
+    return rootsOfValue(projection);
   }
   const owner = getEditorRuntimeOwner(editor);
   const context = getTransactionSpecContext(owner);
@@ -17831,10 +17833,10 @@ const adoptEditorSchemaDocument = (
 
   getEditorSchema(editor).adoptDocumentBaseline(document);
 
-  const roots = {
+  const roots = Object.freeze({
     [MAIN_ROOT_KEY]: document.children,
     ...document.roots,
-  } as Record<string, readonly Descendant[]>;
+  });
 
   CHILDREN.set(editor, roots[MAIN_ROOT_KEY]);
   ROOTS.set(editor, roots);
