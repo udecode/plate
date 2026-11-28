@@ -9,8 +9,18 @@ import {
 } from '@floating-ui/react';
 import { cva } from 'class-variance-authority';
 import { cn } from 'cn';
-import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
-import { LinkRules } from 'platejs';
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  Link,
+  Pencil,
+  Text,
+  Unlink,
+} from 'lucide-react';
+import { getLinkHref, LinkRules, type NodeKey, type Path } from 'platejs';
+import { AuthoredPlugin } from 'platejs/authored';
+import { BaseLockPlugin } from 'platejs/lock';
 import {
   type EditableSiblingProps,
   LinkPlugin,
@@ -49,6 +59,7 @@ const sameAttributes = (left: object | null, right: object) => {
 
 export function LinkElement(props: EditorElementProps<typeof LinkPlugin>) {
   const { api } = props.editor.plugin(LinkPlugin);
+  const readOnly = useEditorReadOnly();
   const attributes = usePluginStore(
     LinkPlugin,
     () => api.getAttributes(props.element),
@@ -60,12 +71,26 @@ export function LinkElement(props: EditorElementProps<typeof LinkPlugin>) {
       {...props}
       as="a"
       className={cn(
-        'font-medium text-primary underline decoration-primary underline-offset-4',
+        'font-medium text-primary underline underline-offset-4',
         inlineSuggestionVariants()
       )}
       attributes={{
         ...props.attributes,
         ...attributes,
+        // A plain click places the caret; Mod+click follows the link.
+        onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
+          if (
+            readOnly ||
+            !(event.metaKey || event.ctrlKey) ||
+            event.button !== 0 ||
+            !attributes.href
+          ) {
+            return;
+          }
+
+          event.preventDefault();
+          window.open(attributes.href, '_blank', 'noopener,noreferrer');
+        },
         onMouseOver: (event: React.MouseEvent<HTMLAnchorElement>) => {
           event.stopPropagation();
         },
@@ -80,20 +105,82 @@ const popoverVariants = cva(
   'cn-popover-content z-50 w-auto p-1 outline-hidden transition-none'
 );
 
-type FloatingLinkMode = '' | 'edit' | 'insert';
+type FloatingLinkState =
+  | { kind: 'closed' }
+  | { editorId: string; kind: 'view' }
+  | {
+      editorId: string;
+      error: string | null;
+      initialTarget: string | undefined;
+      initialUrl: string;
+      kind: 'form';
+      linkKey: NodeKey | null;
+      mode: 'edit' | 'insert';
+      newTab: boolean;
+      newTabDirty: boolean;
+      text: string;
+      url: string;
+      urlDirty: boolean;
+    };
 
-const transientState = {
-  isEditing: false,
-  mode: '' as FloatingLinkMode,
-  mouseDown: false,
-  newTab: false,
-  openEditorId: null as string | null,
-  text: '',
-  url: '',
+const initialLinkState: { ui: FloatingLinkState } = { ui: { kind: 'closed' } };
+
+const INVALID_LINK = 'Enter a valid link, such as example.com.';
+const REFUSED_LINK = 'This link type is not allowed.';
+const LOCKED_LINK = 'This link can no longer be edited.';
+
+const DRAFT_SCHEME = /^([a-z][a-z\d+.-]*):/iu;
+const DRAFT_HIERARCHICAL = /^[a-z][a-z\d+.-]*:\/\//iu;
+const DRAFT_RELATIVE = /^(?:[#/?]|\.{1,2}\/)/u;
+const DRAFT_WEB_WITHOUT_SLASHES = /^https?:(?!\/\/)/iu;
+const DRAFT_EMAIL = /^[^\s#/:?@]+@[^\s#/:?@]+\.[^\s#/:?@]+$/u;
+const DRAFT_LOCALHOST = /^localhost(?::\d{1,5})?(?:[#/?]\S*)?$/iu;
+const DRAFT_HOST =
+  /^(?:(?:\d{1,3}\.){3}\d{1,3}|(?:[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?\.)+(?:\p{L}{2,}|xn--[a-z\d-]+))(?::\d{1,5})?(?:[#/?]\S*)?$/iu;
+// Script-capable schemes stay as typed so the link policy refuses them with
+// an error instead of the form reading them as a host name.
+const FLOOR_SCHEMES = new Set([
+  'blob',
+  'data',
+  'filesystem',
+  'javascript',
+  'vbscript',
+]);
+
+// Turns what a person typed into the URL to store, or the reason it is not a
+// link. Order matters: an address with a scheme is never read as a host.
+const classifyLinkDraft = (
+  value: string,
+  allowedSchemes: readonly string[]
+): { error: string; url?: never } | { error?: never; url: string } => {
+  const draft = value.trim();
+
+  if (draft === '') return { error: 'Enter a link.' };
+  if (
+    draft.startsWith('//') ||
+    /\s/u.test(draft) ||
+    DRAFT_WEB_WITHOUT_SLASHES.test(draft)
+  ) {
+    return { error: INVALID_LINK };
+  }
+  if (DRAFT_RELATIVE.test(draft)) return { url: draft };
+
+  const scheme = DRAFT_SCHEME.exec(draft)?.[1]?.toLowerCase();
+
+  if (
+    DRAFT_HIERARCHICAL.test(draft) ||
+    (scheme !== undefined &&
+      (FLOOR_SCHEMES.has(scheme) ||
+        allowedSchemes.some((allowed) => allowed.toLowerCase() === scheme)))
+  ) {
+    return { url: draft };
+  }
+  if (DRAFT_EMAIL.test(draft)) return { url: `mailto:${draft}` };
+  if (DRAFT_LOCALHOST.test(draft)) return { url: `http://${draft}` };
+  if (DRAFT_HOST.test(draft)) return { url: `https://${draft}` };
+
+  return { error: INVALID_LINK };
 };
-
-const DRAFT_ADDRESS =
-  /^((?!https?:)[a-z][a-z\d+.-]*:|https?:\/\/|[#/?]|\.{1,2}\/)/i;
 
 const linkFloatingOptions = {
   middleware: [
@@ -107,85 +194,175 @@ const linkFloatingOptions = {
   placement: 'top-start',
 } satisfies UseFloatingRectOptions;
 
-export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
-  .extend(({ store }) => {
-    const hide = () => {
-      store.set({ ...transientState });
-    };
-    const show = (mode: FloatingLinkMode, editorId: string) => {
-      store.set({ isEditing: false, mode, openEditorId: editorId });
-    };
+export const linkPlugin = LinkPlugin.extend({
+  initialState: initialLinkState,
+})
+  .extend({
+    api: ({ editor, store }) => ({
+      /**
+       * Whether the link at `at` takes edits: its block is not locked and, in
+       * a reviewed document, the link outlives its pending changes.
+       */
+      canEditLink: (at: Path) => {
+        const lock = editor.plugin(BaseLockPlugin);
 
-    return {
-      api: () => ({
-        closeForm: () => {
-          const { isEditing, mode, openEditorId } = store.get();
+        if (lock.installed && lock.read.isLocked(at)) return false;
 
-          if (!isEditing && mode !== 'insert') return false;
-          store.set(
-            isEditing
-              ? { ...transientState, mode: 'edit', openEditorId }
-              : { ...transientState }
-          );
+        const authored = editor.plugin(AuthoredPlugin);
 
-          return true;
-        },
-        decodeUrl: (url: string) => {
-          try {
-            return decodeURI(url);
-          } catch (error) {
-            if (error instanceof URIError) return url;
-            throw error;
+        if (!authored.installed) return true;
+
+        const link = editor.read.nodes.get(at, { type: LinkPlugin })?.[0];
+
+        if (!link) return false;
+
+        const { reviewOf } = authored.read;
+        const linkReview = reviewOf(link);
+
+        if (
+          linkReview.hidden ||
+          linkReview.marks.some(
+            ({ kind }) => kind === 'delete' || kind === 'unwrap'
+          ) ||
+          link.children.every((child) => {
+            const review = reviewOf(child);
+
+            return (
+              review.hidden ||
+              review.marks.some(({ kind }) => kind === 'delete')
+            );
+          })
+        ) {
+          return false;
+        }
+
+        for (let depth = at.length - 1; depth > 0; depth -= 1) {
+          const ancestor = editor.read.nodes.get(at.slice(0, depth))?.[0];
+          const review = ancestor ? reviewOf(ancestor) : undefined;
+
+          if (
+            review &&
+            (review.hidden ||
+              review.marks.some(({ kind }) => kind === 'delete'))
+          ) {
+            return false;
           }
-        },
-        hide,
-        reset: () => {
-          store.set({
-            ...transientState,
-            openEditorId: store.get('openEditorId'),
-          });
-        },
-        show,
-      }),
-      selectors: {
-        isOpen: (state, editorId: string) => state.openEditorId === editorId,
+        }
+
+        return true;
       },
-    };
+      /** Closes the form, back to the link actions when the caret is in a link. */
+      closeForm: () => {
+        const ui = store.get('ui');
+
+        if (ui.kind !== 'form') return false;
+
+        const selection = editor.read.selection();
+        const inLink =
+          !!selection &&
+          editor.read.selection.isCollapsed() &&
+          !!editor.read.nodes.above({ at: selection, type: LinkPlugin });
+
+        store.set({
+          ui: inLink
+            ? { editorId: ui.editorId, kind: 'view' }
+            : { kind: 'closed' },
+        });
+
+        return true;
+      },
+      decodeUrl: (url: string) => {
+        try {
+          return decodeURI(url);
+        } catch (error) {
+          if (error instanceof URIError) return url;
+          throw error;
+        }
+      },
+      hide: () => {
+        store.set({ ui: { kind: 'closed' } });
+      },
+    }),
   })
   .extend({
     api: ({ api, editor, store, update }) => ({
       submit: () => {
-        const selection = editor.read.selection();
+        const ui = store.get('ui');
 
-        if (!selection) return undefined;
+        if (ui.kind !== 'form' || editor.read.view.isReadOnly()) {
+          return undefined;
+        }
 
-        const { newTab, text, url } = store.get();
-        const editedLink = editor.read.nodes.above({
-          at: selection,
-          type: linkPlugin,
-        });
+        // Saves the draft and returns why it could not, or null once saved.
+        const save = () => {
+          if (ui.mode === 'insert') {
+            const draft = classifyLinkDraft(
+              ui.url,
+              store.get('allowedSchemes')
+            );
 
-        if (editedLink && url === editedLink[0].url) {
-          update.upsert({ text: text || url, url });
-        } else {
-          const draft = url.trim();
+            if (draft.url === undefined) return draft.error;
 
-          if (
-            !DRAFT_ADDRESS.test(draft) ||
-            !update.upsert({
-              target: newTab ? '_blank' : undefined,
-              text,
-              url: draft,
+            const selection = editor.read.selection();
+            const lock = editor.plugin(BaseLockPlugin);
+
+            if (
+              !selection ||
+              (lock.installed && lock.read.isLocked(selection))
+            ) {
+              return LOCKED_LINK;
+            }
+
+            return update.upsert({
+              text: ui.text,
+              url: draft.url,
+              ...(ui.newTab ? { target: '_blank' } : {}),
             })
-          ) {
-            return undefined;
+              ? null
+              : REFUSED_LINK;
           }
+
+          // The link the form opened on, wherever the selection went since.
+          const path =
+            ui.linkKey === null
+              ? undefined
+              : editor.read.nodes.get(ui.linkKey, { type: linkPlugin })?.[1];
+
+          if (!path || !api.canEditLink(path)) return LOCKED_LINK;
+
+          // A stored link the policy would refuse today still takes a new
+          // label or target, as long as its address is left alone.
+          const unchanged =
+            !ui.urlDirty ||
+            ui.url === ui.initialUrl ||
+            ui.url === api.decodeUrl(ui.initialUrl);
+          const draft = unchanged
+            ? { url: ui.initialUrl }
+            : classifyLinkDraft(ui.url, store.get('allowedSchemes'));
+
+          if (draft.url === undefined) return draft.error;
+
+          // An unchanged link saves nothing, which is not a refusal.
+          const saved = update.upsert({
+            at: path,
+            text: ui.text,
+            url: draft.url,
+            ...(ui.newTabDirty ? { target: ui.newTab ? '_blank' : null } : {}),
+          });
+
+          return saved || unchanged ? null : REFUSED_LINK;
+        };
+        const error = save();
+
+        if (error !== null) {
+          store.set({ ui: { ...ui, error } });
+
+          return undefined;
         }
 
         api.closeForm();
-        setTimeout(() => {
-          editor.api.dom.focus();
-        }, 0);
+        // Focus in the same task as the tap so a phone keeps its keyboard up.
+        editor.api.dom.focus();
 
         return true;
       },
@@ -200,49 +377,94 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
         });
 
         if (!entry) return undefined;
-        // The edit form shows only for a caret, so an edit mode started here
-        // would have no form and would block Insert link.
-        if (!editor.read.selection.isCollapsed()) return true;
 
         const [link, path] = entry;
+
+        if (!api.canEditLink(path)) return false;
+
         const linkText = editor.read.text.string(path);
 
         store.set({
-          isEditing: true,
-          mode: 'edit',
-          newTab: link.target === '_blank',
-          openEditorId: editor.id,
-          text: linkText === link.url ? '' : linkText,
-          url: link.url,
+          ui: {
+            editorId: editor.id,
+            error: null,
+            initialTarget: link.target,
+            initialUrl: link.url,
+            kind: 'form',
+            linkKey: editor.key(link),
+            mode: 'edit',
+            newTab: link.target === '_blank',
+            newTabDirty: false,
+            text: linkText === link.url ? '' : linkText,
+            url: link.url,
+            urlDirty: false,
+          },
         });
 
         return true;
       },
       triggerInsert: ({ focused }: { focused?: boolean } = {}) => {
-        if (store.get().mode || !focused) return undefined;
+        if (!focused || store.get('ui').kind === 'form') return undefined;
         if (editor.read.selection.isAcrossBlocks()) return undefined;
 
         const selection = editor.read.selection();
 
         if (!selection) return undefined;
-        if (editor.read.nodes.some({ at: selection, type: linkPlugin })) {
-          return undefined;
-        }
 
-        const block = editor.read.nodes.block({ at: selection });
+        const lock = editor.plugin(BaseLockPlugin);
 
+        if (lock.installed && lock.read.isLocked(selection)) return undefined;
+        // A selection that already holds links still opens Insert link: the
+        // saved link replaces them in one step.
         if (
-          block &&
-          !editor.read.schema.allowsElementType(
-            block[0].type,
-            editor.plugin(LinkPlugin).schema.type
+          !editor.read.schema.canWrap(
+            {
+              children: [{ text: '' }],
+              type: editor.plugin(LinkPlugin).schema.type,
+              url: 'https://example.com',
+            },
+            { replace: true, split: true }
           )
         ) {
           return undefined;
         }
 
-        store.set({ text: editor.read.text.string() });
-        api.show('insert', editor.id);
+        store.set({
+          ui: {
+            editorId: editor.id,
+            error: null,
+            initialTarget: undefined,
+            initialUrl: '',
+            kind: 'form',
+            linkKey: null,
+            mode: 'insert',
+            newTab: false,
+            newTabDirty: false,
+            text: editor.read.text.string(),
+            url: '',
+            urlDirty: false,
+          },
+        });
+
+        return true;
+      },
+      unlink: () => {
+        const selection = editor.read.selection();
+        const entry =
+          selection &&
+          editor.read.nodes.above({ at: selection, type: linkPlugin });
+
+        if (
+          !entry ||
+          editor.read.view.isReadOnly() ||
+          !api.canEditLink(entry[1])
+        ) {
+          return undefined;
+        }
+
+        update.unwrap({ at: entry[1] });
+        api.hide();
+        editor.api.dom.focus();
 
         return true;
       },
@@ -268,7 +490,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
       dismiss: {
         keys: 'escape',
         handler: () => {
-          if (!store.get().mode) return false;
+          if (store.get('ui').kind === 'closed') return false;
           api.hide();
           return true;
         },
@@ -277,34 +499,39 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
     },
   }));
 
-function FloatingLinkUrlInput({
+const preventFocusLoss = (event: React.MouseEvent) => {
+  event.preventDefault();
+};
+
+function FloatingLinkInput({
+  field,
   ...props
-}: React.ComponentPropsWithRef<'input'>) {
+}: React.ComponentPropsWithRef<'input'> & { field: 'text' | 'url' }) {
   const { api, store } = useEditor().plugin(linkPlugin);
-  const [defaultValue] = React.useState(() => api.decodeUrl(store.get().url));
+  const [defaultValue] = React.useState(() => {
+    const ui = store.get('ui');
+
+    if (ui.kind !== 'form') return '';
+
+    return field === 'url' ? api.decodeUrl(ui.url) : ui.text;
+  });
 
   return (
     <Input
+      className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent aria-invalid:ring-0"
       defaultValue={defaultValue}
+      data-editor-keep-selection-visible
       onChange={(event) => {
-        store.set({ url: event.target.value });
-      }}
-      {...props}
-    />
-  );
-}
+        const ui = store.get('ui');
 
-function FloatingLinkTextInput({
-  ...props
-}: React.ComponentPropsWithRef<'input'>) {
-  const { store } = useEditor().plugin(linkPlugin);
-  const [defaultValue] = React.useState(() => store.get().text);
+        if (ui.kind !== 'form') return;
 
-  return (
-    <Input
-      defaultValue={defaultValue}
-      onChange={(event) => {
-        store.set({ text: event.target.value });
+        store.set({
+          ui:
+            field === 'url'
+              ? { ...ui, error: null, url: event.target.value, urlDirty: true }
+              : { ...ui, text: event.target.value },
+        });
       }}
       {...props}
     />
@@ -313,10 +540,10 @@ function FloatingLinkTextInput({
 
 export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   const editor = useEditor();
-
+  const { api, store } = editor.plugin(linkPlugin);
   const readOnly = useEditorReadOnly();
-  const isEditing = usePluginStore(linkPlugin, 'isEditing');
-  const selectedLinkKey = useEditorSelector(
+  const ui = usePluginStore(linkPlugin, 'ui');
+  const selectedLink = useEditorSelector(
     (innerEditor) => {
       const selection = innerEditor.read.selection();
 
@@ -327,61 +554,73 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
         type: linkPlugin,
       });
 
-      return entry ? innerEditor.key(entry[0]) : null;
+      if (!entry) return null;
+
+      return {
+        editable: innerEditor.plugin(linkPlugin).api.canEditLink(entry[1]),
+        key: innerEditor.key(entry[0]),
+        url: entry[0].url,
+      };
     },
-    { dependsOn: ['selection', 'document'] }
+    {
+      dependsOn: ['selection', 'document'],
+      equalityFn: (left, right) =>
+        left === right ||
+        (left !== null &&
+          right !== null &&
+          left.editable === right.editable &&
+          left.key === right.key &&
+          left.url === right.url),
+    }
   );
-  const mode = usePluginStore(linkPlugin, 'mode');
-  const open = usePluginStore(linkPlugin, 'isOpen', editor.id);
-  const { api, store, update } = useEditor().plugin(linkPlugin);
+  const selectedLinkKey = selectedLink?.key ?? null;
   const geometry = useSelectionGeometry({ editableRef });
-  const editOpen =
-    !readOnly && open && mode === 'edit' && selectedLinkKey !== null;
-  const editFloating = useFloatingRect(geometry, {
-    hideWhenClipped: !isEditing,
-    onOpenChange: (nextOpen) => {
-      if (!nextOpen) api.closeForm();
-    },
-    open: editOpen,
-    ...linkFloatingOptions,
-  });
-  const insertFloating = useFloatingRect(geometry, {
-    hideWhenClipped: false,
+  const ownUi = ui.kind !== 'closed' && ui.editorId === editor.id;
+  const formOpen = ownUi && ui.kind === 'form';
+  const open =
+    !readOnly && ownUi && (ui.kind === 'form' || selectedLinkKey !== null);
+  const floating = useFloatingRect(geometry, {
+    hideWhenClipped: !formOpen,
     onOpenChange: (nextOpen, _event, reason) => {
       if (nextOpen) return;
-      api.hide();
-      if (reason !== 'outside-press') editor.api.dom.focus();
+
+      const current = store.get('ui');
+
+      if (current.kind === 'form' && current.mode === 'insert') {
+        api.hide();
+        if (reason !== 'outside-press') editor.api.dom.focus();
+        return;
+      }
+
+      api.closeForm();
     },
-    open: !readOnly && open && mode === 'insert',
+    open,
     ...linkFloatingOptions,
   });
+  const dismiss = useDismiss(floating.context, { escapeKey: false });
+  const { getFloatingProps } = useInteractions([dismiss]);
+  const floatingRef = useComposedRef(floating.refs.setFloating);
+  const floatingElement = floating.elements.floating;
 
   React.useEffect(() => {
+    const current = store.get('ui');
+
     if (readOnly) {
-      if (store.get().openEditorId === editor.id) api.hide();
+      if (current.kind !== 'closed' && current.editorId === editor.id) {
+        api.hide();
+      }
 
       return;
     }
+    if (selectedLinkKey !== null) {
+      if (current.kind === 'closed') {
+        store.set({ ui: { editorId: editor.id, kind: 'view' } });
+      }
 
-    if (selectedLinkKey) {
-      api.show('edit', editor.id);
       return;
     }
-    if (store.get().mode === 'edit') api.hide();
+    if (current.kind === 'view') api.hide();
   }, [api, editor, readOnly, selectedLinkKey, store]);
-
-  const editDismiss = useDismiss(editFloating.context, {
-    escapeKey: false,
-  });
-  const insertDismiss = useDismiss(insertFloating.context, {
-    escapeKey: false,
-  });
-  const editInteractions = useInteractions([editDismiss]);
-  const insertInteractions = useInteractions([insertDismiss]);
-  const floatingElement =
-    mode === 'insert'
-      ? insertFloating.elements.floating
-      : editFloating.elements.floating;
 
   React.useEffect(() => {
     const ownerDocument = floatingElement?.ownerDocument;
@@ -410,43 +649,168 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     };
   }, [api, floatingElement]);
 
-  const editButtonProps = { onClick: api.triggerEdit };
-  const onFloatingKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Escape' || event.nativeEvent.isComposing) return;
-    event.preventDefault();
-    event.stopPropagation();
-    if (!api.closeForm()) api.hide();
-    editor.api.dom.focus();
-  };
-  const onFloatingBlur = (event: React.FocusEvent<HTMLDivElement>) => {
-    const focusLeftForm =
-      event.relatedTarget !== null &&
-      !event.currentTarget.contains(event.relatedTarget);
+  if (!open) return null;
 
-    if (focusLeftForm) api.closeForm();
-  };
-  const editProps = {
-    onBlur: onFloatingBlur,
-    onKeyDown: onFloatingKeyDown,
-    style: { ...editFloating.style, zIndex: 50 },
-  };
-  const editRef = useComposedRef(editFloating.refs.setFloating);
-  const unlinkButtonProps = {
-    onClick: () => {
-      update.unwrap();
-      api.hide();
-      editor.api.dom.focus();
-    },
-    onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault();
-    },
-  };
-  const insertProps = {
-    onBlur: onFloatingBlur,
-    onKeyDown: onFloatingKeyDown,
-    style: { ...insertFloating.style, zIndex: 50 },
-  };
-  const insertRef = useComposedRef(insertFloating.refs.setFloating);
+  return (
+    <div
+      ref={floatingRef}
+      className={cn(popoverVariants(), formOpen && 'p-0')}
+      {...getFloatingProps({
+        onBlur: (event: React.FocusEvent<HTMLDivElement>) => {
+          const focusLeftForm =
+            event.relatedTarget !== null &&
+            !event.currentTarget.contains(event.relatedTarget);
+
+          if (focusLeftForm) api.closeForm();
+        },
+        onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => {
+          if (event.key !== 'Escape' || event.nativeEvent.isComposing) return;
+          event.preventDefault();
+          event.stopPropagation();
+          if (!api.closeForm()) api.hide();
+          editor.api.dom.focus();
+        },
+        style: { ...floating.style, zIndex: 50 },
+      })}
+    >
+      {ui.kind === 'form' ? (
+        <LinkForm
+          key={`${ui.mode}:${ui.linkKey ?? ''}`}
+          shown={floating.shown && !!geometry}
+        />
+      ) : (
+        selectedLink && (
+          <LinkActions
+            key={selectedLink.key}
+            editable={selectedLink.editable}
+            url={selectedLink.url}
+          />
+        )
+      )}
+    </div>
+  );
+}
+
+function LinkActions({ editable, url }: { editable: boolean; url: string }) {
+  const { api } = useEditor().plugin(linkPlugin);
+  const allowedSchemes = usePluginStore(linkPlugin, 'allowedSchemes');
+  const [copied, setCopied] = React.useState(false);
+  const href = getLinkHref(url, { allowedSchemes });
+  const shownUrl = api.decodeUrl(url);
+
+  React.useEffect(() => {
+    if (!copied) return undefined;
+
+    const timeout = globalThis.setTimeout(() => {
+      setCopied(false);
+    }, 1500);
+
+    return () => {
+      globalThis.clearTimeout(timeout);
+    };
+  }, [copied]);
+
+  return (
+    <div className="box-content flex max-w-[calc(100vw-16px)] items-center gap-0.5">
+      {href === undefined ? (
+        <span
+          className="max-w-[240px] truncate px-2 text-sm text-muted-foreground"
+          title={shownUrl}
+        >
+          {shownUrl}
+        </span>
+      ) : (
+        <a
+          className={cn(
+            buttonVariants({ size: 'sm', variant: 'ghost' }),
+            'min-w-0 max-w-[240px] justify-start font-normal'
+          )}
+          href={href}
+          rel="noopener noreferrer"
+          target="_blank"
+          title={shownUrl}
+          onFocus={(event) => {
+            event.stopPropagation();
+          }}
+          onMouseOver={(event) => {
+            event.stopPropagation();
+          }}
+        >
+          <ExternalLink />
+          <span className="sr-only">Open link in a new tab: </span>
+          <span className="truncate">{shownUrl}</span>
+        </a>
+      )}
+
+      <Separator className="mx-0.5 h-5" orientation="vertical" />
+
+      <Button
+        aria-label="Copy link"
+        size="icon-sm"
+        type="button"
+        variant="ghost"
+        onClick={() => {
+          void navigator.clipboard.writeText(url).then(
+            () => {
+              setCopied(true);
+            },
+            () => {
+              setCopied(false);
+            }
+          );
+        }}
+        onMouseDown={preventFocusLoss}
+      >
+        {copied ? <Check /> : <Copy />}
+      </Button>
+      <span className="sr-only" role="status">
+        {copied ? 'Link copied' : ''}
+      </span>
+
+      {editable && (
+        <>
+          <Button
+            aria-label="Edit link"
+            size="sm"
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              api.triggerEdit();
+            }}
+          >
+            <Pencil />
+            Edit
+          </Button>
+          <Button
+            aria-label="Remove link"
+            size="icon-sm"
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              api.unlink();
+            }}
+            onMouseDown={preventFocusLoss}
+          >
+            <Unlink />
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}
+
+function LinkForm({ shown }: { shown: boolean }) {
+  const { api, store } = useEditor().plugin(linkPlugin);
+  const ui = usePluginStore(linkPlugin, 'ui');
+  const errorId = React.useId();
+  const urlInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (shown) urlInputRef.current?.focus({ preventScroll: true });
+  }, [shown]);
+
+  if (ui.kind !== 'form') return null;
+
   const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (
       event.key !== 'Enter' ||
@@ -461,127 +825,90 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     event.stopPropagation();
     api.submit();
   };
-  const urlInputRef = React.useRef<HTMLInputElement>(null);
-  const shouldFocusUrlInput =
-    !readOnly &&
-    open &&
-    !!geometry &&
-    ((mode === 'insert' && insertFloating.shown) ||
-      (mode === 'edit' && isEditing && editFloating.shown));
 
-  React.useEffect(() => {
-    if (shouldFocusUrlInput) {
-      urlInputRef.current?.focus({ preventScroll: true });
-    }
-  }, [shouldFocusUrlInput]);
-
-  if (readOnly || !open) return null;
-
-  const input = (
+  return (
     <div className="flex w-[330px] max-w-[calc(100vw-16px)] flex-col">
       <div className="flex items-center">
-        <div className="flex items-center ps-2 pe-1 text-muted-foreground">
+        <div
+          className={cn(
+            'flex items-center ps-2 pe-1 text-muted-foreground',
+            ui.error && 'text-destructive'
+          )}
+        >
           <Link className="size-4" />
         </div>
 
-        <FloatingLinkUrlInput
+        <FloatingLinkInput
           ref={urlInputRef}
-          className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
+          aria-describedby={ui.error ? errorId : undefined}
+          aria-invalid={Boolean(ui.error)}
+          aria-label="Link"
+          autoCapitalize="none"
+          autoCorrect="off"
+          enterKeyHint="go"
+          field="url"
+          inputMode="url"
           placeholder="Paste link"
-          data-editor-keep-selection-visible
+          spellCheck={false}
           onKeyDown={onInputKeyDown}
         />
       </div>
+      {ui.error && (
+        <p
+          className="px-2 pb-1 text-xs text-destructive"
+          id={errorId}
+          role="alert"
+        >
+          {ui.error}
+        </p>
+      )}
       <Separator className="my-1" />
       <div className="flex items-center">
         <div className="flex items-center ps-2 pe-1 text-muted-foreground">
           <Text className="size-4" />
         </div>
-        <FloatingLinkTextInput
-          className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
+        <FloatingLinkInput
+          aria-label="Text to display"
+          enterKeyHint="go"
+          field="text"
           placeholder="Text to display"
-          data-editor-keep-selection-visible
           onKeyDown={onInputKeyDown}
         />
       </div>
-    </div>
-  );
+      <div className="flex items-center justify-between gap-2 border-t px-2 py-1">
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+          <input
+            checked={ui.newTab}
+            className="size-3.5 accent-primary"
+            type="checkbox"
+            onChange={(event) => {
+              const current = store.get('ui');
 
-  const editContent = isEditing ? (
-    input
-  ) : (
-    <div className="box-content flex items-center">
-      <Button size="sm" type="button" variant="ghost" {...editButtonProps}>
-        Edit link
-      </Button>
+              if (current.kind !== 'form') return;
 
-      <Separator orientation="vertical" />
-
-      <LinkOpenButton />
-
-      <Separator orientation="vertical" />
-
-      <Button size="sm" type="button" variant="ghost" {...unlinkButtonProps}>
-        <Unlink />
-      </Button>
-    </div>
-  );
-
-  if (mode === 'insert') {
-    return (
-      <div
-        ref={insertRef}
-        className={cn(popoverVariants(), 'p-0')}
-        {...insertInteractions.getFloatingProps(insertProps)}
-      >
-        {input}
+              store.set({
+                ui: {
+                  ...current,
+                  newTab: event.target.checked,
+                  newTabDirty: true,
+                },
+              });
+            }}
+          />
+          Open in new tab
+        </label>
+        <Button
+          size="xs"
+          type="button"
+          onClick={() => {
+            api.submit();
+          }}
+          onMouseDown={preventFocusLoss}
+        >
+          Apply
+        </Button>
       </div>
-    );
-  }
-
-  return (
-    <div
-      ref={editRef}
-      className={cn(popoverVariants(), isEditing && 'p-0')}
-      {...editInteractions.getFloatingProps(editProps)}
-    >
-      {editContent}
     </div>
-  );
-}
-
-function LinkOpenButton() {
-  const editor = useEditor();
-  const link = useEditorSelector(
-    (innerEditor) => innerEditor.read.nodes.find({ type: linkPlugin })?.[0],
-    {
-      dependsOn: ['selection', 'document'],
-    }
-  );
-  const attributes = usePluginStore(
-    linkPlugin,
-    () => (link ? editor.plugin(linkPlugin).api.getAttributes(link) : {}),
-    { equalityFn: sameAttributes }
-  );
-
-  return (
-    <a
-      {...attributes}
-      className={buttonVariants({
-        size: 'sm',
-        variant: 'ghost',
-      })}
-      onMouseOver={(e) => {
-        e.stopPropagation();
-      }}
-      onFocus={(e) => {
-        e.stopPropagation();
-      }}
-      aria-label="Open link in a new tab"
-      target="_blank"
-    >
-      <ExternalLink />
-    </a>
   );
 }
 

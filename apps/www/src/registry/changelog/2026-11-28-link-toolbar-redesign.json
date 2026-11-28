@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-link-toolbar-redesign",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-link-toolbar-redesign.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Show the link destination with copy and remove actions, and save bare domains from the link form",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-static",
+      "files": ["apps/www/src/registry/components/editor/link-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/link-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-link-destination-copy-remove-actions-d1d9cd18",
+      "kind": "behavior",
+      "summary": "The link toolbar shows the destination as a link that opens in a new tab, with Copy link, Edit link and Remove link buttons, and hides Edit and Remove on a locked block or a link a pending suggestion removes.",
+      "details": [],
+      "migrationNotes": [
+        "linkPlugin keeps its floating state in one ui field ({ kind: 'closed' | 'view' | 'form' }); the mode, isEditing, openEditorId, url, text and newTab fields, api.show, api.reset and the isOpen selector are gone. Open the form with api.trigger({ focused: true })."
+      ],
+      "targets": ["link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-link-toolbar-redesign",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-link-form-normalize-validate-7c41a2e0",
+      "kind": "behavior",
+      "summary": "The link form saves `example.com` as `https://example.com`, `localhost:3000` as `http://localhost:3000` and `name@example.com` as `mailto:name@example.com`, shows an inline error for an address it cannot save, and adds an Open in new tab toggle and an Apply button.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-link-toolbar-redesign",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-link-shortcut-mod-click-3e9b51f4",
+      "kind": "behavior",
+      "summary": "Mod+K over a selection inside a link opens Edit link, Mod+K over text that holds links opens Insert link and replaces them with one link, and Mod+click on a link opens it in a new tab.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-link-toolbar-redesign",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-link-underline-color-5a0c8d62",
+      "kind": "fix",
+      "summary": "The link underline follows the link's text color, including in suggestions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link", "link-static"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-link-toolbar-redesign",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-link-toolbar-buttons-trigger-b28f6c13",
+      "kind": "behavior",
+      "summary": "The Link buttons open Edit link on a link and Insert link elsewhere, and leave the link item out when only the bare `LinkPlugin` is installed.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link-toolbar-button", "insert-toolbar-button"],
+      "source": {
+        "line": 30,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-link-toolbar-redesign",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-floating-toolbar-link-form-9d27e4a5",
+      "kind": "fix",
+      "summary": "The touch keyboard toolbar stays up while the caret is in a link and gives way only to the link form, and the floating toolbar works without `linkPlugin`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 34,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-link-toolbar-redesign",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

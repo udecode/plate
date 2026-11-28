@@ -113,15 +113,61 @@ export function FloatingToolbar({ children }: { children?: React.ReactNode }) {
   );
   const touch = useCoarsePointer();
 
+  const editor = useEditor();
+  // A bare LinkPlugin, or no link at all, has no link form to yield to.
+  const linkInstalled = editor.plugin(linkPlugin).installed;
+
   if (hasNodeSelection) return null;
 
   const buttons =
     children === undefined ? <FloatingToolbarButtons /> : children;
 
-  return touch ? (
-    <KeyboardToolbar>{buttons}</KeyboardToolbar>
+  if (touch) {
+    return linkInstalled ? (
+      <LinkAwareKeyboardToolbar>{buttons}</LinkAwareKeyboardToolbar>
+    ) : (
+      <KeyboardToolbar isFloatingLinkOpen={false}>{buttons}</KeyboardToolbar>
+    );
+  }
+
+  return linkInstalled ? (
+    <LinkAwareTextFloatingToolbar>{buttons}</LinkAwareTextFloatingToolbar>
   ) : (
-    <TextFloatingToolbar>{buttons}</TextFloatingToolbar>
+    <TextFloatingToolbar isFloatingLinkOpen={false}>
+      {buttons}
+    </TextFloatingToolbar>
+  );
+}
+
+// The keyboard bar stays while the caret sits in a link and yields only to the
+// link form, which needs the space above the keyboard.
+function LinkAwareKeyboardToolbar({ children }: { children: React.ReactNode }) {
+  const isFloatingLinkOpen = usePluginStore(
+    linkPlugin,
+    (state) => 'ui' in state && state.ui.kind === 'form'
+  );
+
+  return (
+    <KeyboardToolbar isFloatingLinkOpen={isFloatingLinkOpen}>
+      {children}
+    </KeyboardToolbar>
+  );
+}
+
+function LinkAwareTextFloatingToolbar({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const isFloatingLinkOpen = usePluginStore(
+    linkPlugin,
+    (state) => 'ui' in state && state.ui.kind !== 'closed'
+  );
+
+  return (
+    <TextFloatingToolbar isFloatingLinkOpen={isFloatingLinkOpen}>
+      {children}
+    </TextFloatingToolbar>
   );
 }
 
@@ -163,12 +209,17 @@ function readViewportBottom() {
 }
 
 // A page cannot move the phone's own selection menu, which opens above the selection, and iOS gives it no way to hide it, so touch screens dock the toolbar above the keyboard.
-function KeyboardToolbar({ children }: { children: React.ReactNode }) {
+function KeyboardToolbar({
+  children,
+  isFloatingLinkOpen,
+}: {
+  children: React.ReactNode;
+  isFloatingLinkOpen: boolean;
+}) {
   const editor = useEditor();
   const editableRef = useEditableRef();
   const editorFocused = useEditorFocused();
   const readOnly = useEditorReadOnly();
-  const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
   const [ownedOverlayOpen, setOwnedOverlayOpen] = React.useState(false);
   const [barFocused, setBarFocused] = React.useState(false);
@@ -353,10 +404,15 @@ function KeyboardToolbar({ children }: { children: React.ReactNode }) {
   );
 }
 
-function TextFloatingToolbar({ children }: { children: React.ReactNode }) {
+function TextFloatingToolbar({
+  children,
+  isFloatingLinkOpen,
+}: {
+  children: React.ReactNode;
+  isFloatingLinkOpen: boolean;
+}) {
   const editableRef = useEditableRef();
   const editorFocused = useEditorFocused();
-  const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
   const [selectionRange, setSelectionRange] = React.useState<Range | null>(
     null

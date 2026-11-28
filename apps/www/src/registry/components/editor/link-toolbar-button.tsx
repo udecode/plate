@@ -12,34 +12,28 @@ export function LinkToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
   const editor = useEditor();
-  const { api } = useEditor().plugin(linkPlugin);
-  const pressed = useEditorSelector((innerEditor) => {
-    const selection = innerEditor.read.selection();
+  const portal = editor.plugin(linkPlugin);
+  // A bare LinkPlugin has no link form to open.
+  const canTrigger = portal.installed && 'trigger' in portal.api;
+  const pressed = useEditorSelector(
+    (innerEditor) =>
+      canTrigger &&
+      !!innerEditor.read.selection() &&
+      innerEditor.read.nodes.some({ type: linkPlugin })
+  );
 
-    return !!selection && innerEditor.read.nodes.some({ type: linkPlugin });
-  });
+  if (!canTrigger) return null;
 
   return (
     <ToolbarButton
       {...props}
       pressed={pressed}
       onClick={() => {
-        if (pressed) {
-          if (!editor.read.selection()) return;
+        const current = editor.plugin(linkPlugin);
 
-          const node = editor.read.nodes.find({
-            type: linkPlugin,
-          });
-
-          if (!node) return;
-
-          const endPoint = editor.read.points.end(node[1]);
-
-          if (endPoint) editor.update.selection.set(endPoint);
-        } else {
-          editor.api.dom.focus();
-          api.trigger({ focused: true });
-        }
+        if (!current.installed || !('trigger' in current.api)) return;
+        if (!editor.read.view.isFocused()) editor.api.dom.focus();
+        current.api.trigger({ focused: true });
       }}
       data-editor-keep-selection-visible
       tooltip="Link"

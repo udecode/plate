@@ -466,7 +466,7 @@ function getGroups(editor: Editor): Group[] {
     });
   }
 
-  if (link.installed) {
+  if (link.installed && 'trigger' in link.api) {
     inline.push({
       focusEditor: false,
       icon: <Link2Icon />,
@@ -475,10 +475,15 @@ function getGroups(editor: Editor): Group[] {
       onSelect: () => {
         const current = editor.plugin(linkPlugin);
 
-        if (!current.installed || editor.read.view.isReadOnly()) return;
+        if (
+          !current.installed ||
+          !('trigger' in current.api) ||
+          editor.read.view.isReadOnly()
+        ) {
+          return;
+        }
 
-        current.store.set({ text: editor.read.text.string() });
-        current.api.show('insert', editor.id);
+        current.api.trigger({ focused: true });
       },
     });
   }

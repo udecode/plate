@@ -1,0 +1,34 @@
+---
+id: 2026-11-28-link-toolbar-redesign
+date: 2026-11-28
+status: draft
+kind: behavior
+summary: 'Show the link destination with copy and remove actions, and save bare domains from the link form'
+change: { 'type': 'source', 'date': '2026-11-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-28-link-destination-copy-remove-actions-d1d9cd18","kind":"behavior","migrationNotes":["linkPlugin keeps its floating state in one ui field ({ kind: 'closed' | 'view' | 'form' }); the mode, isEditing, openEditorId, url, text and newTab fields, api.show, api.reset and the isOpen selector are gone. Open the form with api.trigger({ focused: true })."]} -->
+
+- **`link`**: The link toolbar shows the destination as a link that opens in a new tab, with Copy link, Edit link and Remove link buttons, and hides Edit and Remove on a locked block or a link a pending suggestion removes.
+
+<!-- entry: {"id":"2026-11-28-link-form-normalize-validate-7c41a2e0","kind":"behavior","migrationNotes":[]} -->
+
+- **`link`**: The link form saves `example.com` as `https://example.com`, `localhost:3000` as `http://localhost:3000` and `name@example.com` as `mailto:name@example.com`, shows an inline error for an address it cannot save, and adds an Open in new tab toggle and an Apply button.
+
+<!-- entry: {"id":"2026-11-28-link-shortcut-mod-click-3e9b51f4","kind":"behavior","migrationNotes":[]} -->
+
+- **`link`**: Mod+K over a selection inside a link opens Edit link, Mod+K over text that holds links opens Insert link and replaces them with one link, and Mod+click on a link opens it in a new tab.
+
+<!-- entry: {"id":"2026-11-28-link-underline-color-5a0c8d62","kind":"fix","migrationNotes":[]} -->
+
+- **`link`**, **`link-static`**: The link underline follows the link's text color, including in suggestions.
+
+<!-- entry: {"id":"2026-11-28-link-toolbar-buttons-trigger-b28f6c13","kind":"behavior","migrationNotes":[]} -->
+
+- **`link-toolbar-button`**, **`insert-toolbar-button`**: The Link buttons open Edit link on a link and Insert link elsewhere, and leave the link item out when only the bare `LinkPlugin` is installed.
+
+<!-- entry: {"id":"2026-11-28-floating-toolbar-link-form-9d27e4a5","kind":"fix","migrationNotes":[]} -->
+
+- **`floating-toolbar`**: The touch keyboard toolbar stays up while the caret is in a link and gives way only to the link form, and the floating toolbar works without `linkPlugin`.

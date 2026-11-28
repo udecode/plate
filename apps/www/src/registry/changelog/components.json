@@ -149,6 +149,7 @@
     ],
     "insert-toolbar-button": [
       "2026-11-28-column-resize-unwrap-and-entrypoint",
+      "2026-11-28-link-toolbar-redesign",
       "2026-11-23-media-embed-gaps",
       "2026-11-21-block-menus-disable-refused-items",
       "2026-11-19-rtl-editor-ui",
@@ -213,6 +214,7 @@
     ],
     "link": [
       "2026-11-28-fix-link-dismiss-and-diagram-mount",
+      "2026-11-28-link-toolbar-redesign",
       "2026-11-27-selector-depends-on",
       "2026-11-20-caret-slot-toolbars",
       "2026-11-19-rtl-editor-ui",
@@ -468,6 +470,51 @@
     "prompt-editor": [
       "2026-11-28-inline-combobox-trigger-props",
       "2026-11-21-prompt-editor"
+    ],
+    "link-static": [
+      "2026-11-28-link-toolbar-redesign",
+      "2026-10-08-registry-install-dependencies",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "link-toolbar-button": [
+      "2026-11-28-link-toolbar-redesign",
+      "2026-11-18-registry-icon-library",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families"
+    ],
+    "floating-toolbar": [
+      "2026-11-28-link-toolbar-redesign",
+      "2026-11-27-use-no-scrollbar",
+      "2026-11-26-keyboard-bar-keeps-caret-above",
+      "2026-11-25-keyboard-bar-keeps-focus",
+      "2026-11-24-floating-toolbar-touch-dock",
+      "2026-11-23-fix-toolbar-menu-checks",
+      "2026-11-20-caret-slot-toolbars",
+      "2026-11-20-drop-editor-selection-view",
+      "2026-11-18-ai-menu-acts-on-board-note-text",
+      "2026-11-18-floating-rect-hides-clipped-text",
+      "2026-11-18-registry-icon-library",
+      "2026-11-18-toolbars-act-on-board-note-text",
+      "2026-11-13-platform-shortcut-labels",
+      "2026-10-26-floating-toolbar-safari-menus",
+      "2026-10-21-floating-toolbar-menu-press",
+      "2026-10-19-strikethrough-shortcut-hint",
+      "2026-09-26-floating-toolbar-retained-selections",
+      "2026-09-08-editor-ui-lifetime",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-inline-component-props",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-26-fix-comment-popover-position",
+      "2026-08-24-preserve-toolbar-focus",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
     ],
     "indent-toolbar-button": [
       "2026-11-28-list-indent-api-and-task-ui",
@@ -1001,38 +1048,6 @@
       "2026-08-16-direct-react-component-families",
       "2026-07-23-rich-media-caption-children"
     ],
-    "floating-toolbar": [
-      "2026-11-27-use-no-scrollbar",
-      "2026-11-26-keyboard-bar-keeps-caret-above",
-      "2026-11-25-keyboard-bar-keeps-focus",
-      "2026-11-24-floating-toolbar-touch-dock",
-      "2026-11-23-fix-toolbar-menu-checks",
-      "2026-11-20-caret-slot-toolbars",
-      "2026-11-20-drop-editor-selection-view",
-      "2026-11-18-ai-menu-acts-on-board-note-text",
-      "2026-11-18-floating-rect-hides-clipped-text",
-      "2026-11-18-registry-icon-library",
-      "2026-11-18-toolbars-act-on-board-note-text",
-      "2026-11-13-platform-shortcut-labels",
-      "2026-10-26-floating-toolbar-safari-menus",
-      "2026-10-21-floating-toolbar-menu-press",
-      "2026-10-19-strikethrough-shortcut-hint",
-      "2026-09-26-floating-toolbar-retained-selections",
-      "2026-09-08-editor-ui-lifetime",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-inline-component-props",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-26-fix-comment-popover-position",
-      "2026-08-24-preserve-toolbar-focus",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
-    ],
     "suggestion-colors": ["2026-11-26-suggestion-colors"],
     "suggestion-style": [
       "2026-11-26-suggestion-colors",
@@ -1465,12 +1480,6 @@
       "2026-11-18-registry-icon-library",
       "2026-11-17-format-painter"
     ],
-    "link-toolbar-button": [
-      "2026-11-18-registry-icon-library",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families"
-    ],
     "markdown-streaming-demo": [
       "2026-11-18-registry-icon-library",
       "2026-11-17-cn-package",
@@ -1845,10 +1854,6 @@
     "tabbable": [
       "2026-10-11-tabbable-kit-view-caret",
       "2026-09-01-plugin-render-contract",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "link-static": [
-      "2026-10-08-registry-install-dependencies",
       "2026-08-17-flat-editor-registry"
     ],
     "markdown-joiner-transform": [

@@ -259,6 +259,30 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-link-toolbar-redesign",
+      "href": "/registry/changelog/2026-11-28-link-toolbar-redesign.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Show the link destination with copy and remove actions, and save bare domains from the link form",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "link",
+        "link-static",
+        "link-toolbar-button",
+        "insert-toolbar-button",
+        "floating-toolbar"
+      ],
+      "entries": 6,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-list-indent-api-and-task-ui",
       "href": "/registry/changelog/2026-11-28-list-indent-api-and-task-ui.json",
       "status": "draft",

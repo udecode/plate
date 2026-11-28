@@ -9,7 +9,7 @@ export function LinkElementStatic(
     <EditorElement
       {...props}
       as="a"
-      className="font-medium text-primary underline decoration-primary underline-offset-4"
+      className="font-medium text-primary underline underline-offset-4"
       attributes={{
         ...props.attributes,
         ...props.editor.plugin(BaseLinkPlugin).api.getAttributes(props.element),
