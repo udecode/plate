@@ -11,7 +11,7 @@ import {
 import type { JsonNode } from '../../core/change/tokens';
 import type { PropertyModification } from '../../core/change/transform';
 import type { CommandProjection } from '../../core/command-document';
-import { carriesDefault } from '../../core/default-storage';
+import { carriesContentMark, carriesDefault } from '../../core/default-storage';
 import {
   type CompiledEditorSchema,
   uniquePropertiesOf,
@@ -141,7 +141,8 @@ export const carriedJudge = (
     root: string,
     node: JsonNode,
     key: string,
-    at: number | null
+    at: number | null,
+    forbidsContentMarks = false
   ) => {
     if (at === null) return false;
 
@@ -151,16 +152,16 @@ export const carriedJudge = (
     return (
       !!document &&
       entry?.from === at &&
-      carriesDefault(schema, { at, document, root }, node, key) &&
+      (carriesDefault(schema, { at, document, root }, node, key) ||
+        (forbidsContentMarks &&
+          carriesContentMark(schema, { at, document, root }, node, key))) &&
       settled(document, entry.path, key)
     );
   };
-  const misplaced = (
+  const effectiveAncestorTypes = (
     index: DocumentIndex,
-    entry: IndexedNodeRange,
-    root: string
-  ): readonly string[] => {
-    const node = index.node(entry.path);
+    entry: IndexedNodeRange
+  ) => {
     const types: string[] = [];
 
     // The writer's own pending unwrap lifts the children out of the element
@@ -176,6 +177,29 @@ export const carriedJudge = (
         types.push(String(ancestor.type));
       }
     }
+
+    return types;
+  };
+  const forbidsContentMarksAt = (
+    index: DocumentIndex,
+    entry: IndexedNodeRange
+  ) => {
+    if (entry.kind !== 'text') return false;
+
+    const parentType = effectiveAncestorTypes(index, entry)[0];
+
+    return (
+      parentType !== undefined &&
+      schema.elements.byType.get(parentType)?.behavior.contentMarks === false
+    );
+  };
+  const misplaced = (
+    index: DocumentIndex,
+    entry: IndexedNodeRange,
+    root: string
+  ): readonly string[] => {
+    const node = index.node(entry.path);
+    const types = effectiveAncestorTypes(index, entry);
 
     const held = heldProps(schema, node, {
       outerTypes: types.slice(1),
@@ -275,7 +299,15 @@ export const carriedJudge = (
               ? input.projection.map.toStored(root, drop.place.at, 1)
               : drop.place.at;
 
-        if (!carriedFrom(root, plain.node(source.path), drop.key, formerAt)) {
+        if (
+          !carriedFrom(
+            root,
+            plain.node(source.path),
+            drop.key,
+            formerAt,
+            forbidsContentMarksAt(plain, source)
+          )
+        ) {
           continue;
         }
 
@@ -331,8 +363,10 @@ export const carriedJudge = (
                 )
               : from + offset;
 
+            const forbidsContentMarks = forbidsContentMarksAt(index, entry);
+
             for (const key of keys) {
-              if (carriedFrom(root, node, key, formerAt)) {
+              if (carriedFrom(root, node, key, formerAt, forbidsContentMarks)) {
                 add(found, entry, node, key);
               }
             }
@@ -414,8 +448,18 @@ export const carriedJudge = (
               ? mapRootChangePositionBackward(composed, position, 1)
               : splitRestSource(entry);
 
+            const forbidsContentMarks = forbidsContentMarksAt(index, entry);
+
             for (const key of keys) {
-              if (carriedFrom(root, node, key, formerAt ?? null)) {
+              if (
+                carriedFrom(
+                  root,
+                  node,
+                  key,
+                  formerAt ?? null,
+                  forbidsContentMarks
+                )
+              ) {
                 add(found, entry, node, key);
               }
             }

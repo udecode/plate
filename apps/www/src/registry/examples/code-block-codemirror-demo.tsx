@@ -5,7 +5,10 @@ import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
-import { CodeBlockCodeMirrorElement } from '@/registry/components/editor/code-block-codemirror';
+import {
+  CodeBlockCodeMirrorElement,
+  resolveCodeMirrorLanguage,
+} from '@/registry/components/editor/code-block-codemirror';
 import { createCodeBlockPlugin } from '@/registry/components/editor/code-block-container';
 import {
   Editor,
@@ -19,7 +22,9 @@ import { hugeCodeBlockValue } from './values/huge-code-block-value';
 const plugins = [
   ...BasicBlocksKit,
   ...BasicMarksKit,
-  createCodeBlockPlugin(CodeBlockCodeMirrorElement),
+  createCodeBlockPlugin(CodeBlockCodeMirrorElement, {
+    normalizeLanguage: resolveCodeMirrorLanguage,
+  }),
   ...ExitBreakKit,
   TrailingBlockPlugin,
 ];

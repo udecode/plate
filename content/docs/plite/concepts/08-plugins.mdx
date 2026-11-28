@@ -374,7 +374,9 @@ const createCommentsPlugin = (prefix: string) =>
 ```
 
 Element declarations can describe `inline`, `void`, `atom`, `isolating`,
-`object`, `readOnly`, `selectable`, and `markableVoid` behavior.
+`object`, `readOnly`, `selectable`, `markableVoid`, and `contentMarks` behavior
+(setting `contentMarks: false` rejects `role: "content"` formatting marks on
+direct text children while keeping `role: "metadata"` text properties allowed).
 See [Selection And DOM](16-selection-and-dom#object-elements-with-editable-children) and
 [Roots](13-roots#content-roots) for the associated selection and root laws.
 

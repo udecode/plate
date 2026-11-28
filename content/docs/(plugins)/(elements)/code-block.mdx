@@ -109,18 +109,45 @@ This preview contains 1,000 lines. [Open the 10,000-line stress test](/blocks/co
 
 <ComponentSource name="code-block-codemirror" />
 
-For an editor whose code blocks all use CodeMirror, replace the component and omit the Lowlight plugin:
+`code-block-codemirror` depends on `code-block-container` and `code-block-languages` instead of `code-block`, so installing it does not add `lowlight`. For an editor whose code blocks all use CodeMirror without Lowlight, compose the plugin directly with `createCodeBlockPlugin`:
+
+```tsx
+import { TrailingBlockPlugin } from 'platejs';
+
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
+import {
+  CodeBlockCodeMirrorElement,
+  resolveCodeMirrorLanguage,
+} from '@/components/editor/code-block-codemirror';
+import { createCodeBlockPlugin } from '@/components/editor/code-block-container';
+import { ExitBreakKit } from '@/components/editor/exit-break';
+
+export const LargeCodeEditorKit = [
+  ...BasicBlocksKit,
+  ...BasicMarksKit,
+  createCodeBlockPlugin(CodeBlockCodeMirrorElement, {
+    normalizeLanguage: resolveCodeMirrorLanguage,
+  }),
+  ...ExitBreakKit,
+  TrailingBlockPlugin,
+];
+```
+
+If your app already installs `EditorKit`, swap the code-block plugin and drop `CodeHighlightPlugin`:
 
 ```tsx
 import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
 import {
   CodeBlockCodeMirrorElement,
+  resolveCodeMirrorLanguage,
 } from '@/components/editor/code-block-codemirror';
-import { createCodeBlockPlugin } from '@/components/editor/code-block';
+import { createCodeBlockPlugin } from '@/components/editor/code-block-container';
 import { EditorKit } from '@/components/editor/plugins';
 
 const codeBlockCodeMirrorPlugin = createCodeBlockPlugin(
-  CodeBlockCodeMirrorElement
+  CodeBlockCodeMirrorElement,
+  { normalizeLanguage: resolveCodeMirrorLanguage }
 );
 
 export const LargeCodeEditorKit = EditorKit
@@ -217,10 +244,8 @@ Wrap the code block component and replace the kit's code-block plugin:
 ```tsx title="components/editor/diagram-editor-kit.tsx"
 import { CodeBlockPlugin } from 'platejs/react';
 
-import {
-  CodeBlockElement,
-  createCodeBlockPlugin,
-} from '@/components/editor/code-block';
+import { CodeBlockElement } from '@/components/editor/code-block';
+import { createCodeBlockPlugin } from '@/components/editor/code-block-container';
 import { withDiagrams } from '@/components/editor/code-block-diagram';
 import { graphvizRenderer } from '@/components/editor/code-block-diagram-graphviz';
 import { mermaidRenderer } from '@/components/editor/code-block-diagram-mermaid';
@@ -343,9 +368,9 @@ Configure each capability where it is owned. `CodeBlockPlugin` owns the multilin
 
 ```tsx
 import { CodeBlockRules } from 'platejs';
-import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
-import { createEditor } from 'platejs/react';
+import { CodeBlockPlugin, CodeHighlightPlugin, createEditor } from 'platejs/react';
 import { CodeBlockElement } from '@/components/editor/code-block';
+import { resolveCodeBlockLanguage } from '@/components/editor/code-block-languages';
 import { createCodeBlockLowlight } from '@/components/editor/code-block-lowlight';
 
 const lowlight = createCodeBlockLowlight();
@@ -355,7 +380,16 @@ const editor = createEditor({
     // ...otherPlugins,
     CodeBlockPlugin.configure({
       component: CodeBlockElement,
-      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
+      inputRules: [
+        CodeBlockRules.markdown({
+          normalizeLanguage: resolveCodeBlockLanguage,
+          on: 'space',
+        }),
+        CodeBlockRules.markdown({
+          normalizeLanguage: resolveCodeBlockLanguage,
+          on: 'break',
+        }),
+      ],
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
     CodeHighlightPlugin.configure({
@@ -390,7 +424,10 @@ const editor = createEditor({
     // ...otherPlugins,
     CodeBlockPlugin.configure({
       component: CodeBlockElement,
-      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
+      inputRules: [
+        CodeBlockRules.markdown({ on: 'space' }),
+        CodeBlockRules.markdown({ on: 'break' }),
+      ],
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
     CodeHighlightPlugin.configure({
@@ -406,12 +443,12 @@ const editor = createEditor({
 - `CodeBlockPlugin.configure({ component })`: Assigns
   [`CodeBlockElement`](/docs/components/code-block) to render code block
   containers.
-- `inputRules`: Registers the triple-backtick fence rule. Use `on: 'match'` to commit when the fence becomes complete or `on: 'break'` to commit on `Enter`.
+- `inputRules`: Registers triple-backtick fence rules. `on: 'space'` commits ```` ```ts ```` on Space (revertible with Backspace), `on: 'break'` commits ```` ```ts ```` on Enter (revertible with undo), and `on: 'match'` commits a bare fence on the closing backtick. Pass `normalizeLanguage` to map fence aliases such as `ts` to `typescript`.
 - `CodeHighlightPlugin.initialState.lowlight`: Lowlight instance for syntax highlighting. The plugin reads the supplied registry without modifying it. The copied `createCodeBlockLowlight()` resource registers the shipped browser-safe Python grammar and its `py`, `gyp`, and `ipython` aliases before the editor uses it.
 - `CodeHighlightPlugin.initialState.defaultLanguage`: Default language when no language is specified.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
 
-Each `codeBlock` contains one text child. Newline characters define physical lines; editing and highlighting derive their line behavior from text offsets.
+Plain code blocks store one newline-bearing text child; multiple text leaves carry review metadata in Suggesting mode. Code blocks set `contentMarks: false`, so formatting marks (`bold`, `italic`, and other content text properties) do not apply inside code blocks while metadata marks (`authored`) remain allowed. Newline characters define physical lines; editing and highlighting derive their line behavior from text offsets.
 
 A code block stores a Markdown fence's language as `language` and the rest of its info string, such as `title="a.ts" {3-5}`, as `meta`. Markdown and HTML keep both. A fence writes `meta` only after a language, so Markdown export reports a `meta` without a `language` as `markdown-property-omitted`.
 

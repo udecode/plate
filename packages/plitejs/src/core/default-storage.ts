@@ -139,3 +139,49 @@ export const carriesDefault = (
     unwrittenAs(property.descriptor, former[key]) === 'left-out'
   );
 };
+
+/**
+ * Whether `node` carried a legal `role: 'content'` text property from `place`,
+ * so moving or merging it into an element with `contentMarks: false` drops the
+ * formatting instead of rejecting the edit.
+ *
+ * @internal
+ */
+export const carriesContentMark = (
+  schema: CompiledEditorSchema,
+  place: FormerPlace | null,
+  node: StoredNode,
+  key: string
+) => {
+  if (!place || placementOf(node) !== 'text') return false;
+
+  const { document } = place;
+  const entry = document.nodeStartingAt(place.at);
+
+  if (entry?.from !== place.at) return false;
+
+  const former = document.node(entry.path);
+
+  if (
+    placementOf(former) !== 'text' ||
+    !Object.hasOwn(former, key) ||
+    !jsonEqual(former[key], node[key])
+  ) {
+    return false;
+  }
+
+  const ancestors: StoredNode[] = [];
+
+  for (let depth = entry.path.length - 1; depth > 0; depth -= 1) {
+    ancestors.push(document.node(entry.path.slice(0, depth)));
+  }
+
+  const property = resolveCompiledSchemaProperty(
+    schema,
+    'text',
+    key,
+    toCompiledNodeContext(former, ancestors, place.root)
+  );
+
+  return property !== null && property.role === 'content';
+};

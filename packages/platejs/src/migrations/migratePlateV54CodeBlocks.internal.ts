@@ -13,6 +13,7 @@ import {
   TextApi,
 } from '../facade';
 import type { DocumentMigrationContext } from './documentMigrations';
+import { isDeclaredMigrationTextProperty } from './documentMigrationTarget.internal';
 import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
 import {
   createRangeMapper,
@@ -64,28 +65,38 @@ export const migratePlateV54CodeBlocks = ({
       offset
     );
   };
-  const isAllowedCodeTextProperty = (key: string) =>
-    Boolean(
-      conversionTarget.schema.property({
-        key,
-        placement: 'text',
-        type: codeBlockType,
-      })
-    );
-  const stripDisallowedCodeText = (child: Text): Text => {
+  const isDisallowedDeclaredCodeTextProperty = (
+    key: string,
+    ancestors: readonly string[],
+    root: string
+  ) =>
+    isDeclaredMigrationTextProperty(conversionTarget, key) &&
+    !conversionTarget.schema.property({
+      ancestors,
+      key,
+      placement: 'text',
+      root: root === MAIN_ROOT_KEY ? null : root,
+      type: codeBlockType,
+    });
+  const stripDisallowedCodeText = (
+    child: Text,
+    ancestors: readonly string[],
+    root: string
+  ): Text => {
     let changed = false;
     const next: Record<string, unknown> = { text: child.text };
 
     for (const [key, value] of Object.entries(child)) {
       if (key === 'text') continue;
-      if (!isAllowedCodeTextProperty(key)) {
+      if (isDisallowedDeclaredCodeTextProperty(key, ancestors, root)) {
         changed = true;
         continue;
       }
       if (key === 'authored' && Array.isArray(value)) {
         const filtered = (value as readonly AuthoredMark[]).filter(
           (mark) =>
-            mark.kind !== 'format' || isAllowedCodeTextProperty(mark.key)
+            mark.kind !== 'format' ||
+            !isDisallowedDeclaredCodeTextProperty(mark.key, ancestors, root)
         );
 
         if (filtered.length !== value.length) {
@@ -105,7 +116,8 @@ export const migratePlateV54CodeBlocks = ({
     input: Descendant,
     location: string,
     path: Path,
-    root: string
+    root: string,
+    ancestors: readonly string[]
   ): Descendant => {
     if (TextApi.isText(input)) return input;
 
@@ -116,7 +128,7 @@ export const migratePlateV54CodeBlocks = ({
       ) {
         let changed = false;
         const children = input.children.map((child) => {
-          const nextChild = stripDisallowedCodeText(child);
+          const nextChild = stripDisallowedCodeText(child, ancestors, root);
 
           if (nextChild !== child) changed = true;
 
@@ -161,11 +173,14 @@ export const migratePlateV54CodeBlocks = ({
       };
     }
 
+    const childAncestors =
+      typeof input.type === 'string' ? [input.type, ...ancestors] : ancestors;
     const children = migrateChildren(
       input.children,
       `${location}.children`,
       path,
-      root
+      root,
+      childAncestors
     );
 
     return children === input.children ? input : { ...input, children };
@@ -175,7 +190,8 @@ export const migratePlateV54CodeBlocks = ({
     children: T,
     location: string,
     parentPath: Path,
-    root: string
+    root: string,
+    ancestors: readonly string[]
   ): T {
     let changed = false;
     const next = children.map((child, index) => {
@@ -183,7 +199,8 @@ export const migratePlateV54CodeBlocks = ({
         child,
         `${location}.${index}`,
         [...parentPath, index],
-        root
+        root,
+        ancestors
       );
 
       if (migrated !== child) changed = true;
@@ -199,7 +216,8 @@ export const migratePlateV54CodeBlocks = ({
       rootChildren,
       root === MAIN_ROOT_KEY ? 'children' : `roots.${root}`,
       [],
-      root
+      root,
+      []
     )
   );
 

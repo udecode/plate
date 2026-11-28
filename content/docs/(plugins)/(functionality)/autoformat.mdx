@@ -99,7 +99,10 @@ const editor = createEditor({
       inputRules: [HorizontalRuleRules.markdown({ variant: '-' })],
     }),
     CodeBlockPlugin.configure({
-      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
+      inputRules: [
+        CodeBlockRules.markdown({ on: 'space' }),
+        CodeBlockRules.markdown({ on: 'break' }),
+      ],
     }),
     ListPlugin.configure({
       inputRules: [

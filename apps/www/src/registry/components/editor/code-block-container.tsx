@@ -399,18 +399,27 @@ function CopyButton({
   );
 }
 
-export const createCodeBlockPlugin = (component: CodeBlockComponent) =>
-  CodeBlockPlugin.configure({
+export const createCodeBlockPlugin = (
+  component: CodeBlockComponent,
+  options?: {
+    normalizeLanguage?: (language: string) => string | undefined;
+  }
+) => {
+  const normalizeLanguage =
+    options?.normalizeLanguage ?? resolveCodeBlockLanguage;
+
+  return CodeBlockPlugin.configure({
     component,
     inputRules: [
       CodeBlockRules.markdown({
-        normalizeLanguage: resolveCodeBlockLanguage,
+        normalizeLanguage,
         on: 'space',
       }),
       CodeBlockRules.markdown({
-        normalizeLanguage: resolveCodeBlockLanguage,
+        normalizeLanguage,
         on: 'break',
       }),
     ],
     shortcuts: { toggle: { keys: 'mod+alt+8' } },
   });
+};

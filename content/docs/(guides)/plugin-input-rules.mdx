@@ -285,36 +285,39 @@ shorthand could close, whether or not that shorthand is enabled. Highlight uses
 
 ### Code blocks
 
-Code blocks are fenced, which makes them different from simple marks or block prefixes. They ship as a **block fence rule**, and you must pass `on` to pick when the fence commits.
+Code blocks are fenced, which makes them different from simple marks or block prefixes. Pass `on` to pick when the fence commits: `'space'`, `'break'`, or `'match'`.
 
 ```tsx showLineNumbers
 import { CodeBlockRules } from 'platejs';
 import { CodeBlockPlugin } from 'platejs/react';
 
+export const FencedCodeBlockPlugin = CodeBlockPlugin.configure({
+  inputRules: [
+    CodeBlockRules.markdown({ on: 'space' }),
+    CodeBlockRules.markdown({ on: 'break' }),
+  ],
+});
+```
+
+`on: 'space'` commits ```` ``` ```` or ```` ```ts ```` when you press Space (and reverts on Backspace). `on: 'break'` commits the same fence when you press Enter (and reverts on undo). Pass `normalizeLanguage` to map fence aliases such as `ts` to `typescript`, or return `undefined` to omit `language`.
+
+```tsx showLineNumbers
 export const ImmediateCodeBlockPlugin = CodeBlockPlugin.configure({
   inputRules: [CodeBlockRules.markdown({ on: 'match' })],
 });
 ```
 
-`on: 'match'` commits the moment the fence text becomes complete — typing the third backtick of the opening fence converts the paragraph to a code block immediately.
-
-```tsx showLineNumbers
-export const DeferredCodeBlockPlugin = CodeBlockPlugin.configure({
-  inputRules: [CodeBlockRules.markdown({ on: 'break' })],
-});
-```
-
-`on: 'break'` waits for you to press Enter after the fence is complete. Same matcher, different commit point.
+`on: 'match'` commits a bare fence as soon as you type its closing backtick.
 
 <Callout>
-**Why `on` is required.** `match` and `break` are meaningfully different UX choices — instant vs deferred. The factory refuses to guess which one you want.
+**Why `on` is required.** `space`, `break`, and `match` are distinct typing behaviors (language-capturing vs immediate bare-fence conversion). The factory requires an explicit choice.
 </Callout>
 
 If you need to suppress code blocks inside a specific context, pass `enabled`:
 
 ```tsx
 const codeBlockRule = CodeBlockRules.markdown({
-  on: 'match',
+  on: 'space',
   enabled: ({ editor }) => !isInsideSomeCustomContainer(editor),
 });
 ```
@@ -365,8 +368,8 @@ export const MathInputRulesKit = [
 ] as const;
 ```
 
-`variant: '$'` is inline — a delimited mark rule. `variant: '$$'` is a block
-fence, so — like `CodeBlockRules` — it takes `on: 'match' | 'break'`. The
+`variant: '$'` is inline (a delimited mark rule). `variant: '$$'` is a block
+fence, so it takes `on: 'match' | 'break'`. The
 example uses `on: 'break'`, which commits the block equation when you press
 Enter after the fence.
 
@@ -1026,7 +1029,7 @@ Every family below is a single export from its package. Each `.markdown()` (or `
 | `ScriptRules` | `platejs` | `~x~` for `'sub'`, `^x^` for `'sup'`, also inside a word as in `H~2~O` |
 | `HighlightRules` | `platejs` | `==x==` / `≡x≡` mark rule |
 | `MarkComboRules` | `platejs` | Multi-mark combo rules (bold/italic/underline) |
-| `CodeBlockRules` | `platejs` | Triple-backtick block fence rule, requires `on` |
+| `CodeBlockRules` | `platejs` | Triple-backtick fence rule with `on: 'space' \| 'break' \| 'match'` and optional `normalizeLanguage` |
 | `BulletedListRules` | `platejs` | `-` / `*` bulleted list rule |
 | `OrderedListRules` | `platejs` | `1.` / `1)` ordered list rule, preserves start number |
 | `TaskListRules` | `platejs` | `[]` / `[x]` task list rule |

@@ -540,7 +540,7 @@ export const defineDocumentMigrations = <
     )
   );
   const target = Object.freeze({ schema }) satisfies DocumentMigrationTarget;
-  registerMigrationBindings(target, compiled.modelBindings);
+  registerMigrationBindings(target, compiled.modelBindings, compiled.schema);
   if (compiled.authored) {
     registerDocumentMigrationAuthoredCapability(
       target,

@@ -1,4 +1,5 @@
 import type {
+  Element,
   Path,
   PluginReference,
   SelectionInputRuleContext,
@@ -7,15 +8,60 @@ import {
   BaseParagraphPlugin,
   createBlockFenceInputRule,
   defineInputRule,
+  PathApi,
+  SelectionApi,
   TextApi,
 } from '../../../core';
+import { canPlaceBlocksAtPath } from '../../../facade';
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
 const WHITESPACE_RE = /\s/;
 
 type CodeBlockFenceMatch = {
+  block: Element;
   language: string | undefined;
   path: Path;
+  root: string | undefined;
+};
+
+const resolveSelectionRoot = (editor: SelectionInputRuleContext['editor']) => {
+  const selection = editor.read.selection();
+
+  return (
+    (selection ? SelectionApi.root(selection) : undefined) ??
+    editor.read.view.root()
+  );
+};
+
+const isUniformFence = (fence: string) =>
+  fence.length > 0 && Array.from(fence).every((char) => char === fence[0]);
+
+const canPlaceCodeBlock = (
+  editor: SelectionInputRuleContext['editor'],
+  path: Path,
+  language: string | undefined,
+  root: string | undefined
+) => {
+  const codeBlockPlugin = editor.plugin(BaseCodeBlockPlugin);
+  const index = path.at(-1);
+
+  if (!codeBlockPlugin.installed || index === undefined) return false;
+
+  return canPlaceBlocksAtPath(
+    editor.read.schema,
+    path,
+    [
+      {
+        children: [{ text: '' }],
+        ...(language ? { language } : {}),
+        type: codeBlockPlugin.schema.type,
+      },
+    ],
+    {
+      removing: [index],
+      root,
+    }
+  );
 };
 
 const resolveCodeBlockFence = (
@@ -51,15 +97,18 @@ const resolveCodeBlockFence = (
     if (blockNode.type !== plugin.schema.type) return undefined;
   }
 
+  const [leaf] = blockNode.children;
+
   if (
     blockNode.children.length !== 1 ||
-    !TextApi.isText(blockNode.children[0])
+    !TextApi.isText(leaf) ||
+    !PathApi.equals(selection.focus.path, [...path, 0]) ||
+    selection.focus.offset !== leaf.text.length
   ) {
     return undefined;
   }
 
-  if (!editor.read.points.isEnd(selection.focus, path)) return undefined;
-
+  const root = resolveSelectionRoot(editor);
   const blockText = context.getBlockStartText();
 
   if (blockText === undefined || !blockText.startsWith(fence)) {
@@ -70,6 +119,7 @@ const resolveCodeBlockFence = (
 
   if (
     WHITESPACE_RE.test(rawLanguage) ||
+    (isUniformFence(fence) && rawLanguage.startsWith(fence[0])) ||
     (fence.includes('`') && rawLanguage.includes('`'))
   ) {
     return undefined;
@@ -81,10 +131,15 @@ const resolveCodeBlockFence = (
         ? normalizeLanguage(rawLanguage)
         : rawLanguage
       : undefined;
+  const language = normalized?.trim() || undefined;
+
+  if (!canPlaceCodeBlock(editor, path, language, root)) return undefined;
 
   return {
-    language: normalized || undefined,
+    block: blockNode,
+    language,
     path,
+    root,
   };
 };
 
@@ -119,28 +174,53 @@ export const CodeBlockRules = {
     if (on === 'match') {
       return createBlockFenceInputRule({
         block,
-        enabled,
+        enabled: (context) => {
+          if (enabled && !enabled(context)) return false;
+
+          const blockEntry = context.getBlockEntry();
+
+          if (!blockEntry) return false;
+
+          const [blockNode, path] = blockEntry;
+
+          if (
+            blockNode.children.length !== 1 ||
+            !TextApi.isText(blockNode.children[0])
+          ) {
+            return false;
+          }
+
+          return canPlaceCodeBlock(
+            context.editor,
+            path,
+            undefined,
+            resolveSelectionRoot(context.editor)
+          );
+        },
         fence,
         on: 'match',
         priority,
-        apply: ({ decline, editor, tx }, match) => {
+        apply: ({ decline, editor, getBlockEntry, tx }, match) => {
+          const root = resolveSelectionRoot(editor);
+          const blockNode = getBlockEntry()?.[0];
+
           if (
             !tx.nodes.replace(
               {
                 children: [{ text: '' }],
                 type: editor.plugin(BaseCodeBlockPlugin).schema.type,
               },
-              { at: match.path }
+              { at: blockNode ?? match.path }
             )
           ) {
             return decline();
           }
 
-          const start = tx.points.start(match.path);
-
-          if (start) {
-            tx.selection.set(start);
-          }
+          tx.selection.set({
+            offset: 0,
+            path: [...match.path, 0],
+            ...(root ? { root } : {}),
+          });
 
           return undefined;
         },
@@ -162,17 +242,17 @@ export const CodeBlockRules = {
                 ...(match.language ? { language: match.language } : {}),
                 type: editor.plugin(BaseCodeBlockPlugin).schema.type,
               },
-              { at: match.path }
+              { at: match.block }
             )
           ) {
             return decline();
           }
 
-          const start = tx.points.start(match.path);
-
-          if (start) {
-            tx.selection.set(start);
-          }
+          tx.selection.set({
+            offset: 0,
+            path: [...match.path, 0],
+            ...(match.root ? { root: match.root } : {}),
+          });
 
           return undefined;
         },
@@ -201,17 +281,17 @@ export const CodeBlockRules = {
               ...(match.language ? { language: match.language } : {}),
               type: editor.plugin(BaseCodeBlockPlugin).schema.type,
             },
-            { at: match.path }
+            { at: match.block }
           )
         ) {
           return decline();
         }
 
-        const start = tx.points.start(match.path);
-
-        if (start) {
-          tx.selection.set(start);
-        }
+        tx.selection.set({
+          offset: 0,
+          path: [...match.path, 0],
+          ...(match.root ? { root: match.root } : {}),
+        });
 
         return undefined;
       },

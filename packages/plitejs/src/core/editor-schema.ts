@@ -147,7 +147,8 @@ import { countCoreWork } from './work';
 type CarriedPropertyHook = (
   path: readonly number[],
   node: Readonly<Record<string, unknown>>,
-  key: string
+  key: string,
+  forbidsContentMarks?: boolean
 ) => boolean;
 
 /**
@@ -3207,7 +3208,7 @@ export const createEditorSchema = <V extends Value = Value>(
     dropMisplaced: boolean,
     openAncestorBoundary = false,
     validationLocation?: EditorSchemaValidationLocation,
-    carried?: (key: string) => boolean,
+    carried?: (key: string, forbidsContentMarks?: boolean) => boolean,
     validationOptions?: Readonly<{
       requireCanonicalDefaults?: boolean;
       requireReservedId?: boolean;
@@ -3294,7 +3295,7 @@ export const createEditorSchema = <V extends Value = Value>(
             output[key] = canonicalizeProperty(key, boundaryProperty, value);
             continue;
           }
-          if (dropMisplaced || carried?.(key)) continue;
+          if (dropMisplaced || carried?.(key, forbidsContentMarks)) continue;
           const message = `Schema ${placement} property "${key}" cannot target ${
             placement === 'text'
               ? `text under "${context.type}"`
@@ -3477,7 +3478,10 @@ export const createEditorSchema = <V extends Value = Value>(
       }
       countCoreWork('canonicalNodes');
       const path = carried ? [...prefix, index] : prefix;
-      const carriedKey = carried && ((key: string) => carried(path, node, key));
+      const carriedKey =
+        carried &&
+        ((key: string, forbidsContentMarks?: boolean) =>
+          carried(path, node, key, forbidsContentMarks));
 
       if (NodeApi.isText(node)) {
         const source = node as unknown as Readonly<Record<string, unknown>>;

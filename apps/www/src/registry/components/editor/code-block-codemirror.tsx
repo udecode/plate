@@ -34,7 +34,10 @@ import {
   CodeBlockContainer,
   type CodeBlockElementProps,
 } from '@/registry/components/editor/code-block-container';
-import { findCodeBlockLanguage } from '@/registry/components/editor/code-block-languages';
+import {
+  findCodeBlockLanguage,
+  resolveCodeBlockLanguage,
+} from '@/registry/components/editor/code-block-languages';
 
 const syntaxColors = syntaxHighlighting(
   HighlightStyle.define([
@@ -48,13 +51,16 @@ const syntaxColors = syntaxHighlighting(
   ])
 );
 
-// Fences store catalog values such as `objectivec`, which CodeMirror only knows by an alias.
+// Fences store catalog values such as `objectivec`, `docker`, or `wasm`, which
+// CodeMirror only knows by value, label, or alias.
 const languageDescription = (name?: string) => {
   if (!name) return null;
 
+  const option = findCodeBlockLanguage(name);
+
   for (const candidate of [
     name,
-    ...(findCodeBlockLanguage(name)?.aliases ?? []),
+    ...(option ? [option.value, option.label, ...(option.aliases ?? [])] : []),
   ]) {
     const description = LanguageDescription.matchLanguageName(
       languages,
@@ -76,6 +82,26 @@ const codeMirrorLanguages = [
     value: name.toLowerCase(),
   })),
 ];
+
+/**
+ * Normalize a typed fence language for CodeMirror, keeping languages that
+ * CodeMirror parses separately (`tsx`, `jsx`, `sass`, `webassembly`) while
+ * still mapping shared aliases (`ts` to `typescript`, `py` to `python`) and
+ * keeping single-word fence slugs (such as `lisp`, `ini`, `properties`).
+ */
+export function resolveCodeMirrorLanguage(raw: string) {
+  const normalized = raw.trim().toLowerCase();
+
+  if (!normalized) return undefined;
+
+  const matched = findCodeBlockLanguage(normalized, codeMirrorLanguages)?.value;
+
+  if (matched && (!matched.includes(' ') || normalized.includes(' '))) {
+    return matched;
+  }
+
+  return resolveCodeBlockLanguage(normalized);
+}
 
 const codeMirrorAdapter = createCodeMirrorAdapter({
   extensions: [

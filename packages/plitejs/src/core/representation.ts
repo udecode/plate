@@ -52,7 +52,7 @@ import {
   ContentSlice as ContentSliceValue,
   getContentSliceCanonicalAuthority,
 } from './content-slice';
-import { carriesDefault } from './default-storage';
+import { carriesContentMark, carriesDefault } from './default-storage';
 import { getEditorSchema } from './editor-runtime';
 import { getCompiledEditorSchemaFromApi } from './editor-schema';
 import { profileCoreDuration } from './profiling';
@@ -100,13 +100,15 @@ type CanonicalizeOptions = Readonly<{
 export type CarriedWindowHook = (
   at: number | null,
   node: Readonly<Record<string, unknown>>,
-  key: string
+  key: string,
+  forbidsContentMarks?: boolean
 ) => boolean;
 
 /**
  * Drops a value its new place cannot hold when the node carried it, as the
- * left-out default, from where it stood when the recording span began, or
- * any such value in a `view`, and records the drop in `drops`.
+ * left-out default, from where it stood when the recording span began, or as a
+ * content mark moved into an element with `contentMarks: false`, or any such
+ * value in a `view`, and records the drop in `drops`.
  *
  * @internal
  */
@@ -126,12 +128,18 @@ export const carriedHook =
   (root: string): CarriedWindowHook => {
     const dropped = new Set<string>();
 
-    return (at, node, key) => {
+    return (at, node, key, forbidsContentMarks = false) => {
       if (at === null) return false;
 
       const place = formerPlace(steps, root, at);
 
-      if (!view && !carriesDefault(schema, place, node, key)) return false;
+      if (
+        !view &&
+        !carriesDefault(schema, place, node, key) &&
+        !(forbidsContentMarks && carriesContentMark(schema, place, node, key))
+      ) {
+        return false;
+      }
 
       const id = `${at}\u0000${key}`;
 
@@ -1390,7 +1398,8 @@ const replaceCanonicalChildWindow = (
     ((
       relative: readonly number[],
       child: Readonly<Record<string, unknown>>,
-      key: string
+      key: string,
+      forbidsContentMarks?: boolean
     ) => {
       const at = [
         ...path,
@@ -1400,7 +1409,8 @@ const replaceCanonicalChildWindow = (
       const drops = carried(
         draftInputAt(draft, draft.document.nodeRange(at).from),
         child,
-        key
+        key,
+        forbidsContentMarks
       );
 
       if (drops && relative.length > 1 && typeof child.text === 'string') {

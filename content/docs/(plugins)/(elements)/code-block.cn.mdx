@@ -98,6 +98,8 @@ Word 导出使用 `docx-export.tsx` 中自己的样式表为代码着色，它�
 
 <ComponentSource name="code-block-codemirror" />
 
+`code-block-codemirror` 依赖 `code-block-container` 和 `code-block-languages`，不依赖 `code-block` 或 `lowlight`。如果应用只用 CodeMirror 渲染代码块，直接用 `createCodeBlockPlugin(CodeBlockCodeMirrorElement, { normalizeLanguage: resolveCodeMirrorLanguage })` 组合插件即可避免引入 Lowlight，同时保留 CodeMirror 独立的 `tsx`、`jsx`、`sass` 和 `webassembly` 解析器。
+
 `platejs/code-block/codemirror` 导出 `createCodeMirrorAdapter`，负责 ExternalText
 投影。适配器应在组件外创建，并通过 `props.slots.externalText` 使用；配置为
 `config: { language }`。此可选入口需要 `@codemirror/language`、
@@ -138,10 +140,8 @@ npx shadcn@latest add @plate/code-block-diagram @plate/code-block-diagram-mermai
 ```tsx title="components/editor/diagram-editor-kit.tsx"
 import { CodeBlockPlugin } from 'platejs/react';
 
-import {
-  CodeBlockElement,
-  createCodeBlockPlugin,
-} from '@/components/editor/code-block';
+import { CodeBlockElement } from '@/components/editor/code-block';
+import { createCodeBlockPlugin } from '@/components/editor/code-block-container';
 import { withDiagrams } from '@/components/editor/code-block-diagram';
 import { graphvizRenderer } from '@/components/editor/code-block-diagram-graphviz';
 import { mermaidRenderer } from '@/components/editor/code-block-diagram-mermaid';
@@ -254,9 +254,9 @@ const editor = createEditor({
 
 ```tsx
 import { CodeBlockRules } from 'platejs';
-import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
-import { createEditor } from 'platejs/react';
+import { CodeBlockPlugin, CodeHighlightPlugin, createEditor } from 'platejs/react';
 import { CodeBlockElement } from '@/components/editor/code-block';
+import { resolveCodeBlockLanguage } from '@/components/editor/code-block-languages';
 import { createCodeBlockLowlight } from '@/components/editor/code-block-lowlight';
 
 const lowlight = createCodeBlockLowlight();
@@ -266,7 +266,16 @@ const editor = createEditor({
     // ...其他插件,
     CodeBlockPlugin.configure({
       component: CodeBlockElement,
-      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
+      inputRules: [
+        CodeBlockRules.markdown({
+          normalizeLanguage: resolveCodeBlockLanguage,
+          on: 'space',
+        }),
+        CodeBlockRules.markdown({
+          normalizeLanguage: resolveCodeBlockLanguage,
+          on: 'break',
+        }),
+      ],
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
     CodeHighlightPlugin.configure({
@@ -301,7 +310,10 @@ const editor = createEditor({
     // ...其他插件,
     CodeBlockPlugin.configure({
       component: CodeBlockElement,
-      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
+      inputRules: [
+        CodeBlockRules.markdown({ on: 'space' }),
+        CodeBlockRules.markdown({ on: 'break' }),
+      ],
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
     CodeHighlightPlugin.configure({
@@ -316,12 +328,12 @@ const editor = createEditor({
 
 - `CodeBlockPlugin.configure({ component })`：使用
   [`CodeBlockElement`](/docs/components/code-block) 渲染代码块容器
-- `inputRules`：注册三反引号围栏规则。`on: 'match'` 表示围栏完成时立即提交，`on: 'break'` 表示围栏完成后按 `Enter` 再提交。
+- `inputRules`：注册三反引号围栏规则。`on: 'space'` 在输入 ```` ```ts ```` 后按空格提交（可按 Backspace 还原），`on: 'break'` 在按 `Enter` 时提交（可撤销），`on: 'match'` 在输入第三个反引号时立即提交。传入 `normalizeLanguage` 可将 `ts` 等别名映射为 `typescript`。
 - `CodeHighlightPlugin.initialState.lowlight`：用于语法高亮的 lowlight 实例。插件只读取传入的实例，不会修改语言注册表。复制组件提供的 `createCodeBlockLowlight()` 会预先注册兼容浏览器的 Python 语法及 `py`、`gyp`、`ipython` 别名。
 - `CodeHighlightPlugin.initialState.defaultLanguage`: 未指定语言时使用的默认语言
 - `shortcuts.toggle`: 定义切换代码块的键盘[快捷键](/docs/plugin-shortcuts)
 
-每个 `codeBlock` 只包含一个文本子节点。换行符定义物理行；编辑和高亮行为由文本偏移量推导。
+普通代码块包含一个带换行符的文本子节点；建议模式下允许多个文本叶子以承载审阅标记。代码块声明 `contentMarks: false`，因此加粗、斜体等格式标记不会应用到代码块文本，而审阅元数据标记（`authored`）仍然有效。换行符定义物理行；编辑和高亮行为由文本偏移量推导。
 
 代码块把 Markdown 代码围栏的语言存为 `language`，把信息字符串的其余部分（例如 `title="a.ts" {3-5}`）存为 `meta`。Markdown 和 HTML 都会保留这两项。代码围栏只能在语言之后写出 `meta`，因此 Markdown 导出会把没有 `language` 的 `meta` 报告为 `markdown-property-omitted`。
 
@@ -392,7 +404,7 @@ const insertItem = {
 
 ### `CodeHighlightPlugin`
 
-负责 `codeSyntax` mark、Lowlight decoration 流程和高亮 token 渲染。把这个描述符作为普通插件数组的一项加入或省略。
+使用 Lowlight 生成临时语法装饰（decoration），不会把语法标记写入文本节点。把这个描述符作为普通插件数组的一项加入或省略。
 
 <API name="CodeHighlightPlugin">
 <APIOptions>

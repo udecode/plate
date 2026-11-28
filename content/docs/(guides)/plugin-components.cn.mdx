@@ -86,8 +86,7 @@ export function CodeLeaf(props: EditorLeafProps<typeof CodePlugin>) {
 const plugins = [
   ParagraphPlugin.configure({ component: MyParagraphElement }),
   CodeBlockPlugin.configure({ component: MyCodeBlockElement }),
-  CodeHighlightPlugin.configure({ component: MyCodeSyntaxLeaf }),
-]
+];
 ```
 
 ### 组件与用户覆盖

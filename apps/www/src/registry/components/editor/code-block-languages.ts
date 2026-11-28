@@ -138,21 +138,6 @@ export function resolveCodeBlockLanguage(raw: string) {
   return canonicalLanguage.get(language) ?? language;
 }
 
-/**
- * Whether `option` names `lang` directly, through an alias, or through the
- * same catalog value, so CodeMirror's `c++` matches the catalog's `cpp`.
- */
-export function matchesCodeBlockLanguage(
-  lang: string,
-  option: CodeBlockLanguageOption
-) {
-  return (
-    option.value === lang ||
-    Boolean(option.aliases?.includes(lang)) ||
-    resolveCodeBlockLanguage(option.value) === resolveCodeBlockLanguage(lang)
-  );
-}
-
 /** Whether a picker search `query` finds `option` by label, value or alias. */
 export function matchesCodeBlockLanguageQuery(
   option: CodeBlockLanguageOption,
@@ -173,17 +158,30 @@ export function matchesCodeBlockLanguageQuery(
 }
 
 /**
- * Find the option for `lang` in `options`, then in `codeBlockLanguages`. An
- * exact value wins over an alias or catalog match.
+ * Find the option for `lang` in `options`, then in `codeBlockLanguages`.
+ * Case-insensitive value, alias, canonical value, and catalog matches are
+ * ranked in that order so `ts` hits `TypeScript` before `TSX`.
  */
 export function findCodeBlockLanguage(
   lang: string,
   options: readonly CodeBlockLanguageOption[] = []
 ) {
+  const normalized = lang.trim().toLowerCase();
+
+  if (!normalized) return undefined;
+
+  const canonical = resolveCodeBlockLanguage(normalized);
+
   for (const list of [options, codeBlockLanguages]) {
     const option =
-      list.find((candidate) => candidate.value === lang) ??
-      list.find((candidate) => matchesCodeBlockLanguage(lang, candidate));
+      list.find((candidate) => candidate.value.toLowerCase() === normalized) ??
+      list.find((candidate) =>
+        candidate.aliases?.some((alias) => alias.toLowerCase() === normalized)
+      ) ??
+      list.find((candidate) => candidate.value.toLowerCase() === canonical) ??
+      list.find(
+        (candidate) => resolveCodeBlockLanguage(candidate.value) === canonical
+      );
 
     if (option) return option;
   }
