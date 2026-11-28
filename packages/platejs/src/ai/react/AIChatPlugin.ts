@@ -62,11 +62,11 @@ import type {
   AIToolName,
 } from '../lib/AIChatRequestContext';
 import { findQuotedSpan } from '../lib/findQuotedSpan.internal';
+import { LOCKED_BLOCK_PLACEHOLDER_TAG } from '../lib/lockedContext';
 import {
   isAIPathNonWritable,
-  LOCKED_BLOCK_PLACEHOLDER_TAG,
   resolveAISelectedBlocks,
-} from '../lib/lockedContext';
+} from '../lib/lockedContext.internal';
 import {
   captureTextRange,
   extractCopiedBlockProps,

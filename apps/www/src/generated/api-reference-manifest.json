@@ -10591,17 +10591,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/ai:AISelectedBlocksResult": {
-          "aliases": [],
-          "documentation": "Result of resolving the active AI selection into target block entries.",
-          "entrypoint": "platejs/ai",
-          "kind": "type",
-          "name": "AISelectedBlocksResult",
-          "runtime": false,
-          "signature": "type AISelectedBlocksResult = Readonly<{\n  entries: ReadonlyArray<readonly [Element, Path]>;\n  /**\n   * `true` when a text selection starts or ends mid-container inside a\n   * container that holds a non-writable block.\n   */\n  partialLockedContainer: boolean;\n}>;",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs/ai:AIToolName": {
           "aliases": [],
           "documentation": "",
@@ -10624,17 +10613,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/ai:isAIPathNonWritable": {
-          "aliases": [],
-          "documentation": "Return `true` when the block at `path` is non-writable via a contributor\n(such as `BaseLockPlugin`) on itself, an ancestor, an owned root, or any\ndescendant, excluding static `schema.isReadOnly` atoms.",
-          "entrypoint": "platejs/ai",
-          "kind": "const",
-          "name": "isAIPathNonWritable",
-          "runtime": true,
-          "signature": "isAIPathNonWritable: (editor: Editor, path: Path) => boolean",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs/ai:LOCKED_BLOCK_PLACEHOLDER_TAG": {
           "aliases": [],
           "documentation": "Self-closing Markdown block tag emitted for locked blocks inside AI edit\nprompts and parsed back at the Markdown AST stage.",
@@ -10654,17 +10632,6 @@
           "name": "resolveAIChatRequestContext",
           "runtime": true,
           "signature": "resolveAIChatRequestContext: (context: Pick<AIChatRequestContext, 'nodeSelection' | 'selection'>) => {\n  isSelecting: boolean;\n  selection: Selection;\n}",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs/ai:resolveAISelectedBlocks": {
-          "aliases": [],
-          "documentation": "Resolve the active AI selection into sibling target block entries shared by\nclient target capture, request ref collection, and server edit serialization.",
-          "entrypoint": "platejs/ai",
-          "kind": "const",
-          "name": "resolveAISelectedBlocks",
-          "runtime": true,
-          "signature": "resolveAISelectedBlocks: (editor: Editor, explicitSelection?: ReturnType<Editor['read']['selection']>) => AISelectedBlocksResult",
           "source": null,
           "typeParameters": []
         },
