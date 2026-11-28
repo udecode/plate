@@ -6724,10 +6724,12 @@
       "dependsOn": [
         "plitejs#source-hash:partition:authored",
         "plitejs#source-hash:partition:core",
+        "plitejs#source-hash:partition:dom",
         "plitejs#source-hash:partition:testing",
         "source-hash:partition:combobox",
         "source-hash:partition:core",
         "source-hash:partition:footnote",
+        "source-hash:partition:html",
         "source-hash:partition:layout",
         "source-hash:partition:standard-basic-nodes",
         "source-hash:partition:standard-list",

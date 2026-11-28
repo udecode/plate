@@ -326,6 +326,7 @@ export {
   getLiveText as getEditorLiveText,
   getMutationVersion,
   getSnapshotVersion,
+  getUpdateStartValue,
   withTransactionSpecDraftRead,
   withEditorDocumentProjection,
   getStateFieldEffectTypes,

@@ -18,7 +18,13 @@ import {
   txSelection,
   locateAt,
 } from '../../../core';
-import { MAIN_ROOT_KEY } from '../../../facade';
+import {
+  MAIN_ROOT_KEY,
+  getUpdateStartValue,
+  getValueRecords,
+  readAuthoredViewKey,
+  withStoredAuthoredRead,
+} from '../../../facade';
 import { selectAfterInline } from '../../../internal/plugin/inlineInsertion';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import type { ComboboxState } from '../../combobox';
@@ -38,9 +44,13 @@ type FootnoteIndex = {
   referencesByRef: Map<string, Array<NodeEntry<FootnoteNode>>>;
 };
 
-const indexes = new WeakMap<
+const unfilteredIndexes = new WeakMap<
   readonly Descendant[],
-  Map<string, Map<string | undefined, Map<string | undefined, FootnoteIndex>>>
+  Map<string, FootnoteIndex>
+>();
+const contentIndexes = new WeakMap<
+  readonly Descendant[],
+  WeakMap<object, Map<string, FootnoteIndex>>
 >();
 
 const encodeRef = (ref: string) => {
@@ -64,30 +74,13 @@ const encodeRef = (ref: string) => {
   return encoded;
 };
 
-const getFootnoteIndex = (
+const buildFootnoteIndex = (
   children: readonly Descendant[],
   referenceType: string | undefined,
   definitionType: string | undefined,
-  root = MAIN_ROOT_KEY
+  root: string,
+  isContent?: (node: Element) => boolean
 ): FootnoteIndex => {
-  let byRoot = indexes.get(children);
-  if (!byRoot) {
-    byRoot = new Map();
-    indexes.set(children, byRoot);
-  }
-  let byReference = byRoot.get(root);
-  if (!byReference) {
-    byReference = new Map();
-    byRoot.set(root, byReference);
-  }
-  let byDefinition = byReference.get(referenceType);
-  if (!byDefinition) {
-    byDefinition = new Map();
-    byReference.set(referenceType, byDefinition);
-  }
-  const cached = byDefinition.get(definitionType);
-  if (cached) return cached;
-
   const index: FootnoteIndex = {
     anchors: new Map(),
     definitions: [],
@@ -100,7 +93,10 @@ const getFootnoteIndex = (
       if (!ElementApi.isElement(node)) return;
       const path = [...parent, offset];
 
-      if (node.type === referenceType || node.type === definitionType) {
+      if (
+        (node.type === referenceType || node.type === definitionType) &&
+        (!isContent || isContent(node))
+      ) {
         const footnote = node as FootnoteNode;
         const entry: NodeEntry<FootnoteNode> = [footnote, path];
         const isDefinition = node.type === definitionType;
@@ -152,9 +148,100 @@ const getFootnoteIndex = (
     });
   }
 
-  byDefinition.set(definitionType, index);
+  return index;
+};
+
+const getFootnoteIndex = (
+  children: readonly Descendant[],
+  referenceType: string | undefined,
+  definitionType: string | undefined,
+  root = MAIN_ROOT_KEY
+): FootnoteIndex => {
+  let byKey = unfilteredIndexes.get(children);
+  if (!byKey) {
+    byKey = new Map();
+    unfilteredIndexes.set(children, byKey);
+  }
+  const key = JSON.stringify([
+    root,
+    referenceType ?? null,
+    definitionType ?? null,
+  ]);
+  const cached = byKey.get(key);
+  if (cached) return cached;
+
+  const index = buildFootnoteIndex(
+    children,
+    referenceType,
+    definitionType,
+    root
+  );
+  byKey.set(key, index);
 
   return index;
+};
+
+const getContentFootnoteIndex = (
+  children: readonly Descendant[],
+  records: object,
+  authoredKey: string | undefined,
+  referenceType: string | undefined,
+  definitionType: string | undefined,
+  root: string,
+  isContent: (node: Element) => boolean
+): FootnoteIndex => {
+  let byRecords = contentIndexes.get(children);
+  if (!byRecords) {
+    byRecords = new WeakMap();
+    contentIndexes.set(children, byRecords);
+  }
+  let byKey = byRecords.get(records);
+  if (!byKey) {
+    byKey = new Map();
+    byRecords.set(records, byKey);
+  }
+  const key = JSON.stringify([
+    authoredKey ?? null,
+    root,
+    referenceType ?? null,
+    definitionType ?? null,
+  ]);
+  const cached = byKey.get(key);
+  if (cached) return cached;
+
+  const index = buildFootnoteIndex(
+    children,
+    referenceType,
+    definitionType,
+    root,
+    isContent
+  );
+  byKey.set(key, index);
+
+  return index;
+};
+
+const getStoredRootChildren = (
+  editor: Parameters<typeof withStoredAuthoredRead>[0],
+  root: string
+): readonly Descendant[] => {
+  const start = getUpdateStartValue(editor);
+
+  if (start) {
+    return root === MAIN_ROOT_KEY
+      ? start.children
+      : (start.roots?.[root] ?? []);
+  }
+
+  return withStoredAuthoredRead(editor, () =>
+    editor.read((stored) => {
+      const value = stored.value();
+
+      return root === MAIN_ROOT_KEY
+        ? value.children
+        : (value.roots?.[root] ?? []);
+    })
+  );
 };
 
 const getGithubFootnote = (document: Document, href: string | null) => {
@@ -513,12 +600,38 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       .type;
     const referenceType = schema.type;
     const getRegistry = () =>
-      getFootnoteIndex(
+      getContentFootnoteIndex(
         state.children(),
+        getValueRecords(state.value()),
+        readAuthoredViewKey(editor),
         referenceType,
         definitionType,
-        state.view.root() ?? MAIN_ROOT_KEY
+        state.view.root() ?? MAIN_ROOT_KEY,
+        state.nodes.isContent
       );
+    const getUnfilteredRegistries = () => {
+      const root = state.view.root() ?? MAIN_ROOT_KEY;
+      const currentChildren = state.children();
+      const storedChildren = getStoredRootChildren(editor, root);
+      const current = getFootnoteIndex(
+        currentChildren,
+        referenceType,
+        definitionType,
+        root
+      );
+
+      return storedChildren === currentChildren
+        ? [current]
+        : [
+            current,
+            getFootnoteIndex(
+              storedChildren,
+              referenceType,
+              definitionType,
+              root
+            ),
+          ];
+    };
     const definitions = ({ ref }: { ref?: string } = {}): Array<
       NodeEntry<FootnoteDefinitionNode>
     > => {
@@ -578,9 +691,11 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       nextRef: () => {
         const used = new Set<number>();
 
-        for (const [footnote] of getRegistry().footnotes) {
-          if (footnote.ref && NUMERIC_REF_REGEX.test(footnote.ref)) {
-            used.add(Number.parseInt(footnote.ref, 10));
+        for (const registry of getUnfilteredRegistries()) {
+          for (const [footnote] of registry.footnotes) {
+            if (footnote.ref && NUMERIC_REF_REGEX.test(footnote.ref)) {
+              used.add(Number.parseInt(footnote.ref, 10));
+            }
           }
         }
 
@@ -638,9 +753,26 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
 
       if (nextRef === entry[0].ref) return false;
 
+      const root = tx.view.root() ?? MAIN_ROOT_KEY;
+      const currentChildren = tx.children();
+      const storedChildren = getStoredRootChildren(editor, root);
+      const hasRefCollision = (children: readonly Descendant[]) => {
+        const unfiltered = getFootnoteIndex(
+          children,
+          type,
+          definitionType,
+          root
+        );
+
+        return (
+          unfiltered.definitionsByRef.has(nextRef) ||
+          unfiltered.referencesByRef.has(nextRef)
+        );
+      };
+
       if (
-        tx.plugin(plugin.name).definition({ ref: nextRef }) ||
-        tx.plugin(plugin.name).references({ ref: nextRef }).length > 0
+        hasRefCollision(currentChildren) ||
+        (storedChildren !== currentChildren && hasRefCollision(storedChildren))
       ) {
         return false;
       }
