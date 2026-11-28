@@ -653,6 +653,7 @@ export const formatCommentDate = (date: Date | string) => {
   const diffHours = differenceInHours(now, date);
   const diffDays = differenceInDays(now, date);
 
+  if (diffMinutes < 0) return format(date, 'MM/dd/yyyy');
   if (diffMinutes < 60) return `${diffMinutes}m`;
   if (diffHours < 24) return `${diffHours}h`;
   if (diffDays < 2) return `${diffDays}d`;

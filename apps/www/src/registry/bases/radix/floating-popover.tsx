@@ -39,6 +39,7 @@ const PopoverContentWithPlaced =
 const FloatingPopoverRefsContext = React.createContext<{
   anchor: FloatingAnchorTarget;
   insideElement?: Element | null;
+  isInside?: (target: Element) => boolean;
   onBeforeClose?: () => boolean;
   open: boolean;
   /**
@@ -52,21 +53,49 @@ const FloatingPopoverRefsContext = React.createContext<{
   setHost: (host: Element | null) => void;
 } | null>(null);
 
-function isInside(
+function resolveTargetElement(target: EventTarget | null) {
+  if (!target || typeof target !== 'object' || !('ownerDocument' in target)) {
+    return null;
+  }
+
+  const node = target as Node;
+  const view = node.ownerDocument?.defaultView;
+
+  if (!view) return null;
+  if (node instanceof view.Element) return node;
+
+  return node.parentElement;
+}
+
+function matchesInside(
   element: Element | null | undefined,
+  predicate: ((target: Element) => boolean) | undefined,
   target: EventTarget | null
 ) {
-  if (!element) return false;
+  if (element) {
+    const NodeClass = element.ownerDocument.defaultView?.Node;
 
-  const NodeClass = element.ownerDocument.defaultView?.Node;
+    if (
+      !!NodeClass &&
+      target instanceof NodeClass &&
+      element.contains(target)
+    ) {
+      return true;
+    }
+  }
 
-  return !!NodeClass && target instanceof NodeClass && element.contains(target);
+  if (!predicate) return false;
+
+  const targetElement = resolveTargetElement(target);
+
+  return !!targetElement && predicate(targetElement);
 }
 
 export function FloatingPopover({
   children,
   defaultOpen = false,
   insideElement,
+  isInside,
   onBeforeClose,
   onOpenChange,
   onOpenChangeComplete,
@@ -76,6 +105,8 @@ export function FloatingPopover({
   defaultOpen?: boolean;
   /** Presses on this element, and focus moving into it, never dismiss the popover. */
   insideElement?: Element | null;
+  /** Return true for targets whose presses and focus never dismiss the popover. */
+  isInside?: (target: Element) => boolean;
   modal?: boolean;
   /** Return false to refuse a close from Escape or an outside press. */
   onBeforeClose?: () => boolean;
@@ -96,6 +127,7 @@ export function FloatingPopover({
     () => ({
       anchor,
       insideElement,
+      isInside,
       onBeforeClose,
       open: resolvedOpen,
       pinned,
@@ -103,7 +135,15 @@ export function FloatingPopover({
       setAnchor,
       setHost,
     }),
-    [anchor, insideElement, onBeforeClose, pinned, resolvedOpen, setHost]
+    [
+      anchor,
+      insideElement,
+      isInside,
+      onBeforeClose,
+      pinned,
+      resolvedOpen,
+      setHost,
+    ]
   );
   const setOpen = (next: boolean) => {
     if (!next && onBeforeClose?.() === false) return;
@@ -285,7 +325,7 @@ export function FloatingPopoverContent({
         onEscapeKeyDown={onEscapeKeyDown}
         onInteractOutside={(event) => {
           if (
-            isInside(refs?.insideElement, event.target) ||
+            matchesInside(refs?.insideElement, refs?.isInside, event.target) ||
             refs?.onBeforeClose?.() === false
           ) {
             event.preventDefault();

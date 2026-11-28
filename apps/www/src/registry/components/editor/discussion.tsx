@@ -272,6 +272,7 @@ const createDiscussionStore = () => {
   const listeners = new Set<() => void>();
   const blockListeners = new Map<NodeKey, Set<() => void>>();
   const blockTriggers = new Map<NodeKey, HTMLElement>();
+  const blockTriggerElements = new Set<HTMLElement>();
   const blockSnapshots = new Map<NodeKey, DiscussionBlockSnapshot>();
   const threadListeners = new Set<() => void>();
   let commentBlocks = new Map<NodeKey, readonly CommentItem[]>();
@@ -350,6 +351,13 @@ const createDiscussionStore = () => {
     getBlockTrigger(key: NodeKey) {
       return blockTriggers.get(key) ?? null;
     },
+    isBlockTrigger(target: Element) {
+      const trigger = target.closest<HTMLElement>(
+        '[data-discussion-block-trigger]'
+      );
+
+      return Boolean(trigger && blockTriggerElements.has(trigger));
+    },
     getComment(id: string) {
       return commentsById.get(id) ?? null;
     },
@@ -393,8 +401,11 @@ const createDiscussionStore = () => {
       prepareSelection = next;
     },
     setBlockTrigger(key: NodeKey, element: HTMLElement | null) {
+      const previous = blockTriggers.get(key);
+      if (previous) blockTriggerElements.delete(previous);
       if (element) {
         blockTriggers.set(key, element);
+        blockTriggerElements.add(element);
       } else {
         blockTriggers.delete(key);
       }
@@ -1663,11 +1674,16 @@ function DiscussionPopover({
   }, [activeItems.length, comments, pending, setActiveSuggestionId, store]);
 
   const editorDecidesOpen = !pending && activeItems.length > 0;
+  const isBlockTrigger = React.useCallback(
+    (element: Element) => store.isBlockTrigger(element),
+    [store]
+  );
 
   return (
     <div data-discussion-root="">
       <FloatingPopover
         insideElement={editorDecidesOpen ? rootElement : null}
+        isInside={isBlockTrigger}
         modal={false}
         open={open}
         onOpenChange={(nextOpen) => {

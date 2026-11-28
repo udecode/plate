@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-floating-discussion-block-switch-and-width",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-floating-discussion-block-switch-and-width.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix Floating Discussion block trigger switching, future comment dates, and block-menu editor width",
+  "targets": [
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor-value.ts",
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-floating-popover-fix-discussion-block-trigger-4df349c5",
+      "kind": "fix",
+      "summary": "Fix Floating Discussion block trigger switching, future comment dates, and block-menu editor width",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "floating-popover",
+        "discussion",
+        "comment",
+        "block-menu",
+        "editor-ai"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-floating-discussion-block-switch-and-width",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

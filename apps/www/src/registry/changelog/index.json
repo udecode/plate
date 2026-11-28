@@ -56,6 +56,30 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-floating-discussion-block-switch-and-width",
+      "href": "/registry/changelog/2026-11-28-floating-discussion-block-switch-and-width.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix Floating Discussion block trigger switching, future comment dates, and block-menu editor width",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "floating-popover",
+        "discussion",
+        "comment",
+        "block-menu",
+        "editor-ai"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-add-lock-kit",
       "href": "/registry/changelog/2026-11-27-add-lock-kit.json",
       "status": "draft",

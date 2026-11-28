@@ -33,33 +33,68 @@ const FloatingPopoverContext = React.createContext<
   FloatingPopoverContextValue | undefined
 >(undefined);
 
-function isInside(
+function resolveTargetElement(target: EventTarget | null) {
+  if (!target || typeof target !== 'object' || !('ownerDocument' in target)) {
+    return null;
+  }
+
+  const node = target as Node;
+  const view = node.ownerDocument?.defaultView;
+
+  if (!view) return null;
+  if (node instanceof view.Element) return node;
+
+  return node.parentElement;
+}
+
+function matchesInside(
   element: Element | null | undefined,
+  predicate: ((target: Element) => boolean) | undefined,
   target: EventTarget | null
 ) {
-  if (!element) return false;
+  if (element) {
+    const NodeClass = element.ownerDocument.defaultView?.Node;
 
-  const NodeClass = element.ownerDocument.defaultView?.Node;
+    if (
+      !!NodeClass &&
+      target instanceof NodeClass &&
+      element.contains(target)
+    ) {
+      return true;
+    }
+  }
 
-  return !!NodeClass && target instanceof NodeClass && element.contains(target);
+  if (!predicate) return false;
+
+  const targetElement = resolveTargetElement(target);
+
+  return !!targetElement && predicate(targetElement);
 }
 
 // Safari with an input method such as WeType can send a tap's click to the
 // common ancestor of the previous press and this release, so the element under
 // the pointer names the pressed one.
 // https://bugs.webkit.org/show_bug.cgi?id=219670
-function isPressInside(element: Element | null | undefined, event: Event) {
-  if (!element) return false;
-  if (isInside(element, event.target)) return true;
+function isPressInside(
+  element: Element | null | undefined,
+  predicate: ((target: Element) => boolean) | undefined,
+  ownerDocument: Document | null | undefined,
+  event: Event
+) {
+  if (!element && !predicate) return false;
+  if (matchesInside(element, predicate, event.target)) return true;
 
-  const { defaultView } = element.ownerDocument;
+  const doc = element?.ownerDocument ?? ownerDocument;
+  const defaultView = doc?.defaultView;
 
   return (
+    !!doc &&
     !!defaultView &&
     event instanceof defaultView.MouseEvent &&
-    isInside(
+    matchesInside(
       element,
-      element.ownerDocument.elementFromPoint(event.clientX, event.clientY)
+      predicate,
+      doc.elementFromPoint(event.clientX, event.clientY)
     )
   );
 }
@@ -78,6 +113,7 @@ export function FloatingPopover({
   children,
   defaultOpen = false,
   insideElement,
+  isInside,
   onBeforeClose,
   onOpenChange,
   open,
@@ -86,6 +122,8 @@ export function FloatingPopover({
   defaultOpen?: boolean;
   /** Presses on this element or with the pointer over it, and focus moving into it, never dismiss the popover. */
   insideElement?: Element | null;
+  /** Return true for targets whose presses and focus never dismiss the popover. */
+  isInside?: (target: Element) => boolean;
   modal?: boolean;
   /** Return false to refuse a close from Escape or an outside press. */
   onBeforeClose?: () => boolean;
@@ -147,10 +185,19 @@ export function FloatingPopover({
           }
           if (
             (details.reason === 'outside-press' &&
-              isPressInside(insideElement, details.event)) ||
+              isPressInside(
+                insideElement,
+                isInside,
+                hostRef.current?.ownerDocument,
+                details.event
+              )) ||
             (details.reason === 'focus-out' &&
               'relatedTarget' in details.event &&
-              isInside(insideElement, details.event.relatedTarget))
+              matchesInside(
+                insideElement,
+                isInside,
+                details.event.relatedTarget
+              ))
           ) {
             details.cancel();
 

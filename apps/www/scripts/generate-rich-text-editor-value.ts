@@ -20,6 +20,17 @@ const base = projectAuthoredDocument(richTextEditorValue, {
   projection: 'accepted',
 }).document.children;
 
+const withFixedNow = <T>(at: number, run: () => T): T => {
+  const realNow = Date.now;
+  Date.now = () => at;
+
+  try {
+    return run();
+  } finally {
+    Date.now = realNow;
+  }
+};
+
 // Keep existing-text edits independent of the later suggested link insertion.
 const bob = createEditor({
   plugins,
@@ -27,15 +38,20 @@ const bob = createEditor({
   userId: 'bob',
 });
 
-bob.update((tx) => {
-  const offset = 'Review and refine content seamlessly. Use  or to '.length;
+withFixedNow(1_789_665_010_637, () => {
+  bob.update((tx) => {
+    const offset = 'Review and refine content seamlessly. Use  or to '.length;
 
-  tx.authored.propose();
-  tx.text.delete({
-    at: {
-      anchor: { offset, path: [3, 0] },
-      focus: { offset: offset + 'mark text for removal'.length, path: [3, 0] },
-    },
+    tx.authored.propose();
+    tx.text.delete({
+      at: {
+        anchor: { offset, path: [3, 0] },
+        focus: {
+          offset: offset + 'mark text for removal'.length,
+          path: [3, 0],
+        },
+      },
+    });
   });
 });
 const charlie = createEditor({
@@ -44,14 +60,16 @@ const charlie = createEditor({
   userId: 'charlie',
 });
 let overlapChangeId = '';
-charlie.update((tx) => {
-  overlapChangeId = tx.authored.propose();
-  tx.text.insert('overlapping ', {
-    at: {
-      offset: ' on many text segments. You can even have '.length,
-      // Bob's deleted text stays in the document as its own node.
-      path: [3, 4],
-    },
+withFixedNow(1_789_665_010_644, () => {
+  charlie.update((tx) => {
+    overlapChangeId = tx.authored.propose();
+    tx.text.insert('overlapping ', {
+      at: {
+        offset: ' on many text segments. You can even have '.length,
+        // Bob's deleted text stays in the document as its own node.
+        path: [3, 4],
+      },
+    });
   });
 });
 const editor = createEditor({
@@ -59,22 +77,26 @@ const editor = createEditor({
   initialValue: charlie.read.value(),
   userId: 'alice',
 });
-editor.update((tx) => {
-  tx.authored.propose();
-  tx.nodes.insert(
-    {
-      type: 'link',
-      url: '/docs/suggestion',
-      children: [{ text: 'suggestions' }],
-    },
-    {
-      at: {
-        offset: 'Review and refine content seamlessly. Use '.length,
-        path: [3, 0],
+withFixedNow(1_789_665_010_655, () => {
+  editor.update((tx) => {
+    tx.authored.propose();
+    tx.nodes.insert(
+      {
+        type: 'link',
+        url: '/docs/suggestion',
+        children: [{ text: 'suggestions' }],
       },
-    }
-  );
-  tx.text.insert(' like this added text', { at: { offset: 0, path: [3, 2] } });
+      {
+        at: {
+          offset: 'Review and refine content seamlessly. Use '.length,
+          path: [3, 0],
+        },
+      }
+    );
+    tx.text.insert(' like this added text', {
+      at: { offset: 0, path: [3, 2] },
+    });
+  });
 });
 
 const threads = richTextEditorComments.threads.map((thread) =>

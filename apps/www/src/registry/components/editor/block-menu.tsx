@@ -230,7 +230,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
       >
         <div className="w-full">
           <div
-            className="contents"
+            className="w-full"
             onContextMenu={(event) => {
               if (
                 event.target instanceof Element &&

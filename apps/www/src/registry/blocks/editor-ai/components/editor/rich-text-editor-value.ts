@@ -65,7 +65,7 @@ export const richTextEditorValue: EditorDocumentValue = {
           url: '/docs/suggestion',
           authored: [
             {
-              at: 1_791_864_172_518,
+              at: 1_789_665_010_655,
               author: 'alice',
               change: '3eebfcc2-04a2-475e-9c41-c1375ad2b72c',
               kind: 'insert',
@@ -75,7 +75,7 @@ export const richTextEditorValue: EditorDocumentValue = {
             {
               authored: [
                 {
-                  at: 1_791_864_172_518,
+                  at: 1_789_665_010_655,
                   author: 'alice',
                   change: '3eebfcc2-04a2-475e-9c41-c1375ad2b72c',
                   kind: 'insert',
@@ -88,7 +88,7 @@ export const richTextEditorValue: EditorDocumentValue = {
         {
           authored: [
             {
-              at: 1_791_864_172_518,
+              at: 1_789_665_010_655,
               author: 'alice',
               change: '3eebfcc2-04a2-475e-9c41-c1375ad2b72c',
               kind: 'insert',
@@ -102,7 +102,7 @@ export const richTextEditorValue: EditorDocumentValue = {
         {
           authored: [
             {
-              at: 1_791_864_172_425,
+              at: 1_789_665_010_637,
               author: 'bob',
               change: '8b7c7323-a04b-4eac-911c-f4b55fb69550',
               kind: 'delete',
@@ -128,7 +128,7 @@ export const richTextEditorValue: EditorDocumentValue = {
         {
           authored: [
             {
-              at: 1_791_864_172_481,
+              at: 1_789_665_010_644,
               author: 'charlie',
               change: '11ecbc4a-799d-4ffe-a1ed-d515e9e0c30b',
               kind: 'insert',

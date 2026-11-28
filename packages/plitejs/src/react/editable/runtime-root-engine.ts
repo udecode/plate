@@ -2,7 +2,9 @@ import {
   type ComponentPropsWithRef,
   type ForwardedRef,
   useCallback,
+  useInsertionEffect,
   useMemo,
+  useRef,
   useSyncExternalStore,
 } from 'react';
 
@@ -43,7 +45,7 @@ import {
   getEditorRuntimeOwner,
   getInternalDocumentChangeRootKeys,
   registerEditorSurface,
-  subscribeEditorViewState,
+  subscribeSharedEditorViewState,
   toInternalRoot,
 } from './runtime-editor-api';
 import { useEditableEventRuntime } from './runtime-event-engine';
@@ -144,15 +146,35 @@ export const useEditableRootRuntime = ({
   useEditableRootCommitWakeup();
   useFlushDeferredSelectorsOnRender();
 
+  const readOnlyPropRef = useRef(readOnlyProp);
+  const committedReadOnlyRef = useRef(
+    readOnlyProp || editor.read.view.isReadOnly()
+  );
   const readReadOnly = () => readOnlyProp || editor.read.view.isReadOnly();
   const readOnly = useSyncExternalStore(
     useCallback(
-      (listener) => subscribeEditorViewState(editor, listener),
+      (listener) =>
+        subscribeSharedEditorViewState(editor, 'readOnly', () => {
+          const nextReadOnly =
+            readOnlyPropRef.current || editor.read.view.isReadOnly();
+
+          if (nextReadOnly === committedReadOnlyRef.current) return;
+
+          listener();
+        }),
       [editor]
     ),
     readReadOnly,
     readReadOnly
   );
+
+  // React updates useSyncExternalStore's snapshot cache in passive effects,
+  // after EditorRuntimeView's layout flush delivers the lock notice for the
+  // same render. Tracking the committed prop/result skips a redundant render.
+  useInsertionEffect(() => {
+    readOnlyPropRef.current = readOnlyProp;
+    committedReadOnlyRef.current = readOnly;
+  }, [readOnly, readOnlyProp]);
 
   const rootRuntimeState = useEditableRootRuntimeState({
     viewportRuntime,
