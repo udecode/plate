@@ -2,6 +2,7 @@ import { createEditorViewRuntime } from '../editor-runtime-view';
 import type {
   AnyEditor,
   ContentSlice,
+  EditorStateView,
   NodeKey,
   NodeTarget,
   RootKey,
@@ -64,6 +65,7 @@ import { executeEditorRead } from './read-registry';
 import { publishEditorRefusal } from './refusal';
 import { EditorSchemaValidationError } from './schema-validation';
 import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
+import { sliceLandsEndMatter } from './slice-end-matter';
 import { type LandingSource, payloadKeyOf } from './slice-fit/provenance';
 import { aliasedRoots } from './slice-identities';
 import { planPaste, writePaste } from './slice-landing';
@@ -323,12 +325,42 @@ const payloadSourcesOf = (
   return { landing, nodes };
 };
 
+const checkEndMatterPoint = (
+  editor: AnyEditor,
+  state: EditorStateView,
+  slice: ContentSlice | null,
+  point: Point
+) => {
+  if (!slice || !sliceLandsEndMatter(slice, getCompiledEditorSchema(editor))) {
+    return;
+  }
+
+  const schema = getEditorSchema(editor);
+  const block = state.nodes.above({
+    at: point,
+    match: (node): node is Element =>
+      ElementApi.isElement(node) && !schema.getElementBehavior(node).inline,
+    mode: 'lowest',
+  });
+
+  if (block && block[1].length > 1) {
+    refuse('policy');
+  }
+};
+
 const checkTextLanding = (
   editor: AnyEditor,
   admission: Admission,
   point: Point
 ) => {
   const { source, intent, relation } = admission;
+
+  checkEndMatterPoint(
+    editor,
+    getEditorStateView(editor),
+    admission.slice,
+    point
+  );
 
   if (
     source.kind !== 'text' ||
@@ -887,9 +919,13 @@ const runTransfer = (
         copied: ContentSlice,
         sources: PayloadSources | null = null
       ) => {
+        const state = getEditorStateView(editor);
+
+        checkEndMatterPoint(editor, state, copied, at);
+
         const plan = planPaste(
           editor,
-          getEditorStateView(editor),
+          state,
           { options: { at }, slice: copied },
           intent,
           { drop: true }

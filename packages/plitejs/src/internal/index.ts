@@ -147,6 +147,10 @@ export type {
   EditorCommandNativeProbe,
 } from '../core/command-registry';
 export { createDetachedContentSlice } from '../core/content-slice';
+export {
+  containsEndMatter,
+  findEndMatterLandingIndex,
+} from '../core/slice-end-matter';
 export type { InternalEditorRuntimeElementEntry } from '../core/snapshot-index';
 
 export {

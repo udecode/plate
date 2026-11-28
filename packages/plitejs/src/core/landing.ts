@@ -6,8 +6,12 @@ import { SelectionApi } from '../interfaces/selection';
 import { editorReads } from './editor-reads';
 import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
 import { definePluginPoint } from './plugin-point';
-import { getPluginContributions } from './plugin-registry';
+import {
+  getCompiledEditorSchema,
+  getPluginContributions,
+} from './plugin-registry';
 import { executeEditorRead } from './read-registry';
+import { containsEndMatter } from './slice-end-matter';
 import type {
   TransferEdge,
   TransferIntent,
@@ -200,6 +204,12 @@ const checkPlacement = (
     )
   ) {
     refuse('schema');
+  }
+  if (
+    parentPath.length > 0 &&
+    containsEndMatter(fit, getCompiledEditorSchema(editor))
+  ) {
+    refuse('policy');
   }
 };
 
@@ -455,6 +465,9 @@ const checkSlot = (
     })
   ) {
     refuse('schema');
+  }
+  if (containsEndMatter(fit, getCompiledEditorSchema(editor))) {
+    refuse('policy');
   }
 };
 

@@ -367,7 +367,7 @@ import {
   limitNodeInsert,
   limitSliceToLength,
 } from './insert-limit';
-import { getReplaceableEmptyBlock, isEmptyElement } from './is-empty-element';
+import { getReplaceableEmptyBlock } from './is-empty-element';
 import {
   renameSlice,
   renewCopy,
@@ -504,7 +504,11 @@ import {
   settleShown,
   valueSite,
 } from './set-root';
-import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
+import {
+  dissolveOpenEndMatter,
+  findEndMatterLandingIndex,
+  splitEndMatter,
+} from './slice-end-matter';
 import type { InternalSlicePlacementFit } from './slice-fit/compiled-slice-fitter';
 import { replacesEmptyBlockHead } from './slice-fit/edge-plan';
 import type { FitLanding } from './slice-fit/provenance';
@@ -6815,11 +6819,6 @@ const landSlice = (
   const state = getStateView(editor);
   const root = site.root ?? MAIN_ROOT_KEY;
   const children = root === MAIN_ROOT_KEY ? state.children() : state.root(root);
-  const trailing = schema.tryCreateDefaultChild({
-    at: [children.length],
-    root: toPublicRoot(root),
-  });
-  const trailingType = NodeApi.isElement(trailing) ? trailing.type : null;
   const sitePath = writesSite
     ? site.kind === 'blocks'
       ? getDefined(site.blocks.at(-1))[1]
@@ -6830,23 +6829,11 @@ const landSlice = (
     site.kind === 'blocks' && !writesSite
       ? site.blocks.flatMap(([, path]) => (path.length === 1 ? path : []))
       : [];
-  let boundary = children.length;
-
-  while (boundary > notesFloor) {
-    const node = getDefined(children[boundary - 1]);
-    if (
-      !NodeApi.isElement(node) ||
-      node.type !== trailingType ||
-      !isEmptyElement(node, schema.getElementBehavior(node)) ||
-      !schema.canPlaceAt(null, children, endMatter, boundary - 1, {
-        removing,
-        root,
-      })
-    ) {
-      break;
-    }
-    boundary -= 1;
-  }
+  const boundary = findEndMatterLandingIndex(editor, children, endMatter, {
+    minIndex: notesFloor,
+    removing,
+    root,
+  });
   const end = placeSliceFitRange(editor, state, [boundary], site.root, {
     boundary: true,
   });

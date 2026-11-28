@@ -348,6 +348,7 @@ export {
   readStoredEditorDocument,
   rejectEditorRecord,
   fitSlicePlacements,
+  findEndMatterLandingIndex,
   getReaderRange,
   mapDetachedSelectionThroughChange,
   isAuthorId,

@@ -7,7 +7,6 @@ import {
   TextApi,
   definePlugin,
   property,
-  transferVeto,
   type Descendant,
   type Element,
   type ElementOf,
@@ -20,6 +19,7 @@ import {
 } from '../../../core';
 import {
   MAIN_ROOT_KEY,
+  findEndMatterLandingIndex,
   getUpdateStartValue,
   getValueRecords,
   readAuthoredViewKey,
@@ -32,6 +32,7 @@ import {
   type StaticReuseKeyReader,
   withStaticReuseKey,
 } from '../../../internal/plugin/staticReuseKey.internal';
+import { TrailingBlockPlugin } from '../../../utils/plugins/TrailingBlockPlugin';
 import { getFootnoteTarget } from './internal/getFootnoteTarget';
 
 const NUMERIC_REF_REGEX = /^\d+$/;
@@ -468,18 +469,7 @@ export const BaseFootnoteDefinitionPlugin = withStaticReuseKey(
           },
         },
       }),
-  }).extend(({ schema: { type } }) => ({
-    contributions: [
-      // Definitions are end matter: a transfer lands them only at a root, and a
-      // side wrap lands its blocks inside the wrap.
-      transferVeto.of(
-        ({ payload, target: [, path], wrap }) =>
-          payload.kind === 'nodes' &&
-          (path.length > 1 || wrap !== undefined) &&
-          payload.nodes.some((node) => ElementApi.isElementType(node, type))
-      ),
-    ],
-  })),
+  }),
   readFootnoteStaticReuseKey
 );
 
@@ -821,32 +811,25 @@ export const BaseFootnotePlugin = withStaticReuseKey(
 
         return true;
       };
-      const getTrailingInsertIndex = () => {
-        const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
-        const rootChildren = tx.children();
-        let insertIndex = rootChildren.length;
+      const getEndMatterInsertIndex = (node: Element) => {
+        const trailingBlock = getCompiledPlatePlugin(
+          editor,
+          PLUGINS.trailingBlock
+        )
+          ? editor.plugin(TrailingBlockPlugin).store.get()
+          : null;
+        const trailingTypes =
+          trailingBlock &&
+          (trailingBlock.level ?? 0) === 0 &&
+          trailingBlock.type
+            ? [trailingBlock.type]
+            : undefined;
 
-        while (insertIndex > 1) {
-          const last = rootChildren[insertIndex - 1];
-
-          if (
-            !ElementApi.isElement(last) ||
-            last.type !== paragraphType ||
-            last.children.length !== 1 ||
-            !TextApi.isText(last.children[0]) ||
-            last.children[0].text !== '' ||
-            Object.keys(last.children[0]).length !== 1 ||
-            Object.keys(last).some(
-              (key) => key !== 'type' && key !== 'children' && key !== 'id'
-            )
-          ) {
-            break;
-          }
-
-          insertIndex -= 1;
-        }
-
-        return insertIndex;
+        return findEndMatterLandingIndex(editor, tx.children(), [node], {
+          minIndex: 1,
+          root: tx.view.root() ?? MAIN_ROOT_KEY,
+          ...(trailingTypes ? { trailingTypes } : {}),
+        });
       };
       const createDefinition = ({
         focus = true,
@@ -903,15 +886,13 @@ export const BaseFootnotePlugin = withStaticReuseKey(
           children.push({ children: [{ text: '' }], type: paragraphType });
         }
 
-        const path = [getTrailingInsertIndex()];
+        const definitionNode = {
+          ...tx.schema.create(definitionType, { ref }),
+          children,
+        };
+        const path = [getEndMatterInsertIndex(definitionNode)];
 
-        tx.nodes.insert(
-          {
-            ...tx.schema.create(definitionType, { ref }),
-            children,
-          },
-          { at: path }
-        );
+        tx.nodes.insert(definitionNode, { at: path });
 
         if (focus) selectDefinition({ ref });
 
@@ -995,7 +976,9 @@ export const BaseFootnotePlugin = withStaticReuseKey(
             );
 
           if (!stillPresent) {
-            tx.nodes.insert(preserved, { at: [getTrailingInsertIndex()] });
+            tx.nodes.insert(preserved, {
+              at: [getEndMatterInsertIndex(preserved)],
+            });
           }
         }
 
