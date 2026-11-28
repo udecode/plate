@@ -14,6 +14,17 @@ export type ScrollRect = {
 
 type ScrollIntoViewMode = 'always' | 'if-needed';
 
+/** Extra viewport clearance around a scrolled target, in pixels. */
+export type ScrollMargin =
+  | number
+  | Readonly<{
+      bottom?: number;
+      left?: number;
+      right?: number;
+      top?: number;
+    }>;
+
+/** Options controlling how `scrollIntoView` aligns and clears a target rect. */
 export type ScrollIntoViewOptions =
   | boolean
   | {
@@ -21,9 +32,18 @@ export type ScrollIntoViewOptions =
       block?: ScrollLogicalPosition;
       boundary?: Element | ((parent: Element) => boolean) | null;
       inline?: ScrollLogicalPosition;
+      /** Extra clearance around the target rect in pixels, merged with CSS scroll-margin via Math.max. */
+      scrollMargin?: ScrollMargin;
       scrollMode?: 'always' | 'if-needed';
       skipOverflowHiddenElements?: boolean;
     };
+
+type ResolvedScrollMargin = Readonly<{
+  bottom: number;
+  left: number;
+  right: number;
+  top: number;
+}>;
 
 type NormalizedScrollOptions = {
   behavior: ScrollBehavior;
@@ -31,8 +51,37 @@ type NormalizedScrollOptions = {
   boundary: Element | ((parent: Element) => boolean) | null;
   defaultReveal: boolean;
   inline: ScrollLogicalPosition;
+  scrollMargin: ResolvedScrollMargin;
   scrollMode: ScrollIntoViewMode;
   skipOverflowHiddenElements: boolean;
+};
+
+const ZERO_SCROLL_MARGIN: ResolvedScrollMargin = {
+  bottom: 0,
+  left: 0,
+  right: 0,
+  top: 0,
+};
+
+const clampMarginPx = (value: number | undefined) =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
+
+export const resolveScrollMargin = (
+  margin: ScrollMargin | undefined
+): ResolvedScrollMargin => {
+  if (margin === undefined) return ZERO_SCROLL_MARGIN;
+  if (typeof margin === 'number') {
+    const px = clampMarginPx(margin);
+
+    return { bottom: px, left: px, right: px, top: px };
+  }
+
+  return {
+    bottom: clampMarginPx(margin.bottom),
+    left: clampMarginPx(margin.left),
+    right: clampMarginPx(margin.right),
+    top: clampMarginPx(margin.top),
+  };
 };
 
 const MARGIN = 4;
@@ -57,29 +106,36 @@ export const toScrollRect = (r: DOMRect | DOMRectReadOnly): ScrollRect => ({
   top: r.top,
 });
 
+const hasOnlyDefaultRevealKeys = (
+  options: Exclude<ScrollIntoViewOptions, boolean>
+) =>
+  (options.scrollMode === undefined || options.scrollMode === 'if-needed') &&
+  options.block === undefined &&
+  options.inline === undefined &&
+  options.behavior === undefined &&
+  options.boundary === undefined &&
+  options.skipOverflowHiddenElements === undefined;
+
 export const isDefaultScrollRevealOptions = (
   options: ScrollIntoViewOptions | undefined
 ) =>
   options === undefined ||
   (typeof options === 'object' &&
     options !== null &&
-    (options.scrollMode === undefined || options.scrollMode === 'if-needed') &&
-    options.block === undefined &&
-    options.inline === undefined &&
-    options.behavior === undefined &&
-    options.boundary === undefined &&
-    options.skipOverflowHiddenElements === undefined);
+    options.scrollMargin === undefined &&
+    hasOnlyDefaultRevealKeys(options));
 
 const normalizeOptions = (
   options: ScrollIntoViewOptions | undefined
 ): NormalizedScrollOptions => {
-  if (isDefaultScrollRevealOptions(options)) {
+  if (options === undefined) {
     return {
       behavior: 'auto',
       block: 'nearest',
       boundary: null,
       defaultReveal: true,
       inline: 'nearest',
+      scrollMargin: ZERO_SCROLL_MARGIN,
       scrollMode: 'if-needed',
       skipOverflowHiddenElements: true,
     };
@@ -92,21 +148,36 @@ const normalizeOptions = (
       boundary: null,
       defaultReveal: false,
       inline: 'nearest',
+      scrollMargin: ZERO_SCROLL_MARGIN,
       scrollMode: 'always',
       skipOverflowHiddenElements: true,
     };
   }
 
-  const scrollMode: ScrollIntoViewMode = options?.scrollMode ?? 'always';
+  if (hasOnlyDefaultRevealKeys(options)) {
+    return {
+      behavior: 'auto',
+      block: 'nearest',
+      boundary: null,
+      defaultReveal: options.scrollMargin === undefined,
+      inline: 'nearest',
+      scrollMargin: resolveScrollMargin(options.scrollMargin),
+      scrollMode: 'if-needed',
+      skipOverflowHiddenElements: true,
+    };
+  }
+
+  const scrollMode: ScrollIntoViewMode = options.scrollMode ?? 'always';
 
   return {
-    behavior: options?.behavior ?? 'auto',
-    block: options?.block ?? (scrollMode === 'always' ? 'center' : 'nearest'),
-    boundary: options?.boundary ?? null,
+    behavior: options.behavior ?? 'auto',
+    block: options.block ?? (scrollMode === 'always' ? 'center' : 'nearest'),
+    boundary: options.boundary ?? null,
     defaultReveal: false,
-    inline: options?.inline ?? 'nearest',
+    inline: options.inline ?? 'nearest',
+    scrollMargin: resolveScrollMargin(options.scrollMargin),
     scrollMode,
-    skipOverflowHiddenElements: options?.skipOverflowHiddenElements ?? true,
+    skipOverflowHiddenElements: options.skipOverflowHiddenElements ?? true,
   };
 };
 
@@ -674,7 +745,13 @@ export const scrollRectIntoView = ({
 }) => {
   const normalized = normalizeOptions(options);
   const margin = normalized.defaultReveal ? MARGIN : 0;
-  const margins = readScrollMargins(startElement, scrollMarginTop);
+  const cssMargins = readScrollMargins(startElement, scrollMarginTop);
+  const margins = {
+    bottom: Math.max(cssMargins.bottom, normalized.scrollMargin.bottom),
+    left: Math.max(cssMargins.left, normalized.scrollMargin.left),
+    right: Math.max(cssMargins.right, normalized.scrollMargin.right),
+    top: Math.max(cssMargins.top, normalized.scrollMargin.top),
+  };
   let cur: ScrollRect = {
     bottom: rect.bottom + margins.bottom,
     left: rect.left - margins.left,

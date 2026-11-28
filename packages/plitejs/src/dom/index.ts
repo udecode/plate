@@ -37,6 +37,7 @@ export type {
   DOMClipboardInsertDataHandler,
   ScrollIntoViewOptions,
   ScrollIntoViewTarget,
+  ScrollMargin,
 } from './plugin/dom-editor';
 export type { DOMPlugin, DOMPluginTypes } from './plugin/with-dom';
 export { isTrackedMutation, DOMResolutionError } from './plugin/dom-editor';

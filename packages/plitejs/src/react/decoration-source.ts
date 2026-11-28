@@ -174,6 +174,8 @@ type DecorationSourceState<E> = {
   faultBoundary: ReturnType<typeof createDecorationSourceFaultBoundary>;
   generation: number;
   observationGeneration: number;
+  refreshedAtVersion: number;
+  refreshedKeysAtVersion: Set<NodeKey> | 'all' | null;
   snapshot: CompiledDecorationSourceSnapshot;
 };
 
@@ -1338,6 +1340,26 @@ export const createPliteDecorationManager = <E>(
     publishMergedBuckets(affectedNodeKeys, insertionByNodeKey);
   };
 
+  const recordSourceRefreshed = (
+    state: DecorationSourceState<E>,
+    snapshotVersion: number,
+    nodeKeys: readonly NodeKey[] | 'all'
+  ) => {
+    if (state.refreshedAtVersion !== snapshotVersion) {
+      state.refreshedAtVersion = snapshotVersion;
+      state.refreshedKeysAtVersion =
+        nodeKeys === 'all' ? 'all' : new Set(nodeKeys);
+      return;
+    }
+    if (nodeKeys === 'all' || state.refreshedKeysAtVersion === 'all') {
+      state.refreshedKeysAtVersion = 'all';
+      return;
+    }
+    const keys = state.refreshedKeysAtVersion ?? new Set<NodeKey>();
+    state.refreshedKeysAtVersion = keys;
+    for (const key of nodeKeys) keys.add(key);
+  };
+
   const refreshState = (
     state: DecorationSourceState<E>,
     input: DecorationRefresh,
@@ -1345,12 +1367,14 @@ export const createPliteDecorationManager = <E>(
   ) => {
     if (input.nodeKeys === 'all') {
       publishMergedBuckets(refreshAll(state, snapshot));
+      recordSourceRefreshed(state, snapshot.version, 'all');
 
       return;
     }
 
     const result = refreshInputs(state, snapshot, input.nodeKeys);
 
+    recordSourceRefreshed(state, snapshot.version, input.nodeKeys);
     if (result.changes.length === 0) return;
     publishMergedBuckets(result.changes.map(({ nodeKey }) => nodeKey));
   };
@@ -1438,6 +1462,8 @@ export const createPliteDecorationManager = <E>(
       }),
       generation: 0,
       observationGeneration: 0,
+      refreshedAtVersion: -1,
+      refreshedKeysAtVersion: null,
       snapshot: createEmptyCompiledSourceSnapshot(),
     };
     const compiled = compile ? compileAll(state, snapshot, inputs) : null;
@@ -1518,6 +1544,10 @@ export const createPliteDecorationManager = <E>(
       let refreshedSynchronously = false;
 
       if (observeChanged) stopObservation(current);
+      if (readChanged || observeChanged) {
+        current.refreshedAtVersion = -1;
+        current.refreshedKeysAtVersion = null;
+      }
       if (readChanged) current.generation += 1;
       current.definition = definition;
       if (observeChanged && mounted) {
@@ -1767,10 +1797,13 @@ export const createPliteDecorationManager = <E>(
             lastEditorVersion = snapshot.version;
             lastEditorChildren = rootNodesOf(snapshot, 'children');
             if (pendingRefresh) pendingRefresh.snapshot = snapshot;
-            if (
-              sourceStates.length === 0 ||
-              !change.changed.hasAny('document')
-            ) {
+            if (sourceStates.length === 0) {
+              return;
+            }
+            if (!change.changed.hasAny('document')) {
+              if (pendingRefresh && pendingRefresh.sources.size > 0) {
+                flushPendingRefresh();
+              }
               return;
             }
 
@@ -1807,7 +1840,21 @@ export const createPliteDecorationManager = <E>(
               }
               inputKeys = [...expanded];
             }
-            queueSourceRefresh(snapshot, sourceStates, inputKeys);
+            for (const state of sourceStates) {
+              if (state.refreshedAtVersion === snapshot.version) {
+                const refreshedKeys = state.refreshedKeysAtVersion;
+                if (refreshedKeys === 'all') continue;
+                if (inputKeys !== undefined && refreshedKeys) {
+                  const remaining = inputKeys.filter(
+                    (key) => !refreshedKeys.has(key)
+                  );
+                  if (remaining.length === 0) continue;
+                  queueSourceRefresh(snapshot, [state], remaining);
+                  continue;
+                }
+              }
+              queueSourceRefresh(snapshot, [state], inputKeys);
+            }
             if (
               (change.tags.includes('native-text-input') ||
                 change.tags.includes('dom-text-input')) &&
@@ -1849,6 +1896,8 @@ export const createPliteDecorationManager = <E>(
           snapshot.version !== lastEditorVersion ||
           rootNodesOf(snapshot, 'children') !== lastEditorChildren;
         refreshOnMount = false;
+        lastEditorVersion = snapshot.version;
+        lastEditorChildren = rootNodesOf(snapshot, 'children');
         let inputs: ReturnType<typeof getInputEntries> | undefined;
         const getInputs = () => (inputs ??= getInputEntries(snapshot));
 
@@ -1863,8 +1912,6 @@ export const createPliteDecorationManager = <E>(
             affected.add(nodeKey);
           });
         });
-        lastEditorVersion = snapshot.version;
-        lastEditorChildren = rootNodesOf(snapshot, 'children');
         publishMergedBuckets(affected);
       }
 

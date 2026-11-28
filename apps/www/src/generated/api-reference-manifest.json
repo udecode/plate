@@ -13230,12 +13230,12 @@
         },
         "platejs/dom:ScrollIntoViewOptions": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Options controlling how `scrollIntoView` aligns and clears a target rect.",
           "entrypoint": "platejs/dom",
           "kind": "type",
           "name": "ScrollIntoViewOptions",
           "runtime": false,
-          "signature": "type ScrollIntoViewOptions = boolean | {\n  behavior?: ScrollBehavior;\n  block?: ScrollLogicalPosition;\n  boundary?: Element | ((parent: Element) => boolean) | null;\n  inline?: ScrollLogicalPosition;\n  scrollMode?: 'always' | 'if-needed';\n  skipOverflowHiddenElements?: boolean;\n};",
+          "signature": "type ScrollIntoViewOptions = boolean | {\n  behavior?: ScrollBehavior;\n  block?: ScrollLogicalPosition;\n  boundary?: Element | ((parent: Element) => boolean) | null;\n  inline?: ScrollLogicalPosition;\n  /** Extra clearance around the target rect in pixels, merged with CSS scroll-margin via Math.max. */\n  scrollMargin?: ScrollMargin;\n  scrollMode?: 'always' | 'if-needed';\n  skipOverflowHiddenElements?: boolean;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -13247,6 +13247,17 @@
           "name": "ScrollIntoViewTarget",
           "runtime": false,
           "signature": "type ScrollIntoViewTarget = DOMRange | Path | Point | Range$1;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/dom:ScrollMargin": {
+          "aliases": [],
+          "documentation": "Extra viewport clearance around a scrolled target, in pixels.",
+          "entrypoint": "platejs/dom",
+          "kind": "type",
+          "name": "ScrollMargin",
+          "runtime": false,
+          "signature": "type ScrollMargin = number | Readonly<{\n  bottom?: number;\n  left?: number;\n  right?: number;\n  top?: number;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -23662,7 +23673,7 @@
           "kind": "const",
           "name": "NavigationFeedbackPlugin",
           "runtime": true,
-          "signature": "NavigationFeedbackPlugin: Plugin<Readonly<{\n  readonly name: \"navigation\";\n  readonly initialState: {\n    readonly duration: number;\n  };\n  readonly api: {\n    /** Flash one live element in this mounted view without changing the document or selection. */\n    flashTarget: ({ key, attributes, duration }: NavigationFlashTargetOptions) => boolean;\n    /** Clear this mounted view's feedback, returning whether a target was active. */\n    clear: () => boolean;\n  };\n  readonly dependencies: readonly [PluginReference$1<\"dom\"> & PluginDependency<Readonly<{\n    name: \"dom\";\n  }> & Readonly<{\n    __pluginWritableProperties: never;\n  }> & Readonly<Record<\"api\", AutoScrollApi & DOMApi & {\n    clipboard: DOMClipboardApi;\n  }>> & Readonly<Record<\"update\", {\n    autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n  } & Pick<DOMClipboardApi<Value>, \"insertData\">>> & Readonly<Record<never, never>>> & Pick<BasePlugin<Readonly<{\n    readonly activate: true;\n    readonly on: true;\n    readonly initialState: {\n      readonly clipboardFormatKey: string | null;\n      readonly scrollMode: ScrollMode;\n      readonly scrollChanges: {\n        readonly properties?: boolean | undefined;\n        readonly structure?: boolean | undefined;\n        readonly text?: boolean | undefined;\n      };\n      readonly scrollOptions: boolean | {\n        readonly behavior?: ScrollBehavior;\n        readonly block?: ScrollLogicalPosition;\n        readonly boundary?: Element | ((parent: Element) => boolean) | null;\n        readonly inline?: ScrollLogicalPosition;\n        readonly scrollMode?: 'always' | 'if-needed';\n        readonly skipOverflowHiddenElements?: boolean;\n      };\n    };\n    readonly name: \"dom\";\n    readonly api: AutoScrollApi & DOMApi & {\n      clipboard: DOMClipboardApi;\n    };\n    readonly update: {\n      autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n    } & Pick<DOMClipboardApi<Value>, \"insertData\">;\n  }>> & Readonly<Record<never, never>>, \"~schema.plugins\">];\n  readonly render: true;\n}>>",
+          "signature": "NavigationFeedbackPlugin: Plugin<Readonly<{\n  readonly name: \"navigation\";\n  readonly initialState: {\n    readonly duration: number;\n  };\n  readonly api: {\n    /** Flash one live element in this mounted view without changing the document or selection. */\n    flashTarget: ({ key, attributes, duration }: NavigationFlashTargetOptions) => boolean;\n    /** Clear this mounted view's feedback, returning whether a target was active. */\n    clear: () => boolean;\n  };\n  readonly dependencies: readonly [PluginReference$1<\"dom\"> & PluginDependency<Readonly<{\n    name: \"dom\";\n  }> & Readonly<{\n    __pluginWritableProperties: never;\n  }> & Readonly<Record<\"api\", AutoScrollApi & DOMApi & {\n    clipboard: DOMClipboardApi;\n  }>> & Readonly<Record<\"update\", {\n    autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n  } & Pick<DOMClipboardApi<Value>, \"insertData\">>> & Readonly<Record<never, never>>> & Pick<BasePlugin<Readonly<{\n    readonly activate: true;\n    readonly on: true;\n    readonly initialState: {\n      readonly clipboardFormatKey: string | null;\n      readonly scrollMode: ScrollMode;\n      readonly scrollChanges: {\n        readonly properties?: boolean | undefined;\n        readonly structure?: boolean | undefined;\n        readonly text?: boolean | undefined;\n      };\n      readonly scrollOptions: boolean | {\n        readonly behavior?: ScrollBehavior;\n        readonly block?: ScrollLogicalPosition;\n        readonly boundary?: Element | ((parent: Element) => boolean) | null;\n        readonly inline?: ScrollLogicalPosition;\n        readonly scrollMargin?: ScrollMargin;\n        readonly scrollMode?: 'always' | 'if-needed';\n        readonly skipOverflowHiddenElements?: boolean;\n      };\n    };\n    readonly name: \"dom\";\n    readonly api: AutoScrollApi & DOMApi & {\n      clipboard: DOMClipboardApi;\n    };\n    readonly update: {\n      autoScroll: TxDeclaredMethod<(fn: AutoScrollUpdate, options?: AutoScrollOptions) => void>;\n    } & Pick<DOMClipboardApi<Value>, \"insertData\">;\n  }>> & Readonly<Record<never, never>>, \"~schema.plugins\">];\n  readonly render: true;\n}>>",
           "source": null,
           "typeParameters": []
         },

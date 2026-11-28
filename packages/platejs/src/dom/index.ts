@@ -43,4 +43,5 @@ export type {
   KeyboardEventLike,
   ScrollIntoViewOptions,
   ScrollIntoViewTarget,
+  ScrollMargin,
 } from 'plitejs/dom';

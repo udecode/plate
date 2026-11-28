@@ -695,7 +695,6 @@
       "HotkeySpec",
       "isHotkey",
       "KeyboardEventLike",
-      "ScrollIntoViewOptions",
       "ScrollIntoViewTarget"
     ],
     "platejs/excalidraw": ["ExcalidrawElement"],

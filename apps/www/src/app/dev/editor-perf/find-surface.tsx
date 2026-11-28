@@ -730,7 +730,7 @@ export function FindSurface({
       readBack: () => {
         manager();
         const root = editable();
-        const matches = find.store.get('matches');
+        const matches = find.api.matches();
         const { fresh, mismatch, painted } = paintCheck();
 
         return {

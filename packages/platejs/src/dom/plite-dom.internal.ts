@@ -32,4 +32,5 @@ export type {
   HotkeySpec,
   KeyboardEventLike,
   ScrollIntoViewOptions,
+  ScrollMargin,
 } from 'plitejs/dom';

@@ -173,7 +173,9 @@ import {
 import {
   isDefaultScrollRevealOptions,
   isUsableScrollRect,
+  resolveScrollMargin,
   type ScrollIntoViewOptions,
+  type ScrollMargin,
   scrollDOMRangeFocusIntoViewIfNeeded,
   scrollRectIntoView,
   toScrollRect,
@@ -526,7 +528,7 @@ export interface DOMClipboardApi<
   V extends Value = Value,
 > extends DOMEditorClipboardCapability<V> {}
 
-export type { ScrollIntoViewOptions };
+export type { ScrollIntoViewOptions, ScrollMargin };
 
 export type ScrollIntoViewTarget = DOMRange | Path | Point | Range;
 
@@ -2690,9 +2692,16 @@ const DOMEditorImpl: DOMEditorInterface = {
 
         revealInEditableRoot(element, target);
         const scrollElement = getRegisteredScrollElement(activeView);
-        const requestedScrollMarginTop = initialPathElement
-          ? initialScrollMarginTop
-          : readScrollMarginTop(element);
+        const optionMarginTop =
+          typeof options === 'object' && options !== null
+            ? resolveScrollMargin(options.scrollMargin).top
+            : 0;
+        const requestedScrollMarginTop = Math.max(
+          initialPathElement
+            ? initialScrollMarginTop
+            : readScrollMarginTop(element),
+          optionMarginTop
+        );
         const usesRegisteredStartAlignment =
           scrollElement &&
           requestedScrollMarginTop > 0 &&
