@@ -165,7 +165,6 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/react/plite-react.ts',
   'packages/platejs/src/react/virtualized.tsx',
   'packages/platejs/src/static/internal/plite-react.ts',
-  'packages/platejs/src/static/internal/writeStaticSelectionClipboardData.ts',
   'packages/platejs/src/testing/index.ts',
   'packages/platejs/src/yjs/index.tsx',
   'packages/platejs/src/yjs/react/YjsPlugin.tsx',
