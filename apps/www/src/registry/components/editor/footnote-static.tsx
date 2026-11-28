@@ -52,11 +52,13 @@ export function FootnoteDefinitionElementStatic(
     >
       <div
         className="mt-0.5 min-w-4 text-sm text-muted-foreground tabular-nums"
-        data-editor-footnote-chrome=""
+        data-editor-footnote-chrome="label"
       >
         {element.ref ?? ''}
       </div>
-      <div className="min-w-0 flex-1">{props.children}</div>
+      <div className="min-w-0 flex-1" data-editor-footnote-body="">
+        {props.children}
+      </div>
       {anchor?.target && (
         <a
           aria-label={`Back to reference ${element.ref}`}

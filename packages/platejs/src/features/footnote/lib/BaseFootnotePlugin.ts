@@ -339,7 +339,7 @@ export const BaseFootnoteDefinitionPlugin = withStaticReuseKey(
                 (child) => child.tagName === 'OL'
               )) {
                 [...list.children].forEach((item, position) => {
-                  if (item.tagName !== 'LI' || !item.id) return;
+                  if (item.tagName !== 'LI') return;
                   const label =
                     labels.get(item as HTMLElement) ?? `${position + 1}`;
                   let ref = label;
@@ -350,7 +350,7 @@ export const BaseFootnoteDefinitionPlugin = withStaticReuseKey(
                   }
                   used.add(ref);
                   const definition = document.createElement('div');
-                  definition.id = item.id;
+                  if (item.id) definition.id = item.id;
                   definition.setAttribute(
                     'data-editor-footnote-definition',
                     ref
@@ -364,10 +364,48 @@ export const BaseFootnoteDefinitionPlugin = withStaticReuseKey(
             for (const definition of document.querySelectorAll(
               'div[data-editor-footnote-definition]'
             )) {
-              for (const chrome of definition.querySelectorAll(
-                '[data-footnote-backref], [data-editor-footnote-chrome]'
-              )) {
+              if (
+                definition.querySelector('[data-editor-footnote-body]') &&
+                !definition.querySelector(
+                  '[data-editor-footnote-chrome="label"]'
+                )
+              ) {
+                definition.removeAttribute('data-editor-footnote-definition');
+              }
+              for (const chrome of [
+                ...definition.querySelectorAll(
+                  '[data-footnote-backref], [data-editor-footnote-chrome]'
+                ),
+              ]) {
+                const isBackref = chrome.hasAttribute('data-footnote-backref');
+                const previous = chrome.previousSibling;
+                const next = chrome.nextSibling;
+
                 chrome.remove();
+
+                if (!isBackref) continue;
+
+                const trailingBackref =
+                  !next ||
+                  (next.nodeType === 3 && !next.textContent?.trim()) ||
+                  (next.nodeType === 1 &&
+                    (next as HTMLElement).matches('[data-footnote-backref]'));
+
+                if (
+                  trailingBackref &&
+                  previous?.nodeType === 3 &&
+                  previous.textContent
+                ) {
+                  const trimmed = previous.textContent.replace(
+                    /[ \t\u00A0]+$/,
+                    ''
+                  );
+                  if (trimmed.length === 0) {
+                    previous.remove();
+                  } else {
+                    previous.textContent = trimmed;
+                  }
+                }
               }
             }
           },
