@@ -7,6 +7,7 @@ import {
 import { pageSchema } from 'fumadocs-core/source/schema';
 import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
 import { createGenerator, remarkAutoTypeTable } from 'fumadocs-typescript';
+import { rehype } from 'rehype';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
@@ -22,6 +23,7 @@ import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 import 'dotenv/config';
 
 const typeTableGenerator = createGenerator();
+const codeHtmlSerializer = rehype().data('settings', { fragment: true });
 
 const EVENT_META_REGEX = /event="([^"]*)"/;
 const COMMAND_CODE_REGEX = /^(bun|npm|npx|pnpm|yarn)\s/;
@@ -216,19 +218,29 @@ export default defineConfig({
                       preElement.properties.__showLineNumbers__ =
                         node.__showLineNumbers__;
 
-                      if (node.__showLineNumbers__) {
-                        let codeElement: any;
+                      let codeElement: any;
 
-                        for (const child of preElement.children ?? []) {
-                          if (child.tagName === 'code') {
-                            codeElement = child;
-                            break;
-                          }
+                      for (const child of preElement.children ?? []) {
+                        if (child.tagName === 'code') {
+                          codeElement = child;
+                          break;
                         }
+                      }
 
-                        if (codeElement) {
-                          codeElement.properties ??= {};
+                      if (codeElement) {
+                        codeElement.properties ??= {};
+                        if (node.__showLineNumbers__) {
                           codeElement.properties['data-line-numbers'] = '';
+                        }
+                        if (codeElement.children?.length) {
+                          // Serialize highlighted token spans into one HTML string so MDX does not
+                          // compile each token into a JSX span call and exhaust webpack's server heap.
+                          codeElement.properties.__html__ =
+                            codeHtmlSerializer.stringify({
+                              children: codeElement.children,
+                              type: 'root',
+                            });
+                          codeElement.children = [];
                         }
                       }
                       if (node.__src__) {
