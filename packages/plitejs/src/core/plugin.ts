@@ -1661,24 +1661,20 @@ const runEditorTeardown = (editor: Editor, destroy: boolean) => {
         : 'Cannot release an editor while acquiring plugin resources.'
     );
   }
+  if (getEditorLifetime(editor) === 'destroyed') return;
   if (state.teardown) {
-    if (destroy) {
-      state.teardown.destroyRequested = true;
-      setEditorLifetime(editor, 'destroyed');
-    }
+    if (destroy) state.teardown.destroyRequested = true;
     return;
   }
-  if (getEditorLifetime(editor) === 'destroyed') return;
 
   const teardown = { destroyRequested: destroy };
 
   state.teardown = teardown;
   try {
-    setEditorLifetime(editor, destroy ? 'destroyed' : 'released');
+    setEditorLifetime(editor, 'released');
     releasePluginRecords(getInstalledRecordsInOrder(state), 'remove');
 
     if (teardown.destroyRequested) {
-      setEditorLifetime(editor, 'destroyed');
       for (const record of getInstalledRecordsInOrder(state).toReversed()) {
         for (const cause of deactivatePluginRecord(record, 'remove')) {
           reportPluginLifecycleError(
@@ -1689,6 +1685,7 @@ const runEditorTeardown = (editor: Editor, destroy: boolean) => {
           );
         }
       }
+      setEditorLifetime(editor, 'destroyed');
     }
   } finally {
     state.teardown = null;
@@ -3488,7 +3485,11 @@ export const extendEditor = (
   const pluginState = getPluginState(editor);
 
   if (pluginState.teardown) {
-    throw new Error('Cannot install plugins while releasing an editor.');
+    throw new Error(
+      pluginState.teardown.destroyRequested
+        ? 'Cannot install plugins while destroying an editor.'
+        : 'Cannot install plugins while releasing an editor.'
+    );
   }
   if (pluginState.acquiring) {
     throw new Error('Cannot install plugins while acquiring plugin resources.');
