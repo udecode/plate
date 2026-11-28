@@ -185,7 +185,9 @@ const linkCommits = (text) => {
 };
 
 const TEAM_START = /^(?<kind>Team|Team-Action):[ \t]*(?<text>\S.*?)[ \t]*$/u;
-const TRAILER = /^(?:[A-Z][\w-]*|Beyond the ask|Not checked):[ \t]/u;
+const TRAILER =
+  /^(?:(?:[A-Z][\w-]*|Beyond the ask|Not checked):[ \t]|Refs[ \t])/u;
+const NONE_VALUE = /^none\.?$/iu;
 
 const rawTeamLines = (message) => {
   const lines = [];
@@ -193,8 +195,9 @@ const rawTeamLines = (message) => {
   for (const line of message.split('\n').slice(1)) {
     const start = TEAM_START.exec(line);
     if (start) {
-      open = { ...start.groups };
-      lines.push(open);
+      const entry = { ...start.groups };
+      lines.push(entry);
+      open = NONE_VALUE.test(entry.text) ? null : entry;
     } else if (open && line.trim() && !TRAILER.test(line)) {
       open.text += ` ${line.trim()}`;
     } else {
@@ -205,11 +208,11 @@ const rawTeamLines = (message) => {
 };
 
 export const teamLines = (message) =>
-  rawTeamLines(message).filter(({ text }) => text.toLowerCase() !== 'none');
+  rawTeamLines(message).filter(({ text }) => !NONE_VALUE.test(text));
 
 const hasTeamTrailer = (message) =>
   rawTeamLines(message).some(
-    ({ kind, text }) => kind === 'Team' || text.toLowerCase() !== 'none'
+    ({ kind, text }) => kind === 'Team' || !NONE_VALUE.test(text)
   );
 
 const PRIVATE_ISSUE = /\bplate-private#(\d+)\b/gu;
@@ -705,6 +708,63 @@ const TEAM_AFFECTING_PATHS = new Set([
   'package.json',
 ]);
 
+const BREAKING_SUBJECT = /^[a-z]+(?:\([^)\n]+\))?!:/u;
+const BREAKING_BODY = /^BREAKING[ -]CHANGE:/mu;
+const PACKAGE_JSON_PATH = /^(?:packages\/[^/]+|apps\/www)\/package\.json$/u;
+const DEP_FIELDS = ['dependencies', 'peerDependencies', 'optionalDependencies'];
+
+const parseJsonOrEmpty = (raw) => {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const stableJson = (value) => {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value).sort();
+    return `{${keys.map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value ?? null);
+};
+
+const depKeysChanged = (before, after) =>
+  DEP_FIELDS.some((field) => {
+    const prev = Object.keys(before?.[field] ?? {}).sort();
+    const next = Object.keys(after?.[field] ?? {}).sort();
+    return (
+      prev.length !== next.length ||
+      prev.some((key, index) => key !== next[index])
+    );
+  });
+
+const packageTeamReasons = (root, base, changed) => {
+  const pairing = { pair: landingPair };
+  const reasons = [];
+  for (const path of changed) {
+    if (!PACKAGE_JSON_PATH.test(path)) continue;
+    const shown = showAt(root, base, path, pairing);
+    const before = parseJsonOrEmpty(shown.status === 0 ? shown.stdout : '');
+    const full = join(root, path);
+    const after = parseJsonOrEmpty(
+      existsSync(full) ? readFileSync(full, 'utf-8') : ''
+    );
+    const changes = [];
+    if (depKeysChanged(before, after)) changes.push('dependencies');
+    if (
+      stableJson(before.exports ?? null) !== stableJson(after.exports ?? null)
+    ) {
+      changes.push('exports');
+    }
+    if (changes.length > 0) reasons.push(`${path} (${changes.join(', ')})`);
+  }
+  return reasons;
+};
+
 const workflowTeamProblems = (bodies) => {
   if (process.env[LAND_CHECK] !== '1') return [];
   if (bodies.some((body) => hasTeamTrailer(body))) return [];
@@ -718,6 +778,28 @@ const workflowTeamProblems = (bodies) => {
   if (touched.length === 0) return [];
   return [
     `this landing changes teammate-affecting workflow/config paths (${touched.join(', ')}) without a Team: or Team-Action: trailer. Add a Team: or Team-Action: line explaining what changed for teammates (or Team: none for a silent internal tweak), then run land.mjs again with --message.`,
+  ];
+};
+
+const breakingTeamProblems = (bodies) => {
+  if (process.env[LAND_CHECK] !== '1') return [];
+  if (bodies.some((body) => hasTeamTrailer(body))) return [];
+  const reasons = [];
+  if (bodies.some((body) => BREAKING_SUBJECT.test(body.split('\n')[0] ?? ''))) {
+    reasons.push('breaking commit subject (!:)');
+  }
+  if (bodies.some((body) => BREAKING_BODY.test(body))) {
+    reasons.push('BREAKING CHANGE: trailer');
+  }
+  const root = process.cwd();
+  const base = gitAt(root, ['merge-base', 'HEAD', UPSTREAM]).stdout.trim();
+  const changed = base ? changedSince(root, base, { pair: landingPair }) : null;
+  if (changed) {
+    reasons.push(...packageTeamReasons(root, base, [...new Set(changed)]));
+  }
+  if (reasons.length === 0) return [];
+  return [
+    `this landing has breaking or package-contract changes (${reasons.join('; ')}) without a Team: or Team-Action: trailer. Add a plain-English Team: or Team-Action: line explaining what changed for teammates and apps with zero code internals (or Team: none for a truly silent internal tweak), then run land.mjs again with --message.`,
   ];
 };
 
@@ -779,6 +861,7 @@ const check = (args) => {
   const missing = [
     ...demoProblems([...landing]),
     ...workflowTeamProblems([...landing]),
+    ...breakingTeamProblems([...landing]),
   ];
   if (missing.length > 0) fail(1, missing.join('\n'));
 };
