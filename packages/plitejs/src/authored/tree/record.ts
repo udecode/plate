@@ -3063,7 +3063,7 @@ class RootRecorder {
     this.strikeEmptiedWrappers();
     if (this.ops.length > opsBeforeWrappers) this.textStrike = null;
     this.freshCopyKeys();
-    this.keepEndsBeforeRightHalves();
+    this.reconcileSplitEnds();
     const recorded = RootChange.create(this.index, this.sections());
     const carries: Carry[] = [];
     const copies = this.copies.map(
@@ -5122,17 +5122,16 @@ class RootRecorder {
     const withInserted = (props: Props, added: readonly AuthoredMark[]) =>
       this.withMarks(withoutSpares(props), [...this.marks(props), ...added]);
     const insertedLeaves = new Set<Context>();
-    // A suggested drag lands as the mover's insertion, as Google Docs lands a
-    // dragged struck word, while its source keeps every deletion. An Editing
-    // drag strikes no source, so struck content keeps its deletions as it goes.
-    const landed = (props: Props) => {
+    const landed = (props: Props, follows?: string) => {
+      const keepDeletedMarks = this.isEditing;
       const marks = this.withoutCuts(props).filter(
-        (mark) => this.isEditing || mark.kind !== 'delete'
+        (mark) => keepDeletedMarks || mark.kind !== 'delete'
       );
+      const insert = this.options.markOf('insert');
 
       return this.withMarks(withoutSpares(props), [
         ...marks,
-        this.options.markOf('insert'),
+        follows === undefined ? insert : { ...insert, follows },
       ]);
     };
     let trailingLeafProps: Props | null = input.reopen ?? leafOf(stack);
@@ -5342,23 +5341,58 @@ class RootRecorder {
         closeLeaf();
         const subtree = local.slice(index, close + 1);
         const added = landing ? null : insertedMarks();
+        const source =
+          closedElement &&
+          token.nodeKind === 'element' &&
+          !this.options.isInline(token.props)
+            ? splitFrom.at(-1)
+            : undefined;
+        const follows =
+          source?.kind === 'element' && !this.options.isInline(source.props)
+            ? this.followedBy(source.props)
+            : undefined;
+        let rootAdded = added;
 
-        for (const item of subtree) {
+        if (added && follows !== undefined) {
+          const own = incarnationOf(this.options.markOf('insert'));
+          const ownIndex = added.findLastIndex(
+            (mark) => mark.kind === 'insert' && incarnationOf(mark) === own
+          );
+          const markAt =
+            ownIndex !== -1
+              ? ownIndex
+              : added.findLastIndex((mark) => mark.kind === 'insert');
+
+          if (markAt !== -1) {
+            rootAdded = added.map((mark, pos) =>
+              pos === markAt && mark.kind === 'insert'
+                ? { ...mark, follows }
+                : mark
+            );
+          }
+        }
+
+        for (const [offset, item] of subtree.entries()) {
           if (item.kind === 'text') {
-            for (let offset = 0; offset < item.text.length; offset += 1) {
-              outputTextOffsets.push(outLength + offset);
+            for (let char = 0; char < item.text.length; char += 1) {
+              outputTextOffsets.push(outLength + char);
             }
           } else {
             outputTextOffsets.push(outLength);
           }
+          const isRoot = offset === 0;
+
           emit(
             item.kind !== 'open'
               ? item
               : openToken(
                   item.nodeKind,
                   added === null
-                    ? landed(item.props)
-                    : withInserted(item.props, added)
+                    ? landed(item.props, isRoot ? follows : undefined)
+                    : withInserted(
+                        item.props,
+                        isRoot ? (rootAdded ?? added) : added
+                      )
                 )
           );
         }
@@ -6089,13 +6123,7 @@ class RootRecorder {
     }
   }
 
-  /**
-   * Keeps each split's end on the block right before its right half: a block
-   * this write puts there takes the end, and when this write moves the end's
-   * line away, the block left there takes it. A right half this write takes
-   * away leaves its end where it is.
-   */
-  private keepEndsBeforeRightHalves() {
+  private reconcileSplitEnds() {
     const within = (spans: readonly Span[], { from, to }: IndexedNodeRange) =>
       spans.some((span) => span.from <= from && to <= span.to);
     const removals = this.ops.flatMap((op) =>
@@ -6103,7 +6131,52 @@ class RootRecorder {
     );
     const takenAway = (entry: IndexedNodeRange) =>
       within(this.movedFrom, entry) || within(removals, entry);
+    const leavesPosition = (holder: IndexedNodeRange) =>
+      within(removals, holder) ||
+      (within(this.movedFrom, holder) &&
+        isEditingChange(this.options.changeId));
+    const updateLineProps = (
+      at: number,
+      transform: (props: Props) => Props | null
+    ) => {
+      const existing = this.ops.findLastIndex(
+        (op) => op.kind === 'props' && op.at === at
+      );
+      const current =
+        existing !== -1 && this.ops[existing]?.kind === 'props'
+          ? this.ops[existing].props
+          : this.propsStartingAt(at);
+      const next = transform(current);
+
+      if (!next) return;
+      if (existing !== -1) {
+        this.ops[existing] = { at, kind: 'props', props: next };
+      } else {
+        this.ops.push({ at, kind: 'props', props: next });
+      }
+    };
+    const survivingBefore = (entry: IndexedNodeRange) => {
+      let cursor = entry.from;
+
+      while (cursor > 0) {
+        const previous = this.index
+          .nodeRangesTouching(cursor - 1, cursor)
+          .find(
+            (candidate) =>
+              candidate.kind === 'element' &&
+              candidate.to === cursor &&
+              candidate.path.length === entry.path.length
+          );
+
+        if (!previous) return undefined;
+        if (!takenAway(previous)) return previous;
+        cursor = previous.from;
+      }
+
+      return undefined;
+    };
     const holders = new Map<number, IndexedNodeRange>();
+    const withdrawnLinks = new Set<string>();
     const note = (entry: IndexedNodeRange) => {
       if (
         entry.kind === 'element' &&
@@ -6124,6 +6197,53 @@ class RootRecorder {
       for (const entry of this.index.nodeRangesTouching(span.from, span.to)) {
         if (within([span], entry)) note(entry);
       }
+    }
+    const stripWithdrawnEnds = (at: number, links: Set<string>) => {
+      updateLineProps(at, (props) => {
+        const members = readMembers(props);
+        const kept = members.filter((member) => {
+          if (!isSplitEnd(member)) return true;
+          const link = splitLinkOf(member);
+
+          if (!links.has(link)) return true;
+          links.delete(link);
+
+          return false;
+        });
+
+        return kept.length < members.length ? withMembers(props, kept) : null;
+      });
+    };
+
+    for (const span of removals) {
+      for (const entry of this.index.nodeRangesTouching(span.from, span.to)) {
+        if (!within([span], entry) || entry.kind !== 'element') continue;
+        note(entry);
+        if (within(this.movedFrom, entry)) continue;
+        const localLinks = new Set<string>();
+
+        for (const mark of readAuthoredMarks(
+          this.propsStartingAt(entry.from)
+        )) {
+          if (isKeyedSplit(mark)) localLinks.add(splitLinkOf(mark));
+        }
+        if (localLinks.size === 0) continue;
+
+        const before = survivingBefore(entry);
+
+        if (before) stripWithdrawnEnds(before.from, localLinks);
+        for (const link of localLinks) withdrawnLinks.add(link);
+      }
+    }
+    if (withdrawnLinks.size > 0) {
+      this.index.elementsOpeningIn(0, this.index.length, (_node, from) => {
+        if (withdrawnLinks.size === 0) return;
+
+        const entry = this.index.nodeStartingAt(from);
+
+        if (!entry || takenAway(entry)) return;
+        stripWithdrawnEnds(from, withdrawnLinks);
+      });
     }
     for (const holder of holders.values()) {
       const half = this.index.nodeStartingAt(holder.to);
@@ -6155,33 +6275,17 @@ class RootRecorder {
           op.at === half.from &&
           lastBlockIn(op.tokens) !== -1
       );
-      // A suggested move leaves the line it strikes where it stood.
       const before =
-        into === -1 &&
-        holder.from > 0 &&
-        within(this.movedFrom, holder) &&
-        (isEditingChange(this.options.changeId) || within(removals, holder))
-          ? this.index
-              .nodeRangesTouching(holder.from - 1, holder.from)
-              .find(
-                (entry) =>
-                  entry.kind === 'element' &&
-                  entry.to === holder.from &&
-                  entry.path.length === holder.path.length &&
-                  !takenAway(entry)
-              )
+        into === -1 && holder.from > 0 && leavesPosition(holder)
+          ? survivingBefore(holder)
           : undefined;
 
       if (into === -1 && !before) continue;
       this.takeEndsOff(holder, ends, within(removals, holder));
       if (before) {
-        const props = this.propsStartingAt(before.from);
-
-        this.ops.push({
-          at: before.from,
-          kind: 'props',
-          props: withMembers(props, [...readMembers(props), ...ends]),
-        });
+        updateLineProps(before.from, (props) =>
+          withMembers(props, [...readMembers(props), ...ends])
+        );
         continue;
       }
 

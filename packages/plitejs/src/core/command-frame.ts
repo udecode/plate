@@ -603,6 +603,7 @@ const enterFrameDraft = (
   };
   frame.baseCaret = frame.caret;
   snapshot.selection = selection;
+  snapshot.frameSelection = (at) => bookCaret(at, storedSelectionRoot);
   const selectedRoot =
     storedSelection &&
     (SelectionApi.root(storedSelection) ?? storedSelectionRoot);

@@ -690,6 +690,7 @@ type TransactionSnapshot = {
   >;
   token: TransactionToken;
   implicitTarget: Selection;
+  frameSelection: ((selection: Selection) => Selection) | null;
   implicitTargetFrame: Readonly<{
     context: TransactionSpecContext;
     storedSelection: Selection;
@@ -5456,8 +5457,17 @@ export const findLiveNodeKeys = (
   return live;
 };
 
-export const getLastCommit = (editor: Editor): EditorCommit | null =>
-  LAST_COMMIT.get(editor) ?? null;
+export const getLastCommit = (editor: Editor): EditorCommit | null => {
+  const commit = LAST_COMMIT.get(editor) ?? null;
+  const mapSelection = getTransactionSnapshot(editor)?.frameSelection;
+
+  if (!commit || !mapSelection || !commit.selectionAfter) return commit;
+
+  return {
+    ...commit,
+    selectionAfter: mapSelection(commit.selectionAfter),
+  };
+};
 
 const equalMarkValue = (left: unknown, right: unknown): boolean => {
   if (Object.is(left, right)) return true;
@@ -11222,6 +11232,7 @@ export const createTransactionSpecContext = (
     implicitTarget: parentSnapshot?.implicitTargetResolved
       ? cloneValue(parentSnapshot.implicitTarget)
       : null,
+    frameSelection: parentSnapshot?.frameSelection ?? null,
     implicitTargetFrame: parentSnapshot?.implicitTargetFrame ?? null,
     implicitTargetResolved: parentSnapshot?.implicitTargetResolved ?? false,
     previousSnapshot: null,
@@ -16110,6 +16121,7 @@ const createEditorUpdateDraftContext = (
     effects: [],
     pluginReconfigurations: new Map(),
     implicitTarget: null,
+    frameSelection: null,
     implicitTargetFrame: null,
     implicitTargetResolved: false,
     previousSnapshot,
