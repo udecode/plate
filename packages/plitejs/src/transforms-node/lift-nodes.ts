@@ -1,5 +1,9 @@
 import { getEditorSchema } from '../core/editor-runtime';
 import { refuseVetoedWrite } from '../core/node-write-veto';
+import {
+  hasNonWritableDescendant,
+  isElementNonWritable,
+} from '../core/non-writable';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   applyBuiltDocumentChange,
@@ -72,14 +76,21 @@ export const liftNodes = ((
     ) {
       return;
     }
+    const activeRoot = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
     const splitsOrRemovesParent = index === 0 || index < childCount - 1;
+    const liftedIsNonWritable = hasNonWritableDescendant(editor, node, false);
 
-    if (splitsOrRemovesParent && NodeApi.isElement(parent)) {
+    if (
+      NodeApi.isElement(parent) &&
+      (splitsOrRemovesParent ||
+        liftedIsNonWritable ||
+        isElementNonWritable(editor, parent, { includeReadOnly: false }))
+    ) {
       refuseVetoedWrite(editor, {
         kind: 'unwrap',
         node: parent,
         path: parentPath,
-        root: getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY,
+        root: activeRoot,
       });
     }
 

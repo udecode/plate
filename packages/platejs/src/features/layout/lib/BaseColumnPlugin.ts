@@ -201,16 +201,14 @@ export const BaseColumnGroupPlugin = definePlugin(PLUGINS.columnGroup, {
           0
         );
 
-        // An inserted column makes the unlocked share over-full; scaling keeps
-        // each unlocked column's share without mutating locked columns.
-        const resize = (width: number) =>
+        const resizeUnlockedWidth = (width: number) =>
           unlockedSum > targetSum
             ? (width * targetSum) / unlockedSum
             : width + (targetSum - unlockedSum) / unlocked.length;
 
         for (const { index, width } of unlocked) {
           tx.nodes.set(
-            { width: `${resize(width)}%` },
+            { width: `${resizeUnlockedWidth(width)}%` },
             {
               at: path.concat([index]),
             }

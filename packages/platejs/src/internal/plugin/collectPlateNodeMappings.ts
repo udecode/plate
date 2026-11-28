@@ -70,8 +70,13 @@ const collect = (editor: object) => {
 
         const target = getTargetPlugin(editor, owner, declaration.target);
         const binding = getCompiledPlateModelBinding(editor, target);
+        const targetKey =
+          binding?.propertyKey ??
+          (!binding?.elementType && binding?.elementPropertyKeys.length === 1
+            ? binding.elementPropertyKeys[0]
+            : null);
 
-        if (!binding?.elementType && !binding?.propertyKey) {
+        if (!binding || (!binding.elementType && !targetKey)) {
           throw new Error(
             `Plate node mapping target "${target.name}" must own an element type or property key.`
           );
@@ -88,7 +93,7 @@ const collect = (editor: object) => {
             ownedPropertyKeys: binding.elementPropertyKeys,
             schema: binding.schema,
             targetKind: binding.kind,
-            targetKey: binding.propertyKey,
+            targetKey,
             targetPlugin: target.name,
             targetType: binding.elementType,
           })

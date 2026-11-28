@@ -100,23 +100,33 @@ export function BlockContextMenu({ children }: WrapContentProps) {
   const selectionLock = useEditorSelector(
     (current) => {
       const lock = current.plugin(BaseLockPlugin);
+      const blocks = readBlocks(current);
 
-      if (!lock.installed || readBlocks(current).length === 0) {
-        return { isSelectionLocked: false, isSelectionOwnLocked: false };
+      if (!lock.installed || blocks.length === 0) {
+        return {
+          isSelectionAllLocked: false,
+          isSelectionLocked: false,
+          isSelectionOwnLocked: false,
+        };
       }
 
       return {
+        isSelectionAllLocked: blocks.every(([, path]) =>
+          lock.read.isLocked(path)
+        ),
         isSelectionLocked: lock.read.isLocked(),
         isSelectionOwnLocked: lock.read.isOwnLocked(),
       };
     },
     {
       equalityFn: (a, b) =>
+        a.isSelectionAllLocked === b.isSelectionAllLocked &&
         a.isSelectionLocked === b.isSelectionLocked &&
         a.isSelectionOwnLocked === b.isSelectionOwnLocked,
     }
   );
-  const { isSelectionLocked, isSelectionOwnLocked } = selectionLock;
+  const { isSelectionAllLocked, isSelectionLocked, isSelectionOwnLocked } =
+    selectionLock;
   const editable = hasSelection && !isSelectionLocked;
   const aiInstalled = editor.plugin(AIChatPlugin).installed;
   const headingInstalled = editor.plugin(BaseHeadingPlugin).installed;
@@ -366,7 +376,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
           {lockInstalled && (
             <ContextMenuItem
               disabled={
-                !hasSelection || (isSelectionLocked && !isSelectionOwnLocked)
+                !hasSelection || (isSelectionAllLocked && !isSelectionOwnLocked)
               }
               onClick={() => {
                 if (editor.read.view.isReadOnly()) return;
@@ -381,7 +391,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             >
               {isSelectionOwnLocked
                 ? 'Unlock block'
-                : isSelectionLocked
+                : isSelectionAllLocked
                   ? 'Locked by parent'
                   : 'Lock block'}
             </ContextMenuItem>

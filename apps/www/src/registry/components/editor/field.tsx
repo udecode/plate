@@ -18,6 +18,7 @@ import {
   type FieldValue,
 } from 'platejs/field';
 import { FieldPlugin, useFieldRead } from 'platejs/field/react';
+import { BaseLockPlugin } from 'platejs/lock';
 import {
   type EditorElementProps,
   EditorElement,
@@ -262,11 +263,22 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   const warning = problems.map((problem) => PROBLEMS[problem]).join(' ');
   const filling = fillRole !== null;
   const ownField = element.role === fillRole;
+  const locked = useEditorSelector(
+    (current) => {
+      const lock = current.plugin(BaseLockPlugin);
+      const key = current.key(element);
+
+      return Boolean(lock.installed && key && lock.read.isLocked(key));
+    },
+    { dependsOn: ['properties', 'structure'] }
+  );
   const waitsForReview = useWaitsForReview(
     element,
-    ownField && editor.plugin(AuthoredPlugin).installed
+    (ownField || (!filling && locked)) &&
+      editor.plugin(AuthoredPlugin).installed
   );
-  const fills = ownField && !readOnly && !waitsForReview;
+  const fills =
+    (ownField || (!filling && locked)) && !readOnly && !waitsForReview;
   const toggles = fills && element.kind === 'checkbox';
   const ticked = element.value === true;
   const [refusedToggle, setRefusedToggle] = React.useState<{
@@ -292,7 +304,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   const beforeClose = React.useRef<() => 'refused' | 'written'>(null);
   let form: React.ReactNode = null;
 
-  if (!filling && !readOnly) {
+  if (!filling && !locked && !readOnly) {
     form = <FieldSettingsForm beforeClose={beforeClose} element={element} />;
   }
   if (fills && !toggles) {
@@ -309,7 +321,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   if (openAs && !open) setOpenAs(null);
 
   React.useEffect(() => {
-    if (!open || filling || readOnly) return undefined;
+    if (!open || filling || locked || readOnly) return undefined;
 
     const guard = {
       close: () => {
@@ -330,7 +342,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
         openSettingsGuards.delete(modelEditor);
       }
     };
-  }, [element.fieldId, filling, modelEditor, open, readOnly]);
+  }, [element.fieldId, filling, locked, modelEditor, open, readOnly]);
 
   const chip = {
     className: cn(
@@ -340,7 +352,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
       inlineSuggestionVariants({ on: 'parent' })
     ),
     contentEditable: false,
-    draggable: !filling,
+    draggable: !filling && !locked,
     onClick: (event: React.MouseEvent) => {
       if (toggles) {
         setRefusedToggle(
@@ -374,9 +386,10 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
       openAtPointerDownRef.current = open;
     },
   };
+  const showAnswer = filling || locked;
   const chipContent = (
     <>
-      {filling && element.kind === 'checkbox' && (
+      {showAnswer && element.kind === 'checkbox' && (
         <span
           aria-label={ticked ? 'Ticked' : 'Not ticked'}
           className="flex size-3 items-center justify-center self-center rounded-[3px] border border-current"
@@ -385,7 +398,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
           {ticked && <CheckIcon className="size-2.5" />}
         </span>
       )}
-      {filling && element.kind !== 'checkbox'
+      {showAnswer && element.kind !== 'checkbox'
         ? answer || element.label
         : element.label}
       {element.required && (
@@ -435,7 +448,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
           <FloatingPopoverContent
             className={cn(
               'max-h-[min(80vh,var(--floating-popover-available-height,80vh))] max-w-[calc(100vw-2rem)] overflow-y-auto',
-              filling ? 'w-64' : 'w-[26rem]'
+              filling || locked ? 'w-64' : 'w-[26rem]'
             )}
             onFinalFocus={(event) => {
               if (!suppressCloseFocusRef.current) return;
@@ -452,7 +465,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
           {chipContent}
         </button>
       )}
-      {ownField && element.kind === 'checkbox' && (
+      {(ownField || (!filling && locked)) && element.kind === 'checkbox' && (
         <span className="text-xs text-muted-foreground" role="status">
           {refusedToggle && ' Not saved.'}
         </span>

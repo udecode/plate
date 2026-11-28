@@ -999,6 +999,11 @@ function SuggestionDiscussionCard({
         : []),
     ]);
 
+    if (!result) {
+      setOutcome({ status: 'locked' });
+      return;
+    }
+
     if (result.status === 'applied' || result.status === 'unchanged') {
       onDecisionApplied();
       return;

@@ -1124,20 +1124,9 @@ export const compilePlateModel = (editor: Editor): CompiledPlateModel => {
       ...declaredProperties,
       ...(textProperty ? [textProperty] : []),
     ]);
-    // A plugin's schema lists its properties, so their local ids are indexes;
-    // a property under the plugin's key is primary, or a single declared
-    // property on a property-only plugin owns its primary property key.
-    const singleDeclaredPropertyKey =
-      !element &&
-      !mark &&
-      declaredProperties.length === 1 &&
-      typeof declaredProperties[0]?.key === 'string'
-        ? declaredProperties[0].key
-        : null;
+    // A Plite plugin's schema lists its properties, so their local ids are
+    // indexes; only a property declared under the plugin's key is primary.
     const ownsPropertyKey = Object.hasOwn(propertyHandles, propertyKey);
-    const resolvedPropertyKey = ownsPropertyKey
-      ? propertyKey
-      : singleDeclaredPropertyKey;
 
     properties.push(...declaredProperties);
     contentRoots.push(...declaredContentRoots);
@@ -1169,7 +1158,7 @@ export const compilePlateModel = (editor: Editor): CompiledPlateModel => {
       kind: element ? 'element' : mark ? 'mark' : 'none',
       markPlacement: mark ? (plugin.render.mark?.placement ?? 'leaf') : null,
       name: plugin.name,
-      propertyKey: resolvedPropertyKey,
+      propertyKey: ownsPropertyKey ? propertyKey : null,
       propertyHandles: Object.freeze(propertyHandles),
       properties: pluginProperties,
       propertyIds: Object.freeze([

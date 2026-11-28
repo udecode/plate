@@ -347,6 +347,7 @@ export {
   recordEditorHistoryEffect,
   readElementPropertyWrites,
   registerEditorTransactionGuard,
+  resolveLocationRoot,
   subscribeCaretTarget,
   subscribeEditorViewState,
   subscribeSharedEditorViewState,

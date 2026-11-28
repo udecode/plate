@@ -1781,6 +1781,30 @@ export const getEditorUpdateRoot = (editor: Editor): string =>
   getActiveUpdateRoot(getEditorRuntimeOwner(editor)) ??
   getEditorRuntimeRoot(editor);
 
+/** @internal */
+export const resolveLocationRoot = (
+  editor: Editor,
+  target: NodeTarget | NodeSelection | undefined
+): RootKey => {
+  if (target === undefined) return getEditorUpdateRoot(editor);
+
+  if (typeof target === 'object' && target !== null) {
+    if (SelectionApi.isNode(target)) {
+      return target.root ?? getEditorUpdateRoot(editor);
+    }
+
+    const locationRoot = getReadLocationRoot(
+      target as Location | Span | undefined
+    );
+
+    if (locationRoot !== undefined) return locationRoot;
+  }
+
+  const route = routeNodeTarget(editor, target);
+
+  return route?.root ?? getEditorUpdateRoot(editor);
+};
+
 export const isInTransaction = (editor: Editor) =>
   getEditorTransactionDepth(editor) > 0;
 
@@ -15018,9 +15042,12 @@ const applyTransactionSpecDocumentChangeStep = (
   if (
     !IN_DOCUMENT_REPLACEMENT.has(getEditorRuntimeOwner(editor)) &&
     !step.change.empty &&
-    snapshot.annotations.has(documentReplacement.key)
+    snapshot.annotations.get(documentReplacement.key)?.value === true
   ) {
-    snapshot.annotations.delete(documentReplacement.key);
+    snapshot.annotations.set(documentReplacement.key, {
+      type: documentReplacement,
+      value: false,
+    });
   }
 
   snapshot.settlementSplit = advanceSettlementSplit(
@@ -15849,66 +15876,75 @@ export const runEditorTransaction = <R>(
 
     assertSynchronousTransactionAuthorResult(answer);
 
-    finalizeWithoutOrphanedRoots(editor);
-
+    const owner = getEditorRuntimeOwner(editor);
     const snapshot = getTransactionSnapshot(editor);
-    const hasDocumentChange = !(snapshot?.activeChange.change.empty ?? true);
+    const keepReplacementAnnotation =
+      snapshot?.annotations.get(documentReplacement.key)?.value === true;
 
-    if (
-      draftContext?.changed &&
-      !(options.skipCorrections || snapshot?.skipCorrections) &&
-      hasDocumentChange &&
-      getPluginRegistry(editor).corrections.size > 0
-    ) {
-      const activeChange = profileCoreDuration(
-        'transaction-active-change',
-        () => getActiveTransactionDocumentChange(editor)
-      );
-      const changedRoots = new Set([
-        ...[...getInternalDocumentChangeEntries(activeChange)].map(
-          ([root]) => root
-        ),
-        ...activeChange.createRoots,
-      ]);
+    if (keepReplacementAnnotation) IN_DOCUMENT_REPLACEMENT.add(owner);
+    try {
+      finalizeWithoutOrphanedRoots(editor);
 
-      for (const root of changedRoots) {
-        if (activeChange.deleteRoots.has(root)) continue;
+      const hasDocumentChange = !(snapshot?.activeChange.change.empty ?? true);
 
-        const correct = () => {
-          profileCoreDuration('transaction-correct', () => {
-            const framed = runInEditorCommandFrame(
-              editor,
-              (place) => {
-                const seed = {
-                  change: activeChange,
-                  place: (path: Path) => place.location(path),
-                };
+      if (
+        draftContext?.changed &&
+        !(options.skipCorrections || snapshot?.skipCorrections) &&
+        hasDocumentChange &&
+        getPluginRegistry(editor).corrections.size > 0
+      ) {
+        const activeChange = profileCoreDuration(
+          'transaction-active-change',
+          () => getActiveTransactionDocumentChange(editor)
+        );
+        const changedRoots = new Set([
+          ...[...getInternalDocumentChangeEntries(activeChange)].map(
+            ([root]) => root
+          ),
+          ...activeChange.createRoots,
+        ]);
 
-                return () => {
-                  correctDocument(editor, { force: false, root, seed });
+        for (const root of changedRoots) {
+          if (activeChange.deleteRoots.has(root)) continue;
 
-                  return true;
-                };
-              },
-              { ignoresSelection: true, refusesStruckTargets: false }
-            );
+          const correct = () => {
+            profileCoreDuration('transaction-correct', () => {
+              const framed = runInEditorCommandFrame(
+                editor,
+                (place) => {
+                  const seed = {
+                    change: activeChange,
+                    place: (path: Path) => place.location(path),
+                  };
 
-            if (framed === null) {
-              correctDocument(editor, {
-                force: false,
-                root,
-              });
-            }
+                  return () => {
+                    correctDocument(editor, { force: false, root, seed });
+
+                    return true;
+                  };
+                },
+                { ignoresSelection: true, refusesStruckTargets: false }
+              );
+
+              if (framed === null) {
+                correctDocument(editor, {
+                  force: false,
+                  root,
+                });
+              }
+            });
+          };
+
+          withEditorUpdateRoot(editor, root, () => {
+            withEditorUpdateRootChildren(editor, root, correct);
           });
-        };
-
-        withEditorUpdateRoot(editor, root, () => {
-          withEditorUpdateRootChildren(editor, root, correct);
-        });
+        }
       }
-    }
 
-    finalizeWithoutOrphanedRoots(editor);
+      finalizeWithoutOrphanedRoots(editor);
+    } finally {
+      if (keepReplacementAnnotation) IN_DOCUMENT_REPLACEMENT.delete(owner);
+    }
 
     if (snapshot?.pluginReconfigurations.size) {
       const stagedReconfigurations = [
@@ -15966,9 +16002,17 @@ export const runEditorTransaction = <R>(
       pluginPublication?.validateDocument(getEditorDocumentValue(editor));
     }
     if (snapshot) {
-      runEditorDocumentRecorder(editor);
-      admitTransactionDraft(editor);
-      PREPARING_COMMIT.add(getEditorRuntimeOwner(editor));
+      const keepBeforeCommit =
+        snapshot.annotations.get(documentReplacement.key)?.value === true;
+
+      if (keepBeforeCommit) IN_DOCUMENT_REPLACEMENT.add(owner);
+      try {
+        runEditorDocumentRecorder(editor);
+        admitTransactionDraft(editor);
+      } finally {
+        if (keepBeforeCommit) IN_DOCUMENT_REPLACEMENT.delete(owner);
+      }
+      PREPARING_COMMIT.add(owner);
       try {
         runEditorDraftGuards(
           editor,
@@ -15985,7 +16029,7 @@ export const runEditorTransaction = <R>(
           }
         );
       } finally {
-        PREPARING_COMMIT.delete(getEditorRuntimeOwner(editor));
+        PREPARING_COMMIT.delete(owner);
       }
     }
   } catch (error) {

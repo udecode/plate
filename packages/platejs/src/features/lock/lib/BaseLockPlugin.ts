@@ -28,17 +28,19 @@ import {
 import {
   type AnyEditor,
   authoredDirectProperties,
+  canPlaceBlocksAtPath,
   claimsHistoryReplay,
   EditorRefusalError,
   getEditorCommitSnapshot,
+  getEditorRuntimeOwner,
   getPluginContributions,
   MAIN_ROOT_KEY,
   nonWritableContent,
   nonWritableRoot,
   publishEditorRefusal,
   readCommitRootIndex,
-  readRootEntries,
   registerEditorTransactionGuard,
+  resolveLocationRoot,
   skipHistoryIfOnlyProperties,
   subscribeEditorRefusals,
   visitDocumentChangeSections,
@@ -107,12 +109,9 @@ export const lockWriteExemption = definePluginPoint<LockWriteExemption>(
   'lock.write.exemption'
 );
 
-type LockRootCache = {
-  lockedRoots: ReadonlySet<RootKey>;
-  version: number;
-};
+const EMPTY_ROOT_SET: ReadonlySet<RootKey> = new Set();
 
-const LOCK_ROOT_CACHE = new WeakMap<object, LockRootCache>();
+const LOCK_ROOT_CACHE = new WeakMap<object, ReadonlySet<RootKey>>();
 
 const isOwnLockedElement = (node: unknown): boolean =>
   ElementApi.isElement(node) && node.locked === true;
@@ -173,18 +172,68 @@ const treeContainsLocked = (children: readonly Descendant[]): boolean => {
   return false;
 };
 
-const computeLockedRoots = (
-  editor: AnyEditor,
+const valueContainsLocked = (value: EditorDocumentValue): boolean => {
+  if (treeContainsLocked(value.children)) return true;
+  if (!value.roots) return false;
+
+  for (const rootChildren of Object.values(value.roots)) {
+    if (treeContainsLocked(rootChildren)) return true;
+  }
+
+  return false;
+};
+
+const computeLockedRootsFromValue = (
   value: EditorDocumentValue
 ): ReadonlySet<RootKey> => {
   const { roots } = value;
 
   if (!roots || Object.keys(roots).length === 0) {
-    return new Set();
+    return EMPTY_ROOT_SET;
   }
 
-  const entries = readRootEntries(editor);
-  const byRoot = new Map(entries.map((entry) => [entry.root, entry]));
+  const ownersByRoot = new Map<
+    RootKey,
+    Array<Readonly<{ ownerLocked: boolean; ownerRoot: RootKey }>>
+  >();
+
+  const walk = (
+    nodes: readonly Descendant[],
+    ownerRoot: RootKey,
+    ancestorLocked: boolean
+  ) => {
+    for (const node of nodes) {
+      if (!ElementApi.isElement(node)) continue;
+
+      const locked = ancestorLocked || node.locked === true;
+      const { childRoots } = node as Element & {
+        childRoots?: Record<string, unknown>;
+      };
+
+      if (childRoots && typeof childRoots === 'object') {
+        for (const childRoot of Object.values(childRoots)) {
+          if (typeof childRoot !== 'string') continue;
+
+          let list = ownersByRoot.get(childRoot);
+
+          if (!list) {
+            list = [];
+            ownersByRoot.set(childRoot, list);
+          }
+
+          list.push({ ownerLocked: locked, ownerRoot });
+        }
+      }
+
+      walk(node.children, ownerRoot, locked);
+    }
+  };
+
+  walk(value.children, MAIN_ROOT_KEY, false);
+  for (const [rootName, rootChildren] of Object.entries(roots)) {
+    walk(rootChildren, rootName, false);
+  }
+
   const memo = new Map<RootKey, boolean>();
 
   const checkRoot = (root: RootKey, visiting: Set<RootKey>): boolean => {
@@ -194,16 +243,15 @@ const computeLockedRoots = (
     if (visiting.has(root)) return false;
     visiting.add(root);
 
-    const entry = byRoot.get(root);
+    const owners = ownersByRoot.get(root);
     let locked = false;
 
-    if (entry) {
-      for (const owner of entry.owners) {
-        const ownerRoot = owner.root ?? MAIN_ROOT_KEY;
-
+    if (owners) {
+      for (const owner of owners) {
         if (
-          hasLockedElementAtOrAbovePath(value, ownerRoot, owner.path) ||
-          (ownerRoot !== MAIN_ROOT_KEY && checkRoot(ownerRoot, visiting))
+          owner.ownerLocked ||
+          (owner.ownerRoot !== MAIN_ROOT_KEY &&
+            checkRoot(owner.ownerRoot, visiting))
         ) {
           locked = true;
           break;
@@ -230,28 +278,22 @@ const computeLockedRoots = (
 
 const getLockedRoots = (
   editor: AnyEditor,
-  value?: EditorDocumentValue
+  committedValue?: EditorDocumentValue
 ): ReadonlySet<RootKey> => {
-  const currentValue = value ?? editor.read.value();
+  const value = committedValue ?? editor.read.value();
 
-  if (!currentValue.roots || Object.keys(currentValue.roots).length === 0) {
-    return new Set();
+  if (!value.roots || Object.keys(value.roots).length === 0) {
+    return EMPTY_ROOT_SET;
   }
 
-  if (value !== undefined) {
-    return computeLockedRoots(editor, value);
-  }
+  const owner = getEditorRuntimeOwner(editor);
+  const cached = LOCK_ROOT_CACHE.get(owner);
 
-  const version = editor.read((state) => state.lastCommit()?.version ?? 0);
-  const cached = LOCK_ROOT_CACHE.get(editor);
+  if (cached) return cached;
 
-  if (cached && cached.version === version) {
-    return cached.lockedRoots;
-  }
+  const lockedRoots = computeLockedRootsFromValue(value);
 
-  const lockedRoots = computeLockedRoots(editor, currentValue);
-
-  LOCK_ROOT_CACHE.set(editor, { lockedRoots, version });
+  LOCK_ROOT_CACHE.set(owner, lockedRoots);
 
   return lockedRoots;
 };
@@ -259,8 +301,9 @@ const getLockedRoots = (
 const isRootLocked = (
   editor: AnyEditor,
   root: RootKey,
-  value?: EditorDocumentValue
-): boolean => root !== MAIN_ROOT_KEY && getLockedRoots(editor, value).has(root);
+  committedValue?: EditorDocumentValue
+): boolean =>
+  root !== MAIN_ROOT_KEY && getLockedRoots(editor, committedValue).has(root);
 
 const resolveBlockEntries = (
   editor: AnyEditor,
@@ -389,19 +432,20 @@ export const BaseLockPlugin = definePlugin('lock', {
       lastAnnouncedAt = now;
       announcing = true;
       try {
-        editor.update({ history: 'skip' }, (tx) => {
+        editor.update((tx) => {
+          tx.tags.add('history-skip');
           tx.effects.emit(
             screenReaderAnnouncementEffect,
             LOCK_ANNOUNCEMENT_TEXT
           );
         });
       } catch {
-        // Command handlers run inside editor.read; defer the announcement to a microtask.
         queueMicrotask(() => {
           if (announcing) return;
           announcing = true;
           try {
-            editor.update({ history: 'skip' }, (tx) => {
+            editor.update((tx) => {
+              tx.tags.add('history-skip');
               tx.effects.emit(
                 screenReaderAnnouncementEffect,
                 LOCK_ANNOUNCEMENT_TEXT
@@ -443,179 +487,171 @@ export const BaseLockPlugin = definePlugin('lock', {
     );
 
     onCleanup(
-      registerEditorTransactionGuard(editor, ({ before, change, commit }) => {
-        if (commit.tags.includes('collaboration')) return;
-        if (commit.annotations[documentReplacement.key] === true) return;
+      registerEditorTransactionGuard(
+        editor,
+        ({ after, before, change, commit }) => {
+          if (commit.tags.includes('collaboration')) return;
+          if (commit.annotations[documentReplacement.key] === true) return;
 
-        const isHistoryReplay =
-          commit.tags.includes('historic') || claimsHistoryReplay(commit);
+          const isHistoryReplay =
+            commit.tags.includes('historic') || claimsHistoryReplay(commit);
 
-        if (change.empty && !isHistoryReplay) return;
+          if (change.empty && !isHistoryReplay) return;
 
-        const blockingKeys = new Set<NodeKey>();
-        const refuse = (message: string, key?: NodeKey | null): never => {
-          if (key) blockingKeys.add(key);
+          const blockingKeys = new Set<NodeKey>();
+          const refuse = (message: string, key?: NodeKey | null): never => {
+            if (key) blockingKeys.add(key);
 
-          throw new EditorRefusalError(
-            {
-              blockingKeys: [...blockingKeys],
-              reason: 'block-locked',
-            },
-            message
-          );
-        };
-
-        const beforeLockedRoots = getLockedRoots(editor, before);
-
-        for (const deletedRoot of change.deleteRoots) {
-          if (
-            beforeLockedRoots.has(deletedRoot) ||
-            treeContainsLocked(rootChildrenOf(before, deletedRoot))
-          ) {
-            refuse(`Cannot delete locked content root "${deletedRoot}".`);
-          }
-        }
-
-        const authorized = new Set<string>();
-        const authorityEntries = commit.annotations[lockAuthority.key] as
-          | readonly LockAuthorityEntry[]
-          | undefined;
-
-        if (authorityEntries) {
-          for (const entry of authorityEntries) {
-            if (ACTIVE_LOCK_NONCES.has(entry.nonce)) {
-              ACTIVE_LOCK_NONCES.delete(entry.nonce);
-              authorized.add(`${entry.root}:${entry.key}`);
-            }
-          }
-        }
-
-        const exemptions = getPluginContributions(editor, lockWriteExemption);
-
-        visitDocumentChangeSections(change, (section) => {
-          const { root } = section;
-          const beforeIndex = readCommitRootIndex(before, root);
-
-          if (!beforeIndex) return;
-
-          const rootLocked = beforeLockedRoots.has(root);
-
-          if (section.kind === 'properties') {
-            const resolved = beforeIndex.nodeStartingAt(section.fromA);
-
-            if (!resolved) {
-              if (rootLocked) {
-                refuse('Cannot edit properties inside a locked root.');
-              }
-              return;
-            }
-
-            const targetPath = resolved.path;
-            const node = beforeIndex.node(targetPath);
-
-            if (!ElementApi.isElement(node)) {
-              if (
-                rootLocked ||
-                hasLockedProperAncestor(before, root, targetPath)
-              ) {
-                refuse('Cannot modify text marks inside a locked block.');
-              }
-              return;
-            }
-
-            const beforeSnap = getEditorCommitSnapshot(commit, root, 'before');
-            const nodeKey = beforeSnap.index.keyAt(targetPath);
-            const hasLockMod = section.modifications.some(
-              (modification) => modification.key === LOCK_KEY
+            throw new EditorRefusalError(
+              {
+                blockingKeys: [...blockingKeys],
+                reason: 'block-locked',
+              },
+              message
             );
-
-            if (hasLockMod) {
-              const isAuthorized =
-                (nodeKey !== null && authorized.has(`${root}:${nodeKey}`)) ||
-                commit.tags.includes('historic');
-
-              if (!isAuthorized) {
-                refuse(
-                  'Use BaseLockPlugin commands to change a block lock.',
-                  nodeKey
-                );
-              }
-            }
-
-            const nonLockMods = hasLockMod
-              ? section.modifications.filter(
-                  (modification) => modification.key !== LOCK_KEY
-                )
-              : section.modifications;
-
-            if (nonLockMods.length === 0) return;
-
-            const effectivelyLocked =
-              rootLocked ||
-              node.locked === true ||
-              hasLockedProperAncestor(before, root, targetPath);
-
-            if (!effectivelyLocked) return;
-
-            const exempted = exemptions.some((exemption) =>
-              exemption({
-                before,
-                element: node,
-                modifications: nonLockMods,
-                path: targetPath,
-                root,
-              })
-            );
-
-            if (!exempted) {
-              refuse('Cannot edit properties of a locked block.', nodeKey);
-            }
-
-            return;
-          }
-
-          if (rootLocked) {
-            refuse('Cannot edit content inside a locked root.');
-          }
-
-          const checkOpenAncestors = (position: number) => {
-            for (const ancestor of beforeIndex.openContextAt(position)) {
-              const ancestorPath = ancestor.path;
-
-              if (
-                ancestorPath.length === 0 ||
-                ancestor.from >= position ||
-                position >= ancestor.to
-              ) {
-                continue;
-              }
-
-              const ancestorNode = beforeIndex.node(ancestorPath);
-
-              if (isOwnLockedElement(ancestorNode)) {
-                const beforeSnap = getEditorCommitSnapshot(
-                  commit,
-                  root,
-                  'before'
-                );
-
-                refuse(
-                  'Cannot edit content inside a locked block.',
-                  beforeSnap.index.keyAt(ancestorPath)
-                );
-              }
-            }
           };
 
-          checkOpenAncestors(section.fromA);
-          if (section.toA > section.fromA) {
-            checkOpenAncestors(section.toA - 1);
-            beforeIndex.elementsOpeningIn(
-              section.fromA,
-              section.toA,
-              (openingNode, from) => {
-                if (isOwnLockedElement(openingNode)) {
-                  const opening = beforeIndex.nodeStartingAt(from);
+          if (
+            commit.annotations[documentReplacement.key] === false &&
+            (valueContainsLocked(before) || valueContainsLocked(after))
+          ) {
+            refuse(
+              'Cannot mix document replacement with edits when locked blocks are present.'
+            );
+          }
+
+          const beforeLockedRoots = getLockedRoots(editor, before);
+
+          for (const deletedRoot of change.deleteRoots) {
+            if (
+              beforeLockedRoots.has(deletedRoot) ||
+              treeContainsLocked(rootChildrenOf(before, deletedRoot))
+            ) {
+              refuse(`Cannot delete locked content root "${deletedRoot}".`);
+            }
+          }
+
+          const authorized = new Set<string>();
+          const authorityEntries = commit.annotations[lockAuthority.key] as
+            | readonly LockAuthorityEntry[]
+            | undefined;
+
+          if (authorityEntries) {
+            for (const entry of authorityEntries) {
+              if (ACTIVE_LOCK_NONCES.has(entry.nonce)) {
+                ACTIVE_LOCK_NONCES.delete(entry.nonce);
+                authorized.add(`${entry.root}:${entry.key}`);
+              }
+            }
+          }
+
+          const exemptions = getPluginContributions(editor, lockWriteExemption);
+
+          visitDocumentChangeSections(change, (section) => {
+            const { root } = section;
+            const beforeIndex = readCommitRootIndex(before, root);
+
+            if (!beforeIndex) return;
+
+            const rootLocked = beforeLockedRoots.has(root);
+
+            if (section.kind === 'properties') {
+              const resolved = beforeIndex.nodeStartingAt(section.fromA);
+
+              if (!resolved) {
+                if (rootLocked) {
+                  refuse('Cannot edit properties inside a locked root.');
+                }
+                return;
+              }
+
+              const targetPath = resolved.path;
+              const node = beforeIndex.node(targetPath);
+
+              if (!ElementApi.isElement(node)) {
+                if (
+                  rootLocked ||
+                  hasLockedProperAncestor(before, root, targetPath)
+                ) {
+                  refuse('Cannot modify text marks inside a locked block.');
+                }
+                return;
+              }
+
+              const beforeSnap = getEditorCommitSnapshot(
+                commit,
+                root,
+                'before'
+              );
+              const nodeKey = beforeSnap.index.keyAt(targetPath);
+              const hasLockMod = section.modifications.some(
+                (modification) => modification.key === LOCK_KEY
+              );
+
+              if (hasLockMod) {
+                const isAuthorized =
+                  (nodeKey !== null && authorized.has(`${root}:${nodeKey}`)) ||
+                  commit.tags.includes('historic');
+
+                if (!isAuthorized) {
+                  refuse(
+                    'Use BaseLockPlugin commands to change a block lock.',
+                    nodeKey
+                  );
+                }
+              }
+
+              const nonLockMods = hasLockMod
+                ? section.modifications.filter(
+                    (modification) => modification.key !== LOCK_KEY
+                  )
+                : section.modifications;
+
+              if (nonLockMods.length === 0) return;
+
+              const effectivelyLocked =
+                rootLocked ||
+                node.locked === true ||
+                hasLockedProperAncestor(before, root, targetPath);
+
+              if (!effectivelyLocked) return;
+
+              const exempted = exemptions.some((exemption) =>
+                exemption({
+                  before,
+                  element: node,
+                  modifications: nonLockMods,
+                  path: targetPath,
+                  root,
+                })
+              );
+
+              if (!exempted) {
+                refuse('Cannot edit properties of a locked block.', nodeKey);
+              }
+
+              return;
+            }
+
+            if (rootLocked) {
+              refuse('Cannot edit content inside a locked root.');
+            }
+
+            const checkOpenAncestors = (position: number) => {
+              for (const ancestor of beforeIndex.openContextAt(position)) {
+                const ancestorPath = ancestor.path;
+
+                if (
+                  ancestorPath.length === 0 ||
+                  ancestor.from >= position ||
+                  position >= ancestor.to
+                ) {
+                  continue;
+                }
+
+                const ancestorNode = beforeIndex.node(ancestorPath);
+
+                if (isOwnLockedElement(ancestorNode)) {
                   const beforeSnap = getEditorCommitSnapshot(
                     commit,
                     root,
@@ -623,15 +659,39 @@ export const BaseLockPlugin = definePlugin('lock', {
                   );
 
                   refuse(
-                    'Cannot remove or replace a locked block.',
-                    opening ? beforeSnap.index.keyAt(opening.path) : null
+                    'Cannot edit content inside a locked block.',
+                    beforeSnap.index.keyAt(ancestorPath)
                   );
                 }
               }
-            );
-          }
-        });
-      })
+            };
+
+            checkOpenAncestors(section.fromA);
+            if (section.toA > section.fromA) {
+              checkOpenAncestors(section.toA - 1);
+              beforeIndex.elementsOpeningIn(
+                section.fromA,
+                section.toA,
+                (openingNode, from) => {
+                  if (isOwnLockedElement(openingNode)) {
+                    const opening = beforeIndex.nodeStartingAt(from);
+                    const beforeSnap = getEditorCommitSnapshot(
+                      commit,
+                      root,
+                      'before'
+                    );
+
+                    refuse(
+                      'Cannot remove or replace a locked block.',
+                      opening ? beforeSnap.index.keyAt(opening.path) : null
+                    );
+                  }
+                }
+              );
+            }
+          });
+        }
+      )
     );
   },
   contributions: [
@@ -652,16 +712,40 @@ export const BaseLockPlugin = definePlugin('lock', {
 
       if (isRootLocked(editor, targetRoot, value)) return true;
 
-      if (
-        input.intent === 'move' &&
-        input.payload.kind === 'nodes' &&
-        input.payload.nodes.some(
-          (node) =>
-            ElementApi.isElement(node) &&
-            (node.locked === true || hasLockedDescendant(node))
-        )
-      ) {
-        return true;
+      if (input.intent === 'move' && input.payload.kind === 'nodes') {
+        const sourceValue = input.from.read.value();
+        const sourceRoot = input.from.read.view.root() ?? MAIN_ROOT_KEY;
+
+        if (isRootLocked(input.from, sourceRoot, sourceValue)) return true;
+
+        if (
+          input.payload.nodes.some(
+            (node) =>
+              ElementApi.isElement(node) &&
+              (node.locked === true || hasLockedDescendant(node))
+          )
+        ) {
+          return true;
+        }
+
+        for (const parentKey of input.payload.parentKeys) {
+          if (!parentKey) continue;
+
+          const parentEntry = input.from.read.nodes.get(parentKey);
+          const parentRoot = resolveLocationRoot(input.from, parentKey);
+
+          if (
+            isRootLocked(input.from, parentRoot, sourceValue) ||
+            (parentEntry &&
+              hasLockedElementAtOrAbovePath(
+                sourceValue,
+                parentRoot,
+                parentEntry[1]
+              ))
+          ) {
+            return true;
+          }
+        }
       }
 
       const [targetNode, targetPath] = input.target;
@@ -701,9 +785,9 @@ export const BaseLockPlugin = definePlugin('lock', {
     }),
   on: {
     commit: ({ commit, editor }) => {
-      const cached = LOCK_ROOT_CACHE.get(editor);
+      const owner = getEditorRuntimeOwner(editor);
 
-      if (!cached) return;
+      if (!LOCK_ROOT_CACHE.has(owner)) return;
 
       if (
         commit.changed.hasAny('replace') ||
@@ -713,19 +797,19 @@ export const BaseLockPlugin = definePlugin('lock', {
         commit.changed.hasAny('properties') ||
         commit.changed.hasAny('structure')
       ) {
-        LOCK_ROOT_CACHE.delete(editor);
+        LOCK_ROOT_CACHE.delete(owner);
       }
     },
   },
   read: ({ editor }) => ({
     /**
      * Return `true` when the block at `at` (or the current selection) is
-     * effectively locked — either via its own `locked` flag, a locked ancestor,
+     * effectively locked, either via its own `locked` flag, a locked ancestor,
      * or a locked `childRoots` owner.
      */
     isLocked: (at?: Location | NodeKey): boolean => {
       const value = editor.read.value();
-      const root = editor.read.view.root() ?? MAIN_ROOT_KEY;
+      const root = resolveLocationRoot(editor, at);
 
       if (isRootLocked(editor, root, value)) return true;
 
@@ -763,15 +847,111 @@ export const BaseLockPlugin = definePlugin('lock', {
     },
   }),
   update: ({ editor, tx }) => {
+    const resolveDraftBlockEntries = (
+      at?: Location | NodeKey
+    ): ReadonlyArray<readonly [Element, Path]> => {
+      if (typeof at === 'string') {
+        const entry = tx.nodes.get(at);
+
+        if (!entry) return [];
+
+        const [node, path] = entry;
+
+        if (ElementApi.isElement(node) && tx.schema.isBlock(node)) {
+          return [[node, path]];
+        }
+
+        const above = tx.nodes.above({
+          at: path,
+          match: (candidate): candidate is Element =>
+            ElementApi.isElement(candidate) && tx.schema.isBlock(candidate),
+          mode: 'lowest',
+        });
+
+        return above ? [above] : [];
+      }
+
+      if (at === undefined) {
+        const selectedNodes = tx.selection.nodes();
+
+        if (selectedNodes.length > 0) {
+          const results: Array<readonly [Element, Path]> = [];
+
+          for (const [node, path] of selectedNodes) {
+            if (ElementApi.isElement(node) && tx.schema.isBlock(node)) {
+              results.push([node, path]);
+            }
+          }
+
+          return results;
+        }
+      }
+
+      const targetLocation = at ?? tx.selection();
+
+      if (!targetLocation) return [];
+
+      if (SelectionApi.isNode(targetLocation)) {
+        const results: Array<readonly [Element, Path]> = [];
+
+        for (const path of targetLocation.paths) {
+          const node = tx.nodes.get(path)?.[0];
+
+          if (ElementApi.isElement(node) && tx.schema.isBlock(node)) {
+            results.push([node, path]);
+          }
+        }
+
+        return results;
+      }
+
+      if (PathApi.isPath(targetLocation)) {
+        const node = tx.nodes.get(targetLocation)?.[0];
+
+        if (ElementApi.isElement(node) && tx.schema.isBlock(node)) {
+          return [[node, targetLocation]];
+        }
+
+        const above = tx.nodes.above({
+          at: targetLocation,
+          match: (candidate): candidate is Element =>
+            ElementApi.isElement(candidate) && tx.schema.isBlock(candidate),
+          mode: 'lowest',
+        });
+
+        return above ? [above] : [];
+      }
+
+      if (
+        RangeApi.isRange(targetLocation) &&
+        RangeApi.isExpanded(targetLocation)
+      ) {
+        return [
+          ...tx.nodes.blocks({
+            at: targetLocation,
+            mode: 'lowest',
+          }),
+        ];
+      }
+
+      const above = tx.nodes.above({
+        at: targetLocation,
+        match: (candidate): candidate is Element =>
+          ElementApi.isElement(candidate) && tx.schema.isBlock(candidate),
+        mode: 'lowest',
+      });
+
+      return above ? [above] : [];
+    };
+
     const applyLockState = (
       mode: 'lock' | 'toggle' | 'unlock',
       options?: LockTargetOptions
     ): boolean => {
-      const entries = resolveBlockEntries(editor, options?.at);
+      const entries = resolveDraftBlockEntries(options?.at);
 
       if (entries.length === 0) return false;
 
-      const root = editor.read.view.root() ?? MAIN_ROOT_KEY;
       const shouldLock =
         mode === 'lock'
           ? true
@@ -779,35 +959,35 @@ export const BaseLockPlugin = definePlugin('lock', {
             ? false
             : !entries.every(([node]) => node.locked === true);
       const authorityEntries: LockAuthorityEntry[] = [];
-      const pathsToChange: Path[] = [];
+      const keysToChange: NodeKey[] = [];
 
-      for (const [node, path] of entries) {
+      for (const [node] of entries) {
         const currentlyLocked = node.locked === true;
 
         if (currentlyLocked === shouldLock) continue;
 
-        const key = editor.key(path);
+        const key = tx.key(node);
 
         if (!key) continue;
 
         authorityEntries.push({
           key,
           nonce: createLockNonce(),
-          root,
+          root: tx.view.root() ?? resolveLocationRoot(editor, key),
         });
-        pathsToChange.push(path);
+        keysToChange.push(key);
       }
 
-      if (pathsToChange.length === 0) return false;
+      if (keysToChange.length === 0) return false;
 
       tx.annotations.set(lockAuthority, authorityEntries);
       tx.annotations.set(skipHistoryIfOnlyProperties, [LOCK_KEY]);
 
-      for (const path of pathsToChange) {
+      for (const key of keysToChange) {
         if (shouldLock) {
-          tx.nodes.set({ locked: true }, { at: path });
+          tx.nodes.set({ locked: true }, { at: key });
         } else {
-          tx.nodes.unset(LOCK_KEY, { at: path });
+          tx.nodes.unset(LOCK_KEY, { at: key });
         }
       }
 
@@ -886,15 +1066,24 @@ export const BaseLockPlugin = definePlugin('lock', {
 
       const paragraphType =
         editor.plugin(BaseParagraphPlugin).schema.type ?? 'paragraph';
+      const paragraph = { children: [{ text: '' }], type: paragraphType };
       const insertPath = isAtStart
         ? highestLockedPath
         : PathApi.next(highestLockedPath);
 
+      if (
+        !canPlaceBlocksAtPath(state.schema, insertPath, [paragraph], { root })
+      ) {
+        const key = editor.key(highestLockedPath);
+        publishEditorRefusal(editor, {
+          blockingKeys: key ? [key] : [],
+          reason: 'block-locked',
+        });
+        return state.transaction(() => {});
+      }
+
       return state.transaction((tx) => {
-        tx.nodes.insert(
-          { children: [{ text: '' }], type: paragraphType },
-          { at: insertPath, select: true }
-        );
+        tx.nodes.insert(paragraph, { at: insertPath, select: true });
       });
     }),
   ],

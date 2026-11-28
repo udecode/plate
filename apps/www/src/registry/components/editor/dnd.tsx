@@ -10,7 +10,7 @@ import {
   ScissorsIcon,
   LockOpenIcon,
 } from 'lucide-react';
-import { type Element, type NodeKey, PathApi } from 'platejs';
+import { type Element, ElementApi, type NodeKey, PathApi } from 'platejs';
 import { BaseLockPlugin } from 'platejs/lock';
 import {
   definePlugin,
@@ -43,15 +43,35 @@ import {
  * Start a native block drag from a handle and use the dragged blocks as the
  * drag image, held at the pointer's offset from the first block.
  */
+const containsLocked = (node: Element): boolean => {
+  if (node.locked === true) return true;
+
+  for (const child of node.children) {
+    if (ElementApi.isElement(child) && containsLocked(child)) return true;
+  }
+
+  return false;
+};
+
+const blocksLockRemoval = (editor: Editor, key: NodeKey): boolean => {
+  const lock = editor.plugin(BaseLockPlugin);
+
+  if (!lock.installed) return false;
+  if (lock.read.isLocked(key)) return true;
+
+  const node = editor.read.nodes.get(key)?.[0];
+
+  return ElementApi.isElement(node) && containsLocked(node);
+};
+
 export const startBlockDrag = (
   editor: Editor,
   event: React.DragEvent,
   element: Element
 ) => {
-  const lock = editor.plugin(BaseLockPlugin);
   const key = editor.key(element);
 
-  if (lock.installed && key && lock.read.isLocked(key)) {
+  if (key && blocksLockRemoval(editor, key)) {
     event.preventDefault();
 
     return;
@@ -85,10 +105,7 @@ export const startBlockDrag = (
 export const cutBlocks = async (editor: Editor, keys: readonly NodeKey[]) => {
   if (keys.length === 0) return;
 
-  const lock = editor.plugin(BaseLockPlugin);
-
-  // A locked block refuses its removal, so cutting it would only copy it.
-  if (lock.installed && keys.some((key) => lock.read.isLocked(key))) return;
+  if (keys.some((key) => blocksLockRemoval(editor, key))) return;
 
   editor.update.selection.setNodes(keys);
 
@@ -200,8 +217,7 @@ function Draggable(props: RenderNodeWrapperProps) {
   const [lockState, setLockState] = React.useState<
     'inherited' | 'none' | 'own'
   >('none');
-  // Read from the element itself: a selector per block would subscribe every
-  // handle in a large document to lock changes.
+  const [blocksMutation, setBlocksMutation] = React.useState(false);
   const ownLocked = element.locked === true;
   const selected = useElementSelected();
   // A drag node-selects the handle's blocks, so their gutter stays laid out.
@@ -279,17 +295,21 @@ function Draggable(props: RenderNodeWrapperProps) {
   const openActions = (event: React.MouseEvent<HTMLElement>) => {
     const keys = selectBlocks();
     const lock = editor.plugin(BaseLockPlugin);
+    const nextBlocksMutation = keys.some((key) =>
+      blocksLockRemoval(editor, key)
+    );
     const nextLockState = !lock.installed
       ? 'none'
-      : ownLocked
+      : keys.every((key) => lock.read.isOwnLocked(key))
         ? 'own'
-        : keys.some((key) => lock.read.isLocked(key))
+        : keys.every((key) => lock.read.isLocked(key))
           ? 'inherited'
           : 'none';
 
     setActionsRtl(getComputedStyle(event.currentTarget).direction === 'rtl');
     setLockState(nextLockState);
-    setBesideActions(nextLockState === 'none' ? besideOf(keys) : []);
+    setBlocksMutation(nextBlocksMutation);
+    setBesideActions(nextBlocksMutation ? [] : besideOf(keys));
     setActionsOpen(true);
   };
   const setLocked = (locked: boolean) => {
@@ -304,7 +324,7 @@ function Draggable(props: RenderNodeWrapperProps) {
       }
     });
   };
-  const locked = lockState !== 'none';
+  const locked = blocksMutation || lockState !== 'none';
   const lockAction: HandleAction[] = editor.plugin(BaseLockPlugin).installed
     ? [
         lockState === 'own'
@@ -373,7 +393,6 @@ function Draggable(props: RenderNodeWrapperProps) {
             selected &&
               '[@media(hover:none)]:flex! [@media(hover:none)]:opacity-100',
             (nodeSelected || actionsOpen) && 'flex!',
-            // A locked block keeps its lock handle shown as a lasting cue.
             ownLocked && 'flex! opacity-100'
           )}
         >

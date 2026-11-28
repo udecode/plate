@@ -6,10 +6,11 @@ import { type Path, PathApi } from '../interfaces/path';
 import { PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
-import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
+import { getEditorSchema } from './editor-runtime';
 import { definePluginPoint } from './plugin-point';
 import { getPluginContributions } from './plugin-registry';
 import { MAIN_ROOT_KEY } from './public-root';
+import { resolveLocationRoot } from './public-state';
 import { readRootEntries } from './root-entries';
 
 export type NonWritableContentPredicate = (
@@ -136,7 +137,8 @@ const hasNonWritableOwnerRoot = (
   return false;
 };
 
-const hasNonWritableDescendant = (
+/** @internal */
+export const hasNonWritableDescendant = (
   editor: AnyEditor,
   node: Element,
   includeReadOnly: boolean
@@ -155,32 +157,34 @@ const hasNonWritableDescendant = (
   return false;
 };
 
+const getNodeInRoot = (
+  editor: AnyEditor,
+  root: RootKey,
+  path: Path
+): Element | undefined => {
+  let siblings =
+    root === MAIN_ROOT_KEY
+      ? editor.read.value().children
+      : (editor.read.value().roots?.[root] ?? []);
+  let current: unknown;
+
+  for (const index of path) {
+    current = siblings[index];
+    if (!ElementApi.isElement(current)) return undefined;
+    siblings = current.children;
+  }
+
+  return ElementApi.isElement(current) ? current : undefined;
+};
+
 const checkPathAndAncestors = (
   editor: AnyEditor,
   path: Path,
+  root: RootKey,
   includeReadOnly: boolean
-): boolean => {
-  const root = getEditorRuntimeRoot(editor);
-
-  if (hasNonWritableOwnerRoot(editor, root, includeReadOnly)) return true;
-
-  let current: Path = path;
-
-  while (current.length > 0) {
-    const entry = editor.read.nodes.get(current);
-    const node = entry?.[0];
-
-    if (
-      ElementApi.isElement(node) &&
-      isElementNonWritable(editor, node, { includeReadOnly })
-    ) {
-      return true;
-    }
-    current = PathApi.parent(current);
-  }
-
-  return false;
-};
+): boolean =>
+  hasNonWritableOwnerRoot(editor, root, includeReadOnly) ||
+  hasNonWritableElementInAncestors(editor, path, root, includeReadOnly);
 
 /**
  * Return `true` when `at` (a `Location`, `NodeSelection`, or `NodeKey`) lies
@@ -196,29 +200,32 @@ export const hasNonWritableAt = (
   if (at == null) return false;
   if (!includeReadOnly && !hasNonWritableContributors(editor)) return false;
 
-  const root = getEditorRuntimeRoot(editor);
+  const targetRoot = resolveLocationRoot(editor, at);
 
-  if (hasNonWritableOwnerRoot(editor, root, includeReadOnly)) return true;
+  if (hasNonWritableOwnerRoot(editor, targetRoot, includeReadOnly)) return true;
 
   if (typeof at === 'string') {
     const entry = editor.read.nodes.get(at);
 
     if (!entry) return false;
 
-    return checkPathAndAncestors(editor, entry[1], includeReadOnly);
+    return checkPathAndAncestors(editor, entry[1], targetRoot, includeReadOnly);
   }
 
   if (SelectionApi.isNode(at)) {
+    const checkContributors = hasNonWritableContributors(editor);
+
     for (const path of at.paths) {
-      if (checkPathAndAncestors(editor, path, includeReadOnly)) return true;
-
-      const node = editor.read.nodes.get(path)?.[0];
-
-      if (
-        ElementApi.isElement(node) &&
-        hasNonWritableDescendant(editor, node, includeReadOnly)
-      ) {
+      if (checkPathAndAncestors(editor, path, targetRoot, includeReadOnly)) {
         return true;
+      }
+
+      if (checkContributors) {
+        const node = getNodeInRoot(editor, targetRoot, path);
+
+        if (node && hasNonWritableDescendant(editor, node, false)) {
+          return true;
+        }
       }
     }
 
@@ -226,27 +233,32 @@ export const hasNonWritableAt = (
   }
 
   if (PathApi.isPath(at)) {
-    return checkPathAndAncestors(editor, at, includeReadOnly);
+    return checkPathAndAncestors(editor, at, targetRoot, includeReadOnly);
   }
 
   if (PointApi.isPoint(at)) {
-    return checkPathAndAncestors(editor, at.path, includeReadOnly);
+    return checkPathAndAncestors(editor, at.path, targetRoot, includeReadOnly);
   }
 
   if (RangeApi.isRange(at)) {
     if (
-      checkPathAndAncestors(editor, at.anchor.path, includeReadOnly) ||
-      checkPathAndAncestors(editor, at.focus.path, includeReadOnly)
+      checkPathAndAncestors(
+        editor,
+        at.anchor.path,
+        targetRoot,
+        includeReadOnly
+      ) ||
+      checkPathAndAncestors(editor, at.focus.path, targetRoot, includeReadOnly)
     ) {
       return true;
     }
 
-    if (RangeApi.isExpanded(at)) {
+    if (RangeApi.isExpanded(at) && hasNonWritableContributors(editor)) {
       return editor.read.nodes.some({
         at,
         match: (node) =>
           NodeApi.isElement(node) &&
-          isElementNonWritable(editor, node, { includeReadOnly }),
+          isElementNonWritable(editor, node, { includeReadOnly: false }),
         voids: true,
       });
     }

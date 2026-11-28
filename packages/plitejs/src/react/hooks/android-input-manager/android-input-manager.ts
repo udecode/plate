@@ -13,6 +13,7 @@ import {
   TextApi,
 } from '../../..';
 import { hasNonWritableAt } from '../../../core/non-writable';
+import { subscribeEditorRefusals } from '../../../core/refusal';
 import { setShownSelectionAsView } from '../../../core/view-carets';
 import {
   applyStringDiff,
@@ -244,9 +245,17 @@ export function createAndroidInputManager({
       }
     }
 
-    const version = editor.read((state) => state.lastCommit()?.version);
+    const beforeChildren = editor.read.children();
+    let refused = false;
+    const stopRefusals = subscribeEditorRefusals(editor, () => {
+      refused = true;
+    });
 
-    replayAsAndroidCommand(inputController, action.run);
+    try {
+      replayAsAndroidCommand(inputController, action.run);
+    } finally {
+      stopRefusals();
+    }
 
     const at = action.at ?? selection;
 
@@ -254,7 +263,7 @@ export function createAndroidInputManager({
       action.deletes &&
       at &&
       (hasEdgeInReadOnlyInline(editor, at) || hasNonWritableAt(editor, at)) &&
-      editor.read((state) => state.lastCommit()?.version) === version
+      (refused || editor.read.children() === beforeChildren)
     ) {
       EDITOR_TO_PENDING_SELECTION.delete(editor);
       scheduleOnDOMSelectionChange.cancel();
@@ -404,18 +413,29 @@ export function createAndroidInputManager({
         setShownSelectionAsView(editor, range);
       }
 
-      const version = editor.read((state) => state.lastCommit()?.version);
-
-      replayAsAndroidCommand(inputController, () => {
-        if (diff.diff.text) {
-          applyAndroidTextInput(diff.diff.text, diff.inputType ?? 'insertText');
-        } else {
-          applyEditableCommand({
-            command: { kind: 'delete-fragment' },
-            editor,
-          });
-        }
+      const beforeChildren = editor.read.children();
+      let refused = false;
+      const stopRefusals = subscribeEditorRefusals(editor, () => {
+        refused = true;
       });
+
+      try {
+        replayAsAndroidCommand(inputController, () => {
+          if (diff.diff.text) {
+            applyAndroidTextInput(
+              diff.diff.text,
+              diff.inputType ?? 'insertText'
+            );
+          } else {
+            applyEditableCommand({
+              command: { kind: 'delete-fragment' },
+              editor,
+            });
+          }
+        });
+      } finally {
+        stopRefusals();
+      }
 
       // Remove diff only after we have applied it to account for it when transforming
       // pending ranges.
@@ -428,7 +448,7 @@ export function createAndroidInputManager({
 
       const editRefused =
         (Boolean(diff.diff.text) || diff.diff.end > diff.diff.start) &&
-        editor.read((state) => state.lastCommit()?.version) === version;
+        (refused || editor.read.children() === beforeChildren);
 
       if (editRefused) {
         if (diff.diff.text) {

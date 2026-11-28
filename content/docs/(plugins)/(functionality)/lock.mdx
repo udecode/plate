@@ -143,10 +143,10 @@ export const ChecklistWidgetPlugin = definePlugin('checklistWidget', {
 
 ## Behavior
 
-- **Selection, copy, and Cut:** Users can select, search, and copy (`Mod+C`) text inside locked blocks. Pasted copies drop `locked` so copied clauses become editable at the destination. Native Cut (`Mod+X`) and drag-handle Cut refuse before modifying the clipboard or removing blocks.
-- **Enter at block edges:** Pressing `Enter` inside a locked block is refused. Pressing `Enter` at the exact start or end of a locked block inserts a new unlocked paragraph before or after it.
-- **History and Suggesting mode:** Standalone `.lock()`, `.unlock()`, and `.toggle()` updates skip undo history and commit directly in Suggesting mode without creating a formatting suggestion. Local undo or redo steps that would edit a currently locked block are refused without dropping the undo stack.
-- **HTML, Markdown, and DOCX:** Programmatic `editor.api.html.serialize()` and `editor.api.html.parse()` round-trip `data-locked="true"`. Clipboard paste drops `locked`. Markdown serialization reports a `markdown-property-omitted` warning, and `exportDocx` reports a `property-dropped` warning for locked blocks.
+- **Selection, copy, and Cut.** Users can select, search, and copy (`Mod+C`) text inside locked blocks. Pasted copies drop `locked` so copied clauses become editable at the destination. Native Cut (`Mod+X`) and drag-handle Cut refuse before modifying the clipboard or removing blocks.
+- **Enter at block edges.** Pressing `Enter` inside a locked block is refused. Pressing `Enter` at the exact start or end of a locked block inserts a new unlocked paragraph before or after it.
+- **History and Suggesting mode.** Standalone `.lock()`, `.unlock()`, and `.toggle()` updates skip undo history and commit directly in Suggesting mode without creating a formatting suggestion. Local undo or redo steps that would edit a currently locked block are refused without dropping the undo stack.
+- **HTML, Markdown, and DOCX.** Programmatic `editor.api.html.serialize()` and `editor.api.html.parse()` round-trip `data-locked="true"`. Clipboard paste drops `locked`. Markdown serialization reports a `markdown-property-omitted` warning, and `exportDocx` reports a `property-dropped` warning for locked blocks.
 
 ## Plugins
 

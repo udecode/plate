@@ -195,7 +195,17 @@ function DecideAllItems({ readOnly }: { readOnly: boolean }) {
 
       return;
     }
-    const { status } = authored.update.decide({ action, changes: decidable });
+    const result = authored.update.decide({ action, changes: decidable });
+
+    if (!result) {
+      toast.info(
+        'Some suggestions could not be decided because a locked block blocked the edit.'
+      );
+
+      return;
+    }
+
+    const { status } = result;
 
     if (status === 'invalid') {
       toast.error(
@@ -204,11 +214,11 @@ function DecideAllItems({ readOnly }: { readOnly: boolean }) {
 
       return;
     }
-    // Deciding every pending change together is never blocked, so only the
-    // locked changes left out can block the rest.
     if (status === 'blocked') {
       toast.info(
-        'The unlocked suggestions depend on suggestions inside locked blocks, so nothing changed.'
+        skipped > 0
+          ? 'The unlocked suggestions depend on suggestions inside locked blocks, so nothing changed.'
+          : 'Some suggestions could not be decided right now, so nothing changed.'
       );
 
       return;

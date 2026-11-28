@@ -319,6 +319,7 @@ export {
   preserveCompiledSchemaPropertyIdentity,
   repairEditorValue,
   registerEditorTransactionGuard,
+  resolveLocationRoot,
   reportEditorLifecycleError,
   runEditorObserver,
   setEditorMaxLength,

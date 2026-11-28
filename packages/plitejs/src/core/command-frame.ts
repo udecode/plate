@@ -1472,6 +1472,7 @@ export const runInEditorCommandFrame = (
     let storedToWritten: PositionMap | undefined;
     let letters: NewLetters | undefined;
     let steps: readonly DraftStep[] = [];
+    let hadFrameSteps = false;
     let landing: Readonly<{
       root: string;
       spans: readonly DraftSpan[];
@@ -1522,6 +1523,7 @@ export const runInEditorCommandFrame = (
         return false;
       }
       assertWritesPlaced(editor, snapshot);
+      hadFrameSteps = snapshot.builder.draftSteps.length > 0;
       finalizeWithoutOrphanedRoots(editor);
       const wrote = snapshot.builder.change;
 
@@ -1692,7 +1694,9 @@ export const runInEditorCommandFrame = (
       disposeTransactionSpecContext(editor, frame);
     }
     if (!recorded) {
-      if (steps.length > 0) outer.snapshot.publishesUnknownFacts = true;
+      if (hadFrameSteps || steps.length > 0) {
+        outer.snapshot.publishesUnknownFacts = true;
+      }
       setTypedMarks(editor, typedAfter);
       return true;
     }

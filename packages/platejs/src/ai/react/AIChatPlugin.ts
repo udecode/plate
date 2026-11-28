@@ -1040,10 +1040,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     let lockedRefusal = false;
     context.store.set({ refusalMessage: null });
     const stopRefusals = subscribeEditorRefusals(actionEditor, (refusal) => {
+      if (typeof refusal !== 'object' || refusal === null) return;
+
+      const record = refusal as Record<string, unknown>;
+
       if (
-        typeof refusal === 'object' &&
-        refusal !== null &&
-        (refusal as Record<string, unknown>).reason === 'block-locked'
+        record.reason === 'block-locked' ||
+        (record.reason === 'node-write-veto' &&
+          hasNonWritableAt(actionEditor, actionEditor.read.selection()))
       ) {
         lockedRefusal = true;
       }
@@ -1124,6 +1128,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const blocks = formatAIOutput({
       blocks: source,
       format: anchor === target ? format : 'none',
+      schema: editor.read.schema,
       sourceBlock: target[0],
     });
 
@@ -1575,6 +1580,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         const blocks = formatAIOutput({
           blocks: cloneDeep(source),
           format,
+          schema: editor.read.schema,
           sourceBlock: block[0],
         });
 
@@ -1634,6 +1640,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       const blocks = formatAIOutput({
         blocks: cloneDeep(source),
         format: format === 'single' && selected.length > 1 ? 'none' : format,
+        schema: editor.read.schema,
         sourceBlock: sourceBlock[0],
       });
 

@@ -276,7 +276,7 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
           const block = tx.nodes.block();
           const blockKey = key ?? (block ? tx.key(block[1]) : null);
 
-          if (!blockKey) return;
+          if (!blockKey || hasNonWritableAt(editor, blockKey)) return;
 
           setSuggestion({ nodeKey: blockKey, text });
         }
