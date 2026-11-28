@@ -3,6 +3,7 @@ import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
+  getSelectionRoot,
   runEditorTransaction,
   withTransactionSpecDraftRead,
 } from '../core/public-state';
@@ -32,7 +33,7 @@ export const applyToggleMark = (
 
     if (SelectionApi.isNode(selection)) {
       const schema = getEditorSchema(editor);
-      const root = selection.root ?? 'main';
+      const root = getSelectionRoot(editor, selection);
       const entries = withTransactionSpecDraftRead(editor, () =>
         editor.read.selection.ranges().flatMap((range) =>
           editor.read.nodes.toArray({
@@ -90,7 +91,7 @@ export const applyToggleMark = (
       const canonical = getEditorSchema(editor).canonicalizeTextPropertiesAt(
         { ...marks, [key]: nextValue },
         selection.focus.path,
-        selection.focus.root ?? selection.anchor.root ?? 'main',
+        getSelectionRoot(editor, selection),
         key
       );
 

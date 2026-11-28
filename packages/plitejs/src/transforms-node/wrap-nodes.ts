@@ -5,6 +5,7 @@ import {
   getActiveUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
+import { preservesSelectionForExplicitTarget } from '../core/update-root-selection';
 import { withoutPlacement } from '../core/view-carets';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
@@ -345,12 +346,17 @@ export const wrapNodes = ((
         voids: entersVoids,
       })
     );
-    let nextSelection = LocationApi.isRange(target)
-      ? {
-          anchor: target.anchor,
-          focus: target.focus,
-        }
-      : null;
+    const shouldSelect = !preservesSelectionForExplicitTarget(
+      editor,
+      options.at != null
+    );
+    let nextSelection =
+      shouldSelect && LocationApi.isRange(target)
+        ? {
+            anchor: target.anchor,
+            focus: target.focus,
+          }
+        : null;
 
     for (const [, rootPath] of roots) {
       const span = spanIn(rootPath);
@@ -372,6 +378,7 @@ export const wrapNodes = ((
             offset >= 0 &&
             offset < count
             ? {
+                ...point,
                 path: [
                   ...finalWrapperPath,
                   offset,

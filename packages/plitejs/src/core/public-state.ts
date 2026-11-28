@@ -2,6 +2,7 @@ import { applyAddMark } from '../editor/add-mark';
 import { correctDocument } from '../editor/correct-document';
 import { applyDelete } from '../editor/delete-backward';
 import { applyDeleteFragment } from '../editor/delete-fragment';
+import { refusesReadOnlyWrite } from '../editor/element-read-only';
 import { exitBreak } from '../editor/exit-break';
 import { applyInsertBreak } from '../editor/insert-break';
 import { applyInsertSoftBreak } from '../editor/insert-soft-break';
@@ -1782,16 +1783,17 @@ export const withEditorUpdateRoot = <T>(
     }
   }
 
-  const previousRoot = ACTIVE_UPDATE_ROOT.get(editor);
-  ACTIVE_UPDATE_ROOT.set(editor, root);
+  const owner = getEditorRuntimeOwner(editor);
+  const previousRoot = ACTIVE_UPDATE_ROOT.get(owner);
+  ACTIVE_UPDATE_ROOT.set(owner, root);
 
   try {
     return fn();
   } finally {
     if (previousRoot === undefined) {
-      ACTIVE_UPDATE_ROOT.delete(editor);
+      ACTIVE_UPDATE_ROOT.delete(owner);
     } else {
-      ACTIVE_UPDATE_ROOT.set(editor, previousRoot);
+      ACTIVE_UPDATE_ROOT.set(owner, previousRoot);
     }
   }
 };
@@ -5071,6 +5073,10 @@ const VIEW_CHILDREN_SOURCES = new WeakMap<
   InternalEditorRuntime,
   () => ChildrenSource
 >();
+const VIEW_READ_SCOPES = new WeakMap<
+  InternalEditorRuntime,
+  <T>(fn: () => T) => T
+>();
 
 /** @internal */
 export const setViewChildrenSource = (
@@ -5078,9 +5084,21 @@ export const setViewChildrenSource = (
   owner: Editor,
   read: <T>(fn: () => T) => T
 ) => {
-  VIEW_CHILDREN_SOURCES.set(getEditorRuntime(view), () =>
+  const runtime = getEditorRuntime(view);
+
+  VIEW_READ_SCOPES.set(runtime, read);
+  VIEW_CHILDREN_SOURCES.set(runtime, () =>
     read(() => getChildrenSource(owner))
   );
+};
+
+/** @internal */
+export const withEditorViewRead = <T>(editor: Editor, fn: () => T): T => {
+  const read = hasEditorRuntime(editor)
+    ? VIEW_READ_SCOPES.get(getEditorRuntime(editor))
+    : undefined;
+
+  return read ? read(fn) : fn();
 };
 
 const readViewChildrenSource = (editor: Editor) =>
@@ -6146,7 +6164,8 @@ const placeSliceFitRange = (
   if (
     !insertionBoundary &&
     ((!options?.voids && getEditorRuntime(editor).void({ at: range })) ||
-      getEditorRuntime(editor).elementReadOnly({ at: range }))
+      getEditorRuntime(editor).elementReadOnly({ at: range }) ||
+      refusesReadOnlyWrite(editor, range))
   ) {
     return false;
   }

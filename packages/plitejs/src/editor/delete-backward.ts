@@ -8,78 +8,101 @@ import {
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
-import { SelectionApi } from '../interfaces/selection';
+import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { removeNodes } from '../transforms-node/remove-nodes';
 import { deleteText } from '../transforms-text/delete-text';
 import type { TextUnit } from '../types/types';
 import type { WithEditorFirstArg } from '../utils/types';
+
+export const deleteNodeSelection = (
+  editor: Editor,
+  tx: {
+    setSelection: (
+      selection: ReturnType<typeof SelectionApi.text> | null
+    ) => void;
+  },
+  selection: NodeSelection,
+  direction: DeleteCommand['direction'],
+  writesSelection = true
+) => {
+  const root = selection.root ?? editor.read.view.root() ?? 'main';
+
+  withEditorUpdateRootScope(editor, root, () => {
+    const { paths } = selection;
+    const firstPath = paths[0];
+    const lastPath = paths.at(-1);
+
+    if (!firstPath || !lastPath) return;
+
+    const previousPoint =
+      writesSelection && PathApi.hasPrevious(firstPath)
+        ? readPoint(editor, PathApi.previous(firstPath), { edge: 'end' })
+        : undefined;
+    const nextPoint = writesSelection
+      ? readPoint(editor, PathApi.next(lastPath), {
+          edge: 'start',
+        })
+      : undefined;
+    const previousAnchor = previousPoint
+      ? editor.anchor(previousPoint, {
+          association: 'backward',
+          deletion: 'nearest',
+        })
+      : null;
+    const nextAnchor = nextPoint
+      ? editor.anchor(nextPoint, {
+          association: 'forward',
+          deletion: 'nearest',
+        })
+      : null;
+
+    for (const path of paths.toReversed()) {
+      removeNodes(editor, { at: path });
+    }
+
+    if (!writesSelection) {
+      previousAnchor?.release();
+      nextAnchor?.release();
+      return;
+    }
+
+    const candidates =
+      direction === 'backward'
+        ? [previousAnchor, nextAnchor]
+        : [nextAnchor, previousAnchor];
+    let fallbackPoint = null;
+
+    for (const candidate of candidates) {
+      if (!candidate) continue;
+
+      fallbackPoint = candidate.release();
+      if (fallbackPoint) break;
+    }
+
+    previousAnchor?.release();
+    nextAnchor?.release();
+    const rootedFallbackPoint =
+      fallbackPoint && root !== 'main'
+        ? { ...fallbackPoint, root }
+        : fallbackPoint;
+
+    tx.setSelection(
+      rootedFallbackPoint
+        ? SelectionApi.text({
+            anchor: rootedFallbackPoint,
+            focus: rootedFallbackPoint,
+          })
+        : null
+    );
+  });
+};
 
 export const applyDelete = (editor: Editor, command: DeleteCommand) => {
   runEditorTransaction(editor, (tx) => {
     const selection = tx.resolveTarget();
 
     if (SelectionApi.isNode(selection)) {
-      const root = selection.root ?? editor.read.view.root() ?? 'main';
-
-      withEditorUpdateRootScope(editor, root, () => {
-        const { paths } = selection;
-        const firstPath = paths[0];
-        const lastPath = paths.at(-1);
-
-        if (!firstPath || !lastPath) return;
-
-        const previousPoint = PathApi.hasPrevious(firstPath)
-          ? readPoint(editor, PathApi.previous(firstPath), { edge: 'end' })
-          : undefined;
-        const nextPoint = readPoint(editor, PathApi.next(lastPath), {
-          edge: 'start',
-        });
-        const previousAnchor = previousPoint
-          ? editor.anchor(previousPoint, {
-              association: 'backward',
-              deletion: 'nearest',
-            })
-          : null;
-        const nextAnchor = nextPoint
-          ? editor.anchor(nextPoint, {
-              association: 'forward',
-              deletion: 'nearest',
-            })
-          : null;
-
-        for (const path of paths.toReversed()) {
-          removeNodes(editor, { at: path });
-        }
-
-        const candidates =
-          command.direction === 'backward'
-            ? [previousAnchor, nextAnchor]
-            : [nextAnchor, previousAnchor];
-        let fallbackPoint = null;
-
-        for (const candidate of candidates) {
-          if (!candidate) continue;
-
-          fallbackPoint = candidate.release();
-          if (fallbackPoint) break;
-        }
-
-        previousAnchor?.release();
-        nextAnchor?.release();
-        const rootedFallbackPoint =
-          fallbackPoint && root !== 'main'
-            ? { ...fallbackPoint, root }
-            : fallbackPoint;
-
-        tx.setSelection(
-          rootedFallbackPoint
-            ? SelectionApi.text({
-                anchor: rootedFallbackPoint,
-                focus: rootedFallbackPoint,
-              })
-            : null
-        );
-      });
+      deleteNodeSelection(editor, tx, selection, command.direction, true);
       return;
     }
 

@@ -3,13 +3,13 @@ import { jsonEqual } from '../core/change/json';
 import { refuseTextWriteInStruck } from '../core/content-landing';
 import { getEditorSchema } from '../core/editor-runtime';
 import { holdsOneText } from '../core/editor-schema';
+import { hasReadOnlyOwnerRoot } from '../core/non-writable';
 import { joinKeepsPrefixOccupant } from '../core/prefix-occupant-join';
 import {
   applyBuiltDocumentChange,
   getActiveUpdateRoot,
   getChildList,
   getCurrentSelection,
-  getCurrentSelectionRoot,
   getEditorUpdateRoot,
   getSetSite,
   profileCoreDuration,
@@ -18,6 +18,10 @@ import {
   withEditorUpdateRootChildren,
 } from '../core/public-state';
 import { crossesMembers, refuseCrossing } from '../core/set-root';
+import {
+  isSelectionInOtherRoot,
+  isSelectionInUpdateRoot,
+} from '../core/update-root-selection';
 import {
   canReplaceChildrenWithText,
   isEditablePath,
@@ -253,16 +257,8 @@ const readForwardDeletedEmptyBlock = (
   return removed;
 };
 
-const getSelectionInUpdateRoot = (editor: Editor) => {
-  const selection = getCurrentSelection(editor);
-
-  if (!selection) return null;
-
-  return (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) ===
-    getEditorUpdateRoot(editor)
-    ? selection
-    : null;
-};
+const getSelectionInUpdateRoot = (editor: Editor) =>
+  isSelectionInUpdateRoot(editor) ? getCurrentSelection(editor) : null;
 
 const shouldClearDeletedMarksAtMarkedSuffix = (
   editor: Editor,
@@ -395,7 +391,6 @@ const unhangDeleteRange = (
     voids: true,
   });
   const blockPath = endBlock ? endBlock[1] : [];
-  let skip = true;
 
   for (const [node, path] of getNodes(editor, {
     at: { anchor: start, focus: end },
@@ -408,8 +403,7 @@ const unhangDeleteRange = (
     reverse: true,
     voids: true,
   })) {
-    if (skip) {
-      skip = false;
+    if (PathApi.equals(path, end.path)) {
       continue;
     }
 
@@ -444,7 +438,7 @@ const unhangDeleteRange = (
         }
       }
 
-      return { anchor: start, focus: { offset: node.text.length, path } };
+      return { anchor: start, focus };
     }
   }
 
@@ -2129,12 +2123,10 @@ const inRemovalRoot = <T>(
         const root = getLocationRoot(resolved);
         const targetRoot = root ?? getEditorUpdateRoot(editor);
         const selectionInOtherRoot =
-          at !== undefined &&
-          selection !== null &&
-          (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) !==
-            targetRoot;
+          at !== undefined && isSelectionInOtherRoot(editor, targetRoot);
+        const localAt = root ? stripLocationRoots(resolved) : resolved;
         const site: RemovalSite = {
-          at: root ? stripLocationRoots(resolved) : resolved,
+          at: localAt,
           root,
           selectionInOtherRoot,
           writesSelection:
@@ -2142,8 +2134,8 @@ const inRemovalRoot = <T>(
             (!selectionInOtherRoot &&
               selection !== null &&
               RangeApi.isRange(selection) &&
-              LocationApi.isRange(resolved) &&
-              RangeApi.equals(selection, resolved)),
+              LocationApi.isRange(localAt) &&
+              RangeApi.equals(stripLocationRoots(selection), localAt)),
         };
 
         return inRoot(editor, root, () => run(tx, site));
@@ -2420,25 +2412,39 @@ export const resolveDeletedRange = (
   range: Range
 ): Range | null => {
   const site = getSetSite(editor);
-  const root = getLocationRoot(range) ?? getEditorUpdateRoot(editor);
+  const explicitRoot = getLocationRoot(range);
+  const root = explicitRoot ?? getEditorUpdateRoot(editor);
 
   if (crossesMembers(site, range, root)) return null;
-  const target = resolveDeleteTarget(editor, {}, range);
 
-  if (target?.kind !== 'range') return range;
-  if (crossesMembers(site, target.effectiveRange, root)) return null;
-  if (
-    spansTexts(target) &&
-    planGridSteps(editor, target.effectiveRange)?.keepsGrid
-  ) {
-    return null;
-  }
+  return inRoot(editor, explicitRoot, () => {
+    const localRange = explicitRoot ? stripLocationRoots(range) : range;
+    const target = resolveDeleteTarget(editor, {}, localRange);
 
-  return [target.startNonEditable, target.endNonEditable].every(
-    (holder) => !holder || isInlineVoid(editor, holder[0])
-  )
-    ? target.effectiveRange
-    : null;
+    if (target?.kind !== 'range') return range;
+    if (crossesMembers(site, target.effectiveRange, root)) return null;
+    if (
+      spansTexts(target) &&
+      planGridSteps(editor, target.effectiveRange)?.keepsGrid
+    ) {
+      return null;
+    }
+
+    if (
+      ![target.startNonEditable, target.endNonEditable].every(
+        (holder) => !holder || isInlineVoid(editor, holder[0])
+      )
+    ) {
+      return null;
+    }
+
+    return explicitRoot
+      ? {
+          anchor: { ...target.effectiveRange.anchor, root: explicitRoot },
+          focus: { ...target.effectiveRange.focus, root: explicitRoot },
+        }
+      : target.effectiveRange;
+  });
 };
 
 export const deleteText: TextMutationMethods['delete'] = (
@@ -2448,11 +2454,11 @@ export const deleteText: TextMutationMethods['delete'] = (
   inRemovalRoot(editor, options.at, (tx, site) => {
     if (
       !options.voids &&
-      !LocationApi.isPath(site.at) &&
-      (hasEdgeInReadOnlyInline(editor, site.at) ||
-        (RangeApi.isRange(site.at) &&
-          RangeApi.isExpanded(site.at) &&
-          refusesReadOnlyWrite(editor, site.at)))
+      (hasReadOnlyOwnerRoot(editor, site.root ?? getEditorUpdateRoot(editor)) ||
+        (!LocationApi.isPath(site.at) &&
+          (RangeApi.isRange(site.at) && RangeApi.isExpanded(site.at)
+            ? refusesReadOnlyWrite(editor, site.at)
+            : hasEdgeInReadOnlyInline(editor, site.at))))
     ) {
       return null;
     }

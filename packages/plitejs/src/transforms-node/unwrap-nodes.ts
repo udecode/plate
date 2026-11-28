@@ -4,10 +4,12 @@ import {
   applyBuiltDocumentChange,
   getActiveUpdateRoot,
   getCurrentSelection,
-  getCurrentSelectionRoot,
-  getEditorUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
+import {
+  isSelectionInUpdateRoot,
+  preservesSelectionForExplicitTarget,
+} from '../core/update-root-selection';
 import { withoutPlacement } from '../core/view-carets';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
@@ -106,7 +108,6 @@ export const unwrapNodes = ((
       builder.unwrapNode(root, path)
     );
   };
-  // The text cleanup reads only the parent whose children the unwrap changed.
   const unwrapAndJoin = (path: Path) => {
     unwrapNodeAtPath(path);
     if (path.length > 0) mergeAdjacentTextRuns(editor, PathApi.parent(path));
@@ -229,15 +230,15 @@ export const unwrapNodes = ((
 
         if (split && anchoredRange) {
           const currentSelection = getCurrentSelection(editor);
-          const selectionInUpdateRoot =
-            currentSelection !== null &&
-            (SelectionApi.root(currentSelection) ??
-              getCurrentSelectionRoot(editor)) === getEditorUpdateRoot(editor);
           const liveRange =
-            selectionInUpdateRoot && RangeApi.isRange(currentSelection)
-              ? currentSelection
-              : anchoredRange;
-          const intersection = RangeApi.intersection(liveRange, range);
+            isSelectionInUpdateRoot(editor) &&
+            RangeApi.isRange(currentSelection)
+              ? stripLocationRoots(currentSelection)
+              : stripLocationRoots(anchoredRange);
+          const intersection = RangeApi.intersection(
+            liveRange,
+            stripLocationRoots(range)
+          );
 
           if (!intersection) {
             continue;
@@ -305,12 +306,10 @@ export const unwrapNodes = ((
         return;
       }
     }
-    const selectionBefore = getCurrentSelection(editor);
-    const shouldSelect =
-      options.at === undefined ||
-      selectionBefore === null ||
-      (SelectionApi.root(selectionBefore) ??
-        getCurrentSelectionRoot(editor)) === getEditorUpdateRoot(editor);
+    const shouldSelect = !preservesSelectionForExplicitTarget(
+      editor,
+      options.at !== undefined
+    );
     const anchor = editor.anchor(target.anchor, { deletion: 'drop' });
     const focus = editor.anchor(target.focus, { deletion: 'drop' });
 

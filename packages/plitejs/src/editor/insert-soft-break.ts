@@ -5,14 +5,29 @@ import {
   setCurrentMarks,
   setTypedMarks,
 } from '../core/public-state';
-import type { EditorStaticApi } from '../interfaces/editor';
+import {
+  type EditorStaticApi,
+  getSelection as editorGetSelection,
+} from '../interfaces/editor';
+import { RangeApi } from '../interfaces/range';
 import { withoutTypedMarks } from '../transforms-text/insert-text';
 import { breakAtSelectedBlockVoid } from './block-void-break';
+import { refusesReadOnlyWrite } from './element-read-only';
 import { applyInsertTextCommand } from './insert-text';
 
 export const applyInsertSoftBreak: EditorStaticApi['insertSoftBreak'] = (
   editor
 ) => {
+  const selection = editorGetSelection(editor);
+
+  if (
+    selection &&
+    RangeApi.isRange(selection) &&
+    refusesReadOnlyWrite(editor, selection)
+  ) {
+    return;
+  }
+
   if (breakAtSelectedBlockVoid(editor)) {
     return;
   }

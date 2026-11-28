@@ -6,6 +6,7 @@ import {
   runEditorTransaction,
 } from '../core/public-state';
 import { refuseCrossing } from '../core/set-root';
+import { preservesSelectionForExplicitTarget } from '../core/update-root-selection';
 import type {
   AnyEditor,
   EditorFragmentDeletionOptions,
@@ -16,7 +17,7 @@ import { RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getLocationRoot } from '../internal/root-location';
 import { deleteText } from '../transforms-text/delete-text';
-import { applyDelete } from './delete-backward';
+import { deleteNodeSelection } from './delete-backward';
 import { refusesReadOnlyWrite } from './element-read-only';
 
 export type InternalFragmentDeletionOptions = Omit<
@@ -34,11 +35,23 @@ export const applyDeleteFragment = (
     const selection = tx.resolveTarget({ at });
 
     if (SelectionApi.isNode(selection)) {
-      tx.setSelection(selection);
-      applyDelete(editor, {
+      const targetRoot = selection.root ?? getEditorUpdateRoot(editor);
+      const preservesSelection = preservesSelectionForExplicitTarget(
+        editor,
+        at !== undefined,
+        { targetRoot }
+      );
+
+      if (!preservesSelection) {
+        tx.setSelection(selection);
+      }
+      deleteNodeSelection(
+        editor,
+        tx,
+        selection,
         direction,
-        unit: 'character',
-      });
+        !preservesSelection
+      );
       return;
     }
 
@@ -54,7 +67,13 @@ export const applyDeleteFragment = (
       if (refusesReadOnlyWrite(editor, selection)) {
         return;
       }
-      tx.setSelection(SelectionApi.text(selection));
+      if (
+        !preservesSelectionForExplicitTarget(editor, at !== undefined, {
+          targetRoot,
+        })
+      ) {
+        tx.setSelection(SelectionApi.text(selection));
+      }
       deleteText(editor, {
         at: selection,
         reverse: direction === 'backward',

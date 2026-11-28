@@ -1,5 +1,10 @@
 import { getEditorSchema } from '../core/editor-runtime';
-import { withEditorUpdateRoot } from '../core/public-state';
+import { getCompiledEditorSchemaFromApi } from '../core/editor-schema';
+import { hasReadOnlyOwnerRoot } from '../core/non-writable';
+import {
+  getEditorUpdateRoot,
+  withEditorUpdateRootScope,
+} from '../core/public-state';
 import type { AnyEditor, EditorStaticApi } from '../interfaces/editor';
 import {
   above as editorAbove,
@@ -10,7 +15,7 @@ import {
 import type { Element } from '../interfaces/element';
 import { NodeApi } from '../interfaces/node';
 import { PathApi } from '../interfaces/path';
-import type { Point } from '../interfaces/point';
+import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
 
@@ -24,6 +29,48 @@ export const elementReadOnly: EditorStaticApi['elementReadOnly'] = (
       NodeApi.isElement(n) && editorIsElementReadOnly(editor, n),
   });
 
+const isReadOnlyGridCellOrRow = (editor: AnyEditor, element: Element) => {
+  const structure = getCompiledEditorSchemaFromApi(
+    getEditorSchema(editor)
+  )?.elements.byType.get(element.type)?.structure;
+
+  return (
+    structure?.kind === 'grid' &&
+    (structure.role === 'cell' || structure.role === 'row')
+  );
+};
+
+const hasPartialReadOnlyBlockEdge = (
+  editor: AnyEditor,
+  edge: Point,
+  side: 'end' | 'start'
+) => {
+  const readOnly = elementReadOnly(editor, { at: edge, mode: 'highest' });
+
+  if (!readOnly) return false;
+
+  const [element, path] = readOnly;
+  const schema = getEditorSchema(editor);
+
+  if (
+    schema.isInline(element) ||
+    schema.isVoid(element) ||
+    isReadOnlyGridCellOrRow(editor, element)
+  ) {
+    return false;
+  }
+
+  const blockStart = editorPoint(editor, path, { edge: 'start' });
+
+  if (side === 'start') {
+    return !PointApi.equals(edge, blockStart);
+  }
+
+  const blockEnd = editorPoint(editor, path, { edge: 'end' });
+
+  return !PointApi.equals(edge, blockStart) && !PointApi.equals(edge, blockEnd);
+};
+
 const refusesReadOnlyWriteInCurrentRoot = (
   editor: AnyEditor,
   at: Point | Range
@@ -32,7 +79,18 @@ const refusesReadOnlyWriteInCurrentRoot = (
 
   const readOnly = elementReadOnly(editor, { at, mode: 'highest' });
 
-  if (!readOnly) return false;
+  if (!readOnly) {
+    if (RangeApi.isRange(at) && RangeApi.isExpanded(at)) {
+      const [start, end] = RangeApi.edges(at);
+
+      return (
+        hasPartialReadOnlyBlockEdge(editor, start, 'start') ||
+        hasPartialReadOnlyBlockEdge(editor, end, 'end')
+      );
+    }
+
+    return false;
+  }
 
   if (RangeApi.isRange(at) && RangeApi.isExpanded(at)) {
     if (editorIsInline(editor, readOnly[0])) return true;
@@ -52,14 +110,32 @@ const refusesReadOnlyWriteInCurrentRoot = (
   return true;
 };
 
-export const refusesReadOnlyWrite = (editor: AnyEditor, at: Point | Range) => {
+export const refusesReadOnlyWrite = (
+  editor: AnyEditor,
+  at: Point | Range
+): boolean => {
+  if (
+    RangeApi.isRange(at) &&
+    at.anchor.root !== undefined &&
+    at.focus.root !== undefined &&
+    at.anchor.root !== at.focus.root
+  ) {
+    return (
+      refusesReadOnlyWrite(editor, at.anchor) ||
+      refusesReadOnlyWrite(editor, at.focus)
+    );
+  }
+
   const explicitRoot = getLocationRoot(at);
+  const targetRoot = explicitRoot ?? getEditorUpdateRoot(editor);
+
+  if (hasReadOnlyOwnerRoot(editor, targetRoot)) return true;
 
   if (!explicitRoot) {
     return refusesReadOnlyWriteInCurrentRoot(editor, at);
   }
 
-  return withEditorUpdateRoot(editor, explicitRoot, () =>
+  return withEditorUpdateRootScope(editor, explicitRoot, () =>
     refusesReadOnlyWriteInCurrentRoot(editor, stripLocationRoots(at))
   );
 };

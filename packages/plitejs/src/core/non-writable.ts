@@ -1,4 +1,9 @@
-import type { AnyEditor, NodeKey, RootKey } from '../interfaces/editor';
+import type {
+  AnyEditor,
+  EditorRootEntry,
+  NodeKey,
+  RootKey,
+} from '../interfaces/editor';
 import { ElementApi, type Element } from '../interfaces/element';
 import type { Location } from '../interfaces/location';
 import { type Descendant, NodeApi } from '../interfaces/node';
@@ -9,13 +14,18 @@ import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { rootNodesOf } from './change/document-index';
 import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
 import { definePluginPoint } from './plugin-point';
-import { getPluginContributions } from './plugin-registry';
+import {
+  getCompiledEditorSchema,
+  getPluginContributions,
+} from './plugin-registry';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   getActiveEditorTransaction,
   getEditorDocumentRoots,
   getReadProjection,
   resolveLocationRoot,
+  withEditorRootChildren,
+  withEditorViewRead,
 } from './public-state';
 import { readRootEntries } from './root-entries';
 
@@ -48,6 +58,49 @@ export const nonWritableContent =
 export const nonWritableRoot =
   definePluginPoint<NonWritableRootPredicate>('root.non-writable');
 
+const SCHEMA_HAS_READ_ONLY_ELEMENT = new WeakMap<object, boolean>();
+const ROOT_ENTRIES_BY_ROOT = new WeakMap<
+  readonly EditorRootEntry[],
+  ReadonlyMap<RootKey, EditorRootEntry>
+>();
+
+const schemaHasReadOnlyElement = (editor: AnyEditor): boolean => {
+  const schema = getCompiledEditorSchema(getEditorRuntimeOwner(editor));
+
+  if (!schema) return false;
+
+  const cached = SCHEMA_HAS_READ_ONLY_ELEMENT.get(schema);
+
+  if (cached !== undefined) return cached;
+
+  let found = false;
+
+  for (const element of schema.elements.byType.values()) {
+    if (element.behavior.readOnly) {
+      found = true;
+      break;
+    }
+  }
+
+  SCHEMA_HAS_READ_ONLY_ELEMENT.set(schema, found);
+
+  return found;
+};
+
+const getRootEntriesByRoot = (
+  entries: readonly EditorRootEntry[]
+): ReadonlyMap<RootKey, EditorRootEntry> => {
+  const cached = ROOT_ENTRIES_BY_ROOT.get(entries);
+
+  if (cached) return cached;
+
+  const byRoot = new Map(entries.map((entry) => [entry.root, entry]));
+
+  ROOT_ENTRIES_BY_ROOT.set(entries, byRoot);
+
+  return byRoot;
+};
+
 /** @internal */
 export const hasNonWritableContributors = (editor: AnyEditor): boolean =>
   getPluginContributions(editor, nonWritableContent).length > 0 ||
@@ -57,11 +110,19 @@ export const hasNonWritableContributors = (editor: AnyEditor): boolean =>
 export const isElementNonWritable = (
   editor: AnyEditor,
   element: Element,
-  { includeReadOnly = true }: Readonly<{ includeReadOnly?: boolean }> = {}
+  {
+    includeContributors = true,
+    includeReadOnly = true,
+  }: Readonly<{
+    includeContributors?: boolean;
+    includeReadOnly?: boolean;
+  }> = {}
 ): boolean => {
   if (includeReadOnly && getEditorSchema(editor).isReadOnly(element)) {
     return true;
   }
+
+  if (!includeContributors) return false;
 
   const predicates = getPluginContributions(editor, nonWritableContent);
 
@@ -77,19 +138,31 @@ const hasNonWritableElementInAncestors = (
   roots: DocumentRoots,
   path: Path,
   root: RootKey,
-  includeReadOnly: boolean
+  includeReadOnly: boolean,
+  includeContributors = true
 ): boolean => {
   if (path.length === 0) return false;
 
   let node: unknown = rootNodesOf(roots, root).at(path[0]);
 
   if (!ElementApi.isElement(node)) return false;
-  if (isElementNonWritable(editor, node, { includeReadOnly })) return true;
+  if (
+    isElementNonWritable(editor, node, { includeContributors, includeReadOnly })
+  ) {
+    return true;
+  }
 
   for (let index = 1; index < path.length; index += 1) {
     node = node.children[path[index]];
     if (!ElementApi.isElement(node)) return false;
-    if (isElementNonWritable(editor, node, { includeReadOnly })) return true;
+    if (
+      isElementNonWritable(editor, node, {
+        includeContributors,
+        includeReadOnly,
+      })
+    ) {
+      return true;
+    }
   }
 
   return false;
@@ -99,18 +172,43 @@ const hasNonWritableOwnerRoot = (
   editor: AnyEditor,
   roots: DocumentRoots,
   root: RootKey,
-  includeReadOnly: boolean
+  includeReadOnly: boolean,
+  includeContributors = true
 ): boolean => {
   if (root === MAIN_ROOT_KEY) return false;
 
-  const rootPredicates = getPluginContributions(editor, nonWritableRoot);
+  const rootPredicates = includeContributors
+    ? getPluginContributions(editor, nonWritableRoot)
+    : [];
+  const contentPredicates = includeContributors
+    ? getPluginContributions(editor, nonWritableContent)
+    : [];
+  const inTransactionOrProjection =
+    getActiveEditorTransaction(editor) != null ||
+    getReadProjection(editor) != null;
 
-  if (rootPredicates.length > 0) {
-    return rootPredicates.some((predicate) => predicate(root, editor));
+  if (
+    rootPredicates.length > 0 &&
+    !inTransactionOrProjection &&
+    rootPredicates.some((predicate) => predicate(root, editor))
+  ) {
+    return true;
   }
 
-  const entries = readRootEntries(editor);
-  const byRoot = new Map(entries.map((entry) => [entry.root, entry]));
+  const checkReadOnlyInWalk =
+    includeReadOnly && schemaHasReadOnlyElement(editor);
+  const checkContributorsInWalk =
+    includeContributors &&
+    contentPredicates.length > 0 &&
+    (inTransactionOrProjection ||
+      rootPredicates.length === 0 ||
+      contentPredicates.length > rootPredicates.length);
+
+  if (!checkReadOnlyInWalk && !checkContributorsInWalk) {
+    return false;
+  }
+
+  const byRoot = getRootEntriesByRoot(readRootEntries(editor));
   const visited = new Set<RootKey>();
   const stack: RootKey[] = [root];
 
@@ -133,7 +231,8 @@ const hasNonWritableOwnerRoot = (
           roots,
           owner.path,
           ownerRoot,
-          includeReadOnly
+          checkReadOnlyInWalk,
+          checkContributorsInWalk
         )
       ) {
         return true;
@@ -145,6 +244,24 @@ const hasNonWritableOwnerRoot = (
   }
 
   return false;
+};
+
+/** @internal */
+export const hasReadOnlyOwnerRoot = (
+  editor: AnyEditor,
+  root: RootKey
+): boolean => {
+  if (root === MAIN_ROOT_KEY || !schemaHasReadOnlyElement(editor)) {
+    return false;
+  }
+
+  return hasNonWritableOwnerRoot(
+    editor,
+    getEditorDocumentRoots(editor),
+    root,
+    true,
+    false
+  );
 };
 
 /** @internal */
@@ -200,111 +317,137 @@ export const hasNonWritableAt = (
   if (at == null) return false;
   if (!includeReadOnly && !hasNonWritableContributors(editor)) return false;
 
-  const owner = getEditorRuntimeOwner(editor);
-  const state = getActiveEditorTransaction(editor) ?? editor.read;
-  const roots = getReadProjection(editor)
-    ? getEditorDocumentRoots(editor)
-    : getEditorDocumentRoots(owner);
-  const targetRoot = resolveLocationRoot(editor, at);
+  const evaluate = (
+    state: Pick<AnyEditor['read'], 'nodes'>,
+    inActiveTransaction: boolean
+  ): boolean => {
+    const roots = getEditorDocumentRoots(editor);
+    const defaultRoot = resolveLocationRoot(editor, at);
 
-  if (hasNonWritableOwnerRoot(editor, roots, targetRoot, includeReadOnly)) {
-    return true;
-  }
+    if (RangeApi.isRange(at)) {
+      const anchorRoot = at.anchor.root ?? defaultRoot;
+      const focusRoot = at.focus.root ?? defaultRoot;
 
-  if (typeof at === 'string') {
-    const entry = state.nodes.get(at);
-
-    if (!entry) return false;
-
-    return hasNonWritableElementInAncestors(
-      editor,
-      roots,
-      entry[1],
-      targetRoot,
-      includeReadOnly
-    );
-  }
-
-  if (SelectionApi.isNode(at)) {
-    const checkContributors = hasNonWritableContributors(editor);
-
-    for (const path of at.paths) {
       if (
+        hasNonWritableOwnerRoot(editor, roots, anchorRoot, includeReadOnly) ||
+        (focusRoot !== anchorRoot &&
+          hasNonWritableOwnerRoot(editor, roots, focusRoot, includeReadOnly)) ||
         hasNonWritableElementInAncestors(
           editor,
           roots,
-          path,
-          targetRoot,
+          at.anchor.path,
+          anchorRoot,
+          includeReadOnly
+        ) ||
+        hasNonWritableElementInAncestors(
+          editor,
+          roots,
+          at.focus.path,
+          focusRoot,
           includeReadOnly
         )
       ) {
         return true;
       }
 
-      if (checkContributors) {
-        const node = getNodeInRoot(roots, targetRoot, path);
+      if (
+        anchorRoot === focusRoot &&
+        RangeApi.isExpanded(at) &&
+        hasNonWritableContributors(editor)
+      ) {
+        const scan = () =>
+          state.nodes.some({
+            at,
+            match: (node) =>
+              NodeApi.isElement(node) &&
+              isElementNonWritable(editor, node, { includeReadOnly: false }),
+            voids: true,
+          });
 
-        if (node && hasNonWritableDescendant(editor, node, false)) {
-          return true;
-        }
+        return inActiveTransaction
+          ? withEditorRootChildren(editor, anchorRoot, scan)
+          : scan();
       }
+
+      return false;
     }
 
-    return false;
-  }
-
-  if (PathApi.isPath(at)) {
-    return hasNonWritableElementInAncestors(
-      editor,
-      roots,
-      at,
-      targetRoot,
-      includeReadOnly
-    );
-  }
-
-  if (PointApi.isPoint(at)) {
-    return hasNonWritableElementInAncestors(
-      editor,
-      roots,
-      at.path,
-      targetRoot,
-      includeReadOnly
-    );
-  }
-
-  if (RangeApi.isRange(at)) {
-    if (
-      hasNonWritableElementInAncestors(
-        editor,
-        roots,
-        at.anchor.path,
-        targetRoot,
-        includeReadOnly
-      ) ||
-      hasNonWritableElementInAncestors(
-        editor,
-        roots,
-        at.focus.path,
-        targetRoot,
-        includeReadOnly
-      )
-    ) {
+    if (hasNonWritableOwnerRoot(editor, roots, defaultRoot, includeReadOnly)) {
       return true;
     }
 
-    if (RangeApi.isExpanded(at) && hasNonWritableContributors(editor)) {
-      return state.nodes.some({
+    if (typeof at === 'string') {
+      const entry = state.nodes.get(at);
+
+      if (!entry) return false;
+
+      return hasNonWritableElementInAncestors(
+        editor,
+        roots,
+        entry[1],
+        defaultRoot,
+        includeReadOnly
+      );
+    }
+
+    if (SelectionApi.isNode(at)) {
+      const checkContributors = hasNonWritableContributors(editor);
+
+      for (const path of at.paths) {
+        if (
+          hasNonWritableElementInAncestors(
+            editor,
+            roots,
+            path,
+            defaultRoot,
+            includeReadOnly
+          )
+        ) {
+          return true;
+        }
+
+        if (checkContributors) {
+          const node = getNodeInRoot(roots, defaultRoot, path);
+
+          if (node && hasNonWritableDescendant(editor, node, false)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+
+    if (PathApi.isPath(at)) {
+      return hasNonWritableElementInAncestors(
+        editor,
+        roots,
         at,
-        match: (node) =>
-          NodeApi.isElement(node) &&
-          isElementNonWritable(editor, node, { includeReadOnly: false }),
-        voids: true,
-      });
+        defaultRoot,
+        includeReadOnly
+      );
+    }
+
+    if (PointApi.isPoint(at)) {
+      return hasNonWritableElementInAncestors(
+        editor,
+        roots,
+        at.path,
+        defaultRoot,
+        includeReadOnly
+      );
     }
 
     return false;
+  };
+
+  const activeTransaction = getActiveEditorTransaction(editor);
+
+  if (activeTransaction) {
+    return evaluate(activeTransaction, true);
   }
 
-  return false;
+  return editor.read((state) =>
+    withEditorViewRead(editor, () => evaluate(state, false))
+  );
 };

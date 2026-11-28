@@ -8,11 +8,9 @@ import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   applyBuiltDocumentChange,
   getActiveUpdateRoot,
-  getCurrentSelection,
-  getCurrentSelectionRoot,
-  getEditorUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
+import { preservesSelectionForExplicitTarget } from '../core/update-root-selection';
 import { withoutPlacement } from '../core/view-carets';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
@@ -216,12 +214,10 @@ export const liftNodes = ((
       return;
     }
 
-    const liveSelection = getCurrentSelection(editor);
-    const shouldSelect =
-      options.at === undefined ||
-      liveSelection === null ||
-      (SelectionApi.root(liveSelection) ?? getCurrentSelectionRoot(editor)) ===
-        getEditorUpdateRoot(editor);
+    const shouldSelect = !preservesSelectionForExplicitTarget(
+      editor,
+      options.at !== undefined
+    );
     const anchor = editor.anchor(target.anchor, { deletion: 'drop' });
     const focus = editor.anchor(target.focus, { deletion: 'drop' });
 

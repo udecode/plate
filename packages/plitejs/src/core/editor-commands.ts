@@ -88,6 +88,7 @@ import {
   defineUpdateAnnotation,
   readLastCommitAnnotation,
 } from './transaction-values';
+import { preservesSelectionForExplicitTarget } from './update-root-selection';
 import { areEditorJsonValuesEqual } from './value-codec';
 import { holdsWritableText } from './writable-text';
 
@@ -1016,7 +1017,19 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       return state.transaction((tx) => {
-        if (SelectionApi.isNode(target)) tx.selection.set(target);
+        if (
+          SelectionApi.isNode(target) &&
+          !preservesSelectionForExplicitTarget(
+            getActiveCommandEditor(),
+            input.at !== undefined,
+            {
+              targetRoot:
+                target.root ?? getEditorUpdateRoot(getActiveCommandEditor()),
+            }
+          )
+        ) {
+          tx.selection.set(target);
+        }
         tx.fragment.delete({
           direction: input.direction,
           ...(at === undefined ? {} : { at }),
@@ -1165,19 +1178,29 @@ export const editorCommands: EditorCommands = Object.freeze({
 
       if (replacement) {
         return state.transaction((tx) => {
+          const activeEditor = getActiveCommandEditor();
+          const preservesSelection = preservesSelectionForExplicitTarget(
+            activeEditor,
+            input.options?.at !== undefined,
+            {
+              preserveNull: true,
+              targetRoot: replacement.root ?? getEditorUpdateRoot(activeEditor),
+            }
+          );
+
           selectMovedTarget(tx, state, input.options?.at, target);
           tx.nodes.replaceChildren([replacement.replacement], {
             at: replacement.parentPath,
             count: replacement.count,
             index: replacement.index,
             ...(replacement.root ? { root: replacement.root } : {}),
-            newSelection:
-              input.options?.at !== undefined &&
-              getCurrentSelection(getActiveCommandEditor()) === null
-                ? null
-                : replacement.selection,
+            ...(preservesSelection
+              ? getCurrentSelection(activeEditor) === null
+                ? { newSelection: null }
+                : {}
+              : { newSelection: replacement.selection }),
           });
-          if (typing) setNextKeyMarks(getActiveCommandEditor());
+          if (typing) setNextKeyMarks(activeEditor);
         });
       }
 

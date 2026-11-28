@@ -15,6 +15,7 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
+import { preservesSelectionForExplicitTarget } from '../core/update-root-selection';
 import { isWritablePoint } from '../core/writable-text';
 import {
   elementReadOnly,
@@ -411,12 +412,11 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
     const { voids = false } = options;
     const liveSelection = getPublicSelection(editor);
     const targetRoot = getEditorUpdateRoot(editor);
-    const liveSelectionRoot = liveSelection
-      ? (SelectionApi.root(liveSelection) ?? getCurrentSelectionRoot(editor))
-      : null;
-    const explicitAtPreservesSelection =
-      options.at != null &&
-      (liveSelection == null || liveSelectionRoot !== targetRoot);
+    const explicitAtPreservesSelection = preservesSelectionForExplicitTarget(
+      editor,
+      options.at != null,
+      { preserveNull: true, targetRoot }
+    );
     const defaultAt = options.at ?? getDefaultInsertLocation(editor);
     const preflightAt = (() => {
       if (LocationApi.isPath(defaultAt)) {
@@ -668,8 +668,14 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             setCurrentMarks(editor, null);
           }
 
+          const landingLeaf =
+            explicitAtPreservesSelection && landingAt !== nextAt
+              ? NodeApi.get(editor, landingAt.path)
+              : null;
           const inheritedMarks = explicitAtPreservesSelection
-            ? null
+            ? landingLeaf && TextApi.isText(landingLeaf)
+              ? normalizeTextMarks(NodeApi.extractProps(landingLeaf))
+              : null
             : normalizeTextMarks(getSelectionMarks(editor));
           const inheritedInsertionPoint = getPointTextInsertionPoint(
             editor,
@@ -685,6 +691,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               });
             }
             insertTextAtPoint(editor, inheritedInsertionPoint, text);
+            keepTyping();
             return;
           }
         }

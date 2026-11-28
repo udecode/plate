@@ -3,19 +3,21 @@ import type { Range } from '../interfaces/range';
 import { RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
+import { getLocationRoot } from '../internal/root-location';
 import { resolveDeletedRange } from '../transforms-text';
 import { readWholeBlockLanding, tripleClickedBlock } from './editor-commands';
-import { getEditorUpdateRoot } from './public-state';
+import { getEditorUpdateRoot, withEditorRootChildren } from './public-state';
 import { readLastCommitAnnotation } from './transaction-values';
 
 export const resolveFragmentDeletedRange = (
   editor: AnyEditor,
   range: Range
 ): NodeSelection | Range | null => {
+  const explicitRoot = getLocationRoot(range);
+  const targetRoot = explicitRoot ?? getEditorUpdateRoot(editor);
   const landing = editor.read((state) =>
     readWholeBlockLanding(state, range, {
-      root:
-        range.anchor.root ?? range.focus.root ?? getEditorUpdateRoot(editor),
+      root: targetRoot,
       tripleClicked: readLastCommitAnnotation(state, tripleClickedBlock, range),
     })
   );
@@ -26,7 +28,10 @@ export const resolveFragmentDeletedRange = (
     const firstPath = getDefined(first);
 
     return landing.whole && firstPath.length === 1
-      ? SelectionApi.nodes([firstPath, ...rest], { mode: 'block' })
+      ? SelectionApi.nodes([firstPath, ...rest], {
+          mode: 'block',
+          ...(explicitRoot ? { root: explicitRoot } : {}),
+        })
       : null;
   }
   if (landing.keeps !== 'first') return range;
@@ -36,10 +41,15 @@ export const resolveFragmentDeletedRange = (
 
   if (blocks.length > 1) {
     const [, lastPath] = getDefined(blocks.at(-1));
+    const endPoint = getDefined(
+      withEditorRootChildren(editor, targetRoot, () =>
+        editor.read((state) => state.points.end(lastPath))
+      )
+    );
 
     return {
       anchor: RangeApi.start(range),
-      focus: getDefined(editor.read((state) => state.points.end(lastPath))),
+      focus: explicitRoot ? { ...endPoint, root: explicitRoot } : endPoint,
     };
   }
   if (RangeApi.isCollapsed(text)) return text;

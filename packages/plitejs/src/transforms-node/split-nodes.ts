@@ -7,12 +7,11 @@ import {
   getActiveDocumentChangeBuilder,
   getActiveUpdateRoot,
   getCurrentSelection,
-  getCurrentSelectionRoot,
-  getEditorUpdateRoot,
   profileCoreDuration,
   runEditorTransaction,
 } from '../core/public-state';
 import { mapCanonicalRepresentationPoint } from '../core/representation';
+import { isSelectionInUpdateRoot } from '../core/update-root-selection';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
@@ -120,9 +119,7 @@ const deleteRange = (editor: Editor, range: Range): Point | null => {
 
   const selection = getCurrentSelection(editor);
   const selectionInUpdateRoot =
-    SelectionApi.isText(selection) &&
-    (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) ===
-      getEditorUpdateRoot(editor);
+    SelectionApi.isText(selection) && isSelectionInUpdateRoot(editor);
 
   return preserveEndPoint
     ? preservedEnd
