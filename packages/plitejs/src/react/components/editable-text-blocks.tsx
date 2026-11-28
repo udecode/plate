@@ -2012,6 +2012,10 @@ function EditorContentChildRootSurface<const TRoot extends RootKey = RootKey>({
   const livePath = useElementPath();
   const ownerPath = livePath ?? elementContext.path;
   const ownerRoot = toInternalRoot(editor.read((state) => state.view.root()));
+  const parentOwner =
+    existingOwner && existingOwner.childRoot === ownerRoot
+      ? existingOwner
+      : null;
   const ownsRoot = elementOwnsChildRoot(
     elementContext.element,
     elementContext.nodeKey,
@@ -2024,9 +2028,10 @@ function EditorContentChildRootSurface<const TRoot extends RootKey = RootKey>({
             childRoot: root,
             ownerPath,
             ownerRoot,
+            ...(parentOwner ? { parent: parentOwner } : {}),
           }
         : null,
-    [ownerPath, ownerRoot, ownsRoot, root]
+    [ownerPath, ownerRoot, ownsRoot, parentOwner, root]
   );
   const surface = (
     <SurfaceRoot editor={editor} readOnly={rootReadOnly} root={root}>
@@ -2038,7 +2043,8 @@ function EditorContentChildRootSurface<const TRoot extends RootKey = RootKey>({
     !contentRootOwner ||
     (existingOwner?.childRoot === root &&
       existingOwner.ownerRoot === ownerRoot &&
-      PathApi.equals(existingOwner.ownerPath, ownerPath))
+      PathApi.equals(existingOwner.ownerPath, ownerPath) &&
+      existingOwner.parent === parentOwner)
   ) {
     return surface;
   }

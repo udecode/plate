@@ -441,9 +441,17 @@ export const EditorRuntimeView = <
     flushEditorViewState(reactEditor);
     flushViewLockScope(lockScope);
   }, [lockLink, lockScope, reactEditor, readOnly]);
+  const isOwnedChildRootSurface =
+    !!ownSlotInstance ||
+    (mountedIn === undefined &&
+      !!presentation &&
+      !!parentEditor &&
+      getEditorRuntimeOwner(parentEditor) === runtimeOwner &&
+      toInternalRoot(parentEditor.read((state) => state.view.root())) ===
+        contentRootOwner?.ownerRoot);
   const ownContentRootOwner =
     contentRootOwner &&
-    ownSlotInstance &&
+    isOwnedChildRootSurface &&
     contentRootOwner.childRoot === viewRoot
       ? contentRootOwner
       : null;

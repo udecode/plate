@@ -950,7 +950,7 @@ export const waitForSelectionSync = async (
         `${error instanceof Error ? error.message : String(error)}\nSelection sync state:\n${JSON.stringify(state, null, 2)}`
       );
     });
-  await root.evaluate(
+  await root.page().evaluate(
     () =>
       new Promise<void>((resolve) => {
         requestAnimationFrame(() => {

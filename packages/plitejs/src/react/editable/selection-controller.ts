@@ -1230,7 +1230,10 @@ export const shouldSuppressCollapsedSelectionMoveDOMRange = ({
   const parked = readParkedSelection(editor, currentSelection, editorElement);
 
   if (activeIntent === 'native-selection-move') {
-    return parked === 'parked';
+    return (
+      !RangeApi.includes(currentSelection, nextSelection.focus) &&
+      parked === 'parked'
+    );
   }
 
   return (

@@ -71,7 +71,7 @@ export const waitForSelectionRange = async (root: Locator) => {
       })
     )
     .toBe(true);
-  await root.evaluate(
+  await root.page().evaluate(
     () =>
       new Promise<void>((resolve) => {
         requestAnimationFrame(() => {
