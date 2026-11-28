@@ -652,27 +652,15 @@ export const steps = [
     key: [],
   },
   {
-    name: 'effect-ledger',
-    cores: 4,
-    private: true,
-    optIn: '--audit',
-    run: 'pnpm check:effect-ledger --deadline=3300',
-    light: 'pnpm check:effect-ledger --light',
-    affected: runsScript(
-      'packages/plitejs/scripts/effect-ledger.ts',
-      'packages/plitejs/scripts/check-harness.ts',
-      'packages/plitejs/scripts/effect-ledger'
-    ),
-    key: [],
-  },
-  {
     name: 'v4-intent-oracle',
     cores: 2,
     run: 'pnpm check:v4-intent-oracle',
     light: 'pnpm check:v4-intent-oracle --light',
     affected: runsScript(
       'packages/plitejs/scripts/v4-intent-oracle.ts',
-      'packages/plitejs/src/core/change/v4/'
+      'packages/plitejs/src/core/change/v4/',
+      'packages/plitejs/src/sync/server/v4-take-back.ts',
+      'packages/plitejs/src/history/v4-history-rebase.ts'
     ),
     key: [],
   },

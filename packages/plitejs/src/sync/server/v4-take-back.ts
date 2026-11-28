@@ -12,11 +12,22 @@ import {
   type JsonNode,
 } from '../../core/change/tokens';
 import type { V4Step } from '../../core/change/v4/types';
+import type { LaterEntry } from '../../core/change/window';
 import { getRecordText, getValueRecords } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { rebaseOver, sameDocument } from '../protocol';
 import type { SyncGrant, SyncWriteCheck } from './grant';
-import type { LaterEntry, PutEntry } from './take-back';
+
+export type { LaterEntry } from '../../core/change/window';
+
+export type PutEntry = Readonly<{
+  after: JsonEditorValue;
+  before: JsonEditorValue;
+  change: DocumentChange;
+  /** The entries admitted since, oldest first. */
+  later: readonly LaterEntry[];
+  writer: string;
+}>;
 
 const collectElementIds = (nodes: readonly JsonNode[], into: Set<string>) => {
   for (const node of nodes) {

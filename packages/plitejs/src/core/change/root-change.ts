@@ -6235,26 +6235,6 @@ export class RootChange {
     return new RootChange(sections, data);
   }
 
-  /** Invert a change that only inserts tokens without reading the document. */
-  invertInsertions() {
-    const sections: number[] = [];
-    const data: SectionData[] = [];
-
-    for (let index = 0; index < this.sections.length; index += 2) {
-      const length = this.sections[index];
-      const inserted = this.sections[index + 1];
-
-      if (inserted === -1) {
-        addSection(sections, data, length, -1, null);
-        continue;
-      }
-      if (inserted < 0 || length !== 0) return null;
-      addSection(sections, data, inserted, 0, PreparedTokenSlice.empty);
-    }
-
-    return new RootChange(sections, data);
-  }
-
   /** Resize only the unchanged trailing document region. */
   resizeTrailingDocument(length: number) {
     if (!Number.isSafeInteger(length) || length < 0) return null;

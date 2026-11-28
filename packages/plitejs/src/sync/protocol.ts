@@ -1,13 +1,19 @@
 import {
   type DocumentChange,
   type DocumentChangeJson,
+  getV4Steps,
   rebaseDocumentChange,
 } from '../core/change/document-change';
-import type { SetValued, SpanVerdict } from '../core/change/effect-ledger';
 import { jsonEqual } from '../core/change/json';
 import { hasRootNames } from '../core/change/lazy-root';
-import type { JsonEditorValue } from '../core/change/tokens';
-import { V4_REGISTER_SET } from '../core/change/v4/types';
+import type { DocumentSetPropertyResolver } from '../core/change/root-change';
+import {
+  isElementNode,
+  type JsonEditorValue,
+  type JsonNode,
+} from '../core/change/tokens';
+import { extractV4Between } from '../core/change/v4/extract';
+import { V4_REGISTER_SET, type V4Step } from '../core/change/v4/types';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { getValueRecords, recordStoreToJson } from '../core/record-store';
 import { getCompiledPropertyMergeStrategy } from '../core/schema-compiler';
@@ -209,18 +215,22 @@ export const documentOf = (value: JsonEditorValue): JsonEditorValue => {
   };
 };
 
-export const setValuedIn = (editor: AnyEditor): SetValued => {
+export const setValuedIn = (editor: AnyEditor): DocumentSetPropertyResolver => {
   const compiled = getCompiledEditorSchema(editor);
 
-  return (placement, key, context) =>
-    getCompiledPropertyMergeStrategy(compiled, placement, key, context) ===
-    'set';
+  return (_node, key, context) =>
+    getCompiledPropertyMergeStrategy(
+      compiled,
+      context.placement,
+      key,
+      context
+    ) === 'set';
 };
 
 export const sameDocument = (left: JsonEditorValue, right: JsonEditorValue) =>
   jsonEqual(documentOf(left), documentOf(right));
 
-export type SyncVerdict = SpanVerdict<unknown>['kind'];
+export type SyncVerdict = 'contested' | 'held' | 'lost' | 'unjudged';
 
 export const dispositionOf = (
   verdict: SyncVerdict,
@@ -229,6 +239,180 @@ export const dispositionOf = (
   verdict === 'held' || (verdict === 'contested' && stretch === 'live')
     ? 'send'
     : verdict;
+
+const collectElementIds = (nodes: readonly JsonNode[], into: Set<string>) => {
+  for (const node of nodes) {
+    if (!isElementNode(node)) continue;
+    if (typeof node.id === 'string' && node.id.length > 0) into.add(node.id);
+    collectElementIds(node.children, into);
+  }
+};
+
+const writtenIdsOfSteps = (steps: readonly V4Step[]): Set<string> => {
+  const ids = new Set<string>();
+
+  for (const step of steps) {
+    switch (step.op) {
+      case 'insert_text':
+      case 'delete_text':
+      case 'format_text':
+      case 'wrap_inline': {
+        ids.add(step.target);
+        break;
+      }
+      case 'unwrap_inline': {
+        ids.add(step.id);
+        ids.add(step.parent);
+        break;
+      }
+      case 'insert_node': {
+        if ('id' in step.to) ids.add(step.to.id);
+        collectElementIds([step.node], ids);
+        break;
+      }
+      case 'remove_node':
+      case 'set_props':
+      case 'move_node': {
+        ids.add(step.id);
+        if (step.op === 'move_node' && 'id' in step.to) ids.add(step.to.id);
+        break;
+      }
+      case 'split_node': {
+        ids.add(step.id);
+        ids.add(step.newId);
+        break;
+      }
+      case 'join_nodes': {
+        ids.add(step.target);
+        ids.add(step.source);
+        break;
+      }
+      case 'create_root':
+      case 'delete_root':
+      case 'set_register': {
+        break;
+      }
+    }
+  }
+
+  return ids;
+};
+
+const stepsOfChange = (
+  change: DocumentChange,
+  before: JsonEditorValue,
+  isSetValued: DocumentSetPropertyResolver
+): readonly V4Step[] =>
+  getV4Steps(change) ??
+  (change.empty
+    ? []
+    : extractV4Between(before, change.apply(before), { isSetValued }));
+
+/**
+ * Judges whether a rebuilt decision `merged` at `head` preserves `own` and all
+ * unrelated concurrent writes in `accepted` using v4 ID-addressed steps.
+ */
+export const judgeV4DecisionSpan = ({
+  accepted,
+  base,
+  isSetValued,
+  merged,
+  own,
+}: Readonly<{
+  accepted: readonly DocumentChange[];
+  base: JsonEditorValue;
+  isSetValued: DocumentSetPropertyResolver;
+  merged: DocumentChange;
+  own: DocumentChange;
+}>): SyncVerdict => {
+  let head = base;
+  const acceptedWrittenIds = new Set<string>();
+
+  for (const entry of accepted) {
+    for (const id of writtenIdsOfSteps(
+      stepsOfChange(entry, head, isSetValued)
+    )) {
+      acceptedWrittenIds.add(id);
+    }
+    head = entry.apply(head);
+  }
+
+  const mergedDoc = merged.apply(head);
+  const rebased = rebaseOver(accepted, own, base);
+
+  if (rebased.kind === 'rebased') {
+    const expectedDoc = rebased.change.apply(head);
+
+    if (sameDocument(mergedDoc, expectedDoc)) return 'held';
+  }
+
+  if (merged.empty) {
+    if (own.empty) return 'held';
+    if (rebased.kind === 'rebased' && rebased.satisfied) return 'held';
+
+    return 'lost';
+  }
+
+  const headIds = new Set<string>();
+
+  collectElementIds(head.children, headIds);
+  if (head.roots) {
+    for (const nodes of Object.values(head.roots)) {
+      collectElementIds(nodes, headIds);
+    }
+  }
+
+  const ownSteps = stepsOfChange(own, base, isSetValued);
+  const mergedSteps = stepsOfChange(merged, head, isSetValued);
+  const structuralOps = new Set([
+    'insert_node',
+    'join_nodes',
+    'move_node',
+    'remove_node',
+    'split_node',
+  ]);
+  const mergedOps = new Set(mergedSteps.map((step) => step.op));
+
+  for (const step of ownSteps) {
+    if (structuralOps.has(step.op) && !mergedOps.has(step.op)) {
+      return 'lost';
+    }
+    if (
+      step.op === 'join_nodes' &&
+      headIds.has(step.source) &&
+      headIds.has(step.target) &&
+      !mergedSteps.some(
+        (candidate) =>
+          candidate.op === 'join_nodes' &&
+          candidate.source === step.source &&
+          candidate.target === step.target
+      )
+    ) {
+      return 'lost';
+    }
+  }
+
+  const ownWrittenIds = writtenIdsOfSteps(ownSteps);
+  const mergedWrittenIds = writtenIdsOfSteps(mergedSteps);
+  let ownContested = false;
+
+  for (const id of ownWrittenIds) {
+    if (acceptedWrittenIds.has(id)) {
+      ownContested = true;
+      break;
+    }
+  }
+
+  if (ownContested) return 'contested';
+
+  for (const id of mergedWrittenIds) {
+    if (acceptedWrittenIds.has(id) && !ownWrittenIds.has(id)) {
+      return 'lost';
+    }
+  }
+
+  return 'held';
+};
 
 /**
  * Rebases `change` over the accepted changes one at a time, from the value

@@ -1,16 +1,16 @@
 import {
-  bindV4DocumentChange,
   DocumentChange,
   type DocumentChangeJson,
 } from '../../core/change/document-change';
-import {
-  judgeSpan,
-  type SetValued,
-  viewOfChange,
-} from '../../core/change/effect-ledger';
+import type { DocumentSetPropertyResolver } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
-import { rebaseOver, type SyncVerdict, sameDocument } from '../protocol';
+import {
+  judgeV4DecisionSpan,
+  rebaseOver,
+  type SyncVerdict,
+  sameDocument,
+} from '../protocol';
 import type { BatchOrigin, KeptReason } from './outbox';
 
 export type SyncDecision = Readonly<{
@@ -53,34 +53,18 @@ const failed = (
 
 export const MOVED = failed('moved');
 
-const TOKENS_PER_CHANGE = 8000;
-
 export const syncJudge =
-  (isSetValued: SetValued): SyncJudge =>
+  (isSetValued: DocumentSetPropertyResolver): SyncJudge =>
   ({ before, change, since }, merged) => {
     if (!before) return 'held';
 
-    let cursor = before;
-    const accepted = since.map((json) => {
-      const bound = bindV4DocumentChange(DocumentChange.fromJSON(json), cursor);
-
-      cursor = bound.apply(cursor);
-      return viewOfChange(bound);
-    });
-
-    return judgeSpan({
-      accepted,
+    return judgeV4DecisionSpan({
+      accepted: since.map((json) => DocumentChange.fromJSON(json)),
       base: before,
-      budget: TOKENS_PER_CHANGE * (since.length + 2),
-      head: null,
       isSetValued,
-      merged: [viewOfChange(bindV4DocumentChange(merged, cursor))],
-      own: [
-        viewOfChange(
-          bindV4DocumentChange(DocumentChange.fromJSON(change), before)
-        ),
-      ],
-    }).kind;
+      merged,
+      own: DocumentChange.fromJSON(change),
+    });
   };
 
 type IncrementalRebaseState = Readonly<{

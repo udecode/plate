@@ -1,14 +1,9 @@
 import {
-  bindV4DocumentChange,
   DocumentChange,
   type DocumentChangeJson,
   getV4Steps,
 } from '../../core/change/document-change';
-import {
-  type SetValued,
-  judgeSpan,
-  viewOfChange,
-} from '../../core/change/effect-ledger';
+import type { DocumentSetPropertyResolver } from '../../core/change/root-change';
 import {
   isElementNode,
   type JsonEditorValue,
@@ -39,6 +34,7 @@ import {
   digestOf,
   dispositionOf,
   documentOf,
+  judgeV4DecisionSpan,
   measureMessage,
   rebaseOver,
   sameDocument,
@@ -65,9 +61,9 @@ import type {
   StoredRoom,
   SyncStorage,
 } from './storage';
-import type { LaterEntry } from './take-back';
 import { checkV4Admission } from './v4-admission';
 import {
+  type LaterEntry,
   v4OwnTakeBack,
   v4PutAllIndexOf,
   v4PutEntryAt,
@@ -201,7 +197,7 @@ type LoadedRoom = {
   floor: number;
   head: number;
   headEntry: SyncEntry | null;
-  isSetValued: SetValued;
+  isSetValued: DocumentSetPropertyResolver;
   logged: number;
   name: string;
   schema: string;
@@ -867,24 +863,16 @@ export const createSyncServer = <
         ? { actor: SERVER_WRITER, writer: SERVER_WRITER }
         : { actor: member.grant.actor, writer };
     const judgeDecision = () => {
-      let cursor = baseValue;
-      const boundAccepted = accepted.map((entry) => {
-        const bound = bindV4DocumentChange(entry, cursor);
-
-        cursor = bound.apply(cursor);
-        return viewOfChange(bound);
-      });
       const ownChange = covered.judge?.own ?? change;
       const mergedChange = covered.judge?.merged ?? logged;
 
-      return judgeSpan({
-        accepted: boundAccepted,
+      return judgeV4DecisionSpan({
+        accepted,
         base: baseValue,
-        head: room.head,
         isSetValued: room.isSetValued,
-        merged: [viewOfChange(bindV4DocumentChange(mergedChange, cursor))],
-        own: [viewOfChange(bindV4DocumentChange(ownChange, baseValue))],
-      }).kind;
+        merged: mergedChange,
+        own: ownChange,
+      });
     };
 
     if (logged.empty) {

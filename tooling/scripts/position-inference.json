@@ -6,9 +6,6 @@
     "packages/plitejs/src/core/change/carry-program.ts",
     "packages/plitejs/src/core/change/cross-rule.ts",
     "packages/plitejs/src/core/change/cross.ts",
-    "packages/plitejs/src/core/change/effect-ledger-identity.ts",
-    "packages/plitejs/src/core/change/effect-ledger-window.ts",
-    "packages/plitejs/src/core/change/effect-ledger.ts",
     "packages/plitejs/src/core/change/enclosure.ts",
     "packages/plitejs/src/core/change/join.ts",
     "packages/plitejs/src/core/change/lineage.ts",
@@ -21,9 +18,7 @@
     "packages/plitejs/src/core/change/wrap-fidelity.ts",
     "packages/plitejs/src/history/history-character-map.ts",
     "packages/plitejs/src/history/history-replay.ts",
-    "packages/plitejs/src/history/history-state.ts",
-    "packages/plitejs/src/sync/server/take-back.ts",
-    "packages/plitejs/src/sync/server/window.ts"
+    "packages/plitejs/src/history/history-state.ts"
   ],
   "uncounted": {
     "packages/plitejs/src/core/change/range-content.ts": "It reads whether a range covers a letter or a whole void. It works out no move, split, join or wrap.",

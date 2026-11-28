@@ -31,8 +31,8 @@ import {
   SelectionApi,
   target as schemaTarget,
 } from '../src/index';
-import type { LaterEntry } from '../src/sync/server/take-back';
 import {
+  type LaterEntry,
   v4OwnTakeBack,
   v4PutEntryAt,
   v4TakeBack,
@@ -1245,7 +1245,7 @@ const runShippedRoomTakeBackOracle = (fuzzCount: number) => {
       entries,
       'alice',
       { access: 'edit', actor: 'alice', decide: true },
-      () => ({ kind: 'covered' }),
+      () => ({ claims: [], kind: 'covered' }),
       head,
       result,
       compiledSchema

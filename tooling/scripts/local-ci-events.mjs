@@ -435,7 +435,6 @@ const STEP_AREAS = {
   'cli-test': ['packages/cli'],
   'delete-paste-ranges': ['packages/plitejs'],
   'docx-import-report': ['packages/platejs'],
-  'effect-ledger': ['packages/plitejs'],
   'markdown-round-trip': ['packages/platejs'],
   'plite-browser': ['apps/plite', 'packages/plitejs'],
   'plite-docs': ['docs/plite', 'packages/plitejs'],
