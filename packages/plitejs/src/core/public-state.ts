@@ -505,7 +505,7 @@ import {
 import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
 import type { InternalSlicePlacementFit } from './slice-fit/compiled-slice-fitter';
 import { replacesEmptyBlockHead } from './slice-fit/edge-plan';
-import { isFittingMove } from './slice-fit/provenance';
+import type { FitLanding } from './slice-fit/provenance';
 import {
   aliasedRoots,
   type RenewedContentSlice,
@@ -6423,6 +6423,7 @@ const writeSliceAtRange = <V extends Value>(
   place: Extract<SliceFitPlace, { kind: 'range' }>,
   slice: import('../interfaces/editor').ContentSlice<V>,
   options: Readonly<{
+    fitLanding?: FitLanding;
     landed?: (track: DraftTrack) => void;
     paste: object;
     replaceEmptyBlock?: true;
@@ -6462,7 +6463,7 @@ const writeSliceAtRange = <V extends Value>(
       emptyBlock[0],
       slice.content[0],
       (node) => state.schema.getElementBehavior(node),
-      isFittingMove()
+      options.fitLanding?.kind === 'move'
     )
       ? [emptyBlock]
       : [];
@@ -6506,6 +6507,7 @@ const writeSliceAtRange = <V extends Value>(
         at: range,
         ...(bounds ? { contentBounds: bounds, exactBounds: bounds } : {}),
         byLook: fitReadingFor(editor, builder),
+        ...(options.fitLanding ? { fitLanding: options.fitLanding } : {}),
         kind: 'range',
         paste: options.paste,
         ...(emptyBlock ? { replaceEmptyBlock: true } : {}),
@@ -6725,6 +6727,7 @@ const landSlice = (
   options: Readonly<{
     aliased?: ReadonlySet<string>;
     drop?: true;
+    fitLanding?: FitLanding;
     landed?: (track: DraftTrack) => void;
     replaceEmptyBlock?: true;
     rootsPrepared?: boolean;
@@ -6836,7 +6839,12 @@ const landSlice = (
       editor,
       end,
       createContentSliceFromFragment(endMatter, 0, 0, slice.roots),
-      { paste, rootsPrepared: true, selection: 'keep' }
+      {
+        ...(options.fitLanding ? { fitLanding: options.fitLanding } : {}),
+        paste,
+        rootsPrepared: true,
+        selection: 'keep',
+      }
     )
   ) {
     return false;
@@ -6877,6 +6885,7 @@ export const fitSliceAtSite = (
   options: Readonly<{
     copy?: RenewedCopy | null;
     drop?: true;
+    fitLanding?: FitLanding;
     landing?: true;
     replaceEmptyBlock?: true;
   }> = {}
@@ -6897,6 +6906,7 @@ export const fitSliceAtSite = (
       return landSlice(owner, transaction, place, renewal.slice, {
         aliased: aliasedRoots(renewal),
         ...(options.drop ? { drop: true } : {}),
+        ...(options.fitLanding ? { fitLanding: options.fitLanding } : {}),
         ...(options.replaceEmptyBlock ? { replaceEmptyBlock: true } : {}),
         ...(options.landing
           ? {

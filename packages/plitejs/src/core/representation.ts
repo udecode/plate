@@ -64,7 +64,7 @@ import { EditorSchemaValidationError } from './schema-validation';
 import type { RepresentationRepairSink } from './slice-fit/fit-report';
 import { textPropertiesEqual } from './value-codec';
 
-type RepresentationSchema = ReturnType<typeof getEditorSchema>;
+export type RepresentationSchema = ReturnType<typeof getEditorSchema>;
 type RepresentationContext = Editor &
   Partial<Readonly<{ getSchema: () => RepresentationSchema }>>;
 const resolveRepresentationSchema = (context: RepresentationContext) =>

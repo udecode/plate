@@ -32,6 +32,7 @@ import {
 import { executeEditorRead } from './read-registry';
 import { dissolveOpenEndMatter } from './slice-end-matter';
 import { identityKeysOf, replacesEmptyBlockHead } from './slice-fit/edge-plan';
+import type { FitLanding } from './slice-fit/provenance';
 import type { RenewedContentSlice } from './slice-identities';
 import type {
   SliceLanding,
@@ -182,7 +183,7 @@ export const withTrackedPastes = <T>(editor: Editor, run: () => T): T => {
 export const writePaste = (
   editor: Editor,
   plan: PastePlan,
-  requested: Readonly<{ landing?: true }> = {}
+  requested: Readonly<{ fitLanding?: FitLanding; landing?: true }> = {}
 ):
   | Readonly<{
       lossy: boolean;
@@ -192,7 +193,7 @@ export const writePaste = (
     }>
   | false => {
   const options = TRACKED_PASTES.has(getEditorRuntimeOwner(editor))
-    ? { landing: true as const }
+    ? { ...requested, landing: true as const }
     : requested;
 
   if (plan.emptyBlockReplacement) {

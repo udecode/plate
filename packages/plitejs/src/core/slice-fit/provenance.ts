@@ -22,30 +22,9 @@ export const payloadKeyOf = ({
   ...props
 }: object & { children?: unknown }) => canonicalJsonKey(props);
 
-/** How the slice being fitted lands: as a paste, or as a move's content. */
-type FitLanding =
+export type FitLanding =
   | Readonly<{ kind: 'paste' }>
   | Readonly<{ kind: 'move'; sources: readonly LandingSource[] }>;
-
-let landing: FitLanding = { kind: 'paste' };
-
-const landingSources = () => (landing.kind === 'move' ? landing.sources : []);
-
-export const isFittingMove = () => landing.kind === 'move';
-
-export const isFittingMoveWithSources = () => landingSources().length > 0;
-
-/** Fit `run`'s slices as `next` lands them. */
-export const withFitLanding = <T>(next: FitLanding, run: () => T): T => {
-  const previous = landing;
-
-  landing = next;
-  try {
-    return run();
-  } finally {
-    landing = previous;
-  }
-};
 
 /**
  * The relocations a fitted move's raw landing carries: each node the change
@@ -58,10 +37,9 @@ export const withFitLanding = <T>(next: FitLanding, run: () => T): T => {
 export const landedRelocations = (
   root: string,
   after: DocumentIndex,
-  change: RootChange
+  change: RootChange,
+  sources: readonly LandingSource[]
 ): readonly Relocation[] => {
-  const sources = landingSources();
-
   if (sources.length === 0) return [];
 
   const queues = {

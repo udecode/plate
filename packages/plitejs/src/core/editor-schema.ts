@@ -53,6 +53,11 @@ import { completeContent } from './content-completion';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import { getPropertyDefault } from './default-storage';
 import {
+  createCompiledDocumentFitterDelegate,
+  type FitDocumentPositions,
+  type FittedDocumentPositions,
+} from './document-fit';
+import {
   getEditorDocumentShapeIssueMessage,
   readEditorDocument,
   type EditorDocumentShapeIssue,
@@ -109,8 +114,6 @@ import {
 } from './schema-validation';
 import {
   createCompiledSliceFitterDelegate,
-  type FitDocumentPositions,
-  type FittedDocumentPositions,
   type InternalSliceFitOptions,
   type InternalSlicePlacementFit,
   type InternalSlicePlacementsFitOptions,
@@ -3066,14 +3069,21 @@ export const createEditorSchema = <V extends Value = Value>(
   const representationEditor = Object.freeze({
     getSchema: () => api,
   }) as unknown as Editor<V>;
+  const generateReservedElementId = () => {
+    const compiled = getDeclarativeSchema();
+
+    return compiled?.reservedElementId
+      ? String(generatePropertyValue(compiled.reservedElementId, 'element'))
+      : undefined;
+  };
   const sliceFitter = createCompiledSliceFitterDelegate<V>(() => ({
     canContain,
-    collectPropertyRepairs,
     contentAllows,
     contentAllowsAt,
     createDeclarativeAndFill,
     editorRootLabel,
     elementUsesInlineContent,
+    generateReservedElementId,
     getCompiledElement,
     getDescendant,
     getDocumentRoot,
@@ -3084,28 +3094,29 @@ export const createEditorSchema = <V extends Value = Value>(
     getElementContentRoots,
     getElementSlicePolicy,
     getElementType,
-    getRootContent,
-    getVocabulary,
     indexConstructedRoot,
     isSetValuedProperty,
     nodePropertiesEqual,
-    observeRootCanonicalization,
     revision: getRegistry().schemaRevision,
     schema: getDeclarativeSchema(),
     schemaApi: api,
     structurallyEqual,
     validateDeclarativeChildren,
-    validateDocument: assertDocument,
     validateSliceVocabulary,
-    withDocumentOwnershipTracker,
-    withoutGeneration,
-    generateReservedElementId: () => {
-      const compiled = getDeclarativeSchema();
-
-      return compiled?.reservedElementId
-        ? String(generatePropertyValue(compiled.reservedElementId, 'element'))
-        : undefined;
-    },
+  }));
+  const documentFitter = createCompiledDocumentFitterDelegate<V>(() => ({
+    collectPropertyRepairs,
+    fit: sliceFitter.fit,
+    fitDirectContent: sliceFitter.fitDirectContent,
+    generateReservedElementId,
+    getDescendant,
+    getDocumentRoot,
+    getEditor: () => representationEditor,
+    getElementContentRoots,
+    getRootContent,
+    getVocabulary,
+    indexConstructedRoot,
+    isSetValuedProperty,
     loadElementIds: (incoming) => {
       const compiled = getDeclarativeSchema();
 
@@ -3113,24 +3124,29 @@ export const createEditorSchema = <V extends Value = Value>(
         ? loadElementIds(compiled, incoming, null)
         : null;
     },
+    observeRootCanonicalization,
+    revision: getRegistry().schemaRevision,
+    schema: getDeclarativeSchema(),
+    schemaApi: api,
+    validateDocument: assertDocument,
+    withDocumentOwnershipTracker,
+    withoutGeneration,
   }));
   const fit: InternalEditorSchemaApi<V>['fit'] = sliceFitter.fit;
   const fitPlacements: InternalEditorSchemaApi<V>['fitPlacements'] =
     sliceFitter.fitPlacements;
   const fitContent: InternalEditorSchemaApi<V>['fitContent'] =
     sliceFitter.fitContent;
-  const fitDocument = <TValue extends Value>(
-    input: EditorDocumentValue<TValue>
-  ): EditorDocumentValue<V> => sliceFitter.fitDocument(input);
-  const fitDocumentRaw = <TValue extends Value>(
-    input: EditorDocumentValue<TValue>
-  ): EditorDocumentValue<V> => sliceFitter.fitDocumentRaw(input);
+  const fitDocument: InternalEditorSchemaApi<V>['fitDocument'] =
+    documentFitter.fitDocument;
+  const fitDocumentRaw: InternalEditorSchemaApi<V>['fitDocumentRaw'] =
+    documentFitter.fitDocumentRaw;
   const fitDocumentWithReport: InternalEditorSchemaApi<V>['fitDocumentWithReport'] =
-    (input) => sliceFitter.fitDocumentWithReport(input);
+    documentFitter.fitDocumentWithReport;
   const fitDocumentAndMapPositions: InternalEditorSchemaApi<V>['fitDocumentAndMapPositions'] =
-    (input, options) => sliceFitter.fitDocumentAndMapPositions(input, options);
+    documentFitter.fitDocumentAndMapPositions;
   const fitDocumentWithSelection: InternalEditorSchemaApi<V>['fitDocumentWithSelection'] =
-    (input, options) => sliceFitter.fitDocumentWithSelection(input, options);
+    documentFitter.fitDocumentWithSelection;
   const findWrapping: InternalEditorSchemaApi<V>['findWrapping'] =
     sliceFitter.findWrapping;
 

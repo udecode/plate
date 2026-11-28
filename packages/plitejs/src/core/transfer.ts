@@ -64,11 +64,7 @@ import { executeEditorRead } from './read-registry';
 import { publishEditorRefusal } from './refusal';
 import { EditorSchemaValidationError } from './schema-validation';
 import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
-import {
-  type LandingSource,
-  payloadKeyOf,
-  withFitLanding,
-} from './slice-fit/provenance';
+import { type LandingSource, payloadKeyOf } from './slice-fit/provenance';
 import { aliasedRoots } from './slice-identities';
 import { planPaste, writePaste } from './slice-landing';
 import {
@@ -902,12 +898,12 @@ const runTransfer = (
         if (!plan) return null;
         if (!copy && (plan.inputCut || plan.landingCut)) refuse('lossy');
 
-        const written = withFitLanding(
-          copy
+        const written = writePaste(editor, plan, {
+          fitLanding: copy
             ? { kind: 'paste' }
             : { kind: 'move', sources: sources?.landing ?? [] },
-          () => writePaste(editor, plan, { landing: true })
-        );
+          landing: true,
+        });
 
         if (!written) return null;
         if (written.lossy) {
