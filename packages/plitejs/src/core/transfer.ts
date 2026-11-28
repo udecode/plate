@@ -355,17 +355,13 @@ const checkTextLanding = (
   point: Point
 ) => {
   const { source, intent, relation } = admission;
+  const state = getEditorStateView(editor);
 
   if (hasNonWritableAt(editor, point, { includeReadOnly: false })) {
     refuse('policy');
   }
 
-  checkEndMatterPoint(
-    editor,
-    getEditorStateView(editor),
-    admission.slice,
-    point
-  );
+  checkEndMatterPoint(editor, state, admission.slice, point);
 
   if (
     source.kind !== 'text' ||
@@ -626,7 +622,20 @@ const admit = (
     });
   }
 
-  return admittedEdge(landAt(editor, request, input.to));
+  const landedEdge = landAt(editor, request, input.to);
+
+  if (
+    source.kind === 'text' &&
+    slice &&
+    sliceLandsEndMatter(slice, getCompiledEditorSchema(editor))
+  ) {
+    const targetPath = editor.read.nodes.path(landedEdge.edge.key);
+    if (targetPath && targetPath.length > 1) {
+      refuse('policy');
+    }
+  }
+
+  return admittedEdge(landedEdge);
 };
 
 const runTransfer = (
@@ -940,6 +949,8 @@ const runTransfer = (
         );
 
         if (!plan) return null;
+        checkEndMatterPoint(editor, state, plan.slice, at);
+        checkEndMatterPoint(editor, state, plan.emptyBlockReplacement, at);
         if (!copy && (plan.inputCut || plan.landingCut)) refuse('lossy');
 
         const written = writePaste(editor, plan, {

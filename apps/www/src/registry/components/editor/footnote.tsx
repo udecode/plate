@@ -42,9 +42,9 @@ import {
   useInlineComboboxQuery,
 } from '@/registry/components/editor/inline-combobox';
 
-// Markdown keeps these labels byte for byte; `&`, `;` and spaces turn into
-// entities or split the label on the next parse.
-const CREATABLE_FOOTNOTE_REF = /^[A-Za-z0-9_-]+$/;
+// Markdown keeps these labels byte for byte up to CommonMark's 999-char limit;
+// `&`, `;`, spaces, or longer labels turn into entities or plain text on parse.
+const CREATABLE_FOOTNOTE_REF = /^[A-Za-z0-9_-]{1,999}$/;
 // Footnote reads depend on the document and on which suggestions the view
 // shows, never on the selection.
 const FOOTNOTE_DEPENDENCIES = ['document', 'authored'] as const;
@@ -168,6 +168,7 @@ export function FootnoteReferenceElement(
   >(null);
   const hoverTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const returnFocus = React.useRef(false);
+  const cardActionRef = React.useRef<HTMLButtonElement | null>(null);
   const open = openedBy !== null;
   const isResolved = useEditorSelector(
     () => Boolean(ref && footnote.read.definition({ ref })),
@@ -200,6 +201,12 @@ export function FootnoteReferenceElement(
   );
 
   React.useEffect(() => () => clearTimeout(hoverTimer.current), []);
+
+  React.useEffect(() => {
+    if (openedBy === 'keyboard') {
+      cardActionRef.current?.focus({ preventScroll: true });
+    }
+  }, [openedBy]);
 
   const scheduleHover = (next: 'hover' | null) => {
     clearTimeout(hoverTimer.current);
@@ -323,7 +330,13 @@ export function FootnoteReferenceElement(
             data-state={isResolved ? 'resolved' : 'unresolved'}
             sideOffset={6}
             onEscapeKeyDown={() => {
-              returnFocus.current = openedBy === 'keyboard';
+              const shouldReturn = openedBy === 'keyboard';
+              returnFocus.current = shouldReturn;
+              if (shouldReturn) {
+                requestAnimationFrame(() =>
+                  anchor?.focus({ preventScroll: true })
+                );
+              }
             }}
             onFinalFocus={(event) => {
               // Only Escape hands focus back to the chip; a jump has already
@@ -356,6 +369,7 @@ export function FootnoteReferenceElement(
               {readOnly ? null : (
                 <div className="flex items-center justify-between gap-3">
                   <Button
+                    ref={cardActionRef}
                     type="button"
                     variant="outline"
                     size="sm"
@@ -398,6 +412,7 @@ export function FootnoteDefinitionElement(
   // Pointer opens keep the caret in the editor; keyboard opens and Escape
   // move focus so arrow keys reach the picker.
   const pickerFocus = React.useRef({ initial: false, final: false });
+  const backlinkRef = React.useRef<HTMLButtonElement | null>(null);
   const { duplicateReplacementRef, isDuplicateDefinition, referenceCount } =
     useEditorSelector<FootnoteDefinitionState>(
       () => {
@@ -471,6 +486,7 @@ export function FootnoteDefinitionElement(
             <FloatingPopoverAnchor
               element={
                 <button
+                  ref={backlinkRef}
                   type="button"
                   aria-expanded={
                     hasMultipleReferences ? referencePickerOpen : undefined
@@ -515,6 +531,9 @@ export function FootnoteDefinitionElement(
                 sideOffset={8}
                 onEscapeKeyDown={() => {
                   pickerFocus.current.final = true;
+                  requestAnimationFrame(() =>
+                    backlinkRef.current?.focus({ preventScroll: true })
+                  );
                 }}
                 onFinalFocus={(event) => {
                   if (!pickerFocus.current.final) event.preventDefault();

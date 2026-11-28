@@ -40,6 +40,7 @@ import {
   splitTopLevelEndMatter,
 } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import {
   createDetachedTableContext,
   type createTableContext,
@@ -2946,6 +2947,82 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
 
           if (plan.kind !== 'plan') return rejectTablePaste(plan);
 
+          const footnotePlugin = getCompiledPlatePlugin(
+            context.editor,
+            PLUGINS.footnote
+          );
+          const footnoteSchema = footnotePlugin
+            ? context.editor.plugin(footnotePlugin).schema
+            : undefined;
+          const footnoteRefType =
+            footnoteSchema &&
+            'type' in footnoteSchema &&
+            typeof footnoteSchema.type === 'string'
+              ? footnoteSchema.type
+              : undefined;
+          const footnoteDefPlugin = getCompiledPlatePlugin(
+            context.editor,
+            PLUGINS.footnoteDefinition
+          );
+          const footnoteDefSchema = footnoteDefPlugin
+            ? context.editor.plugin(footnoteDefPlugin).schema
+            : undefined;
+          const footnoteDefType =
+            footnoteDefSchema &&
+            'type' in footnoteDefSchema &&
+            typeof footnoteDefSchema.type === 'string'
+              ? footnoteDefSchema.type
+              : undefined;
+          const collectCitedRefs = (
+            nodes: readonly Descendant[],
+            out: Set<string>
+          ) => {
+            if (!footnoteRefType) return;
+            for (const node of nodes) {
+              if (!ElementApi.isElement(node)) continue;
+              if (node.type === footnoteRefType) {
+                const { ref } = node as { ref?: unknown };
+                if (typeof ref === 'string' && ref.length > 0) out.add(ref);
+              }
+              collectCitedRefs(node.children, out);
+            }
+          };
+          const expandTransitiveRefs = (refs: Set<string>) => {
+            if (!footnoteRefType || !footnoteDefType) return;
+            let grew = true;
+            while (grew) {
+              grew = false;
+              for (const node of endMatter) {
+                if (
+                  !ElementApi.isElement(node) ||
+                  node.type !== footnoteDefType
+                ) {
+                  continue;
+                }
+                const { ref: defRef } = node as { ref?: unknown };
+                if (typeof defRef !== 'string' || !refs.has(defRef)) continue;
+                const before = refs.size;
+                collectCitedRefs(node.children, refs);
+                if (refs.size > before) grew = true;
+              }
+            }
+          };
+          const groupCitedRefs =
+            endMatter.length > 0
+              ? plan.placementGroups.map((group) => {
+                  const refs = new Set<string>();
+                  for (const placement of group.placements) {
+                    collectCitedRefs(placement.content, refs);
+                  }
+                  expandTransitiveRefs(refs);
+                  return refs;
+                })
+              : [];
+          const allCitedRefs = new Set<string>();
+          for (const refs of groupCitedRefs) {
+            for (const ref of refs) allCitedRefs.add(ref);
+          }
+
           let fitted = true;
           const transaction = state.transaction((tx) => {
             applyTableMutationPlan(tx, {
@@ -2953,11 +3030,36 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
               operations: plan.operations,
             });
 
-            for (const group of plan.placementGroups) {
+            for (
+              let groupIndex = 0;
+              groupIndex < plan.placementGroups.length;
+              groupIndex++
+            ) {
+              const group = plan.placementGroups[groupIndex];
+              const groupEndMatter =
+                endMatter.length > 0
+                  ? endMatter.filter((node) => {
+                      if (
+                        !footnoteDefType ||
+                        !ElementApi.isElement(node) ||
+                        node.type !== footnoteDefType
+                      ) {
+                        return groupIndex === 0;
+                      }
+                      const { ref } = node as { ref?: unknown };
+                      if (typeof ref !== 'string' || ref.length === 0) {
+                        return groupIndex === 0;
+                      }
+                      if (groupCitedRefs[groupIndex]?.has(ref)) return true;
+                      return groupIndex === 0 && !allCitedRefs.has(ref);
+                    })
+                  : [];
               if (
                 !fitSlicePlacements(context.editor, group.source, {
                   copies: 'tile',
-                  ...(endMatter.length > 0 ? { endMatter } : {}),
+                  ...(groupEndMatter.length > 0
+                    ? { endMatter: groupEndMatter }
+                    : {}),
                   placements: group.placements,
                 })
               ) {

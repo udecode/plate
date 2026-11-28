@@ -377,7 +377,6 @@ import {
 } from './insert-limit';
 import { getReplaceableEmptyBlock } from './is-empty-element';
 import {
-  isRenewalOff,
   renameSlice,
   renewCopy,
   restoreDroppedNames,
@@ -7016,21 +7015,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     if (!place) return false;
     const copy = renewCopy(editor, slice);
     const placeRoot = sliceFitRoot(editor, place);
-    const rawSourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
-    const sourceSlice =
-      !internal?.drop && !isRenewalOff(editor)
-        ? ContentSlice.fromJSON<V>(
-            readSliceLanding(editor, {
-              intent: 'copy',
-              slice: rawSourceSlice,
-              source: rawSourceSlice,
-              target: {
-                kind: 'beside',
-                ...(placeRoot === MAIN_ROOT_KEY ? {} : { root: placeRoot }),
-              },
-            }).slice
-          )
-        : rawSourceSlice;
+    const sourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
     const renewal = internal?.rootsPrepared
       ? null
       : renewContentSlice(editor, sourceSlice, placeRoot);
@@ -7456,17 +7441,40 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
 
       offset += childCount;
       if (!parent) return false;
-      const rawCellSlice = ContentSlice.fromJSON({
+      const rawCellSlice = ContentSlice.fromJSON<V>({
         content,
         openEnd: 0,
         openStart: 0,
         ...(prepared.roots ? { roots: prepared.roots } : {}),
       });
+      const cellPlace =
+        copies === 'each'
+          ? resolveRawSliceFitPlace(editor, undefined, root, {
+              childrenAt: getDefined(parents[index]).key,
+            })
+          : false;
+      const limitedCellSlice =
+        copies === 'each' && cellPlace
+          ? limitSliceToLength(
+              dissolveOpenEndMatter(
+                rawCellSlice,
+                getCompiledEditorSchemaFromApi(schema)
+              ),
+              cellPlace.remainingLength
+            )
+          : rawCellSlice;
+      if (
+        copies === 'each' &&
+        limitedCellSlice.content.length === 0 &&
+        rawCellSlice.content.length > 0
+      ) {
+        return false;
+      }
       const cellSlice =
         copies === 'each'
           ? readSliceLanding(editor, {
               intent: 'copy',
-              slice: rawCellSlice,
+              slice: limitedCellSlice,
               source: rawCellSlice,
               target: {
                 kind: 'beside',
@@ -7516,26 +7524,31 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
       root === MAIN_ROOT_KEY ? undefined : root,
       { boundary: true }
     );
+    const rawEndMatterSlice = ContentSlice.fromJSON<V>({
+      content: landedEndMatter,
+      openEnd: 0,
+      openStart: 0,
+      ...(prepared.roots ? { roots: prepared.roots } : {}),
+    });
+    const limitedEndMatterSlice = endSite
+      ? limitSliceToLength(rawEndMatterSlice, endSite.remainingLength)
+      : rawEndMatterSlice;
 
     if (
       !endSite ||
-      !withRenewalOff(
-        editor,
-        writeSliceAtRange,
-        editor,
-        endSite,
-        ContentSlice.fromJSON<V>({
-          content: landedEndMatter,
-          openEnd: 0,
-          openStart: 0,
-          ...(prepared.roots ? { roots: prepared.roots } : {}),
-        }),
-        {
-          paste: {},
-          rootsPrepared: true,
-          selection: 'keep',
-        }
-      )
+      (limitedEndMatterSlice.content.length > 0 &&
+        !withRenewalOff(
+          editor,
+          writeSliceAtRange,
+          editor,
+          endSite,
+          limitedEndMatterSlice,
+          {
+            paste: {},
+            rootsPrepared: true,
+            selection: 'keep',
+          }
+        ))
     ) {
       return false;
     }

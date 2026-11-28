@@ -4,15 +4,18 @@ import {
   ElementApi,
   PLUGINS,
   PathApi,
+  PointApi,
   RangeApi,
   TextApi,
   definePlugin,
   editorReads,
   property,
   type Descendant,
+  type Editor,
   type Element,
   type ElementOf,
   type NodeEntry,
+  type NodeKey,
   type Path,
   type NodeInsertOptions,
   txLocate,
@@ -228,7 +231,7 @@ const getContentFootnoteIndex = (
 };
 
 const getStoredRootChildren = (
-  editor: Parameters<typeof withStoredAuthoredRead>[0],
+  editor: Editor,
   root: string
 ): readonly Descendant[] => {
   const start = getUpdateStartValue(editor);
@@ -294,7 +297,9 @@ const isWhitespaceOnlyHtmlNode = (node: ChildNode): boolean => {
   return false;
 };
 
-const isTrailingBackref = (next: ChildNode | null): boolean => {
+const classifyTrailingBackref = (
+  next: ChildNode | null
+): 'chain' | 'final' | false => {
   let cursor = next;
   while (cursor) {
     if (isWhitespaceOnlyHtmlNode(cursor)) {
@@ -305,11 +310,22 @@ const isTrailingBackref = (next: ChildNode | null): boolean => {
       cursor.nodeType === 1 &&
       (cursor as HTMLElement).matches('[data-footnote-backref]')
     ) {
-      return true;
+      return 'chain';
     }
     return false;
   }
-  return true;
+  return 'final';
+};
+
+const trimTrailingBackrefSpace = (next: ChildNode | null) => {
+  let cursor = next;
+  while (cursor) {
+    const following = cursor.nextSibling;
+    if (cursor.nodeType !== 8 && isWhitespaceOnlyHtmlNode(cursor)) {
+      cursor.remove();
+    }
+    cursor = following;
+  }
 };
 
 const trimBackrefSeparator = (node: ChildNode | null) => {
@@ -448,8 +464,14 @@ export const BaseFootnoteDefinitionPlugin = withStaticReuseKey(
 
                 chrome.remove();
 
-                if (isBackref && isTrailingBackref(next)) {
-                  trimBackrefSeparator(previous);
+                if (isBackref) {
+                  const trailing = classifyTrailingBackref(next);
+                  if (trailing) {
+                    trimBackrefSeparator(previous);
+                    if (trailing === 'final') {
+                      trimTrailingBackrefSpace(next);
+                    }
+                  }
                 }
               }
             }
@@ -905,7 +927,8 @@ export const BaseFootnotePlugin = withStaticReuseKey(
         if (pairedRefs.length === 0) return landed;
 
         const root = input.target.root ?? state.view.root() ?? MAIN_ROOT_KEY;
-        const currentChildren = state.children();
+        const currentChildren =
+          root === MAIN_ROOT_KEY ? state.children() : state.root(root);
         const storedChildren = getStoredRootChildren(editor, root);
         const usedRefs = new Set<string>();
         const collectUsed = (children: readonly Descendant[]) => {
@@ -916,7 +939,9 @@ export const BaseFootnotePlugin = withStaticReuseKey(
         };
 
         collectUsed(currentChildren);
-        if (storedChildren !== currentChildren) collectUsed(storedChildren);
+        if (storedChildren !== currentChildren) {
+          collectUsed(storedChildren);
+        }
 
         const colliding = pairedRefs.filter((ref) => usedRefs.has(ref));
 
@@ -1106,14 +1131,22 @@ export const BaseFootnotePlugin = withStaticReuseKey(
           });
           inlineChildren = [];
         };
+        const dissolveNestedDefinitions = (node: Descendant): Descendant[] => {
+          if (!ElementApi.isElement(node)) return [node];
+          if (node.type === definitionType) {
+            return node.children.flatMap(dissolveNestedDefinitions);
+          }
+
+          return [
+            {
+              ...node,
+              children: node.children.flatMap(dissolveNestedDefinitions),
+            },
+          ];
+        };
         const appendFragmentNodes = (nodes: readonly Descendant[]) => {
-          for (const child of nodes) {
-            if (ElementApi.isElement(child) && child.type === definitionType) {
-              appendFragmentNodes(child.children);
-            } else if (
-              ElementApi.isElement(child) &&
-              tx.schema.isBlock(child)
-            ) {
+          for (const child of nodes.flatMap(dissolveNestedDefinitions)) {
+            if (ElementApi.isElement(child) && tx.schema.isBlock(child)) {
               flushInlineChildren();
               children.push(child);
             } else {
@@ -1176,24 +1209,63 @@ export const BaseFootnotePlugin = withStaticReuseKey(
 
         let insertOptions = options;
         let fragment: Descendant[] | undefined;
-        const preservedDefinitions: FootnoteDefinitionNode[] = [];
+        const preservedDefinitions: Array<{
+          key: NodeKey | undefined;
+          node: FootnoteDefinitionNode;
+        }> = [];
 
         if (isExpandedTarget && targetRange) {
           if (existingDefinition) {
-            insertOptions = { ...options, at: RangeApi.end(targetRange) };
+            insertOptions = {
+              ...options,
+              at: RangeApi.end(targetRange),
+              ...(options.at === undefined && options.select === undefined
+                ? { select: true }
+                : {}),
+            };
           } else {
+            const [rangeStart, rangeEnd] = RangeApi.edges(targetRange);
+            const firstRootIndex = rangeStart.path[0] ?? 0;
+            const lastRootIndex = rangeEnd.path[0] ?? firstRootIndex;
+            const completeIndices = new Set<number>();
+            const rootChildren = tx.children();
+
+            for (
+              let rootIndex = firstRootIndex + 1;
+              rootIndex <= lastRootIndex;
+              rootIndex++
+            ) {
+              const child = rootChildren[rootIndex];
+              if (
+                !child ||
+                !ElementApi.isElement(child) ||
+                child.type !== definitionType
+              ) {
+                continue;
+              }
+              const defStart = tx.points.start([rootIndex]);
+              const defEnd = tx.points.end([rootIndex]);
+              if (
+                defStart &&
+                defEnd &&
+                PointApi.compare(rangeStart, defStart) <= 0 &&
+                PointApi.compare(rangeEnd, defEnd) >= 0
+              ) {
+                completeIndices.add(rootIndex);
+                preservedDefinitions.push({
+                  key: tx.key([rootIndex]) ?? undefined,
+                  node: structuredClone(child) as FootnoteDefinitionNode,
+                });
+              }
+            }
+
             const rawFragment = tx.fragment({ at: targetRange });
             const flowFragment: Descendant[] = [];
 
-            for (const node of rawFragment) {
-              if (ElementApi.isElement(node) && node.type === definitionType) {
-                preservedDefinitions.push(
-                  structuredClone(node) as FootnoteDefinitionNode
-                );
-              } else {
-                flowFragment.push(node);
-              }
-            }
+            rawFragment.forEach((node, index) => {
+              if (completeIndices.has(firstRootIndex + index)) return;
+              flowFragment.push(node);
+            });
             fragment = flowFragment;
           }
         }
@@ -1207,20 +1279,39 @@ export const BaseFootnotePlugin = withStaticReuseKey(
           options.at === undefined || options.select ? tx.selection() : null;
         const referencePath =
           caretInReference && PathApi.parent(caretInReference.anchor.path);
+        const referenceKey = referencePath ? tx.key(referencePath) : undefined;
+        const survivingDuplicateKeyByRef = new Map<string, NodeKey>();
+
+        if (preservedDefinitions.length > 0) {
+          tx.children().forEach((child, index) => {
+            if (!ElementApi.isElement(child) || child.type !== definitionType) {
+              return;
+            }
+            const childRef = (child as FootnoteDefinitionNode).ref;
+            if (survivingDuplicateKeyByRef.has(childRef)) return;
+            const key = tx.key([index]);
+            if (key) survivingDuplicateKeyByRef.set(childRef, key);
+          });
+        }
 
         for (const preserved of preservedDefinitions) {
-          const stillPresent = tx
-            .children()
-            .some(
-              (child) =>
-                ElementApi.isElement(child) &&
-                child.type === definitionType &&
-                child.id === preserved.id
-            );
+          const stillPresent = preserved.key
+            ? Boolean(tx.nodes.path(preserved.key))
+            : false;
 
           if (!stillPresent) {
-            tx.nodes.insert(preserved, {
-              at: [getEndMatterInsertIndex(preserved)],
+            const survivingKey = survivingDuplicateKeyByRef.get(
+              preserved.node.ref
+            );
+            const survivingPath = survivingKey
+              ? tx.nodes.path(survivingKey)
+              : undefined;
+            const targetIndex = survivingPath
+              ? survivingPath[0]
+              : getEndMatterInsertIndex(preserved.node);
+
+            tx.nodes.insert(preserved.node, {
+              at: [targetIndex],
             });
           }
         }
@@ -1231,18 +1322,22 @@ export const BaseFootnotePlugin = withStaticReuseKey(
           ref: nextRef,
         });
 
-        const reference = referencePath && tx.nodes.get(referencePath)?.[0];
+        const finalReferencePath =
+          (referenceKey ? tx.nodes.path(referenceKey) : undefined) ??
+          referencePath;
+        const reference =
+          finalReferencePath && tx.nodes.get(finalReferencePath)?.[0];
 
         if (
           shouldFocusDefinition ||
-          !referencePath ||
+          !finalReferencePath ||
           !ElementApi.isElement(reference) ||
           reference.type !== type
         ) {
           return;
         }
 
-        selectAfterInline(tx, referencePath);
+        selectAfterInline(tx, finalReferencePath);
       };
 
       return {
