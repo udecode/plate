@@ -1,5 +1,6 @@
 import { readAuthoredView } from '../../core/authored-runtime';
 import {
+  bindV4DocumentChange,
   DocumentChange,
   withoutRetainedRecordSets,
 } from '../../core/change/document-change';
@@ -55,6 +56,7 @@ import {
   type SyncKeptAction,
   type SyncKeptResult,
 } from './recovery';
+import { remintIntroducedIds } from './scoped-origin';
 import { type Clock, type SyncTransport, systemClock } from './transport';
 import { createWriter, type SyncClientState } from './writer';
 
@@ -95,7 +97,9 @@ const fitsIn =
   (before, change) => {
     try {
       editor.read.schema.assertDocument(before);
-      createEditorDocumentChangeBuilder(editor, before).applyCanonical(change);
+      createEditorDocumentChangeBuilder(editor, before).applyCanonical(
+        bindV4DocumentChange(change, before)
+      );
 
       return true;
     } catch {
@@ -274,7 +278,10 @@ const startClient = (
       replaceEditorUndoStep(
         editor,
         entry.step,
-        DocumentChange.fromJSON(entry.takeBack),
+        bindV4DocumentChange(
+          DocumentChange.fromJSON(entry.takeBack),
+          entry.base
+        ),
         (stepBase) => jsonEqual(blocksOf(stepBase), blocks)
       );
     }
@@ -469,10 +476,18 @@ const startClient = (
       return refused('stale');
     }
 
+    const freshChange = remintIntroducedIds(rebased.change, rebased.view, () =>
+      getCompiledEditorSchema(editor).elementIdMint.next()
+    );
+    const freshDraft =
+      freshChange === rebased.change
+        ? rebased.draft
+        : freshChange.apply(rebased.view);
+
     const { landedSeq, refusal, thrown, verdict } = landNow(
       {
-        change: rebased.change,
-        draft: rebased.draft,
+        change: freshChange,
+        draft: freshDraft,
         head: rebased.view,
         kept,
         seq,

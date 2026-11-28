@@ -213,6 +213,178 @@ const extractTextElementDiff = (
   steps: V4Step[],
   isSetValuedForText?: (key: string) => boolean
 ) => {
+  if (
+    beforeNode.children.length === 1 &&
+    afterNode.children.length === 1 &&
+    isTextNode(beforeNode.children[0]) &&
+    isTextNode(afterNode.children[0])
+  ) {
+    const bLeaf = beforeNode.children[0];
+    const aLeaf = afterNode.children[0];
+    const { text: bText, ...bMarks } = bLeaf;
+    const { text: aText, ...aMarks } = aLeaf;
+
+    if (jsonEqual(bMarks, aMarks)) {
+      if (bText === aText) return;
+      let prefix = 0;
+      const minLen = Math.min(bText.length, aText.length);
+
+      while (
+        prefix < minLen &&
+        bText.charCodeAt(prefix) === aText.charCodeAt(prefix)
+      ) {
+        prefix += 1;
+      }
+
+      let suffix = 0;
+
+      while (
+        suffix < minLen - prefix &&
+        bText.charCodeAt(bText.length - 1 - suffix) ===
+          aText.charCodeAt(aText.length - 1 - suffix)
+      ) {
+        suffix += 1;
+      }
+
+      const delLen = bText.length - prefix - suffix;
+
+      if (delLen > 0) {
+        steps.push({
+          length: delLen,
+          offset: prefix,
+          op: 'delete_text',
+          target: targetId,
+        });
+      }
+
+      const insText = aText.slice(prefix, aText.length - suffix);
+
+      if (insText.length > 0) {
+        steps.push({
+          ...(Object.keys(aMarks).length > 0
+            ? { marks: cloneJson(aMarks) }
+            : {}),
+          offset: prefix,
+          op: 'insert_text',
+          target: targetId,
+          text: insText,
+        });
+      }
+
+      return;
+    }
+
+    if (bText === aText) {
+      const delta = propDeltaBetween(bMarks, aMarks, isSetValuedForText);
+
+      if (!isEmptyPropDelta(delta)) {
+        steps.push({
+          ...delta,
+          length: bText.length,
+          offset: 0,
+          op: 'format_text',
+          target: targetId,
+        });
+      }
+
+      return;
+    }
+  }
+
+  const beforeChildren = beforeNode.children;
+  const afterChildren = afterNode.children;
+
+  if (
+    beforeChildren.length >= 2 &&
+    afterChildren.length >= 1 &&
+    beforeChildren.length + afterChildren.length <= 64
+  ) {
+    let bestBeforeIdx = -1;
+    let bestAfterIdx = -1;
+    let bestLen = 32;
+
+    for (let bi = 0; bi < beforeChildren.length; bi += 1) {
+      const bChild = getDefined(beforeChildren[bi]);
+
+      if (!isTextNode(bChild) || bChild.text.length <= bestLen) continue;
+      for (let ai = 0; ai < afterChildren.length; ai += 1) {
+        const aChild = getDefined(afterChildren[ai]);
+
+        if (!isTextNode(aChild) || aChild.text.length !== bChild.text.length) {
+          continue;
+        }
+        if (jsonEqual(bChild, aChild)) {
+          bestLen = bChild.text.length;
+          bestBeforeIdx = bi;
+          bestAfterIdx = ai;
+        }
+      }
+    }
+
+    if (bestBeforeIdx !== -1 && bestAfterIdx !== -1) {
+      const leftBefore = beforeChildren.slice(0, bestBeforeIdx);
+      const leftAfter = afterChildren.slice(0, bestAfterIdx);
+      const rightBefore = beforeChildren.slice(bestBeforeIdx + 1);
+      const rightAfter = afterChildren.slice(bestAfterIdx + 1);
+
+      const childStreamLen = (nodes: readonly JsonNode[]) =>
+        nodes.reduce(
+          (sum, child) => sum + (isElementNode(child) ? 1 : child.text.length),
+          0
+        );
+      const shiftSteps = (list: V4Step[], delta: number) => {
+        if (delta === 0) return list;
+
+        return list.map((step) => {
+          if (
+            step.op === 'insert_text' ||
+            step.op === 'delete_text' ||
+            step.op === 'format_text'
+          ) {
+            return { ...step, offset: step.offset + delta };
+          }
+          if (step.op === 'insert_node' && 'offset' in step.to) {
+            return {
+              ...step,
+              to: { id: step.to.id, offset: step.to.offset + delta },
+            };
+          }
+
+          return step;
+        });
+      };
+
+      if (!jsonEqual(leftBefore, leftAfter)) {
+        const leftSteps: V4Step[] = [];
+
+        extractTextElementDiff(
+          targetId,
+          { ...beforeNode, children: leftBefore },
+          { ...afterNode, children: leftAfter },
+          leftSteps,
+          isSetValuedForText
+        );
+        steps.push(...leftSteps);
+      }
+
+      if (!jsonEqual(rightBefore, rightAfter)) {
+        const rightOffset = childStreamLen(leftAfter) + bestLen;
+        const rightSteps: V4Step[] = [];
+
+        extractTextElementDiff(
+          targetId,
+          { ...beforeNode, children: rightBefore },
+          { ...afterNode, children: rightAfter },
+          rightSteps,
+          isSetValuedForText
+        );
+        steps.push(...shiftSteps(rightSteps, rightOffset));
+      }
+
+      return;
+    }
+  }
+
   const beforeStream = toV4TextStream(beforeNode.children);
   const afterStream = toV4TextStream(afterNode.children);
 
@@ -235,17 +407,6 @@ const extractTextElementDiff = (
     return;
   }
 
-  const sameUnitExact = (left: V4TextUnit, right: V4TextUnit): boolean => {
-    if (left.kind !== right.kind) return false;
-    if (left.kind === 'inline' && right.kind === 'inline') {
-      return left.node.id === right.node.id;
-    }
-    if (left.kind === 'char' && right.kind === 'char') {
-      return left.ch === right.ch && jsonEqual(left.marks, right.marks);
-    }
-    return false;
-  };
-
   const sameUnitChar = (left: V4TextUnit, right: V4TextUnit): boolean => {
     if (left.kind !== right.kind) return false;
     if (left.kind === 'inline' && right.kind === 'inline') {
@@ -257,15 +418,17 @@ const extractTextElementDiff = (
     return false;
   };
 
-  if (
-    beforeStream.units.length === afterStream.units.length &&
-    beforeStream.units.every((u, i) => sameUnitChar(u, afterStream.units[i]))
-  ) {
+  const emitFormatRuns = (
+    beforeStart: number,
+    afterStart: number,
+    count: number,
+    outputOffset: number
+  ) => {
     let i = 0;
 
-    while (i < beforeStream.units.length) {
-      const left = beforeStream.units[i];
-      const right = afterStream.units[i];
+    while (i < count) {
+      const left = beforeStream.units[beforeStart + i];
+      const right = afterStream.units[afterStart + i];
 
       if (left.kind !== 'char' || right.kind !== 'char') {
         i += 1;
@@ -286,9 +449,9 @@ const extractTextElementDiff = (
       const start = i;
 
       i += 1;
-      while (i < beforeStream.units.length) {
-        const nl = beforeStream.units[i];
-        const nr = afterStream.units[i];
+      while (i < count) {
+        const nl = beforeStream.units[beforeStart + i];
+        const nr = afterStream.units[afterStart + i];
 
         if (
           nl.kind !== 'char' ||
@@ -306,20 +469,19 @@ const extractTextElementDiff = (
       steps.push({
         ...delta,
         length: i - start,
-        offset: start,
+        offset: outputOffset + start,
         op: 'format_text',
         target: targetId,
       });
     }
-    return;
-  }
+  };
 
   let prefix = 0;
   const minLen = Math.min(beforeStream.units.length, afterStream.units.length);
 
   while (
     prefix < minLen &&
-    sameUnitExact(beforeStream.units[prefix], afterStream.units[prefix])
+    sameUnitChar(beforeStream.units[prefix], afterStream.units[prefix])
   ) {
     prefix += 1;
   }
@@ -328,12 +490,16 @@ const extractTextElementDiff = (
 
   while (
     suffix < minLen - prefix &&
-    sameUnitExact(
+    sameUnitChar(
       beforeStream.units[beforeStream.units.length - 1 - suffix],
       afterStream.units[afterStream.units.length - 1 - suffix]
     )
   ) {
     suffix += 1;
+  }
+
+  if (prefix > 0) {
+    emitFormatRuns(0, 0, prefix, 0);
   }
 
   const deleteLen = beforeStream.units.length - prefix - suffix;
@@ -388,6 +554,37 @@ const extractTextElementDiff = (
       text,
     });
     cursor += text.length;
+  }
+
+  if (suffix > 0) {
+    emitFormatRuns(
+      beforeStream.units.length - suffix,
+      afterStream.units.length - suffix,
+      suffix,
+      afterStream.units.length - suffix
+    );
+  }
+
+  if (
+    afterStream.units.length === 0 &&
+    afterStream.emptyLeafMarks &&
+    Object.keys(afterStream.emptyLeafMarks).length > 0
+  ) {
+    const delta = propDeltaBetween(
+      {},
+      afterStream.emptyLeafMarks,
+      isSetValuedForText
+    );
+
+    if (!isEmptyPropDelta(delta)) {
+      steps.push({
+        ...delta,
+        length: 0,
+        offset: 0,
+        op: 'format_text',
+        target: targetId,
+      });
+    }
   }
 };
 
@@ -791,6 +988,95 @@ const extractV4BetweenCore = (
   }
 
   const afterIds = collectAllIdsInValue(after);
+  const afterById = new Map<string, JsonElementNode>();
+  const indexAfterNodes = (nodes: readonly JsonNode[]) => {
+    for (const node of nodes) {
+      if (!isElementNode(node)) continue;
+      const id = elementIdOf(node);
+
+      if (id !== null) afterById.set(id, node);
+      indexAfterNodes(node.children);
+    }
+  };
+
+  indexAfterNodes(after.children);
+  if (after.roots) {
+    for (const root of visitRootNames(after.roots)) {
+      indexAfterNodes(after.roots[root]);
+    }
+  }
+
+  const plainTextSignature = (node: JsonElementNode): string => {
+    let out = '';
+
+    for (const child of node.children) {
+      out += isElementNode(child) ? '\uFFFC' : child.text;
+    }
+
+    return out;
+  };
+
+  const detectJoins = (nodes: readonly JsonNode[]) => {
+    let i = 0;
+
+    while (i < nodes.length) {
+      const current = nodes[i];
+
+      if (!isElementNode(current)) {
+        i += 1;
+        continue;
+      }
+
+      const currentId = elementIdOf(current);
+
+      if (
+        currentId !== null &&
+        afterById.has(currentId) &&
+        isTextBearingElement(current)
+      ) {
+        const afterTarget = getDefined(afterById.get(currentId));
+
+        if (isTextBearingElement(afterTarget)) {
+          const targetAfterSig = plainTextSignature(afterTarget);
+          let currentSig = plainTextSignature(current);
+
+          while (i + 1 < nodes.length) {
+            const next = nodes[i + 1];
+
+            if (!isElementNode(next) || !isTextBearingElement(next)) break;
+            const nextId = elementIdOf(next);
+
+            if (
+              nextId === null ||
+              afterIds.has(nextId) ||
+              hasSurvivingDescendant(next)
+            ) {
+              break;
+            }
+
+            const nextSig = plainTextSignature(next);
+
+            if (
+              targetAfterSig === currentSig + nextSig &&
+              (nextSig.length > 0 || current.type === next.type)
+            ) {
+              emit({ op: 'join_nodes', source: nextId, target: currentId });
+              currentSig += nextSig;
+              continue;
+            }
+            break;
+          }
+        }
+      }
+
+      if (i < nodes.length) {
+        const refreshed = nodes[i];
+
+        if (isElementNode(refreshed)) detectJoins(refreshed.children);
+      }
+      i += 1;
+    }
+  };
 
   // 1. Remove elements in `before` that do not exist in `after` (top-down so
   //    removing a dead container drops its dead descendants in one step, while
@@ -811,6 +1097,11 @@ const extractV4BetweenCore = (
     return false;
   };
 
+  detectJoins(state.children);
+  for (const root of Object.keys(state.roots)) {
+    detectJoins(state.roots[root]);
+  }
+
   const pruneDead = (nodes: readonly JsonNode[]) => {
     for (const node of [...nodes]) {
       if (!isElementNode(node)) continue;
@@ -829,6 +1120,74 @@ const extractV4BetweenCore = (
   pruneDead(state.children);
   for (const root of Object.keys(state.roots)) {
     pruneDead(state.roots[root]);
+  }
+
+  const detectSplits = (targetNodes: readonly JsonNode[]) => {
+    for (let i = 0; i < targetNodes.length; i += 1) {
+      const current = targetNodes[i];
+
+      if (!isElementNode(current)) continue;
+      const currentId = elementIdOf(current);
+
+      if (
+        currentId !== null &&
+        isTextBearingElement(current) &&
+        state.idMap.has(currentId)
+      ) {
+        const stateLoc = getDefined(state.idMap.get(currentId));
+        const curSig = plainTextSignature(stateLoc.node);
+        const leftSig = plainTextSignature(current);
+
+        if (
+          isTextBearingElement(stateLoc.node) &&
+          leftSig.length < curSig.length &&
+          curSig.startsWith(leftSig)
+        ) {
+          const next = targetNodes[i + 1];
+
+          if (next && isElementNode(next) && isTextBearingElement(next)) {
+            const nextId = elementIdOf(next);
+
+            if (nextId !== null && !state.idMap.has(nextId)) {
+              const rightSig = plainTextSignature(next);
+
+              if (rightSig.length > 0 && curSig === leftSig + rightSig) {
+                const beforeProps = nodeProps(stateLoc.node);
+                const nextProps = nodeProps(next);
+                const splitProps: JsonRecord = {};
+
+                for (const [k, v] of Object.entries(nextProps)) {
+                  if (k === 'id' || k === 'children') continue;
+                  if (!jsonEqual(beforeProps[k], v)) {
+                    splitProps[k] = cloneJson(v);
+                  }
+                }
+                emit({
+                  at: leftSig.length,
+                  id: currentId,
+                  newId: nextId,
+                  op: 'split_node',
+                  ...(Object.keys(splitProps).length > 0
+                    ? { props: splitProps }
+                    : {}),
+                });
+              }
+            }
+          }
+        }
+      }
+
+      if (!isTextBearingElement(current)) {
+        detectSplits(current.children);
+      }
+    }
+  };
+
+  detectSplits(after.children);
+  for (const root of [...afterRoots].sort()) {
+    const rootNodes = after.roots?.[root];
+
+    if (rootNodes) detectSplits(rootNodes);
   }
 
   // 2. Reconcile each root and element top-down to match `after`.

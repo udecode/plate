@@ -1,6 +1,26 @@
-import { DocumentChange } from '../core/change/document-change';
+import {
+  attachLazyV4Steps,
+  createInternalDocumentChange,
+  DocumentChange,
+  getAttachedV4Steps,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRecords,
+  isUnboundV4DocumentChange,
+} from '../core/change/document-change';
 import { jsonEqual } from '../core/change/json';
-import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
+import { RootChange } from '../core/change/root-change';
+import {
+  isElementNode,
+  type JsonEditorValue,
+  type JsonElementNode,
+  type JsonNode,
+} from '../core/change/tokens';
+import {
+  isEmptyPropDelta,
+  type V4Place,
+  type V4PropDelta,
+  type V4Step,
+} from '../core/change/v4/types';
 import { registerEditorDraftGuard } from '../core/document-recorder';
 import { getEditorRuntime } from '../core/editor-runtime';
 import { ownedRootsOf } from '../core/element-owned-root-index';
@@ -11,7 +31,10 @@ import { publishEditorRefusal } from '../core/refusal';
 import type { CompiledEditorSchema } from '../core/schema-compiler';
 import { alike } from '../core/stored-element-id';
 import type { SpeculativeUpdate } from '../core/update-policy';
-import { COMPARISON_POLICY } from '../diff/lib/comparison-internal';
+import {
+  COMPARISON_POLICY,
+  comparisonChangeHashPayload,
+} from '../diff/lib/comparison-internal';
 import {
   closeOverRequired,
   comparisonPlanOf,
@@ -71,7 +94,7 @@ const validComparison = (comparison: TwoWayComparison): boolean => {
     if (
       comparison.id !==
       `${prefix}:${fingerprintEditorJson({
-        change: comparison.change.toJSON(),
+        change: comparisonChangeHashPayload(comparison.change),
         changes: comparison.changes,
         diagnostics: comparison.diagnostics,
       })}`
@@ -240,9 +263,17 @@ export const proposeAuthoredComparison = <V extends Value>(
 
   for (const form of forms) {
     const write = renewInsertedIds(editor, comparison.before.document, form());
-    const json = write.toJSON();
-    if (tried.some((other) => jsonEqual(other, json))) continue;
-    tried.push(json);
+    const signature = isUnboundV4DocumentChange(write)
+      ? write.toJSON()
+      : {
+          createRoots: [...write.createRoots].sort(),
+          deleteRoots: [...write.deleteRoots].sort(),
+          roots: [...getInternalDocumentChangeEntries(write)]
+            .map(([root, rootChange]) => [root, rootChange.toJSON()] as const)
+            .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+        };
+    if (tried.some((other) => jsonEqual(other, signature))) continue;
+    tried.push(signature);
     const trial: SpeculativeUpdate = { committed: false };
     try {
       getEditorRuntime(editor).update(
@@ -289,68 +320,243 @@ const renewInsertedIds = (
 
   const renamed = new Map<string, string>();
   let changed = false;
-  const rewrite = <T>(value: T): T => {
-    if (Array.isArray(value)) return value.map(rewrite) as T;
-    if (!value || typeof value !== 'object') return value;
+  const mapId = (id: string): string => {
+    if (beforeIds.has(id)) return id;
 
-    const record = value as Record<string, unknown>;
+    let next = renamed.get(id);
 
-    if (
-      typeof record.length === 'number' &&
-      record.properties &&
-      typeof record.properties === 'object' &&
-      Array.isArray((record.properties as Record<string, unknown>).operations)
-    ) {
-      const properties = record.properties as Record<string, unknown>;
-      const operations = properties.operations as ReadonlyArray<
-        Record<string, unknown>
-      >;
-      const filtered = operations.filter((op) => op.key !== 'id');
-
-      if (filtered.length !== operations.length) {
-        changed = true;
-
-        return (
-          filtered.length === 0
-            ? { length: record.length }
-            : {
-                ...record,
-                properties: { ...properties, operations: filtered },
-              }
-        ) as T;
-      }
+    if (!next) {
+      next = compiled.elementIdMint.next();
+      renamed.set(id, next);
     }
+    changed = true;
 
-    if (
-      record.kind === 'open' &&
-      record.nodeKind === 'element' &&
-      record.props &&
-      typeof record.props === 'object'
-    ) {
-      const props = record.props as Record<string, unknown>;
-
-      if (typeof props.id === 'string' && !beforeIds.has(props.id)) {
-        let next = renamed.get(props.id);
-
-        if (!next) {
-          next = compiled.elementIdMint.next();
-          renamed.set(props.id, next);
-        }
-        changed = true;
-
-        return { ...record, props: { ...props, id: next } } as T;
-      }
-    }
-
-    const out: Record<string, unknown> = {};
-
-    for (const [k, v] of Object.entries(record)) out[k] = rewrite(v);
-
-    return out as T;
+    return next;
   };
-  const rewritten = rewrite(change.toJSON());
+  const mapNode = (node: JsonNode): JsonNode => {
+    if (!isElementNode(node)) return node;
 
-  return changed ? DocumentChange.fromJSON(rewritten) : change;
+    const nextId = typeof node.id === 'string' ? mapId(node.id) : node.id;
+    const nextChildren = node.children.map(mapNode);
+
+    if (
+      nextId === node.id &&
+      nextChildren.every((child, index) => child === node.children[index])
+    ) {
+      return node;
+    }
+
+    return {
+      ...node,
+      ...(nextId === undefined ? {} : { id: nextId }),
+      children: nextChildren,
+    };
+  };
+  const mapPlace = (place: V4Place): V4Place =>
+    'id' in place ? { ...place, id: mapId(place.id) } : place;
+  const stripIdDelta = (delta: V4PropDelta): V4PropDelta => {
+    const hasSet = delta.set !== undefined && Object.hasOwn(delta.set, 'id');
+    const hasUnset = delta.unset?.includes('id') ?? false;
+    const hasAdd = delta.add !== undefined && Object.hasOwn(delta.add, 'id');
+    const hasRemove =
+      delta.remove !== undefined && Object.hasOwn(delta.remove, 'id');
+
+    if (!hasSet && !hasUnset && !hasAdd && !hasRemove) return delta;
+    changed = true;
+
+    const omitKey = <T extends Readonly<Record<string, unknown>>>(
+      record: T | undefined
+    ): T | undefined => {
+      if (!record) return undefined;
+      const entries = Object.entries(record).filter(([key]) => key !== 'id');
+
+      return entries.length > 0
+        ? (Object.fromEntries(entries) as T)
+        : undefined;
+    };
+    const nextSet = omitKey(delta.set);
+    const nextUnset = delta.unset?.filter((key) => key !== 'id');
+    const nextAdd = omitKey(delta.add);
+    const nextRemove = omitKey(delta.remove);
+
+    return {
+      ...(nextAdd ? { add: nextAdd } : {}),
+      ...(nextRemove ? { remove: nextRemove } : {}),
+      ...(nextSet ? { set: nextSet } : {}),
+      ...(nextUnset && nextUnset.length > 0 ? { unset: nextUnset } : {}),
+    };
+  };
+
+  if (!isUnboundV4DocumentChange(change)) {
+    const rewriteRoot = <T>(value: T): T => {
+      if (Array.isArray(value)) return value.map(rewriteRoot) as T;
+      if (!value || typeof value !== 'object') return value;
+
+      const record = value as Record<string, unknown>;
+
+      if (
+        typeof record.length === 'number' &&
+        record.properties &&
+        typeof record.properties === 'object' &&
+        Array.isArray((record.properties as Record<string, unknown>).operations)
+      ) {
+        const properties = record.properties as Record<string, unknown>;
+        const operations = properties.operations as ReadonlyArray<
+          Record<string, unknown>
+        >;
+        const filtered = operations.filter((op) => op.key !== 'id');
+
+        if (filtered.length !== operations.length) {
+          changed = true;
+
+          return (
+            filtered.length === 0
+              ? { length: record.length }
+              : {
+                  ...record,
+                  properties: { ...properties, operations: filtered },
+                }
+          ) as T;
+        }
+      }
+
+      if (
+        record.kind === 'open' &&
+        record.nodeKind === 'element' &&
+        record.props &&
+        typeof record.props === 'object'
+      ) {
+        const props = record.props as Record<string, unknown>;
+
+        if (typeof props.id === 'string' && !beforeIds.has(props.id)) {
+          const next = mapId(props.id);
+
+          return { ...record, props: { ...props, id: next } } as T;
+        }
+      }
+
+      const out: Record<string, unknown> = {};
+
+      for (const [k, v] of Object.entries(record)) out[k] = rewriteRoot(v);
+
+      return out as T;
+    };
+
+    const nextRoots = new Map<string, RootChange>();
+
+    for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+      nextRoots.set(
+        root,
+        RootChange.fromJSON(rewriteRoot(rootChange.toJSON()))
+      );
+    }
+
+    if (!changed) {
+      if (!getAttachedV4Steps(change)) {
+        attachLazyV4Steps(change, before, change.apply(before));
+      }
+
+      return change;
+    }
+
+    const next = createInternalDocumentChange(nextRoots, {
+      createRoots: change.createRoots,
+      deleteRoots: change.deleteRoots,
+      records: getInternalDocumentChangeRecords(change),
+    });
+
+    attachLazyV4Steps(next, before, next.apply(before));
+
+    return next;
+  }
+
+  const json = change.toJSON();
+  const nextSteps: V4Step[] = [];
+
+  for (const step of json.steps ?? []) {
+    switch (step.op) {
+      case 'insert_text':
+      case 'delete_text':
+      case 'format_text': {
+        nextSteps.push({ ...step, target: mapId(step.target) });
+        break;
+      }
+      case 'insert_node': {
+        nextSteps.push({
+          ...step,
+          node: mapNode(step.node) as JsonElementNode,
+          to: mapPlace(step.to),
+        });
+        break;
+      }
+      case 'remove_node': {
+        nextSteps.push({ ...step, id: mapId(step.id) });
+        break;
+      }
+      case 'move_node': {
+        nextSteps.push({
+          ...step,
+          id: mapId(step.id),
+          to: mapPlace(step.to),
+        });
+        break;
+      }
+      case 'split_node': {
+        nextSteps.push({
+          ...step,
+          id: mapId(step.id),
+          newId: mapId(step.newId),
+        });
+        break;
+      }
+      case 'join_nodes': {
+        nextSteps.push({
+          ...step,
+          source: mapId(step.source),
+          target: mapId(step.target),
+        });
+        break;
+      }
+      case 'set_props': {
+        const delta = stripIdDelta(step);
+
+        if (!isEmptyPropDelta(delta)) {
+          nextSteps.push({ ...delta, id: mapId(step.id), op: 'set_props' });
+        }
+        break;
+      }
+      case 'wrap_inline': {
+        nextSteps.push({
+          ...step,
+          node: mapNode(step.node) as JsonElementNode,
+          target: mapId(step.target),
+        });
+        break;
+      }
+      case 'unwrap_inline': {
+        nextSteps.push({
+          ...step,
+          id: mapId(step.id),
+          parent: mapId(step.parent),
+        });
+        break;
+      }
+      case 'create_root':
+      case 'delete_root':
+      case 'set_register': {
+        nextSteps.push(step);
+        break;
+      }
+    }
+  }
+
+  return changed
+    ? DocumentChange.fromJSON({
+        ...(json.records ? { records: json.records } : {}),
+        ...(nextSteps.length > 0 ? { steps: nextSteps } : {}),
+        version: 4,
+      })
+    : change;
 };
 
 const changesMarkedIn = (value: JsonEditorValue, facts: ReviewFacts) => {

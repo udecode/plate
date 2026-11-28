@@ -1,8 +1,12 @@
 import {
+  attachV4Steps,
   createInternalDocumentChange,
   type DocumentChange,
+  getAttachedV4Steps,
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRecords,
+  getV4Steps,
+  isUnboundV4DocumentChange,
   mapInternalDocumentChangePosition,
   valueRootIndex,
   withDocumentChangeRecords,
@@ -18,6 +22,7 @@ import {
   SectionIterator,
 } from '../../core/change/root-change';
 import {
+  isElementNode,
   type JsonEditorValue,
   type JsonNode,
   type JsonToken,
@@ -29,6 +34,8 @@ import {
   canonicalJsonKey,
   type PropertyModification,
 } from '../../core/change/transform';
+import { extractV4Between } from '../../core/change/v4/extract';
+import type { V4PropDelta, V4Step } from '../../core/change/v4/types';
 import {
   getRecordEntries,
   getRecordIds,
@@ -36,7 +43,10 @@ import {
   NO_RECORD_OPS,
   recordStoreToJson,
 } from '../../core/record-store';
-import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import {
+  type CompiledEditorSchema,
+  schemaSetValuedResolver,
+} from '../../core/schema-compiler';
 import {
   documentRootsOf,
   rootChildrenOf,
@@ -56,6 +66,7 @@ import {
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMember,
+  isAuthoredSetValued,
   isKeyedSplit,
   isSplitEnd,
   type ReserveMember,
@@ -225,13 +236,66 @@ export const holdsAuthoredRecords = (value: JsonEditorValue) => {
   );
 };
 
-export const writesAuthored = (change: DocumentChange) => {
-  const { primary, roots = {} } = change.toJSON();
+const nodeWritesAuthoredMarks = (node: JsonNode): boolean => {
+  if (readMembers(node).length > 0) return true;
 
-  return (
+  return isElementNode(node) && node.children.some(nodeWritesAuthoredMarks);
+};
+
+const propDeltaWritesAuthoredMarks = (delta: V4PropDelta): boolean => {
+  const added = delta.add?.[AUTHORED_MARKS_KEY];
+
+  if (added && added.length > 0) return true;
+  if (delta.set && Object.hasOwn(delta.set, AUTHORED_MARKS_KEY)) {
+    return (
+      readMembers({ [AUTHORED_MARKS_KEY]: delta.set[AUTHORED_MARKS_KEY] })
+        .length > 0
+    );
+  }
+
+  return false;
+};
+
+const v4StepsWriteAuthoredMarks = (steps: readonly V4Step[]): boolean =>
+  steps.some((step) => {
+    switch (step.op) {
+      case 'insert_text': {
+        return step.marks !== undefined && readMembers(step.marks).length > 0;
+      }
+      case 'format_text':
+      case 'set_props': {
+        return propDeltaWritesAuthoredMarks(step);
+      }
+      case 'insert_node':
+      case 'wrap_inline': {
+        return nodeWritesAuthoredMarks(step.node);
+      }
+      case 'split_node': {
+        return step.props !== undefined && readMembers(step.props).length > 0;
+      }
+      default: {
+        return false;
+      }
+    }
+  });
+
+export const writesAuthored = (change: DocumentChange) => {
+  if (
     [...getInternalDocumentChangeRecords(change).keys()].some((set) =>
       AUTHORED_RECORD_SETS.has(set)
-    ) || [primary ?? [], ...Object.values(roots)].some(writesMarks)
+    )
+  ) {
+    return true;
+  }
+
+  if (isUnboundV4DocumentChange(change)) {
+    const steps = getV4Steps(change);
+
+    if (steps !== null) return v4StepsWriteAuthoredMarks(steps);
+  }
+
+  return [...getInternalDocumentChangeEntries(change)].some(([, rootChange]) =>
+    writesMarks(rootChange.toJSON())
   );
 };
 
@@ -329,8 +393,7 @@ const decides = (
     schema,
     null
   );
-
-  return settled
+  const result = settled
     ? {
         ...decided,
         built: mappedBuiltSpans(decided.built, settled),
@@ -338,6 +401,21 @@ const decides = (
         value: settled.apply(decided.value),
       }
     : decided;
+
+  if (!result.change.empty && getAttachedV4Steps(result.change) === null) {
+    try {
+      attachV4Steps(
+        result.change,
+        extractV4Between(value, result.value, {
+          isSetValued: schemaSetValuedResolver(schema),
+        })
+      );
+    } catch {
+      // ignore
+    }
+  }
+
+  return result;
 };
 
 export const replayAt = (
@@ -572,13 +650,29 @@ export const keepingGapSpares = (
     indexes.set(root, index);
   }
 
-  return containers.length === 0
-    ? kept
-    : kept.compose(
-        spareWritesChange({ containers, records: NO_RECORD_OPS }, indexes)
-          .change,
-        head
+  const result =
+    containers.length === 0
+      ? kept
+      : kept.compose(
+          spareWritesChange({ containers, records: NO_RECORD_OPS }, indexes)
+            .change,
+          head
+        );
+
+  if (!result.empty && getAttachedV4Steps(result) === null) {
+    try {
+      attachV4Steps(
+        result,
+        extractV4Between(head, result.apply(head), {
+          isSetValued: isAuthoredSetValued,
+        })
       );
+    } catch {
+      // ignore
+    }
+  }
+
+  return result;
 };
 
 const isBookkeepingMember = (member: AuthoredMember) =>

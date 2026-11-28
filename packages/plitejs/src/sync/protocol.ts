@@ -7,6 +7,7 @@ import type { SetValued, SpanVerdict } from '../core/change/effect-ledger';
 import { jsonEqual } from '../core/change/json';
 import { hasRootNames } from '../core/change/lazy-root';
 import type { JsonEditorValue } from '../core/change/tokens';
+import { V4_REGISTER_SET } from '../core/change/v4/types';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { getValueRecords, recordStoreToJson } from '../core/record-store';
 import { getCompiledPropertyMergeStrategy } from '../core/schema-compiler';
@@ -15,7 +16,7 @@ import type { AnyEditor } from '../interfaces/editor';
 export const SYNC_PROTOCOL = 1;
 
 /** Raised whenever either end changes how it rebases or judges a batch. */
-export const SYNC_RULES = 7;
+export const SYNC_RULES = 8;
 
 /** Both ends rebase with these settings, the accepted change first. */
 export const SYNC_REBASE = {
@@ -188,7 +189,12 @@ export const schemaFingerprintOf = async (editor: AnyEditor) =>
   sha256(
     JSON.stringify({
       identity: editor.read.schema.identity(),
-      records: [...getCompiledEditorSchema(editor).recordSets.keys()].sort(),
+      records: [
+        ...new Set([
+          ...getCompiledEditorSchema(editor).recordSets.keys(),
+          V4_REGISTER_SET,
+        ]),
+      ].sort(),
       rules: SYNC_RULES,
     })
   );
@@ -235,15 +241,19 @@ export const rebaseOver = (
 ) => {
   let at = base;
   let moved = change;
+  let satisfied = false;
 
   for (const entry of accepted) {
     const rebase = rebaseDocumentChange(entry, moved, at, SYNC_REBASE);
 
     if (rebase.kind !== 'pair') return rebase;
 
+    if (rebase.bOutcomes?.some((outcome) => outcome === 'satisfied')) {
+      satisfied = true;
+    }
     moved = rebase.b;
     at = entry.apply(at);
   }
 
-  return { change: moved, kind: 'rebased' } as const;
+  return { change: moved, kind: 'rebased', satisfied } as const;
 };

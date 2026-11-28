@@ -1,13 +1,10 @@
-import {
-  DocumentChange,
-  type EditorDocumentValue,
-  type EditorStateSchemaApi,
-  type Value,
-} from '../..';
+import type { EditorDocumentValue, EditorStateSchemaApi, Value } from '../..';
+import { rebaseDocumentChange } from '../../core/change/document-change';
 import { createComparisonIndex } from './comparison-index';
 import {
   assertComparisonActive,
   COMPARISON_POLICY,
+  comparisonChangeHashPayload,
   comparisonDocumentsEqual,
   comparisonHash,
   createComparisonSnapshot,
@@ -515,7 +512,7 @@ const compareTwoWay = async <V extends Value>(
 
   assertComparisonActive(input.signal);
   const comparisonId = `${id}:${comparisonHash({
-    change: change.toJSON(),
+    change: comparisonChangeHashPayload(change),
     changes,
     diagnostics,
   })}`;
@@ -794,7 +791,7 @@ const annotateResolvedComparison = <V extends Value>(
     ...comparison,
     changes,
     id: `${prefix}:${comparisonHash({
-      change: comparison.change.toJSON(),
+      change: comparisonChangeHashPayload(comparison.change),
       changes,
       diagnostics: comparison.diagnostics,
     })}`,
@@ -815,7 +812,7 @@ const restoreBaselineSnapshot = <V extends Value>(
     ...comparison,
     before,
     id: `${prefix}:${comparisonHash({
-      change: comparison.change.toJSON(),
+      change: comparisonChangeHashPayload(comparison.change),
       changes: comparison.changes,
       diagnostics: comparison.diagnostics,
     })}`,
@@ -1009,14 +1006,20 @@ export async function resolveComparison<V extends Value>(
   }
   let target: Pick<EditorDocumentValue<V>, 'children' | 'roots'>;
   try {
-    const transformed = DocumentChange.transform(
+    const rebased = rebaseDocumentChange(
       local.change,
       remote.change,
       input.comparison.base.document
     );
 
+    if (rebased.kind !== 'pair') {
+      return invalidResolution(
+        'The selected branch contributions do not form one schema-valid document.'
+      );
+    }
+
     target = detachComparisonDocument(
-      transformed.b.apply(local.change.apply(input.comparison.base.document)),
+      rebased.b.apply(local.change.apply(input.comparison.base.document)),
       state.schema
     );
   } catch {

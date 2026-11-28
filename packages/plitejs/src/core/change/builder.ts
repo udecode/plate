@@ -18,7 +18,10 @@ import {
 } from './classification';
 import {
   applyDocumentChangeWithIndexes,
+  attachLazyV4Steps,
   attachV4Steps,
+  bindV4DocumentChange,
+  copyV4StepsMetadata,
   createInternalDocumentChange,
   DocumentChange,
   freezeReadonlyMap,
@@ -462,6 +465,7 @@ export type DraftCheckpoint = Readonly<{
   spanStart: number;
   steps: readonly DraftStep[];
   v4: V4RecorderSnapshot;
+  v4StepMark: number;
   validationPending: boolean;
 }>;
 
@@ -565,6 +569,7 @@ export class ChangeDraft {
   ) => void;
   private readonly validateRecordsOnlyChange?: (change: DocumentChange) => void;
   private readonly v4Recorder = new V4BuilderRecorder();
+  private v4RecordedStepMark = 0;
 
   constructor(
     value: JsonEditorValue,
@@ -639,6 +644,11 @@ export class ChangeDraft {
 
       if (recorded) {
         attachV4Steps(accumulated, recorded);
+      } else {
+        attachLazyV4Steps(accumulated, this.source, this.current, {
+          authoritative: true,
+          isSetValued: this.isSetValued,
+        });
       }
     }
 
@@ -837,6 +847,7 @@ export class ChangeDraft {
       spanStart: this.spanStart,
       steps: [...this.appliedSteps],
       v4: this.v4Recorder.snapshot(),
+      v4StepMark: this.v4RecordedStepMark,
       validationPending: this.validationPending,
     };
   }
@@ -861,6 +872,7 @@ export class ChangeDraft {
     this.spanStart = checkpoint.spanStart;
     this.validationPending = checkpoint.validationPending;
     this.v4Recorder.restore(checkpoint.v4);
+    this.v4RecordedStepMark = checkpoint.v4StepMark;
 
     return step;
   }
@@ -1196,8 +1208,15 @@ export class ChangeDraft {
 
     const recordedV4 = this.v4Recorder.recorded;
 
-    if (recordedV4 && !classifiedChange.empty) {
-      attachV4Steps(classifiedChange, recordedV4);
+    if (!classifiedChange.empty) {
+      if (recordedV4) {
+        attachV4Steps(classifiedChange, recordedV4);
+      } else {
+        attachLazyV4Steps(classifiedChange, this.source, this.current, {
+          authoritative: true,
+          isSetValued: this.isSetValued,
+        });
+      }
     }
 
     const token = Object.freeze({});
@@ -1296,6 +1315,7 @@ export class ChangeDraft {
         this.v4Recorder.invalidate();
       }
     }
+    this.v4RecordedStepMark = this.v4Recorder.stepCount;
     this.current = payload.after;
 
     return Object.freeze({
@@ -1349,8 +1369,18 @@ export class ChangeDraft {
       getAttachedV4Steps(change) ??
       (change === this.accumulated ? this.v4Recorder.recorded : null);
 
-    if (attachedSteps && !classifiedChange.empty) {
-      attachV4Steps(classifiedChange, attachedSteps);
+    if (!classifiedChange.empty) {
+      if (attachedSteps) {
+        attachV4Steps(classifiedChange, attachedSteps);
+      } else {
+        copyV4StepsMetadata(change, classifiedChange);
+        if (change === this.accumulated) {
+          attachLazyV4Steps(classifiedChange, this.source, this.current, {
+            authoritative: true,
+            isSetValued: this.isSetValued,
+          });
+        }
+      }
     }
 
     return classifiedChange;
@@ -1443,6 +1473,22 @@ export class ChangeDraft {
       indexedAfter
     );
 
+    if (!attachedSteps && !classifiedChange.empty) {
+      const recorded = options.v4Recorded ? this.v4Recorder.recorded : null;
+      const recordedSlice =
+        recorded && recorded.length > this.v4RecordedStepMark
+          ? recorded.slice(this.v4RecordedStepMark)
+          : null;
+
+      if (recordedSlice) {
+        attachV4Steps(classifiedChange, recordedSlice);
+      } else {
+        attachLazyV4Steps(classifiedChange, before, current, {
+          isSetValued: this.isSetValued,
+        });
+      }
+    }
+
     for (const [root, after] of indexedAfter) {
       this.indexes.set(root, after);
     }
@@ -1515,6 +1561,7 @@ export class ChangeDraft {
     if (!options.v4Recorded) {
       this.syncExternalV4Change(change, indexedBefore, indexedAfter);
     }
+    this.v4RecordedStepMark = this.v4Recorder.stepCount;
 
     return Object.freeze({
       after: current,
@@ -1988,6 +2035,7 @@ export class ChangeDraft {
           }
         }
       }
+      this.v4RecordedStepMark = this.v4Recorder.stepCount;
     }
 
     // Composing the correction drops the classification of each root both
@@ -2013,6 +2061,7 @@ export class ChangeDraft {
       this.spanStart = 0;
       this.accumulatedHasRootLifecycle = false;
       if (this.recordV4) this.v4Recorder.resetTo([]);
+      this.v4RecordedStepMark = 0;
       this.indexes.clear();
       for (const [root, index] of this.sourceIndexes) {
         this.indexes.set(root, index);
@@ -2912,11 +2961,12 @@ export const classifyDocumentChange = (
   after: JsonEditorValue,
   change: DocumentChange
 ) => {
+  const bound = bindV4DocumentChange(change, before);
   const classifications = new Map(
-    getInternalDocumentChangeClassificationEntries(change)
+    getInternalDocumentChangeClassificationEntries(bound)
   );
 
-  for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+  for (const [root, rootChange] of getInternalDocumentChangeEntries(bound)) {
     classifications.set(
       root,
       classifyRootChange(
@@ -2928,18 +2978,16 @@ export const classifyDocumentChange = (
   }
 
   const classified = createInternalDocumentChange(
-    new Map(getInternalDocumentChangeEntries(change)),
+    new Map(getInternalDocumentChangeEntries(bound)),
     {
       classifications,
-      createRoots: change.createRoots,
-      deleteRoots: change.deleteRoots,
-      records: getInternalDocumentChangeRecords(change),
+      createRoots: bound.createRoots,
+      deleteRoots: bound.deleteRoots,
+      records: getInternalDocumentChangeRecords(bound),
     }
   );
-  const attachedSteps = getAttachedV4Steps(change);
-
-  if (attachedSteps && !classified.empty) {
-    attachV4Steps(classified, attachedSteps);
+  if (!classified.empty) {
+    copyV4StepsMetadata(bound, classified);
   }
 
   return classified;

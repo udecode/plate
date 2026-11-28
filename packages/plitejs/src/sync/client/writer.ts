@@ -460,14 +460,30 @@ export const createWriter = ({
     logged: DocumentChange,
     before: JsonEditorValue,
     document: JsonEditorValue,
-    tail: readonly SavedBatch[]
+    tail: readonly SavedBatch[],
+    version: number
   ): StepRebuild | null => {
     const { decision } = batch;
+    let sentBase: number | null = null;
+
+    if (batch.state === 'sent' || batch.state === 'withheld') {
+      try {
+        const parsed = JSON.parse(batch.frame) as { base?: unknown };
+
+        if (typeof parsed.base === 'number') sentBase = parsed.base;
+      } catch {
+        sentBase = null;
+      }
+    }
+    const crossedSince =
+      (batch.origin?.since.length ?? 0) > 0 ||
+      (sentBase !== null && version > sentBase + 1) ||
+      decision?.kind === 'redo';
 
     if (
       !decision?.step ||
       decision.kind === 'undo' ||
-      jsonEqual(logged.toJSON(), decision.unrebased)
+      (!crossedSince && jsonEqual(logged.toJSON(), decision.unrebased))
     ) {
       return null;
     }
@@ -535,13 +551,19 @@ export const createWriter = ({
             logged,
             before,
             document,
-            tail.filter((other) => !crossed.drop.includes(other.seq))
+            tail.filter((other) => !crossed.drop.includes(other.seq)),
+            version
           )
         : null;
     const ahead = new Map(
       tail.flatMap((other) =>
         other.seq < batch.seq && !isShown(other)
-          ? [[other.seq, logged ? hiddenPast(other, logged) : other] as const]
+          ? [
+              [
+                other.seq,
+                logged ? hiddenPast(other, logged, before) : other,
+              ] as const,
+            ]
           : []
       )
     );
@@ -676,7 +698,9 @@ export const createWriter = ({
         leaving(
           batch,
           positions.get(batch.seq),
-          batch.state === 'saved' ? { kind: 'expired' } : movedDecision(batch)
+          batch.state === 'saved' ? { kind: 'expired' } : movedDecision(batch),
+          undefined,
+          true
         ),
       ];
     });
@@ -784,9 +808,10 @@ export const createWriter = ({
         const { base, front } = next;
         const { change, origin, seq } = front;
         const live = savedLive.has(seq);
-        const verdict = origin?.since.length
-          ? verdictOf(origin, change)
-          : 'held';
+        const verdict =
+          front.decision && origin?.since.length
+            ? verdictOf(origin, change)
+            : 'held';
         const disposition = dispositionOf(verdict, live ? 'live' : 'offline');
 
         if (disposition !== 'send') {

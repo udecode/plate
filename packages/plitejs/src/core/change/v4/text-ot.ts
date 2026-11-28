@@ -154,11 +154,103 @@ export const stripFixedPropsFromDelta = (
   return stripOverriddenPropDelta(delta, { set: overridingProps });
 };
 
+const applyRemoveDeltaToMarks = (
+  marks: Readonly<JsonRecord> | undefined,
+  remove: Readonly<Record<string, readonly unknown[]>> | undefined
+): Readonly<JsonRecord> | undefined => {
+  if (!marks || !remove) return marks;
+
+  let changed = false;
+  const next: JsonRecord = { ...marks };
+
+  for (const [key, toRemove] of Object.entries(remove)) {
+    const existing = next[key];
+
+    if (!Array.isArray(existing) || toRemove.length === 0) continue;
+
+    const remaining = subtractV4SetValues(existing, toRemove);
+
+    if (remaining.length === existing.length) continue;
+    changed = true;
+    if (remaining.length === 0) delete next[key];
+    else next[key] = normalizeV4SetValues(remaining);
+  }
+
+  if (!changed) return marks;
+
+  return Object.keys(next).length > 0 ? next : undefined;
+};
+
+const splitFormatForEmbeddedInsert = (
+  fmt: Extract<V4Step, { op: 'format_text' }>,
+  ins: Extract<V4Step, { op: 'insert_text' }>
+): Readonly<{
+  fmtPrime: ReadonlyArray<Extract<V4Step, { op: 'format_text' }>>;
+  insPrime: Extract<V4Step, { op: 'insert_text' }>;
+}> => {
+  const len = ins.text.length;
+  const leftLen = ins.offset - fmt.offset;
+  const rightLen = fmt.offset + fmt.length - ins.offset;
+  const hasRemove =
+    fmt.remove !== undefined && Object.keys(fmt.remove).length > 0;
+  const hasOther =
+    (fmt.set !== undefined && Object.keys(fmt.set).length > 0) ||
+    (fmt.unset !== undefined && fmt.unset.length > 0) ||
+    (fmt.add !== undefined && Object.keys(fmt.add).length > 0);
+
+  if (!hasRemove) {
+    return {
+      fmtPrime: [
+        { ...fmt, length: leftLen, offset: fmt.offset },
+        { ...fmt, length: rightLen, offset: ins.offset + len },
+      ],
+      insPrime: ins,
+    };
+  }
+
+  const strippedMarks = applyRemoveDeltaToMarks(ins.marks, fmt.remove);
+  const insPrime: Extract<V4Step, { op: 'insert_text' }> =
+    strippedMarks === ins.marks
+      ? ins
+      : strippedMarks
+        ? { ...ins, marks: strippedMarks }
+        : {
+            offset: ins.offset,
+            op: 'insert_text',
+            target: ins.target,
+            text: ins.text,
+          };
+
+  if (!hasOther) {
+    return {
+      fmtPrime: [{ ...fmt, length: fmt.length + len, offset: fmt.offset }],
+      insPrime,
+    };
+  }
+
+  const { remove: fmtRemove, ...rest } = fmt;
+
+  return {
+    fmtPrime: [
+      { ...rest, length: leftLen, offset: fmt.offset },
+      { ...rest, length: rightLen, offset: ins.offset + len },
+      {
+        length: fmt.length + len,
+        offset: fmt.offset,
+        op: 'format_text',
+        remove: fmtRemove,
+        target: fmt.target,
+      },
+    ],
+    insPrime,
+  };
+};
+
 /**
- * Transform a 1D text/mark step pair on the SAME text-bearing element `target`
- * under one canonical left-to-right sequential UTF-16 TP-1 frame (`a` admitted
- * before `b`, so `b` wins on overlapping scalar/set mark conflicts and sits to
- * the right on equal-offset inserts).
+ * Transform a 1D text/mark step pair on the same text-bearing element under
+ * one canonical left-to-right sequential UTF-16 TP-1 frame (`a` admitted before
+ * `b`, so `b` wins on overlapping conflicts and sits right on equal-offset
+ * inserts).
  */
 export const transformSameTargetTextPair = (
   a: V4TextStep,
@@ -335,16 +427,12 @@ export const transformSameTargetTextPair = (
       return { aPrime: [a], bOutcome: 'applied', bPrime: [b], ok: true };
     }
 
-    const leftLen = a.offset - b.offset;
-    const rightLen = b.offset + b.length - a.offset;
+    const { fmtPrime, insPrime } = splitFormatForEmbeddedInsert(b, a);
 
     return {
-      aPrime: [a],
+      aPrime: [insPrime],
       bOutcome: 'applied',
-      bPrime: [
-        { ...b, length: leftLen, offset: b.offset },
-        { ...b, length: rightLen, offset: a.offset + lenA },
-      ],
+      bPrime: fmtPrime,
       ok: true,
     };
   }
@@ -375,16 +463,12 @@ export const transformSameTargetTextPair = (
       return { aPrime: [a], bOutcome: 'applied', bPrime: [b], ok: true };
     }
 
-    const leftLen = b.offset - a.offset;
-    const rightLen = a.offset + a.length - b.offset;
+    const { fmtPrime, insPrime } = splitFormatForEmbeddedInsert(a, b);
 
     return {
-      aPrime: [
-        { ...a, length: leftLen, offset: a.offset },
-        { ...a, length: rightLen, offset: b.offset + lenB },
-      ],
+      aPrime: fmtPrime,
       bOutcome: 'applied',
-      bPrime: [b],
+      bPrime: [insPrime],
       ok: true,
     };
   }

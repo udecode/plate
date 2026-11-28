@@ -11,7 +11,6 @@ import {
   NO_RECORD_OPS,
   recordStoresEqual,
   type RecordOps,
-  type RecordOpsJson,
   type RecordStore,
   recordOpsBetween,
   recordOpsFromJson,
@@ -63,17 +62,23 @@ import {
   type JsonPoint,
 } from './tokens';
 import type { PropertyModification } from './transform';
-import { applyV4Steps } from './v4/apply';
+import { applyV4RegisterSteps } from './v4/apply';
 import { extractV4Between } from './v4/extract';
 import { invertV4Steps } from './v4/invert';
 import { lowerV4Steps } from './v4/lower';
+import { rebaseV4Changes } from './v4/rebase';
+import type { V4EscalationReason, V4StepOutcome } from './v4/text-ot';
 import {
   assertV4Steps,
   countV4BuilderFallbackDiff,
-  type V4DocumentChangeJson,
+  type DocumentChangeJson,
+  type V4Place,
+  type V4PropDelta,
   v4RootLifecycle,
   type V4Step,
 } from './v4/types';
+
+export type { DocumentChangeJson, V4Place, V4PropDelta, V4Step };
 
 export type DocumentChangedRange = Readonly<{
   fromAfter: number;
@@ -88,15 +93,6 @@ export type DocumentCorrection = (
   value: JsonEditorValue,
   changedRanges: readonly DocumentChangedRange[]
 ) => JsonEditorValue;
-
-export type DocumentChangeJson = {
-  createRoots?: readonly string[];
-  deleteRoots?: readonly string[];
-  primary?: RootChangeJson;
-  records?: RecordOpsJson;
-  roots?: Readonly<Record<string, RootChangeJson>>;
-  version: 3;
-};
 
 // Listed rather than read from Object.prototype, so a polyfill or a host
 // flag such as --disable-proto cannot change which root names pass.
@@ -603,11 +599,15 @@ export const attachLazyV4Steps = (
   before: JsonEditorValue,
   after: JsonEditorValue,
   options: Readonly<{
+    authoritative?: boolean;
     fromBuilder?: boolean;
     isSetValued?: DocumentSetPropertyResolver;
   }> = {}
 ): DocumentChange => {
   if (!DOCUMENT_CHANGE_V4_STEPS.has(change)) {
+    if (options.authoritative) {
+      DOCUMENT_CHANGE_LAZY_V4_COMPUTE.delete(change);
+    }
     DOCUMENT_CHANGE_LAZY_V4.set(change, {
       after,
       before,
@@ -624,6 +624,54 @@ export const getAttachedV4Steps = (
   change: DocumentChange
 ): readonly V4Step[] | null => DOCUMENT_CHANGE_V4_STEPS.get(change) ?? null;
 
+const DOCUMENT_CHANGE_LAZY_V4_COMPUTE = new WeakMap<
+  DocumentChange,
+  () => readonly V4Step[] | null
+>();
+
+/** @internal */
+export const hasV4StepsSource = (change: DocumentChange): boolean =>
+  change.empty ||
+  DOCUMENT_CHANGE_V4_STEPS.has(change) ||
+  DOCUMENT_CHANGE_LAZY_V4_COMPUTE.has(change) ||
+  DOCUMENT_CHANGE_LAZY_V4.has(change);
+
+/** @internal */
+export const attachLazyV4Compute = (
+  change: DocumentChange,
+  compute: () => readonly V4Step[] | null
+): DocumentChange => {
+  if (!hasV4StepsSource(change)) {
+    DOCUMENT_CHANGE_LAZY_V4_COMPUTE.set(change, compute);
+  }
+
+  return change;
+};
+
+/** @internal */
+export const copyV4StepsMetadata = (
+  from: DocumentChange,
+  to: DocumentChange
+) => {
+  const steps = DOCUMENT_CHANGE_V4_STEPS.get(from);
+
+  if (steps) {
+    DOCUMENT_CHANGE_V4_STEPS.set(to, steps);
+    return;
+  }
+
+  const lazyCompute = DOCUMENT_CHANGE_LAZY_V4_COMPUTE.get(from);
+
+  if (lazyCompute) {
+    DOCUMENT_CHANGE_LAZY_V4_COMPUTE.set(to, lazyCompute);
+    return;
+  }
+
+  const lazy = DOCUMENT_CHANGE_LAZY_V4.get(from);
+
+  if (lazy) DOCUMENT_CHANGE_LAZY_V4.set(to, lazy);
+};
+
 /** @internal */
 export const getV4Steps = (
   change: DocumentChange
@@ -631,6 +679,24 @@ export const getV4Steps = (
   const existing = DOCUMENT_CHANGE_V4_STEPS.get(change);
 
   if (existing) return existing;
+
+  const lazyCompute = DOCUMENT_CHANGE_LAZY_V4_COMPUTE.get(change);
+
+  if (lazyCompute) {
+    DOCUMENT_CHANGE_LAZY_V4_COMPUTE.delete(change);
+    try {
+      const computed = lazyCompute();
+
+      if (computed) {
+        const frozen = Object.freeze([...computed]);
+
+        DOCUMENT_CHANGE_V4_STEPS.set(change, frozen);
+        return frozen;
+      }
+    } catch {
+      return null;
+    }
+  }
 
   const lazy = DOCUMENT_CHANGE_LAZY_V4.get(change);
 
@@ -693,7 +759,7 @@ export const bindV4DocumentChange = (
 
 /** @internal */
 export const documentChangeFromV4JSON = (
-  json: V4DocumentChangeJson
+  json: DocumentChangeJson
 ): DocumentChange => {
   assertEditorJsonValue(json, 'DocumentChange v4 JSON');
 
@@ -719,13 +785,36 @@ export const documentChangeFromV4JSON = (
 /** @internal */
 export const documentChangeToV4JSON = (
   change: DocumentChange
-): V4DocumentChangeJson => {
-  const steps = getV4Steps(change) ?? [];
-  const { records } = getDocumentChangeRootState(change);
+): DocumentChangeJson => {
+  let steps = getV4Steps(change);
+  const state = getDocumentChangeRootState(change);
+
+  if (steps === null) {
+    if (state.primary === null && state.roots.size === 0) {
+      const lifecycle: V4Step[] = [
+        ...[...change.createRoots].map((root): V4Step => ({
+          op: 'create_root',
+          root,
+        })),
+        ...[...change.deleteRoots].map((root): V4Step => ({
+          op: 'delete_root',
+          root,
+        })),
+      ];
+
+      steps = lifecycle;
+    } else {
+      throw new Error(
+        'DocumentChange.toJSON requires v4 steps; construct from a builder, DocumentChange.between, or DocumentChange.fromJSON.'
+      );
+    }
+  }
 
   return {
-    ...(records.size > 0 ? { records: recordOpsToJson(records) } : {}),
-    ...(steps.length > 0 ? { steps } : {}),
+    ...(state.records.size > 0
+      ? { records: recordOpsToJson(state.records) }
+      : {}),
+    ...(steps.length > 0 ? { steps: structuredClone(steps) } : {}),
     version: 4,
   };
 };
@@ -1064,20 +1153,29 @@ export const createInternalDocumentChange = (
 export const withDocumentChangeRecords = (
   change: DocumentChange,
   records: RecordOps
-) =>
-  getInternalDocumentChangeRecords(change) === records
-    ? change
-    : createInternalDocumentChange(
-        new Map(getInternalDocumentChangeEntries(change)),
-        {
-          classifications: new Map(
-            getInternalDocumentChangeClassificationEntries(change)
-          ),
-          createRoots: change.createRoots,
-          deleteRoots: change.deleteRoots,
-          records,
-        }
-      );
+) => {
+  if (getInternalDocumentChangeRecords(change) === records) return change;
+  if (UNBOUND_V4_CHANGES.has(change)) {
+    return createV4DocumentChange(DOCUMENT_CHANGE_V4_STEPS.get(change) ?? [], {
+      records,
+    });
+  }
+
+  const next = createInternalDocumentChange(
+    new Map(getInternalDocumentChangeEntries(change)),
+    {
+      classifications: new Map(
+        getInternalDocumentChangeClassificationEntries(change)
+      ),
+      createRoots: change.createRoots,
+      deleteRoots: change.deleteRoots,
+      records,
+    }
+  );
+  copyV4StepsMetadata(change, next);
+
+  return next;
+};
 
 /** @internal */
 export const filterDocumentChangeRecordSets = (
@@ -1266,8 +1364,8 @@ export const bindDocumentChangeNodeKeys = (
   change: DocumentChange,
   target: JsonEditorValue,
   nodeKeyAt: (root: string, path: readonly number[]) => NodeKey | null
-) =>
-  createInternalDocumentChange(
+) => {
+  const bound = createInternalDocumentChange(
     new Map(
       [...getInternalDocumentChangeEntries(change)].map(
         ([root, rootChange]) =>
@@ -1289,6 +1387,10 @@ export const bindDocumentChangeNodeKeys = (
       records: getInternalDocumentChangeRecords(change),
     }
   );
+  copyV4StepsMetadata(change, bound);
+
+  return bound;
+};
 
 export type InternalRootChangeSection = Readonly<{
   after: readonly JsonNode[];
@@ -1581,7 +1683,10 @@ export class DocumentChange {
 
   /** Validate a document change without relying on constructor identity. */
   static isDocumentChange(value: unknown): value is DocumentChange {
-    if (value instanceof DocumentChange && UNBOUND_V4_CHANGES.has(value)) {
+    if (
+      value instanceof DocumentChange &&
+      (UNBOUND_V4_CHANGES.has(value) || DOCUMENT_CHANGE_ROOTS.has(value))
+    ) {
       return true;
     }
 
@@ -1623,17 +1728,10 @@ export class DocumentChange {
       );
       const decoded = DocumentChange.fromJSON(advertised as DocumentChangeJson);
       const canonical = decoded.toJSON();
-      const changeRoots = new Set(Object.keys(canonical.roots ?? {}));
-
-      if (canonical.primary !== undefined) changeRoots.add('main');
-
       const { primaryClassification } = value;
 
       if (primaryClassification !== null) {
-        if (
-          canonical.primary === undefined ||
-          !isRecord(primaryClassification)
-        ) {
+        if (!isRecord(primaryClassification)) {
           return false;
         }
 
@@ -1651,11 +1749,7 @@ export class DocumentChange {
         if (typeof root !== 'string') return false;
         if (!decoded.deleteRoots.has(root)) assertNamedDocumentRootKey(root);
 
-        if (
-          seenClassifications.has(root) ||
-          !changeRoots.has(root) ||
-          !isRecord(classification)
-        ) {
+        if (seenClassifications.has(root) || !isRecord(classification)) {
           return false;
         }
 
@@ -1671,8 +1765,8 @@ export class DocumentChange {
 
       return (
         jsonEqual(advertised, canonical) &&
-        jsonEqual(createRoots, canonical.createRoots ?? []) &&
-        jsonEqual(deleteRoots, canonical.deleteRoots ?? []) &&
+        jsonEqual(createRoots, [...decoded.createRoots]) &&
+        jsonEqual(deleteRoots, [...decoded.deleteRoots]) &&
         decoded.empty === value.empty
       );
     } catch {
@@ -1681,63 +1775,64 @@ export class DocumentChange {
   }
 
   static fromJSON(json: DocumentChangeJson) {
-    assertEditorJsonValue(json, 'DocumentChange JSON');
-
-    if (
-      !isRecord(json) ||
-      json.version !== 3 ||
-      !Object.keys(json).every((key) =>
-        [
-          'createRoots',
-          'deleteRoots',
-          'primary',
-          'records',
-          'roots',
-          'version',
-        ].includes(key)
-      ) ||
-      (json.roots !== undefined && !isRecord(json.roots))
-    ) {
-      throw new Error('Invalid DocumentChange JSON.');
-    }
-    if (
-      (json.createRoots !== undefined &&
-        (!Array.isArray(json.createRoots) ||
-          !json.createRoots.every((root) => typeof root === 'string'))) ||
-      (json.deleteRoots !== undefined &&
-        (!Array.isArray(json.deleteRoots) ||
-          !json.deleteRoots.every((root) => typeof root === 'string'))) ||
-      (json.primary !== undefined && !Array.isArray(json.primary))
-    ) {
-      throw new Error('Invalid DocumentChange JSON.');
-    }
-
-    return new DocumentChange({
-      createRoots: json.createRoots,
-      deleteRoots: json.deleteRoots,
-      primary:
-        json.primary === undefined ? null : RootChange.fromJSON(json.primary),
-      records:
-        json.records === undefined
-          ? NO_RECORD_OPS
-          : recordOpsFromJson(json.records),
-      roots: new Map(
-        Object.entries(json.roots ?? {}).map(
-          ([root, change]) => [root, RootChange.fromJSON(change)] as const
-        )
-      ),
-    });
+    return documentChangeFromV4JSON(json);
   }
 
   /**
-   * Rebase two changes from the same value for pairwise convergence.
-   * Multi-peer ordering belongs to a collaboration adapter such as Yjs.
+   * Rebase two changes from the same value for pairwise convergence (first-wins
+   * on conflict, returning a compensating `a` so both replay orders reach the
+   * same document).
    */
   static transform(
     a: DocumentChange,
     b: DocumentChange,
     value: JsonEditorValue
   ) {
+    const lifecycle = lifecycleConflictOf(a, b, value);
+
+    if (lifecycle) {
+      throw new Error(
+        `Cannot transform concurrent root lifecycle changes for ${lifecycle.root}.`
+      );
+    }
+
+    if (allElementsHaveIds(value)) {
+      const aSteps = tryV4StepsOf(a, value);
+      const bSteps = tryV4StepsOf(b, value);
+
+      if (aSteps !== null && bSteps !== null) {
+        const records = recordsRebasedOf(a, b);
+        const res = rebaseV4Changes(value, aSteps, bSteps);
+
+        if (res.ok && records.unequal.length === 0) {
+          let aOut = createV4DocumentChange(res.aPrime, {
+            records: records.first,
+          });
+          let bOut = createV4DocumentChange(res.bPrime, {
+            records: records.second,
+          });
+
+          if (!UNBOUND_V4_CHANGES.has(a) && !UNBOUND_V4_CHANGES.has(b)) {
+            const aAfter = a.apply(value);
+            const bAfter = b.apply(value);
+
+            aOut = bindV4DocumentChange(aOut, bAfter);
+            bOut = bindV4DocumentChange(bOut, aAfter);
+          }
+
+          return { a: aOut, b: bOut };
+        }
+
+        const aAfter = a.apply(value);
+        const bAfter = b.apply(value);
+
+        return {
+          a: DocumentChange.between(bAfter, aAfter),
+          b: DocumentChange.empty,
+        };
+      }
+    }
+
     const transformed = transformInternalDocumentChange(a, b, value);
 
     return { a: transformed.a, b: transformed.b };
@@ -1749,6 +1844,8 @@ export class DocumentChange {
    * value-free change algebra can recover.
    */
   compose(other: DocumentChange, value?: JsonEditorValue): DocumentChange {
+    if (this.empty) return other;
+    if (other.empty) return this;
     if (UNBOUND_V4_CHANGES.has(this) || UNBOUND_V4_CHANGES.has(other)) {
       const leftSteps = getV4Steps(this);
       const rightSteps = getV4Steps(other);
@@ -1763,7 +1860,7 @@ export class DocumentChange {
       }
       if (!value) {
         throw new Error(
-          'Composing an unbound v4 change with a legacy v3 change requires the source value.'
+          'Composing an unbound v4 change with a bound change without v4 steps requires the source value.'
         );
       }
 
@@ -1874,11 +1971,18 @@ export class DocumentChange {
       deleteRoots,
       records,
     });
-    const leftSteps = DOCUMENT_CHANGE_V4_STEPS.get(this);
-    const rightSteps = DOCUMENT_CHANGE_V4_STEPS.get(other);
+    const leftImmediate = DOCUMENT_CHANGE_V4_STEPS.get(this);
+    const rightImmediate = DOCUMENT_CHANGE_V4_STEPS.get(other);
 
-    if (leftSteps && rightSteps) {
-      attachV4Steps(composed, [...leftSteps, ...rightSteps]);
+    if (leftImmediate && rightImmediate) {
+      attachV4Steps(composed, [...leftImmediate, ...rightImmediate]);
+    } else if (hasV4StepsSource(this) && hasV4StepsSource(other)) {
+      DOCUMENT_CHANGE_LAZY_V4_COMPUTE.set(composed, () => {
+        const leftSteps = this.empty ? [] : getV4Steps(this);
+        const rightSteps = other.empty ? [] : getV4Steps(other);
+
+        return leftSteps && rightSteps ? [...leftSteps, ...rightSteps] : null;
+      });
     }
 
     return composed;
@@ -2011,20 +2115,37 @@ export class DocumentChange {
     if (UNBOUND_V4_CHANGES.has(this)) {
       const steps = DOCUMENT_CHANGE_V4_STEPS.get(this) ?? [];
       const recordOps = getInternalDocumentChangeRecords(this);
-      let applied: Record<string, unknown> = applyV4Steps(value, steps);
+      const hasRegisterSteps = steps.some((step) => step.op === 'set_register');
+      const bound = bindV4DocumentChange(this, value);
+      const applied = (
+        hasRegisterSteps
+          ? withDocumentChangeRecords(bound, NO_RECORD_OPS)
+          : bound
+      ).apply(value);
 
-      if (recordOps.size > 0) {
-        const nextRecords = applyRecordOps(getValueRecords(applied), recordOps);
-        const withRecords: Record<string, unknown> = { ...applied };
+      if (!hasRegisterSteps) return applied;
 
-        withValueRecords(withRecords, nextRecords);
-        if (Object.hasOwn(value, 'records') || !hasValueRecords(value)) {
-          showValueRecords(withRecords, nextRecords);
-        }
-        applied = withRecords;
+      const { records: _staleRecords, ...withoutStaleRecords } =
+        applied as Record<string, unknown>;
+      const afterRegisters = applyV4RegisterSteps(
+        getValueRecords(value),
+        steps
+      );
+      const nextRecords =
+        recordOps.size > 0
+          ? applyRecordOps(afterRegisters, recordOps)
+          : afterRegisters;
+
+      withValueRecords(withoutStaleRecords, nextRecords);
+      if (
+        Object.hasOwn(value, 'records') ||
+        !hasValueRecords(value) ||
+        nextRecords !== getValueRecords(value)
+      ) {
+        showValueRecords(withoutStaleRecords, nextRecords);
       }
 
-      return deepFreeze(applied) as T;
+      return deepFreeze(withoutStaleRecords) as T;
     }
 
     const applied: Record<string, unknown> = applyDocumentChangeValue(
@@ -2127,8 +2248,11 @@ export class DocumentChange {
     });
     const steps = DOCUMENT_CHANGE_V4_STEPS.get(this);
 
-    if (steps) {
-      try {
+    if (steps || DOCUMENT_CHANGE_LAZY_V4_COMPUTE.has(this)) {
+      DOCUMENT_CHANGE_LAZY_V4_COMPUTE.set(inverted, () => {
+        const resolvedSteps = steps ?? getV4Steps(this);
+
+        if (!resolvedSteps) return null;
         let localMap: Map<
           string,
           Readonly<{ path: readonly number[]; root: string }>
@@ -2181,12 +2305,15 @@ export class DocumentChange {
           return localMap.get(id) ?? null;
         };
 
-        attachV4Steps(
-          inverted,
-          invertV4Steps(value, steps, { lookup: boundLookup })
-        );
-      } catch {
-        // Bound v3 invert callers may pass a raw value without element IDs.
+        return invertV4Steps(value, resolvedSteps, { lookup: boundLookup });
+      });
+    } else {
+      const lazy = DOCUMENT_CHANGE_LAZY_V4.get(this);
+
+      if (lazy) {
+        attachLazyV4Steps(inverted, lazy.after, lazy.before, {
+          isSetValued: lazy.isSetValued,
+        });
       }
     }
 
@@ -2194,28 +2321,7 @@ export class DocumentChange {
   }
 
   toJSON(): DocumentChangeJson {
-    const state = getDocumentChangeRootState(this);
-
-    return {
-      ...(state.primary ? { primary: state.primary.toJSON() } : {}),
-      ...(state.records.size > 0
-        ? { records: recordOpsToJson(state.records) }
-        : {}),
-      ...(state.roots.size > 0
-        ? {
-            roots: Object.fromEntries(
-              [...state.roots].map(([root, change]) => [root, change.toJSON()])
-            ),
-          }
-        : {}),
-      ...(this.createRoots.size > 0
-        ? { createRoots: [...this.createRoots] }
-        : {}),
-      ...(this.deleteRoots.size > 0
-        ? { deleteRoots: [...this.deleteRoots] }
-        : {}),
-      version: 3,
-    };
+    return documentChangeToV4JSON(this);
   }
 }
 
@@ -2306,11 +2412,17 @@ export type DocumentChangeConflict =
       kind: 'root-lifecycle';
       records?: ConflictRecords;
       root: string;
+    }>
+  | Readonly<{
+      kind: 'v4-escalation';
+      reason: V4EscalationReason;
+      records?: ConflictRecords;
     }>;
 
 type RebasedPair = Readonly<{
   a: DocumentChange;
   b: DocumentChange;
+  bOutcomes?: readonly V4StepOutcome[];
   keptWrap: KeptWrap | null;
 }>;
 
@@ -2321,6 +2433,7 @@ export type DocumentRebase =
 
 type RebaseOptions = Readonly<{
   crossedMoves?: 'first-wins';
+  isSetValued?: DocumentSetPropertyResolver;
   keepEqualEdits?: boolean;
   keepEqualInserts?: boolean;
   keepEqualMoves?: boolean;
@@ -2337,22 +2450,165 @@ type RebaseOptions = Readonly<{
   }>;
 }>;
 
-const touchesRoot = (change: DocumentChange, root: string) =>
-  change.createRoots.has(root) ||
-  change.deleteRoots.has(root) ||
-  !!getInternalDocumentRootChange(change, root);
+const nodesHaveIds = (nodes: readonly JsonNode[]): boolean => {
+  for (const node of nodes) {
+    if (!isElementNode(node)) continue;
+    if (typeof node.id !== 'string' || node.id.length === 0) return false;
+    if (!nodesHaveIds(node.children)) return false;
+  }
+
+  return true;
+};
+
+const allElementsHaveIds = (value: JsonEditorValue): boolean => {
+  if (!nodesHaveIds(value.children)) return false;
+  if (value.roots) {
+    for (const root of visitRootNames(value.roots)) {
+      const nodes = value.roots[root];
+
+      if (nodes && !nodesHaveIds(nodes)) return false;
+    }
+  }
+
+  return true;
+};
+
+const tryV4StepsOf = (
+  change: DocumentChange,
+  base: JsonEditorValue,
+  isSetValued?: DocumentSetPropertyResolver
+): readonly V4Step[] | null => {
+  const existing = getV4Steps(change);
+
+  if (existing !== null) return existing;
+  try {
+    return extractV4Between(base, change.apply(base), { isSetValued });
+  } catch {
+    return null;
+  }
+};
+
+const idToRootMap = (value: JsonEditorValue): ReadonlyMap<string, string> => {
+  const map = new Map<string, string>();
+  const walk = (root: string, nodes: readonly JsonNode[]) => {
+    for (const node of nodes) {
+      if (!isElementNode(node)) continue;
+      if (typeof node.id === 'string' && node.id.length > 0) {
+        map.set(node.id, root);
+      }
+      walk(root, node.children);
+    }
+  };
+
+  walk('main', value.children);
+  if (value.roots) {
+    for (const root of visitRootNames(value.roots)) {
+      walk(root, value.roots[root]);
+    }
+  }
+
+  return map;
+};
+
+const stepTouchedIds = (step: V4Step): readonly string[] => {
+  switch (step.op) {
+    case 'insert_text':
+    case 'delete_text':
+    case 'format_text':
+    case 'wrap_inline': {
+      return [step.target];
+    }
+    case 'unwrap_inline': {
+      return [step.parent, step.id];
+    }
+    case 'set_props':
+    case 'remove_node':
+    case 'split_node': {
+      return [step.id];
+    }
+    case 'join_nodes': {
+      return [step.target, step.source];
+    }
+    case 'insert_node': {
+      return 'id' in step.to ? [step.to.id] : [];
+    }
+    case 'move_node': {
+      return 'id' in step.to ? [step.id, step.to.id] : [step.id];
+    }
+    default: {
+      return [];
+    }
+  }
+};
+
+const touchesRoot = (
+  change: DocumentChange,
+  root: string,
+  value?: JsonEditorValue,
+  idRoots?: () => ReadonlyMap<string, string>
+) => {
+  if (
+    change.createRoots.has(root) ||
+    change.deleteRoots.has(root) ||
+    !!getInternalDocumentRootChange(change, root)
+  ) {
+    return true;
+  }
+
+  if (UNBOUND_V4_CHANGES.has(change)) {
+    const steps = DOCUMENT_CHANGE_V4_STEPS.get(change) ?? [];
+
+    for (const step of steps) {
+      if (
+        (step.op === 'create_root' || step.op === 'delete_root') &&
+        step.root === root
+      ) {
+        return true;
+      }
+      if (
+        (step.op === 'insert_node' || step.op === 'move_node') &&
+        'root' in step.to &&
+        step.to.root === root
+      ) {
+        return true;
+      }
+      if (value && idRoots) {
+        for (const id of stepTouchedIds(step)) {
+          if (idRoots().get(id) === root) return true;
+        }
+      }
+    }
+  }
+
+  return false;
+};
 
 const lifecycleConflictOf = (
   a: DocumentChange,
-  b: DocumentChange
+  b: DocumentChange,
+  value?: JsonEditorValue
 ): Extract<DocumentChangeConflict, { kind: 'root-lifecycle' }> | null => {
-  for (const root of [
+  const candidates = [
     ...a.createRoots,
     ...a.deleteRoots,
     ...b.createRoots,
     ...b.deleteRoots,
-  ]) {
-    if (touchesRoot(a, root) && touchesRoot(b, root)) {
+  ];
+
+  if (candidates.length === 0) return null;
+
+  let cachedIdRoots: ReadonlyMap<string, string> | null = null;
+  const getIdRoots = () => {
+    if (!cachedIdRoots) cachedIdRoots = value ? idToRootMap(value) : new Map();
+
+    return cachedIdRoots;
+  };
+
+  for (const root of candidates) {
+    if (
+      touchesRoot(a, root, value, getIdRoots) &&
+      touchesRoot(b, root, value, getIdRoots)
+    ) {
       return { kind: 'root-lifecycle', root };
     }
   }
@@ -2480,7 +2736,7 @@ export const rebaseDocumentChange = (
   options: RebaseOptions = {}
 ): DocumentRebase => {
   const records = recordsRebasedOf(a, b);
-  const lifecycle = lifecycleConflictOf(a, b);
+  const lifecycle = lifecycleConflictOf(a, b, value);
 
   if (lifecycle) {
     return records.unequal.length > 0
@@ -2489,6 +2745,39 @@ export const rebaseDocumentChange = (
   }
   if (records.unequal.length > 0) {
     return { kind: 'record', records: records.unequal };
+  }
+
+  if (allElementsHaveIds(value)) {
+    const aSteps = tryV4StepsOf(a, value, options.isSetValued);
+    const bSteps = tryV4StepsOf(b, value, options.isSetValued);
+
+    if (aSteps !== null && bSteps !== null) {
+      const res = rebaseV4Changes(value, aSteps, bSteps);
+
+      if (!res.ok) {
+        if (res.reason === 'root-conflict') {
+          const conflictingRoot =
+            [
+              ...a.createRoots,
+              ...a.deleteRoots,
+              ...b.createRoots,
+              ...b.deleteRoots,
+            ][0] ?? 'main';
+
+          return { kind: 'root-lifecycle', root: conflictingRoot };
+        }
+
+        return { kind: 'v4-escalation', reason: res.reason };
+      }
+
+      return {
+        a: createV4DocumentChange(res.aPrime, { records: records.first }),
+        b: createV4DocumentChange(res.bPrime, { records: records.second }),
+        bOutcomes: res.bOutcomes,
+        keptWrap: null,
+        kind: 'pair',
+      };
+    }
   }
 
   return { kind: 'pair', ...rebasedPair(a, b, value, options, records) };
@@ -2501,7 +2790,7 @@ export const transformInternalDocumentChange = (
   value: JsonEditorValue,
   options: RebaseOptions & Readonly<{ keepRecordWrites?: boolean }> = {}
 ): RebasedPair => {
-  const lifecycle = lifecycleConflictOf(a, b);
+  const lifecycle = lifecycleConflictOf(a, b, value);
 
   if (lifecycle) {
     throw new Error(
@@ -2653,5 +2942,9 @@ export const alignedDocumentChange = (
     }
   }
 
-  return createInternalDocumentChange(changes, { classifications });
+  const aligned = createInternalDocumentChange(changes, { classifications });
+
+  DOCUMENT_CHANGE_LAZY_V4.set(aligned, { after, before });
+
+  return aligned;
 };

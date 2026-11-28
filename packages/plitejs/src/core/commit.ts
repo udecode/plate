@@ -27,8 +27,10 @@ import {
   getDocumentChangeTouchedKeys,
 } from './change/classification';
 import {
+  attachLazyV4Steps,
   bindDocumentChangeNodeKeys,
   type DocumentChange,
+  getAttachedV4Steps,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRecords,
@@ -41,12 +43,13 @@ import { lazyRootOf, setLazyRoot } from './change/lazy-root';
 import { type ChangeFacts, NO_FACTS, UNKNOWN_FACTS } from './change/record';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorRuntimeOwner } from './editor-runtime';
+import { getCompiledEditorSchema } from './plugin-registry';
 import { toInternalRoot, toPublicRoot } from './public-root';
 import {
   readRootPlacementChanges,
   type RootPlacementSide,
 } from './root-entries';
-import type { SchemaSides } from './schema-compiler';
+import { schemaSetValuedResolver, type SchemaSides } from './schema-compiler';
 import { pathKey, snapshotIndexOf } from './snapshot-index';
 import { defineUpdateAnnotation } from './transaction-values';
 import { cloneFrozenEditorJsonValue } from './value-codec';
@@ -1489,6 +1492,15 @@ export const createEditorCommit = <V extends Value>(
     tags: Object.freeze([...body.tags]),
     version: versions.version,
   } as EditorCommit<V>;
+
+  if (getAttachedV4Steps(body.changes) === null && !body.changes.empty) {
+    const compiled = schemas?.after ?? getCompiledEditorSchema(editor);
+    const isSetValued = compiled
+      ? schemaSetValuedResolver(compiled)
+      : undefined;
+
+    attachLazyV4Steps(body.changes, beforeValue, afterValue, { isSetValued });
+  }
 
   Object.defineProperty(commit, 'changed', {
     configurable: false,

@@ -1,4 +1,5 @@
 import {
+  bindV4DocumentChange,
   DocumentChange,
   type DocumentChangeJson,
 } from '../../core/change/document-change';
@@ -56,31 +57,89 @@ const TOKENS_PER_CHANGE = 8000;
 
 export const syncJudge =
   (isSetValued: SetValued): SyncJudge =>
-  ({ before, change, since }, merged) =>
-    judgeSpan({
-      accepted: since.map((json) =>
-        viewOfChange(DocumentChange.fromJSON(json))
-      ),
+  ({ before, change, since }, merged) => {
+    if (!before) return 'held';
+
+    let cursor = before;
+    const accepted = since.map((json) => {
+      const bound = bindV4DocumentChange(DocumentChange.fromJSON(json), cursor);
+
+      cursor = bound.apply(cursor);
+      return viewOfChange(bound);
+    });
+
+    return judgeSpan({
+      accepted,
       base: before,
       budget: TOKENS_PER_CHANGE * (since.length + 2),
       head: null,
       isSetValued,
-      merged: [viewOfChange(merged)],
-      own: [viewOfChange(DocumentChange.fromJSON(change))],
+      merged: [viewOfChange(bindV4DocumentChange(merged, cursor))],
+      own: [
+        viewOfChange(
+          bindV4DocumentChange(DocumentChange.fromJSON(change), before)
+        ),
+      ],
     }).kind;
+  };
 
-const rebasedAt = (
-  { before, change, since }: BatchOrigin,
-  head: JsonEditorValue
+type IncrementalRebaseState = Readonly<{
+  at: JsonEditorValue;
+  count: number;
+  failed: boolean;
+  moved: DocumentChange;
+}>;
+
+const rebasedAtIncremental = (
+  origin: BatchOrigin,
+  head: JsonEditorValue,
+  cache: WeakMap<DocumentChangeJson, IncrementalRebaseState>
 ) => {
-  try {
-    const rebase = rebaseOver(
-      since.map((json) => DocumentChange.fromJSON(json)),
-      DocumentChange.fromJSON(change),
-      before
-    );
+  if (!origin.before) return null;
 
-    return rebase.kind === 'rebased' ? rebase.change.apply(head) : null;
+  try {
+    let state = cache.get(origin.change);
+
+    if (!state || state.count > origin.since.length) {
+      state = {
+        at: origin.before,
+        count: 0,
+        failed: false,
+        moved: DocumentChange.fromJSON(origin.change),
+      };
+    }
+    if (state.failed) return null;
+
+    if (state.count < origin.since.length) {
+      const pending = origin.since
+        .slice(state.count)
+        .map((json) => DocumentChange.fromJSON(json));
+      const rebase = rebaseOver(pending, state.moved, state.at);
+
+      if (rebase.kind !== 'rebased') {
+        cache.set(origin.change, {
+          ...state,
+          count: origin.since.length,
+          failed: true,
+        });
+
+        return null;
+      }
+
+      let nextAt = state.at;
+
+      for (const entry of pending) nextAt = entry.apply(nextAt);
+
+      state = {
+        at: nextAt,
+        count: origin.since.length,
+        failed: false,
+        moved: rebase.change,
+      };
+      cache.set(origin.change, state);
+    }
+
+    return state.moved.apply(head);
   } catch {
     return null;
   }
@@ -90,7 +149,8 @@ const decideAgain = (
   decision: SyncDecision,
   origin: BatchOrigin,
   head: JsonEditorValue,
-  judge: SyncJudge
+  judge: SyncJudge,
+  rebaseCache: WeakMap<DocumentChangeJson, IncrementalRebaseState>
 ): DocumentChange | KeptReason => {
   const rebuilt = decision.atHead(head);
 
@@ -100,7 +160,7 @@ const decideAgain = (
 
   if (kind === 'lost' || kind === 'unjudged') return failed('judge');
   if (decision.decidesStructure) {
-    const rebased = rebasedAt(origin, head);
+    const rebased = rebasedAtIncremental(origin, head, rebaseCache);
     const matches = decision.matchesRebased ?? sameDocument;
 
     if (!rebased || !matches(rebased, rebuilt.apply(head))) {
@@ -116,9 +176,12 @@ export const syncDecider = (
   judge: SyncJudge
 ): SyncDecide => {
   const decisions = new WeakMap<DocumentChangeJson, SyncDecision | null>();
+  const rebaseCache = new WeakMap<DocumentChangeJson, IncrementalRebaseState>();
 
   return (origin, head) => {
     try {
+      if (!origin.before) return MOVED;
+
       let decision = decisions.get(origin.change);
 
       if (decision === undefined) {
@@ -132,7 +195,9 @@ export const syncDecider = (
         decisions.set(origin.change, decision);
       }
 
-      return decision ? decideAgain(decision, origin, head, judge) : MOVED;
+      return decision
+        ? decideAgain(decision, origin, head, judge, rebaseCache)
+        : MOVED;
     } catch {
       return failed('threw');
     }

@@ -74,8 +74,8 @@ export type HistoryJSON = Readonly<{
   redos: readonly HistoryBatchJSON[];
   schema: EditorSchemaIdentity;
   undos: readonly HistoryBatchJSON[];
-  /** 7 for every history this build saves. It still reads 4, 5 and 6. */
-  version: 4 | 5 | 6 | 7;
+  /** 8 for every history this build saves (carrying v4 DocumentChangeJson). */
+  version: 8;
 }>;
 
 export type HistoryBatchJSON = Readonly<{
@@ -92,8 +92,8 @@ export type HistoryBatchJSON = Readonly<{
   /** Only beside `unsettle` on a step whose commit settled a decision's text. */
   rest?: ReturnType<DocumentChange['toJSON']>;
   /**
-   * Only at version 7: the facts of what the step moved, split and joined,
-   * per root, or null when they are unknown. A step with no fact omits it.
+   * The facts of what the step moved, split and joined, per root, or null when
+   * they are unknown. A step with no fact omits it.
    */
   record?: Readonly<Record<string, RootFactsJson>> | null;
   /**

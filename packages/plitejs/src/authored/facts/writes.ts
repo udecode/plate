@@ -1,8 +1,10 @@
 import {
+  bindV4DocumentChange,
   type DocumentChange,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
+  isUnboundV4DocumentChange,
 } from '../../core/change/document-change';
 import type { DocumentIndex } from '../../core/change/document-index';
 import { keptRunsOf, type RootChange } from '../../core/change/root-change';
@@ -756,8 +758,11 @@ const AUTHORED_SETS: ReadonlySet<string> = new Set([
 export const authoredWritesOf = ({
   after,
   before,
-  change,
+  change: rawChange,
 }: AuthoredStep): AuthoredWrites => {
+  const change = isUnboundV4DocumentChange(rawChange)
+    ? bindV4DocumentChange(rawChange, before)
+    : rawChange;
   const headStore = getValueRecords(before);
   const records = getInternalDocumentChangeRecords(change);
   const headFacts = factsOf(before);

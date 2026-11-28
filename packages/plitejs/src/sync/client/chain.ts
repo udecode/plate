@@ -16,6 +16,7 @@ import {
   provenanceOf,
   type SavedBatch,
 } from './outbox';
+import { appendRelevantSince, createScopedOrigin } from './scoped-origin';
 
 export const frameChangeOf = (frame: string) =>
   DocumentChange.fromJSON(JSON.parse(frame).change);
@@ -41,10 +42,15 @@ export const leaving = (
   batch: ShownBatch,
   before: JsonEditorValue | undefined,
   reason: KeptReason | null,
-  records?: ConflictRecords
+  records?: ConflictRecords,
+  gap = false
 ): SavedBatch => {
+  const baseOrigin =
+    batch.origin ??
+    (before &&
+      createScopedOrigin(before, batch.change, batch.decision !== null));
   const origin =
-    batch.origin ?? (before && { before, change: batch.change, since: [] });
+    baseOrigin && gap ? { ...baseOrigin, gap: true as const } : baseOrigin;
   const withOrigin = origin ? { origin } : {};
 
   if (batch.state === 'sent') {
@@ -248,27 +254,29 @@ export const withConflictsOfTeammate = (
     : batches.map((batch) => withConflictsOfLaterEntry(batch, entry));
 
 const crossedOrigin = (
-  { origin }: Readonly<{ origin?: BatchOrigin }>,
+  batch: Readonly<{ decision: SavedBatch['decision']; origin?: BatchOrigin }>,
   change: DocumentChangeJson,
   before: JsonEditorValue,
   carried: DocumentChange
 ): BatchOrigin =>
-  origin
-    ? { ...origin, since: [...origin.since, carried.toJSON()] }
-    : { before, change, since: [carried.toJSON()] };
+  batch.origin
+    ? appendRelevantSince(batch.origin, carried.toJSON(), before)
+    : appendRelevantSince(
+        createScopedOrigin(before, change, batch.decision !== null),
+        carried.toJSON(),
+        before
+      );
 
 export const hiddenPast = (
   batch: SavedBatch,
-  carried: DocumentChange
+  carried: DocumentChange,
+  beforeDoc?: JsonEditorValue
 ): SavedBatch =>
   isShown(batch) || carried.empty || !batch.origin
     ? batch
     : {
         ...batch,
-        origin: {
-          ...batch.origin,
-          since: [...batch.origin.since, carried.toJSON()],
-        },
+        origin: appendRelevantSince(batch.origin, carried.toJSON(), beforeDoc),
       };
 
 export const crossChain = (
@@ -296,7 +304,7 @@ export const crossChain = (
 
   for (const batch of batches) {
     if (!isShown(batch)) {
-      next.push(hiddenPast(batch, carried));
+      next.push(hiddenPast(batch, carried, before));
       continue;
     }
 
@@ -324,11 +332,12 @@ export const crossChain = (
     if (crossed && 'state' in crossed) {
       const rebuilt = DocumentChange.fromJSON(crossed.change);
       const moved = carried.apply(before);
+      const target = rebuilt.apply(moved);
 
       next.push(crossed);
-      carried = sameDocument(rebuilt.apply(moved), after)
+      carried = sameDocument(target, after)
         ? DocumentChange.between(after, after)
-        : own.invert(before).compose(carried, after).compose(rebuilt, after);
+        : DocumentChange.between(after, target);
       before = after;
       continue;
     }

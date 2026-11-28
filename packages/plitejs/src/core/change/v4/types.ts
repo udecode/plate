@@ -66,7 +66,7 @@ export type V4Step =
       writeId: string;
     }>;
 
-export type V4DocumentChangeJson = Readonly<{
+export type DocumentChangeJson = Readonly<{
   records?: RecordOpsJson;
   steps?: readonly V4Step[];
   version: 4;
@@ -563,8 +563,10 @@ export const assertV4Step = (step: unknown): V4Step => {
     }
     case 'delete_root': {
       assertNoExtraKeys(step, new Set(['op', 'root']), step.op);
-      const root = assertSafeV4Key(step.root, 'root');
-      if (root === 'main') {
+      if (typeof step.root !== 'string' || step.root.length === 0) {
+        throw new Error(`Invalid v4 root "${String(step.root)}".`);
+      }
+      if (step.root === 'main') {
         throw new Error('Cannot delete primary root "main".');
       }
       return step as V4Step;

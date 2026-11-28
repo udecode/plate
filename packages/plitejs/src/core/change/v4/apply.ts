@@ -113,6 +113,286 @@ export const fromV4TextStream = (
   return out;
 };
 
+type V4TextRun =
+  | Readonly<{ kind: 'text'; marks: JsonRecord; text: string }>
+  | Readonly<{ kind: 'inline'; node: JsonElementNode }>;
+
+const toV4TextRuns = (
+  children: readonly JsonNode[]
+): Readonly<{
+  emptyLeafMarks: JsonRecord | null;
+  hasInlines: boolean;
+  length: number;
+  runs: V4TextRun[];
+}> => {
+  const runs: V4TextRun[] = [];
+  let hasInlines = false;
+  let emptyLeafMarks: JsonRecord | null = null;
+  let length = 0;
+
+  for (const child of children) {
+    if (isElementNode(child)) {
+      hasInlines = true;
+      length += 1;
+      runs.push({ kind: 'inline', node: child });
+    } else {
+      const { text, ...rawMarks } = child;
+
+      if (text.length === 0) {
+        if (children.length === 1) emptyLeafMarks = cloneJson(rawMarks);
+        continue;
+      }
+      length += text.length;
+      runs.push({ kind: 'text', marks: cloneJson(rawMarks), text });
+    }
+  }
+
+  return { emptyLeafMarks, hasInlines, length, runs };
+};
+
+const fromV4TextRuns = (
+  runs: readonly V4TextRun[],
+  emptyLeafMarks: JsonRecord | null = null
+): JsonNode[] => {
+  if (runs.length === 0) {
+    return [{ ...(emptyLeafMarks ? cloneJson(emptyLeafMarks) : {}), text: '' }];
+  }
+
+  const out: JsonNode[] = [];
+  let hasInlines = false;
+
+  for (const run of runs) {
+    if (run.kind === 'inline') {
+      hasInlines = true;
+      const last = out.at(-1);
+
+      if (!last || isElementNode(last)) out.push({ text: '' });
+      out.push(run.node);
+    } else {
+      if (run.text.length === 0) continue;
+      const prev = out.at(-1);
+
+      if (prev && isTextNode(prev)) {
+        const { text: prevText, ...prevMarks } = prev;
+
+        if (jsonEqual(prevMarks, run.marks)) {
+          (prev as { text: string }).text = prevText + run.text;
+          continue;
+        }
+      }
+      out.push({ ...cloneJson(run.marks), text: run.text });
+    }
+  }
+
+  if (out.length === 0) {
+    return [{ ...(emptyLeafMarks ? cloneJson(emptyLeafMarks) : {}), text: '' }];
+  }
+
+  const tail = out.at(-1);
+
+  if (hasInlines && tail && isElementNode(tail)) {
+    out.push({ text: '' });
+  }
+
+  return out;
+};
+
+export const applyInsertTextToChildren = (
+  children: readonly JsonNode[],
+  offset: number,
+  text: string,
+  rawMarks: JsonRecord | undefined,
+  target: string
+): Readonly<{ children: JsonNode[]; hasInlines: boolean }> => {
+  const { emptyLeafMarks, hasInlines, length, runs } = toV4TextRuns(children);
+
+  if (offset > length) {
+    throw new RangeError(
+      `v4 insert_text offset ${offset} exceeds length ${length} in "${target}".`
+    );
+  }
+  if (text.length === 0) return { children: [...children], hasInlines };
+
+  const marks = rawMarks ? cloneJson(rawMarks) : {};
+  const insertedRun: V4TextRun = { kind: 'text', marks, text };
+  const nextRuns: V4TextRun[] = [];
+  let cursor = 0;
+  let placed = false;
+
+  for (const run of runs) {
+    const runLen = run.kind === 'inline' ? 1 : run.text.length;
+
+    if (!placed && offset <= cursor) {
+      nextRuns.push(insertedRun);
+      placed = true;
+    }
+    if (
+      !placed &&
+      run.kind === 'text' &&
+      offset > cursor &&
+      offset < cursor + runLen
+    ) {
+      const splitAt = offset - cursor;
+
+      nextRuns.push(
+        { kind: 'text', marks: run.marks, text: run.text.slice(0, splitAt) },
+        insertedRun,
+        { kind: 'text', marks: run.marks, text: run.text.slice(splitAt) }
+      );
+      placed = true;
+    } else {
+      nextRuns.push(run);
+    }
+    cursor += runLen;
+  }
+  if (!placed) nextRuns.push(insertedRun);
+
+  return { children: fromV4TextRuns(nextRuns, emptyLeafMarks), hasInlines };
+};
+
+export const applyDeleteTextToChildren = (
+  children: readonly JsonNode[],
+  offset: number,
+  deleteLength: number,
+  target: string
+): Readonly<{
+  children: JsonNode[];
+  hasInlines: boolean;
+  removedInline: boolean;
+}> => {
+  const { emptyLeafMarks, hasInlines, length, runs } = toV4TextRuns(children);
+
+  if (offset + deleteLength > length) {
+    throw new RangeError(
+      `v4 delete_text range [${offset}, ${offset + deleteLength}] exceeds length ${length} in "${target}".`
+    );
+  }
+  if (deleteLength === 0) {
+    return { children: [...children], hasInlines, removedInline: false };
+  }
+
+  const start = offset;
+  const end = offset + deleteLength;
+  const nextRuns: V4TextRun[] = [];
+  let cursor = 0;
+  let removedInline = false;
+
+  for (const run of runs) {
+    const runLen = run.kind === 'inline' ? 1 : run.text.length;
+    const runEnd = cursor + runLen;
+
+    if (runEnd <= start || cursor >= end) {
+      nextRuns.push(run);
+    } else if (run.kind === 'inline') {
+      removedInline = true;
+    } else {
+      if (cursor < start) {
+        nextRuns.push({
+          kind: 'text',
+          marks: run.marks,
+          text: run.text.slice(0, start - cursor),
+        });
+      }
+      if (runEnd > end) {
+        nextRuns.push({
+          kind: 'text',
+          marks: run.marks,
+          text: run.text.slice(end - cursor),
+        });
+      }
+    }
+    cursor = runEnd;
+  }
+
+  return {
+    children: fromV4TextRuns(
+      nextRuns,
+      nextRuns.length === 0 ? null : emptyLeafMarks
+    ),
+    hasInlines,
+    removedInline,
+  };
+};
+
+export const applyFormatTextToChildren = (
+  children: readonly JsonNode[],
+  offset: number,
+  formatLength: number,
+  delta: Extract<V4Step, { op: 'format_text' }>,
+  target: string
+): Readonly<{ children: JsonNode[]; hasInlines: boolean; noop: boolean }> => {
+  const { emptyLeafMarks, hasInlines, length, runs } = toV4TextRuns(children);
+
+  if (formatLength === 0) {
+    if (offset !== 0 || length > 0) {
+      if (offset > length) {
+        throw new RangeError(
+          `v4 format_text offset ${offset} exceeds length ${length} in "${target}".`
+        );
+      }
+
+      return { children: [...children], hasInlines, noop: true };
+    }
+    const nextMarks = applyPropDeltaToRecord(emptyLeafMarks ?? {}, delta);
+
+    return {
+      children: [{ ...nextMarks, text: '' }],
+      hasInlines,
+      noop: false,
+    };
+  }
+
+  if (offset + formatLength > length) {
+    throw new RangeError(
+      `v4 format_text range [${offset}, ${offset + formatLength}] exceeds length ${length} in "${target}".`
+    );
+  }
+
+  const start = offset;
+  const end = offset + formatLength;
+  const nextRuns: V4TextRun[] = [];
+  let cursor = 0;
+
+  for (const run of runs) {
+    const runLen = run.kind === 'inline' ? 1 : run.text.length;
+    const runEnd = cursor + runLen;
+
+    if (run.kind === 'inline' || runEnd <= start || cursor >= end) {
+      nextRuns.push(run);
+    } else {
+      const cutStart = Math.max(0, start - cursor);
+      const cutEnd = Math.min(runLen, end - cursor);
+
+      if (cutStart > 0) {
+        nextRuns.push({
+          kind: 'text',
+          marks: run.marks,
+          text: run.text.slice(0, cutStart),
+        });
+      }
+      nextRuns.push({
+        kind: 'text',
+        marks: applyPropDeltaToRecord(run.marks, delta),
+        text: run.text.slice(cutStart, cutEnd),
+      });
+      if (cutEnd < runLen) {
+        nextRuns.push({
+          kind: 'text',
+          marks: run.marks,
+          text: run.text.slice(cutEnd),
+        });
+      }
+    }
+    cursor = runEnd;
+  }
+
+  return {
+    children: fromV4TextRuns(nextRuns, emptyLeafMarks),
+    hasInlines,
+    noop: false,
+  };
+};
+
 export const elementStreamLength = (node: JsonElementNode): number => {
   let length = 0;
 
@@ -485,30 +765,17 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
       }
 
       const prevChildren = loc.node.children;
-      const stream = toV4TextStream(prevChildren);
-
-      if (step.offset > stream.units.length) {
-        throw new RangeError(
-          `v4 insert_text offset ${step.offset} exceeds length ${stream.units.length} in "${step.target}".`
-        );
-      }
-
-      const marks = step.marks ? cloneJson(step.marks) : {};
-      const inserted: V4TextUnit[] = [];
-
-      for (let i = 0; i < step.text.length; i += 1) {
-        inserted.push({
-          ch: step.text.charAt(i),
-          kind: 'char',
-          marks: cloneJson(marks),
-        });
-      }
-      stream.units.splice(step.offset, 0, ...inserted);
-      (loc.node as { children: JsonNode[] }).children = fromV4TextStream(
-        stream.units,
-        stream.emptyLeafMarks
+      const inserted = applyInsertTextToChildren(
+        prevChildren,
+        step.offset,
+        step.text,
+        step.marks,
+        step.target
       );
-      if (stream.hasInlines) {
+
+      if (step.text.length === 0) return;
+      (loc.node as { children: JsonNode[] }).children = inserted.children;
+      if (inserted.hasInlines) {
         reindexChildren(
           state.idMap,
           loc.root,
@@ -529,21 +796,16 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
       }
 
       const prevChildren = loc.node.children;
-      const stream = toV4TextStream(prevChildren);
-
-      if (step.offset + step.length > stream.units.length) {
-        throw new RangeError(
-          `v4 delete_text range [${step.offset}, ${step.offset + step.length}] exceeds length ${stream.units.length} in "${step.target}".`
-        );
-      }
-
-      const removed = stream.units.splice(step.offset, step.length);
-
-      (loc.node as { children: JsonNode[] }).children = fromV4TextStream(
-        stream.units,
-        stream.units.length === 0 ? null : stream.emptyLeafMarks
+      const deleted = applyDeleteTextToChildren(
+        prevChildren,
+        step.offset,
+        step.length,
+        step.target
       );
-      if (stream.hasInlines || removed.some((u) => u.kind === 'inline')) {
+
+      if (step.length === 0) return;
+      (loc.node as { children: JsonNode[] }).children = deleted.children;
+      if (deleted.hasInlines || deleted.removedInline) {
         reindexChildren(
           state.idMap,
           loc.root,
@@ -564,50 +826,17 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
       }
 
       const prevChildren = loc.node.children;
-      const stream = toV4TextStream(prevChildren);
-
-      if (step.length === 0) {
-        if (step.offset !== 0 || stream.units.length > 0) {
-          if (step.offset > stream.units.length) {
-            throw new RangeError(
-              `v4 format_text offset ${step.offset} exceeds length ${stream.units.length} in "${step.target}".`
-            );
-          }
-          return;
-        }
-        const nextMarks = applyPropDeltaToRecord(
-          stream.emptyLeafMarks ?? {},
-          step
-        );
-
-        (loc.node as { children: JsonNode[] }).children = [
-          { ...nextMarks, text: '' },
-        ];
-        return;
-      }
-
-      if (step.offset + step.length > stream.units.length) {
-        throw new RangeError(
-          `v4 format_text range [${step.offset}, ${step.offset + step.length}] exceeds length ${stream.units.length} in "${step.target}".`
-        );
-      }
-
-      for (let i = step.offset; i < step.offset + step.length; i += 1) {
-        const unit = stream.units[i];
-
-        if (unit.kind !== 'char') continue;
-        stream.units[i] = {
-          ch: unit.ch,
-          kind: 'char',
-          marks: applyPropDeltaToRecord(unit.marks, step),
-        };
-      }
-
-      (loc.node as { children: JsonNode[] }).children = fromV4TextStream(
-        stream.units,
-        stream.emptyLeafMarks
+      const formatted = applyFormatTextToChildren(
+        prevChildren,
+        step.offset,
+        step.length,
+        step,
+        step.target
       );
-      if (stream.hasInlines) {
+
+      if (formatted.noop) return;
+      (loc.node as { children: JsonNode[] }).children = formatted.children;
+      if (formatted.hasInlines) {
         reindexChildren(
           state.idMap,
           loc.root,
@@ -974,44 +1203,62 @@ export const applyV4StepToState = (state: MutableV4State, step: V4Step) => {
     }
 
     case 'set_register': {
-      const current = readRecord(
-        getRecordSetVersion(state.records, step.set),
-        step.id
-      );
-      const currentWriteId =
-        isRecord(current) && typeof current.writeId === 'string'
-          ? current.writeId
-          : null;
-
-      if (
-        step.expectedWriteId !== undefined &&
-        currentWriteId !== step.expectedWriteId
-      ) {
-        return;
-      }
-
-      state.records =
-        step.after === null
-          ? applyRecordOps(state.records, recordDrop(step.set, step.id))
-          : applyRecordOps(
-              applyRecordOps(state.records, recordDrop(step.set, step.id)),
-              new Map([
-                [
-                  step.set,
-                  new Map([
-                    [
-                      step.id,
-                      canonicalRecordJson({
-                        encoded: step.after,
-                        writeId: step.writeId,
-                      }),
-                    ],
-                  ]),
-                ],
-              ])
-            );
+      state.records = applyV4RegisterStep(state.records, step);
     }
   }
+};
+
+const applyV4RegisterStep = (
+  records: RecordStore,
+  step: Extract<V4Step, { op: 'set_register' }>
+): RecordStore => {
+  const current = readRecord(getRecordSetVersion(records, step.set), step.id);
+  const currentWriteId =
+    isRecord(current) && typeof current.writeId === 'string'
+      ? current.writeId
+      : null;
+
+  if (
+    step.expectedWriteId !== undefined &&
+    currentWriteId !== step.expectedWriteId
+  ) {
+    return records;
+  }
+
+  return step.after === null
+    ? applyRecordOps(records, recordDrop(step.set, step.id))
+    : applyRecordOps(
+        applyRecordOps(records, recordDrop(step.set, step.id)),
+        new Map([
+          [
+            step.set,
+            new Map([
+              [
+                step.id,
+                canonicalRecordJson({
+                  encoded: step.after,
+                  writeId: step.writeId,
+                }),
+              ],
+            ]),
+          ],
+        ])
+      );
+};
+
+export const applyV4RegisterSteps = (
+  records: RecordStore,
+  steps: readonly V4Step[]
+): RecordStore => {
+  let next = records;
+
+  for (const step of steps) {
+    if (step.op !== 'set_register') continue;
+    assertV4Step(step);
+    next = applyV4RegisterStep(next, step);
+  }
+
+  return next;
 };
 
 export const applyV4Steps = <T extends JsonEditorValue>(

@@ -1,6 +1,8 @@
 import {
+  bindV4DocumentChange,
   DocumentChange,
   type DocumentChangeJson,
+  getV4Steps,
 } from '../../core/change/document-change';
 import {
   type SetValued,
@@ -63,13 +65,14 @@ import type {
   StoredRoom,
   SyncStorage,
 } from './storage';
+import type { LaterEntry } from './take-back';
+import { checkV4Admission } from './v4-admission';
 import {
-  type LaterEntry,
-  ownTakeBack,
-  putAllIndexOf,
-  putEntryAt,
-  takeBack,
-} from './take-back';
+  v4OwnTakeBack,
+  v4PutAllIndexOf,
+  v4PutEntryAt,
+  v4TakeBack,
+} from './v4-take-back';
 
 const IDLE_MS = 60_000;
 const CHECKPOINT_EVERY = 256;
@@ -167,6 +170,10 @@ export type SyncServerOptions<
   authored: SyncAuthored;
   /** A fresh headless editor with the schema every tab of the room uses. */
   editor: () => Editor<V, TPlugins>;
+  /**
+   * Optional checkpoint interval in entries (default 256).
+   */
+  checkpointEvery?: number;
   /**
    * The most bytes of change JSON the room logs in one entry, at most and by
    * default `SYNC_MAX_MESSAGE_BYTES`.
@@ -280,6 +287,7 @@ export const createSyncServer = <
 >({
   authorize,
   authored,
+  checkpointEvery = CHECKPOINT_EVERY,
   editor: createEditor,
   maxChangeBytes = SYNC_MAX_MESSAGE_BYTES,
   storage,
@@ -604,7 +612,7 @@ export const createSyncServer = <
 
     if (!entries) return 'grant';
 
-    const index = putAllIndexOf(
+    const index = v4PutAllIndexOf(
       entries.map(({ change }) => change),
       cover.set,
       cover.verdicts
@@ -612,8 +620,8 @@ export const createSyncServer = <
 
     if (index === null || entries[index].writer !== writer) return 'grant';
 
-    const change = takeBack(
-      putEntryAt(entries, index),
+    const change = v4TakeBack(
+      v4PutEntryAt(entries, index),
       room.value,
       getCompiledEditorSchema(room.editor)
     );
@@ -636,7 +644,7 @@ export const createSyncServer = <
     const entries = await recentEntries(room);
     const change =
       entries &&
-      ownTakeBack(
+      v4OwnTakeBack(
         entries,
         writer,
         grant,
@@ -740,9 +748,13 @@ export const createSyncServer = <
 
     if (source === 'peer' && writer === SERVER_WRITER) return refuse('writer');
 
-    const bound = await storage.mark(room.name, writer);
+    const writerMark = await storage.mark(room.name, writer);
 
-    if (source === 'peer' && bound && bound.actor !== member.grant.actor) {
+    if (
+      source === 'peer' &&
+      writerMark &&
+      writerMark.actor !== member.grant.actor
+    ) {
       return refuse('writer');
     }
 
@@ -787,11 +799,15 @@ export const createSyncServer = <
     if (skipsOwnEntry) return refuse('invalid');
 
     const accepted = gap.map((entry) => entry.change);
+    let rebasedSatisfied = false;
     const rebased = () => {
       const rebase = attempt(() => rebaseOver(accepted, change, baseValue));
 
       if (!rebase) return 'invalid';
+      if (rebase.kind === 'v4-escalation') return 'lost';
       if (rebase.kind !== 'rebased') return rebase.kind;
+
+      rebasedSatisfied = rebase.satisfied;
 
       const moved = rebase.change;
 
@@ -824,6 +840,9 @@ export const createSyncServer = <
       cover?.kind === 'at-head'
         ? attempt(() => authored.covers(judged, member.grant, schema))
         : cover;
+    const isTakeBack =
+      judgedCover?.kind === 'takes-back' ||
+      (judgedCover?.kind === 'refused' && judgedCover.why.kind === 'uncovered');
     const covered =
       judgedCover?.kind === 'takes-back'
         ? await takenBackStepOf(room, judgedCover, judged, member.grant, writer)
@@ -847,18 +866,33 @@ export const createSyncServer = <
       source === 'server'
         ? { actor: SERVER_WRITER, writer: SERVER_WRITER }
         : { actor: member.grant.actor, writer };
-    const judge = () =>
-      judgeSpan({
-        accepted: accepted.map(viewOfChange),
+    const judgeDecision = () => {
+      let cursor = baseValue;
+      const boundAccepted = accepted.map((entry) => {
+        const bound = bindV4DocumentChange(entry, cursor);
+
+        cursor = bound.apply(cursor);
+        return viewOfChange(bound);
+      });
+      const ownChange = covered.judge?.own ?? change;
+      const mergedChange = covered.judge?.merged ?? logged;
+
+      return judgeSpan({
+        accepted: boundAccepted,
         base: baseValue,
         head: room.head,
         isSetValued: room.isSetValued,
-        merged: [viewOfChange(covered.judge?.merged ?? logged)],
-        own: [viewOfChange(covered.judge?.own ?? change)],
+        merged: [viewOfChange(bindV4DocumentChange(mergedChange, cursor))],
+        own: [viewOfChange(bindV4DocumentChange(ownChange, baseValue))],
       }).kind;
+    };
 
     if (logged.empty) {
-      if (judge() !== 'held') return refuse('lost');
+      const emptyHeld = covered.judge
+        ? judgeDecision() === 'held'
+        : gap.length === 0 || change.empty || rebasedSatisfied;
+
+      if (!emptyHeld) return refuse('lost');
 
       await storage.settle(room.name, {
         mark,
@@ -873,7 +907,11 @@ export const createSyncServer = <
         writer,
       };
     }
-    if (gap.length > 0 && dispositionOf(judge(), 'live') !== 'send') {
+    if (
+      gap.length > 0 &&
+      covered.judge &&
+      dispositionOf(judgeDecision(), 'live') !== 'send'
+    ) {
       return refuse('lost');
     }
 
@@ -882,12 +920,32 @@ export const createSyncServer = <
     if (admission.kind === 'refused') return refuse(admission.reason);
 
     const { bytes, headValue, published } = admission;
+    const version = room.head + 1;
+    const v4Check = await checkV4Admission({
+      after: headValue,
+      before: room.value,
+      grant: member.grant,
+      isRoomDecisionReplay: covered.judge !== undefined,
+      isTakeBack,
+      roomName: room.name,
+      source,
+      steps: getV4Steps(logged) ?? published.steps ?? [],
+      storage,
+      version,
+      writer,
+    });
+
+    if (!v4Check.ok) {
+      renewEditor(room);
+
+      return refuse(v4Check.reason);
+    }
+
     const rewritten =
       admission.text === JSON.stringify(submit.change) ? {} : { published };
-    const version = room.head + 1;
     const at = Date.now();
     const due =
-      version - room.checkpointed >= CHECKPOINT_EVERY ||
+      version - room.checkpointed >= checkpointEvery ||
       room.logged + bytes >= CHECKPOINT_BYTES;
 
     room.floor = await storage.settle(room.name, {
@@ -899,10 +957,17 @@ export const createSyncServer = <
             },
           }
         : {}),
+      ...(v4Check.deletedIds.length > 0
+        ? { deletedIds: v4Check.deletedIds }
+        : {}),
       entry: { at, bytes, change: published, seq, version, writer },
       mark,
       owners: covered.owners,
       receipt: { digest, key, status: 'accepted', version, ...rewritten },
+      ...(v4Check.restoredIds.length > 0
+        ? { restoredIds: v4Check.restoredIds }
+        : {}),
+      ...(v4Check.scopes.length > 0 ? { scopes: v4Check.scopes } : {}),
     });
 
     room.head = version;

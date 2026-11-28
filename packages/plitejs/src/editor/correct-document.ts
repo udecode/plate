@@ -1,6 +1,10 @@
 import {
+  getAttachedV4Steps,
   getInternalDocumentChangeClassification,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
+  isUnboundV4DocumentChange,
   type DocumentChange,
 } from '../core/change/document-change';
 import {
@@ -378,9 +382,27 @@ export const correctDocument = (
 
       if (changes.length === 0) return;
 
+      const fingerprintChange = (change: DocumentChange) => {
+        if (isUnboundV4DocumentChange(change)) {
+          return {
+            records: [...getInternalDocumentChangeRecords(change)],
+            steps: getAttachedV4Steps(change) ?? [],
+          };
+        }
+
+        return {
+          createRoots: [...change.createRoots],
+          deleteRoots: [...change.deleteRoots],
+          records: [...getInternalDocumentChangeRecords(change)],
+          roots: [...getInternalDocumentChangeEntries(change)].map(
+            ([rootName, rootChange]) => [rootName, rootChange.toJSON()]
+          ),
+        };
+      };
+
       const transitionFingerprint = `${key}\u0000${fingerprintValue(
         beforeState
-      )}\u0000${fingerprintValue(changes.map((change) => change.toJSON()))}`;
+      )}\u0000${fingerprintValue(changes.map(fingerprintChange))}`;
       const previousStep = seenTransitions.get(transitionFingerprint);
 
       if (previousStep !== undefined) {

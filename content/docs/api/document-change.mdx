@@ -20,13 +20,15 @@ anchors, corrections, and view invalidation:
 - `apply(value)`
 - `compose(other)`
 - `invert(value)`
-- `mapPosition(position, { root, association, track })`
-- `iterChangedRanges(visit)`
+- `mapPosition(position, { base, root, association, track })`
+- `iterChangedRanges(visit, { base })`
 - `toJSON()` and `DocumentChange.fromJSON(json)`
 
-The compact per-root representation is private. Omit `root` when mapping a
+The compact per-root position representation is private. Omit `root` when mapping a
 primary-document position. Explicit root strings always address named
-secondary roots.
+secondary roots. In-memory committed changes carry their own position map;
+decoded ID-only v4 changes require `base` when calling `mapPosition` or
+`iterChangedRanges`.
 
 ```typescript
 const mapped = change.mapPosition(position, {
@@ -37,18 +39,23 @@ const mappedHeader = change.mapPosition(position, {
   association: "backward",
   root: "header",
 });
+
+const decoded = DocumentChange.fromJSON(message.change);
+const mappedDecoded = decoded.mapPosition(position, {
+  association: "forward",
+  base: previousValue,
+});
 ```
 
-`toJSON()` writes version 3 with optional `primary` and `roots` fields. An
-omitted `roots` object and an empty `roots` object describe the same document
-change.
+`toJSON()` writes version 4 with optional `steps` (ID-addressed block, text,
+inline-wrap, root-lifecycle, and register operations) and `records` fields.
 
 `iterChangedRanges` reports `root: null` for the primary document and a string
-for a named root.
+for a named root. Pass `{ base }` when calling it on a decoded v4 change.
 
 `DocumentChange.transform(a, b, value)` rebases two changes from the same value
-for pairwise convergence, including history rebasing. Multi-peer ordering belongs
-to a collaboration adapter such as Yjs.
+for pairwise convergence using first-wins conflict resolution (returning a
+compensating `a` on conflict so both replay orders reach the same document).
 
 ## Apply a stored or remote change
 

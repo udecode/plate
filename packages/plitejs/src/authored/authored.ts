@@ -2367,7 +2367,109 @@ export const createAuthoredPlugin = (
       };
       onCleanup(
         registerEditorDocumentRecorder(editor, (input) => {
-          if (isReplay(input.tags)) return null;
+          if (isReplay(input.tags)) {
+            const preview = builtPlacements.get(getPlacementGeneration(owner));
+
+            if (
+              preview &&
+              input.selectionBefore?.kind === 'text' &&
+              input.selection?.kind === 'text' &&
+              input.selectionRoot === input.selectionBeforeRoot &&
+              RangeApi.isCollapsed(input.selectionBefore) &&
+              RangeApi.isCollapsed(input.selection) &&
+              input.selection.affinity === 'forward'
+            ) {
+              const root = input.selectionRoot;
+              const shownBefore = ledger
+                .lens(input.before, preview)
+                .toView(input.selectionBefore, root, true);
+
+              if (
+                shownBefore?.kind === 'text' &&
+                RangeApi.isCollapsed(shownBefore)
+              ) {
+                const targetBlockPath = shownBefore.focus.path.slice(0, -1);
+                const afterBlockPath = input.selection.focus.path.slice(0, -1);
+                const parentPath = targetBlockPath.slice(0, -1);
+                const targetIndex = targetBlockPath.at(-1);
+                const afterIndex = afterBlockPath.at(-1);
+
+                if (
+                  targetIndex !== undefined &&
+                  afterIndex !== undefined &&
+                  targetIndex === afterIndex + 1 &&
+                  PathApi.equals(parentPath, afterBlockPath.slice(0, -1))
+                ) {
+                  const walk = (
+                    nodes: readonly JsonNode[],
+                    path: readonly number[]
+                  ): JsonNode | undefined => {
+                    let cur: JsonNode | undefined;
+                    let list: readonly JsonNode[] | undefined = nodes;
+
+                    for (const seg of path) {
+                      cur = list?.[seg];
+                      list = cur?.children;
+                    }
+
+                    return cur;
+                  };
+                  const afterRoot = valueRoot(input.after, root);
+                  const beforeRoot = valueRoot(input.before, root);
+                  const afterParent =
+                    parentPath.length === 0
+                      ? afterRoot
+                      : (walk(afterRoot, parentPath)?.children ?? []);
+                  const beforeParent =
+                    parentPath.length === 0
+                      ? beforeRoot
+                      : (walk(beforeRoot, parentPath)?.children ?? []);
+                  const materialized = afterParent[targetIndex];
+                  const prevBlock = afterParent[afterIndex];
+                  const beforeSame = beforeParent[targetIndex];
+                  const firstChild = materialized?.children?.[0];
+                  const prevText = prevBlock
+                    ? walk(
+                        [prevBlock],
+                        [
+                          0,
+                          ...input.selection.focus.path.slice(
+                            afterBlockPath.length
+                          ),
+                        ]
+                      )
+                    : undefined;
+
+                  if (
+                    firstChild &&
+                    typeof firstChild.text === 'string' &&
+                    prevText &&
+                    typeof prevText.text === 'string' &&
+                    input.selection.focus.offset === prevText.text.length &&
+                    materialized &&
+                    (!beforeSame ||
+                      (beforeSame as { id?: unknown }).id !==
+                        (materialized as { id?: unknown }).id)
+                  ) {
+                    const point = {
+                      offset: 0,
+                      path: [...targetBlockPath, 0],
+                    };
+
+                    return {
+                      change: input.change,
+                      selection: SelectionApi.text({
+                        anchor: point,
+                        focus: point,
+                      }),
+                    };
+                  }
+                }
+              }
+            }
+
+            return null;
+          }
           // A reconfiguration's own write applies as written, and recording
           // it would rebuild the document from one the old schema validated.
           if (

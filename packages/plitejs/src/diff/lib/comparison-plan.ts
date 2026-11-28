@@ -1,7 +1,11 @@
 import type { EditorStateSchemaApi } from '../..';
 import {
-  DocumentChange,
-  type DocumentChangeJson,
+  attachLazyV4Steps,
+  bindV4DocumentChange,
+  createInternalDocumentChange,
+  type DocumentChange,
+  getInternalDocumentChangeEntries,
+  isUnboundV4DocumentChange,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
 import { cloneFrozen, jsonEqual } from '../../core/change/json';
@@ -862,15 +866,21 @@ const walkPlan = (input: PlanInput): ComparisonPlan => {
         .map(({ root }) => root);
     const createRoots = flags('create');
     const deleteRoots = flags('delete');
-    const json: DocumentChangeJson = {
-      ...(createRoots.length > 0 ? { createRoots } : {}),
-      ...(deleteRoots.length > 0 ? { deleteRoots } : {}),
-      ...(primary ? { primary } : {}),
-      ...(named.length > 0 ? { roots: Object.fromEntries(named) } : {}),
-      version: 3,
-    };
+    const rootChanges = new Map<string, RootChange>();
 
-    return DocumentChange.fromJSON(json);
+    if (primary) rootChanges.set('main', RootChange.fromJSON(primary));
+    for (const [root, rootChange] of named) {
+      rootChanges.set(root, RootChange.fromJSON(rootChange));
+    }
+
+    const selected = createInternalDocumentChange(rootChanges, {
+      createRoots,
+      deleteRoots,
+    });
+
+    attachLazyV4Steps(selected, before, selected.apply(before));
+
+    return selected;
   };
   const change = select('all');
   const plan: ComparisonPlan = Object.freeze({
@@ -974,10 +984,28 @@ export const comparisonPlanOf = (
       groups: comparison.changes,
     });
 
-    if (
-      !jsonEqual(plan.change.toJSON(), comparison.change.toJSON()) ||
-      !sameChanges(plan, comparison.changes)
-    ) {
+    const rootEntriesJson = (change: DocumentChange) => ({
+      createRoots: [...change.createRoots].sort(),
+      deleteRoots: [...change.deleteRoots].sort(),
+      roots: [...getInternalDocumentChangeEntries(change)]
+        .map(([root, rootChange]) => [root, rootChange.toJSON()] as const)
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+    });
+
+    const expectedMatches = isUnboundV4DocumentChange(comparison.change)
+      ? jsonEqual(
+          bindV4DocumentChange(
+            comparison.change,
+            comparison.before.document
+          ).apply(comparison.before.document),
+          plan.change.apply(comparison.before.document)
+        )
+      : jsonEqual(
+          rootEntriesJson(plan.change),
+          rootEntriesJson(comparison.change)
+        );
+
+    if (!expectedMatches || !sameChanges(plan, comparison.changes)) {
       return null;
     }
     PLANS.set(comparison.change, plan);

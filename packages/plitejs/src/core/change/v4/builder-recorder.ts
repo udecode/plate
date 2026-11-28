@@ -94,6 +94,10 @@ export class V4BuilderRecorder {
     return this.steps !== null;
   }
 
+  get stepCount(): number {
+    return this.steps?.length ?? 0;
+  }
+
   get recorded(): readonly V4Step[] | null {
     if (this.steps === null || this.pending.length > 0) return null;
 

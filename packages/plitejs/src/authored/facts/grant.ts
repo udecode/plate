@@ -1,4 +1,8 @@
-import type { DocumentChange } from '../../core/change/document-change';
+import {
+  bindV4DocumentChange,
+  type DocumentChange,
+  isUnboundV4DocumentChange,
+} from '../../core/change/document-change';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import { rootsOwnedOnlyWithin } from '../../core/element-owned-root-index';
 import {
@@ -559,10 +563,22 @@ const decisionCover = (
 
   if (!decided) return { kind: 'stale' };
 
+  const boundGap: DocumentChange[] = [];
+  let gapCursor = step.before;
+
+  for (const entry of head.gap) {
+    const bound = isUnboundV4DocumentChange(entry)
+      ? bindV4DocumentChange(entry, gapCursor)
+      : entry;
+
+    boundGap.push(bound);
+    gapCursor = bound.apply(gapCursor);
+  }
+
   const change = keepingGapSpares(
     decided.change,
     step.before,
-    head.gap,
+    boundGap,
     head.value
   );
 
@@ -770,17 +786,20 @@ export function grantCovers(
   schema: CompiledEditorSchema,
   head?: SyncHead
 ): Cover | SyncAtHead {
-  const batch = verdictBatchOf(step.change);
+  const boundStep: AuthoredStep = isUnboundV4DocumentChange(step.change)
+    ? { ...step, change: bindV4DocumentChange(step.change, step.before) }
+    : step;
+  const batch = verdictBatchOf(boundStep.change);
 
   if (batch === null) {
     return head === undefined
-      ? ordinaryCover(step, grant, schema)
+      ? ordinaryCover(boundStep, grant, schema)
       : { kind: 'at-head' };
   }
   if (typeof batch === 'string') {
     return { kind: 'refused', why: { kind: batch } };
   }
-  if ('drops' in batch) return takeBackCover(step, batch);
+  if ('drops' in batch) return takeBackCover(boundStep, batch);
 
-  return decisionCover(step, batch, grant, schema, head);
+  return decisionCover(boundStep, batch, grant, schema, head);
 }

@@ -18,8 +18,8 @@ const isInteger = (value: unknown): value is number =>
 const isCount = (value: unknown): value is number =>
   isInteger(value) && value >= 0;
 
-const isVersion3Change = (value: unknown): value is DocumentChangeJson =>
-  isRecord(value) && value.version === 3;
+const isVersion4Change = (value: unknown): value is DocumentChangeJson =>
+  isRecord(value) && value.version === 4;
 
 export const readClientMessage = (
   data: string
@@ -53,7 +53,7 @@ export const readClientMessage = (
     if (typeof writer !== 'string' || !isInteger(seq)) return null;
 
     return isCount(base) &&
-      isVersion3Change(change) &&
+      isVersion4Change(change) &&
       typeof digest === 'string' &&
       isCount(seq) &&
       writer.length <= MAX_WRITER_LENGTH

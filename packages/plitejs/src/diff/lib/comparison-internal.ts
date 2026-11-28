@@ -1,7 +1,17 @@
-import type { EditorDocumentValue, EditorStateSchemaApi, Value } from '../..';
+import type {
+  DocumentChange,
+  EditorDocumentValue,
+  EditorStateSchemaApi,
+  Value,
+} from '../..';
+import {
+  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRecords,
+} from '../../core/change/document-change';
 import { jsonEqual } from '../../core/change/json';
 import { isElementNode, type JsonNode } from '../../core/change/tokens';
 import { fingerprintEditorJson } from '../../core/json-fingerprint';
+import { recordOpsToJson } from '../../core/record-store';
 import { storedElementIdOf } from '../../core/stored-element-id';
 import { snapshotEditorJsonValue } from '../../core/value-codec';
 import type { ComparisonDocumentIndex } from './comparison-index';
@@ -44,6 +54,23 @@ export const stableStringify = (value: unknown): string => {
 };
 
 export const comparisonHash = (value: unknown) => fingerprintEditorJson(value);
+
+export const comparisonChangeHashPayload = (change: DocumentChange) => {
+  try {
+    return change.toJSON();
+  } catch {
+    const records = getInternalDocumentChangeRecords(change);
+
+    return {
+      createRoots: [...change.createRoots].sort(),
+      deleteRoots: [...change.deleteRoots].sort(),
+      ...(records.size > 0 ? { records: recordOpsToJson(records) } : {}),
+      roots: [...getInternalDocumentChangeEntries(change)]
+        .map(([root, rootChange]) => [root, rootChange.toJSON()] as const)
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+    };
+  }
+};
 
 export const detachComparisonEnvelope = (input: unknown): string | null => {
   if (Array.isArray(input) || typeof input !== 'object' || input === null) {

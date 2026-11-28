@@ -17,7 +17,6 @@ import {
   applyV4Steps,
   elementStreamLength,
   isTextBearingElement,
-  toV4TextStream,
 } from './apply';
 import {
   isTextStep,
@@ -241,34 +240,29 @@ const inlineIdsInRange = (
   offset: number,
   length: number
 ): string[] => {
-  const stream = toV4TextStream(node.children);
   const ids: string[] = [];
-  const end = Math.min(offset + length, stream.units.length);
+  const end = offset + length;
+  let cursor = 0;
 
-  for (let i = offset; i < end; i += 1) {
-    const unit = stream.units[i];
-
-    if (unit && unit.kind === 'inline' && typeof unit.node.id === 'string') {
-      ids.push(unit.node.id);
+  for (const child of node.children) {
+    if (cursor >= end) break;
+    if (isElementNode(child)) {
+      if (cursor >= offset && typeof child.id === 'string') {
+        ids.push(child.id);
+      }
+      cursor += 1;
+    } else {
+      cursor += child.text.length;
     }
   }
 
   return ids;
 };
 
-const computeSplitPropsFixup = (
-  beforeProps: JsonRecord,
-  inheritedOverride: Readonly<JsonRecord> | undefined,
-  desiredOverride: Readonly<JsonRecord> | undefined
+const computeSplitPropsDiff = (
+  inherited: Readonly<JsonRecord>,
+  desired: Readonly<JsonRecord>
 ): Readonly<{ props?: JsonRecord; unset?: readonly string[] }> => {
-  const inherited: JsonRecord = {
-    ...beforeProps,
-    ...(inheritedOverride ? cloneJson(inheritedOverride) : {}),
-  };
-  const desired: JsonRecord = {
-    ...beforeProps,
-    ...(desiredOverride ? cloneJson(desiredOverride) : {}),
-  };
   const props: JsonRecord = {};
   const unset: string[] = [];
 
@@ -289,6 +283,23 @@ const computeSplitPropsFixup = (
     ...(Object.keys(props).length > 0 ? { props } : {}),
     ...(unset.length > 0 ? { unset: unset.sort() } : {}),
   };
+};
+
+const computeSplitPropsFixup = (
+  beforeProps: JsonRecord,
+  inheritedOverride: Readonly<JsonRecord> | undefined,
+  desiredOverride: Readonly<JsonRecord> | undefined
+): Readonly<{ props?: JsonRecord; unset?: readonly string[] }> => {
+  const inherited: JsonRecord = {
+    ...beforeProps,
+    ...(inheritedOverride ? cloneJson(inheritedOverride) : {}),
+  };
+  const desired: JsonRecord = {
+    ...beforeProps,
+    ...(desiredOverride ? cloneJson(desiredOverride) : {}),
+  };
+
+  return computeSplitPropsDiff(inherited, desired);
 };
 
 const placeWithIndex = (place: V4Place, index: number): V4Place =>
@@ -697,7 +708,52 @@ const transformSplitWithOther = (
   }
 
   if (other.op === 'join_nodes') {
-    if (other.target === split.id || other.source === split.id) {
+    if (other.target === split.id) {
+      const targetInfo = doc.elements.get(other.target);
+      const sourceInfo = doc.elements.get(other.source);
+
+      if (
+        targetInfo &&
+        sourceInfo &&
+        isTextBearingElement(targetInfo.node) ===
+          isTextBearingElement(sourceInfo.node)
+      ) {
+        return wrapResult([split], [{ ...other, target: split.newId }]);
+      }
+
+      return { ok: false, reason: 'not-adjacent' };
+    }
+    if (other.source === split.id) {
+      const targetInfo = doc.elements.get(other.target);
+
+      if (targetInfo && isTextBearingElement(targetInfo.node) === textBearing) {
+        const joinOffset = textBearing
+          ? elementStreamLength(targetInfo.node)
+          : targetInfo.node.children.length;
+        const desiredRight: JsonRecord = {
+          ...nodeProps(splitInfo.node),
+          ...(split.props ? cloneJson(split.props) : {}),
+        };
+        const fix = computeSplitPropsDiff(
+          nodeProps(targetInfo.node),
+          desiredRight
+        );
+        const splitPrime: V4Step[] = [
+          {
+            at: joinOffset + split.at,
+            id: other.target,
+            newId: split.newId,
+            op: 'split_node',
+            ...(fix.props ? { props: fix.props } : {}),
+          },
+          ...(fix.unset
+            ? [{ id: split.newId, op: 'set_props' as const, unset: fix.unset }]
+            : []),
+        ];
+
+        return wrapResult(splitPrime, [other]);
+      }
+
       return { ok: false, reason: 'not-adjacent' };
     }
     const sourceInfo = doc.elements.get(other.source);
@@ -828,6 +884,32 @@ const transformJoinWithOther = (
   if (other.op === 'join_nodes') {
     if (other.target === join.target && other.source === join.source) {
       return { aPrime: [], bOutcome: 'satisfied', bPrime: [], ok: true };
+    }
+    if (other.target === join.source && other.source !== join.target) {
+      const otherSourceInfo = doc.elements.get(other.source);
+
+      if (
+        otherSourceInfo &&
+        isTextBearingElement(otherSourceInfo.node) === textBearing
+      ) {
+        return wrapResult(
+          [join],
+          [{ op: 'join_nodes', source: other.source, target: join.target }]
+        );
+      }
+    }
+    if (other.source === join.target && other.target !== join.source) {
+      const otherTargetInfo = doc.elements.get(other.target);
+
+      if (
+        otherTargetInfo &&
+        isTextBearingElement(otherTargetInfo.node) === textBearing
+      ) {
+        return wrapResult(
+          [{ op: 'join_nodes', source: join.source, target: other.target }],
+          [other]
+        );
+      }
     }
     if (
       other.target === join.target ||
@@ -2001,10 +2083,8 @@ const transformStepArrays = (
 };
 
 /**
- * Full 2D multi-step OT diamond tracking exact cell documents and real
- * per-original-step outcomes (`applied` | `satisfied`). Private Step 3 entry
- * point; wired into public `DocumentChange.transform` and internal
- * `rebaseDocumentChange` in Step 5.
+ * Full 2D multi-step OT diamond tracking exact cell documents and
+ * per-original-step outcomes (`applied` | `satisfied`).
  *
  * @internal
  */

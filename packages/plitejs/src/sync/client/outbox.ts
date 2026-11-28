@@ -2,7 +2,10 @@ import type {
   ConflictRecords,
   DocumentChangeJson,
 } from '../../core/change/document-change';
-import type { JsonEditorValue } from '../../core/change/tokens';
+import type {
+  JsonEditorValue,
+  JsonElementNode,
+} from '../../core/change/tokens';
 
 export type OutboxHead = Readonly<{
   actor: string;
@@ -36,9 +39,23 @@ export type KeptReason =
   | Readonly<{ kind: 'refused'; reason: string }>
   | Readonly<{ kind: 'size' }>;
 
+export type ScopedBlockPlacement = Readonly<{
+  ancestors: readonly string[];
+  index: number;
+  node: JsonElementNode;
+  parentId: string | null;
+  root: string;
+}>;
+
 export type BatchOrigin = Readonly<{
-  before: JsonEditorValue;
+  before?: JsonEditorValue;
+  beforeBlocks?: readonly ScopedBlockPlacement[];
+  beforeRecords?: Readonly<
+    Record<string, Readonly<Record<string, string | null>>>
+  >;
   change: DocumentChangeJson;
+  containerChildren?: Readonly<Record<string, readonly string[]>>;
+  gap?: true;
   since: readonly DocumentChangeJson[];
 }>;
 

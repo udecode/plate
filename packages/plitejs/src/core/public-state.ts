@@ -15445,13 +15445,17 @@ export const applyUnnamedDocumentChange = (
   touchesNodes?: boolean
 ) => {
   const builder = getTransactionSnapshot(editor)?.builder;
+  const bound =
+    builder && isUnboundV4DocumentChange(change)
+      ? bindV4DocumentChange(change, builder.value)
+      : change;
 
   applyDocumentChange(
     editor,
-    change,
+    bound,
     {},
     builder && historyFollowsAllFacts()
-      ? builder.unnamedFacts(change, { touchesNodes })
+      ? builder.unnamedFacts(bound, { touchesNodes })
       : undefined
   );
 };

@@ -20,7 +20,11 @@ import {
   stepRejection,
 } from '../core/change/cross-rule';
 import {
+  attachLazyV4Compute,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys,
+  hasV4StepsSource,
   isInternalTextOnlyDocumentChange,
   transformInternalDocumentChange,
   valueRoot,
@@ -31,10 +35,12 @@ import type { ChangeFacts } from '../core/change/record';
 import { hasInternalDocumentChangeStepFirstAt } from '../core/change/replay-step-order';
 import type { KeptWrap } from '../core/change/root-change';
 import { isElementNode, type JsonNode, nodeProps } from '../core/change/tokens';
+import { extractV4Between } from '../core/change/v4/extract';
 import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import { getEditorDocumentValue } from '../core/public-state';
+import { recordOpsToJson } from '../core/record-store';
 import {
   areEditorSchemaIdentitiesEqual,
   propertyTargetsReadParents,
@@ -312,6 +318,18 @@ const replayedOf = <V extends Value>(batch: Batch<V>) => ({
       : undefined,
 });
 
+const attachHistoryLazyV4 = (
+  change: DocumentChange,
+  base: EditorDocumentValue
+) => {
+  if (hasV4StepsSource(change)) return;
+  attachLazyV4Compute(change, () =>
+    extractV4Between(base, change.apply(base), {
+      isSetValued: (_node, key) => key === 'authored',
+    })
+  );
+};
+
 const branch = <V extends Value>(
   batch: Batch<V>,
   base: EditorDocumentValue<V>,
@@ -330,8 +348,25 @@ const branch = <V extends Value>(
     outside: null,
     track: null,
   })
-): HistoryBranch<V> =>
-  Object.freeze({
+): HistoryBranch<V> => {
+  attachHistoryLazyV4(replay.change, base);
+  if (batch.unsettle) {
+    attachHistoryLazyV4(batch.unsettle, base);
+  }
+  if (batch.rest && !hasV4StepsSource(batch.rest)) {
+    const restChange = batch.rest;
+    const unsettleChange = batch.unsettle;
+
+    attachLazyV4Compute(restChange, () => {
+      const restBase = unsettleChange ? unsettleChange.apply(base) : base;
+
+      return extractV4Between(restBase, restChange.apply(restBase), {
+        isSetValued: (_node, key) => key === 'authored',
+      });
+    });
+  }
+
+  return Object.freeze({
     anchorCeiling,
     base,
     batch: withHistoryStep(
@@ -357,6 +392,7 @@ const branch = <V extends Value>(
     origin,
     recovery,
   });
+};
 
 const withKeptBranch = <V extends Value>(
   kept: KeptRedo<V> | null,
@@ -954,6 +990,39 @@ const plainOf = <V extends Value>(
   return head?.identity === value.identity ? head : value;
 };
 
+const sameInternalChange = (
+  left: DocumentChange,
+  right: DocumentChange
+): boolean => {
+  if (left === right) return true;
+  if (
+    left.createRoots.size !== right.createRoots.size ||
+    left.deleteRoots.size !== right.deleteRoots.size
+  ) {
+    return false;
+  }
+  for (const root of left.createRoots) {
+    if (!right.createRoots.has(root)) return false;
+  }
+  for (const root of left.deleteRoots) {
+    if (!right.deleteRoots.has(root)) return false;
+  }
+  const leftEntries = new Map(getInternalDocumentChangeEntries(left));
+  const rightEntries = new Map(getInternalDocumentChangeEntries(right));
+
+  if (leftEntries.size !== rightEntries.size) return false;
+  for (const [root, rootChange] of leftEntries) {
+    const other = rightEntries.get(root);
+
+    if (!other || !jsonEqual(rootChange.toJSON(), other.toJSON())) return false;
+  }
+
+  return jsonEqual(
+    recordOpsToJson(getInternalDocumentChangeRecords(left)),
+    recordOpsToJson(getInternalDocumentChangeRecords(right))
+  );
+};
+
 const plainFallback = <V extends Value>(
   editor: Editor<V>,
   drops: DropSink,
@@ -970,7 +1039,7 @@ const plainFallback = <V extends Value>(
 
   return plain &&
     plain.identity === shown.identity &&
-    !jsonEqual(plain.replay.change.toJSON(), shown.replay.change.toJSON())
+    !sameInternalChange(plain.replay.change, shown.replay.change)
     ? plain
     : null;
 };
@@ -1197,7 +1266,7 @@ const listBatches = <V extends Value>(
 
     if (
       shown !== current &&
-      !jsonEqual(current.replay.change.toJSON(), shown.replay.change.toJSON())
+      !sameInternalChange(current.replay.change, shown.replay.change)
     ) {
       HISTORY_FALLBACKS.set(shown.batch, current.batch);
     }

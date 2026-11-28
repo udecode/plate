@@ -64,7 +64,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isCount = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 
-const isChange = (value: unknown) => isRecord(value) && value.version === 3;
+const isChange = (value: unknown) => isRecord(value) && value.version === 4;
 
 const isEntry = (value: unknown) =>
   isRecord(value) &&

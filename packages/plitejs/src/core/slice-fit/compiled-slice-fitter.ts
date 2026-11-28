@@ -3390,8 +3390,26 @@ export const compileSliceFitter = <V extends Value>(
         const length = tokenLength(token);
         const documentAt =
           kind === 'fit' ? documentElementReopenedAt(token) : undefined;
+        let emittedToken = token;
 
-        output.push(token);
+        if (
+          kind === 'fit' &&
+          documentAt === undefined &&
+          token.kind === 'open' &&
+          token.nodeKind === 'element' &&
+          openTokenAt.has(token) &&
+          Object.hasOwn(token.props, 'id')
+        ) {
+          const { id: _id, ...restProps } = token.props;
+
+          emittedToken = {
+            kind: 'open',
+            nodeKind: 'element',
+            props: restProps,
+          };
+        }
+
+        output.push(emittedToken);
         if (documentAt === undefined) {
           origins.add(length, kind, sourceAt);
         } else {

@@ -21,7 +21,6 @@ import {
   isTextBearingElement,
   type MutableV4State,
   toV4TextStream,
-  type V4TextUnit,
 } from './apply';
 import { getValueIdLookup, type ValueIdLookup } from './lower';
 import {
@@ -66,54 +65,6 @@ const placeOfLocated = (state: MutableV4State, id: string): V4Place => {
   return { id: loc.parent.id as string, index: loc.index };
 };
 
-const emitRestoreUnits = (
-  target: string,
-  baseOffset: number,
-  units: readonly V4TextUnit[]
-): V4Step[] => {
-  const steps: V4Step[] = [];
-  let cursor = baseOffset;
-  let i = 0;
-
-  while (i < units.length) {
-    const unit = getDefined(units[i]);
-
-    if (unit.kind === 'inline') {
-      steps.push({
-        node: cloneJson(unit.node),
-        op: 'insert_node',
-        to: { id: target, offset: cursor },
-      });
-      cursor += 1;
-      i += 1;
-      continue;
-    }
-
-    let text = unit.ch;
-    const { marks } = unit;
-
-    i += 1;
-    while (i < units.length) {
-      const next = getDefined(units[i]);
-
-      if (next.kind !== 'char' || !jsonEqual(next.marks, marks)) break;
-      text += next.ch;
-      i += 1;
-    }
-
-    steps.push({
-      ...(Object.keys(marks).length > 0 ? { marks: cloneJson(marks) } : {}),
-      offset: cursor,
-      op: 'insert_text',
-      target,
-      text,
-    });
-    cursor += text.length;
-  }
-
-  return steps;
-};
-
 const invertOneStep = (state: MutableV4State, step: V4Step): V4Step[] => {
   switch (step.op) {
     case 'insert_text': {
@@ -136,13 +87,48 @@ const invertOneStep = (state: MutableV4State, step: V4Step): V4Step[] => {
         throw new Error(`Missing v4 delete_text target "${step.target}".`);
       }
 
-      const stream = toV4TextStream(loc.node.children);
-      const deleted = stream.units.slice(
-        step.offset,
-        step.offset + step.length
-      );
+      const end = step.offset + step.length;
+      const restoreSteps: V4Step[] = [];
+      let cursor = 0;
 
-      return emitRestoreUnits(step.target, step.offset, deleted);
+      for (const child of loc.node.children) {
+        if (cursor >= end) break;
+        if (isElementNode(child)) {
+          if (cursor >= step.offset) {
+            restoreSteps.push({
+              node: cloneJson(child),
+              op: 'insert_node',
+              to: { id: step.target, offset: cursor },
+            });
+          }
+          cursor += 1;
+        } else {
+          const runEnd = cursor + child.text.length;
+
+          if (runEnd > step.offset && cursor < end) {
+            const sliceStart = Math.max(0, step.offset - cursor);
+            const sliceEnd = Math.min(child.text.length, end - cursor);
+            const text = child.text.slice(sliceStart, sliceEnd);
+
+            if (text.length > 0) {
+              const { text: _t, ...marks } = child;
+
+              restoreSteps.push({
+                ...(Object.keys(marks).length > 0
+                  ? { marks: cloneJson(marks) }
+                  : {}),
+                offset: cursor + sliceStart,
+                op: 'insert_text',
+                target: step.target,
+                text,
+              });
+            }
+          }
+          cursor = runEnd;
+        }
+      }
+
+      return restoreSteps;
     }
 
     case 'format_text': {
@@ -152,11 +138,18 @@ const invertOneStep = (state: MutableV4State, step: V4Step): V4Step[] => {
         throw new Error(`Missing v4 format_text target "${step.target}".`);
       }
 
-      const stream = toV4TextStream(loc.node.children);
-
       if (step.length === 0) {
-        if (step.offset !== 0 || stream.units.length > 0) return [];
-        const inv = invertPropDelta(stream.emptyLeafMarks ?? {}, step);
+        if (step.offset !== 0 || elementStreamLength(loc.node) > 0) return [];
+        const only = loc.node.children[0];
+        const emptyLeafMarks =
+          loc.node.children.length === 1 && only && !isElementNode(only)
+            ? (() => {
+                const { text: _t, ...rest } = only;
+
+                return rest as JsonRecord;
+              })()
+            : {};
+        const inv = invertPropDelta(emptyLeafMarks, step);
 
         return isEmptyPropDelta(inv)
           ? []
@@ -171,44 +164,65 @@ const invertOneStep = (state: MutableV4State, step: V4Step): V4Step[] => {
             ];
       }
 
-      const inverseSteps: V4Step[] = [];
-      let i = step.offset;
       const end = step.offset + step.length;
+      const inverseSteps: V4Step[] = [];
+      let cursor = 0;
 
-      while (i < end) {
-        const unit = stream.units[i];
-
-        if (!unit || unit.kind !== 'char') {
-          i += 1;
+      for (const child of loc.node.children) {
+        if (cursor >= end) break;
+        if (isElementNode(child)) {
+          cursor += 1;
           continue;
         }
+        const runEnd = cursor + child.text.length;
 
-        const runStart = i;
-        const inv = invertPropDelta(unit.marks, step);
+        if (runEnd > step.offset && cursor < end) {
+          const from = Math.max(cursor, step.offset);
+          const to = Math.min(runEnd, end);
 
-        i += 1;
-        while (i < end) {
-          const next = stream.units[i];
+          if (to > from) {
+            const { text: _t, ...marks } = child;
+            const inv = invertPropDelta(marks, step);
 
-          if (
-            !next ||
-            next.kind !== 'char' ||
-            !jsonEqual(invertPropDelta(next.marks, step), inv)
-          ) {
-            break;
+            if (!isEmptyPropDelta(inv)) {
+              const prev = inverseSteps.at(-1);
+
+              if (
+                prev &&
+                prev.op === 'format_text' &&
+                prev.offset + prev.length === from &&
+                jsonEqual(
+                  {
+                    add: prev.add,
+                    remove: prev.remove,
+                    set: prev.set,
+                    unset: prev.unset,
+                  },
+                  {
+                    add: inv.add,
+                    remove: inv.remove,
+                    set: inv.set,
+                    unset: inv.unset,
+                  }
+                )
+              ) {
+                inverseSteps[inverseSteps.length - 1] = {
+                  ...prev,
+                  length: prev.length + (to - from),
+                };
+              } else {
+                inverseSteps.push({
+                  ...inv,
+                  length: to - from,
+                  offset: from,
+                  op: 'format_text',
+                  target: step.target,
+                });
+              }
+            }
           }
-          i += 1;
         }
-
-        if (!isEmptyPropDelta(inv)) {
-          inverseSteps.push({
-            ...inv,
-            length: i - runStart,
-            offset: runStart,
-            op: 'format_text',
-            target: step.target,
-          });
-        }
+        cursor = runEnd;
       }
 
       return inverseSteps;
@@ -672,10 +686,61 @@ const invertV4StepsSparsely = (
     }
   }
 
-  const result: V4Step[] = [];
+  return flattenInverses(steps, perStepInverses);
+};
 
-  for (let i = perStepInverses.length - 1; i >= 0; i -= 1) {
+const subtreeContainsId = (
+  node: JsonElementNode,
+  targetId: string
+): boolean => {
+  if (node.id === targetId) return true;
+
+  for (const child of node.children) {
+    if (isElementNode(child) && subtreeContainsId(child, targetId)) return true;
+  }
+
+  return false;
+};
+
+const flattenInverses = (
+  steps: readonly V4Step[],
+  perStepInverses: ReadonlyArray<readonly V4Step[]>
+): V4Step[] => {
+  const result: V4Step[] = [];
+  let i = perStepInverses.length - 1;
+
+  while (i >= 0) {
+    if (i > 0) {
+      const curFwd = getDefined(steps[i]);
+      const prevFwd = getDefined(steps[i - 1]);
+      const curInv = getDefined(perStepInverses[i]);
+      const prevInv = getDefined(perStepInverses[i - 1]);
+      const curInvStep = curInv[0];
+      const prevInvStep = prevInv[0];
+
+      if (
+        curFwd.op === 'insert_node' &&
+        prevFwd.op === 'remove_node' &&
+        'index' in curFwd.to &&
+        curInv.length === 1 &&
+        prevInv.length === 1 &&
+        curInvStep?.op === 'remove_node' &&
+        prevInvStep?.op === 'insert_node' &&
+        jsonEqual(curFwd.to, prevInvStep.to) &&
+        !subtreeContainsId(prevInvStep.node, curInvStep.id) &&
+        !(
+          typeof prevInvStep.node.id === 'string' &&
+          subtreeContainsId(curFwd.node, prevInvStep.node.id)
+        )
+      ) {
+        result.push(prevInvStep, curInvStep);
+        i -= 2;
+        continue;
+      }
+    }
+
     result.push(...getDefined(perStepInverses[i]));
+    i -= 1;
   }
 
   return result;
@@ -702,11 +767,5 @@ export const invertV4Steps = (
     perStepInverses.push(inverse);
   }
 
-  const result: V4Step[] = [];
-
-  for (let i = perStepInverses.length - 1; i >= 0; i -= 1) {
-    result.push(...getDefined(perStepInverses[i]));
-  }
-
-  return result;
+  return flattenInverses(steps, perStepInverses);
 };

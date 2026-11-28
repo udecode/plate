@@ -3806,6 +3806,24 @@ export const getCompiledPropertyMergeStrategy = (
 ): CompiledSchemaPropertyMergeStrategy | null =>
   resolveCompiledSchemaProperty(schema, placement, key, context)?.merge ?? null;
 
+export const schemaSetValuedResolver =
+  (schema: Pick<CompiledEditorSchema, 'elements' | 'properties'>) =>
+  (
+    _node: unknown,
+    key: string,
+    context: Readonly<{
+      ancestors: readonly string[];
+      placement: 'element' | 'text';
+      root: string | null;
+      type: string;
+    }>
+  ): boolean =>
+    getCompiledPropertyMergeStrategy(schema, context.placement, key, {
+      ancestors: context.ancestors,
+      root: context.root,
+      type: context.type,
+    }) === 'set';
+
 export const getCompiledPropertyCandidates = (
   schema: Pick<CompiledEditorSchema, 'properties'> & {
     reservedElementId?: CompiledSchemaProperty | null;

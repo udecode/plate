@@ -68,16 +68,19 @@ const spansOf = (
 ) => {
   const spans = new Map<string, Span[]>();
 
-  change.iterChangedRanges((name, fromA, toA, fromB, toB) => {
-    const root = rootOf(name);
-    const list = spans.get(root) ?? [];
+  change.iterChangedRanges(
+    (name, fromA, toA, fromB, toB) => {
+      const root = rootOf(name);
+      const list = spans.get(root) ?? [];
 
-    list.push({
-      after: blocksOf(valueRootIndex(after, root), fromB, toB),
-      before: blocksOf(valueRootIndex(before, root), fromA, toA),
-    });
-    spans.set(root, list);
-  });
+      list.push({
+        after: blocksOf(valueRootIndex(after, root), fromB, toB),
+        before: blocksOf(valueRootIndex(before, root), fromA, toA),
+      });
+      spans.set(root, list);
+    },
+    { base: before }
+  );
 
   return spans;
 };
