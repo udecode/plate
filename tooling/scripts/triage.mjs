@@ -7,6 +7,13 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { closeReleasedIssues } from './close-released-issues.mjs';
+import {
+  DAY as NOTIFY_DAY,
+  isVisualPath,
+  readSent,
+  statePath as notifyStatePath,
+  teamLines,
+} from './notify.mjs';
 import { BRANCH, PRIVATE_DIR } from './private-files.mjs';
 import {
   CLAIM_COLUMNS,
@@ -1170,6 +1177,16 @@ function buildRecord(raw, policy, existing) {
     if (proof) rec.proof = proof;
     const retest = pick('retest');
     if (retest) rec.retest = retest;
+    const rawNoNotify =
+      raw.noNotify !== undefined ? raw.noNotify : raw['no-notify'];
+    if (rawNoNotify !== undefined && !String(rawNoNotify).trim()) {
+      refuse(
+        `#${issue}: --no-notify requires a non-empty reason (only for non-user-visible internal fixes)`
+      );
+    }
+    const noNotify =
+      cleanField(rawNoNotify) ?? cleanField(detail.get('no-notify'));
+    if (noNotify) rec.noNotify = noNotify;
     const prior =
       existing?.outcome === 'kind' ? existing : (existing?.kind ?? null);
     if (prior) {
@@ -1743,7 +1760,130 @@ function queueCommand(policy, options) {
   }
 }
 
+const NOTIFY_HEX_RE = /(?<![0-9a-f])[0-9a-f]{7,40}(?![0-9a-f])/giu;
+const NON_NONE_TEAM_RE = /^(?!none\b)\S/iu;
+
+function commitHasTeamNotice(sha) {
+  const body = gitOut('show', '-s', '--format=%B', sha);
+  if (!body) return false;
+  return teamLines(body).some(({ text }) => NON_NONE_TEAM_RE.test(text));
+}
+
+function commitTouchesVisualPath(sha) {
+  const files = (
+    gitOut(
+      'diff-tree',
+      '--root',
+      '--no-commit-id',
+      '--name-only',
+      '-r',
+      '-m',
+      '--first-parent',
+      sha
+    ) ?? ''
+  )
+    .split('\n')
+    .filter(Boolean);
+  return files.some(isVisualPath);
+}
+
+function readRecentNotifyEntries() {
+  let entries;
+  try {
+    entries = readSent(notifyStatePath());
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(entries)) return [];
+  const now = Date.now();
+  return entries.filter(
+    (entry) =>
+      entry &&
+      typeof entry.text === 'string' &&
+      Number.isFinite(entry.at) &&
+      now - entry.at < NOTIFY_DAY
+  );
+}
+
+function entryMatchesCommit(entry, commit, fullSha) {
+  const target = (fullSha ?? commit).toLowerCase();
+  for (const [hex] of entry.text.matchAll(NOTIFY_HEX_RE)) {
+    const lower = hex.toLowerCase();
+    if (
+      fullSha
+        ? target.startsWith(lower)
+        : target.startsWith(lower) || lower.startsWith(target)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const entryHasMediaOrOverride = (entry) =>
+  (Array.isArray(entry.media) && entry.media.length > 0) ||
+  (typeof entry.noMedia === 'string' && entry.noMedia.trim().length > 0);
+
+function ensureFixNotified(policy, built) {
+  const fixedEntries = built.filter(({ record }) => record.outcome === 'fixed');
+  if (fixedEntries.length === 0) return;
+
+  let recentEntries = null;
+  for (const { issue, record } of fixedEntries) {
+    if (record.noNotify) continue;
+
+    const fullSha =
+      gitOut(
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        `${record.commit}^{commit}`
+      )?.trim() ?? null;
+    if (fullSha && commitHasTeamNotice(fullSha)) continue;
+
+    recentEntries ??= readRecentNotifyEntries();
+    const matched = recentEntries.filter((entry) =>
+      entryMatchesCommit(entry, record.commit, fullSha)
+    );
+    const visual = fullSha ? commitTouchesVisualPath(fullSha) : false;
+    if (
+      matched.length > 0 &&
+      (!visual || matched.some(entryHasMediaOrOverride))
+    ) {
+      continue;
+    }
+
+    const issueData = viewIssue(policy.repo, issue);
+    const author = issueData?.author?.login ?? null;
+    const gated =
+      !policy.primary || (author !== null && policy.team.includes(author));
+    if (!gated) continue;
+
+    const ref = `${issuePrefix(policy)}${issue}`;
+    const shortSha = (fullSha ?? record.commit).slice(0, 10);
+    const toHint =
+      author && policy.team.includes(author) ? author : '<reporter|channel>';
+    const action = `Record a before-and-after clip via the clip skill and run: node tooling/scripts/notify.mjs send --to ${toHint} --file <clip> "$(cat <file>)" (or pass --no-notify "<reason>" only for non-user-visible internal fixes).`;
+    if (matched.length > 0 && visual) {
+      refuse(
+        `${ref}: refusing --outcome fixed for UI commit ${shortSha} because its Discord notice in sent.json has no attached clip/still or --no-media reason. ${action}`
+      );
+    }
+    refuse(
+      `${ref}: refusing --outcome fixed for ${shortSha} without a Discord notice in sent.json or a Team: trailer. ${action}`
+    );
+  }
+}
+
 function recordCommand(policy, options) {
+  if (
+    options['no-notify'] !== undefined &&
+    !String(options['no-notify']).trim()
+  ) {
+    refuse(
+      '--no-notify requires a non-empty reason (only for non-user-visible internal fixes)'
+    );
+  }
   const entries = options.from
     ? parseBatchFile(options.from)
     : (() => {
@@ -1767,6 +1907,7 @@ function recordCommand(policy, options) {
             commit: options.commit,
             retest: options.retest,
             proof: options.proof,
+            noNotify: options['no-notify'],
             targetIssue: options.issue,
             lean: options.lean,
             detail: options.detail,
@@ -1785,13 +1926,21 @@ function recordCommand(policy, options) {
   const existingMap = files[policy.stateFile] ?? {};
   const ts = new Date().toISOString();
   const built = entries.map((entry) => {
+    const raw =
+      options['no-notify'] !== undefined &&
+      entry.noNotify === undefined &&
+      entry['no-notify'] === undefined
+        ? { ...entry, noNotify: options['no-notify'] }
+        : entry;
     const { issue, record } = buildRecord(
-      entry,
+      raw,
       policy,
-      existingMap[entryNumberOf(entry)]
+      existingMap[entryNumberOf(raw)]
     );
     return { issue, record: { ...record, who, ts } };
   });
+
+  ensureFixNotified(policy, built);
 
   if (options['dry-run']) {
     for (const { issue, record } of built) {
@@ -2715,6 +2864,7 @@ const VALUE_OPTIONS = new Set([
   'commit',
   'retest',
   'proof',
+  'no-notify',
   'issue',
   'lean',
   'detail',

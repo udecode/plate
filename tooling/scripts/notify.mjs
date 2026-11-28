@@ -6,11 +6,13 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  realpathSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { LAND_CHECK } from '../../.agents/pstack/proof.mjs';
@@ -29,7 +31,7 @@ import {
 
 const USAGE =
   'usage: notify send --to <login|dev|channel> [--file <png|jpg|gif|mp4|webm>]... [--no-media <reason>] <text...> | notify team <revision-range> | notify check';
-const DAY = 24 * 60 * 60 * 1000;
+export const DAY = 24 * 60 * 60 * 1000;
 const MAX_SHOT_AGE = 2 * 60 * 60 * 1000;
 const LIMIT = 2000;
 const MAX_FILES = 4;
@@ -69,7 +71,7 @@ const VISUAL_PATH =
 const NON_VISUAL_PATH =
   /\.(?:spec|test)\.[^/]+$|(?:^|\/)(?:__tests__|generated|__registry__)\/|\.(?:mdx?)$/iu;
 
-const isVisualPath = (file) =>
+export const isVisualPath = (file) =>
   VISUAL_PATH.test(file) && !NON_VISUAL_PATH.test(file);
 
 const requiresMedia = ({ commitFiles = [], text }) => {
@@ -202,7 +204,7 @@ const rawTeamLines = (message) => {
   return lines;
 };
 
-const teamLines = (message) =>
+export const teamLines = (message) =>
   rawTeamLines(message).filter(({ text }) => text.toLowerCase() !== 'none');
 
 const hasTeamTrailer = (message) =>
@@ -318,15 +320,15 @@ const post = async (channel, token, body, files = []) => {
   console.log(`sent ${JSON.parse(text).id}`);
 };
 
-const statePath = () =>
-  process.env.NOTIFY_STATE ??
+export const statePath = () =>
+  process.env.NOTIFY_STATE ||
   join(
-    process.env.XDG_STATE_HOME ?? join(homedir(), '.local', 'state'),
+    process.env.XDG_STATE_HOME || join(homedir(), '.local', 'state'),
     'plate-notify',
     'sent.json'
   );
 
-const readSent = (path) =>
+export const readSent = (path) =>
   existsSync(path) ? JSON.parse(readFileSync(path, 'utf-8')) : [];
 
 const send = async (args) => {
@@ -460,7 +462,20 @@ const send = async (args) => {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(
     path,
-    `${JSON.stringify([...recent, { to, text, media, at: now }], null, 2)}\n`
+    `${JSON.stringify(
+      [
+        ...recent,
+        {
+          to,
+          text,
+          media,
+          ...(noMedia ? { noMedia: noMedia.trim() } : {}),
+          at: now,
+        },
+      ],
+      null,
+      2
+    )}\n`
   );
 };
 
@@ -768,7 +783,15 @@ const check = (args) => {
   if (missing.length > 0) fail(1, missing.join('\n'));
 };
 
-const [command, ...rest] = process.argv.slice(2);
-const commands = { check, send, team };
-if (!Object.hasOwn(commands, command ?? '')) fail(2, USAGE);
-await commands[command](rest);
+const isMain =
+  Boolean(process.argv[1]) &&
+  existsSync(process.argv[1]) &&
+  realpathSync(fileURLToPath(import.meta.url)) ===
+    realpathSync(process.argv[1]);
+
+if (isMain) {
+  const [command, ...rest] = process.argv.slice(2);
+  const commands = { check, send, team };
+  if (!Object.hasOwn(commands, command ?? '')) fail(2, USAGE);
+  await commands[command](rest);
+}
