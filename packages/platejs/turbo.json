@@ -4572,11 +4572,9 @@
     "source-hash:partition:static": {
       "cache": true,
       "dependsOn": [
-        "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:react",
         "source-hash:partition:authored",
-        "source-hash:partition:core",
-        "source-hash:partition:proxies"
+        "source-hash:partition:core"
       ],
       "inputs": [
         "src/static/**",
@@ -8917,7 +8915,6 @@
         "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:footnote",
-        "source-hash:partition:proxies",
         "source-hash:partition:standard-basic-nodes",
         "source-hash:partition:standard-list",
         "source-hash:partition:static",

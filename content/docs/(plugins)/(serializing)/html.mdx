@@ -17,8 +17,8 @@ Use `platejs/html` in the browser. Use `platejs/html/server` when Node.js must p
 Install `HtmlPlugin` to reuse the editor's compiled plugins, schema, and plugin state.
 
 ```ts
+import { BaseBoldPlugin, BaseParagraphPlugin, createEditor } from 'platejs';
 import { HtmlPlugin } from 'platejs/html';
-import { createEditor } from 'platejs';
 
 const editor = createEditor({
   plugins: [BaseParagraphPlugin, BaseBoldPlugin, HtmlPlugin],
@@ -76,9 +76,12 @@ Node.js parsing uses the same parse5 tree and diagnostics through the server
 entrypoint:
 
 ```ts
+import { BaseBoldPlugin, BaseParagraphPlugin } from 'platejs';
 import { parseHtml } from 'platejs/html/server';
 
-const result = parseHtml(source, { plugins: EditorKit });
+const result = parseHtml(source, {
+  plugins: [BaseParagraphPlugin, BaseBoldPlugin],
+});
 ```
 
 Install the optional server DOM peer when a Node process parses HTML:

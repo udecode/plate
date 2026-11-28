@@ -1,4 +1,4 @@
-import type { HtmlMappingDiagnosticInput } from '../../../lib/plugin/PluginFormatContext';
+import type { HtmlPrepareDiagnosticInput } from '../../../lib/plugin/BasePlugin';
 import { isHtmlBlockElement } from '../../../lib/plugins/html/htmlDom';
 import { toIndentLevel } from '../../indent/lib/indentLevel.internal';
 
@@ -23,7 +23,7 @@ const isVisibleHtml = (node: globalThis.Node) =>
 export const flattenHtmlListItem = (
   listItem: HTMLElement,
   imagesAreBlocks: boolean,
-  report: (diagnostic: HtmlMappingDiagnosticInput) => void
+  report: (diagnostic: HtmlPrepareDiagnosticInput) => void
 ) => {
   const isItemBlock = (node: globalThis.Node) =>
     isHtmlBlockElement(node) || (imagesAreBlocks && node.nodeName === 'IMG');
@@ -44,6 +44,7 @@ export const flattenHtmlListItem = (
     if (declarations.length > 0) {
       report({
         action: 'dropped',
+        element,
         kind: 'style',
         message: `List HTML dropped the style "${declarations.join('; ')}" of <${element.tagName.toLowerCase()}> when it moved what the element held.`,
       });

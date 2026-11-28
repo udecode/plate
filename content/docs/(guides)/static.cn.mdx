@@ -276,7 +276,7 @@ export function InteractiveViewer({ value }) {
 | **运行环境**       | 服务端/客户端（SSR/RSC 安全）                          | 仅客户端                                            | 仅客户端                                            |
 | **交互性**     | 无                                                  | 最小（选择、复制、工具栏等）     | 完整交互功能（仅浏览器）               |
 | **浏览器 API**      | 不使用                                              | 最小（事件处理器）                               | 完全使用                                             |
-| **性能**       | 最佳 - 仅静态 HTML                               | 良好 - 静态渲染 + 事件委托             | 较重 - 完整编辑器内部逻辑                        |
+| **性能**       | 最佳（仅静态 HTML）                               | 良好（静态渲染 + 事件委托）             | 较重（完整编辑器内部逻辑）                        |
 | **包体积**       | 最小                                              | 小                                                  | 最大                                                |
 | **使用场景**         | 服务端渲染、HTML 导出                         | 需要基本交互的客户端内容            | 需要所有功能的完整只读编辑器                |
 | **建议**    | 无任何交互的 SSR/RSC                      | 需要轻量交互的客户端内容        | 有复杂交互需求的客户端             |
@@ -361,9 +361,9 @@ const result = await renderStaticHtml(editor, {
 });
 ```
 
-live editor 安装了 authored changes 时，还要传入 `projection: 'accepted'` 或
-`'proposed'`。它的 document 即使还没有 proposal 也带有 authored metadata，没有
-projection 时 `renderStaticHtml` 会抛出 `TypeError`。
+live editor 含有待处理的 authored changes 时，还要传入 `projection: 'accepted'`
+或 `'proposed'`。存在待处理变更而省略 `projection` 时，`renderStaticHtml` 会抛出
+`TypeError`。没有待处理变更的文档在省略 `projection` 时按原样渲染。
 
 对已安装插件声明的每个 element 组件、mark 组件和 wrapper slot 函数，
 `presentation` 中同名的插件提供对应的绘制方式，没有任何已安装插件渲染的元素也一样。
@@ -388,7 +388,8 @@ projection 时 `renderStaticHtml` 会抛出 `TypeError`。
 import type React from 'react';
 import type { Editor, EditorDocumentValue } from 'platejs';
 
-interface EditorStaticProps extends React.HTMLAttributes<HTMLDivElement> {
+interface EditorStaticProps<E = Editor>
+  extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * A document to render instead of the editor's own. The editor supplies
    * the plugins and is not edited.
@@ -396,10 +397,10 @@ interface EditorStaticProps extends React.HTMLAttributes<HTMLDivElement> {
   document?: EditorDocumentValue;
 
   /**
-   * The Plate editor instance, created via `createEditor`.
+   * The Plate editor instance, created via `createEditor` or `useCreateEditor`.
    * Must include component-bound plugins relevant to the content being rendered.
    */
-  editor: Editor;
+  editor: E;
 
   /** Inline CSS styles for the root `div` element. */
   style?: React.CSSProperties;
@@ -408,8 +409,22 @@ interface EditorStaticProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
--   **`document`**：通过 editor 的插件渲染、以代替 editor 自身值的文档；参阅上文的“渲染文档”。
--   **`editor`**：使用 `createEditor` 创建的 `Editor` 实例，包含内容所需的已绑定组件插件。
+-   **`document`**：通过 editor 的插件渲染、以代替 editor 自身值的文档；参阅上文的「渲染文档」。
+-   **`editor`**：使用 `createEditor` 或 `useCreateEditor` 创建的 `Editor` 实例，包含内容所需的已绑定组件插件。
+
+### `renderStaticHtml(editor, options?)`
+
+将文档快照渲染为 HTML 字符串并返回 `{ data, diagnostics }`。
+
+| 选项 | 类型 | 说明 |
+| --- | --- | --- |
+| `component` | `React.ComponentType<T>` | 静态根组件，默认为 `EditorStatic`。 |
+| `document` | `EditorDocumentValue` | 要渲染的文档快照，默认为 `editor.read.value()`。 |
+| `presentation` | `readonly BasePluginInput[]` | 提供元素、标记与 wrapper 静态绘制的插件数组，live editor 保留文档与插件设置。 |
+| `projection` | `'accepted' \| 'proposed'` | 存在待处理 authored changes 时必传；`'accepted'` 丢弃待处理变更，`'proposed'` 将其作为纯内容应用。 |
+| `props` | `Partial<Omit<T, 'document' \| 'editor'>>` | 透传给 `component` 的外观属性（传入 `editor` 或 `document` 会抛出 `TypeError`）。 |
+
+`diagnostics` 包含投影待处理变更时的 `authored-lossy-projection` 警告，以及指出 `presentation` 缺失插件名的 `missing-static-presentation` 警告。
 
 ## 后续步骤
 

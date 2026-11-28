@@ -19,8 +19,8 @@ HTML 转换包含两个方向：
 安装 `HtmlPlugin` 后，editor API 会复用已编译的 plugin、schema 与 plugin state。
 
 ```ts
+import { BaseBoldPlugin, BaseParagraphPlugin, createEditor } from 'platejs';
 import { HtmlPlugin } from 'platejs/html';
-import { createEditor } from 'platejs';
 
 const editor = createEditor({
   plugins: [BaseParagraphPlugin, BaseBoldPlugin, HtmlPlugin],
@@ -73,9 +73,12 @@ Standalone function 只为本次调用编译 declaration，完成后丢弃临时
 Node.js 通过 server entrypoint 使用同一棵 parse5 tree 与同一套诊断：
 
 ```ts
+import { BaseBoldPlugin, BaseParagraphPlugin } from 'platejs';
 import { parseHtml } from 'platejs/html/server';
 
-const result = parseHtml(source, { plugins: EditorKit });
+const result = parseHtml(source, {
+  plugins: [BaseParagraphPlugin, BaseBoldPlugin],
+});
 ```
 
 Node 进程需要解析 HTML 时，安装可选 server DOM peer：

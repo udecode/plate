@@ -3610,18 +3610,20 @@ const unsafeContentDiagnostic = (
     | Readonly<{ model: HtmlModelLocation }>
     | Readonly<{ source: HtmlSourceLocation }>,
   lossPolicy: 'allow' | 'reject'
-): HtmlDiagnostic =>
-  Object.freeze({
+): HtmlDiagnostic => {
+  const base = {
     ...location,
     action: removal.action,
     code: 'html-unsafe-content' as const,
     impact: removal.impact,
     kind: removal.kind,
     message: removal.message,
-    severity: isRejectedRemoval(removal, lossPolicy)
-      ? ('error' as const)
-      : ('warning' as const),
-  });
+  };
+
+  return isRejectedRemoval(removal, lossPolicy)
+    ? Object.freeze({ ...base, severity: 'error' as const })
+    : Object.freeze({ ...base, severity: 'warning' as const });
+};
 
 const unsafeMappingLoss = (
   root: Element,
@@ -3996,12 +3998,7 @@ const repairDiagnostic = (
   repair: HtmlSchemaRepair,
   lossPolicy: 'allow' | 'reject'
 ): HtmlDiagnostic => {
-  const severity =
-    repair.impact === 'lossy' && lossPolicy === 'reject'
-      ? ('error' as const)
-      : ('warning' as const);
-
-  return Object.freeze({
+  const base = {
     action: repairAction(repair.code),
     code: 'html-schema-repair' as const,
     impact: repair.impact,
@@ -4010,8 +4007,11 @@ const repairDiagnostic = (
     outputs: Object.freeze(repair.outputs.map(repairLocation)),
     owner: repair.owner,
     repair: repair.code,
-    severity,
-  });
+  };
+
+  return repair.impact === 'lossy' && lossPolicy === 'reject'
+    ? Object.freeze({ ...base, severity: 'error' as const })
+    : Object.freeze({ ...base, severity: 'warning' as const });
 };
 
 const decodeMaterializedHtmlWithEditor = (

@@ -1,5 +1,3 @@
-import { exportContentSlice } from 'plitejs/internal';
-
 import {
   cleanDOMClipboardContents,
   readDOMSelectionRange,
@@ -8,6 +6,7 @@ import {
   ContentSlice,
   type ContentSlice as ContentSliceValue,
   type Descendant,
+  exportContentSlice,
   type Path,
   type Point,
   projectEditorView,
@@ -17,7 +16,7 @@ import {
   TextApi,
 } from '../../facade';
 import type { Editor } from '../../lib/editor';
-import { getPlainText } from './getPlainText';
+import { getPlainText } from './getPlainText.internal';
 
 type StaticSelectionItem =
   | Readonly<{

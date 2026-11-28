@@ -108,17 +108,13 @@ export default async function HtmlExportBlock() {
   const tailwindCss = await getCachedTailwindCss();
   const katexCDN = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.css" integrity="sha384-o3WH+1yEhq+grOgz1BVYTZPyTlMXrDxnjN1By9/ba94JqJhva6wFm2Hb+URQX53v" crossorigin="anonymous">`;
 
-  // const cookieStore = await cookies();
-  // const theme = cookieStore.get('theme')?.value;
   const theme = 'light';
 
-  // Get the editor content HTML using EditorStatic
   const { data: editorHtml } = await renderStaticHtml(editor, {
     component: EditorStatic,
-    props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
+    props: { style: { padding: '0 calc(50% - 350px)' } },
   });
 
-  // Create the full HTML document
   const html = createHtmlDocument({
     editorHtml,
     katexCDN,

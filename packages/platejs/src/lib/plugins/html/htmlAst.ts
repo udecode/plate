@@ -76,7 +76,6 @@ export type HtmlAstParseResult =
       ok: true;
     }>;
 
-/** Return text only when the parsed HTML contains no element nodes. @internal */
 export const getHtmlAstPlainText = (ast: ParsedHtmlAst): string | null => {
   let text = '';
 
@@ -93,6 +92,9 @@ const sourceLocation = (
   node: HtmlAstNode
 ): HtmlSourceLocation => {
   const location = defaultTreeAdapter.getNodeSourceCodeLocation(node);
+  const tag = defaultTreeAdapter.isElementNode(node)
+    ? node.tagName.toLowerCase()
+    : undefined;
 
   if (
     location &&
@@ -107,10 +109,15 @@ const sourceLocation = (
       ),
       kind: 'source' as const,
       startCodeUnit: location.startOffset,
+      ...(tag ? { tag } : {}),
     });
   }
 
-  return Object.freeze({ kind: 'tree' as const, path: Object.freeze([]) });
+  return Object.freeze({
+    kind: 'tree' as const,
+    path: Object.freeze([]),
+    ...(tag ? { tag } : {}),
+  });
 };
 
 const parserLocation = (

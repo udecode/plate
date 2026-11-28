@@ -56,11 +56,9 @@ export type RenderStaticHtmlOptions<
    * Version of an authored document to export. `accepted` drops pending changes
    * and `proposed` applies them as plain content. Either choice adds an
    * `authored-lossy-projection` warning while changes are pending. Required
-   * when the document has authored metadata, which every document from an
-   * editor with the authored plugin carries, even with no pending change.
-   * Omitting it or passing any other value then throws, and so does a valid
-   * value when the editor lacks the authored plugin. A document without
-   * authored metadata ignores it.
+   * when pending changes exist; omitting it then throws a `TypeError`. A
+   * document with no pending changes renders as-is when `projection` is
+   * omitted. Any other value throws a `TypeError`.
    */
   projection?: 'accepted' | 'proposed';
   /**

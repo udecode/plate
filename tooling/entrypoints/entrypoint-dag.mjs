@@ -466,15 +466,10 @@ export const entrypointDags = {
         )
       ),
       static: ssr(
-        directory(
-          'static',
-          ['authored', 'core', 'dom'],
-          ['plitejs/internal', 'plitejs/react'],
-          {
-            peerDependencies: ['react', 'react-dom'],
-            runtimeProof: 'plate-static-html',
-          }
-        )
+        directory('static', ['authored', 'core'], ['plitejs/react'], {
+          peerDependencies: ['react', 'react-dom'],
+          runtimeProof: 'plate-static-html',
+        })
       ),
       testing: headless(directory('testing', [], ['plitejs/testing'])),
       ...rootFeatureEntrypoints,

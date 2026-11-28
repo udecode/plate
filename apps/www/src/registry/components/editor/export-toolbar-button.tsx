@@ -65,6 +65,9 @@ const readAppStyles = () =>
     }
   }).join('\n');
 
+const escapeHtmlAttribute = (value: string) =>
+  value.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+
 const plural = (count: number, noun: string) =>
   `${count} ${noun}${count === 1 ? '' : 's'}`;
 
@@ -73,6 +76,7 @@ const toastWarnings = (
     Readonly<{
       feature?: string;
       impact?: string;
+      plugin?: string;
       severity: 'error' | 'warning';
     }>
   >
@@ -80,10 +84,12 @@ const toastWarnings = (
   const lost = new Set<string>();
   let other = 0;
 
-  for (const { feature, impact, severity } of diagnostics) {
+  for (const { feature, impact, plugin, severity } of diagnostics) {
     if (severity !== 'warning' || impact === 'lossless') continue;
-    if (feature) {
-      lost.add(feature.replaceAll('-', ' '));
+    const label = feature ?? plugin;
+
+    if (label) {
+      lost.add(label.replaceAll('-', ' '));
     } else {
       other += 1;
     }
@@ -137,17 +143,19 @@ export function ExportToolbarButton() {
         component: EditorStatic,
         presentation: BaseEditorKit,
         projection,
-        props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
+        props: { style: { padding: '0 calc(50% - 350px)' } },
       });
 
+      const isDark = document.documentElement.classList.contains('dark');
+      const bodyClass = escapeHtmlAttribute(document.body.className);
       const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en"${isDark ? ' class="dark"' : ''}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     ${readAppStyles()}
   </head>
-  <body class="${document.body.className}">
+  <body class="${bodyClass}">
     ${result.data}
   </body>
 </html>`;
@@ -234,7 +242,6 @@ export function ExportToolbarButton() {
       const result = await exportDocx(model, {
         comments: docxComments,
         component: EditorStatic,
-        // The download still completes; the toasts below report what was lost.
         lossPolicy: 'allow',
         presentation: BaseEditorKit,
         projection: wordProjection,

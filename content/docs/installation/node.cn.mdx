@@ -112,10 +112,11 @@ DOCX import 是 detached、browser/client-only operation。完整 plugin target 
 `options`，不要传入 editor。
 
 ```ts
+import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
 import { importDocx } from 'platejs/docx/import';
 
 const result = await importDocx(file, {
-  plugins: EditorKit,
+  plugins: [BaseHeadingPlugin, BaseBoldPlugin],
   signal,
 });
 ```
@@ -131,7 +132,7 @@ server-side DOCX conversion。
 | --- | --- | --- |
 | Node editor | `platejs` | 读取、验证与转换 document。 |
 | Node Markdown | `platejs/markdown` | 解析与序列化 Markdown。 |
-| Node HTML parse | `platejs/html/server` | 解析完整 HTML document 或 slice。 |
+| Node HTML parse | `platejs/html/server` | 解析完整 HTML document。 |
 | Semantic HTML serialize | `platejs/html` | 序列化 detached Plate document。 |
 | Static rendering | `platejs/static` | 渲染 server-safe static component。 |
 | React editor | `platejs/react` 与 feature `/react` path | 已挂载 editing UI 与 hook。 |

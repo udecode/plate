@@ -278,8 +278,7 @@ export function ImportToolbarButton({
         (diagnostic.code === 'html-unsafe-content' ||
           diagnostic.code === 'html-unsupported-content') &&
         diagnostic.kind === 'element' &&
-        diagnostic.source?.kind === 'tree' &&
-        diagnostic.source.tag
+        diagnostic.source?.tag
           ? { name: diagnostic.source.tag }
           : undefined
       );

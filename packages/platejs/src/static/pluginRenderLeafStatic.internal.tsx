@@ -56,7 +56,6 @@ export const pluginRenderLeafStatic = (
     return children;
   };
 
-/** @see {@link RenderLeaf} */
 export const pipeRenderLeafStatic = (
   editor: Editor,
   { renderLeaf: renderLeafProp }: { renderLeaf?: PliteRenderLeaf } = {}
@@ -113,10 +112,7 @@ export const pipeRenderLeafStatic = (
           ...attributes,
           ...pluginLeafProps,
           ...(pluginLeafProps.className && {
-            className: clsx(
-              (props as any).className,
-              pluginLeafProps.className
-            ),
+            className: clsx(attributes?.className, pluginLeafProps.className),
           }),
         };
       }

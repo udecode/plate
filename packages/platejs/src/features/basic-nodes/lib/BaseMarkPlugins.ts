@@ -9,7 +9,6 @@ import {
   property,
   PLUGINS,
 } from '../../../core';
-import { someHtmlElement } from '../../../lib/plugins/html/htmlDom';
 import {
   type MarkSpanAcceptor,
   resolveMarkSpan,
@@ -99,6 +98,97 @@ const decodeBold = (element: HTMLElement) => {
   const insideDrawnBold = parent() >= HEAVY_WEIGHT;
 
   return insideDrawnBold ? false : undefined;
+};
+
+const ITALIC_TAGS = new Set(['EM', 'I']);
+
+const STRIKETHROUGH_TAGS = new Set(['DEL', 'S', 'STRIKE']);
+
+const UNDERLINE_TAGS = new Set(['U']);
+
+const statedFontStyle = (element: Element) =>
+  (element as HTMLElement).style?.fontStyle?.trim().toLowerCase() ?? '';
+
+const isItalicStyle = (value: string) =>
+  value === 'italic' || value === 'oblique' || value.startsWith('oblique ');
+
+const isResetStyle = (value: string) =>
+  value === 'normal' || value === 'initial';
+
+const drawnItalic = (element: Element | null): boolean => {
+  if (!element) return false;
+  const style = statedFontStyle(element);
+
+  if (isItalicStyle(style)) return true;
+  if (isResetStyle(style)) return false;
+  if (style === 'inherit' || style === 'unset') {
+    return drawnItalic(element.parentElement);
+  }
+
+  return (
+    ITALIC_TAGS.has(element.nodeName) || drawnItalic(element.parentElement)
+  );
+};
+
+const decodeItalic = (element: HTMLElement) => {
+  const style = statedFontStyle(element);
+
+  if (isItalicStyle(style)) return true;
+  if (isResetStyle(style)) {
+    return drawnItalic(element.parentElement) ? false : undefined;
+  }
+  if (style === 'inherit' || style === 'unset') return undefined;
+
+  return ITALIC_TAGS.has(element.nodeName) || undefined;
+};
+
+const textDecorationTokens = (element: Element) => {
+  const { style } = element as HTMLElement;
+  const raw = [style?.textDecorationLine, style?.textDecoration]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+    .toLowerCase();
+
+  return raw ? raw.split(/\s+/) : [];
+};
+
+const drawnTextDecoration = (
+  element: Element | null,
+  token: 'line-through' | 'underline',
+  tags: ReadonlySet<string>
+): boolean => {
+  if (!element) return false;
+  const tokens = textDecorationTokens(element);
+
+  if (tokens.includes(token)) return true;
+  if (tokens.includes('none') || tokens.includes('initial')) return false;
+  if (tokens.includes('inherit') || tokens.includes('unset')) {
+    return drawnTextDecoration(element.parentElement, token, tags);
+  }
+
+  return (
+    tags.has(element.nodeName) ||
+    drawnTextDecoration(element.parentElement, token, tags)
+  );
+};
+
+const decodeTextDecoration = (
+  element: HTMLElement,
+  token: 'line-through' | 'underline',
+  tags: ReadonlySet<string>
+) => {
+  const tokens = textDecorationTokens(element);
+
+  if (tokens.includes(token)) return true;
+  if (tokens.includes('none') || tokens.includes('initial')) {
+    return drawnTextDecoration(element.parentElement, token, tags)
+      ? false
+      : undefined;
+  }
+  if (tokens.includes('inherit') || tokens.includes('unset')) return undefined;
+
+  return tags.has(element.nodeName) || undefined;
 };
 
 const scriptValues = ['sub', 'sup'] as const;
@@ -360,12 +450,9 @@ export const BaseItalicPlugin = definePlugin(PLUGINS.italic, {
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
-        decode: ({ element }) =>
-          someHtmlElement(element, (node) => node.style.fontStyle === 'normal')
-            ? undefined
-            : true,
+        decode: ({ element }) => decodeItalic(element),
         encode: ({ value }) => (value ? { tag: 'em' } : null),
-        match: [{ tag: ['em', 'i'] }, { style: { fontStyle: 'italic' } }],
+        match: [{ tag: ['em', 'i'] }, { style: { fontStyle: '*' } }],
       },
 
       markdown: { node: 'emphasis' },
@@ -435,16 +522,12 @@ export const BaseStrikethroughPlugin = definePlugin(PLUGINS.strikethrough, {
     defineFormats({
       html: {
         decode: ({ element }) =>
-          someHtmlElement(
-            element,
-            (node) => node.style.textDecoration === 'none'
-          )
-            ? undefined
-            : true,
+          decodeTextDecoration(element, 'line-through', STRIKETHROUGH_TAGS),
         encode: ({ value }) => (value ? { tag: 's' } : null),
         match: [
           { tag: ['s', 'del', 'strike'] },
-          { style: { textDecoration: 'line-through' } },
+          { style: { textDecoration: '*' } },
+          { style: { textDecorationLine: '*' } },
         ],
       },
 
@@ -463,14 +546,13 @@ export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
     defineFormats({
       html: {
         decode: ({ element }) =>
-          someHtmlElement(
-            element,
-            (node) => node.style.textDecoration === 'none'
-          )
-            ? undefined
-            : true,
+          decodeTextDecoration(element, 'underline', UNDERLINE_TAGS),
         encode: ({ value }) => (value ? { tag: 'u' } : null),
-        match: [{ tag: 'u' }, { style: { textDecoration: 'underline' } }],
+        match: [
+          { tag: 'u' },
+          { style: { textDecoration: '*' } },
+          { style: { textDecorationLine: '*' } },
+        ],
       },
 
       markdown: { tag: 'u' },

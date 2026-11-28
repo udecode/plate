@@ -213,6 +213,7 @@ export {
   shouldMergeNodesRemovePrevNode,
 } from 'plitejs/internal';
 export { countCoreWork, type CoreWork, readCoreWork } from 'plitejs/internal';
+export { exportContentSlice } from 'plitejs/internal';
 export { getAnchorRuntimeId, restoreAnchor } from 'plitejs/internal';
 export {
   canonicalRecordJson,

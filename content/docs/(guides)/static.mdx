@@ -288,7 +288,7 @@ export function InteractiveViewer({ value }) {
 | **Environment**       | Server/Client (SSR/RSC safe)                          | Client-only                                            | Client-only                                            |
 | **Interactivity**     | None                                                  | Minimal (selection, copy, toolbar, etc.)     | Full interactive features (browser-only)               |
 | **Browser APIs**      | Not used                                              | Minimal (event handlers)                               | Full usage                                             |
-| **Performance**       | Best - static HTML only                               | Good - static rendering + event delegation             | Heavier - full editor internals                        |
+| **Performance**       | Best (static HTML only)                               | Good (static rendering + event delegation)             | Heavier (full editor internals)                        |
 | **Bundle Size**       | Smallest                                              | Small                                                  | Largest                                                |
 | **Use Cases**         | Server rendering, HTML export                         | Client-side content with basic interactions            | Full read-only editor with all features                |
 | **Recommendation**    | SSR/RSC without any interactions                      | Client-side content needing light interactivity        | Client-side with complex interactive needs             |
@@ -377,10 +377,10 @@ const result = await renderStaticHtml(editor, {
 });
 ```
 
-When the live editor installs authored changes, also pass
-`projection: 'accepted'` or `'proposed'`. Its document carries authored metadata
-even before any proposal, and `renderStaticHtml` throws a `TypeError` without a
-projection.
+When the live editor has pending authored changes, also pass
+`projection: 'accepted'` or `'proposed'`. Omitting `projection` when pending
+changes exist throws a `TypeError`. A document with no pending changes renders
+as-is when `projection` is omitted.
 
 For each element component, mark component, and wrapper slot function an
 installed plugin declares, the plugin of the same name in `presentation`
@@ -431,6 +431,20 @@ interface EditorStaticProps<E = Editor>
 
 - **`document`**: A document rendered through the editor's plugins instead of the editor's own value; see [Render a document](#render-a-document).
 - **`editor`**: An editor created with `createEditor` or `useCreateEditor`, including component-bound plugins required by the value.
+
+### `renderStaticHtml(editor, options?)`
+
+Renders one document snapshot to an HTML string and returns `{ data, diagnostics }`.
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `component` | `React.ComponentType<T>` | Static root component. Defaults to `EditorStatic`. |
+| `document` | `EditorDocumentValue` | Document snapshot to render. Defaults to `editor.read.value()`. |
+| `presentation` | `readonly BasePluginInput[]` | Static plugins supplying element, mark, and wrapper drawings while the live editor keeps the document and plugin settings. |
+| `projection` | `'accepted' \| 'proposed'` | Required when pending authored changes exist; `'accepted'` drops pending changes and `'proposed'` applies them as plain content. |
+| `props` | `Partial<Omit<T, 'document' \| 'editor'>>` | Appearance props forwarded to `component` (`editor` and `document` throw a `TypeError`). |
+
+`diagnostics` contains `authored-lossy-projection` warnings (when projecting pending changes) and `missing-static-presentation` warnings naming any `plugin` omitted from `presentation`.
 
 ## Next steps
 
