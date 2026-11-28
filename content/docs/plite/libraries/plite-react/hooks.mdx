@@ -285,19 +285,20 @@ still run.
 Use these when one editor owns multiple roots or external chrome.
 
 - `useModelEditor()` returns the complete document editor owned by the nearest
-  `EditorRoot` or `EditorRuntimeProvider`.
+  `EditorRoot`.
 - `useRootEditor(root)` returns a command-capable editor for one root.
 - Pair either hook with `useEditorSelector(editor, selector, options?)` to
   subscribe to whole-runtime or single-root derived state.
 
-Use `useRootEditor(root)` when UI knows its root. Use `useCommand` for commands
-that should follow the active or editable root.
+Use `useRootEditor(root)` when UI knows its root. Use `useEditor()` for normal
+controls that read the active root during render, and `useCommand` when a
+command must resolve the caret's root at invocation time or restore focus
+synchronously before dispatching.
 
 #### `useModelEditor(): Editor`
 
-Get the complete document editor owned by the nearest `EditorRoot` or
-`EditorRuntimeProvider`. Pass it to `useEditorSelector` when UI needs
-whole-runtime state across roots.
+Get the complete document editor owned by the nearest `EditorRoot`. Pass it to
+`useEditorSelector` when UI needs whole-runtime state across roots.
 
 ```tsx
 const model = useModelEditor();
@@ -313,7 +314,8 @@ const rootCount = useEditorSelector(
 Create a command-capable editor for one root.
 
 Use this for root-specific toolbar or sidebar commands. Pass `{ readOnly:
-true }` when the editor should only read state.
+true }` to lock a single handle (for example, copy-only drags while sibling
+controls on the same writable surface stay writable).
 Omit `root` for the primary document.
 
 The editor follows the view that shows its root inside the `EditorRoot` around
@@ -443,7 +445,7 @@ return <button onClick={() => insertBreak()}>New paragraph</button>;
 
 Pass `focus: 'restore-root'` when the command should move focus back to the
 editor root before running, so it runs at the caret that focus gives the root.
-Pass `focus: 'none'` to leave focus alone. The default is `focus: 'preserve'`.
+The default is `focus: 'none'`, which leaves focus alone.
 Pass `root` when the command should target a known root instead of the editable
 or active root. An `EditorRoot` does not hide the `EditorContent` around it, so a
 hook in an `EditorRoot` nested inside an `EditorContent` takes that `EditorContent`'s root

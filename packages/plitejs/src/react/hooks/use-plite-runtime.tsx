@@ -933,8 +933,7 @@ type ReactEditorState = EditorStateView<
 >;
 
 /**
- * Return the owning model editor from the nearest `<EditorRoot>` or
- * `<EditorRuntimeProvider>`.
+ * Return the owning model editor from the nearest `<EditorRoot>`.
  */
 export function useModelEditor(): ReactEditorType {
   if (arguments.length > 0) {
@@ -1004,8 +1003,9 @@ function createPliteRootEditor(
  * under its own `EditorRoot`, so while that `EditorRoot` shows no editing
  * area for its root, `api.dom.editable()` returns `null`, even when an
  * editing area in another `EditorRoot` holds the caret. Use it for
- * root-specific toolbar/sidebar commands. Pass `readOnly: true` when UI only
- * needs read APIs. Exact plugin capability comes from `editor.plugin(Plugin)`.
+ * root-specific toolbar/sidebar commands. Pass `readOnly: true` to lock a
+ * single handle (for example, copy-only drags while sibling controls stay
+ * writable). Exact plugin capability comes from `editor.plugin(Plugin)`.
  */
 export function useRootEditor<const TRoot extends RootKey = RootKey>(
   root?: NamedRootKey<TRoot>,
@@ -1094,8 +1094,8 @@ export function useEditor(): EditorContextValue {
   return editor;
 }
 
-/** Focus behavior before or after root command callbacks. */
-export type CommandFocusPolicy = 'none' | 'preserve' | 'restore-root';
+/** Focus behavior before root command callbacks. */
+export type CommandFocusPolicy = 'none' | 'restore-root';
 
 /** Options for `useCommand`. */
 export type UseCommandOptions<TRoot extends RootKey = RootKey> = {
@@ -1136,7 +1136,7 @@ export function useCommand<
   command: TCommand & CompatibleEditorCommand<ReactEditorType, TCommand>,
   options: UseCommandOptions<TRoot> = {}
 ): CommandDispatcher<TCommand> {
-  const { focus = 'preserve', root } = options;
+  const { focus = 'none', root } = options;
 
   if (root === MAIN_ROOT_KEY) {
     throw new Error('Omit root to target the primary document.');

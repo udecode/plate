@@ -65,7 +65,10 @@ Yjs document when React commits the new one, so the new editor binds the same
 
 #### `useEditor(): Editor`
 
-Get the editor from the nearest `EditorRoot` provider. Use
+Get the active editor from the nearest `EditorRoot` provider. Inside an
+`EditorContent`, `useEditor()` returns that editing area's editor. Outside every
+`EditorContent`, such as in a toolbar, it returns the editor of the root holding
+the caret, or the `EditorRoot`'s own root editor while nothing is selected. Use
 `useOptionalEditor()` when a component may render outside a provider.
 
 #### `useEditorComposing(): boolean`
@@ -308,9 +311,11 @@ Use these when one editor owns multiple roots or external chrome.
 - Pair either hook with `useEditorSelector(editor, selector, options?)` to
   subscribe to whole-runtime or single-root derived state.
 
-Prefer `useRootEditor(root)` when UI knows its root. For UI that follows the
-current selection, select the root that owns it from `useModelEditor()` and pass
-it to `useRootEditor`:
+Prefer `useRootEditor(root)` when UI knows its root. Outside every
+`EditorContent`, `useEditor()` already follows the root that holds the caret.
+Inside an `EditorContent`, `useEditor()` returns that editing area's editor, so
+select the caret's root from `useModelEditor()` and pass it to `useRootEditor`
+when an inner component must track the global selection root:
 
 ```tsx
 import { SelectionApi } from "platejs";
@@ -341,7 +346,8 @@ root key, inferred from `root`; read a plugin's exact API with
 `editor.plugin(Plugin)`.
 
 Use this for root-specific toolbar or sidebar commands. Pass `{ readOnly:
-true }` when the editor should only read state.
+true }` to lock a single handle (for example, copy-only drags while sibling
+controls on the same writable surface stay writable).
 Omit `root` for the primary document.
 
 The editor follows the `EditorContent` that shows its root inside the
