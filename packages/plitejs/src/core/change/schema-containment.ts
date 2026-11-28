@@ -175,3 +175,71 @@ export const applyIfBalanced = (
     throw error;
   }
 };
+
+const matchingCloseIndex = (
+  tokens: readonly JsonToken[],
+  openIndex: number
+) => {
+  let depth = 0;
+
+  for (let i = openIndex; i < tokens.length; i += 1) {
+    const token = tokens[i];
+
+    if (token.kind === 'open') depth += 1;
+    else if (token.kind === 'close') {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+
+  return -1;
+};
+
+type OpenProps = Extract<JsonToken, { kind: 'open' }>['props'];
+
+export const matchAlignedWrappers = (
+  removed: readonly JsonToken[],
+  insert: readonly JsonToken[],
+  aligns: (before: OpenProps, after: OpenProps) => boolean
+): {
+  kept: Array<readonly [OpenProps, OpenProps]>;
+  keptTail: number;
+} => {
+  const kept: Array<readonly [OpenProps, OpenProps]> = [];
+  let keptTail = 0;
+
+  while (
+    kept.length < removed.length - keptTail &&
+    kept.length < insert.length - keptTail
+  ) {
+    const before = removed[kept.length];
+    const after = insert[kept.length];
+
+    if (
+      before.kind !== 'open' ||
+      after.kind !== 'open' ||
+      before.nodeKind !== after.nodeKind ||
+      !aligns(before.props, after.props)
+    ) {
+      break;
+    }
+
+    const beforeClose = matchingCloseIndex(removed, kept.length);
+
+    if (beforeClose !== -1) {
+      const afterClose = matchingCloseIndex(insert, kept.length);
+
+      if (
+        beforeClose !== removed.length - 1 - keptTail ||
+        afterClose !== insert.length - 1 - keptTail
+      ) {
+        break;
+      }
+      keptTail += 1;
+    }
+
+    kept.push([before.props, after.props]);
+  }
+
+  return { kept, keptTail };
+};

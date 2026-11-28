@@ -5486,7 +5486,6 @@ export class RootChange {
     return changed ? RootChange.fromSections(sections, data) : null;
   }
 
-  /** @internal */
   alignOpens(
     document: DocumentIndex,
     aligns: (
@@ -5503,50 +5502,43 @@ export class RootChange {
       const length = this.sections[index];
       const inserted = this.sections[index + 1];
       const value = this.data[index / 2];
-      let kept = 0;
 
       if (inserted > 0 && length > 0 && value instanceof PreparedTokenSlice) {
         const removed = document.slice(position, position + length).tokens;
-        const insert = value.tokens;
+        const { kept, keptTail } = containment.matchAlignedWrappers(
+          removed,
+          value.tokens,
+          aligns
+        );
 
-        while (kept < removed.length && kept < insert.length) {
-          const before = removed[kept];
-          const after = insert[kept];
-
-          if (
-            before.kind !== 'open' ||
-            after.kind !== 'open' ||
-            before.nodeKind !== after.nodeKind ||
-            !aligns(before.props, after.props)
-          ) {
-            break;
+        if (kept.length > 0) {
+          aligned = true;
+          for (const [beforeProps, afterProps] of kept) {
+            const modifications = semanticPropertyModifications(
+              beforeProps,
+              afterProps,
+              () => false
+            );
+            addSection(
+              sections,
+              data,
+              1,
+              modifications.length > 0 ? -2 : -1,
+              modifications.length > 0 ? modifications : null
+            );
           }
-
-          const modifications = semanticPropertyModifications(
-            before.props,
-            after.props,
-            () => false
-          );
-
-          addSection(
-            sections,
-            data,
-            1,
-            modifications.length > 0 ? -2 : -1,
-            modifications.length > 0 ? modifications : null
-          );
-          kept += 1;
+          const rest = value.slice(kept.length, value.length - keptTail);
+          const remainingRemoved = length - kept.length - keptTail;
+          if (remainingRemoved > 0 || rest.length > 0) {
+            addSection(sections, data, remainingRemoved, rest.length, rest);
+          }
+          if (keptTail > 0) addSection(sections, data, keptTail, -1, null);
+          position += length;
+          continue;
         }
       }
 
-      if (kept === 0) {
-        addSection(sections, data, length, inserted, value);
-      } else {
-        aligned = true;
-        const rest = (value as PreparedTokenSlice).slice(kept);
-
-        addSection(sections, data, length - kept, rest.length, rest);
-      }
+      addSection(sections, data, length, inserted, value);
       position += length;
     }
 
