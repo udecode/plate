@@ -6,6 +6,7 @@ import type { Value } from 'platejs';
 jsx;
 
 const sample = ({
+  align,
   code,
   heading,
   intro,
@@ -14,6 +15,7 @@ const sample = ({
   quote,
   table,
 }: {
+  align: { center: string; heading: string; justify: string; start: string };
   code: { heading: string; text: string };
   heading: string;
   intro: string;
@@ -38,6 +40,10 @@ const sample = ({
     <hheading level={2}>{heading}</hheading>
     <hp>{intro}</hp>
     <hp>{other}</hp>
+    <hheading level={3}>{align.heading}</hheading>
+    <hp>{align.start}</hp>
+    <hp textAlign="center">{align.center}</hp>
+    <hp textAlign="justify">{align.justify}</hp>
     <hheading level={3}>{lists.heading}</hheading>
     <hp indent={1} listType="bulleted">
       {lists.first}
@@ -94,6 +100,13 @@ const sample = ({
 
 export const rtlValues = {
   ar: sample({
+    align: {
+      center: 'فقرة في الوسط.',
+      heading: 'المحاذاة',
+      justify:
+        'فقرة مضبوطة من الجانبين تمتد أسطرها حتى الحافتين، وتعود إلى محاذاة الاتجاه عند اختيار الافتراضي.',
+      start: 'فقرة بلا محاذاة تبدأ من اليمين، وهو الافتراضي في العربية.',
+    },
     code: {
       heading: 'الشيفرة والمعادلات',
       text: 'تبقى الشيفرة والمعادلات من اليسار إلى اليمين: ',
@@ -120,6 +133,14 @@ export const rtlValues = {
     },
   }),
   en: sample({
+    align: {
+      center: 'A centered paragraph.',
+      heading: 'Alignment',
+      justify:
+        'A justified paragraph stretches its lines to both edges, and Default returns it to the alignment of its direction.',
+      start:
+        'A paragraph with no alignment starts at the left, the default for English.',
+    },
     code: {
       heading: 'Code and equations',
       text: 'Code and equations stay left-to-right: ',
@@ -145,6 +166,13 @@ export const rtlValues = {
     },
   }),
   he: sample({
+    align: {
+      center: 'פסקה ממורכזת.',
+      heading: 'יישור',
+      justify:
+        'פסקה מיושרת לשני הצדדים מותחת את שורותיה עד שני הקצוות, וברירת המחדל מחזירה אותה ליישור של הכיוון.',
+      start: 'פסקה ללא יישור מתחילה מימין, ברירת המחדל בעברית.',
+    },
     code: {
       heading: 'קוד ונוסחאות',
       text: 'קוד ונוסחאות נשארים משמאל לימין: ',

@@ -1,6 +1,7 @@
 import {
   BaseParagraphPlugin,
   definePlugin,
+  ElementApi,
   getInjectMatch,
   PLUGINS,
   property,
@@ -9,13 +10,16 @@ import {
   type DefinitionOf,
   type Editor,
   type Element,
+  type Node,
   type NodeSetNodesOptions,
+  type Path,
   type PluginFormatRegistry,
   type PluginTransaction,
   type WithNodeTarget,
   txLocate,
   locateAt,
 } from '../../../core';
+import { hasNonWritableAt } from '../../../facade';
 import type { AnyBasePlugin } from '../../../lib/plugin/BasePlugin';
 import { formatting } from './BaseFormattingPlugin';
 
@@ -39,7 +43,7 @@ const parseLineHeight = (text: string) => {
 };
 
 const blockStyleUpdate =
-  <TValue>(key: 'lineHeight' | 'textAlign' | 'textIndent') =>
+  <TValue>(key: 'lineHeight' | 'textAlign') =>
   ({
     editor,
     plugin,
@@ -48,32 +52,41 @@ const blockStyleUpdate =
     editor: Editor;
     plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>;
     tx: PluginTransaction;
-  }) => ({
-    clear: txLocate(
-      locateAt(0),
-      (options?: WithNodeTarget<NodeSetNodesOptions<Element>>) => {
-        tx.nodes.unset(key, {
-          match: getInjectMatch(editor, plugin),
-          ...options,
-        });
-      }
-    ),
-    set: txLocate(
-      locateAt(1),
-      (
-        value: TValue,
-        options?: WithNodeTarget<NodeSetNodesOptions<Element>>
-      ) => {
-        tx.nodes.set(
-          { [key]: value },
-          {
-            match: getInjectMatch(editor, plugin),
-            ...options,
-          }
-        );
-      }
-    ),
-  });
+  }) => {
+    const composeMatch = (
+      options?: WithNodeTarget<NodeSetNodesOptions<Element>>
+    ) => {
+      const injectMatch = getInjectMatch(editor, plugin);
+      const userMatch = options?.match;
+
+      return {
+        ...options,
+        match: (node: Node, path: Path) =>
+          ElementApi.isElement(node) &&
+          injectMatch(node, path) &&
+          !hasNonWritableAt(editor, path) &&
+          (!userMatch || userMatch(node, path)),
+      };
+    };
+
+    return {
+      clear: txLocate(
+        locateAt(0),
+        (options?: WithNodeTarget<NodeSetNodesOptions<Element>>) => {
+          tx.nodes.unset(key, composeMatch(options));
+        }
+      ),
+      set: txLocate(
+        locateAt(1),
+        (
+          value: TValue,
+          options?: WithNodeTarget<NodeSetNodesOptions<Element>>
+        ) => {
+          tx.nodes.set({ [key]: value }, composeMatch(options));
+        }
+      ),
+    };
+  };
 
 export type Alignment =
   | 'center'
@@ -95,11 +108,6 @@ const ALIGNMENTS = [
 const isAlignment = (value: unknown): value is Alignment =>
   typeof value === 'string' &&
   ALIGNMENTS.some((alignment) => alignment === value);
-
-export type TextIndentPluginState = {
-  offset: number;
-  unit: string;
-};
 
 // Google Docs writes its default text style on every run it copies, and each run
 // is a span that carries its whole style. So inside a Docs paste, a value equal
@@ -372,77 +380,5 @@ export const BaseTextAlignPlugin = definePlugin(PLUGINS.textAlign, {
   update: blockStyleUpdate<Alignment>('textAlign'),
 });
 
-export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
-  contributions: [formatting.of({ block: ['textIndent'] })],
-  initialState: (): TextIndentPluginState => ({
-    offset: 24,
-    unit: 'px',
-  }),
-  schema: ({ targetElementTypes }) => ({
-    properties: {
-      textIndent: schema.elementProperty(property.number(), {
-        target: target.types(targetElementTypes),
-        typeChange: 'preserve-if-allowed',
-      }),
-    },
-  }),
-  targetPlugins: [BaseParagraphPlugin],
-  formats: ({ defineFormats }) =>
-    defineFormats({
-      html: {
-        decode: ({ element, pluginState, preserve }) => {
-          const { offset, unit } = pluginState;
-          const dataValue = element.dataset.textIndent;
-
-          if (dataValue) {
-            const value = Number(dataValue);
-
-            preserve('data-text-indent');
-
-            return Number.isFinite(value) && value !== 0 ? value : undefined;
-          }
-
-          const styleValue = element.style.textIndent;
-
-          if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) {
-            return undefined;
-          }
-
-          const numericValue = unit
-            ? styleValue.slice(0, -unit.length)
-            : styleValue;
-          const value = Number(numericValue) / offset;
-
-          return Number.isFinite(value) && value !== 0 ? value : undefined;
-        },
-        encode: ({ pluginState, value }) => {
-          const { offset, unit } = pluginState;
-
-          return {
-            attributes: { 'data-text-indent': value },
-            style: { textIndent: value * offset + unit },
-          };
-        },
-        match: [
-          { attributes: { 'data-text-indent': true } },
-          { style: { textIndent: '*' } },
-        ],
-      },
-    }),
-  inject: {
-    isBlock: true,
-    nodeProps: {
-      styleKey: 'textIndent',
-      transformNodeValue: ({ store, nodeValue }) => {
-        const { offset, unit } = store.get();
-
-        return Number(nodeValue) * offset + unit;
-      },
-    },
-  },
-  update: blockStyleUpdate<number>('textIndent'),
-});
-
 export type LineHeightDefinition = DefinitionOf<typeof BaseLineHeightPlugin>;
 export type TextAlignDefinition = DefinitionOf<typeof BaseTextAlignPlugin>;
-export type TextIndentDefinition = DefinitionOf<typeof BaseTextIndentPlugin>;

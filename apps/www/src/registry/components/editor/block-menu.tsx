@@ -43,6 +43,14 @@ import { cutBlocks } from '@/registry/components/editor/dnd';
 type LeafFormat = `heading-${1 | 2 | 3 | 4 | 5 | 6}` | ListType | 'text';
 type Value = 'askAI' | null;
 
+const alignItems = [
+  { label: 'Default', value: 'default' },
+  { label: 'Left', value: 'left' },
+  { label: 'Center', value: 'center' },
+  { label: 'Right', value: 'right' },
+  { label: 'Justify', value: 'justify' },
+] as const;
+
 const readBlocks = (
   editor: ReturnType<typeof useEditor>
 ): ReturnType<ReturnType<typeof useEditor>['read']['nodes']['blocks']> => {
@@ -125,6 +133,10 @@ export function BlockContextMenu({ children }: WrapContentProps) {
     getProp: (node) =>
       ElementApi.isElement(node) ? getLeafFormat(editor, node) : undefined,
   }) as LeafFormat | undefined;
+  const alignValue = useSelectionFragmentProp({
+    getProp: (node) =>
+      ElementApi.isElement(node) ? (node.textAlign ?? 'default') : undefined,
+  });
   const quoteActive = useEditorSelector((current) => {
     const quote = current.plugin(BaseBlockquotePlugin);
     const entries = readBlocks(current);
@@ -558,26 +570,36 @@ export function BlockContextMenu({ children }: WrapContentProps) {
                   Align
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
-                  {(['left', 'center', 'right'] as const).map((align) => (
-                    <ContextMenuItem
-                      key={align}
-                      onClick={() => {
-                        const textAlign = editor.plugin(BaseTextAlignPlugin);
+                  <ContextMenuRadioGroup
+                    value={
+                      alignItems.find((item) => item.value === alignValue)
+                        ?.value ?? ''
+                    }
+                    onValueChange={(value) => {
+                      const textAlign = editor.plugin(BaseTextAlignPlugin);
+                      const item = alignItems.find(
+                        (candidate) => candidate.value === value
+                      );
 
-                        if (
-                          !textAlign.installed ||
-                          !readBlocks(editor).length ||
-                          editor.read.view.isReadOnly()
-                        ) {
-                          return;
-                        }
+                      if (
+                        !item ||
+                        !textAlign.installed ||
+                        !readBlocks(editor).length ||
+                        editor.read.view.isReadOnly()
+                      ) {
+                        return;
+                      }
 
-                        textAlign.update.set(align);
-                      }}
-                    >
-                      {align[0].toUpperCase() + align.slice(1)}
-                    </ContextMenuItem>
-                  ))}
+                      if (item.value === 'default') textAlign.update.clear();
+                      else textAlign.update.set(item.value);
+                    }}
+                  >
+                    {alignItems.map((item) => (
+                      <ContextMenuRadioItem key={item.value} value={item.value}>
+                        {item.label}
+                      </ContextMenuRadioItem>
+                    ))}
+                  </ContextMenuRadioGroup>
                 </ContextMenuSubContent>
               </ContextMenuSub>
             )}

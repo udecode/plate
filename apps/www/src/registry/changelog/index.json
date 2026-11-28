@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-align-clear-and-rtl-ui",
+      "href": "/registry/changelog/2026-11-28-align-clear-and-rtl-ui.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Add Default alignment clear, RTL-aware align toolbar icon, and block menu alignment radio group",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["align-toolbar-button", "block-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-authored-user-directory-and-discussion-cleanup",
       "href": "/registry/changelog/2026-11-28-authored-user-directory-and-discussion-cleanup.json",
       "status": "draft",

@@ -147,9 +147,15 @@ export const migratePlateV54Ast = ({
       );
     }
 
+    const nextIndent =
+      rawIndent === undefined ? undefined : Math.trunc(rawIndent) - 1;
+    const { indent: _oldIndent, ...rest } = input;
+
     return {
-      ...input,
-      ...(rawIndent === undefined ? {} : { indent: Math.trunc(rawIndent) - 1 }),
+      ...rest,
+      ...(nextIndent !== undefined && nextIndent > 0
+        ? { indent: nextIndent }
+        : {}),
       children,
     };
   };
@@ -206,6 +212,7 @@ export const migratePlateV54Ast = ({
         detailsProperties[key] = value;
         continue;
       }
+      if (key === 'textIndent') continue;
 
       throw new Error(
         `Plate v54 migration cannot convert legacy Toggle at ${location}: neither Details nor Summary owns property "${key}".`
@@ -572,11 +579,18 @@ export const migratePlateV54Ast = ({
     ) {
       const indent = safeInteger(properties().indent);
 
-      if (indent === undefined || indent < 0) {
+      if (indent === undefined || indent <= 0) {
         without('indent');
       } else if (indent !== properties().indent) {
         element = { ...element, indent };
       }
+    }
+
+    if (
+      Object.hasOwn(element, 'textIndent') &&
+      !ownsProperty(element.type, 'textIndent', context)
+    ) {
+      without('textIndent');
     }
 
     if (

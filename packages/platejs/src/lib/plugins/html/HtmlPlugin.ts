@@ -1788,7 +1788,6 @@ export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
   'data-list-type',
   'data-locked',
   'data-meta',
-  'data-text-indent',
 ]);
 
 type HtmlFormattingAudit = Readonly<{

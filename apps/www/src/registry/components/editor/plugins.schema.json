@@ -3861,10 +3861,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:b9a55ce4a3f68fea",
+  "fingerprint": "fnv1a64:2b71c2acb9a236a7",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:b9a55ce4a3f68fea",
+    "fingerprint": "fnv1a64:2b71c2acb9a236a7",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -4201,7 +4201,7 @@
           "kind": "number",
           "omitDefault": false,
           "required": false,
-          "validationVersion": 1
+          "validationVersion": 2
         },
         "exclusiveGroupIds": [],
         "id": "element:indent@61aa182cc298c12d",

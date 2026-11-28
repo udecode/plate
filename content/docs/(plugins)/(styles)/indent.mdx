@@ -161,7 +161,7 @@ Indents the selected block(s) in the editor and returns `true` when at least one
 
 <API name="increase">
   <APIOptions type="IndentChangeOptions" optional>
-    Options for indenting blocks.
+    Flat options for targeting blocks (`at`, `match`, `mode`).
   </APIOptions>
 </API>
 
@@ -171,7 +171,32 @@ Decreases the indentation of the selected blocks and returns `true` when at leas
 
 <API name="decrease">
   <APIOptions type="IndentChangeOptions" optional>
-    Options for outdenting blocks.
+    Flat options for targeting blocks (`at`, `match`, `mode`).
+  </APIOptions>
+</API>
+
+### `editor.plugin(IndentPlugin).update.set`
+
+Sets a positive integer `indent` level on matching non-list blocks, clamped to `indentMax` when configured. Passing `0` or a negative number clears `indent`.
+
+<API name="set">
+  <APIParameters>
+    <APIItem name="level" type="number">
+      Target indent level.
+    </APIItem>
+    <APIItem name="options" type="IndentChangeOptions" optional>
+      Flat options for targeting blocks (`at`, `match`, `mode`).
+    </APIItem>
+  </APIParameters>
+</API>
+
+### `editor.plugin(IndentPlugin).update.clear`
+
+Removes `indent` from matching non-list blocks while leaving list items and their nested continuation blocks intact.
+
+<API name="clear">
+  <APIOptions type="IndentChangeOptions" optional>
+    Flat options for targeting blocks (`at`, `match`, `mode`).
   </APIOptions>
 </API>
 
@@ -179,7 +204,7 @@ Decreases the indentation of the selected blocks and returns `true` when at leas
 
 ### `IndentChangeOptions`
 
-Flat options for targeting blocks to indent or outdent.
+Flat options for targeting blocks to indent, outdent, set, or clear.
 
 <API name="IndentChangeOptions">
   <APIOptions>
@@ -210,24 +235,3 @@ const { update } = editor.plugin(IndentPlugin);
   <ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
 </>
 ```
-
-## First-line indent
-
-`TextIndentPlugin` indents only a block's first line. It stores a step count in `textIndent` and draws CSS `text-indent` as `offset * textIndent + unit`, so a negative count is a hanging indent. No kit installs it, so add it yourself:
-
-```tsx
-import { TextIndentPlugin } from "platejs/react";
-import { createEditor } from "platejs/react";
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    TextIndentPlugin,
-  ],
-});
-
-editor.update.textIndent.set(1);
-editor.update.textIndent.clear({ at: [] });
-```
-
-`set(value, options?)` saves the count on matching target blocks, and `clear(options?)` removes it. Both take Plate node update options for the target range and matcher. The plugin targets paragraphs unless you pass `targetPlugins`. `initialState.offset` and `initialState.unit` set the step size, `24` and `'px'` by default. Word export writes the count as a first-line indent, or a hanging indent when negative, and skips it on list paragraphs.

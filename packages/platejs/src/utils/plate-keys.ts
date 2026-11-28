@@ -61,7 +61,6 @@ export const PLUGINS = {
   tableCell: 'tableCell',
   tableRow: 'tableRow',
   textAlign: 'textAlign',
-  textIndent: 'textIndent',
   toc: 'toc',
   details: 'details',
   detailsSummary: 'detailsSummary',

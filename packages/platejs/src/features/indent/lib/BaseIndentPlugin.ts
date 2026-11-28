@@ -5,6 +5,7 @@ import {
   ElementApi,
   getInjectMatch,
   locateAt,
+  PathApi,
   PLUGINS,
   property,
   schema,
@@ -17,6 +18,8 @@ import {
   type NodeKey,
   type NodeMatchPredicate,
   type NodeSelection,
+  type Path,
+  type PluginTransaction,
 } from '../../../core';
 import { projectEditorView } from '../../../facade';
 import {
@@ -29,20 +32,18 @@ import {
 } from '../../../internal/plugin/indentShift';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
 import { formatting } from '../../basic-styles';
-import {
-  isNonNegativeSafeInteger,
-  toIndentLevel,
-} from './indentLevel.internal';
+import { isPositiveSafeInteger, toIndentLevel } from './indentLevel.internal';
 
-/** Options for increasing or decreasing block indentation. */
+/** Options for increasing, decreasing, setting, or clearing block indentation. */
 export type IndentChangeOptions = {
   at?: Location | NodeSelection;
   match?: NodeMatchPredicate<Element>;
   mode?: 'all' | 'highest' | 'lowest';
 };
 
+/** Configuration state for block margin indentation. */
 export type IndentPluginState = {
-  /** Maximum number of indentation. */
+  /** Maximum number of indentation levels. */
   indentMax: number | null;
   /**
    * Indentation offset used in `(offset * element.indent) + unit`.
@@ -62,6 +63,68 @@ const initialState: IndentPluginState = {
   indentMax: null,
   offset: 24,
   unit: 'px',
+};
+
+const indentDepthOf = (node: Element) =>
+  isPositiveSafeInteger(node.indent) ? node.indent : node.listType ? 1 : 0;
+
+// Protects list items and continuation blocks nested under a list head so
+// `indent.set` / `indent.clear` cannot orphan list structure.
+const isInListFamily = (tx: PluginTransaction, path: Path): boolean => {
+  const index = path.at(-1);
+
+  if (index === undefined) return false;
+
+  const parentPath = PathApi.parent(path);
+  const parent =
+    parentPath.length > 0 ? tx.nodes.get(parentPath)?.[0] : undefined;
+  const siblings =
+    parentPath.length > 0
+      ? ElementApi.isElement(parent)
+        ? parent.children
+        : []
+      : tx.children();
+  const targetNode = siblings[index];
+
+  if (!ElementApi.isElement(targetNode)) return false;
+  if (targetNode.listType) return true;
+
+  const targetDepth = indentDepthOf(targetNode);
+
+  if (targetDepth <= 0) return false;
+
+  let minDepth = targetDepth;
+
+  for (let i = index - 1; i >= 0; i -= 1) {
+    const sibling = siblings[i];
+
+    if (!ElementApi.isElement(sibling)) return false;
+
+    const depth = indentDepthOf(sibling);
+
+    if (depth < minDepth) {
+      if (sibling.listType) return true;
+      minDepth = depth;
+      if (minDepth <= 0) return false;
+    }
+  }
+
+  return false;
+};
+
+const clampToIndentMax = (
+  level: number,
+  indentMax: number | null
+): number | null => {
+  if (typeof indentMax !== 'number' || !Number.isFinite(indentMax)) {
+    return level;
+  }
+
+  const max = Math.trunc(indentMax);
+
+  if (max <= 0) return null;
+
+  return Math.min(level, max);
 };
 
 const readMarginLevel = (
@@ -93,6 +156,7 @@ const readHtmlMarginIndent = (
     state
   );
 
+/** Schema, commands, shortcuts, and HTML codec for block margin indentation. */
 export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
   contributions: [formatting.of({ block: ['indent'] })],
   initialState,
@@ -100,8 +164,8 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
     properties: {
       indent: schema.elementProperty(
         property.number({
-          validate: isNonNegativeSafeInteger,
-          validationVersion: 1,
+          validate: isPositiveSafeInteger,
+          validationVersion: 2,
         }),
         {
           landing: 'rebase',
@@ -124,22 +188,39 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
     },
   },
   update: ({ editor, plugin, schema: pluginSchema, store, tx }) => {
-    const change = (
-      offset: 1 | -1,
-      { at, match, mode = 'lowest' }: IndentChangeOptions = {}
-    ): boolean => {
+    const readEntries = ({
+      at,
+      match,
+      mode = 'lowest',
+    }: IndentChangeOptions = {}) => {
       const injectMatch = getInjectMatch(editor, plugin);
-      const entries = tx.nodes.blocks({
+
+      return tx.nodes.blocks({
         ...(at === undefined ? {} : { at }),
         mode,
         match: (node, path) =>
           injectMatch(node, path) && (!match || match(node, path)),
       });
+    };
+
+    const change = (
+      offset: 1 | -1,
+      options: IndentChangeOptions = {}
+    ): boolean => {
+      const entries = readEntries(options);
 
       if (entries.length === 0) return false;
 
       const { indentMax } = store.get();
-      const root = resolveTargetRoot(at, tx.view.root(), tx.selection());
+      const normalizedMax =
+        typeof indentMax === 'number' && Number.isFinite(indentMax)
+          ? Math.trunc(indentMax)
+          : null;
+      const root = resolveTargetRoot(
+        options.at,
+        tx.view.root(),
+        tx.selection()
+      );
       const claimed = new Set<NodeKey>();
       const plans: IndentShiftPlan[] = [];
       const unclaimed = () =>
@@ -157,7 +238,7 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
         const plan = contribute({
           editor,
           entries: remaining,
-          indentMax,
+          indentMax: normalizedMax,
           offset,
           root,
           tx,
@@ -181,16 +262,31 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
           tx.schema.getProperty(node, pluginSchema.properties.indent) ?? 0
         );
 
+        if (normalizedMax !== null && normalizedMax <= 0) {
+          if (currentIndent > 0) {
+            genericWrites.push({ key, nextIndent: 0 });
+          }
+          continue;
+        }
         if (
           offset > 0 &&
-          typeof indentMax === 'number' &&
-          currentIndent >= indentMax
+          normalizedMax !== null &&
+          currentIndent >= normalizedMax
         ) {
           continue;
         }
         if (offset < 0 && currentIndent <= 0) continue;
 
-        genericWrites.push({ key, nextIndent: currentIndent + offset });
+        const nextIndent = Math.max(
+          0,
+          normalizedMax !== null
+            ? Math.min(currentIndent + offset, normalizedMax)
+            : currentIndent + offset
+        );
+
+        if (nextIndent === currentIndent) continue;
+
+        genericWrites.push({ key, nextIndent });
       }
 
       let changed = false;
@@ -211,13 +307,103 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
       return changed;
     };
 
+    const clear = (options: IndentChangeOptions = {}): boolean => {
+      const entries = readEntries(options);
+
+      if (entries.length === 0) return false;
+
+      const root = resolveTargetRoot(
+        options.at,
+        tx.view.root(),
+        tx.selection()
+      );
+      let changed = false;
+
+      for (const [node, path] of entries) {
+        if (!ElementApi.isElement(node)) continue;
+
+        const key = tx.key(node);
+
+        if (
+          !key ||
+          hasNonWritableBlock(editor, path, root) ||
+          isInListFamily(tx, path)
+        ) {
+          continue;
+        }
+        if (
+          tx.schema.getProperty(node, pluginSchema.properties.indent) ===
+          undefined
+        ) {
+          continue;
+        }
+
+        tx.nodes.unset('indent', { at: key });
+        changed = true;
+      }
+
+      return changed;
+    };
+
+    const set = (level: number, options: IndentChangeOptions = {}): boolean => {
+      if (typeof level !== 'number' || !Number.isFinite(level)) return false;
+
+      const truncated = Math.trunc(level);
+
+      if (truncated <= 0) return clear(options);
+
+      const { indentMax } = store.get();
+      const clamped = clampToIndentMax(truncated, indentMax);
+
+      if (clamped === null) return clear(options);
+
+      const entries = readEntries(options);
+
+      if (entries.length === 0) return false;
+
+      const root = resolveTargetRoot(
+        options.at,
+        tx.view.root(),
+        tx.selection()
+      );
+      let changed = false;
+
+      for (const [node, path] of entries) {
+        if (!ElementApi.isElement(node)) continue;
+
+        const key = tx.key(node);
+
+        if (
+          !key ||
+          hasNonWritableBlock(editor, path, root) ||
+          isInListFamily(tx, path)
+        ) {
+          continue;
+        }
+
+        const currentIndent = tx.schema.getProperty(
+          node,
+          pluginSchema.properties.indent
+        );
+
+        if (currentIndent === clamped) continue;
+
+        tx.nodes.set({ indent: clamped }, { at: key });
+        changed = true;
+      }
+
+      return changed;
+    };
+
     return {
+      clear: txLocate(locateAt(0), clear),
       decrease: txLocate(locateAt(0), (options?: IndentChangeOptions) =>
         change(-1, options)
       ),
       increase: txLocate(locateAt(0), (options?: IndentChangeOptions) =>
         change(1, options)
       ),
+      set: txLocate(locateAt(1), set),
     };
   },
   formats: ({ defineFormats }) =>
@@ -384,14 +570,21 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
 
         if (
           typeof indentMax === 'number' &&
-          typeof indent === 'number' &&
-          indent > indentMax
+          Number.isFinite(indentMax) &&
+          typeof indent === 'number'
         ) {
-          tx.nodes.set({ indent: indentMax }, { at: path });
+          const max = Math.trunc(indentMax);
+
+          if (max <= 0) {
+            tx.nodes.unset('indent', { at: path });
+          } else if (indent > max) {
+            tx.nodes.set({ indent: max }, { at: path });
+          }
         }
       },
     },
   ],
 }));
 
+/** Plugin definition type for `BaseIndentPlugin`. */
 export type IndentDefinition = DefinitionOf<typeof BaseIndentPlugin>;

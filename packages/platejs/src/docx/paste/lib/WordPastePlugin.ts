@@ -329,10 +329,7 @@ const prepareWordHtml = (
     leftOut.push('Word equations were left out.');
   }
 
-  const getIndent = (
-    element: HTMLElement,
-    property: 'marginLeft' | 'textIndent'
-  ) => {
+  const getIndent = (element: HTMLElement, property: 'marginLeft') => {
     const value = element.style[property];
 
     if (!value || value.startsWith('-')) return 0;
@@ -471,13 +468,9 @@ const prepareWordHtml = (
     }
 
     const indent = getIndent(htmlElement, 'marginLeft');
-    const textIndent = getIndent(htmlElement, 'textIndent');
 
     if (indent) {
       htmlElement.dataset.indent = String(indent);
-    }
-    if (textIndent) {
-      htmlElement.dataset.textIndent = String(textIndent);
     }
   });
 

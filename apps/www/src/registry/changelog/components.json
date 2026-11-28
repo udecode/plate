@@ -38,6 +38,39 @@
       "2026-11-28-ai-safe-locked-clauses",
       "2026-11-27-add-lock-kit"
     ],
+    "align-toolbar-button": [
+      "2026-11-28-align-clear-and-rtl-ui",
+      "2026-11-27-align-menu-item-padding",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-10-18-layout-style-values",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "block-menu": [
+      "2026-11-28-align-clear-and-rtl-ui",
+      "2026-11-28-floating-discussion-block-switch-and-width",
+      "2026-11-28-list-indent-api-and-task-ui",
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "2026-11-27-add-lock-kit",
+      "2026-11-27-block-menu-board-suppress",
+      "2026-10-28-touch-menus",
+      "2026-10-15-quote-on-details-title",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-details-heading-titles",
+      "2026-10-10-selection-context-menu",
+      "2026-10-08-registry-install-dependencies",
+      "2026-10-02-schema-block-handles",
+      "2026-10-01-block-move-actions",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-block-action-owners",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-single-selection-authority",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
     "user-directory": [
       "2026-11-28-authored-user-directory-and-discussion-cleanup"
     ],
@@ -499,28 +532,6 @@
       "2026-08-31-inline-component-props",
       "2026-08-25-base-first-registry"
     ],
-    "block-menu": [
-      "2026-11-28-floating-discussion-block-switch-and-width",
-      "2026-11-28-list-indent-api-and-task-ui",
-      "2026-11-28-list-toolbar-and-menu-ergonomics",
-      "2026-11-27-add-lock-kit",
-      "2026-11-27-block-menu-board-suppress",
-      "2026-10-28-touch-menus",
-      "2026-10-15-quote-on-details-title",
-      "2026-10-14-block-void-selection",
-      "2026-10-13-details-heading-titles",
-      "2026-10-10-selection-context-menu",
-      "2026-10-08-registry-install-dependencies",
-      "2026-10-02-schema-block-handles",
-      "2026-10-01-block-move-actions",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-block-action-owners",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-single-selection-authority",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
-    ],
     "footnote": [
       "2026-11-28-footnote-combobox-keyboard-and-perf",
       "2026-11-28-inline-combobox-floating-ui",
@@ -805,15 +816,6 @@
       "2026-07-26-plugin-store-state",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
-    ],
-    "align-toolbar-button": [
-      "2026-11-27-align-menu-item-padding",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-10-18-layout-style-values",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-17-flat-editor-registry"
     ],
     "collaboration-demo": [
       "2026-11-27-collaboration-demo-history-gates",

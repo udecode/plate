@@ -161,7 +161,7 @@ const editor = createEditor({
 
 <API name="increase">
   <APIOptions type="IndentChangeOptions" optional>
-    用于缩进块的选项。
+    扁平块目标与筛选选项（`at`、`match`、`mode`）。
   </APIOptions>
 </API>
 
@@ -171,7 +171,32 @@ const editor = createEditor({
 
 <API name="decrease">
   <APIOptions type="IndentChangeOptions" optional>
-    用于取消缩进块的选项。
+    扁平块目标与筛选选项（`at`、`match`、`mode`）。
+  </APIOptions>
+</API>
+
+### `editor.plugin(IndentPlugin).update.set`
+
+在匹配的非列表块上设置正整数 `indent` 级别（若配置了 `indentMax` 则按上限截断）；传入 `0` 或负数时清除 `indent`。
+
+<API name="set">
+  <APIParameters>
+    <APIItem name="level" type="number">
+      目标缩进级别。
+    </APIItem>
+    <APIItem name="options" type="IndentChangeOptions" optional>
+      扁平块目标与筛选选项（`at`、`match`、`mode`）。
+    </APIItem>
+  </APIParameters>
+</API>
+
+### `editor.plugin(IndentPlugin).update.clear`
+
+移除匹配非列表块上的 `indent`，同时保持列表项及其嵌套续行块不变。
+
+<API name="clear">
+  <APIOptions type="IndentChangeOptions" optional>
+    扁平块目标与筛选选项（`at`、`match`、`mode`）。
   </APIOptions>
 </API>
 
@@ -179,7 +204,7 @@ const editor = createEditor({
 
 ### `IndentChangeOptions`
 
-用于指定缩进或取消缩进目标块的扁平选项。
+用于指定缩进、取消缩进、设置或清除目标块的扁平选项。
 
 <API name="IndentChangeOptions">
   <APIOptions>
@@ -210,28 +235,3 @@ const { update } = editor.plugin(IndentPlugin);
   <ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
 </>
 ```
-
-## 首行缩进
-
-`TextIndentPlugin` 只缩进块的第一行。它把缩进步数存在 `textIndent` 中，并按 `offset * textIndent + unit`
-绘制 CSS `text-indent`，所以负数步数是悬挂缩进。没有 kit 安装它，需要自己添加：
-
-```tsx
-import { TextIndentPlugin } from "platejs/react";
-import { createEditor } from "platejs/react";
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    TextIndentPlugin,
-  ],
-});
-
-editor.update.textIndent.set(1);
-editor.update.textIndent.clear({ at: [] });
-```
-
-`set(value, options?)` 在匹配的目标块上保存步数，`clear(options?)` 删除它。两者都接受 Plate 节点更新选项，
-用于指定目标范围和匹配器。默认目标是段落，可以用 `targetPlugins` 修改；`initialState.offset` 和
-`initialState.unit` 设置每一步的大小，默认是 `24` 和 `'px'`。Word 导出把步数写成首行缩进，负数时写成悬挂缩进，
-列表段落上会跳过。

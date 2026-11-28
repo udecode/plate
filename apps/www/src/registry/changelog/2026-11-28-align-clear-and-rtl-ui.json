@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-align-clear-and-rtl-ui",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-align-clear-and-rtl-ui.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Add Default alignment clear, RTL-aware align toolbar icon, and block menu alignment radio group",
+  "targets": [
+    {
+      "name": "align-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/align-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-align-clear-and-rtl-ui-align",
+      "kind": "behavior",
+      "summary": "Add a `Default` option that clears `textAlign` back to container direction, make the align toolbar trigger icon direction-aware (`AlignRightIcon` in RTL, `AlignLeftIcon` in LTR) when alignment is unset, and add `Default` and `Justify` radio items to the block context menu Align submenu.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["align-toolbar-button", "block-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-align-clear-and-rtl-ui",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
