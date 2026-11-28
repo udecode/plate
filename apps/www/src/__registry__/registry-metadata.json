@@ -1,5 +1,5 @@
 {
-  "generation": "454ae4bd17081cca26f8643aef542d9041b9a599130e5676b12841ec610ed65e",
+  "generation": "9d434570667394fcbb4f3a3e6d8074ffdb23202bfd8c236902254c7611ab8790",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -5342,6 +5342,39 @@
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
             "@plate/toolbar"
+          ]
+        },
+        {
+          "name": "list-focused-demo",
+          "title": "List",
+          "description": "Create bulleted, numbered, and task lists with unified indent and outdent controls.",
+          "type": "registry:example",
+          "files": [
+            {
+              "path": "examples/list-focused-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/list",
+                "title": "List"
+              }
+            ]
+          },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
+          "registryDependencies": [
+            "@plate/basic-blocks",
+            "@plate/editor",
+            "@plate/indent-toolbar-button",
+            "@plate/list",
+            "@plate/list-toolbar-button",
+            "@plate/toolbar",
+            "@plate/turn-into-toolbar-button"
           ]
         },
         {
@@ -13361,6 +13394,39 @@
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
             "@plate/toolbar"
+          ]
+        },
+        {
+          "name": "list-focused-demo",
+          "title": "List",
+          "description": "Create bulleted, numbered, and task lists with unified indent and outdent controls.",
+          "type": "registry:example",
+          "files": [
+            {
+              "path": "examples/list-focused-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/list",
+                "title": "List"
+              }
+            ]
+          },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
+          "registryDependencies": [
+            "@plate/basic-blocks",
+            "@plate/editor",
+            "@plate/indent-toolbar-button",
+            "@plate/list",
+            "@plate/list-toolbar-button",
+            "@plate/toolbar",
+            "@plate/turn-into-toolbar-button"
           ]
         },
         {

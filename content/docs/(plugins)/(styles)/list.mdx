@@ -8,7 +8,7 @@ docs:
 
 List turns supported blocks into flat list items. Kind, marker style, list identity, numbering starts, task state, and indentation are separate fields.
 
-<ComponentPreview name="list-demo" />
+<ComponentPreview name="list-focused-demo" />
 
 <PackageInfo>
 
@@ -19,7 +19,7 @@ List turns supported blocks into flat list items. Kind, marker style, list ident
 - listId names the list an item belongs to. A list counts on past other blocks, and two lists can interleave.
 - listLevels holds a list's per-level start and restart rules, as Word stores them.
 - listStart applies when the item opens its level; listRestart forces the item's number.
-- checked belongs to task items.
+- checked belongs to task items. Press `Mod+Enter` to toggle a task, and `Enter` at the end of a checked task starts an unchecked task.
 - Display ordinals are derived without rewriting following nodes.
 - Restart numbering and Continue numbering commands.
 - Markdown rules cover bullets, numbers, and tasks.
@@ -104,59 +104,66 @@ Both fields are signed safe integers, so zero and negative ordered-list starts r
 ## Commands
 
 ~~~ts
-import { ListStyle, ListType } from 'platejs';
-import { ListPlugin } from 'platejs/react';
+import { IndentPlugin, ListPlugin } from 'platejs/react';
 
 const list = editor.plugin(ListPlugin);
+const indent = editor.plugin(IndentPlugin);
 
-list.update.toggle({ type: ListType.Bulleted });
-list.update.toggle({
-  type: ListType.Bulleted,
-  listStyle: ListStyle.Square,
-});
-list.update.toggle({
-  type: ListType.Numbered,
-  listStart: 4,
-});
-list.update.toggle({ type: ListType.Task });
+list.update.set({ type: 'bulleted', style: 'square' });
+list.update.set({ type: 'numbered', style: null });
+list.update.set({ type: 'task', checked: true });
+
+list.update.toggle({ type: 'bulleted' });
+list.update.toggle({ type: 'numbered' });
+list.update.toggle({ type: 'task' });
 
 list.update.restart();
 list.update.restart({ start: 4 });
 list.update.continue();
 
-list.update.outdent();
+indent.update.increase();
+indent.update.decrease();
 list.update.clear();
-list.update.insert({ type: ListType.Numbered }, { replaceEmpty: true, select: true });
-list.update.upsert({ type: ListType.Task });
-list.read.isActive({ type: ListType.Numbered });
-list.read.isActive({ style: ListStyle.UpperRoman, type: ListType.Numbered });
+list.update.insert({ type: 'numbered' }, { replaceEmpty: true, select: true });
+list.update.upsert({ type: 'task' });
+list.read.isActive({ type: 'numbered' });
+list.read.isActive({ style: 'upper-roman', type: 'numbered' });
 ~~~
+
+`set` applies list semantics without toggling an existing list off. Omitting `style`
+preserves an item's current `listStyle` when it already has the same `listType`,
+and `style: null` resets to the default marker. For tasks, `checked` sets the
+task state explicitly. Passing an explicit `at` updates only that target without
+expanding to sibling items in the run.
+
+`toggle` sets or removes a list kind on matching writable blocks; it removes the
+list only when every targeted block already has that `type`.
 
 `restart` forces the selected numbered item's number, 1 by default. `continue`
 removes that restart. On the first item of a list, it moves the whole list onto
 the nearest earlier numbered list at its depth, so the numbers continue it.
 
 `clear` removes list fields and indentation from the selected list items without
-expanding to their unselected siblings. It preserves each block's type and text.
-Pass `at` to target a location or node selection. `insert` creates a paragraph
-list item after the current block; `replaceEmpty` replaces an empty source in
-the same history step. `upsert` replaces the current block when empty or inserts
-after it unless the current block already has that `listType`. An explicit `at`
-keeps node-insertion placement, while `after` identifies the block to insert
-beside. `read.isActive({ type, style? })` checks whether the selection includes
-a matching list item.
+expanding to their unselected siblings, preserving each block's type and text,
+and returns `true` when any block changed. Pass `at` to target a location or node
+selection. `insert` creates a paragraph list item after the current block;
+`replaceEmpty` replaces an empty source in the same history step. `upsert`
+replaces the current block when empty or inserts after it unless the current block
+already has that `listType`. An explicit `at` keeps node-insertion placement,
+while `after` identifies the block to insert beside. `read.isActive({ type, style? })`
+checks whether the selection includes a matching list item.
 
-Tab, Shift+Tab and `outdent` move an item together with the blocks under it,
-such as its nested items and continuation paragraphs, up to the next block at
-its depth or shallower. Drag and Cut take the same blocks through
-`editor.read.transfer.nodes()`. Indent's own commands still move one block.
-List writes each moved block's depth itself, so an override of Indent's
-`increase` or `decrease` does not run for these moves.
+Tab, Shift+Tab, and `IndentPlugin`'s `increase` and `decrease` all move a list
+item together with the blocks under it, such as nested items and continuation
+paragraphs, up to the next block at its depth or shallower. Decreasing an outer
+list item clears its list fields; Shift+Tab keeps an outer item outside a quote
+and lifts one inside a quote. Drag and Cut take the same blocks through
+`editor.read.transfer.nodes()`.
 
-`toggle` on a Details title turns the title into an item and puts the body one
-level under it. It returns `false` and changes nothing when a body block cannot
-take an indent or the result would not fit its parent. Other selected blocks
-stay unchanged too.
+`set` and `toggle` on a Details title turn the title into an item and put the
+body one level under it. They return `false` and change nothing when a body block
+cannot take an indent or the result would not fit its parent. Other selected
+blocks stay unchanged too.
 
 ## Pasting lists
 
@@ -224,14 +231,16 @@ The parse reports either change, so `lossPolicy: 'reject'` refuses it.
 
 | API | Purpose |
 | --- | --- |
-| ListType | Semantic bulleted, numbered, and task constants. |
-| ListStyle | CSS marker constants. |
-| update.toggle(options) | Set or remove list semantics. |
-| update.restart(options?) | Force the selected numbered item's number; `start` defaults to 1. |
-| update.continue(options?) | Remove the selected item's restart, or join the list to the previous one from its first item. |
-| update.outdent(options) | Decrease the indentation of each selected item and the blocks under it, and clear list fields at the outer level. |
-| update.clear(options?) | Remove list semantics from the exact selected list items. |
-| update.insert(input, options?) | Insert a list item with owned construction and placement. |
-| update.upsert(input, options?) | Insert or replace an empty block with a list item unless the target already matches `input.type`. |
-| read.isActive(options) | Check whether the current selection contains a list item matching `type` and optional `style`. |
-| read.ordinal(at) | Derive a numbered item's display ordinal, or `undefined` when `at` is not a numbered item in the editor's root. |
+| `ListType` | Type union `'bulleted' \| 'numbered' \| 'task'`. |
+| `ListStyle` | Type union for CSS `list-style-type` markers. |
+| `ListLevel` / `ListLevels` | Per-level start and restart rule types for Word-compatible lists. |
+| `ListDefinition` | Typed list-definition interface. |
+| `update.set(options)` | Apply list kind, optional `style` (`null` resets), or task `checked` state without toggling off. |
+| `update.toggle(options)` | Toggle a list kind on or off for matching writable blocks. |
+| `update.restart(options?)` | Force the selected numbered item's number; `start` defaults to 1. |
+| `update.continue(options?)` | Remove the selected item's restart, or join the list to the previous one from its first item. |
+| `update.clear(options?)` | Remove list semantics from the exact selected list items and return whether any block changed. |
+| `update.insert(input, options?)` | Insert a list item with owned construction and placement. |
+| `update.upsert(input, options?)` | Insert or replace an empty block with a list item unless the target already matches `input.type`. |
+| `read.isActive(options)` | Check whether the current selection contains a list item matching `type` and optional `style`. |
+| `read.ordinal(at)` | Derive a numbered item's display ordinal, or `undefined` when `at` is not a numbered item in the editor's root. |

@@ -2,10 +2,9 @@
 
 import {
   BulletedListRules,
-  ListType,
   OrderedListRules,
-  TaskListRules,
   PLUGINS,
+  TaskListRules,
 } from 'platejs';
 import { ListPlugin } from 'platejs/react';
 
@@ -30,7 +29,7 @@ export const ListKit = [
         query: ({ nodeProps }) => {
           const { element } = nodeProps;
 
-          return element?.listType === ListType.Bulleted;
+          return element?.listType === 'bulleted';
         },
         transformProps: ({ element, props }) => ({
           ...props,

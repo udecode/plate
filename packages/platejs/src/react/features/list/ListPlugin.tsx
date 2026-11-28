@@ -7,11 +7,7 @@ import {
   type RootKey,
 } from '../../../core';
 import { reportEditorLifecycleError } from '../../../facade';
-import {
-  BaseListPlugin,
-  isOrderedList,
-  ListType,
-} from '../../../features/list/lib';
+import { BaseListPlugin } from '../../../features/list/lib';
 import {
   applyListCommit,
   readListOrdinalByKey,
@@ -154,8 +150,8 @@ export const ListPlugin = toReactPlugin(BaseListPlugin, {
       if (!listType) return undefined;
 
       return (innerProps) => {
-        const List = isOrderedList(innerProps.element) ? 'ol' : 'ul';
-        const numbered = listType === ListType.Numbered;
+        const numbered = listType === 'numbered';
+        const List = numbered ? 'ol' : 'ul';
         const ordinal = numbered
           ? innerProps.editor
               .plugin(ListPlugin)

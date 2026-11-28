@@ -165,6 +165,7 @@
     ],
     "turn-into-toolbar-button": [
       "2026-11-28-column-resize-unwrap-and-entrypoint",
+      "2026-11-28-list-indent-api-and-task-ui",
       "2026-11-28-list-toolbar-and-menu-ergonomics",
       "2026-11-23-fix-toolbar-menu-checks",
       "2026-11-22-ui-sweep-fixes",
@@ -376,6 +377,7 @@
     ],
     "block-menu": [
       "2026-11-28-floating-discussion-block-switch-and-width",
+      "2026-11-28-list-indent-api-and-task-ui",
       "2026-11-28-list-toolbar-and-menu-ergonomics",
       "2026-11-27-add-lock-kit",
       "2026-11-27-block-menu-board-suppress",
@@ -467,7 +469,16 @@
       "2026-11-28-inline-combobox-trigger-props",
       "2026-11-21-prompt-editor"
     ],
+    "indent-toolbar-button": [
+      "2026-11-28-list-indent-api-and-task-ui",
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families"
+    ],
     "list-toolbar-button": [
+      "2026-11-28-list-indent-api-and-task-ui",
       "2026-11-28-list-toolbar-and-menu-ergonomics",
       "2026-11-18-registry-icon-library",
       "2026-10-12-toolbar-button-names",
@@ -478,14 +489,17 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-16-list-toolbar-wiring"
     ],
-    "indent-toolbar-button": [
+    "list": [
+      "2026-11-28-list-indent-api-and-task-ui",
       "2026-11-28-list-toolbar-and-menu-ergonomics",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families"
+      "2026-10-11-fix-bullet-list-style",
+      "2026-09-03-huge-code-block-demo",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
     ],
     "block-list": [
+      "2026-11-28-list-indent-api-and-task-ui",
       "2026-11-28-list-toolbar-and-menu-ergonomics",
       "2026-11-22-fix-todo-checkbox-undo",
       "2026-11-19-rtl-editor-ui",
@@ -503,6 +517,7 @@
       "2025-10-17-fix-react-decouple"
     ],
     "block-list-static": [
+      "2026-11-28-list-indent-api-and-task-ui",
       "2026-11-28-list-toolbar-and-menu-ergonomics",
       "2026-11-27-fix-base-and-phosphor-installs",
       "2026-11-27-render-prop-type-imports",
@@ -521,14 +536,7 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
-    "list": [
-      "2026-11-28-list-toolbar-and-menu-ergonomics",
-      "2026-10-11-fix-bullet-list-style",
-      "2026-09-03-huge-code-block-demo",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
+    "list-focused-demo": ["2026-11-28-list-indent-api-and-task-ui"],
     "markdown": [
       "2026-11-28-remove-raw-html-plugin",
       "2026-11-23-markdown-raw-html",

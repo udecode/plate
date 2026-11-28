@@ -74,6 +74,27 @@ export const examples: Registry['items'] = [
     meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
   },
   {
+    name: 'list-focused-demo',
+    title: 'List',
+    description:
+      'Create bulleted, numbered, and task lists with unified indent and outdent controls.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/list-focused-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/list',
+          title: 'List',
+        },
+      ],
+    },
+  },
+  {
     name: 'comment-demo',
     title: 'Comments',
     description:

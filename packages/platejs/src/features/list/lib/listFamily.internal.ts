@@ -1,7 +1,5 @@
-import type { Editor } from '../../../core';
 import {
   ElementApi,
-  hasNonWritableAt,
   PathApi,
   type Descendant,
   type EditorCoreStateView,
@@ -11,9 +9,13 @@ import {
   type NodeKey,
   type Path,
 } from '../../../facade';
-import { BaseIndentPlugin } from '../../indent';
-import { planMovedListStyles } from './listIdentity.internal';
-import { isListItem, listDepth } from './listIndex.internal';
+import {
+  hasNonWritableBlock,
+  type IndentShiftContext,
+  type IndentShiftPlan,
+} from '../../../internal/plugin/indentShift';
+import { planMovedListStyles, type NodeReader } from './listIdentity.internal';
+import { isListItem, LIST_FIELDS, listDepth } from './listIndex.internal';
 
 // Per sibling array and depth, the index of the last sibling deeper than the
 // depth in the unbroken run starting at each asked sibling, or -1 when that
@@ -128,41 +130,82 @@ export const isListFamilyMember = (
 
 type FamilyMember = Readonly<{ key: NodeKey; node: Element; path: Path }>;
 
+export const getSiblingsAtPath = (
+  rootChildren: readonly Descendant[],
+  parentPath: Path
+): readonly Descendant[] => {
+  let current = rootChildren;
+
+  for (const step of parentPath) {
+    const next = current[step];
+
+    if (!ElementApi.isElement(next)) return [];
+    current = next.children;
+  }
+
+  return current;
+};
+
+export const rootedNodeReader = (
+  tx: Pick<EditorCoreStateView, 'children' | 'nodes' | 'root'>,
+  root: string | undefined
+): NodeReader => {
+  if (!root) return tx;
+
+  return {
+    nodes: {
+      children: (parentPath: Path) =>
+        getSiblingsAtPath(tx.root(root), parentPath),
+      get: (target, options) => {
+        if (target.length === 0) return undefined;
+
+        const siblings = getSiblingsAtPath(
+          tx.root(root),
+          PathApi.parent(target)
+        );
+        const node = siblings[target.at(-1) ?? -1];
+
+        if (!node || !options.match(node)) return undefined;
+
+        return [node, target];
+      },
+    },
+  };
+};
+
 /**
  * The families `entries` head, in document order, read before any write. An
  * entry inside an earlier entry's family moves with that family and heads
  * none of its own.
  */
 export const getListFamilies = (
-  state: Pick<EditorCoreStateView, 'children' | 'key' | 'nodes'>,
-  entries: ReadonlyArray<NodeEntry<Element>>
+  state: Pick<EditorCoreStateView, 'children' | 'key' | 'root' | 'view'>,
+  entries: ReadonlyArray<NodeEntry<Element>>,
+  root: string | undefined = state.view.root()
 ) => {
   const families: FamilyMember[][] = [];
   const seen = new Set<Descendant>();
+  const rootChildren = root ? state.root(root) : state.children();
 
   for (const [node, path] of entries) {
     if (seen.has(node)) continue;
 
     const parentPath = PathApi.parent(path);
     const index = path.at(-1) ?? 0;
-    const parent =
-      parentPath.length > 0
-        ? state.nodes.get(parentPath, {
-            match: ElementApi.isElement,
-          })?.[0]
-        : undefined;
-    const siblings = parent ? parent.children : state.children();
+    const siblings = getSiblingsAtPath(rootChildren, parentPath);
     const end = listFamilyEnd(siblings, index);
     const family: FamilyMember[] = [];
 
     for (let member = index; member <= end; member += 1) {
       const sibling = siblings[member];
-      const memberPath = [...parentPath, member];
-      const key = state.key(memberPath);
 
-      if (!ElementApi.isElement(sibling) || !key) continue;
+      if (!ElementApi.isElement(sibling)) continue;
+
+      const key = state.key(sibling);
+
+      if (!key) continue;
       seen.add(sibling);
-      family.push({ key, node: sibling, path: memberPath });
+      family.push({ key, node: sibling, path: [...parentPath, member] });
     }
     families.push(family);
   }
@@ -185,38 +228,92 @@ export const shiftListFamilyMember = (
 };
 
 /**
- * Moves each family `entries` head one level deeper or shallower, so a list
- * item keeps its nested blocks under it. A deeper move skips a family whose
- * deepest member would pass Indent's `indentMax`.
+ * Plans one-pass family shifts for every list head in `entries`. Claimed keys
+ * include blocked families so generic indent never touches their children;
+ * non-list entries outside any claimed family stay unclaimed for generic
+ * indent. Decreasing a root list item to depth 0 clears `LIST_FIELDS`.
  */
-export const moveListFamilies = (
-  editor: Editor,
-  tx: EditorUpdateTransaction,
-  entries: ReadonlyArray<NodeEntry<Element>>,
-  { offset }: Readonly<{ offset: 1 | -1 }>
-) => {
-  const { indentMax } = editor.plugin(BaseIndentPlugin).store.get();
-  const moved = getListFamilies(tx, entries)
-    .filter(
-      (family) =>
-        !family.some(({ path }) => hasNonWritableAt(editor, path)) &&
-        (offset < 0 ||
-          typeof indentMax !== 'number' ||
-          family.every(({ node }) => listDepth(node) + 1 <= indentMax))
-    )
-    .flat();
-  const styles = planMovedListStyles(tx, moved, offset);
+export const planListIndentShift = ({
+  editor,
+  entries,
+  indentMax,
+  offset,
+  root,
+  tx,
+}: IndentShiftContext): IndentShiftPlan | null => {
+  const claimed = new Set<NodeKey>();
+  const movable: FamilyMember[][] = [];
 
-  for (const member of moved) {
-    shiftListFamilyMember(tx, member, offset);
+  for (const entry of entries) {
+    const [node] = entry;
+    const entryKey = tx.key(node);
 
-    const level = styles.get(member.node);
+    if (!entryKey || claimed.has(entryKey) || !isListItem(node)) continue;
 
-    if (!level) continue;
-    if (level.style === undefined) {
-      tx.nodes.unset('listStyle', { at: member.key });
-    } else {
-      tx.nodes.set({ listStyle: level.style }, { at: member.key });
+    const [family] = getListFamilies(tx, [entry], root);
+
+    if (!family || family.length === 0) continue;
+
+    for (const member of family) claimed.add(member.key);
+
+    if (
+      family.some(({ path: memberPath }) =>
+        hasNonWritableBlock(editor, memberPath, root)
+      )
+    ) {
+      continue;
     }
+    if (
+      offset > 0 &&
+      typeof indentMax === 'number' &&
+      family.some(
+        ({ node: memberNode }) => listDepth(memberNode) + 1 > indentMax
+      )
+    ) {
+      continue;
+    }
+
+    movable.push(family);
   }
+
+  if (claimed.size === 0) return null;
+
+  const moved = movable.flat();
+
+  return {
+    claimed,
+    apply: (applyTx) => {
+      if (moved.length === 0) return false;
+
+      const styles = planMovedListStyles(
+        rootedNodeReader(applyTx, root),
+        moved,
+        offset
+      );
+
+      for (const member of moved) {
+        shiftListFamilyMember(applyTx, member, offset);
+
+        if (
+          offset < 0 &&
+          isListItem(member.node) &&
+          listDepth(member.node) + offset <= 0
+        ) {
+          applyTx.nodes.unset([...LIST_FIELDS], { at: member.key });
+          continue;
+        }
+
+        const level = styles.get(member.node);
+
+        if (!level) continue;
+        if (level.style === undefined) {
+          applyTx.nodes.unset('listStyle', { at: member.key });
+        } else {
+          applyTx.nodes.set({ listStyle: level.style }, { at: member.key });
+        }
+      }
+
+      return true;
+    },
+  };
 };

@@ -13,11 +13,7 @@ import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnotePlugin,
 } from '../../../features/footnote';
-import {
-  BaseListPlugin,
-  type ListElement,
-  ListType,
-} from '../../../features/list';
+import { BaseListPlugin, type ListElement } from '../../../features/list';
 import { BaseTocPlugin, type Heading } from '../../../features/toc';
 import { getDefaultElementTag } from '../../../internal/plugin/defaultElementTag';
 import type { RenderElementProps } from '../../../lib/types/RenderElementProps';
@@ -263,13 +259,13 @@ const listItemOf = (
   };
 
   switch (element.listType) {
-    case ListType.Bulleted: {
+    case 'bulleted': {
       return {
         ...base,
         marker: { kind: 'bulleted', style: element.listStyle ?? 'disc' },
       };
     }
-    case ListType.Numbered: {
+    case 'numbered': {
       return {
         ...base,
         marker: {
@@ -280,7 +276,7 @@ const listItemOf = (
         },
       };
     }
-    case ListType.Task: {
+    case 'task': {
       return {
         ...base,
         marker: { checked: element.checked === true, kind: 'task' },

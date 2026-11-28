@@ -1,7 +1,7 @@
 'use client';
 
 import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
-import { ListStyle, ListType } from 'platejs';
+import type { ListType } from 'platejs';
 import {
   type Editor,
   ListPlugin,
@@ -38,18 +38,12 @@ const readSharedListStyle = (editor: Editor, type: ListType) => {
       if (node.listType !== type) return '';
       if (typeof node.listStyle === 'string') return node.listStyle;
 
-      return type === ListType.Numbered ? ListStyle.Decimal : ListStyle.Disc;
+      return type === 'numbered' ? 'decimal' : 'disc';
     })
   );
   const [style = ''] = styles;
 
   return styles.size === 1 ? style : '';
-};
-
-const setListStyle = (editor: Editor, type: ListType, listStyle: string) => {
-  if (readSharedListStyle(editor, type) === listStyle) return;
-
-  editor.plugin(ListPlugin).update.toggle({ listStyle, type });
 };
 
 export function BulletedListToolbarButton() {
@@ -58,10 +52,10 @@ export function BulletedListToolbarButton() {
   const [open, setOpen] = React.useState(false);
 
   const pressed = useEditorSelector((current) =>
-    current.plugin(ListPlugin).read.isActive({ type: ListType.Bulleted })
+    current.plugin(ListPlugin).read.isActive({ type: 'bulleted' })
   );
   const activeStyle = useEditorSelector((current) =>
-    readSharedListStyle(current, ListType.Bulleted)
+    readSharedListStyle(current, 'bulleted')
   );
 
   return (
@@ -72,7 +66,7 @@ export function BulletedListToolbarButton() {
         disabled={readOnly}
         onClick={() => {
           editor.plugin(ListPlugin).update.toggle({
-            type: ListType.Bulleted,
+            type: 'bulleted',
           });
           editor.api.dom.focus();
         }}
@@ -97,22 +91,25 @@ export function BulletedListToolbarButton() {
           <DropdownMenuRadioGroup
             value={activeStyle}
             onValueChange={(value) => {
-              setListStyle(editor, ListType.Bulleted, value);
+              editor.plugin(ListPlugin).update.set({
+                style: value,
+                type: 'bulleted',
+              });
             }}
           >
-            <DropdownMenuRadioItem value={ListStyle.Disc}>
+            <DropdownMenuRadioItem value="disc">
               <div className="flex items-center gap-2">
                 <div className="size-2 rounded-full border border-current bg-current" />
                 Default
               </div>
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={ListStyle.Circle}>
+            <DropdownMenuRadioItem value="circle">
               <div className="flex items-center gap-2">
                 <div className="size-2 rounded-full border border-current" />
                 Circle
               </div>
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={ListStyle.Square}>
+            <DropdownMenuRadioItem value="square">
               <div className="flex items-center gap-2">
                 <div className="size-2 border border-current bg-current" />
                 Square
@@ -133,10 +130,10 @@ export function NumberedListToolbarButton() {
   const startId = React.useId();
 
   const pressed = useEditorSelector((current) =>
-    current.plugin(ListPlugin).read.isActive({ type: ListType.Numbered })
+    current.plugin(ListPlugin).read.isActive({ type: 'numbered' })
   );
   const activeStyle = useEditorSelector((current) =>
-    readSharedListStyle(current, ListType.Numbered)
+    readSharedListStyle(current, 'numbered')
   );
   const numberingDisabled = !pressed || readOnly;
 
@@ -148,7 +145,7 @@ export function NumberedListToolbarButton() {
         disabled={readOnly}
         onClick={() => {
           editor.plugin(ListPlugin).update.toggle({
-            type: ListType.Numbered,
+            type: 'numbered',
           });
           editor.api.dom.focus();
         }}
@@ -180,25 +177,28 @@ export function NumberedListToolbarButton() {
           <DropdownMenuRadioGroup
             value={activeStyle}
             onValueChange={(value) => {
-              setListStyle(editor, ListType.Numbered, value);
+              editor.plugin(ListPlugin).update.set({
+                style: value,
+                type: 'numbered',
+              });
             }}
           >
-            <DropdownMenuRadioItem value={ListStyle.Decimal}>
+            <DropdownMenuRadioItem value="decimal">
               Decimal (1, 2, 3)
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={ListStyle.DecimalLeadingZero}>
+            <DropdownMenuRadioItem value="decimal-leading-zero">
               Decimal Leading Zero (01, 02, 03)
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={ListStyle.LowerAlpha}>
+            <DropdownMenuRadioItem value="lower-alpha">
               Lower Alpha (a, b, c)
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={ListStyle.UpperAlpha}>
+            <DropdownMenuRadioItem value="upper-alpha">
               Upper Alpha (A, B, C)
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={ListStyle.LowerRoman}>
+            <DropdownMenuRadioItem value="lower-roman">
               Lower Roman (i, ii, iii)
             </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value={ListStyle.UpperRoman}>
+            <DropdownMenuRadioItem value="upper-roman">
               Upper Roman (I, II, III)
             </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
@@ -280,7 +280,7 @@ export function TodoListToolbarButton(
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const pressed = useEditorSelector((current) =>
-    current.plugin(ListPlugin).read.isActive({ type: ListType.Task })
+    current.plugin(ListPlugin).read.isActive({ type: 'task' })
   );
 
   return (
@@ -289,7 +289,7 @@ export function TodoListToolbarButton(
       disabled={props.disabled || readOnly}
       pressed={pressed}
       onClick={() => {
-        editor.plugin(ListPlugin).update.toggle({ type: ListType.Task });
+        editor.plugin(ListPlugin).update.toggle({ type: 'task' });
         editor.api.dom.focus();
       }}
       tooltip="Todo"

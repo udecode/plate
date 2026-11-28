@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list-focused-demo",
+  "title": "List",
+  "description": "Create bulleted, numbered, and task lists with unified indent and outdent controls.",
+  "dependencies": [
+    "diff-match-patch-ts@^0.6.0",
+    "platejs"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/basic-blocks.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/indent-toolbar-button.json",
+    "https://platejs.org/r/list.json",
+    "https://platejs.org/r/list-toolbar-button.json",
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/turn-into-toolbar-button.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/list-focused-demo.tsx",
+      "content": "'use client';\n\nimport type { Value } from 'platejs';\nimport { EditorRoot, useCreateEditor } from 'platejs/react';\n\nimport { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\nimport {\n  IndentToolbarButton,\n  OutdentToolbarButton,\n} from '@/registry/components/editor/indent-toolbar-button';\nimport { ListKit } from '@/registry/components/editor/list';\nimport {\n  BulletedListToolbarButton,\n  NumberedListToolbarButton,\n  TodoListToolbarButton,\n} from '@/registry/components/editor/list-toolbar-button';\nimport { Toolbar, ToolbarGroup } from '@/registry/components/editor/toolbar';\nimport { TurnIntoToolbarButton } from '@/registry/components/editor/turn-into-toolbar-button';\n\nconst initialValue: Value = [\n  {\n    type: 'heading',\n    level: 2,\n    children: [{ text: 'Lists' }],\n  },\n  {\n    type: 'paragraph',\n    children: [\n      {\n        text: 'Try Tab and Shift+Tab on nested items, toggle tasks with Mod+Enter, or restart numbering from the numbered menu.',\n      },\n    ],\n  },\n  {\n    type: 'paragraph',\n    checked: true,\n    indent: 1,\n    listId: 'tasks',\n    listType: 'task',\n    children: [{ text: 'Unify indent and list family moves' }],\n  },\n  {\n    type: 'paragraph',\n    checked: false,\n    indent: 1,\n    listId: 'tasks',\n    listType: 'task',\n    children: [{ text: 'Press Enter at the end of a checked task' }],\n  },\n  {\n    type: 'paragraph',\n    indent: 1,\n    listId: 'bullets',\n    listType: 'bulleted',\n    children: [{ text: 'Bulleted item' }],\n  },\n  {\n    type: 'paragraph',\n    indent: 2,\n    listId: 'bullets',\n    listStyle: 'circle',\n    listType: 'bulleted',\n    children: [{ text: 'Nested circle bullet' }],\n  },\n  {\n    type: 'paragraph',\n    indent: 1,\n    listId: 'steps',\n    listStyle: 'upper-roman',\n    listType: 'numbered',\n    children: [{ text: 'First Roman step' }],\n  },\n  {\n    type: 'paragraph',\n    indent: 2,\n    listId: 'steps',\n    listType: 'numbered',\n    children: [{ text: 'Nested step one' }],\n  },\n  {\n    type: 'paragraph',\n    indent: 2,\n    listId: 'steps',\n    listType: 'numbered',\n    children: [{ text: 'Nested step two' }],\n  },\n  {\n    type: 'paragraph',\n    children: [{ text: 'A plain note between steps does not end the list.' }],\n  },\n  {\n    type: 'paragraph',\n    indent: 1,\n    listId: 'steps',\n    listStyle: 'upper-roman',\n    listType: 'numbered',\n    children: [{ text: 'Second Roman step continues past the note' }],\n  },\n];\n\nexport default function ListFocusedDemo() {\n  const editor = useCreateEditor({\n    plugins: [...BasicBlocksKit, ...ListKit],\n    initialValue,\n  });\n\n  return (\n    <EditorRoot editor={editor}>\n      <EditorContainer className=\"h-[440px]\">\n        <Toolbar className=\"gap-1 border-b px-3 py-1\">\n          <ToolbarGroup>\n            <TurnIntoToolbarButton />\n          </ToolbarGroup>\n          <ToolbarGroup>\n            <BulletedListToolbarButton />\n            <NumberedListToolbarButton />\n            <TodoListToolbarButton />\n          </ToolbarGroup>\n          <ToolbarGroup>\n            <OutdentToolbarButton />\n            <IndentToolbarButton />\n          </ToolbarGroup>\n        </Toolbar>\n        <Editor\n          aria-label=\"List document\"\n          className=\"h-auto min-h-[320px] px-8 py-4\"\n          variant=\"demo\"\n        />\n      </EditorContainer>\n    </EditorRoot>\n  );\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/list",
+        "title": "List"
+      }
+    ]
+  },
+  "type": "registry:example"
+}

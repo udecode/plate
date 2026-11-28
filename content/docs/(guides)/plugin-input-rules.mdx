@@ -538,8 +538,8 @@ group.
 import {
   BaseListPlugin,
   defineInputRule,
-  ListType,
   matchBlockStart,
+  PathApi,
   type InsertTextInputRuleReadContext,
 } from 'platejs';
 
@@ -560,8 +560,9 @@ export const BulletedListRules = {
       priority,
       resolve: (context) => matchBlockStart(context, { match: variant }),
       apply: ({ decline, tx }, match) => {
+        const blockPath = PathApi.parent(match.range.anchor.path);
         tx.text.delete({ at: match.range });
-        if (!tx.list.toggle({ type: ListType.Bulleted })) return decline();
+        if (!tx.list.set({ at: blockPath, type: 'bulleted' })) return decline();
       },
     }),
 };

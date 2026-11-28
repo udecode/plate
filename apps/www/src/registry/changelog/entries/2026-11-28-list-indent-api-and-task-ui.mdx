@@ -1,0 +1,18 @@
+---
+id: 2026-11-28-list-indent-api-and-task-ui
+date: 2026-11-28
+status: draft
+kind: behavior
+summary: 'Update list and indent registry components for unified indent commands, list.update.set, valid task HTML5, and a focused list demo'
+change: { 'type': 'source', 'date': '2026-11-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-28-list-indent-api-and-task-ui-01","kind":"behavior","migrationNotes":[]} -->
+
+- **`indent-toolbar-button`**, **`block-menu`**, **`list-toolbar-button`**, **`turn-into-toolbar-button`**, **`list`**: Call `IndentPlugin.update.increase`/`decrease` directly for list and block indentation, use `ListPlugin.update.set` for marker style and turn-into actions, and use `'bulleted' | 'numbered' | 'task'` literals.
+<!-- entry: {"id":"2026-11-28-list-indent-api-and-task-ui-02","kind":"fix","migrationNotes":[]} -->
+- **`block-list`**, **`block-list-static`**: Render the task checkbox wrapper inside `<li>` for valid HTML5 and emit `data-list-style` on numbered static items.
+<!-- entry: {"id":"2026-11-28-list-indent-api-and-task-ui-03","kind":"new","migrationNotes":[]} -->
+- **`list-focused-demo`**: Add a focused list example with visible list, turn-into, and indent toolbar controls for `/docs/list`.

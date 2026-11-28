@@ -157,7 +157,7 @@ Plugin for indenting block elements. It injects an `indent` prop into the elemen
 
 ### `editor.plugin(IndentPlugin).update.increase`
 
-Indents the selected block(s) in the editor.
+Indents the selected block(s) in the editor and returns `true` when at least one writable block changed. When `ListPlugin` is installed, list items move together with their nested items and continuation blocks.
 
 <API name="increase">
   <APIOptions type="IndentChangeOptions" optional>
@@ -167,7 +167,7 @@ Indents the selected block(s) in the editor.
 
 ### `editor.plugin(IndentPlugin).update.decrease`
 
-Decreases the indentation of the selected blocks.
+Decreases the indentation of the selected blocks and returns `true` when at least one writable block changed. When `ListPlugin` is installed, list items move together with their nested items and continuation blocks, and outer list items clear their list fields.
 
 <API name="decrease">
   <APIOptions type="IndentChangeOptions" optional>
@@ -179,12 +179,18 @@ Decreases the indentation of the selected blocks.
 
 ### `IndentChangeOptions`
 
-Used to provide options for setting the indentation of a block of text.
+Flat options for targeting blocks to indent or outdent.
 
 <API name="IndentChangeOptions">
   <APIOptions>
-    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
-      Node query and update options. `match` may further restrict target blocks.
+    <APIItem name="at" type="Location | NodeSelection" optional>
+      Target location or node selection; defaults to the current selection.
+    </APIItem>
+    <APIItem name="match" type="(node: Element, path: Path) => boolean" optional>
+      Additional predicate to filter target blocks.
+    </APIItem>
+    <APIItem name="mode" type="'all' | 'highest' | 'lowest'" optional>
+      Block matching mode. **Default:** `'lowest'`
     </APIItem>
   </APIOptions>
 </API>

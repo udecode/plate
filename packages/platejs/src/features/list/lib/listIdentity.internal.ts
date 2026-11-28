@@ -24,7 +24,13 @@ import {
 } from './listIndex.internal';
 
 export type NodeReader = {
-  nodes: Pick<EditorCoreStateView['nodes'], 'children' | 'get'>;
+  nodes: {
+    children: (at: Path) => readonly Descendant[];
+    get: (
+      at: Path,
+      options: { match: (node: Descendant) => node is Element }
+    ) => NodeEntry<Element> | undefined;
+  };
 };
 
 const SIBLING_WALK_LIMIT = 64;

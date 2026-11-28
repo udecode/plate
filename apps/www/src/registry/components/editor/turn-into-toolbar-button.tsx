@@ -53,16 +53,16 @@ import {
 } from '@/registry/components/editor/toolbar';
 
 type LeafFormat =
-  | 'decimal'
-  | 'disc'
+  | 'bulleted'
   | 'heading-1'
   | 'heading-2'
   | 'heading-3'
   | 'heading-4'
   | 'heading-5'
   | 'heading-6'
-  | 'text'
-  | 'todo';
+  | 'numbered'
+  | 'task'
+  | 'text';
 
 type LeafItem = {
   icon: React.ReactNode;
@@ -112,7 +112,7 @@ const turnIntoList = defineCommand<
       ) {
         return;
       }
-      applied = tx.plugin(BaseListPlugin).toggle({ type });
+      applied = tx.plugin(BaseListPlugin).set({ type });
     });
 
     return applied ? result : false;
@@ -297,10 +297,10 @@ const getLeafFormat = (editor: Editor, node: Element): LeafFormat => {
   const list = editor.plugin(BaseListPlugin);
 
   if (list.installed && node.listType) {
-    if (node.listType === 'numbered') return 'decimal';
-    if (node.listType === 'task') return 'todo';
+    if (node.listType === 'numbered') return 'numbered';
+    if (node.listType === 'task') return 'task';
 
-    return 'disc';
+    return 'bulleted';
   }
 
   const heading = editor.plugin(BaseHeadingPlugin);
@@ -320,13 +320,13 @@ const isLeafFormatActive = (editor: Editor, value: LeafFormat) => {
 
 const getTurnIntoLabel = (value: LeafFormat | undefined) => {
   switch (value) {
-    case 'disc': {
+    case 'bulleted': {
       return 'Bulleted list';
     }
-    case 'decimal': {
+    case 'numbered': {
       return 'Numbered list';
     }
-    case 'todo': {
+    case 'task': {
       return 'To-do list';
     }
     case 'heading-1': {
@@ -469,29 +469,22 @@ export function TurnIntoToolbarButton() {
     (
       [
         [
-          'disc',
-          'Bulleted list',
-          <ListIcon key="disc" className="[&:dir(rtl)]:-scale-x-100" />,
           'bulleted',
+          'Bulleted list',
+          <ListIcon key="bulleted" className="[&:dir(rtl)]:-scale-x-100" />,
         ],
-        [
-          'decimal',
-          'Numbered list',
-          <ListOrderedIcon key="decimal" />,
-          'numbered',
-        ],
-        ['todo', 'To-do list', <SquareIcon key="todo" />, 'task'],
+        ['numbered', 'Numbered list', <ListOrderedIcon key="numbered" />],
+        ['task', 'To-do list', <SquareIcon key="task" />],
       ] as const
-    ).forEach(([value, label, icon, type]) => {
+    ).forEach(([type, label, icon]) => {
       leafItems.push({
         icon,
         label,
-        value,
+        value: type,
         onSelect: () => {
           if (
             !editor.plugin(BaseListPlugin).installed ||
-            editor.read.view.isReadOnly() ||
-            isLeafFormatActive(editor, value)
+            editor.read.view.isReadOnly()
           ) {
             return;
           }

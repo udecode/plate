@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-list-indent-api-and-task-ui",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-list-indent-api-and-task-ui.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Update list and indent registry components for unified indent commands, list.update.set, valid task HTML5, and a focused list demo",
+  "targets": [
+    {
+      "name": "indent-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/indent-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/list-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list",
+      "files": ["apps/www/src/registry/components/editor/list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-focused-demo",
+      "files": ["apps/www/src/registry/examples/list-focused-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-list-indent-api-and-task-ui-01",
+      "kind": "behavior",
+      "summary": "Call `IndentPlugin.update.increase`/`decrease` directly for list and block indentation, use `ListPlugin.update.set` for marker style and turn-into actions, and use `'bulleted' | 'numbered' | 'task'` literals.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "indent-toolbar-button",
+        "block-menu",
+        "list-toolbar-button",
+        "turn-into-toolbar-button",
+        "list"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-list-indent-api-and-task-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-list-indent-api-and-task-ui-02",
+      "kind": "fix",
+      "summary": "Render the task checkbox wrapper inside `<li>` for valid HTML5 and emit `data-list-style` on numbered static items.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-list", "block-list-static"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-list-indent-api-and-task-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-list-indent-api-and-task-ui-03",
+      "kind": "new",
+      "summary": "Add a focused list example with visible list, turn-into, and indent toolbar controls for `/docs/list`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["list-focused-demo"],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-list-indent-api-and-task-ui",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

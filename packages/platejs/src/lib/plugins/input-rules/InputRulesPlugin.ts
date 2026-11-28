@@ -204,7 +204,7 @@ export const InputRulesPlugin = definePlugin('inputRules', {
 
       if (!selection || !blockEntry) return undefined;
 
-      const anchor = state.points.start(blockEntry[1]);
+      const anchor = state.points.start(blockEntry[0]);
 
       if (!anchor) return undefined;
 

@@ -62,7 +62,7 @@ export type ListLevel = Readonly<{
 /** Level rules of one list, keyed by level, copied onto each of its items. */
 export type ListLevels = Readonly<Record<string, ListLevel>>;
 
-const isSafeInteger = (value: unknown): value is number =>
+export const isListOrdinal = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value);
 
 const isListLevel = (value: unknown): value is ListLevel => {
@@ -79,8 +79,8 @@ const isListLevel = (value: unknown): value is ListLevel => {
     Object.keys(rest).length === 0 &&
     (label === undefined || typeof label === 'string') &&
     (restartAfter === undefined ||
-      (isSafeInteger(restartAfter) && restartAfter >= 0)) &&
-    (start === undefined || isSafeInteger(start))
+      (isListOrdinal(restartAfter) && restartAfter >= 0)) &&
+    (start === undefined || isListOrdinal(start))
   );
 };
 
@@ -105,7 +105,7 @@ export const listDepth = (node: Element) =>
 
 export const normalizeListStyle = (
   type: ListType,
-  style: ListStyle | (string & {}) | undefined
+  style: ListStyle | undefined
 ) =>
   (type === 'bulleted' && style === 'disc') ||
   (type === 'numbered' && style === 'decimal') ||
@@ -136,10 +136,10 @@ const readListFacts = (element: Element): ListFacts | undefined => {
     level: listItemDepth(element),
     levels: isListLevels(element.listLevels) ? element.listLevels : undefined,
     numbered: element.listType === 'numbered',
-    restart: isSafeInteger(element.listRestart)
+    restart: isListOrdinal(element.listRestart)
       ? element.listRestart
       : undefined,
-    start: isSafeInteger(element.listStart) ? element.listStart : undefined,
+    start: isListOrdinal(element.listStart) ? element.listStart : undefined,
   };
 };
 
@@ -500,9 +500,12 @@ const updateRootIndex = (
  */
 export const readListOrdinal = (
   editor: Editor,
-  state: Pick<EditorCoreStateView, 'key' | 'nodes' | 'runtime' | 'view'>,
+  state: Pick<
+    EditorCoreStateView,
+    'key' | 'nodes' | 'root' | 'runtime' | 'view'
+  >,
   element: Element,
-  path: Path
+  _path: Path
 ): number | undefined => {
   if (element.listType !== 'numbered') return undefined;
 
@@ -515,13 +518,26 @@ export const readListOrdinal = (
     return countDetached(snapshot.children, factsOf).get(element);
   }
 
-  const key = state.key(path);
+  const key = state.key(element);
 
-  return key
-    ? (index ?? rebuildRootIndex(editor, root, snapshot, factsOf)).byKey.get(
-        key
-      )?.ordinal
-    : undefined;
+  if (!key) return undefined;
+  if (snapshot.index.pathOf(key) === null) {
+    if (state.view.root() !== undefined) return undefined;
+
+    for (const [candidateRoot, candidateIndex] of indexes.get(editor) ?? []) {
+      const item = candidateIndex.byKey.get(key);
+
+      if (item && candidateIndex.children === state.root(candidateRoot)) {
+        return item.ordinal;
+      }
+    }
+
+    return undefined;
+  }
+
+  return (index ?? rebuildRootIndex(editor, root, snapshot, factsOf)).byKey.get(
+    key
+  )?.ordinal;
 };
 
 /**

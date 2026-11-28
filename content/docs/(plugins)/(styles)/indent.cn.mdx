@@ -157,7 +157,7 @@ const editor = createEditor({
 
 ### `editor.plugin(IndentPlugin).update.increase`
 
-缩进编辑器中的选定块。
+缩进编辑器中的选定块，并在至少一个可写块发生变更时返回 `true`。安装了 `ListPlugin` 时，列表项会连同嵌套项和后续块一起缩进。
 
 <API name="increase">
   <APIOptions type="IndentChangeOptions" optional>
@@ -167,7 +167,7 @@ const editor = createEditor({
 
 ### `editor.plugin(IndentPlugin).update.decrease`
 
-减少选定块的缩进。
+减少选定块的缩进，并在至少一个可写块发生变更时返回 `true`。安装了 `ListPlugin` 时，列表项会连同嵌套项和后续块一起减少缩进，最外层列表项会清除列表属性。
 
 <API name="decrease">
   <APIOptions type="IndentChangeOptions" optional>
@@ -179,12 +179,18 @@ const editor = createEditor({
 
 ### `IndentChangeOptions`
 
-用于提供设置文本块缩进的选项。
+用于指定缩进或取消缩进目标块的扁平选项。
 
 <API name="IndentChangeOptions">
   <APIOptions>
-    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
-      节点查询和更新选项；`match` 可以进一步限制目标块。
+    <APIItem name="at" type="Location | NodeSelection" optional>
+      目标位置或节点选区；默认使用当前选区。
+    </APIItem>
+    <APIItem name="match" type="(node: Element, path: Path) => boolean" optional>
+      用于进一步筛选目标块的谓词。
+    </APIItem>
+    <APIItem name="mode" type="'all' | 'highest' | 'lowest'" optional>
+      块匹配模式。**默认值：** `'lowest'`
     </APIItem>
   </APIOptions>
 </API>

@@ -5291,6 +5291,39 @@
       "type": "registry:example"
     },
     {
+      "name": "list-focused-demo",
+      "title": "List",
+      "description": "Create bulleted, numbered, and task lists with unified indent and outdent controls.",
+      "dependencies": [
+        "diff-match-patch-ts@^0.6.0",
+        "platejs"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/basic-blocks.json",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/indent-toolbar-button.json",
+        "https://platejs.org/r/list.json",
+        "https://platejs.org/r/list-toolbar-button.json",
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/turn-into-toolbar-button.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/list-focused-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/list",
+            "title": "List"
+          }
+        ]
+      },
+      "type": "registry:example"
+    },
+    {
       "name": "comment-demo",
       "title": "Comments",
       "description": "Create comments, reply in threads, and resolve conversations.",

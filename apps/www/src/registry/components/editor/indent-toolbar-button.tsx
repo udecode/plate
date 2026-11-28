@@ -1,13 +1,7 @@
 'use client';
 
 import { IndentIcon, OutdentIcon } from 'lucide-react';
-import { ElementApi } from 'platejs';
-import {
-  IndentPlugin,
-  ListPlugin,
-  useEditor,
-  useEditorReadOnly,
-} from 'platejs/react';
+import { IndentPlugin, useEditor, useEditorReadOnly } from 'platejs/react';
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
@@ -45,18 +39,7 @@ export function OutdentToolbarButton(
       disabled={props.disabled || readOnly}
       tooltip="Outdent"
       onClick={() => {
-        const list = editor.plugin(ListPlugin);
-
-        if (
-          list.installed &&
-          editor.read.nodes.some({
-            match: (node) => ElementApi.isElement(node) && !!node.listType,
-          })
-        ) {
-          list.update.outdent();
-        } else {
-          editor.plugin(IndentPlugin).update.decrease();
-        }
+        editor.plugin(IndentPlugin).update.decrease();
         editor.api.dom.focus();
       }}
     >

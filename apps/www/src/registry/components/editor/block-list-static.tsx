@@ -3,8 +3,7 @@ import {
   BaseListPlugin,
   type Editor,
   type Element,
-  isOrderedList,
-  ListType,
+  type ListType,
 } from 'platejs';
 import { BaseDetailsPlugin } from 'platejs/details';
 import { BaseImagePlugin } from 'platejs/media';
@@ -16,7 +15,7 @@ type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
 // Toggles and images draw no wrapped children, so their bullets keep the
 // marker on the block itself.
 export const drawsBulletOnRoot = (editor: Editor, element: Element) =>
-  element.listType === ListType.Bulleted &&
+  element.listType === 'bulleted' &&
   [BaseDetailsPlugin, BaseImagePlugin].some((descriptor) => {
     const plugin = editor.plugin(descriptor);
 
@@ -35,7 +34,7 @@ export const BlockListStatic: ListWrapper = (props) => {
       <List
         {...innerProps}
         listStart={
-          listType === ListType.Numbered
+          listType === 'numbered'
             ? innerProps.editor
                 .plugin(BaseListPlugin)
                 .read.ordinal(innerProps.path)
@@ -56,10 +55,10 @@ function List(
   }
 ) {
   const { listStart, listStyle, listType } = props;
-  const isTask = listType === ListType.Task;
-  const isBullet = listType === ListType.Bulleted;
-  const isNumbered = listType === ListType.Numbered;
-  const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
+  const isTask = listType === 'task';
+  const isBullet = listType === 'bulleted';
+  const isNumbered = listType === 'numbered';
+  const InnerList = isNumbered ? 'ol' : 'ul';
   const markerStyle =
     isNumbered && listStart === undefined
       ? 'none'
@@ -90,7 +89,7 @@ function List(
         }
         data-list-restart={props.element.listRestart}
         data-list-start={props.element.listStart}
-        data-list-style={isBullet ? listStyle : undefined}
+        data-list-style={isBullet || isNumbered ? listStyle : undefined}
         data-list-type={listType}
         className={
           isTask

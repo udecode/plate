@@ -8,9 +8,9 @@ import {
   BaseTextAlignPlugin,
   defineCommand,
   ElementApi,
-  ListType,
   SelectionApi,
   type Element,
+  type ListType,
 } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { BaseLockPlugin } from 'platejs/lock';
@@ -64,10 +64,10 @@ const getLeafFormat = (
   node: Element
 ): LeafFormat => {
   if (editor.plugin(BaseListPlugin).installed && node.listType) {
-    if (node.listType === ListType.Numbered) return ListType.Numbered;
-    if (node.listType === ListType.Task) return ListType.Task;
+    if (node.listType === 'numbered') return 'numbered';
+    if (node.listType === 'task') return 'task';
 
-    return ListType.Bulleted;
+    return 'bulleted';
   }
 
   const heading = editor.plugin(BaseHeadingPlugin);
@@ -103,7 +103,7 @@ const turnIntoList = defineCommand<Readonly<{ type: ListType }>, Editor>(
         ) {
           return;
         }
-        applied = tx.plugin(BaseListPlugin).toggle({ type });
+        applied = tx.plugin(BaseListPlugin).set({ type });
       });
 
       return applied ? result : false;
@@ -111,23 +111,6 @@ const turnIntoList = defineCommand<Readonly<{ type: ListType }>, Editor>(
     locate: false,
   }
 );
-
-const outdentBlocks = (editor: ReturnType<typeof useEditor>) => {
-  const list = editor.plugin(BaseListPlugin);
-
-  if (
-    list.installed &&
-    editor.read.nodes.some({
-      match: (node) => ElementApi.isElement(node) && !!node.listType,
-    })
-  ) {
-    list.update.outdent();
-
-    return;
-  }
-
-  editor.plugin(BaseIndentPlugin).update.decrease();
-};
 
 export function BlockContextMenu({ children }: WrapContentProps) {
   const editor = useEditor();
@@ -165,7 +148,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
     return (
       list.installed &&
       readBlocks(current).length > 0 &&
-      list.read.isActive({ type: ListType.Numbered })
+      list.read.isActive({ type: 'numbered' })
     );
   });
   const lockInstalled = editor.plugin(BaseLockPlugin).installed;
@@ -248,9 +231,9 @@ export function BlockContextMenu({ children }: WrapContentProps) {
     ...(listInstalled
       ? (
           [
-            [ListType.Bulleted, 'Bulleted list'],
-            [ListType.Numbered, 'Numbered list'],
-            [ListType.Task, 'To-do list'],
+            ['bulleted', 'Bulleted list'],
+            ['numbered', 'Numbered list'],
+            ['task', 'To-do list'],
           ] as const
         ).map(([value, label]) => ({
           label,
@@ -258,10 +241,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
           onSelect: () => {
             if (
               !editor.plugin(BaseListPlugin).installed ||
-              editor.read.view.isReadOnly() ||
-              readBlocks(editor).every(
-                ([node]) => getLeafFormat(editor, node) === value
-              )
+              editor.read.view.isReadOnly()
             ) {
               return;
             }
@@ -531,7 +511,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
                       return;
                     }
 
-                    outdentBlocks(editor);
+                    indent.update.decrease();
                   }}
                 >
                   Outdent

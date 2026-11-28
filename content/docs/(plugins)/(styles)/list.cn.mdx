@@ -8,7 +8,7 @@ docs:
 
 列表将支持的块转换为扁平列表项。列表种类、标记样式、列表标识、编号起始值、任务状态和缩进分别存储。
 
-<ComponentPreview name="list-demo" />
+<ComponentPreview name="list-focused-demo" />
 
 <PackageInfo>
 
@@ -19,7 +19,7 @@ docs:
 - listId 标识该项所属的列表。列表会跨过其他块继续编号，两个列表也可以交错。
 - listLevels 按层级保存列表的起始值和重启规则，与 Word 的存储方式一致。
 - listStart 在该项开启其层级时生效；listRestart 强制该项的编号。
-- checked 只属于任务项。
+- checked 只属于任务项。按 `Mod+Enter` 可切换任务完成状态，在已完成任务末尾按 `Enter` 会创建未完成的新任务。
 - 显示编号通过读取计算，不重写后续节点。
 - 提供“重新编号”和“继续编号”命令。
 - Markdown 规则覆盖项目符号、编号和任务列表。
@@ -104,36 +104,39 @@ listStart 保存潜在作者意图。该项延续所在列表时 Plate 保留它
 ## 命令
 
 ~~~ts
-import { ListStyle, ListType } from 'platejs';
-import { ListPlugin } from 'platejs/react';
+import { IndentPlugin, ListPlugin } from 'platejs/react';
 
 const list = editor.plugin(ListPlugin);
-list.update.toggle({ type: ListType.Bulleted });
-list.update.toggle({
-  type: ListType.Bulleted,
-  listStyle: ListStyle.Square,
-});
-list.update.toggle({
-  type: ListType.Numbered,
-  listStart: 4,
-});
-list.update.toggle({ type: ListType.Task });
+const indent = editor.plugin(IndentPlugin);
+
+list.update.set({ type: 'bulleted', style: 'square' });
+list.update.set({ type: 'numbered', style: null });
+list.update.set({ type: 'task', checked: true });
+
+list.update.toggle({ type: 'bulleted' });
+list.update.toggle({ type: 'numbered' });
+list.update.toggle({ type: 'task' });
 
 list.update.restart();
 list.update.restart({ start: 4 });
 list.update.continue();
 
-list.update.outdent();
+indent.update.increase();
+indent.update.decrease();
 list.update.clear();
-list.update.insert({ type: ListType.Numbered }, { replaceEmpty: true, select: true });
-list.update.upsert({ type: ListType.Task });
-list.read.isActive({ type: ListType.Numbered });
-list.read.isActive({ style: ListStyle.UpperRoman, type: ListType.Numbered });
+list.update.insert({ type: 'numbered' }, { replaceEmpty: true, select: true });
+list.update.upsert({ type: 'task' });
+list.read.isActive({ type: 'numbered' });
+list.read.isActive({ style: 'upper-roman', type: 'numbered' });
 ~~~
+
+`set` 应用列表语义且不会关闭已有列表。省略 `style` 时，同类列表项保留当前 `listStyle`；传入 `style: null` 可重置为默认标记。任务项可通过 `checked` 显式设置勾选状态。传入 `at` 时只更新指定目标，不扩展到同组相邻项。
+
+`toggle` 为可写目标块设置或移除指定列表种类；仅当所有目标块都已是该 `type` 时才移除列表。
 
 `restart` 强制选中有序项的编号，默认为 1。`continue` 移除该重启；在列表第一项上，它会把整个列表并入同层级中最近的前一个有序列表，使编号接续下去。
 
-`clear` 仅清除选中列表项的列表属性与缩进，不扩展到未选中的相邻列表项，保留块类型和文本。`insert` 在当前块之后创建列表段落，`replaceEmpty` 在同一撤销步骤中替换空块。`upsert` 在当前块不是该 `listType` 时插入或替换空块。`read.isActive({ type, style? })` 检查当前选区是否包含匹配的列表项。
+`clear` 仅清除选中列表项的列表属性与缩进，不扩展到未选中的相邻列表项，保留块类型和文本，并在发生变更时返回 `true`。`insert` 在当前块之后创建列表段落，`replaceEmpty` 在同一撤销步骤中替换空块。`upsert` 在当前块不是该 `listType` 时插入或替换空块。`read.isActive({ type, style? })` 检查当前选区是否包含匹配的列表项。
 
 ## 粘贴列表
 
@@ -164,26 +167,27 @@ MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会
 
 | API | 用途 |
 | --- | --- |
-| ListType | bulleted、numbered 和 task 常量。 |
-| ListStyle | CSS 标记常量。 |
-| update.toggle(options) | 设置或移除列表语义。 |
-| update.restart(options?) | 强制选中有序项的编号；`start` 默认为 1。 |
-| update.continue(options?) | 移除选中项的重启，或从列表第一项起把列表接到前一个列表上。 |
-| update.outdent(options) | 减少每个选中列表项及其下方块的缩进，并在最外层清除列表属性。 |
-| update.clear(options?) | 仅清除选中列表项的列表属性与缩进，保留区块类型和文本。 |
-| update.insert(input, options?) | 插入指定类型的段落列表项，并由插件负责构造与位置。 |
-| update.upsert(input, options?) | 在当前块不匹配 `input.type` 时插入或替换空块为列表项。 |
-| read.isActive(options) | 检查当前选区是否包含匹配 `type` 和可选 `style` 的列表项。 |
-| read.ordinal(at) | 计算有序项显示编号；`at` 不是编辑器根中的有序项时返回 `undefined`。 |
+| `ListType` | `'bulleted' \| 'numbered' \| 'task'` 类型联合。 |
+| `ListStyle` | CSS 标记类型联合。 |
+| `ListLevel` / `ListLevels` | 兼容 Word 的各层级起始值与重启规则类型。 |
+| `ListDefinition` | 列表定义类型接口。 |
+| `update.set(options)` | 应用列表种类、可选 `style`（`null` 重置）或任务 `checked` 状态，不关闭已有列表。 |
+| `update.toggle(options)` | 为可写目标块切换指定列表种类。 |
+| `update.restart(options?)` | 强制选中有序项的编号；`start` 默认为 1。 |
+| `update.continue(options?)` | 移除选中项的重启，或从列表第一项起把列表接到前一个列表上。 |
+| `update.clear(options?)` | 仅清除选中列表项的列表属性与缩进，保留区块类型和文本，并返回是否变更。 |
+| `update.insert(input, options?)` | 插入指定类型的段落列表项，并由插件负责构造与位置。 |
+| `update.upsert(input, options?)` | 在当前块不匹配 `input.type` 时插入或替换空块为列表项。 |
+| `read.isActive(options)` | 检查当前选区是否包含匹配 `type` 和可选 `style` 的列表项。 |
+| `read.ordinal(at)` | 计算有序项显示编号；`at` 不是编辑器根中的有序项时返回 `undefined`。 |
 
 `clear` 可通过 `at` 指定位置或节点选区，不会扩展到未选中的相邻列表项。
 `insert({ type }, { replaceEmpty: true, select: true })` 在当前区块之后插入；
 来源区块为空时，在同一个撤销步骤中替换它。`after` 指定来源区块，`at` 指定节点插入位置。
 
-Tab、Shift+Tab 和 `outdent` 会把列表项和它下方的块一起移动，直到下一个深度相同或更浅的块为止，
-包括嵌套列表项和后续段落。拖动和剪切通过 `editor.read.transfer.nodes()` 取得同样的块。
-Indent 自身的命令仍然只移动一个块。
-List 会自己写入每个被移动块的深度，所以对 Indent 的 `increase` 或 `decrease` 的覆盖不会在这些移动中运行。
+Tab、Shift+Tab 以及 `IndentPlugin` 的 `increase` 和 `decrease` 都会把列表项和它下方的块一起移动，
+直到下一个深度相同或更浅的块为止，包括嵌套列表项和后续段落。最外层列表项执行 `decrease` 时会清除列表属性；
+Shift+Tab 在引用外保留最外层列表项，在引用内则将其提升出列表和引用。拖动和剪切通过 `editor.read.transfer.nodes()` 取得同样的块。
 
-在 Details 标题上调用 `toggle` 时，标题变成列表项，正文放在它下面一级。如果某个正文块不能缩进，
-或者结果放不进父级，它返回 `false`，文档不变，选区中的其他块也不会转换。
+在 Details 标题上调用 `set` 或 `toggle` 时，标题变成列表项，正文放在它下面一级。如果某个正文块不能缩进，
+或者结果放不进父级，它们返回 `false`，文档不变，选区中的其他块也不会转换。

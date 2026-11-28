@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
-import { isOrderedList, ListType } from 'platejs';
+import type { ListType } from 'platejs';
 import {
   ListPlugin,
   type RenderNodeWrapper,
@@ -17,15 +17,19 @@ type ListWrapper = RenderNodeWrapper<typeof ListPlugin>;
 export const BlockList: ListWrapper = (props) => {
   const { listStyle, listType } = props.element;
 
-  if (!listType || listType === ListType.Bulleted) return undefined;
+  if (!listType || listType === 'bulleted') return undefined;
 
   return function BlockListWrapper(innerProps) {
     return (
       <List
         {...innerProps}
-        listStart={innerProps.editor
-          .plugin(ListPlugin)
-          .read.ordinal(innerProps.element)}
+        listStart={
+          listType === 'numbered'
+            ? innerProps.editor
+                .plugin(ListPlugin)
+                .read.ordinal(innerProps.element)
+            : undefined
+        }
         listStyle={listStyle}
         listType={listType}
       />
@@ -42,9 +46,9 @@ function List(
   }
 ) {
   const { listStart, listStyle, listType } = props;
-  const isTask = listType === ListType.Task;
-  const isNumbered = listType === ListType.Numbered;
-  const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
+  const isTask = listType === 'task';
+  const isNumbered = listType === 'numbered';
+  const InnerList = isNumbered ? 'ol' : 'ul';
   const markerStyle =
     isNumbered && listStart === undefined
       ? 'none'
@@ -62,7 +66,6 @@ function List(
       style={{ listStyleType: markerStyle }}
       start={isNumbered ? listStart : undefined}
     >
-      {isTask && <TodoMarker {...props} />}
       <li
         className={
           isTask
@@ -74,6 +77,7 @@ function List(
             : undefined
         }
       >
+        {isTask && <TodoMarker {...props} />}
         {props.children}
         {props.lineBreakBadge}
       </li>
@@ -93,17 +97,17 @@ function TodoMarker(
   const readOnly = useEditorReadOnly();
 
   return (
-    <div contentEditable={false}>
+    <div
+      className="absolute -start-6 top-1 select-none"
+      contentEditable={false}
+    >
       <Checkbox
         aria-label={
           props.element.checked === true
             ? 'Mark task incomplete'
             : 'Mark task complete'
         }
-        className={cn(
-          '-start-6 absolute top-1',
-          readOnly && 'pointer-events-none'
-        )}
+        className={cn(readOnly && 'pointer-events-none')}
         checked={props.element.checked === true}
         onCheckedChange={(value) => {
           if (readOnly) return;

@@ -259,6 +259,33 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-list-indent-api-and-task-ui",
+      "href": "/registry/changelog/2026-11-28-list-indent-api-and-task-ui.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Update list and indent registry components for unified indent commands, list.update.set, valid task HTML5, and a focused list demo",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "indent-toolbar-button",
+        "block-menu",
+        "list-toolbar-button",
+        "turn-into-toolbar-button",
+        "list",
+        "block-list",
+        "block-list-static",
+        "list-focused-demo"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-list-toolbar-and-menu-ergonomics",
       "href": "/registry/changelog/2026-11-28-list-toolbar-and-menu-ergonomics.json",
       "status": "draft",
