@@ -71,7 +71,7 @@ preserves the shared search. Search state stays outside the document and history
 
 ## Search API
 
-Use the headless feature for search without the copied bar:
+Use the headless feature for search and replacement without the copied bar:
 
 ```ts
 import { createEditor } from 'platejs';
@@ -80,51 +80,62 @@ import { BaseFindPlugin } from 'platejs/find';
 const editor = createEditor({ plugins: [BaseFindPlugin] });
 const find = editor.plugin(BaseFindPlugin);
 
-find.api.search('example');
+find.api.search('example', { caseSensitive: true, wholeWord: true });
 find.api.move(1);
-find.store.get('matches');
+find.api.matches();
 find.store.get('activeMatch');
 find.update.select();
+find.update.replace('sample');
+find.update.replaceAll('sample');
 ```
 
-`api.search(query)` applies a case-insensitive literal query across the main
-document and every named content root in document reading order (merging each
-named root at its first owner's position). An empty query clears the results.
-Main-root matches keep rootless `Range` coordinates, and named-root matches
-carry `root` on both `anchor` and `focus`. `api.move(1 | -1)` wraps through the
-current results without searching again. Every commit that changes the main
-document or any named root updates the results, including when no view is
-mounted. It searches again only the edited root's smallest changed block, such
-as the paragraph the user types in, and refreshes decoration observers only for
-affected roots. A commit that leaves every root's content unchanged, such as a
-selection change, searches only when the results went stale: after a schema
-change, after the app writes `matches` to the store, or after a search inside
-an update that threw. The query changes only through `api.search`; a `query`
-written to the store starts no search. `api.search` searches every root even
-when called on a named root's view. `update.select()` selects the active match
-in its root from any view and returns whether it did; it returns `false` when
-no match exists or the active match is stale. View focus remains the caller's
-responsibility.
+`api.search(query, options?)` applies a query across the main document and every
+named content root in document reading order (merging each named root at its
+first owner's position). An empty query clears results. Omitted `FindOptions`
+fields (`caseSensitive`, `wholeWord`, `regexp`) default to `false`. Main-root
+matches keep rootless `Range` coordinates, and named-root matches carry `root`
+on both `anchor` and `focus`. Inline voids break text runs so matches never
+bridge across them.
+
+`api.move(1 | -1)` wraps through the current results without searching again,
+and `api.setActiveIndex(index)` selects a result by zero-based reading-order
+index (returning `false` when out of range). `api.matches(options?)` returns a
+frozen snapshot of matches in reading order (or for one `{ root }`), and
+`api.matchAt(point)` resolves the match and global index covering `point`
+(inclusive of range endpoints).
+
+Every commit that changes the main document or any named root updates the
+results, including when no view is mounted. It searches again only the edited
+root's smallest changed block, such as the paragraph the user types in, and
+refreshes decoration observers only for affected roots. A commit that leaves
+every root's content unchanged, such as a selection change, searches only when
+the results went stale: after a schema change or after a search inside an update
+that threw. `api.search` searches every root even when called on a named root's
+view.
+
+`update.select()` selects the active match in its root from any view and returns
+whether it did; view focus remains the caller's responsibility.
+`update.replace(replacement)` replaces the active match with literal
+`replacement` text as its own undo step (when no history tag is already set) and
+advances the active match past the replacement end.
+`update.replaceAll(replacement)` replaces every writable, content-only match in
+reverse document order per root as one undo step and returns the number of
+matches mutated. Both commands refuse read-only views and skip locked ranges,
+inline voids, and non-content leaves (such as struck suggestions).
 
 The active result follows its match through edits. It stays on that match while
 the search still finds the same text there. When an edit breaks the match, the
 active result moves to the first match that ends after where the old one
 started, or wraps to the first match. A new query starts on its first match.
-Writing `activeIndex` to the store picks the active result as `api.move` does,
-and the pick follows its match through later edits. An active result picked or
-searched for inside `editor.update` jumps to a new match typed right before it
-in a later commit. Inside an `editor.update` that has already changed the
-document, a write that picks another result applies its index to the results
-Find publishes when that update commits. A store write that leaves the active
-result as it was, such as one that sets only `error`, keeps it on its match.
 
-`FindPluginState` contains `query`, immutable `matches`, `activeIndex` and
-`error`. The `count` and `activeMatch` store selectors derive current results.
-Each `FindMatch` contains a range and an opaque ID that stays the same when a
-block moves above the match. A commit that leaves every match, the active result
-and `error` as they were notifies no store subscriber and keeps the same
-`matches` array. Match data is transient and never stored as document marks.
-Custom renderers can style `data-find-match` and `data-find-active` attributes.
+`FindPluginState` holds scalar `query`, `caseSensitive`, `wholeWord`, `regexp`,
+`activeIndex`, `error`, and `version`. The `count` and `activeMatch` read-only
+store selectors read the plugin's private index. Each `FindMatch` contains a
+range and an opaque ID preserved across unrelated edits and block shifts. A
+commit that leaves every match, the active result, and `error` unchanged
+notifies no store subscriber. Match data is transient and never stored as
+document marks. Custom renderers can style `data-find-match` and
+`data-find-active` attributes.
 
 ## Custom controls
 
@@ -184,6 +195,3 @@ const selectMatch = () => {
 | `Enter` | Move to the next result in reading order and scroll within the focused presentation. |
 | `Shift+Enter` | Move to the previous result in reading order and scroll within the focused presentation. |
 | `Escape` | Close Find and return focus to the originating editable when connected. |
-
-Find searches text. Document replacement belongs to an app command with its own
-selection, history, and collaboration policy.

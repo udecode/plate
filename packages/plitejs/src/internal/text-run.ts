@@ -8,26 +8,44 @@ import { type Text, TextApi } from '../interfaces/text';
 
 type TextRunSchema = NodeTextRangeView['schema'] | undefined;
 
+type TextRunCollector = {
+  current: Array<NodeEntry<Text>>;
+  segments: Array<Array<NodeEntry<Text>>>;
+};
+
+const flushSegment = (collector: TextRunCollector | undefined) => {
+  if (!collector || collector.current.length === 0) return;
+  collector.segments.push(collector.current);
+  collector.current = [];
+};
+
 const collectTextRun = (
   schema: TextRunSchema,
   node: Descendant,
   path: Path,
-  entries?: Array<NodeEntry<Text>>,
+  collector?: TextRunCollector,
   isContent?: (text: Text) => boolean
 ): boolean => {
   if (TextApi.isText(node)) {
-    if (entries && isContent?.(node) !== false) entries.push([node, path]);
+    if (collector && isContent?.(node) !== false) {
+      collector.current.push([node, path]);
+    }
 
     return true;
   }
   if (!schema?.isInline(node)) return false;
+  if (schema.isVoid?.(node)) {
+    flushSegment(collector);
+
+    return true;
+  }
 
   return node.children.every((child, index) =>
     collectTextRun(
       schema,
       child,
-      entries ? path.concat(index) : path,
-      entries,
+      collector ? path.concat(index) : path,
+      collector,
       isContent
     )
   );
@@ -35,28 +53,47 @@ const collectTextRun = (
 
 /**
  * Whether `findTextRanges` searches a node with these children as one text
- * run. Collects the run's text entries into `entries` when given.
+ * run (splitting into separate contiguous segments around inline voids).
+ * Collects each non-empty segment into `segments` when given.
  */
 export const isTextRun = (
   schema: TextRunSchema,
   children: readonly Descendant[],
   path: Path = [],
-  entries?: Array<NodeEntry<Text>>,
+  segments?: Array<Array<NodeEntry<Text>>>,
   isContent?: (text: Text) => boolean
-) =>
-  children.length > 0 &&
-  // A block child ends the run, so look for one before walking into the
-  // inline elements beside it.
-  children.every((child) => TextApi.isText(child) || schema?.isInline(child)) &&
-  children.every((child, index) =>
-    collectTextRun(
-      schema,
-      child,
-      entries ? path.concat(index) : path,
-      entries,
-      isContent
+) => {
+  if (
+    children.length === 0 ||
+    // A block child ends the run, so look for one before walking into the
+    // inline elements beside it.
+    !children.every((child) => TextApi.isText(child) || schema?.isInline(child))
+  ) {
+    return false;
+  }
+
+  const collector: TextRunCollector | undefined = segments
+    ? { current: [], segments }
+    : undefined;
+
+  if (
+    !children.every((child, index) =>
+      collectTextRun(
+        schema,
+        child,
+        collector ? path.concat(index) : path,
+        collector,
+        isContent
+      )
     )
-  );
+  ) {
+    return false;
+  }
+
+  flushSegment(collector);
+
+  return true;
+};
 
 /**
  * Find the deepest node that a whole `findTextRanges` search reads on its own

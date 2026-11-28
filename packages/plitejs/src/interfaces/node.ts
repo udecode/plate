@@ -172,7 +172,10 @@ export interface NodeTextRangeRoot {
 export interface NodeTextRangeView {
   children(): readonly Descendant[];
   readonly nodes: { isContent(node: Node): boolean };
-  readonly schema: { isInline(element: Element): boolean };
+  readonly schema: {
+    isInline(element: Element): boolean;
+    isVoid?(element: Element): boolean;
+  };
 }
 
 export type NodeTextRangeEntry = readonly [Node | NodeTextRangeRoot, Path];
@@ -517,6 +520,8 @@ const getTextRangeChildren = (
   node: Ancestor | NodeTextRangeRoot
 ): readonly Descendant[] => getAncestorChildren(node as Ancestor);
 
+const ESCAPE_REGEXP_PATTERN = /[.*+?^${}()|[\]\\]/g;
+
 const getStringMatches = (
   text: string,
   query: string,
@@ -526,14 +531,19 @@ const getStringMatches = (
     return [];
   }
 
+  if (!caseSensitive) {
+    return getRegExpMatches(
+      text,
+      new RegExp(query.replace(ESCAPE_REGEXP_PATTERN, '\\$&'), 'gi')
+    );
+  }
+
   const matches: NodeTextRangeMatch[] = [];
-  const source = caseSensitive ? text : text.toLowerCase();
-  const target = caseSensitive ? query : query.toLowerCase();
-  let start = source.indexOf(target);
+  let start = text.indexOf(query);
 
   while (start !== -1) {
-    matches.push({ end: start + target.length, start });
-    start = source.indexOf(target, start + target.length);
+    matches.push({ end: start + query.length, start });
+    start = text.indexOf(query, start + query.length);
   }
 
   return matches;
@@ -541,10 +551,9 @@ const getStringMatches = (
 
 const getRegExpMatches = (
   text: string,
-  query: RegExp
+  expression: RegExp
 ): NodeTextRangeMatch[] => {
-  const flags = query.flags.includes('g') ? query.flags : `${query.flags}g`;
-  const expression = new RegExp(query.source, flags);
+  expression.lastIndex = 0;
   const matches: NodeTextRangeMatch[] = [];
 
   for (const match of text.matchAll(expression)) {
@@ -559,6 +568,25 @@ const getRegExpMatches = (
   }
 
   return matches;
+};
+
+const prepareTextRangeQuery = (
+  query: NodeTextRangeQuery,
+  options: NodeFindTextRangesOptions
+): NodeTextRangeQuery => {
+  if (typeof query === 'string') {
+    if (!query || options.caseSensitive !== false) return query;
+
+    return new RegExp(query.replace(ESCAPE_REGEXP_PATTERN, '\\$&'), 'gi');
+  }
+
+  if (query instanceof RegExp) {
+    const flags = query.flags.includes('g') ? query.flags : `${query.flags}g`;
+
+    return new RegExp(query.source, flags);
+  }
+
+  return query;
 };
 
 const getTextRangeMatches = (
@@ -842,6 +870,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
         ? (root as NodeTextRangeView)
         : null;
     const schema = editor ? getEditorSchema(editor) : view?.schema;
+    const compiledQuery = prepareTextRangeQuery(query, options);
     const isContent = (node: Text) =>
       !options.content ||
       (editor
@@ -855,22 +884,31 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
           ...getTextEntryRanges(
             [[node as Text, path]],
             [node as Text, path],
-            query,
+            compiledQuery,
             options
           )
         );
         return;
       }
 
+      if (
+        NodeApi.isElement(node as Node) &&
+        schema?.isVoid?.(node as Element)
+      ) {
+        return;
+      }
+
       const children = getTextRangeChildren(
         node as Ancestor | NodeTextRangeRoot
       );
-      const inlineEntries: Array<NodeEntry<Text>> = [];
+      const segments: Array<Array<NodeEntry<Text>>> = [];
 
-      if (isTextRun(schema, children, path, inlineEntries, isContent)) {
-        ranges.push(
-          ...getTextEntryRanges(inlineEntries, [node, path], query, options)
-        );
+      if (isTextRun(schema, children, path, segments, isContent)) {
+        for (const segment of segments) {
+          ranges.push(
+            ...getTextEntryRanges(segment, [node, path], compiledQuery, options)
+          );
+        }
         return;
       }
 

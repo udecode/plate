@@ -715,7 +715,6 @@
     ],
     "platejs/excalidraw": ["ExcalidrawElement"],
     "platejs/excalidraw/react": ["ExcalidrawPlugin"],
-    "platejs/find": ["FindMatch", "FindPluginState"],
     "platejs/footnote/react": ["FootnoteDefinitionPlugin", "FootnotePlugin"],
     "platejs/history": [
       "Batch",

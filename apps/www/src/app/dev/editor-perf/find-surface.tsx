@@ -403,7 +403,7 @@ export function FindSurface({
     if (spec.query) {
       find.api.search(spec.query);
       if (spec.wrongActiveIndex !== undefined) {
-        find.store.set({ activeIndex: spec.wrongActiveIndex });
+        find.api.setActiveIndex(spec.wrongActiveIndex);
       }
     } else {
       // Coverage lists only functions that have run, so a document without a
@@ -453,8 +453,7 @@ export function FindSurface({
         : [];
     };
     const editedBlock = (): EditedBlock => {
-      const matches = find.store.get('matches');
-      const active = matches[find.store.get('activeIndex')];
+      const active = find.store.get('activeMatch');
 
       return {
         activeId: active?.id ?? null,

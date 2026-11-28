@@ -60,30 +60,35 @@ const editor = createEditor({
 
 ## 搜索 API
 
-`platejs/find` 的 `BaseFindPlugin` 管理查询、当前匹配项、导航和临时装饰数据。
-`editor.plugin(BaseFindPlugin).api.search(query)` 按文档阅读顺序在主文档和每个命名根中执行不区分大小写的文本搜索（将每个命名根的结果并入其首个拥有者的位置），
-空字符串清除结果。主根匹配项保持无 `root` 的范围坐标，命名根匹配项在 `anchor` 和 `focus` 上携带 `root`。
-`api.move(1 | -1)` 在当前结果中循环切换，不会重新搜索；`update.select()` 可以从任意视图在其所属根中
-选择当前匹配范围并返回是否已选择；没有匹配项或当前匹配项已过期时返回 `false`。视图焦点由调用方负责。
-每次更改主文档或任意命名根的提交都会更新结果，即使没有挂载视图，并且只重新搜索受影响根中包含更改的最小块（例如正在输入的段落），
-仅通知受影响根的装饰观察者。不改变任何根内容的提交（例如只更改选区），只在结果过期时搜索：schema 改变后、
-应用向 store 写入 `matches` 后，或在抛出错误的更新中搜索后。查询只能通过 `api.search` 更改，写入 store 的 `query`
-不会触发搜索。`api.search` 在命名根视图中调用时同样会搜索所有根。
-查询不会写入文档或历史记录。
+`platejs/find` 的 `BaseFindPlugin` 管理查询、匹配项、导航、替换与临时装饰数据。
 
-当前结果会跟随其匹配项经过编辑：只要搜索仍在原处找到同一段文本，它就停留在该匹配项上。
-编辑破坏该匹配项后，它移到在旧匹配项起点之后结束的第一个匹配项，没有则回到第一个匹配项。
-新查询从第一个匹配项开始。向 store 写入 `activeIndex` 与 `api.move` 一样选择当前结果，
-该选择同样会跟随后续编辑。在 `editor.update` 中选择或搜索得到的当前结果，会在之后的提交中
-跳到紧挨在它前面新输入的匹配项上。在已修改文档的 `editor.update` 中，选择另一个结果的写入，
-其索引作用于 Find 在该更新提交时发布的结果。不改变当前结果的 store 写入（例如只设置 `error`）
-会让它继续停留在其匹配项上。
+```ts
+import { createEditor } from 'platejs';
+import { BaseFindPlugin } from 'platejs/find';
 
-`FindPluginState` 包含 `query`、不可变的 `matches`、`activeIndex` 和 `error`。
-`count` 和 `activeMatch` 是 store 选择器。每个 `FindMatch` 包含一个范围和一个不透明 ID；
-匹配项上方的块移动时，ID 保持不变。不改变任何匹配项、当前结果和 `error` 的提交不会通知
-store 订阅者，并保留同一个 `matches` 数组。
-`FindKit` 通过 `decorate.attributes` 为 `data-find-match` 和 `data-find-active` 属性提供样式。
+const editor = createEditor({ plugins: [BaseFindPlugin] });
+const find = editor.plugin(BaseFindPlugin);
+
+find.api.search('example', { caseSensitive: true, wholeWord: true });
+find.api.move(1);
+find.api.matches();
+find.store.get('activeMatch');
+find.update.select();
+find.update.replace('sample');
+find.update.replaceAll('sample');
+```
+
+`api.search(query, options?)` 按文档阅读顺序在主文档和每个命名内容根中执行搜索（将每个命名根的结果并入其首个拥有者的位置），空字符串清除结果。`FindOptions`（`caseSensitive`、`wholeWord`、`regexp`）中省略的选项默认值为 `false`。主根匹配项保持无 `root` 的范围坐标，命名根匹配项在 `anchor` 和 `focus` 上携带 `root`。行内空节点（inline void）会分段文本，匹配不会跨越行内空节点。
+
+`api.move(1 | -1)` 在当前结果中循环切换，不会重新搜索；`api.setActiveIndex(index)` 按从零开始的全局阅读顺序索引切换当前结果（越界时返回 `false`）。`api.matches(options?)` 返回按阅读顺序排列（或指定 `{ root }`）的只读匹配数组，`api.matchAt(point)` 返回覆盖 `point`（含范围端点）的匹配项及其全局索引。
+
+每次更改主文档或任意命名根的提交都会更新结果，即使没有挂载视图，并且只重新搜索受影响根中包含更改的最小块，仅通知受影响根的装饰观察者。不改变任何根内容的提交（例如只更改选区），仅在 schema 改变或抛出错误的更新中搜索后重新搜索。`api.search` 在命名根视图中调用时同样会搜索所有根。
+
+`update.select()` 可以从任意视图在其所属根中选择当前匹配范围并返回是否已选择，视图焦点由调用方负责。`update.replace(replacement)` 以字面文本替换当前匹配项（未设置历史标签时作为单独撤销步骤），并将当前匹配项推进到替换结果之后。`update.replaceAll(replacement)` 在各根内按逆序替换所有可写且属于正文内容的匹配项（作为单次撤销步骤），返回实际修改的数量。两者均拒绝只读视图，并跳过锁定区域、行内空节点与非正文文本叶（例如已删除的建议文本）。
+
+当前结果会跟随其匹配项经过编辑：只要搜索仍在原处找到同一段文本，它就停留在该匹配项上；编辑破坏该匹配项后，它移到在旧匹配项起点之后结束的第一个匹配项，没有则回到第一个匹配项。新查询从第一个匹配项开始。
+
+`FindPluginState` 保存标量字段 `query`、`caseSensitive`、`wholeWord`、`regexp`、`activeIndex`、`error` 和 `version`。`count` 和 `activeMatch` 为只读 store 选择器，从插件私有索引读取。每个 `FindMatch` 包含范围与在无关编辑和块移动后保持稳定的不透明 ID。不改变匹配项、当前结果和 `error` 的提交不会通知 store 订阅者。`FindKit` 通过 `decorate.attributes` 为 `data-find-match` 和 `data-find-active` 属性提供样式。
 
 ## 自定义控件
 
