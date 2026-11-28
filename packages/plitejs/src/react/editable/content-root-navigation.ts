@@ -62,7 +62,7 @@ import {
 } from './content-root-navigation-actions';
 import {
   type ContentRootNavigationEditor,
-  type ContentRootOwner,
+  type PliteViewBoundaryOwner,
   createContentRootViewBoundaryGraph,
   findCrossingContentRootOwners,
   getOwnerForCurrentViewEditor,
@@ -99,7 +99,7 @@ import { isSetRootOf } from './set-root-endpoints';
 import { claimPageSelection } from './unread-press';
 
 export {
-  type ContentRootOwner,
+  type PliteViewBoundaryOwner,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from './content-root-owners';
@@ -109,7 +109,7 @@ export const readContentRootAwareSelection = ({
   getActiveContentRootOwner,
 }: {
   editor: ReactRuntimeEditor;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
 }) => {
   const selection = readRuntimeSelection(editor);
 
@@ -122,15 +122,15 @@ export const readContentRootAwareSelection = ({
 };
 
 type ContentRootNavigationTarget = {
-  owner?: ContentRootOwner;
+  owner?: PliteViewBoundaryOwner;
   point: Point;
   root: RootKey;
 };
 
 type ContentRootViewEditorLookup = {
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
   getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
+    owner: PliteViewBoundaryOwner
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
 };
@@ -187,7 +187,7 @@ const toViewBoundaryPoint = ({
   point,
   root,
 }: {
-  owner: ContentRootOwner | null | undefined;
+  owner: PliteViewBoundaryOwner | null | undefined;
   point: Point;
   root: RootKey;
 }): PliteViewBoundaryPoint => ({
@@ -314,10 +314,10 @@ const getViewBoundaryPointEditor = ({
 }: {
   editor: ContentRootNavigationEditor;
   getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
+    owner: PliteViewBoundaryOwner
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
-  owner: ContentRootOwner | null | undefined;
+  owner: PliteViewBoundaryOwner | null | undefined;
   root: RootKey;
 }): ReactRuntimeEditor | null =>
   (owner ? getContentRootOwnerViewEditor?.(owner) : null) ??
@@ -343,15 +343,16 @@ const getVerticalNavigationTarget = ({
   currentRoot: RootKey;
   direction: ContentRootNavigationDirection;
   editor: ContentRootNavigationEditor;
-  owners: ContentRootOwner[];
+  owners: PliteViewBoundaryOwner[];
   point: Point;
   askExternalViews?: boolean;
   preferredX?: number;
 } & ContentRootViewEditorLookup): ContentRootNavigationTarget | null => {
-  const activeOwner = getActiveContentRootOwner?.(currentRoot);
-  const ownerForCurrentRoot = isKnownContentRootOwner(owners, activeOwner)
-    ? activeOwner
-    : owners.find((owner) => owner.childRoot === currentRoot);
+  const ownerForCurrentRoot = getOwnerForRoot({
+    currentRoot,
+    getActiveContentRootOwner,
+    owners,
+  });
 
   if (ownerForCurrentRoot) {
     const sourceEditor = getViewBoundaryPointEditor({
@@ -392,36 +393,38 @@ const getVerticalNavigationTarget = ({
         ? getExitBoundaryPoint(editor, ownerForCurrentRoot, direction)
         : null;
 
-    if (!exitPoint) {
-      return null;
-    }
+    if (exitPoint) {
+      const parentOwner = ownerForCurrentRoot.parent ?? null;
+      const targetEditor = getViewBoundaryPointEditor({
+        editor,
+        getContentRootOwnerViewEditor,
+        getMountedViewEditor,
+        owner: parentOwner,
+        root: ownerForCurrentRoot.ownerRoot,
+      });
+      const targetPoint =
+        sourceEditor && targetEditor
+          ? resolveVerticalNavigationPoint({
+              direction,
+              fallbackPoint: exitPoint,
+              preferredX,
+              askExternalViews,
+              source: { editor: sourceEditor, point, root: currentRoot },
+              targetEditor,
+              targetRoot: ownerForCurrentRoot.ownerRoot,
+            })
+          : null;
+      const resolvedTargetPoint =
+        targetPoint ?? (atTerminalBlock ? exitPoint : null);
 
-    const targetEditor = getRootViewEditor({
-      editor,
-      getMountedViewEditor,
-      root: ownerForCurrentRoot.ownerRoot,
-    });
-    const targetPoint =
-      sourceEditor && targetEditor
-        ? resolveVerticalNavigationPoint({
-            direction,
-            fallbackPoint: exitPoint,
-            preferredX,
-            askExternalViews,
-            source: { editor: sourceEditor, point, root: currentRoot },
-            targetEditor,
-            targetRoot: ownerForCurrentRoot.ownerRoot,
-          })
+      return resolvedTargetPoint
+        ? {
+            ...(parentOwner ? { owner: parentOwner } : {}),
+            point: resolvedTargetPoint,
+            root: ownerForCurrentRoot.ownerRoot,
+          }
         : null;
-    const resolvedTargetPoint =
-      targetPoint ?? (atTerminalBlock ? exitPoint : null);
-
-    return resolvedTargetPoint
-      ? {
-          point: resolvedTargetPoint,
-          root: ownerForCurrentRoot.ownerRoot,
-        }
-      : null;
+    }
   }
 
   for (const owner of owners) {
@@ -429,13 +432,18 @@ const getVerticalNavigationTarget = ({
       continue;
     }
 
-    const sourceEditor = getRootViewEditor({
+    const chainedOwner = ownerForCurrentRoot
+      ? { ...owner, parent: ownerForCurrentRoot }
+      : owner;
+    const sourceEditor = getViewBoundaryPointEditor({
       editor,
+      getContentRootOwnerViewEditor,
       getMountedViewEditor,
+      owner: ownerForCurrentRoot,
       root: currentRoot,
     });
     const targetEditor =
-      getContentRootOwnerViewEditor?.(owner) ??
+      getContentRootOwnerViewEditor?.(chainedOwner) ??
       getRootViewEditor({
         editor,
         getMountedViewEditor,
@@ -469,7 +477,7 @@ const getVerticalNavigationTarget = ({
     const fallbackTarget = getRootBoundaryNavigationTarget({
       direction,
       editor,
-      owner,
+      owner: chainedOwner,
     });
     const targetPoint =
       fallbackTarget && sourceEditor && targetEditor
@@ -486,7 +494,7 @@ const getVerticalNavigationTarget = ({
 
     if (targetPoint) {
       return {
-        owner,
+        owner: chainedOwner,
         point: targetPoint,
         root: owner.childRoot,
       };
@@ -507,14 +515,15 @@ const getHorizontalNavigationTarget = ({
   currentRoot: RootKey;
   direction: ContentRootNavigationDirection;
   editor: ContentRootNavigationEditor;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  owners: ContentRootOwner[];
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
+  owners: PliteViewBoundaryOwner[];
   point: Point;
 }): ContentRootNavigationTarget | null => {
-  const activeOwner = getActiveContentRootOwner?.(currentRoot);
-  const ownerForCurrentRoot = isKnownContentRootOwner(owners, activeOwner)
-    ? activeOwner
-    : owners.find((owner) => owner.childRoot === currentRoot);
+  const ownerForCurrentRoot = getOwnerForRoot({
+    currentRoot,
+    getActiveContentRootOwner,
+    owners,
+  });
 
   if (ownerForCurrentRoot) {
     const rootEdge = editor.read((state) =>
@@ -528,12 +537,15 @@ const getHorizontalNavigationTarget = ({
         ? getExitBoundaryPoint(editor, ownerForCurrentRoot, direction)
         : null;
 
-    return exitPoint
-      ? {
-          point: exitPoint,
-          root: ownerForCurrentRoot.ownerRoot,
-        }
-      : null;
+    if (exitPoint) {
+      const parentOwner = ownerForCurrentRoot.parent ?? null;
+
+      return {
+        ...(parentOwner ? { owner: parentOwner } : {}),
+        point: exitPoint,
+        root: ownerForCurrentRoot.ownerRoot,
+      };
+    }
   }
 
   for (const owner of owners) {
@@ -544,10 +556,14 @@ const getHorizontalNavigationTarget = ({
     const entryPoint = getOwnerBoundaryPoint(editor, owner, direction);
 
     if (entryPoint && samePliteRootPoint(point, entryPoint, currentRoot)) {
+      const chainedOwner = ownerForCurrentRoot
+        ? { ...owner, parent: ownerForCurrentRoot }
+        : owner;
+
       return getRootBoundaryNavigationTarget({
         direction,
         editor,
-        owner,
+        owner: chainedOwner,
       });
     }
   }
@@ -598,7 +614,7 @@ const advanceHorizontalBoundarySelectionTarget = ({
   action: Extract<ContentRootViewSelectionAction, { kind: 'move' }>;
   editor: ContentRootNavigationEditor;
   getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
+    owner: PliteViewBoundaryOwner
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   target: ContentRootNavigationTarget;
@@ -648,14 +664,14 @@ const advanceVerticalBoundarySelectionTarget = ({
 }: {
   action: Extract<ContentRootViewSelectionAction, { kind: 'move' }>;
   anchorSelection: PliteViewSelection;
-  currentOwner?: ContentRootOwner | null;
+  currentOwner?: PliteViewBoundaryOwner | null;
   currentRoot: RootKey;
   editor: ContentRootNavigationEditor;
   getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
+    owner: PliteViewBoundaryOwner
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
-  owners: ContentRootOwner[];
+  owners: PliteViewBoundaryOwner[];
   target: ContentRootNavigationTarget;
 }): ContentRootNavigationTarget => {
   if (action.axis !== 'vertical') {
@@ -757,10 +773,10 @@ const getInitialProjectedSelectionAnchor = ({
   owners,
   selection,
 }: {
-  currentOwner?: ContentRootOwner | null;
+  currentOwner?: PliteViewBoundaryOwner | null;
   currentRoot: RootKey;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  owners: readonly ContentRootOwner[];
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
+  owners: readonly PliteViewBoundaryOwner[];
   selection: Range;
 }): PliteViewBoundaryPoint => {
   const point = selection.anchor;
@@ -950,9 +966,9 @@ const getViewGraphTarget = ({
   owners,
 }: {
   candidate: ContentRootNavigationTarget | null;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
   graph: PliteViewBoundaryGraphModel;
-  owners: readonly ContentRootOwner[];
+  owners: readonly PliteViewBoundaryOwner[];
 }): ContentRootNavigationTarget | null => {
   const holds = (target: ContentRootNavigationTarget) =>
     !!PliteViewBoundaryGraph.resolvePointNode(
@@ -1036,7 +1052,7 @@ const getProjectedGraphTerminalLineTarget = ({
   direction: ContentRootNavigationDirection;
   editor: ContentRootNavigationEditor;
   getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
+    owner: PliteViewBoundaryOwner
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   viewSelection: PliteViewSelection;
@@ -1095,10 +1111,10 @@ const getContentRootMovementTarget = ({
   action: Extract<ContentRootViewSelectionAction, { kind: 'move' }>;
   allowRootLocalMovement: boolean;
   advanceBoundaryTarget: boolean;
-  currentOwner?: ContentRootOwner | null;
+  currentOwner?: PliteViewBoundaryOwner | null;
   currentRoot: RootKey;
   editor: ContentRootNavigationEditor;
-  owners: ContentRootOwner[];
+  owners: PliteViewBoundaryOwner[];
   point: Point;
   askExternalViews?: boolean;
   preferredX?: number;
@@ -1241,6 +1257,12 @@ const getContentRootActionTarget = ({
       : (getActiveContentRootOwner?.(root) ?? null);
 
   if (action.kind === 'enter') {
+    const ownerForCurrentRoot = getOwnerForRoot({
+      currentRoot,
+      getActiveContentRootOwner: getCurrentRootOwner,
+      owners,
+    });
+
     for (const owner of owners) {
       if (owner.ownerRoot !== currentRoot) {
         continue;
@@ -1253,10 +1275,14 @@ const getContentRootActionTarget = ({
         (start && samePliteRootPoint(point, start, currentRoot)) ||
         (end && samePliteRootPoint(point, end, currentRoot))
       ) {
+        const chainedOwner = ownerForCurrentRoot
+          ? { ...owner, parent: ownerForCurrentRoot }
+          : owner;
+
         return getRootBoundaryNavigationTarget({
           direction: 'forward',
           editor,
-          owner,
+          owner: chainedOwner,
         });
       }
     }
@@ -1318,7 +1344,7 @@ export const shouldModelOwnContentRootVerticalSelection = ({
 }: {
   editor: ReactRuntimeEditor;
   event: ReactKeyboardEvent<HTMLDivElement>;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
   selection: Range | null;
 }) => {
   if (
@@ -1343,7 +1369,11 @@ export const shouldModelOwnContentRootVerticalSelection = ({
   }
 
   const owners = findCrossingContentRootOwners(editor);
-  const graph = createContentRootViewBoundaryGraph(editor, owners);
+  const graph = createContentRootViewBoundaryGraph(
+    editor,
+    owners,
+    getActiveContentRootOwner
+  );
   const anchor = getInitialProjectedSelectionAnchor({
     currentOwner: null,
     currentRoot,

@@ -3,7 +3,7 @@ import { getSetSite } from '../../core/public-state';
 import type { AnyEditor } from '../../interfaces/editor';
 import { MAIN_ROOT_KEY } from '../root-key';
 import {
-  type ContentRootOwner,
+  type PliteViewBoundaryOwner,
   findContentRootOwners,
   getContentRootViewBoundaryPoint,
 } from './content-root-owners';
@@ -11,7 +11,7 @@ import { getEditorRuntimeOwner } from './runtime-editor-api';
 
 type ViewEndpoint = {
   affinity?: 'backward' | 'forward';
-  owner?: ContentRootOwner | null;
+  owner?: PliteViewBoundaryOwner | null;
   point: Point;
   root: RootKey;
 };
@@ -20,7 +20,7 @@ const edgeEndpoint = <T extends ViewEndpoint>(
   editor: AnyEditor,
   focus: T,
   target: Readonly<{
-    owner: ContentRootOwner | null | undefined;
+    owner: PliteViewBoundaryOwner | null | undefined;
     path: Path;
     root: RootKey;
   }>,

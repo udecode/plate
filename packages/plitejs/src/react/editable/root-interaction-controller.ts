@@ -80,7 +80,7 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import {
-  type ContentRootOwner,
+  type PliteViewBoundaryOwner,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from './content-root-navigation';
@@ -92,6 +92,7 @@ import {
 } from './content-root-owner-target';
 import {
   findCrossingContentRootOwners,
+  isKnownContentRootOwner,
   readRootNodes,
 } from './content-root-owners';
 import {
@@ -241,7 +242,7 @@ type PendingRootInteraction = {
 type RootInteractionDragEndpoint = {
   affinity?: 'backward' | 'forward';
   isDOMCoverageBoundary: boolean;
-  owner?: ContentRootOwner | null;
+  owner?: PliteViewBoundaryOwner | null;
   point: Point;
   root: RootKey;
 };
@@ -589,7 +590,7 @@ const shouldUseModelProjectedDragSelection = ({
   (settled || anchor.isDOMCoverageBoundary || focus.isDOMCoverageBoundary);
 
 const findOwnerContainingPoint = (
-  owners: readonly ContentRootOwner[],
+  owners: readonly PliteViewBoundaryOwner[],
   root: RootKey,
   point: Point
 ) =>
@@ -605,7 +606,7 @@ const findOwnerContainingPoint = (
 // A content root owner renders no model text, so the native hit test on its
 // chrome returns an engine-dependent point, which can sit in another block.
 const findOwnerAtChromeTarget = (
-  owners: readonly ContentRootOwner[],
+  owners: readonly PliteViewBoundaryOwner[],
   root: RootKey,
   target: EventTarget | null
 ) => {
@@ -631,7 +632,7 @@ const resolveContentRootOwnerChromeEdge = ({
   owner,
 }: {
   event: MouseEvent<HTMLElement>;
-  owner: ContentRootOwner;
+  owner: PliteViewBoundaryOwner;
 }): 'end' | 'start' => {
   const element = mouseEventTargetToElement(event.target);
   const ownerElement = element?.closest<HTMLElement>(
@@ -661,7 +662,7 @@ const resolveContentRootOwnerChromeEndpoint = ({
 }: {
   editor: RootInteractionEditor;
   event: MouseEvent<HTMLElement>;
-  owners: readonly ContentRootOwner[];
+  owners: readonly PliteViewBoundaryOwner[];
   point: Point;
   root: RootKey;
 }): RootInteractionDragEndpoint | null => {
@@ -805,13 +806,13 @@ const resolveExistingSelectionProjectedDragEndpoint = ({
 };
 
 const resolveKnownOwner = (
-  owners: readonly ContentRootOwner[],
-  owner: ContentRootOwner | null | undefined
-) => (owner ? owners.find((candidate) => isSameOwner(candidate, owner)) : null);
+  owners: readonly PliteViewBoundaryOwner[],
+  owner: PliteViewBoundaryOwner | null | undefined
+) => (isKnownContentRootOwner(owners, owner) ? owner : null);
 
 const toDragBoundaryPoint = (
   graph: PliteViewBoundaryGraphModel,
-  owners: readonly ContentRootOwner[],
+  owners: readonly PliteViewBoundaryOwner[],
   endpoint: RootInteractionDragEndpoint
 ): PliteViewBoundaryPoint | null => {
   const owner = resolveKnownOwner(owners, endpoint.owner);

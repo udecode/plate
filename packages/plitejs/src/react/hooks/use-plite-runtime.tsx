@@ -20,7 +20,6 @@ import {
   type EditorViewOptions,
   type PluginsOf,
   type NamedRootKey,
-  type Path,
   type RootKey,
   SelectionApi,
   type Value,
@@ -76,6 +75,10 @@ import {
   PliteEditingAreaContext,
 } from '../context';
 import {
+  deleteViewEditorContentRootOwner,
+  setViewEditorContentRootOwner,
+} from '../editable/content-root-owners';
+import {
   type EditableDOMRuntime,
   type EditableHistoryReplay,
   getMountedEditableDOMRuntime,
@@ -110,6 +113,10 @@ import type {
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { createSlotArrivalHost, type ViewInstanceInfo } from '../slot-arrival';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
+import {
+  getPliteViewBoundaryOwnerKey,
+  type PliteViewBoundaryOwner,
+} from '../view-boundary-graph-core';
 import { focusPliteEditable } from './focus-plite-editable';
 import { useOptionalEditorContext } from './use-editor-context';
 import {
@@ -128,27 +135,15 @@ type PluginLike = {
   name: string;
 };
 
-/** Ownership record that connects a child content root to its parent element. */
-export type PliteContentRootOwner = {
-  childRoot: RootKey;
-  ownerPath: Path;
-  ownerRoot: RootKey;
-};
-
-const getContentRootOwnerKey = (owner: PliteContentRootOwner) =>
-  `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${
-    owner.childRoot
-  }`;
-
-const getSlotRootKey = (slot: HistoryStepSlot, owner: PliteContentRootOwner) =>
+const getSlotRootKey = (slot: HistoryStepSlot, owner: PliteViewBoundaryOwner) =>
   `${slot.owner}\u0000${slot.slot}\u0000${owner.childRoot}`;
 
 export const unregisterContentRootOwnerViewEditor = <TEditor,>(
   ownerViewEditors: Map<string, TEditor>,
-  owner: PliteContentRootOwner,
+  owner: PliteViewBoundaryOwner,
   editor: TEditor
 ) => {
-  const ownerKey = getContentRootOwnerKey(owner);
+  const ownerKey = getPliteViewBoundaryOwnerKey(owner);
 
   if (ownerViewEditors.get(ownerKey) !== editor) {
     return false;
@@ -177,9 +172,9 @@ type MountedRootTarget = Readonly<{ shown: boolean; view: MountedViewEditor }>;
 
 type PliteRuntimeContextValue = {
   completeHistoryReplay: (replay: EditableHistoryReplay) => void;
-  getActiveContentRootOwner: (root: RootKey) => PliteContentRootOwner | null;
+  getActiveContentRootOwner: (root: RootKey) => PliteViewBoundaryOwner | null;
   getContentRootOwnerViewEditor: (
-    owner: PliteContentRootOwner
+    owner: PliteViewBoundaryOwner
   ) => MountedViewEditor | null;
   getMountedContentViewEditor: (root: RootKey) => MountedViewEditor | null;
   getMountedViewEditor: (root: RootKey) => MountedViewEditor | null;
@@ -195,7 +190,7 @@ type PliteRuntimeContextValue = {
   presentation: ViewPresentation | null;
   registerContentRootOwner: (
     editor: MountedViewEditor,
-    owner: PliteContentRootOwner,
+    owner: PliteViewBoundaryOwner,
     slot: HistoryStepSlot
   ) => () => void;
   registerHistoryStepPane: (pane: EditableDOMRuntime) => () => void;
@@ -223,9 +218,9 @@ type PresentationLookups = {
   getActiveContentRootOwner: (
     root: RootKey,
     presentation: ViewPresentation | null
-  ) => PliteContentRootOwner | null;
+  ) => PliteViewBoundaryOwner | null;
   getContentRootOwnerViewEditor: (
-    owner: PliteContentRootOwner,
+    owner: PliteViewBoundaryOwner,
     presentation: ViewPresentation | null
   ) => MountedViewEditor | null;
   getMountedContentViewEditor: (
@@ -640,7 +635,7 @@ export function EditorRuntimeProvider({
     [historyStepViews]
   );
   const contentRootOwnersRef = useRef(
-    new Map<typeof reactEditor, PliteContentRootOwner>()
+    new Map<typeof reactEditor, PliteViewBoundaryOwner>()
   );
   const contentRootOwnerViewEditorsRef = useRef(
     new Map<ViewPresentation, Map<string, typeof reactEditor>>()
@@ -733,6 +728,7 @@ export function EditorRuntimeProvider({
           contentRootOwnerViewEditorsRef.current.get(presentation);
 
         contentRootOwnersRef.current.delete(editor);
+        deleteViewEditorContentRootOwner(editor);
         if (owner && ownerViewEditors) {
           unregisterContentRootOwnerViewEditor(ownerViewEditors, owner, editor);
         }
@@ -754,7 +750,7 @@ export function EditorRuntimeProvider({
   const registerContentRootOwner = useCallback(
     (
       editor: typeof reactEditor,
-      owner: PliteContentRootOwner,
+      owner: PliteViewBoundaryOwner,
       slot: HistoryStepSlot
     ) => {
       const ownerViewEditors = presentationMap(
@@ -772,7 +768,8 @@ export function EditorRuntimeProvider({
         continueRootViewUse(editor, lastUse.content, lastUse.interaction);
       }
       contentRootOwnersRef.current.set(editor, owner);
-      ownerViewEditors.set(getContentRootOwnerKey(owner), editor);
+      setViewEditorContentRootOwner(editor, owner);
+      ownerViewEditors.set(getPliteViewBoundaryOwnerKey(owner), editor);
 
       return () => {
         lastRootUses.set(place, {
@@ -781,6 +778,7 @@ export function EditorRuntimeProvider({
         });
         if (contentRootOwnersRef.current.get(editor) === owner) {
           contentRootOwnersRef.current.delete(editor);
+          deleteViewEditorContentRootOwner(editor, owner);
           unregisterContentRootOwnerViewEditor(ownerViewEditors, owner, editor);
         }
       };
@@ -802,8 +800,8 @@ export function EditorRuntimeProvider({
     };
   }, [historyStepViews, runtime, slotArrivalHost]);
   const getContentRootOwnerViewEditor = useCallback(
-    (owner: PliteContentRootOwner, presentation: ViewPresentation | null) => {
-      const key = getContentRootOwnerKey(owner);
+    (owner: PliteViewBoundaryOwner, presentation: ViewPresentation | null) => {
+      const key = getPliteViewBoundaryOwnerKey(owner);
 
       if (presentation) {
         return (

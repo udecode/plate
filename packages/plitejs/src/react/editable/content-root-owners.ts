@@ -21,7 +21,9 @@ import {
   createPliteViewBoundaryGraph,
   getPliteDescendantAtPath,
   getPliteBoundaryPoint,
+  getPliteViewBoundaryOwnerKey,
   rootPlitePoint,
+  type PliteViewBoundaryOwner,
   type PliteViewBoundaryPoint,
   type PliteViewBoundaryGraphNodeInput,
 } from '../view-boundary-graph';
@@ -32,11 +34,33 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 
-export type ContentRootOwner = {
-  childRoot: RootKey;
-  ownerPath: Path;
-  ownerRoot: RootKey;
+export type { PliteViewBoundaryOwner };
+
+const VIEW_EDITOR_TO_CONTENT_ROOT_OWNER = new WeakMap<
+  object,
+  PliteViewBoundaryOwner
+>();
+
+export const setViewEditorContentRootOwner = (
+  editor: object,
+  owner: PliteViewBoundaryOwner
+) => {
+  VIEW_EDITOR_TO_CONTENT_ROOT_OWNER.set(editor, owner);
 };
+
+export const deleteViewEditorContentRootOwner = (
+  editor: object,
+  owner?: PliteViewBoundaryOwner
+) => {
+  if (!owner || VIEW_EDITOR_TO_CONTENT_ROOT_OWNER.get(editor) === owner) {
+    VIEW_EDITOR_TO_CONTENT_ROOT_OWNER.delete(editor);
+  }
+};
+
+export const getRegisteredViewEditorContentRootOwner = (
+  editor: object
+): PliteViewBoundaryOwner | null =>
+  VIEW_EDITOR_TO_CONTENT_ROOT_OWNER.get(editor) ?? null;
 
 export type ContentRootNavigationEditor = Pick<
   ReactRuntimeEditor<any>,
@@ -145,7 +169,7 @@ export const getRegisteredRootViewEditor = (
 
 export const findContentRootOwners = <V extends Value>(
   editor: Pick<AnyEditor<V>, 'read'>
-): ContentRootOwner[] => {
+): PliteViewBoundaryOwner[] => {
   const runtimeEditor = getRuntimeEditor(editor);
 
   if (
@@ -198,7 +222,7 @@ export const findContentRootOwners = <V extends Value>(
  * range across its holder selects over the void holder, and a view mounted in
  * the set root is the top of its graph.
  */
-const withoutSetOwners = <T extends readonly ContentRootOwner[]>(
+const withoutSetOwners = <T extends readonly PliteViewBoundaryOwner[]>(
   editor: object,
   owners: T
 ): T => {
@@ -266,11 +290,10 @@ export const isRangeAcrossContentRootOwners = (
   );
 };
 
-export const isKnownContentRootOwner = (
-  owners: readonly ContentRootOwner[],
-  owner: ContentRootOwner | null | undefined
-): owner is ContentRootOwner =>
-  !!owner &&
+const isKnownOwnerHop = (
+  owners: readonly PliteViewBoundaryOwner[],
+  owner: PliteViewBoundaryOwner
+) =>
   owners.some(
     (candidate) =>
       candidate.childRoot === owner.childRoot &&
@@ -278,22 +301,46 @@ export const isKnownContentRootOwner = (
       PathApi.equals(candidate.ownerPath, owner.ownerPath)
   );
 
-const getContentRootOwnerKey = (owner: ContentRootOwner) =>
+export const isKnownContentRootOwner = (
+  owners: readonly PliteViewBoundaryOwner[],
+  owner: PliteViewBoundaryOwner | null | undefined
+): owner is PliteViewBoundaryOwner => {
+  if (!owner) return false;
+
+  const seen = new Set<PliteViewBoundaryOwner>();
+  let current: PliteViewBoundaryOwner | null | undefined = owner;
+
+  while (current) {
+    if (seen.has(current) || !isKnownOwnerHop(owners, current)) {
+      return false;
+    }
+    seen.add(current);
+    if (current.parent && current.parent.childRoot !== current.ownerRoot) {
+      return false;
+    }
+    current = current.parent;
+  }
+
+  return true;
+};
+
+const getSingleHopOwnerKey = (owner: PliteViewBoundaryOwner) =>
   `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${
     owner.childRoot
   }`;
 
 export const isSameContentRootOwner = (
-  left: ContentRootOwner | null | undefined,
-  right: ContentRootOwner | null | undefined
-) =>
+  left: PliteViewBoundaryOwner | null | undefined,
+  right: PliteViewBoundaryOwner | null | undefined
+): boolean =>
   (!left && !right) ||
   Boolean(
     left &&
     right &&
     left.childRoot === right.childRoot &&
     left.ownerRoot === right.ownerRoot &&
-    PathApi.equals(left.ownerPath, right.ownerPath)
+    PathApi.equals(left.ownerPath, right.ownerPath) &&
+    isSameContentRootOwner(left.parent, right.parent)
   );
 
 export const getOwnerForCurrentViewEditor = ({
@@ -303,10 +350,16 @@ export const getOwnerForCurrentViewEditor = ({
 }: {
   editor: ContentRootNavigationEditor;
   getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
+    owner: PliteViewBoundaryOwner
   ) => ReactRuntimeEditor | null;
-  owners: readonly ContentRootOwner[];
-}): ContentRootOwner | null => {
+  owners: readonly PliteViewBoundaryOwner[];
+}): PliteViewBoundaryOwner | null => {
+  const registered = getRegisteredViewEditorContentRootOwner(editor);
+
+  if (isKnownContentRootOwner(owners, registered)) {
+    return registered;
+  }
+
   if (!getContentRootOwnerViewEditor) {
     return null;
   }
@@ -320,24 +373,44 @@ export const getOwnerForCurrentViewEditor = ({
   );
 };
 
+const chainFirstOwnerForRoot = (
+  owners: readonly PliteViewBoundaryOwner[],
+  root: RootKey,
+  seen: ReadonlySet<RootKey> = new Set()
+): PliteViewBoundaryOwner | null => {
+  if (seen.has(root)) return null;
+
+  const owner = owners.find((candidate) => candidate.childRoot === root);
+
+  if (!owner) return null;
+
+  const parent = chainFirstOwnerForRoot(
+    owners,
+    owner.ownerRoot,
+    new Set([...seen, root])
+  );
+
+  return parent ? { ...owner, parent } : owner;
+};
+
 export const getOwnerForRoot = ({
   currentRoot,
   getActiveContentRootOwner,
   owners,
 }: {
   currentRoot: RootKey;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  owners: readonly ContentRootOwner[];
-}): ContentRootOwner | null => {
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
+  owners: readonly PliteViewBoundaryOwner[];
+}): PliteViewBoundaryOwner | null => {
   const activeOwner = getActiveContentRootOwner?.(currentRoot);
 
   return isKnownContentRootOwner(owners, activeOwner)
     ? activeOwner
-    : (owners.find((owner) => owner.childRoot === currentRoot) ?? null);
+    : chainFirstOwnerForRoot(owners, currentRoot);
 };
 
 const getTopLevelOwner = (
-  owners: readonly ContentRootOwner[],
+  owners: readonly PliteViewBoundaryOwner[],
   root: RootKey,
   path: Path
 ) =>
@@ -349,7 +422,7 @@ const getTopLevelOwner = (
   ) ?? null;
 
 const hasNestedOwner = (
-  owners: readonly ContentRootOwner[],
+  owners: readonly PliteViewBoundaryOwner[],
   root: RootKey,
   path: Path
 ) =>
@@ -361,9 +434,9 @@ const hasNestedOwner = (
   );
 
 const getViewDocumentRoot = (
-  owners: readonly ContentRootOwner[],
+  owners: readonly PliteViewBoundaryOwner[],
   root: RootKey,
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null
 ) => {
   const tops = new Set<RootKey>();
   const seen = new Set<RootKey>();
@@ -372,9 +445,15 @@ const getViewDocumentRoot = (
     seen.add(child);
 
     const activeOwner = getActiveContentRootOwner?.(child);
-    const hosts = isKnownContentRootOwner(owners, activeOwner)
-      ? [activeOwner]
-      : owners.filter((owner) => owner.childRoot === child);
+    if (isKnownContentRootOwner(owners, activeOwner)) {
+      let top = activeOwner;
+
+      while (top.parent) top = top.parent;
+      climb(top.ownerRoot);
+      return;
+    }
+
+    const hosts = owners.filter((owner) => owner.childRoot === child);
 
     if (hosts.length === 0) tops.add(child);
     for (const host of hosts) climb(host.ownerRoot);
@@ -387,8 +466,8 @@ const getViewDocumentRoot = (
 
 const walkContentRootView = <V extends Value>(
   editor: Pick<AnyEditor<V>, 'read'>,
-  allOwners: readonly ContentRootOwner[],
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null,
+  allOwners: readonly PliteViewBoundaryOwner[],
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null,
   edge?: 'start' | 'end'
 ) => {
   const owners = withoutSetOwners(editor, allOwners);
@@ -414,20 +493,24 @@ const walkContentRootView = <V extends Value>(
 
     const appendRoot = (
       root: RootKey,
-      owner: ContentRootOwner | null,
+      owner: PliteViewBoundaryOwner | null,
       ownerStack: ReadonlySet<string>
     ) => {
       const appendNode = (node: Descendant, path: Path, blockKey?: string) => {
         const childOwner = getTopLevelOwner(owners, root, path);
 
         if (childOwner) {
-          const ownerKey = getContentRootOwnerKey(childOwner);
+          const edgeKey = getSingleHopOwnerKey(childOwner);
 
-          if (!ownerStack.has(ownerKey)) {
+          if (!ownerStack.has(edgeKey)) {
+            const chainedOwner: PliteViewBoundaryOwner = owner
+              ? { ...childOwner, parent: owner }
+              : childOwner;
+
             appendRoot(
               childOwner.childRoot,
-              childOwner,
-              new Set([...ownerStack, ownerKey])
+              chainedOwner,
+              new Set([...ownerStack, edgeKey])
             );
             return;
           }
@@ -440,7 +523,12 @@ const walkContentRootView = <V extends Value>(
           }
           const childBlockKey = state.schema.isInline(node)
             ? blockKey
-            : JSON.stringify([root, owner, null, path]);
+            : JSON.stringify([
+                root,
+                owner ? getPliteViewBoundaryOwnerKey(owner) : null,
+                null,
+                path,
+              ]);
           forEachInOrder(node.children, (child, index) => {
             appendNode(child, path.concat(index), childBlockKey);
           });
@@ -467,8 +555,8 @@ const walkContentRootView = <V extends Value>(
 
 export const createContentRootViewBoundaryGraph = <V extends Value>(
   editor: Pick<AnyEditor<V>, 'read'>,
-  owners: readonly ContentRootOwner[],
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null
+  owners: readonly PliteViewBoundaryOwner[],
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null
 ) =>
   createPliteViewBoundaryGraph(
     walkContentRootView(editor, owners, getActiveContentRootOwner)
@@ -476,9 +564,9 @@ export const createContentRootViewBoundaryGraph = <V extends Value>(
 
 export const getContentRootViewEdgeNode = <V extends Value>(
   editor: Pick<AnyEditor<V>, 'read'>,
-  owners: readonly ContentRootOwner[],
+  owners: readonly PliteViewBoundaryOwner[],
   edge: 'start' | 'end',
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null
 ): ContentRootViewNode | null =>
   walkContentRootView(editor, owners, getActiveContentRootOwner, edge)[0] ??
   null;

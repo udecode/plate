@@ -479,12 +479,19 @@ function EditableContentRootSlot({
   );
   const { root } = useContentRoot(element, { slot });
   const ownerSources = React.useContext(DecorationSourcesContext);
+  const rawParentOwner = React.useContext(PliteContentRootOwnerContext);
   const rawParentInstance = React.useContext(PliteContentRootInstanceContext);
   const parentInstance =
     rawParentInstance &&
     rawParentInstance.runtimeOwner === runtimeOwner &&
     rawParentInstance.childRoot === ownerRoot
       ? rawParentInstance
+      : null;
+  const parentOwner =
+    rawParentOwner &&
+    rawParentInstance?.runtimeOwner === runtimeOwner &&
+    rawParentOwner.childRoot === ownerRoot
+      ? rawParentOwner
       : null;
   const ownerReadOnly = useInheritedReadOnly();
   const [slotMountId] = React.useState(createContentRootSlotKey);
@@ -493,8 +500,9 @@ function EditableContentRootSlot({
       childRoot: root,
       ownerPath,
       ownerRoot,
+      ...(parentOwner ? { parent: parentOwner } : {}),
     }),
-    [ownerPath, ownerRoot, root]
+    [ownerPath, ownerRoot, parentOwner, root]
   );
   const contentRootInstance = React.useMemo(() => {
     const paneKey = parentInstance?.paneKey ?? ownerRoot;
@@ -627,14 +635,17 @@ function EditableContentRootView({
   React.useInsertionEffect(() => {
     registerHistoryStepSlot(editor, stepSlot);
   }, [editor, registerHistoryStepSlot, stepSlot]);
-  useIsomorphicLayoutEffect(
+  const contentRootOwner = React.useContext(PliteContentRootOwnerContext);
+  const registeredOwner = React.useMemo(
     () =>
-      registerContentRootOwner(
-        editor,
-        { childRoot: root, ownerPath, ownerRoot },
-        stepSlot
-      ),
-    [editor, ownerPath, ownerRoot, registerContentRootOwner, root, stepSlot]
+      contentRootOwner && contentRootOwner.childRoot === root
+        ? contentRootOwner
+        : { childRoot: root, ownerPath, ownerRoot },
+    [contentRootOwner, ownerPath, ownerRoot, root]
+  );
+  useIsomorphicLayoutEffect(
+    () => registerContentRootOwner(editor, registeredOwner, stepSlot),
+    [editor, registerContentRootOwner, registeredOwner, stepSlot]
   );
   const externalMouseGestureRef = React.useRef(false);
   const getViewEditor = React.useCallback(

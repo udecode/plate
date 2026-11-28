@@ -82,6 +82,173 @@ export interface EditorRootProps<E extends EditorReference = Editor> {
   suppressInstanceWarning?: boolean;
 }
 
+const useIsomorphicLayoutEffect =
+  typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect;
+
+function PlateEditorObservers({
+  editor,
+  onCommit,
+  onNodeChange,
+  onSelectionChange,
+  onTextChange,
+  onValueChange,
+}: Pick<
+  EditorRootProps,
+  | 'onCommit'
+  | 'onNodeChange'
+  | 'onSelectionChange'
+  | 'onTextChange'
+  | 'onValueChange'
+> & {
+  editor: Editor;
+}) {
+  const observerBaseline = React.useMemo(
+    () => ({ version: editor.read.lastCommit()?.version ?? 0 }),
+    [editor]
+  );
+  const [commitPublicationQueue] = React.useState(() =>
+    createEditorCommitPublicationQueue(observerBaseline.version)
+  );
+  const observerBaselineRef = React.useRef<typeof observerBaseline | null>(
+    null
+  );
+  const observersRef = React.useRef({
+    onCommit,
+    onNodeChange,
+    onSelectionChange,
+    onTextChange,
+    onValueChange,
+  });
+
+  React.useInsertionEffect(() => {
+    observersRef.current = {
+      onCommit,
+      onNodeChange,
+      onSelectionChange,
+      onTextChange,
+      onValueChange,
+    };
+  }, [onCommit, onNodeChange, onSelectionChange, onTextChange, onValueChange]);
+
+  const hasNodeChange = Boolean(onNodeChange);
+  const hasTextChange = Boolean(onTextChange);
+
+  useIsomorphicLayoutEffect(
+    () =>
+      subscribePlateChangeCallbacks(editor, {
+        onNodeChange: hasNodeChange
+          ? (context) => {
+              observersRef.current.onNodeChange?.(context);
+            }
+          : undefined,
+        onTextChange: hasTextChange
+          ? (context) => {
+              observersRef.current.onTextChange?.(context);
+            }
+          : undefined,
+      }),
+    [editor, hasNodeChange, hasTextChange]
+  );
+
+  useIsomorphicLayoutEffect(() => {
+    if (observerBaselineRef.current !== observerBaseline) {
+      observerBaselineRef.current = observerBaseline;
+      resetEditorCommitPublicationQueue(
+        commitPublicationQueue,
+        observerBaseline.version
+      );
+    }
+
+    const observeCommit: Parameters<typeof editor.subscribeCommit>[0] = (
+      commit,
+      snapshot
+    ) => {
+      const {
+        onCommit: innerOnCommit,
+        onSelectionChange: innerOnSelectionChange,
+        onValueChange: innerOnValueChange,
+      } = observersRef.current;
+      if (!innerOnCommit && !innerOnSelectionChange && !innerOnValueChange) {
+        return;
+      }
+
+      const valueChanged = didCommitChangePersistedValue(editor, commit);
+      const context = { commit, editor, snapshot };
+
+      runEditorObserver(
+        editor,
+        'commit-listener',
+        () => {
+          innerOnCommit?.(context);
+        },
+        'EditorRoot'
+      );
+
+      if (valueChanged && innerOnValueChange) {
+        const value = getCommitDocumentValue(commit) ?? editor.read.value();
+
+        runEditorObserver(
+          editor,
+          'commit-listener',
+          () => {
+            innerOnValueChange({
+              ...context,
+              value,
+            });
+          },
+          'EditorRoot'
+        );
+      }
+
+      if (
+        commit.selectionChanged &&
+        (commit.selectionBeforeRoot === undefined ||
+          commit.selectionAfterRoot === undefined)
+      ) {
+        runEditorObserver(
+          editor,
+          'commit-listener',
+          () => {
+            innerOnSelectionChange?.({
+              ...context,
+              selection: snapshot.selection,
+            });
+          },
+          'EditorRoot'
+        );
+      }
+    };
+
+    const unsubscribe = editor.subscribeCommit((commit, snapshot) => {
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        commit,
+        snapshot,
+        observeCommit,
+        { allowVersionGap: false }
+      );
+    });
+    const latestCommit = editor.read.lastCommit();
+
+    if (
+      latestCommit &&
+      latestCommit.version > commitPublicationQueue.lastVersion
+    ) {
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        latestCommit,
+        editor.read((state) => state.runtime.snapshot()),
+        observeCommit,
+        { allowVersionGap: true }
+      );
+    }
+
+    return unsubscribe;
+  }, [commitPublicationQueue, editor, observerBaseline]);
+
+  return null;
+}
+
 function PlateInner({
   authored,
   children,
@@ -115,158 +282,32 @@ function PlateInner({
     () => ({ editor: currentEditor, containerRef }),
     [containerRef, currentEditor]
   );
-  const observerBaseline = React.useMemo(
-    () => ({ version: editor?.read.lastCommit()?.version ?? 0 }),
-    [editor]
-  );
-  const [commitPublicationQueue] = React.useState(() =>
-    createEditorCommitPublicationQueue(observerBaseline.version)
-  );
-  const observerBaselineRef = React.useRef<typeof observerBaseline | null>(
-    null
-  );
-  const observersRef = React.useRef({
-    onCommit,
-    onSelectionChange,
-    onValueChange,
-  });
-
-  React.useInsertionEffect(() => {
-    observersRef.current = {
-      onCommit,
-      onSelectionChange,
-      onValueChange,
-    };
-  }, [onCommit, onSelectionChange, onValueChange]);
-
-  React.useLayoutEffect(
-    () =>
-      subscribePlateChangeCallbacks(
-        editor ?? failInvariant('Expected value to be defined'),
-        {
-          onNodeChange,
-          onTextChange,
-        }
-      ),
-    [editor, onNodeChange, onTextChange]
-  );
-
-  React.useLayoutEffect(() => {
-    const observedEditor =
-      editor ?? failInvariant('Expected value to be defined');
-    if (observerBaselineRef.current !== observerBaseline) {
-      observerBaselineRef.current = observerBaseline;
-      resetEditorCommitPublicationQueue(
-        commitPublicationQueue,
-        observerBaseline.version
-      );
-    }
-
-    const observeCommit: Parameters<
-      typeof observedEditor.subscribeCommit
-    >[0] = (commit, snapshot) => {
-      const {
-        onCommit: innerOnCommit,
-        onSelectionChange: innerOnSelectionChange,
-        onValueChange: innerOnValueChange,
-      } = observersRef.current;
-      if (!innerOnCommit && !innerOnSelectionChange && !innerOnValueChange) {
-        return;
-      }
-
-      const valueChanged = didCommitChangePersistedValue(
-        observedEditor,
-        commit
-      );
-      const context = { commit, editor: observedEditor, snapshot };
-
-      runEditorObserver(
-        observedEditor,
-        'commit-listener',
-        () => {
-          innerOnCommit?.(context);
-        },
-        'EditorRoot'
-      );
-
-      if (valueChanged && innerOnValueChange) {
-        const value =
-          getCommitDocumentValue(commit) ?? observedEditor.read.value();
-
-        runEditorObserver(
-          observedEditor,
-          'commit-listener',
-          () => {
-            innerOnValueChange({
-              ...context,
-              value,
-            });
-          },
-          'EditorRoot'
-        );
-      }
-
-      if (
-        commit.selectionChanged &&
-        (commit.selectionBeforeRoot === undefined ||
-          commit.selectionAfterRoot === undefined)
-      ) {
-        runEditorObserver(
-          observedEditor,
-          'commit-listener',
-          () => {
-            innerOnSelectionChange?.({
-              ...context,
-              selection: snapshot.selection,
-            });
-          },
-          'EditorRoot'
-        );
-      }
-    };
-
-    const unsubscribe = observedEditor.subscribeCommit((commit, snapshot) => {
-      publishEditorCommitInVersionOrder(
-        commitPublicationQueue,
-        commit,
-        snapshot,
-        observeCommit,
-        { allowVersionGap: false }
-      );
-    });
-    const latestCommit = observedEditor.read.lastCommit();
-
-    if (
-      latestCommit &&
-      latestCommit.version > commitPublicationQueue.lastVersion
-    ) {
-      publishEditorCommitInVersionOrder(
-        commitPublicationQueue,
-        latestCommit,
-        observedEditor.read((state) => state.runtime.snapshot()),
-        observeCommit,
-        { allowVersionGap: true }
-      );
-    }
-
-    return unsubscribe;
-  }, [commitPublicationQueue, editor, observerBaseline]);
 
   return (
-    <RuntimeEditorRoot
-      authored={authored}
-      decorations={decorations}
-      editor={currentEditor}
-      readOnly={plateReadOnly}
-    >
-      <PlateReadOnlyContext value={plateReadOnly}>
-        <PlateModelContext value={model}>
-          <PlateCaretScope primary={primary ?? true}>
-            {children}
-          </PlateCaretScope>
-        </PlateModelContext>
-      </PlateReadOnlyContext>
-    </RuntimeEditorRoot>
+    <>
+      <PlateEditorObservers
+        editor={currentEditor}
+        onCommit={onCommit}
+        onNodeChange={onNodeChange}
+        onSelectionChange={onSelectionChange}
+        onTextChange={onTextChange}
+        onValueChange={onValueChange}
+      />
+      <RuntimeEditorRoot
+        authored={authored}
+        decorations={decorations}
+        editor={currentEditor}
+        readOnly={plateReadOnly}
+      >
+        <PlateReadOnlyContext value={plateReadOnly}>
+          <PlateModelContext value={model}>
+            <PlateCaretScope primary={primary ?? true}>
+              {children}
+            </PlateCaretScope>
+          </PlateModelContext>
+        </PlateReadOnlyContext>
+      </RuntimeEditorRoot>
+    </>
   );
 }
 

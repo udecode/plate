@@ -61,17 +61,20 @@ export const reachesRoot = <V extends Value>(
 
     return hosts.size === 1 ? [...hosts][0] : undefined;
   };
-  const starts: Array<{ host?: RootKey; root: RootKey }> = [
+  const starts: Array<{
+    owner?: PliteViewSelection['anchor']['owner'];
+    root: RootKey;
+  }> = [
     {
-      host: selection.anchor.owner?.ownerRoot,
+      owner: selection.anchor.owner,
       root: getPliteViewBoundaryPointRoot(selection.anchor),
     },
     {
-      host: selection.focus.owner?.ownerRoot,
+      owner: selection.focus.owner,
       root: getPliteViewBoundaryPointRoot(selection.focus),
     },
     ...selection.segments.parts.map((part) => ({
-      host: part.owner?.ownerRoot,
+      owner: part.owner,
       root: part.root,
     })),
   ];
@@ -80,7 +83,17 @@ export const reachesRoot = <V extends Value>(
   for (const start of starts) {
     if (start.root === root) return true;
 
-    let at = start.host ?? onlyHost(start.root);
+    let currentOwner = start.owner ?? null;
+    let lastOwnerRoot: RootKey | undefined;
+
+    while (currentOwner) {
+      if (currentOwner.ownerRoot === root) return true;
+      reached.add(currentOwner.ownerRoot);
+      lastOwnerRoot = currentOwner.ownerRoot;
+      currentOwner = currentOwner.parent ?? null;
+    }
+
+    let at = lastOwnerRoot ? onlyHost(lastOwnerRoot) : onlyHost(start.root);
 
     while (at && !reached.has(at)) {
       if (at === root) return true;

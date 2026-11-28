@@ -66,9 +66,10 @@ import {
 } from '../view-selection';
 import { hasAndroidComposition } from './android-composition';
 import {
-  type ContentRootOwner,
+  type PliteViewBoundaryOwner,
   createContentRootViewBoundaryGraph,
   findCrossingContentRootOwners,
+  getRegisteredViewEditorContentRootOwner,
   isRangeAcrossContentRootOwners,
   readRootNodes,
 } from './content-root-owners';
@@ -141,7 +142,7 @@ const MODEL_BACKED_FULL_DOCUMENT_CHILD_THRESHOLD = 1000;
 const MODEL_OWNED_TEXT_INPUT_GUARD_MS = 100;
 
 const getContentRootShellOwner = (
-  owners: readonly ContentRootOwner[],
+  owners: readonly PliteViewBoundaryOwner[],
   root: string,
   point: Range['anchor']
 ) =>
@@ -154,7 +155,7 @@ const getContentRootShellOwner = (
 
 const getContentRootBoundaryPoint = (
   editor: ReactRuntimeEditor,
-  owner: ContentRootOwner,
+  owner: PliteViewBoundaryOwner,
   edge: 'end' | 'start'
 ) =>
   editor.read((state) => {
@@ -172,31 +173,35 @@ const createContentRootDOMRangeViewSelection = ({
   range,
 }: {
   editor: ReactRuntimeEditor;
-  owners: readonly ContentRootOwner[];
+  owners: readonly PliteViewBoundaryOwner[];
   range: Range;
 }) => {
+  const viewOwner = getRegisteredViewEditorContentRootOwner(editor);
   const projectPoint = (point: Range['anchor']) => {
     const root = point.root ?? MAIN_ROOT_KEY;
     const owner = getContentRootShellOwner(owners, root, point);
 
     if (!owner) {
       return {
+        ...(viewOwner ? { owner: viewOwner } : {}),
         point: rootPlitePoint(point, root),
       };
     }
 
+    const chainedOwner = viewOwner ? { ...owner, parent: viewOwner } : owner;
     const boundaryPoint = getContentRootBoundaryPoint(
       editor,
-      owner,
+      chainedOwner,
       point.offset === 0 ? 'start' : 'end'
     );
 
     return boundaryPoint
       ? {
-          owner,
+          owner: chainedOwner,
           point: boundaryPoint,
         }
       : {
+          ...(viewOwner ? { owner: viewOwner } : {}),
           point: rootPlitePoint(point, root),
         };
   };

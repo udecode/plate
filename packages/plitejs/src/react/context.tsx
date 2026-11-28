@@ -1,6 +1,7 @@
 import { createContext } from 'react';
 
-import type { Editor, NodeKey, Path, RootKey } from '..';
+import type { Editor, NodeKey, RootKey } from '..';
+import type { PliteViewBoundaryOwner } from './view-boundary-graph-core';
 
 export { EditorContext } from './hooks/use-editor-context';
 export { ComposingContext } from './hooks/use-editor-composing';
@@ -26,10 +27,7 @@ export type PliteContentRootInstanceContextValue = Readonly<{
 
 export const PliteEditableRootContext = createContext<RootKey | null>(null);
 export const PliteEditingAreaContext = createContext<boolean>(false);
-export const PliteContentRootOwnerContext = createContext<{
-  childRoot: RootKey;
-  ownerPath: Path;
-  ownerRoot: RootKey;
-} | null>(null);
+export const PliteContentRootOwnerContext =
+  createContext<PliteViewBoundaryOwner | null>(null);
 export const PliteContentRootInstanceContext =
   createContext<PliteContentRootInstanceContextValue | null>(null);

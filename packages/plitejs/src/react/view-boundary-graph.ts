@@ -9,6 +9,7 @@ import {
 import { childAtPathIndex, type NodeList } from '../core/change/document-index';
 import { getPointRoot, MAIN_ROOT_KEY } from './root-key';
 import {
+  clonePliteViewBoundaryOwner,
   createPliteViewBoundaryGraph,
   getPliteViewBoundaryOwnerKey,
   type PliteViewBoundaryPoint,
@@ -22,6 +23,7 @@ import {
 } from './view-boundary-graph-core';
 
 export {
+  clonePliteViewBoundaryOwner,
   createPliteViewBoundaryGraph,
   getPliteViewBoundaryOwnerKey,
   PliteViewBoundaryGraph,
@@ -59,17 +61,6 @@ export const clonePliteViewBoundaryPoint = (point: Point): Point =>
     offset: point.offset,
     path: Object.freeze(clonePliteViewBoundaryPath(point.path)),
   });
-
-export const clonePliteViewBoundaryOwner = (
-  owner: PliteViewBoundaryOwner | null | undefined
-): PliteViewBoundaryOwner | null =>
-  owner
-    ? Object.freeze({
-        childRoot: owner.childRoot,
-        ownerPath: Object.freeze(clonePliteViewBoundaryPath(owner.ownerPath)),
-        ownerRoot: owner.ownerRoot,
-      })
-    : null;
 
 export const clonePliteViewBoundaryPointWithOwner = (
   point: PliteViewBoundaryPoint

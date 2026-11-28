@@ -21,7 +21,7 @@ import {
   resolveUsableRangeRect,
 } from './content-root-coordinate-navigation';
 import type { ContentRootNavigationDirection } from './content-root-navigation-actions';
-import type { ContentRootOwner } from './content-root-owners';
+import type { PliteViewBoundaryOwner } from './content-root-owners';
 import {
   type EditableDOMRuntime,
   getMountedEditableDOMRuntime,
@@ -46,7 +46,7 @@ export const resolveViewBoundaryVisualMovement = ({
   direction: ContentRootNavigationDirection;
   editor: ReactRuntimeEditor;
   graph: PliteViewBoundaryGraphModel;
-  owners: readonly ContentRootOwner[];
+  owners: readonly PliteViewBoundaryOwner[];
   point: PliteViewBoundaryPoint;
   preferredX?: number;
 }): PliteViewBoundaryPoint | null => {

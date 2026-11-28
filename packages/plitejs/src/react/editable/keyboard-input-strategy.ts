@@ -57,7 +57,7 @@ import {
   isContentRootKeyAnswered,
   readContentRootAwareSelection,
 } from './content-root-navigation';
-import type { ContentRootOwner } from './content-root-owners';
+import type { PliteViewBoundaryOwner } from './content-root-owners';
 import { shouldModelOwnPlainVerticalLargeDocumentPlugin } from './dom-coverage-vertical-selection';
 import {
   type EditableDOMRuntime,
@@ -121,9 +121,9 @@ const keyDownHandled = (
 const keyDownUnhandled = (): EditableKeyDownResult => ({ handled: false });
 
 type SelectionFocusOwnerApi = {
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
   getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
+    owner: PliteViewBoundaryOwner
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
 };
@@ -457,16 +457,10 @@ export const applyEditableKeyDown = ({
   preferredVerticalX?: number;
   readOnly: boolean;
   dispatchHistory?: EditableDOMRuntime['dispatchHistory'];
-  getActiveContentRootOwner?: (root: RootKey) => {
-    childRoot: RootKey;
-    ownerPath: Path;
-    ownerRoot: RootKey;
-  } | null;
-  getContentRootOwnerViewEditor?: (owner: {
-    childRoot: RootKey;
-    ownerPath: Path;
-    ownerRoot: RootKey;
-  }) => ReactRuntimeEditor | null;
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
+  getContentRootOwnerViewEditor?: (
+    owner: PliteViewBoundaryOwner
+  ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   setExplicitViewportBackedSelection: (nextValue: boolean) => void;
   setComposing: EditableCompositionStateSetter;

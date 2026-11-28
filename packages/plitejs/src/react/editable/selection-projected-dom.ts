@@ -24,9 +24,10 @@ import {
   isSameOwner as isSameContentRootOwner,
 } from './content-root-owner-target';
 import {
-  type ContentRootOwner,
+  type PliteViewBoundaryOwner,
   createContentRootViewBoundaryGraph,
   findCrossingContentRootOwners,
+  isKnownContentRootOwner,
 } from './content-root-owners';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { toInternalRoot } from './runtime-editor-api';
@@ -34,7 +35,7 @@ import { settleViewFocus } from './set-root-endpoints';
 
 type ProjectedDOMSelectionEndpoint = {
   affinity?: 'backward' | 'forward';
-  owner?: ContentRootOwner;
+  owner?: PliteViewBoundaryOwner;
   point: Point;
   root: RootKey;
 };
@@ -145,13 +146,6 @@ const getEditorFromDOMEditorElement = (
     : null;
 };
 
-const isKnownContentRootOwner = (
-  owner: ContentRootOwner | null | undefined,
-  owners: readonly ContentRootOwner[]
-): owner is ContentRootOwner =>
-  !!owner &&
-  owners.some((candidate) => isSameContentRootOwner(owner, candidate));
-
 const getDescendantEdgePoint = (
   nodes: readonly Descendant[],
   {
@@ -211,7 +205,7 @@ export const resolveProjectedDOMSelectionEndpoint = ({
 }: {
   node: globalThis.Node | null;
   offset: number;
-  owners: readonly ContentRootOwner[];
+  owners: readonly PliteViewBoundaryOwner[];
 }): ProjectedDOMSelectionEndpoint | null => {
   const editorElement = getDOMEditorElementForNode(node);
   const editor = editorElement
@@ -344,18 +338,17 @@ export const resolveProjectedDOMSelection = ({
       : { range: { anchor: anchor.point, focus: focus.point } };
   }
 
-  const anchorOwner = anchor.owner
-    ? owners.find((owner) => isSameContentRootOwner(owner, anchor.owner))
+  const anchorOwner = isKnownContentRootOwner(owners, anchor.owner)
+    ? anchor.owner
     : null;
-  const focusOwner = focus.owner
-    ? owners.find((owner) => isSameContentRootOwner(owner, focus.owner))
+  const focusOwner = isKnownContentRootOwner(owners, focus.owner)
+    ? focus.owner
     : null;
 
   if (
     (anchor.root !== (editor.read.view.root() ?? MAIN_ROOT_KEY) &&
-      !isKnownContentRootOwner(anchorOwner, owners)) ||
-    (focus.root !== (editor.read.view.root() ?? MAIN_ROOT_KEY) &&
-      !isKnownContentRootOwner(focusOwner, owners))
+      !anchorOwner) ||
+    (focus.root !== (editor.read.view.root() ?? MAIN_ROOT_KEY) && !focusOwner)
   ) {
     return null;
   }

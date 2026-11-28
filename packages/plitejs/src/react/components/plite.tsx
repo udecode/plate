@@ -441,11 +441,20 @@ export const EditorRuntimeView = <
     flushEditorViewState(reactEditor);
     flushViewLockScope(lockScope);
   }, [lockLink, lockScope, reactEditor, readOnly]);
+  const ownContentRootOwner =
+    contentRootOwner &&
+    ownSlotInstance &&
+    contentRootOwner.childRoot === viewRoot
+      ? contentRootOwner
+      : null;
   const hasViewSelection = usePliteViewSelectionPresence(reactEditor);
   const viewSelectionDecoration = useMemo(
     () =>
-      createPliteViewSelectionDecorationSource(reactEditor, contentRootOwner),
-    [contentRootOwner, reactEditor]
+      createPliteViewSelectionDecorationSource(
+        reactEditor,
+        ownContentRootOwner
+      ),
+    [ownContentRootOwner, reactEditor]
   );
   const allDecorations = useMemo(
     () =>
@@ -507,13 +516,17 @@ export const EditorRuntimeView = <
                             mountedEditor={reactEditor}
                             presentation={viewPresentation}
                           >
-                            <PliteContentRootInstanceContext
-                              value={descendantInstanceContext}
+                            <PliteContentRootOwnerContext
+                              value={ownContentRootOwner}
                             >
-                              <ViewLockScopeContext value={lockScope}>
-                                {children}
-                              </ViewLockScopeContext>
-                            </PliteContentRootInstanceContext>
+                              <PliteContentRootInstanceContext
+                                value={descendantInstanceContext}
+                              >
+                                <ViewLockScopeContext value={lockScope}>
+                                  {children}
+                                </ViewLockScopeContext>
+                              </PliteContentRootInstanceContext>
+                            </PliteContentRootOwnerContext>
                           </SurfaceRuntimeScope>
                         </TextRenderScopeContext>
                       </ImperativeTextFlowContext>

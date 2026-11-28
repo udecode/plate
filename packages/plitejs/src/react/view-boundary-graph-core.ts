@@ -6,6 +6,7 @@ export type PliteViewBoundaryOwner = Readonly<{
   childRoot: RootKey;
   ownerPath: Path;
   ownerRoot: RootKey;
+  parent?: PliteViewBoundaryOwner | null;
 }>;
 
 export type PliteViewBoundaryGraphNodeInput = Readonly<{
@@ -85,16 +86,20 @@ const pathKey = (path: Path) => path.join('.');
 
 const clonePath = (path: Path): Path => [...path] as Path;
 
-const cloneOwner = (
+export const clonePliteViewBoundaryOwner = (
   owner: PliteViewBoundaryOwner | null | undefined
-): PliteViewBoundaryOwner | null =>
-  owner
-    ? Object.freeze({
-        childRoot: owner.childRoot,
-        ownerPath: Object.freeze(clonePath(owner.ownerPath)),
-        ownerRoot: owner.ownerRoot,
-      })
-    : null;
+): PliteViewBoundaryOwner | null => {
+  if (!owner) return null;
+
+  const parent = clonePliteViewBoundaryOwner(owner.parent);
+
+  return Object.freeze({
+    childRoot: owner.childRoot,
+    ownerPath: Object.freeze(clonePath(owner.ownerPath)),
+    ownerRoot: owner.ownerRoot,
+    ...(parent ? { parent } : {}),
+  });
+};
 
 const clonePoint = (point: Point): Point =>
   Object.freeze({
@@ -103,8 +108,15 @@ const clonePoint = (point: Point): Point =>
     offset: point.offset,
   });
 
-export const getPliteViewBoundaryOwnerKey = (owner: PliteViewBoundaryOwner) =>
+const getSingleHopOwnerKey = (owner: PliteViewBoundaryOwner) =>
   `${owner.ownerRoot}\u0000${pathKey(owner.ownerPath)}\u0000${owner.childRoot}`;
+
+export const getPliteViewBoundaryOwnerKey = (
+  owner: PliteViewBoundaryOwner
+): string =>
+  owner.parent
+    ? `${getPliteViewBoundaryOwnerKey(owner.parent)}\u0001${getSingleHopOwnerKey(owner)}`
+    : getSingleHopOwnerKey(owner);
 
 const getGraphNodeKey = ({
   ownerKey,
@@ -122,7 +134,7 @@ const createNode = (
   input: PliteViewBoundaryGraphNodeInput,
   index: number
 ): PliteViewBoundaryGraphNode => {
-  const owner = cloneOwner(input.owner);
+  const owner = clonePliteViewBoundaryOwner(input.owner);
   const ownerKey = owner ? getPliteViewBoundaryOwnerKey(owner) : null;
   const path = Object.freeze(clonePath(input.path));
 
