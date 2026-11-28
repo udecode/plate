@@ -796,6 +796,7 @@ export const recordStoreToJson = (
 // A document value carries its records here rather than as JSON, so every
 // version of a value shares the store's tree nodes and holds no JSON copy.
 const VALUE_RECORDS = new WeakMap<object, RecordStore>();
+const SHOWN_VALUE_RECORDS = new WeakSet<object>();
 
 /**
  * The records beside a document value: the store core attached to it, or its
@@ -821,6 +822,17 @@ export const collectValueRecords = (
 export const hasValueRecords = (
   value: Readonly<{ records?: EditorDocumentRecords }>
 ) => VALUE_RECORDS.has(value) || value.records !== undefined;
+
+/**
+ * Whether a value exposes its records on its `records` property when non-empty,
+ * including values built with `showValueRecords` whose store happened to be empty.
+ */
+export const showsValueRecords = (
+  value: Readonly<{ records?: EditorDocumentRecords }>
+) =>
+  Object.hasOwn(value, 'records') ||
+  !hasValueRecords(value) ||
+  SHOWN_VALUE_RECORDS.has(value);
 
 export const getAttachedValueRecords = (value: object) =>
   VALUE_RECORDS.get(value);
@@ -896,6 +908,7 @@ export const showValueRecords = <T extends Record<string, unknown>>(
   if (Object.keys(store).length > 0) {
     (value as Record<string, unknown>).records = toJson(store);
   }
+  SHOWN_VALUE_RECORDS.add(value);
 
   return withValueRecords(value, store);
 };

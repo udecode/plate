@@ -222,31 +222,41 @@ class ExampleAwareness {
       return;
     }
 
-    this.emit();
+    this.emit({ added: [], removed: [clientId], updated: [] });
   }
 
   setLocalStateField(field: string, value: unknown) {
+    const hadLocalState = this.localState !== null;
+
     this.localState = {
       ...this.localState,
       [field]: value,
     };
     this.states.set(this.clientID, this.localState);
-    this.emit();
+    this.emit({
+      added: hadLocalState ? [] : [this.clientID],
+      removed: [],
+      updated: hadLocalState ? [this.clientID] : [],
+    });
     this.onLocalStateChange?.();
   }
 
   setRemoteState(clientId: number, state: Record<string, unknown>) {
+    if (this.states.get(clientId) === state) {
+      return;
+    }
+
+    const added = !this.states.has(clientId);
+
     this.states.set(clientId, state);
-    this.emit();
+    this.emit({
+      added: added ? [clientId] : [],
+      removed: [],
+      updated: added ? [] : [clientId],
+    });
   }
 
-  private emit() {
-    const event: YjsAwarenessChange = {
-      added: [],
-      removed: [],
-      updated: [this.clientID],
-    };
-
+  private emit(event: YjsAwarenessChange) {
     for (const listener of this.listeners) {
       listener(event);
     }

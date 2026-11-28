@@ -15,6 +15,7 @@ import {
   recordOpsBetween,
   recordOpsFromJson,
   recordOpsToJson,
+  showsValueRecords,
   showValueRecords,
   transformRecordOps,
   withValueRecords,
@@ -2321,13 +2322,10 @@ export class DocumentChange {
           ? applyRecordOps(afterRegisters, recordOps)
           : afterRegisters;
 
-      withValueRecords(withoutStaleRecords, nextRecords);
-      if (
-        Object.hasOwn(value, 'records') ||
-        !hasValueRecords(value) ||
-        nextRecords !== getValueRecords(value)
-      ) {
+      if (showsValueRecords(value) || nextRecords !== getValueRecords(value)) {
         showValueRecords(withoutStaleRecords, nextRecords);
+      } else {
+        withValueRecords(withoutStaleRecords, nextRecords);
       }
 
       return deepFreeze(withoutStaleRecords) as T;
@@ -2354,9 +2352,7 @@ export class DocumentChange {
       }
       Object.freeze(named);
     }
-    // A value that showed its records, or plain JSON that gains some, shows
-    // them; a value whose store core carries keeps carrying it.
-    if (Object.hasOwn(value, 'records') || !hasValueRecords(value)) {
+    if (showsValueRecords(value)) {
       const records = getValueRecords(applied);
 
       // A change that writes no record keeps the JSON it was given, so a key

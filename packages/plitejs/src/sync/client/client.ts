@@ -22,7 +22,11 @@ import {
   readEditorCommitHistoryStep,
   replaceEditorUndoStep,
 } from '../../core/public-state';
-import { collectValueRecords, withValueRecords } from '../../core/record-store';
+import {
+  collectValueRecords,
+  getValueRecords,
+  withValueRecords,
+} from '../../core/record-store';
 import { publishEditorRefusal } from '../../core/refusal';
 import { bindSharedRoom } from '../../core/shared-room';
 import { withoutUpdateTagContext } from '../../core/update-context';
@@ -153,7 +157,8 @@ const showsIn = (editor: AnyEditor) => {
       return 'rewritten';
     }
 
-    const change = DocumentChange.between(current, document);
+    const target = withValueRecords({ ...document }, getValueRecords(document));
+    const change = DocumentChange.between(current, target);
 
     if (change.empty) return 'exact';
 

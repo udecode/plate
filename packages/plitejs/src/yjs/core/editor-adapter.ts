@@ -1,7 +1,6 @@
 import {
   hasInternalDocumentChangeRoot,
   mapInternalDocumentChangePosition,
-  valueRoot,
   valueRootIndex,
   valueRootNodes,
 } from '../../core/change/document-change';
@@ -11,10 +10,7 @@ import {
   withInternalDocumentChangeStepFirstAt,
 } from '../../core/change/replay-step-order';
 import { withoutRepairOrphans } from '../../core/document-admission';
-import {
-  getEditorRuntimeOwner,
-  getEditorSchema,
-} from '../../core/editor-runtime';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import {
@@ -211,11 +207,6 @@ export const createYjsEditorAdapter = (
       imported && stepFirstAt
         ? withInternalDocumentChangeStepFirstAt(imported.change, stepFirstAt)
         : (imported?.change ?? change);
-    const wasSetRoot = (root: string) =>
-      getEditorSchema(editor).isSetRoot(root, {
-        rootChildren: (name: string) => valueRoot(currentValue, name),
-        value: () => currentValue,
-      });
     const selectionAfter = (
       nextValue: EditorDocumentValue,
       editorMapped: () => EditorSelection | null
@@ -246,11 +237,11 @@ export const createYjsEditorAdapter = (
             )
           : selection;
 
-      if (mapped === null && wasSetRoot(editorRoot)) return editorMapped();
+      if (mapped === null) return editorMapped();
 
       return sanitizeImportSelection(
         valueRootNodes(nextValue, editorRoot) as NodeList<Descendant>,
-        mapped ?? selection
+        mapped
       );
     };
 
