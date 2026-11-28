@@ -3,7 +3,7 @@ title: 区块锁定
 description: 锁定选定区块以防止编辑、删除和拖拽，同时保持文本可选中且行内字段可填写。
 ---
 
-<ComponentPreview name="lock-demo" height="480px" />
+<ComponentPreview name="lock-demo" height="560px" />
 
 <PackageInfo>
 
@@ -14,6 +14,7 @@ description: 锁定选定区块以防止编辑、删除和拖拽，同时保持�
 - 锁定状态会沿嵌套子区块和所属内容根向下继承。
 - 未锁定区块可以正常编辑并在锁定区块之间拖拽；在锁定区块的开头或结尾按 `Enter` 会在其前后插入新的未锁定段落。
 - 通过 `lockWriteExemption`，锁定区块内的行内[字段](/docs/field)在作者模式、建议模式和 `fillRole` 模式下仍可填写。
+- 在 AI 编辑期间通过 Markdown AST 阶段的 `<Locked ref="lN" />` 索引占位符保护锁定条款与锁定表格单元格，在一次可审阅提案中只改写未锁定区间，并在预览与接受阶段实时复检单元格可写性。
 - 复制、粘贴、复刻和拆分区块时会自动移除 `locked`，编程式 HTML 序列化会保留 `data-locked="true"`，DOCX 和 Markdown 导出会报告 `property-dropped` / `markdown-property-omitted` 警告。
 - 单独的锁定切换不会写入撤销历史，且会拦截试图修改当前锁定区块的本地撤销回放；在建议模式下锁定切换会直接生效，不产生格式建议。
 - 锁定区块上的编辑被拒绝时，会以节流方式向屏幕阅读器播报提示。
@@ -141,6 +142,43 @@ export const ChecklistWidgetPlugin = definePlugin('checklistWidget', {
 });
 ```
 
+### AI 安全锁定条款
+
+将 `LockKit` 与 `AIKit`、`MarkdownKit` 和 `SuggestionKit` 组合使用，可让 AI 绕过锁定条款与锁定单元格，只改写未锁定的正文与表格单元格。
+
+- **文档改写：** `AIChatPlugin` 为选中的锁定区块分配请求级 `<Locked ref="lN" />` 占位符，在流式生成期间缓存结果，完成后通过 `editor.api.markdown.parsePlaceholders` 在 Markdown AST 阶段解析占位符，并在单次可审阅提案中仅改写占位符之间的未锁定区块。若模型丢弃、重排、重复或篡改占位符，`AIChatPlugin` 会拒绝应用并设置 `refusalMessage`。
+- **全锁定选区：** 当选中的所有区块或单元格均处于锁定状态时，强制 `edit` 操作会在发送网络请求前直接拒绝；摘要与解释（`generate`）仍可在不修改编辑器的前提下读取锁定文本。
+- **锁定表格单元格：** 多单元格 AI 表格编辑会从 `<CellRef>` 占位符中排除锁定单元格，并在预览和接受时实时复检可写性。若单元格在请求途中被锁定，`accept` 会将其从暂存草稿中移除、刷新预览，并保持菜单打开以展示拒绝提示。
+
+自定义服务端 AI 路由可将 `BaseLockKit`、`BaseFieldKit` 与 `BaseEditorKit` 组合，并调用 `platejs/ai` 提供的共享辅助函数：
+
+```ts
+import { createEditor } from 'platejs';
+import {
+  hasEditableAISelection,
+  serializeAIEditContext,
+  serializeAISelectionMarkdown,
+} from 'platejs/ai';
+
+import { BaseFieldKit } from '@/components/editor/field-static';
+import { BaseLockKit } from '@/components/editor/lock-static';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+
+const editor = createEditor({
+  initialSelection,
+  initialValue: children,
+  plugins: [...BaseEditorKit, ...BaseLockKit, ...BaseFieldKit],
+});
+
+const canEdit = hasEditableAISelection(editor, refs);
+const { lockedContext, markdown } = serializeAIEditContext(editor, {
+  lockedBlocks: refs.lockedBlocks,
+});
+const selectionMarkdown = serializeAISelectionMarkdown(editor, {
+  includeSelectionMarkers: true,
+});
+```
+
 ## 行为说明
 
 - **选区、复制与剪切：** 用户可以在锁定区块内选择、搜索和复制（`Mod+C`）文本。粘贴出的副本会丢弃 `locked`，因此在目标位置可编辑。原生剪切（`Mod+X`）和手柄剪切会在写入剪贴板或移除区块前拒绝执行。
@@ -209,3 +247,19 @@ export const ChecklistWidgetPlugin = definePlugin('checklistWidget', {
 ### `lockWriteExemption`
 
 来自 `platejs/lock` 的插件扩展点，接收 `(input: LockWriteExemptionInput) => boolean` 谓词以批准锁定区块内经过校验的元素属性写入。
+
+### `editor.api.markdown.parsePlaceholders(source, options)`
+
+来自 `platejs/markdown` 的 `MarkdownApi` 方法，在执行完整安全检查与 `RawHtmlPlugin` 预处理后，将包含自闭合区块占位标签（如 `LOCKED_BLOCK_PLACEHOLDER_TAG`）的 Markdown 响应解析为扁平的 `{ kind: 'nodes'; nodes } | { kind: 'placeholder'; ref }` 分段列表。
+
+### `hasEditableAISelection(editor, refs?)`
+
+来自 `platejs/ai` 的辅助函数，当当前选区至少包含一个可写区块或表格单元格时返回 `true`。
+
+### `serializeAIEditContext(editor, options?)`
+
+来自 `platejs/ai` 的辅助函数，用于序列化多区块 AI 编辑上下文，将不可写区块替换为 `<Locked ref="lN" />` 占位符，并返回只读的 `lockedContext` 摘要行与 `refs`。
+
+### `serializeAISelectionMarkdown(editor, options?)`
+
+来自 `platejs/ai` 的辅助函数，在不修改编辑器的前提下将当前选区序列化为 Markdown；当 `includeSelectionMarkers` 为 `true` 时，在克隆的 JSON 副本中插入 `<Selection>` 标记。

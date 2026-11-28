@@ -65,9 +65,77 @@ export const lockValue: Value = [
   {
     children: [
       {
-        text: 'Editable notes: try copying text from a locked clause and pasting here, pressing Enter at the start or end of a locked block, or locking this paragraph from the handle menu.',
+        text: 'Editable notes: try copying text from a locked clause and pasting here, pressing Enter at the start or end of a locked block, or selecting across locked clauses and clicking Ask AI.',
       },
     ],
     type: 'paragraph',
+  },
+  {
+    children: [
+      {
+        children: [
+          {
+            children: [
+              { children: [{ bold: true, text: 'Item' }], type: 'paragraph' },
+            ],
+            header: true,
+            type: 'tableCell',
+          },
+          {
+            children: [
+              {
+                children: [{ bold: true, text: 'Fee (Locked)' }],
+                type: 'paragraph',
+              },
+            ],
+            header: true,
+            type: 'tableCell',
+          },
+          {
+            children: [
+              {
+                children: [{ bold: true, text: 'Delivery Notes' }],
+                type: 'paragraph',
+              },
+            ],
+            header: true,
+            type: 'tableCell',
+          },
+        ],
+        type: 'tableRow',
+      },
+      {
+        children: [
+          {
+            children: [
+              { children: [{ text: 'Base retainer' }], type: 'paragraph' },
+            ],
+            locked: true,
+            type: 'tableCell',
+          },
+          {
+            children: [
+              { children: [{ text: '$12,000 (Net 15)' }], type: 'paragraph' },
+            ],
+            locked: true,
+            type: 'tableCell',
+          },
+          {
+            children: [
+              {
+                children: [
+                  { text: 'Editable delivery summary for AI updates.' },
+                ],
+                type: 'paragraph',
+              },
+            ],
+            type: 'tableCell',
+          },
+        ],
+        type: 'tableRow',
+      },
+    ],
+    columnWidths: [170, 170, 240],
+    type: 'table',
   },
 ];

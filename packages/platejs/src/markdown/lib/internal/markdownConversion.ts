@@ -2449,7 +2449,7 @@ const isPlaceholderTextNode = (
 const isEscapedOrTagMatch = (html: string, tag: string): boolean => {
   const escapedTag = tag.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  return new RegExp(`^<\\/?${escapedTag}(?=[\\s/>]|$)`, 'i').test(html.trim());
+  return new RegExp(`<\\/?${escapedTag}(?=[\\s/>]|$)`, 'i').test(html);
 };
 
 const reportPlaceholderTagError = (
@@ -2500,6 +2500,25 @@ const readPlaceholderRef = (
       diagnostics,
       tag,
       `Placeholder tag <${tag}> cannot contain nested content.`,
+      node,
+      source
+    );
+
+    return null;
+  }
+
+  const startOffset = node.position?.start.offset;
+  const endOffset = node.position?.end.offset;
+
+  if (
+    typeof startOffset === 'number' &&
+    typeof endOffset === 'number' &&
+    !source.slice(startOffset, endOffset).trimEnd().endsWith('/>')
+  ) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag <${tag}> must be self-closing.`,
       node,
       source
     );
@@ -2571,11 +2590,7 @@ const assertNoNestedPlaceholderTag = (
     return;
   }
 
-  if (
-    node.type === 'html' &&
-    getMarkdownTagRepair(node) &&
-    isEscapedOrTagMatch(node.value, tag)
-  ) {
+  if (node.type === 'html' && isEscapedOrTagMatch(node.value, tag)) {
     reportPlaceholderTagError(
       diagnostics,
       tag,

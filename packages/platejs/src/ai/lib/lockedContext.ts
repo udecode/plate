@@ -204,16 +204,22 @@ export const resolveAISelectedBlocks = (
   return { entries: siblings, partialLockedContainer: false };
 };
 
-const isMultiCellTableSelection = (editor: Editor): boolean => {
-  if (!editor.read.selection()) return false;
+const getSelectedTableCells = (editor: Editor) => {
+  const tablePlugin = editor.plugin(BaseTablePlugin);
+
+  if (tablePlugin.installed) {
+    const selected = tablePlugin.read.selection()?.cells ?? [];
+
+    if (selected.length > 0) return selected;
+  }
+
+  if (!editor.read.selection()) return [];
 
   const tableEntry = editor.read.nodes.block({ type: BaseTablePlugin });
 
-  if (!tableEntry) return false;
+  if (!tableEntry) return [];
 
-  const cells = editor.read.nodes.toArray({ type: BaseTableCellPlugin });
-
-  return cells.length > 1;
+  return editor.read.nodes.toArray({ type: BaseTableCellPlugin });
 };
 
 /**
@@ -224,16 +230,16 @@ export const hasEditableAISelection = (
   editor: Editor,
   refs?: Partial<Pick<AIChatRequestRefs, 'lockedBlocks' | 'tableCells'>>
 ): boolean => {
-  if (isMultiCellTableSelection(editor)) {
+  const selectedCells = getSelectedTableCells(editor);
+
+  if (selectedCells.length > 1) {
     if (refs?.tableCells !== undefined) {
       return refs.tableCells.some(
         ({ path }) => !isAIPathNonWritable(editor, path)
       );
     }
 
-    const cells = editor.read.nodes.toArray({ type: BaseTableCellPlugin });
-
-    return cells.some(([, path]) => !isAIPathNonWritable(editor, path));
+    return selectedCells.some(([, path]) => !isAIPathNonWritable(editor, path));
   }
 
   const { entries, partialLockedContainer } = resolveAISelectedBlocks(editor);

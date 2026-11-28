@@ -1,6 +1,43 @@
 {
   "schemaVersion": 1,
   "components": {
+    "ai-api": [
+      "2026-11-28-ai-safe-locked-clauses",
+      "2026-11-20-ai-command-tool-results",
+      "2026-11-17-ai-api-initial-selection",
+      "2026-11-17-ai-comment-author",
+      "2026-11-16-ai-routes-caller-key",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-29-markdown-joiner-removal",
+      "2026-09-28-markdown-registered-tags",
+      "2026-09-17-ai-comment-recovery",
+      "2026-08-13-ai-request-refs",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
+    "field": [
+      "2026-11-28-ai-safe-locked-clauses",
+      "2026-11-27-field-condition-lists-read",
+      "2026-11-27-field-condition-lists-ui",
+      "2026-11-27-field-condition-targets",
+      "2026-11-27-field-multiple-choice-ui",
+      "2026-11-27-field-remove-default",
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-27-selector-depends-on",
+      "2026-11-26-suggestion-colors",
+      "2026-11-25-field-name-conflicts",
+      "2026-11-25-field-name-input",
+      "2026-11-24-field-static-answers",
+      "2026-11-23-field-condition-loop",
+      "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
+    "lock-demo": [
+      "2026-11-28-ai-safe-locked-clauses",
+      "2026-11-27-add-lock-kit"
+    ],
     "diff": [
       "2026-11-28-diff-two-way-only",
       "2026-11-27-diff-and-cursor-colors",
@@ -161,7 +198,6 @@
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry"
     ],
-    "lock-demo": ["2026-11-27-add-lock-kit"],
     "align-toolbar-button": [
       "2026-11-27-align-menu-item-padding",
       "2026-11-19-rtl-editor-ui",
@@ -271,22 +307,6 @@
       "2026-08-16-direct-react-component-families",
       "2026-07-24-collaboration-runtime",
       "2025-11-20-biome-ultracite"
-    ],
-    "field": [
-      "2026-11-27-field-condition-lists-read",
-      "2026-11-27-field-condition-lists-ui",
-      "2026-11-27-field-condition-targets",
-      "2026-11-27-field-multiple-choice-ui",
-      "2026-11-27-field-remove-default",
-      "2026-11-27-fix-base-and-phosphor-installs",
-      "2026-11-27-selector-depends-on",
-      "2026-11-26-suggestion-colors",
-      "2026-11-25-field-name-conflicts",
-      "2026-11-25-field-name-input",
-      "2026-11-24-field-static-answers",
-      "2026-11-23-field-condition-loop",
-      "2026-11-23-field-fill-view",
-      "2026-11-21-add-field"
     ],
     "field-demo": [
       "2026-11-27-field-condition-lists-ui",
@@ -991,21 +1011,6 @@
     "demo": ["2026-11-22-ui-sweep-fixes"],
     "prompt-editor": ["2026-11-21-prompt-editor"],
     "prompt-editor-demo": ["2026-11-21-prompt-editor"],
-    "ai-api": [
-      "2026-11-20-ai-command-tool-results",
-      "2026-11-17-ai-api-initial-selection",
-      "2026-11-17-ai-comment-author",
-      "2026-11-16-ai-routes-caller-key",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-29-markdown-joiner-removal",
-      "2026-09-28-markdown-registered-tags",
-      "2026-09-17-ai-comment-recovery",
-      "2026-08-13-ai-request-refs",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions"
-    ],
     "use-chat": [
       "2026-11-20-ai-comment-excerpt-slice",
       "2026-11-17-ai-comment-author",

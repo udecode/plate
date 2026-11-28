@@ -14,6 +14,7 @@ import { MAIN_ROOT_KEY } from './public-root';
 import {
   getActiveEditorTransaction,
   getEditorDocumentRoots,
+  getReadProjection,
   resolveLocationRoot,
 } from './public-state';
 import { readRootEntries } from './root-entries';
@@ -185,16 +186,6 @@ const getNodeInRoot = (
   return current;
 };
 
-const checkPathAndAncestors = (
-  editor: AnyEditor,
-  roots: DocumentRoots,
-  path: Path,
-  root: RootKey,
-  includeReadOnly: boolean
-): boolean =>
-  hasNonWritableOwnerRoot(editor, roots, root, includeReadOnly) ||
-  hasNonWritableElementInAncestors(editor, roots, path, root, includeReadOnly);
-
 /**
  * Return `true` when `at` (a `Location`, `NodeSelection`, or `NodeKey`) lies
  * inside or spans any non-writable element or non-writable owned root.
@@ -211,7 +202,9 @@ export const hasNonWritableAt = (
 
   const owner = getEditorRuntimeOwner(editor);
   const state = getActiveEditorTransaction(editor) ?? editor.read;
-  const roots = getEditorDocumentRoots(owner);
+  const roots = getReadProjection(editor)
+    ? getEditorDocumentRoots(editor)
+    : getEditorDocumentRoots(owner);
   const targetRoot = resolveLocationRoot(editor, at);
 
   if (hasNonWritableOwnerRoot(editor, roots, targetRoot, includeReadOnly)) {
@@ -223,7 +216,7 @@ export const hasNonWritableAt = (
 
     if (!entry) return false;
 
-    return checkPathAndAncestors(
+    return hasNonWritableElementInAncestors(
       editor,
       roots,
       entry[1],
@@ -237,7 +230,13 @@ export const hasNonWritableAt = (
 
     for (const path of at.paths) {
       if (
-        checkPathAndAncestors(editor, roots, path, targetRoot, includeReadOnly)
+        hasNonWritableElementInAncestors(
+          editor,
+          roots,
+          path,
+          targetRoot,
+          includeReadOnly
+        )
       ) {
         return true;
       }
@@ -255,7 +254,7 @@ export const hasNonWritableAt = (
   }
 
   if (PathApi.isPath(at)) {
-    return checkPathAndAncestors(
+    return hasNonWritableElementInAncestors(
       editor,
       roots,
       at,
@@ -265,7 +264,7 @@ export const hasNonWritableAt = (
   }
 
   if (PointApi.isPoint(at)) {
-    return checkPathAndAncestors(
+    return hasNonWritableElementInAncestors(
       editor,
       roots,
       at.path,
@@ -276,14 +275,14 @@ export const hasNonWritableAt = (
 
   if (RangeApi.isRange(at)) {
     if (
-      checkPathAndAncestors(
+      hasNonWritableElementInAncestors(
         editor,
         roots,
         at.anchor.path,
         targetRoot,
         includeReadOnly
       ) ||
-      checkPathAndAncestors(
+      hasNonWritableElementInAncestors(
         editor,
         roots,
         at.focus.path,

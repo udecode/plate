@@ -465,8 +465,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     };
   };
   const stop = () => {
+    const hasLockedRefs =
+      Object.keys(context.store.get('_lockedBlockRefs')).length > 0;
     void context.store.get().chat?.stop?.();
     context.store.set({
+      ...(hasLockedRefs ? { _lockedBlockRefs: {}, _requestId: null } : {}),
       streaming: false,
     });
   };
@@ -747,10 +750,16 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       tableView ? tableView.key(path) : state.key(path);
 
     const selectedNodeKeys = new Set(cells.map(([, path]) => tableKey(path)));
-    const tableEntry = tableNodes.block({
-      match: (node): node is Element =>
-        ElementApi.isElement(node) && node.type === tablePlugin.schema.type,
-    });
+    const tableEntry =
+      tableNodes.block({
+        match: (node): node is Element =>
+          ElementApi.isElement(node) && node.type === tablePlugin.schema.type,
+      }) ??
+      tableNodes.above({
+        at: cells[0][1],
+        match: (node): node is Element =>
+          ElementApi.isElement(node) && node.type === tablePlugin.schema.type,
+      });
 
     if (!tableEntry) return '';
     const [table, tablePath] = tableEntry;
@@ -913,11 +922,17 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const tableCellRefs: AIChatPluginState['_tableCellRefs'] = {};
     const tableCells: AIChatRequestNodeRef[] = [];
 
+    let isMultiCellTable = false;
+
     if (tablePlugin.installed) {
       const selectedCells =
         requestEditor
           .plugin(BaseTablePlugin)
-          .read.selection({ at: viewAt ?? undefined })?.cells ?? [];
+          .read.selection(
+            isNodeSelecting || !viewAt ? undefined : { at: viewAt }
+          )?.cells ?? [];
+
+      isMultiCellTable = selectedCells.length > 1;
       let cellRefIndex = 0;
 
       for (const [, path] of selectedCells) {
@@ -936,17 +951,19 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     }
 
     const selectedBlockEntries: ReadonlyArray<readonly [Element, Path]> =
-      isNodeSelecting
-        ? selectedPaths.flatMap((path) => {
-            const entry = requestEditor.read.nodes.get(path, {
-              match: ElementApi.isElement,
-            });
+      isMultiCellTable
+        ? []
+        : isNodeSelecting
+          ? selectedPaths.flatMap((path) => {
+              const entry = requestEditor.read.nodes.get(path, {
+                match: ElementApi.isElement,
+              });
 
-            return entry ? [entry] : [];
-          })
-        : viewAt && RangeApi.isExpanded(viewAt)
-          ? resolveAISelectedBlocks(requestEditor, viewAt).entries
-          : [];
+              return entry ? [entry] : [];
+            })
+          : viewAt && RangeApi.isExpanded(viewAt)
+            ? resolveAISelectedBlocks(requestEditor, viewAt).entries
+            : [];
     const lockedBlockRefs: AIChatPluginState['_lockedBlockRefs'] = {};
     const lockedBlocks: AIChatRequestNodeRef[] = [];
     let lockedRefIndex = 0;
@@ -1002,10 +1019,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         }
       : null;
 
-    if (tablePlugin.installed && viewAt) {
+    if (tablePlugin.installed && (selectedNodePaths.length > 0 || viewAt)) {
       const selectedCells =
-        view.plugin(BaseTablePlugin).read.selection({ at: viewAt })?.cells ??
-        [];
+        view
+          .plugin(BaseTablePlugin)
+          .read.selection(
+            selectedNodePaths.length > 0 || !viewAt ? undefined : { at: viewAt }
+          )?.cells ?? [];
 
       if (selectedCells.length > 1) {
         return requestContext.refs.tableCells.length > 0;
@@ -1444,7 +1464,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     if (!ElementApi.isElement(node)) return node;
 
     const key = actionEditor.key(path);
-    const draft = key ? tableDraft.get(key) : undefined;
+    const rawDraft = key ? tableDraft.get(key) : undefined;
+    const draft =
+      key && rawDraft && isAIPathNonWritable(actionEditor, path)
+        ? (tableDraft.delete(key), undefined)
+        : rawDraft;
     const { locked: _locked, ...rest } = node;
 
     return {
@@ -1528,17 +1552,21 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       return nextRun;
     }
 
+    const baseIndent =
+      typeof firstSource.indent === 'number' ? firstSource.indent : undefined;
+    const uniformIndent =
+      baseIndent !== undefined &&
+      sourceRun.every((node) => node.indent === baseIndent);
     const sharedListId =
+      uniformIndent &&
       typeof firstSource.listId === 'string' &&
       sourceRun.every((node) => node.listId === firstSource.listId)
         ? firstSource.listId
         : undefined;
-    const baseIndent =
-      typeof firstSource.indent === 'number' ? firstSource.indent : undefined;
     const firstNextIndent =
       typeof nextRun[0]?.indent === 'number' ? nextRun[0].indent : undefined;
     const indentDelta =
-      baseIndent !== undefined && firstNextIndent !== undefined
+      uniformIndent && firstNextIndent !== undefined
         ? baseIndent - firstNextIndent
         : 0;
     const sourceHadListStart = Object.hasOwn(firstSource, 'listStart');
@@ -1685,6 +1713,20 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         state.chatNodes.map(({ nodeKey }) => nodeKey)
       );
       if (!ordered) return false;
+      const isContiguous = ordered.every(([, path], index) => {
+        if (index === 0) return true;
+        const previous = ordered[index - 1];
+
+        return (
+          previous !== undefined &&
+          PathApi.equals(path, PathApi.next(previous[1]))
+        );
+      });
+      if (!isContiguous) {
+        return failLockedSuggestion(
+          'Selected blocks are not contiguous or changed before AI finished.'
+        );
+      }
       const lockedEntries: Array<readonly [Element, Path]> = [];
       const lockedIndices: number[] = [];
 
@@ -1791,7 +1833,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         );
         const lockedEntry = lockedEntries[index];
 
-        if (lockedEntry) {
+        if (lockedEntry && !Object.hasOwn(lockedEntry[0], 'childRoots')) {
           unlockedResponse.push(stripLockedDeep(lockedEntry[0]));
         }
       }
@@ -2129,7 +2171,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       completeDetachedOutput(commandEditor, 'replaceSelection', 'single');
       return undefined;
     }
-    landAndClose(getActionEditor(commandEditor), (tx) => {
+    const actionEditor = getActionEditor(commandEditor);
+    landAndClose(actionEditor, (tx) => {
       const output = getActionPreviewSource();
       const blockKey = context.store.get('_blockKey');
       const target = blockKey
@@ -2141,7 +2184,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       const replace =
         node.type === paragraph.schema.type &&
         tx.nodes.isEmpty(node) &&
-        !hasNonWritableAt(commandEditor, path);
+        !(actionEditor && hasNonWritableAt(actionEditor, path));
       const [anchor, anchorPath] = replace
         ? target
         : resolveInsertionAnchor(editor, tx, target);

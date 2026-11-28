@@ -14955,7 +14955,7 @@
           "kind": "type",
           "name": "MarkdownPlaceholderParseResult",
           "runtime": false,
-          "signature": "type MarkdownPlaceholderParseResult<V extends Value = Value> = Readonly<{\n  diagnostics: readonly MarkdownWarningDiagnostic[];\n  ok: true;\n  segments: readonly MarkdownPlaceholderSegment<V>[];\n}> | Readonly<{\n  diagnostics: readonly [MarkdownErrorDiagnostic, ...MarkdownDiagnostic[]];\n  ok: false;\n}>;",
+          "signature": "type MarkdownPlaceholderParseResult<V extends Value = Value> = Readonly<{\n  diagnostics: readonly MarkdownWarningDiagnostic[];\n  ok: true;\n  segments: ReadonlyArray<MarkdownPlaceholderSegment<V>>;\n}> | Readonly<{\n  diagnostics: readonly [MarkdownErrorDiagnostic, ...MarkdownDiagnostic[]];\n  ok: false;\n}>;",
           "source": null,
           "typeParameters": [
             "V extends Value = Value"

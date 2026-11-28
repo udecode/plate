@@ -143,7 +143,18 @@ const findTableCellPath = (
 };
 
 const hasMultiCellTableSelection = (ctx: AIChatRequestContext): boolean => {
+  if (ctx.refs.tableCells.length === 0) return false;
   if (ctx.refs.tableCells.length > 1) return true;
+  if (ctx.nodeSelection && ctx.nodeSelection.paths.length > 1) {
+    const distinctCells = new Set(
+      ctx.nodeSelection.paths
+        .map((path) => findTableCellPath(ctx.children, path))
+        .filter((path): path is Path => path !== null)
+        .map((path) => path.join(','))
+    );
+
+    if (distinctCells.size > 1) return true;
+  }
   if (!ctx.selection) return false;
 
   const anchorCell = findTableCellPath(ctx.children, ctx.selection.anchor.path);
@@ -234,7 +245,7 @@ const rewriteUnlockedDemoBlock = (node: Element): string => {
 
   if (!text) return '';
 
-  const prefix = node.listStyleType ? '- ' : '';
+  const prefix = node.listType ? '- ' : '';
   const rewritten = text.startsWith('Updated:')
     ? text
     : `Updated: ${text.charAt(0).toLowerCase()}${text.slice(1)}`;

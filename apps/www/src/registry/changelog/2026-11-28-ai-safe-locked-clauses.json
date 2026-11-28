@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-ai-safe-locked-clauses",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-ai-safe-locked-clauses.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Make AI command route and lock demo respect locked clauses and table cells",
+  "targets": [
+    {
+      "name": "ai-api",
+      "files": [
+        "apps/www/src/registry/app/api/ai/command/prompt/common.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getChooseToolPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/route.ts",
+        "apps/www/src/registry/app/api/ai/command/utils.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "lock-demo",
+      "files": [
+        "apps/www/src/registry/examples/lock-demo.tsx",
+        "apps/www/src/registry/examples/values/lock-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-ai-api-make-command-route-lock-e161cc45",
+      "kind": "new",
+      "summary": "Make AI command route and lock demo respect locked clauses and table cells",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-api", "field", "lock-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-ai-safe-locked-clauses",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -15,14 +15,28 @@ import {
 
 const tableCellRefPattern = /^c[1-9]\d*$/;
 
+const hasLockedDescendant = (node: unknown): boolean => {
+  if (!ElementApi.isElement(node)) return false;
+  if ((node as { locked?: unknown }).locked === true) return true;
+
+  return node.children.some(hasLockedDescendant);
+};
+
 export function buildEditTableMultiCellPrompt(
   editor: MarkdownEditor,
   messages: ChatMessage[],
   refs: AIChatRequestRefs['tableCells']
 ): string {
-  const tableEntry = editor.read.nodes.block({
-    type: BaseTablePlugin,
-  });
+  const tableEntry =
+    editor.read.nodes.block({
+      type: BaseTablePlugin,
+    }) ??
+    (refs[0]
+      ? editor.read.nodes.above({
+          at: refs[0].path,
+          type: BaseTablePlugin,
+        })
+      : undefined);
   const table = tableEntry?.[0];
   const tablePath = tableEntry?.[1];
   const refsByPath = new Map(
@@ -44,9 +58,10 @@ export function buildEditTableMultiCellPrompt(
             ? [...tablePath, rowIndex, cellIndex]
             : null;
           const isLockedCell =
-            cellPath !== null &&
-            lockPlugin.installed &&
-            lockPlugin.read.isLocked(cellPath);
+            (cellPath !== null &&
+              lockPlugin.installed &&
+              lockPlugin.read.isLocked(cellPath)) ||
+            hasLockedDescendant(cell);
           const ref =
             cellPath && !isLockedCell
               ? refsByPath.get(cellPath.join(','))

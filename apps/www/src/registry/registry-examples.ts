@@ -1309,7 +1309,7 @@ export const demoExamples: Registry['items'] = (
     },
     {
       description:
-        'Lock individual clauses against edits, deletion, and drag while keeping text selectable and inline fields fillable.',
+        'Lock chosen clauses and table cells against edits, deletion, drag, and AI rewrites while keeping text selectable and inline fields fillable.',
       files: [
         {
           path: 'examples/lock-demo.tsx',

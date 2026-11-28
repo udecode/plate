@@ -3,7 +3,7 @@ title: Block Lock
 description: Lock chosen blocks against edits, deletion, and drag while keeping text selectable and inline fields fillable.
 ---
 
-<ComponentPreview name="lock-demo" height="480px" />
+<ComponentPreview name="lock-demo" height="560px" />
 
 <PackageInfo>
 
@@ -14,6 +14,7 @@ description: Lock chosen blocks against edits, deletion, and drag while keeping 
 - Inherit locks down through nested child blocks and owned content roots.
 - Allow unlocked blocks to edit and drag around locked blocks normally, and insert a new sibling paragraph when pressing `Enter` at the very start or end of a locked block.
 - Keep inline [Field](/docs/field) values fillable inside locked blocks in Author, Suggesting, and `fillRole` modes via `lockWriteExemption`.
+- Protect locked clauses and locked table cells during AI edits by replacing locked blocks with indexed `<Locked ref="lN" />` Markdown AST placeholders, rewriting unlocked runs around them in one reviewable proposal, and excluding locked cells from multi-cell table edits with live writability revalidation.
 - Drop `locked` on copy, paste, duplicate, and block splits while preserving `data-locked="true"` on programmatic HTML serialization and reporting `property-dropped` / `markdown-property-omitted` warnings on DOCX and Markdown export.
 - Skip standalone lock toggles in undo history while blocking local undo replays that would mutate a currently locked block, and commit lock toggles directly in Suggesting mode without recording a formatting suggestion.
 - Announce refused edits on locked blocks to screen readers with cooldown throttling.
@@ -141,6 +142,43 @@ export const ChecklistWidgetPlugin = definePlugin('checklistWidget', {
 });
 ```
 
+### AI-safe locked clauses
+
+Pair `LockKit` with `AIKit`, `MarkdownKit`, and `SuggestionKit` to let AI edit unlocked prose and unlocked table cells around locked clauses without touching locked content.
+
+- **Document rewrites:** `AIChatPlugin` binds each selected locked block to a request-local `<Locked ref="lN" />` placeholder, buffers streaming responses until completion, parses placeholders at the Markdown AST stage with `editor.api.markdown.parsePlaceholders`, and proposes edits only on the unlocked runs between placeholders. If the model drops, reorders, duplicates, or alters a placeholder, `AIChatPlugin` refuses the response and sets `refusalMessage`.
+- **All-locked selections:** Forced `edit` actions refuse before sending a network request when every selected block or table cell is locked. Summarize and explain (`generate`) requests serialize locked text without mutating the editor.
+- **Locked table cells:** Multi-cell AI table edits omit locked cells from `<CellRef>` placeholders and revalidate cell writability on both preview and accept. If a cell becomes locked in flight, `accept` removes it from the staged table draft, refreshes the preview, and keeps the menu open with a refusal message.
+
+Custom server AI routes compose `BaseLockKit` and `BaseFieldKit` alongside `BaseEditorKit` and call the shared `platejs/ai` helpers:
+
+```ts
+import { createEditor } from 'platejs';
+import {
+  hasEditableAISelection,
+  serializeAIEditContext,
+  serializeAISelectionMarkdown,
+} from 'platejs/ai';
+
+import { BaseFieldKit } from '@/components/editor/field-static';
+import { BaseLockKit } from '@/components/editor/lock-static';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+
+const editor = createEditor({
+  initialSelection,
+  initialValue: children,
+  plugins: [...BaseEditorKit, ...BaseLockKit, ...BaseFieldKit],
+});
+
+const canEdit = hasEditableAISelection(editor, refs);
+const { lockedContext, markdown } = serializeAIEditContext(editor, {
+  lockedBlocks: refs.lockedBlocks,
+});
+const selectionMarkdown = serializeAISelectionMarkdown(editor, {
+  includeSelectionMarkers: true,
+});
+```
+
 ## Behavior
 
 - **Selection, copy, and Cut.** Users can select, search, and copy (`Mod+C`) text inside locked blocks. Pasted copies drop `locked` so copied clauses become editable at the destination. Native Cut (`Mod+X`) and drag-handle Cut refuse before modifying the clipboard or removing blocks.
@@ -209,3 +247,19 @@ React hook from `platejs/lock/react` returning the own-lock state for `at` or th
 ### `lockWriteExemption`
 
 Plugin point from `platejs/lock` accepting `(input: LockWriteExemptionInput) => boolean` predicates that approve validated element-property writes inside locked blocks.
+
+### `editor.api.markdown.parsePlaceholders(source, options)`
+
+Method on `MarkdownApi` (`platejs/markdown`) that parses a Markdown response into flat `{ kind: 'nodes'; nodes } | { kind: 'placeholder'; ref }` segments for a call-scoped self-closing block tag (such as `LOCKED_BLOCK_PLACEHOLDER_TAG`) after running full security and `RawHtmlPlugin` pre-passes.
+
+### `hasEditableAISelection(editor, refs?)`
+
+Helper from `platejs/ai` returning `true` when the active selection includes at least one writable block or table cell.
+
+### `serializeAIEditContext(editor, options?)`
+
+Helper from `platejs/ai` that serializes the selected blocks for multi-block AI edits, replacing each non-writable block with `<Locked ref="lN" />` and returning read-only `lockedContext` lines alongside the Markdown prompt and `refs`.
+
+### `serializeAISelectionMarkdown(editor, options?)`
+
+Helper from `platejs/ai` that serializes the active selection to Markdown without mutating the editor, splicing `<Selection>` markers into a cloned JSON copy when `includeSelectionMarkers` is `true`.

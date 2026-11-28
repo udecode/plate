@@ -1,5 +1,5 @@
 {
-  "generation": "b894f18586a91ba1d1a846265fc7b96a044a8c2e542dda26b382c6b9cfc9eb32",
+  "generation": "abb28bc260b20e2e060bb1249b4c694e260e432d7bdcfc8486bf432d5e81e4f7",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -6996,7 +6996,7 @@
           "type": "registry:example"
         },
         {
-          "description": "Lock individual clauses against edits, deletion, and drag while keeping text selectable and inline fields fillable.",
+          "description": "Lock chosen clauses and table cells against edits, deletion, drag, and AI rewrites while keeping text selectable and inline fields fillable.",
           "files": [
             {
               "path": "examples/lock-demo.tsx",
@@ -15016,7 +15016,7 @@
           "type": "registry:example"
         },
         {
-          "description": "Lock individual clauses against edits, deletion, and drag while keeping text selectable and inline fields fillable.",
+          "description": "Lock chosen clauses and table cells against edits, deletion, drag, and AI rewrites while keeping text selectable and inline fields fillable.",
           "files": [
             {
               "path": "examples/lock-demo.tsx",

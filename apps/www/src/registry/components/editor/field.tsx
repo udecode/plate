@@ -254,7 +254,18 @@ const useWaitsForReview = (element: FieldNode, watches: boolean) => {
 const useFieldLocked = (element: FieldNode, watches: boolean) => {
   const editor = useEditor();
   const subscribe = React.useCallback(
-    (wake: () => void) => (watches ? editor.subscribeCommit(wake) : () => {}),
+    (wake: () => void) =>
+      watches
+        ? editor.subscribeCommit((commit) => {
+            if (
+              commit.changed.hasAny('properties') ||
+              commit.changed.hasAny('structure') ||
+              commit.changed.hasAny('replace')
+            ) {
+              wake();
+            }
+          })
+        : () => {},
     [editor, watches]
   );
   const locked = () => {

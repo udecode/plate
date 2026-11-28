@@ -218,8 +218,15 @@ export const getMarkdownWithSelection = (
   options: { includeSelectionMarkers?: boolean } = {}
 ) => serializeAISelectionMarkdown(editor, options);
 
-/** Check if the current selection is inside a table cell */
 export const isSelectionInTable = (editor: Editor): boolean => {
+  const tablePlugin = editor.plugin(BaseTablePlugin);
+
+  if (
+    tablePlugin.installed &&
+    (tablePlugin.read.selection()?.cells.length ?? 0) > 0
+  ) {
+    return true;
+  }
   if (!editor.read.selection()) return false;
 
   const tableEntry = editor.read.nodes.block({
@@ -229,11 +236,16 @@ export const isSelectionInTable = (editor: Editor): boolean => {
   return !!tableEntry;
 };
 
-/** Check if selection is within a single table cell */
 export const isSingleCellSelection = (editor: Editor): boolean => {
+  const tablePlugin = editor.plugin(BaseTablePlugin);
+
+  if (tablePlugin.installed) {
+    const cells = tablePlugin.read.selection()?.cells ?? [];
+
+    if (cells.length > 0) return cells.length === 1;
+  }
   if (!editor.read.selection()) return false;
 
-  // Get all td blocks in selection
   const cells = editor.read.nodes.toArray({
     type: BaseTableCellPlugin,
   });
