@@ -1,4 +1,5 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { withEditorUpdateRoot } from '../core/public-state';
 import type { AnyEditor, EditorStaticApi } from '../interfaces/editor';
 import {
   above as editorAbove,
@@ -11,6 +12,7 @@ import { NodeApi } from '../interfaces/node';
 import { PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
+import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
 
 export const elementReadOnly: EditorStaticApi['elementReadOnly'] = (
   editor,
@@ -22,7 +24,12 @@ export const elementReadOnly: EditorStaticApi['elementReadOnly'] = (
       NodeApi.isElement(n) && editorIsElementReadOnly(editor, n),
   });
 
-export const refusesReadOnlyWrite = (editor: AnyEditor, at: Point | Range) => {
+const refusesReadOnlyWriteInCurrentRoot = (
+  editor: AnyEditor,
+  at: Point | Range
+) => {
+  if (hasEdgeInReadOnlyInline(editor, at)) return true;
+
   const readOnly = elementReadOnly(editor, { at, mode: 'highest' });
 
   if (!readOnly) return false;
@@ -43,6 +50,18 @@ export const refusesReadOnlyWrite = (editor: AnyEditor, at: Point | Range) => {
   }
 
   return true;
+};
+
+export const refusesReadOnlyWrite = (editor: AnyEditor, at: Point | Range) => {
+  const explicitRoot = getLocationRoot(at);
+
+  if (!explicitRoot) {
+    return refusesReadOnlyWriteInCurrentRoot(editor, at);
+  }
+
+  return withEditorUpdateRoot(editor, explicitRoot, () =>
+    refusesReadOnlyWriteInCurrentRoot(editor, stripLocationRoots(at))
+  );
 };
 
 export const readOnlyInlineAt = (editor: AnyEditor, point: Point) => {

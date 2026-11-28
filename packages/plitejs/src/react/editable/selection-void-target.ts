@@ -7,6 +7,7 @@ import {
   clearEditableDOMSelection,
   focusedElementOnPage,
 } from '../../dom/plugin/dom-root-runtime';
+import { containsShadowAware } from '../../dom/utils/dom';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
@@ -100,7 +101,7 @@ export const isEditableControlTarget = (
 
   const refused = element.closest(INTERACTIVE_CONTROL_TARGET_SELECTOR);
 
-  return !!refused && refused !== root && root.contains(refused);
+  return !!refused && refused !== root && containsShadowAware(root, refused);
 };
 
 export const resolveEditableVoidClickTarget = (

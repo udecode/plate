@@ -10,7 +10,8 @@ import {
 } from '../../core/root-target';
 import { getSelection, isDOMElement, isDOMNode, isDOMText } from '../../dom';
 import { findDOMRootRuntime } from '../../dom/internal';
-import { isDOMHTMLElement } from '../../dom/utils/dom';
+import { readEditableDOMSelectionPoints } from '../../dom/plugin/dom-root-runtime';
+import { containsShadowAware, isDOMHTMLElement } from '../../dom/utils/dom';
 import { getViewPresentation } from '../../editor-runtime-view';
 import type {
   EditableHandlerContext,
@@ -60,7 +61,10 @@ export const getExternalTextHostOwner = (target: EventTarget | null) => {
     if (node.nodeType === 1) {
       const host = node as HTMLElement;
       const owner = EXTERNAL_HOSTS.get(host);
-      if (owner && owner.root()?.contains(host)) return { host, owner };
+      const ownerRoot = owner?.root();
+      if (owner && ownerRoot && containsShadowAware(ownerRoot, host)) {
+        return { host, owner };
+      }
     }
     node =
       node.parentNode ?? ('host' in node ? (node as ShadowRoot).host : null);
@@ -91,7 +95,7 @@ export const findNestedEditable = (
   if (
     !isDOMHTMLElement(nested) ||
     nested === editorElement ||
-    !editorElement.contains(nested)
+    !containsShadowAware(editorElement, nested)
   ) {
     return null;
   }
@@ -118,17 +122,20 @@ export const findNestedEditable = (
 };
 
 export const findSelectionNestedEditable = (editorElement: HTMLElement) => {
-  const selection = getSelection(
-    editorElement.getRootNode() as Document | ShadowRoot
-  );
-  const anchor = findNestedEditable(
-    editorElement,
-    selection?.anchorNode ?? null
-  );
+  const tree = editorElement.getRootNode() as Document | ShadowRoot;
+  const selection = getSelection(tree);
+  const points =
+    tree.nodeType === tree.DOCUMENT_FRAGMENT_NODE
+      ? readEditableDOMSelectionPoints(editorElement, selection)
+      : null;
+  const anchorNode = points
+    ? points.anchor[0]
+    : (selection?.anchorNode ?? null);
+  const focusNode = points ? points.focus[0] : (selection?.focusNode ?? null);
+  const anchor = findNestedEditable(editorElement, anchorNode);
 
   return anchor &&
-    anchor.element ===
-      findNestedEditable(editorElement, selection?.focusNode ?? null)?.element
+    anchor.element === findNestedEditable(editorElement, focusNode)?.element
     ? anchor
     : null;
 };
@@ -143,10 +150,10 @@ export const getEditableInteractionOwner = (
   if (external?.owner.root() === root) return 'external-text' as const;
   const node = target as Node;
   const element = node.nodeType === 1 ? (node as Element) : node.parentElement;
-  if (!root.contains(node)) return 'outside' as const;
+  if (!containsShadowAware(root, node)) return 'outside' as const;
   if (findNestedEditable(root, node)) return 'nested-editor' as const;
   const within = (owner: Element | null | undefined) =>
-    !!owner && owner !== root && root.contains(owner);
+    !!owner && owner !== root && containsShadowAware(root, owner);
   if (
     within(element?.closest('input,textarea,select,button,[role="button"]'))
   ) {

@@ -11,7 +11,11 @@ import {
 } from '../../core/view-carets';
 import { getSelection, isDOMNode } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
-import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
+import {
+  getEventTargetInRoot,
+  isElementFocused,
+  isSelectionOwnedByEditable,
+} from '../../dom/plugin/dom-root-runtime';
 import { ensureFocusCaret } from '../../dom/plugin/dom-view-caret';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
@@ -50,13 +54,14 @@ import {
 type FocusHandler = (event: FocusEvent<HTMLDivElement>) => boolean | void;
 type MouseHandler = (event: MouseEvent<HTMLDivElement>) => boolean | void;
 
-const hasDOMCaretIn = (element: HTMLElement) => {
-  const anchorNode = getSelection(
-    element.getRootNode() as Document | ShadowRoot
-  )?.anchorNode;
+const hasDOMCaretIn = (element: HTMLElement) =>
+  isSelectionOwnedByEditable(
+    element,
+    getSelection(element.getRootNode() as Document | ShadowRoot)
+  );
 
-  return !!anchorNode && element.contains(anchorNode);
-};
+const getEditableEventTarget = (event: MouseEvent<HTMLDivElement>) =>
+  getEventTargetInRoot(event.currentTarget, event.nativeEvent) ?? event.target;
 
 export const useRuntimeFocusMouseEvents = ({
   cancelNativeSelectionImport,
@@ -111,7 +116,7 @@ export const useRuntimeFocusMouseEvents = ({
     (event: MouseEvent<HTMLDivElement>) => {
       nativePointerFocusRef.current = !isInteractiveInternalTarget(
         editor,
-        event.target
+        getEditableEventTarget(event)
       );
       domPhaseScheduler.schedule(
         'model',
@@ -414,22 +419,23 @@ export const useRuntimeFocusMouseEvents = ({
 
       clearVerticalGoal();
       markNativePointerFocus(event);
+      const target = getEditableEventTarget(event);
 
-      if (readOnly || isInteractiveInternalTarget(editor, event.target)) {
+      if (readOnly || isInteractiveInternalTarget(editor, target)) {
         return;
       }
 
-      const nativeDraggable = isNativeDraggableTarget(editor, event.target);
+      const nativeDraggable = isNativeDraggableTarget(editor, target);
       const selectedPath =
         selectEditableSelectableOwnerTarget({
           editor,
           inputController,
-          target: event.target,
+          target,
         }) ??
         selectEditableVoidTarget({
           editor,
           inputController,
-          target: event.target,
+          target,
         });
 
       if (selectedPath && !nativeDraggable) {
@@ -509,7 +515,7 @@ export const useRuntimeFocusMouseEvents = ({
         return;
       }
 
-      if (isInteractiveInternalTarget(editor, event.target)) {
+      if (isInteractiveInternalTarget(editor, getEditableEventTarget(event))) {
         onMouseUp?.(event);
         return;
       }

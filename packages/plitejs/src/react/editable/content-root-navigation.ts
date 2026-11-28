@@ -13,6 +13,13 @@ import {
 } from '../..';
 import { asSelectionMotion } from '../../core/public-state';
 import { setShownSelectionAsView } from '../../core/view-carets';
+import { isDOMNode } from '../../dom';
+import {
+  isFocusRequestedElsewhere,
+  watchFocusSuperseded,
+} from '../../dom/plugin/dom-editor';
+import { focusedElementOnPage } from '../../dom/plugin/dom-root-runtime';
+import { containsShadowAware } from '../../dom/utils/dom';
 import type { EditorSelectionTarget } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readRootChildren } from '../root-key';
@@ -79,10 +86,7 @@ import {
   isPointOnVisualBoundaryLine,
   resolveVerticalNavigationPoint,
 } from './content-root-vertical-geometry';
-import {
-  findMountedEditableDOMRuntime,
-  getMountedEditableDOMRuntime,
-} from './editable-dom-runtime';
+import { findMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { scheduleEditableDOMSelectionClear } from './input-state';
 import { getLineBoundaryPoint } from './line-boundary';
 import {
@@ -341,6 +345,44 @@ const resolveExitBoundary = (
   return null;
 };
 
+const resolveKnownCurrentRootOwner = (
+  owners: readonly PliteViewBoundaryOwner[],
+  currentOwner: PliteViewBoundaryOwner | null | undefined,
+  root: RootKey
+): PliteViewBoundaryOwner | null =>
+  isKnownContentRootOwner(owners, currentOwner) &&
+  currentOwner.childRoot === root
+    ? currentOwner
+    : null;
+
+const createCurrentRootOwnerLookup = ({
+  currentOwner,
+  currentRoot,
+  getActiveContentRootOwner,
+  owners,
+}: {
+  currentOwner: PliteViewBoundaryOwner | null | undefined;
+  currentRoot: RootKey;
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
+  owners: readonly PliteViewBoundaryOwner[];
+}) => {
+  const knownCurrentOwner = resolveKnownCurrentRootOwner(
+    owners,
+    currentOwner,
+    currentRoot
+  );
+
+  return (root: RootKey): PliteViewBoundaryOwner | null =>
+    root === currentRoot && knownCurrentOwner
+      ? knownCurrentOwner
+      : (getActiveContentRootOwner?.(root) ?? null);
+};
+
+const chainContentRootOwner = (
+  owner: PliteViewBoundaryOwner,
+  parent: PliteViewBoundaryOwner | null | undefined
+): PliteViewBoundaryOwner => (parent ? { ...owner, parent } : owner);
+
 const getRootViewEditor = ({
   editor,
   getMountedViewEditor,
@@ -356,13 +398,7 @@ const getRootViewEditor = ({
     ? (editor as ReactRuntimeEditor)
     : null);
 
-const getViewBoundaryPointEditor = ({
-  editor,
-  getContentRootOwnerViewEditor,
-  getMountedViewEditor,
-  owner,
-  root,
-}: {
+type ViewBoundaryPointEditorLookup = {
   editor: ContentRootNavigationEditor;
   getContentRootOwnerViewEditor?: (
     owner: PliteViewBoundaryOwner
@@ -370,14 +406,26 @@ const getViewBoundaryPointEditor = ({
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   owner: PliteViewBoundaryOwner | null | undefined;
   root: RootKey;
-}): ReactRuntimeEditor | null =>
+};
+
+const findViewBoundaryPointEditor = ({
+  editor,
+  getContentRootOwnerViewEditor,
+  getMountedViewEditor,
+  owner,
+  root,
+}: ViewBoundaryPointEditorLookup): ReactRuntimeEditor | null =>
   (owner ? getContentRootOwnerViewEditor?.(owner) : null) ??
   getRootViewEditor({
     editor,
     getMountedViewEditor,
     root,
-  }) ??
-  (editor as ReactRuntimeEditor);
+  });
+
+const getViewBoundaryPointEditor = (
+  input: ViewBoundaryPointEditorLookup
+): ReactRuntimeEditor =>
+  findViewBoundaryPointEditor(input) ?? (input.editor as ReactRuntimeEditor);
 
 const getVerticalNavigationTarget = ({
   currentRoot,
@@ -483,9 +531,7 @@ const getVerticalNavigationTarget = ({
       continue;
     }
 
-    const chainedOwner = ownerForCurrentRoot
-      ? { ...owner, parent: ownerForCurrentRoot }
-      : owner;
+    const chainedOwner = chainContentRootOwner(owner, ownerForCurrentRoot);
     const sourceEditor = getViewBoundaryPointEditor({
       editor,
       getContentRootOwnerViewEditor,
@@ -493,13 +539,13 @@ const getVerticalNavigationTarget = ({
       owner: ownerForCurrentRoot,
       root: currentRoot,
     });
-    const targetEditor =
-      getContentRootOwnerViewEditor?.(chainedOwner) ??
-      getRootViewEditor({
-        editor,
-        getMountedViewEditor,
-        root: owner.childRoot,
-      });
+    const targetEditor = findViewBoundaryPointEditor({
+      editor,
+      getContentRootOwnerViewEditor,
+      getMountedViewEditor,
+      owner: chainedOwner,
+      root: owner.childRoot,
+    });
     const entryPoint = getOwnerBoundaryPoint(editor, owner, direction);
     const adjacentBoundary = getOwnerAdjacentBoundary(editor, owner, direction);
     const atModelBoundary =
@@ -601,9 +647,7 @@ const getHorizontalNavigationTarget = ({
     const entryPoint = getOwnerBoundaryPoint(editor, owner, direction);
 
     if (entryPoint && samePliteRootPoint(point, entryPoint, currentRoot)) {
-      const chainedOwner = ownerForCurrentRoot
-        ? { ...owner, parent: ownerForCurrentRoot }
-        : owner;
+      const chainedOwner = chainContentRootOwner(owner, ownerForCurrentRoot);
 
       return getRootBoundaryNavigationTarget({
         direction,
@@ -724,10 +768,8 @@ const advanceVerticalBoundarySelectionTarget = ({
   }
 
   const currentRootOwner =
-    isKnownContentRootOwner(owners, currentOwner) &&
-    currentOwner.childRoot === currentRoot
-      ? currentOwner
-      : owners.find((owner) => owner.childRoot === currentRoot);
+    resolveKnownCurrentRootOwner(owners, currentOwner, currentRoot) ??
+    owners.find((owner) => owner.childRoot === currentRoot);
   const fallbackPoint = currentRootOwner
     ? (resolveExitBoundary(editor, currentRootOwner, action.direction)?.point ??
       null)
@@ -830,14 +872,12 @@ const getInitialProjectedSelectionAnchor = ({
   const point = selection.anchor;
   const root = getPlitePointRoot(point, currentRoot);
   const owner =
-    isKnownContentRootOwner(owners, currentOwner) &&
-    currentOwner.childRoot === root
-      ? currentOwner
-      : getOwnerForRoot({
-          currentRoot: root,
-          getActiveContentRootOwner,
-          owners,
-        });
+    resolveKnownCurrentRootOwner(owners, currentOwner, root) ??
+    getOwnerForRoot({
+      currentRoot: root,
+      getActiveContentRootOwner,
+      owners,
+    });
 
   return toViewBoundaryPoint({
     owner,
@@ -1167,12 +1207,12 @@ const getContentRootMovementTarget = ({
   askExternalViews?: boolean;
   preferredX?: number;
 } & ContentRootViewEditorLookup): ContentRootNavigationTarget | null => {
-  const getCurrentRootOwner = (root: RootKey) =>
-    root === currentRoot &&
-    isKnownContentRootOwner(owners, currentOwner) &&
-    currentOwner.childRoot === root
-      ? currentOwner
-      : (getActiveContentRootOwner?.(root) ?? null);
+  const getCurrentRootOwner = createCurrentRootOwnerLookup({
+    currentOwner,
+    currentRoot,
+    getActiveContentRootOwner,
+    owners,
+  });
   const boundaryTarget =
     action.axis === 'line'
       ? null
@@ -1255,13 +1295,18 @@ const getContentRootMovementTarget = ({
             unit: getHorizontalSelectionUnit(action.axis),
           });
 
+  const knownCurrentOwner = resolveKnownCurrentRootOwner(
+    owners,
+    currentOwner,
+    currentRoot
+  );
+
   return rootLocalTarget &&
     rootLocalTarget.root === currentRoot &&
-    isKnownContentRootOwner(owners, currentOwner) &&
-    currentOwner.childRoot === currentRoot
+    knownCurrentOwner
     ? {
         ...rootLocalTarget,
-        owner: currentOwner,
+        owner: knownCurrentOwner,
       }
     : rootLocalTarget;
 };
@@ -1302,12 +1347,12 @@ const getContentRootActionTarget = ({
     getContentRootOwnerViewEditor,
     owners,
   });
-  const getCurrentRootOwner = (root: RootKey) =>
-    root === currentRoot &&
-    isKnownContentRootOwner(owners, currentViewOwner) &&
-    currentViewOwner.childRoot === root
-      ? currentViewOwner
-      : (getActiveContentRootOwner?.(root) ?? null);
+  const getCurrentRootOwner = createCurrentRootOwnerLookup({
+    currentOwner: currentViewOwner,
+    currentRoot,
+    getActiveContentRootOwner,
+    owners,
+  });
 
   if (action.kind === 'enter') {
     const ownerForCurrentRoot = getOwnerForRoot({
@@ -1328,9 +1373,7 @@ const getContentRootActionTarget = ({
         (start && samePliteRootPoint(point, start, currentRoot)) ||
         (end && samePliteRootPoint(point, end, currentRoot))
       ) {
-        const chainedOwner = ownerForCurrentRoot
-          ? { ...owner, parent: ownerForCurrentRoot }
-          : owner;
+        const chainedOwner = chainContentRootOwner(owner, ownerForCurrentRoot);
 
         return getRootBoundaryNavigationTarget({
           direction: 'forward',
@@ -1389,6 +1432,44 @@ export const getContentRootVerticalMoveTarget = ({
     action: { axis: 'vertical', direction, kind: 'move' },
   });
 
+const createProjectedSelectionFromRange = ({
+  currentOwner,
+  currentRoot,
+  getActiveContentRootOwner,
+  graph,
+  owners,
+  selection,
+}: {
+  currentOwner: PliteViewBoundaryOwner | null;
+  currentRoot: RootKey;
+  getActiveContentRootOwner?: (root: RootKey) => PliteViewBoundaryOwner | null;
+  graph: PliteViewBoundaryGraphModel;
+  owners: readonly PliteViewBoundaryOwner[];
+  selection: Range;
+}) => {
+  const anchor = getInitialProjectedSelectionAnchor({
+    currentOwner,
+    currentRoot,
+    getActiveContentRootOwner,
+    owners,
+    selection,
+  });
+  const focusRoot = selection.focus.root ?? currentRoot;
+
+  return createPliteViewSelection(graph, {
+    anchor,
+    focus: toViewBoundaryPoint({
+      owner: getOwnerForRoot({
+        currentRoot: focusRoot,
+        getActiveContentRootOwner,
+        owners,
+      }),
+      point: selection.focus,
+      root: focusRoot,
+    }),
+  });
+};
+
 export const shouldModelOwnContentRootVerticalSelection = ({
   editor,
   event,
@@ -1427,25 +1508,13 @@ export const shouldModelOwnContentRootVerticalSelection = ({
     owners,
     getActiveContentRootOwner
   );
-  const anchor = getInitialProjectedSelectionAnchor({
+  const projectedSelection = createProjectedSelectionFromRange({
     currentOwner: null,
     currentRoot,
     getActiveContentRootOwner,
+    graph,
     owners,
     selection,
-  });
-  const focusRoot = selection.focus.root ?? currentRoot;
-  const projectedSelection = createPliteViewSelection(graph, {
-    anchor,
-    focus: toViewBoundaryPoint({
-      owner: getOwnerForRoot({
-        currentRoot: focusRoot,
-        getActiveContentRootOwner,
-        owners,
-      }),
-      point: selection.focus,
-      root: focusRoot,
-    }),
   });
 
   return projectedSelection.segments.parts.some(
@@ -1523,19 +1592,24 @@ const applyContentRootViewSelectionAction = ({
     return { handled: false };
   }
 
-  const getCurrentRootOwner = (root: RootKey) =>
-    root === currentRoot &&
-    isKnownContentRootOwner(owners, currentOwner) &&
-    currentOwner.childRoot === root
-      ? currentOwner
-      : (getActiveContentRootOwner?.(root) ?? null);
+  const getCurrentRootOwner = createCurrentRootOwnerLookup({
+    currentOwner,
+    currentRoot,
+    getActiveContentRootOwner,
+    owners,
+  });
   const graph = createContentRootViewBoundaryGraph(
     editor,
     owners,
     getCurrentRootOwner
   );
   const inView = (candidate: ContentRootNavigationTarget | null) =>
-    getViewGraphTarget({ candidate, getActiveContentRootOwner, graph, owners });
+    getViewGraphTarget({
+      candidate,
+      getActiveContentRootOwner: getCurrentRootOwner,
+      graph,
+      owners,
+    });
   let target = inView(
     action.kind === 'document-boundary'
       ? getDocumentBoundaryNavigationTarget({
@@ -1551,7 +1625,7 @@ const applyContentRootViewSelectionAction = ({
           currentOwner,
           currentRoot,
           editor,
-          getActiveContentRootOwner,
+          getActiveContentRootOwner: getCurrentRootOwner,
           getContentRootOwnerViewEditor,
           getMountedViewEditor,
           owners,
@@ -1600,25 +1674,13 @@ const applyContentRootViewSelectionAction = ({
       action.kind === 'move' &&
       action.axis === 'vertical'
     ) {
-      const anchor = getInitialProjectedSelectionAnchor({
+      const projectedSelection = createProjectedSelectionFromRange({
         currentOwner,
         currentRoot,
-        getActiveContentRootOwner,
+        getActiveContentRootOwner: getCurrentRootOwner,
+        graph,
         owners,
         selection,
-      });
-      const focusRoot = selection.focus.root ?? currentRoot;
-      const projectedSelection = createPliteViewSelection(graph, {
-        anchor,
-        focus: toViewBoundaryPoint({
-          owner: getOwnerForRoot({
-            currentRoot: focusRoot,
-            getActiveContentRootOwner,
-            owners,
-          }),
-          point: selection.focus,
-          root: focusRoot,
-        }),
       });
       const hasProjectedPart = projectedSelection.segments.parts.some(
         (segment) => segment.owner || segment.root !== currentRoot
@@ -1661,7 +1723,7 @@ const applyContentRootViewSelectionAction = ({
     getInitialProjectedSelectionAnchor({
       currentOwner,
       currentRoot,
-      getActiveContentRootOwner,
+      getActiveContentRootOwner: getCurrentRootOwner,
       owners,
       selection: selection ?? failInvariant('Expected value to be defined'),
     });
@@ -1783,10 +1845,9 @@ export const applyContentRootViewSelection = ({
   selection: Range | null;
 } & ContentRootViewEditorLookup): ContentRootNavigationResult =>
   asSelectionMotion(editor, () => {
-    const sourceElement =
-      event.target instanceof Node
-        ? (findMountedEditableDOMRuntime(event.target)?.rootRef.current ?? null)
-        : null;
+    const sourceElement = isDOMNode(event.target)
+      ? (findMountedEditableDOMRuntime(event.target)?.rootRef.current ?? null)
+      : null;
     const result = applyContentRootViewSelectionAction({
       action: getProjectedSelectionAction({ event, isRTL }),
       editor,
@@ -1922,11 +1983,13 @@ const selectContentRootTarget = ({
   focusEditor?: (editor: ReactRuntimeEditor) => void;
   target: ContentRootNavigationTarget;
 } & ContentRootViewEditorLookup): ContentRootNavigationResult => {
-  const targetEditor =
-    (target.owner ? getContentRootOwnerViewEditor?.(target.owner) : null) ??
-    getMountedViewEditor?.(target.root) ??
-    getRegisteredRootViewEditor(editor, target.root) ??
-    editor;
+  const targetEditor = getViewBoundaryPointEditor({
+    editor,
+    getContentRootOwnerViewEditor,
+    getMountedViewEditor,
+    owner: target.owner,
+    root: target.root,
+  });
 
   event.preventDefault();
   writePliteViewSelection(editor, null, {
@@ -1937,12 +2000,44 @@ const selectContentRootTarget = ({
 
   if (targetEditor !== editor) {
     focusEditor?.(targetEditor);
+    const sourceElement = event.currentTarget ?? null;
+    const focused = sourceElement
+      ? focusedElementOnPage(sourceElement.getRootNode())
+      : null;
+    const targetRuntime = focused
+      ? findMountedEditableDOMRuntime(focused)
+      : null;
+    const targetElement =
+      targetRuntime?.editor === targetEditor
+        ? targetRuntime.rootRef.current
+        : null;
     const domPhaseScheduler =
-      getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??
-      getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
+      targetRuntime?.domPhaseScheduler ??
+      (sourceElement
+        ? findMountedEditableDOMRuntime(sourceElement)?.domPhaseScheduler
+        : undefined);
     const { version } = editor.read.runtime.snapshot();
     const viewSelection = readPliteViewSelection(editor);
+    const focusScope = targetElement ?? sourceElement;
+    const superseded = watchFocusSuperseded(targetEditor, focusScope);
+    const movedToExternalControl = () => {
+      if (!focusScope) return false;
+      if (isFocusRequestedElsewhere(targetEditor, focusScope)) return true;
+
+      const active = focusedElementOnPage(focusScope.getRootNode());
+
+      return (
+        !!active &&
+        active !== targetElement &&
+        active !== focusScope.ownerDocument.body &&
+        active !== focusScope.ownerDocument.documentElement &&
+        !(targetElement && containsShadowAware(targetElement, active)) &&
+        !(sourceElement && containsShadowAware(sourceElement, active))
+      );
+    };
     const nothingSelectedSince = () =>
+      !superseded() &&
+      !movedToExternalControl() &&
       editor.read.runtime.snapshot().version === version &&
       readPliteViewSelection(editor) === viewSelection &&
       claimPageSelection();

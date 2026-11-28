@@ -4,7 +4,6 @@ import {
   getEditorUpdateRoot,
   getSetSite,
   runEditorTransaction,
-  withEditorUpdateRoot,
 } from '../core/public-state';
 import { refuseCrossing } from '../core/set-root';
 import type {
@@ -15,13 +14,10 @@ import type {
 import type { Location } from '../interfaces/location';
 import { RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
-import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
+import { getLocationRoot } from '../internal/root-location';
 import { deleteText } from '../transforms-text/delete-text';
 import { applyDelete } from './delete-backward';
-import {
-  hasEdgeInReadOnlyInline,
-  refusesReadOnlyWrite,
-} from './element-read-only';
+import { refusesReadOnlyWrite } from './element-read-only';
 
 export type InternalFragmentDeletionOptions = Omit<
   EditorFragmentDeletionOptions,
@@ -53,20 +49,9 @@ export const applyDeleteFragment = (
     ) {
       const targetRoot =
         getLocationRoot(selection) ?? getEditorUpdateRoot(editor);
-      const localSelection = getLocationRoot(selection)
-        ? stripLocationRoots(selection)
-        : selection;
 
       refuseCrossing(getSetSite(editor), selection, targetRoot);
-      if (
-        withEditorUpdateRoot(
-          editor,
-          targetRoot,
-          () =>
-            hasEdgeInReadOnlyInline(editor, localSelection) ||
-            refusesReadOnlyWrite(editor, localSelection)
-        )
-      ) {
+      if (refusesReadOnlyWrite(editor, selection)) {
         return;
       }
       tx.setSelection(SelectionApi.text(selection));

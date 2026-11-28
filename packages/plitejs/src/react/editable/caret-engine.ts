@@ -22,6 +22,7 @@ import {
   type DOMPhaseScheduler,
   getLineBoundaryKeyboardMove,
 } from '../../dom/internal';
+import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import {
@@ -401,9 +402,9 @@ export const isElementDrawn = (
   if (visibility === 'hidden' || visibility === 'collapse') return false;
 
   for (
-    let current: HTMLElement | null = element;
+    let current: Element | null = element;
     current;
-    current = current.parentElement
+    current = getFlatTreeParentElement(current)
   ) {
     const { contentVisibility, display } = view.getComputedStyle(current);
 

@@ -31,8 +31,6 @@
     ],
     "packages/plitejs/src/react/editable/content-root-navigation.ts": [
       "const sourceElement = sourceEditor.api.dom.resolveDOMNode(sourceEditor);",
-      "getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;",
-      "getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??",
       "sourceEditor?.api.dom?.resolveDOMNode?.(sourceEditor) ?? null;"
     ],
     "packages/plitejs/src/react/editable/content-root-vertical-geometry.ts": [
