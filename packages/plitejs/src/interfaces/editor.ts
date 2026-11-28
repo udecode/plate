@@ -2348,7 +2348,7 @@ export interface BaseEditor<
   /** Return the stable runtime key for a live node or location. */
   key: EditorKeyApi;
   read: EditorRead<V, TPlugins>;
-  subscribeCommit: (listener: EditorCommitListener<any>) => () => void;
+  subscribeCommit: (listener: EditorCommitListener<V>) => () => void;
   update: EditorUpdate<V, TPlugins>;
   /**
    * Add plugins to this live editor in a commit of their own, and return a

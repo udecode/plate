@@ -280,7 +280,11 @@ import {
   isInCommandFrame,
   runInEditorCommandFrame,
 } from './command-frame';
-import { createEditorCommit, type EditorCommitSettlement } from './commit';
+import {
+  createEditorCommit,
+  type EditorCommitSettlement,
+  getEditorCommitSnapshot,
+} from './commit';
 import { isEditorContent } from './content';
 import {
   landTextWriteOutsideStruck,
@@ -14434,7 +14438,11 @@ export const getSnapshot = (editor: Editor): EditorSnapshot => {
     live instanceof DocumentIndex || isImmutable(live)
       ? live
       : cloneFrozen(live);
-  const selection = cloneFrozenEditorJsonValue(getCurrentSelection(editor));
+  const selection = getRootScopedSelection(
+    getCurrentSelection(editor),
+    getCurrentSelectionRoot(editor),
+    getCurrentChildrenRoot(editor)
+  );
   const owner = getEditorRuntimeOwner(editor);
   let index: SnapshotIndex | undefined;
   const snapshot: Record<string, unknown> = {};
@@ -14541,7 +14549,11 @@ const getSelectionOnlySnapshot = (
 ): EditorSnapshot => {
   const snapshot = {
     children: previousSnapshot.children,
-    selection: cloneFrozenEditorJsonValue(getCurrentSelection(editor)),
+    selection: getRootScopedSelection(
+      getCurrentSelection(editor),
+      getCurrentSelectionRoot(editor),
+      MAIN_ROOT_KEY
+    ),
     version,
   };
 
@@ -14669,8 +14681,9 @@ const snapshotIndexReader = (
 
 const getListenerSnapshot = (
   editor: Editor,
-  _change?: EditorCommit
+  change?: EditorCommit
 ): EditorSnapshot =>
+  change?.after ??
   withEditorRootChildren(editor, MAIN_ROOT_KEY, () => getSnapshot(editor));
 
 type RootEntries = ReadonlyArray<readonly [string, NodeList<Descendant>]>;
@@ -16167,7 +16180,9 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
       return snapshot;
     };
 
-    LAST_COMMIT.set(editor, change);
+    if ((LAST_COMMIT.get(editor)?.version ?? -1) < change.version) {
+      LAST_COMMIT.set(editor, change);
+    }
 
     profileCoreDuration('notify-plugin-commit-listeners', () => {
       for (const listener of pluginCommitListeners) {
@@ -16255,7 +16270,7 @@ const materializeAfterCommitHandlers = (
     let snapshot = snapshots.get(root);
 
     if (!snapshot) {
-      snapshot = getCurrentRootSnapshot(editor, root);
+      snapshot = getEditorCommitSnapshot(commit, root, 'after');
       snapshots.set(root, snapshot);
     }
 
