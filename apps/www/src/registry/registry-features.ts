@@ -35,6 +35,19 @@ export const registryStaticFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    description:
+      'Code block language catalog, aliases, labels and syntax classes.',
+    files: [
+      {
+        path: 'components/editor/code-block-languages.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-languages',
+    title: 'Code Block Languages',
+    type: 'registry:component',
+  },
+  {
     dependencies: ['platejs', 'lowlight'],
     files: [
       {
@@ -423,6 +436,19 @@ export const registryFeatures: Registry['items'] = [
       ],
       examples: ['callout-demo'],
     },
+  },
+  {
+    description:
+      'Code block frame, language picker and plugin factory shared by the native and CodeMirror code blocks.',
+    files: [
+      {
+        path: 'components/editor/code-block-container.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-container',
+    title: 'Code Block Container',
+    type: 'registry:component',
   },
   {
     dependencies: ['platejs', 'lowlight'],

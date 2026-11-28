@@ -9,10 +9,8 @@ import * as React from 'react';
 
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
-import {
-  CodeBlockElement,
-  createCodeBlockPlugin,
-} from '@/registry/components/editor/code-block';
+import { CodeBlockElement } from '@/registry/components/editor/code-block';
+import { createCodeBlockPlugin } from '@/registry/components/editor/code-block-container';
 import { withDiagrams } from '@/registry/components/editor/code-block-diagram';
 import { flowchartRenderer } from '@/registry/components/editor/code-block-diagram-flowchart';
 import { graphvizRenderer } from '@/registry/components/editor/code-block-diagram-graphviz';

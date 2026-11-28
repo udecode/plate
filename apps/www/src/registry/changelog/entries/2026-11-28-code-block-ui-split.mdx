@@ -1,0 +1,24 @@
+---
+id: 2026-11-28-code-block-ui-split
+date: 2026-11-28
+status: draft
+kind: behavior
+summary: 'Split the code block UI so CodeMirror installs skip Lowlight, fix the language picker, and type fence languages'
+change: { 'type': 'source', 'date': '2026-11-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-28-code-block-ui-split-01","kind":"new","migrationNotes":["Import `createCodeBlockPlugin`, `CodeBlockContainer`, `formatJsonCodeBlock`, `CodeBlockAddon`, `CodeBlockComponent` and `CodeBlockElementProps` from `code-block-container` instead of `code-block`.","Import `codeSyntaxClassName` from `code-block-languages` instead of `code-block-lowlight`."]} -->
+
+- **`code-block-container`**, **`code-block-languages`**: Add the shared code block frame, language picker and plugin factory, and a server-safe language catalog with aliases, labels and `resolveCodeBlockLanguage`. Neither imports Lowlight.
+<!-- entry: {"id":"2026-11-28-code-block-ui-split-02","kind":"behavior","migrationNotes":[]} -->
+- **`code-block-codemirror`**, **`code-block-diagram`**: Depend on `code-block-container` instead of `code-block`, so installing them no longer adds `lowlight` or highlight.js.
+<!-- entry: {"id":"2026-11-28-code-block-ui-split-03","kind":"behavior","migrationNotes":[]} -->
+- **`code-block`**, **`code-block-codemirror`**: Typing ` ```ts ` and Space or Enter creates a `typescript` code block. Fence aliases such as `py`, `c++` and `sass` map to their catalog language, and other names, such as `dot`, stay as typed.
+<!-- entry: {"id":"2026-11-28-code-block-ui-split-04","kind":"fix","migrationNotes":[]} -->
+- **`code-block`**, **`code-block-codemirror`**: The language picker finds languages by alias, such as `ts` or `sass`, lists SCSS and Visual Basic once, labels and checks CodeMirror languages such as `c++` against stored `cpp`, gives each block its own listbox id, and clears its search after a pick or close.
+<!-- entry: {"id":"2026-11-28-code-block-ui-split-05","kind":"remove","migrationNotes":["Render code blocks for DOCX export with `CodeBlockElementStatic`, or keep a local copy of `CodeBlockElementDocx`."]} -->
+- **`code-block-static`**: Remove `CodeBlockElementDocx` and read labels from `code-block-languages`, so the static label matches the editor's.
+<!-- entry: {"id":"2026-11-28-code-block-ui-split-06","kind":"wiring","migrationNotes":[]} -->
+- **`code-block-codemirror-demo`**: Build the demo from basic blocks, basic marks, exit break and the CodeMirror code block instead of the full editor kit, so the page loads no Lowlight code.

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import type {
   CodeBlockComponent,
   CodeBlockElementProps,
-} from '@/registry/components/editor/code-block';
+} from '@/registry/components/editor/code-block-container';
 
 export type DiagramRenderer = Readonly<{
   /** Fence languages this engine draws, canonical first, such as ['graphviz', 'dot']. */

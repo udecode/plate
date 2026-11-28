@@ -1,36 +1,33 @@
 'use client';
 
-import {
-  CodeBlockPlugin,
-  CodeHighlightPlugin,
-  EditorRoot,
-  useCreateEditor,
-} from 'platejs/react';
+import { TrailingBlockPlugin } from 'platejs';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
-import { createCodeBlockPlugin } from '@/registry/components/editor/code-block';
+import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 import { CodeBlockCodeMirrorElement } from '@/registry/components/editor/code-block-codemirror';
+import { createCodeBlockPlugin } from '@/registry/components/editor/code-block-container';
 import {
   Editor,
   EditorContainer,
   EditorFrame,
 } from '@/registry/components/editor/editor';
-import { EditorKit } from '@/registry/components/editor/plugins';
+import { ExitBreakKit } from '@/registry/components/editor/exit-break';
 
-import { createValue } from './values/demo-values';
+import { hugeCodeBlockValue } from './values/huge-code-block-value';
 
-const codeBlockCodeMirrorPlugin = createCodeBlockPlugin(
-  CodeBlockCodeMirrorElement
-);
-const CodeBlockCodeMirrorDemoKit = EditorKit.filter(
-  (plugin) => plugin.name !== CodeHighlightPlugin.name
-).map((plugin) =>
-  plugin.name === CodeBlockPlugin.name ? codeBlockCodeMirrorPlugin : plugin
-);
+const plugins = [
+  ...BasicBlocksKit,
+  ...BasicMarksKit,
+  createCodeBlockPlugin(CodeBlockCodeMirrorElement),
+  ...ExitBreakKit,
+  TrailingBlockPlugin,
+];
 
-export default function CodeBlockCodeMirrorDemo({ id }: { id: string }) {
+export default function CodeBlockCodeMirrorDemo() {
   const editor = useCreateEditor({
-    plugins: CodeBlockCodeMirrorDemoKit,
-    initialValue: createValue(id),
+    plugins,
+    initialValue: hugeCodeBlockValue,
   });
 
   return (

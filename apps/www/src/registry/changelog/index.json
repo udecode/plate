@@ -85,6 +85,32 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-code-block-ui-split",
+      "href": "/registry/changelog/2026-11-28-code-block-ui-split.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Split the code block UI so CodeMirror installs skip Lowlight, fix the language picker, and type fence languages",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "code-block-container",
+        "code-block-languages",
+        "code-block-codemirror",
+        "code-block-diagram",
+        "code-block",
+        "code-block-static",
+        "code-block-codemirror-demo"
+      ],
+      "entries": 6,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-code-block-webkit-word-selection",
       "href": "/registry/changelog/2026-11-28-code-block-webkit-word-selection.json",
       "status": "draft",

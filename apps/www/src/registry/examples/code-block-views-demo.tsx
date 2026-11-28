@@ -13,9 +13,9 @@ import * as React from 'react';
 import {
   CodeBlockElement,
   CodeBlockKit,
-  createCodeBlockPlugin,
 } from '@/registry/components/editor/code-block';
 import { CodeBlockCodeMirrorElement } from '@/registry/components/editor/code-block-codemirror';
+import { createCodeBlockPlugin } from '@/registry/components/editor/code-block-container';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 const NativeCode = React.createContext(false);

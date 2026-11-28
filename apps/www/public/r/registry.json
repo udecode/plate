@@ -2302,6 +2302,22 @@
       "type": "registry:component"
     },
     {
+      "name": "code-block-languages",
+      "title": "Code Block Languages",
+      "description": "Code block language catalog, aliases, labels and syntax classes.",
+      "registryDependencies": [
+        "https://platejs.org/r/code-syntax-style.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/code-block-languages.ts",
+          "type": "registry:component",
+          "target": "@components/editor/code-block-languages.ts"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
       "name": "code-block-static",
       "dependencies": [
         "platejs",
@@ -2309,7 +2325,7 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-syntax-style.json"
+        "https://platejs.org/r/code-block-languages.json"
       ],
       "files": [
         {
@@ -2963,20 +2979,40 @@
       "type": "registry:component"
     },
     {
+      "name": "code-block-container",
+      "title": "Code Block Container",
+      "description": "Code block frame, language picker and plugin factory shared by the native and CodeMirror code blocks.",
+      "dependencies": [
+        "cn",
+        "diff-match-patch-ts@^0.6.0",
+        "platejs"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/code-block-languages.json",
+        "https://platejs.org/r/floating-popover.json",
+        "button",
+        "command"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/code-block-container.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/code-block-container.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
       "name": "code-block",
       "title": "Code Block",
       "description": "A code block with syntax highlighting and language selection.",
       "dependencies": [
         "platejs",
         "lowlight",
-        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-syntax-style.json",
-        "https://platejs.org/r/floating-popover.json",
-        "button",
-        "command"
+        "https://platejs.org/r/code-block-container.json"
       ],
       "files": [
         {
@@ -3024,7 +3060,8 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-block.json",
+        "https://platejs.org/r/code-block-container.json",
+        "https://platejs.org/r/code-block-languages.json",
         "https://platejs.org/r/plate-ui.json"
       ],
       "files": [
@@ -3057,7 +3094,7 @@
         "platejs"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-block.json",
+        "https://platejs.org/r/code-block-container.json",
         "button"
       ],
       "files": [

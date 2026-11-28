@@ -33,7 +33,8 @@ import { useEditorSelector } from 'platejs/react';
 import {
   CodeBlockContainer,
   type CodeBlockElementProps,
-} from '@/registry/components/editor/code-block';
+} from '@/registry/components/editor/code-block-container';
+import { findCodeBlockLanguage } from '@/registry/components/editor/code-block-languages';
 
 const syntaxColors = syntaxHighlighting(
   HighlightStyle.define([
@@ -46,12 +47,34 @@ const syntaxColors = syntaxHighlighting(
     { tag: tags.propertyName, class: 'hljs-attr' },
   ])
 );
-const languageDescription = (name?: string) =>
-  name ? LanguageDescription.matchLanguageName(languages, name, false) : null;
+
+// Fences store catalog values such as `objectivec`, which CodeMirror only knows by an alias.
+const languageDescription = (name?: string) => {
+  if (!name) return null;
+
+  for (const candidate of [
+    name,
+    ...(findCodeBlockLanguage(name)?.aliases ?? []),
+  ]) {
+    const description = LanguageDescription.matchLanguageName(
+      languages,
+      candidate,
+      false
+    );
+
+    if (description) return description;
+  }
+
+  return null;
+};
 
 const codeMirrorLanguages = [
   { label: 'Plain Text', value: 'plaintext' },
-  ...languages.map(({ name }) => ({ label: name, value: name.toLowerCase() })),
+  ...languages.map(({ alias, name }) => ({
+    aliases: alias,
+    label: name,
+    value: name.toLowerCase(),
+  })),
 ];
 
 const codeMirrorAdapter = createCodeMirrorAdapter({

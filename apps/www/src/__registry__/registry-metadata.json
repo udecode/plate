@@ -1,5 +1,5 @@
 {
-  "generation": "54e82f0f7d549f145a67e0ec2d8ab64b5b1b3823bface6390042f726f81eb839",
+  "generation": "ef5abfd595656d18f08074ec69a5dd05d7325ccb897703c9b761ed082699482f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2338,6 +2338,22 @@
           "type": "registry:component"
         },
         {
+          "description": "Code block language catalog, aliases, labels and syntax classes.",
+          "files": [
+            {
+              "path": "components/editor/code-block-languages.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-languages.ts"
+            }
+          ],
+          "name": "code-block-languages",
+          "title": "Code Block Languages",
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/code-syntax-style"
+          ]
+        },
+        {
           "dependencies": [
             "platejs",
             "lowlight",
@@ -2358,7 +2374,7 @@
           "name": "code-block-static",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/code-syntax-style"
+            "@plate/code-block-languages"
           ]
         },
         {
@@ -3000,12 +3016,35 @@
           ]
         },
         {
+          "description": "Code block frame, language picker and plugin factory shared by the native and CodeMirror code blocks.",
+          "files": [
+            {
+              "path": "components/editor/code-block-container.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-container.tsx"
+            }
+          ],
+          "name": "code-block-container",
+          "title": "Code Block Container",
+          "type": "registry:component",
+          "dependencies": [
+            "cn",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-languages",
+            "@plate/floating-popover",
+            "button",
+            "command"
+          ]
+        },
+        {
           "dependencies": [
             "platejs",
             "lowlight",
-            "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -3039,10 +3078,7 @@
             ]
           },
           "registryDependencies": [
-            "@plate/code-syntax-style",
-            "@plate/floating-popover",
-            "button",
-            "command"
+            "@plate/code-block-container"
           ]
         },
         {
@@ -3081,7 +3117,8 @@
             ]
           },
           "registryDependencies": [
-            "@plate/code-block",
+            "@plate/code-block-container",
+            "@plate/code-block-languages",
             "@plate/plate-ui"
           ]
         },
@@ -3114,7 +3151,7 @@
             "platejs"
           ],
           "registryDependencies": [
-            "@plate/code-block",
+            "@plate/code-block-container",
             "button"
           ]
         },
@@ -6623,10 +6660,12 @@
           },
           "name": "code-block-codemirror-demo",
           "registryDependencies": [
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
             "@plate/code-block-codemirror",
-            "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
+            "@plate/code-block-container",
+            "@plate/exit-break",
+            "@plate/editor"
           ],
           "type": "registry:example"
         },
@@ -10419,6 +10458,22 @@
           "type": "registry:component"
         },
         {
+          "description": "Code block language catalog, aliases, labels and syntax classes.",
+          "files": [
+            {
+              "path": "components/editor/code-block-languages.ts",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-languages.ts"
+            }
+          ],
+          "name": "code-block-languages",
+          "title": "Code Block Languages",
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/code-syntax-style"
+          ]
+        },
+        {
           "dependencies": [
             "platejs",
             "lowlight",
@@ -10439,7 +10494,7 @@
           "name": "code-block-static",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/code-syntax-style"
+            "@plate/code-block-languages"
           ]
         },
         {
@@ -11081,12 +11136,35 @@
           ]
         },
         {
+          "description": "Code block frame, language picker and plugin factory shared by the native and CodeMirror code blocks.",
+          "files": [
+            {
+              "path": "components/editor/code-block-container.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/code-block-container.tsx"
+            }
+          ],
+          "name": "code-block-container",
+          "title": "Code Block Container",
+          "type": "registry:component",
+          "dependencies": [
+            "cn",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
+          ],
+          "registryDependencies": [
+            "@plate/code-block-languages",
+            "@plate/floating-popover",
+            "button",
+            "command"
+          ]
+        },
+        {
           "dependencies": [
             "platejs",
             "lowlight",
-            "cn",
-            "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
             {
@@ -11120,10 +11198,7 @@
             ]
           },
           "registryDependencies": [
-            "@plate/code-syntax-style",
-            "@plate/floating-popover",
-            "button",
-            "command"
+            "@plate/code-block-container"
           ]
         },
         {
@@ -11162,7 +11237,8 @@
             ]
           },
           "registryDependencies": [
-            "@plate/code-block",
+            "@plate/code-block-container",
+            "@plate/code-block-languages",
             "@plate/plate-ui"
           ]
         },
@@ -11195,7 +11271,7 @@
             "platejs"
           ],
           "registryDependencies": [
-            "@plate/code-block",
+            "@plate/code-block-container",
             "button"
           ]
         },
@@ -14704,10 +14780,12 @@
           },
           "name": "code-block-codemirror-demo",
           "registryDependencies": [
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
             "@plate/code-block-codemirror",
-            "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
+            "@plate/code-block-container",
+            "@plate/exit-break",
+            "@plate/editor"
           ],
           "type": "registry:example"
         },

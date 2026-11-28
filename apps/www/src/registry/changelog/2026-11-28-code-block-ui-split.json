@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-code-block-ui-split",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-code-block-ui-split.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Split the code block UI so CodeMirror installs skip Lowlight, fix the language picker, and type fence languages",
+  "targets": [
+    {
+      "name": "code-block-container",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-container.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-languages",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-languages.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-diagram",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-diagram.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-codemirror-demo",
+      "files": [
+        "apps/www/src/registry/examples/code-block-codemirror-demo.tsx",
+        "apps/www/src/registry/examples/values/huge-code-block-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-code-block-ui-split-01",
+      "kind": "new",
+      "summary": "Add the shared code block frame, language picker and plugin factory, and a server-safe language catalog with aliases, labels and `resolveCodeBlockLanguage`. Neither imports Lowlight.",
+      "details": [],
+      "migrationNotes": [
+        "Import `createCodeBlockPlugin`, `CodeBlockContainer`, `formatJsonCodeBlock`, `CodeBlockAddon`, `CodeBlockComponent` and `CodeBlockElementProps` from `code-block-container` instead of `code-block`.",
+        "Import `codeSyntaxClassName` from `code-block-languages` instead of `code-block-lowlight`."
+      ],
+      "targets": ["code-block-container", "code-block-languages"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-code-block-ui-split",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-code-block-ui-split-02",
+      "kind": "behavior",
+      "summary": "Depend on `code-block-container` instead of `code-block`, so installing them no longer adds `lowlight` or highlight.js.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block-codemirror", "code-block-diagram"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-code-block-ui-split",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-code-block-ui-split-03",
+      "kind": "behavior",
+      "summary": "Typing ` ```ts ` and Space or Enter creates a `typescript` code block. Fence aliases such as `py`, `c++` and `sass` map to their catalog language, and other names, such as `dot`, stay as typed.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block", "code-block-codemirror"],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-code-block-ui-split",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-code-block-ui-split-04",
+      "kind": "fix",
+      "summary": "The language picker finds languages by alias, such as `ts` or `sass`, lists SCSS and Visual Basic once, labels and checks CodeMirror languages such as `c++` against stored `cpp`, gives each block its own listbox id, and clears its search after a pick or close.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block", "code-block-codemirror"],
+      "source": {
+        "line": 20,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-code-block-ui-split",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-code-block-ui-split-05",
+      "kind": "remove",
+      "summary": "Remove `CodeBlockElementDocx` and read labels from `code-block-languages`, so the static label matches the editor's.",
+      "details": [],
+      "migrationNotes": [
+        "Render code blocks for DOCX export with `CodeBlockElementStatic`, or keep a local copy of `CodeBlockElementDocx`."
+      ],
+      "targets": ["code-block-static"],
+      "source": {
+        "line": 22,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-code-block-ui-split",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-code-block-ui-split-06",
+      "kind": "wiring",
+      "summary": "Build the demo from basic blocks, basic marks, exit break and the CodeMirror code block instead of the full editor kit, so the page loads no Lowlight code.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block-codemirror-demo"],
+      "source": {
+        "line": 24,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-code-block-ui-split",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

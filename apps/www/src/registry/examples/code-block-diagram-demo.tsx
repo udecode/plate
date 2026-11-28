@@ -2,10 +2,8 @@
 
 import { CodeBlockPlugin, EditorRoot, useCreateEditor } from 'platejs/react';
 
-import {
-  CodeBlockElement,
-  createCodeBlockPlugin,
-} from '@/registry/components/editor/code-block';
+import { CodeBlockElement } from '@/registry/components/editor/code-block';
+import { createCodeBlockPlugin } from '@/registry/components/editor/code-block-container';
 import { withDiagrams } from '@/registry/components/editor/code-block-diagram';
 import { flowchartRenderer } from '@/registry/components/editor/code-block-diagram-flowchart';
 import { graphvizRenderer } from '@/registry/components/editor/code-block-diagram-graphviz';

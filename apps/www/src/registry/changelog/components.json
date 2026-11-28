@@ -242,6 +242,7 @@
     ],
     "code-block-codemirror": [
       "2026-11-28-code-block-suggesting",
+      "2026-11-28-code-block-ui-split",
       "2026-11-24-editor-primary-color",
       "2026-11-24-install-plate-ui-color",
       "2026-11-20-codemirror-code-keys",
@@ -252,7 +253,19 @@
       "2026-09-04-code-block-editing-and-syntax",
       "2026-09-03-huge-code-block-demo"
     ],
+    "code-block-container": ["2026-11-28-code-block-ui-split"],
+    "code-block-languages": ["2026-11-28-code-block-ui-split"],
+    "code-block-diagram": [
+      "2026-11-28-code-block-ui-split",
+      "2026-11-28-fix-link-dismiss-and-diagram-mount",
+      "2026-11-27-selector-depends-on",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-09-pass-view-root-to-key-questions",
+      "2026-10-16-code-block-diagrams"
+    ],
     "code-block": [
+      "2026-11-28-code-block-ui-split",
       "2026-11-28-code-block-webkit-word-selection",
       "2026-11-20-code-syntax-style",
       "2026-11-19-rtl-editor-ui",
@@ -273,6 +286,21 @@
       "2026-08-25-base-first-registry",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
+    ],
+    "code-block-static": [
+      "2026-11-28-code-block-ui-split",
+      "2026-11-20-code-syntax-style",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-19-text-block-direction",
+      "2026-10-26-remove-code-block-auto-language",
+      "2026-09-03-code-block-text-flow",
+      "2026-09-02-comments-ownership",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "code-block-codemirror-demo": [
+      "2026-11-28-code-block-ui-split",
+      "2026-09-04-code-block-editing-and-syntax"
     ],
     "column": [
       "2026-11-28-column-resize-unwrap-and-entrypoint",
@@ -400,14 +428,6 @@
       "2026-08-25-base-first-registry",
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
-    ],
-    "code-block-diagram": [
-      "2026-11-28-fix-link-dismiss-and-diagram-mount",
-      "2026-11-27-selector-depends-on",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-09-pass-view-root-to-key-questions",
-      "2026-10-16-code-block-diagrams"
     ],
     "fixed-toolbar": [
       "2026-11-28-fixed-toolbar-overflow-and-scroll-layout",
@@ -1263,16 +1283,6 @@
     "floating-toolbar-demo": ["2026-11-22-ui-sweep-fixes"],
     "demo": ["2026-11-22-ui-sweep-fixes"],
     "prompt-editor-demo": ["2026-11-21-prompt-editor"],
-    "code-block-static": [
-      "2026-11-20-code-syntax-style",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-19-text-block-direction",
-      "2026-10-26-remove-code-block-auto-language",
-      "2026-09-03-code-block-text-flow",
-      "2026-09-02-comments-ownership",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-flat-editor-registry"
-    ],
     "code-syntax-style": ["2026-11-20-code-syntax-style"],
     "docx-export": [
       "2026-11-20-code-syntax-style",
@@ -1904,7 +1914,6 @@
       "2026-09-06-registry-lifetime-repairs",
       "2025-11-20-biome-ultracite"
     ],
-    "code-block-codemirror-demo": ["2026-09-04-code-block-editing-and-syntax"],
     "code-block-views-demo": ["2026-09-04-code-block-editing-and-syntax"],
     "code-block-demo": [
       "2026-09-03-code-block-text-flow",
