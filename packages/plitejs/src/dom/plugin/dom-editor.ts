@@ -1845,6 +1845,24 @@ export const resolveDOMRangeInRoot = (
   return domRange;
 };
 
+const isTargetInsideVoid = <
+  V extends Value,
+  TPlugins extends readonly unknown[],
+>(
+  editor: DOMEditor<V, TPlugins>,
+  target: EventTarget | null
+): boolean => {
+  if (!DOMEditor.hasTarget(editor, target)) return false;
+
+  const editorNode = DOMEditor.resolveNode(editor, target);
+
+  return (
+    !!editorNode &&
+    NodeApi.isElement(editorNode) &&
+    editorIsVoid(editor, editorNode)
+  );
+};
+
 const DOMEditorImpl: DOMEditorInterface = {
   androidPendingDiffs: (editor) => EDITOR_TO_PENDING_DIFFS.get(editor),
 
@@ -2379,7 +2397,7 @@ const DOMEditorImpl: DOMEditorInterface = {
 
   hasSelectableTarget: (editor, target) =>
     DOMEditor.hasEditableTarget(editor, target) ||
-    DOMEditor.isTargetInsideNonReadonlyVoid(editor, target) ||
+    isTargetInsideVoid(editor, target) ||
     (DOMEditor.hasTarget(editor, target) && isSoftLineEndTarget(target)),
 
   hasTarget: (editor, target): target is DOMNode =>
@@ -2403,18 +2421,8 @@ const DOMEditorImpl: DOMEditorInterface = {
 
   isReadOnly: (editor) => !!IS_READ_ONLY.get(editor),
 
-  isTargetInsideNonReadonlyVoid: (editor, target) => {
-    if (IS_READ_ONLY.get(editor)) return false;
-    if (!DOMEditor.hasTarget(editor, target)) return false;
-
-    const editorNode = DOMEditor.resolveNode(editor, target);
-
-    return (
-      !!editorNode &&
-      NodeApi.isElement(editorNode) &&
-      editorIsVoid(editor, editorNode)
-    );
-  },
+  isTargetInsideNonReadonlyVoid: (editor, target) =>
+    !IS_READ_ONLY.get(editor) && isTargetInsideVoid(editor, target),
 
   resolveDOMNode: (editor, nodeOrKey) => {
     if (nodeOrKey === editor) return DOMEditor.editable(editor);

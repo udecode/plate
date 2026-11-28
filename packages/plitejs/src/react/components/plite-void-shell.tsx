@@ -3,6 +3,7 @@ import React, { type ReactNode, useRef } from 'react';
 import { isDOMElement } from '../../dom';
 import { isTextFieldTarget } from '../editable/input-controller';
 import { useEditableDOMHostFact } from '../hooks/use-claim-editable-dom-commit';
+import { useInheritedReadOnly } from '../hooks/use-editor-read-only';
 import { recordPliteReactRender } from '../render-profiler';
 import { EditorElement } from './plite-element';
 import { EditorSpacer } from './plite-spacer';
@@ -18,15 +19,18 @@ export const VoidShell = ({
   content: ReactNode;
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
+  const readOnly = useInheritedReadOnly();
 
   recordPliteReactRender({ kind: 'void' });
 
   return (
     <EditorElement
-      draggable
+      draggable={!readOnly}
       isVoid
       style={{ position: 'relative' }}
       onPointerDownCapture={(event) => {
+        if (readOnly) return;
+
         const { target } = event;
         const pressInEditable =
           isDOMElement(target) &&

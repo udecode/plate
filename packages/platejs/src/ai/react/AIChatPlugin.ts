@@ -79,6 +79,30 @@ import {
   withoutText,
 } from './aiOutputLanding.internal';
 
+const HEX = Array.from({ length: 256 }, (_, byte) =>
+  byte.toString(16).padStart(2, '0')
+);
+
+const createRequestId = (): string => {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+
+  if (typeof globalThis.crypto?.getRandomValues === 'function') {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  return `${HEX[bytes[0]]}${HEX[bytes[1]]}${HEX[bytes[2]]}${HEX[bytes[3]]}-${HEX[bytes[4]]}${HEX[bytes[5]]}-${HEX[bytes[6]]}${HEX[bytes[7]]}-${HEX[bytes[8]]}${HEX[bytes[9]]}-${HEX[bytes[10]]}${HEX[bytes[11]]}${HEX[bytes[12]]}${HEX[bytes[13]]}${HEX[bytes[14]]}${HEX[bytes[15]]}`;
+};
+
 export type AIMode = 'chat' | 'insert';
 
 type TComment = {
@@ -2501,7 +2525,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           return result;
         }
 
-        context.store.set({ _requestId: crypto.randomUUID() });
+        context.store.set({ _requestId: createRequestId() });
 
         void chat?.regenerate({
           body: {
@@ -2805,7 +2829,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           return discarded;
         }
 
-        context.store.set({ _requestId: crypto.randomUUID() });
+        context.store.set({ _requestId: createRequestId() });
         void chat?.sendMessage(promptText, {
           body: {
             ctx: {

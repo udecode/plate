@@ -1,7 +1,7 @@
 import type { Anchor } from '../core/anchor';
 import type { NodeList } from '../core/change/document-index';
 import { getEditorSchema } from '../core/editor-runtime';
-import { getChildList } from '../core/public-state';
+import { applyBuiltDocumentChange, getChildList } from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import {
   type Descendant,
@@ -93,7 +93,9 @@ export const maybeMergeAdjacentTextAt = (
     return;
   }
 
-  mergeNodes(editor, { at: path });
+  applyBuiltDocumentChange(editor, (builder, root) =>
+    builder.mergeNode(root, path)
+  );
 };
 
 const hasSingleChildNest = (

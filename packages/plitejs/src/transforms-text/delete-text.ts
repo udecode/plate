@@ -890,9 +890,7 @@ const reconcileDeleteStructure = (
     plan.preservedEmptyStartBlock
   );
 
-  if (plan.initialAt == null) {
-    maybeMergeAdjacentTextAt(editor, removal.endAnchor.resolve()?.path);
-  }
+  maybeMergeAdjacentTextAt(editor, removal.endAnchor.resolve()?.path);
 
   return keptIncompatibleBlockBoundary;
 };

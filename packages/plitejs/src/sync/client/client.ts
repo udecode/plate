@@ -28,6 +28,7 @@ import { bindSharedRoom } from '../../core/shared-room';
 import { withoutUpdateTagContext } from '../../core/update-context';
 import { REMOTE_UPDATE } from '../../core/update-policy';
 import type { AnyEditor, EditorCommit } from '../../interfaces/editor';
+import { randomUuid } from '../../internal/random-uuid';
 import {
   documentOf,
   sameDocument,
@@ -600,7 +601,7 @@ export const openSyncClient = async (
         ? oldest
         : undefined;
     const adopted = claimed.filter((claim) => claim !== opened);
-    const writerId = opened?.record.head.writer ?? crypto.randomUUID();
+    const writerId = opened?.record.head.writer ?? randomUuid();
     const release =
       opened?.release ?? (await locks.holdIfFree(lockOf(writerId)));
 

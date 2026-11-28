@@ -158,6 +158,7 @@ import { type Point, PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
+import { randomUuid } from '../internal/random-uuid';
 import {
   indexAuthoredChanges,
   type Occurrence,
@@ -1386,13 +1387,13 @@ export const createAuthoredPlugin = (
     object,
     Array<(state: AuthoredState) => void>
   >();
-  const createChangeId = options.createChangeId ?? (() => crypto.randomUUID());
+  const createChangeId = options.createChangeId ?? randomUuid;
   // Every saved tag, cut and `over` link carries an id, so ids stay short: a
   // format tag's only has to differ from the other tags on its key, and a
   // cut's from the other cuts in the document.
   const createTagId =
     options.createTagId ??
-    (() => crypto.randomUUID().replaceAll('-', '').slice(0, 12));
+    (() => randomUuid().replaceAll('-', '').slice(0, 12));
   const now = options.now ?? Date.now;
   let incarnationToken: string | undefined;
   let incarnations = 0;
@@ -1401,7 +1402,7 @@ export const createAuthoredPlugin = (
   const createIncarnationId =
     options.createIncarnationId ??
     (() => {
-      incarnationToken ??= crypto.randomUUID().slice(0, 8);
+      incarnationToken ??= randomUuid().slice(0, 8);
       incarnations += 1;
 
       return `${incarnationToken}:${incarnations}`;
