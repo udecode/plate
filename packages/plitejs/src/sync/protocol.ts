@@ -327,14 +327,30 @@ export const judgeV4DecisionSpan = ({
 }>): SyncVerdict => {
   let head = base;
   const acceptedWrittenIds = new Set<string>();
+  const acceptedSteps: V4Step[] = [];
 
   for (const entry of accepted) {
-    for (const id of writtenIdsOfSteps(
-      stepsOfChange(entry, head, isSetValued)
-    )) {
+    const entrySteps = stepsOfChange(entry, head, isSetValued);
+
+    for (const step of entrySteps) acceptedSteps.push(step);
+    for (const id of writtenIdsOfSteps(entrySteps)) {
       acceptedWrittenIds.add(id);
     }
     head = entry.apply(head);
+  }
+
+  const ownSteps = stepsOfChange(own, base, isSetValued);
+
+  for (const step of ownSteps) {
+    if (
+      step.op === 'join_nodes' &&
+      acceptedSteps.some(
+        (acc) =>
+          acc.op === 'split_node' && acc.id === step.source && acc.at === 0
+      )
+    ) {
+      return 'lost';
+    }
   }
 
   const mergedDoc = merged.apply(head);
@@ -362,7 +378,6 @@ export const judgeV4DecisionSpan = ({
     }
   }
 
-  const ownSteps = stepsOfChange(own, base, isSetValued);
   const mergedSteps = stepsOfChange(merged, head, isSetValued);
   const structuralOps = new Set([
     'insert_node',

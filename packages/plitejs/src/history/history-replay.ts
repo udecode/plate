@@ -1010,7 +1010,8 @@ const mapOneReplay = <T extends JsonEditorValue>(
           base,
           replay.change,
           recorded.after,
-          schema.isSetValued
+          schema.isSetValued,
+          stepRules.anchor && !exact
         )
       : false;
   const v4Mapped =

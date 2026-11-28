@@ -11,6 +11,7 @@ import {
   getInternalDocumentRootChange,
   getV4RegisterSteps,
   getV4Steps,
+  isExternalRootChangeOrigin,
   valueRoot,
   valueRootIndex,
   withInternalDocumentRootChange,
@@ -18,7 +19,12 @@ import {
 import type { DocumentIndex } from '../core/change/document-index';
 import { jsonEqual, type JsonRecord } from '../core/change/json';
 import { visitRootNames } from '../core/change/lazy-root';
-import type { DocumentSetPropertyResolver } from '../core/change/root-change';
+import { hasInternalDocumentChangeStepFirstAt } from '../core/change/replay-step-order';
+import {
+  type DocumentSetPropertyResolver,
+  keptRunsOf,
+  RootChange,
+} from '../core/change/root-change';
 import {
   isElementNode,
   isTextNode,
@@ -338,7 +344,8 @@ export const isPureV4FormatChange = (
   base: JsonEditorValue,
   change: DocumentChange,
   after: JsonEditorValue,
-  isSetValued: DocumentSetPropertyResolver
+  isSetValued: DocumentSetPropertyResolver,
+  allowAuthored = false
 ): boolean => {
   if (change.empty) return false;
 
@@ -352,7 +359,12 @@ export const isPureV4FormatChange = (
     }
   }
 
-  return steps.length > 0 && steps.every(isUserFormatStep);
+  return (
+    steps.length > 0 &&
+    steps.every((step) =>
+      allowAuthored ? step.op === 'format_text' : isUserFormatStep(step)
+    )
+  );
 };
 
 const tryRelocatedTextDeleteRebase = (
@@ -1217,6 +1229,93 @@ export const tryV4HistoryRebase = (
 ): V4HistoryRebaseResult | null => {
   if (hasRootLifecycleConflict(edit, step)) return null;
 
+  const isExternalYjs =
+    isExternalRootChangeOrigin(edit) ||
+    hasInternalDocumentChangeStepFirstAt(edit);
+
+  if (isExternalYjs) {
+    const attachedStepFast = getV4Steps(step);
+
+    if (
+      !attachedStepFast ||
+      attachedStepFast.length === 0 ||
+      !attachedStepFast.every((item) => item.op === 'format_text')
+    ) {
+      return null;
+    }
+
+    if (
+      attachedStepFast.every(isUserFormatStep) &&
+      getV4RegisterSteps(step).length === 0 &&
+      getInternalDocumentChangeRecords(step).size === 0
+    ) {
+      const roots = [
+        ...new Set([
+          ...getInternalDocumentChangeRootKeys(edit),
+          ...getInternalDocumentChangeRootKeys(step),
+        ]),
+      ];
+
+      if (roots.length === 1) {
+        const root = roots[0];
+        const beforeIndex = valueRootIndex(base, root);
+        const afterIndex = valueRootIndex(editAfter, root);
+        const direct = getInternalDocumentRootChange(edit, root);
+        const directRuns = direct
+          ? keptRunsOf(direct, 0, afterIndex.length)
+          : [];
+        const aligned = RootChange.aligned(beforeIndex, afterIndex);
+        const alignedRuns = aligned
+          ? keptRunsOf(aligned, 0, afterIndex.length)
+          : [];
+        const findIn = (
+          runs: ReadonlyArray<
+            Readonly<{ at: number; from: number; to: number }>
+          >,
+          pos: number
+        ): number | null => {
+          for (const run of runs) {
+            const len = run.to - run.from;
+
+            if (pos >= run.at && pos < run.at + len) {
+              return run.from + (pos - run.at);
+            }
+          }
+
+          return null;
+        };
+        const mapped = rebaseCarriedFormatViaLetters(
+          base,
+          step,
+          stepAfter,
+          {
+            letterAt: (pos) =>
+              findIn(directRuns, pos) ?? findIn(alignedRuns, pos),
+            root,
+          },
+          DocumentChange.empty,
+          edit,
+          editAfter,
+          isSetValued
+        );
+
+        if (mapped) {
+          const origTargets = new Set(
+            attachedStepFast
+              .filter((s): s is V4FormatTextStep => s.op === 'format_text')
+              .map((s) => s.target)
+          );
+          const mappedSteps = getV4Steps(mapped.b) ?? [];
+          const movedAcrossElements = mappedSteps.some(
+            (s) => s.op === 'format_text' && !origTargets.has(s.target)
+          );
+
+          if (movedAcrossElements) return mapped;
+        }
+      }
+    }
+  }
+
   const attachedEdit = getV4Steps(edit);
   const attachedStep = getV4Steps(step);
 
@@ -1249,6 +1348,19 @@ export const tryV4HistoryRebase = (
   const stepDocSteps = stepRawSteps.filter(
     (item) => item.op !== 'set_register'
   );
+
+  if (
+    !edit.empty &&
+    editDocSteps.length === 0 &&
+    editRegSteps.length === 0 &&
+    getInternalDocumentChangeRecords(edit).size === 0
+  ) {
+    return null;
+  }
+
+  if (isExternalYjs && !editDocSteps.every((s) => s.op === 'format_text')) {
+    return null;
+  }
 
   // If the incoming mapping is a synthetic same-place same-content ID swap
   // (propagated from a positional fallback on an upper undo step), re-target

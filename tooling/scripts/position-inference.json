@@ -4,8 +4,6 @@
     "packages/plitejs/src/core/change/carried-projection.ts",
     "packages/plitejs/src/core/change/carried-run.ts",
     "packages/plitejs/src/core/change/carry-program.ts",
-    "packages/plitejs/src/core/change/cross-rule.ts",
-    "packages/plitejs/src/core/change/cross.ts",
     "packages/plitejs/src/core/change/enclosure.ts",
     "packages/plitejs/src/core/change/join.ts",
     "packages/plitejs/src/core/change/lineage.ts",
@@ -16,7 +14,6 @@
     "packages/plitejs/src/core/change/transform.ts",
     "packages/plitejs/src/core/change/window.ts",
     "packages/plitejs/src/core/change/wrap-fidelity.ts",
-    "packages/plitejs/src/history/history-character-map.ts",
     "packages/plitejs/src/history/history-replay.ts",
     "packages/plitejs/src/history/history-state.ts"
   ],

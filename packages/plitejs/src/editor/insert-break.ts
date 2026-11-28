@@ -1,7 +1,9 @@
+import { authoredDocumentCapabilityPoint } from '../core/authored-document-capability';
 import { dispatchCommand } from '../core/command-registry';
 import { landTextWriteOutsideStruck } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
-import { getEditorSchema } from '../core/editor-runtime';
+import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
+import { getPluginContributions } from '../core/plugin-registry';
 import {
   applyBuiltDocumentChange,
   getActiveUpdateRoot,
@@ -61,6 +63,15 @@ const getNextSoftBreakRange = (
 const tryInsertBreakAtBlockStart = (
   editor: Parameters<EditorStaticApi['insertBreak']>[0]
 ): boolean => {
+  if (
+    getPluginContributions(
+      getEditorRuntimeOwner(editor),
+      authoredDocumentCapabilityPoint
+    ).length > 0
+  ) {
+    return false;
+  }
+
   const selection = editorGetSelection(editor);
 
   if (

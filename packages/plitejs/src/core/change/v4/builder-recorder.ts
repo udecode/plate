@@ -186,6 +186,12 @@ export class V4BuilderRecorder {
   ) {
     if (this.steps === null) return;
     if (
+      this.steps.some((step) => step.op === 'create_root' && step.root === root)
+    ) {
+      this.invalidate();
+      return;
+    }
+    if (
       deletedChildren &&
       this.steps.some((step) => step.op === 'insert_node')
     ) {
@@ -211,6 +217,7 @@ export class V4BuilderRecorder {
           const step = this.steps[i];
 
           if (step.op !== 'insert_node') continue;
+          if ('root' in step.to && step.to.root === root) continue;
           const insertedId = idOf(step.node);
 
           if (!insertedId || !deletedIds.has(insertedId)) continue;

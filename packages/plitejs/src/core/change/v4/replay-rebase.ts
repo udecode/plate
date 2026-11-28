@@ -445,10 +445,22 @@ const rewriteJoinEditOverRemoval = (
   removedIds: ReadonlySet<string>,
   touchedRoots: ReadonlySet<string>
 ): Readonly<{ kept: V4Step[]; skippedMoveIntoRemoved: boolean }> | null => {
+  const editRemovedIds = new Set<string>();
+
+  for (const step of editSteps) {
+    if (step.op === 'remove_node') editRemovedIds.add(step.id);
+  }
+
   const removedJoinPartnerIds = new Set<string>();
 
   for (const step of editSteps) {
     if (step.op !== 'join_nodes') continue;
+    if (
+      (removedIds.has(step.target) || removedIds.has(step.source)) &&
+      editRemovedIds.has(step.target)
+    ) {
+      return null;
+    }
     if (removedIds.has(step.target) && !removedIds.has(step.source)) {
       removedJoinPartnerIds.add(step.source);
     } else if (removedIds.has(step.source) && !removedIds.has(step.target)) {
@@ -943,12 +955,17 @@ const collectDeletedIds = (
 
         if (
           text.length > 0 &&
-          insertedNodes.some(
-            (inserted) =>
-              isElementNode(inserted) &&
-              isTextBearingElement(inserted) &&
-              textContentOfNode(inserted).includes(text)
-          )
+          insertedNodes.some((inserted) => {
+            if (!isElementNode(inserted) || !isTextBearingElement(inserted)) {
+              return false;
+            }
+            const insertedText = textContentOfNode(inserted);
+
+            return (
+              insertedText.length > 0 &&
+              (insertedText.includes(text) || text.includes(insertedText))
+            );
+          })
         ) {
           continue;
         }

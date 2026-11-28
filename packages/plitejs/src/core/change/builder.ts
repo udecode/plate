@@ -34,6 +34,7 @@ import {
   getInternalDocumentRootChange,
   getV4RegisterSteps,
   isInternalRecordsOnlyChange,
+  markExternalRootChangeOrigin,
   rootsComposeRebuilds,
   valueRootIndex,
 } from './document-change';
@@ -542,6 +543,7 @@ export class ChangeDraft {
   private readonly sourceIndexes = new Map<string, DocumentIndex>();
   private readonly preparationAuthority: object;
   private readonly recordV4: boolean;
+  private externalRootChangeApplied = false;
   private readonly trackChanges: boolean;
   readonly tracksPlaces: boolean;
   /** Whether a collaboration binding reads which letters are new or moved. */
@@ -651,6 +653,9 @@ export class ChangeDraft {
           authoritative: true,
           isSetValued: this.isSetValued,
         });
+        if (this.externalRootChangeApplied) {
+          markExternalRootChangeOrigin(accumulated);
+        }
       }
     }
 
@@ -662,17 +667,19 @@ export class ChangeDraft {
     indexedBefore: ReadonlyMap<string, DocumentIndex>,
     indexedAfter: ReadonlyMap<string, DocumentIndex>
   ) {
-    if (!this.v4Recorder.active || change.empty) return;
+    if (change.empty) return;
 
     const attached = getAttachedV4Steps(change);
 
     if (attached) {
-      this.v4Recorder.appendRaw(attached);
+      if (this.v4Recorder.active) this.v4Recorder.appendRaw(attached);
       return;
     }
 
     if (documentChangeFillsOnlyMissingElementIds(change, indexedBefore)) {
-      this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
+      if (this.v4Recorder.active) {
+        this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
+      }
       return;
     }
 
@@ -684,14 +691,19 @@ export class ChangeDraft {
         change.createRoots.has(root)
       )
     ) {
-      for (const root of change.createRoots) {
-        const afterIndex = indexedAfter.get(root) ?? this.getIndex(root);
+      if (this.v4Recorder.active) {
+        for (const root of change.createRoots) {
+          const afterIndex = indexedAfter.get(root) ?? this.getIndex(root);
 
-        this.v4Recorder.recordCreateRoot(root, afterIndex.value);
+          this.v4Recorder.recordCreateRoot(root, afterIndex.value);
+        }
       }
       return;
     }
 
+    if (this.tracksLetters) {
+      this.externalRootChangeApplied = true;
+    }
     this.v4Recorder.invalidate();
   }
 

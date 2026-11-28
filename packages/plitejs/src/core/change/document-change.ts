@@ -660,6 +660,21 @@ const DOCUMENT_CHANGE_REGISTER_STEPS = new WeakMap<
   readonly V4RegisterStep[]
 >();
 
+const EXTERNAL_ROOT_CHANGE_ORIGIN = new WeakSet<DocumentChange>();
+
+/** @internal */
+export const markExternalRootChangeOrigin = (
+  change: DocumentChange
+): DocumentChange => {
+  EXTERNAL_ROOT_CHANGE_ORIGIN.add(change);
+
+  return change;
+};
+
+/** @internal */
+export const isExternalRootChangeOrigin = (change: DocumentChange): boolean =>
+  EXTERNAL_ROOT_CHANGE_ORIGIN.has(change);
+
 /** @internal */
 export const getV4RegisterSteps = (
   change: DocumentChange
@@ -3174,6 +3189,8 @@ const mayRebaseV4ForReplay = (
   if (
     a.empty ||
     b.empty ||
+    isExternalRootChangeOrigin(a) ||
+    isExternalRootChangeOrigin(b) ||
     a.createRoots.size > 0 ||
     a.deleteRoots.size > 0 ||
     b.createRoots.size > 0 ||
