@@ -273,6 +273,39 @@ const href = getLinkHref(url, { allowedSchemes });
 </APIReturns>
 </API>
 
+### `linkUrlValidation`
+
+Schema property validation contract for a stored navigation destination. Pass it to `property.string(linkUrlValidation)` (or spread it with `{ required: true, ...linkUrlValidation }`) on custom plugins that store a navigation URL, such as a tag chip, so they enforce the same storage floor and schema `validationVersion` as `LinkPlugin`.
+
+```tsx
+import { definePlugin, linkUrlValidation, property } from 'platejs';
+
+export const TagPlugin = definePlugin('tag', {
+  schema: {
+    element: {
+      properties: {
+        url: property.string(linkUrlValidation),
+        value: property.string({ required: true }),
+      },
+      void: 'inline',
+    },
+  },
+});
+```
+
+`linkUrlValidation.validate(value)` accepts the empty string, relative URLs outside `//`, and valid absolute URLs outside the script-capable floor (`javascript:`, `vbscript:`, `data:`, `blob:`, `filesystem:`), rejecting control characters and backslashes. Use `getLinkHref` when rendering to enforce `allowedSchemes`.
+
+<API name="linkUrlValidation">
+<APIAttributes>
+  <APIItem name="validate" type="(value: unknown) => value is string">
+    Returns `true` when `value` passes the stored navigation URL floor.
+  </APIItem>
+  <APIItem name="validationVersion" type="number">
+    Version tracked in the editor's compiled schema fingerprint.
+  </APIItem>
+</APIAttributes>
+</API>
+
 ## Registry link UI
 
 The copied `link` item owns floating UI state (`ui: closed | view | form`), positioning, hotkeys, validation, lock and suggestion edit guards, and toolbar commands. It exports the app-local `linkPlugin` descriptor and `LinkFloatingToolbar` component.

@@ -664,21 +664,33 @@ export const BaseLinkPlugin = definePlugin('link', {
               }
               changed = true;
             }
+            let replacedLiveLinkText = false;
+
             if (nextText?.length && nextText !== tx.text.string(linkPath)) {
+              const liveSelectionInLink =
+                liveSelection !== null &&
+                PathApi.isAncestor(linkPath, liveSelection.anchor.path) &&
+                PathApi.isAncestor(linkPath, liveSelection.focus.path);
+
               tx.nodes.replaceChildren(
                 [{ ...link.children[0], text: nextText }],
                 { at: linkPath }
               );
               changed = true;
 
-              if (at === undefined) {
+              if (at === undefined || liveSelectionInLink) {
                 const end = tx.points.end(linkPath);
 
-                if (end) tx.selection.set(end);
+                if (end) {
+                  tx.selection.set(end);
+                  replacedLiveLinkText = true;
+                }
               }
             }
 
-            restoreSelection();
+            if (!replacedLiveLinkText) {
+              restoreSelection();
+            }
 
             return changed ? true : undefined;
           }
@@ -720,7 +732,7 @@ export const BaseLinkPlugin = definePlugin('link', {
                   url,
                 },
                 {
-                  ...(at === undefined ? {} : { at: targetLocation }),
+                  ...(at === undefined ? {} : { at: targetRange }),
                   replace: true,
                   split: true,
                 }
@@ -1076,17 +1088,40 @@ const pasteAutolinkRule = (
 
         if (!leaf) return decline();
 
+        const linkType = editor.plugin(BaseLinkPlugin).schema.type;
         const linkNode = {
           children: [{ ...leaf[0], text: match.label }],
-          type: editor.plugin(BaseLinkPlugin).schema.type,
+          type: linkType,
           url: match.url,
         };
 
-        if (!tx.schema.canWrap(linkNode, { at: start })) {
+        if (!tx.schema.canWrap(linkNode, { at: start, replace: true })) {
           return decline();
         }
 
         tx.fragment.delete();
+
+        const survivingLink = tx.nodes.above({ type: BaseLinkPlugin });
+
+        if (survivingLink) {
+          const caret = tx.selection();
+
+          if (caret && tx.points.isEnd(caret.focus, survivingLink[1])) {
+            exitLinkEnd(tx, linkType);
+          } else if (
+            caret &&
+            tx.points.isStart(caret.anchor, survivingLink[1])
+          ) {
+            const beforeLink = tx.points.before(survivingLink[1]);
+
+            if (beforeLink) {
+              tx.selection.set(beforeLink);
+            } else {
+              tx.nodes.insert({ text: '' }, { at: survivingLink[1] });
+              tx.selection.set({ offset: 0, path: survivingLink[1] });
+            }
+          }
+        }
 
         return tx.fragment.replace([linkNode]) ? undefined : decline();
       }

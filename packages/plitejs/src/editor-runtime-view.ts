@@ -123,6 +123,7 @@ import type {
   EditorSelectionBlockOptions,
   EditorSnapshot,
   EditorCommit,
+  EditorStateSchemaApi,
   EditorStateSliceApi,
   EditorStateView,
   EditorStateViewApi,
@@ -1526,7 +1527,9 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.range(...args)),
     read: (fn) =>
       withDocumentViewRead(getViewEditor() ?? editor, () =>
-        baseRuntime.read((state) => fn(projectState(state)))
+        baseRuntime.read((state) =>
+          withRootRead(editor, viewState, () => fn(projectState(state)))
+        )
       ),
     hasSurface: () => isShown(viewState),
     mountedIn: viewState.mountedIn,
@@ -1792,8 +1795,20 @@ export const createEditorViewRuntime = <
   const viewRead = createEditorReadApi<V, TPlugins>((fn) =>
     viewRuntime.read((state) => fn(state as EditorStateView<V, TPlugins>))
   );
-  // Compiled schema methods belong to the shared model, including layered descriptor accessors.
-  viewRead.schema = sourceEditor.read.schema;
+  // Compiled schema methods belong to the shared model, including layered
+  // descriptor accessors; only canWrap scopes reads to this view's root/projection.
+  const viewSchemaCanWrap: EditorStateSchemaApi<V>['canWrap'] = (
+    element,
+    wrapOptions
+  ) => viewRuntime.read((state) => state.schema.canWrap(element, wrapOptions));
+
+  viewRead.schema = new Proxy(sourceEditor.read.schema, {
+    get(target, key, receiver) {
+      if (key === 'canWrap') return viewSchemaCanWrap;
+
+      return Reflect.get(target, key, receiver);
+    },
+  });
   const viewUpdate = createEditorUpdateApi<V, TPlugins>(
     (fn, policy) => {
       assertViewWritable(viewState);

@@ -267,6 +267,39 @@ const href = getLinkHref(url, { allowedSchemes });
 </APIReturns>
 </API>
 
+### `linkUrlValidation`
+
+用于已存储导航地址的 schema 属性校验契约。在存储导航 URL 的自定义插件（例如标签 chip）上将其传给 `property.string(linkUrlValidation)`（或展开为 `{ required: true, ...linkUrlValidation }`），即可执行与 `LinkPlugin` 相同的存储安全下限与 schema `validationVersion`。
+
+```tsx
+import { definePlugin, linkUrlValidation, property } from 'platejs';
+
+export const TagPlugin = definePlugin('tag', {
+  schema: {
+    element: {
+      properties: {
+        url: property.string(linkUrlValidation),
+        value: property.string({ required: true }),
+      },
+      void: 'inline',
+    },
+  },
+});
+```
+
+`linkUrlValidation.validate(value)` 接受空字符串、不以 `//` 开头的相对 URL，以及不在可执行脚本下限（`javascript:`、`vbscript:`、`data:`、`blob:`、`filesystem:`）内的有效绝对 URL，并拒绝控制字符和反斜杠。渲染时请使用 `getLinkHref` 按 `allowedSchemes` 检查。
+
+<API name="linkUrlValidation">
+<APIAttributes>
+  <APIItem name="validate" type="(value: unknown) => value is string">
+    当 `value` 通过已存储导航 URL 下限时返回 `true`。
+  </APIItem>
+  <APIItem name="validationVersion" type="number">
+    纳入编辑器编译 schema 指纹的校验版本号。
+  </APIItem>
+</APIAttributes>
+</API>
+
 ## Registry 链接界面
 
 复制的 `link` 项负责浮动界面状态（`ui: closed | view | form`）、定位、热键、输入校验、锁定与建议编辑保护以及工具栏命令。它导出应用本地的 `linkPlugin` 描述符和 `LinkFloatingToolbar` 组件。

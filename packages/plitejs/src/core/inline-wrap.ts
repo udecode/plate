@@ -200,6 +200,16 @@ const withInlineTextSpacers = (
   return spaced;
 };
 
+export const hasReadOnlyElement = (
+  schema: ReturnType<typeof getEditorSchema>,
+  node: Descendant
+): boolean => {
+  if (!ElementApi.isElement(node)) return false;
+  if (schema.isReadOnly(node)) return true;
+
+  return node.children.some((child) => hasReadOnlyElement(schema, child));
+};
+
 const planBlockInlineWrap = (
   editor: Editor,
   wrapper: Element,
@@ -219,7 +229,7 @@ const planBlockInlineWrap = (
       status: 'skip',
     };
   }
-  if (hasNonWritableAt(editor, trimmed)) {
+  if (hasNonWritableAt(editor, trimmed, { root })) {
     return { blockPath, parentPath: blockPath, range: trimmed, status: 'skip' };
   }
 
@@ -348,9 +358,16 @@ const planBlockInlineWrap = (
             )
           : child.children;
 
-      wrappedNodes.push(
-        ...flattenWrapperChildren(middleChildren, wrapper.type)
+      const flattenedMiddle = flattenWrapperChildren(
+        middleChildren,
+        wrapper.type
       );
+
+      if (flattenedMiddle.some((node) => hasReadOnlyElement(schema, node))) {
+        return { blockPath, parentPath, range: trimmed, status: 'skip' };
+      }
+
+      wrappedNodes.push(...flattenedMiddle);
 
       if (endSplits) {
         const afterChildren = sliceElementChildren(
@@ -366,6 +383,10 @@ const planBlockInlineWrap = (
       }
 
       continue;
+    }
+
+    if (hasReadOnlyElement(schema, child)) {
+      return { blockPath, parentPath, range: trimmed, status: 'skip' };
     }
 
     wrappedNodes.push(child);
@@ -491,7 +512,7 @@ const canInsertInlineAtPoint = (
   const { replace, root } = options;
   const schema = getEditorSchema(editor);
 
-  if (hasNonWritableAt(editor, point)) return false;
+  if (hasNonWritableAt(editor, point, { root })) return false;
 
   const blockEntry = editorAbove(editor, {
     at: point,
@@ -621,7 +642,7 @@ export const canWrapAtTarget = (
   if (SelectionApi.isNode(at)) return false;
 
   if (!schema.isInline(element)) {
-    if (hasNonWritableAt(editor, at)) return false;
+    if (hasNonWritableAt(editor, at, { root })) return false;
 
     const { children: _children, ...shell } = element;
 
@@ -692,11 +713,12 @@ export const canWrapAtTarget = (
       });
     }
 
+    const split = options.split ?? true;
     const { children: _children, ...shell } = element;
     const plans = planInlineWrap(editor, { ...shell, children: [] }, at, {
-      replace,
+      replace: replace && split,
       root,
-      split: options.split ?? true,
+      split,
     });
 
     if (plans.some((plan) => plan.status === 'veto')) return false;
@@ -713,11 +735,12 @@ export const canWrapAtTarget = (
     });
   }
 
+  const split = options.split ?? true;
   const { children: _children, ...shell } = element;
   const plans = planInlineWrap(editor, { ...shell, children: [] }, range, {
-    replace,
+    replace: replace && split,
     root,
-    split: options.split ?? true,
+    split,
   });
 
   if (plans.some((plan) => plan.status === 'veto')) return false;

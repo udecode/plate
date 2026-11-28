@@ -18,7 +18,14 @@ import {
   Text,
   Unlink,
 } from 'lucide-react';
-import { getLinkHref, LinkRules, type NodeKey, type Path } from 'platejs';
+import {
+  getLinkHref,
+  LinkRules,
+  NodeApi,
+  type NodeKey,
+  type Path,
+  SelectionApi,
+} from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import { BaseLockPlugin } from 'platejs/lock';
 import {
@@ -112,16 +119,21 @@ type FloatingLinkState =
       editorId: string;
       error: string | null;
       initialTarget: string | undefined;
+      initialText: string;
       initialUrl: string;
       kind: 'form';
       linkKey: NodeKey | null;
+      linkRoot: string | undefined;
       mode: 'edit' | 'insert';
       newTab: boolean;
       newTabDirty: boolean;
+      openId: number;
       text: string;
       url: string;
       urlDirty: boolean;
     };
+
+let nextFormOpenId = 0;
 
 const initialLinkState: { ui: FloatingLinkState } = { ui: { kind: 'closed' } };
 
@@ -203,16 +215,23 @@ export const linkPlugin = LinkPlugin.extend({
        * Whether the link at `at` takes edits: its block is not locked and, in
        * a reviewed document, the link outlives its pending changes.
        */
-      canEditLink: (at: Path) => {
+      canEditLink: (at: Path, root?: string) => {
+        const rootedPoint = root
+          ? { offset: 0, path: [...at, 0], root }
+          : undefined;
         const lock = editor.plugin(BaseLockPlugin);
 
-        if (lock.installed && lock.read.isLocked(at)) return false;
+        if (lock.installed && lock.read.isLocked(rootedPoint ?? at)) {
+          return false;
+        }
 
         const authored = editor.plugin(AuthoredPlugin);
 
         if (!authored.installed) return true;
 
-        const link = editor.read.nodes.get(at, { type: LinkPlugin })?.[0];
+        const link = rootedPoint
+          ? editor.read.nodes.above({ at: rootedPoint, type: LinkPlugin })?.[0]
+          : editor.read.nodes.get(at, { type: LinkPlugin })?.[0];
 
         if (!link) return false;
 
@@ -237,7 +256,12 @@ export const linkPlugin = LinkPlugin.extend({
         }
 
         for (let depth = at.length - 1; depth > 0; depth -= 1) {
-          const ancestor = editor.read.nodes.get(at.slice(0, depth))?.[0];
+          const ancestor = rootedPoint
+            ? editor.read.nodes.above({
+                at: rootedPoint,
+                match: (_node, path) => path.length === depth,
+              })?.[0]
+            : editor.read.nodes.get(at.slice(0, depth))?.[0];
           const review = ancestor ? reviewOf(ancestor) : undefined;
 
           if (
@@ -323,34 +347,42 @@ export const linkPlugin = LinkPlugin.extend({
           }
 
           // The link the form opened on, wherever the selection went since.
-          const path =
+          const entry =
             ui.linkKey === null
               ? undefined
-              : editor.read.nodes.get(ui.linkKey, { type: linkPlugin })?.[1];
+              : editor.read.nodes.get(ui.linkKey, { type: linkPlugin });
 
-          if (!path || !api.canEditLink(path)) return LOCKED_LINK;
+          if (!entry || !api.canEditLink(entry[1], ui.linkRoot)) {
+            return LOCKED_LINK;
+          }
+
+          const [liveLink, path] = entry;
+          const targetAt = ui.linkRoot
+            ? { offset: 0, path: [...path, 0], root: ui.linkRoot }
+            : path;
 
           // A stored link the policy would refuse today still takes a new
           // label or target, as long as its address is left alone.
-          const unchanged =
+          const isUneditedUrl =
             !ui.urlDirty ||
-            ui.url === ui.initialUrl ||
-            ui.url === api.decodeUrl(ui.initialUrl);
-          const draft = unchanged
-            ? { url: ui.initialUrl }
+            ui.url === liveLink.url ||
+            ui.url === api.decodeUrl(liveLink.url);
+          const draft = isUneditedUrl
+            ? { url: liveLink.url }
             : classifyLinkDraft(ui.url, store.get('allowedSchemes'));
 
           if (draft.url === undefined) return draft.error;
 
           // An unchanged link saves nothing, which is not a refusal.
+          const urlMatchesLive = draft.url === liveLink.url;
           const saved = update.upsert({
-            at: path,
+            at: targetAt,
             text: ui.text,
             url: draft.url,
             ...(ui.newTabDirty ? { target: ui.newTab ? '_blank' : null } : {}),
           });
 
-          return saved || unchanged ? null : REFUSED_LINK;
+          return saved || urlMatchesLive ? null : REFUSED_LINK;
         };
         const error = save();
 
@@ -379,23 +411,29 @@ export const linkPlugin = LinkPlugin.extend({
         if (!entry) return undefined;
 
         const [link, path] = entry;
+        const linkRoot = SelectionApi.root(selection);
 
-        if (!api.canEditLink(path)) return false;
+        if (!api.canEditLink(path, linkRoot)) return false;
 
-        const linkText = editor.read.text.string(path);
+        const linkText = NodeApi.string(link);
+        const initialText = linkText === link.url ? '' : linkText;
 
+        nextFormOpenId += 1;
         store.set({
           ui: {
             editorId: editor.id,
             error: null,
             initialTarget: link.target,
+            initialText,
             initialUrl: link.url,
             kind: 'form',
             linkKey: editor.key(link),
+            linkRoot,
             mode: 'edit',
             newTab: link.target === '_blank',
             newTabDirty: false,
-            text: linkText === link.url ? '' : linkText,
+            openId: nextFormOpenId,
+            text: initialText,
             url: link.url,
             urlDirty: false,
           },
@@ -429,18 +467,24 @@ export const linkPlugin = LinkPlugin.extend({
           return undefined;
         }
 
+        const initialText = editor.read.text.string();
+
+        nextFormOpenId += 1;
         store.set({
           ui: {
             editorId: editor.id,
             error: null,
             initialTarget: undefined,
+            initialText,
             initialUrl: '',
             kind: 'form',
             linkKey: null,
+            linkRoot: undefined,
             mode: 'insert',
             newTab: false,
             newTabDirty: false,
-            text: editor.read.text.string(),
+            openId: nextFormOpenId,
+            text: initialText,
             url: '',
             urlDirty: false,
           },
@@ -454,15 +498,21 @@ export const linkPlugin = LinkPlugin.extend({
           selection &&
           editor.read.nodes.above({ at: selection, type: linkPlugin });
 
-        if (
-          !entry ||
-          editor.read.view.isReadOnly() ||
-          !api.canEditLink(entry[1])
-        ) {
+        if (!entry || editor.read.view.isReadOnly()) {
           return undefined;
         }
 
-        update.unwrap({ at: entry[1] });
+        const linkRoot = SelectionApi.root(selection);
+
+        if (!api.canEditLink(entry[1], linkRoot)) {
+          return undefined;
+        }
+
+        update.unwrap({
+          at: linkRoot
+            ? { offset: 0, path: [...entry[1], 0], root: linkRoot }
+            : entry[1],
+        });
         api.hide();
         editor.api.dom.focus();
 
@@ -507,19 +557,11 @@ function FloatingLinkInput({
   field,
   ...props
 }: React.ComponentPropsWithRef<'input'> & { field: 'text' | 'url' }) {
-  const { api, store } = useEditor().plugin(linkPlugin);
-  const [defaultValue] = React.useState(() => {
-    const ui = store.get('ui');
-
-    if (ui.kind !== 'form') return '';
-
-    return field === 'url' ? api.decodeUrl(ui.url) : ui.text;
-  });
+  const { store } = useEditor().plugin(linkPlugin);
 
   return (
     <Input
       className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent aria-invalid:ring-0"
-      defaultValue={defaultValue}
       data-editor-keep-selection-visible
       onChange={(event) => {
         const ui = store.get('ui');
@@ -557,7 +599,9 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
       if (!entry) return null;
 
       return {
-        editable: innerEditor.plugin(linkPlugin).api.canEditLink(entry[1]),
+        editable: innerEditor
+          .plugin(linkPlugin)
+          .api.canEditLink(entry[1], SelectionApi.root(selection)),
         key: innerEditor.key(entry[0]),
         url: entry[0].url,
       };
@@ -674,10 +718,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
       })}
     >
       {ui.kind === 'form' ? (
-        <LinkForm
-          key={`${ui.mode}:${ui.linkKey ?? ''}`}
-          shown={floating.shown && !!geometry}
-        />
+        <LinkForm key={ui.openId} shown={floating.shown && !!geometry} />
       ) : (
         selectedLink && (
           <LinkActions
@@ -750,7 +791,7 @@ function LinkActions({ editable, url }: { editable: boolean; url: string }) {
         type="button"
         variant="ghost"
         onClick={() => {
-          void navigator.clipboard.writeText(url).then(
+          void navigator.clipboard?.writeText(url).then(
             () => {
               setCopied(true);
             },
@@ -845,6 +886,7 @@ function LinkForm({ shown }: { shown: boolean }) {
           aria-label="Link"
           autoCapitalize="none"
           autoCorrect="off"
+          defaultValue={api.decodeUrl(ui.initialUrl)}
           enterKeyHint="go"
           field="url"
           inputMode="url"
@@ -869,6 +911,7 @@ function LinkForm({ shown }: { shown: boolean }) {
         </div>
         <FloatingLinkInput
           aria-label="Text to display"
+          defaultValue={ui.initialText}
           enterKeyHint="go"
           field="text"
           placeholder="Text to display"

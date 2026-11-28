@@ -1,6 +1,7 @@
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   contentPaths,
+  hasReadOnlyElement,
   planInlineWrap,
   trimToContent,
 } from '../core/inline-wrap';
@@ -222,13 +223,38 @@ export const wrapNodes = ((
           const replacePaths = Array.from(
             getNodes(editor, {
               at: trimmedAfterSplit,
-              match: (node, path) =>
-                ElementApi.isElement(node) &&
-                node.type === wrapper.type &&
-                path.length > postSplitParent.length &&
-                PathApi.isAncestor(postSplitParent, path) &&
-                path[postSplitParent.length] >= firstIndex &&
-                path[postSplitParent.length] <= lastIndex,
+              match: (node, path) => {
+                if (
+                  !ElementApi.isElement(node) ||
+                  node.type !== wrapper.type ||
+                  path.length <= postSplitParent.length ||
+                  !PathApi.isAncestor(postSplitParent, path) ||
+                  path[postSplitParent.length] < firstIndex ||
+                  path[postSplitParent.length] > lastIndex
+                ) {
+                  return false;
+                }
+
+                for (
+                  let ancestorDepth = postSplitParent.length + 1;
+                  ancestorDepth < path.length;
+                  ancestorDepth += 1
+                ) {
+                  const [ancestor] = getNode(
+                    editor,
+                    path.slice(0, ancestorDepth)
+                  );
+
+                  if (
+                    !ElementApi.isElement(ancestor) ||
+                    ancestor.type !== wrapper.type
+                  ) {
+                    return false;
+                  }
+                }
+
+                return true;
+              },
               mode: 'all',
             }),
             ([, path]) => path
@@ -275,9 +301,10 @@ export const wrapNodes = ((
         const mapped = selectionAnchor.release();
 
         if (mapped) {
-          const directed = wasBackward
-            ? { anchor: mapped.focus, focus: mapped.anchor }
-            : mapped;
+          const directed =
+            wasBackward !== RangeApi.isBackward(mapped)
+              ? { anchor: mapped.focus, focus: mapped.anchor }
+              : mapped;
 
           withoutPlacement(editor, () => select(editor, directed));
         }
@@ -357,13 +384,19 @@ export const wrapNodes = ((
       const [parent] = getNode(editor, span.commonPath);
       const depth = span.commonPath.length;
 
-      return NodeApi.isElement(parent) &&
+      if (!NodeApi.isElement(parent)) return null;
+
+      const movedChildren = parent.children.slice(
+        span.firstPath[depth],
+        span.lastPath[depth] + 1
+      );
+
+      return !movedChildren.some((child) =>
+        hasReadOnlyElement(schema, child)
+      ) &&
         schema.canWrapChildren(parent, {
           ...wrapper,
-          children: parent.children.slice(
-            span.firstPath[depth],
-            span.lastPath[depth] + 1
-          ),
+          children: movedChildren,
         })
         ? span
         : null;

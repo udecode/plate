@@ -22,6 +22,8 @@ import { MAIN_ROOT_KEY } from './public-root';
 import {
   getActiveEditorTransaction,
   getEditorDocumentRoots,
+  getEditorReadDepth,
+  getEditorStateView,
   getReadProjection,
   resolveLocationRoot,
   withEditorRootChildren,
@@ -312,17 +314,17 @@ const getNodeInRoot = (
 export const hasNonWritableAt = (
   editor: AnyEditor,
   at: Location | NodeSelection | NodeKey | null | undefined,
-  { includeReadOnly = true }: Readonly<{ includeReadOnly?: boolean }> = {}
+  {
+    includeReadOnly = true,
+    root,
+  }: Readonly<{ includeReadOnly?: boolean; root?: RootKey }> = {}
 ): boolean => {
   if (at == null) return false;
   if (!includeReadOnly && !hasNonWritableContributors(editor)) return false;
 
-  const evaluate = (
-    state: Pick<AnyEditor['read'], 'nodes'>,
-    inActiveTransaction: boolean
-  ): boolean => {
+  const evaluate = (state: Pick<AnyEditor['read'], 'nodes'>): boolean => {
     const roots = getEditorDocumentRoots(editor);
-    const defaultRoot = resolveLocationRoot(editor, at);
+    const defaultRoot = root ?? resolveLocationRoot(editor, at);
 
     if (RangeApi.isRange(at)) {
       const anchorRoot = at.anchor.root ?? defaultRoot;
@@ -364,9 +366,7 @@ export const hasNonWritableAt = (
             voids: true,
           });
 
-        return inActiveTransaction
-          ? withEditorRootChildren(editor, anchorRoot, scan)
-          : scan();
+        return withEditorRootChildren(editor, anchorRoot, scan);
       }
 
       return false;
@@ -444,10 +444,18 @@ export const hasNonWritableAt = (
   const activeTransaction = getActiveEditorTransaction(editor);
 
   if (activeTransaction) {
-    return evaluate(activeTransaction, true);
+    return evaluate(activeTransaction);
+  }
+
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (getReadProjection(owner) || getEditorReadDepth(owner) > 0) {
+    return withEditorViewRead(editor, () =>
+      evaluate(getEditorStateView(editor))
+    );
   }
 
   return editor.read((state) =>
-    withEditorViewRead(editor, () => evaluate(state, false))
+    withEditorViewRead(editor, () => evaluate(state))
   );
 };
