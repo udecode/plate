@@ -5,6 +5,21 @@ on:
     branches:
       - main
       - next
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Beta action on refs/pstack/local-ci-green (next only)'
+        required: false
+        default: 'sync'
+        type: choice
+        options:
+          - sync
+          - auto
+          - manual
+  schedule:
+    # Daily morning check (07:00 UTC) so a due beta ships hands-free even when
+    # Local CI already went green and next has had no new pushes.
+    - cron: '0 7 * * *'
 
 permissions: {}
 
@@ -17,7 +32,10 @@ jobs:
     name: Release and changelog
     runs-on: ubuntu-latest
     if: >-
-      (github.repository == 'udecode/plate' || vars.RELEASE_VERSION_PR_TEST == 'true') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next') && !contains(github.event.head_commit.message, '[skip release]')
+      (github.repository == 'udecode/plate' || vars.RELEASE_VERSION_PR_TEST == 'true') && (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next') && !contains(github.event.head_commit.message, '[skip release]')) ||
+        ((github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && github.ref == 'refs/heads/next')
+      )
     permissions:
       actions: read
       contents: write
@@ -25,9 +43,9 @@ jobs:
       pull-requests: write
       id-token: write
     outputs:
-      published: ${{ steps.changesets.outputs.published }}
-      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
-      versionPullRequestNumber: ${{ steps.changesets.outputs.pullRequestNumber }}
+      published: ${{ steps.changesets.outputs.published || steps.beta_publish.outputs.published || 'false' }}
+      publishedPackages: ${{ steps.changesets.outputs.published == 'true' && steps.changesets.outputs.publishedPackages || steps.beta_publish.outputs.publishedPackages || '[]' }}
+      versionPullRequestNumber: ${{ steps.changesets.outputs.pullRequestNumber || steps.beta_version.outputs.pullRequestNumber || '' }}
 
     steps:
       - name: Generate App Token
@@ -47,6 +65,7 @@ jobs:
 
       - name: 🔎 Detect auto-release opt-in
         id: auto_release
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
@@ -159,70 +178,50 @@ jobs:
           echo "::error::Unsupported release branch: $GITHUB_REF_NAME"
           exit 1
 
+      - name: 🧭 Plan beta release on green tip
+        id: beta_plan
+        if: ${{ steps.release_channel.outputs.channel == 'beta' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          INPUT_MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+
+          # Keep the workflow's own release helpers in RUNNER_TEMP so checking out
+          # an older green commit never loses the current runner script.
+          mkdir -p "$RUNNER_TEMP/release-scripts"
+          cp tooling/scripts/beta-release.mjs \
+             tooling/scripts/beta-release-ci.mjs \
+             tooling/scripts/local-ci-events.mjs \
+             tooling/scripts/step-failures.mjs \
+             "$RUNNER_TEMP/release-scripts/"
+
+          node "$RUNNER_TEMP/release-scripts/beta-release-ci.mjs" plan
+
+      - name: 🔀 Checkout beta target commit
+        if: ${{ steps.release_channel.outputs.channel == 'beta' && steps.beta_plan.outputs.action != 'noop' && steps.beta_plan.outputs.target_sha != '' }}
+        env:
+          TARGET_SHA: ${{ steps.beta_plan.outputs.target_sha }}
+        run: |
+          set -euo pipefail
+          git checkout --detach "$TARGET_SHA"
+          echo "Checked out beta target commit $(git rev-parse HEAD)."
+
       - name: 📦 Monorepo install
+        if: ${{ steps.release_channel.outputs.channel != 'beta' || steps.beta_plan.outputs.action != 'noop' }}
         uses: ./.github/actions/pnpm-install
         with:
           link-workspace-packages: 'true'
 
-      - name: ⏸️ Hold back changesets until the beta is published
-        id: hold_back
-        if: ${{ steps.release_channel.outputs.channel == 'beta' }}
-        run: |
-          set -euo pipefail
-
-          # changesets/action publishes only with no changeset pending, so a late one would turn this run into another version PR refresh.
-          fixed_group_version="$(jq -r .version packages/platejs/package.json)"
-
-          if lookup="$(npm view "platejs@${fixed_group_version}" version --json 2>/dev/null)"; then
-            echo "platejs@${fixed_group_version} is on npm, so pending changesets stay."
-            echo "published_version=${fixed_group_version}" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [[ "$(jq -r '.error.code // empty' <<<"$lookup")" != "E404" ]]; then
-            echo "::error::npm could not say whether platejs@${fixed_group_version} is published."
-            echo "$lookup"
-            exit 1
-          fi
-
-          echo "platejs@${fixed_group_version} is not on npm yet, so this run holds back these changesets and publishes it:"
-          find .changeset -maxdepth 1 -name '*.md' ! -name README.md -print -delete
-
-      - name: 📝 Add this beta's changelog entry
-        if: ${{ steps.hold_back.outputs.published_version != '' }}
-        env:
-          PUBLISHED_VERSION: ${{ steps.hold_back.outputs.published_version }}
-        run: |
-          set -euo pipefail
-
-          # changesets/action opens the version PR only while a changeset is pending.
-          consumed="$(jq -r '.changesets[]' .changeset/pre.json)"
-          for changeset in .changeset/*.md; do
-            id="$(basename "$changeset" .md)"
-            if [[ "$id" != README ]] && ! grep -qxF "$id" <<<"$consumed"; then
-              echo "${changeset} is pending, so this beta needs no entry of its own."
-              exit 0
-            fi
-          done
-
-          entry=".changeset/beta-${GITHUB_SHA::10}.md"
-          cat > "$entry" <<EOF
-          ---
-          'platejs': patch
-          ---
-
-          Ship [every change on \`next\` since \`${PUBLISHED_VERSION}\`](https://github.com/${GITHUB_REPOSITORY}/compare/platejs@${PUBLISHED_VERSION}...${GITHUB_SHA}).
-          EOF
-          echo "Added ${entry} for the changes since platejs@${PUBLISHED_VERSION}."
-
       - name: 🧩 Prepare release changesets
+        if: ${{ steps.release_channel.outputs.channel == 'latest' }}
         run: |
-          # changeset status compares against the config's baseBranch, main, which a checkout of next has only as origin/main.
           git rev-parse --verify --quiet refs/heads/main >/dev/null || git branch main origin/main
           node tooling/scripts/prepare-release-changesets.mjs
 
       - name: 🦋 Create Release Pull Request or Publish
         id: changesets
+        if: ${{ steps.release_channel.outputs.channel == 'latest' }}
         uses: changesets/action@v1
         with:
           cwd: ${{ github.workspace }}
@@ -240,11 +239,32 @@ jobs:
           PLATE_DISABLE_PUBLISH: ${{ github.repository != 'udecode/plate' }}
           PLATE_RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
 
-      - name: 🏷️ Push package tags
-        if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' }}
+      - name: 🦋 Update beta Version Packages PR on green tip
+        id: beta_version
+        if: ${{ steps.release_channel.outputs.channel == 'beta' && steps.beta_plan.outputs.action == 'version' }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
-          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+          TARGET_SHA: ${{ steps.beta_plan.outputs.target_sha }}
+          PUBLISHED_VERSION: ${{ steps.beta_plan.outputs.published_version }}
+          ALLOW_SYNTHETIC: ${{ steps.beta_plan.outputs.allow_synthetic }}
+        run: node "$RUNNER_TEMP/release-scripts/beta-release-ci.mjs" version
+
+      - name: 🚀 Publish beta from green tip
+        id: beta_publish
+        if: ${{ steps.release_channel.outputs.channel == 'beta' && steps.beta_plan.outputs.action == 'publish' }}
+        env:
+          HOME: ${{ github.workspace }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PLATE_DISABLE_PUBLISH: ${{ github.repository != 'udecode/plate' }}
+          PLATE_RELEASE_CHANNEL: beta
+        run: node "$RUNNER_TEMP/release-scripts/beta-release-ci.mjs" publish
+
+      - name: 🏷️ Push package tags
+        if: ${{ github.repository == 'udecode/plate' && (steps.changesets.outputs.published == 'true' || steps.beta_publish.outputs.published == 'true') }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.published == 'true' && steps.changesets.outputs.publishedPackages || steps.beta_publish.outputs.publishedPackages }}
         run: |
           mapfile -t TAGS < <(node tooling/scripts/published-package-tags.mjs)
 
@@ -258,7 +278,7 @@ jobs:
           done
 
       - name: 📝 Sync release docs from Version Packages PR
-        if: ${{ steps.changesets.outputs.published != 'true' && steps.changesets.outputs.pullRequestNumber != '' }}
+        if: ${{ steps.release_channel.outputs.channel == 'latest' && steps.changesets.outputs.published != 'true' && steps.changesets.outputs.pullRequestNumber != '' }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           RELEASE_PR: ${{ steps.changesets.outputs.pullRequestNumber }}
@@ -281,9 +301,9 @@ jobs:
 
       - name: 📝 Generate raw release notes
         id: raw-notes
-        if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' }}
+        if: ${{ github.repository == 'udecode/plate' && (steps.changesets.outputs.published == 'true' || steps.beta_publish.outputs.published == 'true') }}
         env:
-          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.published == 'true' && steps.changesets.outputs.publishedPackages || steps.beta_publish.outputs.publishedPackages }}
         run: node tooling/scripts/release-notes.mjs
 
       - name: 🧠 Build AI prompt from template
@@ -318,7 +338,7 @@ jobs:
         continue-on-error: true
         env:
           RAW_PATH: ${{ steps.raw-notes.outputs.raw_changelog_path }}
-          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.published == 'true' && steps.changesets.outputs.publishedPackages || steps.beta_publish.outputs.publishedPackages }}
         run: |
           node tooling/scripts/release-notes.mjs validate "$RAW_PATH" "${RAW_PATH}.final"
           if [[ -f "${RAW_PATH}.final" ]]; then
@@ -327,12 +347,14 @@ jobs:
           fi
 
       - name: 📝 Create GitHub Release
-        if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' }}
+        if: ${{ github.repository == 'udecode/plate' && (steps.changesets.outputs.published == 'true' || steps.beta_publish.outputs.published == 'true') }}
         env:
           CHANNEL: ${{ steps.release_channel.outputs.channel }}
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.raw-notes.outputs.version }}
           RAW_PATH: ${{ steps.raw-notes.outputs.raw_changelog_path }}
+          RELEASE_SHA: ${{ steps.beta_plan.outputs.target_sha || github.sha }}
+          RELEASE_MODE: ${{ steps.beta_plan.outputs.release_mode || 'manual' }}
         run: |
           if [[ -z "$VERSION" ]]; then
             echo "::error::Could not determine release version."
@@ -342,11 +364,6 @@ jobs:
           TAG="v${VERSION}"
           TITLE="$TAG"
           PAGE_FLAGS=()
-          if [[ "$CHANNEL" == "beta" ]]; then
-            TITLE="${TAG} ($(date -u +%Y-%m-%d))"
-            PAGE_FLAGS=(--prerelease --latest=false)
-          fi
-
           if [[ -f "${RAW_PATH}.final" && -f "${RAW_PATH}.final.validated" ]]; then
             NOTES_FILE="${RAW_PATH}.final"
             echo "Using AI-rewritten release notes."
@@ -358,27 +375,34 @@ jobs:
             echo "Using raw release notes."
           fi
 
+          if [[ "$CHANNEL" == "beta" ]]; then
+            TITLE="${TAG} ($(date -u +%Y-%m-%d))"
+            PAGE_FLAGS=(--prerelease --latest=false)
+            printf '\n<!-- beta-release:%s -->\n' "${RELEASE_MODE}" >> "$NOTES_FILE"
+          fi
+
           gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
-            -f ref="refs/tags/${TAG}" -f sha="$GITHUB_SHA" 2>/dev/null \
+            -f ref="refs/tags/${TAG}" -f sha="$RELEASE_SHA" 2>/dev/null \
             || echo "Tag $TAG already exists."
 
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TITLE" --notes-file "$NOTES_FILE" "${PAGE_FLAGS[@]}"
             echo "Updated release $TAG."
           else
-            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TITLE" --notes-file "$NOTES_FILE" --target "$GITHUB_SHA" "${PAGE_FLAGS[@]}"
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TITLE" --notes-file "$NOTES_FILE" --target "$RELEASE_SHA" "${PAGE_FLAGS[@]}"
             echo "Created release $TAG."
           fi
 
       - name: ✅ Close issues fixed in this release
-        if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' && steps.raw-notes.outputs.version != '' }}
+        if: ${{ github.repository == 'udecode/plate' && (steps.changesets.outputs.published == 'true' || steps.beta_publish.outputs.published == 'true') && steps.raw-notes.outputs.version != '' }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.raw-notes.outputs.version }}
-        run: node tooling/scripts/close-released-issues.mjs --version "$VERSION" --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_SHA"
+          RELEASE_SHA: ${{ steps.beta_plan.outputs.target_sha || github.sha }}
+        run: node tooling/scripts/close-released-issues.mjs --version "$VERSION" --repo "$GITHUB_REPOSITORY" --ref "$RELEASE_SHA"
 
       - name: 🤖 Merge Version Packages PR
-        if: ${{ steps.auto_release.outputs.enabled == 'true' && steps.changesets.outputs.pullRequestNumber != '' }}
+        if: ${{ steps.release_channel.outputs.channel == 'latest' && steps.auto_release.outputs.enabled == 'true' && steps.changesets.outputs.pullRequestNumber != '' }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB }}
           RELEASE_PR: ${{ steps.changesets.outputs.pullRequestNumber }}
@@ -391,6 +415,29 @@ jobs:
 
           gh pr comment "$RELEASE_PR" --body "Merging because PR #${SOURCE_PR} checked auto release."
           gh pr merge "$RELEASE_PR" --squash --delete-branch --admin
+
+      - name: 🤖 Merge beta Version Packages PR
+        if: ${{ steps.release_channel.outputs.channel == 'beta' && steps.beta_plan.outputs.auto_merge == 'true' && steps.beta_version.outputs.pullRequestNumber != '' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB }}
+          RELEASE_PR: ${{ steps.beta_version.outputs.pullRequestNumber }}
+          HEAD_SHA: ${{ steps.beta_version.outputs.headSha }}
+          TARGET_SHA: ${{ steps.beta_plan.outputs.target_sha }}
+          RELEASE_MODE: ${{ steps.beta_plan.outputs.release_mode }}
+        run: |
+          if [[ -z "${GH_TOKEN}" ]]; then
+            echo "A GitHub App token or API_TOKEN_GITHUB is required so the merged release PR can trigger publish workflows."
+            exit 1
+          fi
+
+          gh pr merge "$RELEASE_PR" \
+            --repo "$GITHUB_REPOSITORY" \
+            --merge \
+            --delete-branch \
+            --admin \
+            --match-head-commit "$HEAD_SHA" \
+            --subject "[Release] Version packages (beta)" \
+            --body "$(printf 'Beta-Release: %s\nGreen-Tip: %s\n' "$RELEASE_MODE" "$TARGET_SHA")"
 
   sync-release-artifacts:
     name: Sync registry and templates after publish

@@ -627,6 +627,12 @@ const run = async (args) => {
       } catch (error) {
         return brokenAt(tip, error);
       }
+      if (!dry && isMain && state.green) {
+        spawnSync(process.execPath, [join(here, 'beta-release.mjs'), 'wake'], {
+          cwd: main,
+          stdio: 'inherit',
+        });
+      }
       return 0;
     }
     const logs = join(main, 'docs', 'plans', 'artifacts', 'local-ci', today);
@@ -676,6 +682,12 @@ const run = async (args) => {
       });
       if (!dry && isMain) pushGreen(tip);
       writeState(next);
+      if (!dry && isMain) {
+        spawnSync(process.execPath, [join(here, 'beta-release.mjs'), 'wake'], {
+          cwd: main,
+          stdio: 'inherit',
+        });
+      }
       return 0;
     }
     let privateTip;
@@ -853,7 +865,7 @@ const run = async (args) => {
         ...Object.fromEntries([...passing].map((ok) => [ok, tip])),
       };
       writeState(next);
-      if (result.ok && !dry) {
+      if (result.ok && !dry && isMain) {
         spawnSync(process.execPath, [join(here, 'beta-release.mjs'), 'wake'], {
           cwd: main,
           stdio: 'inherit',

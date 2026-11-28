@@ -14,7 +14,7 @@ Release notes document user-visible changes: package changesets for published pa
 
 ## Package changesets on `next`
 
-While Plate v2 is in beta, a change on `next` that a package user can observe gets one changeset, written by the rules below. Its release baseline is the last published beta. Use `patch`: the four packages `next` publishes move together in one fixed group, so the bump type changes no version. Before each beta, the release job condenses the pending changesets into one line per user-visible change. On each push to `next` with no changeset pending, the release workflow adds one entry that links every commit since the last published beta, so the beta Version Packages PR always has a beta to publish. The v2 stable release gets one hand-written entry. Registry changelog entries still follow rule 4.
+While Plate v2 is in beta, a change on `next` that a package user can observe gets one changeset, written by the rules below. Its release baseline is the last published beta. Use `patch`: the four packages `next` publishes move together in one fixed group, so the bump type changes no version. Daily auto-releases ship from `refs/pstack/local-ci-green` only when real unreleased changesets wait ahead of the last published beta; when that green tip has commits ahead with no changeset pending, the release workflow still adds one synthetic entry linking commits up to that green tip so a manual beta Version Packages PR stays available. The v2 stable release gets one hand-written entry. Registry changelog entries still follow rule 4.
 
 ## Critical Rules
 

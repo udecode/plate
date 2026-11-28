@@ -17,7 +17,7 @@ Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/ne
 - Failures rerun failing test files (or the step) to separate flakes from reds, then bisect within 1h (`PLITE_BROWSER_KEEP_GOING=1`). Flakes stay defects until timing/load dependence is gone.
 - Each red/flake wakes `operator` for the 3-step green-convergence loop (never cut Yjs tests, park, retry, or raise limits).
 - Three starts of one failure in 7d record a `recurrence` event (`red-recurrence.mjs`) for a `/pstack:correct` guard.
-- `beta-release.mjs wake` emits `release` after green when due. Fix, release, and friction briefs keep `Send no team message.`; `operator` may post via `notify` for workflow, pstack, setup, or team-facing changes.
+- `beta-release.mjs wake` runs after green (and idle main ticks) to dispatch `release.yml` (`mode=auto` when `> 24h` since last auto beta, excluding manual betas, with changesets on `refs/pstack/local-ci-green`; else `mode=sync` if PR lags) with `wake: false`. Briefs keep `Send no team message.`; `operator` may post via `notify` for team/workflow changes.
 
 Run from `<main>` (`<ci>` for CI; `<friction>` for friction). `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skip due check); `status`, `rerun`, `install`, `uninstall` -> below.
 
@@ -56,7 +56,7 @@ Read effective `maxAutoStart` from `readProjectConfig()` in `.agents/pstack/lead
    - `passed`: drop from queue and tell any running fix on that step to recheck and close.
    - `dry: true`: spawn **Dry brief**.
    - `broken`: check `output` and `plate-local-ci/launchd.log`; if install broke, run `pnpm install --frozen-lockfile` in `.claude/worktrees/local-ci`, else report without Discord.
-   - `release`: main CI only (drop if `config.json` exists or release runs); spawn **Release brief**.
+   - `release` (`wake: true` only): main CI only (drop if `config.json` exists or release runs); spawn **Release brief** (daily betas run via `release.yml`).
    - `friction`: continue to step 3.
    - **Agent friction (`FRICTION [tooling|skill|pstack|t3]`):** deduplicate by signature (file/command/error); if a fix runs, append new `blocking: yes` `threadId`s to its wakeup list. For `plate`/`ustack` fixes, spawn **Agent friction fix brief**, land on `origin/next` (or push `ustack` `main`), and wake paused reporters via `t3_thread_send` (`"Fixed in <sha>, pull origin/next and resume"`). For external T3 bugs, log once in `<main>/docs/plans/artifacts/local-ci/<day>/t3-friction.md` and reply to `blocking: yes` reporters with a fallback or clean stop.
    - **`SLOT_FREE`:** immediately check active non-pinned Plate threads against `maxAutoStart` and fill open slots via step 3 (Local CI events remain the crash/missed-ping fallback).
@@ -87,11 +87,10 @@ Save reports to `<main>/docs/plans/artifacts/local-ci/<day>/` (`fix-<step>.md`, 
 
 ### Release brief
 
-> Operator woke for a beta: `<event JSON>`. Work from `<main>`; read `AGENTS.md`, `release-lanes`, `changeset`.
-> 1. Cut worktree from `origin/next`, run `node tooling/scripts/beta-release.mjs due` (stop if not due).
-> 2. Run `beta-release.mjs pending`, condense changesets per `changeset`; if changed, land `chore(release): condense changesets` via `land.mjs`.
-> 3. Run `node tooling/scripts/beta-release.mjs ship --force` in background (`release.yml` closes fixed public issues; `ship` runs `close-released-issues.mjs` fallback; retry on exit 75).
-> 4. Send no team message. End with 1 line: beta and closed issues, or why none shipped.
+> Manual beta: `<event JSON>`. Work from `<main>`; read `AGENTS.md`, `release-lanes`, `changeset`.
+> 1. Cut worktree from `origin/next`; check `beta-release.mjs due` and `pending` on `refs/pstack/local-ci-green`.
+> 2. Run `node tooling/scripts/beta-release.mjs ship --force` in background (`manual` beta, does not reset `> 24h` auto clock; retry on exit 75).
+> 3. Send no team message. End with 1 line: beta and closed issues, or why none shipped.
 
 ### Friction brief
 
