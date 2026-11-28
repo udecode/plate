@@ -23,6 +23,7 @@ import {
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
+import { getStaticReuseKeyReader } from '../../internal/plugin/staticReuseKey.internal';
 import type { Editor, RenderElementSlots } from '../../lib';
 import type { RenderElementProps } from '../../lib/types/RenderElementProps';
 import type {
@@ -78,12 +79,16 @@ type ContentRootInput = Readonly<{
 type BlockInputs = Readonly<{
   contentRoots: readonly ContentRootInput[];
   decorations: readonly Decoration[];
+  documentKeys: readonly string[];
   readsDocument: boolean;
 }>;
+
+const EMPTY_DOCUMENT_KEYS: readonly string[] = Object.freeze([]);
 
 const EMPTY_BLOCK_INPUTS: BlockInputs = Object.freeze({
   contentRoots: Object.freeze([]),
   decorations: EMPTY_DECORATIONS,
+  documentKeys: EMPTY_DOCUMENT_KEYS,
   readsDocument: false,
 });
 
@@ -107,6 +112,10 @@ const areBlockInputsEqual = (left: BlockInputs, right: BlockInputs) => {
   if (equal === undefined) {
     equal =
       left.readsDocument === right.readsDocument &&
+      left.documentKeys.length === right.documentKeys.length &&
+      left.documentKeys.every(
+        (key, index) => key === right.documentKeys[index]
+      ) &&
       left.contentRoots.length === right.contentRoots.length &&
       left.contentRoots.every(
         ({ nodes, root }, index) =>
@@ -166,7 +175,30 @@ const readBlockInputs = (
 ): BlockInputs => {
   const decorations: Decoration[] = [...own];
   const contentRoots: ContentRootInput[] = [];
+  const documentKeys: string[] = [];
   let readsDocument = readsDocumentWithin(editor, block);
+  const collectDocumentKey = (
+    reader: Editor,
+    readerRoot: string,
+    element: Element,
+    nodePath: Path
+  ) => {
+    const plugin = getCompiledPlatePluginByType(reader, element.type);
+
+    if (plugin?.render.readsDocument === true) return;
+
+    const readKey = getStaticReuseKeyReader(plugin);
+
+    if (!readKey) return;
+
+    const key = withDocumentViewRead(reader, () =>
+      readKey({ editor: reader, element, path: nodePath })
+    );
+
+    if (key !== undefined) {
+      documentKeys.push(`${readerRoot}:${nodePath.join(',')}:${key}`);
+    }
+  };
   const visitContentRoots = (reader: Editor, element: Element) => {
     for (const contentRoot of Object.values(
       schema.getElementContentRoots(element)
@@ -182,7 +214,15 @@ const readBlockInputs = (
         ) {
           readsDocument = true;
         }
-        visit(rootReader, contentRoot, node, [index]);
+        visit(
+          rootReader,
+          contentRoot,
+          node,
+          [index],
+          !readsDocument &&
+            ElementApi.isElement(node) &&
+            hasStaticReuseKeyWithin(rootReader, node)
+        );
       });
     }
   };
@@ -190,7 +230,8 @@ const readBlockInputs = (
     reader: Editor,
     readerRoot: string,
     node: Descendant,
-    nodePath: Path
+    nodePath: Path,
+    collectKeys: boolean
   ) => {
     for (const source of sources) {
       decorations.push(
@@ -198,25 +239,64 @@ const readBlockInputs = (
       );
     }
     if (ElementApi.isElement(node)) {
+      if (collectKeys && !readsDocument) {
+        collectDocumentKey(reader, readerRoot, node, nodePath);
+      }
       visitContentRoots(reader, node);
+      const childCollectKeys =
+        collectKeys && !readsDocument && hasStaticReuseKeyWithin(reader, node);
+
       node.children.forEach((child, index) =>
-        visit(reader, readerRoot, child, [...nodePath, index])
+        visit(
+          reader,
+          readerRoot,
+          child,
+          [...nodePath, index],
+          childCollectKeys &&
+            ElementApi.isElement(child) &&
+            hasStaticReuseKeyWithin(reader, child)
+        )
       );
     }
   };
 
+  const blockHasReuseKeys =
+    !readsDocument && hasStaticReuseKeyWithin(editor, block);
+
+  if (blockHasReuseKeys) {
+    collectDocumentKey(editor, root, block, path);
+  }
   visitContentRoots(editor, block);
   block.children.forEach((child, index) =>
-    visit(editor, root, child, [...path, index])
+    visit(
+      editor,
+      root,
+      child,
+      [...path, index],
+      blockHasReuseKeys &&
+        ElementApi.isElement(child) &&
+        hasStaticReuseKeyWithin(editor, child)
+    )
   );
 
-  if (contentRoots.length === 0 && decorations.length === 0 && !readsDocument) {
+  const effectiveDocumentKeys =
+    readsDocument || documentKeys.length === 0
+      ? EMPTY_DOCUMENT_KEYS
+      : documentKeys;
+
+  if (
+    contentRoots.length === 0 &&
+    decorations.length === 0 &&
+    effectiveDocumentKeys.length === 0 &&
+    !readsDocument
+  ) {
     return EMPTY_BLOCK_INPUTS;
   }
 
   return {
     contentRoots,
     decorations: decorations.length === 0 ? EMPTY_DECORATIONS : decorations,
+    documentKeys: effectiveDocumentKeys,
     readsDocument,
   };
 };
@@ -465,6 +545,7 @@ const countUnchangedBlocks = (
 // their own block (table borders). Elements that read later content declare
 // `render.readsDocument` and render again on any change.
 const documentReaders = new WeakMap<object, WeakMap<Element, boolean>>();
+const staticReuseKeyReaders = new WeakMap<object, WeakMap<Element, boolean>>();
 
 // A reused element skips its whole subtree, so it reads the document when it
 // or any element inside it declares `render.readsDocument`, such as a table
@@ -492,6 +573,32 @@ const readsDocumentWithin = (editor: Editor, element: Element): boolean => {
   }
 
   return reads;
+};
+
+const hasStaticReuseKeyWithin = (editor: Editor, element: Element): boolean => {
+  const runtime = getPlateRuntime(editor);
+  let readers = staticReuseKeyReaders.get(runtime);
+
+  if (!readers) {
+    readers = new WeakMap();
+    staticReuseKeyReaders.set(runtime, readers);
+  }
+
+  let hasKey = readers.get(element);
+
+  if (hasKey === undefined) {
+    hasKey =
+      getStaticReuseKeyReader(
+        getCompiledPlatePluginByType(editor, element.type)
+      ) !== undefined ||
+      element.children.some(
+        (child) =>
+          ElementApi.isElement(child) && hasStaticReuseKeyWithin(editor, child)
+      );
+    readers.set(element, hasKey);
+  }
+
+  return hasKey;
 };
 
 const isSameRenderedDocument = (

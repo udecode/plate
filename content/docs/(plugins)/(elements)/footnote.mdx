@@ -154,7 +154,7 @@ editor.api.footnote.focusReference({ ref: '3', index: 1 });
 Both commands return `true` after navigating, and `false` for an unresolved
 target or an unmounted editor. For selection-only changes inside a transaction,
 use `tx.footnote.selectDefinition` or `tx.footnote.selectReference`; each
-returns the resolved `{ point, targetPath }` target or `false`.
+returns `true` after moving the selection or `false` when unresolved.
 
 With `NavigationFeedbackPlugin.configure({ enabled: false })` in `plugins`,
 footnote navigation still scrolls to the target, and selects and focuses it in
@@ -215,11 +215,11 @@ The first main-root reference to a ref gets the id `fnref-<ref>`, and the nth
 gets `fnref-<ref>:<n>`. The main-root note gets `fn-<ref>`, and a later
 duplicate gets `fn-<ref>:<n>` with no back link. Inside a named content root,
 each id scopes by root as `fnref@<root>@<ref>` and `fn@<root>@<ref>` (with
-`:<n>` for duplicates), percent-encoding both root and ref. A named-root
-reference without a definition and a named-root definition without a reference
-omit `href` while keeping `data-editor-footnote-ref` so HTML decode round-trips.
-Pasting the HTML back gives the same references and definitions without the back
-link.
+`:<n>` for duplicates), percent-encoding both root and ref. In both main and
+named roots, a reference without a definition and a definition without a
+reference omit `href` while keeping `data-editor-footnote-ref` so HTML decode
+round-trips. Pasting the HTML back gives the same references and definitions
+without the back link.
 
 Footnotes copied from a page GitHub rendered, such as a README or a comment,
 paste as references and root definitions with the numbers GitHub shows. A
@@ -229,10 +229,13 @@ citation pasted without its note becomes an unresolved reference.
 
 The `BaseFootnoteKit` static components draw each reference as a link to its
 note and give each canonical note a back link to its first reference, with the
-ids `editor.read.footnote.anchor` returns. On the main root, a reference without
-a note links to the id its note would have. Inside a named content root, an
-unresolved reference or unreferenced definition omits `target` and `href`. Word
-export writes the label and the note text without links.
+ids `editor.read.footnote.anchor` returns. Unresolved references and unreferenced
+definitions omit `target` and `href` in both main and named roots. `EditorStatic`
+tracks each footnote's anchor key so unchanged footnote blocks reuse across
+rerenders; if a custom static footnote component reads beyond `read.anchor`
+(such as definition text or citation counts), configure it with
+`render: { readsDocument: true }`. Word export writes the label and the note
+text without links.
 
 ### Customize rendering
 
