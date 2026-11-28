@@ -317,6 +317,7 @@ import {
   readPersistedEnvelope,
   rejectEditorRecord,
 } from './document-shape';
+import { assertNoDocumentViewRead } from './document-view-read';
 import {
   type DraftSpan,
   type DraftTrack,
@@ -3773,17 +3774,54 @@ const readAtOptionsTarget = <TOptions extends object, T>(
     : miss;
 };
 
+const withReadGeneratorScope = <T>(
+  editor: Editor,
+  iterable: Iterable<T>
+): Generator<T, void, undefined> =>
+  (function* scopedReadGenerator() {
+    const iterator = iterable[Symbol.iterator]();
+    let done = false;
+
+    try {
+      while (true) {
+        const exitRead = enterEditorRead(editor);
+        let result: IteratorResult<T>;
+
+        try {
+          result = iterator.next();
+        } finally {
+          exitRead();
+        }
+        if (result.done) {
+          done = true;
+          return;
+        }
+        yield result.value;
+      }
+    } finally {
+      if (!done) {
+        const exitRead = enterEditorRead(editor);
+
+        try {
+          iterator.return?.();
+        } finally {
+          exitRead();
+        }
+      }
+    }
+  })();
+
 const readAtOptionsTargetGenerator = <TOptions extends object, T>(
   editor: Editor,
   options: TOptions,
   create: (options: TOptions) => Iterable<T>
 ): Generator<T, void, undefined> => {
+  const inRead = !isInTransaction(editor);
   const route = routeNodeTarget(editor, getOptionsNodeTarget(options));
 
   if (!route) return (function* missedNodeTarget() {})();
   const routed = routeOptions(options, route);
-
-  return route.root
+  const generator = route.root
     ? withRoutedCallerScopeGenerator(
         editor,
         withEditorRootChildrenGenerator(editor, route.root, () =>
@@ -3793,6 +3831,8 @@ const readAtOptionsTargetGenerator = <TOptions extends object, T>(
     : (function* unscopedNodeTargetGenerator() {
         yield* create(routed);
       })();
+
+  return inRead ? withReadGeneratorScope(editor, generator) : generator;
 };
 
 const readElementEntry = (
@@ -6109,14 +6149,18 @@ const resolveSliceFitPlace = (
     return placeSliceFitRange(editor, state, at, root, options);
   }
 
-  const entries = getSelectionNodeEntries(editor, state, at);
+  const rootedAt =
+    root && root !== MAIN_ROOT_KEY && at.root === undefined
+      ? { ...at, root }
+      : at;
+  const entries = getSelectionNodeEntries(editor, state, rootedAt);
   const blocks = asBlockEntries(state, entries);
 
   if (blocks) {
     return {
       blocks,
       kind: 'blocks',
-      remainingLength: getInsertRemainingLength(state, { at }),
+      remainingLength: getInsertRemainingLength(state, { at: rootedAt }),
       root: root ?? MAIN_ROOT_KEY,
     };
   }
@@ -6215,11 +6259,22 @@ export const resolveSliceFitSite = (
     );
   };
   const resolve = () => {
-    if (SelectionApi.isNode(implicitTarget)) {
-      const root = implicitTarget.root ?? MAIN_ROOT_KEY;
+    const explicitNodeTarget = SelectionApi.isNode(options?.at)
+      ? options.at
+      : null;
+    const nodeTarget =
+      explicitNodeTarget ??
+      (SelectionApi.isNode(implicitTarget) ? implicitTarget : null);
+
+    if (nodeTarget) {
+      const root = getNodeSelectionRoot(
+        owner,
+        nodeTarget,
+        explicitNodeTarget ? 'target' : 'stored'
+      );
 
       return runWithMutationRoot(owner, root, () =>
-        createSite(implicitTarget, root, options, undefined)
+        createSite(nodeTarget, root, options, undefined)
       );
     }
 
@@ -6889,64 +6944,88 @@ const fitSliceIntoActiveDraft = <V extends Value>(
   slice: import('../interfaces/editor').ContentSlice,
   options?: SliceFitOptions<V>,
   internal?: SliceFitInternal
-) =>
-  withSliceFitTarget(
+) => {
+  const runAtPlace = (place: SliceFitPlace | false) => {
+    if (!place) return false;
+    const copy = renewCopy(editor, slice);
+    const sourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
+    const renewal = internal?.rootsPrepared
+      ? null
+      : renewContentSlice(editor, sourceSlice, sliceFitRoot(editor, place));
+    const inputSlice = renewal?.slice ?? sourceSlice;
+
+    if (renewal) internal?.renewed?.(renewal);
+    const limitedSlice = limitSliceToLength(
+      internal?.drop
+        ? inputSlice
+        : dissolveOpenEndMatter(
+            inputSlice,
+            getCompiledEditorSchemaFromApi(getEditorSchema(editor))
+          ),
+      place.remainingLength
+    );
+
+    if (limitedSlice.content.length === 0 && inputSlice.content.length > 0) {
+      return false;
+    }
+
+    const fitted = withRenewalOff(
+      editor,
+      landSlice,
+      editor,
+      getUpdateView(getEditorRuntimeOwner(editor)),
+      place,
+      limitedSlice,
+      {
+        ...(renewal ? { aliased: aliasedRoots(renewal) } : {}),
+        ...(internal?.drop ? { drop: true } : {}),
+        rootsPrepared: internal?.rootsPrepared,
+      }
+    );
+
+    if (fitted && copy) {
+      finalizeWithoutOrphanedRoots(editor);
+      restoreDroppedNames(editor, copy);
+    }
+
+    return fitted;
+  };
+
+  if (internal?.childrenAt === undefined) {
+    const explicitNodeTarget = SelectionApi.isNode(options?.at)
+      ? options.at
+      : null;
+    const implicitTarget =
+      options?.at === undefined
+        ? getTransactionView(editor).resolveTarget({})
+        : null;
+    const nodeTarget =
+      explicitNodeTarget ??
+      (SelectionApi.isNode(implicitTarget) ? implicitTarget : null);
+
+    if (nodeTarget) {
+      const root = getNodeSelectionRoot(
+        editor,
+        nodeTarget,
+        explicitNodeTarget ? 'target' : 'stored'
+      );
+
+      return runWithMutationRoot(editor, root, () =>
+        runAtPlace(resolveSliceFitPlace(editor, nodeTarget, root, options))
+      );
+    }
+  }
+
+  return withSliceFitTarget(
     editor,
     options,
     internal?.childrenAt,
-    (resolvedOptions, root) => {
-      const place = resolveRawSliceFitPlace(
-        editor,
-        resolvedOptions,
-        root,
-        internal
-      );
-
-      if (!place) return false;
-      const copy = renewCopy(editor, slice);
-      const sourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
-      const renewal = internal?.rootsPrepared
-        ? null
-        : renewContentSlice(editor, sourceSlice, sliceFitRoot(editor, place));
-      const inputSlice = renewal?.slice ?? sourceSlice;
-
-      if (renewal) internal?.renewed?.(renewal);
-      const limitedSlice = limitSliceToLength(
-        internal?.drop
-          ? inputSlice
-          : dissolveOpenEndMatter(
-              inputSlice,
-              getCompiledEditorSchemaFromApi(getEditorSchema(editor))
-            ),
-        place.remainingLength
-      );
-
-      if (limitedSlice.content.length === 0 && inputSlice.content.length > 0) {
-        return false;
-      }
-
-      const fitted = withRenewalOff(
-        editor,
-        landSlice,
-        editor,
-        getUpdateView(getEditorRuntimeOwner(editor)),
-        place,
-        limitedSlice,
-        {
-          ...(renewal ? { aliased: aliasedRoots(renewal) } : {}),
-          ...(internal?.drop ? { drop: true } : {}),
-          rootsPrepared: internal?.rootsPrepared,
-        }
-      );
-
-      if (fitted && copy) {
-        finalizeWithoutOrphanedRoots(editor);
-        restoreDroppedNames(editor, copy);
-      }
-
-      return fitted;
-    }
+    (resolvedOptions, root) =>
+      runAtPlace(
+        resolveRawSliceFitPlace(editor, resolvedOptions, root, internal)
+      )
   );
+};
 
 export type InternalSliceChildrenTarget = NodeKey | Path;
 
@@ -11033,7 +11112,13 @@ export const createTransactionSpecContext = (
   const activeChildrenRoot = getEditorChildrenRoot(editor);
   const activeUpdateRoot = getActiveUpdateRoot(editor);
   const anchorValue = getEditorDocumentValue(editor);
-  const baseViewDocument = parent ? undefined : getReadProjection(editor);
+  const baseViewDocument = parent
+    ? parent.baseViewDocument
+    : getReadProjection(editor);
+
+  if (!parent && baseViewDocument) {
+    getEditorSchema(editor).ensureDocumentBaseline(baseViewDocument);
+  }
   const roots = getEditorDocumentRoots(editor);
   const selection = getCurrentSelection(editor);
   const caret: CaretState = {
@@ -11251,11 +11336,13 @@ const assertTransactionSpecBase = (editor: Editor, spec: TransactionSpec) => {
     base.context === context?.id ||
     (context?.kind === 'update' && base.context === undefined);
 
+  const currentViewDocument =
+    TRANSACTION_SPEC_CONTEXTS.get(editor)?.[0]?.baseViewDocument ??
+    getReadProjection(editor);
+
   if (
     (!validContext && (base.context !== undefined || context !== undefined)) ||
-    (base.viewDocument &&
-      base.viewDocument !==
-        TRANSACTION_SPEC_CONTEXTS.get(editor)?.[0]?.baseViewDocument)
+    base.viewDocument !== currentViewDocument
   ) {
     throw new Error('Cannot apply a transaction spec outside its base state.');
   }
@@ -11933,6 +12020,12 @@ export const updateEditor = <
   if (getEditorReadDepth(editor) > 0) {
     throw new Error(
       'editor.update cannot be started inside editor.read outside an active update'
+    );
+  }
+  assertNoDocumentViewRead(editor);
+  if (READ_PROJECTIONS.has(getEditorRuntimeOwner(editor))) {
+    throw new Error(
+      'editor.update cannot be started while an editor view projection is active'
     );
   }
 

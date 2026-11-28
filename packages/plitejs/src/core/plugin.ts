@@ -284,11 +284,13 @@ type PluginRuntimeDefinition = PluginDefinitionInput &
   Readonly<{ name: string }>;
 
 type PluginState = {
+  acquiring: boolean;
   afterAcquisition: Array<
     Readonly<{ callback: () => void; pluginName: string }>
   >;
   nextOrder: number;
   records: Map<string, PluginRecord>;
+  teardown: { destroyRequested: boolean } | null;
 };
 
 type PluginCleanup = (context: PluginCleanupContext) => void;
@@ -401,9 +403,11 @@ const getPluginState = (editor: Editor) => {
 
   if (!state) {
     state = {
+      acquiring: false,
       afterAcquisition: [],
       nextOrder: 0,
       records: new Map(),
+      teardown: null,
     };
     PLUGIN_STATE.set(owner, state);
   }
@@ -1545,36 +1549,45 @@ const releasePluginRecords = (
   }
 };
 
-const acquirePluginRecords = (records: readonly PluginRecord[]) => {
+const acquirePluginRecords = (
+  editor: Editor,
+  records: readonly PluginRecord[]
+) => {
+  const state = getPluginState(editor);
   const touched: PluginRecord[] = [];
 
-  for (const record of records) {
-    const { activation } = record;
+  state.acquiring = true;
+  try {
+    for (const record of records) {
+      const { activation } = record;
 
-    if (!activation?.active || activation.releases.length > 0) continue;
-    touched.push(record);
-    try {
-      for (const take of activation.takes) {
-        const release = take();
+      if (!activation?.active || activation.releases.length > 0) continue;
+      touched.push(record);
+      try {
+        for (const take of activation.takes) {
+          const release = take();
 
-        assertSynchronousLifecycleResult(
-          release,
-          `Editor plugin "${record.descriptor.name}" acquisition`
-        );
-        if (typeof release !== 'function') {
-          throw new Error('Editor plugin acquisition must return a release.');
+          assertSynchronousLifecycleResult(
+            release,
+            `Editor plugin "${record.descriptor.name}" acquisition`
+          );
+          if (typeof release !== 'function') {
+            throw new Error('Editor plugin acquisition must return a release.');
+          }
+          activation.releases.push(release);
         }
-        activation.releases.push(release);
+      } catch (error) {
+        releasePluginRecords(touched, 'rollback');
+        throw new PluginPublicationError(
+          record.descriptor.name,
+          error,
+          [],
+          'acquire'
+        );
       }
-    } catch (error) {
-      releasePluginRecords(touched, 'rollback');
-      throw new PluginPublicationError(
-        record.descriptor.name,
-        error,
-        [],
-        'acquire'
-      );
     }
+  } finally {
+    state.acquiring = false;
   }
 };
 
@@ -1623,7 +1636,7 @@ export const startEditor = (editor: Editor) => {
 
   try {
     runWithPluginPublicationGuard(editor, () => {
-      acquirePluginRecords(getInstalledRecordsInOrder(state));
+      acquirePluginRecords(editor, getInstalledRecordsInOrder(state));
     });
   } catch (error) {
     state.afterAcquisition = [];
@@ -1633,33 +1646,55 @@ export const startEditor = (editor: Editor) => {
   flushAfterAcquisition(editor);
 };
 
+const runEditorTeardown = (editor: Editor, destroy: boolean) => {
+  const state = getPluginState(editor);
+
+  if (state.acquiring) {
+    throw new Error(
+      destroy
+        ? 'Cannot destroy an editor while acquiring plugin resources.'
+        : 'Cannot release an editor while acquiring plugin resources.'
+    );
+  }
+  if (getEditorLifetime(editor) === 'destroyed') return;
+  if (state.teardown) {
+    if (destroy) state.teardown.destroyRequested = true;
+    return;
+  }
+
+  const teardown = { destroyRequested: destroy };
+
+  state.teardown = teardown;
+  try {
+    setEditorLifetime(editor, 'released');
+    releasePluginRecords(getInstalledRecordsInOrder(state), 'remove');
+
+    if (teardown.destroyRequested) {
+      for (const record of getInstalledRecordsInOrder(state).toReversed()) {
+        for (const cause of deactivatePluginRecord(record, 'remove')) {
+          reportPluginLifecycleError(
+            record.editor,
+            record.descriptor.name,
+            'cleanup',
+            cause
+          );
+        }
+      }
+      setEditorLifetime(editor, 'destroyed');
+    }
+  } finally {
+    state.teardown = null;
+  }
+};
+
 /** @internal */
 export const releaseEditor = (editor: Editor) => {
-  if (getEditorLifetime(editor) === 'destroyed') return;
-  setEditorLifetime(editor, 'released');
-  releasePluginRecords(
-    getInstalledRecordsInOrder(getPluginState(editor)),
-    'remove'
-  );
+  runEditorTeardown(editor, false);
 };
 
 /** @internal */
 export const destroyEditor = (editor: Editor) => {
-  if (getEditorLifetime(editor) === 'destroyed') return;
-  releaseEditor(editor);
-  for (const record of getInstalledRecordsInOrder(
-    getPluginState(editor)
-  ).toReversed()) {
-    for (const cause of deactivatePluginRecord(record, 'remove')) {
-      reportPluginLifecycleError(
-        record.editor,
-        record.descriptor.name,
-        'cleanup',
-        cause
-      );
-    }
-  }
-  setEditorLifetime(editor, 'destroyed');
+  runEditorTeardown(editor, true);
 };
 
 const activatePluginRecord = <TEditor extends Editor>(
@@ -2976,7 +3011,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
         });
         if (getEditorLifetime(editor) !== 'live') return;
         try {
-          acquirePluginRecords(activatedRecords);
+          acquirePluginRecords(editor, activatedRecords);
         } catch (error) {
           const failure = error as PluginPublicationError;
 
@@ -3459,7 +3494,12 @@ export const extendEditor = (
   });
 
   return (uninstallOptions) => {
-    if (getEditorLifetime(editor) === 'destroyed') return;
+    if (
+      getEditorLifetime(editor) === 'destroyed' ||
+      getPluginState(editor).teardown?.destroyRequested
+    ) {
+      return;
+    }
     assertNoOpenDraft(editor, UNINSTALL_REFUSAL);
     cleanup(uninstallOptions);
   };

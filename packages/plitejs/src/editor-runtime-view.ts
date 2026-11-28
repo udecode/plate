@@ -77,6 +77,7 @@ import {
   withEditorViewSelectionRead,
   getSelectionNodeEntries,
   getTargetRuntime,
+  isInTransaction,
   isSelectionAcrossBlocks,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
@@ -483,24 +484,41 @@ const withRootRead = <T>(
     : withAuthoredViewRead(editor, viewState.editor ?? editor, read);
 };
 
+const runViewReadStep = <T>(
+  editor: Editor,
+  viewState: ViewState,
+  fn: () => T
+): T =>
+  withDocumentViewRead(viewState.editor ?? editor, () =>
+    getEditorRuntime(editor).read(() => withRootRead(editor, viewState, fn))
+  );
+
 const withRootGenerator = <T>(
   editor: Editor,
   viewState: ViewState,
-  create: () => Iterable<T>
+  create: () => Iterable<T>,
+  readScope: boolean
 ): Generator<T, void, undefined> => {
-  const iterator = withRootRead(editor, viewState, () =>
-    create()[Symbol.iterator]()
-  );
+  const runStep = <TResult>(fn: () => TResult): TResult =>
+    readScope || !isInTransaction(editor)
+      ? runViewReadStep(editor, viewState, fn)
+      : withRootRead(editor, viewState, fn);
+  const iterator = runStep(() => create()[Symbol.iterator]());
 
   return (function* iterateViewRoot() {
+    let done = false;
+
     try {
       while (true) {
-        const result = withRootRead(editor, viewState, () => iterator.next());
-        if (result.done) return;
+        const result = runStep(() => iterator.next());
+        if (result.done) {
+          done = true;
+          return;
+        }
         yield result.value;
       }
     } finally {
-      withRootRead(editor, viewState, () => iterator.return?.());
+      if (!done) runStep(() => iterator.return?.());
     }
   })();
 };
@@ -521,11 +539,15 @@ const rootMethod = <TMethod extends (...args: any[]) => any>(
 const rootGeneratorMethod = <TMethod extends (...args: any[]) => Iterable<any>>(
   editor: Editor,
   viewState: ViewState,
-  method: TMethod
+  method: TMethod,
+  readScope: boolean
 ): TMethod =>
   ((...args: Parameters<TMethod>) =>
-    withRootGenerator(editor, viewState, () =>
-      method(...args)
+    withRootGenerator(
+      editor,
+      viewState,
+      () => method(...args),
+      readScope
     )) as unknown as TMethod;
 
 const runRootTransform = <T>(
@@ -612,7 +634,8 @@ const withRootChildren = <
 >(
   editor: Editor,
   state: T,
-  viewState: ViewState
+  viewState: ViewState,
+  readScope: boolean
 ): T['nodes'] => {
   // An entry names no root for main, which a view bound to a named root would
   // read as its own root, so such a view finds no element main holds.
@@ -633,13 +656,23 @@ const withRootChildren = <
     ),
     children: rootMethod(editor, viewState, state.nodes.children),
     elementReadOnly: rootMethod(editor, viewState, state.nodes.elementReadOnly),
-    entries: rootGeneratorMethod(editor, viewState, state.nodes.entries),
+    entries: rootGeneratorMethod(
+      editor,
+      viewState,
+      state.nodes.entries,
+      readScope
+    ),
     find: rootMethod(editor, viewState, state.nodes.find),
     first: rootMethod(editor, viewState, state.nodes.first),
     get: rootMethod(editor, viewState, state.nodes.get),
     last: rootMethod(editor, viewState, state.nodes.last),
     leaf: rootMethod(editor, viewState, state.nodes.leaf),
-    levels: rootGeneratorMethod(editor, viewState, state.nodes.levels),
+    levels: rootGeneratorMethod(
+      editor,
+      viewState,
+      state.nodes.levels,
+      readScope
+    ),
     next: rootMethod(editor, viewState, state.nodes.next),
     parent: rootMethod(editor, viewState, state.nodes.parent),
     path: rootMethod(editor, viewState, state.nodes.path),
@@ -653,7 +686,8 @@ const withRootChildren = <
 const withRootPoints = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
   state: T,
-  viewState: ViewState
+  viewState: ViewState,
+  readScope: boolean
 ): T['points'] =>
   Object.freeze({
     ...state.points,
@@ -665,7 +699,12 @@ const withRootPoints = <V extends Value, T extends ViewStateTransformInput<V>>(
     isEnd: rootMethod(editor, viewState, state.points.isEnd),
     isStart: rootMethod(editor, viewState, state.points.isStart),
     isWordEnd: rootMethod(editor, viewState, state.points.isWordEnd),
-    positions: rootGeneratorMethod(editor, viewState, state.points.positions),
+    positions: rootGeneratorMethod(
+      editor,
+      viewState,
+      state.points.positions,
+      readScope
+    ),
     start: rootMethod(editor, viewState, state.points.start),
   });
 
@@ -727,7 +766,8 @@ const withRootRuntime = <V extends Value, T extends ViewStateTransformInput<V>>(
 const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
   state: T,
-  viewState: ViewState
+  viewState: ViewState,
+  readScope: boolean
 ): T & { view: EditorStateViewApi } => {
   const semanticSelection = () =>
     withRootRead(editor, viewState, () =>
@@ -840,8 +880,8 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     ),
     key: rootMethod(editor, viewState, state.key),
     marks: withRootMarks<V, T>(editor, state, viewState),
-    nodes: withRootChildren<V, T>(editor, state, viewState),
-    points: withRootPoints<V, T>(editor, state, viewState),
+    nodes: withRootChildren<V, T>(editor, state, viewState, readScope),
+    points: withRootPoints<V, T>(editor, state, viewState, readScope),
     ranges,
     root: rootMethod(editor, viewState, state.root),
     runtime: withRootRuntime<V, T>(editor, state, viewState),
@@ -932,7 +972,8 @@ const withViewTransaction = <V extends Value>(
   const state = withViewState<V, EditorUpdateTransaction<V, any>>(
     editor,
     transaction,
-    viewState
+    viewState,
+    false
   );
   const hasExplicitTarget = (options: { at?: unknown } | undefined) =>
     options?.at !== undefined;
@@ -1357,7 +1398,8 @@ const createViewRuntime = <V extends Value>(
           ...withViewState<V, EditorStateView<V, any>>(
             editor,
             state,
-            viewState
+            viewState,
+            true
           ),
           roots: rootMethod(editor, viewState, state.roots),
         },
@@ -1435,7 +1477,12 @@ const createViewRuntime = <V extends Value>(
     leaf: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.leaf(...args)),
     levels: (...args) =>
-      withRootGenerator(editor, viewState, () => baseRuntime.levels(...args)),
+      withRootGenerator(
+        editor,
+        viewState,
+        () => baseRuntime.levels(...args),
+        false
+      ),
     next: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.next(...args)),
     parent: ((at: Location, options?: EditorParentOptions) =>
@@ -1452,8 +1499,11 @@ const createViewRuntime = <V extends Value>(
     point: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.point(...args)),
     positions: (...args) =>
-      withRootGenerator(editor, viewState, () =>
-        baseRuntime.positions(...args)
+      withRootGenerator(
+        editor,
+        viewState,
+        () => baseRuntime.positions(...args),
+        false
       ),
     previous: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.previous(...args)),

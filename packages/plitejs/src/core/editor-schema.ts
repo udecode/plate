@@ -362,6 +362,8 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     ) => boolean;
     /** Register one trusted immutable document installed by the runtime owner. */
     adoptDocumentBaseline: (value: EditorDocumentValue) => void;
+    /** Validate any unvalidated roots of a projected document baseline. */
+    ensureDocumentBaseline: (value: EditorDocumentValue) => void;
     cachedRootCounts: () => Readonly<{ frozen: number; ownership: number }>;
     /** Fit an external document and preserve one explicit selection through it. */
     fitDocumentWithSelection: <TValue extends Value>(
@@ -5537,6 +5539,21 @@ export const createEditorSchema = <V extends Value = Value>(
     });
   };
 
+  const ensureDocumentBaseline = (value: EditorDocumentValue) => {
+    const authority = getValidationAuthority();
+    const roots = documentRoots(value);
+
+    if (
+      visitRootNames(roots).every((root) =>
+        isRootValidatedBy(roots[root], authority)
+      )
+    ) {
+      return;
+    }
+
+    assertDocument(value);
+  };
+
   const checkDocumentChange = (
     {
       after,
@@ -6144,6 +6161,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const api: InternalEditorSchemaApi<V> = Object.freeze({
     adoptDocumentBaseline: rememberValidatedDocumentRoots,
+    ensureDocumentBaseline,
     cachedRootCounts: () => {
       const compiled = getDeclarativeSchema();
 
