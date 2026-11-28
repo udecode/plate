@@ -1,6 +1,8 @@
 import {
+  getInternalDocumentChangeRanges,
   hasInternalDocumentChangeRoot,
   mapInternalDocumentChangePosition,
+  valueRoot,
   valueRootIndex,
   valueRootNodes,
 } from '../../core/change/document-change';
@@ -10,7 +12,10 @@ import {
   withInternalDocumentChangeStepFirstAt,
 } from '../../core/change/replay-step-order';
 import { withoutRepairOrphans } from '../../core/document-admission';
-import { getEditorRuntimeOwner } from '../../core/editor-runtime';
+import {
+  getEditorRuntimeOwner,
+  getEditorSchema,
+} from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import {
@@ -43,7 +48,6 @@ type YjsRemoteImport = Readonly<{
   effects: readonly PendingYjsEffect[];
   /** Record writes applied before the content change, in the same commit. */
   records?: DocumentChange | null;
-  selection?: Range | Selection;
   /**
    * Whether the Yjs events the change was read from wrote or dropped a node.
    * Once history follows every recorded change, an import read from its
@@ -51,7 +55,11 @@ type YjsRemoteImport = Readonly<{
    * diffed two values and commits unknown facts.
    */
   touchesNodes?: boolean;
-}>;
+}> &
+  (
+    | Readonly<{ mappedSelection?: never; selection?: Range | Selection }>
+    | Readonly<{ mappedSelection: Range | Selection; selection?: never }>
+  );
 
 export type YjsImportOutcome = Readonly<{
   admission: AdmittedRepair | null;
@@ -139,15 +147,40 @@ const mapImportRange = (
 
   const source = valueRootIndex(before, root);
   const target = valueRootIndex(after, root);
+  const changedRanges = getInternalDocumentChangeRanges(change, root);
   const map = (point: Range['anchor']) => {
+    const pos = source.positionAt(point);
     const position = mapInternalDocumentChangePosition(
       change,
       root,
-      source.positionAt(point),
+      pos,
       -1,
       'around'
     );
-    const mapped = position === null ? null : target.pointAt(position, -1);
+
+    if (position !== null) {
+      const mapped = target.pointAt(position, -1);
+
+      return mapped && { ...point, offset: mapped.offset, path: mapped.path };
+    }
+
+    const blockPath = point.path.slice(0, -1);
+
+    if (blockPath.length === 0) return null;
+
+    const block = source.nodeRange(blockPath);
+
+    if (
+      changedRanges.some(([from, to]) => from <= block.from && to >= block.to)
+    ) {
+      return null;
+    }
+
+    const boundary = mapInternalDocumentChangePosition(change, root, pos, -1);
+    const mapped =
+      boundary === null
+        ? null
+        : (target.pointAt(boundary, -1) ?? target.pointAt(boundary, 1));
 
     return mapped && { ...point, offset: mapped.offset, path: mapped.path };
   };
@@ -186,7 +219,15 @@ export const createYjsEditorAdapter = (
     return root === 'main' ? value.children : (value.roots?.[root] ?? []);
   };
   const applyRemote: YjsEditorAdapter['applyRemote'] = (
-    { replacement, change, effects, records, selection, touchesNodes },
+    {
+      replacement,
+      change,
+      effects,
+      mappedSelection,
+      records,
+      selection,
+      touchesNodes,
+    },
     beforeListeners
   ) => {
     const currentValue = readValue();
@@ -207,41 +248,60 @@ export const createYjsEditorAdapter = (
       imported && stepFirstAt
         ? withInternalDocumentChangeStepFirstAt(imported.change, stepFirstAt)
         : (imported?.change ?? change);
+    const wasSetRoot = (root: string) =>
+      getEditorSchema(editor).isSetRoot(root, {
+        rootChildren: (name: string) => valueRoot(currentValue, name),
+        value: () => currentValue,
+      });
+    const targetSelection =
+      mappedSelection !== undefined ? mappedSelection : selection;
     const selectionAfter = (
       nextValue: EditorDocumentValue,
       editorMapped: () => EditorSelection | null
     ) => {
-      if (selection === undefined || selection === null) return null;
+      if (targetSelection === undefined || targetSelection === null) {
+        return null;
+      }
 
       const editorRoot =
-        !SelectionApi.isNode(selection) && !RangeApi.isRange(selection)
+        !SelectionApi.isNode(targetSelection) &&
+        !RangeApi.isRange(targetSelection)
           ? normalizeRootKey(editor.read.view.root())
-          : normalizeRootKey(SelectionApi.root(selection));
+          : normalizeRootKey(SelectionApi.root(targetSelection));
       const changes =
         replacement === undefined && publishable && !publishable.empty;
 
-      if (changes && SelectionApi.isNode(selection)) return editorMapped();
+      if (mappedSelection !== undefined) {
+        return sanitizeImportSelection(
+          valueRootNodes(nextValue, editorRoot) as NodeList<Descendant>,
+          mappedSelection
+        );
+      }
+
+      if (changes && SelectionApi.isNode(targetSelection)) {
+        return editorMapped();
+      }
 
       // A text selection maps through the change, so a caret after a
       // remote split moves into the line that now holds its letters.
       const mapped =
         changes &&
-        !SelectionApi.isNode(selection) &&
-        !('kind' in selection && selection.kind !== 'text')
+        !SelectionApi.isNode(targetSelection) &&
+        !('kind' in targetSelection && targetSelection.kind !== 'text')
           ? mapImportRange(
               publishable,
               currentValue,
               nextValue,
               editorRoot,
-              selection
+              targetSelection
             )
-          : selection;
+          : targetSelection;
 
-      if (mapped === null) return editorMapped();
+      if (mapped === null && wasSetRoot(editorRoot)) return editorMapped();
 
       return sanitizeImportSelection(
         valueRootNodes(nextValue, editorRoot) as NodeList<Descendant>,
-        mapped
+        mapped ?? targetSelection
       );
     };
 
@@ -277,7 +337,7 @@ export const createYjsEditorAdapter = (
               );
             }
           }
-          if (selection !== undefined) {
+          if (targetSelection !== undefined) {
             const nextSelection = selectionAfter(tx.value(), () =>
               getCurrentSelection(editor)
             );

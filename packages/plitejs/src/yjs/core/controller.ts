@@ -1241,9 +1241,9 @@ export class YjsController<
             effects: [],
             ...(mapped
               ? {
-                  selection: SelectionApi.text({
+                  mappedSelection: SelectionApi.text({
                     ...mapped,
-                    ...(root === 'main' ? {} : { root }),
+                    ...(root === MAIN_ROOT_KEY ? {} : { root }),
                   }),
                 }
               : {}),
