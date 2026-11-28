@@ -79,6 +79,7 @@ import {
 } from '../react/editable/view-lines';
 import { useEditableLayoutPass } from '../react/hooks/use-editable-layout-pass';
 import { useOptionalEditorContext } from '../react/hooks/use-editor-context';
+import { useEditorHostScrollElement } from '../react/hooks/use-editor-dom-scope';
 import { useInheritedReadOnly } from '../react/hooks/use-editor-read-only';
 import { useInternalEditorSelector } from '../react/hooks/use-editor-selector';
 import { useOptionalEditorViewState } from '../react/hooks/use-editor-view-state';
@@ -88,6 +89,10 @@ import {
   type ReactRuntimeEditor,
   toReactRuntimeEditor,
 } from '../react/plugin/react-editor';
+import {
+  canUseElementAsScrollRoot,
+  findScrollableAncestor,
+} from '../react/scroll-root';
 import {
   createPretextPageLayoutEngine,
   measurePages,
@@ -598,43 +603,18 @@ const attachFontView = (fonts: FontFaceSet, view: FontView): (() => void) => {
   };
 };
 
-const SCROLLABLE_OVERFLOW_PATTERN = /(auto|scroll|overlay)/;
+const getScrollRoot = (
+  element: HTMLElement | null,
+  hostScrollElement: HTMLElement | null = null
+): HTMLElement | null => {
+  if (hostScrollElement) return hostScrollElement;
 
-const parseCSSPixels = (value: string | null | undefined) => {
-  if (!value || value === 'auto' || value === 'none') return 0;
-  const parsed = Number.parseFloat(value);
-
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const canScroll = (element: HTMLElement | null) => {
-  if (!element) return false;
-  const style = element.ownerDocument.defaultView?.getComputedStyle(element);
-
-  return (
-    SCROLLABLE_OVERFLOW_PATTERN.test(
-      `${style?.overflow ?? ''} ${style?.overflowY ?? ''}`
-    ) &&
-    (element.clientHeight > 0 ||
-      parseCSSPixels(style?.height) > 0 ||
-      parseCSSPixels(style?.maxHeight) > 0)
-  );
-};
-
-const getScrollRoot = (element: HTMLElement | null): HTMLElement | null => {
   const editable =
     element?.querySelector<HTMLElement>('[data-editor="true"]') ?? null;
 
-  if (canScroll(editable)) return editable;
+  if (canUseElementAsScrollRoot(editable)) return editable;
 
-  let current = element;
-
-  while (current) {
-    if (canScroll(current)) return current;
-    current = current.parentElement;
-  }
-
-  return null;
+  return findScrollableAncestor(element);
 };
 
 type Viewport = { bottom: number; top: number };
@@ -664,6 +644,7 @@ const sameViewportSnapshot = (
 const createViewportStore = () => {
   const listeners = new Set<() => void>();
   let root: HTMLDivElement | null = null;
+  let hostScrollElement: HTMLElement | null = null;
   let geometryHeight = 0;
   let cleanup = () => {};
   let lastScrollAt = Number.NEGATIVE_INFINITY;
@@ -687,7 +668,7 @@ const createViewportStore = () => {
   const restart = () => {
     cleanup();
     if (listeners.size === 0 || !root) return;
-    const scrollRoot = getScrollRoot(root);
+    const scrollRoot = getScrollRoot(root, hostScrollElement);
 
     if (!scrollRoot) {
       publish(INACTIVE_VIEWPORT);
@@ -793,9 +774,14 @@ const createViewportStore = () => {
   };
 
   return {
-    configure(nextRoot: HTMLDivElement | null, nextHeight: number) {
+    configure(
+      nextRoot: HTMLDivElement | null,
+      nextHeight: number,
+      nextHostScrollElement: HTMLElement | null = null
+    ) {
       root = nextRoot;
       geometryHeight = nextHeight;
+      hostScrollElement = nextHostScrollElement;
       restart();
     },
     getLastScrollAt: () => lastScrollAt,
@@ -1569,9 +1555,15 @@ const PagedEditableInner = <TElement extends Element = Element>({
         : EMPTY_PAGE_MOUNT_PLAN,
     [geometry, mode, snapshot]
   );
+  const hostScrollElement = useEditorHostScrollElement(editor);
+
   useLayoutEffect(() => {
-    viewportStore.configure(rootRef.current, geometry?.height ?? 0);
-  }, [geometry?.height, viewportStore]);
+    viewportStore.configure(
+      rootRef.current,
+      geometry?.height ?? 0,
+      hostScrollElement
+    );
+  }, [geometry?.height, hostScrollElement, viewportStore]);
   const viewportState = useSyncExternalStore(
     viewportStore.subscribe,
     viewportStore.getSnapshot,
@@ -1761,7 +1753,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
       }
       const item =
         itemIndex === undefined ? undefined : pageMountPlan.items[itemIndex];
-      const scrollRoot = getScrollRoot(rootRef.current);
+      const scrollRoot = getScrollRoot(rootRef.current, hostScrollElement);
 
       if (!item || !scrollRoot) return false;
       const viewportHeight = Math.max(
@@ -1778,7 +1770,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
       scrollRoot.scrollTo({ top: Math.max(0, top) });
       return true;
     },
-    [pageMountPlan]
+    [hostScrollElement, pageMountPlan]
   );
 
   const { pageArrayIndex, pageByIndex } = useMemo(() => {

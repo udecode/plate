@@ -160,55 +160,6 @@ export const createPagedEditablePageMountPlan = ({
   return { itemIndexesByPath, itemIndexesByTopLevelIndex, items };
 };
 
-export const getPagedEditableMountedPageIndexes = (
-  plan: PagedEditablePageMountPlan,
-  {
-    composingTopLevelIndex,
-    promotedTopLevelIndex,
-    selectedTopLevelIndex,
-    visibleItemIndexes,
-  }: {
-    composingTopLevelIndex?: number | null;
-    promotedTopLevelIndex?: number | null;
-    selectedTopLevelIndex?: number | null;
-    visibleItemIndexes: Iterable<number>;
-  }
-): readonly number[] => {
-  const itemIndexes = new Set(visibleItemIndexes);
-
-  for (const topLevelIndex of [
-    selectedTopLevelIndex,
-    promotedTopLevelIndex,
-    composingTopLevelIndex,
-  ]) {
-    if (typeof topLevelIndex !== 'number') {
-      continue;
-    }
-
-    for (const itemIndex of plan.itemIndexesByTopLevelIndex.get(
-      topLevelIndex
-    ) ?? []) {
-      itemIndexes.add(itemIndex);
-    }
-  }
-
-  const pageIndexes = new Set<number>();
-
-  for (const itemIndex of itemIndexes) {
-    const item = plan.items[itemIndex];
-
-    if (!item) {
-      continue;
-    }
-
-    for (const pageIndex of item.pageIndexes) {
-      pageIndexes.add(pageIndex);
-    }
-  }
-
-  return [...pageIndexes].sort((left, right) => left - right);
-};
-
 export const getPagedEditableVisiblePageMountItems = (
   plan: PagedEditablePageMountPlan,
   {

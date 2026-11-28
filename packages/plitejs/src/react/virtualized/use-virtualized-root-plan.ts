@@ -7,6 +7,8 @@ import React from 'react';
 import { flushSync } from 'react-dom';
 
 import type { NodeKey, Path } from '../..';
+import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
+import { parseCSSPixels } from '../scroll-root';
 import {
   createEditableViewportPlan,
   createInitialViewportIndexes,
@@ -18,17 +20,8 @@ export type VirtualizedEditableOptions = {
   overscan: number;
 };
 
-const SCROLLABLE_OVERFLOW_PATTERN = /(auto|scroll|overlay)/;
 const TOP_LEVEL_NATIVE_SCROLLBAR_DRAG_OVERSCAN = 96;
 const SCROLLBAR_POINTER_HIT_SLOP = 24;
-
-const parseCSSPixels = (value: string | null | undefined) => {
-  if (!value || value === 'auto' || value === 'none') return 0;
-
-  const parsed = Number.parseFloat(value);
-
-  return Number.isFinite(parsed) ? parsed : 0;
-};
 
 const getElementViewportHeight = (
   element: HTMLElement | null,
@@ -65,31 +58,22 @@ const isVerticalScrollbarPointer = (
   return event.clientX >= start && event.clientX <= end;
 };
 
-const canUseElementAsVirtualizerScrollRoot = (element: HTMLElement | null) => {
-  if (!element) return false;
-
-  const style = element.ownerDocument.defaultView?.getComputedStyle(element);
-  const overflow = `${style?.overflow ?? ''} ${style?.overflowY ?? ''}`;
-  const hasScrollableOverflow = SCROLLABLE_OVERFLOW_PATTERN.test(overflow);
-  const hasBoundedHeight =
-    element.clientHeight > 0 ||
-    parseCSSPixels(style?.height) > 0 ||
-    parseCSSPixels(style?.maxHeight) > 0;
-
-  return hasScrollableOverflow && hasBoundedHeight;
-};
-
-export const getVirtualizerScrollElement = (
-  element: HTMLElement | null
-): HTMLElement | null => {
-  let current = element;
-
-  while (current) {
-    if (canUseElementAsVirtualizerScrollRoot(current)) return current;
-    current = current.parentElement;
+const readScrollMargin = (
+  scrollElement: HTMLElement | null,
+  rootElement: HTMLElement | null
+) => {
+  if (!scrollElement || !rootElement || scrollElement === rootElement) {
+    return 0;
   }
 
-  return null;
+  const scrollRect = scrollElement.getBoundingClientRect();
+  const rootRect = rootElement.getBoundingClientRect();
+  const margin =
+    rootRect.top -
+    (scrollRect.top + (scrollElement.clientTop || 0)) +
+    scrollElement.scrollTop;
+
+  return Number.isFinite(margin) && margin > 0 ? margin : 0;
 };
 
 const createRetainedRangeExtractor =
@@ -114,21 +98,19 @@ const createRetainedRangeExtractor =
 
 export const useVirtualizedRootPlan = ({
   options,
-  promotedTopLevelIndex,
+  promotedTopLevelIndexes,
   retainedPaths,
   rootElement,
   scrollElement,
   selectionPaths,
-  selectedTopLevelIndex,
   topLevelNodeKeys,
 }: {
   options: VirtualizedEditableOptions;
-  promotedTopLevelIndex: number | null;
+  promotedTopLevelIndexes: readonly number[];
   retainedPaths?: readonly Path[];
   rootElement: HTMLElement | null;
   scrollElement: HTMLElement | null;
   selectionPaths: readonly Path[] | null;
-  selectedTopLevelIndex: number | null;
   topLevelNodeKeys: readonly NodeKey[];
 }): EditableViewportPlan => {
   const { estimatedBlockSize, overscan } = options;
@@ -151,17 +133,48 @@ export const useVirtualizedRootPlan = ({
     () => [
       ...selectedEndpointIndexes,
       ...retainedPathIndexes,
-      selectedTopLevelIndex,
-      promotedTopLevelIndex,
+      ...promotedTopLevelIndexes,
     ],
-    [
-      promotedTopLevelIndex,
-      retainedPathIndexes,
-      selectedEndpointIndexes,
-      selectedTopLevelIndex,
-    ]
+    [promotedTopLevelIndexes, retainedPathIndexes, selectedEndpointIndexes]
   );
   const [nativeScrollbarDrag, setNativeScrollbarDrag] = React.useState(false);
+  const [scrollMargin, setScrollMargin] = React.useState(0);
+
+  useIsomorphicLayoutEffect(() => {
+    const updateMargin = () => {
+      const next = readScrollMargin(scrollElement, rootElement);
+      setScrollMargin((prev) => (prev === next ? prev : next));
+    };
+
+    updateMargin();
+
+    if (!scrollElement || !rootElement || scrollElement === rootElement) {
+      return undefined;
+    }
+
+    const view = rootElement.ownerDocument.defaultView;
+    const ResizeObserverConstructor =
+      view?.ResizeObserver ??
+      (typeof ResizeObserver === 'undefined' ? null : ResizeObserver);
+    const observer = ResizeObserverConstructor
+      ? new ResizeObserverConstructor(updateMargin)
+      : null;
+
+    observer?.observe(scrollElement);
+    observer?.observe(rootElement);
+    if (
+      rootElement.parentElement &&
+      rootElement.parentElement !== scrollElement
+    ) {
+      observer?.observe(rootElement.parentElement);
+    }
+    view?.addEventListener('resize', updateMargin);
+
+    return () => {
+      observer?.disconnect();
+      view?.removeEventListener('resize', updateMargin);
+    };
+  }, [rootElement, scrollElement]);
 
   React.useEffect(() => {
     if (!scrollElement) return undefined;
@@ -207,9 +220,14 @@ export const useVirtualizedRootPlan = ({
     },
     overscan: effectiveOverscan,
     rangeExtractor,
+    scrollMargin,
   });
   const virtualItems = scrollElement
-    ? virtualizer.getVirtualItems()
+    ? virtualizer.getVirtualItems().map((item) => ({
+        index: item.index,
+        size: item.size,
+        start: Math.max(0, item.start - scrollMargin),
+      }))
     : createInitialViewportIndexes({ count, retainedIndexes }).map((index) => ({
         index,
         size: estimatedBlockSize,
@@ -222,7 +240,7 @@ export const useVirtualizedRootPlan = ({
 
       const index = Number(element.dataset.index);
 
-      if (Number.isInteger(index)) {
+      if (Number.isInteger(index) && element.offsetHeight > 0) {
         virtualizer.resizeItem(index, element.offsetHeight);
       }
     },

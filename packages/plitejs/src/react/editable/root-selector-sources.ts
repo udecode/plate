@@ -123,45 +123,6 @@ export const useRootNodeKeys = () => {
   });
 };
 
-export const useTopLevelSelectionIndex = (enabled: boolean) => {
-  const editor = useEditorContext();
-  const root = toInternalRoot(editor.read((state) => state.view.root()));
-  const selector = useCallback(
-    (innerEditor3: ReactRuntimeEditor) => {
-      if (!enabled) {
-        return null;
-      }
-
-      const selection = readRuntimeSelection(innerEditor3);
-      const indices = selection
-        ? SelectionApi.isNode(selection)
-          ? selection.paths.map((path) => path[0])
-          : [selection.anchor.path[0], selection.focus.path[0]]
-        : [];
-
-      if (
-        !indices.every((index): index is number => typeof index === 'number')
-      ) {
-        return null;
-      }
-
-      return indices.length > 0 ? Math.min(...indices) : null;
-    },
-    [enabled]
-  );
-  const shouldUpdate = useCallback(
-    (change?: EditorCommit) =>
-      enabled && shouldUpdateSelectedTopLevelIndex(root, change),
-    [enabled, root]
-  );
-
-  return useInternalEditorSelector(selector, {
-    equalityFn: Object.is,
-    profileId: 'top-level-selection-index',
-    shouldUpdate,
-  });
-};
-
 const sameSelectionPaths = (
   left: readonly Path[] | null,
   right: readonly Path[] | null

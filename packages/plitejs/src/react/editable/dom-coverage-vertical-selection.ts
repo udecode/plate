@@ -44,9 +44,8 @@ type VerticalDOMCoverageMove = PlainVerticalDOMCoveragePlugin & {
   extend: boolean;
 };
 
-const isNonViewportMaterializeBoundary = (boundary: DOMCoverageBoundary) =>
-  boundary.selectionPolicy === 'materialize' &&
-  boundary.reason !== 'viewport-virtualization';
+const isMaterializeBoundary = (boundary: DOMCoverageBoundary) =>
+  boundary.selectionPolicy === 'materialize';
 
 type RectLike = DOMGeometryRect;
 type ResolvedDOMPoint = DOMGeometryPoint;
@@ -406,20 +405,16 @@ const resolveVisualLineTargetPoint = ({
 
 const getUnselectedMaterializeBoundariesForRange = ({
   coverage,
-  extend,
   range,
   selectedBoundaryIds,
 }: {
   coverage: DOMCoverageSession | undefined;
-  extend: boolean;
   range: Range;
   selectedBoundaryIds: Set<string>;
 }) =>
   (coverage?.getBoundariesForRange(range) ?? []).filter(
     (boundary) =>
-      (extend
-        ? boundary.selectionPolicy === 'materialize'
-        : isNonViewportMaterializeBoundary(boundary)) &&
+      isMaterializeBoundary(boundary) &&
       !selectedBoundaryIds.has(boundary.boundaryId)
   );
 
@@ -1003,8 +998,7 @@ export const getPlainVerticalDOMCoveragePlugin = ({
   if (
     reverse === null ||
     !selection ||
-    (!extend &&
-      !coverage?.getBoundaries().some(isNonViewportMaterializeBoundary))
+    !coverage?.getBoundaries().some(isMaterializeBoundary)
   ) {
     return null;
   }
@@ -1030,7 +1024,6 @@ export const getPlainVerticalDOMCoveragePlugin = ({
   if (
     getUnselectedMaterializeBoundariesForRange({
       coverage,
-      extend,
       range: focusMovementRange,
       selectedBoundaryIds,
     }).length > 0
@@ -1038,10 +1031,7 @@ export const getPlainVerticalDOMCoveragePlugin = ({
     return { extend, reverse, target: nextFocus };
   }
 
-  if (
-    !isSameBlockPoint({ editor, left: selection.focus, right: nextFocus }) ||
-    !isLeavingRenderedLine({ editor, point: selection.focus, reverse })
-  ) {
+  if (!isSameBlockPoint({ editor, left: selection.focus, right: nextFocus })) {
     return null;
   }
 
@@ -1058,12 +1048,17 @@ export const getPlainVerticalDOMCoveragePlugin = ({
     focus: boundaryFocus,
   };
 
-  return getUnselectedMaterializeBoundariesForRange({
-    coverage,
-    extend,
-    range: boundaryMovementRange,
-    selectedBoundaryIds,
-  }).length > 0
+  if (
+    getUnselectedMaterializeBoundariesForRange({
+      coverage,
+      range: boundaryMovementRange,
+      selectedBoundaryIds,
+    }).length === 0
+  ) {
+    return null;
+  }
+
+  return isLeavingRenderedLine({ editor, point: selection.focus, reverse })
     ? { extend, reverse, target: boundaryFocus }
     : null;
 };

@@ -12,15 +12,12 @@ import {
   useDescendantCaretOwnerPaths,
   useRootNodeKeys,
   useSelectionPaths,
-  useTopLevelSelectionIndex,
 } from './editable/root-selector-sources';
 import { useEditorContext } from './hooks/use-editor-context';
 import { useEditorHostScrollElement } from './hooks/use-editor-dom-scope';
 import { useInheritedReadOnly } from './hooks/use-editor-read-only';
-import {
-  getVirtualizerScrollElement,
-  useVirtualizedRootPlan,
-} from './virtualized/use-virtualized-root-plan';
+import { findScrollableAncestor } from './scroll-root';
+import { useVirtualizedRootPlan } from './virtualized/use-virtualized-root-plan';
 
 export type VirtualizedEditorContentProps<
   TElement extends Element = Element,
@@ -57,16 +54,16 @@ const VirtualizedEditorContentInner = <TElement extends Element>({
   const [rootElement, setRootElement] = React.useState<HTMLDivElement | null>(
     null
   );
-  const [promotedTopLevelIndex, setPromotedTopLevelIndex] = React.useState<
-    number | null
-  >(null);
+  const [promotedTopLevelIndexes, setPromotedTopLevelIndexes] = React.useState<
+    readonly number[]
+  >([]);
+  const promotionBatchActiveRef = React.useRef(false);
   const topLevelNodeKeys = useRootNodeKeys();
   const selectionPaths = useSelectionPaths(true);
   const descendantCaretOwnerPaths = useDescendantCaretOwnerPaths(true);
-  const selectedTopLevelIndex = useTopLevelSelectionIndex(true);
   const hostScrollElement = useEditorHostScrollElement(useEditorContext());
   const scrollElement = React.useMemo(
-    () => hostScrollElement ?? getVirtualizerScrollElement(rootElement),
+    () => hostScrollElement ?? findScrollableAncestor(rootElement),
     [hostScrollElement, rootElement]
   );
   const options = React.useMemo(
@@ -75,20 +72,37 @@ const VirtualizedEditorContentInner = <TElement extends Element>({
   );
   const plan = useVirtualizedRootPlan({
     options,
-    promotedTopLevelIndex,
+    promotedTopLevelIndexes,
     retainedPaths: descendantCaretOwnerPaths,
     rootElement,
     scrollElement,
-    selectedTopLevelIndex,
     selectionPaths,
     topLevelNodeKeys,
   });
+  const requestMount = React.useCallback((index: number) => {
+    const appendToBatch = promotionBatchActiveRef.current;
+
+    if (!appendToBatch) {
+      promotionBatchActiveRef.current = true;
+      queueMicrotask(() => {
+        promotionBatchActiveRef.current = false;
+      });
+    }
+
+    setPromotedTopLevelIndexes((prev) => {
+      if (!appendToBatch) {
+        return prev.length === 1 && prev[0] === index ? prev : [index];
+      }
+
+      return prev.includes(index) ? prev : [...prev, index];
+    });
+  }, []);
   const viewportPlan = React.useMemo(
     () => ({
       ...plan,
-      requestMount: (index: number) => setPromotedTopLevelIndex(index),
+      requestMount,
     }),
-    [plan]
+    [plan, requestMount]
   );
   const ref = React.useCallback(
     (element: HTMLDivElement | null) => {

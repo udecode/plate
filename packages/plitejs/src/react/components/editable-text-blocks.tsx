@@ -15,7 +15,6 @@ import {
   type RootKey,
   type NodeKey,
   type Element as ElementNode,
-  type Range as ModelRange,
   type Text as TextNode,
 } from '../..';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
@@ -25,6 +24,7 @@ import { isDOMElement, isDOMNode, isDOMText } from '../../dom';
 import {
   type DOMCoverageBoundary,
   type DOMCoverageCopyPolicy,
+  type DOMCoverageMaterializeOptions,
   type DOMCoverageReason,
   type DOMCoverageSelectionPolicy,
   type DOMCoverageSession,
@@ -1412,13 +1412,16 @@ export const EditableDescendantNode = React.memo(
 const EditableCoverageMaterializer = ({
   materialize,
 }: {
-  materialize: (boundary: DOMCoverageBoundary, range?: ModelRange) => boolean;
+  materialize: (
+    boundary: DOMCoverageBoundary,
+    options: DOMCoverageMaterializeOptions
+  ) => boolean;
 }) => {
   const coverage = useEditableDOMRuntime()?.domCoverage;
   useIsomorphicLayoutEffect(
     () =>
       coverage?.registerMaterializeHandler((boundary, _reason, options) =>
-        materialize(boundary, options.range)
+        materialize(boundary, options)
       ),
     [coverage, materialize]
   );
@@ -1543,11 +1546,19 @@ const EditableInner = <TElement extends ElementNode>({
     });
   }, [hasViewportPlan, revealMounted, scrollViewportPathIntoView]);
   const materializeViewportBoundary = React.useCallback(
-    (boundary: DOMCoverageBoundary, targetRange?: ModelRange) => {
-      const path = targetRange?.anchor.path;
+    (boundary: DOMCoverageBoundary, options: DOMCoverageMaterializeOptions) => {
+      if (boundary.reason !== 'viewport-virtualization' || !viewportPlan) {
+        return false;
+      }
+
+      const targetRange = options.range;
+      const path =
+        options.rangeRole === 'focus'
+          ? (targetRange?.focus.path ?? targetRange?.anchor.path)
+          : (targetRange?.anchor.path ?? targetRange?.focus.path);
       const targetIndex = path?.[0] ?? boundary.coveredPathRanges[0]?.anchor[0];
 
-      if (typeof targetIndex !== 'number' || !viewportPlan) return false;
+      if (typeof targetIndex !== 'number') return false;
 
       viewportPlan.requestMount?.(targetIndex, path);
       if (path) viewportPlan.scrollToPath(path, 'center');
@@ -1560,33 +1571,48 @@ const EditableInner = <TElement extends ElementNode>({
 
   useIsomorphicLayoutEffect(() => {
     const anchorPath = selectedViewportPaths?.[0];
+    const focusPath = selectedViewportPaths?.at(-1);
 
     if (!viewportPlan || !anchorPath) {
       lastViewportScrollPathKeyRef.current = null;
       return;
     }
 
-    const anchorPathKey = anchorPath.join('.');
     const lastCommit = editor.read((state) => state.lastCommit());
 
     if (lastCommit?.changed.hasAny('text')) return;
 
-    const node = editor.read((state) => state.nodes.get(anchorPath)?.[0]);
-    const shownKeys = viewportPlan.shownTopLevelNodeKeys;
-    const anchorBlockKey = topLevelNodeKeys[anchorPath[0] ?? -1];
-    const shown = shownKeys
-      ? anchorBlockKey !== undefined && shownKeys.has(anchorBlockKey)
-      : node && editor.api.dom.resolveDOMNode(node);
+    const isPathShown = (path: Path) => {
+      const shownKeys = viewportPlan.shownTopLevelNodeKeys;
+      const blockKey = topLevelNodeKeys[path[0] ?? -1];
 
-    if (shown) {
-      lastViewportScrollPathKeyRef.current = anchorPathKey;
+      if (shownKeys) {
+        return blockKey !== undefined && shownKeys.has(blockKey);
+      }
+
+      const node = editor.read((state) => state.nodes.get(path)?.[0]);
+
+      return Boolean(node && editor.api.dom.resolveDOMNode(node));
+    };
+
+    const anchorShown = isPathShown(anchorPath);
+    const targetPath =
+      anchorShown && focusPath && !PathApi.equals(anchorPath, focusPath)
+        ? focusPath
+        : anchorPath;
+    const targetPathKey = targetPath.join('.');
+    const targetShown =
+      targetPath === anchorPath ? anchorShown : isPathShown(targetPath);
+
+    if (targetShown) {
+      lastViewportScrollPathKeyRef.current = targetPathKey;
       return;
     }
-    if (lastViewportScrollPathKeyRef.current === anchorPathKey) return;
+    if (lastViewportScrollPathKeyRef.current === targetPathKey) return;
 
-    viewportPlan.requestMount?.(anchorPath[0] ?? 0, anchorPath);
-    if (viewportPlan.scrollToPath(anchorPath, 'center')) {
-      lastViewportScrollPathKeyRef.current = anchorPathKey;
+    viewportPlan.requestMount?.(targetPath[0] ?? 0, targetPath);
+    if (viewportPlan.scrollToPath(targetPath, 'center')) {
+      lastViewportScrollPathKeyRef.current = targetPathKey;
     }
   }, [editor, selectedViewportPaths, topLevelNodeKeys, viewportPlan]);
 
@@ -1709,7 +1735,6 @@ const EditableInner = <TElement extends ElementNode>({
             ref={viewportPlan.measureElement}
             style={{
               left: 0,
-              minHeight: item.size,
               pointerEvents: 'auto',
               position: 'absolute',
               top: 0,

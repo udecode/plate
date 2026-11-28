@@ -1,46 +1,9 @@
-import {
-  type Editor,
-  type EditorSnapshot,
-  type NodeKey,
-  type Range,
-  RangeApi,
-} from '..';
+import type { NodeKey, Range } from '..';
 import { usesAppleDOMHotkeys } from '../dom/internal';
-import { point as editorPoint } from './editable/runtime-editor-api';
 
 export type MountedTopLevelRange = {
   endIndex: number;
   startIndex: number;
-};
-
-const samePath = (left: readonly number[], right: readonly number[]) =>
-  left.length === right.length &&
-  left.every((segment, index) => segment === right[index]);
-
-const samePoint = (
-  left: { offset: number; path: readonly number[] },
-  right: { offset: number; path: readonly number[] }
-) => left.offset === right.offset && samePath(left.path, right.path);
-
-export const getFullDocumentRange = (editor: Editor) => ({
-  anchor: editorPoint(editor, [], { edge: 'start' }),
-  focus: editorPoint(editor, [], { edge: 'end' }),
-});
-
-export const isFullDocumentSelection = (
-  editor: Editor,
-  selection: EditorSnapshot['selection']
-) => {
-  if (!selection || !RangeApi.isRange(selection)) return false;
-
-  const fullRange = getFullDocumentRange(editor);
-
-  return (
-    (samePoint(selection.anchor, fullRange.anchor) &&
-      samePoint(selection.focus, fullRange.focus)) ||
-    (samePoint(selection.anchor, fullRange.focus) &&
-      samePoint(selection.focus, fullRange.anchor))
-  );
 };
 
 export const isSelectionViewportBacked = (
