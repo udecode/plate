@@ -74,7 +74,7 @@ import { LintKit } from '@/registry/components/editor/lint';
 
 import { CreateSink, type CreateSinkKit } from './create-sink';
 
-const BASE_SINK_KIT: CreateSinkKit = {
+export const BASE_SINK_KIT: CreateSinkKit = {
   AIToolbarButton,
   AlignToolbarButton,
   Avatar,

@@ -6,11 +6,15 @@ import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 
-export function AnnouncementButton() {
+export function AnnouncementButton({
+  label = 'Create your Plate editor',
+}: {
+  label?: string;
+}) {
   return (
     <Badge asChild variant="secondary" className="mb-2 bg-muted">
-      <Link href="/docs/plugin-input-rules">
-        Plugin Input Rules
+      <Link href="/create">
+        {label}
         <ArrowRightIcon />
       </Link>
     </Badge>

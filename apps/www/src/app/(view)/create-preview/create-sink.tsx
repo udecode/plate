@@ -51,7 +51,7 @@ import { IconPlaceholder } from './icon-placeholder';
 
 export type { CreateSinkKit } from './create-sink-types';
 
-function SinkFixedToolbarButtons({ kit }: { kit: CreateSinkKit }) {
+export function SinkFixedToolbarButtons({ kit }: { kit: CreateSinkKit }) {
   const {
     AIToolbarButton,
     AlignToolbarButton,
@@ -204,7 +204,7 @@ function SinkFixedToolbarButtons({ kit }: { kit: CreateSinkKit }) {
   );
 }
 
-function SinkFloatingToolbarButtons({ kit }: { kit: CreateSinkKit }) {
+export function SinkFloatingToolbarButtons({ kit }: { kit: CreateSinkKit }) {
   const {
     AIToolbarButton,
     CommentToolbarButton,
@@ -284,7 +284,7 @@ function SinkFloatingToolbarButtons({ kit }: { kit: CreateSinkKit }) {
   );
 }
 
-function ExpandFirstDetails() {
+export function ExpandFirstDetails() {
   const editor = useEditor();
 
   React.useEffect(() => {
