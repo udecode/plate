@@ -280,6 +280,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-slash-media-items",
+      "href": "/registry/changelog/2026-11-28-slash-media-items.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add Media items (Image, Video, Audio, File) to the slash menu",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["slash"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-add-lock-kit",
       "href": "/registry/changelog/2026-11-27-add-lock-kit.json",
       "status": "draft",

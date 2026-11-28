@@ -4233,6 +4233,7 @@
         "ai@^6.0.0",
         "diff-match-patch-ts@^0.6.0",
         "fastest-levenshtein@1.0.16",
+        "files-sdk@^3.2.0",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
         "unified@^11.0.5"

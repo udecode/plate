@@ -1,5 +1,5 @@
 {
-  "generation": "562306a0cff4ce398e0c373f369b13c4220bea65755c6a40a36690c0eae73eda",
+  "generation": "45780a7778d512d45c00c957dae5da52f1e282e3acb96e2514576141ae376971",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -4280,6 +4280,7 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
+            "files-sdk@^3.2.0",
             "lucide-react",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -12303,6 +12304,7 @@
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
+            "files-sdk@^3.2.0",
             "lucide-react",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",

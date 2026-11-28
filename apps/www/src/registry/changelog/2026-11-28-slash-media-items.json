@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-slash-media-items",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-slash-media-items.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add Media items (Image, Video, Audio, File) to the slash menu",
+  "targets": [
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-slash-media-items-image-video-8d566d6f",
+      "kind": "new",
+      "summary": "Add Media items (Image, Video, Audio, File) to the slash menu",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["slash"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-slash-media-items",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

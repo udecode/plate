@@ -1,13 +1,17 @@
 'use client';
 
 import {
+  AudioLinesIcon,
   CalendarIcon,
   ChevronRightIcon,
   Code2,
   Columns3Icon,
+  FileUpIcon,
+  FilmIcon,
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
+  ImageIcon,
   LightbulbIcon,
   ListIcon,
   ListOrdered,
@@ -38,6 +42,12 @@ import { BaseFootnotePlugin } from 'platejs/footnote';
 import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+} from 'platejs/media';
+import {
   type EditableSiblingProps,
   type Editor,
   definePlugin,
@@ -46,6 +56,7 @@ import {
 } from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
 import { BaseTocPlugin } from 'platejs/toc';
+import { BaseUploadPlugin } from 'platejs/upload';
 import * as React from 'react';
 
 import {
@@ -222,6 +233,59 @@ const groups: Group[] = [
         label: 'Callout',
         onSelect: (_editor, tx) =>
           tx.plugin(BaseCalloutPlugin).upsert({}, { select: true }),
+      },
+    ],
+  },
+  {
+    group: 'Media',
+    items: [
+      {
+        icon: <ImageIcon />,
+        isAvailable: (editor) =>
+          editor.plugin(BaseUploadPlugin).installed &&
+          editor.plugin(BaseImagePlugin).installed,
+        keywords: ['img', 'picture', 'photo'],
+        label: 'Image',
+        onSelect: (_editor, tx) =>
+          tx
+            .plugin(BaseUploadPlugin)
+            .upsert({ kind: 'image' }, { select: true }),
+      },
+      {
+        icon: <FilmIcon />,
+        isAvailable: (editor) =>
+          editor.plugin(BaseUploadPlugin).installed &&
+          editor.plugin(BaseVideoPlugin).installed,
+        keywords: ['movie'],
+        label: 'Video',
+        onSelect: (_editor, tx) =>
+          tx
+            .plugin(BaseUploadPlugin)
+            .upsert({ kind: 'video' }, { select: true }),
+      },
+      {
+        icon: <AudioLinesIcon />,
+        isAvailable: (editor) =>
+          editor.plugin(BaseUploadPlugin).installed &&
+          editor.plugin(BaseAudioPlugin).installed,
+        keywords: ['sound'],
+        label: 'Audio',
+        onSelect: (_editor, tx) =>
+          tx
+            .plugin(BaseUploadPlugin)
+            .upsert({ kind: 'audio' }, { select: true }),
+      },
+      {
+        icon: <FileUpIcon />,
+        isAvailable: (editor) =>
+          editor.plugin(BaseUploadPlugin).installed &&
+          editor.plugin(BaseFilePlugin).installed,
+        keywords: ['document', 'attachment'],
+        label: 'File',
+        onSelect: (_editor, tx) =>
+          tx
+            .plugin(BaseUploadPlugin)
+            .upsert({ kind: 'file' }, { select: true }),
       },
     ],
   },
