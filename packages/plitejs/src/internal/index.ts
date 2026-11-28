@@ -150,6 +150,7 @@ export { createDetachedContentSlice } from '../core/content-slice';
 export {
   containsEndMatter,
   findEndMatterLandingIndex,
+  splitTopLevelEndMatter,
 } from '../core/slice-end-matter';
 export type { InternalEditorRuntimeElementEntry } from '../core/snapshot-index';
 

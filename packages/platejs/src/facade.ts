@@ -349,6 +349,7 @@ export {
   rejectEditorRecord,
   fitSlicePlacements,
   findEndMatterLandingIndex,
+  splitTopLevelEndMatter,
   getReaderRange,
   mapDetachedSelectionThroughChange,
   isAuthorId,

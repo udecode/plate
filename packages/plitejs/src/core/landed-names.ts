@@ -114,6 +114,9 @@ const rebuild = (
   };
 };
 
+export const isRenewalOff = (editor: Editor): boolean =>
+  RENEWAL_OFF.has(getEditorRuntimeOwner(editor));
+
 export const withRenewalOff = <A extends unknown[], T>(
   editor: Editor,
   land: (...landing: A) => T,

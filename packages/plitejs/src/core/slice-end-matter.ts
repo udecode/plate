@@ -169,6 +169,40 @@ export const dissolveOpenEndMatter = <V extends Value>(
       );
 };
 
+export const splitTopLevelEndMatter = (
+  slice: Slice,
+  schema: CompiledEditorSchema | null
+): Readonly<{ endMatter: readonly Descendant[]; flow: Slice }> => {
+  if (
+    slice.openStart !== 0 ||
+    slice.openEnd !== 0 ||
+    !declaresEndMatter(schema)
+  ) {
+    return { endMatter: [], flow: slice };
+  }
+
+  const endMatter: Descendant[] = [];
+  const flow: Descendant[] = [];
+
+  for (const node of slice.content) {
+    if (
+      ElementApi.isElement(node) &&
+      schema.elements.byType.get(node.type)?.slice.endMatter
+    ) {
+      endMatter.push(node);
+    } else {
+      flow.push(node);
+    }
+  }
+
+  return endMatter.length === 0
+    ? { endMatter, flow: slice }
+    : {
+        endMatter,
+        flow: createContentSliceFromFragment(flow, 0, 0, slice.roots),
+      };
+};
+
 export const splitEndMatter = (
   slice: Slice,
   schema: CompiledEditorSchema | null

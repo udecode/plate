@@ -1,11 +1,13 @@
 import {
   BaseParagraphPlugin,
+  ContentSlice,
   ElementApi,
   PLUGINS,
   PathApi,
   RangeApi,
   TextApi,
   definePlugin,
+  editorReads,
   property,
   type Descendant,
   type Element,
@@ -473,6 +475,83 @@ export const BaseFootnoteDefinitionPlugin = withStaticReuseKey(
   readFootnoteStaticReuseKey
 );
 
+const collectSliceFootnoteRefs = (
+  nodes: readonly Descendant[],
+  referenceType: string,
+  definitionType: string,
+  references: Set<string>,
+  definitions: Set<string>
+) => {
+  for (const node of nodes) {
+    if (!ElementApi.isElement(node)) continue;
+    if (node.type === referenceType && isNonBlankRef(node.ref)) {
+      references.add(node.ref);
+    } else if (node.type === definitionType && isNonBlankRef(node.ref)) {
+      definitions.add(node.ref);
+    }
+    collectSliceFootnoteRefs(
+      node.children,
+      referenceType,
+      definitionType,
+      references,
+      definitions
+    );
+  }
+};
+
+const remapSliceFootnoteRefs = (
+  nodes: readonly Descendant[],
+  referenceType: string,
+  definitionType: string,
+  remap: ReadonlyMap<string, string>
+): readonly Descendant[] => {
+  let changed = false;
+  const result = nodes.map((node) => {
+    if (!ElementApi.isElement(node)) return node;
+    const children = remapSliceFootnoteRefs(
+      node.children,
+      referenceType,
+      definitionType,
+      remap
+    );
+    const nextRef =
+      (node.type === referenceType || node.type === definitionType) &&
+      typeof node.ref === 'string'
+        ? remap.get(node.ref)
+        : undefined;
+
+    if (children === node.children && nextRef === undefined) return node;
+    changed = true;
+    return {
+      ...node,
+      ...(nextRef !== undefined ? { ref: nextRef } : {}),
+      children,
+    };
+  });
+
+  return changed ? result : nodes;
+};
+
+const allocateFreshFootnoteRef = (ref: string, taken: Set<string>): string => {
+  if (NUMERIC_REF_REGEX.test(ref)) {
+    let next = 1;
+
+    while (taken.has(`${next}`)) next += 1;
+    taken.add(`${next}`);
+
+    return `${next}`;
+  }
+
+  let suffix = 2;
+
+  while (taken.has(`${ref}-${suffix}`)) suffix += 1;
+  const fresh = `${ref}-${suffix}`;
+
+  taken.add(fresh);
+
+  return fresh;
+};
+
 type FootnoteDefinitionNode = ElementOf<typeof BaseFootnoteDefinitionPlugin>;
 
 type CreateFootnoteDefinitionOptions = {
@@ -719,6 +798,87 @@ export const BaseFootnotePlugin = withStaticReuseKey(
       },
     },
   }).extend(({ editor, plugin, schema: { type } }) => ({
+    readMiddleware: ({ around }) => [
+      around(editorReads.slice.landing, ({ input, next, state }) => {
+        const landed = next();
+
+        if (input.intent !== 'copy') return landed;
+
+        const definitionType = editor.plugin(BaseFootnoteDefinitionPlugin)
+          .schema.type;
+        const sliceRefs = new Set<string>();
+        const sliceDefs = new Set<string>();
+
+        collectSliceFootnoteRefs(
+          landed.slice.content,
+          type,
+          definitionType,
+          sliceRefs,
+          sliceDefs
+        );
+
+        const pairedRefs = [...sliceRefs].filter((ref) => sliceDefs.has(ref));
+
+        if (pairedRefs.length === 0) return landed;
+
+        const root = input.target.root ?? state.view.root() ?? MAIN_ROOT_KEY;
+        const currentChildren = state.children();
+        const storedChildren = getStoredRootChildren(editor, root);
+        const usedRefs = new Set<string>();
+        const collectUsed = (children: readonly Descendant[]) => {
+          const index = getFootnoteIndex(children, type, definitionType, root);
+
+          for (const ref of index.definitionsByRef.keys()) usedRefs.add(ref);
+          for (const ref of index.referencesByRef.keys()) usedRefs.add(ref);
+        };
+
+        collectUsed(currentChildren);
+        if (storedChildren !== currentChildren) collectUsed(storedChildren);
+
+        const colliding = pairedRefs.filter((ref) => usedRefs.has(ref));
+
+        if (colliding.length === 0) return landed;
+
+        const taken = new Set<string>([
+          ...usedRefs,
+          ...sliceRefs,
+          ...sliceDefs,
+        ]);
+        const remap = new Map<string, string>();
+
+        for (const ref of colliding) {
+          remap.set(ref, allocateFreshFootnoteRef(ref, taken));
+        }
+
+        const rewrite = (targetSlice: typeof landed.slice) => {
+          const content = remapSliceFootnoteRefs(
+            targetSlice.content,
+            type,
+            definitionType,
+            remap
+          );
+
+          return content === targetSlice.content
+            ? targetSlice
+            : ContentSlice.withContent(targetSlice, content, {
+                open: 'preserve',
+              });
+        };
+
+        return {
+          ...landed,
+          slice: rewrite(landed.slice),
+          ...(landed.replaceEmpty
+            ? {
+                replaceEmpty: {
+                  ...landed.replaceEmpty,
+                  slice: rewrite(landed.replaceEmpty.slice),
+                },
+              }
+            : {}),
+        };
+      }),
+    ],
     update: ({ tx }) => {
       const definitionType = editor.plugin(BaseFootnoteDefinitionPlugin).schema
         .type;

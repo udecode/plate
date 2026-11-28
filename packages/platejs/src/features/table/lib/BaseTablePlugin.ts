@@ -34,7 +34,11 @@ import {
   locateAt,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
-import { fitSlicePlacements } from '../../../facade';
+import {
+  fitSlicePlacements,
+  getCompiledEditorSchema,
+  splitTopLevelEndMatter,
+} from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
   createDetachedTableContext,
@@ -2876,7 +2880,11 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
 
           if (!view) return next();
 
-          const prepared = prepareTablePaste(slice, {
+          const { endMatter, flow } = splitTopLevelEndMatter(
+            slice,
+            getCompiledEditorSchema(context.editor)
+          );
+          const prepared = prepareTablePaste(flow, {
             createCell: ({ children, header, sourceRow }) =>
               createTableCell(context.editor, {
                 children: children ? [...children] : undefined,
@@ -2950,6 +2958,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
               if (
                 !fitSlicePlacements(context.editor, group.source, {
                   copies: 'tile',
+                  ...(endMatter.length > 0 ? { endMatter } : {}),
                   placements: group.placements,
                 })
               ) {

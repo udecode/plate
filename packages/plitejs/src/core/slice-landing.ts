@@ -12,17 +12,19 @@ import type {
 import { NodeApi } from '../interfaces/node';
 import { getDefined } from '../internal/get-defined';
 import { ContentSlice as ContentSliceValue } from './content-slice';
+import { isDocumentView, isDocumentViewReading } from './document-view-read';
 import type { ReplaceSliceCommand } from './editor-commands';
 import { editorReads } from './editor-reads';
 import {
   type EditorRuntimeCarrier,
   getEditorRuntimeOwner,
+  getEditorRuntimeRoot,
   getEditorSchema,
 } from './editor-runtime';
 import { getCompiledEditorSchemaFromApi } from './editor-schema';
 import { limitSliceToLength, sliceFitsLength } from './insert-limit';
 import { renewCopy, type RenewedCopy } from './landed-names';
-import { MAIN_ROOT_KEY } from './public-root';
+import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
 import {
   fitSliceAtSite,
   readAtSliceFitSite,
@@ -57,16 +59,22 @@ export const readSliceLanding = <V extends Value>(
   input: SliceLandingInput
 ): SliceLanding => {
   const { root } = input.target;
+  const editorRoot = toPublicRoot(getEditorRuntimeRoot(editor));
 
   return executeEditorRead(
     editor,
     editorReads.slice.landing,
     input,
     ({ slice }): SliceLanding => ({ slice }),
-    root === editor.read.view.root()
-      ? editor
+    isDocumentViewReading(editor) && !isDocumentView(editor)
+      ? undefined
       : () =>
-          createEditorViewRuntime(editor, root === undefined ? {} : { root })
+          root === editorRoot
+            ? editor
+            : createEditorViewRuntime(
+                editor,
+                root === undefined ? {} : { root }
+              )
   );
 };
 

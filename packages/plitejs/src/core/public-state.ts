@@ -369,6 +369,7 @@ import {
 } from './insert-limit';
 import { getReplaceableEmptyBlock } from './is-empty-element';
 import {
+  isRenewalOff,
   renameSlice,
   renewCopy,
   restoreDroppedNames,
@@ -6098,9 +6099,9 @@ type SliceFitPlaceOptions = Readonly<{
   voids?: boolean;
 }>;
 
-const placeSliceFitRange = (
-  editor: Editor,
-  state: EditorStateView,
+const placeSliceFitRange = <V extends Value>(
+  editor: Editor<V>,
+  state: EditorStateView<V>,
   at: Location,
   root: string | undefined,
   options: SliceFitPlaceOptions | undefined
@@ -7005,10 +7006,25 @@ const fitSliceIntoActiveDraft = <V extends Value>(
   const runAtPlace = (place: SliceFitPlace | false) => {
     if (!place) return false;
     const copy = renewCopy(editor, slice);
-    const sourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
+    const placeRoot = sliceFitRoot(editor, place);
+    const rawSourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
+    const sourceSlice =
+      !internal?.drop && !isRenewalOff(editor)
+        ? ContentSlice.fromJSON<V>(
+            readSliceLanding(editor, {
+              intent: 'copy',
+              slice: rawSourceSlice,
+              source: rawSourceSlice,
+              target: {
+                kind: 'beside',
+                ...(placeRoot === MAIN_ROOT_KEY ? {} : { root: placeRoot }),
+              },
+            }).slice
+          )
+        : rawSourceSlice;
     const renewal = internal?.rootsPrepared
       ? null
-      : renewContentSlice(editor, sourceSlice, sliceFitRoot(editor, place));
+      : renewContentSlice(editor, sourceSlice, placeRoot);
     const inputSlice = renewal?.slice ?? sourceSlice;
 
     if (renewal) internal?.renewed?.(renewal);
@@ -7181,7 +7197,8 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
   editor: Editor<V>,
   sourceTile: import('../interfaces/editor').ContentSlice,
   placements: ReadonlyArray<InternalSlicePlacement<V>>,
-  copies: 'each' | 'tile'
+  copies: 'each' | 'tile',
+  endMatter?: ReadonlyArray<DescendantIn<V>>
 ) => {
   const state = getStateView(editor);
   const schema: InternalEditorSchemaApi<V> = getEditorSchema(editor);
@@ -7272,9 +7289,51 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
     copied.push(content);
     if (copies === 'each') cells.push(closed(content, ownRoots));
   }
-  const whole = closed(copies === 'tile' ? copied.flat() : [], sharedCopyRoots);
+  const endMatterCopied =
+    copies === 'tile' && endMatter && endMatter.length > 0
+      ? prepareChildren(endMatter, root, new Map(), sharedCopyRoots)
+      : [];
+
+  if (!endMatterCopied) return false;
+
+  const whole = closed(
+    copies === 'tile' ? [...copied.flat(), ...endMatterCopied] : [],
+    sharedCopyRoots
+  );
   const copy = renewCopy(editor, whole, cells);
-  const renewed = [copy?.slice ?? whole, ...(copy?.separateCopies ?? cells)];
+  const renewedWhole = copy?.slice ?? whole;
+  const landedWhole =
+    copies === 'tile' && renewedWhole.content.length > 0
+      ? readSliceLanding(editor, {
+          intent: 'copy',
+          slice: renewedWhole,
+          source: renewedWhole,
+          target: {
+            kind: 'beside',
+            ...(root === MAIN_ROOT_KEY ? {} : { root }),
+          },
+        }).slice
+      : renewedWhole;
+  const effectiveWhole =
+    landedWhole.content.length === renewedWhole.content.length
+      ? landedWhole
+      : renewedWhole;
+  const cellsTotal = copied.reduce((sum, items) => sum + items.length, 0);
+  const tileCellsContent =
+    copies === 'tile'
+      ? effectiveWhole.content.slice(0, cellsTotal)
+      : effectiveWhole.content;
+  const landedEndMatter =
+    copies === 'tile' && endMatterCopied.length > 0
+      ? effectiveWhole.content.slice(cellsTotal)
+      : [];
+  const renewed = [
+    closed(
+      tileCellsContent,
+      new Map(Object.entries(effectiveWhole.roots ?? {}))
+    ),
+    ...(copy?.separateCopies ?? cells),
+  ];
   const prepared = closed(
     renewed.flatMap(({ content }) => content),
     new Map(renewed.flatMap(({ roots }) => Object.entries(roots ?? {})))
@@ -7339,9 +7398,12 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
 
       const cellSlice = createContentSliceFromFragment(content, 0, 0);
       const dissolved = dissolveOpenEndMatter(cellSlice, compiled);
-      const { endMatter, flow } = splitEndMatter(dissolved, compiled);
+      const { endMatter: cellEndMatter, flow } = splitEndMatter(
+        dissolved,
+        compiled
+      );
 
-      if (endMatter.length > 0) return 'fallback';
+      if (cellEndMatter.length > 0) return 'fallback';
 
       const range =
         root === MAIN_ROOT_KEY
@@ -7385,17 +7447,30 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
 
       offset += childCount;
       if (!parent) return false;
+      const rawCellSlice = ContentSlice.fromJSON({
+        content,
+        openEnd: 0,
+        openStart: 0,
+        ...(prepared.roots ? { roots: prepared.roots } : {}),
+      });
+      const cellSlice =
+        copies === 'each'
+          ? readSliceLanding(editor, {
+              intent: 'copy',
+              slice: rawCellSlice,
+              source: rawCellSlice,
+              target: {
+                kind: 'beside',
+                ...(root === MAIN_ROOT_KEY ? {} : { root }),
+              },
+            }).slice
+          : rawCellSlice;
       if (
         !withRenewalOff(
           editor,
           fitSliceIntoActiveDraft<V>,
           editor,
-          ContentSlice.fromJSON({
-            content,
-            openEnd: 0,
-            openStart: 0,
-            ...(prepared.roots ? { roots: prepared.roots } : {}),
-          }),
+          cellSlice,
           undefined,
           {
             childrenAt: getDefined(parents[index]).key,
@@ -7406,6 +7481,54 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
       ) {
         return false;
       }
+    }
+  }
+
+  if (landedEndMatter.length > 0) {
+    if (!landedEndMatter.every((node) => schema.canContainAtRoot(node, root))) {
+      return false;
+    }
+    const currentRootState = getStateView(editor);
+    const currentRootChildren =
+      root === MAIN_ROOT_KEY
+        ? currentRootState.children()
+        : currentRootState.root(root);
+    const minIndex = Math.max(...paths.map((path) => (path[0] ?? 0) + 1));
+    const boundary = findEndMatterLandingIndex(
+      editor,
+      currentRootChildren,
+      landedEndMatter,
+      { minIndex, root }
+    );
+    const endSite = placeSliceFitRange(
+      editor,
+      currentRootState,
+      [boundary],
+      root === MAIN_ROOT_KEY ? undefined : root,
+      { boundary: true }
+    );
+
+    if (
+      !endSite ||
+      !withRenewalOff(
+        editor,
+        writeSliceAtRange,
+        editor,
+        endSite,
+        ContentSlice.fromJSON<V>({
+          content: landedEndMatter,
+          openEnd: 0,
+          openStart: 0,
+          ...(prepared.roots ? { roots: prepared.roots } : {}),
+        }),
+        {
+          paste: {},
+          rootsPrepared: true,
+          selection: 'keep',
+        }
+      )
+    ) {
+      return false;
     }
   }
 
@@ -7482,6 +7605,8 @@ export const fitSlicePlacements = <V extends Value>(
      * placement's references can name.
      */
     copies: 'each' | 'tile';
+    /** Root-only end-matter blocks paired with a `tile` copy. */
+    endMatter?: ReadonlyArray<DescendantIn<V>>;
     placements: ReadonlyArray<InternalSlicePlacement<V>>;
   }>
 ) => {
@@ -7507,7 +7632,8 @@ export const fitSlicePlacements = <V extends Value>(
           editor,
           sourceTile,
           options.placements,
-          options.copies
+          options.copies,
+          options.endMatter
         )
       );
     });
