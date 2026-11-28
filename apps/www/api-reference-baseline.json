@@ -762,16 +762,6 @@
       "parseHtml"
     ],
     "platejs/hyperscript": ["HyperscriptEditorFixture"],
-    "platejs/layout": [
-      "BaseColumnGroupPlugin",
-      "BaseColumnItemPlugin",
-      "ColumnDefinition",
-      "ColumnElement",
-      "ColumnGroupElement",
-      "SetColumnsOptions",
-      "ToggleColumnGroupOptions"
-    ],
-    "platejs/layout/react": ["ColumnItemPlugin"],
     "platejs/lint": ["LintFinding", "LintPluginState", "LintRule"],
     "platejs/markdown": [
       "MarkdownApi",

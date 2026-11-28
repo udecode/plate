@@ -11,6 +11,10 @@ import {
 } from '../features/basic-styles';
 import { BaseCalloutPlugin } from '../features/callout';
 import { BaseCodeBlockPlugin } from '../features/code-block';
+import {
+  BaseColumnGroupPlugin,
+  BaseColumnItemPlugin,
+} from '../features/column';
 import { BaseDatePlugin } from '../features/date';
 import {
   BaseDetailsPlugin,
@@ -21,10 +25,6 @@ import {
   BaseFootnotePlugin,
 } from '../features/footnote';
 import { BaseIndentPlugin } from '../features/indent';
-import {
-  BaseColumnGroupPlugin,
-  BaseColumnItemPlugin,
-} from '../features/layout';
 import { BaseLinkPlugin } from '../features/link';
 import { BaseListPlugin } from '../features/list';
 import {

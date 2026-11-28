@@ -3,6 +3,7 @@
 import {
   CalendarIcon,
   ChevronRightIcon,
+  Columns2Icon,
   Columns3Icon,
   FileCodeIcon,
   FilmIcon,
@@ -35,11 +36,11 @@ import {
   PathApi,
   PLUGINS,
 } from 'platejs';
+import { BaseColumnGroupPlugin, BaseColumnItemPlugin } from 'platejs/column';
 import { BaseDatePlugin } from 'platejs/date';
 import { BaseDetailsPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { BaseFootnotePlugin } from 'platejs/footnote';
-import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import { BaseImagePlugin, BaseMediaEmbedPlugin } from 'platejs/media';
 import {
@@ -406,24 +407,26 @@ function getGroups(editor: Editor): Group[] {
   }
 
   if (column.installed) {
-    advancedBlocks.push({
-      icon: <Columns3Icon />,
-      block: blockOf(column.schema.type),
-      label: '3 columns',
-      value: 'action_three_columns',
-      onSelect: () => {
-        const current = editor.plugin(BaseColumnGroupPlugin);
+    for (const columns of [2, 3] as const) {
+      advancedBlocks.push({
+        icon: columns === 2 ? <Columns2Icon /> : <Columns3Icon />,
+        block: blockOf(column.schema.type),
+        label: `${columns} columns`,
+        value: columns === 2 ? 'action_two_columns' : 'action_three_columns',
+        onSelect: () => {
+          const current = editor.plugin(BaseColumnGroupPlugin);
 
-        if (!current.installed || editor.read.view.isReadOnly()) return;
+          if (!current.installed || editor.read.view.isReadOnly()) return;
 
-        editor.update((tx) => {
-          tx.plugin(BaseColumnGroupPlugin).insert(
-            { columns: 3 },
-            { select: true }
-          );
-        });
-      },
-    });
+          editor.update((tx) => {
+            tx.plugin(BaseColumnGroupPlugin).insert(
+              { columns },
+              { select: true }
+            );
+          });
+        },
+      });
+    }
   }
 
   if (equation.installed) {
@@ -565,10 +568,17 @@ const getRefusedItems = (editor: Editor) => {
 
   const at = PathApi.next(entry[1]);
   const root = editor.read.view.root();
+  // Column groups do not nest, so a column insert inside a column is a no-op.
+  const columnGroup = editor.plugin(BaseColumnGroupPlugin);
+  const insideColumn =
+    columnGroup.installed &&
+    !!editor.read.nodes.above({ at: entry[1], type: BaseColumnItemPlugin });
 
   return getGroups(editor).flatMap(({ items }) =>
     items.flatMap(({ block, value }) =>
-      block && !editor.read.schema.canPlace([block], { at, root })
+      block &&
+      ((insideColumn && block.type === columnGroup.schema.type) ||
+        !editor.read.schema.canPlace([block], { at, root }))
         ? [value]
         : []
     )

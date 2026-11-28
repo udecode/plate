@@ -52,7 +52,7 @@
     },
     {
       "path": "src/registry/examples/values/column-value.tsx",
-      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test';\nimport type { Value } from 'platejs';\n\njsx;\n\nexport const columnValue: Value = (\n  <fragment>\n    <hheading level={2}>Column</hheading>\n    <hp>Create column and the border will hidden when viewing</hp>\n    <hcolumngroup>\n      <hcolumn width=\"50%\">\n        <hp>left 1</hp>\n        <hp>left 2</hp>\n      </hcolumn>\n      <hcolumn width=\"50%\">\n        <hp>right 1</hp>\n        <hp>right 2</hp>\n      </hcolumn>\n    </hcolumngroup>\n  </fragment>\n);\n",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test';\nimport type { Value } from 'platejs';\n\njsx;\n\nexport const columnValue: Value = (\n  <fragment>\n    <hheading level={2}>Column</hheading>\n    <hp>Create column and the border will hidden when viewing</hp>\n    <hcolumngroup>\n      <hcolumn>\n        <hp>left 1</hp>\n        <hp>left 2</hp>\n      </hcolumn>\n      <hcolumn>\n        <hp>right 1</hp>\n        <hp>right 2</hp>\n      </hcolumn>\n    </hcolumngroup>\n  </fragment>\n);\n",
       "type": "registry:example"
     },
     {

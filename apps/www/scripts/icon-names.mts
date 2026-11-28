@@ -108,6 +108,20 @@ const ICON_NAMES: Record<string, IconNames> = {
     remixicon: 'RiFontColor',
     tabler: 'IconBaseline',
   },
+  BetweenVerticalEnd: {
+    hugeicons: 'InsertColumnRightIcon',
+    lucide: 'BetweenVerticalEnd',
+    phosphor: 'ColumnsPlusRightIcon',
+    remixicon: 'RiInsertColumnRight',
+    tabler: 'IconColumnInsertRight',
+  },
+  BetweenVerticalStart: {
+    hugeicons: 'InsertColumnLeftIcon',
+    lucide: 'BetweenVerticalStart',
+    phosphor: 'ColumnsPlusLeftIcon',
+    remixicon: 'RiInsertColumnLeft',
+    tabler: 'IconColumnInsertLeft',
+  },
   Bold: {
     hugeicons: 'TextBoldIcon',
     lucide: 'Bold',

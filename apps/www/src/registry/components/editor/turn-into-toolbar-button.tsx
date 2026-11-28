@@ -2,6 +2,7 @@
 
 import {
   ChevronRightIcon,
+  Columns2Icon,
   Columns3Icon,
   FileCodeIcon,
   Heading1Icon,
@@ -27,8 +28,8 @@ import {
   SelectionApi,
   type Element,
 } from 'platejs';
+import { BaseColumnGroupPlugin } from 'platejs/column';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
-import { BaseColumnGroupPlugin } from 'platejs/layout';
 import {
   type Editor,
   useEditor,
@@ -77,7 +78,8 @@ type StructuralActionState = {
 
 type StructuralState = {
   code: StructuralActionState;
-  columns: StructuralActionState;
+  /** `count` is the enclosing column group's content column count, or 0. */
+  columns: StructuralActionState & { count: number };
   details: StructuralActionState;
   quote: StructuralActionState;
 };
@@ -203,14 +205,16 @@ const getStructuralState = (editor: Editor): StructuralState => {
     summary.installed &&
     leafEntries.length > 1 &&
     leafEntries.some(([node]) => node.type === summary.schema.type);
-  const columnActive =
-    columns.installed &&
-    entries.length === 1 &&
-    (entries[0][0].type === columns.schema.type ||
-      !!editor.read.nodes.above({
-        at: entries[0][1],
-        type: BaseColumnGroupPlugin,
-      }));
+  const columnGroup =
+    columns.installed && entries.length === 1
+      ? entries[0][0].type === columns.schema.type
+        ? entries[0][0]
+        : editor.read.nodes.above({
+            at: entries[0][1],
+            type: BaseColumnGroupPlugin,
+          })?.[0]
+      : undefined;
+  const columnActive = !!columnGroup;
 
   return {
     code: {
@@ -223,6 +227,11 @@ const getStructuralState = (editor: Editor): StructuralState => {
     },
     columns: {
       active: columnActive,
+      count: columnGroup
+        ? columnGroup.children.filter((child) =>
+            editor.read.nodes.isContent(child)
+          ).length
+        : 0,
       eligible:
         columns.installed &&
         (columnActive || (!hasContainerNodeSelection && entries.length === 1)),
@@ -568,28 +577,29 @@ export function TurnIntoToolbarButton() {
         ]
       : []),
     ...(columns.installed
-      ? [
-          {
-            ...structural.columns,
-            refused: refused.includes('columns'),
-            icon: <Columns3Icon />,
-            label: '3 columns',
-            onSelect: () => {
-              const current = getStructuralState(editor).columns;
-              const portal = editor.plugin(BaseColumnGroupPlugin);
+      ? ([2, 3] as const).map((count) => ({
+          // Inside a group, the other count re-splits it into that many columns.
+          active:
+            structural.columns.active && structural.columns.count === count,
+          eligible: structural.columns.eligible,
+          refused: refused.includes('columns'),
+          icon: count === 2 ? <Columns2Icon /> : <Columns3Icon />,
+          label: `${count} columns`,
+          onSelect: () => {
+            const current = getStructuralState(editor).columns;
+            const portal = editor.plugin(BaseColumnGroupPlugin);
 
-              if (
-                !portal.installed ||
-                !current.eligible ||
-                editor.read.view.isReadOnly()
-              ) {
-                return;
-              }
+            if (
+              !portal.installed ||
+              !current.eligible ||
+              editor.read.view.isReadOnly()
+            ) {
+              return;
+            }
 
-              portal.update.toggle({ columns: 3 });
-            },
+            portal.update.toggle({ columns: count });
           },
-        ]
+        }))
       : []),
   ];
 

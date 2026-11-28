@@ -10,10 +10,10 @@ export const columnValue: Value = (
     <hheading level={2}>列</hheading>
     <hp>创建列，在查看时边框将被隐藏</hp>
     <hcolumngroup>
-      <hcolumn width="50%">
+      <hcolumn>
         <hp>左侧</hp>
       </hcolumn>
-      <hcolumn width="50%">
+      <hcolumn>
         <hp>右侧</hp>
       </hcolumn>
     </hcolumngroup>

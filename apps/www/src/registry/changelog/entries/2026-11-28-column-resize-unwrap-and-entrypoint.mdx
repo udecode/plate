@@ -1,0 +1,14 @@
+---
+id: 2026-11-28-column-resize-unwrap-and-entrypoint
+date: 2026-11-28
+status: draft
+kind: breaking
+summary: 'Migrate column UI to platejs/column numeric flex weights with drag-resize dividers, unwrap, mobile stacking, and 2/3-column menus'
+change: { 'type': 'source', 'date': '2026-11-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-28-column-resize-unwrap-and-entrypoint-column-ui","kind":"breaking","migrationNotes":["Import column plugins from `platejs/column` and `platejs/column/react` instead of `platejs/layout` and `platejs/layout/react`.","Store numeric flex weights on `column.width` (default `1`, omitted at default) instead of CSS percentage strings."]} -->
+
+- **`column`**, **`slash`**, **`insert-toolbar-button`**, **`turn-into-toolbar-button`**: Update column imports to `platejs/column` and `platejs/column/react`, switch column layouts to numeric flex weights with responsive mobile stacking (`--column-weight`), add interactive drag-resize dividers, accessible toolbar presets with Unwrap, column handle add/delete actions, and 2-column and 3-column menu entries, and remove unused `ColumnElementDocx` and `ColumnGroupElementDocx` helpers.

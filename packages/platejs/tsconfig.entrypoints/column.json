@@ -6,10 +6,10 @@
     "emitDeclarationOnly": true,
     "incremental": true,
     "noEmit": false,
-    "outDir": "../.turbo/entrypoint-types/layout",
+    "outDir": "../.turbo/entrypoint-types/column",
     "rootDir": "../src",
     "sourceMap": false,
-    "tsBuildInfoFile": "../.turbo/entrypoint-types/layout.tsbuildinfo"
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/column.tsbuildinfo"
   },
   "exclude": [
     "../src/**/*.spec.*",
@@ -18,7 +18,7 @@
     "../src/**/__tests__/**"
   ],
   "extends": "../tsconfig.json",
-  "include": ["../src/features/layout/**/*"],
+  "include": ["../src/features/column/**/*"],
   "references": [
     {
       "path": "./core.json"

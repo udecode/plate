@@ -118,7 +118,7 @@ const selectedBlocks = editor.read.nodes.blocks();
 editor.update((tx) => {
   tx.nodes.children(groupPath).forEach((column, index) => {
     if (!tx.nodes.isContent(column)) return;
-    tx.nodes.set({ width: "50%" }, { at: [...groupPath, index] });
+    tx.nodes.set({ width: 1 }, { at: [...groupPath, index] });
   });
 });
 ```

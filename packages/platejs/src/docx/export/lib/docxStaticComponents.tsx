@@ -6,13 +6,13 @@ import { BaseHeadingPlugin } from '../../../features/basic-nodes';
 import { BaseCalloutPlugin } from '../../../features/callout';
 import { BaseCodeBlockPlugin } from '../../../features/code-block';
 import {
+  BaseColumnItemPlugin,
+  BaseColumnGroupPlugin,
+} from '../../../features/column';
+import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnotePlugin,
 } from '../../../features/footnote';
-import {
-  BaseColumnItemPlugin,
-  BaseColumnGroupPlugin,
-} from '../../../features/layout';
 import {
   BaseListPlugin,
   type ListElement,
@@ -66,15 +66,44 @@ const FootnoteDefinitionDocx = (
 
 const ColumnItemDocx = (
   props: EditorElementProps<typeof BaseColumnItemPlugin>
-) => (
-  <EditorElement
-    {...props}
-    as="td"
-    style={{ border: 'none', width: props.element.width }}
-  >
-    {props.children}
-  </EditorElement>
-);
+) => {
+  const columnWeight =
+    typeof props.element.width === 'number' &&
+    Number.isFinite(props.element.width) &&
+    props.element.width > 0
+      ? props.element.width
+      : 1;
+  const parent = props.editor.read.nodes.parent(props.path)?.[0];
+  const siblingColumns =
+    parent && 'children' in parent
+      ? parent.children.filter(
+          (child): child is typeof props.element =>
+            'type' in child && child.type === props.element.type
+        )
+      : [];
+  const totalWeight = siblingColumns.reduce(
+    (sum, sibling) =>
+      sum +
+      (typeof sibling.width === 'number' &&
+      Number.isFinite(sibling.width) &&
+      sibling.width > 0
+        ? sibling.width
+        : 1),
+    0
+  );
+  const widthPercent =
+    totalWeight > 0 ? `${(columnWeight / totalWeight) * 100}%` : '50%';
+
+  return (
+    <EditorElement
+      {...props}
+      as="td"
+      style={{ border: 'none', width: widthPercent }}
+    >
+      {props.children}
+    </EditorElement>
+  );
+};
 
 const ColumnGroupDocx = (
   props: EditorElementProps<typeof BaseColumnGroupPlugin>

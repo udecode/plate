@@ -74,6 +74,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-column-resize-unwrap-and-entrypoint",
+      "href": "/registry/changelog/2026-11-28-column-resize-unwrap-and-entrypoint.json",
+      "status": "draft",
+      "kind": "breaking",
+      "summary": "Migrate column UI to platejs/column numeric flex weights with drag-resize dividers, unwrap, mobile stacking, and 2/3-column menus",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "column",
+        "slash",
+        "insert-toolbar-button",
+        "turn-into-toolbar-button"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-diff-two-way-only",
       "href": "/registry/changelog/2026-11-28-diff-two-way-only.json",
       "status": "draft",

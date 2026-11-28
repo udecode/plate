@@ -4,13 +4,18 @@ import { cn } from 'cn';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  Trash2Icon,
+  BetweenVerticalEndIcon,
+  BetweenVerticalStartIcon,
   GripHorizontal,
+  Trash2Icon,
+  UngroupIcon,
 } from 'lucide-react';
-import type { Element } from 'platejs';
-import { BaseColumnGroupPlugin } from 'platejs/layout';
-import { ColumnItemPlugin, ColumnGroupPlugin } from 'platejs/layout/react';
+import { type Element, type NodeKey, type Path, PathApi } from 'platejs';
+import { BaseColumnGroupPlugin, BaseColumnItemPlugin } from 'platejs/column';
+import { ColumnGroupPlugin, ColumnItemPlugin } from 'platejs/column/react';
+import { BaseLockPlugin } from 'platejs/lock';
 import {
+  type Editor,
   type EditorElementProps,
   EditorElement,
   useEditor,
@@ -19,6 +24,7 @@ import {
   useElement,
   useElementSelected,
   useFocusedLast,
+  usePath,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -40,21 +46,90 @@ import {
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
 
+const MAX_COLUMNS = 5;
+// Smallest share of the resized pair either column keeps.
+const MIN_PAIR_SHARE = 0.15;
+const KEYBOARD_PAIR_STEP = 0.1;
+
+const weightOf = (column: { width?: number }) => column.width ?? 1;
+
+const roundWeight = (weight: number) => Math.round(weight * 1000) / 1000;
+
+const splitPair = (total: number, share: number): [number, number] => {
+  const clamped = Math.min(1 - MIN_PAIR_SHARE, Math.max(MIN_PAIR_SHARE, share));
+  const left = roundWeight(total * clamped);
+
+  return [left, roundWeight(total - left)];
+};
+
+const readGroupColumns = (editor: Editor, element: Element) => {
+  const entry = editor.read.nodes.get(editor.key(element));
+
+  if (!entry) return null;
+
+  const [, path] = entry;
+  const group = editor.read.nodes.get(PathApi.parent(path), {
+    type: BaseColumnGroupPlugin,
+  })?.[0];
+
+  if (!group) return null;
+
+  return {
+    columns: group.children.filter((child) =>
+      editor.read.nodes.isContent(child)
+    ),
+    index: path.at(-1) ?? 0,
+    siblings: group.children,
+  };
+};
+
+// The next content column the trailing divider resizes against, or null when
+// this column is the last one or either side is locked.
+const readResizePartner = (editor: Editor, element: Element) => {
+  const group = readGroupColumns(editor, element);
+
+  if (!group || !editor.read.nodes.isContent(element)) return null;
+
+  const next = group.siblings
+    .slice(group.index + 1)
+    .find((child) => editor.read.nodes.isContent(child));
+
+  if (!next) return null;
+
+  const key = editor.key(next);
+  const lock = editor.plugin(BaseLockPlugin);
+
+  if (
+    lock.installed &&
+    (lock.read.isLocked(editor.key(element)) || lock.read.isLocked(key))
+  ) {
+    return null;
+  }
+
+  return key;
+};
+
 export function ColumnElement({
   children,
   element,
   ref,
   ...props
 }: EditorElementProps<typeof ColumnItemPlugin>) {
-  const { width } = element;
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected();
   const nodeSelected = useElementSelected({ mode: 'node' });
+  const partner = useEditorSelector((current) =>
+    readResizePartner(current, element)
+  );
 
   return (
     <div
-      className="group/column relative hover:[&>.editor-column-drag-handle]:opacity-100"
-      style={{ width: width ?? '100%' }}
+      className={cn(
+        'group/column relative w-full flex-none hover:[&>.editor-column-drag-handle]:opacity-100',
+        'sm:w-auto sm:min-w-0 sm:flex-(--column-weight)'
+      )}
+      data-slot="column"
+      style={{ '--column-weight': weightOf(element) } as React.CSSProperties}
     >
       {!readOnly && (
         <div
@@ -78,7 +153,7 @@ export function ColumnElement({
           'data-node-selection-highlight': 'self',
         }}
         element={element}
-        className="h-full px-2 pt-2 group-first/column:ps-0 group-last/column:pe-0"
+        className="h-full pt-2"
       >
         <div
           className={cn(
@@ -92,6 +167,173 @@ export function ColumnElement({
           {children}
         </div>
       </EditorElement>
+
+      {!readOnly && partner && (
+        <ColumnDivider element={element} partner={partner} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Resizes this column and the next one. A pointer drag previews through the
+ * `--column-weight` variables and commits one history step on release.
+ */
+function ColumnDivider({
+  element,
+  partner,
+}: {
+  element: EditorElementProps<typeof ColumnItemPlugin>['element'];
+  partner: NodeKey;
+}) {
+  const editor = useEditor();
+  const [resizing, setResizing] = React.useState(false);
+  const partnerWeight = useEditorSelector((current) => {
+    const node = current.read.nodes.get(partner, {
+      type: BaseColumnItemPlugin,
+    })?.[0];
+
+    return node ? weightOf(node) : 1;
+  });
+  const drag = React.useRef<{
+    left: HTMLElement;
+    leftWeight: number;
+    next: [number, number] | null;
+    pairWidth: number;
+    right: HTMLElement;
+    rightWeight: number;
+    rtl: boolean;
+    startX: number;
+  } | null>(null);
+  const leftWeight = weightOf(element);
+  const total = leftWeight + partnerWeight;
+
+  const resize = (widths: [number, number]) => {
+    editor.plugin(BaseColumnGroupPlugin).update.resizeColumns({
+      columns: [editor.key(element), partner],
+      widths,
+    });
+  };
+
+  const finish = (
+    event: React.PointerEvent<HTMLDivElement>,
+    commit: boolean
+  ) => {
+    const { current } = drag;
+
+    if (!current) return;
+
+    drag.current = null;
+    setResizing(false);
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    // React owns these variables; hand them back before the commit re-renders.
+    current.left.style.setProperty(
+      '--column-weight',
+      String(current.leftWeight)
+    );
+    current.right.style.setProperty(
+      '--column-weight',
+      String(current.rightWeight)
+    );
+
+    if (
+      commit &&
+      current.next &&
+      (current.next[0] !== current.leftWeight ||
+        current.next[1] !== current.rightWeight)
+    ) {
+      resize(current.next);
+    }
+  };
+
+  return (
+    <div
+      aria-label="Resize columns"
+      aria-orientation="vertical"
+      aria-valuemax={(1 - MIN_PAIR_SHARE) * 100}
+      aria-valuemin={MIN_PAIR_SHARE * 100}
+      aria-valuenow={Math.round((leftWeight / total) * 100)}
+      className={cn(
+        'group/divider absolute top-2 bottom-0 -end-3 z-10 hidden w-2 cursor-col-resize touch-none select-none justify-center outline-none sm:flex',
+        // A block drag over the gap must reach the editor's side-drop target.
+        '[:root:has([data-editor-dragging])_&]:pointer-events-none'
+      )}
+      contentEditable={false}
+      data-plate-column-divider=""
+      data-resizing={resizing || undefined}
+      draggable={false}
+      role="separator"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
+        const grow = (event.key === 'ArrowRight') !== rtl;
+
+        resize(
+          splitPair(
+            total,
+            leftWeight / total +
+              (grow ? KEYBOARD_PAIR_STEP : -KEYBOARD_PAIR_STEP)
+          )
+        );
+      }}
+      onPointerCancel={(event) => finish(event, false)}
+      onPointerDown={(event) => {
+        if (event.button !== 0) return;
+
+        const left = event.currentTarget.closest<HTMLElement>(
+          '[data-slot="column"]'
+        );
+        const right = editor.api.dom
+          .resolveDOMNode(partner)
+          ?.closest<HTMLElement>('[data-slot="column"]');
+
+        if (!left || !right) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.setPointerCapture(event.pointerId);
+        drag.current = {
+          left,
+          leftWeight,
+          next: null,
+          pairWidth:
+            left.getBoundingClientRect().width +
+            right.getBoundingClientRect().width,
+          right,
+          rightWeight: partnerWeight,
+          rtl: getComputedStyle(left).direction === 'rtl',
+          startX: event.clientX,
+        };
+        setResizing(true);
+      }}
+      onPointerMove={(event) => {
+        const { current } = drag;
+
+        if (!current || current.pairWidth <= 0) return;
+
+        const deltaX =
+          (event.clientX - current.startX) * (current.rtl ? -1 : 1);
+        const next = splitPair(
+          total,
+          leftWeight / total + deltaX / current.pairWidth
+        );
+
+        current.next = next;
+        current.left.style.setProperty('--column-weight', String(next[0]));
+        current.right.style.setProperty('--column-weight', String(next[1]));
+      }}
+      onPointerUp={(event) => finish(event, true)}
+    >
+      <div className="h-full w-0.5 rounded-full bg-transparent transition-colors group-hover/divider:bg-ring group-focus-visible/divider:bg-ring group-data-resizing/divider:bg-ring" />
     </div>
   );
 }
@@ -100,6 +342,15 @@ function ColumnDragHandle({ element }: { element: Element }) {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
   const [rtl, setRtl] = React.useState(false);
+  const columnCount = useEditorSelector(
+    (current) => readGroupColumns(current, element)?.columns.length ?? 0
+  );
+  const locked = useEditorSelector((current) => {
+    const lock = current.plugin(BaseLockPlugin);
+
+    return lock.installed && lock.read.isLocked(current.key(element));
+  });
+  const columns = editor.plugin(BaseColumnGroupPlugin);
   const move = (to: 'next' | 'previous', announce: string) => {
     editor.api.transfer.move({
       announce,
@@ -107,6 +358,7 @@ function ColumnDragHandle({ element }: { element: Element }) {
       to,
     });
   };
+  const atCap = columnCount >= MAX_COLUMNS;
 
   return (
     <TooltipProvider>
@@ -130,7 +382,9 @@ function ColumnDragHandle({ element }: { element: Element }) {
           </Button>
         </TooltipTrigger>
 
-        <TooltipContent>Drag to move column, click for actions</TooltipContent>
+        <TooltipContent className="pointer-events-none">
+          Drag to move column, click for actions
+        </TooltipContent>
       </Tooltip>
       <HandleActionsMenu
         actions={[
@@ -143,6 +397,32 @@ function ColumnDragHandle({ element }: { element: Element }) {
             icon: <ArrowRightIcon />,
             label: 'Move right',
             run: () => move(rtl ? 'previous' : 'next', 'Moved right'),
+          },
+          {
+            disabled: atCap || locked,
+            icon: <BetweenVerticalStartIcon />,
+            label: 'Add column left',
+            run: () =>
+              columns.update.insertColumn({
+                at: element,
+                side: rtl ? 'after' : 'before',
+              }),
+          },
+          {
+            disabled: atCap || locked,
+            icon: <BetweenVerticalEndIcon />,
+            label: 'Add column right',
+            run: () =>
+              columns.update.insertColumn({
+                at: element,
+                side: rtl ? 'before' : 'after',
+              }),
+          },
+          {
+            disabled: locked,
+            icon: <Trash2Icon />,
+            label: 'Delete column',
+            run: () => columns.update.removeColumn({ at: element }),
           },
         ]}
         className="inset-0"
@@ -160,11 +440,54 @@ export function ColumnGroupElement(
   return (
     <EditorElement className="mb-2" {...props}>
       <ColumnFloatingToolbar>
-        <div className="flex size-full rounded">{props.children}</div>
+        <div className="flex size-full flex-col gap-4 rounded sm:flex-row">
+          {props.children}
+        </div>
       </ColumnFloatingToolbar>
     </EditorElement>
   );
 }
+
+const PRESET_SHARE_TOLERANCE = 0.02;
+
+const sharesOf = (weights: readonly number[]) => {
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+
+  return weights.map((weight) => weight / total);
+};
+
+// The preset whose split the group's content columns match, if any.
+const readActivePreset = (editor: Editor, at: Path) => {
+  const group = editor.read.nodes.get(at, { type: BaseColumnGroupPlugin })?.[0];
+
+  if (!group) return null;
+
+  const shares = sharesOf(
+    group.children.flatMap((child) => {
+      const column = editor.read.nodes.get(editor.key(child), {
+        type: BaseColumnItemPlugin,
+      })?.[0];
+
+      return column && editor.read.nodes.isContent(column)
+        ? [weightOf(column)]
+        : [];
+    })
+  );
+
+  return (
+    COLUMN_PRESETS.find(({ widths }) => {
+      const presetShares = sharesOf(widths);
+
+      return (
+        presetShares.length === shares.length &&
+        presetShares.every(
+          (share, index) =>
+            Math.abs(share - shares[index]) <= PRESET_SHARE_TOLERANCE
+        )
+      );
+    })?.label ?? null
+  );
+};
 
 function ColumnFloatingToolbar({ children }: { children: React.ReactElement }) {
   const editor = useEditor();
@@ -177,13 +500,11 @@ function ColumnFloatingToolbar({ children }: { children: React.ReactElement }) {
   const isFocusedLast = useFocusedLast();
 
   const open = isFocusedLast && !readOnly && selected && isCollapsed;
-
-  const onColumnChange = (widths: string[]) => {
-    editor.plugin(BaseColumnGroupPlugin).update.setColumns({
-      at: element,
-      widths,
-    });
-  };
+  const path = usePath();
+  const activePreset = useEditorSelector((current) =>
+    readActivePreset(current, path)
+  );
+  const columns = editor.plugin(BaseColumnGroupPlugin);
 
   return (
     <FloatingPopover open={open} modal={false}>
@@ -197,69 +518,75 @@ function ColumnFloatingToolbar({ children }: { children: React.ReactElement }) {
         side="top"
         sideOffset={10}
       >
-        <div className="box-content flex h-8 items-center">
-          <Button
-            variant="ghost"
-            className="size-8"
-            onClick={() => {
-              onColumnChange(['50%', '50%']);
-            }}
-          >
-            <DoubleColumnOutlined />
-          </Button>
-          <Button
-            variant="ghost"
-            className="size-8"
-            onClick={() => {
-              onColumnChange(['33%', '33%', '33%']);
-            }}
-          >
-            <ThreeColumnOutlined />
-          </Button>
-          <Button
-            variant="ghost"
-            className="size-8"
-            onClick={() => {
-              onColumnChange(['70%', '30%']);
-            }}
-          >
-            <RightSideDoubleColumnOutlined />
-          </Button>
-          <Button
-            variant="ghost"
-            className="size-8"
-            onClick={() => {
-              onColumnChange(['30%', '70%']);
-            }}
-          >
-            <LeftSideDoubleColumnOutlined />
-          </Button>
-          <Button
-            variant="ghost"
-            className="size-8"
-            onClick={() => {
-              onColumnChange(['25%', '50%', '25%']);
-            }}
-          >
-            <DoubleSideDoubleColumnOutlined />
-          </Button>
+        <TooltipProvider>
+          <div className="box-content flex h-8 items-center">
+            {COLUMN_PRESETS.map(({ icon, label, widths }) => (
+              <ColumnToolbarButton
+                key={label}
+                active={label === activePreset}
+                label={label}
+                onClick={() => {
+                  columns.update.setColumns({ at: element, widths });
+                }}
+              >
+                {icon}
+              </ColumnToolbarButton>
+            ))}
 
-          <Separator orientation="vertical" className="mx-1 h-6" />
-          <Button
-            variant="ghost"
-            className="size-8"
-            onClick={() => {
-              editor.update.nodes.remove({ at: element });
-            }}
-            onMouseDown={(event) => {
-              event.preventDefault();
-            }}
-          >
-            <Trash2Icon />
-          </Button>
-        </div>
+            <Separator orientation="vertical" className="mx-1 h-6" />
+            <ColumnToolbarButton
+              label="Unwrap columns"
+              onClick={() => {
+                columns.update.unwrap({ at: element });
+              }}
+            >
+              <UngroupIcon />
+            </ColumnToolbarButton>
+            <ColumnToolbarButton
+              label="Delete columns"
+              onClick={() => {
+                editor.update.nodes.remove({ at: element });
+              }}
+            >
+              <Trash2Icon />
+            </ColumnToolbarButton>
+          </div>
+        </TooltipProvider>
       </FloatingPopoverContent>
     </FloatingPopover>
+  );
+}
+
+function ColumnToolbarButton({
+  active,
+  children,
+  label,
+  onClick,
+}: {
+  children: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  active?: boolean;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          aria-label={label}
+          aria-pressed={active}
+          variant="ghost"
+          className={cn('size-8', active && 'bg-accent')}
+          data-active={active || undefined}
+          onClick={onClick}
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+        >
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -347,6 +674,26 @@ const DoubleSideDoubleColumnOutlined = () => (
     />
   </svg>
 );
+
+const COLUMN_PRESETS = [
+  { icon: <DoubleColumnOutlined />, label: '2 columns', widths: [1, 1] },
+  { icon: <ThreeColumnOutlined />, label: '3 columns', widths: [1, 1, 1] },
+  {
+    icon: <RightSideDoubleColumnOutlined />,
+    label: 'Right sidebar (70/30)',
+    widths: [7, 3],
+  },
+  {
+    icon: <LeftSideDoubleColumnOutlined />,
+    label: 'Left sidebar (30/70)',
+    widths: [3, 7],
+  },
+  {
+    icon: <DoubleSideDoubleColumnOutlined />,
+    label: '3 columns (25/50/25)',
+    widths: [1, 2, 1],
+  },
+];
 
 export const ColumnKit = [
   ColumnGroupPlugin.configure({ component: ColumnGroupElement }),

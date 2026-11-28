@@ -31,8 +31,8 @@ export const exitBreakValue: Value = (
 
     <hp>退出块结构在表格和分栏等嵌套结构中同样适用：</hp>
     <hcolumngroup>
-      <hcolumn width="50%">{createTable()}</hcolumn>
-      <hcolumn width="50%">
+      <hcolumn>{createTable()}</hcolumn>
+      <hcolumn>
         <hcodeblock>试试 ⌘⏎ 退出此代码块。</hcodeblock>
       </hcolumn>
     </hcolumngroup>

@@ -1,12 +1,13 @@
 import {
-  BaseColumnItemPlugin,
   BaseColumnGroupPlugin,
-} from '../../../features/layout/lib';
+  BaseColumnItemPlugin,
+} from '../../../features/column/lib';
 import { toReactPlugin } from '../../core';
 
+/** React adapter for individual columns inside a column group. */
 export const ColumnItemPlugin = toReactPlugin(BaseColumnItemPlugin);
 
-/** Enables support for columns with React-specific features. */
+/** React adapter for multi-column groups. */
 export const ColumnGroupPlugin = toReactPlugin(BaseColumnGroupPlugin, {
   dependencies: [ColumnItemPlugin],
 });

@@ -5,6 +5,7 @@ import {
   CalendarIcon,
   ChevronRightIcon,
   Code2,
+  Columns2Icon,
   Columns3Icon,
   FileUpIcon,
   FilmIcon,
@@ -35,11 +36,11 @@ import {
 } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { BaseCalloutPlugin } from 'platejs/callout';
+import { BaseColumnGroupPlugin, BaseColumnItemPlugin } from 'platejs/column';
 import { BaseDatePlugin } from 'platejs/date';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { BaseFootnotePlugin } from 'platejs/footnote';
-import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import {
   BaseAudioPlugin,
@@ -79,6 +80,17 @@ type Item = {
   focusEditor?: boolean;
   keywords?: readonly string[];
 };
+
+const columnsItem = (columns: 2 | 3): Item => ({
+  icon: columns === 2 ? <Columns2Icon /> : <Columns3Icon />,
+  // Column groups do not nest, so the insert is a no-op inside a column.
+  isAvailable: (editor) =>
+    editor.plugin(BaseColumnGroupPlugin).installed &&
+    !editor.read.nodes.above({ type: BaseColumnItemPlugin }),
+  label: `${columns} columns`,
+  onSelect: (_editor, tx) =>
+    tx.plugin(BaseColumnGroupPlugin).upsert({ columns }, { select: true }),
+});
 
 type Group = {
   group: string;
@@ -300,15 +312,8 @@ const groups: Group[] = [
         onSelect: (_editor, tx) =>
           tx.plugin(BaseTocPlugin).upsert({}, { select: true }),
       },
-      {
-        icon: <Columns3Icon />,
-        isAvailable: (editor) => editor.plugin(BaseColumnGroupPlugin).installed,
-        label: '3 columns',
-        onSelect: (_editor, tx) =>
-          tx
-            .plugin(BaseColumnGroupPlugin)
-            .upsert({ columns: 3 }, { select: true }),
-      },
+      columnsItem(2),
+      columnsItem(3),
       {
         focusEditor: false,
         icon: <RadicalIcon />,

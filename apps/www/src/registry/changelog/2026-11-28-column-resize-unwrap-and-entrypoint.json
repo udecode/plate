@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-column-resize-unwrap-and-entrypoint",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-column-resize-unwrap-and-entrypoint.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "breaking",
+  "summary": "Migrate column UI to platejs/column numeric flex weights with drag-resize dividers, unwrap, mobile stacking, and 2/3-column menus",
+  "targets": [
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-column-resize-unwrap-and-entrypoint-column-ui",
+      "kind": "breaking",
+      "summary": "Update column imports to `platejs/column` and `platejs/column/react`, switch column layouts to numeric flex weights with responsive mobile stacking (`--column-weight`), add interactive drag-resize dividers, accessible toolbar presets with Unwrap, column handle add/delete actions, and 2-column and 3-column menu entries, and remove unused `ColumnElementDocx` and `ColumnGroupElementDocx` helpers.",
+      "details": [],
+      "migrationNotes": [
+        "Import column plugins from `platejs/column` and `platejs/column/react` instead of `platejs/layout` and `platejs/layout/react`.",
+        "Store numeric flex weights on `column.width` (default `1`, omitted at default) instead of CSS percentage strings."
+      ],
+      "targets": [
+        "column",
+        "slash",
+        "insert-toolbar-button",
+        "turn-into-toolbar-button"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-column-resize-unwrap-and-entrypoint",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

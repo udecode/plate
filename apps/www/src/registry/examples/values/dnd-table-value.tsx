@@ -69,11 +69,11 @@ export const dndTableValue: Value = (
       a column into the other column or out of the layout.
     </hp>
     <hcolumngroup>
-      <hcolumn width="50%">
+      <hcolumn>
         <hp>Left one</hp>
         <hp>Left two</hp>
       </hcolumn>
-      <hcolumn width="50%">
+      <hcolumn>
         <hp>Right one</hp>
         <hp>Right two</hp>
       </hcolumn>

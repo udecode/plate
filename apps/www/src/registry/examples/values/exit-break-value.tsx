@@ -35,8 +35,8 @@ export const exitBreakValue: Value = (
 
     <hp>Exit breaks work in nested structures like tables and columns:</hp>
     <hcolumngroup>
-      <hcolumn width="50%">{createTable()}</hcolumn>
-      <hcolumn width="50%">
+      <hcolumn>{createTable()}</hcolumn>
+      <hcolumn>
         <hcodeblock>Try ⌘⏎ to exit this code block.</hcodeblock>
       </hcolumn>
     </hcolumngroup>

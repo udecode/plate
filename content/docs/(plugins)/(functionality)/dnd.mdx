@@ -275,8 +275,8 @@ around(editorReads.transfer.side, ({ input, next }) =>
         payload: [input.side === 'end' ? 1 : 0],
         shell: {
           children: [
-            { children: [], type: 'column', width: '50%' },
-            { children: [], type: 'column', width: '50%' },
+            { children: [], type: 'column' },
+            { children: [], type: 'column' },
           ],
           type: 'columnGroup',
         },

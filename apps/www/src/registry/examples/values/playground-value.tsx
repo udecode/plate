@@ -657,7 +657,6 @@ export const playgroundValue: EditorDocumentValue = {
             },
           ],
           type: 'column',
-          width: '50%',
         },
         {
           children: [
@@ -671,7 +670,6 @@ export const playgroundValue: EditorDocumentValue = {
             },
           ],
           type: 'column',
-          width: '50%',
         },
       ],
       type: 'columnGroup',

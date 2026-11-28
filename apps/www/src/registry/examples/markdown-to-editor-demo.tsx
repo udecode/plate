@@ -75,11 +75,11 @@ $$
 Multi-column layout features enable richer page designs and content layouts.
 
 <columnGroup>
-<column width="50%">
+<column>
 left
 </column>
 
-  <column width="50%">
+  <column>
     right
   </column>
 </columnGroup>

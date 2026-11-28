@@ -222,15 +222,15 @@
       "import": "./dist/react/features/ink/index.js",
       "default": "./dist/react/features/ink/index.js"
     },
-    "./layout": {
-      "types": "./dist/features/layout/index.d.ts",
-      "import": "./dist/features/layout/index.js",
-      "default": "./dist/features/layout/index.js"
+    "./column": {
+      "types": "./dist/features/column/index.d.ts",
+      "import": "./dist/features/column/index.js",
+      "default": "./dist/features/column/index.js"
     },
-    "./layout/react": {
-      "types": "./dist/react/features/layout/index.d.ts",
-      "import": "./dist/react/features/layout/index.js",
-      "default": "./dist/react/features/layout/index.js"
+    "./column/react": {
+      "types": "./dist/react/features/column/index.d.ts",
+      "import": "./dist/react/features/column/index.js",
+      "default": "./dist/react/features/column/index.js"
     },
     "./lint": {
       "types": "./dist/features/lint/index.d.ts",
@@ -392,6 +392,8 @@
     "lint:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout",
     "lint:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout-react",
     "lint:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-block-codemirror",
+    "lint:partition:column": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs column",
+    "lint:partition:column-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs column-react",
     "lint:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox-react",
     "lint:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments",
     "lint:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments-react",
@@ -418,8 +420,6 @@
     "lint:partition:html-server": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs html-server",
     "lint:partition:ink": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ink",
     "lint:partition:ink-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ink-react",
-    "lint:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs layout",
-    "lint:partition:layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs layout-react",
     "lint:partition:lint": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs lint",
     "lint:partition:lock": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs lock",
     "lint:partition:lock-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs lock-react",
@@ -473,6 +473,7 @@
     "test:partition:board-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs board-react",
     "test:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs callout",
     "test:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-block-codemirror",
+    "test:partition:column": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs column",
     "test:partition:combobox-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox-react",
     "test:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments",
     "test:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments-react",
@@ -497,7 +498,6 @@
     "test:partition:html-server": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs html-server",
     "test:partition:ink": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ink",
     "test:partition:ink-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ink-react",
-    "test:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs layout",
     "test:partition:lint": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs lint",
     "test:partition:lock": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs lock",
     "test:partition:lock-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs lock-react",

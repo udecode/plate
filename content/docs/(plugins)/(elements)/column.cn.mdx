@@ -11,8 +11,9 @@ docs:
 
 ## 功能特性
 
-- 在文档中添加分栏布局
-- 通过 `column-group-node` 工具栏选择多种分栏样式
+- 在文档中添加 2 栏和 3 栏布局，也可通过添加分栏或侧边拖放扩展至最多五栏
+- 拖动相邻分栏之间的分隔线，在单次可撤销步骤中调整相对 flex 权重，或通过浮动工具栏选择预设与取消分栏
+- 窄屏移动端自动纵向堆叠，宽屏下保持并排权重比例
 - 配合[拖放](/docs/dnd)，把区块拖到另一个区块旁边（它的行内结束边缘，或顶层区块旁编辑器两侧的留白），两者会放入一个新的分栏组；拖到分栏内区块的旁边则添加一栏，最多五栏
 
 </PackageInfo>
@@ -63,7 +64,7 @@ npm install platejs
 将 `ColumnGroupPlugin` 加入编辑器。它会把 `ColumnItemPlugin` 作为必需的结构依赖安装。
 
 ```tsx
-import { ColumnGroupPlugin } from 'platejs/layout/react';
+import { ColumnGroupPlugin } from 'platejs/column/react';
 import { createEditor } from 'platejs/react';
 
 const editor = createEditor({
@@ -79,7 +80,7 @@ const editor = createEditor({
 配置分栏组；需要替换依赖的渲染组件时，再加入完整的 `ColumnItemPlugin` 描述符。
 
 ```tsx
-import { ColumnGroupPlugin, ColumnItemPlugin } from 'platejs/layout/react';
+import { ColumnGroupPlugin, ColumnItemPlugin } from 'platejs/column/react';
 import { createEditor } from 'platejs/react';
 import { ColumnGroupElement, ColumnElement } from '@/components/editor/column';
 
@@ -96,10 +97,10 @@ const editor = createEditor({
 
 ### 转换为工具栏按钮
 
-添加一个直接调用`BaseColumnGroupPlugin`的结构化操作。只有在选中一个符合条件的块时才启用它。
+添加一个直接调用 `BaseColumnGroupPlugin` 的结构化操作。仅在选中一个位于分栏外的符合条件的区块时启用。
 
 ```tsx
-import { BaseColumnGroupPlugin } from 'platejs/layout';
+import { BaseColumnGroupPlugin } from 'platejs/column';
 
 const turnIntoItem = {
   icon: <Columns3Icon />,
@@ -139,8 +140,8 @@ const turnIntoItem = {
 
 <API name="ColumnElement">
 <APIAttributes>
-  <APIItem name="width" type="string" optional>
-    分栏宽度（必须以 `%` 结尾）
+  <APIItem name="width" type="number" optional>
+    相对于同级分栏的正有限数字 flex 权重（默认为 `1`，等于 `1` 时省略）
   </APIItem>
 </APIAttributes>
 </API>
@@ -154,7 +155,14 @@ const columnGroup = editor.plugin(ColumnGroupPlugin);
 const column = editor.plugin(ColumnItemPlugin);
 
 columnGroup.update.insert({ columns: 3 }, { select: true });
-columnGroup.update.setColumns({ at: columnGroupPath, widths: ['33%', '67%'] });
+columnGroup.update.setColumns({ at: columnGroupPath, widths: [1, 2] });
+columnGroup.update.resizeColumns({
+  columns: [leftColumnKey, rightColumnKey],
+  widths: [1.5, 0.5],
+});
+columnGroup.update.insertColumn({ at: columnPath, side: 'after' });
+columnGroup.update.removeColumn({ at: columnPath });
+columnGroup.update.unwrap({ at: columnGroupPath });
 columnGroup.update.toggle({ columns: 2 });
 column.update.selectAll();
 ```
@@ -162,12 +170,18 @@ column.update.selectAll();
 组命令也可通过 `editor.update.columnGroup` 使用；项命令通过
 `editor.update.column` 使用。
 
-- `insert` 在当前区块之后插入一组等宽分栏项。`select: true` 选中首个段落；
+- `insert` 在当前区块之后插入一组分栏项（拒绝在分栏内嵌套插入）。`select: true` 选中首个段落；
   `replaceEmpty: true` 在同一个撤销步骤中替换空的来源区块。`after` 指定来源区块，
   `at` 指定节点插入位置。
-- `setColumns` 修改现有分栏组的数量和宽度。
-- `toggle` 将当前区块转换为分栏组，或更新其布局。
+- `setColumns` 修改现有分栏组的数量和数字 flex 权重，同时保持锁定分栏的权重不变。
+- `resizeColumns` 按实时 `NodeKey` 调整一对相邻内容分栏的数字 flex 权重，不修改其他同级分栏。
+- `insertColumn` 在目标分栏前或后插入新分栏，权重取当前分栏组的平均值，最多五栏。
+- `removeColumn` 在三栏及以上的分栏组中删除目标分栏；在两栏组中删除该栏并结构化展开剩余分栏。
+- `unwrap` 按顺序将所有分栏内的区块结构化提升到父容器中。
+- `toggle` 将当前区块转换为分栏组，或更新已有分栏组的布局。
 - `selectAll` 将栏内选区扩展到整个分栏组。
 
+当某栏仅包含一个空白普通段落时，在段落开头按 Backspace 会移除该栏（两栏组会自动展开），并让位给标题、列表、缩进段落以及提及等行内内容。
+
 `ColumnGroupPlugin` 还通过 `editorReads.transfer.side` 构建侧边放置，因此
-`editor.api.transfer.move({ nodes, to: { key, side: 'end' } })` 会把区块放到顶层区块旁的新分栏组中，或作为新的一栏放到分栏内区块旁，最多五栏。新加的一栏取分栏组的平均宽度，随后分栏组按比例缩放回 100%。参见[在区块旁构建](/cn/docs/dnd#在区块旁构建)。
+`editor.api.transfer.move({ nodes, to: { key, side: 'end' } })` 会把区块放到顶层区块旁的新分栏组中，或作为新的一栏放到分栏内区块旁，最多五栏。新加的一栏取分栏组的平均 flex 权重，无需重写其他同级分栏宽度。参见[在区块旁构建](/cn/docs/dnd#在区块旁构建)。

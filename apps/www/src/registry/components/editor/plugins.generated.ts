@@ -79,7 +79,7 @@ export interface ColumnElement extends Element {
   readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "column";
   readonly authored?: readonly (unknown)[];
-  readonly width: string;
+  readonly width?: number;
 }
 
 export interface ColumnGroupElement extends Element {
@@ -445,11 +445,11 @@ export type Mutations = Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly authored?: readonly (unknown)[];
-      readonly width?: string;
+      readonly width?: number;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
-      readonly width: string;
+      readonly width?: number;
     }>;
     readonly type: "column";
   }>;

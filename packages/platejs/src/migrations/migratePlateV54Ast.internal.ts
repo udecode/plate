@@ -405,6 +405,22 @@ export const migratePlateV54Ast = ({
       without('identifier');
     }
 
+    const parseLegacyColumnWidth = (value: unknown): number | undefined => {
+      if (typeof value === 'number') {
+        return Number.isFinite(value) && value > 0 ? value : undefined;
+      }
+      if (typeof value !== 'string') return undefined;
+
+      const trimmed = value.trim();
+      const match = /^([+-]?(?:\d+(?:\.\d*)?|\.\d+))%?$/.exec(trimmed);
+
+      if (!match) return undefined;
+
+      const parsed = Number(match[1]);
+
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+    };
+
     if (columnGroupType && element.type === columnGroupType) {
       const { layout } = properties();
 
@@ -412,36 +428,65 @@ export const migratePlateV54Ast = ({
         const columnCount = element.children.filter(
           (child) => ElementApi.isElement(child) && child.type === columnType
         ).length;
-        const fallbackWidth = `${100 / Math.max(columnCount, 1)}%`;
-        const nextChildren = element.children.map((child, index) => {
-          const width: unknown = Array.isArray(layout)
+        const fallbackWidth = 100 / Math.max(columnCount, 1);
+        const resolvedWidths = element.children.map((child, index) => {
+          if (!ElementApi.isElement(child) || child.type !== columnType) {
+            return undefined;
+          }
+
+          const rawLayout: unknown = Array.isArray(layout)
             ? layout[index]
             : undefined;
           const layoutWidth =
-            typeof width === 'number' && Number.isFinite(width) && width > 0
-              ? `${width}%`
-              : fallbackWidth;
+            typeof rawLayout === 'number' &&
+            Number.isFinite(rawLayout) &&
+            rawLayout > 0
+              ? rawLayout
+              : undefined;
+          const childWidth = parseLegacyColumnWidth(child.width);
 
+          if (
+            childWidth !== undefined &&
+            layoutWidth !== undefined &&
+            Math.abs(childWidth - layoutWidth) > 1e-6
+          ) {
+            throw new Error(
+              `Plate v54 migration collision at ${location}.children.${index}: layout width "${layoutWidth}%" conflicts with property "width" value "${String(child.width)}".`
+            );
+          }
+
+          return childWidth ?? layoutWidth ?? fallbackWidth;
+        });
+
+        const numericWidths = resolvedWidths.filter(
+          (value): value is number => value !== undefined
+        );
+        const allEqual =
+          numericWidths.length > 0 &&
+          numericWidths.every(
+            (value) => Math.abs(value - numericWidths[0]) < 1e-6
+          );
+
+        const nextChildren = element.children.map((child, index) => {
           if (!ElementApi.isElement(child) || child.type !== columnType) {
             return child;
           }
 
-          if (isNonEmptyString(child.width)) {
-            if (
-              typeof width === 'number' &&
-              Number.isFinite(width) &&
-              width > 0 &&
-              child.width !== layoutWidth
-            ) {
-              throw new Error(
-                `Plate v54 migration collision at ${location}.children.${index}: layout width "${layoutWidth}" conflicts with property "width" value "${child.width}".`
-              );
-            }
+          const resolved = resolvedWidths[index] ?? 1;
+          const targetWidth =
+            allEqual || Math.abs(resolved - 1) < 1e-9 ? undefined : resolved;
 
-            return child;
+          if (targetWidth === undefined) {
+            if (!Object.hasOwn(child, 'width')) return child;
+
+            const { width: _removed, ...rest } = child;
+
+            return rest;
           }
 
-          return { ...child, width: layoutWidth };
+          if (child.width === targetWidth) return child;
+
+          return { ...child, width: targetWidth };
         });
 
         if (
@@ -451,6 +496,20 @@ export const migratePlateV54Ast = ({
         }
       }
       without('layout');
+    }
+
+    if (
+      columnType &&
+      element.type === columnType &&
+      Object.hasOwn(element, 'width')
+    ) {
+      const parsed = parseLegacyColumnWidth(properties().width);
+
+      if (parsed === undefined || Math.abs(parsed - 1) < 1e-9) {
+        without('width');
+      } else if (parsed !== properties().width) {
+        element = { ...element, width: parsed };
+      }
     }
 
     if (

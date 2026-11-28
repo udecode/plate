@@ -388,7 +388,6 @@ export const COLUMN_TOC_VALUE: Value = [
           },
         ],
         type: 'column',
-        width: '50%',
       },
       {
         children: [
@@ -403,7 +402,6 @@ export const COLUMN_TOC_VALUE: Value = [
           },
         ],
         type: 'column',
-        width: '50%',
       },
     ],
     type: 'columnGroup',

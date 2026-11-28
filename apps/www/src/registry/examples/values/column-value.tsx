@@ -10,11 +10,11 @@ export const columnValue: Value = (
     <hheading level={2}>Column</hheading>
     <hp>Create column and the border will hidden when viewing</hp>
     <hcolumngroup>
-      <hcolumn width="50%">
+      <hcolumn>
         <hp>left 1</hp>
         <hp>left 2</hp>
       </hcolumn>
-      <hcolumn width="50%">
+      <hcolumn>
         <hp>right 1</hp>
         <hp>right 2</hp>
       </hcolumn>

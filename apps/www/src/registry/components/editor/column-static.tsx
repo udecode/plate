@@ -1,18 +1,18 @@
-import { BaseColumnItemPlugin, BaseColumnGroupPlugin } from 'platejs/layout';
+import { BaseColumnGroupPlugin, BaseColumnItemPlugin } from 'platejs/column';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 export function ColumnElementStatic(
   props: EditorElementProps<typeof BaseColumnItemPlugin>
 ) {
-  const { width } = props.element;
-
   return (
-    <div className="group/column relative" style={{ width: width ?? '100%' }}>
-      <EditorElement
-        className="h-full px-2 pt-2 group-first/column:ps-0 group-last/column:pe-0"
-        {...props}
-      >
+    <div
+      className="group/column relative w-full flex-none sm:w-auto sm:min-w-0 sm:flex-(--column-weight)"
+      style={
+        { '--column-weight': props.element.width ?? 1 } as React.CSSProperties
+      }
+    >
+      <EditorElement className="h-full pt-2" {...props}>
         <div className="relative h-full border border-transparent p-1.5">
           {props.children}
         </div>
@@ -26,55 +26,9 @@ export function ColumnGroupElementStatic(
 ) {
   return (
     <EditorElement className="mb-2" {...props}>
-      <div className="flex size-full rounded">{props.children}</div>
-    </EditorElement>
-  );
-}
-
-/**
- * DOCX-compatible column component using table cell.
- */
-export function ColumnElementDocx(
-  props: EditorElementProps<typeof BaseColumnItemPlugin>
-) {
-  const { width } = props.element;
-
-  return (
-    <EditorElement
-      {...props}
-      as="td"
-      style={{
-        width: width ?? 'auto',
-        verticalAlign: 'top',
-        padding: '4px 8px',
-        border: 'none',
-      }}
-    >
-      {props.children}
-    </EditorElement>
-  );
-}
-
-/**
- * DOCX-compatible column group component using table layout.
- */
-export function ColumnGroupElementDocx(
-  props: EditorElementProps<typeof BaseColumnGroupPlugin>
-) {
-  return (
-    <EditorElement {...props}>
-      <table
-        style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          border: 'none',
-          tableLayout: 'fixed',
-        }}
-      >
-        <tbody>
-          <tr>{props.children}</tr>
-        </tbody>
-      </table>
+      <div className="flex size-full flex-col gap-4 rounded sm:flex-row">
+        {props.children}
+      </div>
     </EditorElement>
   );
 }

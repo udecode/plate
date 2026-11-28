@@ -17,6 +17,10 @@
       "platejs/code-block/codemirror": [
         "./packages/platejs/src/code-block/codemirror/index.ts"
       ],
+      "platejs/column": ["./packages/platejs/src/features/column/index.ts"],
+      "platejs/column/react": [
+        "./packages/platejs/src/react/features/column/index.ts"
+      ],
       "platejs/combobox/react": [
         "./packages/platejs/src/react/features/combobox/index.ts"
       ],
@@ -61,10 +65,6 @@
       "platejs/ink": ["./packages/platejs/src/features/ink/index.ts"],
       "platejs/ink/react": [
         "./packages/platejs/src/react/features/ink/index.ts"
-      ],
-      "platejs/layout": ["./packages/platejs/src/features/layout/index.ts"],
-      "platejs/layout/react": [
-        "./packages/platejs/src/react/features/layout/index.ts"
       ],
       "platejs/lint": ["./packages/platejs/src/features/lint/index.ts"],
       "platejs/lock": ["./packages/platejs/src/features/lock/index.ts"],

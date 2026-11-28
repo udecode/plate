@@ -6,10 +6,10 @@
     "emitDeclarationOnly": true,
     "incremental": true,
     "noEmit": false,
-    "outDir": "../.turbo/entrypoint-types/layout-react",
+    "outDir": "../.turbo/entrypoint-types/column-react",
     "rootDir": "../src",
     "sourceMap": false,
-    "tsBuildInfoFile": "../.turbo/entrypoint-types/layout-react.tsbuildinfo"
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/column-react.tsbuildinfo"
   },
   "exclude": [
     "../src/**/*.spec.*",
@@ -18,10 +18,10 @@
     "../src/**/__tests__/**"
   ],
   "extends": "../tsconfig.json",
-  "include": ["../src/react/features/layout/**/*"],
+  "include": ["../src/react/features/column/**/*"],
   "references": [
     {
-      "path": "./layout.json"
+      "path": "./column.json"
     },
     {
       "path": "./react-core.json"

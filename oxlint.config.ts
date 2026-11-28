@@ -301,7 +301,7 @@ const config = defineConfig({
         'packages/platejs/src/features/details/lib/BaseDetailsPlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/find/lib/BaseFindPlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.authored-tree.spec.ts',
-        'packages/platejs/src/features/layout/lib/BaseColumnPlugin.authored-tree.spec.ts',
+        'packages/platejs/src/features/column/lib/BaseColumnPlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/list/lib/BaseListPlugin.authored-tree.spec.ts',
         'packages/platejs/src/math/lib/BaseEquationPlugin.authored-tree.spec.ts',
       ],
