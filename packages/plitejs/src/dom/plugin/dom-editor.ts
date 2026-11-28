@@ -1,7 +1,3 @@
-import scrollIntoViewIfNeeded, {
-  type StandardBehaviorOptions,
-} from 'scroll-into-view-if-needed';
-
 import {
   type Descendant,
   type Element as EditorElement,
@@ -174,9 +170,11 @@ import {
   writeEditableDOMSelection,
 } from './dom-root-runtime';
 import {
+  isDefaultScrollRevealOptions,
   isUsableScrollRect,
+  type ScrollIntoViewOptions,
   scrollDOMRangeFocusIntoViewIfNeeded,
-  scrollRectIntoViewIfNeeded,
+  scrollRectIntoView,
   toScrollRect,
 } from './dom-scroll-into-view';
 import {
@@ -527,7 +525,7 @@ export interface DOMClipboardApi<
   V extends Value = Value,
 > extends DOMEditorClipboardCapability<V> {}
 
-export type ScrollIntoViewOptions = StandardBehaviorOptions | boolean;
+export type { ScrollIntoViewOptions };
 
 export type ScrollIntoViewTarget = DOMRange | Path | Point | Range;
 
@@ -1213,60 +1211,6 @@ const nextScrollIntoViewToken = (scope: object) => {
   VIEW_TO_SCROLL_TOKEN.set(scope, token);
 
   return token;
-};
-
-const hasCSSScrollMargin = (element: HTMLElement) => {
-  const win = element.ownerDocument?.defaultView;
-
-  if (!win) return false;
-
-  const style = win.getComputedStyle(element);
-
-  return (
-    (Number.parseFloat(
-      element.style.scrollMarginTop || style.scrollMarginTop
-    ) || 0) > 0 ||
-    (Number.parseFloat(
-      element.style.scrollMarginBottom || style.scrollMarginBottom
-    ) || 0) > 0 ||
-    (Number.parseFloat(
-      element.style.scrollMarginLeft || style.scrollMarginLeft
-    ) || 0) > 0 ||
-    (Number.parseFloat(
-      element.style.scrollMarginRight || style.scrollMarginRight
-    ) || 0) > 0
-  );
-};
-
-const runScrollIntoViewIfNeeded = (
-  element: HTMLElement,
-  options: boolean | StandardBehaviorOptions | undefined
-) => {
-  if (
-    typeof options !== 'object' ||
-    options === null ||
-    typeof options.behavior === 'function' ||
-    !hasCSSScrollMargin(element)
-  ) {
-    scrollIntoViewIfNeeded(element, options);
-
-    return;
-  }
-
-  const { behavior } = options;
-
-  // scroll-into-view-if-needed subtracts scrollMarginTop a second time after
-  // compute-scroll-into-view already applied it; apply computed coordinates directly.
-  scrollIntoViewIfNeeded(element, {
-    ...options,
-    behavior: (actions) => {
-      for (const { el, left, top } of actions) {
-        if (el.scrollTop !== top || el.scrollLeft !== left) {
-          el.scroll({ behavior, left, top });
-        }
-      }
-    },
-  });
 };
 
 const getScrollIntoViewScope = (
@@ -2550,16 +2494,7 @@ const DOMEditorImpl: DOMEditorInterface = {
     null,
 
   scrollIntoView: (editor, target, options = { scrollMode: 'if-needed' }) => {
-    const usesDefaultReveal =
-      typeof options === 'object' &&
-      options !== null &&
-      (options.scrollMode === undefined ||
-        options.scrollMode === 'if-needed') &&
-      options.block === undefined &&
-      options.inline === undefined &&
-      options.behavior === undefined &&
-      options.boundary === undefined &&
-      options.skipOverflowHiddenElements === undefined;
+    const usesDefaultReveal = isDefaultScrollRevealOptions(options);
     const readScrollMarginTop = (element: HTMLElement) => {
       const window = element.ownerDocument?.defaultView;
 
@@ -2777,17 +2712,17 @@ const DOMEditorImpl: DOMEditorInterface = {
               scrollRect.top -
               requestedScrollMarginTop,
           });
-        } else if (usesDefaultReveal) {
+        } else {
           const rect = element.getBoundingClientRect();
 
           if (isUsableScrollRect(rect)) {
-            scrollRectIntoViewIfNeeded({
+            scrollRectIntoView({
+              options,
               rect: toScrollRect(rect),
+              scrollMarginTop: requestedScrollMarginTop,
               startElement: element,
             });
           }
-        } else {
-          runScrollIntoViewIfNeeded(element, options);
         }
 
         return;
@@ -2837,48 +2772,22 @@ const DOMEditorImpl: DOMEditorInterface = {
         return;
       }
 
-      const hadOwnRect = Object.hasOwn(leafElement, 'getBoundingClientRect');
-      // oxlint-disable-next-line typescript/unbound-method -- [P0 behavior-boundary] The original own method is restored on the same element after the temporary range-backed call; rebinding would change its identity.
-      const originalGetBoundingClientRect = leafElement.getBoundingClientRect;
-      const nearestScrollMarginTop =
-        typeof options === 'object' &&
-        options !== null &&
-        (options.block === undefined || options.block === 'nearest')
-          ? readScrollMarginTop(leafElement)
-          : 0;
-
-      leafElement.getBoundingClientRect = () => {
-        const rangeRect = domRange.getBoundingClientRect();
-        const baseRect = isUsableScrollRect(rangeRect)
+      const rangeRect =
+        typeof domRange.getBoundingClientRect === 'function'
+          ? domRange.getBoundingClientRect()
+          : null;
+      const baseRect =
+        rangeRect && isUsableScrollRect(rangeRect)
           ? rangeRect
-          : originalGetBoundingClientRect.call(leafElement);
+          : leafElement.getBoundingClientRect();
 
-        // compute-scroll-into-view shifts nearest-block bottom upward by
-        // scrollMarginTop, hiding targets within scrollMarginTop below the fold.
-        if (nearestScrollMarginTop <= 0) return baseRect;
+      if (!isUsableScrollRect(baseRect)) return;
 
-        return {
-          bottom: baseRect.bottom + nearestScrollMarginTop,
-          height: baseRect.height + nearestScrollMarginTop,
-          left: baseRect.left,
-          right: baseRect.right,
-          toJSON: () => baseRect.toJSON?.() ?? {},
-          top: baseRect.top,
-          width: baseRect.width,
-          x: baseRect.x,
-          y: baseRect.y,
-        };
-      };
-
-      try {
-        runScrollIntoViewIfNeeded(leafElement, options);
-      } finally {
-        if (hadOwnRect) {
-          leafElement.getBoundingClientRect = originalGetBoundingClientRect;
-        } else {
-          Reflect.deleteProperty(leafElement, 'getBoundingClientRect');
-        }
-      }
+      scrollRectIntoView({
+        options,
+        rect: toScrollRect(baseRect),
+        startElement: leafElement,
+      });
     };
 
     if (!alwaysMode) {

@@ -563,7 +563,6 @@
     "plitejs": "workspace:*",
     "rbush": "4.0.1",
     "saxes": "6.0.0",
-    "scroll-into-view-if-needed": "^3.1.0",
     "unist-util-visit": "5.0.0",
     "zustand": "^5.0.5"
   },

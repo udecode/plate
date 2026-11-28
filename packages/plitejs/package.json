@@ -140,8 +140,7 @@
   },
   "dependencies": {
     "csstype": "3.2.3",
-    "lodash": "^4.17.21",
-    "scroll-into-view-if-needed": "^3.1.0"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@babel/core": "7.29.0",

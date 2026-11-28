@@ -12,8 +12,33 @@ export type ScrollRect = {
   top: number;
 };
 
+type ScrollIntoViewMode = 'always' | 'if-needed';
+
+export type ScrollIntoViewOptions =
+  | boolean
+  | {
+      behavior?: ScrollBehavior;
+      block?: ScrollLogicalPosition;
+      boundary?: Element | ((parent: Element) => boolean) | null;
+      inline?: ScrollLogicalPosition;
+      scrollMode?: 'always' | 'if-needed';
+      skipOverflowHiddenElements?: boolean;
+    };
+
+type NormalizedScrollOptions = {
+  behavior: ScrollBehavior;
+  block: ScrollLogicalPosition;
+  boundary: Element | ((parent: Element) => boolean) | null;
+  defaultReveal: boolean;
+  inline: ScrollLogicalPosition;
+  scrollMode: ScrollIntoViewMode;
+  skipOverflowHiddenElements: boolean;
+};
+
 const MARGIN = 4;
+const MAX_IFRAME_DEPTH = 16;
 const SCROLLABLE_RE = /(auto|scroll|overlay)/;
+const HIDDEN_OVERFLOW_RE = /\bhidden\b/;
 
 export const isUsableScrollRect = (r: DOMRect | DOMRectReadOnly) =>
   r.width > 0 ||
@@ -32,6 +57,59 @@ export const toScrollRect = (r: DOMRect | DOMRectReadOnly): ScrollRect => ({
   top: r.top,
 });
 
+export const isDefaultScrollRevealOptions = (
+  options: ScrollIntoViewOptions | undefined
+) =>
+  options === undefined ||
+  (typeof options === 'object' &&
+    options !== null &&
+    (options.scrollMode === undefined || options.scrollMode === 'if-needed') &&
+    options.block === undefined &&
+    options.inline === undefined &&
+    options.behavior === undefined &&
+    options.boundary === undefined &&
+    options.skipOverflowHiddenElements === undefined);
+
+const normalizeOptions = (
+  options: ScrollIntoViewOptions | undefined
+): NormalizedScrollOptions => {
+  if (isDefaultScrollRevealOptions(options)) {
+    return {
+      behavior: 'auto',
+      block: 'nearest',
+      boundary: null,
+      defaultReveal: true,
+      inline: 'nearest',
+      scrollMode: 'if-needed',
+      skipOverflowHiddenElements: true,
+    };
+  }
+
+  if (typeof options === 'boolean') {
+    return {
+      behavior: 'auto',
+      block: options ? 'start' : 'end',
+      boundary: null,
+      defaultReveal: false,
+      inline: 'nearest',
+      scrollMode: 'always',
+      skipOverflowHiddenElements: true,
+    };
+  }
+
+  const scrollMode: ScrollIntoViewMode = options?.scrollMode ?? 'always';
+
+  return {
+    behavior: options?.behavior ?? 'auto',
+    block: options?.block ?? (scrollMode === 'always' ? 'center' : 'nearest'),
+    boundary: options?.boundary ?? null,
+    defaultReveal: false,
+    inline: options?.inline ?? 'nearest',
+    scrollMode,
+    skipOverflowHiddenElements: options?.skipOverflowHiddenElements ?? true,
+  };
+};
+
 const shiftRect = (r: ScrollRect, dx: number, dy: number): ScrollRect => ({
   bottom: r.bottom - dy,
   left: r.left - dx,
@@ -39,18 +117,57 @@ const shiftRect = (r: ScrollRect, dx: number, dy: number): ScrollRect => ({
   top: r.top - dy,
 });
 
+const parsePositivePx = (value: string | undefined) => {
+  const n = Number.parseFloat(value ?? '');
+
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+
+const getElementStyle = (element: Element) =>
+  element.ownerDocument.defaultView?.getComputedStyle(element) ??
+  (isDOMHTMLElement(element) ? element.style : undefined);
+
+const readScrollMargins = (
+  element: Element,
+  scrollMarginTopOverride?: number
+) => {
+  const style = getElementStyle(element);
+  const inlineStyle = isDOMHTMLElement(element) ? element.style : undefined;
+  const top =
+    scrollMarginTopOverride !== undefined
+      ? Math.max(0, scrollMarginTopOverride)
+      : parsePositivePx(inlineStyle?.scrollMarginTop || style?.scrollMarginTop);
+
+  return {
+    bottom: parsePositivePx(
+      inlineStyle?.scrollMarginBottom || style?.scrollMarginBottom
+    ),
+    left: parsePositivePx(
+      inlineStyle?.scrollMarginLeft || style?.scrollMarginLeft
+    ),
+    right: parsePositivePx(
+      inlineStyle?.scrollMarginRight || style?.scrollMarginRight
+    ),
+    top,
+  };
+};
+
 const canScroll = (
   el: Element,
   style: CSSStyleDeclaration | undefined,
-  axis: 'x' | 'y'
+  axis: 'x' | 'y',
+  skipOverflowHiddenElements: boolean
 ) => {
   const overflow =
     axis === 'y'
       ? `${style?.overflowY ?? ''} ${style?.overflow ?? ''}`
       : `${style?.overflowX ?? ''} ${style?.overflow ?? ''}`;
+  const overflowAllows =
+    SCROLLABLE_RE.test(overflow) ||
+    (!skipOverflowHiddenElements && HIDDEN_OVERFLOW_RE.test(overflow));
 
   return (
-    SCROLLABLE_RE.test(overflow) &&
+    overflowAllows &&
     (axis === 'y'
       ? el.scrollHeight > el.clientHeight
       : el.scrollWidth > el.clientWidth)
@@ -74,20 +191,93 @@ const paddedBox = (
     top: number;
     width: number;
   },
-  style: CSSStyleDeclaration | undefined
+  style: CSSStyleDeclaration | undefined,
+  margin: number,
+  scaleX = 1,
+  scaleY = 1
 ): ScrollRect => ({
-  bottom: rect.bottom - pad(style?.scrollPaddingBottom, rect.height) - MARGIN,
-  left: rect.left + pad(style?.scrollPaddingLeft, rect.width) + MARGIN,
-  right: rect.right - pad(style?.scrollPaddingRight, rect.width) - MARGIN,
-  top: rect.top + pad(style?.scrollPaddingTop, rect.height) + MARGIN,
+  bottom:
+    rect.bottom -
+    pad(style?.scrollPaddingBottom, rect.height / scaleY) * scaleY -
+    margin,
+  left:
+    rect.left +
+    pad(style?.scrollPaddingLeft, rect.width / scaleX) * scaleX +
+    margin,
+  right:
+    rect.right -
+    pad(style?.scrollPaddingRight, rect.width / scaleX) * scaleX -
+    margin,
+  top:
+    rect.top +
+    pad(style?.scrollPaddingTop, rect.height / scaleY) * scaleY +
+    margin,
 });
+
+const getElementScale = (el: Element, rect: DOMRectReadOnly) => {
+  if (!isDOMHTMLElement(el)) return { x: 1, y: 1 };
+
+  return {
+    x: el.offsetWidth > 0 && rect.width > 0 ? rect.width / el.offsetWidth : 1,
+    y:
+      el.offsetHeight > 0 && rect.height > 0
+        ? rect.height / el.offsetHeight
+        : 1,
+  };
+};
+
+const getScrollContainerBox = (
+  el: Element,
+  style: CSSStyleDeclaration | undefined,
+  scale: { x: number; y: number },
+  margin: number
+): ScrollRect => {
+  const rect = el.getBoundingClientRect();
+  const borderTop = parsePositivePx(style?.borderTopWidth) * scale.y;
+  const borderBottom = parsePositivePx(style?.borderBottomWidth) * scale.y;
+  const borderLeft = parsePositivePx(style?.borderLeftWidth) * scale.x;
+  const borderRight = parsePositivePx(style?.borderRightWidth) * scale.x;
+  const top = rect.top + borderTop;
+  const bottom =
+    el.clientHeight > 0
+      ? Math.min(rect.bottom - borderBottom, top + el.clientHeight * scale.y)
+      : rect.bottom - borderBottom;
+  const isRtl = style?.direction === 'rtl';
+  const left =
+    isRtl && el.clientWidth > 0
+      ? Math.max(
+          rect.left + borderLeft,
+          rect.right - borderRight - el.clientWidth * scale.x
+        )
+      : rect.left + borderLeft;
+  const right =
+    !isRtl && el.clientWidth > 0
+      ? Math.min(rect.right - borderRight, left + el.clientWidth * scale.x)
+      : rect.right - borderRight;
+
+  return paddedBox(
+    {
+      bottom,
+      height: Math.max(0, bottom - top),
+      left,
+      right,
+      top,
+      width: Math.max(0, right - left),
+    },
+    style,
+    margin,
+    scale.x,
+    scale.y
+  );
+};
 
 // Chrome reports client rects in layout-viewport space (pageTop - scrollY = offsetTop),
 // while iOS Safari reports them in visual-viewport space (pageTop - scrollY ~= 0).
 // Clamping pageTop - scrollY to [0, offsetTop] matches the visible box on both without UA checks.
 const getVisibleViewportBox = (
   win: Window,
-  scrollingElement: Element
+  scrollingElement: Element,
+  margin: number
 ): ScrollRect => {
   const vv = win.visualViewport;
   const height = vv?.height ?? win.innerHeight;
@@ -104,19 +294,46 @@ const getVisibleViewportBox = (
 
   return paddedBox(
     { bottom: top + height, height, left, right: left + width, top, width },
-    win.getComputedStyle(scrollingElement)
+    win.getComputedStyle(scrollingElement),
+    margin
   );
 };
 
-const axisDelta = (
-  start: number,
-  end: number,
-  low: number,
-  high: number,
-  ownLow?: number,
-  ownHigh?: number
-) => {
+const axisDelta = ({
+  align,
+  end,
+  high,
+  low,
+  ownHigh,
+  ownLow,
+  rtl = false,
+  scrollMode,
+  start,
+}: {
+  align: ScrollLogicalPosition;
+  end: number;
+  high: number;
+  low: number;
+  ownHigh?: number;
+  ownLow?: number;
+  rtl?: boolean;
+  scrollMode: ScrollIntoViewMode;
+  start: number;
+}) => {
   if (low >= high) return 0;
+  if (scrollMode === 'if-needed' && start >= low && end <= high) return 0;
+
+  if (align === 'start') {
+    return rtl ? end - high : start - low;
+  }
+  if (align === 'end') {
+    return rtl ? start - low : end - high;
+  }
+  if (align === 'center') {
+    return (start + end) / 2 - (low + high) / 2;
+  }
+
+  if (start < low && end > high) return 0;
   if (start < low) {
     const d = low - start;
 
@@ -133,64 +350,151 @@ const axisDelta = (
   return 0;
 };
 
+const applyElementScroll = (
+  el: Element,
+  dx: number,
+  dy: number,
+  behavior: ScrollBehavior
+) => {
+  const prevLeft = el.scrollLeft;
+  const prevTop = el.scrollTop;
+  const nextLeft = prevLeft + dx;
+  const nextTop = prevTop + dy;
+
+  if (behavior === 'smooth' && typeof el.scroll === 'function') {
+    el.scroll({ behavior, left: nextLeft, top: nextTop });
+
+    return { dx, dy };
+  }
+
+  if (typeof el.scroll === 'function') {
+    el.scroll({ behavior, left: nextLeft, top: nextTop });
+  }
+  if (el.scrollTop === prevTop && dy !== 0) {
+    el.scrollTop = nextTop;
+  }
+  if (el.scrollLeft === prevLeft && dx !== 0) {
+    el.scrollLeft = nextLeft;
+  }
+
+  return {
+    dx: el.scrollLeft - prevLeft,
+    dy: el.scrollTop - prevTop,
+  };
+};
+
 const scrollAncestors = (
   startElement: Element,
   scrollingElement: Element,
   rect: ScrollRect,
-  visibleBox: ScrollRect | null
-) => {
+  visibleBox: ScrollRect | null,
+  options: NormalizedScrollOptions
+): { cur: ScrollRect; stopped: boolean } => {
   let cur = rect;
+  const margin = options.defaultReveal ? MARGIN : 0;
+  const startStyle = getElementStyle(startElement);
+
+  if (startStyle?.position === 'fixed') {
+    return { cur, stopped: true };
+  }
+
+  if (options.boundary === startElement) {
+    return { cur, stopped: true };
+  }
 
   for (
     let el = getFlatTreeParentElement(startElement);
     el;
     el = getFlatTreeParentElement(el)
   ) {
-    if (el === scrollingElement) continue;
+    if (typeof options.boundary === 'function' && !options.boundary(el)) {
+      return { cur, stopped: true };
+    }
+    if (el === scrollingElement) {
+      return { cur, stopped: options.boundary === el };
+    }
 
-    const style = el.ownerDocument.defaultView?.getComputedStyle(el);
-    const scrollY = canScroll(el, style, 'y');
-    const scrollX = canScroll(el, style, 'x');
+    const style = getElementStyle(el);
+    const scrollY = canScroll(
+      el,
+      style,
+      'y',
+      options.skipOverflowHiddenElements
+    );
+    const scrollX = canScroll(
+      el,
+      style,
+      'x',
+      options.skipOverflowHiddenElements
+    );
 
-    if (!scrollY && !scrollX) continue;
+    if (scrollY || scrollX) {
+      const scale = getElementScale(el, el.getBoundingClientRect());
+      const own = getScrollContainerBox(el, style, scale, margin);
+      const isRtl = style?.direction === 'rtl';
+      const dy = scrollY
+        ? visibleBox
+          ? axisDelta({
+              align: 'nearest',
+              end: cur.bottom,
+              high: Math.min(own.bottom, visibleBox.bottom),
+              low: Math.max(own.top, visibleBox.top),
+              ownHigh: own.bottom,
+              ownLow: own.top,
+              scrollMode: 'if-needed',
+              start: cur.top,
+            })
+          : axisDelta({
+              align: options.block,
+              end: cur.bottom,
+              high: own.bottom,
+              low: own.top,
+              scrollMode: options.scrollMode,
+              start: cur.top,
+            })
+        : 0;
+      const dx = scrollX
+        ? visibleBox
+          ? axisDelta({
+              align: 'nearest',
+              end: cur.right,
+              high: Math.min(own.right, visibleBox.right),
+              low: Math.max(own.left, visibleBox.left),
+              ownHigh: own.right,
+              ownLow: own.left,
+              rtl: isRtl,
+              scrollMode: 'if-needed',
+              start: cur.left,
+            })
+          : axisDelta({
+              align: options.inline,
+              end: cur.right,
+              high: own.right,
+              low: own.left,
+              rtl: isRtl,
+              scrollMode: options.scrollMode,
+              start: cur.left,
+            })
+        : 0;
 
-    const own = paddedBox(el.getBoundingClientRect(), style);
-    const dy = scrollY
-      ? visibleBox
-        ? axisDelta(
-            cur.top,
-            cur.bottom,
-            Math.max(own.top, visibleBox.top),
-            Math.min(own.bottom, visibleBox.bottom),
-            own.top,
-            own.bottom
-          )
-        : axisDelta(cur.top, cur.bottom, own.top, own.bottom)
-      : 0;
-    const dx = scrollX
-      ? visibleBox
-        ? axisDelta(
-            cur.left,
-            cur.right,
-            Math.max(own.left, visibleBox.left),
-            Math.min(own.right, visibleBox.right),
-            own.left,
-            own.right
-          )
-        : axisDelta(cur.left, cur.right, own.left, own.right)
-      : 0;
+      if (dy !== 0 || dx !== 0) {
+        const applied = applyElementScroll(
+          el,
+          dx / scale.x,
+          dy / scale.y,
+          options.behavior
+        );
 
-    if (dy === 0 && dx === 0) continue;
+        cur = shiftRect(cur, applied.dx * scale.x, applied.dy * scale.y);
+      }
+    }
 
-    const prevTop = el.scrollTop;
-    const prevLeft = el.scrollLeft;
-
-    el.scrollTop += dy;
-    el.scrollLeft += dx;
-    cur = shiftRect(cur, el.scrollLeft - prevLeft, el.scrollTop - prevTop);
+    if (style?.position === 'fixed' || options.boundary === el) {
+      return { cur, stopped: true };
+    }
   }
 
-  return cur;
+  return { cur, stopped: false };
 };
 
 const outsideBox = (rect: ScrollRect, box: ScrollRect, tolerance = 0) =>
@@ -237,7 +541,8 @@ const panVisualViewportNearest = (
   win: Window,
   scrollingElement: Element,
   el: Element,
-  caret: ScrollRect
+  caret: ScrollRect,
+  margin: number
 ): ScrollRect => {
   const vv = win.visualViewport;
 
@@ -258,12 +563,18 @@ const panVisualViewportNearest = (
     );
   };
 
-  setCaretScrollMargin(el, elRect, caret, MARGIN, MARGIN, MARGIN, MARGIN);
+  setCaretScrollMargin(el, elRect, caret, margin, margin, margin, margin);
   el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 
   let nextCaret = caretAfter();
 
-  if (outsideBox(nextCaret, getVisibleViewportBox(win, scrollingElement), 1)) {
+  if (
+    outsideBox(
+      nextCaret,
+      getVisibleViewportBox(win, scrollingElement, margin),
+      1
+    )
+  ) {
     const rootStyle = win.getComputedStyle(scrollingElement);
     const padTop = pad(rootStyle.scrollPaddingTop, vv.height);
     const padRight = pad(rootStyle.scrollPaddingRight, vv.width);
@@ -277,10 +588,10 @@ const panVisualViewportNearest = (
         el,
         elRect,
         caret,
-        MARGIN + padTop,
-        MARGIN + padRight,
-        MARGIN + padBottom,
-        MARGIN + padLeft
+        margin + padTop,
+        margin + padRight,
+        margin + padBottom,
+        margin + padLeft
       );
       el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       nextCaret = caretAfter();
@@ -300,7 +611,8 @@ const panVisualViewportCenter = (
   win: Window,
   scrollingElement: Element,
   el: Element,
-  caret: ScrollRect
+  caret: ScrollRect,
+  margin: number
 ) => {
   if (!canPanVisualViewport(win, scrollingElement, el)) return;
 
@@ -308,11 +620,177 @@ const panVisualViewportCenter = (
   const prev = el.style.getPropertyValue('scroll-margin');
   const priority = el.style.getPropertyPriority('scroll-margin');
 
-  setCaretScrollMargin(el, elRect, caret, MARGIN, MARGIN, MARGIN, MARGIN);
+  setCaretScrollMargin(el, elRect, caret, margin, margin, margin, margin);
   el.scrollIntoView({ block: 'center', inline: 'nearest' });
 
   if (prev) el.style.setProperty('scroll-margin', prev, priority);
   else el.style.removeProperty('scroll-margin');
+};
+
+const getEnclosingFrame = (win: Window): Element | null => {
+  try {
+    return win.frameElement;
+  } catch {
+    return null;
+  }
+};
+
+const mapRectIntoParentWindow = (
+  rect: ScrollRect,
+  frame: Element
+): ScrollRect => {
+  const frameRect = frame.getBoundingClientRect();
+  const frameStyle = getElementStyle(frame);
+  const scale = getElementScale(frame, frameRect);
+  const offsetX =
+    frameRect.left +
+    (parsePositivePx(frameStyle?.borderLeftWidth) +
+      parsePositivePx(frameStyle?.paddingLeft)) *
+      scale.x;
+  const offsetY =
+    frameRect.top +
+    (parsePositivePx(frameStyle?.borderTopWidth) +
+      parsePositivePx(frameStyle?.paddingTop)) *
+      scale.y;
+
+  return {
+    bottom: offsetY + rect.bottom * scale.y,
+    left: offsetX + rect.left * scale.x,
+    right: offsetX + rect.right * scale.x,
+    top: offsetY + rect.top * scale.y,
+  };
+};
+
+export const scrollRectIntoView = ({
+  options,
+  rect,
+  scrollMarginTop,
+  startElement,
+}: {
+  options?: ScrollIntoViewOptions;
+  rect: ScrollRect;
+  scrollMarginTop?: number;
+  startElement: Element;
+}) => {
+  const normalized = normalizeOptions(options);
+  const margin = normalized.defaultReveal ? MARGIN : 0;
+  const margins = readScrollMargins(startElement, scrollMarginTop);
+  let cur: ScrollRect = {
+    bottom: rect.bottom + margins.bottom,
+    left: rect.left - margins.left,
+    right: rect.right + margins.right,
+    top: rect.top - margins.top,
+  };
+  let currentStart: Element = startElement;
+
+  for (let depth = 0; depth < MAX_IFRAME_DEPTH; depth += 1) {
+    const doc = currentStart.ownerDocument;
+    const scrollingElement = doc.scrollingElement ?? doc.documentElement;
+
+    if (!scrollingElement) return;
+
+    const { cur: afterAncestors, stopped } = scrollAncestors(
+      currentStart,
+      scrollingElement,
+      cur,
+      null,
+      normalized
+    );
+
+    cur = afterAncestors;
+    if (stopped) return;
+
+    const win = doc.defaultView;
+
+    if (!win) return;
+
+    const rootStyle = win.getComputedStyle(scrollingElement);
+    const isRtl = rootStyle?.direction === 'rtl';
+    let visible = getVisibleViewportBox(win, scrollingElement, margin);
+    const dy =
+      scrollingElement.scrollHeight > scrollingElement.clientHeight
+        ? axisDelta({
+            align: normalized.block,
+            end: cur.bottom,
+            high: visible.bottom,
+            low: visible.top,
+            scrollMode: normalized.scrollMode,
+            start: cur.top,
+          })
+        : 0;
+    const dx =
+      scrollingElement.scrollWidth > scrollingElement.clientWidth
+        ? axisDelta({
+            align: normalized.inline,
+            end: cur.right,
+            high: visible.right,
+            low: visible.left,
+            rtl: isRtl,
+            scrollMode: normalized.scrollMode,
+            start: cur.left,
+          })
+        : 0;
+
+    if (dy !== 0 || dx !== 0) {
+      if (normalized.behavior === 'smooth') {
+        win.scrollBy({ behavior: 'smooth', left: dx, top: dy });
+        cur = shiftRect(cur, dx, dy);
+      } else {
+        const prevY = win.scrollY;
+        const prevX = win.scrollX;
+
+        win.scrollBy(dx, dy);
+        cur = shiftRect(cur, win.scrollX - prevX, win.scrollY - prevY);
+      }
+      visible = getVisibleViewportBox(win, scrollingElement, margin);
+    }
+
+    if (normalized.behavior !== 'smooth') {
+      if (outsideBox(cur, visible, 1)) {
+        cur = panVisualViewportNearest(
+          win,
+          scrollingElement,
+          currentStart,
+          cur,
+          margin
+        );
+        visible = getVisibleViewportBox(win, scrollingElement, margin);
+      }
+
+      if (outsideBox(cur, visible)) {
+        ({ cur } = scrollAncestors(
+          currentStart,
+          scrollingElement,
+          cur,
+          visible,
+          normalized
+        ));
+      }
+
+      if (outsideBox(cur, visible, 1)) {
+        panVisualViewportCenter(
+          win,
+          scrollingElement,
+          currentStart,
+          cur,
+          margin
+        );
+      }
+    }
+
+    const frame = getEnclosingFrame(win);
+
+    if (!frame || frame.ownerDocument === doc) return;
+    if (
+      normalized.boundary === frame ||
+      (typeof normalized.boundary === 'function' && !normalized.boundary(frame))
+    ) {
+      return;
+    }
+
+    cur = mapRectIntoParentWindow(cur, frame);
+    currentStart = frame;
+  }
 };
 
 export const scrollRectIntoViewIfNeeded = ({
@@ -322,45 +800,7 @@ export const scrollRectIntoViewIfNeeded = ({
   rect: ScrollRect;
   startElement: Element;
 }) => {
-  const scrollingElement =
-    startElement.ownerDocument.scrollingElement ??
-    startElement.ownerDocument.documentElement;
-  let cur = scrollAncestors(startElement, scrollingElement, rect, null);
-  const win = startElement.ownerDocument.defaultView;
-
-  if (!win) return;
-
-  let visible = getVisibleViewportBox(win, scrollingElement);
-  const dy =
-    scrollingElement.scrollHeight > scrollingElement.clientHeight
-      ? axisDelta(cur.top, cur.bottom, visible.top, visible.bottom)
-      : 0;
-  const dx =
-    scrollingElement.scrollWidth > scrollingElement.clientWidth
-      ? axisDelta(cur.left, cur.right, visible.left, visible.right)
-      : 0;
-
-  if (dy !== 0 || dx !== 0) {
-    const prevY = win.scrollY;
-    const prevX = win.scrollX;
-
-    win.scrollBy(dx, dy);
-    cur = shiftRect(cur, win.scrollX - prevX, win.scrollY - prevY);
-    visible = getVisibleViewportBox(win, scrollingElement);
-  }
-
-  if (outsideBox(cur, visible, 1)) {
-    cur = panVisualViewportNearest(win, scrollingElement, startElement, cur);
-    visible = getVisibleViewportBox(win, scrollingElement);
-  }
-
-  if (outsideBox(cur, visible)) {
-    cur = scrollAncestors(startElement, scrollingElement, cur, visible);
-  }
-
-  if (outsideBox(cur, visible, 1)) {
-    panVisualViewportCenter(win, scrollingElement, startElement, cur);
-  }
+  scrollRectIntoView({ rect, startElement });
 };
 
 export const scrollDOMRangeFocusIntoViewIfNeeded = (
