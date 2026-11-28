@@ -3866,8 +3866,7 @@
         "https://platejs.org/r/highlight-style.json",
         "https://platejs.org/r/inline-combobox.json",
         "button",
-        "command",
-        "hover-card"
+        "command"
       ],
       "files": [
         {

@@ -278,6 +278,71 @@ const getGithubFootnote = (document: Document, href: string | null) => {
   return null;
 };
 
+const isWhitespaceOnlyHtmlNode = (node: ChildNode): boolean => {
+  if (node.nodeType === 8) return true;
+  if (node.nodeType === 3) {
+    return /^[ \t\r\n\u00A0]*$/.test(node.textContent ?? '');
+  }
+  if (node.nodeType === 1) {
+    const element = node as HTMLElement;
+    return (
+      element.tagName === 'SPAN' &&
+      element.children.length === 0 &&
+      /^[ \t\r\n\u00A0]*$/.test(element.textContent ?? '')
+    );
+  }
+  return false;
+};
+
+const isTrailingBackref = (next: ChildNode | null): boolean => {
+  let cursor = next;
+  while (cursor) {
+    if (isWhitespaceOnlyHtmlNode(cursor)) {
+      cursor = cursor.nextSibling;
+      continue;
+    }
+    if (
+      cursor.nodeType === 1 &&
+      (cursor as HTMLElement).matches('[data-footnote-backref]')
+    ) {
+      return true;
+    }
+    return false;
+  }
+  return true;
+};
+
+const trimBackrefSeparator = (node: ChildNode | null) => {
+  let cursor = node;
+  while (cursor && isWhitespaceOnlyHtmlNode(cursor)) {
+    const previous = cursor.previousSibling;
+    if (cursor.nodeType !== 8) cursor.remove();
+    cursor = previous;
+  }
+  if (!cursor) return;
+
+  const textNode =
+    cursor.nodeType === 3
+      ? cursor
+      : cursor.nodeType === 1 &&
+          (cursor as HTMLElement).tagName === 'SPAN' &&
+          cursor.lastChild?.nodeType === 3
+        ? cursor.lastChild
+        : null;
+
+  if (!textNode?.textContent) return;
+
+  const trimmed = textNode.textContent.replace(/[ \t\u00A0]+$/, '');
+  if (trimmed.length === 0) {
+    textNode.remove();
+    if (cursor !== textNode && cursor.childNodes.length === 0) {
+      cursor.remove();
+    }
+  } else {
+    textNode.textContent = trimmed;
+  }
+};
+
 const readFootnoteStaticReuseKey: StaticReuseKeyReader = ({ editor, path }) => {
   if (!getCompiledPlatePlugin(editor, PLUGINS.footnote)) return undefined;
 
@@ -383,28 +448,8 @@ export const BaseFootnoteDefinitionPlugin = withStaticReuseKey(
 
                 chrome.remove();
 
-                if (!isBackref) continue;
-
-                const trailingBackref =
-                  !next ||
-                  (next.nodeType === 3 && !next.textContent?.trim()) ||
-                  (next.nodeType === 1 &&
-                    (next as HTMLElement).matches('[data-footnote-backref]'));
-
-                if (
-                  trailingBackref &&
-                  previous?.nodeType === 3 &&
-                  previous.textContent
-                ) {
-                  const trimmed = previous.textContent.replace(
-                    /[ \t\u00A0]+$/,
-                    ''
-                  );
-                  if (trimmed.length === 0) {
-                    previous.remove();
-                  } else {
-                    previous.textContent = trimmed;
-                  }
+                if (isBackref && isTrailingBackref(next)) {
+                  trimBackrefSeparator(previous);
                 }
               }
             }

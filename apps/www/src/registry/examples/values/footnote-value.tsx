@@ -15,11 +15,6 @@ export const footnoteValue = (
       </hfootnoteReference>
       .
     </hp>
-    <hfootnoteDefinition ref="1">
-      <hp>
-        <htext>Footnote definitions keep block content and their ref.</htext>
-      </hp>
-    </hfootnoteDefinition>
     <hp>
       Unresolved references can still exist during editing like
       <hfootnoteReference ref="2">
@@ -41,6 +36,11 @@ export const footnoteValue = (
       </hfootnoteReference>
       .
     </hp>
+    <hfootnoteDefinition ref="1">
+      <hp>
+        <htext>Footnote definitions keep block content and their ref.</htext>
+      </hp>
+    </hfootnoteDefinition>
     <hfootnoteDefinition ref="3">
       <hp>
         <htext>First definition for duplicate id 3.</htext>

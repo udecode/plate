@@ -1,5 +1,5 @@
 {
-  "generation": "ef5abfd595656d18f08074ec69a5dd05d7325ccb897703c9b761ed082699482f",
+  "generation": "09b2939adf0835a0cad2ad4599247675fcc252371daef21ec31224728bed8f9a",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3931,8 +3931,7 @@
             "@plate/highlight-style",
             "@plate/inline-combobox",
             "button",
-            "command",
-            "hover-card"
+            "command"
           ]
         },
         {
@@ -12051,8 +12050,7 @@
             "@plate/highlight-style",
             "@plate/inline-combobox",
             "button",
-            "command",
-            "hover-card"
+            "command"
           ]
         },
         {
