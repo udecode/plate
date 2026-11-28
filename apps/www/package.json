@@ -46,7 +46,6 @@
     "@ai-sdk/google": "^3.0.0",
     "@ai-sdk/openai": "^3.0.0",
     "@ai-sdk/react": "^3.0.0",
-    "@ariakit/react": "0.4.17",
     "@aws-sdk/client-s3": "^3.1079.0",
     "@aws-sdk/lib-storage": "^3.700.0",
     "@aws-sdk/s3-presigned-post": "^3.700.0",

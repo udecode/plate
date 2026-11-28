@@ -728,7 +728,7 @@
       "title": "Inline Combobox",
       "description": "A combobox for inline suggestions.",
       "dependencies": [
-        "@ariakit/react",
+        "@floating-ui/react",
         "platejs",
         "class-variance-authority",
         "cn",

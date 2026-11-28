@@ -43,7 +43,6 @@ import {
   InlineComboboxEmpty,
   InlineComboboxGroup,
   InlineComboboxItem,
-  useInlineComboboxOpen,
   useInlineComboboxQuery,
 } from '@/registry/components/editor/inline-combobox';
 
@@ -59,7 +58,6 @@ const CLOSED_PREVIEW: FootnotePreview = {
   isResolved: false,
   previewText: undefined,
 };
-const CLOSED_OPTIONS: FootnoteOptions = { footnotes: [], nextRef: '1' };
 const CLOSED_REFERENCE_ITEMS: ReadonlyArray<
   Readonly<{ index: number; label: string }>
 > = [];
@@ -429,19 +427,15 @@ export function FootnoteCombobox({ editableRef }: EditableSiblingProps) {
 
 function FootnoteComboboxContent() {
   const { read: footnoteApi } = useEditor().plugin(FootnotePlugin);
-  const open = useInlineComboboxOpen();
   const query = useInlineComboboxQuery().trim();
   const { footnotes, nextRef } = useEditorSelector<FootnoteOptions>(
-    () =>
-      open
-        ? {
-            footnotes: footnoteApi.refs().map((ref) => ({
-              ref,
-              text: footnoteApi.definitionText({ ref }),
-            })),
-            nextRef: footnoteApi.nextRef(),
-          }
-        : CLOSED_OPTIONS,
+    () => ({
+      footnotes: footnoteApi.refs().map((ref) => ({
+        ref,
+        text: footnoteApi.definitionText({ ref }),
+      })),
+      nextRef: footnoteApi.nextRef(),
+    }),
     { equalityFn: sameOptions }
   );
   const numericQuery = NUMERIC_FOOTNOTE_QUERY.test(query) ? query : '';

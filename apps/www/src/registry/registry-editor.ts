@@ -385,7 +385,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@ariakit/react', 'platejs'],
+    dependencies: ['@floating-ui/react', 'platejs'],
     description: 'A combobox for inline suggestions.',
     files: [
       {

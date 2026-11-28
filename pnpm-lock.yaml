@@ -257,9 +257,6 @@ importers:
       '@ai-sdk/react':
         specifier: ^3.0.0
         version: 3.0.118(react@19.2.8)(zod@4.6.6)
-      '@ariakit/react':
-        specifier: 0.4.17
-        version: 0.4.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@aws-sdk/client-s3':
         specifier: ^3.1079.0
         version: 3.1136.0
@@ -1099,21 +1096,6 @@ packages:
   '@antfu/ni@24.3.0':
     resolution: {integrity: sha512-wBSav4mBxvHEW9RbdSo1SWLQ6MAlT0Dc423weC58yOWqW4OcMvtnNDdDrxOZeJ88fEIyPK93gDUWIelBxzSf8g==}
     hasBin: true
-
-  '@ariakit/core@0.4.15':
-    resolution: {integrity: sha512-vvxmZvkNhiisKM+Y1TbGMUfVVchV/sWu9F0xw0RYADXcimWPK31dd9JnIZs/OQ5pwAryAHmERHwuGQVESkSjwQ==}
-
-  '@ariakit/react-core@0.4.17':
-    resolution: {integrity: sha512-kFF6n+gC/5CRQIyaMTFoBPio2xUe0k9rZhMNdUobWRmc/twfeLVkODx+8UVYaNyKilTge8G0JFqwvFKku/jKEw==}
-    peerDependencies:
-      react: ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-
-  '@ariakit/react@0.4.17':
-    resolution: {integrity: sha512-HQaIboE2axtlncJz1hRTaiQfJ1GGjhdtNcAnPwdjvl2RybfmlHowIB+HTVBp36LzroKPs/M4hPCxk7XTaqRZGg==}
-    peerDependencies:
-      react: ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@aws-sdk/checksums@3.1001.0':
     resolution: {integrity: sha512-6uTniZc87q+B5eXouGTl+7Tmc482rEeCcvxpsvREP8EfF0gvloRZ41UOA9sbSJlyy8TbqIBXb3kKfKarEArUQA==}
@@ -5848,6 +5830,7 @@ packages:
 
   bun@1.4.4:
     resolution: {integrity: sha512-hj0ASdG6PNjLZGFAXktWb3Uaj/dcv/1wCsIttoEXADNIQBsGjTr+5uLKYbrDkuc7NT0Tkj4yPIqJI2jDxXdvVg==}
+    cpu: [arm64, x64]
     os: [darwin, linux, android, freebsd, win32]
     hasBin: true
 
@@ -11454,22 +11437,6 @@ snapshots:
       fzf: 0.5.2
       package-manager-detector: 1.6.0
       tinyexec: 1.2.4
-
-  '@ariakit/core@0.4.15': {}
-
-  '@ariakit/react-core@0.4.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
-    dependencies:
-      '@ariakit/core': 0.4.15
-      '@floating-ui/dom': 1.7.6
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-      use-sync-external-store: 1.6.0(react@19.2.8)
-
-  '@ariakit/react@0.4.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
-    dependencies:
-      '@ariakit/react-core': 0.4.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
 
   '@aws-sdk/checksums@3.1001.0':
     dependencies:

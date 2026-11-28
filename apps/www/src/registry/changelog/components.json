@@ -289,6 +289,7 @@
     ],
     "footnote": [
       "2026-11-28-footnote-combobox-keyboard-and-perf",
+      "2026-11-28-inline-combobox-floating-ui",
       "2026-11-27-dark-mode-editor-chrome",
       "2026-11-23-footnote-create-definition-focus",
       "2026-11-17-cn-package",
@@ -306,6 +307,7 @@
       "2026-08-17-flat-editor-registry"
     ],
     "inline-combobox": [
+      "2026-11-28-inline-combobox-floating-ui",
       "2026-11-28-inline-combobox-hover-scroll",
       "2026-11-22-inline-combobox-menu-color",
       "2026-11-17-cn-package",

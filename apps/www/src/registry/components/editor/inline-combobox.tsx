@@ -1,16 +1,17 @@
 'use client';
 
 import {
-  ComboboxGroup,
-  ComboboxGroupLabel,
-  ComboboxItem,
-  ComboboxPopover,
-  ComboboxProvider,
-  Portal,
-  useComboboxContext,
-  useComboboxStore,
-  useStoreState,
-} from '@ariakit/react';
+  FloatingPortal,
+  type VirtualElement,
+  autoUpdate,
+  flip,
+  offset,
+  shift,
+  size,
+  useDismiss,
+  useFloating,
+  useInteractions,
+} from '@floating-ui/react';
 import { cva } from 'class-variance-authority';
 import { cn } from 'cn';
 import type { PluginReference } from 'platejs';
@@ -21,18 +22,24 @@ import {
   type UseComboboxReturn,
   useCombobox,
 } from 'platejs/combobox/react';
-import { useEditor } from 'platejs/react';
+import { useComposedRef, useEditor } from 'platejs/react';
 import * as React from 'react';
 
 type InlineComboboxContextValue = {
+  activeId: string | null;
   box: UseComboboxReturn;
+  editableRef: React.RefObject<HTMLDivElement | null>;
+  itemCount: number;
   match: ComboboxMatch | null;
+  open: boolean;
+  registerContent: (node: HTMLDivElement | null) => void;
+  registerItem: () => () => void;
+  setHasEmpty: (hasEmpty: boolean) => void;
   onOptionPointerMove: (
     id: string,
     event: React.PointerEvent<HTMLDivElement>
   ) => void;
-  open: boolean;
-  setHasEmpty: (hasEmpty: boolean) => void;
+  onUserScroll: () => void;
 };
 
 const InlineComboboxContext =
@@ -47,8 +54,6 @@ const useInlineComboboxContext = () => {
 
   return context;
 };
-
-const useInlineComboboxOpen = () => useInlineComboboxContext().open;
 
 /** The text typed after the trigger, or `''` when no trigger is active. */
 const useInlineComboboxQuery = () =>
@@ -137,9 +142,19 @@ const rankOptions = <T extends RankedOption>(
     .map(({ option }) => option);
 };
 
-// The popup's DOM holds the option order. Ariakit sorts its collection a frame
-// after options render and misses a reorder of kept options, which a ranked
-// list can make on any query.
+const EMPTY_RECT = Object.freeze({
+  bottom: 0,
+  height: 0,
+  left: 0,
+  right: 0,
+  top: 0,
+  width: 0,
+  x: 0,
+  y: 0,
+});
+
+// The popup's DOM holds the option order, because `rankOptions` can reorder
+// already-mounted keyed items on any query without remounting them.
 const getOptions = (contentElement: HTMLElement | null) =>
   Array.from(
     contentElement?.querySelectorAll<HTMLElement>(
@@ -161,20 +176,45 @@ const InlineCombobox = <P extends PluginReference>({
   /** Options are still loading: Enter and Tab do nothing. */
   loading?: boolean;
 }) => {
-  // Without a text input, a null active id would point at no option.
-  const store = useComboboxStore({ includesBaseElement: false });
-  const activeId = useStoreState(store, 'activeId');
-  const items = useStoreState(store, 'items');
-  const renderedItems = useStoreState(store, 'renderedItems');
+  const [items, setItems] = React.useState({ count: 0, version: 0 });
+  const [hasEmpty, setHasEmpty] = React.useState(false);
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+  const [shown, setShown] = React.useState(false);
+  const activeIdRef = React.useRef<string | null>(null);
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
   const followFirstOption = React.useRef(true);
   const lastPointer = React.useRef<{ x: number; y: number } | null>(null);
   const prevQuery = React.useRef('');
-  const contentElement = useStoreState(store, 'contentElement');
+
+  const registerItem = React.useCallback(() => {
+    setItems((prev) => ({ count: prev.count + 1, version: prev.version + 1 }));
+
+    return () => {
+      setItems((prev) => ({
+        count: Math.max(0, prev.count - 1),
+        version: prev.version + 1,
+      }));
+    };
+  }, []);
+
+  const registerContent = React.useCallback((node: HTMLDivElement | null) => {
+    contentRef.current = node;
+  }, []);
+
+  const onUserScroll = React.useCallback(() => {
+    followFirstOption.current = false;
+  }, []);
+
+  const setActiveOptionId = React.useCallback((nextId: string | null) => {
+    if (activeIdRef.current !== nextId) {
+      activeIdRef.current = nextId;
+      setActiveId(nextId);
+    }
+  }, []);
+
   const activateOption = React.useCallback(
     (option: HTMLElement, scroll: boolean) => {
-      if (store.getState().activeId !== option.id) {
-        store.setActiveId(option.id);
-      }
+      setActiveOptionId(option.id);
       if (scroll) {
         option.scrollIntoView({
           block: 'nearest',
@@ -182,8 +222,9 @@ const InlineCombobox = <P extends PluginReference>({
         });
       }
     },
-    [store]
+    [setActiveOptionId]
   );
+
   const onOptionPointerMove = React.useCallback(
     (id: string, event: React.PointerEvent<HTMLDivElement>) => {
       if (!id || event.pointerType === 'touch') return;
@@ -200,17 +241,20 @@ const InlineCombobox = <P extends PluginReference>({
     },
     [activateOption]
   );
+
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (loading) {
         return event.key === 'Enter' || event.key === 'Tab';
       }
-      const { activeId: currentId, contentElement: content } = store.getState();
-      const options = getOptions(content);
+
+      const options = getOptions(contentRef.current);
 
       if (options.length === 0) return false;
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        const index = options.findIndex((option) => option.id === currentId);
+        const index = options.findIndex(
+          (option) => option.id === activeIdRef.current
+        );
         const next =
           event.key === 'ArrowDown'
             ? (options[index + 1] ?? options[0])
@@ -223,15 +267,19 @@ const InlineCombobox = <P extends PluginReference>({
       }
       if (event.key !== 'Enter' && event.key !== 'Tab') return false;
 
-      (options.find((option) => option.id === currentId) ?? options[0]).click();
+      (
+        options.find((option) => option.id === activeIdRef.current) ??
+        options[0]
+      ).click();
 
       return true;
     },
-    [activateOption, loading, store]
+    [activateOption, loading]
   );
-  const [shown, setShown] = React.useState(false);
+
+  const effectiveActiveId = shown ? activeId : null;
   const box = useCombobox({
-    activeOptionId: activeId ?? null,
+    activeOptionId: effectiveActiveId,
     editableRef,
     onKeyDown,
     open: shown,
@@ -239,59 +287,39 @@ const InlineCombobox = <P extends PluginReference>({
   });
   const { dismiss, match } = box;
   const query = match?.query ?? '';
-  const [hasEmpty, setHasEmpty] = React.useState(false);
-  const open =
-    !!match &&
-    (items.length > 0 || hasEmpty) &&
-    (!hideWhenNoValue || query.length > 0);
+  const active = !!match && (!hideWhenNoValue || query.length > 0);
+  const open = active && (items.count > 0 || hasEmpty);
 
   if (shown !== open) setShown(open);
 
-  React.useEffect(() => {
-    store.setAnchorElement(editableRef.current);
-  }, [editableRef, store]);
-
-  React.useEffect(() => {
-    if (!contentElement) return undefined;
-
-    const stopFollowingFirst = () => {
-      followFirstOption.current = false;
-    };
-    const options = { capture: true, passive: true };
-
-    contentElement.addEventListener('wheel', stopFollowingFirst, options);
-    contentElement.addEventListener('touchmove', stopFollowingFirst, options);
-
-    return () => {
-      contentElement.removeEventListener('wheel', stopFollowingFirst, options);
-      contentElement.removeEventListener(
-        'touchmove',
-        stopFollowingFirst,
-        options
-      );
-    };
-  }, [contentElement]);
-
-  React.useEffect(() => {
-    if (!open) store.getState().contentElement?.scrollTo({ top: 0 });
-  }, [open, store]);
-
-  React.useEffect(() => {
-    followFirstOption.current = true;
-  }, [query]);
-
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     const queryChanged = prevQuery.current !== query;
 
     prevQuery.current = query;
 
-    if (renderedItems.length === 0) return;
+    if (!open) {
+      activeIdRef.current = null;
+      followFirstOption.current = true;
+      lastPointer.current = null;
+      contentRef.current?.scrollTo({ top: 0 });
 
-    const { activeId: id, contentElement: content } = store.getState();
-    const options = getOptions(content);
+      return;
+    }
+    if (queryChanged) {
+      followFirstOption.current = true;
+    }
+
+    const options = getOptions(contentRef.current);
     const first = options[0];
 
-    if (!first) return;
+    if (!first) {
+      setActiveOptionId(null);
+
+      return;
+    }
+
+    const id = activeIdRef.current;
+
     if (!id) {
       activateOption(first, false);
     } else if (id === first.id) {
@@ -302,46 +330,64 @@ const InlineCombobox = <P extends PluginReference>({
     ) {
       activateOption(first, true);
     }
-  }, [activateOption, query, renderedItems, store]);
+  }, [activateOption, items.version, open, query, setActiveOptionId]);
 
-  const queryBecameProse =
-    !!match &&
-    !match.composing &&
-    !loading &&
-    items.length === 0 &&
-    /\s$/.test(query);
+  const trailingSpace =
+    !!match && !match.composing && !loading && /\s$/.test(query);
 
   React.useEffect(() => {
-    if (queryBecameProse) dismiss();
-  }, [dismiss, queryBecameProse]);
+    if (!trailingSpace) return;
+
+    const content = contentRef.current;
+
+    if (!content) return;
+    if (getOptions(content).length === 0) dismiss();
+  }, [dismiss, items.version, query, trailingSpace]);
 
   const contextValue = React.useMemo<InlineComboboxContextValue>(
-    () => ({ box, match, onOptionPointerMove, open, setHasEmpty }),
-    [box, match, onOptionPointerMove, open]
+    () => ({
+      activeId: effectiveActiveId,
+      box,
+      editableRef,
+      itemCount: items.count,
+      match,
+      onOptionPointerMove,
+      onUserScroll,
+      open,
+      registerContent,
+      registerItem,
+      setHasEmpty,
+    }),
+    [
+      box,
+      editableRef,
+      effectiveActiveId,
+      items.count,
+      match,
+      onOptionPointerMove,
+      onUserScroll,
+      open,
+      registerContent,
+      registerItem,
+    ]
   );
 
   return (
-    <ComboboxProvider
-      open={open}
-      setOpen={(nextOpen) => {
-        if (!nextOpen) dismiss();
-      }}
-      store={store}
-      value={query}
-    >
-      <InlineComboboxContext value={contextValue}>
-        {children}
-      </InlineComboboxContext>
-    </ComboboxProvider>
+    <InlineComboboxContext value={contextValue}>
+      {active ? children : null}
+    </InlineComboboxContext>
   );
 };
 
 const InlineComboboxContent = ({
   className,
+  onMouseDown,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
   const editor = useEditor();
-  const { box, match, open } = useInlineComboboxContext();
+  const { box, editableRef, match, onUserScroll, open, registerContent } =
+    useInlineComboboxContext();
+  const listboxRef = React.useRef<HTMLDivElement | null>(null);
   const getAnchorRect = React.useCallback(() => {
     if (!match) return null;
 
@@ -349,36 +395,167 @@ const InlineComboboxContent = ({
 
     return editor.api.dom.resolveRangeRect({ anchor: start, focus: start });
   }, [editor, match]);
+  const getAnchorRectRef = React.useRef(getAnchorRect);
+
+  React.useLayoutEffect(() => {
+    getAnchorRectRef.current = getAnchorRect;
+  });
+
+  const { context, floatingStyles, isPositioned, refs, update } =
+    useFloating<VirtualElement>({
+      middleware: [
+        offset(0),
+        flip(),
+        shift({ padding: 8 }),
+        size({
+          apply({ availableHeight, elements }) {
+            elements.floating.style.setProperty(
+              '--popover-available-height',
+              `${Math.max(0, availableHeight)}px`
+            );
+          },
+          padding: 8,
+        }),
+      ],
+      open,
+      placement: 'bottom-start',
+      whileElementsMounted: autoUpdate,
+      onOpenChange: (nextOpen) => {
+        if (!nextOpen) box.dismiss();
+      },
+    });
+
+  React.useLayoutEffect(() => {
+    const editable = editableRef.current;
+
+    refs.setPositionReference({
+      contextElement: editable ?? undefined,
+      getBoundingClientRect: () =>
+        getAnchorRectRef.current() ??
+        editable?.getBoundingClientRect() ??
+        EMPTY_RECT,
+    });
+  }, [editableRef, refs]);
+
+  React.useLayoutEffect(() => {
+    if (open) update();
+  }, [match, open, update]);
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+
+    const view = editableRef.current?.ownerDocument.defaultView;
+    const viewport = view?.visualViewport;
+
+    if (!viewport) return undefined;
+
+    const onResize = () => update();
+
+    viewport.addEventListener('resize', onResize, { passive: true });
+
+    return () => {
+      viewport.removeEventListener('resize', onResize);
+    };
+  }, [editableRef, open, update]);
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+
+    const doc = editableRef.current?.ownerDocument ?? document;
+    const onFocusIn = (event: FocusEvent) => {
+      const { target } = event;
+
+      if (!(target instanceof Node)) return;
+      if (
+        editableRef.current?.contains(target) ||
+        listboxRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      box.dismiss();
+    };
+
+    doc.addEventListener('focusin', onFocusIn);
+
+    return () => {
+      doc.removeEventListener('focusin', onFocusIn);
+    };
+  }, [box, editableRef, open]);
+
+  const [listboxElement, setListboxElement] =
+    React.useState<HTMLDivElement | null>(null);
+  const onUserScrollRef = React.useRef(onUserScroll);
+
+  React.useLayoutEffect(() => {
+    onUserScrollRef.current = onUserScroll;
+  });
+
+  React.useEffect(() => {
+    if (!listboxElement) return undefined;
+
+    const options = { capture: true, passive: true };
+    const handleScroll = () => onUserScrollRef.current();
+
+    listboxElement.addEventListener('wheel', handleScroll, options);
+    listboxElement.addEventListener('touchmove', handleScroll, options);
+
+    return () => {
+      listboxElement.removeEventListener('wheel', handleScroll, options);
+      listboxElement.removeEventListener('touchmove', handleScroll, options);
+    };
+  }, [listboxElement]);
+
+  const dismissInteraction = useDismiss(context, {
+    escapeKey: false,
+    outsidePress: (event) =>
+      !(event.target instanceof Node) ||
+      !editor.api.dom.root()?.contains(event.target),
+  });
+  const { getFloatingProps } = useInteractions([dismissInteraction]);
+  const floatingRef = useComposedRef(refs.setFloating);
+  const setListboxRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      listboxRef.current = node;
+      setListboxElement(node);
+      registerContent(node);
+    },
+    [registerContent]
+  );
 
   return (
-    <Portal>
-      <ComboboxPopover
-        id={box.listboxId}
-        className={cn(
-          'cn-command cn-command-list cn-menu-target cn-menu-translucent z-500 max-h-[min(--spacing(72),var(--popover-available-height,--spacing(72)))] w-[300px] overflow-x-hidden overflow-y-auto shadow-md',
-          className
-        )}
-        autoFocusOnHide={false}
-        autoFocusOnShow={false}
-        getAnchorRect={getAnchorRect}
-        // Ariakit keeps a closed popover shown for at least two frames whenever
-        // its computed animation or transition duration is nonzero, even a
-        // reduced-motion reset's 0.01ms. By then the closed match has removed
-        // its options and anchor.
+    <FloatingPortal preserveTabOrder={false}>
+      <div
+        ref={floatingRef}
+        className="z-500"
         hidden={!open}
-        hideOnEscape={false}
-        hideOnInteractOutside={(event) =>
-          !(event.target instanceof Node) ||
-          !editor.api.dom.root()?.contains(event.target)
-        }
-        modal={false}
-        // Keep the editor focused unless an IME is composing: the blur ends it.
-        onMouseDown={(event) => {
-          if (!match?.composing) event.preventDefault();
+        style={{
+          ...floatingStyles,
+          minWidth: 'max-content',
+          transform: isPositioned
+            ? floatingStyles.transform
+            : 'translate(0, -200%)',
         }}
-        {...props}
-      />
-    </Portal>
+        {...getFloatingProps()}
+      >
+        <div
+          {...props}
+          id={box.listboxId}
+          ref={setListboxRef}
+          className={cn(
+            'cn-command cn-command-list cn-menu-target cn-menu-translucent max-h-[min(--spacing(72),var(--popover-available-height,--spacing(72)))] w-[300px] overflow-x-hidden overflow-y-auto shadow-md',
+            className
+          )}
+          role="listbox"
+          tabIndex={-1}
+          // Keep the editor focused unless an IME is composing: the blur ends it.
+          onMouseDown={(event) => {
+            if (!match?.composing) event.preventDefault();
+            onMouseDown?.(event);
+          }}
+        />
+      </div>
+    </FloatingPortal>
   );
 };
 
@@ -389,6 +566,7 @@ const comboboxItemVariants = cva(
 const InlineComboboxItem = ({
   className,
   focusEditor = true,
+  id: providedId,
   onClick,
   onPointerMove,
   onSelect,
@@ -399,25 +577,40 @@ const InlineComboboxItem = ({
   onSelect?: Parameters<UseComboboxReturn['complete']>[1];
 }) => {
   const editor = useEditor();
-  const { box, match, onOptionPointerMove } = useInlineComboboxContext();
+  const generatedId = React.useId();
+  const id = providedId ?? generatedId;
+  const { activeId, box, match, onOptionPointerMove, registerItem } =
+    useInlineComboboxContext();
+
+  React.useLayoutEffect(() => {
+    if (!match) return undefined;
+
+    return registerItem();
+  }, [match, registerItem]);
 
   if (!match) return null;
 
+  const isActive = activeId === id;
+
   return (
-    <ComboboxItem
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events -- Keyboard selection stays on the combobox editor root via aria-activedescendant.
+    <div
+      {...props}
+      id={id}
+      aria-selected={isActive}
       className={cn(comboboxItemVariants(), className)}
-      hideOnClick={false}
-      setValueOnClick={false}
+      data-active-item={isActive ? 'true' : undefined}
+      role="option"
+      tabIndex={-1}
       onClick={(event) => {
         if (!box.complete(match, (tx) => onSelect?.(tx))) return;
         if (focusEditor) editor.api.dom.focus();
         onClick?.(event);
       }}
       onPointerMove={(event) => {
-        onOptionPointerMove(event.currentTarget.id, event);
+        onOptionPointerMove(id, event);
         onPointerMove?.(event);
       }}
-      {...props}
     />
   );
 };
@@ -427,16 +620,9 @@ const InlineComboboxEmpty = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
-  const { setHasEmpty } = useInlineComboboxContext();
-  const store = useComboboxContext();
+  const { itemCount, setHasEmpty } = useInlineComboboxContext();
 
-  if (store == null) {
-    throw new Error('InlineComboboxEmpty requires a Combobox store');
-  }
-
-  const items = useStoreState(store, 'items');
-
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     setHasEmpty(true);
 
     return () => {
@@ -444,7 +630,7 @@ const InlineComboboxEmpty = ({
     };
   }, [setHasEmpty]);
 
-  if (items.length > 0) return null;
+  if (itemCount > 0) return null;
 
   return (
     <div className={cn('cn-command-empty', className)} {...props}>
@@ -453,18 +639,34 @@ const InlineComboboxEmpty = ({
   );
 };
 
+type InlineComboboxGroupContextValue = {
+  labelId: string;
+  setHasLabel: (hasLabel: boolean) => void;
+};
+
+const InlineComboboxGroupContext =
+  React.createContext<InlineComboboxGroupContextValue | null>(null);
+
 function InlineComboboxGroup({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  const labelId = React.useId();
+  const [hasLabel, setHasLabel] = React.useState(false);
+  const value = React.useMemo(() => ({ labelId, setHasLabel }), [labelId]);
+
   return (
-    <ComboboxGroup
-      {...props}
-      className={cn(
-        'cn-command-group hidden not-last:border-b [&:has([role=option])]:block',
-        className
-      )}
-    />
+    <InlineComboboxGroupContext value={value}>
+      <div
+        {...props}
+        aria-labelledby={hasLabel ? labelId : undefined}
+        className={cn(
+          'cn-command-group hidden not-last:border-b [&:has([role=option])]:block',
+          className
+        )}
+        role="group"
+      />
+    </InlineComboboxGroupContext>
   );
 }
 
@@ -472,9 +674,20 @@ function InlineComboboxGroupLabel({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  const group = React.useContext(InlineComboboxGroupContext);
+
+  React.useLayoutEffect(() => {
+    group?.setHasLabel(true);
+
+    return () => {
+      group?.setHasLabel(false);
+    };
+  }, [group]);
+
   return (
-    <ComboboxGroupLabel
+    <div
       {...props}
+      id={group?.labelId}
       className={cn(
         'mt-1.5 mb-2 px-3 font-medium text-muted-foreground text-xs',
         className
@@ -491,6 +704,5 @@ export {
   InlineComboboxGroupLabel,
   InlineComboboxItem,
   rankOptions,
-  useInlineComboboxOpen,
   useInlineComboboxQuery,
 };

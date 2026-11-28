@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-inline-combobox-floating-ui",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-inline-combobox-floating-ui.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "enhancement",
+  "summary": "Replace @ariakit/react with @floating-ui/react in inline-combobox and mount popup children only while active",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-inline-combobox-floating-ui-1",
+      "kind": "remove",
+      "summary": "Replace `@ariakit/react` with `@floating-ui/react` and React state, mount popup children only while active, and remove `useInlineComboboxOpen`",
+      "details": [],
+      "migrationNotes": [
+        "Replace `@ariakit/react` with `@floating-ui/react` and React state, mount popup children only while active, and remove `useInlineComboboxOpen`"
+      ],
+      "targets": ["inline-combobox", "footnote"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-inline-combobox-floating-ui",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

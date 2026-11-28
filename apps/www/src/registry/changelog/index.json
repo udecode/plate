@@ -157,6 +157,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-inline-combobox-floating-ui",
+      "href": "/registry/changelog/2026-11-28-inline-combobox-floating-ui.json",
+      "status": "draft",
+      "kind": "enhancement",
+      "summary": "Replace @ariakit/react with @floating-ui/react in inline-combobox and mount popup children only while active",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox", "footnote"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-inline-combobox-hover-scroll",
       "href": "/registry/changelog/2026-11-28-inline-combobox-hover-scroll.json",
       "status": "draft",

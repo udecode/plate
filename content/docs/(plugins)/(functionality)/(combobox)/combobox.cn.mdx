@@ -247,6 +247,6 @@ const editor = createEditor({
 
 ## Registry UI
 
-复制的 `inline-combobox` 组件用 Ariakit 列表封装 `useCombobox`。它负责当前选项以及在触发字符处定位弹出框。在弹出框内用 `useInlineComboboxQuery()` 读取查询，并把它和菜单的选项一起传给 `rankOptions(options, query)`。它返回匹配的选项，最佳匹配排在最前：标签或关键词完全相同，然后是以查询开头的标签，然后是标签中后面的单词，最后是关键词或分组。同等匹配保留列表顺序，空查询保留所有选项。在 `InlineComboboxItem.onSelect` 中使用推断的事务插入所选功能并返回命令的结果，当选项不再可用时返回 `false`。成功补全后的 UI 操作（例如打开另一个弹出框）放在 `onClick` 中。
+复制的 `inline-combobox` 组件用 Floating UI 列表封装 `useCombobox`。它负责当前选项以及在触发字符处定位弹出框。在弹出框内用 `useInlineComboboxQuery()` 读取查询，并把它和菜单的选项一起传给 `rankOptions(options, query)`。它返回匹配的选项，最佳匹配排在最前：标签或关键词完全相同，然后是以查询开头的标签，然后是标签中后面的单词，最后是关键词或分组。同等匹配保留列表顺序，空查询保留所有选项。在 `InlineComboboxItem.onSelect` 中使用推断的事务插入所选功能并返回命令的结果，当选项不再可用时返回 `false`。成功补全后的 UI 操作（例如打开另一个弹出框）放在 `onClick` 中。
 
 <ComponentSource name="inline-combobox" />
