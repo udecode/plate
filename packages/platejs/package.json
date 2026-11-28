@@ -541,7 +541,6 @@
     "lodash": "^4.17.23",
     "mdast-util-math": "3.0.0",
     "mdast-util-mdx": "3.0.0",
-    "micromark-extension-cjk-friendly-util": "3.0.1",
     "mutative": "^1.1.0",
     "nanoid": "^5.1.5",
     "parse5": "^8.0.1",
