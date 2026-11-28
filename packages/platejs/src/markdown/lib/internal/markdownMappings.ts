@@ -152,7 +152,7 @@ export type MarkdownEncoded = Readonly<{
 type MarkdownEncoder = (
   node: Descendant,
   options: SerializeMdContext
-) => MarkdownEncoded | undefined;
+) => MarkdownEncoded | 'declined' | undefined;
 
 type MarkdownMarkEncoder = (
   node: Descendant,
@@ -848,11 +848,7 @@ const createEncoder =
 
       return undefined;
     }
-    if (!encoded) {
-      throw new Error(
-        `Markdown node mapping "${compiled.owner}" returned no encoded node.`
-      );
-    }
+    if (encoded === undefined) return 'declined';
     const nodes: readonly MdRootContent[] = Array.isArray(encoded)
       ? encoded
       : [encoded as MdRootContent];
@@ -968,6 +964,8 @@ const decodeDerivedTag =
       return decodeDerivedTagContent(tag, content, marks, options);
     }
     if (missing) {
+      if (tag.name === 'audio' || tag.name === 'video') return undefined;
+
       return refuse(
         `<${tag.name}> requires the "${missing.attribute}" attribute.`
       );
@@ -1066,10 +1064,19 @@ const createMarkWrapper =
 
       return undefined;
     }
-    if (!wrapper) {
-      throw new Error(
-        `Markdown node mapping "${compiled.owner}" returned no mark wrapper.`
-      );
+    if (wrapper === undefined) {
+      options.report({
+        code: 'markdown-property-omitted',
+        key,
+        message: `Markdown cannot represent text property "${key}"; it was omitted.`,
+        model: { ...options.modelLocation(node), property: key },
+        owner: compiled.owner,
+        phase: 'serialize',
+        reason: 'unsupported',
+        severity: 'warning',
+      });
+
+      return undefined;
     }
 
     return { ...wrapper, children: [] } as MdRootContent;

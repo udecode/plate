@@ -106,7 +106,7 @@ const matchMultiset = (from, minus, covererFor) => {
   const stillUnmatched = [];
   let downgraded = 0;
   for (const identity of unmatchedFrom) {
-    const coverer = covererFor(identity);
+    const coverer = covererFor(identity, remainingMinus);
     const index =
       coverer && coverer !== identity ? remainingMinus.indexOf(coverer) : -1;
     if (index === -1) {
@@ -133,12 +133,12 @@ const matchMultiset = (from, minus, covererFor) => {
  *
  * @param {Record<string, Record<string, readonly string[]>>} from Grouped findings to check.
  * @param {Record<string, Record<string, readonly string[]>>} minus Grouped baseline findings to subtract.
- * @param {(rule: string, identity: string) => string | undefined} [coveredBy] Maps a downgraded finding to a strictly more severe baseline identity.
+ * @param {(rule: string, identity: string, candidates?: readonly string[]) => string | undefined} [coveredBy] Maps a downgraded finding to a strictly more severe baseline identity.
  */
 export const differences = (from, minus, coveredBy) =>
   Object.entries(from).flatMap(([rule, files]) => {
     const covererFor = coveredBy
-      ? (identity) => coveredBy(rule, identity)
+      ? (identity, candidates) => coveredBy(rule, identity, candidates)
       : undefined;
     return Object.entries(files).flatMap(([file, identities]) =>
       matchMultiset(
@@ -169,7 +169,7 @@ export const differences = (from, minus, coveredBy) =>
  *
  * @param {{
  *   boundFiles?: readonly string[];
- *   coveredBy?: (rule: string, identity: string) => string | undefined;
+ *   coveredBy?: (rule: string, identity: string, candidates?: readonly string[]) => string | undefined;
  *   describe?: (key: string) => string;
  *   file: string;
  *   found: Record<string, Record<string, readonly string[]>>;
@@ -294,7 +294,7 @@ export function enforceBaseline({
   const lowered = Object.fromEntries(
     Object.entries(old).map(([rule, files]) => {
       const covererFor = coveredBy
-        ? (identity) => coveredBy(rule, identity)
+        ? (identity, candidates) => coveredBy(rule, identity, candidates)
         : undefined;
       return [
         rule,

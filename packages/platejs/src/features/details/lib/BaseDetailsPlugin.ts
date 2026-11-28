@@ -3,6 +3,7 @@ import type { PhrasingContent } from 'mdast';
 import {
   BaseParagraphPlugin,
   definePlugin,
+  type Descendant,
   type Editor,
   editorCommands,
   editorReads,
@@ -23,6 +24,7 @@ import {
   property,
   schema,
   SelectionApi,
+  TextApi,
   txLocate,
   locateAt,
 } from '../../../core';
@@ -59,6 +61,65 @@ const getDetailsOfTitle = (
   const title = container?.[0].children[0];
 
   return title && state.nodes.isContent(title) ? container : undefined;
+};
+
+const flattenSummaryChildren = (
+  nodes: readonly Descendant[],
+  isInline: (node: Descendant) => boolean
+): Descendant[] => {
+  const lines: Descendant[][] = [];
+  let current: Descendant[] = [];
+  const flush = () => {
+    if (current.length === 0) return;
+    lines.push(current);
+    current = [];
+  };
+  const walk = (items: readonly Descendant[]) => {
+    for (const item of items) {
+      if (TextApi.isText(item) || isInline(item)) {
+        current.push(item);
+      } else if (ElementApi.isElement(item)) {
+        flush();
+        walk(item.children);
+        flush();
+      }
+    }
+  };
+
+  walk(nodes);
+  flush();
+
+  if (lines.length === 0) return [{ text: '' }];
+
+  return lines.flatMap((line, index) =>
+    index === 0 ? line : [{ text: '\n' }, ...line]
+  );
+};
+
+const groupDetailsBlocks = (
+  nodes: readonly Descendant[],
+  isInline: (node: Descendant) => boolean,
+  paragraphType: string
+) => {
+  const blocks: Array<ReturnType<typeof Object.assign>> = [];
+  let inline: Descendant[] = [];
+  const flush = () => {
+    if (inline.length === 0) return;
+    blocks.push({ children: inline, type: paragraphType });
+    inline = [];
+  };
+
+  for (const node of nodes) {
+    if (TextApi.isText(node) || isInline(node)) {
+      inline.push(node);
+    } else {
+      flush();
+      blocks.push(node);
+    }
+  }
+  flush();
+
+  return blocks;
 };
 
 const opensTagOrBreaks = (text: string) =>
@@ -173,7 +234,14 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
       markdown: {
         tag: type,
         // GitHub renders a leveled title only as `<summary><h2>…</h2></summary>`.
-        decode: ({ caption, decode, node, readTagAttributes, refuse }) => {
+        decode: ({
+          caption,
+          decode,
+          isInline,
+          node,
+          readTagAttributes,
+          report,
+        }) => {
           const [paragraph, ...rest] = node.children;
           const phrasing =
             paragraph?.type === 'paragraph' && rest.length === 0
@@ -190,16 +258,21 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
             close?.type === 'html' &&
             close.value.toLowerCase() === `</h${level}>`;
           const { properties } = readTagAttributes();
-          const children = caption(
-            decode(
-              heading
-                ? [{ children: phrasing.slice(1, -1), type: 'paragraph' }]
-                : node.children
-            )
+          const decoded = decode(
+            heading
+              ? [{ children: phrasing.slice(1, -1), type: 'paragraph' }]
+              : node.children
           );
+          let children = caption(decoded);
 
           if (!children) {
-            return refuse(`<${type}> content must be one Markdown paragraph.`);
+            report({
+              action: 'unwrapped',
+              kind: 'property',
+              message: `<${type}> block boundaries were flattened into line breaks.`,
+              nodeType: type,
+            });
+            children = flattenSummaryChildren(decoded, isInline);
           }
 
           const titleLevel = heading ? level : properties.level;
@@ -283,7 +356,68 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         encode: ({ content }) => ({ children: content, tag: 'details' }),
         match: [{ tag: 'details' }],
       },
-      markdown: { tag: type },
+      markdown: {
+        tag: type,
+        decode: ({
+          decode,
+          isInline,
+          node,
+          readTagAttributes,
+          registry,
+          report,
+        }) => {
+          const summaryType =
+            registry.type(BaseDetailsSummaryPlugin) ?? PLUGINS.detailsSummary;
+          const paragraphType =
+            registry.type(BaseParagraphPlugin) ?? PLUGINS.paragraph;
+          const { properties } = readTagAttributes();
+          const decoded = groupDetailsBlocks(
+            decode(node.children),
+            isInline,
+            paragraphType
+          );
+          let summary: Descendant | undefined;
+          const body: Descendant[] = [];
+
+          for (const child of decoded) {
+            if (ElementApi.isElement(child) && child.type === summaryType) {
+              if (!summary) {
+                summary = child;
+              } else {
+                report({
+                  action: 'replaced',
+                  kind: 'property',
+                  message: `Extra <${summaryType}> inside <${type}> was converted to a paragraph.`,
+                  nodeType: summaryType,
+                });
+                body.push({
+                  children: child.children,
+                  type: paragraphType,
+                });
+              }
+            } else {
+              body.push(child);
+            }
+          }
+
+          return {
+            ...properties,
+            children: [
+              summary ?? { children: [{ text: '' }], type: summaryType },
+              ...(body.length > 0
+                ? body
+                : [{ children: [{ text: '' }], type: paragraphType }]),
+            ],
+            type,
+          };
+        },
+        encode: ({ encodeFlow, encodeNodeAttributes, node }) => ({
+          attributes: encodeNodeAttributes(),
+          children: encodeFlow(node.children),
+          name: type,
+          type: 'mdxJsxFlowElement',
+        }),
+      },
     }),
 })
   .extend(({ editor, plugin, schema: { type }, viewStoreOf }) => ({

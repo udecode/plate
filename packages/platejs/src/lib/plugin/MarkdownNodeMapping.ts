@@ -264,11 +264,11 @@ type MarkdownElementMappingBase<
   ) => Descendant | Descendant[] | MarkdownRefusal | undefined;
   /**
    * Return the Markdown node that stands for the node, several to write it as
-   * a run of siblings, or `refuse(message)`.
+   * a run of siblings, `undefined` to decline, or `refuse(message)`.
    */
   encode?: (
     context: MarkdownEncodeContext<PluginFormatNode<D>, D>
-  ) => RootContent | readonly RootContent[] | MarkdownRefusal;
+  ) => RootContent | readonly RootContent[] | MarkdownRefusal | undefined;
   /** Higher runs first among claim mappings on one selector. */
   priority?: number;
   style?: never;
@@ -289,10 +289,10 @@ type MarkdownMarkMappingBase<
   priority?: never;
   /** The mark value this tag or node stands for; defaults to `true`. */
   value?: PluginFormatTextValue<D>;
-  /** Write the inline wrapper yourself, or `refuse(message)`; Markdown supplies its encoded children. */
+  /** Write the inline wrapper yourself, return `undefined` to decline, or `refuse(message)`; Markdown supplies its encoded children. */
   wrap?: (
     context: MarkdownMarkWrapContext<D>
-  ) => MarkdownMarkWrapper | MarkdownRefusal;
+  ) => MarkdownMarkWrapper | MarkdownRefusal | undefined;
 }>;
 
 type MarkdownMarkContainerKind =

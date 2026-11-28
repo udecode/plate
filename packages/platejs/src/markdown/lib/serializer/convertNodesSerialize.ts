@@ -113,7 +113,11 @@ export const encodeMdastNode = (
 ): MarkdownEncoded | undefined => {
   const encode = options.mappings.encodeByType.get(node.type);
 
-  if (encode) return encode(node, options);
+  if (encode) {
+    const result = encode(node, options);
+
+    if (result !== 'declined') return result;
+  }
   if (
     node.type === getMarkdownParagraphType(options.registry) ||
     isLandedParagraph(node, options)

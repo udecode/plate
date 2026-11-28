@@ -107,7 +107,7 @@ type TokenizeContext = {
 type TagInfo = {
   attributes: Array<{
     name: string;
-    value: string | { expression: string } | null;
+    value: string | null;
   }>;
   closing: boolean;
   name: string;
@@ -120,8 +120,6 @@ const SLASH = 47;
 const EQ = 61;
 const DQ = 34;
 const SQ = 39;
-const BRACE_OPEN = 123;
-const BRACE_CLOSE = 125;
 const DASH = 45;
 const UNDERSCORE = 95;
 const COLON = 58;
@@ -190,7 +188,6 @@ const tagStates = (
   let attributeName = '';
   let value = '';
   let quote = 0;
-  let depth = 0;
 
   const consume = (code: Code, next: State) => {
     effects.consume(code);
@@ -282,11 +279,6 @@ const tagStates = (
 
       return consume(code, quoted);
     }
-    if (code === BRACE_OPEN) {
-      depth = 1;
-
-      return consume(code, expression);
-    }
     if (
       code === null ||
       isLineEnding(code) ||
@@ -314,23 +306,6 @@ const tagStates = (
     value += charOf(code);
 
     return consume(code, quoted);
-  };
-  // Legacy `name={…}` values from older MDX output.
-  const expression: State = (code) => {
-    if (code === null || isLineEnding(code)) return nok(code);
-    if (code === BRACE_OPEN) depth += 1;
-    if (code === BRACE_CLOSE) depth -= 1;
-    if (code === BRACE_CLOSE && depth === 0) {
-      info.attributes.push({
-        name: attributeName,
-        value: { expression: value },
-      });
-
-      return consume(code, between);
-    }
-    value += charOf(code);
-
-    return consume(code, expression);
   };
   const unquoted: State = (code) => {
     if (code === null || isLineEnding(code) || isSpace(code) || code === GT) {
@@ -534,10 +509,7 @@ const toMdxAttributes = (
   attributes.map(({ name, value }) => ({
     name,
     type: 'mdxJsxAttribute',
-    value:
-      value !== null && typeof value === 'object'
-        ? { type: 'mdxJsxAttributeValueExpression', value: value.expression }
-        : value,
+    value,
   }));
 
 const createFromMarkdown = () => {
@@ -945,20 +917,19 @@ const normalizeBlocks = (
         type: 'html',
         value: tag.raw,
       };
-      const close: AnyNode[] =
-        tag.repair === 'unclosed'
-          ? []
-          : [
-              {
-                data: {
-                  markdownTagClose: true,
-                  markdownTagRepair: 'misplaced',
-                },
-                position: tag.close,
-                type: 'html',
-                value: `</${(child as unknown as MarkdownTagElement).name}>`,
+      const close: AnyNode[] = !tag.close
+        ? []
+        : [
+            {
+              data: {
+                markdownTagClose: true,
+                markdownTagRepair: 'misplaced',
               },
-            ];
+              position: tag.close,
+              type: 'html',
+              value: `</${(child as unknown as MarkdownTagElement).name}>`,
+            },
+          ];
 
       return [open, ...(child.children ?? []), ...close];
     });

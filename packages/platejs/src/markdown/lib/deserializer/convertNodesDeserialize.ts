@@ -77,21 +77,40 @@ export const buildSlateNode = (
 
   const nodeType = mdastNode.name || mdastNode.type;
 
+  if (STANDARD_HTML_WRAPPER_TAGS.has(nodeType)) {
+    options.report({
+      action: 'unwrapped',
+      code: 'markdown-unsupported-node',
+      impact: 'lossless',
+      message: `Markdown HTML wrapper <${nodeType}> was not accepted by an installed mapping and was unwrapped.`,
+      nodeType,
+      owner: 'markdown',
+      phase: 'parse',
+      severity: 'warning',
+      source: options.sourceLocation(mdastNode),
+    });
+
+    return convertNodesDeserialize(mdastNode.children, marks, options);
+  }
+
+  const keepAsRawHtml = STANDARD_HTML_MEDIA_TAGS.has(nodeType);
+
   options.report({
     action: 'replaced',
     code: 'markdown-unsupported-node',
-    impact: 'lossy',
+    impact: keepAsRawHtml ? 'lossless' : 'lossy',
     message: decoders
       ? `Markdown tag <${nodeType}> was not accepted by an installed mapping and was preserved as source text.`
       : `Markdown node "${nodeType}" has no installed mapping and was preserved as source text.`,
     nodeType,
     owner: 'markdown',
     phase: 'parse',
-    severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
+    severity:
+      keepAsRawHtml || options.lossPolicy === 'allow' ? 'warning' : 'error',
     source: options.sourceLocation(mdastNode),
   });
 
-  const text = { text: serializeUnknownMdxNode(mdastNode) };
+  const text = { ...marks, text: serializeUnknownMdxNode(mdastNode) };
 
   return mdastNode.type === 'mdxJsxTextElement'
     ? [text]
@@ -102,6 +121,9 @@ export const buildSlateNode = (
         },
       ];
 };
+
+const STANDARD_HTML_WRAPPER_TAGS = new Set(['figcaption', 'figure', 'span']);
+const STANDARD_HTML_MEDIA_TAGS = new Set(['audio', 'video']);
 
 const readBlockIdentity = (
   node: MdxJsxFlowElement,
