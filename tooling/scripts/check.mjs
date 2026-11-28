@@ -575,9 +575,12 @@ export const steps = [
     run: 'PLATE_WWW_SKIP_REGISTRY_BUILD=1 pnpm --filter www test:www-browser:chromium tests/browser/suggestion-colors.spec.ts tests/browser/diff-and-cursor-colors.spec.ts tests/browser/dark-mode-chrome-contrast.spec.ts',
     optIn: '--browser',
     affected: touches(
+      'apps/www/playwright.config.ts',
+      'apps/www/scripts/run-www-browser.mjs',
       'apps/www/src/app/globals.css',
       'apps/www/src/registry/registry-styles.ts',
       'apps/www/src/registry/components/editor/',
+      'apps/www/tests/browser/global-setup.ts',
       'apps/www/tests/browser/suggestion-colors.spec.ts',
       'apps/www/tests/browser/diff-and-cursor-colors.spec.ts',
       'apps/www/tests/browser/dark-mode-chrome-contrast.spec.ts'
