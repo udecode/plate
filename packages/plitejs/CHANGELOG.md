@@ -1,5 +1,177 @@
 # plite
 
+## 54.0.0-beta.8
+
+### Minor Changes
+
+- [`a82b28097f9d8b9042553102a61a091a2fefd19c`](https://github.com/udecode/plate/commit/a82b28097f9d8b9042553102a61a091a2fefd19c) – Rename `Editable`, `EditableProps`, `PagedEditable`, `PagedEditableProps`, `PagedEditablePageAttributes`, `PagedEditableRenderPageProps`, `PagedEditablePageView`, `VirtualizedEditable`, and `VirtualizedEditableProps` to `EditorContent`, `EditorContentProps`, `PagedEditorContent`, `PagedEditorContentProps`, `PagedEditorContentPageAttributes`, `PagedEditorContentRenderPageProps`, `PagedEditorContentPageView`, `VirtualizedEditorContent`, and `VirtualizedEditorContentProps`, and thread the `TRoot` generic through `PagedEditorContent` and `PagedEditorContentProps`.
+
+### Patch Changes
+
+- [`513f13d460d8ca9efaea30cb5ee6080cd33a8ab7`](https://github.com/udecode/plate/commit/513f13d460d8ca9efaea30cb5ee6080cd33a8ab7) – Keep caret navigation keys in a nested content root from activating the enclosing root's parked caret
+
+- [`e7a8d3982abdac69d27b0541edffe8be04236698`](https://github.com/udecode/plate/commit/e7a8d3982abdac69d27b0541edffe8be04236698) – Fix collapsed caret mark reads at the start of a text node to match the marks applied by typing.
+
+- [`e3b52e91ff9be0a2bd593eb71a3f682e43ffbbec`](https://github.com/udecode/plate/commit/e3b52e91ff9be0a2bd593eb71a3f682e43ffbbec) –
+
+  - Allow point drops to move ranges holding content-root owners without failing validation before landing
+  - Join open multi-depth slices into root blocks at block start and end
+  - Keep closed object blocks and their captions intact when pasted into a different block type
+  - Refuse Enter, typing, and delete over partial ranges inside read-only blocks
+
+- [`52d9cd6b499b37de2af53c61659c83395cd6dd67`](https://github.com/udecode/plate/commit/52d9cd6b499b37de2af53c61659c83395cd6dd67) –
+
+  - Keep the caret inside a trailing or leading content root instead of entering hidden owner text on arrow navigation
+  - Extend `Shift+ArrowRight` past a two-deep nested content root that ends its host into the next outer block, and preserve projected cross-root `Shift+ArrowDown` selection from nested synced blocks in Firefox
+  - Keep named-root carets and pending marks unchanged when explicit `main` text or node transforms run
+  - Revalidate an existing content root's projected grammar when its owner changes
+  - Scale content-root document loading, validation, and replacement linearly in card count
+  - Preserve attached document records when reading, fitting, loading, replacing, or viewing documents with `undefined` fields
+
+- [`f9c90453a862978accd98a213fbcdb5c0dab5462`](https://github.com/udecode/plate/commit/f9c90453a862978accd98a213fbcdb5c0dab5462) – Fix Shift+Tab leaving an external text view when it is the first block in a root
+
+- [`0c22d891e39857c7e695dc0e9d43532180311104`](https://github.com/udecode/plate/commit/0c22d891e39857c7e695dc0e9d43532180311104) –
+
+  - Fix virtualized paged viewport tracking when an ancestor transform scale changes without resizing the editor box
+  - Fix vertical arrow navigation across side-by-side spread pages
+  - Inherit ancestor text decoration on projected paged runs so links keep their underline
+
+- [`cfd5f290ae512eeabfd2ec462e13d8a4dbd31c63`](https://github.com/udecode/plate/commit/cfd5f290ae512eeabfd2ec462e13d8a4dbd31c63) – Preserve remote and `history: 'skip'` state field updates across local undo and redo instead of overwriting them with earlier local field values.
+
+- [`000cba5c30fc7dc21dfc282a251b8e86b9387dba`](https://github.com/udecode/plate/commit/000cba5c30fc7dc21dfc282a251b8e86b9387dba) – Keep restored text and paragraph breaks on the right side of concurrent peer insertions during collaborative undo
+
+- [`e2625074f34dfa6617f06d63b4eccfc3078ce331`](https://github.com/udecode/plate/commit/e2625074f34dfa6617f06d63b4eccfc3078ce331) –
+
+  - Keep a peer's caret at the replacement point when a remote Yjs edit replaces text under it.
+  - Preserve document records when applying a `DocumentChange` after an earlier change on a document with no records.
+
+- [`a812676afb50f0708c53412c5307da5600f6db22`](https://github.com/udecode/plate/commit/a812676afb50f0708c53412c5307da5600f6db22) –
+
+  - Unify content-root owner-chain resolution in `content-root-navigation.ts`, keeping duplicated synced-block hosts on the focused host during projected selection extension and guarding cross-root focus retries against intervening focus moves.
+  - Use shadow-aware selection, containment, and flat-tree visibility checks in `runtime-focus-mouse-events.ts`, `selection-void-target.ts`, `caret-engine.ts`, and `interaction-owner.ts`.
+  - Make `refusesReadOnlyWrite` root-aware and refuse partial writes whose range starts or ends inside a read-only inline across `insertText`, `insertBreak`, `deleteFragment`, and `deleteText`.
+
+- [`a9842dc2c1c1c22c903e5fcd896d5770a830ae81`](https://github.com/udecode/plate/commit/a9842dc2c1c1c22c903e5fcd896d5770a830ae81) – Preserve matching closing tags when aligning open tokens in multi-step slice replacements so table-expanding paste succeeds in documents with pending suggestions.
+
+- [`9e1f70738ba3fdcad2159771856c5f0ba8b55cc0`](https://github.com/udecode/plate/commit/9e1f70738ba3fdcad2159771856c5f0ba8b55cc0) –
+
+  - Preserve paragraph order when dragging whole paragraphs into another paragraph with the authored plugin installed.
+  - Drop the withdrawn split end and keep the surviving split end anchored when deleting a pending split paragraph.
+  - Keep triple-click followed by Backspace deleting a whole paragraph when that paragraph contains a pending suggestion.
+
+- [`1802cbe9d06a4c7a24d37f9f709aa8eba119bb6a`](https://github.com/udecode/plate/commit/1802cbe9d06a4c7a24d37f9f709aa8eba119bb6a) –
+
+  - Fix selecting and copying struck media in a read-only proposed view
+  - Keep typed text after struck letters when replacing an inline element and following text in Suggesting mode
+  - Fall back from `crypto.randomUUID` so authored changes and sync work on non-secure HTTP origins
+
+- [`7fbc4047d2a3e38947ae4998b1c39388a73742e0`](https://github.com/udecode/plate/commit/7fbc4047d2a3e38947ae4998b1c39388a73742e0) – Clear browser-restored DOM caret on keyup while a node selection is active
+
+- [`c48142ea12a9b374e32a088fc782ddc6f50eb2fb`](https://github.com/udecode/plate/commit/c48142ea12a9b374e32a088fc782ddc6f50eb2fb) – Remove redundant `'preserve'` value from `CommandFocusPolicy`; use `'none'` (default) or `'restore-root'`
+
+- [`51aa7972b33ee4923435367588db552936d5a20e`](https://github.com/udecode/plate/commit/51aa7972b33ee4923435367588db552936d5a20e) – Report all changed node keys when an update deletes and recreates a named root.
+
+- [`fb134b5c49ded450ffc10cf4734e9b6268a5c3a9`](https://github.com/udecode/plate/commit/fb134b5c49ded450ffc10cf4734e9b6268a5c3a9) – Remove three-way comparison and `resolveComparison` from `plitejs/diff`, collapse `TwoWayComparison` into `Comparison` without `kind`, and move live comparison import from `proposeAuthoredComparison` to `editor.api.authored.proposeComparison`. `compare` now hashes document `records` alongside `meta` in `before.envelopeFingerprint`, so callers importing through `proposeComparison` should pass `editor.read.value()` as `before` instead of `editor.read.children()`.
+
+  **Migration:**
+
+  ```ts
+  // Before
+  import { proposeAuthoredComparison } from 'plitejs/authored';
+  import { compare, type TwoWayComparison } from 'plitejs/diff';
+
+  const comparison: TwoWayComparison = await compare({ before, after, schema });
+  const result = proposeAuthoredComparison(editor, { comparison, groupIds });
+
+  // After
+  import { compare, type Comparison } from 'plitejs/diff';
+
+  const comparison: Comparison = await compare({ before, after, schema });
+  const result = editor.api.authored.proposeComparison({
+    comparison,
+    groupIds,
+  });
+  ```
+
+- [`ec1e0831539fd728416f9509ab28a3a11a432c25`](https://github.com/udecode/plate/commit/ec1e0831539fd728416f9509ab28a3a11a432c25) – Keep the browser selection anchored inside draggable void elements instead of snapping the caret to the start of the document.
+
+- [`6b19fe15e51a687a18021a4c1f9a93e953563639`](https://github.com/udecode/plate/commit/6b19fe15e51a687a18021a4c1f9a93e953563639) – Skip the extra `EditableDOMRoot` render when an `EditorRoot` turns read-only in the same render that already passes `readOnly={true}` to its editable, and scope the editable's read-only view-state subscription to `readOnly` changes.
+
+- [`be622b76fd5acb5c94b43adcf81fadbba0c87bab`](https://github.com/udecode/plate/commit/be622b76fd5acb5c94b43adcf81fadbba0c87bab) –
+
+  - Refuse partial cross-block edits and pastes into read-only blocks, soft breaks inside read-only blocks, and writes inside named roots owned by read-only elements
+  - Preserve named-root selections during explicit-target fragment deletes, node wraps, and full-block text replacements, and fix split unwraps and deleted-range root resolution in named roots
+
+- [`396bdb04ac05e78d6a7b0d18c259d4961a2c3350`](https://github.com/udecode/plate/commit/396bdb04ac05e78d6a7b0d18c259d4961a2c3350) –
+
+  - Group consecutive typing over a text selection in Suggesting mode or over a block selection in Editing mode into one undo step
+  - Preserve empty block containers without inserting text leaves during history serialization, replay, and undo/redo around peer moves
+  - Keep a peer-deleted paragraph removed when undoing a merged unwrap and line split
+
+- [`5eca87e5bc5aab6e59acb80cc353cdbdc5b2df64`](https://github.com/udecode/plate/commit/5eca87e5bc5aab6e59acb80cc353cdbdc5b2df64) –
+
+  - Fix history redo of an inline link wrap over a teammate's overlapping link wrap so it splits the teammate's overlapping link around the replayed link without throwing a nesting error.
+  - Fix history redo over a teammate's replaced or deleted paragraph so edits targeting the removed block drop without overwriting the replacement or typing into a following paragraph.
+  - Fix history undo of a block split when a teammate wraps the first half and edits inside it so the wrapper and teammate edits stay intact.
+
+- [`510aa3f77a4331e1717fbc3184510bbdb18a637d`](https://github.com/udecode/plate/commit/510aa3f77a4331e1717fbc3184510bbdb18a637d) –
+
+  - Omit `position: relative` from default inline `EditorElement` wrappers so a native text caret beside an inline element paints above it instead of behind it.
+
+- [`ebb0c2960f13767f21b05f1e687634f1eccb6a8f`](https://github.com/udecode/plate/commit/ebb0c2960f13767f21b05f1e687634f1eccb6a8f) –
+
+  - Extend selections into and out of external text views with `Shift+ArrowUp` and `Shift+ArrowDown`
+  - Keep editor focus when clicking inside an editor mounted in a shadow root
+  - Keep a trailing soft break visible after a refused native key insert
+  - Let a touch long press select the pressed word when a range spans unmounted blocks
+
+- [`bc4d52819c5b741e19353cbf8913b649e387a96d`](https://github.com/udecode/plate/commit/bc4d52819c5b741e19353cbf8913b649e387a96d) – Scope `usePageLayoutFragments` to the owning paged view, retain ancestor owners of descendant caret roots across virtualized and paged views, and stage ancestor-chain reveals in `DOMEditor.scrollIntoView` for unmounted nested roots.
+
+- [`27cab7475eec47b27fc1d93cc6ec47a3d30b8f4b`](https://github.com/udecode/plate/commit/27cab7475eec47b27fc1d93cc6ec47a3d30b8f4b) – Add non-writable content admission, direct-property Suggesting writes, property-only history skipping, and native DOM/IME/Cut/Android/CodeMirror refusal rollback hooks.
+
+- [`e5956ce8b376cd7fa3e8b1162cd6f7842650b143`](https://github.com/udecode/plate/commit/e5956ce8b376cd7fa3e8b1162cd6f7842650b143) – Fix double-click glyph side detection after emoji and combining marks in paged views
+
+- [`490a8937d3d87d81caa4c9e87c9a5259f55c87d9`](https://github.com/udecode/plate/commit/490a8937d3d87d81caa4c9e87c9a5259f55c87d9) –
+
+  - Keep opening documents with many content roots and reading authored preview roots linear instead of quadratic in the number of roots
+
+- [`096084a0c8e36f8ed38e43e5addd13646dee16fb`](https://github.com/udecode/plate/commit/096084a0c8e36f8ed38e43e5addd13646dee16fb) –
+
+  - Fix focus selection export over hidden coverage boundaries and after `skip-dom-selection` commits, prevent no-op React rerenders from clearing active programmatic selection guards early, and preserve backward direction for shadow-DOM selection reads
+
+- [`e7587862eda43162ffe7a50b360e97d219644b0c`](https://github.com/udecode/plate/commit/e7587862eda43162ffe7a50b360e97d219644b0c) –
+
+  - Fix pointer, drag, clipboard, Android composition, and DOM integrity caret restoration inside open and closed shadow roots
+  - Restore empty-leaf zero-width carets and preserve sibling decorated spans when reverting refused native text inserts
+  - Recognize trailing display newlines on custom-rendered leaves as canonical during DOM integrity checks
+
+- [`92fa1008184872991b66957271c4bea0f891f2a9`](https://github.com/udecode/plate/commit/92fa1008184872991b66957271c4bea0f891f2a9) – Route document-editor `transfer` step moves (`to: 'next' | 'previous'`) to the selection's root when `from`, `nodes`, and `range` are omitted
+
+- [`3bce3d5a92d66b44a9b4f83cfb7a106fc5df20b5`](https://github.com/udecode/plate/commit/3bce3d5a92d66b44a9b4f83cfb7a106fc5df20b5) –
+
+  - Unify `editor.api.dom.scrollIntoView` onto Plite's native scroll engine for all option combinations and remove the `scroll-into-view-if-needed` dependency. Calls with explicit `block`, `inline`, `behavior`, `boundary`, or `scrollMode` options now work inside iframes, preserve negative `scrollLeft` in RTL containers, account for CSS `transform: scale()`, walk nested scroll containers in `if-needed` mode, and respect `visualViewport` offset and root `scroll-padding`.
+
+- [`ebe4818306216c3333719af933377d95cf044d8d`](https://github.com/udecode/plate/commit/ebe4818306216c3333719af933377d95cf044d8d) – Keep model selection synchronized on plain vertical arrow keys after expanded selections or typing, deliver Shift+Arrow keys to nested child-root editors, and paint projected cross-root selection highlights inside `EditorContent` child roots
+
+- [`9490e1fdeb50dc1edbac34d4c46f1eb8af37fdc5`](https://github.com/udecode/plate/commit/9490e1fdeb50dc1edbac34d4c46f1eb8af37fdc5) –
+
+  - Preserve sticky horizontal caret column across vertical arrow navigation in paged views and when entering scroll containers in Firefox, and fix cross-realm `getComputedStyle` lookups for iframe editors
+
+- [`2404e2887f8e9707947c2167ac9630545f8005d6`](https://github.com/udecode/plate/commit/2404e2887f8e9707947c2167ac9630545f8005d6) – Key nested content-root view-boundary nodes by their full owner chain so a nested root inside a host shown multiple times builds and extends selection without throwing duplicate-key errors
+
+- [`389f8ab32ef1c86c55ac9273e7adea7789982a2b`](https://github.com/udecode/plate/commit/389f8ab32ef1c86c55ac9273e7adea7789982a2b) –
+
+  - Fix `state.transaction` and `state.transaction.extend` over authored previews and document views
+  - Keep read and document-view guards active across lazy `nodes.entries`, `nodes.levels`, and `points.positions` iterator callbacks
+  - Fix `tx.slice.replace`, `editor.update.slice.replace`, `state.slice.fit`, and `tx.fragment.replace` over block node selections
+  - Keep one teardown owner for reentrant `editor.destroy()` calls and refuse `editor.destroy()` during plugin `acquire` callbacks
+
+- [`6eaee8bca668dede151b5f7eb312abf7dadacd03`](https://github.com/udecode/plate/commit/6eaee8bca668dede151b5f7eb312abf7dadacd03) – Fix virtualized row height shrinking, host scroll-margin offset, paged host scroll tracking, and mixed-boundary materialization in `VirtualizedEditorContent` and `PagedEditorContent`
+
+- [`ffa8a55ca3939bb05b9aa736bcc9f846b57cc088`](https://github.com/udecode/plate/commit/ffa8a55ca3939bb05b9aa736bcc9f846b57cc088) –
+  - Fix pending mark writes through a named-root view throwing when the caret sits in that root
+  - Fix Editing mode with authored review retaining replaced document versions in memory
+
 ## 54.0.0-beta.7
 
 ### Major Changes

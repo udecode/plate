@@ -1,5 +1,7 @@
 # @platejs/test
 
+## 54.0.0-beta.8
+
 ## 54.0.0-beta.7
 
 ## 54.0.0-beta.6

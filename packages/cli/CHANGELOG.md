@@ -1,5 +1,15 @@
 # @platejs/cli
 
+## 54.0.0-beta.8
+
+### Minor Changes
+
+- [`4bf170b7eadbbeae6e1555f694a61c300405dd93`](https://github.com/udecode/plate/commit/4bf170b7eadbbeae6e1555f694a61c300405dd93) – Update `plate codemod plite-to-plate` for unified Plite and Plate naming: remove obsolete `EditorStateSelectorOptions` and `useEditorEditableElement` rules, diagnose removed `useOptionalEditorReadOnly` and multi-root `useEditorContext` differences, support legacy `PagedEditablePage*` type renames, and resolve aliased `*EditorContent*` bindings for `root` lifting, render props, spread props, `<EditorRoot readOnly>` override conflicts, and 3-arg `useEditorSelector` / `useStateFieldValue` `deferred` checks.
+
+### Patch Changes
+
+- [`d5f3a595540cb5ecc7b4558f25d7ce9042e4e666`](https://github.com/udecode/plate/commit/d5f3a595540cb5ecc7b4558f25d7ce9042e4e666) – Allow `--from 0` in `plate migrate run` to match `migrateDocument` source version `0`.
+
 ## 54.0.0-beta.7
 
 ### Patch Changes

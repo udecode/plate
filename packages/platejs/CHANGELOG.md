@@ -1,5 +1,141 @@
 # platejs
 
+## 54.0.0-beta.8
+
+### Minor Changes
+
+- [`a82b28097f9d8b9042553102a61a091a2fefd19c`](https://github.com/udecode/plate/commit/a82b28097f9d8b9042553102a61a091a2fefd19c) – Rename `PagedEditablePageAttributes`, `PagedEditablePageView`, and `PagedEditableRenderPageProps` re-exports in `platejs/pagination/react` to `PagedEditorContentPageAttributes`, `PagedEditorContentPageView`, and `PagedEditorContentRenderPageProps` to match `PagedEditorContent`.
+
+### Patch Changes
+
+- [`513f13d460d8ca9efaea30cb5ee6080cd33a8ab7`](https://github.com/udecode/plate/commit/513f13d460d8ca9efaea30cb5ee6080cd33a8ab7) – Measure the board container before revealing a shape so switching to Viewing keeps the active note in view
+
+- [`c3b1d9eb9877d728b880020aee060429796d012c`](https://github.com/udecode/plate/commit/c3b1d9eb9877d728b880020aee060429796d012c) –
+
+  - Allow `defineFormats({ html, plainText })` without requiring `markdown`, and tighten `DocxNodeMapping`, `MarkdownNodeMapping`, and `PlainTextNodeMapping` types and runtime guards to match schema roles
+  - Report `property-dropped` diagnostics on DOCX export only for rendered roots and anchored comment bodies, and admit multi-property element-property plugins
+  - Preserve `data-locked` and empty `codeBlock.meta` in HTML round trips, report unclaimed `data-locked`, `data-meta`, and board arrow/frame/stroke attributes, and remove no-op `plainText` encoders on callout, code block, and column plugins so foreign overrides and contributed content roots apply
+  - Skip absent foreign `markdown`, `plainText`, and `docx` targets and reject mismatched schema-family targets at runtime
+
+- [`c13647734eb3cfeb9e5b8225c441a4bd51cea806`](https://github.com/udecode/plate/commit/c13647734eb3cfeb9e5b8225c441a4bd51cea806) –
+
+  - Open Markdown links containing images, such as linked badges, by lifting images out of links and headings with a warning instead of failing the parse.
+  - Preserve saved carets, comment ranges, and node selections across `migrateV54` profile and AST restructures including legacy media captions, subscript/superscript text, toggles, and degraded dates or mentions.
+
+- [`8dcb3f451b254f7720901b4562272babcaf5ca04`](https://github.com/udecode/plate/commit/8dcb3f451b254f7720901b4562272babcaf5ca04) – Reuse one `Intl.Collator` in `filterWords`, and close an active combobox when its range becomes non-writable
+
+- [`e3b52e91ff9be0a2bd593eb71a3f682e43ffbbec`](https://github.com/udecode/plate/commit/e3b52e91ff9be0a2bd593eb71a3f682e43ffbbec) –
+
+  - Land Duplicate of a closed Details title after the Details
+  - Select an adjacent block void at container edges before deleting it on forward Delete or backward Backspace
+
+- [`42d6b49431610fd6dd16335829751ec246fe58d0`](https://github.com/udecode/plate/commit/42d6b49431610fd6dd16335829751ec246fe58d0) –
+
+  - Refuse `BaseListPlugin.update.restart()` on non-writable (locked) blocks and initialize `checked: false` when inserting or upserting a task list item.
+
+- [`1802cbe9d06a4c7a24d37f9f709aa8eba119bb6a`](https://github.com/udecode/plate/commit/1802cbe9d06a4c7a24d37f9f709aa8eba119bb6a) –
+
+  - Fall back from `crypto.randomUUID` in `AIChatPlugin` so AI chat requests work on non-secure HTTP origins
+
+- [`2d4af6281056d4c6c3da4042de3f338dedd84589`](https://github.com/udecode/plate/commit/2d4af6281056d4c6c3da4042de3f338dedd84589) –
+
+  - Fix `editor.plugin(BlockquotePlugin).update.untab()` and Shift+Tab lifting the wrong paragraphs when a blockquote selection spans ten or more children or crosses nested blockquotes.
+
+- [`6e1a89e2e56fc2197a7af9dec019563e2ef05019`](https://github.com/udecode/plate/commit/6e1a89e2e56fc2197a7af9dec019563e2ef05019) – Add `'image'` to `BoardShapeDescription['kind']` (reporting child caption or `alt` text), announce keyboard-placed free text, mark active keyboard-resize corners with `data-board-resize-corner`, coalesce held arrow-key nudges into one undo step, and keep sibling boards and portaled menus isolated on `Escape`.
+
+  **Migration:** If your `BoardMessages` implementation maps `BoardShapeDescription['kind']` exhaustively, add an `image` label:
+
+  ```ts
+  const KINDS: Readonly<Record<BoardShapeDescription['kind'], string>> = {
+    arrow: 'Arrow',
+    frame: 'Frame',
+    geo: 'Shape',
+    image: 'Image',
+    note: 'Note',
+    shape: 'Shape',
+    stroke: 'Line',
+    text: 'Text',
+  };
+  ```
+
+- [`92fa1008184872991b66957271c4bea0f891f2a9`](https://github.com/udecode/plate/commit/92fa1008184872991b66957271c4bea0f891f2a9) – Allow moving paragraphs inside board notes when no Yjs binding is installed while keeping shape moves refused
+
+- [`43825d9d5adc11696c787e9483db652b0f77c48c`](https://github.com/udecode/plate/commit/43825d9d5adc11696c787e9483db652b0f77c48c) – Render Copilot ghost text inline inside list items regardless of plugin order relative to `ListPlugin`.
+
+- [`fb134b5c49ded450ffc10cf4734e9b6268a5c3a9`](https://github.com/udecode/plate/commit/fb134b5c49ded450ffc10cf4734e9b6268a5c3a9) – Remove three-way comparison and `resolveComparison` from `platejs/diff`, collapse `TwoWayComparison` into `Comparison` without `kind`, and move live comparison import from `proposeAuthoredComparison` to `editor.plugin(AuthoredPlugin).api.proposeComparison`. `compare` now hashes document `records` alongside `meta` in `before.envelopeFingerprint`, so callers importing through `proposeComparison` should pass `editor.read.value()` as `before` instead of `editor.read.children()`.
+
+  **Migration:**
+
+  ```ts
+  // Before
+  import { proposeAuthoredComparison } from 'platejs/authored';
+  import { compare, type TwoWayComparison } from 'platejs/diff';
+
+  const comparison: TwoWayComparison = await compare({ before, after, schema });
+  const result = proposeAuthoredComparison(editor, { comparison, groupIds });
+
+  // After
+  import { AuthoredPlugin } from 'platejs/authored';
+  import { compare, type Comparison } from 'platejs/diff';
+
+  const comparison: Comparison = await compare({ before, after, schema });
+  const result = editor
+    .plugin(AuthoredPlugin)
+    .api.proposeComparison({ comparison, groupIds });
+  ```
+
+- [`2404e2887f8e9707947c2167ac9630545f8005d6`](https://github.com/udecode/plate/commit/2404e2887f8e9707947c2167ac9630545f8005d6) – Deliver `EditorRoot` change and commit callbacks for commits made during editor startup, child mount layout effects, and rerenders with inline `onNodeChange` or `onTextChange` handlers
+
+- [`325ea7b60967f2cdfa8cdc83df51cb8d93b24794`](https://github.com/udecode/plate/commit/325ea7b60967f2cdfa8cdc83df51cb8d93b24794) –
+
+  - Accept `at: { id }` and other node targets in default element `insert`, `set`, and `remove` updates, and in `lineHeight`, `textAlign`, and `textIndent` `set` and `clear` updates.
+
+- [`1f876a44305e30eb5cacefbe8cdeb65f7edb2e37`](https://github.com/udecode/plate/commit/1f876a44305e30eb5cacefbe8cdeb65f7edb2e37) –
+
+  - Ignore an unrelated expanded selection when `tx.footnote.insert` receives an explicit `at` target.
+  - Place definitions added by `tx.footnote.createDefinition` before trailing empty default paragraphs instead of after them.
+
+- [`bd8e3d40055d4f3a3c8f0fa1a7a88cd6c14418db`](https://github.com/udecode/plate/commit/bd8e3d40055d4f3a3c8f0fa1a7a88cd6c14418db) –
+
+  - Fix `EditorStatic` dropping earlier `leafAttributes` class names when multiple leaf-attribute mark plugins apply to one leaf
+  - Decode combined `text-decoration: underline line-through` and nested `font-style: normal` or `text-decoration: none` mark resets on HTML paste
+  - Include `source.tag` on AST-stage `html-unsafe-content` element removals and preserve element locations on dropped list HTML styles
+  - Remove the DOM entrypoint dependency from `platejs/static`
+
+- [`c0aaa2ccf1598819d6a0530f4a343a47e4895bdf`](https://github.com/udecode/plate/commit/c0aaa2ccf1598819d6a0530f4a343a47e4895bdf) – Keep ink strokes visible across edits, wraps, RTL, and narrow viewports, support drawing on block-level void elements (such as images and videos with `[data-ink-box]`, scaling proportionally on resize), delete ink atomically when its block or marked paragraph is deleted (`Cmd+Z` restores both), and remove `InkSign`, `InkCopyView`, `InkSignPlace`, the `InkContent` `sign` prop, and the `ink-gone` record set.
+
+  **Migration:** Remove `InkSign`, `InkCopyView`, and `InkSignPlace` imports and drop the `sign` prop from `<InkContent {...props} />`. If your app persists older beta document snapshots containing `records['ink-gone']`, strip that key before loading.
+
+- [`a410ebb53bd8d38def5bdb7099a803d750848f72`](https://github.com/udecode/plate/commit/a410ebb53bd8d38def5bdb7099a803d750848f72) – Make `InkContent`'s `sign` prop optional for headless setups, ignore ink capture over block-level void elements instead of mis-anchoring onto neighboring paragraphs, and measure sibling blocks when rendering edited multi-block Digitize passages.
+
+- [`d8be70886ed9a7bfa0b016daaca901cfb335e95f`](https://github.com/udecode/plate/commit/d8be70886ed9a7bfa0b016daaca901cfb335e95f) – Expose `data-ink-tool`, `var(--ink-cursor, crosshair)`, and optional `className`/`style` forwarding on `InkContent`'s overlay layer gated on active non-read-only, non-hidden tools.
+
+- [`3b41838cb5c8964167526c1fe0d4e137d625c564`](https://github.com/udecode/plate/commit/3b41838cb5c8964167526c1fe0d4e137d625c564) – Focus the Editable without scrolling after a Lasso drag completes in `InkPlugin` so dragging a lasso in a scrolled document no longer snaps back to the caret mid-drag.
+
+- [`510aa3f77a4331e1717fbc3184510bbdb18a637d`](https://github.com/udecode/plate/commit/510aa3f77a4331e1717fbc3184510bbdb18a637d) –
+
+  - Omit `position: relative` from inline `EditorElement` wrappers so a native text caret beside an inline chip paints above the chip instead of behind it.
+
+- [`fd8c3dc9539e5e18f8369eb2ad67a5b6f0393de2`](https://github.com/udecode/plate/commit/fd8c3dc9539e5e18f8369eb2ad67a5b6f0393de2) – Add `editor.api.markdown.parsePlaceholders`, lock-aware AI prompt helpers (`hasEditableAISelection`, `serializeAIEditContext`, `serializeAISelectionMarkdown`, `LOCKED_BLOCK_PLACEHOLDER_TAG`, and optional `AIChatRequestRefs.lockedBlocks`), and aligned `AIChatPlugin` document and multi-cell table editing around locked blocks and cells.
+
+- [`27cab7475eec47b27fc1d93cc6ec47a3d30b8f4b`](https://github.com/udecode/plate/commit/27cab7475eec47b27fc1d93cc6ec47a3d30b8f4b) – Add `platejs/lock` and `platejs/lock/react` for per-block client-side locking with inline field fill exemptions and lock-aware feature guards.
+
+- [`12b0275dbb1bf5a21a6aa8738620bdc85cf71551`](https://github.com/udecode/plate/commit/12b0275dbb1bf5a21a6aa8738620bdc85cf71551) – Remove `RawHtmlPlugin` from `platejs/markdown`. Unmapped raw HTML stays plain text on import and escapes on export, and HTML comments drop with a lossless `markdown-unsupported-node` warning.
+
+  **Migration:**
+
+  - Remove `RawHtmlPlugin` from your `platejs/markdown` imports and plugin lists.
+  - If your app saved beta v54 documents containing `rawHtml: true` on text leaves, strip the `rawHtml` property from text leaves before opening them under the updated schema (or increment your named schema `version` and strip `rawHtml` in a migration step).
+  - Update saved `{ document, schema }` fingerprints, Yjs rooms, and saved `History` snapshots that included `RawHtmlPlugin` in their schema fingerprint.
+
+- [`bbfe276a46e7b978f25cd9ea66fcefe6d8fd9e9a`](https://github.com/udecode/plate/commit/bbfe276a46e7b978f25cd9ea66fcefe6d8fd9e9a) – Finish marquee block selection at the last held pointer position when a move arrives with the primary button already released
+
+- [`621f2b6cb9d98b2f1645c7a9facb6dd5741fa65c`](https://github.com/udecode/plate/commit/621f2b6cb9d98b2f1645c7a9facb6dd5741fa65c) – Parse inline CSS declarations in `platejs/html/server` with `!important` priority, case-insensitive property names, comment stripping, shorthand expansion (`font`, `background`, `margin`, `padding`, `list-style`), and `CSSStyleDeclaration.item()`.
+
+- [`d5f3a595540cb5ecc7b4558f25d7ce9042e4e666`](https://github.com/udecode/plate/commit/d5f3a595540cb5ecc7b4558f25d7ce9042e4e666) –
+  - Contract saved comment ranges inward across degraded or removed unsafe media in `migrateV54` instead of expanding over synthesized alt text or file names.
+  - Preserve `NodeSelection` paths across `migrateV54` input-literal expansions, unsafe URL cleanup, and code-block flattening, and compute `mappedSelection` lazily when a migration step supplies its own `mapSelection`.
+
 ## 54.0.0-beta.7
 
 ### Minor Changes
