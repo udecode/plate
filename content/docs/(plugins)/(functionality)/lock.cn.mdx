@@ -250,7 +250,7 @@ const selectionMarkdown = serializeAISelectionMarkdown(editor, {
 
 ### `editor.api.markdown.parsePlaceholders(source, options)`
 
-来自 `platejs/markdown` 的 `MarkdownApi` 方法，在执行完整安全检查与 `RawHtmlPlugin` 预处理后，将包含自闭合区块占位标签（如 `LOCKED_BLOCK_PLACEHOLDER_TAG`）的 Markdown 响应解析为扁平的 `{ kind: 'nodes'; nodes } | { kind: 'placeholder'; ref }` 分段列表。
+来自 `platejs/markdown` 的 `MarkdownApi` 方法，在执行完整安全检查预处理后，将包含自闭合区块占位标签（如 `LOCKED_BLOCK_PLACEHOLDER_TAG`）的 Markdown 响应解析为扁平的 `{ kind: 'nodes'; nodes } | { kind: 'placeholder'; ref }` 分段列表。
 
 ### `hasEditableAISelection(editor, refs?)`
 

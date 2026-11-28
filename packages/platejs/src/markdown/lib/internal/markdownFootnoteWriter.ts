@@ -2,7 +2,7 @@ import type { Nodes, Root } from 'mdast';
 import type { Processor, Plugin as UnifiedPlugin } from 'unified';
 
 import { decideUrl } from '../../../internal/utils/urlPolicy';
-import type { MarkdownReader } from './markdownRawHtml';
+import type { MarkdownReader } from './markdownSafety';
 
 type Handle = (...args: unknown[]) => string;
 type ToMarkdownExtension = {

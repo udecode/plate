@@ -105,8 +105,7 @@ warning。
 Plate 先读取开头的 [front matter](#front-matter) block，再读写 CommonMark，以及已安装
 feature plugin 注册的 tag。GFM、math、emoji 与
 [CJK 强调](#cjk-强调)来自 `MarkdownPlugin` 上配置的 [remark plugin](#remark-plugin)。注册 tag 的写法
-类似 HTML，但只有注册过的名称才是 tag，且不会执行任何内容。其他 HTML 保持为文本，
-其 block 通过检查时，[`RawHtmlPlugin`](#raw-html) 会把它写回为 HTML。
+类似 HTML，但只有注册过的名称才是 tag，且不会执行任何内容。其他 HTML 保持为纯文本。
 
 ### 注册 tag
 
@@ -124,79 +123,6 @@ feature plugin 注册的 tag。GFM、math、emoji 与
 
 只有对应 feature plugin 已安装时，tag 才会注册。Element tag 使用 schema type，
 因此应用重命名 type 时也会重命名对应 tag。
-
-### Raw HTML
-
-`RawHtmlPlugin` 让文件中的 raw HTML 在保存后保留。Markdown kit 已安装它。使用自己
-plugin 列表的 editor 将它加在 `MarkdownPlugin` 旁边：
-
-```ts
-import { BaseParagraphPlugin, createEditor } from 'platejs';
-import { MarkdownPlugin, RawHtmlPlugin } from 'platejs/markdown';
-
-const editor = createEditor({
-  plugins: [BaseParagraphPlugin, MarkdownPlugin, RawHtmlPlugin],
-});
-```
-
-自身 plugin 已声明 `rawHtml` mark 的应用保留该 plugin，不添加 `RawHtmlPlugin`，
-因为两个 plugin 不能拥有同一个 mark。
-
-该 plugin 会改变 editor 的 schema fingerprint，因此安装它的 editor 会拒绝以旧 schema
-identity 保存的文档。以命名 schema 保存文档的应用需要递增其 `version` 并添加一个
-migration step，参见[文档迁移](/cn/docs/editor#文档迁移)。在 derived identity 下保存
-`{ document, schema }` 的应用，先在未安装该 plugin 的 editor 中打开每个已保存的文档，
-再把它的 `read.value()` 传给新的 editor。
-
-Import 会给没有注册 tag 认领的 raw HTML 加上 `rawHtml` mark，例如 README 居中的页头，
-也会给 document、block quote 或 list item 中独占若干行的大多数 HTML comment 加上该 mark。
-Editor 把这些文本显示为普通文本，export 会把它写回为 HTML：
-
-```md
-<p align="center">
-  <img src="logo.png" width="200" />
-</p>
-
-<!-- markdownlint-disable -->
-```
-
-- Import 只标记 export 能写回的 HTML。其他 raw HTML 保持为不带 mark 的普通文本，
-  保存时会被转义，与未安装该 plugin 时一样。无法通过检查的 comment block，例如
-  `<!-- a <!-- b -->`，也保持为普通文本，而未安装该 plugin 的 editor 会丢弃它。
-- Export 会检查每个包含已标记文本的 block：所在的 paragraph、heading、table cell 或
-  HTML block。其他 block 中的已标记文本无法通过检查。检查接受一组固定的格式、
-  heading、list、table、media 与 disclosure tag，例如 `p`、`div`、`img`、`kbd` 与
-  `details`，以及 `align`、`alt`、`href`、`src`、`title` 与 `width` 等 attribute。
-  它拒绝其他所有 tag 与 attribute，例如 `script`、`class`、`style` 与事件处理器，
-  也拒绝 doctype。
-- `href` 或 `src` URL 为空或通过 Plate 的 URL 安全规则时即通过检查，`cite` 或 `srcset`
-  URL 只有通过这些规则时才通过。这些规则拒绝可执行脚本的 scheme，例如
-  `javascript:`。检查不读取 Link plugin 的 `allowedSchemes`，因此
-  `<a href="smb://server/share">x</a>` 会写回为 HTML，而使用默认 scheme 的 Link
-  plugin 会拒绝 `[x](smb://server/share)`。
-- 编辑使已标记的 block 无法通过检查时，export 会转义写出该 block 中已标记的文本，并报告
-  一条 lossless 的 `markdown-unsafe-content` warning。少数情况下，例如某个 mapping
-  复制了已标记的文本，export 会转义写出文档中所有已标记的文本。Plate 把 details
-  summary 行写为 HTML，因此 CommonMark reader 仍会把其中被转义的文本读为 HTML，而
-  Plate 会把它读回为相同的普通文本。
-- HTML block 在 document、block quote 或 list item 中写回为 HTML。在注册 block tag 的
-  body 中，例如 `<callout>`，raw HTML 只以能放在一行内的片段写回。那里的 HTML block
-  保持为普通文本，保存时会被转义。直接位于 `<details>` 中的 HTML block 会使 parse
-  失败并报告 `markdown-schema-invalid`，comment 除外。包裹单个 HTML block 的
-  `<block>` wrapper 会在 import 时被移除，其中的 HTML 会写回。Footnote definition
-  中的所有 raw HTML 都保持为普通文本。
-- 以下 comment 会被丢弃，与未安装该 plugin 时一样：位于一行 paragraph 或 heading
-  文本、table cell、注册 tag 的 body 或 footnote definition 中的 comment，以及没有
-  缩进的 `<!---->`，即 Plate 写在两个 block 之间的分隔符。
-- Import 也不会标记 export 无法写回其缩进的 comment 或 HTML block。这包括空 list
-  marker 下一行缩进超过 item 文本的 block，例如 `-` 之后的 `   <!-- c -->`；list
-  之后带缩进的 block，例如 `- a` 之后缩进一个空格的 block；以及在 quote 或 list
-  item 自身缩进之后仍含 tab 的 block。这样的 comment 会被丢弃，这样的 HTML 保存时
-  会被转义。
-- HTML、DOCX 与纯文本 export 会把已标记的文本写为可见文本。
-- 在 `MarkdownPlugin` 的 `plainMarks` 中写入 `rawHtml` 会让 import 不再加 mark，因此
-  tag 保持为普通文本，comment block 会被丢弃。在 serialize 调用的 `plainMarks` 中写入它，
-  会转义写出已标记的文本，且不报告 warning。
 
 ### 写出格式
 
@@ -226,8 +152,7 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
 
 - 任意字符串都能解析。没有 mapping 接受的 raw HTML 保留为字面文本，并在任何策略下
   报告无损的 `markdown-unsupported-node` warning。
-- 未安装 [`RawHtmlPlugin`](#raw-html) 时，只包含闭合 comment 的 HTML block 会被丢弃并
-  报告无损 warning。
+- 只包含闭合 comment 的 HTML block 会被丢弃并报告无损 warning。
 - `<br>`、`<br/>` 与 `<br />` 读取为换行。
 - 只包含一个注册 block tag 的行是 block，即使紧邻 paragraph 文本。出现在
   paragraph 或 heading 其他位置的 block tag 保留为文本。Table cell 还接受没有子
@@ -773,7 +698,7 @@ node/depth admission 在 parser 返回后执行。
 | `editor.api.markdown.parseInline(source, options?)` | 闭合、无 root 的 inline `ContentSlice`。 |
 | `editor.api.markdown.serialize(options?)` | 使用已安装 target 序列化当前或指定 document。 |
 
-`MarkdownPlugin`、`RawHtmlPlugin`、standalone function 及其 result、diagnostic 与 option type 从
+`MarkdownPlugin`、standalone function 及其 result、diagnostic 与 option type 从
 `platejs/markdown` import。
 
 | Parse option | 用途 |
@@ -795,5 +720,4 @@ node/depth admission 在 parser 返回后执行。
 
 Standalone function 还必须包含 `plugins`，并可包含 `schema`。editor method 从
 editor 捕获 plugins 与 schema，因此不接受这两个选项。`MarkdownPlugin` state 包含
-`remarkPlugins`、`remarkStringifyOptions` 与 `plainMarks`。当其 `plainMarks` 包含
-`rawHtml` 时，import 不会给 raw HTML 加 mark。
+`remarkPlugins`、`remarkStringifyOptions` 与 `plainMarks`。

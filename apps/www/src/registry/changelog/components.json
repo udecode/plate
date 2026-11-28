@@ -275,6 +275,13 @@
       "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
       "2025-11-20-biome-ultracite"
     ],
+    "markdown": [
+      "2026-11-28-remove-raw-html-plugin",
+      "2026-11-23-markdown-raw-html",
+      "2026-11-20-markdown-cjk-emphasis",
+      "2026-09-28-markdown-registered-tags",
+      "2026-08-17-flat-editor-registry"
+    ],
     "lock": ["2026-11-27-add-lock-kit"],
     "lock-static": ["2026-11-27-add-lock-kit"],
     "dnd": [
@@ -974,12 +981,6 @@
       "2026-11-18-registry-icon-library",
       "2026-10-18-layout-style-values",
       "2026-09-18-item-focus-block-upsert",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "markdown": [
-      "2026-11-23-markdown-raw-html",
-      "2026-11-20-markdown-cjk-emphasis",
-      "2026-09-28-markdown-registered-tags",
       "2026-08-17-flat-editor-registry"
     ],
     "media-embed": [

@@ -22,7 +22,6 @@ import type {
   RuntimePluginReference,
 } from '../../facade';
 import type { CompiledMarkdownMappings } from './internal/markdownMappings';
-import type { createRawHtmlPlacementDecider } from './internal/markdownRawHtml';
 import type {
   MdDelete,
   MdEmphasis,
@@ -297,10 +296,7 @@ export type MarkdownParsePolicy = Readonly<{
 
 export type MarkdownSerializePolicy = Readonly<{
   lossPolicy?: 'allow' | 'reject';
-  /**
-   * Mark keys written as plain text without Markdown formatting. Naming
-   * `rawHtml` writes text that `RawHtmlPlugin` marked as escaped text.
-   */
+  /** Mark keys written as plain text without Markdown formatting. */
   plainMarks?: readonly string[] | null;
   preserveEmptyParagraphs?: boolean;
   /**
@@ -354,9 +350,7 @@ export type DeserializeMdContext = Readonly<
     onRootBlocks?: (counts: readonly number[]) => void;
     /** The root node before this source when it continues an earlier one. */
     previousRootSibling?: MdRootContent | null;
-    rawHtml?: Readonly<{
-      blocks: ReadonlySet<Html>;
-    }>;
+    flowHtmlBlocks?: ReadonlySet<Html>;
     limits: MarkdownParseLimits;
     lossPolicy: 'allow' | 'reject';
     mappings: CompiledMarkdownMappings;
@@ -378,15 +372,6 @@ export type SerializeMdContext = Readonly<
     lossPolicy: 'allow' | 'reject';
     mappings: CompiledMarkdownMappings;
     modelLocation: (node: Descendant) => MarkdownModelLocation | undefined;
-    /**
-     * Set when `RawHtmlPlugin` is installed and `plainMarks` does not name its
-     * mark: marked text writes as raw HTML
-     * unless `refused` holds its leaf or is `all`.
-     */
-    rawHtml?: Readonly<{
-      decide: ReturnType<typeof createRawHtmlPlacementDecider>;
-      refused?: ReadonlySet<Text> | 'all';
-    }>;
     readRoots: Set<RootKey>;
     report: (diagnostic: MarkdownDiagnostic) => void;
     remarkPlugins: Pluggable[];

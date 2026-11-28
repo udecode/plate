@@ -3,7 +3,7 @@
 import type { Value } from 'platejs';
 import type { DocxDiagnostic } from 'platejs/docx/export';
 import type { FieldKind, FieldSettings } from 'platejs/field';
-import { MarkdownPlugin, RawHtmlPlugin } from 'platejs/markdown';
+import { MarkdownPlugin } from 'platejs/markdown';
 import {
   EditorRoot,
   useCreateEditor,
@@ -34,7 +34,6 @@ const presentation = [
   ...BaseDateKit,
   ...BaseFieldKit,
   ...BaseMentionKit,
-  RawHtmlPlugin,
 ];
 
 const field = (

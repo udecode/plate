@@ -1,0 +1,14 @@
+---
+id: 2026-11-28-remove-raw-html-plugin
+date: 2026-11-28
+status: draft
+kind: remove
+summary: 'Remove RawHtmlPlugin from MarkdownKit'
+change: { 'type': 'source', 'date': '2026-11-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-28-markdown-remove-raw-html-plugin","kind":"remove","migrationNotes":["Upgrade `platejs` to the release that removes `RawHtmlPlugin` from `platejs/markdown`, and remove `RawHtmlPlugin` from any custom plugin list or static presentation plugin list.","If your app saved beta v54 documents with `rawHtml: true` on text leaves, strip `rawHtml` from text leaves before loading them, because the default closed schema rejects unknown text properties.","Removing `RawHtmlPlugin` changes the kit's schema fingerprint. If your app saves documents under a named schema, increment its `version`, add a migration step that removes `rawHtml` from text leaves, and register the earlier version's fingerprint in `sourceFingerprints`.","The updated kit refuses to join a Yjs room created with `RawHtmlPlugin`, with `Yjs schema mismatch` or `Yjs derived schema mismatch`. Move each room's document to a new room after stripping any `rawHtml` leaf marks.","If your app saves `{ document, schema }` under the default derived identity, read each saved document in an editor using the previous kit, strip `rawHtml` from text leaves, and pass the result to the updated editor.","Undo history saved with `RawHtmlPlugin` no longer loads (`History schema mismatch`). Discard that history or migrate it offline before loading it."]} -->
+
+- **`markdown`**: Remove `RawHtmlPlugin` from `MarkdownKit`. Unmapped raw HTML in Markdown stays plain text and HTML comments drop with a lossless `markdown-unsupported-node` warning.

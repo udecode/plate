@@ -233,9 +233,9 @@ mark under another name, rename it in a pre-pass before `migrateDocument`, as
 the font-weight pre-pass above does.
 
 A v53 text leaf with `rawHtml: true` holds text that Markdown import kept from
-raw HTML. `migrateV54` treats `rawHtml` as it treats `ai`. An editor with
-`RawHtmlPlugin` keeps the mark, and an editor whose plugins declare no
-`rawHtml` drops it.
+raw HTML. `migrateV54` treats `rawHtml` as it treats `ai`: an editor whose
+plugins declare a `rawHtml` mark keeps it, and an editor whose plugins declare
+no `rawHtml` drops it.
 
 A document that the v53 AI kit saved while a response was streaming also holds
 `aiPreview` on its blocks and an `aiChat` anchor. `migrateDocument` refuses it

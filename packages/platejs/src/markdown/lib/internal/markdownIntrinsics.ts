@@ -1,5 +1,4 @@
 import type {
-  Data,
   Html,
   Nodes,
   Paragraph,
@@ -15,14 +14,12 @@ import {
   type EditorCoreStateView,
   type Element,
   ElementApi,
-  type Text,
   TextApi,
   PLUGINS,
 } from '../../../core';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import type { MdRootContent } from '../mdast';
-import { RawHtmlPlugin } from '../RawHtmlPlugin';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import type {
   DeserializeMdContext,
@@ -42,39 +39,6 @@ const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
 export const BARE_URL_HTML = /^[a-z][a-z\d+.-]*:\S*$/i;
 
 export const isMarkdownBreakHtml = (value: string) => ONLY_BR_TAGS.test(value);
-
-type RawHtmlData = Data &
-  Readonly<{
-    rawHtmlFlow?: true;
-    rawHtmlPiece?: Readonly<{ leaves: readonly Text[] }>;
-  }>;
-
-/** Encode marked leaves as raw HTML that their block's decision may keep. */
-export const encodeRawHtmlLeaves = (leaves: readonly Text[]): Html => {
-  const data: RawHtmlData = { rawHtmlPiece: { leaves } };
-
-  return {
-    data,
-    type: 'html',
-    value: leaves.map((leaf) => leaf.text).join(''),
-  };
-};
-
-const rawHtmlDataOf = (node: { data?: unknown }) =>
-  node.data as RawHtmlData | undefined;
-
-export const rawHtmlPieceOf = (node: Nodes) =>
-  node.type === 'html' ? rawHtmlDataOf(node)?.rawHtmlPiece : undefined;
-
-export const markRawHtmlFlow = (paragraph: Paragraph) => {
-  const data: RawHtmlData = { rawHtmlFlow: true };
-
-  paragraph.data = { ...paragraph.data, ...data };
-};
-
-export const isRawHtmlFlow = (node: Nodes) =>
-  rawHtmlPieceOf(node) !== undefined ||
-  (node.type === 'paragraph' && rawHtmlDataOf(node)?.rawHtmlFlow === true);
 
 /** Markdown drops an empty paragraph, so the writer gives it this text. */
 const EMPTY_PARAGRAPH_TEXT = '\u200B';
@@ -159,9 +123,8 @@ const withUnmarkedLineEndings = (text: string, marks: MdMarks) =>
         )
     : { ...marks, text };
 
-// The writer prints a paragraph that holds only raw HTML as an HTML block only
-// when every container above it is the document, a quote, a list or a list
-// item.
+// Flow containers whose direct `html` children decode as their own paragraph
+// instead of merging into neighboring text.
 const FLOW_CONTAINERS: ReadonlySet<string> = new Set([
   'blockquote',
   'list',
@@ -173,92 +136,23 @@ const WRITER_SEPARATOR = '<!---->';
 const isBlockWrapper = (node: Readonly<{ name?: unknown; type: string }>) =>
   node.type === 'mdxJsxFlowElement' && node.name === 'block';
 
-export type WrittenFollows = 'block' | 'list' | 'marker';
-
-export const wholeHtmlBlockRefusal = (
-  value: string,
-  follows: WrittenFollows
-): 'comment' | 'flow-shape' | undefined => {
-  if (value === WRITER_SEPARATOR) return 'comment';
-  // A leading tab can indent a line four columns, which reads as indented code.
-  // After a list marker, a leading space or tab reads as the marker's spacing,
-  // and the item's later lines, which the writer indents by the marker and one
-  // space, then fall out of the item. After a list, an indented line can
-  // continue the list.
-  if (/^ *\t/.test(value) || (follows !== 'block' && /^[\t ]/.test(value))) {
-    return 'flow-shape';
-  }
-
-  return undefined;
-};
-
-export const isMarkdownHtmlComment = (value: string) =>
-  HTML_COMMENT.test(value);
-
-const isEmptyBlockWrapper = (node: MdParent): boolean =>
-  isBlockWrapper(node) &&
-  node.children.every((child) => isEmptyBlockWrapper(child as MdParent));
-
-const wrapsOneHtmlBlock = (wrapper: MdParent): boolean => {
-  const [only, ...rest] = wrapper.children.filter(
-    (child) => !isEmptyBlockWrapper(child as MdParent)
-  );
-
-  if (!only || rest.length > 0) return false;
-
-  return (
-    only.type === 'html' ||
-    (isBlockWrapper(only) && wrapsOneHtmlBlock(only as MdParent))
-  );
-};
-
-export const findMarkdownRawHtml = (
-  tree: Root,
-  before: WrittenFollows = 'block'
-) => {
+export const findMarkdownFlowHtmlBlocks = (tree: Root): Set<Html> => {
   const blocks = new Set<Html>();
-  const visit = (
-    parent: MdParent,
-    split: boolean,
-    held: boolean,
-    start: WrittenFollows
-  ): WrittenFollows => {
-    let follows = start;
-
+  const visit = (parent: MdParent, split: boolean) => {
     for (const child of parent.children) {
       if (child.type === 'html') {
-        if (split && !held && !wholeHtmlBlockRefusal(child.value, follows)) {
-          blocks.add(child);
-          follows = 'block';
-        } else if (!HTML_COMMENT.test(child.value)) {
-          follows = 'block';
-        }
+        if (split) blocks.add(child);
       } else if (isBlockWrapper(child)) {
-        follows = visit(
-          child as MdParent,
-          split,
-          held || !wrapsOneHtmlBlock(child as MdParent),
-          follows
-        );
-      } else {
-        if ('children' in child) {
-          visit(
-            child,
-            split && FLOW_CONTAINERS.has(child.type),
-            held,
-            child.type === 'listItem' ? 'marker' : 'block'
-          );
-        }
-        follows = child.type === 'list' ? 'list' : 'block';
+        visit(child as MdParent, split);
+      } else if ('children' in child) {
+        visit(child, split && FLOW_CONTAINERS.has(child.type));
       }
     }
-
-    return follows;
   };
 
-  const follows = visit(tree, true, false, before);
+  visit(tree, true);
 
-  return { blocks, follows };
+  return blocks;
 };
 
 /**
@@ -289,9 +183,7 @@ export const markdownIntrinsicDecoders = {
     if (ONLY_BR_TAGS.test(value)) {
       return { text: value.replace(BR_TAG, '\n') };
     }
-    const { rawHtml } = options;
-
-    if (HTML_COMMENT.test(value) && !rawHtml?.blocks.has(node)) {
+    if (HTML_COMMENT.test(value)) {
       options.report({
         action: 'dropped',
         code: 'markdown-unsupported-node',
@@ -320,10 +212,9 @@ export const markdownIntrinsicDecoders = {
       source: options.sourceLocation(node),
     });
 
-    if (!rawHtml) return { ...marks, text: value };
-    const text = { ...marks, [RawHtmlPlugin.name]: true, text: value };
+    const text = { ...marks, text: value };
 
-    return rawHtml.blocks.has(node)
+    return options.flowHtmlBlocks?.has(node)
       ? { children: [text], type: getMarkdownParagraphType(options.registry) }
       : text;
   },
@@ -509,7 +400,6 @@ export const writeBareUrlsSafely = (parent: MdParent) => {
     }
     if (
       child.type !== 'html' ||
-      rawHtmlPieceOf(child) ||
       !BARE_URL_HTML.test(child.value) ||
       (!ENDS_IN_LETTER.test(writtenBefore(parent, index)) &&
         staysBare(child.value, writtenAfter(parent, index)))
@@ -525,7 +415,13 @@ export const writeBareUrlsSafely = (parent: MdParent) => {
   });
 };
 
-const startText = function (this: { stack: Nodes[] }, token: { start: Point }) {
+const escapedTexts = new WeakSet<MdText>();
+
+const pushText = (
+  stack: Nodes[],
+  token: { start: Point },
+  markEscaped: boolean
+) => {
   const { column, line, offset } = token.start;
   const node: MdText = {
     position: {
@@ -536,8 +432,31 @@ const startText = function (this: { stack: Nodes[] }, token: { start: Point }) {
     value: '',
   };
 
-  (this.stack.at(-1) as Parent).children.push(node);
-  this.stack.push(node);
+  if (markEscaped) escapedTexts.add(node);
+  (stack.at(-1) as Parent).children.push(node);
+  stack.push(node);
+};
+
+const startEscapedText = function (
+  this: { stack: Nodes[] },
+  token: { start: Point }
+) {
+  pushText(this.stack, token, true);
+};
+
+const startDataAfterEscape = function (
+  this: { stack: Nodes[] },
+  token: { start: Point }
+) {
+  const parent = this.stack.at(-1) as Parent;
+  const tail = parent.children.at(-1);
+
+  if (tail?.type === 'text' && !escapedTexts.has(tail)) {
+    this.stack.push(tail);
+
+    return;
+  }
+  pushText(this.stack, token, false);
 };
 
 const joinTexts = (parent: MdParent) => {
@@ -562,10 +481,9 @@ const joinTexts = (parent: MdParent) => {
 
 /**
  * Remark plugin that starts a text node at each backslash escape and
- * character reference while the source parses, then joins the texts again.
- * mdast-util-gfm-autolink-literal links a URL it finds in decoded text during
- * the parse, so without the split the `https\://a.b` that the writer gives a
- * text URL reads back as a link.
+ * character reference while the source parses. Paired with
+ * `remarkJoinEscapedTexts` after remark plugins so autolinks and emoji
+ * shortcodes never match across an escaped character.
  */
 export const remarkSeparateEscapes: UnifiedPlugin<[], Root> = function (
   this: Processor
@@ -573,13 +491,18 @@ export const remarkSeparateEscapes: UnifiedPlugin<[], Root> = function (
   const data = this.data() as { fromMarkdownExtensions?: unknown[] };
 
   (data.fromMarkdownExtensions ??= []).push({
-    enter: { characterEscape: startText, characterReference: startText },
+    enter: {
+      characterEscape: startEscapedText,
+      characterReference: startEscapedText,
+      data: startDataAfterEscape,
+    },
   });
+};
 
-  return (tree, file) => {
+export const remarkJoinEscapedTexts: UnifiedPlugin<[], Root> =
+  () => (tree, file) => {
     if (/[&\\]/.test(String(file.value))) joinTexts(tree);
   };
-};
 
 export const TRAILING_BREAK_HTML = '\n<br />';
 
@@ -610,8 +533,6 @@ export const encodeMarkdownParagraph = (
     options.preserveEmptyParagraphs !== false
       ? {
           ...only,
-          // The stand-in is the writer's own text, not raw HTML.
-          ...(options.rawHtml ? { [RawHtmlPlugin.name]: undefined } : {}),
           text: EMPTY_PARAGRAPH_TEXT,
         }
       : undefined;

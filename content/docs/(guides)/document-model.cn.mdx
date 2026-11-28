@@ -222,7 +222,7 @@ v53 中带有 `ai: true` 的文本叶子保存的是没有人接受的 AI 输出
 若要以其他名称保留该标记，请在 `migrateDocument` 之前用预处理重命名它，做法与上面的字重预处理相同。
 
 v53 中带有 `rawHtml: true` 的文本叶子保存的是 Markdown 导入从原始 HTML 中保留的文本。`migrateV54`
-处理 `rawHtml` 的方式与处理 `ai` 相同。安装了 `RawHtmlPlugin` 的编辑器保留该标记，插件中没有声明
+处理 `rawHtml` 的方式与处理 `ai` 相同：插件中声明了 `rawHtml` 标记的编辑器保留该标记，插件中没有声明
 `rawHtml` 的编辑器删除该标记。
 
 v53 AI 套件在响应流式输出期间保存的文档，还会在块上带有 `aiPreview`，并带有一个 `aiChat` 锚点。

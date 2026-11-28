@@ -188,8 +188,3 @@ const isListElement = (
   typeof node.listType === 'string' &&
   (node.type === getMarkdownParagraphType(options.registry) ||
     node.type === options.registry.type(PLUGINS.image));
-
-export const mayJoinList = (
-  node: Descendant | undefined,
-  options: Pick<SerializeMdContext, 'registry'>
-) => isListElement(node, options) || mayContinueListItem(node);

@@ -37,7 +37,6 @@ import {
   serializeMarkdownSliceWithRuntime,
   serializeMarkdownWithRuntime,
   withMarkdownRuntime,
-  writesRawHtml,
 } from './internal/markdownConversion';
 import { markdownMappingsRegistryKey } from './internal/markdownMappings';
 import type {
@@ -55,11 +54,7 @@ import type {
 } from './types';
 
 export type MarkdownPluginState = {
-  /**
-   * Mark keys serialized as plain text. Naming `rawHtml` also stops import
-   * from marking raw HTML, so tags stay plain text and comment blocks drop
-   * with `RawHtmlPlugin` installed.
-   */
+  /** Mark keys serialized as plain text. */
   plainMarks: readonly string[] | null;
   /** Remark plugins used for parsing and serialization. */
   remarkPlugins: readonly MarkdownSyncPluggable[];
@@ -79,7 +74,7 @@ export type MarkdownApi<V extends Value = Value> = {
   /**
    * Parse Markdown containing self-closing block placeholder tags (`<Tag ref="..." />`)
    * at the Markdown AST stage, returning flat validated node runs and placeholder
-   * references without registering a schema element or triggering `RawHtmlPlugin`.
+   * references without registering a schema element.
    */
   parsePlaceholders: (
     source: string,
@@ -190,7 +185,7 @@ const serializeMarkdownDataTransferSlice = (
   state: EditorCoreStateView
 ): string | null => {
   if (slice.openStart === 0 && slice.openEnd === 0) {
-    const { result } = serializeMarkdownSliceWithRuntime(
+    const result = serializeMarkdownSliceWithRuntime(
       runtime,
       toMarkdownBlocks(runtime, slice.content),
       slice.roots
@@ -199,13 +194,11 @@ const serializeMarkdownDataTransferSlice = (
     return result.ok ? result.data : null;
   }
   let failed = false;
-  let lastPrintedKind: string | undefined;
   const serialize = (children: readonly Descendant[]) => {
-    const { lastKind, result } = serializeMarkdownSliceWithRuntime(
+    const result = serializeMarkdownSliceWithRuntime(
       runtime,
       toMarkdownBlocks(runtime, children),
-      slice.roots,
-      lastPrintedKind
+      slice.roots
     );
 
     if (!result.ok) {
@@ -214,14 +207,7 @@ const serializeMarkdownDataTransferSlice = (
       return '';
     }
 
-    // Raw HTML keeps its trailing spaces, so only the final line endings go.
-    const data = writesRawHtml(runtime, runtime.options.plainMarks)
-      ? result.data.replace(/\n+$/, '')
-      : result.data.trimEnd();
-
-    if (data.trim()) lastPrintedKind = lastKind;
-
-    return data;
+    return result.data.trimEnd();
   };
   const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
   const serializeOpenNodes = (

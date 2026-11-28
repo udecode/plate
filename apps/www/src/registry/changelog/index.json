@@ -134,6 +134,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-remove-raw-html-plugin",
+      "href": "/registry/changelog/2026-11-28-remove-raw-html-plugin.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Remove RawHtmlPlugin from MarkdownKit",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["markdown"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-27-add-lock-kit",
       "href": "/registry/changelog/2026-11-27-add-lock-kit.json",
       "status": "draft",

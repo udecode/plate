@@ -5,7 +5,7 @@ argument-hint: '[check | deep | lower | case <identity> | update]'
 
 # Markdown round trips and streamed parses
 
-Handle `$ARGUMENTS`. Active Local CI gate running the real Markdown codec (`createTestEditor` + `BaseIndentPlugin`, `RawHtmlPlugin`, math, GFM, CJK-friendly, emoji) over small generated sources and CommonMark/GFM spec examples.
+Handle `$ARGUMENTS`. Active Local CI gate running the real Markdown codec (`createTestEditor` + `BaseIndentPlugin`, math, GFM, CJK-friendly, emoji) over small generated sources and CommonMark/GFM spec examples.
 
 **The property.** Every accepted Markdown source round-trips (`parse -> serialize -> parse`) to the same document across LF/CRLF/CR while preserving front matter and code-fence info strings, and every streamed `parseSlice` continuation matches a fresh parse without unexpected take-backs, hidden text, or lossless drift.
 
@@ -23,7 +23,7 @@ Exit 0 passes, 1 reports findings, 2 reports bad flag, crashed worker, unreadabl
 ## Bounds and assumptions
 
 - Gate covers <=2 inline tokens (22-token alphabet), <=2 block forms (21 forms), CommonMark 0.31.2 + 41 GFM examples, 42 front matter files, 34 README raw-HTML shapes, CJK emphasis, and URL edge cases. `markdown-stream-guess` and `markdown-stream-parse` have 0 baseline entries.
-- Excludes HTML codec, arbitrary chunkings of inline syntax, plugins outside `createTestEditor`, MDX, `RawHtmlPlugin` disabled, front matter in `parseSlice`, YAML/TOML schema validation, and browser UI.
+- Excludes HTML codec, arbitrary chunkings of inline syntax, plugins outside `createTestEditor`, MDX, front matter in `parseSlice`, YAML/TOML schema validation, and browser UI.
 
 ## Bug vs drift
 
@@ -32,8 +32,8 @@ Exit 0 passes, 1 reports findings, 2 reports bad flag, crashed worker, unreadabl
 
 ## Coverage record
 
-Synced at `feat(markdown): install RawHtmlPlugin in the Markdown kit and the test editor`. Check drift with `git log --oneline <commit>..HEAD -- packages/platejs/src/markdown/lib packages/platejs/scripts/markdown-round-trip*`; move sync commit only after confirming script and passing `pnpm check:markdown-round-trip`.
+Synced at Step 1 of `docs/plans/2026-11-28-markdown-codec-hard-cut.md`. Check drift with `git log --oneline <commit>..HEAD -- packages/platejs/src/markdown/lib packages/platejs/scripts/markdown-round-trip*`; move sync commit only after confirming script and passing `pnpm check:markdown-round-trip`.
 
-Covered paths: `packages/platejs/src/markdown/lib/{MarkdownPlugin,RawHtmlPlugin}.ts`, `packages/platejs/src/markdown/lib/internal/{markdownConversion,markdownSegments,markdownTags,markdownOpenTail}.ts`, `packages/platejs/src/markdown/lib/{deserializer,serializer}/`, `packages/platejs/src/features/indent/`, `apps/www/src/registry/components/editor/indent-static.tsx`, `packages/platejs/scripts/markdown-round-trip{-gfm,-previews}.ts`.
+Covered paths: `packages/platejs/src/markdown/lib/MarkdownPlugin.ts`, `packages/platejs/src/markdown/lib/internal/{markdownConversion,markdownSegments,markdownTags,markdownOpenTail}.ts`, `packages/platejs/src/markdown/lib/{deserializer,serializer}/`, `packages/platejs/src/features/indent/`, `apps/www/src/registry/components/editor/indent-static.tsx`, `packages/platejs/scripts/markdown-round-trip{-gfm,-previews}.ts`.
 
 Use `/pstack:maintain-formal-verification-skill` after changes that skipped this check.

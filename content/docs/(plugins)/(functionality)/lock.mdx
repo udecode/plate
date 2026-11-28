@@ -250,7 +250,7 @@ Plugin point from `platejs/lock` accepting `(input: LockWriteExemptionInput) => 
 
 ### `editor.api.markdown.parsePlaceholders(source, options)`
 
-Method on `MarkdownApi` (`platejs/markdown`) that parses a Markdown response into flat `{ kind: 'nodes'; nodes } | { kind: 'placeholder'; ref }` segments for a call-scoped self-closing block tag (such as `LOCKED_BLOCK_PLACEHOLDER_TAG`) after running full security and `RawHtmlPlugin` pre-passes.
+Method on `MarkdownApi` (`platejs/markdown`) that parses a Markdown response into flat `{ kind: 'nodes'; nodes } | { kind: 'placeholder'; ref }` segments for a call-scoped self-closing block tag (such as `LOCKED_BLOCK_PLACEHOLDER_TAG`) after running full security pre-passes.
 
 ### `hasEditableAISelection(editor, refs?)`
 

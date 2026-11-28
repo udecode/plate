@@ -1,4 +1,4 @@
-import { MarkdownPlugin, RawHtmlPlugin } from 'platejs/markdown';
+import { MarkdownPlugin } from 'platejs/markdown';
 import remarkCjkFriendlyGfmStrikethrough from 'remark-cjk-friendly-gfm-strikethrough/bidi';
 import remarkCjkFriendly from 'remark-cjk-friendly/bidi';
 import remarkEmoji from 'remark-emoji';
@@ -17,5 +17,4 @@ export const MarkdownKit = [
       ],
     },
   }),
-  RawHtmlPlugin,
 ];

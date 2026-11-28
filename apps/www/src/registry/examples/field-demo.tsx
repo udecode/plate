@@ -13,7 +13,7 @@ import {
   startFieldValues,
 } from 'platejs/field';
 import { FieldPlugin } from 'platejs/field/react';
-import { MarkdownPlugin, RawHtmlPlugin } from 'platejs/markdown';
+import { MarkdownPlugin } from 'platejs/markdown';
 import {
   EditorRoot,
   useCreateEditor,
@@ -62,7 +62,6 @@ const presentation = [
   ...BaseFieldKit,
   ...BaseMentionKit,
   ...BaseTableKit,
-  RawHtmlPlugin,
 ];
 const panel = 'flex min-w-0 flex-col gap-2 rounded-md border p-3';
 const AUTHOR = 'author';

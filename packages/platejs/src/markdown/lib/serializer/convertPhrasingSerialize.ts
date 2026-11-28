@@ -4,10 +4,8 @@ import {
   type Text,
   TextApi,
 } from '../../../core';
-import { encodeRawHtmlLeaves } from '../internal/markdownIntrinsics';
 import { getMarkdownMarkWriter } from '../internal/markdownMappings';
 import type { MdRootContent } from '../mdast';
-import { RawHtmlPlugin } from '../RawHtmlPlugin';
 import type { MdMark, SerializeMdContext } from '../types';
 
 type MdContainer = Exclude<MdMark, { type: 'inlineCode' | 'text' }>;
@@ -50,7 +48,6 @@ export const convertPhrasingSerialize = (
       if (
         key === 'text' ||
         !value ||
-        (key === RawHtmlPlugin.name && options.rawHtml) ||
         plainMarkSet.has(key) ||
         writerOf(leaf, key) !== undefined ||
         options.state.schema.property({ key, placement: 'text' })?.role ===
@@ -124,19 +121,6 @@ export const convertPhrasingSerialize = (
     if (TextApi.isText(node)) {
       reportOmitted(node);
       const { code, marks } = marksOf(node);
-
-      if (
-        !code &&
-        node[RawHtmlPlugin.name] === true &&
-        options.rawHtml &&
-        options.rawHtml.refused !== 'all' &&
-        !options.rawHtml.refused?.has(node)
-      ) {
-        if (node.text) {
-          items.push({ content: [encodeRawHtmlLeaves([node])], marks });
-        }
-        continue;
-      }
       const lines = hardBreaks ? node.text.split(/\r?\n/) : [node.text];
       const breakMarks = marks.filter(({ container }) =>
         SPANNING_KINDS.has(container.type)

@@ -1,6 +1,5 @@
 import { dequal } from 'dequal';
 import type {
-  Html,
   List,
   ListItem,
   Nodes,
@@ -11,9 +10,7 @@ import type {
 } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import remarkParse from 'remark-parse';
-import remarkStringify, {
-  type Options as RemarkStringifyOptions,
-} from 'remark-stringify';
+import remarkStringify from 'remark-stringify';
 import { type Processor, type Plugin as UnifiedPlugin, unified } from 'unified';
 
 import {
@@ -27,7 +24,6 @@ import {
   ElementApi,
   type MarkdownPluginRegistry,
   type RootKey,
-  type Text,
   TextApi,
 } from '../../../core';
 import { sameUpToListIds } from '../../../features/list/lib/listIdentity.internal';
@@ -48,11 +44,7 @@ import { createValidatedContentSlice } from '../../../internal/utils/trustedCont
 import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
 import type { MarkdownPluginState } from '../MarkdownPlugin';
-import { RawHtmlPlugin } from '../RawHtmlPlugin';
-import {
-  convertNodesSerialize,
-  mayJoinList,
-} from '../serializer/convertNodesSerialize';
+import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import { finishMarkdownLists } from '../serializer/listToMdastTree';
 import type {
   DeserializeMdContext,
@@ -94,13 +86,11 @@ import {
   writeMarkdownFrontmatter,
 } from './markdownFrontmatter';
 import {
-  findMarkdownRawHtml,
+  findMarkdownFlowHtmlBlocks,
   getMarkdownParagraphLanding,
-  isRawHtmlFlow,
-  rawHtmlPieceOf,
+  remarkJoinEscapedTexts,
   remarkSeparateEscapes,
   writeBareUrlsSafely,
-  type WrittenFollows,
 } from './markdownIntrinsics';
 import {
   type CompiledMarkdownMappings,
@@ -119,19 +109,15 @@ import {
   remarkOpenTail,
 } from './markdownOpenTail';
 import {
-  createRawHtmlPlacementDecider,
-  decideRawHtmlBlocks,
-  type MarkdownReader,
-  printsNoText,
-  type RawHtmlBlockRefusal,
-  readMathSafely,
-  writeMathSafely,
-} from './markdownRawHtml';
-import {
   allocateMarkdownFootnoteLabels,
   remarkResolveMarkdownReferences,
 } from './markdownReferences';
-import { cleanMarkdownDestinations } from './markdownSafety';
+import {
+  cleanMarkdownDestinations,
+  type MarkdownReader,
+  readMathSafely,
+  writeMathSafely,
+} from './markdownSafety';
 import {
   countMarkdownLines,
   findMarkdownSegmentBoundaries,
@@ -284,16 +270,6 @@ export const getMergedOptionsDeserialize = (
   return context;
 };
 
-export const writesRawHtml = (
-  runtime: MarkdownRuntime,
-  plainMarks: readonly string[] | null | undefined
-) =>
-  runtime.registry.has(RawHtmlPlugin) &&
-  !plainMarks?.includes(RawHtmlPlugin.name);
-
-const importsRawHtml = (runtime: MarkdownRuntime) =>
-  writesRawHtml(runtime, runtime.options.plainMarks);
-
 export const getMergedOptionsSerialize = (
   runtime: MarkdownRuntime,
   options: MarkdownSerializePolicy = {},
@@ -316,16 +292,6 @@ export const getMergedOptionsSerialize = (
       (locate ??= createMarkdownModelLocator(document))(node),
     plainMarks: plain,
     preserveEmptyParagraphs: options.preserveEmptyParagraphs,
-    ...(writesRawHtml(runtime, plain)
-      ? {
-          rawHtml: {
-            decide: createRawHtmlPlacementDecider({
-              commonmark: readCommonMark,
-              editor: (source) => getRawHtmlEditorReader(runtime)(source),
-            }),
-          },
-        }
-      : {}),
     readRoots,
     remarkPlugins: materializeRemarkPlugins(remarkPlugins),
     remarkStringifyOptions:
@@ -349,10 +315,8 @@ type MarkdownSegmentHooks = Pick<
   Readonly<{
     /** The source is one paragraph, so no HTML block decodes on its own. */
     inline?: boolean;
-    onRawHtmlEnd?: (end: WrittenFollows) => void;
     onSyntaxTree?: (root: Root) => void;
     openTail?: OpenTailRead;
-    rawHtmlBefore?: WrittenFollows;
   }>;
 
 const createMarkdownParser = (
@@ -368,6 +332,7 @@ const createMarkdownParser = (
     .use(remarkResolveMarkdownReferences)
     .use(openTail ? [[remarkOpenTail, openTail]] : [])
     .use(remarkPlugins)
+    .use(remarkJoinEscapedTexts)
     .use(() => readMathSafely);
 
 const COMMONMARK = unified().use(remarkParse).freeze();
@@ -384,28 +349,6 @@ const samePlugins = (
   cached.remarkPlugins.every(
     (plugin, index) => plugin === remarkPlugins[index]
   );
-
-const rawHtmlEditorReaders = new WeakMap<
-  CompiledMarkdownMappings,
-  Readonly<{ read: MarkdownReader; remarkPlugins: readonly unknown[] }>
->();
-
-const getRawHtmlEditorReader = (runtime: MarkdownRuntime) => {
-  const { remarkPlugins } = runtime.options;
-  const cached = rawHtmlEditorReaders.get(runtime.formats);
-
-  if (cached && samePlugins(cached, remarkPlugins)) return cached.read;
-  const parser = createMarkdownParser(
-    runtime,
-    materializeRemarkPlugins(remarkPlugins)
-  ).freeze();
-  const read: MarkdownReader = (source) =>
-    parser.runSync(parser.parse(source), source);
-
-  rawHtmlEditorReaders.set(runtime.formats, { read, remarkPlugins });
-
-  return read;
-};
 
 type MicromarkConstruct = Readonly<{ name?: string }> | null | undefined;
 
@@ -486,13 +429,7 @@ export const markdownToSlateNodesWithRuntime = (
   text: string,
   options: MarkdownParsePolicy = {},
   diagnostics = new MarkdownDiagnostics(),
-  {
-    inline,
-    onRawHtmlEnd,
-    openTail,
-    rawHtmlBefore,
-    ...hooks
-  }: MarkdownSegmentHooks = {},
+  { inline, openTail, ...hooks }: MarkdownSegmentHooks = {},
   source = text
 ): Descendant[] => {
   const mergedOptions: ToSlateOptions = {
@@ -509,15 +446,7 @@ export const markdownToSlateNodesWithRuntime = (
     mergedOptions.remarkPlugins,
     options.partial ? openTail : undefined
   )
-    .use(
-      remarkToSlate,
-      mergedOptions,
-      importsRawHtml(runtime)
-        ? inline
-          ? 'inline'
-          : { onRawHtmlEnd, rawHtmlBefore }
-        : undefined
-    )
+    .use(remarkToSlate, mergedOptions, inline)
     .processSync(text).result;
 };
 
@@ -557,32 +486,10 @@ const readLineEndingsAsLf = (node: Nodes) => {
 type ToSlateOptions = DeserializeMdContext &
   Pick<MarkdownSegmentHooks, 'onSyntaxTree'>;
 
-type RemarkToSlateOptions = [
-  ToSlateOptions,
-  rawHtml:
-    | 'inline'
-    | Pick<MarkdownSegmentHooks, 'onRawHtmlEnd' | 'rawHtmlBefore'>
-    | undefined,
-];
-
-const NO_RAW_HTML_BLOCKS = Object.freeze({ blocks: new Set<Html>() });
-
-const readRawHtmlBlocks = (
-  root: Root,
-  {
-    onRawHtmlEnd,
-    rawHtmlBefore,
-  }: Pick<MarkdownSegmentHooks, 'onRawHtmlEnd' | 'rawHtmlBefore'>
-) => {
-  const found = findMarkdownRawHtml(root, rawHtmlBefore);
-
-  onRawHtmlEnd?.(found.follows);
-
-  return found;
-};
+type RemarkToSlateOptions = [ToSlateOptions, inline?: boolean];
 
 const remarkToSlate: UnifiedPlugin<RemarkToSlateOptions, Root, Descendant[]> =
-  function (options, rawHtml) {
+  function (options, inline) {
     this.compiler = (node, file) => {
       if (String(file).includes('\r')) readLineEndingsAsLf(node as Root);
 
@@ -604,15 +511,12 @@ const remarkToSlate: UnifiedPlugin<RemarkToSlateOptions, Root, Descendant[]> =
 
       return mdastToSlate(
         node as Root,
-        rawHtml
-          ? {
+        inline
+          ? options
+          : {
               ...options,
-              rawHtml:
-                rawHtml === 'inline'
-                  ? NO_RAW_HTML_BLOCKS
-                  : readRawHtmlBlocks(node as Root, rawHtml),
+              flowHtmlBlocks: findMarkdownFlowHtmlBlocks(node as Root),
             }
-          : options
       );
     };
   };
@@ -640,17 +544,102 @@ const remarkEscapeDollars: UnifiedPlugin<[], Root> = function () {
   }
 };
 
+const EMOJI_PROBE = ':+1:';
+
+const emojiShortcodePlugins = new WeakMap<
+  CompiledMarkdownMappings,
+  Readonly<{
+    escapes: boolean;
+    remarkPlugins: readonly unknown[];
+    serializePlugins: DeserializeMdContext['remarkPlugins'];
+  }>
+>();
+
+const isParseOnlyEmojiPlugin = (
+  plugin: DeserializeMdContext['remarkPlugins'][number]
+) => {
+  try {
+    const processor = unified().use(remarkParse).use([plugin]).freeze();
+
+    if (
+      (processor.data('toMarkdownExtensions') as unknown[] | undefined)?.length
+    ) {
+      return false;
+    }
+    const root = processor.runSync(
+      processor.parse(EMOJI_PROBE),
+      EMOJI_PROBE
+    ) as Root;
+    const paragraph = root.children[0];
+    const text =
+      paragraph?.type === 'paragraph' ? paragraph.children[0] : undefined;
+
+    return text?.type === 'text' && text.value.startsWith('👍');
+  } catch {
+    return false;
+  }
+};
+
+const getSerializeRemarkPlugins = (
+  mappings: CompiledMarkdownMappings,
+  remarkPlugins: DeserializeMdContext['remarkPlugins']
+) => {
+  const cached = emojiShortcodePlugins.get(mappings);
+
+  if (cached && samePlugins(cached, remarkPlugins)) return cached;
+  let escapes = false;
+  const serializePlugins = remarkPlugins.filter((plugin) => {
+    if (isParseOnlyEmojiPlugin(plugin)) {
+      escapes = true;
+
+      return false;
+    }
+
+    return true;
+  });
+  const entry = { escapes, remarkPlugins, serializePlugins };
+
+  emojiShortcodePlugins.set(mappings, entry);
+
+  return entry;
+};
+
+const remarkEscapeEmojiShortcodes: UnifiedPlugin<[], Root> = function () {
+  const data = this.data() as {
+    toMarkdownExtensions?: Array<{
+      unsafe?: Array<{
+        after?: string;
+        character?: string;
+        inConstruct?: unknown;
+      }>;
+    }>;
+  };
+
+  (data.toMarkdownExtensions ??= []).push({
+    unsafe: [
+      {
+        after: '(?:\\+1|-1|[\\w-]+):',
+        character: ':',
+        inConstruct: 'phrasing',
+      },
+    ],
+  });
+};
+
 const createMarkdownStringifier = (
   context: SerializeMdContext,
   unwritable: MarkdownWriterExtension
 ) => {
-  const app = context.remarkStringifyOptions;
-  const { join: appJoin, ...appWithoutJoin } = app ?? {};
+  const { escapes, serializePlugins } = getSerializeRemarkPlugins(
+    context.mappings,
+    context.remarkPlugins
+  );
 
   return unified()
     .use(remarkMarkdownTagWriter)
-    .use(context.remarkPlugins)
+    .use(serializePlugins)
     .use(remarkEscapeDollars)
+    .use(escapes ? [remarkEscapeEmojiShortcodes] : [])
     .use(remarkFootnoteDefinitionWriter, { read: readCommonMark })
     .use(function remarkUnwritableNodeWriter(this: Processor) {
       const data = this.data() as { toMarkdownExtensions?: unknown[] };
@@ -658,61 +647,25 @@ const createMarkdownStringifier = (
       // After every plugin, so a plugin that replaces the list still gets it.
       (data.toMarkdownExtensions ??= []).push(unwritable);
     })
-    .use(function remarkRawHtmlJoin(this: Processor) {
-      if (!context.rawHtml) return;
-      const settings = this.data('settings') ?? {};
-      // remark-stringify spreads the app's options over the settings, so an
-      // app's `join` key replaces the plugins' joins even when its value is
-      // `undefined`.
-      const join = app && Object.hasOwn(app, 'join') ? appJoin : settings.join;
-
-      // The writer reads `join` from the end, so this one decides first:
-      // outside a list's own items, an HTML block of marked text ends only at
-      // a blank line.
-      this.data('settings', {
-        ...settings,
-        join: [...(join ?? []), joinRawHtmlFlow],
-      });
-    })
     .use(remarkStringify, {
       emphasis: '_',
       resourceLink: false,
-      ...(context.rawHtml ? appWithoutJoin : app),
+      ...context.remarkStringifyOptions,
     });
 };
 
-// Only a list, list item or quote can hold a flow piece that passes, so a join
-// looks for one at a block's edge only through them.
-const flowEdgeOf = (node: Nodes, edge: 'first' | 'last'): Nodes | undefined => {
-  if (
-    node.type !== 'blockquote' &&
-    node.type !== 'list' &&
-    node.type !== 'listItem'
-  ) {
-    return node;
-  }
-  const prints = (child: Nodes) => !printsNoText(child);
-  const child =
-    edge === 'first'
-      ? node.children.find(prints)
-      : node.children.findLast(prints);
-
-  return child && flowEdgeOf(child, edge);
-};
-
-const joinRawHtmlFlow: NonNullable<RemarkStringifyOptions['join']>[number] = (
-  left,
-  right,
-  parent
-) =>
-  // Each list item opens on a marker line, which ends the item before it, so
-  // a tight list stays tight.
-  parent.type !== 'list' &&
-  [flowEdgeOf(left, 'last'), flowEdgeOf(right, 'first')].some(
-    (node) => node !== undefined && isRawHtmlFlow(node)
-  )
-    ? 1
-    : undefined;
+const printsNoText = (node: Nodes): boolean =>
+  node.type === 'html' || node.type === 'text'
+    ? node.value === ''
+    : node.type === 'table'
+      ? node.children.every((row) => row.children.length === 0)
+      : node.type === 'list' || node.type === 'tableRow'
+        ? node.children.length === 0
+        : (node.type === 'emphasis' ||
+            node.type === 'paragraph' ||
+            node.type === 'strong' ||
+            node.type === 'tableCell') &&
+          node.children.every(printsNoText);
 
 const emptyRootStartsWithByteOrderMark = (context: SerializeMdContext) =>
   createMarkdownStringifier(context, {})
@@ -806,319 +759,10 @@ const encodeMarkdownBody = (context: SerializeMdContext) => {
   };
 };
 
-const SETEXT_PROBE: Root = {
-  children: [
-    { children: [{ type: 'text', value: 'x' }], depth: 1, type: 'heading' },
-  ],
-  type: 'root',
-};
+const writeMarkdownBody = (context: SerializeMdContext) => {
+  const { lastKind, processor, tree } = encodeMarkdownBody(context);
 
-// The writer merges `setext` from settings, options and extensions, so ask it.
-const writesSetext = (
-  processor: ReturnType<typeof createMarkdownStringifier>
-) => processor.stringify(SETEXT_PROBE).includes('\n=');
-
-const REFUSAL_ROUNDS = 3;
-
-const holdsRawHtmlPiece = (node: Nodes): boolean =>
-  rawHtmlPieceOf(node) !== undefined ||
-  ('children' in node && node.children.some(holdsRawHtmlPiece));
-
-const markedLeavesOf = (nodes: readonly Descendant[]): Text[] =>
-  nodes.flatMap((node) =>
-    TextApi.isText(node)
-      ? node[RawHtmlPlugin.name] === true
-        ? [node]
-        : []
-      : markedLeavesOf(node.children)
-  );
-
-type RawHtmlWriting = NonNullable<SerializeMdContext['rawHtml']>;
-
-/**
- * Export and import both decide through it, so import marks only what export
- * writes back.
- */
-const encodeRawHtmlBody = (
-  context: SerializeMdContext,
-  rawHtml: RawHtmlWriting,
-  refused: RawHtmlWriting['refused'],
-  previousKind: string | undefined,
-  readSetext: (
-    processor: ReturnType<typeof createMarkdownStringifier>
-  ) => boolean
-) => {
-  const diagnostics = new MarkdownDiagnostics();
-  const readRoots = new Set<RootKey>();
-  const body = encodeMarkdownBody({
-    ...context,
-    // Each encode is a conversion of its own, so its list audit starts empty.
-    operation: {},
-    rawHtml: { ...rawHtml, refused },
-    readRoots,
-    report: diagnostics.report,
-  });
-  const holdsRawHtml = holdsRawHtmlPiece(body.tree);
-  const options = {
-    previousKind,
-    setext: holdsRawHtml && readSetext(body.processor),
-    unwritable: body.unwritable,
-  };
-
-  return {
-    ...body,
-    diagnostics,
-    failing: holdsRawHtml
-      ? decideRawHtmlBlocks(body.tree, rawHtml.decide, options)
-      : [],
-    holdsRawHtml,
-    options,
-    readRoots,
-  };
-};
-
-// A mapping that copies marked leaves defeats refusal by object, so export then
-// writes every marked text as text.
-const copiesMarkedLeaf = (
-  failing: readonly RawHtmlBlockRefusal[],
-  document: ReadonlySet<Text>
-) => failing.some(({ leaves }) => leaves.some((leaf) => !document.has(leaf)));
-
-const sameTextProperties = (left: Text, right: Text) =>
-  dequal({ ...left, text: '' }, { ...right, text: '' });
-
-// Only a text next to an unmarked leaf can newly equal its neighbor.
-const unmarkLeaves = (
-  nodes: readonly Descendant[],
-  leaves: ReadonlySet<Text>
-): readonly Descendant[] => {
-  const output: Descendant[] = [];
-  let changed = false;
-  let joinsUnmarked = false;
-
-  for (const node of nodes) {
-    let next: Descendant = node;
-    let unmarked = false;
-
-    if (!TextApi.isText(node)) {
-      next = unmarkElement(node, leaves);
-    } else if (leaves.has(node)) {
-      const { [RawHtmlPlugin.name]: _marked, ...text } = node;
-
-      next = text;
-      unmarked = true;
-    }
-    changed ||= next !== node;
-    const previous = output.at(-1);
-
-    if (
-      (unmarked || joinsUnmarked) &&
-      previous !== undefined &&
-      TextApi.isText(previous) &&
-      TextApi.isText(next) &&
-      sameTextProperties(previous, next)
-    ) {
-      output[output.length - 1] = {
-        ...previous,
-        text: previous.text + next.text,
-      };
-      joinsUnmarked = true;
-    } else {
-      output.push(next);
-      joinsUnmarked = unmarked;
-    }
-  }
-
-  return changed ? output : nodes;
-};
-
-const unmarkElement = (
-  element: Element,
-  leaves: ReadonlySet<Text>
-): Element => {
-  const children = unmarkLeaves(element.children, leaves);
-
-  return children === element.children
-    ? element
-    : { ...element, children: [...children] };
-};
-
-const unmarkBlocks = (
-  blocks: readonly Element[],
-  unmarked: ReadonlySet<Text>
-) => blocks.map((block) => unmarkElement(block, unmarked));
-
-type BlocksDocument = Readonly<{
-  before?: readonly Descendant[];
-  meta?: EditorDocumentValue['meta'];
-  roots?: EditorDocumentValue['roots'];
-}>;
-
-const createBlocksContext = (
-  runtime: MarkdownRuntime,
-  blocks: readonly Element[],
-  { before = [], meta, roots }: BlocksDocument
-): SerializeMdContext => {
-  const document = createContentFormatDocument({
-    content: [...before, ...blocks],
-    meta,
-    roots,
-  });
-
-  return {
-    ...getMergedOptionsSerialize(runtime, {}, document),
-    modelLocation: createMarkdownModelLocator(document, {
-      from: before.length,
-    }),
-    value: [...blocks],
-  };
-};
-
-const keepWrittenRawHtml = (
-  runtime: MarkdownRuntime,
-  blocks: readonly Element[],
-  {
-    previousKind,
-    ...place
-  }: BlocksDocument & Readonly<{ previousKind?: string }> = {}
-): Readonly<{
-  blocks: readonly Element[];
-  unmarkedAll: boolean;
-  written?: Readonly<{ lastKind: string | undefined }>;
-}> => {
-  const kept = { blocks, unmarkedAll: false };
-
-  if (!importsRawHtml(runtime)) return kept;
-  const marked = markedLeavesOf(blocks);
-
-  if (marked.length === 0) return kept;
-  const context = createBlocksContext(runtime, blocks, place);
-  const { rawHtml } = context;
-
-  if (!rawHtml) return kept;
-  const document = new Set(marked);
-  const unmarkAll = () => ({
-    blocks: unmarkBlocks(blocks, document),
-    unmarkedAll: true,
-  });
-  let failing: ReturnType<typeof encodeRawHtmlBody>['failing'];
-  let lastKind: string | undefined;
-
-  try {
-    ({ failing, lastKind } = encodeRawHtmlBody(
-      context,
-      rawHtml,
-      undefined,
-      previousKind,
-      writesSetext
-    ));
-  } catch (error) {
-    try {
-      encodeRawHtmlBody(context, rawHtml, 'all', previousKind, writesSetext);
-    } catch {
-      // Export throws on these blocks with or without raw HTML.
-      return unmarkAll();
-    }
-    throw error;
-  }
-
-  const written = { lastKind };
-
-  if (failing.length === 0) return { ...kept, written };
-  if (copiesMarkedLeaf(failing, document)) return unmarkAll();
-
-  return {
-    blocks: unmarkBlocks(
-      blocks,
-      new Set(failing.flatMap(({ leaves }) => leaves))
-    ),
-    unmarkedAll: false,
-    written,
-  };
-};
-
-/**
- * With `RawHtmlPlugin` installed and its mark not in `plainMarks`, each block
- * of marked text decides on the tree
- * the writer prints, and the document encodes again with every leaf of each
- * failing block refused, so the writers escape that text as they escape any
- * text. A refused leaf can sit in another block too, so encoding repeats until
- * no block fails, for at most `REFUSAL_ROUNDS` rounds, because a chain of
- * blocks that share leaves would otherwise encode once per leaf. `previousKind` is the
- * type of the last root node the copied chunk before this one printed.
- */
-const writeMarkdownBody = (
-  context: SerializeMdContext,
-  previousKind?: string
-) => {
-  const { rawHtml } = context;
-
-  if (!rawHtml) {
-    const { lastKind, processor, tree } = encodeMarkdownBody(context);
-
-    return { data: processor.stringify(tree), holdsRawHtml: false, lastKind };
-  }
-  let setext: boolean | undefined;
-  const encode = (refused?: ReadonlySet<Text> | 'all') =>
-    encodeRawHtmlBody(context, rawHtml, refused, previousKind, (processor) => {
-      setext ??= writesSetext(processor);
-
-      return setext;
-    });
-  let body = encode();
-  const documentLeaves = new Set(
-    body.failing.length > 0
-      ? markedLeavesOf([
-          ...context.value,
-          ...Object.values(context.document.roots ?? {}).flat(),
-        ])
-      : []
-  );
-  const report = ({ leaves, reason }: RawHtmlBlockRefusal) =>
-    context.report({
-      code: 'markdown-unsafe-content',
-      impact: 'lossless',
-      message: `Markdown raw HTML cannot be written as HTML at its place (${reason}); it was written as text.`,
-      model: context.modelLocation(
-        leaves.find((leaf) => documentLeaves.has(leaf)) ?? leaves[0]
-      ),
-      nodeType: 'html',
-      phase: 'serialize',
-      severity: 'warning',
-    });
-  const refused = new Set<Text>();
-
-  for (let round = 0; body.failing.length > 0; round += 1) {
-    const copied = copiesMarkedLeaf(body.failing, documentLeaves);
-
-    if (copied || round === REFUSAL_ROUNDS) {
-      const reason = copied ? 'copied-leaf' : 'shared-leaf';
-
-      decideRawHtmlBlocks(
-        body.tree,
-        () => ({ ok: false, reason }),
-        body.options
-      ).forEach(report);
-      body = encode('all');
-      break;
-    }
-    for (const block of body.failing) {
-      report(block);
-      block.leaves.forEach((leaf) => refused.add(leaf));
-    }
-    body = encode(new Set(refused));
-  }
-  // Writers report while they print too.
-  const data = body.processor.stringify(body.tree);
-
-  body.diagnostics.all().forEach(context.report);
-  body.readRoots.forEach((root) => context.readRoots.add(root));
-
-  return {
-    data,
-    holdsRawHtml: body.holdsRawHtml,
-    lastKind: body.lastKind,
-  };
+  return { data: processor.stringify(tree), lastKind };
 };
 
 // mdast-util-to-markdown writes these CommonMark kinds itself and throws on any
@@ -1285,17 +929,6 @@ type MarkdownSegment = Readonly<{
   lastRoot: MdRootContent | null;
   nodes: readonly Descendant[];
   syntaxNodes: number;
-}> &
-  CommittedRawHtml;
-
-/**
- * With `RawHtmlPlugin`, what the source up to a segment's end leaves for the
- * raw HTML decisions after it, so a later segment decides as a fresh parse of
- * the whole source does.
- */
-type CommittedRawHtml = Readonly<{
-  follows: WrittenFollows;
-  printedKind: string | undefined;
 }>;
 
 type MarkdownCheckpoint = Readonly<{
@@ -1326,60 +959,7 @@ const snapshotBlocks = (
   runtime: MarkdownRuntime,
   parsed: readonly Descendant[]
 ): readonly Descendant[] =>
-  ContentSlice.closed([
-    ...keepWrittenRawHtml(runtime, normalizeDocumentChildren(runtime, parsed))
-      .blocks,
-  ]).content;
-
-const NOTHING_COMMITTED: CommittedRawHtml = {
-  follows: 'block',
-  printedKind: undefined,
-};
-
-const rawHtmlAfter = (committed: readonly MarkdownSegment[]) =>
-  committed.at(-1) ?? NOTHING_COMMITTED;
-
-const continueBlocks = (
-  runtime: MarkdownRuntime,
-  parsed: readonly Descendant[],
-  committed: readonly MarkdownSegment[],
-  prior?: readonly Descendant[]
-): Pick<MarkdownSegment, 'nodes' | 'printedKind'> | null => {
-  const normalized = normalizeDocumentChildren(runtime, parsed);
-
-  if (!importsRawHtml(runtime)) {
-    return {
-      nodes: ContentSlice.closed([...normalized]).content,
-      printedKind: undefined,
-    };
-  }
-  const after = rawHtmlAfter(committed);
-
-  if (after.printedKind === 'list' && mayJoinList(normalized[0], runtime)) {
-    return null;
-  }
-  const before = prior ?? committed.flatMap((segment) => segment.nodes);
-  const { blocks, unmarkedAll, written } = keepWrittenRawHtml(
-    runtime,
-    normalized,
-    { before, previousKind: after.printedKind }
-  );
-
-  if (unmarkedAll) return null;
-  const nodes = ContentSlice.closed([...blocks]).content;
-
-  try {
-    // Encoded together, so a list item's continuation prints as part of its
-    // list.
-    const { lastKind } =
-      written ??
-      encodeMarkdownBody(createBlocksContext(runtime, blocks, { before }));
-
-    return { nodes, printedKind: lastKind ?? after.printedKind };
-  } catch {
-    return null;
-  }
-};
+  ContentSlice.closed([...normalizeDocumentChildren(runtime, parsed)]).content;
 
 const MAX_COPIED_SEGMENT_LENGTH = 2000;
 
@@ -1435,9 +1015,7 @@ const markKindsOf = (runtime: MarkdownRuntime): MarkdownMarkKinds => {
 
   return {
     emphasis: keys('emphasis'),
-    // A copy decides raw HTML without the blocks before it, and the received
-    // text with them.
-    exact: new Set(importsRawHtml(runtime) ? [RawHtmlPlugin.name] : []),
+    exact: new Set(),
     strong: keys('strong'),
   };
 };
@@ -1673,24 +1251,13 @@ const deliverOpenTail = (
   const { committed, fit } = segment;
   const grammar = probeGrammar(runtime);
   const repairable = grammar.attention ?? grammar.strikethrough;
-  const readHooks = committed
-    ? { ...hooks, rawHtmlBefore: rawHtmlAfter(committed).follows }
-    : hooks;
   const ready = (parsed: readonly Descendant[]) =>
-    committed
-      ? (continueBlocks(runtime, parsed, committed)?.nodes ?? null)
-      : fit.ready(parsed);
+    committed ? snapshotBlocks(runtime, parsed) : fit.ready(parsed);
 
   // micromark's offsets skip a byte order mark that starts the source, so
   // the tail cannot read a fresh preview's tree.
   if (source.startsWith(BYTE_ORDER_MARK) || !repairable) {
-    const parsed = runParsedNodes(
-      runtime,
-      text,
-      options,
-      diagnostics,
-      readHooks
-    );
+    const parsed = runParsedNodes(runtime, text, options, diagnostics, hooks);
 
     return parsed && ready(parsed);
   }
@@ -1709,7 +1276,7 @@ const deliverOpenTail = (
     read.plan = plan;
   };
   const parsed = runParsedNodes(runtime, text, options, received, {
-    ...readHooks,
+    ...hooks,
     onRootBlocks: (counts) => {
       read.blocks = counts;
     },
@@ -1726,13 +1293,7 @@ const deliverOpenTail = (
 
   if (plan?.heldFromEnd.length && !(blocks && fit.fits(blocks))) {
     if (!segment.retriesUncut) return null;
-    const uncut = runParsedNodes(
-      runtime,
-      text,
-      options,
-      diagnostics,
-      readHooks
-    );
+    const uncut = runParsedNodes(runtime, text, options, diagnostics, hooks);
 
     return uncut && ready(uncut);
   }
@@ -1878,7 +1439,6 @@ const convertMarkdownSource = (
     let count = 0;
     let lastRoot: MdRootContent | null = null;
     let ordered = false;
-    let { follows } = rawHtmlAfter(segments);
     const parsed = runParsedNodes(
       runtime,
       source.slice(stableEnd, end),
@@ -1889,9 +1449,6 @@ const convertMarkdownSource = (
       },
       local,
       {
-        onRawHtmlEnd: (read) => {
-          follows = read;
-        },
         onRootChildren: (children) => {
           lastRoot = children.at(-1) ?? null;
           ordered =
@@ -1903,7 +1460,6 @@ const convertMarkdownSource = (
         },
         // A decoder reads the node before it, even across segments.
         previousRootSibling: segments.at(-1)?.lastRoot ?? null,
-        rawHtmlBefore: follows,
       }
     );
 
@@ -1916,7 +1472,6 @@ const convertMarkdownSource = (
         .map((diagnostic) =>
           shiftMarkdownDiagnostic(diagnostic, lines, stableEnd)
         ),
-      follows,
       lastRoot,
       parsed,
       placed: ordered && !hasUnplaced(local.all()),
@@ -1959,18 +1514,16 @@ const convertMarkdownSource = (
     if (!last || TextApi.isText(last) || runtime.state.schema.isInline(last)) {
       continue;
     }
-    const committed = continueBlocks(runtime, segment.parsed, segments, prior);
+    const nodes = snapshotBlocks(runtime, segment.parsed);
 
-    if (!committed) return full();
     segments.push({
-      ...committed,
       diagnostics: segment.diagnostics,
       end: boundary,
-      follows: segment.follows,
       lastRoot: segment.lastRoot,
+      nodes,
       syntaxNodes: segment.syntaxNodes,
     });
-    for (const node of committed.nodes) prior.push(node);
+    for (const node of nodes) prior.push(node);
     syntaxNodes += segment.syntaxNodes - 1;
     stableEnd = boundary;
   }
@@ -2281,11 +1834,6 @@ const deliverMarkdownDocument = (
     reportSchemaInvalid(error, diagnostics);
 
     return null;
-  }
-  const { blocks } = keepWrittenRawHtml(runtime, document.children, document);
-
-  if (blocks !== document.children) {
-    document = { ...document, children: [...blocks] };
   }
   try {
     runtime.state.schema.assertDocument(document);
@@ -2795,9 +2343,7 @@ export const parseMarkdownPlaceholdersWithRuntime = (
     sourceLocation: mergedOptions.sourceLocation,
   });
 
-  const rawHtml = importsRawHtml(runtime)
-    ? readRawHtmlBlocks(root, {})
-    : undefined;
+  const flowHtmlBlocks = findMarkdownFlowHtmlBlocks(root);
 
   const chunks: PlaceholderMdastChunk[] = [];
   let pendingMdast: MdRootContent[] = [];
@@ -2848,9 +2394,10 @@ export const parseMarkdownPlaceholdersWithRuntime = (
     return placeholderParseFailure(diagnostics);
   }
 
-  const slateOptions: DeserializeMdContext = rawHtml
-    ? { ...mergedOptions, rawHtml }
-    : mergedOptions;
+  const slateOptions: DeserializeMdContext = {
+    ...mergedOptions,
+    flowHtmlBlocks,
+  };
   const segments: MarkdownPlaceholderSegment[] = [];
 
   for (const chunk of chunks) {
@@ -2940,18 +2487,11 @@ const deliverMarkdownInline = (
 
     return null;
   }
-  // The decision reads the paragraph the slice lands as, spaces included.
-  const paragraph = {
-    ...block,
-    children: [
-      ...whitespace(LEADING_WHITESPACE.exec(source)?.[0] ?? ''),
-      ...block.children,
-      ...whitespace(TRAILING_WHITESPACE.exec(source)?.[0] ?? ''),
-    ],
-  };
-  const [kept = paragraph] = keepWrittenRawHtml(runtime, [paragraph]).blocks;
-
-  return kept.children;
+  return [
+    ...whitespace(LEADING_WHITESPACE.exec(source)?.[0] ?? ''),
+    ...block.children,
+    ...whitespace(TRAILING_WHITESPACE.exec(source)?.[0] ?? ''),
+  ];
 };
 
 // Surrounding whitespace is kept for insertion into running text. A partial
@@ -3130,7 +2670,7 @@ const writeMarkdownDocument = (
     return `${emptyRootStartsWithByteOrderMark(context) ? BYTE_ORDER_MARK : ''}${frontmatter}`;
   }
 
-  const { data, holdsRawHtml, lastKind } = writeMarkdownBody(context);
+  const { data, lastKind } = writeMarkdownBody(context);
   const insertAfterRootByteOrderMark = (text: string, body: string) => {
     const rootMarkLength =
       body.startsWith(BYTE_ORDER_MARK) &&
@@ -3142,13 +2682,7 @@ const writeMarkdownDocument = (
   };
 
   if (frontmatter !== null) {
-    // A reader without front matter reads `+++` as paragraph text, which
-    // neither an HTML block of a tag outside CommonMark's block list, such as
-    // `<span>`, nor an ordered list that starts past 1 can interrupt.
-    return insertAfterRootByteOrderMark(
-      holdsRawHtml ? `${frontmatter}\n` : frontmatter,
-      data
-    );
+    return insertAfterRootByteOrderMark(frontmatter, data);
   }
   if (!readsBackMarkdownFrontmatter(runtime, context, data)) return data;
 
@@ -3222,21 +2756,19 @@ export const serializeMarkdownWithRuntime = (
 export const serializeMarkdownSliceWithRuntime = (
   runtime: MarkdownRuntime,
   children: Element[],
-  roots?: ContentSlice['roots'],
-  previousKind?: string
+  roots?: ContentSlice['roots']
 ) => {
   const diagnostics = new MarkdownDiagnostics();
-  const { data, lastKind } = writeMarkdownBody(
+  const { data } = writeMarkdownBody(
     getMergedOptionsSerialize(
       runtime,
       {},
       createContentFormatDocument({ content: children, roots }),
       diagnostics
-    ),
-    previousKind
+    )
   );
 
-  return { lastKind, result: finishMarkdownSerialize(data, diagnostics) };
+  return finishMarkdownSerialize(data, diagnostics);
 };
 
 const finishMarkdownSerialize = (

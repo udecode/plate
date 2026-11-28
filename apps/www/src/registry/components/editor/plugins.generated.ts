@@ -20,7 +20,6 @@ export interface EditorText extends Text {
   readonly highlight?: boolean;
   readonly italic?: boolean;
   readonly kbd?: boolean;
-  readonly rawHtml?: boolean;
   readonly script?: "sub" | "sup";
   readonly strikethrough?: boolean;
   readonly underline?: boolean;
@@ -345,7 +344,6 @@ export type Schema = Readonly<{
     readonly indent: Readonly<{ readonly key: "indent"; }>;
     readonly textAlign: Readonly<{ readonly key: "textAlign"; }>;
     readonly lineHeight: Readonly<{ readonly key: "lineHeight"; }>;
-    readonly rawHtml: Readonly<{ readonly key: "rawHtml"; }>;
   }>;
   readonly properties: Readonly<Record<PropertyKey, never>>;
 }>;
@@ -897,7 +895,6 @@ export const schema = Object.freeze({
     indent: Object.freeze({ key: "indent" }),
     textAlign: Object.freeze({ key: "textAlign" }),
     lineHeight: Object.freeze({ key: "lineHeight" }),
-    rawHtml: Object.freeze({ key: "rawHtml" }),
   }),
   properties: Object.freeze({}),
 }) satisfies Schema;
