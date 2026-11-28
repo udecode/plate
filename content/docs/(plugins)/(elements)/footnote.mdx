@@ -116,7 +116,7 @@ Pass `ref` to reuse an existing ref; the transform skips creating a duplicate de
 
 ### Repair an unresolved reference
 
-When a reference points at a ref with no definition (e.g. pasted from elsewhere), use `tx.footnote.createDefinition` to create just the definition — without inserting another reference:
+When a reference points at a ref with no definition (e.g. pasted from elsewhere), use `tx.footnote.createDefinition` to create just the definition, without inserting another reference:
 
 ```tsx
 editor.update((tx) => tx.footnote.createDefinition({ ref: '3' }));
@@ -154,7 +154,7 @@ editor.api.footnote.focusReference({ ref: '3', index: 1 });
 Both commands return `true` after navigating, and `false` for an unresolved
 target or an unmounted editor. For selection-only changes inside a transaction,
 use `tx.footnote.selectDefinition` or `tx.footnote.selectReference`; each
-returns the resolved `{ targetPath, point }` target or `null`.
+returns the resolved `{ point, targetPath }` target or `false`.
 
 With `NavigationFeedbackPlugin.configure({ enabled: false })` in `plugins`,
 footnote navigation still scrolls to the target, and selects and focuses it in
@@ -250,7 +250,7 @@ const editor = createEditor({
 });
 ```
 
-The package owns node semantics, ref allocation, and navigation helpers. App-level surfaces — hover previews, the `[^` combobox, slash-command entries, toolbar buttons — are built on top of the transforms and API methods below.
+The package owns node semantics, ref allocation, and navigation helpers. App-level UI such as hover previews, the `[^` combobox, slash-command entries, and toolbar buttons builds on top of the updates and API methods below.
 
 </Steps>
 
@@ -262,6 +262,14 @@ Inline void node rendered as `<sup>`. Owns the `[^` trigger policy, ref registry
 
 <API name="FootnotePlugin">
 <APIOptions>
+  <APIItem name="maxQueryLength" type="number" optional>
+    Maximum query length after `trigger` before the combobox stops matching.
+    - **Default:** `75`
+  </APIItem>
+  <APIItem name="queryPattern" type="RegExp | null" optional>
+    Extra pattern each query must match after `trigger`. `null` allows any query text.
+    - **Default:** `null`
+  </APIItem>
   <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
     Text that opens the footnote picker. Completion replaces the whole `[^` and query, so `claim[^1` works after a word.
     - **Default:** `'[^'`
@@ -272,6 +280,7 @@ Inline void node rendered as `<sup>`. Owns the `[^` trigger policy, ref registry
   </APIItem>
   <APIItem name="triggerQuery" type="((editor: ComboboxEditor) => boolean) | null" optional>
     Extra predicate gating the picker. Return `false` to keep a typed `[^` as text.
+    - **Default:** `null`
   </APIItem>
 </APIOptions>
 </API>
@@ -306,12 +315,12 @@ Get the first definition entry in document order for a ref.
 
 ### `editor.read.footnote.definitions`
 
-Get every definition entry that shares a ref, in document order. When duplicates exist, the first entry is canonical; later entries are duplicates.
+Get definition entries in document order. Pass `ref` to filter to one ref; omit `ref` (or the options object) to return every definition in the active root. When duplicates share a ref, the first entry is canonical and later entries are duplicates.
 
 <API name="definitions">
 <APIParameters>
-  <APIItem name="ref" type="string">
-    Footnote ref.
+  <APIItem name="ref" type="string" optional>
+    Footnote ref to filter by. Omit to return all definitions.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -323,7 +332,7 @@ Get every definition entry that shares a ref, in document order. When duplicates
 
 ### `editor.read.footnote.definitionText`
 
-Get the plain-text content of the canonical definition. Ideal for hover previews — reads straight from live definition nodes, no copied state.
+Get the plain-text content of the canonical definition. Useful for hover previews, reading straight from live definition nodes with no copied state.
 
 <API name="definitionText">
 <APIParameters>
@@ -451,7 +460,7 @@ When the selection is expanded, the expanded fragment seeds the new definition b
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions" optional>
+  <APIItem name="options" type="NodeInsertOptions" optional>
     Standard reference insertion options such as `at` and `select`.
   </APIItem>
 </APIParameters>
@@ -459,7 +468,7 @@ When the selection is expanded, the expanded fragment seeds the new definition b
 
 ### `editor.update.footnote.createDefinition`
 
-Create the missing definition for an existing ref without inserting another reference. Returns the path of the definition — the newly created one, or the existing one when the ref already resolves.
+Create the missing definition for an existing ref without inserting another reference. Returns the path of the definition: the newly created one, or the existing one when the ref already resolves.
 
 <API name="createDefinition">
 <APIParameters>
@@ -470,6 +479,9 @@ Create the missing definition for an existing ref without inserting another refe
     Focus the definition body after creation.
     - **Default:** `true`
   </APIItem>
+  <APIItem name="fragment" type="readonly Descendant[]" optional>
+    Initial block or inline nodes used to seed the new definition body.
+  </APIItem>
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="number[]">
@@ -477,6 +489,66 @@ Create the missing definition for an existing ref without inserting another refe
   </APIItem>
 </APIReturns>
 </API>
+
+### `editor.update.footnote.normalizeDuplicateDefinition`
+
+Renumber a later duplicate definition so the canonical definition stays intact. Pass the path of the duplicate; optionally pass a specific `ref` to target, otherwise the update picks `editor.read.footnote.nextRef()`.
+
+<API name="normalizeDuplicateDefinition">
+<APIParameters>
+  <APIItem name="path" type="number[]">
+    Path of the duplicate definition to renumber.
+  </APIItem>
+  <APIItem name="ref" type="string" optional>
+    Target ref. Must be free. Defaults to `editor.read.footnote.nextRef()`.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="false | string">
+    The assigned ref on success, or `false` when the path isn't a duplicate definition or the target ref is already taken.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.update.footnote.selectDefinition`
+
+Move the selection to the start of the canonical definition for a ref without changing document content.
+
+<API name="selectDefinition">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="{ point: Point; targetPath: Path } | false">
+    Resolved target and point, or `false` when the definition is missing.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.update.footnote.selectReference`
+
+Move the selection beside a matching reference without changing document content.
+
+<API name="selectReference">
+<APIParameters>
+  <APIItem name="ref" type="string">
+    Footnote ref.
+  </APIItem>
+  <APIItem name="index" type="number" optional>
+    Pick a specific reference in document order when several share the ref.
+    - **Default:** `0`
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="{ point: Point; targetPath: Path } | false">
+    Resolved target and point, or `false` when the reference is missing.
+  </APIItem>
+</APIReturns>
+</API>
+
+## API
 
 ### `editor.api.footnote.focusDefinition`
 
@@ -512,26 +584,6 @@ Scroll the matching reference into view and flash it through Navigation Feedback
 <APIReturns>
   <APIItem name="return" type="boolean">
     `false` when the reference is missing or the calling view is unmounted; `true` after navigation, in an editable or a read-only view.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `editor.update.footnote.normalizeDuplicateDefinition`
-
-Renumber a later duplicate definition so the canonical definition stays intact. Pass the path of the duplicate; optionally pass a specific `ref` to target, otherwise the transform picks `editor.read.footnote.nextRef()`.
-
-<API name="normalizeDuplicateDefinition">
-<APIParameters>
-  <APIItem name="path" type="number[]">
-    Path of the duplicate definition to renumber.
-  </APIItem>
-  <APIItem name="ref" type="string" optional>
-    Target ref. Must be free. Defaults to `editor.read.footnote.nextRef()`.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem name="return" type="false | string">
-    The assigned ref on success, or `false` when the path isn't a duplicate definition or the target ref is already taken.
   </APIItem>
 </APIReturns>
 </API>

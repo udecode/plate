@@ -116,6 +116,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-footnote-combobox-keyboard-and-perf",
+      "href": "/registry/changelog/2026-11-28-footnote-combobox-keyboard-and-perf.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix footnote combobox empty state, keyboard actions, and backlink popover dismissal",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["footnote"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-inline-combobox-hover-scroll",
       "href": "/registry/changelog/2026-11-28-inline-combobox-hover-scroll.json",
       "status": "draft",

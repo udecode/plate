@@ -252,6 +252,24 @@
       "2026-07-24-decouple-suggestion-trailing-block",
       "2026-03-28-render-url-videos-media-node"
     ],
+    "footnote": [
+      "2026-11-28-footnote-combobox-keyboard-and-perf",
+      "2026-11-27-dark-mode-editor-chrome",
+      "2026-11-23-footnote-create-definition-focus",
+      "2026-11-17-cn-package",
+      "2026-11-15-drop-default-selector-comparisons",
+      "2026-11-13-rank-menu-matches",
+      "2026-10-19-slash-local-plugin",
+      "2026-10-17-footnote-links",
+      "2026-10-14-block-void-selection",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-09-navigation-view-feedback",
+      "2026-09-08-inline-combobox-input",
+      "2026-09-07-footnote-target-attributes",
+      "2026-08-25-base-first-registry",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
     "inline-combobox": [
       "2026-11-28-inline-combobox-hover-scroll",
       "2026-11-22-inline-combobox-menu-color",
@@ -510,23 +528,6 @@
       "2026-09-07-docx-bookmarks",
       "2026-09-07-toc-observer",
       "2026-08-29-fix-toc-scroll-navigation",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "footnote": [
-      "2026-11-27-dark-mode-editor-chrome",
-      "2026-11-23-footnote-create-definition-focus",
-      "2026-11-17-cn-package",
-      "2026-11-15-drop-default-selector-comparisons",
-      "2026-11-13-rank-menu-matches",
-      "2026-10-19-slash-local-plugin",
-      "2026-10-17-footnote-links",
-      "2026-10-14-block-void-selection",
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-09-navigation-view-feedback",
-      "2026-09-08-inline-combobox-input",
-      "2026-09-07-footnote-target-attributes",
-      "2026-08-25-base-first-registry",
-      "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
     "lint": [

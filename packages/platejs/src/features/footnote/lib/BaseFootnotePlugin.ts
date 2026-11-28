@@ -343,7 +343,6 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
               inline = [];
             };
 
-            // Definitions hold block content; only inline runs need a paragraph.
             for (const child of decodeNodes(node.children, marks)) {
               if (TextApi.isText(child) || isInline(child)) {
                 inline.push(child);
@@ -740,7 +739,30 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       if (children.length === 0) {
         children.push({ children: [{ text: '' }], type: paragraphType });
       }
-      const path = [tx.children().length];
+      const rootChildren = tx.children();
+      let insertIndex = rootChildren.length;
+
+      while (insertIndex > 1) {
+        const last = rootChildren[insertIndex - 1];
+
+        if (
+          !ElementApi.isElement(last) ||
+          last.type !== paragraphType ||
+          last.children.length !== 1 ||
+          !TextApi.isText(last.children[0]) ||
+          last.children[0].text !== '' ||
+          Object.keys(last.children[0]).length !== 1 ||
+          Object.keys(last).some(
+            (key) => key !== 'type' && key !== 'children' && key !== 'id'
+          )
+        ) {
+          break;
+        }
+
+        insertIndex -= 1;
+      }
+
+      const path = [insertIndex];
 
       tx.nodes.insert(
         {
@@ -774,7 +796,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
 
       const nextRef = ref ?? tx.plugin(plugin.name).nextRef();
       const fragment =
-        selection && tx.selection.isExpanded()
+        options.at === undefined && selection && tx.selection.isExpanded()
           ? tx.fragment({ at: selection })
           : undefined;
 

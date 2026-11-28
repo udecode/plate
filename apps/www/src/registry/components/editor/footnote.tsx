@@ -60,6 +60,9 @@ const CLOSED_PREVIEW: FootnotePreview = {
   previewText: undefined,
 };
 const CLOSED_OPTIONS: FootnoteOptions = { footnotes: [], nextRef: '1' };
+const CLOSED_REFERENCE_ITEMS: ReadonlyArray<
+  Readonly<{ index: number; label: string }>
+> = [];
 
 const sameOptions = (left: FootnoteOptions | null, right: FootnoteOptions) =>
   left?.nextRef === right.nextRef &&
@@ -190,7 +193,7 @@ export function FootnoteReferenceElement(
                 event.preventDefault();
                 event.stopPropagation();
                 if (!footnoteApi.isResolved({ ref })) {
-                  footnoteUpdate.createDefinition({ ref });
+                  footnoteUpdate.createDefinition({ focus: false, ref });
                 }
 
                 footnoteNavigation.focusDefinition({ ref });
@@ -221,12 +224,15 @@ export function FootnoteReferenceElement(
                   variant="outline"
                   size="sm"
                   className="h-6 rounded-xs px-2 text-[11px]"
-                  onMouseDown={(event) => {
+                  onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    footnoteUpdate.createDefinition({ ref });
+                    footnoteUpdate.createDefinition({ focus: false, ref });
                     footnoteNavigation.focusDefinition({ ref });
                     setHoverOpen(false);
+                  }}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
                   }}
                 >
                   Create definition for [^{ref}]
@@ -253,31 +259,33 @@ export function FootnoteDefinitionElement(
     update: footnoteUpdate,
   } = editor.plugin(FootnotePlugin);
   const ref = element.ref ?? '';
+  const [referencePickerOpen, setReferencePickerOpen] = React.useState(false);
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
-      !!path && !!footnoteApi.isDuplicateDefinition?.({ path });
-    const referenceItems =
-      !isDuplicateDefinition && ref
-        ? footnoteApi.references({ ref }).map((entry, index) => ({
-            index,
-            label: getReferenceContextLabel(editor, entry[1], index),
-          }))
-        : [];
+      !!path && footnoteApi.isDuplicateDefinition({ path });
 
     return {
       duplicateReplacementRef: isDuplicateDefinition
-        ? footnoteApi.nextRef?.()
+        ? footnoteApi.nextRef()
         : undefined,
       isDuplicateDefinition,
-      path,
-      referenceItems,
+      referenceCount:
+        !isDuplicateDefinition && ref
+          ? footnoteApi.references({ ref }).length
+          : 0,
     };
   });
-  const isDuplicateDefinition = !!definitionState?.isDuplicateDefinition;
-  const duplicateReplacementRef = definitionState?.duplicateReplacementRef;
-  const [referencePickerOpen, setReferencePickerOpen] = React.useState(false);
-  const referenceItems = definitionState?.referenceItems ?? [];
-  const hasMultipleReferences = referenceItems.length > 1;
+  const { isDuplicateDefinition } = definitionState;
+  const { duplicateReplacementRef } = definitionState;
+  const hasMultipleReferences = definitionState.referenceCount > 1;
+  const referenceItems = useEditorSelector(() =>
+    referencePickerOpen && !isDuplicateDefinition && ref
+      ? footnoteApi.references({ ref }).map((entry, index) => ({
+          index,
+          label: getReferenceContextLabel(editor, entry[1], index),
+        }))
+      : CLOSED_REFERENCE_ITEMS
+  );
   const focusReference = (index = 0) => {
     if (footnoteNavigation.focusReference({ ref, index }) && readOnly) {
       focusFootnoteControl(editor, footnoteApi.references({ ref })[index]?.[1]);
@@ -316,19 +324,6 @@ export function FootnoteDefinitionElement(
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    if (!readOnly) return;
-
-                    if (hasMultipleReferences) {
-                      setReferencePickerOpen((open) => !open);
-                    } else {
-                      focusReference();
-                    }
-                  }}
-                  onMouseDown={(event) => {
-                    if (readOnly) return;
-
-                    event.preventDefault();
-                    event.stopPropagation();
 
                     if (hasMultipleReferences) {
                       setReferencePickerOpen((open) => !open);
@@ -336,7 +331,10 @@ export function FootnoteDefinitionElement(
                       return;
                     }
 
-                    footnoteNavigation.focusReference({ ref });
+                    focusReference();
+                  }}
+                  onMouseDown={(event) => {
+                    if (!readOnly) event.preventDefault();
                   }}
                 >
                   {ref}
@@ -359,26 +357,24 @@ export function FootnoteDefinitionElement(
                 <Command tabIndex={readOnly ? 0 : undefined}>
                   <CommandList>
                     <CommandGroup>
-                      {referenceItems.map(
-                        (item: { index: number; label: string }) => (
-                          <CommandItem
-                            key={`${ref}-${item.index}`}
-                            className="cursor-pointer gap-2"
-                            onMouseDown={(event) => {
-                              event.preventDefault();
-                            }}
-                            onSelect={() => {
-                              setReferencePickerOpen(false);
-                              focusReference(item.index);
-                            }}
-                          >
-                            <span className="font-mono text-xs text-muted-foreground">
-                              {item.index + 1}
-                            </span>
-                            <span className="truncate">{item.label}</span>
-                          </CommandItem>
-                        )
-                      )}
+                      {referenceItems.map((item) => (
+                        <CommandItem
+                          key={`${ref}-${item.index}`}
+                          className="cursor-pointer gap-2"
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                          }}
+                          onSelect={() => {
+                            setReferencePickerOpen(false);
+                            focusReference(item.index);
+                          }}
+                        >
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {item.index + 1}
+                          </span>
+                          <span className="truncate">{item.label}</span>
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -388,33 +384,33 @@ export function FootnoteDefinitionElement(
         )}
       </div>
       <div className="min-w-0 flex-1">
-        {isDuplicateDefinition ? (
+        {isDuplicateDefinition &&
+        !readOnly &&
+        duplicateReplacementRef &&
+        path ? (
           <div
             contentEditable={false}
             className="mb-2 flex flex-wrap items-center gap-2"
           >
-            {!readOnly && duplicateReplacementRef && path ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-6 rounded-xs border-amber-500/40 px-2 text-[11px] text-amber-700 hover:bg-amber-500/10 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  footnoteUpdate.normalizeDuplicateDefinition({
-                    ref: duplicateReplacementRef,
-                    path,
-                  });
-                }}
-              >
-                Renumber to [^{duplicateReplacementRef}]
-              </Button>
-            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-6 rounded-xs border-amber-500/40 px-2 text-[11px] text-amber-700 hover:bg-amber-500/10 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                footnoteUpdate.normalizeDuplicateDefinition({
+                  ref: duplicateReplacementRef,
+                  path,
+                });
+              }}
+              onMouseDown={(event) => {
+                event.preventDefault();
+              }}
+            >
+              Renumber to [^{duplicateReplacementRef}]
+            </Button>
           </div>
         ) : null}
         {props.children}
@@ -439,32 +435,34 @@ function FootnoteComboboxContent() {
     () =>
       open
         ? {
-            footnotes: (footnoteApi.refs?.() ?? []).map((ref) => ({
+            footnotes: footnoteApi.refs().map((ref) => ({
               ref,
-              text: footnoteApi.definitionText?.({ ref }),
+              text: footnoteApi.definitionText({ ref }),
             })),
-            nextRef: footnoteApi.nextRef?.() ?? '1',
+            nextRef: footnoteApi.nextRef(),
           }
         : CLOSED_OPTIONS,
     { equalityFn: sameOptions }
   );
   const numericQuery = NUMERIC_FOOTNOTE_QUERY.test(query) ? query : '';
   const proposedRef = numericQuery || nextRef;
-  const showCreateOption = !footnotes.some(({ ref }) => ref === proposedRef);
+  const showCreateOption =
+    (!query || Boolean(numericQuery)) &&
+    !footnotes.some(({ ref }) => ref === proposedRef);
   const lowerQuery = query.toLowerCase();
   const filteredFootnotes = footnotes.filter(
     ({ ref, text = '' }) =>
-      !query || ref.includes(query) || text.toLowerCase().includes(lowerQuery)
+      !query ||
+      ref.toLowerCase().includes(lowerQuery) ||
+      text.toLowerCase().includes(lowerQuery)
   );
 
   return (
     <InlineComboboxContent className="my-1.5 w-72">
-      {showCreateOption || filteredFootnotes.length > 0 ? null : (
-        <InlineComboboxEmpty>No footnotes</InlineComboboxEmpty>
-      )}
+      <InlineComboboxEmpty>No footnotes</InlineComboboxEmpty>
 
       <InlineComboboxGroup>
-        {showCreateOption && (!query || numericQuery) ? (
+        {showCreateOption ? (
           <InlineComboboxItem
             onSelect={(tx) => {
               if (

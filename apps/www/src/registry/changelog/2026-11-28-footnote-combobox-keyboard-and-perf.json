@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-footnote-combobox-keyboard-and-perf",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-footnote-combobox-keyboard-and-perf.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix footnote combobox empty state, keyboard actions, and backlink popover dismissal",
+  "targets": [
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-footnote-combobox-keyboard-and-perf-8c2f41a9",
+      "kind": "fix",
+      "summary": "Show the `No footnotes` empty state for unmatched non-numeric `[^` queries and match named refs case-insensitively. Make `Create definition`, `Renumber`, and editable backlinks work from keyboard activation, dismiss open backlink pickers on outside actions, and avoid recomputing citation labels while the backlink picker is closed.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["footnote"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-footnote-combobox-keyboard-and-perf",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
