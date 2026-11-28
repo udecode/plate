@@ -82,31 +82,74 @@ export const groupFindings = (findings) => {
   );
 };
 
-const multisetDifference = (from = [], minus = []) => {
-  const left = [...minus];
-  return from.filter((identity) => {
-    const index = left.indexOf(identity);
-    if (index === -1) return true;
-    left.splice(index, 1);
-    return false;
-  });
+const matchMultiset = (from, minus, covererFor) => {
+  const remainingMinus = [...(minus ?? [])];
+  const unmatchedFrom = [];
+  const kept = [];
+  for (const identity of from ?? []) {
+    const index = remainingMinus.indexOf(identity);
+    if (index === -1) {
+      unmatchedFrom.push(identity);
+    } else {
+      remainingMinus.splice(index, 1);
+      kept.push(identity);
+    }
+  }
+  if (!covererFor) {
+    return {
+      downgraded: 0,
+      kept,
+      unmatchedFrom,
+      unmatchedMinus: remainingMinus,
+    };
+  }
+  const stillUnmatched = [];
+  let downgraded = 0;
+  for (const identity of unmatchedFrom) {
+    const coverer = covererFor(identity);
+    const index =
+      coverer && coverer !== identity ? remainingMinus.indexOf(coverer) : -1;
+    if (index === -1) {
+      stillUnmatched.push(identity);
+    } else {
+      remainingMinus.splice(index, 1);
+      kept.push(identity);
+      downgraded += 1;
+    }
+  }
+  return {
+    downgraded,
+    kept,
+    unmatchedFrom: stillUnmatched,
+    unmatchedMinus: remainingMinus,
+  };
 };
-
-const multisetIntersection = (a, b) =>
-  multisetDifference(a, multisetDifference(a, b));
 
 /**
  * The grouped findings in `from` that `minus` does not list, counting
- * repeats, as `<rule> <file>: "<identity>"` lines.
+ * repeats, as `<rule> <file>: "<identity>"` lines. When `coveredBy` names a
+ * strictly more severe identity for a finding, one unmatched copy of that
+ * stricter identity in `minus` covers one copy of the finding.
+ *
+ * @param {Record<string, Record<string, readonly string[]>>} from Grouped findings to check.
+ * @param {Record<string, Record<string, readonly string[]>>} minus Grouped baseline findings to subtract.
+ * @param {(rule: string, identity: string) => string | undefined} [coveredBy] Maps a downgraded finding to a strictly more severe baseline identity.
  */
-export const differences = (from, minus) =>
-  Object.entries(from).flatMap(([rule, files]) =>
-    Object.entries(files).flatMap(([file, identities]) =>
-      multisetDifference(identities, minus[rule]?.[file]).map(
+export const differences = (from, minus, coveredBy) =>
+  Object.entries(from).flatMap(([rule, files]) => {
+    const covererFor = coveredBy
+      ? (identity) => coveredBy(rule, identity)
+      : undefined;
+    return Object.entries(files).flatMap(([file, identities]) =>
+      matchMultiset(
+        identities,
+        minus[rule]?.[file],
+        covererFor
+      ).unmatchedFrom.map(
         (identity) => `${rule} ${file}: ${JSON.stringify(identity)}`
       )
-    )
-  );
+    );
+  });
 
 /**
  * Compares `found` with the baseline at `file` and returns the exit code.
@@ -115,14 +158,29 @@ export const differences = (from, minus) =>
  * baseline does not list, for a run whose cases are a subset of the gate's,
  * which reaches only some of the listed findings. `lower` fails on a finding
  * the baseline does not list and otherwise drops the entries the tree no
- * longer holds.
+ * longer holds, downgrading entries covered by `coveredBy`.
  * `init` fails when the file already lists every rule, or on a finding the
  * file does not list under a rule it lists, and otherwise seeds every rule
  * the file lacks. `describe` turns a new finding's baseline key into the line
- * the caller prints for it. The base commit's copies of `boundFiles`, `file`
- * alone by default, together bound the baseline's growth.
+ * the caller prints for it. `coveredBy` optionally maps `(rule, identity)` to
+ * a strictly more severe baseline identity that covers `identity` 1-to-1.
+ * The base commit's copies of `boundFiles`, `file` alone by default, together
+ * bound the baseline's growth.
+ *
+ * @param {{
+ *   boundFiles?: readonly string[];
+ *   coveredBy?: (rule: string, identity: string) => string | undefined;
+ *   describe?: (key: string) => string;
+ *   file: string;
+ *   found: Record<string, Record<string, readonly string[]>>;
+ *   lowerCommand: string;
+ *   mode: string;
+ *   newFindingsHelp: string;
+ *   rules: readonly string[];
+ * }} options Baseline comparison options.
  */
 export function enforceBaseline({
+  coveredBy,
   describe = (key) => key,
   file,
   boundFiles = [file],
@@ -154,7 +212,8 @@ export function enforceBaseline({
       Object.fromEntries(
         Object.keys(bound).map((rule) => [rule, old[rule] ?? {}])
       ),
-      bound
+      bound,
+      coveredBy
     );
     if (raised.length > 0) {
       console.error(raised.join('\n'));
@@ -181,7 +240,8 @@ export function enforceBaseline({
       Object.fromEntries(
         Object.keys(old).map((rule) => [rule, found[rule] ?? {}])
       ),
-      old
+      old,
+      coveredBy
     );
     if (raised.length > 0) {
       console.error(raised.map(describe).join('\n'));
@@ -199,7 +259,7 @@ export function enforceBaseline({
     return 0;
   }
 
-  const increases = differences(found, old);
+  const increases = differences(found, old, coveredBy);
   const decreases = differences(old, found);
 
   if (increases.length > 0) {
@@ -229,20 +289,37 @@ export function enforceBaseline({
     console.info(`${file} matches the tree.`);
     return 0;
   }
+  let dropped = 0;
+  let downgraded = 0;
   const lowered = Object.fromEntries(
-    Object.entries(old).map(([rule, files]) => [
-      rule,
-      Object.fromEntries(
-        Object.entries(files)
-          .map(([source, identities]) => [
-            source,
-            multisetIntersection(identities, found[rule]?.[source]),
-          ])
-          .filter(([, identities]) => identities.length > 0)
-      ),
-    ])
+    Object.entries(old).map(([rule, files]) => {
+      const covererFor = coveredBy
+        ? (identity) => coveredBy(rule, identity)
+        : undefined;
+      return [
+        rule,
+        Object.fromEntries(
+          Object.entries(files)
+            .map(([source, identities]) => {
+              const match = matchMultiset(
+                found[rule]?.[source],
+                identities,
+                covererFor
+              );
+              dropped += match.unmatchedMinus.length;
+              downgraded += match.downgraded;
+              return [source, match.kept.sort((a, b) => a.localeCompare(b))];
+            })
+            .filter(([, identities]) => identities.length > 0)
+        ),
+      ];
+    })
   );
   writeBaseline(file, lowered);
-  console.info(`Dropped ${decreases.length} entries from ${file}.`);
+  console.info(
+    downgraded > 0
+      ? `Dropped ${dropped} entries and downgraded ${downgraded} entries in ${file}.`
+      : `Dropped ${dropped} entries from ${file}.`
+  );
   return 0;
 }
