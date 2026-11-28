@@ -994,7 +994,7 @@ export const createBoardView = (
     return { height: size.height / zoom, width: size.width / zoom, x, y };
   };
 
-  const refresh = () => {
+  const refresh = (force = false) => {
     const shown = viewBox();
     const found = new Set(
       index
@@ -1008,7 +1008,7 @@ export const createBoardView = (
     );
     const next = frame === 0 ? found : new Set([...mountedKeys, ...found]);
 
-    if (sameKeys(next, mountedKeys)) return;
+    if (!force && sameKeys(next, mountedKeys)) return;
     mountedKeys = next;
     viewport = { mountedKeys, reveal };
     for (const listener of viewportListeners) listener();
@@ -1429,6 +1429,8 @@ export const createBoardView = (
     const layout = index.layout(index.entries()[path[0] ?? -1]?.key ?? '');
 
     if (!layout) return false;
+    measure();
+    if (size.width <= 0 || size.height <= 0) return false;
 
     const { box } = layout;
     const { x, y, zoom } = state.camera;
@@ -1511,8 +1513,10 @@ export const createBoardView = (
       y: rect.top + surface.clientTop,
     };
     if (rect.width === size.width && rect.height === size.height) return;
+    const unmeasured = size.width <= 0 || size.height <= 0;
+
     size = { height: rect.height, width: rect.width };
-    refresh();
+    refresh(unmeasured && size.width > 0 && size.height > 0);
   };
 
   const viewCenter = () => {

@@ -41,6 +41,7 @@ import type {
   InputIntent,
 } from '../editable/input-controller';
 import {
+  getEditableInteractionOwner,
   guardExternalTextEvents,
   isOwnEditableInteractionTarget,
   markCopyChainUsed,
@@ -548,7 +549,11 @@ export const EditableDOMRoot = (
     onKeyDownCapture: (event: React.KeyboardEvent<HTMLDivElement>) => {
       runtime.clearNextClickSelected();
       runtime.clearOwnedPressGesture();
-      if (CARET_KEYS.has(event.key)) {
+      if (
+        CARET_KEYS.has(event.key) &&
+        getEditableInteractionOwner(event.currentTarget, event.target) ===
+          'editor'
+      ) {
         activateViewCaret(editor);
         runtime.beginCaretKey();
       }
