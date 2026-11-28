@@ -1,5 +1,6 @@
 import {
   type Element,
+  ElementApi,
   type NodeKey,
   NodeApi,
   screenReaderAnnouncementEffect,
@@ -23,9 +24,9 @@ import type { BoardTool } from './boardView.internal';
 /**
  * A board shape as the board's words describe it. `kind` comes from the
  * shape's type, and any shape type the board does not ship reads `shape`.
- * `text` is the shape's top-level blocks' text joined with a space, or a
- * frame's name. An arrow's `ends` describe the shapes its two ends attach to,
- * or `null` for a free end.
+ * `text` is the shape's top-level blocks' text joined with a space, a frame's
+ * name, or an image shape's caption or trimmed `alt` text. An arrow's `ends`
+ * describe the shapes its two ends attach to, or `null` for a free end.
  */
 export type BoardShapeDescription =
   | Readonly<{
@@ -37,7 +38,7 @@ export type BoardShapeDescription =
       }>;
     }>
   | Readonly<{
-      kind: 'frame' | 'geo' | 'note' | 'shape' | 'stroke' | 'text';
+      kind: 'frame' | 'geo' | 'image' | 'note' | 'shape' | 'stroke' | 'text';
       text: string;
     }>;
 
@@ -227,19 +228,34 @@ type BoardUtterance =
   | Readonly<{ kind: 'removed'; count: number }>
   | Readonly<{ kind: 'resize'; size: ResizeSize }>
   | Readonly<{ kind: 'resizing'; key: NodeKey; size: ResizeSize }>
+  | Readonly<{ kind: 'shape'; key: NodeKey }>
   | Readonly<{ kind: 'tool'; tool: BoardTool }>
   | Readonly<{ kind: 'toolLock'; locked: boolean }>
   | Readonly<{ kind: 'zoom'; percent: number }>;
 
-const textOf = (node: Element) => {
+const textOf = (node: Element, imageType: string | undefined) => {
   if (node.type === BOARD_FRAME_TYPE) {
     return typeof node.name === 'string' ? node.name : '';
   }
 
-  return node.children
+  const text = node.children
     .map((child) => NodeApi.string(child))
     .filter(Boolean)
     .join(' ');
+
+  if (node.type === imageType) {
+    const caption = text.trim();
+
+    if (caption) return caption;
+
+    const [child] = node.children;
+
+    return ElementApi.isElement(child) && typeof child.alt === 'string'
+      ? child.alt.trim()
+      : '';
+  }
+
+  return text;
 };
 
 export const activeElementOf = (host: HTMLElement) =>
@@ -281,6 +297,7 @@ export const createBoardVoice = ({
   ): Exclude<BoardShapeDescription['kind'], 'arrow'> => {
     if (type === BOARD_FRAME_TYPE) return 'frame';
     if (type === types.geo()) return 'geo';
+    if (type === types.image()) return 'image';
     if (type === types.note()) return 'note';
     if (type === types.stroke()) return 'stroke';
     if (type === types.text()) return 'text';
@@ -292,7 +309,7 @@ export const createBoardVoice = ({
     entry: BoardMemberEntry,
     entries: readonly BoardMemberEntry[]
   ): BoardShapeDescription => {
-    const text = textOf(entry.node);
+    const text = textOf(entry.node, types.image());
 
     if (entry.kind !== 'arrow') {
       return { kind: kindOf(entry.node.type), text };
@@ -387,6 +404,9 @@ export const createBoardVoice = ({
         ? said.connecting(null)
         : shapeWords(utterance.key, said.connecting);
     }
+    if (utterance.kind === 'shape') {
+      return shapeWords(utterance.key, said.shape);
+    }
 
     const shapes = selectedShapes();
 
@@ -444,6 +464,7 @@ export const createBoardVoice = ({
     resize: (size: ResizeSize) => say({ kind: 'resize', size }),
     resizing: (key: NodeKey, size: ResizeSize) =>
       say({ key, kind: 'resizing', size }),
+    sayShape: (key: NodeKey) => say({ key, kind: 'shape' }),
     starting: (at: BoardPlace, key: NodeKey | null) =>
       say({ at, key, kind: 'starting' }),
     selectionChanged: () => {

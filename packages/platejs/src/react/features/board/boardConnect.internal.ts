@@ -14,7 +14,6 @@ import {
 import { anchorIn } from './boardPick.internal';
 import { previewArrowLine, previewArrowMark } from './boardPreview.internal';
 import type { BoardStyle, BoardViewCore } from './boardView.internal';
-import { activeElementOf } from './boardVoice.internal';
 
 type ConnectEnd = Readonly<{
   keyPoint: BoardPlace;
@@ -160,17 +159,6 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
     sayPlaced(connect);
   };
 
-  // A window that loses focus fires focusout with no relatedTarget and keeps
-  // its active element, so the connect goes on when the window comes back.
-  const onFocusOut = ({ relatedTarget }: FocusEvent) => {
-    const next =
-      relatedTarget instanceof Node ? relatedTarget : activeElementOf(host);
-
-    if (connect && !host.contains(next)) core.cancelInteraction();
-  };
-
-  host.addEventListener('focusout', onFocusOut);
-
   const aimFrom = () =>
     connect
       ? (bindable(connect[connect.side]?.bound?.shape) ??
@@ -210,9 +198,6 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
     aimable,
     aimFrom,
     candidates: () => index.entries().flatMap((entry) => aimable(entry) ?? []),
-    detach: () => {
-      host.removeEventListener('focusout', onFocusOut);
-    },
     finish: () => {
       if (!connect) return;
       if (connect.side === 'start') {

@@ -231,6 +231,7 @@ const KINDS: Readonly<Record<BoardShapeDescription['kind'], string>> = {
   arrow: 'Arrow',
   frame: 'Frame',
   geo: 'Shape',
+  image: 'Image',
   note: 'Note',
   shape: 'Shape',
   stroke: 'Line',
@@ -600,11 +601,41 @@ export function BoardToolbar() {
   );
 }
 
-const ROW_KEYS: Readonly<Record<string, number>> = {
-  ArrowDown: 1,
-  ArrowLeft: -1,
-  ArrowRight: 1,
-  ArrowUp: -1,
+const STYLE_GRID_COLUMNS = 4;
+
+const nextStyleOptionIndex = (
+  key: string,
+  index: number,
+  length: number
+): number | null => {
+  if (key === 'Home') return 0;
+  if (key === 'End') return length - 1;
+  if (key === 'ArrowRight') return (index + 1) % length;
+  if (key === 'ArrowLeft') return (index - 1 + length) % length;
+  if (key === 'ArrowDown' || key === 'ArrowUp') {
+    const forward = key === 'ArrowDown';
+
+    if (length <= STYLE_GRID_COLUMNS) {
+      return (index + (forward ? 1 : -1) + length) % length;
+    }
+
+    const next = index + (forward ? STYLE_GRID_COLUMNS : -STYLE_GRID_COLUMNS);
+
+    if (next >= 0 && next < length) return next;
+
+    const col = index % STYLE_GRID_COLUMNS;
+
+    if (forward) return col;
+
+    const lastRowStart =
+      Math.floor((length - 1) / STYLE_GRID_COLUMNS) * STYLE_GRID_COLUMNS;
+
+    return lastRowStart + col < length
+      ? lastRowStart + col
+      : lastRowStart - STYLE_GRID_COLUMNS + col;
+  }
+
+  return null;
 };
 
 function BoardStyleOptions<TValue extends string>({
@@ -648,14 +679,18 @@ function BoardStyleOptions<TValue extends string>({
           onClick={() => onPick(option.value)}
           onFocus={() => setFocused(index)}
           onKeyDown={(event) => {
-            const step = ROW_KEYS[event.key];
+            const nextIndex = nextStyleOptionIndex(
+              event.key,
+              index,
+              options.length
+            );
 
-            if (!step) return;
+            if (nextIndex === null) return;
             event.preventDefault();
             const row =
               event.currentTarget.parentElement?.querySelectorAll('button');
 
-            row?.[(index + step + options.length) % options.length]?.focus();
+            row?.[nextIndex]?.focus();
           }}
         >
           {option.icon}
@@ -678,12 +713,41 @@ export function BoardStylePanel({
   const writable = useBoardView((view) => view.writable);
   const { setStyle } = useBoardActions();
   const [open, setOpen] = React.useState(false);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
   const panel = React.useRef<HTMLDivElement>(null);
+  const visible = writable && Object.keys(styles).length > 0;
+  const isOpen = open && visible;
 
-  if (!writable || Object.keys(styles).length === 0) return null;
+  React.useEffect(() => {
+    const button = buttonRef.current;
+
+    if (!isOpen || !button) return undefined;
+
+    const closeIfWide = () => {
+      if (getComputedStyle(button).display === 'none') setOpen(false);
+    };
+
+    closeIfWide();
+
+    const host = button.closest('[data-board]') ?? button.parentElement;
+
+    if (!host || typeof ResizeObserver === 'undefined') return undefined;
+
+    const observer = new ResizeObserver(closeIfWide);
+
+    observer.observe(host);
+
+    return () => observer.disconnect();
+  }, [isOpen]);
+
+  if (!visible) {
+    if (open) setOpen(false);
+
+    return null;
+  }
 
   return (
-    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P1 local-invariant] A press anywhere on the panel keeps focus where it is, so a shape being edited keeps its caret, and the narrow-board panel closes when focus leaves the button and the panel together.
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P1 local-invariant] A press anywhere on the panel keeps focus where it is, so a shape being edited keeps its caret, and the narrow-board panel closes on blur or Escape.
     <div
       {...props}
       className={cn(
@@ -697,35 +761,42 @@ export function BoardStylePanel({
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
       }}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape' || !isOpen) return;
+        event.preventDefault();
+        event.stopPropagation();
+        buttonRef.current?.focus();
+        setOpen(false);
+      }}
       onMouseDown={(event) => event.preventDefault()}
     >
       <button
+        ref={buttonRef}
         className="flex size-8 items-center justify-center rounded-lg border bg-background shadow-sm outline-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-expanded:bg-accent @min-[36rem]:hidden [&_svg]:size-4"
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-label="Styles"
         title="Styles"
         type="button"
         onClick={(event) => {
           const button = event.currentTarget;
 
-          flushSync(() => setOpen(!open));
-          (open
+          flushSync(() => setOpen(!isOpen));
+          (isOpen
             ? button
             : panel.current?.querySelector<HTMLElement>('[tabindex="0"]')
           )?.focus();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') setOpen(false);
         }}
       >
         <PaletteIcon />
       </button>
       <div
         className={cn(
-          open ? 'flex' : 'hidden',
+          isOpen ? 'flex' : 'hidden',
           'min-h-0 w-36 flex-col gap-2 overflow-y-auto overscroll-contain rounded-lg border bg-background p-2 shadow-sm @min-[36rem]:flex'
         )}
+        aria-label={isOpen ? 'Styles' : undefined}
         ref={panel}
+        role={isOpen ? 'dialog' : undefined}
       >
         {styles.geo && (
           <BoardStyleOptions
@@ -785,6 +856,9 @@ const BOARD_FOCUS_RING =
 
 const BOARD_ERASING = '[&_[data-board-shape][data-erasing]]:opacity-30';
 
+const BOARD_RESIZE_HANDLE =
+  '[&_[data-board-resize-corner="topLeft"]>[data-board-handle="topLeft"]]:scale-125 [&_[data-board-resize-corner="topLeft"]>[data-board-handle="topLeft"]]:border-primary! [&_[data-board-resize-corner="topLeft"]>[data-board-handle="topLeft"]]:bg-primary! [&_[data-board-resize-corner="topLeft"]>[data-board-handle="topLeft"]]:ring-2 [&_[data-board-resize-corner="topLeft"]>[data-board-handle="topLeft"]]:ring-ring [&_[data-board-resize-corner="topRight"]>[data-board-handle="topRight"]]:scale-125 [&_[data-board-resize-corner="topRight"]>[data-board-handle="topRight"]]:border-primary! [&_[data-board-resize-corner="topRight"]>[data-board-handle="topRight"]]:bg-primary! [&_[data-board-resize-corner="topRight"]>[data-board-handle="topRight"]]:ring-2 [&_[data-board-resize-corner="topRight"]>[data-board-handle="topRight"]]:ring-ring [&_[data-board-resize-corner="bottomRight"]>[data-board-handle="bottomRight"]]:scale-125 [&_[data-board-resize-corner="bottomRight"]>[data-board-handle="bottomRight"]]:border-primary! [&_[data-board-resize-corner="bottomRight"]>[data-board-handle="bottomRight"]]:bg-primary! [&_[data-board-resize-corner="bottomRight"]>[data-board-handle="bottomRight"]]:ring-2 [&_[data-board-resize-corner="bottomRight"]>[data-board-handle="bottomRight"]]:ring-ring [&_[data-board-resize-corner="bottomLeft"]>[data-board-handle="bottomLeft"]]:scale-125 [&_[data-board-resize-corner="bottomLeft"]>[data-board-handle="bottomLeft"]]:border-primary! [&_[data-board-resize-corner="bottomLeft"]>[data-board-handle="bottomLeft"]]:bg-primary! [&_[data-board-resize-corner="bottomLeft"]>[data-board-handle="bottomLeft"]]:ring-2 [&_[data-board-resize-corner="bottomLeft"]>[data-board-handle="bottomLeft"]]:ring-ring';
+
 const CURSOR_RING =
   'data-board-cursor:after:pointer-events-none data-board-cursor:after:absolute data-board-cursor:after:-inset-1.5 data-board-cursor:after:rounded-md data-board-cursor:after:outline-2 data-board-cursor:after:outline-ring data-board-cursor:after:outline-dashed';
 
@@ -809,7 +883,8 @@ export function BoardElement(props: EditorElementProps<typeof BoardPlugin>) {
           BOARD_COLORS,
           BOARD_ERASING,
           BOARD_FOCUS_RING,
-          BOARD_GRID
+          BOARD_GRID,
+          BOARD_RESIZE_HANDLE
         ),
       }}
       messages={boardMessages}
@@ -831,7 +906,8 @@ export function BoardPageElement(
           BOARD_COLORS,
           BOARD_ERASING,
           BOARD_FOCUS_RING,
-          BOARD_GRID
+          BOARD_GRID,
+          BOARD_RESIZE_HANDLE
         ),
       }}
       height="100%"

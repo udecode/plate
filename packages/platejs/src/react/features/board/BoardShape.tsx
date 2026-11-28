@@ -36,10 +36,21 @@ const CORNERS: ReadonlyArray<readonly [BoardCorner, React.CSSProperties]> = [
   ['bottomRight', { bottom: -4, cursor: 'nwse-resize', right: -4 }],
 ];
 
-function Handles() {
-  const resizes = useBoardView((view) => view.tool === 'select');
+function Handles({ id }: { id: string }) {
+  const view = useBoardViewContext();
+  const selectTool = useBoardView((state) => state.tool === 'select');
+  const subscribeResize = React.useCallback(
+    (listener: () => void) => view.subscribeResize(id, listener),
+    [id, view]
+  );
+  const readResizing = () => view.resizeCorner(id) !== undefined;
+  const resizing = React.useSyncExternalStore(
+    subscribeResize,
+    readResizing,
+    readResizing
+  );
 
-  if (!resizes) return null;
+  if (!selectTool && !resizing) return null;
 
   return CORNERS.map(([corner, place]) => (
     <div
@@ -58,12 +69,12 @@ function Handles() {
   ));
 }
 
-function AloneHandles() {
+function AloneHandles({ id }: { id: string }) {
   const alone = useEditorSelector(
     (editor) => editor.read.selection.nodes().length === 1
   );
 
-  return alone && <Handles />;
+  return alone && <Handles id={id} />;
 }
 
 const FIXED_STYLE_KEYS: ReadonlySet<string> = new Set([
@@ -213,8 +224,10 @@ const rootStyle = (
 /**
  * One member of a board, painted at its stacking rank while the DOM keeps the
  * board's stored order. A shape, frame or stroke sits at its box and,
- * selected alone while the view's tool is `select`, shows four resize
- * handles, `[data-board-handle]`, each valued with its `BoardCorner`. An
+ * selected alone while the view's tool is `select` or during a keyboard
+ * resize, shows four resize handles, `[data-board-handle]`, each valued with
+ * its `BoardCorner`. While keyboard resize is active, the shape carries
+ * `data-board-resize-corner` set to the active `BoardCorner`. An
  * arrow sits at the board's origin with no size, so its component draws in
  * board coordinates through `BoardArrowPath`, `BoardArrowhead` and
  * `BoardArrowLabel`, and it has no handles. A frame takes
@@ -282,6 +295,7 @@ export function BoardShape({
     readErasing
   );
   const [cursor] = React.useState(() => view.isCursor(id));
+  const [resizeCorner] = React.useState(() => view.resizeCorner(id));
   const selected = useElementSelected({ mode: 'node' });
   const arrow = props.element.type === BOARD_ARROW_TYPE;
   const grow: BoardShapeGrow = placement?.grow ?? 'none';
@@ -349,6 +363,7 @@ export function BoardShape({
         attributes={{
           ...props.attributes,
           'data-board-cursor': cursor ? '' : undefined,
+          'data-board-resize-corner': resizeCorner,
           'data-board-shape': placement?.id,
           'data-erasing': erasing || undefined,
           'data-selected': selected || undefined,
@@ -362,7 +377,7 @@ export function BoardShape({
         ) : (
           props.children
         )}
-        {selected && !arrow && <AloneHandles />}
+        {selected && !arrow && <AloneHandles id={id} />}
       </EditorElement>
     </div>
   );

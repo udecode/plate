@@ -23,6 +23,17 @@ import type {
   BoardTool,
   BoardViewCore,
 } from './boardView.internal';
+import { activeElementOf } from './boardVoice.internal';
+
+const dragCancels = new Set<() => boolean>();
+
+const cancelOtherDrag = (own: () => boolean) => {
+  for (const cancel of dragCancels) {
+    if (cancel !== own && cancel()) return true;
+  }
+
+  return false;
+};
 
 const TOOL_KEYS: Readonly<Record<string, BoardTool>> = {
   a: 'arrow',
@@ -101,6 +112,12 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const resize = attachBoardResize(host, core);
   const picking = attachBoardPicking(host, core);
   let spacePress: { action: 'start' | 'toggle' | null } | null = null;
+  let heldNudge: { ids: readonly string[]; key: string } | null = null;
+  const cancelDrag = () =>
+    (core.interactionKind() === 'drag' || core.interactionKind() === 'draw') &&
+    core.cancelInteraction();
+
+  dragCancels.add(cancelDrag);
 
   const inThisBoard = (element: Element) =>
     element.closest('[data-board]') === host;
@@ -158,6 +175,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
       if (popup && bar.contains(popup)) return false;
       if (event.repeat) return true;
+      if (cancelOtherDrag(cancelDrag)) return true;
       core.cancelInteraction();
 
       return core.focusBoard();
@@ -350,6 +368,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
     const shape = core.selectedShapes()[0] ?? core.editedShape();
 
+    if (tool === 'text' && shape) core.voice.sayShape(shape.key);
     if (shape && !core.inView(shape)) {
       core.reveal([index.entries().findIndex(({ key }) => key === shape.key)]);
     }
@@ -554,11 +573,20 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       stepOut(event);
     } else if (arrow) {
       const step = event.shiftKey ? SHIFT_NUDGE : NUDGE;
+      const merge = Boolean(
+        event.repeat &&
+        heldNudge &&
+        heldNudge.key === event.key &&
+        heldNudge.ids.length === ids.length &&
+        heldNudge.ids.every((id, at) => id === ids[at])
+      );
 
+      heldNudge = { ids, key: event.key };
       core.commit({
         delta: { x: arrow.x * step, y: arrow.y * step },
         ids,
         kind: 'move',
+        merge,
       });
     } else if (event.key === 'q' && !event.shiftKey) {
       if (!event.repeat) core.setToolLocked(!core.state().toolLocked);
@@ -692,7 +720,13 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     const bar = target.closest<HTMLElement>('[data-board-toolbar]');
 
     if (bar && inThisBoard(bar)) return toolbarKey(event, target, bar);
-    if (event.key === 'Escape' && core.cancelInteraction()) return true;
+    if (
+      event.key === 'Escape' &&
+      !target.closest(OPEN_POPUP) &&
+      (core.cancelInteraction() || cancelOtherDrag(cancelDrag))
+    ) {
+      return true;
+    }
 
     return !bar && boardTakes(event, target);
   };
@@ -723,7 +757,11 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
     if (isSpace(event)) holdSpace(event);
     else if (spacePress) spacePress.action = null;
+    if (!MODIFIER_KEYS.has(event.key) && !(event.key in ARROWS)) {
+      heldNudge = null;
+    }
     if (
+      event.defaultPrevented ||
       isImeConfirmKeyEvent(event) ||
       !(target instanceof Element) ||
       !keyTaken(event, target)
@@ -734,7 +772,8 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     event.stopPropagation();
   };
 
-  const onSpaceUp = (event: KeyboardEvent) => {
+  const onKeyUp = (event: KeyboardEvent) => {
+    if (heldNudge && event.key === heldNudge.key) heldNudge = null;
     if (!isSpace(event)) return;
 
     const press = spacePress;
@@ -745,30 +784,47 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     if (press?.action === 'start' && !picking.active()) picking.start();
   };
 
-  const releaseSpace = () => {
+  const releaseKeys = () => {
     spacePress = null;
+    heldNudge = null;
+  };
+
+  // A window that loses focus fires focusout with no relatedTarget and keeps
+  // its active element, so keyboard modes go on when the window comes back.
+  const onFocusOut = ({ relatedTarget }: FocusEvent) => {
+    if (!connect.active() && !resize.active() && !picking.active()) return;
+    const next =
+      relatedTarget instanceof Node ? relatedTarget : activeElementOf(host);
+
+    if (!(next instanceof Element && inThisBoard(next))) {
+      core.cancelInteraction();
+    }
   };
 
   const onPointerDown = () => {
     if (spacePress) spacePress.action = null;
+    heldNudge = null;
+    if (!resize.active() && !picking.active()) return;
+    core.cancelInteraction();
+    core.voice.quiet();
   };
 
   const view = host.ownerDocument.defaultView;
 
+  host.addEventListener('focusout', onFocusOut);
   view?.addEventListener('keydown', onKeyDown, true);
-  view?.addEventListener('keyup', onSpaceUp, true);
+  view?.addEventListener('keyup', onKeyUp, true);
   view?.addEventListener('pointerdown', onPointerDown, true);
-  view?.addEventListener('blur', releaseSpace);
+  view?.addEventListener('blur', releaseKeys);
 
   return {
     detach: () => {
+      dragCancels.delete(cancelDrag);
+      host.removeEventListener('focusout', onFocusOut);
       view?.removeEventListener('keydown', onKeyDown, true);
-      view?.removeEventListener('keyup', onSpaceUp, true);
+      view?.removeEventListener('keyup', onKeyUp, true);
       view?.removeEventListener('pointerdown', onPointerDown, true);
-      view?.removeEventListener('blur', releaseSpace);
-      connect.detach();
-      resize.detach();
-      picking.detach();
+      view?.removeEventListener('blur', releaseKeys);
     },
     spaceHeld: () => !!spacePress,
   };

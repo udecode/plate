@@ -52,11 +52,16 @@ import { boardTypesOf } from '../../../features/board/lib/boardTypes.internal';
 import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 import { uploadDraftsOf } from '../../../internal/plugin/uploadDrafts';
 import type { BasePluginInput } from '../../../lib';
-import type { Editor, EditorHistoryController } from '../../core';
+import {
+  type Editor,
+  type EditorHistoryController,
+  HistoryPlugin,
+} from '../../core';
 import { attachBoardClipboard } from './boardClipboard.internal';
 import { attachBoardGestures } from './boardGesture.internal';
 import {
   type BoardBox,
+  type BoardCorner,
   type BoardIndex,
   type BoardShapeLayout,
   createBoardIndex,
@@ -254,7 +259,12 @@ export type BoardViewActions = Readonly<{
 }>;
 
 export type BoardWrite =
-  | Readonly<{ kind: 'move'; delta: BoardPlace; ids: readonly string[] }>
+  | Readonly<{
+      kind: 'move';
+      delta: BoardPlace;
+      ids: readonly string[];
+      merge?: boolean;
+    }>
   | Readonly<{ kind: 'remove'; ids: readonly string[] }>
   | Readonly<{ kind: 'removeFrame'; id: string }>
   | Readonly<{ kind: 'resize'; id: string; rect: BoardBox }>
@@ -270,7 +280,8 @@ export type BoardInteraction = Readonly<
     follow?: () => void;
   } & (
     | { kind: 'connect'; startShape: () => string | undefined }
-    | { kind: 'drag' | 'draw' | 'resize' }
+    | { kind: 'drag' | 'draw' }
+    | { corner: () => BoardCorner; kind: 'resize'; shape: () => string }
     | { kind: 'pick'; cursor: () => string }
   )
 >;
@@ -362,6 +373,7 @@ export type BoardViewCore = Readonly<{
     | 'repeatSelection'
     | 'resize'
     | 'resizing'
+    | 'sayShape'
     | 'starting'
   >;
   writable: () => boolean;
@@ -668,6 +680,7 @@ export const createBoardView = (
   const viewportListeners = new Set<() => void>();
   const erasing = new Set<string>();
   const erasingListeners = new Map<string, Set<() => void>>();
+  const resizeListeners = new Map<string, Set<() => void>>();
 
   const listenTo =
     (listeners: Map<string, Set<() => void>>) =>
@@ -687,6 +700,10 @@ export const createBoardView = (
     for (const id of ids) {
       for (const listener of erasingListeners.get(id) ?? []) listener();
     }
+  };
+
+  const notifyResize = (id: string) => {
+    for (const listener of resizeListeners.get(id) ?? []) listener();
   };
 
   const notifyShapes = (ids?: Iterable<string>) => {
@@ -977,13 +994,18 @@ export const createBoardView = (
   let surface: HTMLElement | null = null;
   let gestures: ReturnType<typeof attachBoardGestures> | null = null;
   let interaction: BoardInteraction | null = null;
+  let commits = 0;
+  let lastMoveStep: unknown;
 
   const cancelInteraction = () => {
     const held = interaction;
 
     if (!held) return false;
+    const resizingId = held.kind === 'resize' ? held.shape() : undefined;
+
     interaction = null;
     held.cancel();
+    if (resizingId) notifyResize(resizingId);
 
     return true;
   };
@@ -1697,11 +1719,18 @@ export const createBoardView = (
     return index.byId(id)?.key;
   };
 
-  const write = <T>(change: (tx: PluginTransaction) => T) => {
+  const write = <T>(
+    change: (tx: PluginTransaction) => T,
+    historyMode: 'merge' | 'new-batch' = 'new-batch'
+  ) => {
     if (!writable()) return undefined;
+    const hasHistory = mounted.plugin(HistoryPlugin).installed;
 
     return mounted.update((tx) => {
-      tx.history.newBatch();
+      if (hasHistory) {
+        if (historyMode === 'merge') tx.history.merge();
+        else tx.history.newBatch();
+      }
 
       return change(tx);
     });
@@ -1730,21 +1759,42 @@ export const createBoardView = (
       index.confirmMountedHeights(pending);
     }
 
-    const written = write((tx) => {
-      const commands = tx.plugin(BaseBoardPlugin);
+    const hasHistory = mounted.plugin(HistoryPlugin).installed;
+    const merges =
+      change.kind === 'move' &&
+      Boolean(change.merge) &&
+      hasHistory &&
+      lastMoveStep !== undefined &&
+      mounted.read.history().undos.at(-1) === lastMoveStep;
+    const commitsBefore = commits;
 
-      if (change.kind === 'move') commands.move(change.ids, change.delta);
-      else if (change.kind === 'remove') {
-        commands.remove(change.ids);
-        tx.selection.set(null);
-      } else if (change.kind === 'removeFrame') {
-        commands.removeFrame(change.id);
-      } else if (change.kind === 'resize') {
-        commands.resize(change.id, change.rect);
-      } else commands.restack(change.ids, change.direction);
+    const written = write(
+      (tx) => {
+        const commands = tx.plugin(BaseBoardPlugin);
 
-      return true;
-    });
+        if (change.kind === 'move') commands.move(change.ids, change.delta);
+        else if (change.kind === 'remove') {
+          commands.remove(change.ids);
+          tx.selection.set(null);
+        } else if (change.kind === 'removeFrame') {
+          commands.removeFrame(change.id);
+        } else if (change.kind === 'resize') {
+          commands.resize(change.id, change.rect);
+        } else commands.restack(change.ids, change.direction);
+
+        return true;
+      },
+      merges ? 'merge' : 'new-batch'
+    );
+
+    if (change.kind === 'move') {
+      lastMoveStep =
+        written && hasHistory && commits - commitsBefore === 1
+          ? mounted.read.history().undos.at(-1)
+          : undefined;
+    } else {
+      lastMoveStep = undefined;
+    }
 
     if (!written) return;
     if (change.kind === 'remove') deselectOnBoard();
@@ -2005,9 +2055,13 @@ export const createBoardView = (
     replaceInteraction: (next) => {
       cancelInteraction();
       interaction = next;
+      if (next.kind === 'resize') notifyResize(next.shape());
 
       return () => {
-        if (interaction === next) interaction = null;
+        if (interaction === next) {
+          interaction = null;
+          if (next.kind === 'resize') notifyResize(next.shape());
+        }
       };
     },
     board,
@@ -2388,6 +2442,7 @@ export const createBoardView = (
       connected = true;
       let schema = editor.read.schema.identity();
       const unsubscribe = editor.subscribeCommit(({ changed }) => {
+        commits += 1;
         const reshaped =
           changed.hasAny('properties') ||
           changed.hasAny('structure') ||
@@ -2489,6 +2544,7 @@ export const createBoardView = (
         (change) => {
           if (change !== 'readOnly' && change !== 'authored') return;
 
+          lastMoveStep = undefined;
           gestures?.refuseWrites();
           syncLending();
           unsubscribeRootText();
@@ -2508,6 +2564,7 @@ export const createBoardView = (
       return () => {
         connected = false;
         ephemeralText = null;
+        lastMoveStep = undefined;
         unlendMounted?.();
         unlendEditor?.();
         cancelSettle();
@@ -2524,6 +2581,10 @@ export const createBoardView = (
     focusTarget,
     isCursor: (id: string) =>
       interaction?.kind === 'pick' && interaction.cursor() === id,
+    resizeCorner: (id: string) =>
+      interaction?.kind === 'resize' && interaction.shape() === id
+        ? interaction.corner()
+        : undefined,
     layoutOf: (id: string) => {
       if (!index.byId(id)) index.update();
 
@@ -2613,6 +2674,7 @@ export const createBoardView = (
       };
     },
     subscribeErasing: listenTo(erasingListeners),
+    subscribeResize: listenTo(resizeListeners),
     subscribeShape,
     subscribeShapes: subscribeTo(everyShapeListeners),
     subscribeViewport: subscribeTo(viewportListeners),

@@ -15,7 +15,8 @@ import {
   setResizeTextWrap,
 } from './boardPreview.internal';
 import type { BoardViewCore } from './boardView.internal';
-import { activeElementOf } from './boardVoice.internal';
+
+const RESIZE_CORNER = 'data-board-resize-corner';
 
 type EdgeOffsets = Readonly<{
   bottom: number;
@@ -194,36 +195,20 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
   const say = (corner: BoardCorner, { height, width }: BoardBox) =>
     core.voice.resize({ corner, height, width });
 
+  const markCorner = (current: Resize) => {
+    elementFor(current)?.setAttribute(RESIZE_CORNER, current.corner);
+  };
+
+  const clearCorner = (current: Resize) => {
+    elementFor(current)?.removeAttribute(RESIZE_CORNER);
+  };
+
   const follow = () => {
     if (!core.writable() || !show()) core.cancelInteraction();
   };
 
-  // A window that loses focus fires focusout with no relatedTarget and keeps
-  // its active element, so the resize goes on when the window comes back.
-  const onFocusOut = ({ relatedTarget }: FocusEvent) => {
-    const next =
-      relatedTarget instanceof Node ? relatedTarget : activeElementOf(host);
-
-    if (resize && !host.contains(next)) core.cancelInteraction();
-  };
-
-  const onPointerDown = () => {
-    if (!resize) return;
-    core.cancelInteraction();
-    core.voice.quiet();
-  };
-
-  const view = host.ownerDocument.defaultView;
-
-  host.addEventListener('focusout', onFocusOut);
-  view?.addEventListener('pointerdown', onPointerDown, true);
-
   return {
     active: () => !!resize,
-    detach: () => {
-      host.removeEventListener('focusout', onFocusOut);
-      view?.removeEventListener('pointerdown', onPointerDown, true);
-    },
     finish: () => {
       const done = held();
 
@@ -301,14 +286,18 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
       core.replaceInteraction({
         cancel: () => {
           if (resize === next) resize = null;
+          clearCorner(next);
           placeAtModel(next);
           index.clearPreview();
           core.voice.repeatSelection();
         },
+        corner: () => next.corner,
         follow,
         kind: 'resize',
+        shape: () => next.id,
       });
       resize = next;
+      markCorner(next);
       core.voice.resizing(shape.key, {
         corner: next.corner,
         height: startBox.height,
@@ -336,6 +325,7 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
 
       turning.resize.corner =
         CORNERS_CLOCKWISE[(at + (backward ? length - 1 : 1)) % length];
+      markCorner(turning.resize);
       if (!unmoved && sameBox(placed, turning.layout.box)) {
         clearToModel(turning.resize);
         say(turning.resize.corner, turning.layout.box);

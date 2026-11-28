@@ -1,7 +1,6 @@
 import type { BoardShapeLayout } from './boardIndex.internal';
 import { elementOf } from './boardPreview.internal';
 import type { BoardViewCore } from './boardView.internal';
-import { activeElementOf } from './boardVoice.internal';
 
 type Cursor = { element: HTMLElement | null; id: string };
 
@@ -35,32 +34,8 @@ export const attachBoardPicking = (host: HTMLElement, core: BoardViewCore) => {
     if (!shape()) core.cancelInteraction();
   };
 
-  // A window that loses focus fires focusout with no relatedTarget and keeps
-  // its active element, so picking goes on when the window comes back.
-  const onFocusOut = ({ relatedTarget }: FocusEvent) => {
-    const next =
-      relatedTarget instanceof Node ? relatedTarget : activeElementOf(host);
-
-    if (cursor && !host.contains(next)) core.cancelInteraction();
-  };
-
-  const onPointerDown = () => {
-    if (!cursor) return;
-    core.cancelInteraction();
-    core.voice.quiet();
-  };
-
-  const view = host.ownerDocument.defaultView;
-
-  host.addEventListener('focusout', onFocusOut);
-  view?.addEventListener('pointerdown', onPointerDown, true);
-
   return {
     active: () => !!cursor,
-    detach: () => {
-      host.removeEventListener('focusout', onFocusOut);
-      view?.removeEventListener('pointerdown', onPointerDown, true);
-    },
     moveTo: (layout: BoardShapeLayout) => {
       if (!cursor) return;
       elementFor(cursor)?.removeAttribute(CURSOR);

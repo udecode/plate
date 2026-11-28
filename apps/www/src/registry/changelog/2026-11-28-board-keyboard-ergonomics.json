@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-board-keyboard-ergonomics",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-board-keyboard-ergonomics.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Highlight active keyboard resize corner, fix narrow Styles popover Escape, add 2D swatch grid keys, and add image shape label",
+  "targets": [
+    {
+      "name": "board",
+      "files": [
+        "apps/www/src/registry/components/editor/board-static.tsx",
+        "apps/www/src/registry/components/editor/board-styles.tsx",
+        "apps/www/src/registry/components/editor/board.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-board-highlight-active-keyboard-resize-996db6e5",
+      "kind": "fix",
+      "summary": "Highlight active keyboard resize corner, fix narrow Styles popover Escape, add 2D swatch grid keys, and add image shape label",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-board-keyboard-ergonomics",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
