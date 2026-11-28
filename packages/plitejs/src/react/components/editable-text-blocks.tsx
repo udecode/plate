@@ -10,6 +10,7 @@ import {
   type NamedRootKey,
   NodeApi,
   type Path,
+  PathApi,
   RangeApi,
   type RootKey,
   type NodeKey,
@@ -90,6 +91,7 @@ import { useEditorFocused } from '../hooks/use-editor-focused';
 import { useInheritedReadOnly } from '../hooks/use-editor-read-only';
 import { useEditorSelection } from '../hooks/use-editor-selection';
 import { useOptionalEditorViewState } from '../hooks/use-editor-view-state';
+import { useElementPath } from '../hooks/use-element-path';
 import { useHydrated } from '../hooks/use-hydrated';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
@@ -1961,6 +1963,82 @@ const InactiveSelectionCaretGeometry = ({
   );
 };
 
+const elementOwnsChildRoot = (
+  element: ElementNode,
+  nodeKey: NodeKey,
+  root: RootKey
+) => {
+  if (element.childRoot === root) return true;
+  if (
+    typeof element.childRoots === 'object' &&
+    element.childRoots !== null &&
+    Object.values(element.childRoots).includes(root)
+  ) {
+    return true;
+  }
+
+  return root.startsWith(`core:child:${nodeKey}:`);
+};
+
+function EditorContentChildRootSurface<const TRoot extends RootKey = RootKey>({
+  editable,
+  editor,
+  elementContext,
+  root,
+  rootReadOnly,
+}: {
+  editable: ReactNode;
+  editor: ReturnType<typeof useEditorContext>;
+  elementContext: {
+    element: ElementNode;
+    nodeKey: NodeKey;
+    path: Path;
+  };
+  root: TRoot;
+  rootReadOnly: boolean;
+}) {
+  const existingOwner = React.useContext(PliteContentRootOwnerContext);
+  const livePath = useElementPath();
+  const ownerPath = livePath ?? elementContext.path;
+  const ownerRoot = toInternalRoot(editor.read((state) => state.view.root()));
+  const ownsRoot = elementOwnsChildRoot(
+    elementContext.element,
+    elementContext.nodeKey,
+    root
+  );
+  const contentRootOwner = React.useMemo(
+    () =>
+      ownsRoot
+        ? {
+            childRoot: root,
+            ownerPath,
+            ownerRoot,
+          }
+        : null,
+    [ownerPath, ownerRoot, ownsRoot, root]
+  );
+  const surface = (
+    <SurfaceRoot editor={editor} readOnly={rootReadOnly} root={root}>
+      {editable}
+    </SurfaceRoot>
+  );
+
+  if (
+    !contentRootOwner ||
+    (existingOwner?.childRoot === root &&
+      existingOwner.ownerRoot === ownerRoot &&
+      PathApi.equals(existingOwner.ownerPath, ownerPath))
+  ) {
+    return surface;
+  }
+
+  return (
+    <PliteContentRootOwnerContext value={contentRootOwner}>
+      {surface}
+    </PliteContentRootOwnerContext>
+  );
+}
+
 /**
  * Render the editable content area for one Plite root.
  *
@@ -1987,12 +2065,26 @@ export const EditorContent = <
   }
   const inheritedReadOnly = useInheritedReadOnly();
   const editor = useEditorContext();
+  const elementContext = React.useContext(ElementContext);
   const rootReadOnly = props.readOnly || inheritedReadOnly;
   const editable = <EditableInner {...editableProps} />;
 
-  return root === undefined ? (
-    editable
-  ) : (
+  if (root === undefined) {
+    return editable;
+  }
+  if (elementContext) {
+    return (
+      <EditorContentChildRootSurface
+        editable={editable}
+        editor={editor}
+        elementContext={elementContext}
+        root={root}
+        rootReadOnly={rootReadOnly}
+      />
+    );
+  }
+
+  return (
     <SurfaceRoot editor={editor} readOnly={rootReadOnly} root={root}>
       {editable}
     </SurfaceRoot>

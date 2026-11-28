@@ -517,7 +517,11 @@ export const applyEditableKeyDown = ({
     const shouldHandleProjectedSelection =
       !!nested || selectionRoot !== viewRoot;
 
-    if (shouldHandleProjectedSelection) {
+    if (
+      shouldHandleProjectedSelection &&
+      !event.isDefaultPrevented() &&
+      !nativeEvent.defaultPrevented
+    ) {
       if (isContentRootKeyAnswered(event)) return keyDownHandled();
 
       const focusEditor = nestedSelectionContext?.editor ?? editor;
@@ -624,9 +628,10 @@ export const applyEditableKeyDown = ({
       return keyDownHandled();
     }
 
-    if (nested?.kind !== 'view') {
-      event.stopPropagation();
+    if (nested?.kind === 'view') {
+      return keyDownUnhandled();
     }
+    event.stopPropagation();
     return keyDownHandled();
   }
 

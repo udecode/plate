@@ -25,8 +25,10 @@ import {
   armHiddenAnchorPress,
   armNativeMoveHold,
   beginEditableNativeSelectionImport,
+  clearEditablePendingNativeTextInputRepair,
   endHiddenAnchorPress,
   endSelectionImport,
+  recordEditableInputIntent,
   type EditableInputController,
 } from './input-state';
 import { getSelection as editorGetSelection } from './runtime-editor-api';
@@ -504,6 +506,9 @@ export const createRuntimeSelectionImportController = ({
     fromHiddenAnchor: boolean;
     root: HTMLElement;
   }) {
+    recordEditableInputIntent(inputController, 'native-selection-move');
+    inputController.state.recentTextInputRepairEcho = null;
+    clearEditablePendingNativeTextInputRepair(inputController);
     const receipt = armNativeMoveHold(inputController, editor);
     if (fromHiddenAnchor) {
       armHiddenAnchorPress(inputController, receipt, root, () =>

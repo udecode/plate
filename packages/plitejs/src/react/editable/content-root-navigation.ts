@@ -241,6 +241,36 @@ const collapseModelSelectionForProjectedSelection = (
   selectContentRoot(editor, range);
 };
 
+const isEmptyProjectedSelection = (
+  editor: ReactRuntimeEditor,
+  projectedSelection: PliteViewSelection
+) => {
+  if (isPliteViewSelectionCollapsed(projectedSelection)) return true;
+
+  const roots = editor.read((state) =>
+    createPliteViewBoundaryRootMap(state.value())
+  );
+
+  return projectedSelection.segments.parts.every((segment) => {
+    const start =
+      segment.start.kind === 'point'
+        ? segment.start.point
+        : resolvePliteViewBoundarySegmentEndpoint(
+            roots,
+            segment,
+            segment.start
+          );
+    const end =
+      segment.end.kind === 'point'
+        ? segment.end.point
+        : resolvePliteViewBoundarySegmentEndpoint(roots, segment, segment.end);
+
+    return (
+      !start || !end || RangeApi.isCollapsed({ anchor: start, focus: end })
+    );
+  });
+};
+
 const showProjectedSelection = (
   editor: ReactRuntimeEditor,
   projectedSelection: PliteViewSelection,
@@ -1576,6 +1606,17 @@ const applyContentRootViewSelectionAction = ({
         point: advanced.point,
         root: advanced.root,
       }),
+    });
+  }
+
+  if (
+    viewSelection &&
+    !isPliteViewSelectionCollapsed(projectedSelection) &&
+    isEmptyProjectedSelection(editor, projectedSelection)
+  ) {
+    projectedSelection = createPliteViewSelection(graph, {
+      anchor,
+      focus: anchor,
     });
   }
 

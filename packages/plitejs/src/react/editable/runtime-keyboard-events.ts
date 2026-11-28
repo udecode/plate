@@ -540,6 +540,7 @@ export const useRuntimeKeyboardEvents = ({
       if (
         !readOnly &&
         !keyDownWorkerResult.handled &&
+        decision.targetOwner !== 'internal-control' &&
         decision.intent === 'native-selection-move'
       ) {
         scheduleNativeSelectionImport();

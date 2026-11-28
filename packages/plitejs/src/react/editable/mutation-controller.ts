@@ -297,6 +297,18 @@ const deleteProjectedRangesToStart = (
   if (caret) tx.selection.set({ anchor: caret, focus: caret });
 };
 
+const readExpandedProjectedViewSelection = (editor: RuntimeEditor) => {
+  const viewSelection = readPliteViewSelection(editor);
+
+  if (!viewSelection) return null;
+  if (isPliteViewSelectionCollapsed(viewSelection)) {
+    writePliteViewSelection(editor, null);
+    return null;
+  }
+
+  return viewSelection;
+};
+
 const applyProjectedViewSelectionTextCommand = ({
   editor,
   nativeInput,
@@ -306,9 +318,9 @@ const applyProjectedViewSelectionTextCommand = ({
   nativeInput?: NativeGroupingInput;
   text?: string;
 }) => {
-  const viewSelection = readPliteViewSelection(editor);
+  const viewSelection = readExpandedProjectedViewSelection(editor);
 
-  if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
+  if (!viewSelection) {
     return false;
   }
 
@@ -354,9 +366,9 @@ const applyProjectedViewSelectionDataCommand = ({
   data: DataTransfer;
   editor: RuntimeEditor;
 }) => {
-  const viewSelection = readPliteViewSelection(editor);
+  const viewSelection = readExpandedProjectedViewSelection(editor);
 
-  if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
+  if (!viewSelection) {
     return false;
   }
 
@@ -452,9 +464,9 @@ const applyProjectedViewSelectionLineBreakCommand = ({
   editor: RuntimeEditor;
   kind: 'open-line' | 'paragraph' | 'soft';
 }) => {
-  const viewSelection = readPliteViewSelection(editor);
+  const viewSelection = readExpandedProjectedViewSelection(editor);
 
-  if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
+  if (!viewSelection) {
     return false;
   }
 
