@@ -16,7 +16,8 @@ import {
   getEditorCommitValue,
 } from '../../core/commit';
 import { mapSelectionThroughChange } from '../../core/selection-protocol';
-import { getSelection, isDOMElement, isDOMNode } from '../../dom';
+import { getSelection, isDOMElement } from '../../dom';
+import { observeRootBoundaryEvent } from '../../dom/internal';
 import type { OpenedInput } from '../../dom/utils/weak-maps';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { getParkedRange } from './dom-coverage-selection';
@@ -455,24 +456,23 @@ const listenForLeave = (
   const onVisibilityChange = () => {
     if (document.visibilityState === 'hidden') end('visibility');
   };
-  const onPointerDown = (event: PointerEvent) => {
-    if (
-      !event.composedPath().includes(root) &&
-      !(isDOMNode(event.target) && root.contains(event.target))
-    ) {
+  const detachOutsidePointerDown = observeRootBoundaryEvent(
+    root,
+    'pointerdown',
+    () => {
       end('pointer');
-    }
-  };
+    },
+    { capture: true, filter: 'outside', scope: 'document' }
+  );
 
   document.addEventListener('selectionchange', onSelectionChange, true);
   document.addEventListener('visibilitychange', onVisibilityChange);
-  document.addEventListener('pointerdown', onPointerDown, true);
   root.addEventListener('focusout', onFocusOut);
 
   return () => {
+    detachOutsidePointerDown();
     document.removeEventListener('selectionchange', onSelectionChange, true);
     document.removeEventListener('visibilitychange', onVisibilityChange);
-    document.removeEventListener('pointerdown', onPointerDown, true);
     root.removeEventListener('focusout', onFocusOut);
   };
 };

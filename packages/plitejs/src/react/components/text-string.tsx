@@ -1,5 +1,6 @@
 import React, { type Ref } from 'react';
 
+import { formatDOMStringText } from '../../dom/internal';
 import type { DecorationAttributes } from '../decoration-source';
 
 export const DecoratedTextString = ({
@@ -19,7 +20,7 @@ export const DecoratedTextString = ({
     data-editor-string
     ref={ref}
   >
-    {`${text ?? ''}${isTrailing ? '\n' : ''}`}
+    {formatDOMStringText(text ?? '', isTrailing)}
   </span>
 );
 
@@ -37,6 +38,6 @@ export const TextString = ({
     data-editor-string
     ref={ref}
   >
-    {`${text ?? ''}${isTrailing ? '\n' : ''}`}
+    {formatDOMStringText(text ?? '', isTrailing)}
   </span>
 );

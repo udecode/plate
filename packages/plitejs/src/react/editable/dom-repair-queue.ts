@@ -14,7 +14,9 @@ import {
 import { isSoftLineTextStale } from '../../dom/dom-soft-line-end';
 import {
   type DOMPhaseScheduler,
+  ensureDOMStringDisplaySentinel,
   resolveDOMTextFlowEntry,
+  restoreDOMTextHostDisplayText,
 } from '../../dom/internal';
 import {
   isSelectableDOMSelection,
@@ -316,52 +318,23 @@ export const createDOMRepairQueue = ({
       if (offset === insert.offset) {
         node.deleteData(start, insert.text.length);
         const stringElement = node.parentElement?.closest(
-          '[data-editor-string]'
+          '[data-editor-string], [data-editor-zero-width]'
         );
-        const lengthAttribute =
-          stringElement?.getAttribute('data-editor-length');
-        const expectedLength =
-          lengthAttribute == null ? null : Number(lengthAttribute);
 
-        if (
-          expectedLength !== null &&
-          Number.isFinite(expectedLength) &&
-          node.data.length === expectedLength &&
-          node.data.endsWith('\n')
-        ) {
-          node.appendData('\n');
+        if (stringElement) {
+          ensureDOMStringDisplaySentinel(stringElement, node);
         }
         return;
       }
     }
 
     if (textHost && editorText !== undefined) {
-      const targetString =
-        (isDOMText(node) && textHost.contains(node)
-          ? node.parentElement?.closest('[data-editor-string]')
-          : null) ?? textHost.querySelector('[data-editor-string]');
-      const hasTrailingDisplayNewline =
-        editorText.endsWith('\n') &&
-        targetString?.hasAttribute('data-editor-length') === true;
-      const expectedText = hasTrailingDisplayNewline
-        ? `${editorText}\n`
-        : editorText;
-      const expectedData = editorText === '' ? '\uFEFF' : expectedText;
-      const currentText = textHost.textContent?.replace(/\uFEFF/g, '') ?? '';
-
-      if (currentText !== expectedText) {
-        if (isDOMText(node) && textHost.contains(node)) {
-          node.data = expectedData;
-        } else {
-          const firstChild = targetString?.firstChild;
-
-          if (isDOMText(firstChild)) {
-            firstChild.data = expectedData;
-          } else if (targetString) {
-            targetString.textContent = expectedData;
-          }
-        }
-      }
+      restoreDOMTextHostDisplayText({
+        modelText: editorText,
+        path,
+        preferredTextNode: isDOMText(node) ? node : null,
+        textHost,
+      });
     }
   };
 

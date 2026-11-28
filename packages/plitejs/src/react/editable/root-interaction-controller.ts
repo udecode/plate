@@ -25,7 +25,7 @@ import {
   getPlacementGeneration,
   liftShownTarget,
 } from '../../core/view-carets';
-import { getSelection, isDOMNode } from '../../dom';
+import { getSelection } from '../../dom';
 import {
   canWriteEditableDOMSelection,
   clearEditableDOMSelection,
@@ -39,6 +39,7 @@ import {
   getTextFlowPointAtCoordinates,
   hasMountedDOMRoot,
   isSelectionOwnedByEditable,
+  observeRootBoundaryEvent,
   resolveDOMTargetView,
   writeEditableDOMSelection,
 } from '../../dom/internal';
@@ -375,25 +376,24 @@ const attachPlacedDragListeners = (
 ) => {
   const document = rootElement.ownerDocument;
   const window = document.defaultView;
-  const outside =
-    (handle: (pointer: globalThis.MouseEvent) => void) =>
-    (pointer: globalThis.MouseEvent) => {
-      if (
-        !(isDOMNode(pointer.target) && rootElement.contains(pointer.target))
-      ) {
-        handle(pointer);
-      }
-    };
-  const move = outside(onMove);
-  const up = outside(onUp);
+  const detachMove = observeRootBoundaryEvent(
+    rootElement,
+    'mousemove',
+    (pointer) => onMove(pointer),
+    { capture: true, filter: 'outside', scope: 'document' }
+  );
+  const detachUp = observeRootBoundaryEvent(
+    rootElement,
+    'mouseup',
+    (pointer) => onUp(pointer),
+    { capture: true, filter: 'outside', scope: 'document' }
+  );
 
-  document.addEventListener('mousemove', move, true);
-  document.addEventListener('mouseup', up, true);
   window?.addEventListener('blur', onBlur);
 
   return () => {
-    document.removeEventListener('mousemove', move, true);
-    document.removeEventListener('mouseup', up, true);
+    detachMove();
+    detachUp();
     window?.removeEventListener('blur', onBlur);
   };
 };

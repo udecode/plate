@@ -1,4 +1,5 @@
 import { isSoftLineEnd } from '../dom-soft-line-end';
+import { containsShadowAware, getSelection } from '../utils/dom';
 import type { DOMSelectionPoints } from '../utils/selection-writes';
 import {
   markDOMTextFlowMutation,
@@ -56,6 +57,7 @@ export type DOMIntegrityObserverOptions = {
   maxRepairPassesPerFrame?: number;
   onDOMChange?: () => void;
   onRepair: (evidence: DOMIntegrityRepairEvidence) => void;
+  readSelection?: (root: HTMLElement) => DOMSelectionPoints | null;
   resolvePath: (mutation: MutationRecord) => string | null;
   schedule: ScheduleDOMIntegrityTask;
   writeSelection?: (root: HTMLElement, points: DOMSelectionPoints) => boolean;
@@ -201,8 +203,30 @@ const affectsEditorDOMContract = (mutation: MutationRecord) =>
   (mutation.attributeName !== null &&
     EDITOR_DOM_ATTRIBUTES.has(mutation.attributeName));
 
-const captureSelection = (root: HTMLElement) => {
-  const selection = root.ownerDocument.getSelection();
+const captureSelection = (
+  root: HTMLElement,
+  readSelection?: (root: HTMLElement) => DOMSelectionPoints | null
+) => {
+  if (readSelection) {
+    const points = readSelection(root);
+
+    if (
+      !points ||
+      !containsShadowAware(root, points.anchor[0]) ||
+      !containsShadowAware(root, points.focus[0])
+    ) {
+      return null;
+    }
+
+    return {
+      anchorNode: points.anchor[0],
+      anchorOffset: points.anchor[1],
+      focusNode: points.focus[0],
+      focusOffset: points.focus[1],
+    };
+  }
+
+  const selection = getSelection(root.getRootNode() as Document | ShadowRoot);
   const anchorNode = selection?.anchorNode ?? null;
   const focusNode = selection?.focusNode ?? null;
 
@@ -210,8 +234,8 @@ const captureSelection = (root: HTMLElement) => {
     !selection ||
     !anchorNode ||
     !focusNode ||
-    !root.contains(anchorNode) ||
-    !root.contains(focusNode)
+    !containsShadowAware(root, anchorNode) ||
+    !containsShadowAware(root, focusNode)
   ) {
     return null;
   }
@@ -237,8 +261,8 @@ const restoreSelection = (
   if (
     !snapshot ||
     !writeSelection ||
-    !root.contains(snapshot.anchorNode) ||
-    !root.contains(snapshot.focusNode)
+    !containsShadowAware(root, snapshot.anchorNode) ||
+    !containsShadowAware(root, snapshot.focusNode)
   ) {
     return;
   }
@@ -692,7 +716,7 @@ export class DOMIntegrityObserver {
       path: this.options.resolvePath(mutation),
       type: mutation.type,
     }));
-    const selection = captureSelection(root);
+    const selection = captureSelection(root, this.options.readSelection);
 
     for (const mutation of mutations.reverse()) restoreMutation(mutation);
 

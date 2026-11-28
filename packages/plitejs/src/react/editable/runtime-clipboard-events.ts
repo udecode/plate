@@ -5,7 +5,8 @@ import {
 } from 'react';
 
 import { SelectionApi } from '../..';
-import { isDOMNode, markPlainTextPaste } from '../../dom/utils/dom';
+import { isElementFocused, observeRootBoundaryEvent } from '../../dom/internal';
+import { markPlainTextPaste } from '../../dom/utils/dom';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   isPliteViewSelectionCollapsed,
@@ -235,16 +236,11 @@ export const useRuntimeClipboardEvents = ({
 
     if (!root) return undefined;
 
-    const document = root.ownerDocument;
     const route = (event: globalThis.ClipboardEvent) => {
       const projected = readPliteViewSelection(editor);
-      const { target } = event;
-      const targetNode = isDOMNode(target) ? target : null;
-      const targetUsesRootHandler = targetNode && root.contains(targetNode);
       if (
         event.defaultPrevented ||
-        document.activeElement !== root ||
-        targetUsesRootHandler ||
+        !isElementFocused(root) ||
         (!SelectionApi.isNode(readRuntimeSelection(editor)) &&
           (!projected || isPliteViewSelectionCollapsed(projected)))
       ) {
@@ -262,14 +258,26 @@ export const useRuntimeClipboardEvents = ({
       }
     };
 
-    document.addEventListener('copy', route, true);
-    document.addEventListener('cut', route, true);
-    document.addEventListener('paste', route, true);
+    const detachCopy = observeRootBoundaryEvent(root, 'copy', route, {
+      capture: true,
+      filter: 'outside',
+      scope: 'document',
+    });
+    const detachCut = observeRootBoundaryEvent(root, 'cut', route, {
+      capture: true,
+      filter: 'outside',
+      scope: 'document',
+    });
+    const detachPaste = observeRootBoundaryEvent(root, 'paste', route, {
+      capture: true,
+      filter: 'outside',
+      scope: 'document',
+    });
 
     return () => {
-      document.removeEventListener('copy', route, true);
-      document.removeEventListener('cut', route, true);
-      document.removeEventListener('paste', route, true);
+      detachCopy();
+      detachCut();
+      detachPaste();
     };
   }, [editor, onRuntimeCopy, onRuntimeCut, onRuntimePaste, rootRef]);
 

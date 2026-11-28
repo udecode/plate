@@ -8,7 +8,11 @@ import {
   placedSince,
 } from '../../core/view-carets';
 import { getSelection } from '../../dom';
-import { findDOMRootRuntime, isWebKitDOMHost } from '../../dom/internal';
+import {
+  findDOMRootRuntime,
+  isWebKitDOMHost,
+  observeRootBoundaryEvent,
+} from '../../dom/internal';
 import type { DOMPhaseScheduler } from '../../dom/plugin/dom-phase-scheduler';
 import { watchDOMSyncTextMarks } from '../../dom/plugin/dom-sync-mutation-ownership';
 import { longestCommonPrefixLength } from '../../dom/utils/diff-text';
@@ -374,8 +378,6 @@ export class SelectionClaims {
   }
 
   private readonly onPointerDown = (event: PointerEvent) => {
-    if (!event.composedPath().includes(this.editable)) return;
-
     this.pointerPressed = true;
     this.openGesture(
       { kind: 'press', pointer: event.pointerType || 'mouse' },
@@ -523,7 +525,12 @@ export class SelectionClaims {
     const document = editable.ownerDocument;
     const window = document.defaultView;
 
-    window?.addEventListener('pointerdown', this.onPointerDown, true);
+    const detachPointerDown = observeRootBoundaryEvent(
+      editable,
+      'pointerdown',
+      this.onPointerDown,
+      { capture: true, filter: 'inside', scope: 'window' }
+    );
     editable.addEventListener('mousedown', this.onPress, true);
     editable.addEventListener('touchstart', this.onPress, true);
     for (const type of RELEASES) {
@@ -532,7 +539,7 @@ export class SelectionClaims {
     document.addEventListener('visibilitychange', this.onRelease, true);
     window?.addEventListener('blur', this.onRelease, true);
     this.detachGestureListeners = () => {
-      window?.removeEventListener('pointerdown', this.onPointerDown, true);
+      detachPointerDown();
       editable.removeEventListener('mousedown', this.onPress, true);
       editable.removeEventListener('touchstart', this.onPress, true);
       for (const type of RELEASES) {

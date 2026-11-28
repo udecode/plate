@@ -9,8 +9,12 @@ import {
 } from 'react';
 
 import { getLastCommit } from '../../core/public-state';
-import type { DOMRange } from '../../dom';
-import { IS_READ_ONLY } from '../../dom/internal';
+import { containsShadowAware, type DOMRange, getSelection } from '../../dom';
+import {
+  focusedElementOnPage,
+  IS_READ_ONLY,
+  readEditableDOMSelectionPoints,
+} from '../../dom/internal';
 import type {
   EditableDOMBeforeInputHandler,
   EditableViewportRuntime,
@@ -256,13 +260,15 @@ export const useEditableRootRuntime = ({
   runtime.updateSelectionExportHandler(syncDOMSelectionToEditor);
   runtime.updateSelectionExportAfterDOMCommitHandler(() => {
     const root = runtime.rootElement;
-    const activeElement = root?.ownerDocument.activeElement;
 
     if (!root) return;
+
+    const activeElement = focusedElementOnPage(root);
+
     if (
       !ReactEditor.isFocused(editor) &&
       activeElement !== root &&
-      !(activeElement && root.contains(activeElement))
+      !containsShadowAware(root, activeElement)
     ) {
       if (isHistoryReplayInFlight(editor) || shouldSkipDOMSelection(editor)) {
         return;
@@ -272,12 +278,15 @@ export const useEditableRootRuntime = ({
       // pointer selection is the only sign it owns the page selection. Its
       // root is not contenteditable, so writing that selection back cannot
       // focus it.
-      const selection = readOnly ? root.ownerDocument.getSelection() : null;
+      const selection = readOnly
+        ? getSelection(root.getRootNode() as Document | ShadowRoot)
+        : null;
+      const selectionPoints = readEditableDOMSelectionPoints(root, selection);
 
       if (
-        !selection?.anchorNode ||
-        !root.contains(selection.anchorNode) ||
-        !root.contains(selection.focusNode)
+        !selectionPoints ||
+        !containsShadowAware(root, selectionPoints.anchor[0]) ||
+        !containsShadowAware(root, selectionPoints.focus[0])
       ) {
         return;
       }

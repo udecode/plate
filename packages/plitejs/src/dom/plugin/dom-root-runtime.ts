@@ -17,7 +17,12 @@ import {
   getViewFollowTarget,
 } from '../../editor-runtime-view';
 import type { AnyEditor, Editor, RootKey } from '../../interfaces/editor';
-import { containsShadowAware, getSelection, pageOf } from '../utils/dom';
+import {
+  containsShadowAware,
+  getSelection,
+  isDOMNode,
+  pageOf,
+} from '../utils/dom';
 import {
   type DOMRootFactOverrides,
   type DOMRootQuirk,
@@ -734,12 +739,16 @@ export const resolveInnermostElementAtPoint = (
 // A shadow host or a frame is its tree's focused element while focus sits
 // inside it, so only the chain down from the top document reaches the element
 // that holds focus.
-const focusedElementOf = (top: Document) => {
+const focusedElementOf = (
+  top: Document,
+  extraShadowRoots?: ReadonlyMap<Element, ShadowRoot>
+) => {
   let element = top.activeElement;
 
   while (element) {
     const inner =
-      shadowRootOf(element)?.activeElement ??
+      (shadowRootOf(element) ?? extraShadowRoots?.get(element))
+        ?.activeElement ??
       (element as Partial<HTMLIFrameElement>).contentDocument?.activeElement;
 
     if (!inner) return element;
@@ -749,8 +758,273 @@ const focusedElementOf = (top: Document) => {
   return null;
 };
 
-export const focusedElementOnPage = (node: Node) =>
-  focusedElementOf(pageOf(node.ownerDocument ?? (node as Document)));
+export const focusedElementOnPage = (node: Node) => {
+  let extraShadowRoots: Map<Element, ShadowRoot> | undefined;
+  const element = asElement(node);
+
+  if (element) {
+    for (const shadowRoot of shadowRootsAbove(element)) {
+      if (!shadowRootOf(shadowRoot.host)) {
+        extraShadowRoots ??= new Map();
+        extraShadowRoots.set(shadowRoot.host, shadowRoot);
+      }
+    }
+  }
+
+  return focusedElementOf(
+    pageOf(node.ownerDocument ?? (node as Document)),
+    extraShadowRoots
+  );
+};
+
+export type RootBoundaryEventInfo = Readonly<{
+  inRoot: boolean;
+  target: EventTarget | null;
+}>;
+
+export type ObserveRootBoundaryEventOptions = Readonly<{
+  capture?: boolean;
+  filter?: 'all' | 'inside' | 'outside';
+  scope?: 'document' | 'window';
+}>;
+
+export const isEventInsideRoot = (
+  root: Element,
+  event: Event,
+  seen?: WeakSet<Event>
+): boolean => {
+  if (seen?.has(event)) return true;
+
+  const path =
+    typeof event.composedPath === 'function' ? event.composedPath() : [];
+
+  return (
+    path.includes(root) ||
+    (isDOMNode(event.target) && containsShadowAware(root, event.target))
+  );
+};
+
+export const getEventTargetInRoot = (
+  root: Element,
+  event: Event
+): EventTarget | null => {
+  const path =
+    typeof event.composedPath === 'function' ? event.composedPath() : [];
+
+  return path.includes(root) ? (path[0] ?? event.target) : event.target;
+};
+
+const isSlottedIntoShadowRoot = (
+  shadowRoot: ShadowRoot,
+  target: EventTarget | null
+): boolean => {
+  if (!isDOMNode(target)) return false;
+
+  const slots = shadowRoot.querySelectorAll('slot');
+
+  if (slots.length === 0) return false;
+
+  for (const slot of slots) {
+    for (const assigned of slot.assignedNodes({ flatten: true })) {
+      if (assigned === target || containsShadowAware(assigned, target)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
+export const observeRootBoundaryEvent = <K extends keyof DocumentEventMap>(
+  root: HTMLElement,
+  type: K,
+  listener: (event: DocumentEventMap[K], info: RootBoundaryEventInfo) => void,
+  {
+    capture = true,
+    filter = 'all',
+    scope = 'document',
+  }: ObserveRootBoundaryEventOptions = {}
+): (() => void) => {
+  const { ownerDocument } = root;
+  const outerTarget: EventTarget | null =
+    scope === 'window' ? ownerDocument.defaultView : ownerDocument;
+
+  if (!outerTarget) return () => {};
+
+  const allShadowRoots = shadowRootsAbove(root);
+  const closedRoots = allShadowRoots.filter(
+    (shadowRoot) => shadowRoot.mode === 'closed'
+  );
+  const emit = (event: Event, inRoot: boolean, target: EventTarget | null) => {
+    if (filter === 'inside' && !inRoot) return;
+    if (filter === 'outside' && inRoot) return;
+    listener(event as DocumentEventMap[K], { inRoot, target });
+  };
+
+  if (filter === 'inside') {
+    const insideTarget: EventTarget = allShadowRoots[0] ?? outerTarget;
+    const handleInner = (event: Event) => {
+      const path =
+        typeof event.composedPath === 'function' ? event.composedPath() : [];
+
+      if (
+        !path.includes(root) &&
+        !(isDOMNode(event.target) && containsShadowAware(root, event.target))
+      ) {
+        return;
+      }
+
+      emit(event, true, path[0] ?? event.target);
+    };
+
+    insideTarget.addEventListener(type, handleInner, capture);
+
+    return () => {
+      insideTarget.removeEventListener(type, handleInner, capture);
+    };
+  }
+
+  if (closedRoots.length === 0) {
+    const handleOuter = (event: Event) => {
+      const path =
+        typeof event.composedPath === 'function' ? event.composedPath() : [];
+      const inRoot =
+        path.includes(root) ||
+        (isDOMNode(event.target) && containsShadowAware(root, event.target));
+      const target = inRoot ? (path[0] ?? event.target) : event.target;
+
+      emit(event, inRoot, target);
+    };
+
+    outerTarget.addEventListener(type, handleOuter, capture);
+
+    return () => {
+      outerTarget.removeEventListener(type, handleOuter, capture);
+    };
+  }
+
+  const innermostRoot = allShadowRoots[0];
+
+  if (!capture) {
+    const insideTargets = new WeakMap<Event, EventTarget | null>();
+    const resetOnOuterCapture = (event: Event) => {
+      insideTargets.delete(event);
+    };
+    const markInside = (event: Event) => {
+      if (isEventInsideRoot(root, event)) {
+        const path =
+          typeof event.composedPath === 'function' ? event.composedPath() : [];
+
+        insideTargets.set(event, path[0] ?? event.target);
+      }
+    };
+    const handleBubble = (event: Event) => {
+      const hasInside = insideTargets.has(event);
+      const insideTarget = insideTargets.get(event) ?? null;
+
+      insideTargets.delete(event);
+      const inRoot = hasInside || isEventInsideRoot(root, event);
+      const target = hasInside
+        ? (insideTarget ?? event.target)
+        : getEventTargetInRoot(root, event);
+
+      emit(event, inRoot, target);
+    };
+
+    outerTarget.addEventListener(type, resetOnOuterCapture, true);
+    innermostRoot.addEventListener(type, markInside, true);
+    outerTarget.addEventListener(type, handleBubble, false);
+
+    return () => {
+      outerTarget.removeEventListener(type, resetOnOuterCapture, true);
+      innermostRoot.removeEventListener(type, markInside, true);
+      outerTarget.removeEventListener(type, handleBubble, false);
+    };
+  }
+
+  const outerToInnerClosed = [...closedRoots].reverse();
+  const levels: EventTarget[] = [outerTarget, ...outerToInnerClosed];
+  const handled = new WeakSet<Event>();
+  const cleanups: Array<() => void> = [];
+
+  for (let index = 0; index < levels.length; index += 1) {
+    const levelTarget = levels[index];
+    const nextClosed = outerToInnerClosed[index] ?? null;
+
+    if (nextClosed) {
+      const nextHost = nextClosed.host;
+      const handleLevelCapture = (event: Event) => {
+        if (index === 0) {
+          handled.delete(event);
+        }
+        if (handled.has(event)) return;
+
+        const path =
+          typeof event.composedPath === 'function' ? event.composedPath() : [];
+        const deepestTarget = path[0] ?? event.target;
+
+        if (
+          deepestTarget === nextHost ||
+          (path.includes(nextHost) &&
+            isSlottedIntoShadowRoot(nextClosed, deepestTarget))
+        ) {
+          return;
+        }
+
+        if (event.composed) {
+          handled.add(event);
+        }
+        emit(event, false, deepestTarget);
+      };
+      const handleHostFallback = (event: Event) => {
+        if (handled.has(event)) return;
+
+        const path =
+          typeof event.composedPath === 'function' ? event.composedPath() : [];
+
+        if ((path[0] ?? event.target) !== nextHost) return;
+
+        if (event.composed) {
+          handled.add(event);
+        }
+        emit(event, false, event.target);
+      };
+
+      levelTarget.addEventListener(type, handleLevelCapture, true);
+      nextHost.addEventListener(type, handleHostFallback, false);
+      cleanups.push(() => {
+        levelTarget.removeEventListener(type, handleLevelCapture, true);
+        nextHost.removeEventListener(type, handleHostFallback, false);
+      });
+    } else {
+      const handleInnermostCapture = (event: Event) => {
+        if (handled.has(event)) return;
+        if (event.composed) {
+          handled.add(event);
+        }
+
+        const path =
+          typeof event.composedPath === 'function' ? event.composedPath() : [];
+        const inRoot =
+          path.includes(root) ||
+          (isDOMNode(event.target) && containsShadowAware(root, event.target));
+
+        emit(event, inRoot, inRoot ? (path[0] ?? event.target) : event.target);
+      };
+
+      levelTarget.addEventListener(type, handleInnermostCapture, true);
+      cleanups.push(() => {
+        levelTarget.removeEventListener(type, handleInnermostCapture, true);
+      });
+    }
+  }
+
+  return () => {
+    for (const cleanup of cleanups) {
+      cleanup();
+    }
+  };
+};
 
 export const movedFocusElsewhere = (
   element: Element,
@@ -1136,6 +1410,11 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
         ) ?? (() => {})
     );
     this.domIntegrityObserver = new DOMIntegrityObserver({
+      readSelection: (root) =>
+        readEditableDOMSelectionPoints(
+          root,
+          getSelection(root.getRootNode() as Document | ShadowRoot)
+        ),
       writeSelection: (root, points) =>
         writeEditableDOMSelection(root, points, { editor: this.editor }),
       getAndroidMutationHandler: options.getAndroidMutationHandler,
@@ -1588,9 +1867,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     this.rootInputActivationCleanup = null;
     const runtime = this as unknown as DOMRootRuntime;
     const root = this.rootRef.current;
-    const activeElement = (
-      root?.getRootNode() as Document | ShadowRoot | undefined
-    )?.activeElement;
+    const activeElement = root ? focusedElementOnPage(root) : null;
     const focusedRuntime = activeElement
       ? findDOMRootRuntime(activeElement)
       : null;

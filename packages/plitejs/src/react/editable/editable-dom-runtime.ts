@@ -57,7 +57,9 @@ import {
   findEditorDOMRootRuntime,
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
+  isCanonicalDOMTextHostDisplay,
   observeDataTransferInsertion,
+  observeRootBoundaryEvent,
   resolveDOMReach,
   resolveDOMTargetView,
   resolveDOMTextFlowEntry,
@@ -697,10 +699,10 @@ export class EditableDOMRuntime {
           : null;
 
         if (zeroWidth) {
-          return modelText !== null && mutation.target.nodeValue === '\uFEFF';
+          return modelText != null && mutation.target.nodeValue === '\uFEFF';
         }
 
-        if (flowEntry && modelText !== null) {
+        if (flowEntry && modelText != null) {
           return (
             resolveDOMTextFlowRecordDOMText(
               flowEntry.host,
@@ -710,8 +712,9 @@ export class EditableDOMRuntime {
         }
 
         return (
-          modelText !== null &&
-          textHost?.textContent?.replaceAll('\uFEFF', '') === modelText
+          modelText != null &&
+          !!textHost &&
+          isCanonicalDOMTextHostDisplay(textHost, mutation.target, modelText)
         );
       },
       nodeSelectionFocus: () => this.nodeSelectionFocus?.current ?? null,
@@ -1490,8 +1493,27 @@ export class EditableDOMRuntime {
     this.rootRuntime.releaseDisposable(key);
   }
 
+  private readonly rootChangeListeners = new Set<
+    (node: HTMLDivElement | null) => void
+  >();
+
+  subscribeRootChange(listener: (node: HTMLDivElement | null) => void) {
+    this.rootChangeListeners.add(listener);
+
+    return () => {
+      this.rootChangeListeners.delete(listener);
+    };
+  }
+
   setRoot(node: HTMLDivElement | null) {
+    const previous = this.rootRef.current;
+
     this.rootRuntime.setRoot(node);
+    if (this.rootRef.current !== previous) {
+      for (const listener of this.rootChangeListeners) {
+        listener(this.rootRef.current);
+      }
+    }
   }
 
   publishAndroidInputManager(inputManager: AndroidInputManager | null) {
@@ -2126,13 +2148,12 @@ export class EditableDOMRuntime {
       this.nativeInputHandlers.input?.(event);
     };
 
-    // A page's document-capture pointerdown can focus the Editable and prevent
-    // the mousedown, so the press opens here, before any document listener.
-    const notePointerPress = (event: PointerEvent) => {
-      const composedPath = event.composedPath();
-      const inRoot = composedPath.includes(node);
-      const target = inRoot ? (composedPath[0] ?? event.target) : event.target;
-
+    // Capture on window (or the enclosing closed shadow root) so the press
+    // opens before document bubble or editable listeners can prevent mousedown.
+    const notePointerPress = (
+      event: PointerEvent,
+      { inRoot, target }: { inRoot: boolean; target: EventTarget | null }
+    ) => {
       this.unreadPress.pointerDown(
         inRoot &&
           this.readOnlyValue &&
@@ -2228,11 +2249,12 @@ export class EditableDOMRuntime {
       noteAfterInsertCaret(this.editorValue, commit)
     );
 
-    const nodeRoot = node.getRootNode();
-    const closedShadowRoot =
-      'host' in nodeRoot && (nodeRoot as ShadowRoot).mode === 'closed'
-        ? (nodeRoot as ShadowRoot)
-        : null;
+    const detachPointerPress = observeRootBoundaryEvent(
+      node,
+      'pointerdown',
+      notePointerPress,
+      { capture: true, scope: 'window' }
+    );
 
     node.addEventListener('compositionstart', handleCompositionStart);
     node.addEventListener('beforeinput', handleBeforeInput);
@@ -2242,12 +2264,6 @@ export class EditableDOMRuntime {
     node.addEventListener('keyup', clearNodeSelectionDOMRangeOnKeyUp, true);
     node.addEventListener('dragstart', cancelPress, true);
     node.addEventListener('blur', cancelPress);
-    ownerWindow?.addEventListener('pointerdown', notePointerPress, true);
-    closedShadowRoot?.addEventListener(
-      'pointerdown',
-      notePointerPress as EventListener,
-      true
-    );
     ownerWindow?.addEventListener('pointerup', endPress, true);
     ownerWindow?.addEventListener('pointercancel', endPress, true);
     ownerWindow?.addEventListener('pointercancel', cancelPress, true);
@@ -2255,6 +2271,7 @@ export class EditableDOMRuntime {
     ownerWindow?.addEventListener('blur', cancelPress);
     this.nativeInputListenersCleanup = () => {
       releaseCommits();
+      detachPointerPress();
       node.removeEventListener('pointerdown', clearCaret, true);
       node.removeEventListener('keydown', cancelPressOnKey, true);
       node.removeEventListener(
@@ -2270,12 +2287,6 @@ export class EditableDOMRuntime {
       node.removeEventListener('compositionstart', handleCompositionStart);
       node.removeEventListener('beforeinput', handleBeforeInput);
       node.removeEventListener('input', handleInput);
-      ownerWindow?.removeEventListener('pointerdown', notePointerPress, true);
-      closedShadowRoot?.removeEventListener(
-        'pointerdown',
-        notePointerPress as EventListener,
-        true
-      );
       ownerWindow?.removeEventListener('pointerup', endPress, true);
       ownerWindow?.removeEventListener('pointercancel', endPress, true);
       ownerWindow?.removeEventListener('pointercancel', cancelPress, true);

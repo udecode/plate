@@ -659,6 +659,72 @@ export const readDOMTextFlowHost = (host: HTMLElement) => {
   }));
 };
 
+const pathsEqual = (left: readonly number[] | null, right: readonly number[]) =>
+  left !== null &&
+  left.length === right.length &&
+  left.every((value, index) => value === right[index]);
+
+export type DOMTextFlowRestoreSegment = Readonly<{
+  domLength: number;
+  end: number;
+  start: number;
+  stringElement: HTMLElement | null;
+  textNode: globalThis.Text;
+  replaceTextNode: (nextTextNode: globalThis.Text) => void;
+}>;
+
+export const getDOMTextFlowRestoreSegments = (
+  host: Element,
+  path?: readonly number[] | null
+): readonly DOMTextFlowRestoreSegment[] | null => {
+  const index = TEXT_HOST_TO_FLOW_INDEX.get(host as HTMLElement);
+
+  if (!index) return null;
+
+  let matched: DOMTextFlowRecord | null = null;
+
+  if (path) {
+    for (const { record } of index.records.values()) {
+      if (pathsEqual(record.path, path)) {
+        matched = record;
+        break;
+      }
+    }
+  }
+
+  if (!matched && index.records.size === 1) {
+    matched = index.records.values().next().value?.record ?? null;
+  }
+
+  if (!matched || matched.segments.length === 0) return null;
+
+  const record = matched;
+
+  return record.segments.map((segment) => {
+    const bounds = getBindingSegmentBounds({ record, segment });
+
+    return {
+      domLength: segment.domLength,
+      end: bounds.end,
+      replaceTextNode: (nextTextNode) => {
+        if (segment.textNode === nextTextNode) return;
+        (segment.textNode as DOMTextFlowBoundNode)[DOM_TEXT_FLOW_SEGMENT] =
+          null;
+        segment.textNode = nextTextNode;
+        (nextTextNode as DOMTextFlowBoundNode)[DOM_TEXT_FLOW_SEGMENT] = segment;
+        segment.boundNodes = [
+          segment.rootNode,
+          segment.stringElement,
+          nextTextNode,
+        ].filter((node): node is globalThis.Node => !!node);
+      },
+      start: bounds.start,
+      stringElement: segment.stringElement,
+      textNode: segment.textNode,
+    };
+  });
+};
+
 export const resolveDOMTextFlowOffset = (
   host: HTMLElement,
   node: globalThis.Node,

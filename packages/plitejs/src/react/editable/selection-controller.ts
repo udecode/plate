@@ -44,6 +44,7 @@ import {
   canWriteDOMSelection,
   canWriteEditableDOMSelection,
   clearEditableDOMSelection,
+  focusedElementOnPage,
   isElementFocused,
 } from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
@@ -229,16 +230,6 @@ export const isSelectionInEditorView = (
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
 
   return selectionRoot === viewRoot;
-};
-
-const getActiveElementInDocument = (targetDocument: Document) => {
-  let { activeElement } = targetDocument;
-
-  while (activeElement?.shadowRoot?.activeElement) {
-    ({ activeElement } = activeElement.shadowRoot);
-  }
-
-  return activeElement;
 };
 
 export const executeEditableSelectionImport = ({
@@ -1351,7 +1342,7 @@ export const applyEditableDOMSelectionChange = ({
   ) {
     webKitProbeActive.current = true;
 
-    const active = getActiveElementInDocument(editorDocument);
+    const active = focusedElementOnPage(editorElement);
 
     if (active) {
       // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] WebKit still requires execCommand('indent') to repair selection across a shadow-root editing host.

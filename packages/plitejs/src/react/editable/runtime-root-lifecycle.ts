@@ -4,13 +4,17 @@ import {
   clearCaretUnlessHeldElsewhere,
   mayClearCaret,
 } from '../../core/view-carets';
-import { containsShadowAware, getSelection, isDOMNode } from '../../dom';
+import { containsShadowAware, getSelection } from '../../dom';
 import {
   clearEditableDOMSelection,
   type DOMPhaseScheduler,
+  focusedElementOnPage,
   IS_FOCUSED,
+  isEventInsideRoot,
+  observeRootBoundaryEvent,
+  readEditableDOMSelectionPoints,
 } from '../../dom/internal';
-import { focusedElementOnPage } from '../../dom/plugin/dom-root-runtime';
+import { isDOMHTMLElement } from '../../dom/utils/dom';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -31,6 +35,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
   readOnly,
   rootRef,
   state,
+  subscribeRootChange,
   targetDocument,
 }: {
   domPhaseScheduler: DOMPhaseScheduler;
@@ -39,9 +44,11 @@ export const attachEditableOutsideFocusBoundaryListener = ({
   readOnly: boolean;
   rootRef: RefObject<HTMLElement | null>;
   state: EditableInputControllerState;
+  subscribeRootChange?: (
+    listener: (node: HTMLElement | null) => void
+  ) => () => void;
   targetDocument: Document;
 }) => {
-  const targetWindow = targetDocument.defaultView;
   let outsideFocusBoundaryRevision = 0;
   const releaseRootOwnedNativeState = () => {
     const rootElement = rootRef.current;
@@ -52,25 +59,21 @@ export const attachEditableOutsideFocusBoundaryListener = ({
 
     let hadRootOwnedNativeState = false;
     const root = rootElement.getRootNode() as Document | ShadowRoot;
-    const activeElement =
-      root === targetDocument
-        ? focusedElementOnPage(rootElement)
-        : root.activeElement;
+    const activeElement = focusedElementOnPage(rootElement);
     const selection = getSelection(root);
+    const selectionPoints = readEditableDOMSelectionPoints(
+      rootElement,
+      selection
+    );
+    const anchorNode =
+      selectionPoints?.anchor[0] ?? selection?.anchorNode ?? null;
+    const focusNode = selectionPoints?.focus[0] ?? selection?.focusNode ?? null;
 
     if (
       readOnly &&
       (isDOMTargetInAnotherSelectionView(editor, rootElement, activeElement) ||
-        isDOMTargetInAnotherSelectionView(
-          editor,
-          rootElement,
-          selection?.anchorNode ?? null
-        ) ||
-        isDOMTargetInAnotherSelectionView(
-          editor,
-          rootElement,
-          selection?.focusNode ?? null
-        ))
+        isDOMTargetInAnotherSelectionView(editor, rootElement, anchorNode) ||
+        isDOMTargetInAnotherSelectionView(editor, rootElement, focusNode))
     ) {
       // Keep the sibling's native selection, but release this view's focus.
       if (ReactEditor.isFocused(editor)) {
@@ -86,8 +89,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
       Boolean(editor.read((innerState) => innerState.selection()));
 
     if (
-      targetWindow &&
-      activeElement instanceof targetWindow.HTMLElement &&
+      isDOMHTMLElement(activeElement) &&
       containsShadowAware(rootElement, activeElement)
     ) {
       activeElement.blur();
@@ -95,9 +97,8 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     }
 
     const selectionInRoot =
-      selection &&
-      (containsShadowAware(rootElement, selection.anchorNode) ||
-        containsShadowAware(rootElement, selection.focusNode));
+      containsShadowAware(rootElement, anchorNode) ||
+      containsShadowAware(rootElement, focusNode);
 
     if (selectionInRoot) {
       hadRootOwnedNativeState = true;
@@ -125,30 +126,13 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     return true;
   };
 
-  const insideMouseDownEvents = new WeakSet<Event>();
-  const isEventInRoot = (event: Event, rootElement: HTMLElement) =>
-    insideMouseDownEvents.has(event) ||
-    event.composedPath().includes(rootElement) ||
-    (isDOMNode(event.target) && containsShadowAware(rootElement, event.target));
-  const markInsideMouseDown = (event: Event) => {
-    const rootElement = rootRef.current;
-
-    if (rootElement && event.composedPath().includes(rootElement)) {
-      insideMouseDownEvents.add(event);
-    }
-  };
-
   // A touch or pen tap also sends a compatibility mousedown before its click,
   // so every pointer decides here, where a control keeps the editor's focus
   // by preventing mousedown.
-  const handleOutsideMouseDown = (event: MouseEvent) => {
+  const handleOutsideMouseDown = (event: MouseEvent, inRoot: boolean) => {
     const rootElement = rootRef.current;
 
-    if (!rootElement || event.defaultPrevented) {
-      return;
-    }
-
-    if (isEventInRoot(event, rootElement)) {
+    if (!rootElement || event.defaultPrevented || inRoot) {
       return;
     }
 
@@ -171,34 +155,72 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     );
   };
 
-  const handleFocusIn = (event: Event) => {
-    const rootElement = rootRef.current;
-
-    if (rootElement && isEventInRoot(event, rootElement)) {
+  const handleFocusIn = (inRoot: boolean) => {
+    if (inRoot) {
       outsideFocusBoundaryRevision += 1;
       state.outsideFocusBoundarySettleUntil = 0;
     }
   };
 
-  const rootNode = rootRef.current?.getRootNode();
-  const shadowRoot =
-    rootNode && rootNode !== targetDocument && 'host' in rootNode
-      ? (rootNode as ShadowRoot)
-      : null;
+  let detachCurrent: (() => void) | null = null;
+  const bindForRoot = (mountedRoot: HTMLElement | null) => {
+    detachCurrent?.();
+    detachCurrent = null;
 
-  shadowRoot?.addEventListener('mousedown', markInsideMouseDown, true);
-  shadowRoot?.addEventListener('focusin', handleFocusIn, true);
-  targetDocument.addEventListener('mousedown', handleOutsideMouseDown);
-  // Capture, so a refocus ends the window before the editor's own focus
-  // handler, which React runs at its root, reads it.
-  targetDocument.addEventListener('focusin', handleFocusIn, true);
+    if (mountedRoot) {
+      const detachMouseDown = observeRootBoundaryEvent(
+        mountedRoot,
+        'mousedown',
+        (event, { inRoot }) => handleOutsideMouseDown(event, inRoot),
+        { capture: false, scope: 'document' }
+      );
+      // Capture, so a refocus ends the window before the editor's own focus
+      // handler, which React runs at its root, reads it.
+      const detachFocusIn = observeRootBoundaryEvent(
+        mountedRoot,
+        'focusin',
+        (_event, { inRoot }) => handleFocusIn(inRoot),
+        { capture: true, filter: 'inside', scope: 'document' }
+      );
+
+      detachCurrent = () => {
+        detachMouseDown();
+        detachFocusIn();
+      };
+      return;
+    }
+
+    const fallbackMouseDown = (event: MouseEvent) => {
+      const rootElement = rootRef.current;
+
+      if (!rootElement) return;
+      handleOutsideMouseDown(event, isEventInsideRoot(rootElement, event));
+    };
+    const fallbackFocusIn = (event: FocusEvent) => {
+      const rootElement = rootRef.current;
+
+      if (!rootElement) return;
+      handleFocusIn(isEventInsideRoot(rootElement, event));
+    };
+
+    targetDocument.addEventListener('mousedown', fallbackMouseDown);
+    targetDocument.addEventListener('focusin', fallbackFocusIn, true);
+    detachCurrent = () => {
+      targetDocument.removeEventListener('mousedown', fallbackMouseDown);
+      targetDocument.removeEventListener('focusin', fallbackFocusIn, true);
+    };
+  };
+
+  bindForRoot(rootRef.current);
+  const unsubscribeRootChange = subscribeRootChange?.((nextRoot) => {
+    bindForRoot(nextRoot);
+  });
 
   return () => {
     outsideFocusBoundaryRevision += 1;
-    shadowRoot?.removeEventListener('mousedown', markInsideMouseDown, true);
-    shadowRoot?.removeEventListener('focusin', handleFocusIn, true);
-    targetDocument.removeEventListener('mousedown', handleOutsideMouseDown);
-    targetDocument.removeEventListener('focusin', handleFocusIn, true);
+    unsubscribeRootChange?.();
+    detachCurrent?.();
+    detachCurrent = null;
   };
 };
 
@@ -229,6 +251,8 @@ export const useEditableRootGlobalLifecycle = ({
         readOnly,
         rootRef,
         state,
+        subscribeRootChange: (listener) =>
+          runtime.subscribeRootChange(listener),
         targetDocument: window.document,
       });
 
