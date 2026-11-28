@@ -9,7 +9,7 @@ metadata:
 
 # Operator and Local CI
 
-Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/next`) and the persistent `operator` session. Let `<main>` be the main checkout.
+Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/next`) and the persistent `operator` session. Let `<main>` be the main checkout, `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs`, and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
 
 ## How Local CI runs
 
@@ -23,21 +23,21 @@ Owns Local CI (`tooling/scripts/local-ci.mjs`, post-landing checks on `origin/ne
 - Three starts of one failure in 7d record a `recurrence` event (`red-recurrence.mjs`) for a `/pstack:correct` guard.
 - `beta-release.mjs wake` emits `release` after green when a daily beta is due. Fix, release, and friction workers skip team posts (`Send no team message.` stays on those briefs); `operator` may notify teammates via `notify` when workflow, pstack, setup, or team-facing changes warrant it.
 
-Run from `<main>` (`.claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` for CI; `<main>/tooling/scripts/local-ci.mjs` for `friction`). `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skip due check); `status`, `rerun`, `install`, `uninstall` -> below.
+Run from `<main>` (`<ci>` for CI; `<friction>` for friction). `$ARGUMENTS`: none/`supervise` -> **Keep watching**; `release` -> **Release brief** (skip due check); `status`, `rerun`, `install`, `uninstall` -> below.
 
 ## status
 
-Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs status`. Report launchd state, steps, author email, last run/green, newest events (step, culprit/range, log), `red now:`, and 14d time-to-green.
+Run `<ci> status`. Report launchd state, steps, author email, last run/green, newest events (step, culprit/range, log), `red now:`, and 14d time-to-green.
 
 ## rerun
 
-1. Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs run --force` in background (`run --full` for daily fresh).
+1. Run `<ci> run --force` in background (`run --full` for daily fresh).
 2. For another commit without side effects: `run --ref <sha> --green <last-green> [--step <name>] --dry`.
 3. Run `status` on exit and report.
 
 ## install and uninstall
 
-Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs install` (or `node tooling/scripts/local-ci.mjs install` first) for `dev.plate.local-ci`, `uninstall` to remove. Main CI (zbeyens) omits `--steps`; teammates pass `--steps <a,b>` (needs `git config user.email`). Confirm: `launchctl print gui/$(id -u)/dev.plate.local-ci`.
+Run `<ci> install` (or `node tooling/scripts/local-ci.mjs install` first) for `dev.plate.local-ci`, `uninstall` to remove. Main CI (zbeyens) omits `--steps`; teammates pass `--steps <a,b>` (needs `git config user.email`). Confirm: `launchctl print gui/$(id -u)/dev.plate.local-ci`.
 
 ## Keep watching
 
@@ -49,7 +49,7 @@ Keep one pinned `operator` T3 Code thread (own worktree, commands prefixed `cd <
 
 ## watch
 
-Never edit or land directly. `operator` runs at `medium`. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `light` step), 1 release, 1 friction judge; subagents (`invoke_subagent`/`delegate_task`) are unlimited. Spawn via `invoke_subagent` (`delegate_task` for isolation/effort): routine fixers at `medium`, complex bugs at `high`, escalate a failed 1st fix once to Neon `@xhigh`. Let `<ci>` = `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs` and `<friction>` = `node tooling/scripts/local-ci.mjs friction`.
+Never edit or land directly. `operator` runs at `medium`. Caps: 3 fix agents (max 1 heavy: `plite-browser` or any `light` step), 1 release, 1 friction judge; subagents (`invoke_subagent`/`delegate_task`) are unlimited. Spawn via `invoke_subagent` (`delegate_task` for isolation/effort): routine fixers at `medium`, complex bugs at `high`, escalate a failed 1st fix once to Neon `@xhigh`.
 
 Read effective `maxAutoStart` from `readProjectConfig()` in `.agents/pstack/lead.mjs` (merges `.agents/pstack.json` with main checkout's gitignored `.agents/pstack.local.json`, default `0`).
 
@@ -67,7 +67,7 @@ Read effective `maxAutoStart` from `readProjectConfig()` in `.agents/pstack/lead
 3. Dispatch:
    - **P0 Local CI reds (exempt from `maxAutoStart`):** fill up to 3 fix agents from the red queue (1 per step, max 1 heavy) using **Fix brief**.
    - **Friction:** if 0 fixes run and red queue is empty, run `<friction> next`; if `item`, run `<friction> start --item <id>` and spawn **Friction fix brief**. If no judge runs and `<friction> next` shows `unjudged`/`stuck`, spawn **Friction brief**.
-   - **Opt-in auto-start (`maxAutoStart > 0` only):** launch zero threads when `maxAutoStart === 0`, and pause P1 to P3 launches while `>= 2` Local CI steps are red. Count active non-pinned top-level `🥔` threads (`active`); while `active < maxAutoStart` and red steps `< 2`, launch via `t3_thread_launch` (`workspaceStrategy: { type: "worktree", baseRef: "origin/next", startFromOrigin: true }`) at `gemini-4-neon @high` in priority order:
+   - **Opt-in auto-start (`maxAutoStart > 0` only):** launch 0 threads when `maxAutoStart === 0`. Pause P1 to P3 auto-starts only when (a) a foundational build/type gate (`typecheck`, `www-build`, `plite-app-typecheck`, or `broken` install) is red on `origin/next` with no fix landed after the red tip, or (b) `>= 3` steps are red with no fix landed and no active fixer running. Localized test/lint reds and reds whose fixes already landed awaiting the next Local CI sweep do not pause auto-start. Count active non-pinned top-level `🥔` threads (`active`); while `active < maxAutoStart` and unpaused, launch via `t3_thread_launch` (`workspaceStrategy: { type: "worktree", baseRef: "origin/next", startFromOrigin: true }`) at `gemini-4-neon @high` in priority order:
      1. **P1 Team sweep (`plate-private`/Beta):** run `pnpm triage claim --next --repo plate-private` first (atomic claim; skips claimed work), then launch `triage fix <domain>`.
      2. **P2 Active roadmaps:** manual `/start` threads by the owner (counted in `active`).
      3. **P3 Background fill:** check live T3 threads first to avoid duplicates, then pick: `node tooling/scripts/relapse.mjs` (`card` scopes) -> `<main>/docs/plans/artifacts/queue.tsv` (P0 then P1, ignore rows >14d old; include any sibling matching-scope rows in the brief so one worker groups same-owner bugs) -> `node tooling/scripts/review-ledger.mjs due` (max 2 concurrent verdicts; large new roadmaps stop at `🟠`).
