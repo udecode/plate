@@ -194,6 +194,15 @@ const classifyLinkDraft = (
   return { error: INVALID_LINK };
 };
 
+const decodeLinkUrl = (url: string) => {
+  try {
+    return decodeURI(url);
+  } catch (error) {
+    if (error instanceof URIError) return url;
+    throw error;
+  }
+};
+
 const linkFloatingOptions = {
   middleware: [
     offset(8),
@@ -295,14 +304,7 @@ export const linkPlugin = LinkPlugin.extend({
 
         return true;
       },
-      decodeUrl: (url: string) => {
-        try {
-          return decodeURI(url);
-        } catch (error) {
-          if (error instanceof URIError) return url;
-          throw error;
-        }
-      },
+      decodeUrl: decodeLinkUrl,
       hide: () => {
         store.set({ ui: { kind: 'closed' } });
       },
@@ -737,7 +739,7 @@ function LinkActions({ editable, url }: { editable: boolean; url: string }) {
   const allowedSchemes = usePluginStore(linkPlugin, 'allowedSchemes');
   const [copied, setCopied] = React.useState(false);
   const href = getLinkHref(url, { allowedSchemes });
-  const shownUrl = api.decodeUrl(url);
+  const shownUrl = decodeLinkUrl(url);
 
   React.useEffect(() => {
     if (!copied) return undefined;
@@ -886,7 +888,7 @@ function LinkForm({ shown }: { shown: boolean }) {
           aria-label="Link"
           autoCapitalize="none"
           autoCorrect="off"
-          defaultValue={api.decodeUrl(ui.initialUrl)}
+          defaultValue={decodeLinkUrl(ui.initialUrl)}
           enterKeyHint="go"
           field="url"
           inputMode="url"
