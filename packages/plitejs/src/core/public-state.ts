@@ -800,6 +800,7 @@ const VIEW_STATE_FOLLOWS: ViewStateListeners = new WeakMap();
 const LAST_COMMIT = new WeakMap<Editor, EditorCommit | null>();
 const SNAPSHOT_CACHE = new WeakMap<Editor, Map<string, EditorSnapshot>>();
 const READ_PROJECTIONS = new WeakMap<Editor, EditorDocumentValue>();
+const READ_PROJECTION_ROOT = new WeakMap<Editor, string>();
 const READ_SELECTIONS = new WeakMap<
   Editor,
   Readonly<{ root: string; selection: () => Selection }>
@@ -982,9 +983,11 @@ export const withEditorDocumentProjection = <T>(
 ): T => {
   const owner = getEditorRuntimeOwner(editor);
   const previous = READ_PROJECTIONS.get(owner);
+  const previousRoot = READ_PROJECTION_ROOT.get(owner);
   const previousSelection = READ_SELECTIONS.get(owner);
   if (value) READ_PROJECTIONS.set(owner, value);
   else READ_PROJECTIONS.delete(owner);
+  READ_PROJECTION_ROOT.delete(owner);
   if (selection) READ_SELECTIONS.set(owner, selection);
   else READ_SELECTIONS.delete(owner);
   try {
@@ -992,6 +995,8 @@ export const withEditorDocumentProjection = <T>(
   } finally {
     if (previous) READ_PROJECTIONS.set(owner, previous);
     else READ_PROJECTIONS.delete(owner);
+    if (previousRoot === undefined) READ_PROJECTION_ROOT.delete(owner);
+    else READ_PROJECTION_ROOT.set(owner, previousRoot);
     if (previousSelection) READ_SELECTIONS.set(owner, previousSelection);
     else READ_SELECTIONS.delete(owner);
   }
@@ -1771,9 +1776,19 @@ const scheduleMicrotask =
         void Promise.resolve().then(callback);
       };
 
-export const getEditorChildrenRoot = (editor: Editor): string | undefined =>
-  getTransactionSpecContext(editor)?.activeChildrenRoot ??
-  ACTIVE_CHILDREN_ROOT.get(editor);
+export const getEditorChildrenRoot = (editor: Editor): string | undefined => {
+  const context = getTransactionSpecContext(editor);
+
+  if (context) return context.activeChildrenRoot;
+  if (getReadProjection(editor)) {
+    return (
+      READ_PROJECTION_ROOT.get(getEditorRuntimeOwner(editor)) ??
+      ACTIVE_CHILDREN_ROOT.get(editor)
+    );
+  }
+
+  return ACTIVE_CHILDREN_ROOT.get(editor);
+};
 
 export const getActiveUpdateRoot = (editor: Editor): string | undefined =>
   getTransactionSpecContext(editor)?.activeUpdateRoot ??
@@ -3384,10 +3399,20 @@ export const getEditorDocumentRecords = (editor: Editor): RecordStore => {
     : (RECORDS.get(editor) ?? EMPTY_RECORD_STORE);
 };
 
-const getCurrentChildrenRoot = (editor: Editor): string =>
-  getTransactionSpecContext(editor)?.currentChildrenRoot ??
-  CURRENT_CHILDREN_ROOT.get(editor) ??
-  MAIN_ROOT_KEY;
+const getCurrentChildrenRoot = (editor: Editor): string => {
+  const context = getTransactionSpecContext(editor);
+
+  if (context) return context.currentChildrenRoot;
+  if (getReadProjection(editor)) {
+    return (
+      READ_PROJECTION_ROOT.get(getEditorRuntimeOwner(editor)) ??
+      CURRENT_CHILDREN_ROOT.get(editor) ??
+      MAIN_ROOT_KEY
+    );
+  }
+
+  return CURRENT_CHILDREN_ROOT.get(editor) ?? MAIN_ROOT_KEY;
+};
 
 const getNodeSelectionRoot = (
   editor: Editor,
@@ -12464,16 +12489,14 @@ const enterEditorRootChildren = (
     };
   }
 
-  if (READ_PROJECTIONS.has(getEditorRuntimeOwner(editor))) {
-    const previousRoot = CURRENT_CHILDREN_ROOT.get(editor);
-    const previousActive = ACTIVE_CHILDREN_ROOT.get(editor);
-    CURRENT_CHILDREN_ROOT.set(editor, targetRoot);
-    ACTIVE_CHILDREN_ROOT.set(editor, targetRoot);
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (READ_PROJECTIONS.has(owner)) {
+    const previousRoot = READ_PROJECTION_ROOT.get(owner);
+    READ_PROJECTION_ROOT.set(owner, targetRoot);
     return () => {
-      if (previousRoot === undefined) CURRENT_CHILDREN_ROOT.delete(editor);
-      else CURRENT_CHILDREN_ROOT.set(editor, previousRoot);
-      if (previousActive === undefined) ACTIVE_CHILDREN_ROOT.delete(editor);
-      else ACTIVE_CHILDREN_ROOT.set(editor, previousActive);
+      if (previousRoot === undefined) READ_PROJECTION_ROOT.delete(owner);
+      else READ_PROJECTION_ROOT.set(owner, previousRoot);
     };
   }
 
