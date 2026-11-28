@@ -51,13 +51,8 @@ type Occurrence = Readonly<{
 }>;
 
 const POPUP_KEYS = new Set(['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab']);
-// `input` follows each preedit DOM update; composition events alone can precede it.
-const PREVIEW_EVENTS = [
-  'compositionend',
-  'compositionstart',
-  'compositionupdate',
-  'input',
-] as const;
+// `input` follows each preedit DOM update; `compositionupdate` alone can precede it.
+const PREVIEW_EVENTS = ['compositionupdate', 'input'] as const;
 const refused = new Error('combobox completion refused');
 const owners = new WeakMap<Element, ComboboxOwner>();
 // Equal text in a later occurrence must not complete a match offered by an earlier one.
@@ -457,9 +452,14 @@ class ComboboxOwner {
     );
 
     const { ownerDocument } = this.element;
+    const refreshPreview = () => {
+      if (this.occurrence && this.view.api.react.isComposing()) {
+        this.refresh();
+      }
+    };
 
     for (const type of PREVIEW_EVENTS) {
-      this.element.addEventListener(type, refresh);
+      this.element.addEventListener(type, refreshPreview);
     }
     ownerDocument.addEventListener('focusin', refresh);
 
@@ -469,7 +469,7 @@ class ComboboxOwner {
       unsubscribeView();
       releaseKeys();
       for (const type of PREVIEW_EVENTS) {
-        this.element.removeEventListener(type, refresh);
+        this.element.removeEventListener(type, refreshPreview);
       }
       ownerDocument.removeEventListener('focusin', refresh);
       this.close();

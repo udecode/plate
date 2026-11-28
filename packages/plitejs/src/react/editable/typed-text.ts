@@ -1,5 +1,16 @@
-import { NodeApi, PathApi, RangeApi, type Range, TextApi } from '../..';
-import { getEditorCommitSnapshot } from '../../core/commit';
+import {
+  ElementApi,
+  NodeApi,
+  PathApi,
+  RangeApi,
+  type Range,
+  TextApi,
+} from '../..';
+import { valueRootIndex } from '../../core/change/document-change';
+import {
+  getEditorCommitSnapshot,
+  getEditorCommitValue,
+} from '../../core/commit';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getSnapshotVersion } from '../../core/public-state';
 import type {
@@ -80,17 +91,21 @@ export const withTypedTextIntent = <T>(
 
 // Every input that opens a scope leaves the caret just past the text it wrote,
 // wherever Plite put that text, so the text before the caret identifies it.
-// The block's text, not its tokens, decides: Suggesting marks the letters it
-// records, so typing also opens or re-marks a text leaf.
+// Plain typing takes the O(1) token-range fast path without stringifying the
+// block; structural splits (Suggesting marks or mid-leaf pending marks) fall
+// back to comparing only the leaf's parent element.
 const readInsertion = <V extends Value>(
   commit: EditorCommit<V>,
   children: Value,
   before: Value,
   text: string
 ): Range | null => {
+  const beforeSelection = commit.selectionBefore;
   const caret = commit.selectionAfter;
 
   if (
+    !RangeApi.isRange(beforeSelection) ||
+    !RangeApi.isCollapsed(beforeSelection) ||
     !RangeApi.isRange(caret) ||
     !RangeApi.isCollapsed(caret) ||
     caret.focus.offset < text.length
@@ -98,10 +113,21 @@ const readInsertion = <V extends Value>(
     return null;
   }
 
+  const root = commit.selectionAfterRoot ?? 'main';
   let changes = 0;
+  let rangeRoot: string | null = null;
+  let fromA = 0;
+  let toA = 0;
+  let fromB = 0;
+  let toB = 0;
 
-  commit.changes.iterChangedRanges(() => {
+  commit.changes.iterChangedRanges((changedRoot, a0, a1, b0, b1) => {
     changes += 1;
+    rangeRoot = changedRoot;
+    fromA = a0;
+    toA = a1;
+    fromB = b0;
+    toB = b1;
   });
 
   const end = caret.focus;
@@ -112,6 +138,7 @@ const readInsertion = <V extends Value>(
 
   if (
     changes !== 1 ||
+    (rangeRoot ?? 'main') !== root ||
     !TextApi.isText(leaf) ||
     leaf.text.slice(start, end.offset) !== text ||
     !before[index]
@@ -119,17 +146,43 @@ const readInsertion = <V extends Value>(
     return null;
   }
 
-  let offset = start;
+  const posAtEnd = valueRootIndex(
+    getEditorCommitValue(commit),
+    root
+  ).positionAt(end);
 
-  for (const [node, path] of NodeApi.texts(block)) {
-    if (PathApi.equals(path, rest)) break;
-    offset += node.text.length;
+  if (posAtEnd === null || fromB >= posAtEnd || toB < posAtEnd) {
+    return null;
   }
 
-  const typed = NodeApi.string(block);
+  if (fromA === toA && toB - fromB === text.length && toB === posAtEnd) {
+    return { anchor: { ...end, offset: start }, focus: end };
+  }
+
+  const parentPath = PathApi.parent(rest);
+  const leafIndex = rest.at(-1) ?? 0;
+  const parentAfter = NodeApi.getIf(block, parentPath);
+  const parentBefore = NodeApi.getIf(before[index], parentPath);
+
+  if (
+    !parentAfter ||
+    !parentBefore ||
+    !ElementApi.isElement(parentAfter) ||
+    !ElementApi.isElement(parentBefore)
+  ) {
+    return null;
+  }
+
+  let offset = start;
+
+  for (let childIndex = 0; childIndex < leafIndex; childIndex += 1) {
+    offset += NodeApi.string(parentAfter.children[childIndex]).length;
+  }
+
+  const typed = NodeApi.string(parentAfter);
 
   return typed.slice(0, offset) + typed.slice(offset + text.length) ===
-    NodeApi.string(before[index])
+    NodeApi.string(parentBefore)
     ? { anchor: { ...end, offset: start }, focus: end }
     : null;
 };

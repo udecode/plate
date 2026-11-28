@@ -85,23 +85,48 @@ const longestTrigger = (trigger: ComboboxState['trigger']) =>
     ? 1
     : Math.max(0, ...[trigger].flat().map((candidate) => candidate.length));
 
-const textRunLength = (read: ComboboxRead, from: Point, to: Point) => {
-  const parent = PathApi.parent(to.path);
-  const first = from.path.at(-1) ?? 0;
-  const last = to.path.at(-1) ?? 0;
-  let length = 0;
+const readTriggerAndQuery = (
+  read: ComboboxRead,
+  start: Point,
+  end: Point,
+  caret: Point,
+  maxTotalLength: number
+) => {
+  const parent = PathApi.parent(caret.path);
+  const first = start.path.at(-1) ?? 0;
+  const endLeaf = end.path.at(-1) ?? 0;
+  const last = caret.path.at(-1) ?? 0;
+  let total = 0;
+  let triggerLen = 0;
+  const parts: string[] = [];
 
   for (let index = first; index <= last; index += 1) {
     const node = read.nodes.get([...parent, index])?.[0];
 
     if (!TextApi.isText(node)) return null;
 
-    length +=
-      (index === last ? to.offset : node.text.length) -
-      (index === first ? from.offset : 0);
+    const from = index === first ? start.offset : 0;
+    const to = index === last ? caret.offset : node.text.length;
+    const sliceLen = to - from;
+
+    total += sliceLen;
+    if (total > maxTotalLength) return null;
+
+    if (index < endLeaf) {
+      triggerLen += sliceLen;
+    } else if (index === endLeaf) {
+      triggerLen += end.offset - from;
+    }
+
+    parts.push(node.text.slice(from, to));
   }
 
-  return length;
+  const run = parts.join('');
+
+  return {
+    query: run.slice(triggerLen),
+    trigger: run.slice(0, triggerLen),
+  };
 };
 
 const findLastTrigger = (
@@ -199,17 +224,15 @@ export const readComboboxQuery = (
     return null;
   }
 
-  const runLength = textRunLength(read, start, caret);
+  const run = readTriggerAndQuery(
+    read,
+    start,
+    end,
+    caret,
+    triggerText.length + state.maxQueryLength
+  );
 
-  if (
-    runLength === null ||
-    runLength - triggerText.length > state.maxQueryLength ||
-    read.text.string(trigger) !== triggerText
-  ) {
-    return null;
-  }
+  if (!run || run.trigger !== triggerText) return null;
 
-  const query = read.text.string({ anchor: end, focus: caret });
-
-  return isComboboxQuery(query, state) ? query : null;
+  return isComboboxQuery(run.query, state) ? run.query : null;
 };
