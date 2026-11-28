@@ -60,7 +60,7 @@ export interface CalloutElement extends Element {
 }
 
 export interface CodeBlockElement extends Element {
-  readonly children: readonly [EditorText];
+  readonly children: readonly (EditorText)[];
   readonly type: "codeBlock";
   readonly authored?: readonly (unknown)[];
   readonly checked?: boolean;
@@ -327,8 +327,8 @@ export type Schema = Readonly<{
     readonly date: Readonly<{ readonly type: "date"; }>;
     readonly link: Readonly<{ readonly type: "link"; }>;
     readonly mention: Readonly<{ readonly type: "mention"; }>;
-    readonly footnote: Readonly<{ readonly type: "footnoteReference"; }>;
     readonly footnoteDefinition: Readonly<{ readonly type: "footnoteDefinition"; }>;
+    readonly footnote: Readonly<{ readonly type: "footnoteReference"; }>;
     readonly bold: Readonly<{ readonly key: "bold"; }>;
     readonly italic: Readonly<{ readonly key: "italic"; }>;
     readonly underline: Readonly<{ readonly key: "underline"; }>;
@@ -878,8 +878,8 @@ export const schema = Object.freeze({
     date: Object.freeze({ type: "date" }),
     link: Object.freeze({ type: "link" }),
     mention: Object.freeze({ type: "mention" }),
-    footnote: Object.freeze({ type: "footnoteReference" }),
     footnoteDefinition: Object.freeze({ type: "footnoteDefinition" }),
+    footnote: Object.freeze({ type: "footnoteReference" }),
     bold: Object.freeze({ key: "bold" }),
     italic: Object.freeze({ key: "italic" }),
     underline: Object.freeze({ key: "underline" }),

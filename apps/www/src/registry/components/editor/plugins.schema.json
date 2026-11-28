@@ -806,7 +806,7 @@
           "defaultPlan": {
             "kind": "text"
           },
-          "max": 1,
+          "max": null,
           "min": 1
         },
         "contentRoots": [],
@@ -2319,7 +2319,7 @@
           "defaultPlan": {
             "kind": "text"
           },
-          "max": 1,
+          "max": null,
           "min": 1
         }
       ],
@@ -3860,10 +3860,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:e8dcbd69213d5330",
+  "fingerprint": "fnv1a64:e2f388d3c0c05630",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:e8dcbd69213d5330",
+    "fingerprint": "fnv1a64:e2f388d3c0c05630",
     "kind": "derived"
   },
   "primaryRoot": {
