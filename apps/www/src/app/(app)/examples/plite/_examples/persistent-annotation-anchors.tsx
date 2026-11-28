@@ -336,18 +336,10 @@ const AnchoredProjectionContent = ({
           disabled={!!annotation || !alphaRow}
           id="add-anchor"
           onClick={() => {
-            const path = getLeafPathByText(editor, (text) =>
-              text.includes('alpha')
-            );
+            const range = getRangeInsideText(editor, 'alpha', 1, 4);
 
             onAddAnnotation(
-              editor.anchor(
-                {
-                  anchor: { path, offset: 1 },
-                  focus: { path, offset: 4 },
-                },
-                { association: 'inward', deletion: 'drop' }
-              )
+              editor.anchor(range, { association: 'inward', deletion: 'drop' })
             );
           }}
           type="button"
@@ -402,10 +394,14 @@ const AnchoredProjectionContent = ({
           Insert prefix
         </Button>
         <Button
-          disabled={!annotation || !alphaRow}
+          disabled={!entry?.range}
           id="delete-anchor-text"
           onClick={() => {
-            const range = getRangeInsideText(editor, 'alpha', 1, 4);
+            const range = annotation?.resolve(editor);
+
+            if (!range) {
+              return;
+            }
 
             editor.update.text.delete({ at: range });
           }}
