@@ -44,6 +44,7 @@ import {
   serializeMarkdownSliceWithRuntime,
   serializeMarkdownWithRuntime,
 } from './internal/markdownSerialize';
+import { createMarkdownStream } from './internal/markdownStream';
 import type {
   MarkdownDiagnostic,
   MarkdownDocumentParseResult,
@@ -55,6 +56,8 @@ import type {
   MarkdownSerializeOptions,
   MarkdownSerializeResult,
   MarkdownSliceParseResult,
+  MarkdownStream,
+  MarkdownStreamOptions,
   MarkdownSyncPluggable,
 } from './types';
 
@@ -106,6 +109,11 @@ export type MarkdownApi<V extends Value = Value> = {
   serialize: (
     options?: MarkdownEditorSerializeOptions<V>
   ) => MarkdownSerializeResult;
+  /**
+   * Create a stateful incremental streaming Markdown session for block or
+   * inline content, returning revisioned deltas and a validated final slice.
+   */
+  stream: (options?: MarkdownStreamOptions) => MarkdownStream<V>;
 };
 
 const shouldParseMarkdown = (
@@ -386,6 +394,13 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
         )
       );
     },
+    stream: (options) =>
+      createMarkdownStream(
+        editor,
+        () => store.get(),
+        () => getMarkdownReuse(editor, undefined).pluginStates,
+        options
+      ),
   }),
 }));
 

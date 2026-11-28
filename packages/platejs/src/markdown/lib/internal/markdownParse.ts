@@ -137,7 +137,7 @@ const knownPluginSyntax = new WeakMap<
  * syntax can read the line it starts on or the labels defined before it, so a
  * continued parse with one reads the whole source.
  */
-const knowsPluginSyntax = (runtime: MarkdownRuntime) => {
+export const knowsPluginSyntax = (runtime: MarkdownRuntime) => {
   const { remarkPlugins } = runtime.options;
   const cached = knownPluginSyntax.get(runtime.formats);
 
@@ -260,13 +260,13 @@ const compileMarkdownTree = (
   );
 };
 
-const markdownParseLimits = (options: MarkdownParsePolicy) =>
+export const markdownParseLimits = (options: MarkdownParsePolicy) =>
   Object.freeze({
     ...DEFAULT_MARKDOWN_PARSE_LIMITS,
     ...options.limits,
   });
 
-const reportByteLimit = (
+export const reportByteLimit = (
   source: string,
   options: MarkdownParsePolicy,
   diagnostics: MarkdownDiagnostics
@@ -376,7 +376,7 @@ type MarkdownConversion = Readonly<{
   unvalidated: readonly Descendant[];
 }>;
 
-const snapshotBlocks = (
+export const snapshotBlocks = (
   runtime: MarkdownRuntime,
   parsed: readonly Descendant[]
 ): readonly Descendant[] =>
@@ -1001,7 +1001,7 @@ const rememberMarkdownConversion = <T extends object>(
   return result;
 };
 
-const normalizeDocumentChildren = (
+export const normalizeDocumentChildren = (
   runtime: MarkdownRuntime,
   children: readonly Descendant[]
 ): Element[] =>
@@ -1010,7 +1010,7 @@ const normalizeDocumentChildren = (
     paragraphType: getMarkdownParagraphType(runtime.registry),
   });
 
-const reportUnlandedParagraph = (
+export const reportUnlandedParagraph = (
   diagnostics: MarkdownDiagnostics,
   message: string,
   path?: readonly number[]
@@ -1027,7 +1027,7 @@ const reportUnlandedParagraph = (
     severity: 'error',
   });
 
-const findMarkdownParagraph = (
+export const findMarkdownParagraph = (
   nodes: readonly Descendant[],
   path: readonly number[]
 ): readonly number[] | undefined => {
@@ -1108,7 +1108,7 @@ const landMarkdownParagraphs = (
   });
 };
 
-const reportSchemaInvalid = (
+export const reportSchemaInvalid = (
   error: unknown,
   diagnostics: MarkdownDiagnostics
 ) => {

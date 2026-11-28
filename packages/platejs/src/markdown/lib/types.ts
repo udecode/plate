@@ -13,6 +13,7 @@ import type {
   EditorDocumentValue,
   EditorSchemaRepairCode,
   EditorSchemaValidationDiagnostic,
+  Element,
   RootKey,
   Text,
   Value,
@@ -207,6 +208,107 @@ export type MarkdownSliceParseResult<V extends Value = Value> =
       diagnostics: readonly [MarkdownErrorDiagnostic, ...MarkdownDiagnostic[]];
       ok: false;
     }>;
+
+/** Options for creating a stateful streaming Markdown session via `editor.api.markdown.stream()`. */
+export type MarkdownStreamOptions = Readonly<{
+  /**
+   * How incomplete inline links (`[label](https://...`) render before `)` arrives.
+   * - `'placeholder'` (default): renders a link with the arrived URL prefix (or `'#'` fallback).
+   * - `'text'`: renders the link label as plain text until `)` arrives.
+   */
+  incompleteLinks?: 'placeholder' | 'text';
+  /** Parse limits enforced on the accumulated stream. */
+  limits?: Partial<MarkdownParseLimits>;
+  /**
+   * Loss policy applied when `finish()` validates the completed stream.
+   * Defaults to `'reject'`, matching `parseSlice` and `parseInline`.
+   * Intermediate preview ticks always run with `'allow'`.
+   */
+  lossPolicy?: 'allow' | 'reject';
+  /**
+   * Streaming mode:
+   * - `'blocks'` (default): block-level slice streaming (`parseSlice` parity on `finish()`).
+   * - `'inline'`: single-paragraph inline streaming (`parseInline` parity on `finish()`).
+   */
+  mode?: 'blocks' | 'inline';
+}>;
+
+/** Minimal revisioned patch describing how a streaming Markdown snapshot changed from its predecessor. */
+export type MarkdownStreamDelta =
+  | Readonly<{ kind: 'reset'; revision: number }>
+  | Readonly<{
+      baseRevision: number;
+      from: number;
+      kind: 'splice';
+      nodes: readonly Descendant[];
+      revision: number;
+    }>
+  | Readonly<{
+      baseRevision: number;
+      blockIndex: number;
+      kind: 'append-text';
+      revision: number;
+      text: string;
+    }>
+  | Readonly<{
+      baseRevision: number;
+      blockIndex: number;
+      kind: 'append-code';
+      revision: number;
+      text: string;
+    }>
+  | Readonly<{
+      baseRevision: number;
+      blockIndex: number;
+      kind: 'append-table-row';
+      revision: number;
+      row: Element;
+      rowIndex: number;
+    }>
+  | Readonly<{
+      baseRevision: number;
+      blockIndex: number;
+      kind: 'replace-table-row';
+      revision: number;
+      row: Element;
+      rowIndex: number;
+    }>;
+
+/** Immutable snapshot returned by each `MarkdownStream` operation. */
+export type MarkdownStreamSnapshot<V extends Value = Value> = Readonly<{
+  /** Revisioned delta from the previous snapshot. */
+  delta: MarkdownStreamDelta;
+  /** Diagnostics collected for the current snapshot. */
+  diagnostics: readonly MarkdownDiagnostic[];
+  /** Whether `finish()` has completed on the current source. */
+  done: boolean;
+  /** Frozen full node array; indices `[0, stableCount)` keep `===` reference identity while revision advances without a reset. */
+  nodes: readonly Descendant[];
+  /** Whether the snapshot succeeded. */
+  ok: boolean;
+  /** Monotonically increasing revision number for this stream session. */
+  revision: number;
+  /** Validated `ContentSlice` populated only when `done && ok`. */
+  slice?: ContentSlice<V>;
+  /** Provisional committed prefix block count; may decrease with `delta.kind === 'reset'` on late definitions or whole-tree `finish()`. */
+  stableCount: number;
+}>;
+
+/** Stateful incremental streaming Markdown session returned by `editor.api.markdown.stream()`. */
+export type MarkdownStream<V extends Value = Value> = Readonly<{
+  /** Append the next raw chunk to the stream and return the updated preview snapshot. */
+  append: (chunk: string) => MarkdownStreamSnapshot<V>;
+  /** Finalize the accumulated source under the configured `lossPolicy` and return the final snapshot with a validated `slice`. */
+  finish: () => MarkdownStreamSnapshot<V>;
+  /** Clear all buffered state and reset the session to revision 0. */
+  reset: () => void;
+  /** Replace or extend the accumulated source (incrementally appending when `source` extends `this.source`). */
+  set: (source: string) => MarkdownStreamSnapshot<V>;
+  /** Latest immutable snapshot for this session. */
+  readonly snapshot: MarkdownStreamSnapshot<V>;
+  /** Current raw source accumulated by this session. */
+  readonly source: string;
+}>;
 
 /**
  * One segment returned by `editor.api.markdown.parsePlaceholders`: either a

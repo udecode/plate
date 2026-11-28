@@ -14770,7 +14770,7 @@
           "kind": "type",
           "name": "MarkdownApi",
           "runtime": false,
-          "signature": "type MarkdownApi<V extends Value = Value> = {\n  parse: (source: string, options?: MarkdownParsePolicy) => MarkdownDocumentParseResult<V>;\n  parseInline: (source: string, options?: MarkdownParsePolicy) => MarkdownSliceParseResult<V>;\n  /**\n   * Parse Markdown containing self-closing block placeholder tags (`<Tag ref=\"...\" />`)\n   * at the Markdown AST stage, returning flat validated node runs and placeholder\n   * references without registering a schema element.\n   */\n  parsePlaceholders: (source: string, options: MarkdownPlaceholderParseOptions) => MarkdownPlaceholderParseResult<V>;\n  parseSlice: (source: string, options?: MarkdownParsePolicy & Readonly<{\n    /**\n     * The previous result of a growing source. When it came from this\n     * editor's `parseSlice`, for a prefix of `source`, under unchanged\n     * plugins and limits, only the text after its last complete block is\n     * converted again, and complete blocks keep their node objects, so a\n     * preview or the final parse can publish just the changed tail. Under\n     * another `lossPolicy`, only complete blocks that reported nothing\n     * are kept. Any other hint parses the whole source, and so does a\n     * source with a link reference or footnote definition, which can\n     * change blocks before it.\n     */\n    previous?: MarkdownSliceParseResult<V>;\n  }>) => MarkdownSliceParseResult<V>;\n  serialize: (options?: MarkdownEditorSerializeOptions<V>) => MarkdownSerializeResult;\n};",
+          "signature": "type MarkdownApi<V extends Value = Value> = {\n  parse: (source: string, options?: MarkdownParsePolicy) => MarkdownDocumentParseResult<V>;\n  parseInline: (source: string, options?: MarkdownParsePolicy) => MarkdownSliceParseResult<V>;\n  /**\n   * Parse Markdown containing self-closing block placeholder tags (`<Tag ref=\"...\" />`)\n   * at the Markdown AST stage, returning flat validated node runs and placeholder\n   * references without registering a schema element.\n   */\n  parsePlaceholders: (source: string, options: MarkdownPlaceholderParseOptions) => MarkdownPlaceholderParseResult<V>;\n  parseSlice: (source: string, options?: MarkdownParsePolicy & Readonly<{\n    /**\n     * The previous result of a growing source. When it came from this\n     * editor's `parseSlice`, for a prefix of `source`, under unchanged\n     * plugins and limits, only the text after its last complete block is\n     * converted again, and complete blocks keep their node objects, so a\n     * preview or the final parse can publish just the changed tail. Under\n     * another `lossPolicy`, only complete blocks that reported nothing\n     * are kept. Any other hint parses the whole source, and so does a\n     * source with a link reference or footnote definition, which can\n     * change blocks before it.\n     */\n    previous?: MarkdownSliceParseResult<V>;\n  }>) => MarkdownSliceParseResult<V>;\n  serialize: (options?: MarkdownEditorSerializeOptions<V>) => MarkdownSerializeResult;\n  /**\n   * Create a stateful incremental streaming Markdown session for block or\n   * inline content, returning revisioned deltas and a validated final slice.\n   */\n  stream: (options?: MarkdownStreamOptions) => MarkdownStream<V>;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value"
@@ -15019,6 +15019,54 @@
           "signature": "type MarkdownSourceLocation = Readonly<{\n  end?: Readonly<{\n    column: number;\n    line: number;\n    offset?: number;\n  }>;\n  excerpt?: string;\n  nodeType?: string;\n  start?: Readonly<{\n    column: number;\n    line: number;\n    offset?: number;\n  }>;\n}>;",
           "source": null,
           "typeParameters": []
+        },
+        "platejs/markdown:MarkdownStream": {
+          "aliases": [],
+          "documentation": "Stateful incremental streaming Markdown session returned by `editor.api.markdown.stream()`.",
+          "entrypoint": "platejs/markdown",
+          "kind": "type",
+          "name": "MarkdownStream",
+          "runtime": false,
+          "signature": "type MarkdownStream<V extends Value = Value> = Readonly<{\n  /** Append the next raw chunk to the stream and return the updated preview snapshot. */\n  append: (chunk: string) => MarkdownStreamSnapshot<V>;\n  /** Finalize the accumulated source under the configured `lossPolicy` and return the final snapshot with a validated `slice`. */\n  finish: () => MarkdownStreamSnapshot<V>;\n  /** Clear all buffered state and reset the session to revision 0. */\n  reset: () => void;\n  /** Replace or extend the accumulated source (incrementally appending when `source` extends `this.source`). */\n  set: (source: string) => MarkdownStreamSnapshot<V>;\n  /** Latest immutable snapshot for this session. */\n  readonly snapshot: MarkdownStreamSnapshot<V>;\n  /** Current raw source accumulated by this session. */\n  readonly source: string;\n}>;",
+          "source": null,
+          "typeParameters": [
+            "V extends Value = Value"
+          ]
+        },
+        "platejs/markdown:MarkdownStreamDelta": {
+          "aliases": [],
+          "documentation": "Minimal revisioned patch describing how a streaming Markdown snapshot changed from its predecessor.",
+          "entrypoint": "platejs/markdown",
+          "kind": "type",
+          "name": "MarkdownStreamDelta",
+          "runtime": false,
+          "signature": "type MarkdownStreamDelta = Readonly<{\n  kind: 'reset';\n  revision: number;\n}> | Readonly<{\n  baseRevision: number;\n  from: number;\n  kind: 'splice';\n  nodes: readonly Descendant[];\n  revision: number;\n}> | Readonly<{\n  baseRevision: number;\n  blockIndex: number;\n  kind: 'append-text';\n  revision: number;\n  text: string;\n}> | Readonly<{\n  baseRevision: number;\n  blockIndex: number;\n  kind: 'append-code';\n  revision: number;\n  text: string;\n}> | Readonly<{\n  baseRevision: number;\n  blockIndex: number;\n  kind: 'append-table-row';\n  revision: number;\n  row: Element;\n  rowIndex: number;\n}> | Readonly<{\n  baseRevision: number;\n  blockIndex: number;\n  kind: 'replace-table-row';\n  revision: number;\n  row: Element;\n  rowIndex: number;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/markdown:MarkdownStreamOptions": {
+          "aliases": [],
+          "documentation": "Options for creating a stateful streaming Markdown session via `editor.api.markdown.stream()`.",
+          "entrypoint": "platejs/markdown",
+          "kind": "type",
+          "name": "MarkdownStreamOptions",
+          "runtime": false,
+          "signature": "type MarkdownStreamOptions = Readonly<{\n  /**\n   * How incomplete inline links (`[label](https://...`) render before `)` arrives.\n   * - `'placeholder'` (default): renders a link with the arrived URL prefix (or `'#'` fallback).\n   * - `'text'`: renders the link label as plain text until `)` arrives.\n   */\n  incompleteLinks?: 'placeholder' | 'text';\n  /** Parse limits enforced on the accumulated stream. */\n  limits?: Partial<MarkdownParseLimits>;\n  /**\n   * Loss policy applied when `finish()` validates the completed stream.\n   * Defaults to `'reject'`, matching `parseSlice` and `parseInline`.\n   * Intermediate preview ticks always run with `'allow'`.\n   */\n  lossPolicy?: 'allow' | 'reject';\n  /**\n   * Streaming mode:\n   * - `'blocks'` (default): block-level slice streaming (`parseSlice` parity on `finish()`).\n   * - `'inline'`: single-paragraph inline streaming (`parseInline` parity on `finish()`).\n   */\n  mode?: 'blocks' | 'inline';\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/markdown:MarkdownStreamSnapshot": {
+          "aliases": [],
+          "documentation": "Immutable snapshot returned by each `MarkdownStream` operation.",
+          "entrypoint": "platejs/markdown",
+          "kind": "type",
+          "name": "MarkdownStreamSnapshot",
+          "runtime": false,
+          "signature": "type MarkdownStreamSnapshot<V extends Value = Value> = Readonly<{\n  /** Revisioned delta from the previous snapshot. */\n  delta: MarkdownStreamDelta;\n  /** Diagnostics collected for the current snapshot. */\n  diagnostics: readonly MarkdownDiagnostic[];\n  /** Whether `finish()` has completed on the current source. */\n  done: boolean;\n  /** Frozen full node array; indices `[0, stableCount)` keep `===` reference identity while revision advances without a reset. */\n  nodes: readonly Descendant[];\n  /** Whether the snapshot succeeded. */\n  ok: boolean;\n  /** Monotonically increasing revision number for this stream session. */\n  revision: number;\n  /** Validated `ContentSlice` populated only when `done && ok`. */\n  slice?: ContentSlice$1<V>;\n  /** Provisional committed prefix block count; may decrease with `delta.kind === 'reset'` on late definitions or whole-tree `finish()`. */\n  stableCount: number;\n}>;",
+          "source": null,
+          "typeParameters": [
+            "V extends Value = Value"
+          ]
         },
         "platejs/markdown:MarkdownSyncPluggable": {
           "aliases": [],

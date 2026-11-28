@@ -405,6 +405,52 @@ const isParseOnlyEmojiPlugin = (
   }
 };
 
+const localTransformerPluginsCache = new WeakMap<
+  CompiledMarkdownMappings,
+  Readonly<{
+    localOnly: boolean;
+    remarkPlugins: readonly unknown[];
+  }>
+>();
+
+const isKnownLocalRemarkPlugin = (
+  plugin: DeserializeMdContext['remarkPlugins'][number]
+): boolean => {
+  if (isParseOnlyEmojiPlugin(plugin)) return true;
+  try {
+    const fn = Array.isArray(plugin) ? plugin[0] : plugin;
+    const args = Array.isArray(plugin) ? plugin.slice(1) : [];
+    const probe = unified().use(remarkParse);
+    const transformer = (fn as (...params: unknown[]) => unknown).apply(
+      probe,
+      args
+    );
+
+    return typeof transformer !== 'function';
+  } catch {
+    return false;
+  }
+};
+
+export const hasOnlyKnownLocalRemarkPlugins = (
+  runtime: MarkdownRuntime
+): boolean => {
+  const { remarkPlugins } = runtime.options;
+  const cached = localTransformerPluginsCache.get(runtime.formats);
+
+  if (cached && samePlugins(cached, remarkPlugins)) return cached.localOnly;
+  const localOnly = getCachedRemarkPlugins(runtime).every(
+    isKnownLocalRemarkPlugin
+  );
+
+  localTransformerPluginsCache.set(runtime.formats, {
+    localOnly,
+    remarkPlugins,
+  });
+
+  return localOnly;
+};
+
 const remarkEscapeEmojiShortcodes: UnifiedPlugin<[], Root> = function () {
   const data = this.data() as {
     toMarkdownExtensions?: Array<{
