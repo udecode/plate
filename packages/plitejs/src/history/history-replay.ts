@@ -54,6 +54,7 @@ import type { Selection } from '../interfaces/selection';
 import {
   type HistoryReplaySchema,
   historyReplaySchemaOf,
+  replayTransformOptions,
 } from './history-replay-schema';
 import {
   isPureV4FormatChange,
@@ -120,19 +121,14 @@ const replayOver = (
   edit: DocumentChange,
   step: DocumentChange,
   base: JsonEditorValue,
-  { anchor, carriesLift, readBack }: MapRules
+  rules: MapRules
 ) =>
-  transformInternalDocumentChange(edit, step, base, {
-    keepRecordWrites: true,
-    replay: {
-      anchor,
-      canContain: schema.canContain,
-      carriesLift,
-      pieceProps: (element, parent, root, nodes) =>
-        schema.pieceProps(element, [...parent, 0], root, nodes),
-      readBack,
-    },
-  });
+  transformInternalDocumentChange(
+    edit,
+    step,
+    base,
+    replayTransformOptions(schema, rules)
+  );
 
 export const recordHistoryReplay = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,

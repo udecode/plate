@@ -1,6 +1,7 @@
 import type { DocumentChange } from '../core/change/document-change';
 import type { NodeList } from '../core/change/document-index';
 import type { JsonRecord } from '../core/change/json';
+import type { ReadBack } from '../core/change/read-back';
 import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
 import { getEditorSchema } from '../core/editor-runtime';
 import { constructCanonicalDocumentChange } from '../core/representation';
@@ -89,7 +90,49 @@ export const historyReplaySchemaOf = (editor: AnyEditor) => {
         before,
         displacement: 'none',
       }),
+    validateChildren: (
+      children: readonly JsonNode[],
+      root: string,
+      ancestors: readonly JsonNode[]
+    ) => {
+      try {
+        schema.validateChildrenAt(
+          children as readonly Descendant[],
+          root,
+          ancestors as readonly Element[]
+        );
+
+        return true;
+      } catch {
+        return false;
+      }
+    },
   };
 };
 
 export type HistoryReplaySchema = ReturnType<typeof historyReplaySchemaOf>;
+
+export const replayTransformOptions = (
+  schema: HistoryReplaySchema,
+  rules: Readonly<{
+    anchor: boolean;
+    carriesLift?: boolean;
+    readBack: (ReadBack & { projected: boolean }) | null;
+  }>
+) => ({
+  isSetValued: schema.isSetValued,
+  keepRecordWrites: true,
+  replay: {
+    anchor: rules.anchor,
+    canContain: schema.canContain,
+    carriesLift: rules.carriesLift,
+    pieceProps: (
+      element: JsonNode,
+      parent: readonly number[],
+      root: string,
+      nodes: NodeList
+    ) => schema.pieceProps(element, [...parent, 0], root, nodes),
+    readBack: rules.readBack,
+    validateChildren: schema.validateChildren,
+  },
+});

@@ -60,15 +60,18 @@ import {
   type JsonEditorValue,
   type JsonNode,
   type JsonPoint,
-  type JsonToken,
 } from './tokens';
 import type { PropertyModification } from './transform';
 import { applyV4RegisterSteps } from './v4/apply';
 import { extractRegisterSteps, extractV4Between } from './v4/extract';
 import { invertV4RegisterSteps, invertV4Steps } from './v4/invert';
-import { lowerV4Steps } from './v4/lower';
+import { getValueIdLookup, lowerV4Steps } from './v4/lower';
 import { rebaseV4Changes } from './v4/rebase';
-import { rebaseV4JoinOverSiblingRemoval } from './v4/replay-join-over-remove';
+import {
+  hasV4ReplayCandidateSteps,
+  rebaseV4ForReplay,
+  type ValidateReplayChildren,
+} from './v4/replay-rebase';
 import type { V4EscalationReason, V4StepOutcome } from './v4/text-ot';
 import {
   assertV4Steps,
@@ -2677,6 +2680,7 @@ type RebaseOptions = Readonly<{
       root: string,
       nodes: NodeList
     ) => JsonRecord;
+    validateChildren?: ValidateReplayChildren;
   }>;
 }>;
 
@@ -2715,6 +2719,55 @@ const tryV4StepsOf = (
     return extractV4Between(base, change.apply(base), { isSetValued });
   } catch {
     return null;
+  }
+};
+
+const nodeHasMissingId = (node: JsonNode): boolean => {
+  if (!isElementNode(node)) return false;
+  if (typeof node.id !== 'string' || node.id.length === 0) return true;
+
+  return node.children.some(nodeHasMissingId);
+};
+
+const hasUnresolvedV4NodeId = (steps: readonly V4Step[]): boolean =>
+  steps.some(
+    (step) =>
+      (step.op === 'insert_node' || step.op === 'wrap_inline') &&
+      nodeHasMissingId(step.node)
+  );
+
+const hasAuthoritativeV4Source = (change: DocumentChange): boolean =>
+  change.empty ||
+  DOCUMENT_CHANGE_V4_STEPS.has(change) ||
+  DOCUMENT_CHANGE_LAZY_V4_COMPUTE.has(change);
+
+const tryReplayV4StepsOf = (
+  change: DocumentChange,
+  base: JsonEditorValue,
+  isSetValued?: DocumentSetPropertyResolver
+): Readonly<{ authoritative: boolean; steps: readonly V4Step[] }> | null => {
+  const authoritativeSource = hasAuthoritativeV4Source(change);
+  const existing = getV4Steps(change);
+
+  if (existing !== null && !hasUnresolvedV4NodeId(existing)) {
+    return { authoritative: authoritativeSource, steps: existing };
+  }
+  try {
+    const extracted = extractV4Between(base, change.apply(base), {
+      isSetValued,
+    });
+
+    return {
+      authoritative:
+        authoritativeSource &&
+        existing !== null &&
+        existing.some((step) => step.op === 'remove_node'),
+      steps: extracted,
+    };
+  } catch {
+    return existing
+      ? { authoritative: authoritativeSource, steps: existing }
+      : null;
   }
 };
 
@@ -3052,181 +3105,455 @@ export const rebaseDocumentChange = (
   return { kind: 'pair', ...rebasedPair(a, b, value, options, records) };
 };
 
-const isBalancedElements = (tokens: readonly JsonToken[]) => {
+const rangesOverlapOrTouch = (
+  first: ReadonlyArray<readonly [number, number]>,
+  second: ReadonlyArray<readonly [number, number]>
+) => {
   if (
-    tokens.length < 2 ||
-    tokens[0].kind !== 'open' ||
-    tokens.at(-1)?.kind !== 'close'
-  ) {
-    return false;
-  }
-
-  let depth = 0;
-
-  for (const token of tokens) {
-    if (token.kind === 'open') depth += 1;
-    else if (token.kind === 'close') {
-      depth -= 1;
-      if (depth < 0) return false;
-    }
-  }
-
-  return depth === 0;
-};
-
-const isPureElementRemovalRootChange = (
-  change: RootChange,
-  document: DocumentIndex
-) => {
-  if (change.propertyChanges().length > 0) return false;
-
-  let sawRange = false;
-  let valid = true;
-
-  change.iterChangedRanges((fromA, toA, fromB, toB) => {
-    sawRange = true;
-    if (
-      !valid ||
-      toB !== fromB ||
-      toA <= fromA ||
-      !isBalancedElements(document.slice(fromA, toA).tokens)
-    ) {
-      valid = false;
-    }
-  });
-
-  return sawRange && valid;
-};
-
-const overlapsWithStructuralBoundaryRemoval = (
-  removal: RootChange,
-  edit: RootChange,
-  document: DocumentIndex
-) => {
-  const removalRanges: Array<readonly [number, number]> = [];
-
-  removal.iterChangedRanges((fromA, toA) => {
-    removalRanges.push([fromA, toA]);
-  });
-
-  let overlaps = false;
-  let removedClose = false;
-  let removedOpen = false;
-
-  edit.iterChangedRanges((fromA, toA) => {
-    if (
-      !overlaps &&
-      removalRanges.some(([rFrom, rTo]) => !(toA < rFrom || rTo < fromA))
-    ) {
-      overlaps = true;
-    }
-    if (toA <= fromA || (removedClose && removedOpen)) return;
-
-    for (const token of document.slice(fromA, toA).tokens) {
-      if (token.kind === 'close') removedClose = true;
-      else if (token.kind === 'open') removedOpen = true;
-      if (removedClose && removedOpen) break;
-    }
-  });
-
-  return overlaps && removedClose && removedOpen;
-};
-
-const isPureElementRemovalCandidate = (
-  change: DocumentChange,
-  value: JsonEditorValue
-) => {
-  const cached = DOCUMENT_CHANGE_V4_STEPS.get(change);
-
-  if (cached) {
-    return (
-      cached.length > 0 && cached.every((step) => step.op === 'remove_node')
-    );
-  }
-  if (
-    UNBOUND_V4_CHANGES.has(change) ||
-    change.createRoots.size > 0 ||
-    change.deleteRoots.size > 0 ||
-    getV4RegisterSteps(change).length > 0
-  ) {
-    return false;
-  }
-
-  const entries = [...getInternalDocumentChangeEntries(change)];
-
-  return (
-    entries.length > 0 &&
-    entries.every(([root, rootChange]) =>
-      isPureElementRemovalRootChange(rootChange, valueRootIndex(value, root))
+    first.some(([aFrom, aTo]) =>
+      second.some(([bFrom, bTo]) => !(aTo < bFrom || bTo < aFrom))
     )
-  );
-};
-
-const hasJoinOverlapCandidate = (
-  removal: DocumentChange,
-  edit: DocumentChange,
-  value: JsonEditorValue
-) => {
-  const cachedEdit = DOCUMENT_CHANGE_V4_STEPS.get(edit);
-
-  if (cachedEdit && !cachedEdit.some((step) => step.op === 'join_nodes')) {
-    return false;
-  }
-  if (UNBOUND_V4_CHANGES.has(removal) || UNBOUND_V4_CHANGES.has(edit)) {
+  ) {
     return true;
   }
 
-  for (const [root, removalRoot] of getInternalDocumentChangeEntries(removal)) {
-    const editRoot = getInternalDocumentRootChange(edit, root);
+  if (first.length >= 2 && second.length >= 2) {
+    const aMin = getDefined(first[0])[0];
+    const aMax = getDefined(first.at(-1))[1];
+    const bMin = getDefined(second[0])[0];
+    const bMax = getDefined(second.at(-1))[1];
 
-    if (
-      editRoot &&
-      overlapsWithStructuralBoundaryRemoval(
-        removalRoot,
-        editRoot,
-        valueRootIndex(value, root)
-      )
-    ) {
-      return true;
-    }
+    return !(aMax < bMin || bMax < aMin);
   }
 
   return false;
 };
 
-const rootsHaveIds = (
-  value: JsonEditorValue,
-  a: DocumentChange,
-  b: DocumentChange
+const rootChangeRanges = (change: RootChange) => {
+  const ranges: Array<readonly [number, number]> = [];
+
+  change.iterChangedRanges((fromA, toA) => {
+    ranges.push([fromA, toA]);
+  });
+
+  return ranges;
+};
+
+const touchingTopBlocksHaveIds = (
+  docIndex: DocumentIndex,
+  ranges: ReadonlyArray<readonly [number, number]>
 ) => {
-  if (UNBOUND_V4_CHANGES.has(a) || UNBOUND_V4_CHANGES.has(b)) {
-    return allElementsHaveIds(value);
-  }
+  const checked = new Set<number>();
 
-  const roots = new Set([
-    ...[...getInternalDocumentChangeEntries(a)].map(([root]) => root),
-    ...[...getInternalDocumentChangeEntries(b)].map(([root]) => root),
-  ]);
+  for (const [from, to] of ranges) {
+    for (const entry of docIndex.nodeRangesTouching(from, to)) {
+      if (entry.path.length !== 1) continue;
+      const topIdx = getDefined(entry.path[0]);
 
-  for (const root of roots) {
-    const nodes = root === 'main' ? value.children : value.roots?.[root];
-
-    if (nodes && !nodesHaveIds(nodes)) return false;
+      if (checked.has(topIdx)) continue;
+      checked.add(topIdx);
+      if (!nodesHaveIds([docIndex.node([topIdx])])) return false;
+    }
   }
 
   return true;
 };
 
-const mayJoinOverSiblingRemoval = (
+const hasCachedFollowUpReplay = (steps: readonly V4Step[] | undefined) =>
+  steps !== undefined &&
+  ((steps.some((step) => step.op === 'move_node') &&
+    steps.some((step) => step.op === 'join_nodes')) ||
+    (steps.some((step) => step.op === 'unwrap_inline') &&
+      steps.some((step) => step.op === 'wrap_inline')));
+
+const mayRebaseV4ForReplay = (
   a: DocumentChange,
   b: DocumentChange,
   value: JsonEditorValue
-) =>
-  ((isPureElementRemovalCandidate(a, value) &&
-    hasJoinOverlapCandidate(a, b, value)) ||
-    (isPureElementRemovalCandidate(b, value) &&
-      hasJoinOverlapCandidate(b, a, value))) &&
-  rootsHaveIds(value, a, b);
+): ReadonlySet<string> | null => {
+  if (
+    a.empty ||
+    b.empty ||
+    a.createRoots.size > 0 ||
+    a.deleteRoots.size > 0 ||
+    b.createRoots.size > 0 ||
+    b.deleteRoots.size > 0
+  ) {
+    return null;
+  }
+
+  const cachedA = DOCUMENT_CHANGE_V4_STEPS.get(a);
+  const cachedB = DOCUMENT_CHANGE_V4_STEPS.get(b);
+
+  if (cachedA && cachedB && !hasV4ReplayCandidateSteps(cachedA, cachedB)) {
+    return null;
+  }
+
+  const aUnbound = UNBOUND_V4_CHANGES.has(a);
+  const bUnbound = UNBOUND_V4_CHANGES.has(b);
+
+  if (aUnbound || bUnbound) {
+    const roots = new Set<string>();
+
+    if (!aUnbound) {
+      for (const [root] of getInternalDocumentChangeEntries(a)) roots.add(root);
+    } else if (!bUnbound) {
+      for (const [root] of getInternalDocumentChangeEntries(b)) roots.add(root);
+    } else {
+      const lookup = getValueIdLookup(value);
+
+      if (lookup && cachedA && cachedB) {
+        const addStepRoots = (steps: readonly V4Step[]) => {
+          for (const step of steps) {
+            if ('to' in step) {
+              if ('root' in step.to) {
+                roots.add(step.to.root);
+              } else {
+                const loc = lookup(step.to.id);
+
+                if (loc) roots.add(loc.root);
+              }
+            }
+            if ('target' in step) {
+              const loc = lookup(step.target);
+
+              if (loc) roots.add(loc.root);
+            }
+            if ('id' in step) {
+              const loc = lookup(step.id);
+
+              if (loc) roots.add(loc.root);
+            }
+            if ('source' in step) {
+              const loc = lookup(step.source);
+
+              if (loc) roots.add(loc.root);
+            }
+            if ('parent' in step) {
+              const loc = lookup(step.parent);
+
+              if (loc) roots.add(loc.root);
+            }
+          }
+        };
+
+        addStepRoots(cachedA);
+        addStepRoots(cachedB);
+      }
+      if (roots.size === 0) {
+        roots.add('main');
+        for (const root of visitRootNames(value.roots)) roots.add(root);
+      }
+    }
+
+    if (roots.size === 0) return null;
+    for (const root of roots) {
+      const nodes = root === 'main' ? value.children : value.roots?.[root];
+
+      if (nodes && !nodesHaveIds(nodes)) return null;
+    }
+
+    return roots;
+  }
+
+  if (
+    isInternalTextOnlyDocumentChange(a) &&
+    isInternalTextOnlyDocumentChange(b)
+  ) {
+    return null;
+  }
+
+  const bFollowUp = hasCachedFollowUpReplay(cachedB);
+  const candidateRoots = new Set<string>();
+
+  for (const [root, aRoot] of getInternalDocumentChangeEntries(a)) {
+    const bRoot = getInternalDocumentRootChange(b, root);
+
+    if (!bRoot) continue;
+
+    const aClass = getInternalDocumentChangeClassification(a, root);
+    const bClass = getInternalDocumentChangeClassification(b, root);
+
+    if (
+      !bFollowUp &&
+      aClass &&
+      bClass &&
+      !aClass.structure &&
+      !bClass.structure
+    ) {
+      continue;
+    }
+
+    const aRanges = rootChangeRanges(aRoot);
+    const bRanges = rootChangeRanges(bRoot);
+
+    if (!bFollowUp && !rangesOverlapOrTouch(aRanges, bRanges)) {
+      continue;
+    }
+
+    const docIndex = valueRootIndex(value, root);
+
+    if (
+      !touchingTopBlocksHaveIds(docIndex, aRanges) ||
+      !touchingTopBlocksHaveIds(docIndex, bRanges)
+    ) {
+      return null;
+    }
+
+    candidateRoots.add(root);
+  }
+
+  if (candidateRoots.size === 0) return null;
+
+  const allTouched = new Set<string>(candidateRoots);
+
+  for (const [root] of getInternalDocumentChangeEntries(a)) {
+    allTouched.add(root);
+  }
+  for (const [root] of getInternalDocumentChangeEntries(b)) {
+    allTouched.add(root);
+  }
+
+  return allTouched;
+};
+
+const propagateDocumentStepFirstAt = (
+  a: DocumentChange,
+  b: DocumentChange,
+  target: DocumentChange
+) => {
+  const stepFirstAt = getInternalDocumentChangeStepFirstAt(a);
+
+  if (!stepFirstAt?.size) return;
+
+  let nextStepFirstAt: Map<string, ReadonlySet<number>> | undefined;
+
+  for (const [root, rootStepFirstAt] of stepFirstAt) {
+    const aRoot = getInternalDocumentRootChange(a, root);
+    const bRoot = getInternalDocumentRootChange(b, root);
+
+    if (!aRoot) continue;
+    const next = bRoot
+      ? propagateRootStepFirstAt(aRoot, bRoot, rootStepFirstAt)
+      : rootStepFirstAt;
+
+    if (next?.size) {
+      nextStepFirstAt ??= new Map();
+      nextStepFirstAt.set(root, next);
+    }
+  }
+
+  if (nextStepFirstAt?.size) {
+    withInternalDocumentChangeStepFirstAt(target, nextStepFirstAt);
+  }
+};
+
+const tryRebaseV4ForReplay = (
+  a: DocumentChange,
+  b: DocumentChange,
+  value: JsonEditorValue,
+  options: RebaseOptions,
+  records: Readonly<{ first: RecordOps; second: RecordOps }>
+): RebasedPair | null => {
+  const { replay } = options;
+
+  if (!replay) return null;
+
+  const touchedRoots = mayRebaseV4ForReplay(a, b, value);
+
+  if (!touchedRoots) return null;
+
+  const extractedA = tryReplayV4StepsOf(a, value, options.isSetValued);
+  const extractedB = tryReplayV4StepsOf(b, value, options.isSetValued);
+
+  if (extractedA === null || extractedB === null) return null;
+
+  const aStepsAuthoritative = extractedA.authoritative;
+  const rawASteps = extractedA.steps;
+  const rawBSteps = extractedB.steps;
+
+  const aRegisters = rawASteps.filter(
+    (step): step is V4RegisterStep => step.op === 'set_register'
+  );
+  const bRegisters = rawBSteps.filter(
+    (step): step is V4RegisterStep => step.op === 'set_register'
+  );
+  let nextARegisters: readonly V4RegisterStep[] = aRegisters;
+  let nextBRegisters: readonly V4RegisterStep[] = bRegisters;
+
+  if (aRegisters.length > 0 || bRegisters.length > 0) {
+    const regRebase = rebaseV4Changes(value, aRegisters, bRegisters);
+
+    if (!regRebase.ok) return null;
+    nextARegisters = regRebase.aPrime.filter(
+      (step): step is V4RegisterStep => step.op === 'set_register'
+    );
+    nextBRegisters = regRebase.bPrime.filter(
+      (step): step is V4RegisterStep => step.op === 'set_register'
+    );
+  }
+
+  const aDocSteps =
+    aRegisters.length > 0
+      ? rawASteps.filter((step) => step.op !== 'set_register')
+      : rawASteps;
+  const bDocSteps =
+    bRegisters.length > 0
+      ? rawBSteps.filter((step) => step.op !== 'set_register')
+      : rawBSteps;
+
+  let allDocIds: ReadonlySet<string> | null = null;
+  const hasIdInDoc = (id: string): boolean => {
+    const lookup = getValueIdLookup(value);
+
+    if (lookup) return lookup(id) !== null;
+    if (allDocIds === null) {
+      allDocIds = new Set(idToRootMap(value).keys());
+    }
+
+    return allDocIds.has(id);
+  };
+
+  const rebasedV4 = rebaseV4ForReplay(
+    value,
+    aDocSteps,
+    bDocSteps,
+    touchedRoots,
+    {
+      aStepsAuthoritative,
+      canContain: replay.canContain,
+      hasIdInDoc,
+      isSetValued: options.isSetValued,
+      pieceProps: replay.pieceProps,
+      validateChildren: replay.validateChildren,
+    }
+  );
+
+  if (!rebasedV4) return null;
+
+  try {
+    if (rebasedV4.kind === 'drop-all') {
+      const afterB = b.apply(value);
+      const aPrimeSteps = [
+        ...invertV4Steps(value, bDocSteps),
+        ...aDocSteps,
+        ...nextARegisters,
+      ];
+      let aPrime: DocumentChange;
+
+      if (UNBOUND_V4_CHANGES.has(a) || UNBOUND_V4_CHANGES.has(b)) {
+        aPrime = bindV4DocumentChange(
+          createV4DocumentChange(aPrimeSteps, { records: records.first }),
+          afterB
+        );
+      } else {
+        const bDocOnly = createInternalDocumentChange(
+          new Map(getInternalDocumentChangeEntries(b))
+        );
+        const aDocOnly = createInternalDocumentChange(
+          new Map(getInternalDocumentChangeEntries(a))
+        );
+        const composedDoc = bDocOnly.invert(value).compose(aDocOnly, value);
+
+        aPrime = createInternalDocumentChange(
+          new Map(getInternalDocumentChangeEntries(composedDoc)),
+          { records: records.first }
+        );
+        attachV4Steps(aPrime, aPrimeSteps);
+        if (nextARegisters.length > 0) {
+          DOCUMENT_CHANGE_REGISTER_STEPS.set(
+            aPrime,
+            Object.freeze(nextARegisters)
+          );
+        }
+      }
+
+      const bPrime = createInternalDocumentChange(new Map(), {
+        records: records.second,
+      });
+
+      attachV4Steps(bPrime, nextBRegisters);
+      if (nextBRegisters.length > 0) {
+        DOCUMENT_CHANGE_REGISTER_STEPS.set(
+          bPrime,
+          Object.freeze(nextBRegisters)
+        );
+      }
+      propagateDocumentStepFirstAt(a, b, aPrime);
+
+      return { a: aPrime, b: bPrime, keptWrap: null };
+    }
+
+    if (rebasedV4.kind === 'filter-b') {
+      const boundA = bindV4DocumentChange(a, value);
+      const survivingChange = bindV4DocumentChange(
+        createV4DocumentChange([...rebasedV4.survivingBSteps, ...bRegisters], {
+          records: getInternalDocumentChangeRecords(b),
+        }),
+        value
+      );
+      const rebased = rebasedPair(
+        boundA,
+        survivingChange,
+        value,
+        options,
+        records
+      );
+      const afterSurvivingB = survivingChange.apply(value);
+      const afterB = b.apply(value);
+      const undoDroppedSteps = invertV4Steps(
+        afterSurvivingB,
+        rebasedV4.droppedBSteps
+      );
+      const undoDropped = bindV4DocumentChange(
+        createV4DocumentChange(undoDroppedSteps),
+        afterB
+      );
+      const restored = undoDropped.apply(afterB);
+
+      for (const root of touchedRoots) {
+        if (
+          !jsonEqual(
+            valueRoot(restored, root),
+            valueRoot(afterSurvivingB, root)
+          )
+        ) {
+          return null;
+        }
+      }
+
+      const aPrime = undoDropped.compose(rebased.a, afterB);
+
+      attachLazyV4Steps(aPrime, afterB, aPrime.apply(afterB), {
+        isSetValued: options.isSetValued,
+      });
+      propagateDocumentStepFirstAt(boundA, b, aPrime);
+
+      return { a: aPrime, b: rebased.b, keptWrap: rebased.keptWrap };
+    }
+
+    const afterA = a.apply(value);
+    const afterB = b.apply(value);
+    const boundA = bindV4DocumentChange(
+      createV4DocumentChange([...rebasedV4.aPrime, ...nextARegisters], {
+        records: records.first,
+      }),
+      afterB
+    );
+    const boundB = bindV4DocumentChange(
+      createV4DocumentChange([...rebasedV4.bPrime, ...nextBRegisters], {
+        records: records.second,
+      }),
+      afterA
+    );
+
+    propagateDocumentStepFirstAt(a, b, boundA);
+
+    return { a: boundA, b: boundB, keptWrap: null };
+  } catch {
+    return null;
+  }
+};
 
 /** @internal */
 export const transformInternalDocumentChange = (
@@ -3250,24 +3577,49 @@ export const transformInternalDocumentChange = (
       }
     : recordsRebasedOf(a, b);
 
-  if (options.replay && mayJoinOverSiblingRemoval(a, b, value)) {
-    const aSteps = tryV4StepsOf(a, value, options.isSetValued);
-    const bSteps = tryV4StepsOf(b, value, options.isSetValued);
+  const rebasedV4 = tryRebaseV4ForReplay(a, b, value, options, records);
 
-    if (aSteps !== null && bSteps !== null) {
-      const joined = rebaseV4JoinOverSiblingRemoval(value, aSteps, bSteps);
+  if (rebasedV4) return rebasedV4;
 
-      if (joined) {
-        return {
-          a: createV4DocumentChange(joined.aPrime, { records: records.first }),
-          b: createV4DocumentChange(joined.bPrime, { records: records.second }),
-          keptWrap: null,
-        };
+  const pair = rebasedPair(a, b, value, options, records);
+
+  if (options.replay && !hasV4StepsSource(pair.a)) {
+    const aAuthSteps = hasAuthoritativeV4Source(a) ? getV4Steps(a) : null;
+    const bSteps = getV4Steps(b);
+
+    if (
+      aAuthSteps &&
+      bSteps &&
+      bSteps.every(
+        (step) =>
+          step.op === 'insert_text' ||
+          step.op === 'delete_text' ||
+          step.op === 'format_text' ||
+          step.op === 'set_props'
+      ) &&
+      !UNBOUND_V4_CHANGES.has(a) &&
+      !UNBOUND_V4_CHANGES.has(b)
+    ) {
+      let disjoint = true;
+
+      for (const [root, aRoot] of getInternalDocumentChangeEntries(a)) {
+        const bRoot = getInternalDocumentRootChange(b, root);
+
+        if (
+          bRoot &&
+          rangesOverlapOrTouch(rootChangeRanges(aRoot), rootChangeRanges(bRoot))
+        ) {
+          disjoint = false;
+          break;
+        }
+      }
+      if (disjoint) {
+        attachV4Steps(pair.a, aAuthSteps);
       }
     }
   }
 
-  return rebasedPair(a, b, value, options, records);
+  return pair;
 };
 
 export const applyDocumentChangeValue = <T extends JsonEditorValue>(
