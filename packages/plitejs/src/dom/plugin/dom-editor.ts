@@ -111,6 +111,7 @@ import {
 import {
   type ClipboardSliceRead,
   type ClipboardSliceWrite,
+  cutDOMClipboard,
   insertDOMData,
   insertDOMFragmentData,
   insertDOMTextData,
@@ -331,23 +332,6 @@ export interface DOMApi {
    */
   blur: () => void;
   drag: DOMDragApi;
-  /**
-   * Resolve where a drop under a pointer lands: the innermost block edge or
-   * side the transfer dry pass admits, or a text point for a text drag. A
-   * files drop resolves only to an edge. With no `target`, a text drag
-   * resolves nothing, and a block or files drop hit-tests the pointer, read as
-   * client coordinates of the window of the view this editor picks, where its
-   * last rendered Editable sits, and resolves in the editor's view found
-   * there, else in the picked view. The editor an Editable renders with always
-   * resolves in its own view. For a `useRootEditor` editor, the hit test finds
-   * only its `EditorRoot`'s views of its root. The hit test enters shadow
-   * roots but not iframes. A read-only editor resolves nothing unless an
-   * Editable renders with it.
-   */
-  resolveDropTarget: (
-    input: DOMDropTargetInput,
-    options?: DOMDropTargetOptions
-  ) => DOMDropTarget | null;
   deselect: () => void;
   /**
    * The Editable of the view this editor's calls run in, or of a view at
@@ -458,7 +442,7 @@ export interface DOMApi {
 }
 
 export interface DOMEditorCapability<V extends Value = Value> extends DOMApi {
-  clipboard: DOMEditorClipboardCapability<V>;
+  clipboard: DOMClipboardApi<V>;
 }
 
 /** Native block drag, used by drag handles and custom drivers. */
@@ -480,6 +464,23 @@ export interface DOMDragApi {
   /** Publish this view's drop indicator for a target, or clear it. */
   indicate: (target: DOMDropTarget | null) => void;
   /**
+   * Resolve where a drop under a pointer lands: the innermost block edge or
+   * side the transfer dry pass admits, or a text point for a text drag. A
+   * files drop resolves only to an edge. With no `target`, a text drag
+   * resolves nothing, and a block or files drop hit-tests the pointer, read as
+   * client coordinates of the window of the view this editor picks, where its
+   * last rendered Editable sits, and resolves in the editor's view found
+   * there, else in the picked view. The editor an Editable renders with always
+   * resolves in its own view. For a `useRootEditor` editor, the hit test finds
+   * only its `EditorRoot`'s views of its root. The hit test enters shadow
+   * roots but not iframes. A read-only editor resolves nothing unless an
+   * Editable renders with it.
+   */
+  resolveTarget: (
+    input: DOMDropTargetInput,
+    options?: DOMDropTargetOptions
+  ) => DOMDropTarget | null;
+  /**
    * Start a block drag: block-select what a transfer of `node` carries, open
    * the drag session and return inert previews for the drag image. A read-only
    * view starts a copy-only drag.
@@ -491,7 +492,18 @@ export interface DOMDragApi {
 }
 
 /** Clipboard methods installed by the editor DOM bridge. */
-export interface DOMEditorClipboardCapability<V extends Value = Value> {
+export interface DOMClipboardApi<V extends Value = Value> {
+  /**
+   * Write the current selection (or `options.at`) to the system clipboard with
+   * a cut marker, then remove the target in one transaction and arm moved
+   * anchors so a subsequent paste preserves tracked anchors. Returns `false`
+   * without mutating when the view is read-only, the target is non-writable,
+   * the clipboard write fails, or the document changes while waiting.
+   */
+  cut: (
+    options?: Readonly<{ at?: readonly NodeKey[] | NodeSelection | Range }>
+  ) => Promise<boolean>;
+
   /**
    * Insert data from a `DataTransfer` into the editor.
    */
@@ -523,10 +535,6 @@ export interface DOMEditorClipboardCapability<V extends Value = Value> {
     payload: ClipboardSliceWrite<V>
   ) => void;
 }
-
-export interface DOMClipboardApi<
-  V extends Value = Value,
-> extends DOMEditorClipboardCapability<V> {}
 
 export type { ScrollIntoViewOptions, ScrollMargin };
 
@@ -3920,6 +3928,9 @@ export const createDOMEditorCapability = <
       DOMEditor.hasSelectableTarget(editor, target),
     hasTarget: (target) => DOMEditor.hasTarget(editor, target),
     clipboard: Object.freeze({
+      cut: (
+        options?: Readonly<{ at?: readonly NodeKey[] | NodeSelection | Range }>
+      ) => cutDOMClipboard(editor, options),
       insertData: (data: DataTransfer) =>
         runClipboardInsert(data, (nextData) =>
           DOMEditor.clipboard.insertData(editor, nextData)
@@ -3966,6 +3977,23 @@ export const createDOMEditorCapability = <
         indicatorView = view;
         if (view) indicateDOMDropTarget(view, target);
       },
+      resolveTarget: (
+        input: DOMDropTargetInput,
+        options?: DOMDropTargetOptions
+      ) => {
+        const view = dropView(
+          input.target
+            ? reachTarget(editor, input.target)
+            : reachPointer(editor, input.clientX, input.clientY)
+        );
+
+        if (!view) return null;
+        const target = resolveDOMDropTarget(view, input, options);
+
+        return target && 'point' in target
+          ? { point: inRoot(target.point, otherRoot(editor, view)) }
+          : target;
+      },
       start: (
         event: Pick<DragEvent, 'clientX' | 'clientY' | 'dataTransfer'>,
         options: { node: EditorElement }
@@ -3983,23 +4011,6 @@ export const createDOMEditorCapability = <
         );
       },
     }),
-    resolveDropTarget: (
-      input: DOMDropTargetInput,
-      options?: DOMDropTargetOptions
-    ) => {
-      const view = dropView(
-        input.target
-          ? reachTarget(editor, input.target)
-          : reachPointer(editor, input.clientX, input.clientY)
-      );
-
-      if (!view) return null;
-      const target = resolveDOMDropTarget(view, input, options);
-
-      return target && 'point' in target
-        ? { point: inRoot(target.point, otherRoot(editor, view)) }
-        : target;
-    },
     isComposing: () => DOMEditor.isComposing(editor),
     isFocused: () => DOMEditor.isFocused(editor),
     isReadOnly: () => DOMEditor.isReadOnly(editor),

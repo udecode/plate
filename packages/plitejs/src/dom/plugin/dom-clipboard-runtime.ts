@@ -5,9 +5,12 @@ import {
   defineCommand,
   type Editor,
   type EditorStateView,
+  type EditorUpdateTransaction,
   editorCommands,
+  type NodeKey,
   type NodeSelection,
   NodeApi as PliteNode,
+  type Path,
   PathApi,
   type Point,
   PointApi,
@@ -22,13 +25,27 @@ import {
   evaluateCommandWithState,
   getActiveCommandEditor,
 } from '../../core/command-registry';
+import {
+  getEditorRuntimeOwner,
+  getEditorRuntimeRoot,
+} from '../../core/editor-runtime';
+import { resolveFragmentDeletedRange } from '../../core/fragment-deleted-range';
 import { importContentSlice } from '../../core/import-content-slice';
-import { dispatchPaste, landPaste } from '../../core/moved-anchors';
+import {
+  armCutSession,
+  collectMovedAnchors,
+  dispatchPaste,
+  landPaste,
+} from '../../core/moved-anchors';
+import { hasNonWritableAt } from '../../core/non-writable';
 import { getInstalledPlugin } from '../../core/plugin';
-import { getSetSite } from '../../core/public-state';
+import { toInternalRoot, toPublicRoot } from '../../core/public-root';
+import { getNodeTargetRoot, getSetSite } from '../../core/public-state';
 import { captureSliceLanding } from '../../core/slice-landing';
+import { createEditorViewRuntime } from '../../editor-runtime-view';
 import { withLandingBlock } from '../../editor/insert-default-child';
 import {
+  type AnyEditor,
   getSelection as getEditorSelection,
   void as editorVoid,
 } from '../../interfaces/editor';
@@ -48,6 +65,7 @@ import {
   readClipboardFragmentPayload,
   isDOMElement,
   isDOMText,
+  writeClipboardCut,
 } from '../utils/dom';
 import { resolveLastEditorWindow } from '../utils/weak-maps';
 import {
@@ -1036,3 +1054,281 @@ export const insertDOMTextData = <V extends Value>(
   data: DataTransfer
 ): boolean | undefined =>
   insertDataTransfer(editor, data, { mimeType: 'text/plain' });
+
+const generateClipboardCutId = () =>
+  // randomUUID exists only on secure origins; getRandomValues everywhere.
+  Array.from(crypto.getRandomValues(new Uint32Array(4)), (part) =>
+    part.toString(36)
+  ).join('');
+
+export const cutWithAnchors = <T>(
+  editor: AnyEditor,
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  source: NodeSelection | Range,
+  cut: (tx: EditorUpdateTransaction) => T,
+  options?: Readonly<{ id?: string }>
+): T | undefined => {
+  const owner = getEditorRuntimeOwner(editor);
+  const version = editor.read((state) => state.lastCommit()?.version);
+  const root = toInternalRoot(
+    SelectionApi.isNode(source) ? source.root : source.anchor.root
+  );
+  const done = editor.update((tx) => {
+    const moved = collectMovedAnchors(owner, root, source, { cut: true });
+
+    return { moved, result: cut(tx) };
+  });
+  const commit = editor.read((state) => state.lastCommit());
+
+  if (done?.moved && commit && commit.version !== version) {
+    const id = options?.id ?? generateClipboardCutId();
+
+    if (armCutSession(owner, id, done.moved, commit.changes) && !options?.id) {
+      writeClipboardCut(data, id);
+    }
+  }
+
+  return done?.result;
+};
+
+const pruneNestedPaths = (paths: readonly Path[]): Path[] => {
+  const sorted = [...paths].sort(PathApi.compare);
+  const pruned: Path[] = [];
+
+  for (const path of sorted) {
+    const previous = pruned.at(-1);
+
+    if (
+      previous &&
+      (PathApi.equals(previous, path) || PathApi.isAncestor(previous, path))
+    ) {
+      continue;
+    }
+    pruned.push(path);
+  }
+
+  return pruned;
+};
+
+const resolveCutTarget = <V extends Value>(
+  editor: DOMEditor<V>,
+  at?: readonly NodeKey[] | NodeSelection | Range
+): Readonly<{
+  source: NodeSelection | Range;
+  view: DOMEditor<V>;
+}> | null => {
+  const editorRoot = getEditorRuntimeRoot(editor);
+  const viewForRoot = (root: string): DOMEditor<V> =>
+    root === editorRoot
+      ? editor
+      : (createEditorViewRuntime(
+          editor,
+          toPublicRoot(root) === undefined ? {} : { root: toPublicRoot(root) }
+        ) as DOMEditor<V>);
+
+  if (Array.isArray(at)) {
+    if (at.length === 0) return null;
+
+    let targetRoot: string | null = null;
+    const paths: Path[] = [];
+
+    for (const key of at) {
+      const entry = editor.read.nodes.get(key);
+
+      if (!entry) return null;
+
+      const root = getNodeTargetRoot(editor, key) ?? editorRoot;
+
+      if (targetRoot === null) targetRoot = root;
+      else if (targetRoot !== root) return null;
+
+      paths.push(entry[1]);
+    }
+
+    const pruned = pruneNestedPaths(paths);
+
+    if (pruned.length === 0 || targetRoot === null) return null;
+
+    const publicRoot = toPublicRoot(targetRoot);
+
+    return {
+      source: SelectionApi.nodes(pruned as [Path, ...Path[]], {
+        mode: 'block',
+        ...(publicRoot ? { root: publicRoot } : {}),
+      }),
+      view: viewForRoot(targetRoot),
+    };
+  }
+
+  if (at === undefined) {
+    const selectedNodes = editor.read.selection.nodes();
+
+    if (selectedNodes.length > 0) {
+      const pruned = pruneNestedPaths(selectedNodes.map(([, path]) => path));
+
+      if (pruned.length === 0) return null;
+
+      const selection = editor.read.selection();
+      const targetRoot = toInternalRoot(
+        (selection && SelectionApi.root(selection)) ?? editor.read.view.root()
+      );
+      const publicRoot = toPublicRoot(targetRoot);
+
+      return {
+        source: SelectionApi.nodes(pruned as [Path, ...Path[]], {
+          mode: 'block',
+          ...(publicRoot ? { root: publicRoot } : {}),
+        }),
+        view: viewForRoot(targetRoot),
+      };
+    }
+  }
+
+  const raw = at ?? editor.read.selection();
+
+  if (!raw) return null;
+
+  if (SelectionApi.isNode(raw)) {
+    const pruned = pruneNestedPaths(raw.paths);
+
+    if (pruned.length === 0) return null;
+
+    const targetRoot = toInternalRoot(raw.root ?? editor.read.view.root());
+    const publicRoot = toPublicRoot(targetRoot);
+
+    return {
+      source: SelectionApi.nodes(pruned as [Path, ...Path[]], {
+        mode: raw.mode,
+        ...(publicRoot ? { root: publicRoot } : {}),
+      }),
+      view: viewForRoot(targetRoot),
+    };
+  }
+
+  if (RangeApi.isRange(raw)) {
+    const anchorRoot = toInternalRoot(
+      raw.anchor.root ?? editor.read.view.root()
+    );
+    const focusRoot = toInternalRoot(raw.focus.root ?? editor.read.view.root());
+
+    if (anchorRoot !== focusRoot) return null;
+
+    const view = viewForRoot(anchorRoot);
+    const [start] = RangeApi.edges(raw);
+    const startVoid = editorVoid(view, { at: start.path });
+
+    if (RangeApi.isCollapsed(raw) && !startVoid) return null;
+
+    const resolved = resolveFragmentDeletedRange(view, raw);
+
+    if (!resolved) return null;
+
+    if (RangeApi.isRange(resolved)) {
+      const coverage = findEditorDOMRootRuntime(view)?.domCoverage;
+      const boundaries = coverage?.getBoundariesForRange(resolved) ?? [];
+
+      if (boundaries.some((boundary) => boundary.copyPolicy === 'exclude')) {
+        return null;
+      }
+    }
+
+    return { source: resolved, view };
+  }
+
+  return null;
+};
+
+export const cutDOMClipboard = async <V extends Value>(
+  editor: DOMEditor<V>,
+  options?: Readonly<{ at?: readonly NodeKey[] | NodeSelection | Range }>
+): Promise<boolean> => {
+  if (editor.read.view.isReadOnly()) return false;
+
+  const target = resolveCutTarget(editor, options?.at);
+
+  if (!target) return false;
+
+  const { source, view } = target;
+
+  if (
+    view.read.view.isReadOnly() ||
+    hasNonWritableAt(view as AnyEditor, source, { includeReadOnly: false })
+  ) {
+    return false;
+  }
+
+  const versionBefore = view.read((state) => state.lastCommit()?.version);
+  const payload = new Map<string, string>();
+  const data: Pick<DataTransfer, 'getData' | 'setData'> = {
+    getData: (format) => payload.get(format) ?? '',
+    setData: (format, value) => {
+      payload.set(format, value);
+    },
+  };
+
+  writeDOMRangeData(view, data, source);
+
+  const id = generateClipboardCutId();
+
+  writeClipboardCut(data, id);
+
+  const html = data.getData('text/html');
+  const text = data.getData('text/plain');
+
+  if (!html && !text && !SelectionApi.isNode(source)) return false;
+
+  const targetWindow =
+    resolveLastEditorWindow(view) ??
+    resolveLastEditorWindow(editor) ??
+    globalThis.window;
+  const clipboard = targetWindow?.navigator?.clipboard;
+  const ClipboardItemCtor =
+    (
+      targetWindow as
+        | (Window & { ClipboardItem?: typeof ClipboardItem })
+        | undefined
+    )?.ClipboardItem ?? globalThis.ClipboardItem;
+
+  if (!clipboard?.write || !ClipboardItemCtor) return false;
+
+  const items: Record<string, Blob> = {
+    'text/plain': new Blob([text], { type: 'text/plain' }),
+  };
+
+  if (html) {
+    items['text/html'] = new Blob([html], { type: 'text/html' });
+  }
+
+  try {
+    await clipboard.write([new ClipboardItemCtor(items)]);
+  } catch {
+    return false;
+  }
+
+  if (
+    editor.read.view.isReadOnly() ||
+    view.read.view.isReadOnly() ||
+    view.read((state) => state.lastCommit()?.version) !== versionBefore ||
+    hasNonWritableAt(view as AnyEditor, source, { includeReadOnly: false })
+  ) {
+    return false;
+  }
+
+  cutWithAnchors(
+    view as AnyEditor,
+    data,
+    source,
+    (tx) => {
+      if (SelectionApi.isNode(source)) {
+        for (const path of [...source.paths].reverse()) {
+          tx.nodes.remove({ at: path });
+        }
+      } else {
+        tx.text.delete({ at: source });
+      }
+    },
+    { id }
+  );
+
+  return view.read((state) => state.lastCommit()?.version) !== versionBefore;
+};

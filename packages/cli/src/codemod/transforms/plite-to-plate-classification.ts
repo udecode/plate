@@ -208,8 +208,6 @@ export const PLITE_ONLY_DIAGNOSTICS: Readonly<Record<string, string>> = {
     'DOMCoverage types are Plite-only and not re-exported by platejs/dom.',
   'plitejs/dom#DOMCoverageSession':
     'DOMCoverage types are Plite-only and not re-exported by platejs/dom.',
-  'plitejs/dom#DOMEditorClipboardCapability':
-    'Use DOMClipboardApi from platejs/dom.',
   'plitejs/dom#DOMEditorOptions':
     'Pass clipboardFormatKey directly on platejs/react createEditor/useCreateEditor options.',
   'plitejs/dom#DOMFragmentDataHtml':

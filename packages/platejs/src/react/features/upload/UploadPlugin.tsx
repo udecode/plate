@@ -19,7 +19,7 @@ export const UploadPlugin = toReactPlugin(BaseUploadPlugin).extend(
         dragOver: ({ editor, event }) => {
           if (!carriesFiles(event.dataTransfer)) return undefined;
 
-          const target = editor.api.dom.resolveDropTarget(event, {
+          const target = editor.api.dom.drag.resolveTarget(event, {
             files: fileDropBlock,
           });
 
@@ -32,7 +32,7 @@ export const UploadPlugin = toReactPlugin(BaseUploadPlugin).extend(
         drop: ({ editor, event }) => {
           if (!carriesFiles(event.dataTransfer)) return undefined;
 
-          const target = editor.api.dom.resolveDropTarget(event, {
+          const target = editor.api.dom.drag.resolveTarget(event, {
             files: fileDropBlock,
           });
 

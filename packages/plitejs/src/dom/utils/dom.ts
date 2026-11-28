@@ -384,7 +384,7 @@ export const isPlainTextPaste = (data: object) => plainTextPastes.has(data);
 
 const CUT_MIME_TYPE = 'application/x-editor-cut';
 const catchTagName = /^<[A-Za-z][^\s/>]*/;
-const catchLeadingEditorCut = /^<[A-Za-z][^\s/>]*\s+data-editor-cut="([^"]*)"/;
+const catchEditorCut = /\bdata-editor-cut\s*=\s*(["'])(.*?)\1/;
 
 export const readClipboardCut = (
   data: Pick<DataTransfer, 'getData'>
@@ -397,7 +397,7 @@ export const readClipboardCut = (
 
   for (const [tag] of data.getData('text/html').matchAll(catchOpeningHtmlTag)) {
     if (catchEditorFragment.test(tag)) {
-      return tag.match(catchLeadingEditorCut)?.[1] ?? null;
+      return tag.match(catchEditorCut)?.[2] ?? null;
     }
   }
 

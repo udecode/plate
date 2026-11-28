@@ -32,7 +32,6 @@ export type {
   DOMDragApi,
   DOMVisualPoint,
   DOMVisualPointOptions,
-  DOMEditorClipboardCapability,
   DOMClipboardApi,
   DOMClipboardInsertDataHandler,
   ScrollIntoViewOptions,

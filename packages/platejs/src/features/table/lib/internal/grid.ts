@@ -59,10 +59,24 @@ export type TableGridCompilerMetrics = Readonly<{
   compileCount: number;
 }>;
 
+export type TableSpanIndex = Readonly<{
+  rowIndex: ReadonlyMap<unknown, number>;
+  spannedGaps: ReadonlySet<number>;
+  spannedRows: ReadonlySet<number>;
+}>;
+
+export type TableSpanIndexMetrics = Readonly<{
+  buildCount: number;
+  cacheHitCount: number;
+}>;
+
 const cache = new WeakMap<Element, TableGrid>();
+const spanIndexCache = new WeakMap<TableGrid, TableSpanIndex>();
 export const TABLE_CELL_OPERATION_KEY = Symbol('tableCellOperationKey');
 let cacheHitCount = 0;
 let compileCount = 0;
+let spanIndexBuildCount = 0;
+let spanIndexCacheHitCount = 0;
 
 const isValidSpan = (value: unknown) =>
   value === undefined ||
@@ -308,6 +322,58 @@ export function compileTableGrid(
 
   return compileCachedTableGrid(stateOrTable as Element);
 }
+
+export const getTableSpanIndex = (table: Element): TableSpanIndex => {
+  const grid = compileCachedTableGrid(table);
+  const cached = spanIndexCache.get(grid);
+
+  if (cached) {
+    spanIndexCacheHitCount += 1;
+
+    return cached;
+  }
+
+  spanIndexBuildCount += 1;
+
+  const spannedGaps = new Set<number>();
+  const spannedRows = new Set<number>();
+  const rowIndex = new Map<unknown, number>();
+
+  table.children.forEach((row, index) => {
+    rowIndex.set(row, index);
+  });
+
+  for (const { row, rowSpan } of grid.anchors) {
+    if (rowSpan <= 1) continue;
+
+    const endRow = Math.min(grid.height, row + rowSpan);
+
+    for (let r = row; r < endRow; r += 1) {
+      spannedRows.add(r);
+      if (r > row) spannedGaps.add(r);
+    }
+  }
+
+  const index: TableSpanIndex = Object.freeze({
+    rowIndex: freezeMap(rowIndex),
+    spannedGaps,
+    spannedRows,
+  });
+
+  spanIndexCache.set(grid, index);
+
+  return index;
+};
+
+export const getTableSpanIndexMetrics = (): TableSpanIndexMetrics => ({
+  buildCount: spanIndexBuildCount,
+  cacheHitCount: spanIndexCacheHitCount,
+});
+
+export const resetTableSpanIndexMetrics = () => {
+  spanIndexBuildCount = 0;
+  spanIndexCacheHitCount = 0;
+};
 
 export type DetachedTableGrid =
   | Readonly<{ grid: TableGrid; kind: 'merged' }>

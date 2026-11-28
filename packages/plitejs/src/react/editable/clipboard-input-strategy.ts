@@ -1,9 +1,7 @@
 import type { ClipboardEvent, DragEvent } from 'react';
 
 import {
-  type EditorUpdateTransaction,
   type TransferOutcome,
-  type NodeSelection,
   NodeApi,
   PathApi,
   type Range,
@@ -11,15 +9,9 @@ import {
   SelectionApi,
   TextApi,
 } from '../..';
-import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { resolveFragmentDeletedRange } from '../../core/fragment-deleted-range';
-import {
-  armCutSession,
-  collectMovedAnchors,
-  endCutSession,
-} from '../../core/moved-anchors';
+import { endCutSession } from '../../core/moved-anchors';
 import { hasNonWritableAt } from '../../core/non-writable';
-import { toInternalRoot } from '../../core/public-root';
 import { checkTransfer } from '../../core/transfer';
 import {
   isDOMElement,
@@ -38,6 +30,7 @@ import {
   scheduleEditorDOMPhase,
   supportsDOMBeforeInput,
 } from '../../dom/internal';
+import { cutWithAnchors } from '../../dom/plugin/dom-clipboard-runtime';
 import {
   copyIntentOf,
   type DOMDropTargetInput,
@@ -52,12 +45,13 @@ import {
   eventCarriesBlockFragment,
   resolveBlockFragmentDropRange,
 } from '../../dom/plugin/dom-event-range-targets';
-import { isDOMInputOrTextArea, writeClipboardCut } from '../../dom/utils/dom';
+import { isDOMInputOrTextArea } from '../../dom/utils/dom';
 import {
   beginDragSession,
   clearDragSession,
   type DragSession,
   isDragSessionClaimed,
+  isDragScrollRepaintActive,
   readDragSession,
   setDragScrollRepaint,
   settleDragSession,
@@ -391,38 +385,6 @@ const readCutDeletedRange = (editor: AnyEditor, selection: Range) => {
     : null;
 };
 
-const cutWithAnchors = <T>(
-  editor: ReactRuntimeEditor,
-  data: Pick<DataTransfer, 'getData' | 'setData'>,
-  source: NodeSelection | Range,
-  cut: (tx: EditorUpdateTransaction) => T
-): T | undefined => {
-  const owner = getEditorRuntimeOwner(editor);
-  const version = editor.read((state) => state.lastCommit()?.version);
-  const root = toInternalRoot(
-    SelectionApi.isNode(source) ? source.root : source.anchor.root
-  );
-  const done = editor.update((tx) => {
-    const moved = collectMovedAnchors(owner, root, source, { cut: true });
-
-    return { moved, result: cut(tx) };
-  });
-  const commit = editor.read((state) => state.lastCommit());
-
-  if (done?.moved && commit && commit.version !== version) {
-    // randomUUID exists only on secure origins; getRandomValues everywhere.
-    const id = Array.from(crypto.getRandomValues(new Uint32Array(4)), (part) =>
-      part.toString(36)
-    ).join('');
-
-    if (armCutSession(owner, id, done.moved, commit.changes)) {
-      writeClipboardCut(data, id);
-    }
-  }
-
-  return done?.result;
-};
-
 export const applyEditableCut = ({
   editor,
   event,
@@ -715,6 +677,7 @@ export const applyEditableDragEnd = ({
 // session's payload and only the pointer coordinates.
 const followDOMDropTargetOnScroll = (
   editor: ReactRuntimeEditor,
+  ownerDocument: Document,
   session: DragSession,
   input: DOMDropTargetInput
 ) => {
@@ -727,12 +690,15 @@ const followDOMDropTargetOnScroll = (
     nodes: session.source.keys,
   };
 
-  setDragScrollRepaint(ReactEditor.getWindow(editor).document, editor, () => {
+  setDragScrollRepaint(ownerDocument, editor, () => {
     scheduleEditorDOMPhase(
       editor,
       'dom-read',
       'drag scroll repaint',
       () => {
+        if (!isDragScrollRepaintActive(ownerDocument, session.id, editor)) {
+          return;
+        }
         indicateDOMDropTarget(
           editor,
           resolveDOMDropTarget(editor, point, options)
@@ -790,7 +756,12 @@ export const applyEditableDragOver = ({
       input,
       session.source.kind === 'nodes' ? session.source.keys : []
     );
-    followDOMDropTargetOnScroll(editor, session, input);
+    followDOMDropTargetOnScroll(
+      editor,
+      event.currentTarget.ownerDocument,
+      session,
+      input
+    );
     // Always preventDefault for block drags to suppress the native text cursor,
     // even when no valid drop target is found.
     event.preventDefault();

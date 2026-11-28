@@ -117,13 +117,37 @@ const LOCK_ROOT_CACHE = new WeakMap<object, ReadonlySet<RootKey>>();
 const isOwnLockedElement = (node: unknown): boolean =>
   ElementApi.isElement(node) && node.locked === true;
 
-const hasLockedDescendant = (node: Element): boolean => {
+const hasLockedDescendant = (
+  node: Element,
+  value?: EditorDocumentValue,
+  visited = new Set<RootKey>()
+): boolean => {
   for (const child of node.children) {
     if (
       ElementApi.isElement(child) &&
-      (child.locked === true || hasLockedDescendant(child))
+      (child.locked === true || hasLockedDescendant(child, value, visited))
     ) {
       return true;
+    }
+  }
+
+  const { childRoots } = node as Element & {
+    childRoots?: Readonly<Record<string, RootKey>>;
+  };
+
+  if (childRoots && value) {
+    for (const root of Object.values(childRoots)) {
+      if (visited.has(root)) continue;
+      visited.add(root);
+
+      for (const child of rootChildrenOf(value, root)) {
+        if (
+          ElementApi.isElement(child) &&
+          (child.locked === true || hasLockedDescendant(child, value, visited))
+        ) {
+          return true;
+        }
+      }
     }
   }
 
@@ -332,6 +356,22 @@ const resolveBlockEntries = (
     return above ? [above] : [];
   }
 
+  if (at === undefined) {
+    const selectedNodes = editor.read.selection.nodes();
+
+    if (selectedNodes.length > 0) {
+      const results: Array<readonly [Element, Path]> = [];
+
+      for (const [node, path] of selectedNodes) {
+        if (ElementApi.isElement(node) && editor.read.schema.isBlock(node)) {
+          results.push([node, path]);
+        }
+      }
+
+      return results;
+    }
+  }
+
   const targetLocation = at ?? editor.read.selection();
 
   if (!targetLocation) return [];
@@ -407,7 +447,7 @@ const isTransferRefusalFromLock = (
     siblings = node.children;
   }
 
-  return ElementApi.isElement(node) && hasLockedDescendant(node);
+  return ElementApi.isElement(node) && hasLockedDescendant(node, value);
 };
 
 /**
@@ -723,7 +763,7 @@ export const BaseLockPlugin = definePlugin('lock', {
           input.payload.nodes.some(
             (node) =>
               ElementApi.isElement(node) &&
-              (node.locked === true || hasLockedDescendant(node))
+              (node.locked === true || hasLockedDescendant(node, sourceValue))
           )
         ) {
           return true;
@@ -757,7 +797,7 @@ export const BaseLockPlugin = definePlugin('lock', {
 
       if (
         input.wrap &&
-        (targetNode.locked === true || hasLockedDescendant(targetNode))
+        (targetNode.locked === true || hasLockedDescendant(targetNode, value))
       ) {
         return true;
       }
@@ -803,6 +843,56 @@ export const BaseLockPlugin = definePlugin('lock', {
     },
   },
   read: ({ editor }) => ({
+    /**
+     * Return `true` when `at` (a location, node key, node key list, or the
+     * current selection) is locked or contains any locked descendant or owned
+     * content root.
+     */
+    containsLocked: (at?: Location | NodeKey | readonly NodeKey[]): boolean => {
+      const value = editor.read.value();
+
+      if (Array.isArray(at)) {
+        if (at.length === 0) return false;
+        if (typeof at[0] === 'string') {
+          for (const key of at as readonly NodeKey[]) {
+            const root = resolveLocationRoot(editor, key);
+
+            if (isRootLocked(editor, root, value)) return true;
+
+            const entries = resolveBlockEntries(editor, key);
+
+            if (
+              entries.some(
+                ([node, path]) =>
+                  node.locked === true ||
+                  hasLockedElementAtOrAbovePath(value, root, path) ||
+                  hasLockedDescendant(node, value)
+              )
+            ) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+      }
+
+      const targetAt = at as Location | NodeKey | undefined;
+      const root = resolveLocationRoot(editor, targetAt);
+
+      if (isRootLocked(editor, root, value)) return true;
+
+      const entries = resolveBlockEntries(editor, targetAt);
+
+      if (entries.length === 0) return false;
+
+      return entries.some(
+        ([node, path]) =>
+          node.locked === true ||
+          hasLockedElementAtOrAbovePath(value, root, path) ||
+          hasLockedDescendant(node, value)
+      );
+    },
     /**
      * Return `true` when the block at `at` (or the current selection) is
      * effectively locked, either via its own `locked` flag, a locked ancestor,

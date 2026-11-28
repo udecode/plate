@@ -96,9 +96,13 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
                   <div
                     draggable
                     onDragStart={(event) => {
-                      editor.api.dom.drag.start(event.nativeEvent, {
-                        node: props.element,
-                      });
+                      if (
+                        !editor.api.dom.drag.start(event.nativeEvent, {
+                          node: props.element,
+                        })
+                      ) {
+                        event.preventDefault();
+                      }
                     }}
                   >
                     <LiteYouTubeEmbed
@@ -128,9 +132,13 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
                   <div
                     draggable
                     onDragStart={(event) => {
-                      editor.api.dom.drag.start(event.nativeEvent, {
-                        node: props.element,
-                      });
+                      if (
+                        !editor.api.dom.drag.start(event.nativeEvent, {
+                          node: props.element,
+                        })
+                      ) {
+                        event.preventDefault();
+                      }
                     }}
                   >
                     {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}
@@ -157,9 +165,13 @@ export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
                   <div
                     draggable
                     onDragStart={(event) => {
-                      editor.api.dom.drag.start(event.nativeEvent, {
-                        node: props.element,
-                      });
+                      if (
+                        !editor.api.dom.drag.start(event.nativeEvent, {
+                          node: props.element,
+                        })
+                      ) {
+                        event.preventDefault();
+                      }
                     }}
                   >
                     <ReactPlayer

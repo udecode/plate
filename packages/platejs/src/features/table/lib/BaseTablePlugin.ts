@@ -48,6 +48,7 @@ import {
 import {
   compileDetachedTableGrid,
   compileTableGrid,
+  getTableSpanIndex,
   getTableColumnSizes,
   isTableColumnSizes,
   type TableGridAnchor,
@@ -668,13 +669,13 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
   const isRow = (node: Node): boolean =>
     ElementApi.isElement(node) && node.type === type;
   const splitsSpan = (table: Node, gap: number): boolean =>
-    compileTableGrid(table as TableElement).anchors.some(
-      ({ row, rowSpan }) => row < gap && gap < row + rowSpan
-    );
-  const spansRow = (table: Node, index: number): boolean =>
-    compileTableGrid(table as TableElement).anchors.some(
-      ({ row, rowSpan }) => rowSpan > 1 && row <= index && index < row + rowSpan
-    );
+    getTableSpanIndex(table as TableElement).spannedGaps.has(gap);
+  const spansRow = (table: Node, row: Node): boolean => {
+    const spanIndex = getTableSpanIndex(table as TableElement);
+    const index = spanIndex.rowIndex.get(row);
+
+    return index !== undefined && spanIndex.spannedRows.has(index);
+  };
 
   return {
     // A grid's width and spans are not schema, so these limits stay here.
@@ -724,9 +725,7 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
             const source = parentKey && from.read.nodes.get(parentKey)?.[0];
 
             return (
-              !!source &&
-              ElementApi.isElement(source) &&
-              spansRow(source, source.children.indexOf(row))
+              !!source && ElementApi.isElement(source) && spansRow(source, row)
             );
           });
         }

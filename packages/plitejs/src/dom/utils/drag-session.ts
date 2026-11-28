@@ -152,6 +152,14 @@ export const clearDragScrollRepaint = (document: Document, owner: object) => {
   if (REPAINTS.get(document)?.owner === owner) REPAINTS.delete(document);
 };
 
+export const isDragScrollRepaintActive = (
+  document: Document,
+  sessionId: string,
+  owner: object
+) =>
+  SESSIONS.get(document)?.id === sessionId &&
+  REPAINTS.get(document)?.owner === owner;
+
 /**
  * Runs `settle` once the active drag has rested on `key` of `owner` for
  * `delay` ms. A dragover on another key, `null`, or the drag's end cancels it,

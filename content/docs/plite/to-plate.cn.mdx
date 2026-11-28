@@ -337,7 +337,7 @@ const editor = useCreateEditor({
 | --- | --- | --- |
 | `getEditorDOMRoot(editor)` | `editor.api.dom.root()` | |
 | `dom`、`DOMEditorOptions`、`DOMPlugin`、`DOMPluginTypes` | 无 | Plate 会自动安装核心 DOM 插件；在来自 `platejs/react` 的 `createEditor` 或 `useCreateEditor` 中配置 `clipboardFormatKey`。 |
-| `getDOMClipboardFormatKey`、`writeDOMFragmentData`、`writeDOMRangeData`、`cleanDOMClipboardContents`、`DOMClipboardInsertDataHandler`、`DOMEditorClipboardCapability`、`DOMFragmentDataHtml`、`DOMFragmentDataPayload` | `editor.api.dom.clipboard` 和插件的 `dataTransferFormats` | |
+| `getDOMClipboardFormatKey`、`writeDOMFragmentData`、`writeDOMRangeData`、`cleanDOMClipboardContents`、`DOMClipboardInsertDataHandler`、`DOMFragmentDataHtml`、`DOMFragmentDataPayload` | `editor.api.dom.clipboard` 和插件的 `dataTransferFormats` | |
 | `Hotkeys` | 来自 `platejs` 的 `Hotkeys` | Plate 的集合成员不同。 |
 | `createCompiledHotkeyMatcher`、`Key` | `isHotkey`，或插件的 `shortcuts` | |
 | `readDOMSelectionRange`、`writeDOMSelection`、`DOMSelectionPoints` | 无 | `EditorContent` 负责读写 DOM 选区。 |

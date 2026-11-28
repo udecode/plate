@@ -68,9 +68,13 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
                   draggable
                   src={props.element.url}
                   onDragStart={(event) => {
-                    editor.api.dom.drag.start(event.nativeEvent, {
-                      node: props.element,
-                    });
+                    if (
+                      !editor.api.dom.drag.start(event.nativeEvent, {
+                        node: props.element,
+                      })
+                    ) {
+                      event.preventDefault();
+                    }
                   }}
                   onDoubleClickCapture={openPreview}
                 />

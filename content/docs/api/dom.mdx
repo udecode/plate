@@ -52,7 +52,7 @@ view, picked by the editor you call it on:
   `assertRange` run on the editor you call instead, so resolve a DOM range in
   one view with that view's own editor.
 - On the editor `createEditor` returns and on an editor from `useRootEditor`,
-  a block or files drop that `resolveDropTarget` finds from coordinates alone,
+  a block or files drop that `drag.resolveTarget` finds from coordinates alone,
   and `drag.autoScroll`, hit-test the pointer in the document of the view
   picked as above. They run in the editor's view found there, else in the
   picked view. The hit test enters shadow roots but not iframes, so a pointer
@@ -347,9 +347,9 @@ around `node` or a list item's family, marks their hosts with `data-editor-dragg
 the pointer's offset for `event.dataTransfer.setDragImage`. A read-only view
 starts a copy-only drag. Returns `null` when nothing can be dragged.
 
-#### `editor.api.dom.drag.indicate(target: DropTarget | null): void`
+#### `editor.api.dom.drag.indicate(target: DOMDropTarget | null): void`
 
-Publish this view's drop indicator for a target from `resolveDropTarget`, or
+Publish this view's drop indicator for a target from `drag.resolveTarget`, or
 clear it. `useDropIndicator` reads it.
 
 #### `editor.api.dom.drag.autoScroll(point: { x: number; y: number }): number`
@@ -367,7 +367,7 @@ the maximum step of 28px per call.
 Call it once per animation frame while a custom drag lasts, and call again on
 the next frame while it returns a value other than 0.
 
-#### `editor.api.dom.resolveDropTarget(input: { clientX: number; clientY: number; target?: EventTarget | null; dataTransfer?: DataTransfer | null }, options?: { copy?: boolean; files?: Element; from?: Editor; nodes?: NodeKey[]; range?: Range }): { key: NodeKey; edge: 'after' | 'before'; axis: 'x' | 'y' } | { key: NodeKey; side: 'end' | 'start' } | { point: Point } | null`
+#### `editor.api.dom.drag.resolveTarget(input: { clientX: number; clientY: number; target?: EventTarget | null; dataTransfer?: DataTransfer | null }, options?: { copy?: boolean; files?: Element; from?: Editor; nodes?: NodeKey[]; range?: Range }): { key: NodeKey; edge: 'after' | 'before'; axis: 'x' | 'y' } | { key: NodeKey; side: 'end' | 'start' } | { point: Point } | null`
 
 Resolve where a drop under a pointer lands: an edge the schema, the landing
 redirects and the vetoes admit, or a text point for a text drag. Within 8px of a
@@ -400,6 +400,15 @@ another editor never resolves to a side. Pass the target to
 `editor.api.transfer.move` as `to`, or narrow with `'edge' in target`.
 
 ## DataTransfer
+
+#### `editor.api.dom.clipboard.cut(options?: { at?: readonly NodeKey[] | NodeSelection | Range }): Promise<boolean>`
+
+Write the selected blocks or range (or `options.at`) to the system clipboard
+with a cut marker, then remove the target in one transaction and arm moved
+anchors so a subsequent paste preserves tracked anchors. Returns `false`
+without mutating the document when the view is read-only, the target is
+non-writable, the clipboard write fails, or the document changes while waiting
+for the clipboard.
 
 #### `editor.api.dom.clipboard.insertData(data: DataTransfer): boolean | undefined`
 

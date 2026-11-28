@@ -7,6 +7,7 @@ import {
   PathApi,
   type Point,
   type Range,
+  SelectionApi,
 } from '../..';
 import {
   checkFilesLanding,
@@ -25,7 +26,10 @@ import {
 import { publishDropIndicator } from '../utils/drop-indicator';
 import { usesAppleDOMHotkeys } from '../utils/environment';
 import { resolveLastEditorWindow } from '../utils/weak-maps';
-import { writeDOMSelectionData } from './dom-clipboard-runtime';
+import {
+  writeDOMRangeData,
+  writeDOMSelectionData,
+} from './dom-clipboard-runtime';
 import type { DOMApi } from './dom-editor';
 import { findEditorDOMRootRuntime } from './dom-root-runtime';
 
@@ -506,12 +510,15 @@ const paddingSide = (
   }
 
   const style = view.getComputedStyle(root);
+  const scaleX = root.offsetWidth ? box.width / root.offsetWidth : 1;
   const origin = readDragOriginX(root.ownerDocument);
   const right =
-    input.clientX > box.right - (Number.parseFloat(style.paddingRight) || 0) &&
+    input.clientX >
+      box.right - (Number.parseFloat(style.paddingRight) || 0) * scaleX &&
     (origin === undefined || input.clientX > origin + SIDE_CLEARANCE);
   const left =
-    input.clientX < box.left + (Number.parseFloat(style.paddingLeft) || 0) &&
+    input.clientX <
+      box.left + (Number.parseFloat(style.paddingLeft) || 0) * scaleX &&
     (origin === undefined || input.clientX < origin - SIDE_CLEARANCE);
 
   if (!right && !left) return null;
@@ -968,6 +975,9 @@ export const indicateDOMDropTarget = (
 const previewOf = (host: HTMLElement) => {
   const preview = host.cloneNode(true) as HTMLElement;
 
+  for (const media of preview.querySelectorAll('iframe, embed, object')) {
+    media.remove();
+  }
   for (const element of [preview, ...preview.querySelectorAll('*')]) {
     for (const attribute of Array.from(element.attributes)) {
       if (attribute.name.startsWith('data-editor')) {
@@ -993,13 +1003,21 @@ export const startDOMDrag = (
 
   if (!dataTransfer) return null;
 
-  const entries = transferEntries(editor, node).map(([entry]) => entry);
+  const rawEntries = transferEntries(editor, node);
+  const entries = rawEntries.map(([entry]) => entry);
+  const paths = rawEntries.map(([, path]) => path);
   const keys = entries.flatMap((entry) => editor.key(entry) ?? []);
   const hosts = entries.flatMap((entry) => dom.resolveDOMNode(entry) ?? []);
 
   if (keys.length === 0 || hosts.length === 0) return null;
 
-  if (!copyOnly) {
+  if (copyOnly) {
+    writeDOMRangeData(
+      editor,
+      dataTransfer,
+      SelectionApi.nodes(paths as [Path, ...Path[]], { mode: 'block' })
+    );
+  } else {
     editor.update.selection.setNodes(entries);
     writeDOMSelectionData(editor, dataTransfer);
   }
