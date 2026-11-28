@@ -117,7 +117,7 @@ return <Button disabled={!canToggleBold} onClick={onPress}>Bold</Button>;
 
 // Good: base/live split stays explicit.
 export const BaseFootnoteKit = [
-  BaseFootnoteReferencePlugin.configure({
+  BaseFootnotePlugin.configure({
     component: FootnoteReferenceElementStatic,
   }),
   BaseFootnoteDefinitionPlugin.configure({
@@ -126,7 +126,7 @@ export const BaseFootnoteKit = [
 ];
 
 export const FootnoteKit = [
-  FootnoteReferencePlugin.configure({
+  FootnotePlugin.configure({
     component: FootnoteReferenceElement,
     slots: { afterEditable: FootnoteCombobox },
   }),

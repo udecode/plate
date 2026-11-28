@@ -17,12 +17,13 @@ Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitio
 
 - GFM-compatible footnote references and definitions as dedicated Plate nodes.
 - One-transform insertion with automatic numeric ref allocation.
-- Typing `[^` opens a reference picker from the default UI kit.
+- Typing `[^` opens an inline picker for existing footnotes or creating numeric and named (`[A-Za-z0-9_-]+`) refs.
+- Click, tap, Enter, or hover opens a preview card with Jump and Create actions; `Mod+click` jumps directly.
 - Recreate a missing definition from an unresolved reference without duplicating.
-- Keep the first duplicate definition canonical; renumber later duplicates on demand.
+- Keep the first duplicate definition canonical; flag later duplicates with a `Duplicate` badge and on-demand renumbering.
 - Navigation helpers that jump between reference and definition with a landed-target flash.
 - HTML export and static pages link each reference to its note, and footnotes copied from GitHub paste as footnotes.
-- Pasted notes land at the end of the document, wherever the caret is.
+- Pasted notes land at the end of the document, wherever the caret is, and colliding pasted reference-and-definition pairs remap to a free ref.
 
 </PackageInfo>
 
@@ -160,11 +161,20 @@ With `NavigationFeedbackPlugin.configure({ enabled: false })` in `plugins`,
 footnote navigation still scrolls to the target, and selects and focuses it in
 an editable view, without a highlight.
 
+In an editable view, hovering, clicking, tapping, or pressing Enter on a
+`FootnoteKit` reference opens a preview card showing the note's text and a
+"Go to footnote" or "Create definition" button (disabled when the reference sits
+in a locked block). `Mod+click` jumps straight to the definition, creating it
+when missing and unlocked. Unresolved references show a dashed amber badge,
+uncited definitions show a plain label instead of a back link, and later
+duplicate definitions show a `Duplicate` badge alongside a "Renumber" button.
+
 In a read-only view, the `FootnoteKit` components jump on a plain click or
 Enter. A reference jumps to its note. A note's back link jumps to its reference,
 or opens a picker of its citations when several references share the note; the
 arrow keys move through the picker and Enter jumps. After a jump, focus moves to
-the target's own jump control, so Enter jumps back.
+the target's own jump control, so Enter jumps back. Duplicate definitions still
+show the `Duplicate` badge in read-only views without the renumber button.
 
 ### Handle duplicate definitions
 
@@ -185,7 +195,11 @@ The transform returns the newly assigned ref string on success, or `false` when 
 A pasted definition lands at the end of the document, after every block already
 there and before the empty paragraph `TrailingBlockPlugin` keeps. Its references
 and the rest of the paste land at the caret, in a table cell, a quote or a list
-item as in a paragraph, and the caret ends after the pasted text. One undo
+item as in a paragraph, and the caret ends after the pasted text. When a paste
+carries both a reference and its definition and that ref already exists in the
+document, both remap to the next free numeric ref across paragraphs, table
+cells, multi-cell selections, and pasted tables. A definition pasted on its own
+keeps its ref so you can resolve or renumber duplicates explicitly. One undo
 removes the whole paste. A definition saved inside another block stays there.
 
 Words copied from inside a note paste as words, without the note. A copy that
@@ -364,7 +378,7 @@ id it links to. Static components and the HTML encoders use the same ids.
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="{ id: string; target?: string } | undefined">
-    `{ id, target? }`, or `undefined` when no footnote is at `path`. On the main root, a reference targets its note's id even when the note is missing, and a canonical definition targets its first reference. Inside a named root, ids are scoped as `fn@<root>@<ref>` and `fnref@<root>@<ref>`, and `target` is omitted when the matching definition or reference is missing. A later duplicate has no `target`.
+    `{ id, target? }`, or `undefined` when no footnote is at `path`. A reference targets its canonical definition and a canonical definition targets its first reference. Unresolved references, uncited definitions, and later duplicate definitions omit `target` in both main and named roots. Inside a named root, ids scope as `fn@<root>@<ref>` and `fnref@<root>@<ref>`.
   </APIItem>
 </APIReturns>
 </API>

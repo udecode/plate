@@ -1,0 +1,16 @@
+---
+id: 2026-11-28-footnote-preview-and-combobox
+date: 2026-11-28
+status: draft
+kind: behavior
+summary: 'Redesign footnote preview popover, visual states, named combobox refs, and static copy markup'
+change: { 'type': 'source', 'date': '2026-11-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-28-footnote-preview-and-combobox-7f3a9d1c","kind":"behavior","migrationNotes":[]} -->
+
+- **`footnote`**: Open an interactive preview popover on hover, click, tap, or Enter with Jump and Create actions, style unresolved references distinctly, render uncited definitions as plain labels, show a `Duplicate` badge with lock-aware renumbering, and support round-trip-safe GFM named refs (`[A-Za-z0-9_-]+`) in the inline combobox.
+<!-- entry: {"id":"2026-11-28-footnote-static-partial-copy-4c2e8b0a","kind":"fix","migrationNotes":[]} -->
+- **`footnote-static`**: Mark static footnote definition labels and bodies separately so partial text copies from a static footnote paste as plain text instead of an empty footnote definition.

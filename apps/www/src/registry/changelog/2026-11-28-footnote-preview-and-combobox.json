@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-footnote-preview-and-combobox",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-footnote-preview-and-combobox.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Redesign footnote preview popover, visual states, named combobox refs, and static copy markup",
+  "targets": [
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote-static",
+      "files": ["apps/www/src/registry/components/editor/footnote-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-footnote-preview-and-combobox-7f3a9d1c",
+      "kind": "behavior",
+      "summary": "Open an interactive preview popover on hover, click, tap, or Enter with Jump and Create actions, style unresolved references distinctly, render uncited definitions as plain labels, show a `Duplicate` badge with lock-aware renumbering, and support round-trip-safe GFM named refs (`[A-Za-z0-9_-]+`) in the inline combobox.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["footnote"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-footnote-preview-and-combobox",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-footnote-static-partial-copy-4c2e8b0a",
+      "kind": "fix",
+      "summary": "Mark static footnote definition labels and bodies separately so partial text copies from a static footnote paste as plain text instead of an empty footnote definition.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["footnote-static"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-footnote-preview-and-combobox",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -271,6 +271,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-footnote-preview-and-combobox",
+      "href": "/registry/changelog/2026-11-28-footnote-preview-and-combobox.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Redesign footnote preview popover, visual states, named combobox refs, and static copy markup",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["footnote", "footnote-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-inline-combobox-floating-ui",
       "href": "/registry/changelog/2026-11-28-inline-combobox-floating-ui.json",
       "status": "draft",

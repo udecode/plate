@@ -534,6 +534,7 @@
     ],
     "footnote": [
       "2026-11-28-footnote-combobox-keyboard-and-perf",
+      "2026-11-28-footnote-preview-and-combobox",
       "2026-11-28-inline-combobox-floating-ui",
       "2026-11-28-inline-combobox-trigger-props",
       "2026-11-27-dark-mode-editor-chrome",
@@ -549,6 +550,12 @@
       "2026-09-08-inline-combobox-input",
       "2026-09-07-footnote-target-attributes",
       "2026-08-25-base-first-registry",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "footnote-static": [
+      "2026-11-28-footnote-preview-and-combobox",
+      "2026-10-17-footnote-links",
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
@@ -1777,11 +1784,6 @@
       "2026-10-18-layout-style-values",
       "2026-08-17-flat-editor-registry",
       "2026-08-12-fix-font-size-selection-highlight"
-    ],
-    "footnote-static": [
-      "2026-10-17-footnote-links",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
     ],
     "indent": [
       "2026-10-16-code-block-diagrams",
