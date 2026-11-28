@@ -16,6 +16,16 @@
   ],
   "maxEffort": "xhigh",
   "maxAutoStart": 0,
+  "audit": {
+    "model": "gemini-4-neon",
+    "reopen": {
+      "clipboard": "2026-11-28T10:35:00Z",
+      "distribution": "2026-11-28T10:35:00Z",
+      "dom-lookup-names": "2026-11-28T10:35:00Z",
+      "list": "2026-11-28T10:35:00Z",
+      "persistence": "2026-11-28T10:35:00Z"
+    }
+  },
   "stepBudget": {
     "exclude": [
       "apps/www/src/generated/**",

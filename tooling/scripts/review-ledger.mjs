@@ -271,6 +271,7 @@ function pageOf(path, text) {
     verdicts: verdictsOf(meta.review_scopes, meta.verdict),
     basis: Array.isArray(meta.review_basis) ? meta.review_basis : [],
     workKind: meta.work_kind ?? null,
+    model: meta.review_model || bodyLeadModel(text),
     summary: leadOf(text),
     jobs: jobsOf(text),
     previous: null,
@@ -468,6 +469,7 @@ function compact(ledger, tree, plans, scope, incoming) {
           id: head.id,
           date: head.date,
           verdict: head.verdict,
+          ...(head.model ? { model: head.model } : {}),
           summary: clip(head.summary),
         }
       : null,
@@ -498,11 +500,12 @@ function detailed(ledger, tree, plans, scope, incoming) {
     ...compact(ledger, tree, plans, scope, incoming),
     scope,
     history: (ledger.reviews.get(scope.id) ?? []).map(
-      ({ id, kind, date, verdict, path, summary }) => ({
+      ({ id, kind, date, verdict, model, path, summary }) => ({
         id,
         kind,
         date,
         verdict,
+        ...(model ? { model } : {}),
         ...(path ? { path } : {}),
         summary,
       })
@@ -674,20 +677,59 @@ function tierAt(tiers, { id, writes }) {
 
 const leadScope = (page) => page.scopes[0];
 
+const normalizeModel = (value) =>
+  (value ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+function parseUtcTime(label, value) {
+  const at =
+    typeof value === 'string' &&
+    /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?Z)?$/.test(value)
+      ? Date.parse(value)
+      : Number.NaN;
+  assert.ok(
+    !Number.isNaN(at) &&
+      new Date(at).toISOString().startsWith(value.slice(0, 10)),
+    `${label} in .agents/pstack.json is ${JSON.stringify(value)}, which is no UTC time. Write it as 2026-11-14T09:30:00Z, or as 2026-11-14 for the start of that day.`
+  );
+  return at;
+}
+
 function passStart(root, ledger) {
   const since = configOf(root, ledger).audit?.since;
   if (since === undefined) return Number.NEGATIVE_INFINITY;
-  const at = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?Z)?$/.test(
-    since
-  )
-    ? Date.parse(since)
-    : Number.NaN;
+  return parseUtcTime('audit.since', since);
+}
+
+function passModel(root, ledger) {
+  const model = configOf(root, ledger).audit?.model;
+  if (model === undefined) return '';
   assert.ok(
-    !Number.isNaN(at) &&
-      new Date(at).toISOString().startsWith(since.slice(0, 10)),
-    `audit.since in .agents/pstack.json is ${JSON.stringify(since)}, which is no UTC time. Write it as 2026-11-14T09:30:00Z, or as 2026-11-14 for the start of that day.`
+    isText(model),
+    `audit.model in .agents/pstack.json must be a non-empty string, got ${JSON.stringify(model)}.`
   );
-  return at;
+  const normalized = normalizeModel(model);
+  assert.ok(
+    normalized.length > 0,
+    `audit.model in .agents/pstack.json has no model token: ${JSON.stringify(model)}.`
+  );
+  return normalized;
+}
+
+function passReopen(root, ledger) {
+  const reopen = configOf(root, ledger).audit?.reopen;
+  const result = new Map();
+  if (reopen === undefined) return result;
+  assert.ok(
+    isObject(reopen),
+    `audit.reopen in .agents/pstack.json must be an object mapping scope ids to UTC times.`
+  );
+  for (const [scopeId, value] of Object.entries(reopen)) {
+    result.set(scopeId, parseUtcTime(`audit.reopen.${scopeId}`, value));
+  }
+  return result;
 }
 
 const logOf = (page) => page.path?.replace(/\.md$/, '.decisions.tsv');
@@ -734,6 +776,8 @@ function pagesLandedSinceFork(root) {
 
 function dueScopes(root, ledger, plans) {
   const start = passStart(root, ledger);
+  const requiredModel = passModel(root, ledger);
+  const reopen = passReopen(root, ledger);
   const counted = [
     ...[...ledger.pages.values()].map((page) => ({
       page,
@@ -741,10 +785,21 @@ function dueScopes(root, ledger, plans) {
     })),
     ...pagesLandedSinceFork(root),
   ]
-    .filter(
-      ({ page, began }) =>
-        ['ranked', 'unread'].includes(page.jobs) && began >= start
-    )
+    .filter(({ page, began }) => {
+      if (!['ranked', 'unread'].includes(page.jobs)) return false;
+      const floor = Math.max(
+        start,
+        reopen.get(leadScope(page)) ?? Number.NEGATIVE_INFINITY
+      );
+      if (began < floor) return false;
+      if (
+        requiredModel &&
+        !normalizeModel(page.model).includes(requiredModel)
+      ) {
+        return false;
+      }
+      return true;
+    })
     .map(({ page }) => page);
   const ranked = new Set(
     counted.filter((page) => page.jobs === 'ranked').map(leadScope)
@@ -975,7 +1030,7 @@ export function show(root, scopeId) {
     ...history.flatMap((record) => [
       `### ${record.date}: ${record.id}`,
       '',
-      `${record.kind}; ${record.verdict ?? 'no verdict'}.`,
+      `${record.kind}; ${record.verdict ?? 'no verdict'}${record.model ? `; ${record.model}` : ''}.`,
       '',
       record.summary,
       ...(record.path ? ['', `Page: ${record.path}`] : []),
@@ -1228,9 +1283,27 @@ function leadOf(text) {
   return '';
 }
 
+function bodyLeadModel(text) {
+  const line = text
+    .match(/^(?:[-*]\s*)?(?:\*\*)?Model(?:\*\*)?:\s*(.+)$/im)?.[1]
+    ?.trim();
+  if (!line) return null;
+  const lead = line
+    .split(/[.,;]|(?:\b(?:with|panel|plus|delegated)\b)/i)[0]
+    .replaceAll('`', '')
+    .trim();
+  return lead || null;
+}
+
 const unquote = (value) => value.trim().replace(/^(['"])(.*)\1$/, '$2');
 const frontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
-const reviewKeys = ['review_scopes', 'review_basis', 'work_kind', 'verdict'];
+const reviewKeys = [
+  'review_scopes',
+  'review_basis',
+  'work_kind',
+  'verdict',
+  'review_model',
+];
 
 export function documentMetadata(text) {
   const frontmatter = text.match(frontmatterPattern)?.[1] ?? '';
@@ -1244,7 +1317,7 @@ export function documentMetadata(text) {
     );
     if (!match) continue;
     const value = match[1].trim();
-    if (key === 'work_kind') {
+    if (key === 'work_kind' || key === 'review_model') {
       result[key] = unquote(value);
     } else if (value.startsWith('[') && value.endsWith(']')) {
       result[key] = value.slice(1, -1).trim()
