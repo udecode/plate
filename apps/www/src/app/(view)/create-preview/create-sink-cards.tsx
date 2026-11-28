@@ -12,6 +12,7 @@ import { InkPlugin } from 'platejs/ink/react';
 import { BaseLintPlugin } from 'platejs/lint';
 import { MarkdownPlugin } from 'platejs/markdown';
 import {
+  type Editor,
   EditorRoot,
   useEditor,
   useEditorSelector,
@@ -350,7 +351,7 @@ function measureTextLines(
   return lines;
 }
 
-function seedDemoInkMarks(editor: EditorReference) {
+function seedDemoInkMarks(editor: Editor) {
   const ink = editor.plugin(InkPlugin);
 
   if (ink.read.marks().length > 0) return;
