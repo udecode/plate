@@ -1182,8 +1182,6 @@ export const deepSteps = steps.filter((step) =>
 );
 
 export const manualOnly = {
-  'bench:editor:check':
-    'Checks the separate benchmarks/editor npm project, which needs its own npm install.',
   'bench:targets:report:check':
     'Checks generated benchmark target history report on demand during benchmark runs.',
   'check:docs':

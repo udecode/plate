@@ -16,7 +16,7 @@ Handle `$ARGUMENTS`. The Perf issue playbook (`.agents/playbooks/perf-issue.md`)
 ## Commands and tooling
 
 - Target registry and runner: `benchmarks/targets/slate-v2.json` via `pnpm bench:targets:list`, `pnpm bench:targets:run`, `pnpm bench:targets:check`, `pnpm bench:targets:report`.
-- Focused benches: `pnpm bench:docx`, `pnpm bench:markdown`, `pnpm bench:relocation`, `pnpm bench:table`, and `benchmarks/editor` (`pnpm bench:editor:install`, `pnpm bench:editor:bench`, `pnpm bench:editor:check`).
+- Focused benches: `pnpm bench:docx`, `pnpm bench:markdown`, `pnpm bench:relocation`, `pnpm bench:table`, and standalone producers under `benchmarks/editor/benchmarks/`.
 - Paired wall-clock timing (requires planted-slowdown and same-code arms per frozen cohort): `node .agents/rules/benchmark/scripts/paired-timing.mjs`.
 - Benchmark plan template and validator: copy `.agents/rules/benchmark/templates/benchmark.md` to `docs/plans/<date>-<scope>-benchmark.md` and validate at checkpoints and close with `node .agents/skills/benchmark/scripts/validate-benchmark-plan.mjs <plan> [--complete]`.
 - Pre-acceptance architecture probe pack: `.agents/rules/benchmark/templates/performance-observability.md`.

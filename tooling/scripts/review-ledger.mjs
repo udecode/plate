@@ -31,7 +31,6 @@ export const census = {
   ],
   files: [
     'package.json',
-    'benchmarks/editor/package.json',
     'apps/www/playwright.config.ts',
     'apps/www/package.json',
   ],
