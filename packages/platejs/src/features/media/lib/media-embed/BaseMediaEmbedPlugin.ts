@@ -17,7 +17,11 @@ import {
   TextApi,
 } from '../../../../core';
 import { getActiveCommandEditor, readAuthoredView } from '../../../../facade';
-import { decideUrl, isStoredUrl } from '../../../../internal/utils/urlPolicy';
+import {
+  decideUrl,
+  encodeUrlInput,
+  isStoredUrl,
+} from '../../../../internal/utils/urlPolicy';
 import { DOMPlugin } from '../../../../lib/plugins/dom/DOMPlugin';
 import {
   defineMediaPlugin,
@@ -441,7 +445,11 @@ const isBareLink = (
 
   const [leaf, ...rest] = node.children;
 
-  return rest.length === 0 && isBareText(leaf) && leaf.text === node.url;
+  return (
+    rest.length === 0 &&
+    isBareText(leaf) &&
+    (leaf.text === node.url || encodeUrlInput(leaf.text) === node.url)
+  );
 };
 
 const bareLineText = (

@@ -130,20 +130,19 @@ export const isListFamilyMember = (
 
 type FamilyMember = Readonly<{ key: NodeKey; node: Element; path: Path }>;
 
-export const getSiblingsAtPath = (
-  rootChildren: readonly Descendant[],
-  parentPath: Path
+const rootedPathTarget = (path: Path, root: string | undefined) =>
+  root ? { offset: 0, path, root } : path;
+
+const readSiblingsAtPath = (
+  state: Pick<EditorCoreStateView, 'children' | 'nodes' | 'root'>,
+  parentPath: Path,
+  root: string | undefined
 ): readonly Descendant[] => {
-  let current = rootChildren;
-
-  for (const step of parentPath) {
-    const next = current[step];
-
-    if (!ElementApi.isElement(next)) return [];
-    current = next.children;
+  if (parentPath.length === 0) {
+    return root ? state.root(root) : state.children();
   }
 
-  return current;
+  return state.nodes.children(rootedPathTarget(parentPath, root));
 };
 
 export const rootedNodeReader = (
@@ -154,20 +153,15 @@ export const rootedNodeReader = (
 
   return {
     nodes: {
-      children: (parentPath: Path) =>
-        getSiblingsAtPath(tx.root(root), parentPath),
+      children: (parentPath: Path) => readSiblingsAtPath(tx, parentPath, root),
       get: (target, options) => {
         if (target.length === 0) return undefined;
 
-        const siblings = getSiblingsAtPath(
-          tx.root(root),
-          PathApi.parent(target)
-        );
-        const node = siblings[target.at(-1) ?? -1];
+        const entry = tx.nodes.get(rootedPathTarget(target, root), {
+          match: ElementApi.isElement,
+        });
 
-        if (!node || !options.match(node)) return undefined;
-
-        return [node, target];
+        return entry && options.match(entry[0]) ? entry : undefined;
       },
     },
   };
@@ -179,20 +173,26 @@ export const rootedNodeReader = (
  * none of its own.
  */
 export const getListFamilies = (
-  state: Pick<EditorCoreStateView, 'children' | 'key' | 'root' | 'view'>,
+  state: Pick<
+    EditorCoreStateView,
+    'children' | 'key' | 'nodes' | 'root' | 'view'
+  >,
   entries: ReadonlyArray<NodeEntry<Element>>,
   root: string | undefined = state.view.root()
 ) => {
   const families: FamilyMember[][] = [];
   const seen = new Set<Descendant>();
-  const rootChildren = root ? state.root(root) : state.children();
+  let rootChildren: readonly Descendant[] | undefined;
 
   for (const [node, path] of entries) {
     if (seen.has(node)) continue;
 
     const parentPath = PathApi.parent(path);
     const index = path.at(-1) ?? 0;
-    const siblings = getSiblingsAtPath(rootChildren, parentPath);
+    const siblings =
+      parentPath.length === 0
+        ? (rootChildren ??= root ? state.root(root) : state.children())
+        : readSiblingsAtPath(state, parentPath, root);
     const end = listFamilyEnd(siblings, index);
     const family: FamilyMember[] = [];
 

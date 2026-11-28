@@ -158,3 +158,23 @@ export const isScriptCapableUrl = (url: string) => {
  */
 export const isBareAutolinkLiteral = (url: string) =>
   BARE_AUTOLINK_LITERAL_RE.test(url);
+
+/**
+ * Percent-encodes raw characters outside existing `%XX` escapes so pasted or
+ * typed URLs stay valid without double-encoding percent escapes.
+ */
+export const encodeUrlInput = (url: string) => {
+  try {
+    return url
+      .split(/(%[\dA-Fa-f]{2})/)
+      .map((part) =>
+        /^%[\dA-Fa-f]{2}$/.test(part)
+          ? part
+          : encodeURI(part).replaceAll('%25', '%')
+      )
+      .join('');
+  } catch (error) {
+    if (error instanceof URIError) return url;
+    throw error;
+  }
+};

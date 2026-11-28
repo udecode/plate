@@ -27,11 +27,7 @@ import {
 } from '../../../internal/plugin/indentShift';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
 import { BaseIndentPlugin } from '../../indent';
-import {
-  getListFamilies,
-  getSiblingsAtPath,
-  shiftListFamilyMember,
-} from './listFamily.internal';
+import { getListFamilies, shiftListFamilyMember } from './listFamily.internal';
 import { isListItem, LIST_FIELDS, listItemDepth } from './listIndex.internal';
 
 export const handleListTab = (editor: Editor) => {
@@ -199,15 +195,15 @@ type ListCommandState = EditorCoreStateView & {
 };
 
 const getElementAtPath = (
-  rootChildren: readonly Descendant[],
-  path: Path
+  tx: Pick<EditorCoreStateView, 'nodes'>,
+  path: Path,
+  root: string | undefined
 ): Element | undefined => {
   if (path.length === 0) return undefined;
 
-  const siblings = getSiblingsAtPath(rootChildren, PathApi.parent(path));
-  const node = siblings[path.at(-1) ?? -1];
-
-  return ElementApi.isElement(node) ? node : undefined;
+  return tx.nodes.get(root ? { offset: 0, path, root } : path, {
+    match: ElementApi.isElement,
+  })?.[0];
 };
 
 export const handleListDeleteBackward = (
@@ -337,9 +333,8 @@ export const handleListInsertBreak = (
   if (result === false) return result;
 
   return state.transaction.extend(result, (tx) => {
-    const rootChildren = root ? tx.root(root) : tx.children();
-    const inserted = getElementAtPath(rootChildren, blockPath);
-    const shifted = getElementAtPath(rootChildren, PathApi.next(blockPath));
+    const inserted = getElementAtPath(tx, blockPath, root);
+    const shifted = getElementAtPath(tx, PathApi.next(blockPath), root);
     const firstKey = inserted ? tx.key(inserted) : null;
     const secondKey = shifted ? tx.key(shifted) : null;
     const isNewKey = (key: NodeKey | null): key is NodeKey =>

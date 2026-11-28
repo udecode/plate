@@ -27,25 +27,10 @@ import {
 } from '../../../core';
 import {
   decideUrl,
+  encodeUrlInput,
   isBareAutolinkLiteral,
   isStoredUrl,
 } from '../../../internal/utils/urlPolicy';
-
-function encodeUrlInput(url: string) {
-  try {
-    return url
-      .split(/(%[\dA-Fa-f]{2})/)
-      .map((part) =>
-        /^%[\dA-Fa-f]{2}$/.test(part)
-          ? part
-          : encodeURI(part).replaceAll('%25', '%')
-      )
-      .join('');
-  } catch (error) {
-    if (error instanceof URIError) return url;
-    throw error;
-  }
-}
 
 type LinkTextAutolinkMatch = {
   hasTrailing: boolean;
