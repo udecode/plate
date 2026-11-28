@@ -19,6 +19,7 @@ import {
   focusEditableRepairTarget,
 } from './mutation-controller';
 import { readRuntimeText } from './runtime-live-state';
+import type { EditableDOMSelectionSyncOptions } from './selection-controller';
 
 type PendingModelSelectionExport = {
   selection: Selection;
@@ -43,7 +44,7 @@ export const useRuntimeRepairEngine = ({
   scrollSelectionIntoView: Parameters<
     typeof createDOMRepairQueue
   >[0]['scrollSelectionIntoView'];
-  syncDOMSelectionToEditor: () => void;
+  syncDOMSelectionToEditor: (options?: EditableDOMSelectionSyncOptions) => void;
 }) => {
   const { domPhaseScheduler, editor, inputController } = runtime;
   const [, forceRender] = useReducer((s) => s + 1, 0);

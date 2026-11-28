@@ -231,10 +231,10 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
   }
 };
 
-const renderVoid = ({ element }: RenderVoidProps<CustomElement>) => {
+const renderVoid = ({ element, slots }: RenderVoidProps<CustomElement>) => {
   switch (element.type) {
     case 'image': {
-      return <Image element={element} />;
+      return <Image element={element} slots={slots} />;
     }
     default: {
       return null;

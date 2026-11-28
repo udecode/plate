@@ -94,6 +94,13 @@ type RenderElementProps = {
   isInline: boolean;
   slots: EditableElementSlots;
 };
+
+type RenderVoidProps<TElement extends Element = Element> = {
+  element: TElement;
+  slots: {
+    contentRoot: EditableElementSlots["contentRoot"];
+  };
+};
 ```
 
 ## `renderElement`
@@ -153,17 +160,19 @@ Use `renderVoid` for void elements. A void renderer returns visible content only
 `ImageElement` is the application component defined in the next example.
 
 ```tsx
-const renderVoid = ({ element }) => {
+const renderVoid = ({ element, slots }) => {
   switch (element.type) {
     case "image":
-      return <ImageElement element={element} />;
+      return <ImageElement element={element} slots={slots} />;
+    case "editable-void":
+      return slots.contentRoot("body", { ariaLabel: "Editable void body" });
     default:
       return null;
   }
 };
 ```
 
-Do not render `children`, hidden text anchors, or shell wrappers in normal void renderers. Plite renders the shell and model anchor for you.
+Do not render `children`, hidden text anchors, or shell wrappers in normal void renderers. Plite renders the shell and model anchor for you. Use `slots.contentRoot(slot, options)` to render any schema-declared `contentRoots` owned by the void element.
 
 If a void needs selected UI, subscribe from inside the void component.
 
@@ -560,8 +569,8 @@ Pass `root` when one editor renders a named document root.
 </EditorRoot>
 ```
 
-Use `slots.contentRoot(slot)` from `renderElement` when an element owns an
-editable child root, such as a synced block body.
+Use `slots.contentRoot(slot)` from `renderElement` or `renderVoid` when an element owns an
+editable child root, such as a synced block or editable void body.
 
 ```tsx
 const SyncedBlock = ({ attributes, element, slots }) => (

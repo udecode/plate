@@ -96,7 +96,9 @@ import type {
 import {
   endEditableSelectionUpdate,
   exportEditableDOMSelection,
+  getActiveTextInputRepairEcho,
   getDeferredSelectionWriteStatus,
+  isEditableComposingForDOMSelection,
   isEditableOutsideFocusBoundarySettling,
   isSelectionHeldForNativeMove,
   scheduleEditableDOMSelectionClear,
@@ -330,6 +332,7 @@ export const shouldUseModelBackedSelectAllSelection = ({
 };
 
 export type EditableDOMSelectionSyncOptions = {
+  clearDelayMs?: number;
   /**
    * The export writes a model-owned composition's caret, where the composition
    * started, while the browser's composed text that follows it is not yet in
@@ -471,14 +474,16 @@ export const isStaleModelOwnedTextInputDOMRange = ({
     activeIntent === 'composition' ||
     activeIntent === 'text-insert' ||
     selectionSource === 'model-owned';
+  const activeRecentEcho = recentTextInputRepairEcho
+    ? getActiveTextInputRepairEcho({ recentTextInputRepairEcho })
+    : null;
   const recentRepairEchoOwnsSelection =
     activeIntent === 'text-insert' &&
-    !!recentTextInputRepairEcho &&
+    !!activeRecentEcho &&
     RangeApi.isRange(modelSelection) &&
     RangeApi.isCollapsed(modelSelection) &&
-    recentTextInputRepairEcho.pathKey ===
-      modelSelection.anchor.path.join(',') &&
-    recentTextInputRepairEcho.selectionOffset === modelSelection.anchor.offset;
+    activeRecentEcho.pathKey === modelSelection.anchor.path.join(',') &&
+    activeRecentEcho.selectionOffset === modelSelection.anchor.offset;
   const hasModelOwnedSelectionAuthority =
     modelOwnedTextInputGuard > 0 ||
     selectionSource === 'model-owned' ||
@@ -669,11 +674,12 @@ export const syncEditorSelectionFromDOM = ({
   ignoreModelSelectionPreference?: boolean;
   inputController: EditableInputController;
 }) => {
-  const epoch = inputController.domInputRuntime.compositionEpoch;
-
   if (
-    inputController.state.isComposing &&
-    epoch?.phase === 'native-composing'
+    isEditableComposingForDOMSelection(
+      inputController,
+      ReactEditor.isComposing(editor),
+      { mode: 'native-composing' }
+    )
   ) {
     return;
   }
@@ -840,8 +846,9 @@ const importDOMSelection = ({
       modelOwnedTextInputGuard:
         inputController.state.modelOwnedTextInputGuard ?? 0,
       range,
-      recentTextInputRepairEcho:
-        inputController.state.recentTextInputRepairEcho,
+      recentTextInputRepairEcho: getActiveTextInputRepairEcho(
+        inputController.state
+      ),
       selectionSource: inputController.state.selectionSource,
       textInputOwnership: inputController.state.textInputOwnership,
     })
@@ -1254,8 +1261,11 @@ export const resolveEditableImplicitTarget = ({
   if (
     !root ||
     inputController.state.isReplayingAndroidCommand ||
-    inputController.state.isComposing ||
-    ReactEditor.isComposing(editor)
+    isEditableComposingForDOMSelection(
+      inputController,
+      ReactEditor.isComposing(editor),
+      { mode: 'strict' }
+    )
   ) {
     return request.fallback;
   }
@@ -1335,9 +1345,25 @@ export const applyEditableDOMSelectionChange = ({
   const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
 
   if (!editorElement || !root) return;
+  const { state } = inputController;
   const editorDocument = editorElement.ownerDocument;
   const ShadowRootConstructor = editorDocument.defaultView?.ShadowRoot;
   const editorRoot = editorElement.getRootNode();
+
+  if (
+    isEditableComposingForDOMSelection(
+      inputController,
+      ReactEditor.isComposing(editor),
+      {
+        hasAndroidComposition: hasAndroidComposition(inputController),
+        isAndroidHost: isAndroidDOMHost(editorElement),
+        mode: 'selection-change',
+      }
+    )
+  ) {
+    state.pendingNativeTextInputRepairSuppressedDOMSelection = false;
+    return;
+  }
 
   if (
     !webKitProbeActive.current &&
@@ -1360,13 +1386,9 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
-  const { state } = inputController;
   state.pendingNativeTextInputRepairSuppressedDOMSelection = false;
 
   if (
-    (ReactEditor.isComposing(editor) &&
-      (!isAndroidDOMHost(editorElement) ||
-        hasAndroidComposition(inputController))) ||
     state.isDraggingInternally ||
     state.isProjectingSelection ||
     isEditableOutsideFocusBoundarySettling(state)
@@ -1509,7 +1531,8 @@ const importDOMSelectionChange = ({
   if (selectionChangeOrigin === 'repair-induced' && domSelection.isCollapsed) {
     if (
       state.textInputOwnership === 'model' &&
-      (state.activeIntent === 'text-insert' || state.recentTextInputRepairEcho)
+      (state.activeIntent === 'text-insert' ||
+        getActiveTextInputRepairEcho(state))
     ) {
       setEditableModelSelectionPreference({
         inputController,
@@ -1605,7 +1628,7 @@ const importDOMSelectionChange = ({
         modelSelection,
         modelOwnedTextInputGuard: state.modelOwnedTextInputGuard ?? 0,
         range,
-        recentTextInputRepairEcho: state.recentTextInputRepairEcho,
+        recentTextInputRepairEcho: getActiveTextInputRepairEcho(state),
         selectionSource: state.selectionSource,
         textInputOwnership: state.textInputOwnership,
       })
@@ -1874,7 +1897,7 @@ export const syncEditableDOMSelectionToEditor = ({
     };
 
     domPhaseScheduler.schedule('selection-repair', label, clear, {
-      delay,
+      delay: options?.clearDelayMs ?? delay,
       timing: 'timeout',
     });
   };
@@ -2061,10 +2084,6 @@ export const syncEditableDOMSelectionToEditor = ({
 
     if (!domRange) {
       return false;
-    }
-
-    if (viewSelection) {
-      writePliteViewSelection(editor, null);
     }
 
     const writeSelection = () =>

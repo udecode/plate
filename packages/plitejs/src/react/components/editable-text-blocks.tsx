@@ -91,11 +91,10 @@ import { useEditorFocused } from '../hooks/use-editor-focused';
 import { useInheritedReadOnly } from '../hooks/use-editor-read-only';
 import { useEditorSelection } from '../hooks/use-editor-selection';
 import { useOptionalEditorViewState } from '../hooks/use-editor-view-state';
-import { useElementPath } from '../hooks/use-element-path';
 import { useHydrated } from '../hooks/use-hydrated';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
-import { useContentRoot } from '../hooks/use-plite-content-root';
+import { useDeclaredContentRoot } from '../hooks/use-plite-content-root';
 import {
   getDOMTextRenderRevision,
   recordDrawnBlockDirection,
@@ -243,6 +242,8 @@ type EditableContentRootViewport = {
 
 export type EditableContentRootSlotOptions = {
   ariaLabel?: string;
+  /** Focus the content root's editable surface when it mounts. */
+  autoFocus?: boolean;
   className?: string;
   disableDefaultStyles?: boolean;
   id?: string;
@@ -285,6 +286,10 @@ type EditableContentRootSlotRenderers<
   renderVoid?: RenderVoidRenderer<TElement>;
 };
 
+/**
+ * Render slots passed to custom element renderers for child projection,
+ * external text views, DOM coverage boundaries, and schema-owned content roots.
+ */
 export type EditableElementSlots = {
   children: (range?: { from?: number; to?: number }) => ReactNode;
   /** Delegate one exact-one-Text block to an adapter while the editor owns its value. */
@@ -296,6 +301,7 @@ export type EditableElementSlots = {
    * absent, such as closed accordion bodies or inactive tab panels.
    */
   contentBoundary: (props: EditableDOMCoverageBoundaryProps) => ReactNode;
+  /** Render a schema-owned child content root declared on the element's `contentRoots`. */
   contentRoot: (
     slot: string,
     options?: EditableContentRootSlotOptions
@@ -477,7 +483,7 @@ function EditableContentRootSlot({
   const ownerRoot = toInternalRoot(
     ownerEditor.read((state) => state.view.root())
   );
-  const { root } = useContentRoot(element, { slot });
+  const root = useDeclaredContentRoot(element, slot);
   const ownerSources = React.useContext(DecorationSourcesContext);
   const rawParentOwner = React.useContext(PliteContentRootOwnerContext);
   const rawParentInstance = React.useContext(PliteContentRootInstanceContext);
@@ -582,6 +588,7 @@ function EditableContentRootView({
 }) {
   const {
     ariaLabel,
+    autoFocus,
     className,
     disableDefaultStyles,
     id,
@@ -718,6 +725,7 @@ function EditableContentRootView({
   const editableProps: EditorContentProps = {
     ...ownerHandlers,
     'aria-label': ariaLabel,
+    autoFocus,
     className,
     disableDefaultStyles,
     id,
@@ -830,8 +838,17 @@ export type RenderElementProps<TElement extends ElementNode = ElementNode> =
 export type RenderElementRenderer<TElement extends ElementNode = ElementNode> =
   (props: RenderElementProps<TElement>) => ReactNode;
 
+/**
+ * Props passed to `renderVoid` for rendering a void element's visible content
+ * inside the runtime-managed void shell.
+ */
 export type RenderVoidProps<TElement extends ElementNode = ElementNode> = {
+  /** The rendered void element node. */
   element: TElement;
+  /** Element render slots available to void renderers (`slots.contentRoot` for schema-owned child roots). */
+  slots: {
+    contentRoot: EditableElementSlots['contentRoot'];
+  };
 };
 
 export type RenderVoidRenderer<TElement extends ElementNode = ElementNode> = (
@@ -843,13 +860,15 @@ const EditableRenderedVoid = <TElement extends ElementNode = ElementNode>({
   element,
   isInline,
   renderVoid,
+  slots,
 }: {
   children: ReactNode;
   element: TElement;
   isInline: boolean;
   renderVoid?: RenderVoidRenderer<TElement>;
+  slots?: RenderVoidProps<TElement>['slots'];
 }) => {
-  const content = renderVoid?.({ element }) ?? null;
+  const content = renderVoid && slots ? renderVoid({ element, slots }) : null;
 
   return isInline ? (
     <InlineVoidShell content={content}>{children}</InlineVoidShell>
@@ -1275,11 +1294,25 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     renderChildrenOverride
       ? renderChildrenOverride(from, to)
       : renderChildrenContent(from ?? 0, to ?? childNodeKeys.length - 1);
-  if (voidNode && renderVoid) {
-    if (!path) {
-      return null;
-    }
+  const slots =
+    (voidNode && renderVoid) || renderElement
+      ? createEditableElementSlots(editor, {
+          coverage,
+          element: node as TElement,
+          elementKey: nodeKey,
+          isVoid: voidNode,
+          nodeKey: nodeKeyDOMValue ?? nodeKey,
+          ownerPath: path,
+          renderChildren,
+          renderElement,
+          renderLeaf,
+          renderPlaceholder,
+          renderText,
+          renderVoid,
+        })
+      : undefined;
 
+  if (voidNode && renderVoid && slots) {
     const children = renderChildren();
 
     return (
@@ -1291,6 +1324,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
           element={node as TElement}
           isInline={inline}
           renderVoid={renderVoid}
+          slots={{ contentRoot: slots.contentRoot }}
         >
           {children}
         </EditableRenderedVoid>
@@ -1300,17 +1334,9 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
 
   const nodeRenderElement = renderElement;
 
-  if (nodeRenderElement) {
-    if (!path) {
-      return null;
-    }
+  if (nodeRenderElement && slots) {
     const RenderedElement = getEditableElementRenderer(nodeRenderElement);
 
-    const renderElementPropsBase = {
-      attributes,
-      element: node as TElement,
-      isInline: inline,
-    };
     const renderElementProps = {
       attributes,
       element: node as TElement,
@@ -1324,20 +1350,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
         );
       },
       isInline: inline,
-      slots: createEditableElementSlots(editor, {
-        ...renderElementPropsBase,
-        coverage,
-        elementKey: nodeKey,
-        isVoid: voidNode,
-        renderElement,
-        renderChildren,
-        renderLeaf,
-        renderPlaceholder,
-        renderText,
-        renderVoid,
-        ownerPath: path,
-        nodeKey: nodeKeyDOMValue ?? nodeKey,
-      }),
+      slots,
     } as unknown as RenderElementProps<TElement>;
 
     return (
@@ -1999,88 +2012,6 @@ const InactiveSelectionCaretGeometry = ({
   );
 };
 
-const elementOwnsChildRoot = (
-  element: ElementNode,
-  nodeKey: NodeKey,
-  root: RootKey
-) => {
-  if (element.childRoot === root) return true;
-  if (
-    typeof element.childRoots === 'object' &&
-    element.childRoots !== null &&
-    Object.values(element.childRoots).includes(root)
-  ) {
-    return true;
-  }
-
-  return root.startsWith(`core:child:${nodeKey}:`);
-};
-
-function EditorContentChildRootSurface<const TRoot extends RootKey = RootKey>({
-  editable,
-  editor,
-  elementContext,
-  root,
-  rootReadOnly,
-}: {
-  editable: ReactNode;
-  editor: ReturnType<typeof useEditorContext>;
-  elementContext: {
-    element: ElementNode;
-    nodeKey: NodeKey;
-    path: Path;
-  };
-  root: TRoot;
-  rootReadOnly: boolean;
-}) {
-  const existingOwner = React.useContext(PliteContentRootOwnerContext);
-  const livePath = useElementPath();
-  const ownerPath = livePath ?? elementContext.path;
-  const ownerRoot = toInternalRoot(editor.read((state) => state.view.root()));
-  const parentOwner =
-    existingOwner && existingOwner.childRoot === ownerRoot
-      ? existingOwner
-      : null;
-  const ownsRoot = elementOwnsChildRoot(
-    elementContext.element,
-    elementContext.nodeKey,
-    root
-  );
-  const contentRootOwner = React.useMemo(
-    () =>
-      ownsRoot
-        ? {
-            childRoot: root,
-            ownerPath,
-            ownerRoot,
-            ...(parentOwner ? { parent: parentOwner } : {}),
-          }
-        : null,
-    [ownerPath, ownerRoot, ownsRoot, parentOwner, root]
-  );
-  const surface = (
-    <SurfaceRoot editor={editor} readOnly={rootReadOnly} root={root}>
-      {editable}
-    </SurfaceRoot>
-  );
-
-  if (
-    !contentRootOwner ||
-    (existingOwner?.childRoot === root &&
-      existingOwner.ownerRoot === ownerRoot &&
-      PathApi.equals(existingOwner.ownerPath, ownerPath) &&
-      existingOwner.parent === parentOwner)
-  ) {
-    return surface;
-  }
-
-  return (
-    <PliteContentRootOwnerContext value={contentRootOwner}>
-      {surface}
-    </PliteContentRootOwnerContext>
-  );
-}
-
 /**
  * Render the editable content area for one Plite root.
  *
@@ -2115,15 +2046,15 @@ export const EditorContent = <
     return editable;
   }
   if (elementContext) {
-    return (
-      <EditorContentChildRootSurface
-        editable={editable}
-        editor={editor}
-        elementContext={elementContext}
-        root={root}
-        rootReadOnly={rootReadOnly}
-      />
+    const ownedRoots = editor.read((state) =>
+      state.schema.getElementContentRoots(elementContext.element)
     );
+
+    if (Object.values(ownedRoots).some((ownedRoot) => ownedRoot === root)) {
+      throw new Error(
+        'Use slots.contentRoot(slot) to render an element-owned child root instead of <EditorContent root={...}>.'
+      );
+    }
   }
 
   return (

@@ -62,10 +62,10 @@ const PasteHtmlExample = () => {
         renderElement={Element}
         renderLeaf={Leaf}
         renderText={FontSizeText}
-        renderVoid={({ element }) => {
+        renderVoid={({ element, slots }) => {
           switch (element.type) {
             case 'image': {
-              return <ImageElement element={element} />;
+              return <ImageElement element={element} slots={slots} />;
             }
             default: {
               return null;

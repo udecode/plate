@@ -1061,15 +1061,84 @@ export const beginEditableNativeSelectionImport = (
   inputController.state.selectionChangeOrigin = 'native-user';
 };
 
+export type DOMSelectionCompositionGuardMode =
+  | 'before-input'
+  | 'native-composing'
+  | 'selection-change'
+  | 'strict';
+
+export type DOMSelectionCompositionGuardOptions =
+  | Readonly<{
+      inputType: string;
+      mode: 'before-input';
+    }>
+  | Readonly<{
+      mode: 'native-composing';
+    }>
+  | Readonly<{
+      hasAndroidComposition: boolean;
+      isAndroidHost: boolean;
+      mode: 'selection-change';
+    }>
+  | Readonly<{
+      mode: 'strict';
+    }>;
+
+export const isEditableComposingForDOMSelection = (
+  inputController: EditableInputController | undefined,
+  isEditorComposing: boolean,
+  options: DOMSelectionCompositionGuardOptions
+): boolean => {
+  const composing =
+    Boolean(inputController?.state.isComposing) || isEditorComposing;
+
+  if (!composing) return false;
+
+  switch (options.mode) {
+    case 'native-composing': {
+      return (
+        inputController?.domInputRuntime.compositionEpoch?.phase ===
+        'native-composing'
+      );
+    }
+    case 'selection-change': {
+      return !options.isAndroidHost || options.hasAndroidComposition;
+    }
+    case 'before-input': {
+      return (
+        options.inputType !== 'insertFromComposition' &&
+        inputController?.domInputRuntime.compositionEpoch?.phase !==
+          'final-input-ready'
+      );
+    }
+    default: {
+      return true;
+    }
+  }
+};
+
+export const getActiveTextInputRepairEcho = (
+  state: {
+    recentTextInputRepairEcho?: EditableInputControllerState['recentTextInputRepairEcho'];
+  },
+  timestamp = getEditableInputTimestamp()
+) => {
+  const recentEcho = state.recentTextInputRepairEcho;
+
+  if (!recentEcho) return null;
+  if (timestamp > recentEcho.expiresAt) {
+    state.recentTextInputRepairEcho = null;
+    return null;
+  }
+
+  return recentEcho;
+};
+
 export const clearExpiredTextInputRepairEcho = (
   inputController: EditableInputController,
   timestamp = getEditableInputTimestamp()
 ) => {
-  const recentEcho = inputController.state.recentTextInputRepairEcho;
-
-  if (recentEcho && timestamp > recentEcho.expiresAt) {
-    inputController.state.recentTextInputRepairEcho = null;
-  }
+  getActiveTextInputRepairEcho(inputController.state, timestamp);
 };
 
 export const isEditableOutsideFocusBoundarySettling = (

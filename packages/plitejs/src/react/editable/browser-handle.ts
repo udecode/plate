@@ -59,6 +59,7 @@ import {
   beginEditableNativeSelectionImport,
   beginEditableSelectionUpdate,
   endEditableSelectionUpdate,
+  getActiveTextInputRepairEcho,
   isPendingDOMSelectionImportFresh,
 } from './input-state';
 import type { EditableInputController } from './input-state';
@@ -778,8 +779,9 @@ export const attachPliteBrowserHandle = ({
           inputController.state.pendingNativeTextInputRepairPathKey ?? null,
         preferModelSelection:
           inputController.preferModelSelectionForInputRef.current,
-        recentTextInputRepairEcho:
-          inputController.state.recentTextInputRepairEcho ?? null,
+        recentTextInputRepairEcho: getActiveTextInputRepairEcho(
+          inputController.state
+        ),
         selectionChangeOrigin: inputController.state.selectionChangeOrigin,
         selectionSource: inputController.state.selectionSource,
       };

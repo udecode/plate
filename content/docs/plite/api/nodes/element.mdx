@@ -83,6 +83,9 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
 />;
 ```
 
+`RenderVoidProps` also provides `slots.contentRoot(slot, options)` when a void
+element declares schema `contentRoots` for nested rich text.
+
 For a "markable" void such as a `mention` element, marks on the text child can
 still be used to determine how the visible content is rendered. Selection UI is
 an opt-in target subscription:

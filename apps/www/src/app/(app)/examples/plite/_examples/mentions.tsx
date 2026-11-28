@@ -317,10 +317,13 @@ const renderElement = (props: RenderElementProps<MentionValueElement>) => {
   }
 };
 
-const renderVoid = ({ element }: RenderVoidProps<MentionValueElement>) => {
+const renderVoid = ({
+  element,
+  slots,
+}: RenderVoidProps<MentionValueElement>) => {
   switch (element.type) {
     case 'mention': {
-      return <Mention element={element} />;
+      return <Mention element={element} slots={slots} />;
     }
     default: {
       return null;

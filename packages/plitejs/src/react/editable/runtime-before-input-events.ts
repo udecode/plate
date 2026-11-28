@@ -1002,6 +1002,7 @@ export const useRuntimeBeforeInputEvents = ({
                 editorElement: el,
                 event,
                 forceModelOwnedTextInput,
+                inputController,
                 inputType: type,
                 isCompositionChange,
                 liveSelection,

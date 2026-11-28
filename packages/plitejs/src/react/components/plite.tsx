@@ -57,6 +57,7 @@ import {
 } from '../../editor-runtime-view';
 import type { AnyEditor } from '../../interfaces/editor';
 import {
+  ElementContext,
   PliteContentRootInstanceContext,
   PliteContentRootOwnerContext,
   PliteEditingAreaContext,
@@ -451,17 +452,9 @@ export const EditorRuntimeView = <
     flushEditorViewState(reactEditor);
     flushViewLockScope(lockScope);
   }, [lockLink, lockScope, reactEditor, readOnly]);
-  const isOwnedChildRootSurface =
-    !!ownSlotInstance ||
-    (mountedIn === undefined &&
-      !!presentation &&
-      !!parentEditor &&
-      getEditorRuntimeOwner(parentEditor) === runtimeOwner &&
-      toInternalRoot(parentEditor.read((state) => state.view.root())) ===
-        contentRootOwner?.ownerRoot);
   const ownContentRootOwner =
     contentRootOwner &&
-    isOwnedChildRootSurface &&
+    ownSlotInstance &&
     contentRootOwner.childRoot === viewRoot
       ? contentRootOwner
       : null;
@@ -516,42 +509,44 @@ export const EditorRuntimeView = <
             <EditorContext
               value={reactEditor as unknown as EditorContextValue<any>}
             >
-              <PliteEditingAreaContext value={false}>
-                <ExplicitReadOnlyOverrideContext
-                  value={
-                    preserveReadOnlyOverride
-                      ? inheritedExplicitReadOnly
-                      : undefined
-                  }
-                >
-                  <ReadOnlyContext value={readOnly}>
-                    <FocusedContext value={isFocused}>
-                      <ImperativeTextFlowContext
-                        value={Boolean(parentEditor) || inheritedTextFlow}
-                      >
-                        <TextRenderScopeContext value="flat">
-                          <SurfaceRuntimeScope
-                            mountedEditor={reactEditor}
-                            presentation={viewPresentation}
-                          >
-                            <PliteContentRootOwnerContext
-                              value={ownContentRootOwner}
+              <ElementContext value={null}>
+                <PliteEditingAreaContext value={false}>
+                  <ExplicitReadOnlyOverrideContext
+                    value={
+                      preserveReadOnlyOverride
+                        ? inheritedExplicitReadOnly
+                        : undefined
+                    }
+                  >
+                    <ReadOnlyContext value={readOnly}>
+                      <FocusedContext value={isFocused}>
+                        <ImperativeTextFlowContext
+                          value={Boolean(parentEditor) || inheritedTextFlow}
+                        >
+                          <TextRenderScopeContext value="flat">
+                            <SurfaceRuntimeScope
+                              mountedEditor={reactEditor}
+                              presentation={viewPresentation}
                             >
-                              <PliteContentRootInstanceContext
-                                value={descendantInstanceContext}
+                              <PliteContentRootOwnerContext
+                                value={ownContentRootOwner}
                               >
-                                <ViewLockScopeContext value={lockScope}>
-                                  {children}
-                                </ViewLockScopeContext>
-                              </PliteContentRootInstanceContext>
-                            </PliteContentRootOwnerContext>
-                          </SurfaceRuntimeScope>
-                        </TextRenderScopeContext>
-                      </ImperativeTextFlowContext>
-                    </FocusedContext>
-                  </ReadOnlyContext>
-                </ExplicitReadOnlyOverrideContext>
-              </PliteEditingAreaContext>
+                                <PliteContentRootInstanceContext
+                                  value={descendantInstanceContext}
+                                >
+                                  <ViewLockScopeContext value={lockScope}>
+                                    {children}
+                                  </ViewLockScopeContext>
+                                </PliteContentRootInstanceContext>
+                              </PliteContentRootOwnerContext>
+                            </SurfaceRuntimeScope>
+                          </TextRenderScopeContext>
+                        </ImperativeTextFlowContext>
+                      </FocusedContext>
+                    </ReadOnlyContext>
+                  </ExplicitReadOnlyOverrideContext>
+                </PliteEditingAreaContext>
+              </ElementContext>
             </EditorContext>
           </DecorationSourcesContext>
         </DecorationRegistrationContext>

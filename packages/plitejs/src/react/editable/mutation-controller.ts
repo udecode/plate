@@ -109,6 +109,7 @@ import {
 } from './runtime-selection-state';
 import {
   armModelOwnedTextInputGuard,
+  type EditableDOMSelectionSyncOptions,
   isEditableModelSelectionPreferred,
   setEditableModelSelectionPreference,
   shouldUseModelBackedSelectAllSelection,
@@ -1222,7 +1223,7 @@ export const applyEditableRepairRequest = ({
   replacing?: DOMSelectionPoints;
   request: EditableRepairRequest;
   requestFocusAfterRender?: (editor: ReactRuntimeEditor) => void;
-  syncDOMSelectionToEditor: () => void;
+  syncDOMSelectionToEditor: (options?: EditableDOMSelectionSyncOptions) => void;
 }) => {
   if (request.kind === 'none' || request.kind === 'skip-dom-sync') {
     return;
@@ -1344,8 +1345,29 @@ export const applyEditableRepairRequest = ({
           }
           if (!claimPageSelection()) return;
 
-          markProgrammaticSelectionUpdate();
-          syncDOMSelectionToEditor();
+          const versionBefore =
+            inputController.state.updatingSelectionVersion ?? 0;
+
+          syncDOMSelectionToEditor({ clearDelayMs: 160 });
+
+          if (
+            (inputController.state.updatingSelectionVersion ?? 0) !==
+              versionBefore &&
+            inputController.state.isUpdatingSelection &&
+            inputController.state.activeUpdatingSelectionToken != null
+          ) {
+            selectionUpdateVersion =
+              inputController.state.activeUpdatingSelectionToken;
+            return;
+          }
+
+          if (
+            selectionUpdateVersion === undefined ||
+            inputController.state.activeUpdatingSelectionToken !==
+              selectionUpdateVersion
+          ) {
+            markProgrammaticSelectionUpdate();
+          }
         };
 
         const focusedAtCommand = ReactEditor.isFocused(editor);

@@ -57,6 +57,7 @@ import {
   type DOMInputRepairTarget,
   type EditableInputController,
   endNativeMoveHold,
+  getActiveTextInputRepairEcho,
   replayAsAndroidCommand,
   shouldMergeEditableCompositionHistory,
 } from '../../editable/input-state';
@@ -361,7 +362,7 @@ export function createAndroidInputManager({
         insertPositionHint = null;
       }
 
-      const recentEcho = inputController.state.recentTextInputRepairEcho;
+      const recentEcho = getActiveTextInputRepairEcho(inputController.state);
       const editorText = NodeApi.leaf(editor, diff.path).text;
       const isDuplicateRecentEchoText =
         !!recentEcho &&
@@ -376,7 +377,6 @@ export function createAndroidInputManager({
 
       if (
         recentEcho &&
-        performance.now() <= recentEcho.expiresAt &&
         diff.path.join(',') === recentEcho.pathKey &&
         editorText === recentEcho.text &&
         !hasFreshNativeUserSelection() &&
@@ -578,12 +578,11 @@ export function createAndroidInputManager({
     const inputTarget = openInputTarget(editor);
     const target = NodeApi.leaf(editor, path);
     const pathKey = path.join(',');
-    const recentEcho = inputController.state.recentTextInputRepairEcho;
+    const recentEcho = getActiveTextInputRepairEcho(inputController.state);
     let nextDiff = diff;
 
     if (
       recentEcho &&
-      performance.now() <= recentEcho.expiresAt &&
       recentEcho.pathKey === pathKey &&
       target.text === recentEcho.text &&
       !hasFreshNativeUserSelection() &&
@@ -684,11 +683,10 @@ export function createAndroidInputManager({
     }
 
     const target = NodeApi.leaf(editor, path);
-    const recentEcho = inputController.state.recentTextInputRepairEcho;
+    const recentEcho = getActiveTextInputRepairEcho(inputController.state);
 
     if (
       recentEcho &&
-      performance.now() <= recentEcho.expiresAt &&
       recentEcho.pathKey === pathKey &&
       target.text === recentEcho.text &&
       !freshNativeUserSelection &&

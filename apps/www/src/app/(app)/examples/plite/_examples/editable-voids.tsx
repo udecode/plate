@@ -8,7 +8,6 @@ import {
   EditorRoot,
   useChildRoot,
   useCreateEditor,
-  useRootChrome,
   useRootEditor,
 } from 'plitejs/react';
 import { type PointerEvent, useState } from 'react';
@@ -142,10 +141,10 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
   }
 };
 
-const renderVoid = (props: RenderVoidProps<CustomElement>) => {
-  switch (props.element.type) {
+const renderVoid = ({ element, slots }: RenderVoidProps<CustomElement>) => {
+  switch (element.type) {
     case 'editable-void': {
-      return <EditableVoid element={props.element} />;
+      return <EditableVoid element={element} slots={slots} />;
     }
     default: {
       return null;
@@ -188,10 +187,12 @@ const ParagraphElement = ({
 
 const unsetWidthStyle = 'editor-editable-voids-unset-width-style';
 
-const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
+const EditableVoid = ({
+  element,
+  slots,
+}: RenderVoidProps<EditableVoidElement>) => {
   const bodyRoot = useChildRoot(element, 'body');
   const bodyEditor = useRootEditor(bodyRoot);
-  const chrome = useRootChrome(bodyRoot);
   const [mountedWithCaret] = useState(
     () => bodyEditor.read.selection() !== null
   );
@@ -219,17 +220,12 @@ const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
         Right
         <h4>Tell us about yourself:</h4>
       </div>
-      <div {...chrome.props}>
-        <EditorContent
-          aria-label="Editable void rich content"
-          autoFocus={mountedWithCaret}
-          className="editor-editable-voids-child-editor"
-          placeholder="Tell us about yourself..."
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          root={bodyRoot}
-        />
-      </div>
+      {slots.contentRoot('body', {
+        ariaLabel: 'Editable void rich content',
+        autoFocus: mountedWithCaret,
+        className: 'editor-editable-voids-child-editor',
+        placeholder: 'Tell us about yourself...',
+      })}
     </div>
   );
 };

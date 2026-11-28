@@ -87,6 +87,7 @@ import {
   beginEditableNativeSelectionImport,
   endEditableSelectionUpdate,
   exportEditableDOMSelection,
+  isEditableComposingForDOMSelection,
   isSelectionHeldForPendingImport,
 } from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
@@ -620,6 +621,7 @@ export const syncSelectionForBeforeInput = ({
   editorElement,
   event,
   forceModelOwnedTextInput = false,
+  inputController,
   inputType: type,
   isCompositionChange,
   liveSelection = null,
@@ -638,6 +640,7 @@ export const syncSelectionForBeforeInput = ({
   editorElement: HTMLElement;
   event: InputEvent;
   forceModelOwnedTextInput?: boolean;
+  inputController?: EditableInputController;
   inputType: string;
   isCompositionChange: boolean;
   /**
@@ -667,6 +670,13 @@ export const syncSelectionForBeforeInput = ({
   let nextNative = native;
   let nativeBlocker: string | undefined;
   let nextSelection = selection;
+  const canImportDOMSelection =
+    allowDOMSelectionImport &&
+    !isEditableComposingForDOMSelection(
+      inputController,
+      ReactEditor.isComposing(editor),
+      { inputType: type, mode: 'before-input' }
+    );
   const domSelection = getSelection(root);
   const domSelectionAnchorNode = domSelection?.anchorNode ?? null;
   const domSelectionAnchorElement = isDOMText(domSelectionAnchorNode)
@@ -716,7 +726,7 @@ export const syncSelectionForBeforeInput = ({
       : null;
 
   if (
-    allowDOMSelectionImport &&
+    canImportDOMSelection &&
     type === 'insertText' &&
     !preferModelSelectionForInput &&
     !forceModelOwnedTextInput &&
@@ -776,7 +786,7 @@ export const syncSelectionForBeforeInput = ({
   // current selection, but IME/focus cleanup can provide an expanded
   // beforeinput target range that must become the model delete range.
   let didUseBeforeInputTargetRange = false;
-  if (allowDOMSelectionImport) {
+  if (canImportDOMSelection) {
     const nodeMapDirty = IS_NODE_MAP_DIRTY.get(editor);
     const textHostRange = targetRange
       ? resolvePliteRangeFromDOMTextRange(editor, targetRange, {
@@ -947,7 +957,7 @@ export const syncSelectionForBeforeInput = ({
   }
 
   if (
-    allowDOMSelectionImport &&
+    canImportDOMSelection &&
     type === 'insertText' &&
     !didUseBeforeInputTargetRange &&
     !shouldPreferModelSelectionForInput &&
@@ -1057,7 +1067,7 @@ export const syncSelectionForBeforeInput = ({
   }
 
   if (
-    allowDOMSelectionImport &&
+    canImportDOMSelection &&
     type !== 'insertText' &&
     !type.startsWith('delete') &&
     domSelection &&
@@ -1106,7 +1116,7 @@ export const syncSelectionForBeforeInput = ({
   }
 
   if (
-    allowDOMSelectionImport &&
+    canImportDOMSelection &&
     type.startsWith('delete') &&
     !didUseBeforeInputTargetRange &&
     !shouldPreferModelSelectionForInput
@@ -1518,6 +1528,15 @@ export const useEditableSelectionReconciler = ({
         projectedSelection &&
         !ReactEditor.hasRange(editor, projectedSelection)
       ) {
+        if (
+          isEditableComposingForDOMSelection(
+            runtime.inputController,
+            ReactEditor.isComposing(editor),
+            { mode: 'strict' }
+          )
+        ) {
+          return undefined;
+        }
         const resolvedRange = ReactEditor.resolveRange(editor, domSelection, {
           exactMatch: false,
         });

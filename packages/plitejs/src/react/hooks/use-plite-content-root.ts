@@ -23,16 +23,15 @@ export type ContentRootController = {
 };
 
 /**
- * Resolve a schema-owned child content root and its root chrome controller.
+ * Resolve and validate a schema-owned child content root without binding root chrome.
  */
-export function useContentRoot(
+export function useDeclaredContentRoot(
   element?: Element | null,
-  options: UseContentRootOptions = {}
-): ContentRootController {
+  slotOverride?: string
+): NamedRootKey {
   const editor = useEditorContext();
   const contextElement = useOptionalElement();
   const targetElement = element ?? contextElement;
-  const { slot: slotOverride, ...chromeOptions } = options;
   const declaredSlots = targetElement
     ? editor.read((state) =>
         Object.keys(
@@ -48,7 +47,19 @@ export function useContentRoot(
       '`useContentRoot` needs a declared contentRoots slot; pass options.slot when the element declares more than one.'
     );
   }
-  const root = useChildRoot(targetElement, slot);
+
+  return useChildRoot(targetElement, slot);
+}
+
+/**
+ * Resolve a schema-owned child content root and its root chrome controller.
+ */
+export function useContentRoot(
+  element?: Element | null,
+  options: UseContentRootOptions = {}
+): ContentRootController {
+  const { slot: slotOverride, ...chromeOptions } = options;
+  const root = useDeclaredContentRoot(element, slotOverride);
   const chrome = useRootChrome(root, chromeOptions);
 
   return useMemo(() => ({ chrome, root }), [chrome, root]);

@@ -118,18 +118,19 @@ export type MovedAnchors = Readonly<{
 
 const SUSPENDED_PLACEMENT = new WeakMap<object, number>();
 
-export const suspendMovePlacement = (editor: object) => {
+export const suspendMovePlacement = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
   let bound = true;
 
-  SUSPENDED_PLACEMENT.set(editor, (SUSPENDED_PLACEMENT.get(editor) ?? 0) + 1);
+  SUSPENDED_PLACEMENT.set(owner, (SUSPENDED_PLACEMENT.get(owner) ?? 0) + 1);
 
   return () => {
     if (!bound) return;
     bound = false;
-    const left = getDefined(SUSPENDED_PLACEMENT.get(editor)) - 1;
+    const left = getDefined(SUSPENDED_PLACEMENT.get(owner)) - 1;
 
-    if (left > 0) SUSPENDED_PLACEMENT.set(editor, left);
-    else SUSPENDED_PLACEMENT.delete(editor);
+    if (left > 0) SUSPENDED_PLACEMENT.set(owner, left);
+    else SUSPENDED_PLACEMENT.delete(owner);
   };
 };
 
@@ -270,7 +271,7 @@ export const collectMovedAnchors = (
 ): MovedAnchors | null => {
   const { builder } = getDefined(getTransactionSnapshot(editor));
 
-  if (SUSPENDED_PLACEMENT.has(editor)) return null;
+  if (SUSPENDED_PLACEMENT.has(getEditorRuntimeOwner(editor))) return null;
 
   const index = builder.getIndex(root);
   const schema = getEditorSchema(editor);

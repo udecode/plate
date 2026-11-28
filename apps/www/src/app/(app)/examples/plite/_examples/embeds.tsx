@@ -76,10 +76,10 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
   }
 };
 
-const renderVoid = ({ element }: RenderVoidProps<CustomElement>) => {
+const renderVoid = ({ element, slots }: RenderVoidProps<CustomElement>) => {
   switch (element.type) {
     case 'video': {
-      return <VideoElement element={element} />;
+      return <VideoElement element={element} slots={slots} />;
     }
     default: {
       return null;

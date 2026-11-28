@@ -18671,12 +18671,12 @@
         },
         "platejs/react:EditableElementSlots": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Render slots passed to custom element renderers for child projection,\nexternal text views, DOM coverage boundaries, and schema-owned content roots.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditableElementSlots",
           "runtime": false,
-          "signature": "type EditableElementSlots = {\n  children: (range?: {\n    from?: number;\n    to?: number;\n  }) => ReactNode;\n  /** Delegate one exact-one-Text block to an adapter while the editor owns its value. */\n  externalText: <TConfig = undefined>(options: ExternalTextOptions<TConfig>) => ReactNode;\n  /**\n   * Renders model-present content whose editable DOM may be intentionally\n   * absent, such as closed accordion bodies or inactive tab panels.\n   */\n  contentBoundary: (props: EditableDOMCoverageBoundaryProps) => ReactNode;\n  contentRoot: (slot: string, options?: EditableContentRootSlotOptions) => ReactNode;\n};",
+          "signature": "type EditableElementSlots = {\n  children: (range?: {\n    from?: number;\n    to?: number;\n  }) => ReactNode;\n  /** Delegate one exact-one-Text block to an adapter while the editor owns its value. */\n  externalText: <TConfig = undefined>(options: ExternalTextOptions<TConfig>) => ReactNode;\n  /**\n   * Renders model-present content whose editable DOM may be intentionally\n   * absent, such as closed accordion bodies or inactive tab panels.\n   */\n  contentBoundary: (props: EditableDOMCoverageBoundaryProps) => ReactNode;\n  /** Render a schema-owned child content root declared on the element's `contentRoots`. */\n  contentRoot: (slot: string, options?: EditableContentRootSlotOptions) => ReactNode;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -26125,12 +26125,12 @@
         },
         "platejs/react:RenderVoidProps": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Props passed to `renderVoid` for rendering a void element's visible content\ninside the runtime-managed void shell.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "RenderVoidProps",
           "runtime": false,
-          "signature": "type RenderVoidProps<TElement extends Element$1 = Element$1> = {\n  element: TElement;\n};",
+          "signature": "type RenderVoidProps<TElement extends Element$1 = Element$1> = {\n  /** The rendered void element node. */\n  element: TElement;\n  /** Element render slots available to void renderers (`slots.contentRoot` for schema-owned child roots). */\n  slots: {\n    contentRoot: EditableElementSlots['contentRoot'];\n  };\n};",
           "source": null,
           "typeParameters": [
             "TElement extends Element$1 = Element$1"

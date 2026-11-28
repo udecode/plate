@@ -28,6 +28,7 @@ import {
   clearEditablePendingNativeTextInputRepair,
   endHiddenAnchorPress,
   endSelectionImport,
+  isEditableComposingForDOMSelection,
   recordEditableInputIntent,
   type EditableInputController,
 } from './input-state';
@@ -531,10 +532,20 @@ export const createRuntimeSelectionImportController = ({
    * follows acts on it before its selectionchange arrives.
    */
   settleHiddenEnd(editorElement: HTMLElement) {
-    const { hiddenAnchorPress, isComposing } = inputController.state;
+    const { hiddenAnchorPress } = inputController.state;
+    if (
+      isEditableComposingForDOMSelection(
+        inputController,
+        ReactEditor.isComposing(editor),
+        { mode: 'strict' }
+      )
+    ) {
+      endHiddenAnchorPress(inputController);
+      return;
+    }
+
     const selection = readRuntimeSelection(editor);
     const domWins =
-      !isComposing &&
       RangeApi.isRange(selection) &&
       readHiddenEndTarget(editor, selection, editorElement, inputController) ===
         'dom';

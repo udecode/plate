@@ -45,6 +45,7 @@ import {
   clearEditablePendingNativeTextInputRepair,
   type DOMInputRepairTarget,
   type EditableInputController,
+  getActiveTextInputRepairEcho,
   type RepairDOMInput,
   setEditablePendingNativeTextInputRepair,
 } from './input-state';
@@ -642,10 +643,9 @@ const shouldPreferRuntimeTextInputRepairTarget = ({
     inputController.state.pendingNativeTextInputRepairPathKey === pathKey &&
     inputController.state.pendingNativeTextInputRepairOffset ===
       selection.anchor.offset;
-  const recentEcho = inputController.state.recentTextInputRepairEcho;
+  const recentEcho = getActiveTextInputRepairEcho(inputController.state, now());
   const recentEchoMatches =
     !!recentEcho &&
-    now() <= recentEcho.expiresAt &&
     recentEcho.pathKey === pathKey &&
     recentEcho.selectionOffset === selection.anchor.offset &&
     recentEcho.text === text;
