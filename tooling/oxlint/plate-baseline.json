@@ -263,9 +263,6 @@
     "packages/platejs/src/docx/export/lib/internal/docx-document.ts": [
       "export type NumberingOptions = ListStyleDefaults;"
     ],
-    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": [
-      "export type FootnotePluginState = ComboboxState;"
-    ],
     "packages/platejs/src/features/media/lib/BaseMediaPlugin.ts": [
       "export type AudioPluginState = MediaPluginState;",
       "export type FilePluginState = MediaPluginState;",

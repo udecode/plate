@@ -280,8 +280,7 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseFootnotePlugin).installed,
         keywords: ['citation', 'fn', 'footnote', '[^]'],
         label: 'Footnote',
-        onSelect: (_editor, tx) =>
-          tx.plugin(BaseFootnotePlugin).insert({}, { select: true }),
+        onSelect: (_editor, tx) => tx.plugin(BaseFootnotePlugin).insert(),
       },
       {
         focusEditor: false,

@@ -9,11 +9,13 @@ export const FootnoteDefinitionPlugin = toReactPlugin(
   BaseFootnoteDefinitionPlugin
 );
 
-export const FootnotePlugin = toReactPlugin(BaseFootnotePlugin).extend({
+export const FootnotePlugin = toReactPlugin(BaseFootnotePlugin, {
+  dependencies: [FootnoteDefinitionPlugin],
+}).extend({
   api: ({ editor, update }) => {
     const jump = (
       readOnly: boolean,
-      target: ReturnType<typeof getFootnoteTarget> | false
+      target: ReturnType<typeof getFootnoteTarget>
     ) => {
       if (!target) return false;
 
@@ -24,41 +26,34 @@ export const FootnotePlugin = toReactPlugin(BaseFootnotePlugin).extend({
       if (key && navigation.installed) navigation.api.flashTarget({ key });
       return true;
     };
+    const readTarget = (
+      kind: 'definition' | 'reference',
+      ref: string,
+      index = 0
+    ) => {
+      const { read } = editor.plugin(BaseFootnotePlugin);
+      const entry =
+        kind === 'definition'
+          ? read.definition({ ref })
+          : read.references({ ref })[index];
+
+      return editor.read((state) => getFootnoteTarget(state, entry?.[1], kind));
+    };
 
     return {
       focusDefinition: ({ ref }: { ref: string }) => {
         if (!editor.api.dom.root()) return false;
-        if (!editor.read.view.isReadOnly()) {
-          return jump(false, update.selectDefinition({ ref }));
-        }
+        const readOnly = editor.read.view.isReadOnly();
+        if (!readOnly && !update.selectDefinition({ ref })) return false;
 
-        const definition = editor
-          .plugin(BaseFootnotePlugin)
-          .read.definition({ ref });
-
-        return jump(
-          true,
-          editor.read((state) =>
-            getFootnoteTarget(state, definition?.[1], 'definition')
-          )
-        );
+        return jump(readOnly, readTarget('definition', ref));
       },
       focusReference: ({ ref, index = 0 }: { ref: string; index?: number }) => {
         if (!editor.api.dom.root()) return false;
-        if (!editor.read.view.isReadOnly()) {
-          return jump(false, update.selectReference({ ref, index }));
-        }
+        const readOnly = editor.read.view.isReadOnly();
+        if (!readOnly && !update.selectReference({ ref, index })) return false;
 
-        const reference = editor
-          .plugin(BaseFootnotePlugin)
-          .read.references({ ref })[index];
-
-        return jump(
-          true,
-          editor.read((state) =>
-            getFootnoteTarget(state, reference?.[1], 'reference')
-          )
-        );
+        return jump(readOnly, readTarget('reference', ref, index));
       },
     };
   },

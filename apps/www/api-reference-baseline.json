@@ -725,14 +725,6 @@
     "platejs/excalidraw": ["ExcalidrawElement"],
     "platejs/excalidraw/react": ["ExcalidrawPlugin"],
     "platejs/find": ["FindMatch", "FindPluginState"],
-    "platejs/footnote": [
-      "CreateFootnoteDefinitionOptions",
-      "FootnoteDefinition",
-      "FootnoteDefinitionElement",
-      "FootnoteElement",
-      "FootnotePluginState",
-      "FootnoteReferenceElement"
-    ],
     "platejs/footnote/react": ["FootnoteDefinitionPlugin", "FootnotePlugin"],
     "platejs/history": [
       "Batch",

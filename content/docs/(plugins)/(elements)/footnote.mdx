@@ -330,23 +330,6 @@ Get definition entries in document order. Pass `ref` to filter to one ref; omit 
 </APIReturns>
 </API>
 
-### `editor.read.footnote.definitionText`
-
-Get the plain-text content of the canonical definition. Useful for hover previews, reading straight from live definition nodes with no copied state.
-
-<API name="definitionText">
-<APIParameters>
-  <APIItem name="ref" type="string">
-    Footnote ref.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem name="return" type="string | undefined">
-    Definition text, or `undefined` when no definition exists.
-  </APIItem>
-</APIReturns>
-</API>
-
 ### `editor.read.footnote.references`
 
 Get every reference entry that points at a ref, in document order.
@@ -388,23 +371,6 @@ Compute the next free numeric ref. Used by `tx.footnote.insert` when the caller 
 </APIReturns>
 </API>
 
-### `editor.read.footnote.isResolved`
-
-Check whether a ref has at least one definition.
-
-<API name="isResolved">
-<APIParameters>
-  <APIItem name="ref" type="string">
-    Footnote ref.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem name="return" type="boolean">
-    `true` when at least one definition exists for the ref.
-  </APIItem>
-</APIReturns>
-</API>
-
 ### `editor.read.footnote.anchor`
 
 Get the fragment id of the footnote reference or definition at a path, and the
@@ -417,7 +383,7 @@ id it links to. Static components and the HTML encoders use the same ids.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  <APIItem name="return" type="FootnoteAnchor | undefined">
+  <APIItem name="return" type="{ id: string; target?: string } | undefined">
     `{ id, target? }`, or `undefined` when no footnote is at `path`. On the main root, a reference targets its note's id even when the note is missing, and a canonical definition targets its first reference. Inside a named root, ids are scoped as `fn@<root>@<ref>` and `fnref@<root>@<ref>`, and `target` is omitted when the matching definition or reference is missing. A later duplicate has no `target`.
   </APIItem>
 </APIReturns>
@@ -521,8 +487,8 @@ Move the selection to the start of the canonical definition for a ref without ch
   </APIItem>
 </APIParameters>
 <APIReturns>
-  <APIItem name="return" type="{ point: Point; targetPath: Path } | false">
-    Resolved target and point, or `false` when the definition is missing.
+  <APIItem name="return" type="boolean">
+    `true` when selection moved into the definition, or `false` when the definition is missing.
   </APIItem>
 </APIReturns>
 </API>
@@ -542,8 +508,8 @@ Move the selection beside a matching reference without changing document content
   </APIItem>
 </APIParameters>
 <APIReturns>
-  <APIItem name="return" type="{ point: Point; targetPath: Path } | false">
-    Resolved target and point, or `false` when the reference is missing.
+  <APIItem name="return" type="boolean">
+    `true` when selection moved beside the reference, or `false` when the reference is missing.
   </APIItem>
 </APIReturns>
 </API>

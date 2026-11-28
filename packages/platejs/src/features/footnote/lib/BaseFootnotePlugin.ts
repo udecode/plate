@@ -3,11 +3,11 @@ import {
   ElementApi,
   PLUGINS,
   PathApi,
+  RangeApi,
   TextApi,
   definePlugin,
   property,
   transferVeto,
-  type DefinitionOf,
   type Descendant,
   type Element,
   type ElementOf,
@@ -28,16 +28,14 @@ const NUMERIC_REF_REGEX = /^\d+$/;
 const isNonBlankRef = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
-/** The fragment id of a footnote and, when present, its linked fragment id. */
-export type FootnoteAnchor = { id: string; target?: string };
-
-type IndexedFootnote = Element & { ref: string };
+type FootnoteAnchor = { id: string; target?: string };
+type FootnoteNode = Element & { ref: string };
 type FootnoteIndex = {
   anchors: Map<string, FootnoteAnchor>;
-  definitions: Array<NodeEntry<IndexedFootnote>>;
-  definitionsByRef: Map<string, Array<NodeEntry<IndexedFootnote>>>;
-  footnotes: Array<NodeEntry<IndexedFootnote>>;
-  referencesByRef: Map<string, Array<NodeEntry<IndexedFootnote>>>;
+  definitions: Array<NodeEntry<FootnoteNode>>;
+  definitionsByRef: Map<string, Array<NodeEntry<FootnoteNode>>>;
+  footnotes: Array<NodeEntry<FootnoteNode>>;
+  referencesByRef: Map<string, Array<NodeEntry<FootnoteNode>>>;
 };
 
 const indexes = new WeakMap<
@@ -103,8 +101,8 @@ const getFootnoteIndex = (
       const path = [...parent, offset];
 
       if (node.type === referenceType || node.type === definitionType) {
-        const footnote = node as IndexedFootnote;
-        const entry: NodeEntry<IndexedFootnote> = [footnote, path];
+        const footnote = node as FootnoteNode;
+        const entry: NodeEntry<FootnoteNode> = [footnote, path];
         const isDefinition = node.type === definitionType;
 
         index.footnotes.push(entry);
@@ -191,6 +189,7 @@ const getGithubFootnote = (document: Document, href: string | null) => {
 export const BaseFootnoteDefinitionPlugin = definePlugin(
   PLUGINS.footnoteDefinition,
   {
+    dependencies: [BaseParagraphPlugin],
     render: { readsDocument: true },
     schema: ({ plugins }) => ({
       element: {
@@ -387,21 +386,18 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
   ],
 }));
 
-export type FootnoteDefinitionElement = ElementOf<
-  typeof BaseFootnoteDefinitionPlugin
->;
+type FootnoteDefinitionNode = ElementOf<typeof BaseFootnoteDefinitionPlugin>;
 
-export type CreateFootnoteDefinitionOptions = {
+type CreateFootnoteDefinitionOptions = {
   focus?: boolean;
   fragment?: readonly Descendant[];
   ref: string;
 };
 
-export type FootnotePluginState = ComboboxState;
-
 /** Enables footnote references and their document-level operations. */
 export const BaseFootnotePlugin = definePlugin('footnote', {
-  initialState: (): FootnotePluginState => ({
+  dependencies: [BaseFootnoteDefinitionPlugin],
+  initialState: (): ComboboxState => ({
     maxQueryLength: 75,
     queryPattern: null,
     trigger: '[^',
@@ -513,10 +509,8 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       },
     }),
   read: ({ editor, schema, state }) => {
-    const definition = editor.plugin(BaseFootnoteDefinitionPlugin);
-    const definitionType = definition.installed
-      ? definition.schema.type
-      : undefined;
+    const definitionType = editor.plugin(BaseFootnoteDefinitionPlugin).schema
+      .type;
     const referenceType = schema.type;
     const getRegistry = () =>
       getFootnoteIndex(
@@ -525,33 +519,38 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
         definitionType,
         state.view.root() ?? MAIN_ROOT_KEY
       );
-    const definitions = ({ ref }: { ref?: string } = {}) => {
+    const definitions = ({ ref }: { ref?: string } = {}): Array<
+      NodeEntry<FootnoteDefinitionNode>
+    > => {
       const current = getRegistry();
 
       if (ref !== undefined && !isNonBlankRef(ref)) return [];
 
       return (
-        (ref !== undefined
+        ((ref !== undefined
           ? current.definitionsByRef.get(ref)
           : current.definitions
-        )?.slice() ?? []
+        )?.slice() as Array<NodeEntry<FootnoteDefinitionNode>> | undefined) ??
+        []
       );
     };
-    const references = ({ ref }: { ref: string }) =>
+    const references = ({
+      ref,
+    }: {
+      ref: string;
+    }): Array<NodeEntry<Element & { ref: string }>> =>
       getRegistry().referencesByRef.get(ref)?.slice() ?? [];
 
     return {
       anchor: ({ path }: { path: Path }) =>
         getRegistry().anchors.get(path.join(',')),
-      definition: ({ ref }: { ref: string }) => definitions({ ref })[0],
+      definition: ({
+        ref,
+      }: {
+        ref: string;
+      }): NodeEntry<FootnoteDefinitionNode> | undefined =>
+        definitions({ ref })[0],
       definitions,
-      definitionText: ({ ref }: { ref: string }) => {
-        const innerDefinition = definitions({ ref })[0];
-
-        return innerDefinition
-          ? state.text.string(innerDefinition[1])
-          : undefined;
-      },
       refs: () => [
         ...new Set(
           definitions().flatMap(([innerDefinition3]) =>
@@ -561,7 +560,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       ],
       isDuplicateDefinition: ({ path }: { path: Path }) => {
         const entry = state.nodes.get(path, {
-          match: (node): node is FootnoteDefinitionElement =>
+          match: (node): node is FootnoteDefinitionNode =>
             ElementApi.isElement(node) && node.type === definitionType,
         });
 
@@ -576,7 +575,6 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
             index > 0 && PathApi.equals(definitionPath, path)
         );
       },
-      isResolved: ({ ref }: { ref: string }) => definitions({ ref }).length > 0,
       nextRef: () => {
         const used = new Set<number>();
 
@@ -612,10 +610,8 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
   },
 }).extend(({ editor, plugin, schema: { type } }) => ({
   update: ({ tx }) => {
-    const definition = editor.plugin(BaseFootnoteDefinitionPlugin);
-    const definitionType = definition.installed
-      ? definition.schema.type
-      : undefined;
+    const definitionType = editor.plugin(BaseFootnoteDefinitionPlugin).schema
+      .type;
     const normalizeDuplicateDefinition = ({
       path,
       ref,
@@ -624,7 +620,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       path: Path;
     }) => {
       const entry = tx.nodes.get(path, {
-        match: (node): node is FootnoteDefinitionElement =>
+        match: (node): node is FootnoteDefinitionNode =>
           ElementApi.isElement(node) && node.type === definitionType,
       });
 
@@ -653,7 +649,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
 
       return nextRef;
     };
-    const selectDefinition = ({ ref }: { ref: string }) => {
+    const selectDefinition = ({ ref }: { ref: string }): boolean => {
       const target = getFootnoteTarget(
         tx,
         tx.plugin(plugin.name).definition({ ref })?.[1],
@@ -665,7 +661,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       const { point } = target;
       tx.selection.set({ anchor: point, focus: point });
 
-      return target;
+      return true;
     };
     const selectReference = ({
       ref,
@@ -673,7 +669,7 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
     }: {
       ref: string;
       index?: number;
-    }) => {
+    }): boolean => {
       const target = getFootnoteTarget(
         tx,
         tx.plugin(plugin.name).references({ ref })[index]?.[1],
@@ -685,7 +681,34 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       const { point } = target;
       tx.selection.set({ anchor: point, focus: point });
 
-      return target;
+      return true;
+    };
+    const getTrailingInsertIndex = () => {
+      const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
+      const rootChildren = tx.children();
+      let insertIndex = rootChildren.length;
+
+      while (insertIndex > 1) {
+        const last = rootChildren[insertIndex - 1];
+
+        if (
+          !ElementApi.isElement(last) ||
+          last.type !== paragraphType ||
+          last.children.length !== 1 ||
+          !TextApi.isText(last.children[0]) ||
+          last.children[0].text !== '' ||
+          Object.keys(last.children[0]).length !== 1 ||
+          Object.keys(last).some(
+            (key) => key !== 'type' && key !== 'children' && key !== 'id'
+          )
+        ) {
+          break;
+        }
+
+        insertIndex -= 1;
+      }
+
+      return insertIndex;
     };
     const createDefinition = ({
       focus = true,
@@ -694,12 +717,6 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
     }: CreateFootnoteDefinitionOptions) => {
       if (!isNonBlankRef(ref)) {
         throw new TypeError('Footnote ref must be a non-empty string.');
-      }
-
-      if (!definitionType) {
-        throw new Error(
-          'Footnote definition creation requires BaseFootnoteDefinitionPlugin.'
-        );
       }
 
       const existingDefinition = tx.plugin(plugin.name).definition({
@@ -725,44 +742,27 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
         });
         inlineChildren = [];
       };
-
-      for (const child of clonedFragment) {
-        if (ElementApi.isElement(child) && tx.schema.isBlock(child)) {
-          flushInlineChildren();
-          children.push(child);
-        } else {
-          inlineChildren.push(child);
+      const appendFragmentNodes = (nodes: readonly Descendant[]) => {
+        for (const child of nodes) {
+          if (ElementApi.isElement(child) && child.type === definitionType) {
+            appendFragmentNodes(child.children);
+          } else if (ElementApi.isElement(child) && tx.schema.isBlock(child)) {
+            flushInlineChildren();
+            children.push(child);
+          } else {
+            inlineChildren.push(child);
+          }
         }
-      }
+      };
+
+      appendFragmentNodes(clonedFragment);
       flushInlineChildren();
 
       if (children.length === 0) {
         children.push({ children: [{ text: '' }], type: paragraphType });
       }
-      const rootChildren = tx.children();
-      let insertIndex = rootChildren.length;
 
-      while (insertIndex > 1) {
-        const last = rootChildren[insertIndex - 1];
-
-        if (
-          !ElementApi.isElement(last) ||
-          last.type !== paragraphType ||
-          last.children.length !== 1 ||
-          !TextApi.isText(last.children[0]) ||
-          last.children[0].text !== '' ||
-          Object.keys(last.children[0]).length !== 1 ||
-          Object.keys(last).some(
-            (key) => key !== 'type' && key !== 'children' && key !== 'id'
-          )
-        ) {
-          break;
-        }
-
-        insertIndex -= 1;
-      }
-
-      const path = [insertIndex];
+      const path = [getTrailingInsertIndex()];
 
       tx.nodes.insert(
         {
@@ -795,16 +795,65 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
       }
 
       const nextRef = ref ?? tx.plugin(plugin.name).nextRef();
-      const fragment =
-        options.at === undefined && selection && tx.selection.isExpanded()
-          ? tx.fragment({ at: selection })
+      const explicitRange =
+        options.at !== undefined && RangeApi.isRange(options.at)
+          ? options.at
           : undefined;
+      const targetRange =
+        explicitRange ??
+        (options.at === undefined ? (selection ?? undefined) : undefined);
+      const isExpandedTarget = Boolean(
+        targetRange && RangeApi.isExpanded(targetRange)
+      );
+      const existingDefinition = tx.plugin(plugin.name).definition({
+        ref: nextRef,
+      });
 
-      tx.nodes.insert(tx.schema.create(type, { ref: nextRef }), options);
+      let insertOptions = options;
+      let fragment: Descendant[] | undefined;
+      const preservedDefinitions: FootnoteDefinitionNode[] = [];
 
-      const caretInReference = options.at === undefined ? tx.selection() : null;
+      if (isExpandedTarget && targetRange) {
+        if (existingDefinition) {
+          insertOptions = { ...options, at: RangeApi.end(targetRange) };
+        } else {
+          const rawFragment = tx.fragment({ at: targetRange });
+          const flowFragment: Descendant[] = [];
+
+          for (const node of rawFragment) {
+            if (ElementApi.isElement(node) && node.type === definitionType) {
+              preservedDefinitions.push(
+                structuredClone(node) as FootnoteDefinitionNode
+              );
+            } else {
+              flowFragment.push(node);
+            }
+          }
+          fragment = flowFragment;
+        }
+      }
+
+      tx.nodes.insert(tx.schema.create(type, { ref: nextRef }), insertOptions);
+
+      const caretInReference =
+        options.at === undefined || options.select ? tx.selection() : null;
       const referencePath =
         caretInReference && PathApi.parent(caretInReference.anchor.path);
+
+      for (const preserved of preservedDefinitions) {
+        const stillPresent = tx
+          .children()
+          .some(
+            (child) =>
+              ElementApi.isElement(child) &&
+              child.type === definitionType &&
+              child.id === preserved.id
+          );
+
+        if (!stillPresent) {
+          tx.nodes.insert(preserved, { at: [getTrailingInsertIndex()] });
+        }
+      }
 
       createDefinition({
         focus: shouldFocusDefinition,
@@ -838,9 +887,3 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
     };
   },
 }));
-
-export type FootnoteReferenceElement = ElementOf<typeof BaseFootnotePlugin>;
-export type FootnoteElement = ElementOf<
-  typeof BaseFootnoteDefinitionPlugin | typeof BaseFootnotePlugin
->;
-export type FootnoteDefinition = DefinitionOf<typeof BaseFootnotePlugin>;

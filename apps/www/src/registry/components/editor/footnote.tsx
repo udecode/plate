@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
-import { PathApi, type Path } from 'platejs';
+import { NodeApi, PathApi, type Element, type Path } from 'platejs';
 import {
   FootnotePlugin,
   FootnoteDefinitionPlugin,
@@ -82,6 +82,14 @@ const focusFootnoteControl = (editor: Editor, path?: Path) => {
   }
 };
 
+const getDefinitionPreviewText = (entry?: readonly [Element, Path]) =>
+  entry
+    ? entry[0].children
+        .map((child) => NodeApi.string(child))
+        .filter((line) => line.length > 0)
+        .join(' ')
+    : undefined;
+
 const getFootnotePreviewLabel = (text?: string) => {
   const normalized = text?.replace(/\s+/g, ' ').trim();
 
@@ -127,14 +135,16 @@ export function FootnoteReferenceElement(
   const ref = element.ref ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
-  const { isResolved, previewText } = useEditorSelector<FootnotePreview>(() =>
-    hoverOpen && ref
-      ? {
-          isResolved: footnoteApi.isResolved({ ref }),
-          previewText: footnoteApi.definitionText({ ref }),
-        }
-      : CLOSED_PREVIEW
-  );
+  const { isResolved, previewText } = useEditorSelector<FootnotePreview>(() => {
+    if (!hoverOpen || !ref) return CLOSED_PREVIEW;
+
+    const definition = footnoteApi.definition({ ref });
+
+    return {
+      isResolved: Boolean(definition),
+      previewText: getDefinitionPreviewText(definition),
+    };
+  });
   const selected = useElementSelected({ mode: 'text' });
   const isSelectionInsideAtom = useEditorSelector((currentEditor) => {
     const selection = currentEditor.read.selection();
@@ -175,7 +185,7 @@ export function FootnoteReferenceElement(
               event.stopPropagation();
               if (
                 readOnly &&
-                footnoteApi.isResolved({ ref }) &&
+                Boolean(footnoteApi.definition({ ref })) &&
                 footnoteNavigation.focusDefinition({ ref })
               ) {
                 focusFootnoteControl(
@@ -190,7 +200,7 @@ export function FootnoteReferenceElement(
               if (event.metaKey || event.ctrlKey) {
                 event.preventDefault();
                 event.stopPropagation();
-                if (!footnoteApi.isResolved({ ref })) {
+                if (!footnoteApi.definition({ ref })) {
                   footnoteUpdate.createDefinition({ focus: false, ref });
                 }
 
@@ -432,7 +442,7 @@ function FootnoteComboboxContent() {
     () => ({
       footnotes: footnoteApi.refs().map((ref) => ({
         ref,
-        text: footnoteApi.definitionText({ ref }),
+        text: getDefinitionPreviewText(footnoteApi.definition({ ref })),
       })),
       nextRef: footnoteApi.nextRef(),
     }),

@@ -514,7 +514,7 @@ function getGroups(editor: Editor): Group[] {
         }
 
         editor.update((tx) => {
-          tx.plugin(BaseFootnotePlugin).insert({}, { select: true });
+          tx.plugin(BaseFootnotePlugin).insert();
         });
       },
     });
