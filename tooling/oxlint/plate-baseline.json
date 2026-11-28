@@ -36,7 +36,6 @@
       "sourceEditor?.api.dom?.resolveDOMNode?.(sourceEditor) ?? null;"
     ],
     "packages/plitejs/src/react/editable/content-root-vertical-geometry.ts": [
-      "const root = editor.api.dom.root();",
       "const targetElement = targetEditor.api.dom.resolveDOMNode(targetEditor);",
       "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
       "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
