@@ -537,6 +537,13 @@ export type SchemaElementStructure =
 export type SchemaElementInput = Readonly<{
   atom?: boolean;
   content?: SchemaContent;
+  /**
+   * Whether direct text children admit `role: 'content'` text properties
+   * (formatting marks). Defaults to `true`. Set `false` for plain-text
+   * containers such as code blocks; `role: 'metadata'` text properties
+   * (such as review marks) remain allowed.
+   */
+  contentMarks?: boolean;
   /** Projected named-root grammars keyed by the element's `childRoots` slot. */
   contentRoots?: Readonly<Record<string, SchemaContentRootInput>>;
   /** Explicit product groups. Structural groups are compiler-derived. */
@@ -622,6 +629,12 @@ export type EditorSchemaElementStructure =
 export type EditorSchemaElement = Readonly<{
   behavior: Readonly<{
     atom: boolean;
+    /**
+     * Whether direct text children admit `role: 'content'` text properties
+     * (formatting marks). Defaults to `true`; `role: 'metadata'` text
+     * properties remain allowed even when `false`.
+     */
+    contentMarks: boolean;
     inline: boolean;
     isolating: boolean;
     markableVoid: boolean;

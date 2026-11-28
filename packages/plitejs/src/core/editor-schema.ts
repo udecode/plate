@@ -1839,6 +1839,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const DEFAULT_ELEMENT_BEHAVIOR: EditorElementBehavior = Object.freeze({
     atom: false,
+    contentMarks: true,
     inline: false,
     isolating: false,
     markableVoid: false,
@@ -2191,6 +2192,16 @@ export const createEditorSchema = <V extends Value = Value>(
         ? ownDescriptor.value
         : undefined;
     if (resolved.placement === 'text' && !resolved.target) {
+      const parentType = options.parent ? getElementType(options.parent) : null;
+
+      if (
+        resolved.role === 'content' &&
+        parentType &&
+        schema.elements.byType.get(parentType)?.behavior.contentMarks === false
+      ) {
+        return undefined;
+      }
+
       return ownValue !== undefined ? ownValue : getPropertyDefault(resolved);
     }
     const type = ElementApi.isElement(node)
@@ -2201,6 +2212,9 @@ export const createEditorSchema = <V extends Value = Value>(
 
     if (
       !type ||
+      (resolved.placement === 'text' &&
+        resolved.role === 'content' &&
+        schema.elements.byType.get(type)?.behavior.contentMarks === false) ||
       !matchesCompiledSchemaTarget(
         schema,
         resolved.target,
@@ -3260,9 +3274,14 @@ export const createEditorSchema = <V extends Value = Value>(
 
       if (!property) {
         if (candidates.length > 0) {
+          const forbidsContentMarks =
+            placement === 'text' &&
+            schema.elements.byType.get(context.type)?.behavior.contentMarks ===
+              false;
           const boundaryProperty = openAncestorBoundary
             ? candidates.find(
                 (candidate) =>
+                  !(forbidsContentMarks && candidate.role === 'content') &&
                   matchesTargetWithOpenAncestorBoundary(
                     schema,
                     candidate.target,

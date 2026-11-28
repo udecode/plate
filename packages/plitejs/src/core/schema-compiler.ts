@@ -279,6 +279,7 @@ type CompiledSchemaContentRoot = Readonly<{
 
 type CompiledSchemaElementBehavior = Readonly<{
   atom: boolean;
+  contentMarks: boolean;
   inline: boolean;
   isolating: boolean;
   markableVoid: boolean;
@@ -1335,6 +1336,7 @@ const collectSchemaKeyDiagnostics = (
         [
           'atom',
           'content',
+          'contentMarks',
           'contentRoots',
           'groups',
           'inline',
@@ -1696,29 +1698,37 @@ export const canonicalJson = <TValue>(
 const stableStringify = (value: unknown): string =>
   JSON.stringify(canonicalJson(value));
 
-const omitFalseOwnsExit = ({
+const omitDefaultBehaviorFlags = ({
+  contentMarks,
   ownsExit,
   ...behavior
 }: EditorSchemaContractElementBehavior): EditorSchemaContractElementBehavior =>
-  Object.freeze(ownsExit ? { ...behavior, ownsExit } : behavior);
+  Object.freeze({
+    ...behavior,
+    ...(contentMarks === false ? { contentMarks: false } : {}),
+    ...(ownsExit ? { ownsExit } : {}),
+  });
 
 const ownsExitByKind = (
   behavior: Readonly<{ object: boolean; void: boolean }>
 ) => behavior.void || behavior.object;
 
 const declaredContractBehavior = ({
+  contentMarks,
   ownsExit,
   ...behavior
 }: CompiledSchemaElementBehavior): EditorSchemaContractElementBehavior =>
-  Object.freeze(
-    ownsExit && !ownsExitByKind(behavior) ? { ...behavior, ownsExit } : behavior
-  );
+  Object.freeze({
+    ...behavior,
+    ...(contentMarks ? {} : { contentMarks: false }),
+    ...(ownsExit && !ownsExitByKind(behavior) ? { ownsExit } : {}),
+  });
 
 // Keep the reserved false bit in persisted fingerprints after removing the
 // editable-island feature; ordinary element semantics did not change.
 const canonicalSchemaElementBehavior = (
   behavior: EditorSchemaContractElementBehavior
-) => ({ ...omitFalseOwnsExit(behavior), editableIsland: false });
+) => ({ ...omitDefaultBehaviorFlags(behavior), editableIsland: false });
 
 /**
  * Exact 64-bit FNV-1a over JavaScript UTF-16 code units.
@@ -2393,6 +2403,27 @@ const compileElementBehavior = (
     void: isSchemaVoidKind(voidKind),
   });
 
+  if (
+    input.contentMarks !== undefined &&
+    typeof input.contentMarks !== 'boolean'
+  ) {
+    compileFailure(
+      'invalid-element-behavior',
+      `Schema element at ${source.path} contentMarks must be a boolean.`,
+      [source],
+      `${source.path}.contentMarks`
+    );
+  }
+  if (input.contentMarks !== undefined && isSchemaVoidKind(voidKind)) {
+    compileFailure(
+      'invalid-element-behavior',
+      `Schema element at ${source.path} declares contentMarks, which only an element whose content admits text can declare.`,
+      [source],
+      `${source.path}.contentMarks`
+    );
+  }
+  const contentMarks = input.contentMarks ?? true;
+
   if (ownsExit && (inline || ownedByKind)) {
     compileFailure(
       'invalid-element-behavior',
@@ -2433,6 +2464,7 @@ const compileElementBehavior = (
 
   return Object.freeze({
     atom,
+    contentMarks,
     inline,
     isolating: object || gridBoundary || (input.isolating ?? false),
     markableVoid: input.markableVoid ?? voidKind === 'markable-inline',
@@ -3768,12 +3800,17 @@ export const resolveCompiledSchemaProperty = (
     return schema.reservedElementId;
   }
 
+  const forbidsContentMarks =
+    placement === 'text' &&
+    context.type !== undefined &&
+    schema.elements.byType.get(context.type)?.behavior.contentMarks === false;
   const lookup = schema.properties.lookup[placement];
   for (const id of lookup.exact.get(key) ?? []) {
     const property = schema.properties.byId.get(id);
 
     if (
       property &&
+      !(forbidsContentMarks && property.role === 'content') &&
       matchesCompiledSchemaTarget(schema, property.target, context)
     ) {
       return property;
@@ -3788,6 +3825,7 @@ export const resolveCompiledSchemaProperty = (
 
       if (
         property &&
+        !(forbidsContentMarks && property.role === 'content') &&
         matchesCompiledSchemaTarget(schema, property.target, context)
       ) {
         return property;
@@ -4078,9 +4116,23 @@ export const tracksPlaces = (
 
     return answers.size > 1;
   };
+  const hasDisallowedContentMarks = [...schema.elements.byType.values()].some(
+    (element) => !element.behavior.contentMarks
+  );
+  const hasAllowedContentMarks =
+    schema.unknown === 'preserve' ||
+    [...schema.elements.byType.values()].some(
+      (element) =>
+        (element.content?.allowsText ?? false) && element.behavior.contentMarks
+    );
   const tracks = [...schema.properties.byId.values()].some(
     (property) =>
-      property.target !== null && varies(property.target, property.placement)
+      (property.target !== null &&
+        varies(property.target, property.placement)) ||
+      (property.placement === 'text' &&
+        property.role === 'content' &&
+        hasDisallowedContentMarks &&
+        hasAllowedContentMarks)
   );
 
   tracksPlacesBySchema.set(schema, tracks);
@@ -4806,6 +4858,15 @@ const compileEditorSchemaInternal = (
       unknownPolicy
     );
 
+    if (element.input.contentMarks !== undefined && !program.allowsText) {
+      compileFailure(
+        'invalid-element-behavior',
+        `Schema element "${element.type}" declares contentMarks, which only an element whose content admits text can declare.`,
+        [element.source],
+        `${element.source.path}.contentMarks`
+      );
+    }
+
     const blockChildTypes = sortedStrings(
       [...program.allowedElementTypes].filter(
         (type) => mutableElements.get(type)?.behavior.inline === false
@@ -5468,6 +5529,10 @@ const compileEditorSchemaInternal = (
   for (const property of compiledProperties) {
     const destination =
       property.placement === 'element' ? propertyIdsByElement : textIdsByParent;
+    const excludesContentMarks = (type: string) =>
+      property.placement === 'text' &&
+      property.role === 'content' &&
+      mutableElements.get(type)?.behavior.contentMarks === false;
     const { target } = property;
     const directTypes = !target
       ? elementTypes
@@ -5480,11 +5545,16 @@ const compileEditorSchemaInternal = (
             : null;
 
     if (directTypes) {
-      for (const type of directTypes) destination.get(type)?.add(property.id);
+      for (const type of directTypes) {
+        if (!excludesContentMarks(type)) {
+          destination.get(type)?.add(property.id);
+        }
+      }
       continue;
     }
     for (const type of elementTypes) {
       if (
+        !excludesContentMarks(type) &&
         targetCombinationIsSatisfiable(
           targetSchema,
           [property.target],
@@ -6403,7 +6473,9 @@ export type EditorSchemaContractContentRoot = Readonly<{
 }>;
 
 export type EditorSchemaContractElementBehavior = Readonly<
-  Omit<CompiledSchemaElementBehavior, 'ownsExit'> & {
+  Omit<CompiledSchemaElementBehavior, 'contentMarks' | 'ownsExit'> & {
+    /** Present only where an element declares `contentMarks: false`. */
+    contentMarks?: false;
     /**
      * Present only where a text block declares `ownsExit`; voids and objects
      * own their exit by kind and never carry it.
@@ -7127,6 +7199,7 @@ const isContractElementBehavior = (value: unknown) =>
     'selectable',
     'void',
   ].every((key) => typeof value[key] === 'boolean') &&
+  (value.contentMarks === undefined || value.contentMarks === false) &&
   (value.ownsExit === undefined || value.ownsExit === true) &&
   (value.voidKind === null || isSchemaVoidKind(value.voidKind));
 

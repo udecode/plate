@@ -1255,6 +1255,7 @@ function textBlock(
     options,
     [
       'atom',
+      'contentMarks',
       'contentRoots',
       'groups',
       'isolating',

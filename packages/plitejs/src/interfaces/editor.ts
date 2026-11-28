@@ -1975,6 +1975,12 @@ export type EditorStateRuntimeApi<V extends Value = Value> = {
 
 export type EditorElementBehavior = Readonly<{
   atom: boolean;
+  /**
+   * Whether direct text children admit `role: 'content'` text properties
+   * (formatting marks). Defaults to `true`; `role: 'metadata'` text
+   * properties remain allowed even when `false`.
+   */
+  contentMarks: boolean;
   inline: boolean;
   isolating: boolean;
   markableVoid: boolean;

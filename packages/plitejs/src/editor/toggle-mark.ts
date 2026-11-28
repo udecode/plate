@@ -13,6 +13,8 @@ import type {
 } from '../interfaces/editor';
 import { parent as editorParent } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
+import { PathApi } from '../interfaces/path';
+import { PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { applyAddMark } from './add-mark';
@@ -83,15 +85,65 @@ export const applyToggleMark = (
 
     if (!RangeApi.isRange(selection)) return;
 
-    const marks = tx.marks ?? tx.getSelectionMarks();
+    const schema = getEditorSchema(editor);
+    const root = getSelectionRoot(editor, selection);
+    let { marks } = tx;
+    let canonicalPath = selection.focus.path;
+
+    if (!marks && RangeApi.isExpanded(selection)) {
+      const [rawStart, rawEnd] = RangeApi.edges(selection);
+      const eligible = withTransactionSpecDraftRead(editor, () => {
+        let start = rawStart;
+        const startEnd = editor.read.points.end(start.path);
+
+        if (startEnd && PointApi.equals(start, startEnd)) {
+          const after = editor.read.points.after(start);
+
+          if (after) start = after;
+        }
+
+        return editor.read.nodes
+          .toArray({
+            at: { anchor: start, focus: rawEnd },
+            match: NodeApi.isText,
+            voids: true,
+          })
+          .filter(([, path]) => {
+            if (
+              rawEnd.offset === 0 &&
+              PathApi.equals(path, rawEnd.path) &&
+              !PathApi.equals(start.path, rawEnd.path)
+            ) {
+              return false;
+            }
+            const [parentNode] = editorParent(editor, path);
+
+            return (
+              NodeApi.isElement(parentNode) &&
+              schema.isTextPropertyAllowedAt(key, path, root) &&
+              (!schema.isVoid(parentNode) || schema.isMarkableVoid(parentNode))
+            );
+          });
+      });
+
+      if (eligible.length === 0) return;
+
+      const [[firstNode, firstPath]] = eligible;
+      const { text: _text, ...rest } = firstNode;
+
+      marks = rest;
+      canonicalPath = firstPath;
+    } else if (!marks) {
+      marks = tx.getSelectionMarks();
+    }
 
     if (isActive(marks?.[key])) {
       applyRemoveMark(editor, key);
     } else {
-      const canonical = getEditorSchema(editor).canonicalizeTextPropertiesAt(
+      const canonical = schema.canonicalizeTextPropertiesAt(
         { ...marks, [key]: nextValue },
-        selection.focus.path,
-        getSelectionRoot(editor, selection),
+        canonicalPath,
+        root,
         key
       );
 
