@@ -6966,7 +6966,10 @@
         "source-hash:partition:core",
         "source-hash:partition:html-server",
         "source-hash:partition:standard-basic-nodes",
-        "source-hash:partition:standard-code-block"
+        "source-hash:partition:standard-basic-styles",
+        "source-hash:partition:standard-code-block",
+        "source-hash:partition:standard-indent",
+        "source-hash:partition:standard-list"
       ],
       "inputs": [
         "src/html/server/**",

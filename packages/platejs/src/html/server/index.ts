@@ -5,6 +5,7 @@ import type {
   HtmlDocumentParseResult,
   HtmlParseOptions,
 } from '../../lib/plugins/html/htmlTypes';
+import { installServerCssStyles } from './serverCssStyle.internal';
 
 type LinkeDomModule = Readonly<{
   parseHTML: (html: string) => Readonly<{ document: Document }>;
@@ -24,8 +25,9 @@ const createServerHtmlDocument = (): Document => {
     );
   }
 
-  return linkedom.parseHTML('<!doctype html><html><body></body></html>')
-    .document;
+  return installServerCssStyles(
+    linkedom.parseHTML('<!doctype html><html><body></body></html>').document
+  );
 };
 
 export const parseHtml = (

@@ -40,12 +40,8 @@ const lighterWeight = (parent: number) =>
 
 const CSS_NUMBER = /^\+?(\d+|\d*\.\d+)(e[+-]?\d+)?$/;
 
-// linkedom keeps `!important` in the value.
 const statedWeight = (element: Element) =>
-  (element as HTMLElement).style?.fontWeight
-    ?.replace(/\s*!\s*important\s*$/i, '')
-    .trim()
-    .toLowerCase() ?? '';
+  (element as HTMLElement).style?.fontWeight?.trim().toLowerCase() ?? '';
 
 const absoluteWeight = (value: string) => {
   if (value === 'normal' || value === 'initial') return 400;
