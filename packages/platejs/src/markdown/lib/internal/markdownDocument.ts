@@ -97,48 +97,54 @@ export const serializeUnknownMdxNode = (
   return `${openTag}>${inner}</${mdastNode.name}>`;
 };
 
-export const toMarkdownBlockContent = (
-  context: MarkdownConversionContext,
-  children: readonly Descendant[]
-): Value => {
+export const groupMarkdownInlineRuns = (
+  children: readonly Descendant[],
+  options: Readonly<{
+    defaultEmpty?: boolean;
+    isBlock: (node: Element) => boolean;
+    paragraphType: string;
+  }>
+): Element[] => {
   const content: Element[] = [];
-  const paragraphType = getMarkdownParagraphType(context.registry);
   let inline: Descendant[] = [];
   const flush = () => {
     if (inline.length === 0) return;
-
     content.push({
       children: inline,
-      type: paragraphType,
+      type: options.paragraphType,
     });
     inline = [];
   };
 
-  children.forEach((child) => {
-    if (
-      ElementApi.isElement(child) &&
-      context.isBlock(child) &&
-      !context.isInline(child)
-    ) {
+  for (const child of children) {
+    if (ElementApi.isElement(child) && options.isBlock(child)) {
       flush();
       content.push(child);
-
-      return;
+    } else {
+      inline.push(child);
     }
-
-    inline.push(child);
-  });
+  }
   flush();
 
-  return content.length > 0
+  return content.length > 0 || !options.defaultEmpty
     ? content
     : [
         {
           children: [{ text: '' }],
-          type: paragraphType,
+          type: options.paragraphType,
         },
       ];
 };
+
+export const toMarkdownBlockContent = (
+  context: MarkdownConversionContext,
+  children: readonly Descendant[]
+): Value =>
+  groupMarkdownInlineRuns(children, {
+    defaultEmpty: true,
+    isBlock: (child) => context.isBlock(child) && !context.isInline(child),
+    paragraphType: getMarkdownParagraphType(context.registry),
+  });
 
 export const toMarkdownCaptionContent = (
   context: MarkdownConversionContext,

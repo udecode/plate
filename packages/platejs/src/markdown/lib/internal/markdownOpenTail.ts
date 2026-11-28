@@ -671,24 +671,26 @@ const cutHeld = (text: string, tree: Root, heldFromEnd: readonly Run[]) => {
   last.value = last.value.slice(0, -tail.length) + shown + text.slice(at);
 };
 
-export const remarkOpenTail: UnifiedPlugin<[OpenTailRead], Root> =
-  (read) => (tree, file) => {
-    const text = String(file);
+export const remarkOpenTail: UnifiedPlugin<[], Root> = () => (tree, file) => {
+  const read = file.data.openTail as OpenTailRead | undefined;
 
-    if (read.mode === 'pairCopy') {
-      if (!pairsAsPlanned(text, tree, read.copy)) {
-        throw new Error('The closed copy pairs other runs than its plan.');
-      }
-      cutHeld(text, tree, read.heldFromEnd);
+  if (!read) return;
+  const text = String(file);
 
-      return;
+  if (read.mode === 'pairCopy') {
+    if (!pairsAsPlanned(text, tree, read.copy)) {
+      throw new Error('The closed copy pairs other runs than its plan.');
     }
-    const plan = planOpenTail(text, tree, read);
+    cutHeld(text, tree, read.heldFromEnd);
 
-    if (!plan) return;
-    cutHeld(text, tree, plan.heldFromEnd);
-    read.onPlan(plan);
-  };
+    return;
+  }
+  const plan = planOpenTail(text, tree, read);
+
+  if (!plan) return;
+  cutHeld(text, tree, plan.heldFromEnd);
+  read.onPlan(plan);
+};
 
 type Token =
   | string

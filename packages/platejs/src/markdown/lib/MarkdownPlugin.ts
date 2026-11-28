@@ -13,7 +13,6 @@ import {
   type EditorCoreStateView,
   type EditorDocumentValue,
   type Element,
-  TextApi,
   type Value,
   isUrl,
 } from '../../core';
@@ -25,20 +24,26 @@ import {
   projectPlateFormatDocument,
   withPlateFormatCompilation,
 } from '../../lib/editor/withPlite';
+import { groupMarkdownInlineRuns } from './internal/markdownDocument';
+import { markdownMappingsRegistryKey } from './internal/markdownMappings';
 import {
-  createMarkdownOperationRuntime,
-  createMarkdownRuntime,
   type MarkdownReuse,
   parseMarkdownDocumentWithRuntime,
   parseMarkdownInlineWithRuntime,
   parseMarkdownPlaceholdersWithRuntime,
   parseMarkdownSliceWithRuntime,
+} from './internal/markdownParse';
+import {
+  createMarkdownOperationRuntime,
+  createMarkdownRuntime,
+  type MarkdownRuntime,
   prepareMarkdownRuntime,
+  withMarkdownRuntime,
+} from './internal/markdownRuntime';
+import {
   serializeMarkdownSliceWithRuntime,
   serializeMarkdownWithRuntime,
-  withMarkdownRuntime,
-} from './internal/markdownConversion';
-import { markdownMappingsRegistryKey } from './internal/markdownMappings';
+} from './internal/markdownSerialize';
 import type {
   MarkdownDiagnostic,
   MarkdownDocumentParseResult,
@@ -119,8 +124,6 @@ const shouldParseMarkdown = (
   return true;
 };
 
-type MarkdownRuntime = ReturnType<typeof createMarkdownOperationRuntime>;
-
 const markdownStateOwners = new WeakMap<object, readonly string[]>();
 
 // A mapping callback sees only its owner's state, and parsing reads Markdown's
@@ -155,29 +158,11 @@ const getMarkdownReuse = (
 const toMarkdownBlocks = (
   runtime: MarkdownRuntime,
   children: readonly Descendant[]
-): Element[] => {
-  const output: Element[] = [];
-  let inline: Descendant[] = [];
-  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-  const flushInline = () => {
-    if (inline.length === 0) return;
-    output.push({ children: inline, type: paragraphType });
-    inline = [];
-  };
-
-  children.forEach((node) => {
-    if (TextApi.isText(node) || runtime.state.schema.isInline(node)) {
-      inline.push(node);
-
-      return;
-    }
-    flushInline();
-    output.push(node);
+): Element[] =>
+  groupMarkdownInlineRuns(children, {
+    isBlock: (node) => !runtime.state.schema.isInline(node),
+    paragraphType: runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph',
   });
-  flushInline();
-
-  return output;
-};
 
 const serializeMarkdownDataTransferSlice = (
   runtime: MarkdownRuntime,
@@ -312,23 +297,21 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
     {
       mimeType: 'text/markdown',
       scope: 'document',
-      decode: ({ data, pluginState, registry, report, schema, state }) =>
+      decode: ({ data, pluginState, registry, report, state }) =>
         parseMarkdownDataTransferSlice(
           createMarkdownOperationRuntime({
             pluginState,
             registry,
-            schema,
             state,
           }),
           data,
           report
         ),
-      encode: ({ pluginState, registry, schema, slice, state }) =>
+      encode: ({ pluginState, registry, slice, state }) =>
         serializeMarkdownDataTransferSlice(
           createMarkdownOperationRuntime({
             pluginState,
             registry,
-            schema,
             state,
           }),
           slice,
@@ -339,12 +322,11 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
     {
       mimeType: 'text/plain',
       scope: 'document',
-      decode: ({ data, pluginState, registry, report, schema, state }) =>
+      decode: ({ data, pluginState, registry, report, state }) =>
         parseMarkdownDataTransferSlice(
           createMarkdownOperationRuntime({
             pluginState,
             registry,
-            schema,
             state,
           }),
           data,

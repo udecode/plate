@@ -1,104 +1,61 @@
-import { dequal } from 'dequal';
 import type {
   List,
   ListItem,
   Nodes,
   Paragraph,
-  Parent,
   Root,
   RootContent as MdRootContent,
 } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import remarkParse from 'remark-parse';
-import remarkStringify from 'remark-stringify';
-import { type Processor, type Plugin as UnifiedPlugin, unified } from 'unified';
 
 import {
   ContentSlice,
   type Descendant,
-  type Editor,
   type EditorCoreStateView,
   type EditorDocumentValue,
   EditorSchemaValidationError,
   type Element,
   ElementApi,
-  type MarkdownPluginRegistry,
-  type RootKey,
   TextApi,
 } from '../../../core';
 import { sameUpToListIds } from '../../../features/list/lib/listIdentity.internal';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-} from '../../../internal/plugin/compilePlateModel';
 import {
   getMarkdownParagraphType,
   landsMarkdownParagraph,
   UNLANDED_MARKDOWN_PARAGRAPH_TYPE,
 } from '../../../internal/plugin/markdownParagraph';
-import {
-  createContentFormatDocument,
-  createPluginFormatRegistry,
-} from '../../../internal/plugin/pluginFormatOperation';
 import { createValidatedContentSlice } from '../../../internal/utils/trustedContentSlice';
-import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
-import type { MarkdownPluginState } from '../MarkdownPlugin';
-import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
-import { finishMarkdownLists } from '../serializer/listToMdastTree';
 import type {
   DeserializeMdContext,
   MarkdownDiagnostic,
   MarkdownDocumentParseResult,
-  MarkdownConversionContext,
   MarkdownFrontmatter,
   MarkdownParsePolicy,
   MarkdownPlaceholderParseOptions,
   MarkdownPlaceholderParseResult,
   MarkdownPlaceholderSegment,
-  MarkdownSerializePolicy,
-  MarkdownSerializeResult,
   MarkdownSliceParseResult,
-  SerializeMdContext,
 } from '../types';
 import {
-  materializeMarkdownSettings,
-  materializeRemarkPlugins,
-} from '../utils/remarkPlugins';
-import {
   checkMarkdownTreeLimits,
-  createMarkdownModelLocator,
   createMarkdownSourceLocation,
   DEFAULT_MARKDOWN_PARSE_LIMITS,
   MarkdownDiagnostics,
   ReportedMarkdownFailureError,
 } from './markdownDiagnostics';
-import type { MarkdownSerializeDocumentValue } from './markdownDocument';
-import { remarkFootnoteDefinitionWriter } from './markdownFootnoteWriter';
+import { groupMarkdownInlineRuns } from './markdownDocument';
 import {
   blankMarkdownFrontmatter,
   BYTE_ORDER_MARK,
-  hasMarkdownFrontmatterShape,
-  isMarkdownFrontmatter,
   MARKDOWN_FRONTMATTER_KEY,
-  opensMarkdownFrontmatterFence,
   readMarkdownFrontmatter,
-  writeMarkdownFrontmatter,
 } from './markdownFrontmatter';
 import {
   findMarkdownFlowHtmlBlocks,
   getMarkdownParagraphLanding,
-  remarkJoinEscapedTexts,
-  remarkSeparateEscapes,
-  writeBareUrlsSafely,
 } from './markdownIntrinsics';
-import {
-  type CompiledMarkdownMappings,
-  compileMarkdownMappings,
-  getMarkdownMappingsRegistryKey,
-  getRegisteredMarkdownMappings,
-  registerMarkdownMappings,
-} from './markdownMappings';
+import type { CompiledMarkdownMappings } from './markdownMappings';
 import {
   keepsReceived,
   type MarkdownGrammar,
@@ -106,23 +63,19 @@ import {
   type OpenTailCopy,
   type OpenTailPlan,
   type OpenTailRead,
-  remarkOpenTail,
 } from './markdownOpenTail';
 import {
-  allocateMarkdownFootnoteLabels,
-  remarkResolveMarkdownReferences,
-} from './markdownReferences';
-import {
-  cleanMarkdownDestinations,
-  type MarkdownReader,
-  readMathSafely,
-  writeMathSafely,
-} from './markdownSafety';
+  getMarkdownParser,
+  getMergedOptionsDeserialize,
+  type MarkdownRuntime,
+  samePlugins,
+} from './markdownRuntime';
+import { cleanMarkdownDestinations } from './markdownSafety';
 import {
   countMarkdownLines,
+  DEFINITION_SYNTAX,
   findMarkdownSegmentBoundaries,
   holdsMarkdownSegmentOpen,
-  DEFINITION_SYNTAX,
   MARKDOWN_DEFINITION,
   readsMarkdownWhole,
   shiftMarkdownDiagnostic,
@@ -131,182 +84,8 @@ import {
   getMarkdownTagRepair,
   isMarkdownTagSyntax,
   MARKDOWN_TAG_NAME,
-  type MarkdownTagRegistry,
-  remarkMarkdownTags,
-  remarkMarkdownTagWriter,
   trimIncompleteMarkdownTag,
 } from './markdownTags';
-
-export type MarkdownRuntimeState = NormalizePluginState<MarkdownPluginState>;
-
-type MarkdownRuntimeEditorState = EditorCoreStateView;
-
-type MarkdownRuntimeOptions = Readonly<{
-  plainMarks: readonly string[] | null;
-  remarkPlugins: NonNullable<MarkdownRuntimeState['remarkPlugins']>;
-  remarkStringifyOptions: NonNullable<
-    MarkdownRuntimeState['remarkStringifyOptions']
-  > | null;
-}>;
-
-export type MarkdownRuntime = Readonly<{
-  formats: CompiledMarkdownMappings;
-  options: MarkdownRuntimeOptions;
-  registry: MarkdownPluginRegistry;
-  state: MarkdownRuntimeEditorState;
-}>;
-
-type MarkdownOperationRuntimeContext = Readonly<{
-  pluginState: MarkdownRuntimeState;
-  registry: MarkdownPluginRegistry;
-  schema: object;
-  state: MarkdownRuntimeEditorState;
-}>;
-
-const createMarkdownRuntimeFromParts = (
-  formats: CompiledMarkdownMappings,
-  options: MarkdownRuntimeState,
-  registry: MarkdownPluginRegistry,
-  state: MarkdownRuntimeEditorState
-): MarkdownRuntime =>
-  Object.freeze({
-    formats,
-    options: Object.freeze(options),
-    registry,
-    state,
-  });
-
-export const createMarkdownRuntime = (
-  editor: Editor,
-  options: MarkdownRuntimeState,
-  state: MarkdownRuntimeEditorState
-): MarkdownRuntime => {
-  const formats = compileMarkdownMappings(editor);
-  const registry = createPluginFormatRegistry(
-    (name) => getCompiledPlatePlugin(editor, name),
-    (name) =>
-      getCompiledPlateModelBinding(editor, name)?.elementType ?? undefined
-  );
-
-  registerMarkdownMappings(getMarkdownMappingsRegistryKey(options), formats);
-
-  return createMarkdownRuntimeFromParts(formats, options, registry, state);
-};
-
-export const prepareMarkdownRuntime = (
-  editor: Editor,
-  options: MarkdownRuntimeState
-) => {
-  registerMarkdownMappings(
-    getMarkdownMappingsRegistryKey(options),
-    compileMarkdownMappings(editor)
-  );
-};
-
-export const createMarkdownOperationRuntime = (
-  context: MarkdownOperationRuntimeContext
-): MarkdownRuntime => {
-  void context.schema;
-
-  return createMarkdownRuntimeFromParts(
-    getRegisteredMarkdownMappings(
-      getMarkdownMappingsRegistryKey(context.pluginState)
-    ),
-    context.pluginState,
-    context.registry,
-    context.state
-  );
-};
-
-export const withMarkdownRuntime = <T>(
-  editor: Editor,
-  options: MarkdownRuntimeState,
-  run: (runtime: MarkdownRuntime) => T
-): T =>
-  editor.read((state) => run(createMarkdownRuntime(editor, options, state)));
-
-const createConversionContext = (
-  runtime: MarkdownRuntime
-): MarkdownConversionContext => ({
-  isBlock: (node) => runtime.state.schema.isBlock(node),
-  isInline: (node) => runtime.state.schema.isInline(node),
-  operation: {},
-  registry: runtime.registry,
-});
-
-export const getMergedOptionsDeserialize = (
-  runtime: MarkdownRuntime,
-  options: MarkdownParsePolicy = {},
-  operation: Readonly<{
-    diagnostics?: MarkdownDiagnostics;
-    positionsReferToSource?: boolean;
-    source?: string;
-  }> = {}
-): DeserializeMdContext => {
-  const { remarkPlugins } = runtime.options;
-  const diagnostics = operation.diagnostics ?? new MarkdownDiagnostics();
-  const source = operation.source ?? '';
-
-  const context: DeserializeMdContext = {
-    ...createConversionContext(runtime),
-    limits: Object.freeze({
-      ...DEFAULT_MARKDOWN_PARSE_LIMITS,
-      ...options.limits,
-    }),
-    lossPolicy: options.lossPolicy ?? 'reject',
-    mappings: runtime.formats,
-    partial: options.partial,
-    remarkPlugins: materializeRemarkPlugins(remarkPlugins),
-    report: diagnostics.report,
-    sourceLocation: (node) =>
-      createMarkdownSourceLocation(
-        node,
-        source,
-        operation.positionsReferToSource ?? false
-      ),
-    state: runtime.state,
-  };
-
-  return context;
-};
-
-export const getMergedOptionsSerialize = (
-  runtime: MarkdownRuntime,
-  options: MarkdownSerializePolicy = {},
-  documentOverride?: MarkdownSerializeDocumentValue,
-  diagnostics = new MarkdownDiagnostics(),
-  readRoots = new Set<RootKey>()
-): SerializeMdContext => {
-  const { plainMarks, remarkPlugins, remarkStringifyOptions } = runtime.options;
-
-  const document = documentOverride ?? runtime.state.value();
-  let locate: ReturnType<typeof createMarkdownModelLocator> | undefined;
-  const plain =
-    options.plainMarks ?? (plainMarks ? [...plainMarks] : plainMarks);
-  const context: SerializeMdContext = {
-    ...createConversionContext(runtime),
-    document,
-    lossPolicy: options.lossPolicy ?? 'reject',
-    mappings: runtime.formats,
-    modelLocation: (node) =>
-      (locate ??= createMarkdownModelLocator(document))(node),
-    plainMarks: plain,
-    preserveEmptyParagraphs: options.preserveEmptyParagraphs,
-    readRoots,
-    remarkPlugins: materializeRemarkPlugins(remarkPlugins),
-    remarkStringifyOptions:
-      options.remarkStringifyOptions ??
-      (remarkStringifyOptions
-        ? materializeMarkdownSettings(remarkStringifyOptions)
-        : remarkStringifyOptions),
-    report: diagnostics.report,
-    spread: options.spread,
-    state: runtime.state,
-    value: [...document.children],
-  };
-
-  return context;
-};
 
 type MarkdownSegmentHooks = Pick<
   DeserializeMdContext,
@@ -318,37 +97,6 @@ type MarkdownSegmentHooks = Pick<
     onSyntaxTree?: (root: Root) => void;
     openTail?: OpenTailRead;
   }>;
-
-const createMarkdownParser = (
-  runtime: MarkdownRuntime,
-  remarkPlugins: DeserializeMdContext['remarkPlugins'],
-  openTail?: OpenTailRead,
-  tags: MarkdownTagRegistry = runtime.formats.tags
-) =>
-  unified()
-    .use(remarkParse)
-    .use(remarkSeparateEscapes)
-    .use(remarkMarkdownTags, { tags })
-    .use(remarkResolveMarkdownReferences)
-    .use(openTail ? [[remarkOpenTail, openTail]] : [])
-    .use(remarkPlugins)
-    .use(remarkJoinEscapedTexts)
-    .use(() => readMathSafely);
-
-const COMMONMARK = unified().use(remarkParse).freeze();
-const readCommonMark: MarkdownReader = (source) => COMMONMARK.parse(source);
-
-// The editor keeps its compiled mappings while its plugins stay the same, so
-// they key each cache that outlives one call. A copy clones the plugin state,
-// so the remark plugins compare one by one.
-const samePlugins = (
-  cached: Readonly<{ remarkPlugins: readonly unknown[] }>,
-  remarkPlugins: readonly unknown[]
-) =>
-  cached.remarkPlugins.length === remarkPlugins.length &&
-  cached.remarkPlugins.every(
-    (plugin, index) => plugin === remarkPlugins[index]
-  );
 
 type MicromarkConstruct = Readonly<{ name?: string }> | null | undefined;
 
@@ -394,12 +142,9 @@ const knowsPluginSyntax = (runtime: MarkdownRuntime) => {
   const cached = knownPluginSyntax.get(runtime.formats);
 
   if (cached && samePlugins(cached, remarkPlugins)) return cached.scanned;
-  const extensions = createMarkdownParser(
-    runtime,
-    materializeRemarkPlugins(remarkPlugins)
-  )
-    .freeze()
-    .data('micromarkExtensions') as unknown[] | undefined;
+  const extensions = getMarkdownParser(runtime).data('micromarkExtensions') as
+    | unknown[]
+    | undefined;
   const scanned = [extensions ?? []].flat(Infinity).every(
     (extension) =>
       isMarkdownTagSyntax(extension) ||
@@ -440,21 +185,15 @@ export const markdownToSlateNodesWithRuntime = (
     }),
     ...hooks,
   };
+  const parser = getMarkdownParser(runtime);
+  const activeOpenTail = options.partial ? openTail : undefined;
+  const file = activeOpenTail
+    ? { data: { openTail: activeOpenTail }, value: text }
+    : text;
+  const tree = parser.runSync(parser.parse(text), file);
 
-  return createMarkdownParser(
-    runtime,
-    mergedOptions.remarkPlugins,
-    options.partial ? openTail : undefined
-  )
-    .use(remarkToSlate, mergedOptions, inline)
-    .processSync(text).result;
+  return compileMarkdownTree(tree, text, mergedOptions, inline);
 };
-
-declare module 'unified' {
-  interface CompileResultMap {
-    remarkToSlateNode: Descendant[];
-  }
-}
 
 // This reads the parsed tree, not the source, because node positions count the
 // raw source.
@@ -486,357 +225,39 @@ const readLineEndingsAsLf = (node: Nodes) => {
 type ToSlateOptions = DeserializeMdContext &
   Pick<MarkdownSegmentHooks, 'onSyntaxTree'>;
 
-type RemarkToSlateOptions = [ToSlateOptions, inline?: boolean];
+const compileMarkdownTree = (
+  node: Root,
+  text: string,
+  options: ToSlateOptions,
+  inline?: boolean
+): Descendant[] => {
+  if (text.includes('\r')) readLineEndingsAsLf(node);
 
-const remarkToSlate: UnifiedPlugin<RemarkToSlateOptions, Root, Descendant[]> =
-  function (options, inline) {
-    this.compiler = (node, file) => {
-      if (String(file).includes('\r')) readLineEndingsAsLf(node as Root);
-
-      const syntaxNodes = checkMarkdownTreeLimits(
-        node,
-        options.limits,
-        options.report
-      );
-
-      if (syntaxNodes === null) throw new ReportedMarkdownFailureError();
-      options.onSyntaxNodes?.(syntaxNodes);
-      options.onSyntaxTree?.(node as Root);
-      cleanMarkdownDestinations(node as Root, {
-        lossPolicy: options.lossPolicy,
-        phase: 'parse',
-        report: options.report,
-        sourceLocation: options.sourceLocation,
-      });
-
-      return mdastToSlate(
-        node as Root,
-        inline
-          ? options
-          : {
-              ...options,
-              flowHtmlBlocks: findMarkdownFlowHtmlBlocks(node as Root),
-            }
-      );
-    };
-  };
-
-// mdast-util-math declares its `$` pattern with an `after` key even when that key
-// is undefined, so mdast-util-to-markdown treats the escape as conditional and
-// drops it before an escaped character: `x$*$y` writes `x$\*\$y`, which reads
-// back as math. The same pattern without the key clears that condition.
-const remarkEscapeDollars: UnifiedPlugin<[], Root> = function () {
-  const data = this.data() as {
-    toMarkdownExtensions?: Array<{
-      unsafe?: Array<{ character?: string; inConstruct?: unknown }>;
-    }>;
-  };
-  const extensions = data.toMarkdownExtensions ?? [];
-  const escapesDollars = extensions.some((extension) =>
-    extension.unsafe?.some(
-      (pattern) =>
-        pattern.character === '$' && pattern.inConstruct === 'phrasing'
-    )
+  const syntaxNodes = checkMarkdownTreeLimits(
+    node,
+    options.limits,
+    options.report
   );
 
-  if (escapesDollars) {
-    extensions.push({ unsafe: [{ character: '$', inConstruct: 'phrasing' }] });
-  }
-};
-
-const EMOJI_PROBE = ':+1:';
-
-const emojiShortcodePlugins = new WeakMap<
-  CompiledMarkdownMappings,
-  Readonly<{
-    escapes: boolean;
-    remarkPlugins: readonly unknown[];
-    serializePlugins: DeserializeMdContext['remarkPlugins'];
-  }>
->();
-
-const isParseOnlyEmojiPlugin = (
-  plugin: DeserializeMdContext['remarkPlugins'][number]
-) => {
-  try {
-    const processor = unified().use(remarkParse).use([plugin]).freeze();
-
-    if (
-      (processor.data('toMarkdownExtensions') as unknown[] | undefined)?.length
-    ) {
-      return false;
-    }
-    const root = processor.runSync(
-      processor.parse(EMOJI_PROBE),
-      EMOJI_PROBE
-    ) as Root;
-    const paragraph = root.children[0];
-    const text =
-      paragraph?.type === 'paragraph' ? paragraph.children[0] : undefined;
-
-    return text?.type === 'text' && text.value.startsWith('👍');
-  } catch {
-    return false;
-  }
-};
-
-const getSerializeRemarkPlugins = (
-  mappings: CompiledMarkdownMappings,
-  remarkPlugins: DeserializeMdContext['remarkPlugins']
-) => {
-  const cached = emojiShortcodePlugins.get(mappings);
-
-  if (cached && samePlugins(cached, remarkPlugins)) return cached;
-  let escapes = false;
-  const serializePlugins = remarkPlugins.filter((plugin) => {
-    if (isParseOnlyEmojiPlugin(plugin)) {
-      escapes = true;
-
-      return false;
-    }
-
-    return true;
-  });
-  const entry = { escapes, remarkPlugins, serializePlugins };
-
-  emojiShortcodePlugins.set(mappings, entry);
-
-  return entry;
-};
-
-const remarkEscapeEmojiShortcodes: UnifiedPlugin<[], Root> = function () {
-  const data = this.data() as {
-    toMarkdownExtensions?: Array<{
-      unsafe?: Array<{
-        after?: string;
-        character?: string;
-        inConstruct?: unknown;
-      }>;
-    }>;
-  };
-
-  (data.toMarkdownExtensions ??= []).push({
-    unsafe: [
-      {
-        after: '(?:\\+1|-1|[\\w-]+):',
-        character: ':',
-        inConstruct: 'phrasing',
-      },
-    ],
-  });
-};
-
-const createMarkdownStringifier = (
-  context: SerializeMdContext,
-  unwritable: MarkdownWriterExtension
-) => {
-  const { escapes, serializePlugins } = getSerializeRemarkPlugins(
-    context.mappings,
-    context.remarkPlugins
-  );
-
-  return unified()
-    .use(remarkMarkdownTagWriter)
-    .use(serializePlugins)
-    .use(remarkEscapeDollars)
-    .use(escapes ? [remarkEscapeEmojiShortcodes] : [])
-    .use(remarkFootnoteDefinitionWriter, { read: readCommonMark })
-    .use(function remarkUnwritableNodeWriter(this: Processor) {
-      const data = this.data() as { toMarkdownExtensions?: unknown[] };
-
-      // After every plugin, so a plugin that replaces the list still gets it.
-      (data.toMarkdownExtensions ??= []).push(unwritable);
-    })
-    .use(remarkStringify, {
-      emphasis: '_',
-      resourceLink: false,
-      ...context.remarkStringifyOptions,
-    });
-};
-
-const printsNoText = (node: Nodes): boolean =>
-  node.type === 'html' || node.type === 'text'
-    ? node.value === ''
-    : node.type === 'table'
-      ? node.children.every((row) => row.children.length === 0)
-      : node.type === 'list' || node.type === 'tableRow'
-        ? node.children.length === 0
-        : (node.type === 'emphasis' ||
-            node.type === 'paragraph' ||
-            node.type === 'strong' ||
-            node.type === 'tableCell') &&
-          node.children.every(printsNoText);
-
-const emptyRootStartsWithByteOrderMark = (context: SerializeMdContext) =>
-  createMarkdownStringifier(context, {})
-    .stringify({ children: [], type: 'root' })
-    .startsWith(BYTE_ORDER_MARK);
-
-const encodeMarkdownBody = (context: SerializeMdContext) => {
-  const unwritable: MarkdownWriterExtension & {
-    handlers: Record<string, (node: { type: string }) => string>;
-  } = { handlers: {} };
-  const toRemarkProcessor = createMarkdownStringifier(context, unwritable);
-  const tree: Root = {
-    children: convertNodesSerialize(context.value, context),
-    type: 'root',
-  };
-
-  finishMarkdownLists(tree, context);
-  cleanMarkdownDestinations(tree, {
-    lossPolicy: context.lossPolicy,
-    phase: 'serialize',
-    report: context.report,
-  });
-  allocateMarkdownFootnoteLabels(tree, (label) =>
-    context.report({
-      action: 'replaced',
-      code: 'markdown-unsupported-node',
-      impact: 'lossy',
-      message: `Footnote reference "${label}" has no definition in the output and reads back as text.`,
-      nodeType: 'footnoteReference',
-      owner: 'markdown',
-      phase: 'serialize',
-      severity: 'warning',
-    })
-  );
-
-  const transformed = toRemarkProcessor.runSync(tree);
-
-  writeBareUrlsSafely(transformed);
-  writeMathSafely(transformed, readCommonMark);
-  const configuredWriters = new Set<string>();
-
-  [
-    ...(toRemarkProcessor.data('toMarkdownExtensions') ?? []),
-    toRemarkProcessor.data('settings'),
-    context.remarkStringifyOptions,
-  ].forEach((extension) =>
-    addMarkdownWriterKinds(configuredWriters, extension)
-  );
-  const writable = new Set([...COMMONMARK_WRITER_KINDS, ...configuredWriters]);
-  const reportUnwritable = (nodeType: string) =>
-    context.report({
-      action: 'dropped',
-      code: 'markdown-unsupported-node',
-      impact: 'lossy',
-      message: `Markdown cannot write "${nodeType}": no configured remark plugin serializes it.`,
-      nodeType,
-      owner: 'markdown',
-      phase: 'serialize',
-      severity: context.lossPolicy === 'allow' ? 'warning' : 'error',
-    });
-
-  // mdast-util-to-markdown's own writers write every child and read its
-  // neighbors' output, so a child no writer handles leaves the tree before
-  // they run. A configured writer may write its children itself, so a node
-  // under one reports only when that writer reaches it.
-  if (!configuredWriters.has('root')) {
-    dropUnwritableMarkdownNodes(
-      transformed,
-      writable,
-      configuredWriters,
-      reportUnwritable
-    );
-  }
-  addUnwritableMarkdownKinds(transformed, writable, (nodeType) => {
-    unwritable.handlers[nodeType] = (node) => {
-      reportUnwritable(node.type);
-
-      return '';
-    };
+  if (syntaxNodes === null) throw new ReportedMarkdownFailureError();
+  options.onSyntaxNodes?.(syntaxNodes);
+  options.onSyntaxTree?.(node);
+  cleanMarkdownDestinations(node, {
+    lossPolicy: options.lossPolicy,
+    phase: 'parse',
+    report: options.report,
+    sourceLocation: options.sourceLocation,
   });
 
-  const written = transformed.children.filter(
-    (node) => !Object.hasOwn(unwritable.handlers, node.type)
+  return mdastToSlate(
+    node,
+    inline
+      ? options
+      : {
+          ...options,
+          flowHtmlBlocks: findMarkdownFlowHtmlBlocks(node),
+        }
   );
-
-  return {
-    lastKind: written.findLast((node) => !printsNoText(node))?.type,
-    processor: toRemarkProcessor,
-    tree: transformed,
-    unwritable: new Set(Object.keys(unwritable.handlers)),
-  };
-};
-
-const writeMarkdownBody = (context: SerializeMdContext) => {
-  const { lastKind, processor, tree } = encodeMarkdownBody(context);
-
-  return { data: processor.stringify(tree), lastKind };
-};
-
-// mdast-util-to-markdown writes these CommonMark kinds itself and throws on any
-// other kind no remark plugin registers a handler for.
-const COMMONMARK_WRITER_KINDS = [
-  'blockquote',
-  'break',
-  'code',
-  'definition',
-  'emphasis',
-  'hardBreak',
-  'heading',
-  'html',
-  'image',
-  'imageReference',
-  'inlineCode',
-  'link',
-  'linkReference',
-  'list',
-  'listItem',
-  'paragraph',
-  'root',
-  'strong',
-  'text',
-  'thematicBreak',
-];
-
-type MarkdownWriterExtension = Readonly<{
-  extensions?: readonly MarkdownWriterExtension[] | null;
-  handlers?: object | null;
-}>;
-
-const addMarkdownWriterKinds = (
-  kinds: Set<string>,
-  extension: MarkdownWriterExtension | null | undefined
-) => {
-  extension?.extensions?.forEach((nested) =>
-    addMarkdownWriterKinds(kinds, nested)
-  );
-  Object.keys(extension?.handlers ?? {}).forEach((kind) => kinds.add(kind));
-};
-
-const dropUnwritableMarkdownNodes = (
-  parent: { children: Parent['children'] },
-  writable: ReadonlySet<string>,
-  configuredWriters: ReadonlySet<string>,
-  report: (nodeType: string) => void
-) => {
-  parent.children = parent.children.filter((child) => {
-    if (!writable.has(child.type)) {
-      report(child.type);
-      return false;
-    }
-    if ('children' in child && !configuredWriters.has(child.type)) {
-      dropUnwritableMarkdownNodes(child, writable, configuredWriters, report);
-    }
-    return true;
-  });
-};
-
-const addUnwritableMarkdownKinds = (
-  parent: { children: Parent['children'] },
-  known: Set<string>,
-  add: (nodeType: string) => void
-) => {
-  for (const child of parent.children) {
-    if (!known.has(child.type)) {
-      known.add(child.type);
-      add(child.type);
-    }
-    if ('children' in child) {
-      addUnwritableMarkdownKinds(child, known, add);
-    }
-  }
 };
 
 const markdownParseLimits = (options: MarkdownParsePolicy) =>
@@ -1042,12 +463,7 @@ const readGrammar = (runtime: MarkdownRuntime): MarkdownGrammar => {
   let probe: readonly MdRootContent[];
 
   try {
-    probe = [
-      ...createMarkdownParser(
-        runtime,
-        materializeRemarkPlugins(runtime.options.remarkPlugins)
-      ).parse(GRAMMAR_PROBE).children,
-    ];
+    probe = [...getMarkdownParser(runtime).parse(GRAMMAR_PROBE).children];
   } catch {
     return { attention: null, strikethrough: null };
   }
@@ -1588,29 +1004,11 @@ const rememberMarkdownConversion = <T extends object>(
 const normalizeDocumentChildren = (
   runtime: MarkdownRuntime,
   children: readonly Descendant[]
-): Element[] => {
-  const paragraphType = getMarkdownParagraphType(runtime.registry);
-  const output: Element[] = [];
-  let inline: Descendant[] = [];
-  const flushInline = () => {
-    if (inline.length === 0) return;
-    output.push({ children: inline, type: paragraphType });
-    inline = [];
-  };
-
-  children.forEach((node) => {
-    if (TextApi.isText(node) || runtime.state.schema.isInline(node)) {
-      inline.push(node);
-
-      return;
-    }
-    flushInline();
-    output.push(node);
+): Element[] =>
+  groupMarkdownInlineRuns(children, {
+    isBlock: (node) => !runtime.state.schema.isInline(node),
+    paragraphType: getMarkdownParagraphType(runtime.registry),
   });
-  flushInline();
-
-  return output;
-};
 
 const reportUnlandedParagraph = (
   diagnostics: MarkdownDiagnostics,
@@ -2302,16 +1700,7 @@ export const parseMarkdownPlaceholdersWithRuntime = (
     positionsReferToSource: true,
     source,
   });
-  const callTags = new Map(runtime.formats.tags);
-
-  callTags.set(tag, 'block');
-
-  const parser = createMarkdownParser(
-    runtime,
-    mergedOptions.remarkPlugins,
-    undefined,
-    callTags
-  );
+  const parser = getMarkdownParser(runtime, tag);
 
   let root: Root;
 
@@ -2567,221 +1956,5 @@ export const parseMarkdownInlineWithRuntime = (
     diagnostics: diagnostics.warnings(),
     ok: true,
     slice: ContentSlice.closed(children),
-  });
-};
-
-type MarkdownFrontmatterOmitted = Extract<
-  MarkdownDiagnostic,
-  { code: 'markdown-frontmatter-omitted' }
->;
-
-const writeStoredMarkdownFrontmatter = (
-  document: EditorDocumentValue
-):
-  | Readonly<{ block: string }>
-  | Readonly<{ reason: MarkdownFrontmatterOmitted['reason'] }>
-  | null => {
-  const stored = document.meta?.[MARKDOWN_FRONTMATTER_KEY];
-
-  if (stored === undefined) return null;
-  if (!hasMarkdownFrontmatterShape(stored)) return { reason: 'shape' };
-  if (!isMarkdownFrontmatter(stored)) return { reason: 'format' };
-
-  const block = writeMarkdownFrontmatter(stored);
-
-  return block === null ? { reason: 'unreadable' } : { block };
-};
-
-const FRONTMATTER_OMITTED_MESSAGES: Record<
-  MarkdownFrontmatterOmitted['reason'],
-  string
-> = {
-  format: 'its format is neither "yaml" nor "toml"',
-  shape:
-    'it is not an object of exactly a string "format" and a string "value"',
-  unreadable: 'the written block would not read back as the same value',
-};
-
-const withoutElementIds = (nodes: readonly Descendant[]): Descendant[] =>
-  nodes.map((node) => {
-    if (!ElementApi.isElement(node)) return node;
-
-    const { id: _id, ...kept } = node;
-
-    return { ...kept, children: withoutElementIds(node.children) };
-  });
-
-const isFittedEmptyDocument = (
-  runtime: MarkdownRuntime,
-  document: EditorDocumentValue
-) => {
-  const fitted = runtime.state.schema.fitDocument({ children: [] }).children;
-
-  if (document.children.length !== fitted.length) return false;
-
-  return dequal(
-    withoutElementIds(document.children),
-    withoutElementIds(fitted)
-  );
-};
-
-// mdast types name only `yaml`; remark-frontmatter's TOML preset emits `toml`.
-const isFrontmatterKind = (kind: string | undefined) =>
-  kind === 'yaml' || kind === 'toml';
-
-/**
- * Reads the output as a UTF-8 file gives it back: each lone surrogate
- * replaced, with and without the byte-order mark a file read may drop.
- */
-const readsBackMarkdownFrontmatter = (
-  runtime: MarkdownRuntime,
-  context: SerializeMdContext,
-  data: string
-) => {
-  const readsBlock = (form: string) => {
-    if (!opensMarkdownFrontmatterFence(form)) return false;
-
-    const file = form.toWellFormed();
-
-    if (readMarkdownFrontmatter(file)) return true;
-    if (context.remarkPlugins.length === 0) return false;
-
-    return isFrontmatterKind(
-      createMarkdownParser(runtime, context.remarkPlugins).parse(file)
-        .children[0]?.type
-    );
-  };
-
-  return (
-    readsBlock(data) ||
-    (data.startsWith(BYTE_ORDER_MARK) && readsBlock(data.slice(1)))
-  );
-};
-
-const writeMarkdownDocument = (
-  runtime: MarkdownRuntime,
-  context: SerializeMdContext,
-  frontmatter: string | null
-) => {
-  if (
-    frontmatter !== null &&
-    isFittedEmptyDocument(runtime, context.document)
-  ) {
-    return `${emptyRootStartsWithByteOrderMark(context) ? BYTE_ORDER_MARK : ''}${frontmatter}`;
-  }
-
-  const { data, lastKind } = writeMarkdownBody(context);
-  const insertAfterRootByteOrderMark = (text: string, body: string) => {
-    const rootMarkLength =
-      body.startsWith(BYTE_ORDER_MARK) &&
-      emptyRootStartsWithByteOrderMark(context)
-        ? 1
-        : 0;
-
-    return `${body.slice(0, rootMarkLength)}${text}${body.slice(rootMarkLength)}`;
-  };
-
-  if (frontmatter !== null) {
-    return insertAfterRootByteOrderMark(frontmatter, data);
-  }
-  if (!readsBackMarkdownFrontmatter(runtime, context, data)) return data;
-
-  // mdast-util-to-markdown adds a final line ending only when the output lacks
-  // one, so a body that ends in raw HTML may end in the HTML's line ending.
-  const bodyLessFinalLineEnding =
-    lastKind !== 'html' && data.endsWith('\n') ? data.slice(0, -1) : data;
-
-  return insertAfterRootByteOrderMark('\n', bodyLessFinalLineEnding);
-};
-
-export const serializeMarkdownWithRuntime = (
-  runtime: MarkdownRuntime,
-  document: EditorDocumentValue,
-  options: MarkdownSerializePolicy = {},
-  initialDiagnostics: readonly MarkdownDiagnostic[] = []
-): MarkdownSerializeResult => {
-  runtime.state.schema.assertDocument(document);
-  const readRoots = new Set<RootKey>();
-  const serialized = new MarkdownDiagnostics();
-  const frontmatter = writeStoredMarkdownFrontmatter(document);
-  const data = writeMarkdownDocument(
-    runtime,
-    getMergedOptionsSerialize(
-      runtime,
-      options,
-      document,
-      serialized,
-      readRoots
-    ),
-    frontmatter && 'block' in frontmatter ? frontmatter.block : null
-  );
-  const diagnostics = new MarkdownDiagnostics(initialDiagnostics);
-
-  Object.keys(document.roots ?? {})
-    .filter((root) => !readRoots.has(root))
-    .sort()
-    .forEach((root) => {
-      diagnostics.report({
-        code: 'markdown-unsupported-root',
-        message: `Semantic Markdown omits document root "${root}".`,
-        root,
-        severity: 'warning',
-      });
-    });
-  if (frontmatter && 'reason' in frontmatter) {
-    diagnostics.report({
-      code: 'markdown-frontmatter-omitted',
-      impact: 'lossy',
-      message: `Markdown omits the front matter block at document metadata "${MARKDOWN_FRONTMATTER_KEY}": ${FRONTMATTER_OMITTED_MESSAGES[frontmatter.reason]}.`,
-      reason: frontmatter.reason,
-      severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
-    });
-  }
-  Object.keys(document.meta ?? {})
-    .filter((key) => key !== 'authored' && key !== MARKDOWN_FRONTMATTER_KEY)
-    .sort()
-    .forEach((key) => {
-      diagnostics.report({
-        code: 'markdown-unsupported-metadata',
-        key,
-        message: `Semantic Markdown omits document metadata "${key}".`,
-        severity: 'warning',
-      });
-    });
-  serialized.all().forEach(diagnostics.report);
-
-  return finishMarkdownSerialize(data, diagnostics);
-};
-
-export const serializeMarkdownSliceWithRuntime = (
-  runtime: MarkdownRuntime,
-  children: Element[],
-  roots?: ContentSlice['roots']
-) => {
-  const diagnostics = new MarkdownDiagnostics();
-  const { data } = writeMarkdownBody(
-    getMergedOptionsSerialize(
-      runtime,
-      {},
-      createContentFormatDocument({ content: children, roots }),
-      diagnostics
-    )
-  );
-
-  return finishMarkdownSerialize(data, diagnostics);
-};
-
-const finishMarkdownSerialize = (
-  data: string,
-  diagnostics: MarkdownDiagnostics
-): MarkdownSerializeResult => {
-  const failure = diagnostics.failure();
-
-  if (failure) return Object.freeze({ diagnostics: failure, ok: false });
-
-  return Object.freeze({
-    data,
-    diagnostics: diagnostics.warnings(),
-    ok: true,
   });
 };
