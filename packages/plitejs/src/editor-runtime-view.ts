@@ -87,6 +87,7 @@ import {
   setEditorFocused,
   setViewChildrenSource,
   transformEditorSnapshotInput,
+  withActiveReadViewScope,
   withEditorDocumentProjection,
   withEditorRootChildren,
   withEditorTargetRuntime,
@@ -1528,7 +1529,11 @@ const createViewRuntime = <V extends Value>(
     read: (fn) =>
       withDocumentViewRead(getViewEditor() ?? editor, () =>
         baseRuntime.read((state) =>
-          withRootRead(editor, viewState, () => fn(projectState(state)))
+          withActiveReadViewScope(
+            editor,
+            (inner) => withRootRead(editor, viewState, inner),
+            () => fn(projectState(state))
+          )
         )
       ),
     hasSurface: () => isShown(viewState),

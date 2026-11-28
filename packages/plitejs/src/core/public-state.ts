@@ -12277,8 +12277,10 @@ export const readEditor = <
       : () => {};
 
   try {
-    return withEditorDocumentProjection(editor, undefined, () =>
-      withAuthoredViewRead(editor, editor, () => fn(getStateView(editor)))
+    return withActiveReadViewScope(editor, undefined, () =>
+      withEditorDocumentProjection(editor, undefined, () =>
+        withAuthoredViewRead(editor, editor, () => fn(getStateView(editor)))
+      )
     );
   } finally {
     restoreDraft();
@@ -12925,17 +12927,38 @@ export const evaluateSchemaCanWrap = <V extends Value>(
     split?: boolean;
   }> = {}
 ): boolean => {
-  const target = options.at ?? getCurrentSelection(editor);
+  const run = (): boolean => {
+    const target = options.at ?? getCurrentSelection(editor);
 
-  if (!target || SelectionApi.isNode(target)) return false;
+    if (!target || SelectionApi.isNode(target)) return false;
 
-  if (options.root !== undefined) {
-    const explicitRoot = options.root;
+    if (options.root !== undefined) {
+      const explicitRoot = options.root;
 
-    assertDocumentRootKey(explicitRoot);
+      assertDocumentRootKey(explicitRoot);
 
-    return withRoutedCallerScope(editor, () =>
-      withEditorRootChildren(editor, explicitRoot, () =>
+      return withRoutedCallerScope(editor, () =>
+        withEditorRootChildren(editor, explicitRoot, () =>
+          hasLocationPath(editor, target)
+            ? canWrapAtTarget(
+                editor as unknown as Editor,
+                element,
+                stripLocationRoots(target),
+                {
+                  replace: options.replace,
+                  root: explicitRoot,
+                  split: options.split,
+                }
+              )
+            : false
+        )
+      );
+    }
+
+    return withLocationRootRead(
+      editor,
+      target,
+      () =>
         hasLocationPath(editor, target)
           ? canWrapAtTarget(
               editor as unknown as Editor,
@@ -12943,33 +12966,20 @@ export const evaluateSchemaCanWrap = <V extends Value>(
               stripLocationRoots(target),
               {
                 replace: options.replace,
-                root: explicitRoot,
+                root: getCurrentChildrenRoot(editor),
                 split: options.split,
               }
             )
-          : false
-      )
+          : false,
+      { selectionFallback: options.at === undefined }
     );
-  }
+  };
+  const owner = getEditorRuntimeOwner(editor);
+  const activeReadView = getTransactionSpecContext(owner)
+    ? undefined
+    : ACTIVE_READ_VIEW_WRAPPER.get(owner);
 
-  return withLocationRootRead(
-    editor,
-    target,
-    () =>
-      hasLocationPath(editor, target)
-        ? canWrapAtTarget(
-            editor as unknown as Editor,
-            element,
-            stripLocationRoots(target),
-            {
-              replace: options.replace,
-              root: getCurrentChildrenRoot(editor),
-              split: options.split,
-            }
-          )
-        : false,
-    { selectionFallback: options.at === undefined }
-  );
+  return activeReadView ? activeReadView(run) : run();
 };
 
 export const getCurrentSelection = (editor: Editor): SettledSelection =>
@@ -18138,6 +18148,24 @@ const adoptEditorSchemaDocument = (
 };
 
 const VIEW_READ_ROOTS = new WeakMap<Editor, string>();
+const ACTIVE_READ_VIEW_WRAPPER = new WeakMap<Editor, <T>(fn: () => T) => T>();
+
+export const withActiveReadViewScope = <T>(
+  editor: Editor,
+  wrap: (<R>(fn: () => R) => R) | undefined,
+  read: () => T
+): T => {
+  const owner = getEditorRuntimeOwner(editor);
+  const previous = ACTIVE_READ_VIEW_WRAPPER.get(owner);
+  if (wrap === undefined) ACTIVE_READ_VIEW_WRAPPER.delete(owner);
+  else ACTIVE_READ_VIEW_WRAPPER.set(owner, wrap);
+  try {
+    return read();
+  } finally {
+    if (previous === undefined) ACTIVE_READ_VIEW_WRAPPER.delete(owner);
+    else ACTIVE_READ_VIEW_WRAPPER.set(owner, previous);
+  }
+};
 
 export const withEditorViewSelectionRead = <T>(
   editor: Editor,
