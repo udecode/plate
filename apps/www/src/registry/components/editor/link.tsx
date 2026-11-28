@@ -166,7 +166,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
         });
 
         if (editedLink && url === editedLink[0].url) {
-          update.upsertText({ text: text || url, url });
+          update.upsert({ text: text || url, url });
         } else {
           const draft = url.trim();
 

@@ -21,6 +21,7 @@ const NAVIGATION_FLOOR = new Set([
   'vbscript',
 ]);
 const WEB_SCHEMES = new Set(['http', 'https']);
+const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\/[^\s<>\\]+$/i;
 const SCRIPT_SCHEME = /^(?:javascript|vbscript):/iu;
 const URL_TAB_OR_NEWLINE = /[\t\n\r]/gu;
 
@@ -150,3 +151,10 @@ export const isScriptCapableUrl = (url: string) => {
 
   return !decision.ok && decision.reason === 'scheme';
 };
+
+/**
+ * Whether `url` is a bare `http://` or `https://` autolink literal with no
+ * whitespace, angle brackets, or backslashes.
+ */
+export const isBareAutolinkLiteral = (url: string) =>
+  BARE_AUTOLINK_LITERAL_RE.test(url);

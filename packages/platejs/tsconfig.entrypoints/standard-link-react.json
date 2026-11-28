@@ -21,9 +21,6 @@
   "include": ["../src/react/features/link/**/*"],
   "references": [
     {
-      "path": "./core.json"
-    },
-    {
       "path": "./react-core.json"
     },
     {

@@ -1,7 +1,6 @@
 import {
-  type DefinitionOf,
   type Descendant,
-  type Editor,
+  type EditorTransactionSpecBuilder,
   type Element,
   ElementApi,
   type ElementOf,
@@ -9,26 +8,28 @@ import {
   type InsertDataInputRuleReadContext,
   type InsertTextInputRuleReadContext,
   type Location,
+  LocationApi,
   type MaximizeMode,
-  NodeApi,
   PathApi,
+  type Point,
   type Range,
   RangeApi,
   type Text,
   TextApi,
-  type TextInsertFragmentOptions,
   defineInputRule,
   definePlugin,
   editorCommands,
   isDefined,
+  locateAt,
   property,
   schema,
   txLocate,
-  locateAt,
 } from '../../../core';
-import { decideUrl, isStoredUrl } from '../../../internal/utils/urlPolicy';
-
-const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\/[^\s<>\\]+$/i;
+import {
+  decideUrl,
+  isBareAutolinkLiteral,
+  isStoredUrl,
+} from '../../../internal/utils/urlPolicy';
 
 function encodeUrlInput(url: string) {
   try {
@@ -46,96 +47,137 @@ function encodeUrlInput(url: string) {
   }
 }
 
-export type LinkAttributes = Record<string, unknown> & {
-  className?: string;
-  download?: boolean | string;
-  href?: string;
-  rel?: string;
-  target?: string;
-  title?: string;
-};
-
-export type BaseLinkPluginState = {
-  /**
-   * URL schemes the link feature accepts when it inserts, types, pastes or
-   * imports a link, and that a rendered link may use. A link pasted as an
-   * exact editor fragment keeps its URL. Relative URLs are always allowed;
-   * script-capable schemes such as `javascript:` and `data:` never are.
-   */
-  allowedSchemes: readonly string[];
-  defaultLinkAttributes: LinkAttributes;
-  /** Keeps selected text on pasting links by default. */
-  keepSelectedTextOnPaste: boolean;
-  /**
-   * Returns the href for typed or pasted text, or `undefined` when the text is
-   * not a link. `defaultParseUrl` accepts a whole token with an explicit
-   * scheme. The href still has to pass `allowedSchemes`.
-   */
-  parseUrl: (
-    text: string,
-    defaultParseUrl: (text: string) => string | undefined
-  ) => string | undefined;
-  /** Configures the range used to find text before the selection. */
-  rangeBeforeOptions: NonNullable<
-    Parameters<Editor['read']['points']['before']>[1]
-  >;
-};
-
-export type CreateLinkNodeOptions = {
-  url: string;
-  children?: Text[];
-  target?: string;
-  text?: string;
-};
-
-export type UnwrapLinkOptions = {
-  at?: Location;
-  mode?: MaximizeMode;
-  split?: boolean;
-  voids?: boolean;
-};
-
-export interface WrapLinkOptions {
-  url: string;
-  at?: Location;
-  mode?: MaximizeMode;
-  split?: boolean;
-  target?: string;
-  voids?: boolean;
-}
-
-export type UpsertLinkOptions = {
-  insertNodesOptions?: TextInsertFragmentOptions;
-} & CreateLinkNodeOptions;
-
-type BaseLinkApi = {
-  getAttributes: (link: Element) => LinkAttributes;
-};
-
 type LinkTextAutolinkMatch = {
+  hasTrailing: boolean;
   range: Range;
   url: string;
 };
 
-const LINK_AUTOMD_REGEX = /\[([^\]\n]+)]\((\S+)$/;
-const SCHEME_TOKEN = /^([a-z][a-z\d+.-]*):(\S+)$/i;
+type MarkdownLinkSourceMatch = {
+  destination: string;
+  isImage: boolean;
+  label: string;
+  labelEnd: number;
+  labelStart: number;
+  openParenDepth: number;
+  start: number;
+};
 
-const isUnfinishedLinkSource = (before: string) => {
-  const destinationStart =
-    Math.max(before.lastIndexOf(')'), before.lastIndexOf('\n')) + 1;
+const SCHEME_TOKEN = /^([a-z][a-z\d+.-]*):(\S+)$/i;
+const WWW_TOKEN = /^www\.[^\s]+$/i;
+const LEADING_AUTOLINK_WRAPPERS = new Set(['(', '[', '{', '<', "'", '"']);
+const TRAILING_AUTOLINK_PUNCTUATION = new Set([
+  '.',
+  ',',
+  ';',
+  ':',
+  '!',
+  '?',
+  "'",
+  '"',
+]);
+const CLOSING_TO_OPENING_BRACKET: Record<string, string> = {
+  ')': '(',
+  '>': '<',
+  ']': '[',
+  '}': '{',
+};
+
+const scanUnclosedMarkdownLink = (
+  textBefore: string
+): MarkdownLinkSourceMatch | undefined => {
+  const lineStart = textBefore.lastIndexOf('\n') + 1;
 
   for (
-    let open = before.lastIndexOf('](');
-    open >= destinationStart;
-    open = open === 0 ? -1 : before.lastIndexOf('](', open - 1)
+    let open = textBefore.lastIndexOf('](');
+    open >= lineStart;
+    open = open === 0 ? -1 : textBefore.lastIndexOf('](', open - 1)
   ) {
-    for (let index = open - 1; index >= 0; index--) {
-      if (before[index] === '[') return true;
-      if (before[index] === ']' || before[index] === '\n') break;
+    let depth = 0;
+    let closed = false;
+
+    for (let index = open + 2; index < textBefore.length; index++) {
+      const ch = textBefore[index];
+
+      if (ch === '(') {
+        depth += 1;
+      } else if (ch === ')') {
+        depth -= 1;
+        if (depth < 0) {
+          closed = true;
+          break;
+        }
+      }
     }
+
+    if (closed) continue;
+
+    let bracket = -1;
+
+    for (let index = open - 1; index >= lineStart; index--) {
+      if (textBefore[index] === '[') {
+        bracket = index;
+        break;
+      }
+      if (textBefore[index] === ']') break;
+    }
+
+    if (bracket === -1) continue;
+
+    return {
+      destination: textBefore.slice(open + 2),
+      isImage: bracket > 0 && textBefore[bracket - 1] === '!',
+      label: textBefore.slice(bracket + 1, open),
+      labelEnd: open,
+      labelStart: bracket + 1,
+      openParenDepth: depth,
+      start: bracket,
+    };
   }
 
-  return false;
+  return undefined;
+};
+
+const isUnfinishedLinkSource = (before: string) =>
+  scanUnclosedMarkdownLink(before) !== undefined;
+
+const stripAutolinkWrappers = (raw: string) => {
+  let start = 0;
+  let end = raw.length;
+
+  while (start < end && LEADING_AUTOLINK_WRAPPERS.has(raw[start] ?? '')) {
+    start += 1;
+  }
+
+  while (end > start) {
+    const ch = raw[end - 1] ?? '';
+
+    if (TRAILING_AUTOLINK_PUNCTUATION.has(ch)) {
+      end -= 1;
+      continue;
+    }
+
+    const opener = CLOSING_TO_OPENING_BRACKET[ch];
+
+    if (opener) {
+      let opens = 0;
+      let closes = 0;
+
+      for (let index = start; index < end; index++) {
+        if (raw[index] === opener) opens += 1;
+        else if (raw[index] === ch) closes += 1;
+      }
+
+      if (closes > opens) {
+        end -= 1;
+        continue;
+      }
+    }
+
+    break;
+  }
+
+  return { end, start };
 };
 
 const DEFAULT_ALLOWED_SCHEMES: readonly string[] = [
@@ -193,6 +235,27 @@ const admitLinkInput = (allowedSchemes: readonly string[], input: string) =>
   getLinkHref(encodeUrlInput(input), { allowedSchemes });
 
 const defaultParseUrl = (text: string) => {
+  if (WWW_TOKEN.test(text)) {
+    const candidate = `https://${text}`;
+
+    try {
+      const labels = new URL(candidate).hostname.split('.');
+      const tld = labels.at(-1) ?? '';
+
+      if (
+        labels.length >= 3 &&
+        labels.every((label) => label.length > 0) &&
+        /[a-z]/i.test(tld)
+      ) {
+        return candidate;
+      }
+    } catch {
+      return undefined;
+    }
+
+    return undefined;
+  }
+
   const match = SCHEME_TOKEN.exec(text);
 
   if (!match) return undefined;
@@ -211,7 +274,16 @@ const defaultParseUrl = (text: string) => {
 };
 
 const recognizeLinkText = (
-  { allowedSchemes, parseUrl }: BaseLinkPluginState,
+  {
+    allowedSchemes,
+    parseUrl,
+  }: Readonly<{
+    allowedSchemes: readonly string[];
+    parseUrl: (
+      text: string,
+      defaultParseUrl: (text: string) => string | undefined
+    ) => string | undefined;
+  }>,
   text: string
 ) => {
   const href = parseUrl(text, defaultParseUrl);
@@ -220,9 +292,28 @@ const recognizeLinkText = (
 };
 
 const getLinkAttributes = (
-  { allowedSchemes, defaultLinkAttributes }: BaseLinkPluginState,
+  {
+    allowedSchemes,
+    defaultLinkAttributes,
+  }: Readonly<{
+    allowedSchemes: readonly string[];
+    defaultLinkAttributes: Record<string, unknown> & {
+      className?: string;
+      download?: boolean | string;
+      rel?: string;
+      target?: string;
+      title?: string;
+    };
+  }>,
   link: Element
-): LinkAttributes => {
+): Record<string, unknown> & {
+  className?: string;
+  download?: boolean | string;
+  href?: string;
+  rel?: string;
+  target?: string;
+  title?: string;
+} => {
   const { href: _, ...attributes } = defaultLinkAttributes;
   const href =
     typeof link.url === 'string'
@@ -236,26 +327,88 @@ const getLinkAttributes = (
   };
 };
 
+const exitLinkEnd = (tx: EditorTransactionSpecBuilder, type: string) => {
+  const selection = tx.selection();
+
+  if (!selection || !tx.selection.isCollapsed()) {
+    return undefined;
+  }
+
+  const link = tx.nodes.above({
+    at: selection,
+    type,
+  });
+
+  if (!link || !tx.points.isEnd(selection.focus, link[1])) {
+    return undefined;
+  }
+
+  const nextPoint = tx.points.after(link[1]);
+
+  if (
+    nextPoint &&
+    PathApi.equals(PathApi.parent(nextPoint.path), PathApi.parent(link[1]))
+  ) {
+    tx.selection.set(nextPoint);
+  } else {
+    const nextPath = PathApi.next(link[1]);
+
+    tx.nodes.insert({ text: '' }, { at: nextPath });
+    tx.selection.set({ offset: 0, path: nextPath });
+  }
+
+  return true;
+};
+
 const refusedLinkMessage = (format: 'HTML' | 'Markdown', url: string) =>
   `${format} link destination "${url}" is not a link this editor allows; its label was kept.`;
 
-const initialState: BaseLinkPluginState = {
+const initialState: {
+  /**
+   * URL schemes the link feature accepts when it inserts, types, pastes or
+   * imports a link, and that a rendered link may use. A link pasted as an
+   * exact editor fragment keeps its URL. Relative URLs are always allowed;
+   * script-capable schemes such as `javascript:` and `data:` never are.
+   */
+  allowedSchemes: readonly string[];
+  defaultLinkAttributes: Record<string, unknown> & {
+    className?: string;
+    download?: boolean | string;
+    rel?: string;
+    target?: string;
+    title?: string;
+  };
+  /** Keeps selected text on pasting links by default. */
+  keepSelectedTextOnPaste: boolean;
+  /**
+   * Returns the href for typed or pasted text, or `undefined` when the text is
+   * not a link. `defaultParseUrl` accepts a whole token with an explicit
+   * scheme or `www.` domain. The href still has to pass `allowedSchemes`.
+   */
+  parseUrl: (
+    text: string,
+    defaultParseUrl: (text: string) => string | undefined
+  ) => string | undefined;
+} = {
   allowedSchemes: DEFAULT_ALLOWED_SCHEMES,
   defaultLinkAttributes: {},
   keepSelectedTextOnPaste: true,
   parseUrl: (text, parse) => parse(text),
-  rangeBeforeOptions: {
-    afterMatch: true,
-    matchBlockStart: true,
-    matchString: ' ',
-    skipInvalid: true,
-  },
 };
 
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = definePlugin('link', {
-  api: ({ store }): BaseLinkApi => ({
-    getAttributes: (link) => getLinkAttributes(store.get(), link),
+  api: ({ store }) => ({
+    getAttributes: (
+      link: Element
+    ): Record<string, unknown> & {
+      className?: string;
+      download?: boolean | string;
+      href?: string;
+      rel?: string;
+      target?: string;
+      title?: string;
+    } => getLinkAttributes(store.get(), link),
   }),
   initialState,
   schema: {
@@ -415,14 +568,14 @@ export const BaseLinkPlugin = definePlugin('link', {
 
           preserve('url');
           const url = typeof node.url === 'string' ? node.url : '';
-          const isBareAutolinkLiteral =
+
+          if (
             children.length === 1 &&
             children[0]?.type === 'text' &&
             children[0].value === url &&
             !resourceLink &&
-            BARE_AUTOLINK_LITERAL_RE.test(url);
-
-          if (isBareAutolinkLiteral) {
+            isBareAutolinkLiteral(url)
+          ) {
             return {
               type: 'html',
               value: url,
@@ -440,7 +593,6 @@ export const BaseLinkPlugin = definePlugin('link', {
   component: 'a',
   rules: {
     normalize: { removeEmpty: true },
-    selection: { affinity: 'directional' },
   },
   render: {
     attributes: ({ element, store }) => getLinkAttributes(store.get(), element),
@@ -448,231 +600,210 @@ export const BaseLinkPlugin = definePlugin('link', {
 })
   .extend(({ plugin, schema: { type }, store }) => ({
     update: ({ tx }) => ({
-      exitEnd: () => {
-        const selection = tx.selection();
-
-        if (!selection || !tx.selection.isCollapsed()) {
-          return undefined;
-        }
-
-        const link = tx.nodes.above({
-          at: selection,
-          type: plugin,
-        });
-
-        if (!link || !tx.points.isEnd(selection.focus, link[1])) {
-          return undefined;
-        }
-
-        const nextPoint = tx.points.after(link[1]);
-
-        if (
-          nextPoint &&
-          PathApi.equals(
-            PathApi.parent(nextPoint.path),
-            PathApi.parent(link[1])
-          )
-        ) {
-          tx.selection.set(nextPoint);
-        } else {
-          const nextPath = PathApi.next(link[1]);
-
-          tx.nodes.insert({ text: '' }, { at: nextPath });
-          tx.selection.set({ offset: 0, path: nextPath });
-        }
-
-        return true;
-      },
-      insert: txLocate(
-        locateAt(1),
-        (
-          { children, target, text = '', url: inputUrl }: CreateLinkNodeOptions,
-          options?: TextInsertFragmentOptions
-        ) => {
-          const url = admitLinkInput(store.get().allowedSchemes, inputUrl);
-
-          if (url === undefined) return undefined;
-
-          return (
-            tx.fragment.replace(
-              [
-                {
-                  children: children ?? [{ text }],
-                  ...(target === undefined ? {} : { target }),
-                  type,
-                  url,
-                },
-              ],
-              options
-            ) || undefined
-          );
-        }
-      ),
       unwrap: txLocate(
         locateAt(0),
-        (options?: UnwrapLinkOptions) =>
+        (options?: {
+          at?: Location;
+          mode?: MaximizeMode;
+          split?: boolean;
+        }): true | undefined =>
           tx.nodes.unwrap({ type: plugin, ...options }) || undefined
       ),
       upsert: txLocate(
-        ([options], place): [UpsertLinkOptions] | null => {
-          const insert = options.insertNodesOptions;
+        locateAt(0),
+        (options: {
+          url: string;
+          at?: Location;
+          target?: string | null;
+          text?: string;
+        }): true | undefined => {
+          const { at, target, text, url: inputUrl } = options;
+          const hasTarget = 'target' in options;
+          const normalizedTarget = target ?? undefined;
+          const targetLocation = at ?? tx.selection();
 
-          if (insert?.at === undefined) return [options];
+          if (
+            !targetLocation ||
+            (at === undefined && tx.selection.nodes().length > 0)
+          ) {
+            return undefined;
+          }
 
-          const at = place.location(insert.at);
+          const liveSelection = at === undefined ? null : tx.selection();
+          const savedSelection = liveSelection
+            ? tx.anchor(liveSelection, {
+                association: RangeApi.isCollapsed(liveSelection)
+                  ? 'forward'
+                  : 'inward',
+                deletion: 'nearest',
+              })
+            : null;
+          const restoreSelection = () => {
+            if (!savedSelection) return;
 
-          return at && [{ ...options, insertNodesOptions: { ...insert, at } }];
-        },
-        ({
-          insertNodesOptions,
-          target,
-          text,
-          url: inputUrl,
-        }: UpsertLinkOptions) => {
-          const selection = tx.selection();
+            const next = savedSelection.resolve();
 
-          if (!selection || tx.selection.nodes().length > 0) return undefined;
+            if (next) tx.selection.set(next);
+          };
 
-          const linkAbove = tx.nodes.above({
-            at: selection,
-            type: plugin,
-          });
+          const linkAbove =
+            (LocationApi.isPath(targetLocation)
+              ? tx.nodes.get(targetLocation, { type: plugin })
+              : undefined) ??
+            tx.nodes.above({
+              at: targetLocation,
+              type: plugin,
+            });
+
+          if (linkAbove) {
+            const [link, linkPath] = linkAbove;
+            const url =
+              inputUrl === link.url
+                ? link.url
+                : admitLinkInput(store.get().allowedSchemes, inputUrl);
+
+            if (url === undefined) return undefined;
+
+            const nextText = isDefined(text) && text.length === 0 ? url : text;
+            let changed = false;
+
+            if (url !== link.url) {
+              tx.nodes.set({ url }, { at: linkPath });
+              changed = true;
+            }
+            if (hasTarget && normalizedTarget !== link.target) {
+              if (normalizedTarget === undefined) {
+                tx.nodes.unset('target', { at: linkPath });
+              } else {
+                tx.nodes.set({ target: normalizedTarget }, { at: linkPath });
+              }
+              changed = true;
+            }
+            if (nextText?.length && nextText !== tx.text.string(linkPath)) {
+              tx.nodes.replaceChildren(
+                [{ ...link.children[0], text: nextText }],
+                { at: linkPath }
+              );
+              changed = true;
+
+              if (at === undefined) {
+                const end = tx.points.end(linkPath);
+
+                if (end) tx.selection.set(end);
+              }
+            }
+
+            restoreSelection();
+
+            return changed ? true : undefined;
+          }
 
           const url = admitLinkInput(store.get().allowedSchemes, inputUrl);
 
           if (url === undefined) return undefined;
 
           const nextText = isDefined(text) && text.length === 0 ? url : text;
-          const updateText = () => {
-            const link = tx.nodes.above({ type: plugin });
+          const targetRange = RangeApi.isRange(targetLocation)
+            ? targetLocation
+            : LocationApi.isPath(targetLocation)
+              ? tx.ranges.get(targetLocation)
+              : undefined;
 
-            if (!link) return;
-
-            const [linkNode, linkPath] = link;
-
-            if (!nextText?.length || nextText === tx.text.string(linkPath)) {
-              return;
-            }
-
-            tx.nodes.replaceChildren(
-              [{ ...linkNode.children[0], text: nextText }],
-              {
-                at: linkPath,
-              }
-            );
-
-            const end = tx.points.end(linkPath);
-
-            if (end) tx.selection.set(end);
-          };
-
-          if (linkAbove) {
-            const [link, linkPath] = linkAbove;
-
-            if (url !== link.url) {
-              tx.nodes.set({ url }, { at: linkPath });
-            }
-            if (target !== link.target) {
-              if (target === undefined) {
-                tx.nodes.unset('target', { at: linkPath });
-              } else {
-                tx.nodes.set({ target }, { at: linkPath });
-              }
-            }
-
-            updateText();
-
-            return true;
-          }
-
-          if (RangeApi.isExpanded(selection)) {
-            tx.nodes.unwrap({ split: true, type: plugin });
+          if (targetRange && RangeApi.isExpanded(targetRange)) {
+            const anchorBlock = tx.nodes.block({ at: targetRange.anchor });
+            const focusBlock = tx.nodes.block({ at: targetRange.focus });
+            const isSingleBlock =
+              anchorBlock !== undefined &&
+              focusBlock !== undefined &&
+              PathApi.equals(anchorBlock[1], focusBlock[1]);
+            const wrapAnchor =
+              nextText?.length && isSingleBlock
+                ? tx.anchor(targetRange, {
+                    association: 'inward',
+                    deletion: 'nearest',
+                  })
+                : null;
 
             if (
               !tx.nodes.wrap(
                 {
                   children: [],
-                  ...(target === undefined ? {} : { target }),
+                  ...(normalizedTarget === undefined
+                    ? {}
+                    : { target: normalizedTarget }),
                   type,
                   url,
                 },
-                { split: true }
+                {
+                  ...(at === undefined ? {} : { at: targetLocation }),
+                  replace: true,
+                  split: true,
+                }
               )
             ) {
               return undefined;
             }
 
-            updateText();
+            if (wrapAnchor && nextText?.length) {
+              const wrappedRange = wrapAnchor.resolve();
+              const wrappedLink = wrappedRange
+                ? tx.nodes.above({ at: wrappedRange, type: plugin })
+                : undefined;
+
+              if (wrappedLink) {
+                const [linkNode, linkPath] = wrappedLink;
+
+                if (nextText !== tx.text.string(linkPath)) {
+                  tx.nodes.replaceChildren(
+                    [{ ...linkNode.children[0], text: nextText }],
+                    { at: linkPath }
+                  );
+
+                  if (at === undefined) {
+                    const end = tx.points.end(linkPath);
+
+                    if (end) tx.selection.set(end);
+                  }
+                }
+              }
+            }
+
+            restoreSelection();
 
             return true;
           }
 
-          const linkEntry = tx.nodes.find({
-            at: selection,
-            type: plugin,
-          });
-          const leaf = tx.nodes.leaf(selection.focus.path);
+          const point = tx.points.start(targetLocation);
+          const leaf = point && tx.nodes.leaf(point.path);
 
           if (!leaf) return undefined;
 
-          return (
-            tx.fragment.replace(
-              [
-                {
-                  ...(linkEntry ? NodeApi.extractProps(linkEntry[0]) : {}),
-                  children: [
-                    { ...leaf[0], text: nextText?.length ? nextText : url },
-                  ],
-                  ...(target === undefined ? {} : { target }),
-                  type,
-                  url,
-                },
-              ],
-              insertNodesOptions
-            ) || undefined
-          );
-        }
-      ),
-      upsertText: txLocate(false, ({ text }: UpsertLinkOptions) => {
-        const link = tx.nodes.above({ type: plugin });
-
-        if (!link) return;
-
-        const [linkNode, linkPath] = link;
-
-        if (!text?.length || text === tx.text.string(linkPath)) return;
-
-        tx.nodes.replaceChildren([{ ...linkNode.children[0], text }], {
-          at: linkPath,
-        });
-
-        const end = tx.points.end(linkPath);
-
-        if (end) tx.selection.set(end);
-      }),
-      wrap: txLocate(
-        locateAt(0),
-        ({ target, url: inputUrl, ...options }: WrapLinkOptions) => {
-          const url = admitLinkInput(store.get().allowedSchemes, inputUrl);
-
-          if (url === undefined) return undefined;
-
-          return (
-            tx.nodes.wrap(
+          const inserted = tx.fragment.replace(
+            [
               {
-                children: [],
-                ...(target === undefined ? {} : { target }),
+                children: [
+                  { ...leaf[0], text: nextText?.length ? nextText : url },
+                ],
+                ...(normalizedTarget === undefined
+                  ? {}
+                  : { target: normalizedTarget }),
                 type,
                 url,
               },
-              { split: true, ...options }
-            ) || undefined
+            ],
+            at === undefined ? undefined : { at: targetLocation }
           );
+
+          if (!inserted) return undefined;
+
+          restoreSelection();
+
+          return true;
         }
       ),
     }),
   }))
-  .extend(({ plugin }) => ({
+  .extend(({ plugin, schema: { type } }) => ({
     commands: ({ around }) => [
       around(editorCommands.insertText, ({ input, state, next }) => {
         const { at, ...options } = input.options ?? {};
@@ -701,7 +832,7 @@ export const BaseLinkPlugin = definePlugin('link', {
         }
 
         const prefix = state.transaction((tx) => {
-          tx.plugin(plugin.name).exitEnd();
+          exitLinkEnd(tx, type);
         });
 
         return next.after(prefix, { ...input, options });
@@ -710,11 +841,121 @@ export const BaseLinkPlugin = definePlugin('link', {
   }));
 
 export type LinkElement = ElementOf<typeof BaseLinkPlugin>;
-export type BaseLinkDefinition = DefinitionOf<typeof BaseLinkPlugin>;
 
 type InputRuleOptions<TContext> = {
   enabled?: (context: TContext) => boolean;
   priority?: number;
+};
+
+const AUTOLINK_BEFORE_OPTIONS = {
+  afterMatch: true,
+  matchBlockStart: true,
+  matchString: ' ',
+  skipInvalid: true,
+} as const;
+
+const sliceRangeByUtf16Offsets = (
+  editor: InsertTextInputRuleReadContext['editor'],
+  range: Range,
+  startOffset: number,
+  endOffset: number
+): Range | undefined => {
+  let cursor = 0;
+  let anchor: Point | undefined;
+  let focus: Point | undefined;
+
+  for (const [textNode, path] of editor.read.nodes.entries({
+    at: range,
+    match: TextApi.isText,
+  })) {
+    const sliceStart = PathApi.equals(path, range.anchor.path)
+      ? range.anchor.offset
+      : 0;
+    const sliceEnd = PathApi.equals(path, range.focus.path)
+      ? range.focus.offset
+      : textNode.text.length;
+    const sliceLen = sliceEnd - sliceStart;
+
+    if (
+      anchor === undefined &&
+      startOffset >= cursor &&
+      startOffset < cursor + sliceLen
+    ) {
+      anchor = { offset: sliceStart + (startOffset - cursor), path };
+    }
+    if (
+      focus === undefined &&
+      endOffset > cursor &&
+      endOffset <= cursor + sliceLen
+    ) {
+      focus = { offset: sliceStart + (endOffset - cursor), path };
+      break;
+    }
+
+    cursor += sliceLen;
+  }
+
+  return anchor && focus ? { anchor, focus } : undefined;
+};
+
+const pointAtBackwardUtf16Distance = (
+  editor: InsertTextInputRuleReadContext['editor'],
+  blockRange: Range,
+  distanceFromEnd: number
+): Point | undefined => {
+  if (distanceFromEnd === 0) return blockRange.focus;
+
+  let remaining = distanceFromEnd;
+
+  for (const [textNode, path] of editor.read.nodes.entries({
+    at: blockRange,
+    match: TextApi.isText,
+    reverse: true,
+  })) {
+    const sliceStart = PathApi.equals(path, blockRange.anchor.path)
+      ? blockRange.anchor.offset
+      : 0;
+    const sliceEnd = PathApi.equals(path, blockRange.focus.path)
+      ? blockRange.focus.offset
+      : textNode.text.length;
+    const sliceLen = sliceEnd - sliceStart;
+
+    if (sliceLen === 0) continue;
+
+    if (remaining <= sliceLen) {
+      return { offset: sliceEnd - remaining, path };
+    }
+
+    remaining -= sliceLen;
+  }
+
+  return undefined;
+};
+
+const collectLabelLeaves = (
+  tx: EditorTransactionSpecBuilder,
+  labelRange: Range
+): Text[] => {
+  const leaves: Text[] = [];
+
+  for (const [leaf, path] of tx.nodes.entries({
+    at: labelRange,
+    match: TextApi.isText,
+  })) {
+    const sliceStart = PathApi.equals(path, labelRange.anchor.path)
+      ? labelRange.anchor.offset
+      : 0;
+    const sliceEnd = PathApi.equals(path, labelRange.focus.path)
+      ? labelRange.focus.offset
+      : leaf.text.length;
+    const text = leaf.text.slice(sliceStart, sliceEnd);
+
+    if (text.length > 0) {
+      leaves.push({ ...leaf, text });
+    }
+  }
+
+  return leaves;
 };
 
 const findAutolink = (
@@ -723,9 +964,12 @@ const findAutolink = (
   const selection = editor.read.selection();
 
   if (!selection || !editor.read.selection.isCollapsed()) return undefined;
+  if (editor.read.nodes.above({ at: selection, type: BaseLinkPlugin })) {
+    return undefined;
+  }
 
   const state = editor.plugin(BaseLinkPlugin).store.get();
-  const before = editor.read.points.before(selection, state.rangeBeforeOptions);
+  const before = editor.read.points.before(selection, AUTOLINK_BEFORE_OPTIONS);
   const block = before ? undefined : editor.read.nodes.block({ at: selection });
   const blockStart = block && editor.read.points.start(block[1]);
   const range = before
@@ -738,9 +982,27 @@ const findAutolink = (
     return undefined;
   }
 
-  const url = recognizeLinkText(state, editor.read.text.string(range));
+  const raw = editor.read.text.string(range);
+  const { end, start } = stripAutolinkWrappers(raw);
 
-  return url === undefined ? undefined : { range, url };
+  if (start >= end) return undefined;
+
+  const url = recognizeLinkText(state, raw.slice(start, end));
+
+  if (url === undefined) return undefined;
+
+  const trimmedRange =
+    start === 0 && end === raw.length
+      ? range
+      : sliceRangeByUtf16Offsets(editor, range, start, end);
+
+  if (!trimmedRange) return undefined;
+
+  return {
+    hasTrailing: end < raw.length,
+    range: trimmedRange,
+    url,
+  };
 };
 
 const breakAutolinkRule = (
@@ -750,13 +1012,25 @@ const breakAutolinkRule = (
     ...options,
     target: 'insertBreak',
     resolve: ({ editor }) => findAutolink(editor),
-    apply: ({ decline, next, tx }, match) => {
-      tx.selection.set(match.range);
+    apply: ({ decline, editor, next, tx }, match) => {
+      const selection = tx.selection();
+      const caretAnchor = selection
+        ? tx.anchor(selection.focus, {
+            association: 'forward',
+            deletion: 'nearest',
+          })
+        : null;
 
-      if (!tx.link.upsert({ url: match.url })) return decline();
+      if (!tx.link.upsert({ at: match.range, url: match.url })) {
+        return decline();
+      }
 
-      tx.selection.collapse({ edge: 'end' });
-      tx.link.exitEnd();
+      const nextCaret = caretAnchor?.resolve();
+
+      if (nextCaret) tx.selection.set(nextCaret);
+      if (!match.hasTrailing) {
+        exitLinkEnd(tx, editor.plugin(BaseLinkPlugin).schema.type);
+      }
 
       return next();
     },
@@ -790,7 +1064,7 @@ const pasteAutolinkRule = (
         return { text };
       }
 
-      return { url };
+      return { label: text, url };
     },
     apply: ({ decline, editor, tx }, match) => {
       if (match.text !== undefined) {
@@ -799,14 +1073,40 @@ const pasteAutolinkRule = (
         return undefined;
       }
 
+      const selection = tx.selection();
+
+      if (!selection) return decline();
+
       const { keepSelectedTextOnPaste } = editor
         .plugin(BaseLinkPlugin)
         .store.get();
 
-      return tx.link.upsert({
-        text: keepSelectedTextOnPaste ? undefined : match.url,
-        url: match.url,
-      })
+      if (RangeApi.isExpanded(selection)) {
+        if (keepSelectedTextOnPaste) {
+          return tx.link.upsert({ url: match.url }) ? undefined : decline();
+        }
+
+        const start = RangeApi.start(selection);
+        const leaf = tx.nodes.leaf(start.path);
+
+        if (!leaf) return decline();
+
+        const linkNode = {
+          children: [{ ...leaf[0], text: match.label }],
+          type: editor.plugin(BaseLinkPlugin).schema.type,
+          url: match.url,
+        };
+
+        if (!tx.schema.canWrap(linkNode, { at: start })) {
+          return decline();
+        }
+
+        tx.fragment.delete();
+
+        return tx.fragment.replace([linkNode]) ? undefined : decline();
+      }
+
+      return tx.link.upsert({ text: match.label, url: match.url })
         ? undefined
         : decline();
     },
@@ -820,13 +1120,25 @@ const spaceAutolinkRule = (
     target: 'insertText',
     trigger: ' ',
     resolve: (context) => findAutolink(context.editor),
-    apply: ({ decline, text, tx }, match) => {
-      tx.selection.set(match.range);
+    apply: ({ decline, editor, text, tx }, match) => {
+      const selection = tx.selection();
+      const caretAnchor = selection
+        ? tx.anchor(selection.focus, {
+            association: 'forward',
+            deletion: 'nearest',
+          })
+        : null;
 
-      if (!tx.link.upsert({ url: match.url })) return decline();
+      if (!tx.link.upsert({ at: match.range, url: match.url })) {
+        return decline();
+      }
 
-      tx.selection.collapse({ edge: 'end' });
-      tx.link.exitEnd();
+      const nextCaret = caretAnchor?.resolve();
+
+      if (nextCaret) tx.selection.set(nextCaret);
+      if (!match.hasTrailing) {
+        exitLinkEnd(tx, editor.plugin(BaseLinkPlugin).schema.type);
+      }
       tx.text.insert(text);
 
       return undefined;
@@ -862,62 +1174,98 @@ export const LinkRules = {
         if (!blockRange) return undefined;
 
         const textBefore = editor.read.text.string(blockRange);
-        const match = LINK_AUTOMD_REGEX.exec(textBefore);
+        const scan = scanUnclosedMarkdownLink(textBefore);
 
-        if (!match) return undefined;
+        if (
+          !scan ||
+          scan.isImage ||
+          scan.openParenDepth !== 0 ||
+          scan.label.length === 0 ||
+          scan.destination.length === 0 ||
+          /\s/.test(scan.destination)
+        ) {
+          return undefined;
+        }
 
-        const isImageSource = textBefore[match.index - 1] === '!';
-
-        if (isImageSource) return undefined;
-
-        const [, linkText, destination] = match;
         const url = admitLinkInput(
           editor.plugin(BaseLinkPlugin).store.get().allowedSchemes,
-          destination
+          scan.destination
         );
 
         if (url === undefined) return undefined;
 
-        const startPoint = editor.read.points.before(selection, {
-          distance: match[0].length,
-          unit: 'character',
-        });
+        const startPoint = pointAtBackwardUtf16Distance(
+          editor,
+          blockRange,
+          textBefore.length - scan.start
+        );
+        const labelStartPoint = pointAtBackwardUtf16Distance(
+          editor,
+          blockRange,
+          textBefore.length - scan.labelStart
+        );
+        const labelEndPoint = pointAtBackwardUtf16Distance(
+          editor,
+          blockRange,
+          textBefore.length - scan.labelEnd
+        );
 
-        if (!startPoint) return undefined;
+        if (!startPoint || !labelStartPoint || !labelEndPoint) {
+          return undefined;
+        }
+
+        const matchRange = { anchor: startPoint, focus: selection.anchor };
+
+        if (
+          editor.read.nodes.some({
+            at: matchRange,
+            match: (node) =>
+              ElementApi.isElement(node) && editor.read.schema.isInline(node),
+          })
+        ) {
+          return undefined;
+        }
 
         return {
-          range: { anchor: startPoint, focus: selection.anchor },
-          text: linkText,
+          labelRange: { anchor: labelStartPoint, focus: labelEndPoint },
+          range: matchRange,
           url,
         };
       },
-      apply: ({ decline, tx }, match) => {
-        if (
-          !tx.link.upsert({
-            insertNodesOptions: { at: match.range },
-            text: match.text,
-            url: match.url,
-          })
-        ) {
+      apply: ({ decline, editor, tx }, match) => {
+        const children = collectLabelLeaves(tx, match.labelRange);
+
+        if (children.length === 0) return decline();
+
+        const linkType = editor.plugin(BaseLinkPlugin).schema.type;
+        const linkNode = { children, type: linkType, url: match.url };
+
+        if (!tx.schema.canWrap(linkNode, { at: match.range.anchor })) {
           return decline();
         }
 
-        tx.link.exitEnd();
+        tx.fragment.delete({ at: match.range });
+
+        if (!tx.fragment.replace([linkNode])) {
+          return decline();
+        }
+
+        exitLinkEnd(tx, linkType);
 
         return undefined;
       },
     }),
   autolink: (
     options:
-      | ({ variant: 'break' } & NonNullable<
-          Parameters<typeof breakAutolinkRule>[0]
-        >)
-      | ({ variant: 'paste' } & NonNullable<
-          Parameters<typeof pasteAutolinkRule>[0]
-        >)
-      | ({ variant: 'space' } & NonNullable<
-          Parameters<typeof spaceAutolinkRule>[0]
-        >)
+      | ({
+          variant: 'break';
+        } & InputRuleOptions<InsertBreakInputRuleReadContext>)
+      | ({
+          variant: 'paste';
+        } & InputRuleOptions<InsertDataInputRuleReadContext>)
+      | ({
+          variant: 'space';
+        } & InputRuleOptions<InsertTextInputRuleReadContext>)
   ) => {
     if (options.variant === 'break') {
       const { variant: _, ...runtime } = options;

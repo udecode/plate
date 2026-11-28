@@ -18,6 +18,7 @@ import {
   PLUGINS,
 } from '../../../core';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
+import { isBareAutolinkLiteral } from '../../../internal/utils/urlPolicy';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import type { MdRootContent } from '../mdast';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
@@ -35,8 +36,6 @@ const ONLY_BR_TAGS = /^(?:\s*<br\s*\/?>)+\s*$/i;
 const HTML_COMMENT =
   /^[\t\n\f\r ]*(?:<!--(?!-?>)(?:(?!--!?>)[\s\S])*-->[\t\n\f\r ]*)+$/;
 const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
-
-export const BARE_URL_HTML = /^[a-z][a-z\d+.-]*:\S*$/i;
 
 export const isMarkdownBreakHtml = (value: string) => ONLY_BR_TAGS.test(value);
 
@@ -400,7 +399,7 @@ export const writeBareUrlsSafely = (parent: MdParent) => {
     }
     if (
       child.type !== 'html' ||
-      !BARE_URL_HTML.test(child.value) ||
+      !isBareAutolinkLiteral(child.value) ||
       (!ENDS_IN_LETTER.test(writtenBefore(parent, index)) &&
         staysBare(child.value, writtenAfter(parent, index)))
     ) {

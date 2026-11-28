@@ -8,6 +8,7 @@ import type {
 } from 'mdast';
 
 import { type Descendant, ElementApi, TextApi } from '../../../core';
+import { isBareAutolinkLiteral } from '../../../internal/utils/urlPolicy';
 import type { MarkdownEncodeContext } from '../../../lib/plugin/MarkdownNodeMapping';
 import { convertNodesDeserialize } from '../deserializer/convertNodesDeserialize';
 import type { MdRootContent } from '../mdast';
@@ -16,7 +17,6 @@ import type { DeserializeMdContext, MdMarks } from '../types';
 import { ReportedMarkdownFailureError } from './markdownDiagnostics';
 import { toMarkdownBlockContent } from './markdownDocument';
 import {
-  BARE_URL_HTML,
   LONE_BREAK_HTML,
   readEmptyParagraphMarker,
   TRAILING_BREAK_HTML,
@@ -289,7 +289,7 @@ const lowerPhrasing = (
         if (!value.includes('|')) return [{ ...child, value }];
         // The link mapping writes a bare autolink literal as raw HTML, where a
         // character reference would change the URL.
-        if (BARE_URL_HTML.test(value)) {
+        if (isBareAutolinkLiteral(value)) {
           reportDestination(line);
 
           return [{ ...child, value: value.replaceAll('|', '%7C') }];
