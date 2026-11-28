@@ -1393,7 +1393,7 @@ const codePointLengthAt = (data: string, offset: number) =>
 const isTextFlowBreak = (unit: string) =>
   unit === '\n' || unit === '\r' || unit === '\r\n';
 
-const isOnVisualRow = (rect: DOMGeometryRect, row: DOMGeometryRect) =>
+export const isOnVisualRow = (rect: DOMGeometryRect, row: DOMGeometryRect) =>
   getRectOverlap(rect, row) > Math.min(rect.height, row.height) / 2;
 
 function* getGraphemeRangesFrom(

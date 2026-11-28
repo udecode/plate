@@ -92,6 +92,7 @@ import {
   applyEditableCommand,
   applyModelOwnedTextInput,
 } from './mutation-controller';
+import { moveByRenderedLines } from './rendered-line-motion';
 import {
   getEditorRuntimeOwner,
   hasPath as editorHasPath,
@@ -102,12 +103,13 @@ import {
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 import { getTextDirection } from './text-direction';
-import { moveByRenderedLines, type ViewLines } from './view-lines';
+import type { ViewLines } from './view-lines';
 
 export type EditableKeyDownResult = {
   focusEditor?: ReactRuntimeEditor;
   handled: boolean;
   repair?: EditableRepairRequest | null;
+  verticalGoalX?: number;
 };
 
 const keyDownHandled = (
@@ -1073,11 +1075,24 @@ export const applyEditableKeyDown = ({
       return keyDownHandled();
     }
 
-    const viewLinesRepair = verticalOwnerTarget
+    const renderedLineMove = verticalOwnerTarget
       ? null
-      : moveByRenderedLines({ editor, event, inputController, viewLines });
+      : moveByRenderedLines({
+          editor,
+          event,
+          inputController,
+          preferredVerticalX,
+          viewLines,
+        });
 
-    if (viewLinesRepair) return keyDownHandled(viewLinesRepair);
+    if (renderedLineMove) {
+      return {
+        ...keyDownHandled(renderedLineMove.repair),
+        ...(renderedLineMove.goalX !== undefined
+          ? { verticalGoalX: renderedLineMove.goalX }
+          : {}),
+      };
+    }
 
     const caretMovementResult = applyEditableCaretMovement({
       domPhaseScheduler,

@@ -155,18 +155,15 @@ const createPagedViewLines = ({
   readVersion: () => number;
   readViewport: () => Viewport | null;
 }>): ViewLines => ({
-  hasDisjointLines: () => {
-    const placements = readLayout()?.geometry?.pagePlacements;
-
-    if (!placements) return false;
-    const first = placements[0];
-
-    return (
-      first !== undefined &&
-      placements.some((placement) => placement.left !== first.left)
-    );
-  },
-  lineAfter: ({ direction, from, nativeLinesReachable = false, readX }) => {
+  interceptsLineMotion: (nativeFlow) =>
+    nativeFlow === 'skips-placed-lines' ||
+    Boolean(readLayout()?.geometry?.hasDisjointColumns),
+  lineAfter: ({
+    direction,
+    from,
+    nativeFlow = 'skips-placed-lines',
+    readX,
+  }) => {
     const layout = readLayout();
 
     if (!layout || layout.measuredVersion !== readVersion()) return null;
@@ -206,13 +203,18 @@ const createPagedViewLines = ({
     const crossesColumn =
       fromLeft !== undefined && toLeft !== undefined && fromLeft !== toLeft;
 
-    if (nativeLinesReachable && !crossesColumn) return null;
+    if (nativeFlow === 'contiguous' && !crossesColumn) return null;
     const root = target.drawn ? layout.root : null;
     const { path } = target;
+    let targetX: number | null | undefined;
     const readTargetX = () => {
+      if (targetX !== undefined) return targetX;
       const x = readX();
 
-      if (x === null || !crossesColumn) return x;
+      if (x === null || !crossesColumn) {
+        targetX = x;
+        return targetX;
+      }
       const scale = layout.canvas
         ? getElementTransformScale(
             layout.canvas,
@@ -220,19 +222,32 @@ const createPagedViewLines = ({
           ).x
         : 1;
 
-      return x + (toLeft - fromLeft) * scale;
+      targetX = x + (toLeft - fromLeft) * scale;
+      return targetX;
     };
 
-    return target.kind === 'line'
-      ? landOnViewLine({
-          editor,
-          end: target.end,
-          path,
-          readX: readTargetX,
-          root,
-          start: target.start,
-        })
-      : landInViewBlock({ direction, editor, path, readX: readTargetX, root });
+    const landing =
+      target.kind === 'line'
+        ? landOnViewLine({
+            editor,
+            end: target.end,
+            path,
+            readX: readTargetX,
+            root,
+            start: target.start,
+          })
+        : landInViewBlock({
+            direction,
+            editor,
+            path,
+            readX: readTargetX,
+            root,
+          });
+
+    if (!landing || !crossesColumn) return landing;
+    const goalX = readTargetX();
+
+    return goalX === null ? landing : { ...landing, goalX };
   },
   placementAt: ({ reach, target, x, y }) => {
     const layout = readLayout();

@@ -48,6 +48,7 @@ import {
   getExternalTextHostOwner,
 } from './interaction-owner';
 import { applyEditableKeyDown } from './keyboard-input-strategy';
+import { moveByRenderedLines } from './rendered-line-motion';
 import {
   getSnapshot as editorGetSnapshot,
   getEditorRuntimeOwner,
@@ -57,7 +58,7 @@ import {
 import type { EditableEventRuntimeCore } from './runtime-event-engine';
 import { readRuntimeSelection } from './runtime-selection-state';
 import { resolveViewBoundaryDOMPoint } from './selection-projected-dom';
-import { moveByRenderedLines, ViewLinesContext } from './view-lines';
+import { ViewLinesContext } from './view-lines';
 
 const WHITESPACE_KEY_RE = /\s/;
 const MODIFIER_ONLY_KEYS = new Set([
@@ -435,15 +436,26 @@ export const useRuntimeKeyboardEvents = ({
         })
       ) {
         flushPendingNativeTextInput?.();
-        const repair = moveByRenderedLines({
+        const moved = moveByRenderedLines({
           editor,
           event,
           inputController,
+          preferredVerticalX,
           viewLines,
         });
 
-        if (repair) {
-          runtime.repair.requestEditableRepair(repair);
+        if (moved) {
+          const nextFocus = getVerticalNavigationFocus(
+            editor,
+            editorGetSnapshot(editor).selection
+          );
+
+          if (moved.goalX !== undefined && nextFocus) {
+            verticalNavigation.setVerticalGoalX(moved.goalX, nextFocus);
+          } else {
+            verticalNavigation.clearVerticalGoal();
+          }
+          runtime.repair.requestEditableRepair(moved.repair);
           return;
         }
         runtime.selection.holdExportForNativeMove({
@@ -525,13 +537,15 @@ export const useRuntimeKeyboardEvents = ({
           editor,
           editorGetSnapshot(editor).selection
         );
+        const nextGoalX =
+          keyDownWorkerResult.verticalGoalX ?? preferredVerticalX;
 
         if (
           keyDownWorkerResult.handled &&
-          preferredVerticalX !== undefined &&
+          nextGoalX !== undefined &&
           nextFocus
         ) {
-          verticalNavigation.setVerticalGoalX(preferredVerticalX, nextFocus);
+          verticalNavigation.setVerticalGoalX(nextGoalX, nextFocus);
         } else {
           verticalNavigation.clearVerticalGoal();
         }

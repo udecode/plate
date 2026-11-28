@@ -7,6 +7,7 @@ import type {
 } from './index';
 
 export type PageLayoutGeometry = Readonly<{
+  hasDisjointColumns: boolean;
   height: number;
   occupiedSizes: readonly PageLayoutSize[];
   pagePlacements: ReadonlyArray<Readonly<{ left: number; top: number }>>;
@@ -65,7 +66,14 @@ export const createPageLayoutGeometry = ({
       if (index + 2 < pages.length) top += gap;
     }
 
-    return { height: top, occupiedSizes, pagePlacements: placements, width };
+    return {
+      hasDisjointColumns:
+        placements.length > 1 && placements[1].left !== placements[0].left,
+      height: top,
+      occupiedSizes,
+      pagePlacements: placements,
+      width,
+    };
   }
 
   const pagePlacements: Array<{ left: number; top: number }> = [];
@@ -78,7 +86,13 @@ export const createPageLayoutGeometry = ({
     top += size.height + (index < occupiedSizes.length - 1 ? gap : 0);
   });
 
-  return { height: top, occupiedSizes, pagePlacements, width };
+  return {
+    hasDisjointColumns: false,
+    height: top,
+    occupiedSizes,
+    pagePlacements,
+    width,
+  };
 };
 
 export const toCanvasRect = (

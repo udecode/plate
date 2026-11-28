@@ -52,6 +52,7 @@ export {
   getPliteTextHostStrings,
   getTextFlowPointAtCoordinates,
   hasUsableDOMRect,
+  isOnVisualRow,
 } from '../plugin/dom-geometry';
 export {
   createDOMPhaseScheduler,
