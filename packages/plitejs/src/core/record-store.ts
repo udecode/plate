@@ -667,7 +667,7 @@ const parseRecordStore = (
   );
 };
 
-const collectLiveStore = (
+export const collectLiveStore = (
   store: RecordStore,
   rules: RecordSetRules
 ): RecordStore => {
@@ -821,6 +821,20 @@ export const collectValueRecords = (
 export const hasValueRecords = (
   value: Readonly<{ records?: EditorDocumentRecords }>
 ) => VALUE_RECORDS.has(value) || value.records !== undefined;
+
+export const getAttachedValueRecords = (value: object) =>
+  VALUE_RECORDS.get(value);
+
+export const transferValueRecords = <T extends object>(
+  from: unknown,
+  to: T
+): T => {
+  if (from === null || typeof from !== 'object' || from === to) return to;
+
+  const store = VALUE_RECORDS.get(from);
+
+  return store ? withValueRecords(to, store) : to;
+};
 
 /** Attach `store` to a value object that no other store was attached to. */
 export const withValueRecords = <T extends object>(

@@ -114,7 +114,8 @@ export const getWholeTopLevelBlockRange = (
 
 export const deleteWholeTopLevelBlockRange = (
   editor: Editor,
-  range: WholeTopLevelBlockRange
+  range: WholeTopLevelBlockRange,
+  select = true
 ): Point => {
   const { endIndex, landing, startIndex } = range;
   const children = editorGetChildren(editor);
@@ -148,12 +149,14 @@ export const deleteWholeTopLevelBlockRange = (
           removedChildren.length,
           wholeDocument ? [{ ...startBlock, children: [{ text: '' }] }] : []
         ),
-      {
-        selection: {
-          root,
-          value: SelectionApi.text({ anchor: caret, focus: caret }),
-        },
-      }
+      select
+        ? {
+            selection: {
+              root,
+              value: SelectionApi.text({ anchor: caret, focus: caret }),
+            },
+          }
+        : undefined
     );
   });
 

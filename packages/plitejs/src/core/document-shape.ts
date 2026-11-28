@@ -11,7 +11,7 @@ import type {
   NamedEditorSchemaIdentity,
 } from '../interfaces/schema';
 import { isDocumentRootKey } from './change/document-change';
-import { isBuiltRecordsJson } from './record-store';
+import { isBuiltRecordsJson, transferValueRecords } from './record-store';
 import { getEditorJsonRecordEntries } from './value-codec';
 
 /** A record reader's refusal; `json` marks an object that is not plain JSON. */
@@ -202,7 +202,9 @@ export const readDocumentRecord = <const TFields extends EditorRecordFields>(
   }
 
   return (
-    defined.length === entries.length ? value : Object.fromEntries(defined)
+    defined.length === entries.length
+      ? value
+      : transferValueRecords(value, Object.fromEntries(defined))
   ) as EditorRecordOf<TFields>;
 };
 

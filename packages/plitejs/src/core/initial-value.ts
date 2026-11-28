@@ -6,6 +6,7 @@ import {
   getEditorDocumentShapeIssueMessage,
   readEditorDocument,
 } from './document-shape';
+import { getAttachedValueRecords, type RecordStore } from './record-store';
 import {
   cloneEditorJsonValue,
   getEditorJsonRecordEntries,
@@ -17,6 +18,7 @@ type NormalizedInitialValue = {
   explicit: boolean;
   meta: Record<string, unknown> | undefined;
   savedRecords: unknown;
+  savedRecordStore: RecordStore | undefined;
   roots: Record<string, Descendant[]>;
 };
 
@@ -129,6 +131,7 @@ export const normalizeEditorValue = (
       explicit: false,
       meta: undefined,
       savedRecords: undefined,
+      savedRecordStore: undefined,
       roots: Object.freeze({ [MAIN_ROOT_KEY]: children }),
     };
   }
@@ -141,6 +144,7 @@ export const normalizeEditorValue = (
       explicit: true,
       meta: undefined,
       savedRecords: undefined,
+      savedRecordStore: undefined,
     };
   }
 
@@ -176,5 +180,6 @@ export const normalizeEditorValue = (
     explicit: true,
     meta,
     savedRecords: value.records,
+    savedRecordStore: getAttachedValueRecords(value),
   };
 };

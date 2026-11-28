@@ -8,6 +8,9 @@ import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   applyBuiltDocumentChange,
   getActiveUpdateRoot,
+  getCurrentSelection,
+  getCurrentSelectionRoot,
+  getEditorUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
 import { withoutPlacement } from '../core/view-carets';
@@ -213,6 +216,12 @@ export const liftNodes = ((
       return;
     }
 
+    const liveSelection = getCurrentSelection(editor);
+    const shouldSelect =
+      options.at === undefined ||
+      liveSelection === null ||
+      (SelectionApi.root(liveSelection) ?? getCurrentSelectionRoot(editor)) ===
+        getEditorUpdateRoot(editor);
     const anchor = editor.anchor(target.anchor, { deletion: 'drop' });
     const focus = editor.anchor(target.focus, { deletion: 'drop' });
 
@@ -228,7 +237,7 @@ export const liftNodes = ((
       const nextAnchor = anchor.release();
       const nextFocus = focus.release();
 
-      if (nextAnchor && nextFocus) {
+      if (shouldSelect && nextAnchor && nextFocus) {
         withoutPlacement(editor, () =>
           tx.setSelection(
             SelectionApi.text({ anchor: nextAnchor, focus: nextFocus })

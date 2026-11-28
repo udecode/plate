@@ -2163,52 +2163,84 @@ export class ChangeDraft {
     this.pendingSinceValidated.push(change);
   }
 
-  createRoot(root: string, children: readonly JsonNode[]) {
-    if (root === 'main' || Object.hasOwn(this.current.roots ?? {}, root)) {
-      throw new Error(`Cannot create editor root ${root}.`);
+  createRoots(entries: ReadonlyArray<readonly [string, readonly JsonNode[]]>) {
+    if (entries.length === 0) {
+      return this.applyConstructed(DocumentChange.empty, 'root');
     }
 
-    const document = DocumentIndex.fromValue([]);
-    const rootChange = replaceChildrenChange(document, [], 0, 0, children);
+    const rootChanges = new Map<string, RootChange>();
+    const createRoots = new Set<string>();
 
-    this.v4Recorder.recordCreateRoot(root, children);
+    for (const [root, children] of entries) {
+      if (
+        root === 'main' ||
+        Object.hasOwn(this.current.roots ?? {}, root) ||
+        createRoots.has(root)
+      ) {
+        throw new Error(`Cannot create editor root ${root}.`);
+      }
+
+      const document = DocumentIndex.fromValue([]);
+      const rootChange = replaceChildrenChange(document, [], 0, 0, children);
+
+      this.v4Recorder.recordCreateRoot(root, children);
+      createRoots.add(root);
+      if (!rootChange.empty) rootChanges.set(root, rootChange);
+    }
 
     return this.applyConstructed(
-      createInternalDocumentChange(
-        rootChange.empty ? new Map() : new Map([[root, rootChange]]),
-        {
-          createRoots: [root],
-        }
-      ),
+      createInternalDocumentChange(rootChanges, {
+        createRoots: [...createRoots],
+      }),
       'root'
     );
   }
 
-  deleteRoot(root: string) {
-    if (root === 'main' || !Object.hasOwn(this.current.roots ?? {}, root)) {
-      throw new Error(`Cannot delete editor root ${root}.`);
+  deleteRoots(roots: readonly string[]) {
+    if (roots.length === 0) {
+      return this.applyConstructed(DocumentChange.empty, 'root');
     }
 
-    const document = this.getIndex(root);
-    const rootChange = replaceChildrenChange(
-      document,
-      [],
-      0,
-      document.value.length,
-      []
-    );
+    const rootChanges = new Map<string, RootChange>();
+    const deleteRoots = new Set<string>();
 
-    this.v4Recorder.recordDeleteRoot(root, () => document.value);
+    for (const root of roots) {
+      if (
+        root === 'main' ||
+        !Object.hasOwn(this.current.roots ?? {}, root) ||
+        deleteRoots.has(root)
+      ) {
+        throw new Error(`Cannot delete editor root ${root}.`);
+      }
+
+      const document = this.getIndex(root);
+      const rootChange = replaceChildrenChange(
+        document,
+        [],
+        0,
+        document.value.length,
+        []
+      );
+
+      this.v4Recorder.recordDeleteRoot(root, () => document.value);
+      deleteRoots.add(root);
+      if (!rootChange.empty) rootChanges.set(root, rootChange);
+    }
 
     return this.applyConstructed(
-      createInternalDocumentChange(
-        rootChange.empty ? new Map() : new Map([[root, rootChange]]),
-        {
-          deleteRoots: [root],
-        }
-      ),
+      createInternalDocumentChange(rootChanges, {
+        deleteRoots: [...deleteRoots],
+      }),
       'root'
     );
+  }
+
+  createRoot(root: string, children: readonly JsonNode[]) {
+    return this.createRoots([[root, children]]);
+  }
+
+  deleteRoot(root: string) {
+    return this.deleteRoots([root]);
   }
 
   insertNode(root: string, path: readonly number[], node: JsonNode) {

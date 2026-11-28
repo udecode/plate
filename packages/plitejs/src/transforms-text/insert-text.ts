@@ -409,8 +409,14 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
   };
   const insertText = () => {
     const { voids = false } = options;
-    const explicitAtPreservesNullSelection =
-      options.at != null && getPublicSelection(editor) == null;
+    const liveSelection = getPublicSelection(editor);
+    const targetRoot = getEditorUpdateRoot(editor);
+    const liveSelectionRoot = liveSelection
+      ? (SelectionApi.root(liveSelection) ?? getCurrentSelectionRoot(editor))
+      : null;
+    const explicitAtPreservesSelection =
+      options.at != null &&
+      (liveSelection == null || liveSelectionRoot !== targetRoot);
     const defaultAt = options.at ?? getDefaultInsertLocation(editor);
     const preflightAt = (() => {
       if (LocationApi.isPath(defaultAt)) {
@@ -458,12 +464,19 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
       );
 
       const root = getEditorUpdateRoot(editor);
-      const newSelection = explicitAtPreservesNullSelection
-        ? null
-        : SelectionApi.text({
-            anchor: { path: [0, 0], offset: text.length },
-            focus: { path: [0, 0], offset: text.length },
-          });
+      const selectionOption = explicitAtPreservesSelection
+        ? liveSelection == null
+          ? { selection: { root, value: null } }
+          : {}
+        : {
+            selection: {
+              root,
+              value: SelectionApi.text({
+                anchor: { path: [0, 0], offset: text.length },
+                focus: { path: [0, 0], offset: text.length },
+              }),
+            },
+          };
 
       applyBuiltDocumentChange(
         editor,
@@ -486,7 +499,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
           }
           return step;
         },
-        { selection: { root, value: newSelection } }
+        selectionOption
       );
       if (options.at == null) {
         syncImplicitTargetToCurrentSelection(editor);
@@ -564,7 +577,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
           if (options.at == null) {
             setSelection(editor, { anchor: nextAt, focus: nextAt });
-          } else if (explicitAtPreservesNullSelection) {
+          } else if (liveSelection == null) {
             deselect(editor);
           }
 
@@ -589,7 +602,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             );
 
             if (textInsertionPoint) {
-              if (!explicitAtPreservesNullSelection) {
+              if (!explicitAtPreservesSelection) {
                 setSelection(editor, {
                   anchor: textInsertionPoint,
                   focus: textInsertionPoint,
@@ -611,7 +624,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               ),
               {
                 at: nextAt,
-                select: !explicitAtPreservesNullSelection,
+                select: !explicitAtPreservesSelection,
                 voids,
               }
             );
@@ -642,7 +655,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               };
               at = landingAt;
 
-              if (!explicitAtPreservesNullSelection) {
+              if (!explicitAtPreservesSelection) {
                 setSelection(editor, {
                   anchor: landingAt,
                   focus: landingAt,
@@ -651,9 +664,13 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             }
           }
 
-          setCurrentMarks(editor, null);
+          if (!explicitAtPreservesSelection) {
+            setCurrentMarks(editor, null);
+          }
 
-          const inheritedMarks = normalizeTextMarks(getSelectionMarks(editor));
+          const inheritedMarks = explicitAtPreservesSelection
+            ? null
+            : normalizeTextMarks(getSelectionMarks(editor));
           const inheritedInsertionPoint = getPointTextInsertionPoint(
             editor,
             landingAt,
@@ -661,7 +678,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
           );
 
           if (inheritedInsertionPoint) {
-            if (!explicitAtPreservesNullSelection) {
+            if (!explicitAtPreservesSelection) {
               setSelection(editor, {
                 anchor: inheritedInsertionPoint,
                 focus: inheritedInsertionPoint,
@@ -701,7 +718,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
           );
 
           if (textInsertionPoint) {
-            if (!explicitAtPreservesNullSelection) {
+            if (!explicitAtPreservesSelection) {
               setSelection(editor, {
                 anchor: textInsertionPoint,
                 focus: textInsertionPoint,
@@ -723,7 +740,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
                 path,
                 root
               ),
-              { at, select: !explicitAtPreservesNullSelection, voids }
+              { at, select: !explicitAtPreservesSelection, voids }
             );
           }
           keepTyping();

@@ -64,6 +64,7 @@ import {
   findElementOwnedRootOwnerPath,
   forgetElementOwnedRootBuilds,
   getElementOwnedRootGrammarBindings,
+  getElementOwnedRootGrammarEntries,
   getChangedElementOwnedRootKeys,
   getElementOwnedRootIssues,
   getElementOwnedRootKeys,
@@ -71,6 +72,7 @@ import {
   rebaseElementOwnedRootIndex,
   schemaDeclaresSetRoots,
   type ElementOwnedRootBinding,
+  type ElementOwnedRootGrammarEntry,
   type ElementOwnedRootIndex,
   type ElementOwnedRootIssue,
 } from './element-owned-root-index';
@@ -1460,27 +1462,63 @@ export const createEditorSchema = <V extends Value = Value>(
     root: RootKey
   ) => (root === 'main' ? schema.primaryRoot : schema.roots.get(root))?.content;
 
-  const documentOwnershipIndexes = new WeakMap<
+  type OwnershipIndexEntry = Readonly<{
+    index: ElementOwnedRootIndex;
+    root: RootKey;
+  }>;
+  type DocumentOwnershipSummary = Readonly<{
+    byChildRoot: ReadonlyMap<string, readonly ElementOwnedRootGrammarEntry[]>;
+    indexes: readonly OwnershipIndexEntry[];
+  }>;
+  type ActiveDocumentOwnershipTracker = {
+    currentRoot: RootKey | null;
+    readBindings: (
+      childRoot: string,
+      value: EditorDocumentValue
+    ) => readonly ElementOwnedRootGrammarEntry[];
+    schema: CompiledEditorSchema;
+    syncRoot: (root: RootKey, value: EditorDocumentValue) => void;
+  };
+  let activeOwnershipTracker: ActiveDocumentOwnershipTracker | null = null;
+
+  const summarizeOwnershipIndexes = (
+    indexes: readonly OwnershipIndexEntry[]
+  ): DocumentOwnershipSummary => {
+    const byChildRoot = new Map<string, ElementOwnedRootGrammarEntry[]>();
+
+    for (const { index } of indexes) {
+      if (!index.childRoots) continue;
+      for (const [childRoot, bindings] of getElementOwnedRootGrammarEntries(
+        index
+      )) {
+        if (bindings.length === 0) continue;
+        const list = byChildRoot.get(childRoot);
+
+        if (list) {
+          list.push(...bindings);
+        } else {
+          byChildRoot.set(childRoot, [...bindings]);
+        }
+      }
+    }
+
+    return Object.freeze({ byChildRoot, indexes });
+  };
+
+  const documentOwnershipSummaries = new WeakMap<
     object,
     Readonly<{
-      indexes: ReadonlyArray<
-        Readonly<{ index: ElementOwnedRootIndex; root: RootKey }>
-      >;
       schema: CompiledEditorSchema;
+      summary: DocumentOwnershipSummary;
     }>
   >();
-  const getDocumentOwnershipIndexes = (
+  const getDocumentOwnershipSummary = (
     schema: CompiledEditorSchema,
     value: EditorDocumentValue
-  ): ReadonlyArray<
-    Readonly<{
-      index: ElementOwnedRootIndex;
-      root: RootKey;
-    }>
-  > => {
-    const known = documentOwnershipIndexes.get(value);
+  ): DocumentOwnershipSummary => {
+    const known = documentOwnershipSummaries.get(value);
 
-    if (known?.schema === schema) return known.indexes;
+    if (known?.schema === schema) return known.summary;
 
     forgetElementOwnedRootBuilds(schema, value.roots ?? {});
 
@@ -1494,23 +1532,134 @@ export const createEditorSchema = <V extends Value = Value>(
         root,
       }))
     );
+    const summary = summarizeOwnershipIndexes(indexes);
 
     if (isFrozenWithRoots(value)) {
-      documentOwnershipIndexes.set(value, { indexes, schema });
+      documentOwnershipSummaries.set(value, { schema, summary });
     }
 
-    return indexes;
+    return summary;
   };
+
+  const withDocumentOwnershipTracker = <T>(
+    initial: EditorDocumentValue,
+    run: (
+      beginRoot: (root: RootKey) => void,
+      syncRoot: (root: RootKey, value: EditorDocumentValue) => void
+    ) => T
+  ): T => {
+    const schema = getDeclarativeSchema();
+
+    if (!schema || !schemaHasContentRoots(schema)) {
+      return run(
+        () => undefined,
+        () => undefined
+      );
+    }
+
+    const rootNodesMap = new Map<RootKey, readonly Descendant[]>();
+    const rootIndexMap = new Map<RootKey, ElementOwnedRootIndex>();
+    const byChildRoot = new Map<
+      string,
+      Map<RootKey, readonly ElementOwnedRootGrammarEntry[]>
+    >();
+
+    const updateRootIndex = (
+      root: RootKey,
+      nodes: readonly Descendant[],
+      index: ElementOwnedRootIndex
+    ) => {
+      const previous = rootIndexMap.get(root) ?? null;
+
+      rootNodesMap.set(root, nodes);
+      rootIndexMap.set(root, index);
+      if (previous === index) return;
+
+      for (const childRoot of getChangedElementOwnedRootKeys(previous, index)) {
+        const nextBindings = getElementOwnedRootGrammarBindings(
+          index,
+          childRoot
+        );
+        let ownersByRoot = byChildRoot.get(childRoot);
+
+        if (nextBindings.length > 0) {
+          if (!ownersByRoot) {
+            ownersByRoot = new Map();
+            byChildRoot.set(childRoot, ownersByRoot);
+          }
+          ownersByRoot.set(root, nextBindings);
+        } else if (ownersByRoot) {
+          ownersByRoot.delete(root);
+          if (ownersByRoot.size === 0) byChildRoot.delete(childRoot);
+        }
+      }
+    };
+
+    const syncRoot = (root: RootKey, value: EditorDocumentValue) => {
+      const nodes = (
+        root === 'main' ? value.children : (value.roots?.[root] ?? [])
+      ) as readonly Descendant[];
+
+      if (rootNodesMap.get(root) === nodes) return;
+      updateRootIndex(
+        root,
+        nodes,
+        ensureElementOwnedRootIndex(schema, root, valueRootIndex(value, root))
+      );
+    };
+
+    for (const root of ['main', ...visitRootNames(initial.roots)]) {
+      syncRoot(root, initial);
+    }
+
+    const previousTracker = activeOwnershipTracker;
+    const tracker: ActiveDocumentOwnershipTracker = {
+      currentRoot: null,
+      readBindings: (childRoot, value) => {
+        syncRoot('main', value);
+        if (tracker.currentRoot && tracker.currentRoot !== 'main') {
+          syncRoot(tracker.currentRoot, value);
+        }
+        const ownersByRoot = byChildRoot.get(childRoot);
+
+        if (!ownersByRoot || ownersByRoot.size === 0) return [];
+        const bindings: ElementOwnedRootGrammarEntry[] = [];
+
+        for (const list of ownersByRoot.values()) {
+          bindings.push(...list);
+        }
+
+        return bindings;
+      },
+      schema,
+      syncRoot,
+    };
+
+    activeOwnershipTracker = tracker;
+    try {
+      return run(
+        (root) => {
+          tracker.currentRoot = root;
+        },
+        (root, value) => {
+          syncRoot(root, value);
+        }
+      );
+    } finally {
+      activeOwnershipTracker = previousTracker;
+    }
+  };
+
+  const getDocumentOwnershipIndexes = (
+    schema: CompiledEditorSchema,
+    value: EditorDocumentValue
+  ): readonly OwnershipIndexEntry[] =>
+    getDocumentOwnershipSummary(schema, value).indexes;
 
   const getLiveDocumentOwnershipIndexes = (
     schema: CompiledEditorSchema,
     targetRoot: RootKey
-  ): ReadonlyArray<
-    Readonly<{
-      index: ElementOwnedRootIndex;
-      root: RootKey;
-    }>
-  > => {
+  ): readonly OwnershipIndexEntry[] => {
     const editor = getEditor();
     const pending: RootKey[] = [
       'main',
@@ -1543,6 +1692,21 @@ export const createEditorSchema = <V extends Value = Value>(
     return Object.freeze(indexes);
   };
 
+  const getProgramFromBindings = (
+    bindings: readonly ElementOwnedRootGrammarEntry[] | undefined
+  ) => {
+    let projected: CompiledSchemaContentProgram | undefined;
+
+    for (const binding of bindings ?? []) {
+      if (projected && !contentProgramsEqual(projected, binding.content)) {
+        return null;
+      }
+      projected = binding.content;
+    }
+
+    return projected;
+  };
+
   const getDocumentRootProgram = (
     schema: CompiledEditorSchema,
     root: RootKey,
@@ -1551,12 +1715,18 @@ export const createEditorSchema = <V extends Value = Value>(
     const declared = getDeclarativeRootProgram(schema, root);
 
     if (declared || root === 'main') return declared;
-    let projected: CompiledSchemaContentProgram | undefined;
-    const indexes = value
-      ? getDocumentOwnershipIndexes(schema, value)
-      : getLiveDocumentOwnershipIndexes(schema, root);
+    if (value) {
+      const bindings =
+        activeOwnershipTracker?.schema === schema
+          ? activeOwnershipTracker.readBindings(root, value)
+          : getDocumentOwnershipSummary(schema, value).byChildRoot.get(root);
 
-    for (const { index } of indexes) {
+      return getProgramFromBindings(bindings);
+    }
+
+    let projected: CompiledSchemaContentProgram | undefined;
+
+    for (const { index } of getLiveDocumentOwnershipIndexes(schema, root)) {
       for (const binding of getElementOwnedRootGrammarBindings(index, root)) {
         if (projected && !contentProgramsEqual(projected, binding.content)) {
           return null;
@@ -1772,15 +1942,9 @@ export const createEditorSchema = <V extends Value = Value>(
     schema: CompiledEditorSchema,
     root: RootKey,
     value: EditorDocumentValue
-  ) => {
-    for (const { index } of getDocumentOwnershipIndexes(schema, value)) {
-      const [binding] = getElementOwnedRootGrammarBindings(index, root);
-
-      if (binding) return binding.owner;
-    }
-
-    return null;
-  };
+  ) =>
+    getDocumentOwnershipSummary(schema, value).byChildRoot.get(root)?.[0]
+      ?.owner ?? null;
 
   const setRootAnswers = new Map<
     RootKey,
@@ -1900,9 +2064,11 @@ export const createEditorSchema = <V extends Value = Value>(
     const schema = getDeclarativeSchema();
 
     return schema && hasContentRoots()
-      ? getDocumentOwnershipIndexes(schema, value).flatMap(({ index }) =>
-          getElementOwnedRootGrammarBindings(index, root)
-        )
+      ? [
+          ...(getDocumentOwnershipSummary(schema, value).byChildRoot.get(
+            root
+          ) ?? []),
+        ]
       : [];
   };
 
@@ -2931,6 +3097,7 @@ export const createEditorSchema = <V extends Value = Value>(
     validateDeclarativeChildren,
     validateDocument: assertDocument,
     validateSliceVocabulary,
+    withDocumentOwnershipTracker,
     withoutGeneration,
     generateReservedElementId: () => {
       const compiled = getDeclarativeSchema();
@@ -5269,7 +5436,7 @@ export const createEditorSchema = <V extends Value = Value>(
     value: EditorDocumentValue,
     schema: CompiledEditorSchema,
     childRoot: string,
-    indexes = getDocumentOwnershipIndexes(schema, value)
+    summary = getDocumentOwnershipSummary(schema, value)
   ) => {
     let exclusive = false;
     let ownerCount = 0;
@@ -5280,37 +5447,32 @@ export const createEditorSchema = <V extends Value = Value>(
         }>
       | undefined;
 
-    for (const { index } of indexes) {
-      for (const grammar of getElementOwnedRootGrammarBindings(
-        index,
-        childRoot
-      )) {
-        exclusive ||= grammar.ownership === 'exclusive';
-        ownerCount += grammar.count;
-        if (
-          projection &&
-          !contentProgramsEqual(projection.content, grammar.content)
-        ) {
-          const previous = elementOwnedRootLocation(value, projection.owner);
-          const conflicting = elementOwnedRootLocation(value, grammar.owner);
+    for (const grammar of summary.byChildRoot.get(childRoot) ?? []) {
+      exclusive ||= grammar.ownership === 'exclusive';
+      ownerCount += grammar.count;
+      if (
+        projection &&
+        !contentProgramsEqual(projection.content, grammar.content)
+      ) {
+        const previous = elementOwnedRootLocation(value, projection.owner);
+        const conflicting = elementOwnedRootLocation(value, grammar.owner);
 
-          throw createEditorSchemaValidationError(
-            'invalid-root',
-            `Editor root "${childRoot}" has conflicting projected content grammars from ${editorRootLabel(
-              projection.owner.ownerRoot
-            )}:[${previous.path}] "${projection.owner.ownerType}.${
-              projection.owner.slot
-            }" and ${editorRootLabel(grammar.owner.ownerRoot)}:[${
-              conflicting.path
-            }] "${grammar.owner.ownerType}.${grammar.owner.slot}".`,
-            conflicting
-          );
-        }
-        projection ??= Object.freeze({
-          content: grammar.content,
-          owner: grammar.owner,
-        });
+        throw createEditorSchemaValidationError(
+          'invalid-root',
+          `Editor root "${childRoot}" has conflicting projected content grammars from ${editorRootLabel(
+            projection.owner.ownerRoot
+          )}:[${previous.path}] "${projection.owner.ownerType}.${
+            projection.owner.slot
+          }" and ${editorRootLabel(grammar.owner.ownerRoot)}:[${
+            conflicting.path
+          }] "${grammar.owner.ownerType}.${grammar.owner.slot}".`,
+          conflicting
+        );
       }
+      projection ??= Object.freeze({
+        content: grammar.content,
+        owner: grammar.owner,
+      });
     }
 
     if (exclusive && ownerCount !== 1 && projection) {
@@ -5334,9 +5496,9 @@ export const createEditorSchema = <V extends Value = Value>(
     };
     // Element-owned roots validate across owners, so their nodes are not reused.
     const reuseRootNodes = !hasContentRoots();
-    const ownershipIndexes = hasContentRoots()
-      ? getDocumentOwnershipIndexes(schema, value)
-      : [];
+    const ownershipSummary = hasContentRoots()
+      ? getDocumentOwnershipSummary(schema, value)
+      : null;
     const projectedRoots = new Map<
       string,
       Readonly<{
@@ -5344,25 +5506,23 @@ export const createEditorSchema = <V extends Value = Value>(
         owner: ElementOwnedRootBinding;
       }>
     >();
-    const projectedRootKeys = new Set<string>();
 
-    for (const { index } of ownershipIndexes) {
-      const issue = getElementOwnedRootIssues(index)[0];
+    if (ownershipSummary) {
+      for (const { index } of ownershipSummary.indexes) {
+        const issue = getElementOwnedRootIssues(index)[0];
 
-      if (issue) throwElementOwnedRootIssue(value, issue);
-      for (const childRoot of getElementOwnedRootKeys(index)) {
-        projectedRootKeys.add(childRoot);
+        if (issue) throwElementOwnedRootIssue(value, issue);
       }
-    }
-    for (const childRoot of projectedRootKeys) {
-      const projection = getProjectedRoot(
-        value,
-        schema,
-        childRoot,
-        ownershipIndexes
-      );
+      for (const childRoot of ownershipSummary.byChildRoot.keys()) {
+        const projection = getProjectedRoot(
+          value,
+          schema,
+          childRoot,
+          ownershipSummary
+        );
 
-      if (projection) projectedRoots.set(childRoot, projection);
+        if (projection) projectedRoots.set(childRoot, projection);
+      }
     }
 
     for (const [name, root] of schema.roots) {
@@ -5588,12 +5748,9 @@ export const createEditorSchema = <V extends Value = Value>(
       ...change.deleteRoots,
     ]);
     const touchedRoots = new Set(changedRoots);
-    const ownershipIndexes: Array<
-      Readonly<{
-        index: ElementOwnedRootIndex;
-        root: RootKey;
-      }>
-    > = [];
+    const revalidatedRoots = new Set<string>();
+    const ownershipIndexes: OwnershipIndexEntry[] = [];
+    let afterOwnershipSummary: DocumentOwnershipSummary | null = null;
 
     if (schema && hasContentRoots()) {
       const dirtyChildRoots = new Set<string>();
@@ -5643,6 +5800,7 @@ export const createEditorSchema = <V extends Value = Value>(
       }
 
       if (introduced) throwElementOwnedRootIssue(after, introduced);
+      afterOwnershipSummary = summarizeOwnershipIndexes(ownershipIndexes);
       const ownershipRoots = new Set([
         ...dirtyChildRoots,
         ...change.createRoots,
@@ -5652,9 +5810,9 @@ export const createEditorSchema = <V extends Value = Value>(
         value: EditorDocumentValue,
         roots: typeof afterRoots,
         root: string,
-        indexes?: typeof ownershipIndexes
+        summary?: DocumentOwnershipSummary
       ) => {
-        const projection = getProjectedRoot(value, schema, root, indexes);
+        const projection = getProjectedRoot(value, schema, root, summary);
 
         if (projection) {
           if (!Object.hasOwn(roots, root)) {
@@ -5672,7 +5830,7 @@ export const createEditorSchema = <V extends Value = Value>(
             );
           }
 
-          return true;
+          return projection;
         }
         if (Object.hasOwn(roots, root) && !schema.roots.has(root)) {
           if (schema.unknown === 'reject') {
@@ -5690,7 +5848,7 @@ export const createEditorSchema = <V extends Value = Value>(
           );
         }
 
-        return false;
+        return null;
       };
       const baselineHasRootError = (root: string) => {
         try {
@@ -5706,8 +5864,23 @@ export const createEditorSchema = <V extends Value = Value>(
       for (const root of ownershipRoots) {
         if (root === 'main') continue;
         try {
-          if (checkOwnedRoot(after, afterRoots, root, ownershipIndexes)) {
+          const projection = checkOwnedRoot(
+            after,
+            afterRoots,
+            root,
+            afterOwnershipSummary
+          );
+
+          if (projection) {
             touchedRoots.add(root);
+            const beforeProgram = getDocumentRootProgram(schema, root, before);
+
+            if (
+              !beforeProgram ||
+              !contentProgramsEqual(beforeProgram, projection.content)
+            ) {
+              revalidatedRoots.add(root);
+            }
           }
         } catch (error) {
           if (
@@ -6057,12 +6230,24 @@ export const createEditorSchema = <V extends Value = Value>(
         }
       }
 
+      if (revalidatedRoots.has(root)) {
+        addParentIndex([]);
+        for (let index = 0; index < children.length; index += 1) {
+          addParentIndex([], index);
+        }
+      }
+
       for (const { indexes, path } of parentIndexes.values()) {
         const parent = path.length === 0 ? null : getDescendant(children, path);
         const content =
           path.length === 0
             ? schema
-              ? getDocumentRootProgram(schema, root, after)
+              ? (getDeclarativeRootProgram(schema, root) ??
+                (afterOwnershipSummary
+                  ? getProgramFromBindings(
+                      afterOwnershipSummary.byChildRoot.get(root)
+                    )
+                  : getDocumentRootProgram(schema, root, after)))
               : null
             : schema && ElementApi.isElement(parent)
               ? schema.elements.byType.get(getElementType(parent) ?? '')

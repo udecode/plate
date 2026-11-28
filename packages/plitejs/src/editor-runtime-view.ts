@@ -93,7 +93,11 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from './core/public-state';
-import { getValueRecords, type RecordStore } from './core/record-store';
+import {
+  getValueRecords,
+  type RecordStore,
+  transferValueRecords,
+} from './core/record-store';
 import { preserveSemanticUpdateGroup } from './core/semantic-update-method';
 import {
   getEditorJsonArrayItems,
@@ -263,11 +267,20 @@ const readViewDocument = (
     throw new TypeError(getEditorDocumentShapeIssueMessage({ kind: 'json' }));
   };
 
-  return adoptViewJson(
-    readDocumentRecord(input, EDITOR_DOCUMENT_FIELDS, refuseAsAssertDocument),
-    refuseAsAssertDocument,
-    new WeakSet()
-  ) as EditorDocumentValue;
+  const record = readDocumentRecord(
+    input,
+    EDITOR_DOCUMENT_FIELDS,
+    refuseAsAssertDocument
+  );
+
+  return transferValueRecords(
+    record,
+    adoptViewJson(
+      record,
+      refuseAsAssertDocument,
+      new WeakSet()
+    ) as EditorDocumentValue
+  );
 };
 
 const assertViewDocument = (editor: Editor, document: EditorDocumentValue) => {

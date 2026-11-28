@@ -644,15 +644,17 @@ export const rebaseElementOwnedRootIndex = (
   });
 };
 
-export const getElementOwnedRootGrammarBindings = (
-  index: ElementOwnedRootIndex,
-  childRoot: string
-) => {
-  const owners = persistentMapGet(index.childRoots, childRoot);
+export type ElementOwnedRootGrammarEntry = Readonly<{
+  content: CompiledSchemaContentProgram;
+  count: number;
+  owner: ElementOwnedRootBinding;
+  ownership: SchemaContentRootOwnership;
+}>;
 
-  if (!owners) return Object.freeze([]);
-
-  return Object.freeze(
+const toGrammarEntries = (
+  owners: ChildRootOwners
+): readonly ElementOwnedRootGrammarEntry[] =>
+  Object.freeze(
     [...persistentMapEntries(owners.grammars)].map(([, grammar]) => ({
       content: grammar.content,
       count: grammar.count,
@@ -661,7 +663,23 @@ export const getElementOwnedRootGrammarBindings = (
         .value,
     }))
   );
+
+export const getElementOwnedRootGrammarBindings = (
+  index: ElementOwnedRootIndex,
+  childRoot: string
+): readonly ElementOwnedRootGrammarEntry[] => {
+  const owners = persistentMapGet(index.childRoots, childRoot);
+
+  return owners ? toGrammarEntries(owners) : Object.freeze([]);
 };
+
+export function* getElementOwnedRootGrammarEntries(
+  index: ElementOwnedRootIndex
+): Generator<readonly [string, readonly ElementOwnedRootGrammarEntry[]]> {
+  for (const [childRoot, owners] of persistentMapEntries(index.childRoots)) {
+    yield [childRoot, toGrammarEntries(owners)];
+  }
+}
 
 export function* getElementOwnedRootOwnerCounts(
   index: ElementOwnedRootIndex

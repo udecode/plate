@@ -499,13 +499,13 @@ const applyProjectedViewSelectionLineBreakCommand = ({
     tx.annotations.set(projectedHistoryRange, viewSelection);
     deleteProjectedRanges(target.ranges, deleteFragmentIn(editor));
 
-    tx.selection.set({
+    const routed = projectedRootTransaction(editor, target.start.root);
+
+    routed.selection.set({
       anchor: target.start,
       focus: target.start,
     });
     applied = true;
-
-    const routed = projectedRootTransaction(editor, target.start.root);
 
     if (kind !== 'open-line') {
       routed.command(

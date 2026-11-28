@@ -4,6 +4,8 @@ import {
   applyBuiltDocumentChange,
   getActiveUpdateRoot,
   getCurrentSelection,
+  getCurrentSelectionRoot,
+  getEditorUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
 import { withoutPlacement } from '../core/view-carets';
@@ -227,9 +229,14 @@ export const unwrapNodes = ((
 
         if (split && anchoredRange) {
           const currentSelection = getCurrentSelection(editor);
-          const liveRange = RangeApi.isRange(currentSelection)
-            ? currentSelection
-            : anchoredRange;
+          const selectionInUpdateRoot =
+            currentSelection !== null &&
+            (SelectionApi.root(currentSelection) ??
+              getCurrentSelectionRoot(editor)) === getEditorUpdateRoot(editor);
+          const liveRange =
+            selectionInUpdateRoot && RangeApi.isRange(currentSelection)
+              ? currentSelection
+              : anchoredRange;
           const intersection = RangeApi.intersection(liveRange, range);
 
           if (!intersection) {
@@ -298,6 +305,12 @@ export const unwrapNodes = ((
         return;
       }
     }
+    const selectionBefore = getCurrentSelection(editor);
+    const shouldSelect =
+      options.at === undefined ||
+      selectionBefore === null ||
+      (SelectionApi.root(selectionBefore) ??
+        getCurrentSelectionRoot(editor)) === getEditorUpdateRoot(editor);
     const anchor = editor.anchor(target.anchor, { deletion: 'drop' });
     const focus = editor.anchor(target.focus, { deletion: 'drop' });
 
@@ -313,7 +326,7 @@ export const unwrapNodes = ((
       const nextAnchor = anchor.release();
       const nextFocus = focus.release();
 
-      if (nextAnchor && nextFocus) {
+      if (shouldSelect && nextAnchor && nextFocus) {
         withoutPlacement(editor, () =>
           tx.setSelection(
             SelectionApi.text({ anchor: nextAnchor, focus: nextFocus })

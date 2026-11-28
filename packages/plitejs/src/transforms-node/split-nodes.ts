@@ -7,6 +7,8 @@ import {
   getActiveDocumentChangeBuilder,
   getActiveUpdateRoot,
   getCurrentSelection,
+  getCurrentSelectionRoot,
+  getEditorUpdateRoot,
   profileCoreDuration,
   runEditorTransaction,
 } from '../core/public-state';
@@ -117,12 +119,16 @@ const deleteRange = (editor: Editor, range: Range): Point | null => {
   if (removal.kind === 'grid') return removal.landing;
 
   const selection = getCurrentSelection(editor);
+  const selectionInUpdateRoot =
+    SelectionApi.isText(selection) &&
+    (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) ===
+      getEditorUpdateRoot(editor);
 
   return preserveEndPoint
     ? preservedEnd
-    : SelectionApi.isText(selection)
+    : selectionInUpdateRoot
       ? selection.anchor
-      : preservedEnd;
+      : (removal.landing ?? preservedEnd);
 };
 
 const getTextEndForwardPoint = (

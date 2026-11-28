@@ -198,27 +198,44 @@ const toViewBoundaryPoint = ({
 const clearNativeSelectionForProjectedSelection = (
   editor: ReactRuntimeEditor,
   selection: Range | null,
-  element: HTMLElement | null
+  element: HTMLElement | null,
+  sourceElement?: HTMLElement | null,
+  sourceEditor?: ReactRuntimeEditor | null
 ) => {
   if (!selection || !element) {
     return;
   }
 
-  const runtime = findMountedEditableDOMRuntime(element);
+  const targets: Array<{
+    editable: HTMLElement;
+    targetEditor: ReactRuntimeEditor;
+  }> = [];
 
-  scheduleEditableDOMSelectionClear({
-    domPhaseScheduler: runtime?.domPhaseScheduler,
-    editable: element,
-    editor,
-    inputController: runtime?.inputController,
-    label: 'clear-projected-selection',
-    shouldRun: () => {
-      if (!element.isConnected) return false;
-      const current = readPliteViewSelection(editor);
+  if (sourceElement && sourceElement !== element) {
+    targets.push({
+      editable: sourceElement,
+      targetEditor: sourceEditor ?? editor,
+    });
+  }
+  targets.push({ editable: element, targetEditor: editor });
 
-      return !!current && !isPliteViewSelectionCollapsed(current);
-    },
-  });
+  for (const { editable, targetEditor } of targets) {
+    const runtime = findMountedEditableDOMRuntime(editable);
+
+    scheduleEditableDOMSelectionClear({
+      domPhaseScheduler: runtime?.domPhaseScheduler,
+      editable,
+      editor: targetEditor,
+      inputController: runtime?.inputController,
+      label: 'clear-projected-selection',
+      shouldRun: () => {
+        if (!editable.isConnected) return false;
+        const current = readPliteViewSelection(editor);
+
+        return !!current && !isPliteViewSelectionCollapsed(current);
+      },
+    });
+  }
 };
 
 const collapseModelSelectionForProjectedSelection = (
@@ -275,7 +292,9 @@ const showProjectedSelection = (
   editor: ReactRuntimeEditor,
   projectedSelection: PliteViewSelection,
   selection: Range | null,
-  element: HTMLElement | null
+  element: HTMLElement | null,
+  sourceElement?: HTMLElement | null,
+  sourceEditor?: ReactRuntimeEditor | null
 ) => {
   const placesNothing = !selection || RangeApi.isCollapsed(selection);
   const shown =
@@ -285,9 +304,41 @@ const showProjectedSelection = (
         collapseModelSelectionForProjectedSelection(editor, selection),
     });
 
-  clearNativeSelectionForProjectedSelection(editor, selection, element);
+  clearNativeSelectionForProjectedSelection(
+    editor,
+    selection,
+    element,
+    sourceElement,
+    sourceEditor
+  );
 
   return shown;
+};
+
+const resolveExitBoundary = (
+  editor: ContentRootNavigationEditor,
+  owner: PliteViewBoundaryOwner,
+  direction: ContentRootNavigationDirection
+): ContentRootNavigationTarget | null => {
+  let current: PliteViewBoundaryOwner | null = owner;
+
+  while (current) {
+    const exitPoint = getExitBoundaryPoint(editor, current, direction);
+
+    if (exitPoint) {
+      const parentOwner = current.parent ?? null;
+
+      return {
+        ...(parentOwner ? { owner: parentOwner } : {}),
+        point: exitPoint,
+        root: current.ownerRoot,
+      };
+    }
+
+    current = current.parent ?? null;
+  }
+
+  return null;
 };
 
 const getRootViewEditor = ({
@@ -388,40 +439,40 @@ const getVerticalNavigationTarget = ({
       point,
       root: currentRoot,
     });
-    const exitPoint =
+    const exit =
       atModelBoundary || atVisualBoundary
-        ? getExitBoundaryPoint(editor, ownerForCurrentRoot, direction)
+        ? resolveExitBoundary(editor, ownerForCurrentRoot, direction)
         : null;
 
-    if (exitPoint) {
-      const parentOwner = ownerForCurrentRoot.parent ?? null;
+    if (exit) {
+      const parentOwner = exit.owner ?? null;
       const targetEditor = getViewBoundaryPointEditor({
         editor,
         getContentRootOwnerViewEditor,
         getMountedViewEditor,
         owner: parentOwner,
-        root: ownerForCurrentRoot.ownerRoot,
+        root: exit.root,
       });
       const targetPoint =
         sourceEditor && targetEditor
           ? resolveVerticalNavigationPoint({
               direction,
-              fallbackPoint: exitPoint,
+              fallbackPoint: exit.point,
               preferredX,
               askExternalViews,
               source: { editor: sourceEditor, point, root: currentRoot },
               targetEditor,
-              targetRoot: ownerForCurrentRoot.ownerRoot,
+              targetRoot: exit.root,
             })
           : null;
       const resolvedTargetPoint =
-        targetPoint ?? (atTerminalBlock ? exitPoint : null);
+        targetPoint ?? (atTerminalBlock ? exit.point : null);
 
       return resolvedTargetPoint
         ? {
             ...(parentOwner ? { owner: parentOwner } : {}),
             point: resolvedTargetPoint,
-            root: ownerForCurrentRoot.ownerRoot,
+            root: exit.root,
           }
         : null;
     }
@@ -532,19 +583,13 @@ const getHorizontalNavigationTarget = ({
         direction === 'forward' ? 'end' : 'start'
       )
     );
-    const exitPoint =
+    const exit =
       rootEdge && samePliteRootPoint(point, rootEdge, currentRoot)
-        ? getExitBoundaryPoint(editor, ownerForCurrentRoot, direction)
+        ? resolveExitBoundary(editor, ownerForCurrentRoot, direction)
         : null;
 
-    if (exitPoint) {
-      const parentOwner = ownerForCurrentRoot.parent ?? null;
-
-      return {
-        ...(parentOwner ? { owner: parentOwner } : {}),
-        point: exitPoint,
-        root: ownerForCurrentRoot.ownerRoot,
-      };
+    if (exit) {
+      return exit;
     }
   }
 
@@ -678,11 +723,14 @@ const advanceVerticalBoundarySelectionTarget = ({
     return target;
   }
 
-  const currentRootOwner = isKnownContentRootOwner(owners, currentOwner)
-    ? currentOwner
-    : owners.find((owner) => owner.childRoot === currentRoot);
+  const currentRootOwner =
+    isKnownContentRootOwner(owners, currentOwner) &&
+    currentOwner.childRoot === currentRoot
+      ? currentOwner
+      : owners.find((owner) => owner.childRoot === currentRoot);
   const fallbackPoint = currentRootOwner
-    ? getExitBoundaryPoint(editor, currentRootOwner, action.direction)
+    ? (resolveExitBoundary(editor, currentRootOwner, action.direction)?.point ??
+      null)
     : target.owner
       ? getRootBoundaryNavigationTarget({
           direction: action.direction,
@@ -1120,7 +1168,9 @@ const getContentRootMovementTarget = ({
   preferredX?: number;
 } & ContentRootViewEditorLookup): ContentRootNavigationTarget | null => {
   const getCurrentRootOwner = (root: RootKey) =>
-    root === currentRoot && isKnownContentRootOwner(owners, currentOwner)
+    root === currentRoot &&
+    isKnownContentRootOwner(owners, currentOwner) &&
+    currentOwner.childRoot === root
       ? currentOwner
       : (getActiveContentRootOwner?.(root) ?? null);
   const boundaryTarget =
@@ -1207,7 +1257,8 @@ const getContentRootMovementTarget = ({
 
   return rootLocalTarget &&
     rootLocalTarget.root === currentRoot &&
-    isKnownContentRootOwner(owners, currentOwner)
+    isKnownContentRootOwner(owners, currentOwner) &&
+    currentOwner.childRoot === currentRoot
     ? {
         ...rootLocalTarget,
         owner: currentOwner,
@@ -1252,7 +1303,9 @@ const getContentRootActionTarget = ({
     owners,
   });
   const getCurrentRootOwner = (root: RootKey) =>
-    root === currentRoot && isKnownContentRootOwner(owners, currentViewOwner)
+    root === currentRoot &&
+    isKnownContentRootOwner(owners, currentViewOwner) &&
+    currentViewOwner.childRoot === root
       ? currentViewOwner
       : (getActiveContentRootOwner?.(root) ?? null);
 
@@ -1403,6 +1456,7 @@ export const shouldModelOwnContentRootVerticalSelection = ({
 const applyContentRootViewSelectionAction = ({
   editor,
   element,
+  sourceElement,
   action,
   extend = true,
   getActiveContentRootOwner,
@@ -1414,6 +1468,7 @@ const applyContentRootViewSelectionAction = ({
 }: {
   editor: ReactRuntimeEditor;
   element: HTMLElement | null;
+  sourceElement?: HTMLElement | null;
   action: ContentRootViewSelectionAction | null;
   extend?: boolean;
   preventDefault?: () => void;
@@ -1469,7 +1524,9 @@ const applyContentRootViewSelectionAction = ({
   }
 
   const getCurrentRootOwner = (root: RootKey) =>
-    root === currentRoot && isKnownContentRootOwner(owners, currentOwner)
+    root === currentRoot &&
+    isKnownContentRootOwner(owners, currentOwner) &&
+    currentOwner.childRoot === root
       ? currentOwner
       : (getActiveContentRootOwner?.(root) ?? null);
   const graph = createContentRootViewBoundaryGraph(
@@ -1527,6 +1584,14 @@ const applyContentRootViewSelectionAction = ({
     }
   }
 
+  const selectionSourceEditor = getViewBoundaryPointEditor({
+    editor,
+    getContentRootOwnerViewEditor,
+    getMountedViewEditor,
+    owner: getCurrentRootOwner(currentRoot),
+    root: currentRoot,
+  });
+
   if (!target) {
     if (
       !viewSelection &&
@@ -1564,7 +1629,9 @@ const applyContentRootViewSelectionAction = ({
           editor,
           projectedSelection,
           selection,
-          element
+          element,
+          sourceElement,
+          selectionSourceEditor
         );
         preventDefault?.();
 
@@ -1577,7 +1644,9 @@ const applyContentRootViewSelectionAction = ({
         editor,
         viewSelection,
         selection,
-        element
+        element,
+        sourceElement,
+        selectionSourceEditor
       );
       preventDefault?.();
 
@@ -1654,7 +1723,9 @@ const applyContentRootViewSelectionAction = ({
     editor,
     projectedSelection,
     selection,
-    element
+    element,
+    sourceElement,
+    selectionSourceEditor
   );
 
   preventDefault?.();
@@ -1712,10 +1783,15 @@ export const applyContentRootViewSelection = ({
   selection: Range | null;
 } & ContentRootViewEditorLookup): ContentRootNavigationResult =>
   asSelectionMotion(editor, () => {
+    const sourceElement =
+      event.target instanceof Node
+        ? (findMountedEditableDOMRuntime(event.target)?.rootRef.current ?? null)
+        : null;
     const result = applyContentRootViewSelectionAction({
       action: getProjectedSelectionAction({ event, isRTL }),
       editor,
       element: event.currentTarget,
+      sourceElement,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
       getMountedViewEditor,

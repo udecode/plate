@@ -167,21 +167,11 @@ export const getExitBoundaryPoint = (
       return null;
     }
 
-    const siblingPoint = getSiblingBoundaryPoint({
+    return getSiblingBoundaryPoint({
       children,
       ownerPath: owner.ownerPath,
       side: direction === 'forward' ? 'after' : 'before',
     });
-
-    if (siblingPoint) {
-      return siblingPoint;
-    }
-
-    return getPliteBoundaryPoint(
-      ownerNode,
-      owner.ownerPath,
-      direction === 'forward' ? 'end' : 'start'
-    );
   });
 
 export const getRootBoundaryNavigationTarget = ({

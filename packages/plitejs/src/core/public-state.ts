@@ -426,6 +426,7 @@ import {
   getValueRecords,
   hasValueRecords,
   NO_RECORD_OPS,
+  collectLiveStore,
   collectRecordStore,
   collectValueRecords,
   readRecord,
@@ -755,6 +756,7 @@ const DOCUMENT_STATE = new WeakMap<
 >();
 const RECORDS = new WeakMap<Editor, RecordStore>();
 const UNLOADED_RECORDS = new WeakMap<Editor, unknown>();
+const UNLOADED_RECORD_STORE = new WeakMap<Editor, RecordStore>();
 const RECORDS_JSON = new WeakMap<
   Editor,
   Readonly<{ json: EditorDocumentRecords; store: RecordStore }>
@@ -17291,6 +17293,9 @@ export const replaceTransformedSnapshot = (
     };
     const currentRoots = getEditorDocumentRoots(editor);
 
+    const createdRoots: Array<readonly [string, readonly JsonNode[]]> = [];
+    const modifiedRootChanges = new Map<string, RootChange>();
+
     for (const root of Object.keys(fittedRoots).sort((left, right) =>
       left === MAIN_ROOT_KEY
         ? -1
@@ -17324,7 +17329,7 @@ export const replaceTransformedSnapshot = (
         root !== MAIN_ROOT_KEY &&
         !Object.hasOwn(builder.value.roots ?? {}, root)
       ) {
-        applyDocumentChangeStep(editor, builder.createRoot(root, nextChildren));
+        createdRoots.push([root, nextChildren]);
         continue;
       }
 
@@ -17334,10 +17339,20 @@ export const replaceTransformedSnapshot = (
       );
 
       if (rootChange.empty) continue;
+      modifiedRootChanges.set(root, rootChange);
+    }
+
+    if (createdRoots.length > 0) {
       applyDocumentChangeStep(
         editor,
-        builder.apply(
-          createInternalDocumentChange(new Map([[root, rootChange]])),
+        getActiveDocumentChangeBuilder(editor).createRoots(createdRoots)
+      );
+    }
+    if (modifiedRootChanges.size > 0) {
+      applyDocumentChangeStep(
+        editor,
+        getActiveDocumentChangeBuilder(editor).apply(
+          createInternalDocumentChange(modifiedRootChanges),
           { origin: 'slice' }
         )
       );
@@ -17345,18 +17360,23 @@ export const replaceTransformedSnapshot = (
 
     finalizeWithoutOrphanedRoots(editor);
 
-    for (const root of Object.keys(currentRoots).sort()) {
-      if (
-        replacedRoot === undefined &&
-        root !== MAIN_ROOT_KEY &&
-        !Object.hasOwn(fittedRoots, root) &&
-        Object.hasOwn(getEditorDocumentRoots(editor), root)
-      ) {
-        applyDocumentChangeStep(
-          editor,
-          getActiveDocumentChangeBuilder(editor).deleteRoot(root)
-        );
-      }
+    const removedRoots =
+      replacedRoot === undefined
+        ? Object.keys(currentRoots)
+            .sort()
+            .filter(
+              (root) =>
+                root !== MAIN_ROOT_KEY &&
+                !Object.hasOwn(fittedRoots, root) &&
+                Object.hasOwn(getEditorDocumentRoots(editor), root)
+            )
+        : [];
+
+    if (removedRoots.length > 0) {
+      applyDocumentChangeStep(
+        editor,
+        getActiveDocumentChangeBuilder(editor).deleteRoots(removedRoots)
+      );
     }
 
     if (replacedRoot === undefined) {
@@ -17689,7 +17709,9 @@ export const initializePublicState = <
   CHILDREN.set(editor, initialChildren);
   ROOTS.set(editor, initialRoots);
   RECORDS.set(editor, EMPTY_RECORD_STORE);
-  if (initialValue.savedRecords !== undefined) {
+  if (initialValue.savedRecordStore !== undefined) {
+    UNLOADED_RECORD_STORE.set(editor, initialValue.savedRecordStore);
+  } else if (initialValue.savedRecords !== undefined) {
     UNLOADED_RECORDS.set(editor, initialValue.savedRecords);
   }
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
@@ -17719,6 +17741,17 @@ export const loadOpenedRecords = (
   editor: Editor,
   schema: CompiledEditorSchema | undefined
 ) => {
+  const store = UNLOADED_RECORD_STORE.get(editor);
+
+  if (store !== undefined) {
+    UNLOADED_RECORD_STORE.delete(editor);
+    RECORDS.set(
+      editor,
+      collectLiveStore(store, schema?.recordSets ?? new Map())
+    );
+    clearSnapshotCache(editor);
+    return;
+  }
   if (!UNLOADED_RECORDS.has(editor)) return;
 
   const json = UNLOADED_RECORDS.get(editor);

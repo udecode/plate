@@ -65,7 +65,7 @@ import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
 import {
   getValueRecords,
-  recordStoreFromJson,
+  hasValueRecords,
   showValueRecords,
   withValueRecords,
 } from '../record-store';
@@ -387,6 +387,13 @@ type SliceFitterDependencies<V extends Value> = Readonly<{
   }> | null;
   validateDocument: (value: EditorDocumentValue) => void;
   validateSliceVocabulary: (children: readonly Descendant[]) => void;
+  withDocumentOwnershipTracker: <T>(
+    initial: EditorDocumentValue,
+    run: (
+      beginRoot: (root: RootKey) => void,
+      syncRoot: (root: RootKey, value: EditorDocumentValue) => void
+    ) => T
+  ) => T;
   withoutGeneration: <T>(read: () => T) => T;
   generateReservedElementId?: () => string | undefined;
 }>;
@@ -598,6 +605,7 @@ export const compileSliceFitter = <V extends Value>(
     validateDeclarativeChildren,
     validateDocument,
     validateSliceVocabulary,
+    withDocumentOwnershipTracker,
     withoutGeneration,
   } = input;
   const getDeclarativeSchema = () => schema;
@@ -5848,42 +5856,51 @@ export const compileSliceFitter = <V extends Value>(
         }
       };
 
-      const firstPassProjectedContent = new Map<
-        string,
-        ReturnType<typeof getRootContent>
-      >();
+      withDocumentOwnershipTracker(
+        builder.value as EditorDocumentValue,
+        (beginRoot, syncRoot) => {
+          const firstPassProjectedContent = new Map<
+            string,
+            ReturnType<typeof getRootContent>
+          >();
 
-      for (const [root, children] of roots) {
-        if (root !== 'main' && !schema?.roots.has(root)) {
-          firstPassProjectedContent.set(
-            root,
-            getRootContent(root, builder.value as EditorDocumentValue)
-          );
-        }
-        fitRoot(root, children);
-      }
+          for (const [root, children] of roots) {
+            beginRoot(root);
+            if (root !== 'main' && !schema?.roots.has(root)) {
+              firstPassProjectedContent.set(
+                root,
+                getRootContent(root, builder.value as EditorDocumentValue)
+              );
+            }
+            fitRoot(root, children);
+            syncRoot(root, builder.value as EditorDocumentValue);
+          }
 
-      // Only projected root grammar depends on owners installed by the first pass.
-      for (const [root, children] of roots) {
-        if (
-          root !== 'main' &&
-          !schema?.roots.has(root) &&
-          getRootContent(root, builder.value as EditorDocumentValue) !==
-            firstPassProjectedContent.get(root)
-        ) {
-          fitRoot(root, children);
+          // Only projected root grammar depends on owners installed by the first pass.
+          for (const [root, children] of roots) {
+            beginRoot(root);
+            if (
+              root !== 'main' &&
+              !schema?.roots.has(root) &&
+              getRootContent(root, builder.value as EditorDocumentValue) !==
+                firstPassProjectedContent.get(root)
+            ) {
+              fitRoot(root, children);
+              syncRoot(root, builder.value as EditorDocumentValue);
+            }
+          }
         }
-      }
+      );
 
       builder.finalize();
       // Fitting reaches no record, so a document's records pass through.
       const fittedDocument = (
-        innerInput2.records === undefined
+        !hasValueRecords(innerInput2)
           ? builder.value
           : Object.freeze(
               showValueRecords(
                 { ...builder.value },
-                recordStoreFromJson(innerInput2.records)
+                getValueRecords(innerInput2)
               )
             )
       ) as EditorDocumentValue<V>;

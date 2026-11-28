@@ -9,6 +9,7 @@ import {
   getActiveUpdateRoot,
   getChildList,
   getCurrentSelection,
+  getCurrentSelectionRoot,
   getEditorUpdateRoot,
   getSetSite,
   profileCoreDuration,
@@ -252,11 +253,22 @@ const readForwardDeletedEmptyBlock = (
   return removed;
 };
 
+const getSelectionInUpdateRoot = (editor: Editor) => {
+  const selection = getCurrentSelection(editor);
+
+  if (!selection) return null;
+
+  return (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) ===
+    getEditorUpdateRoot(editor)
+    ? selection
+    : null;
+};
+
 const shouldClearDeletedMarksAtMarkedSuffix = (
   editor: Editor,
   deletedMarks: Record<string, unknown>
 ) => {
-  const selection = getCurrentSelection(editor);
+  const selection = getSelectionInUpdateRoot(editor);
 
   if (
     !selection ||
@@ -565,7 +577,7 @@ const resolveDeleteTarget = (
   }
 
   if (LocationApi.isPath(at)) {
-    const selection = getCurrentSelection(editor);
+    const selection = getSelectionInUpdateRoot(editor);
     const selectionInside =
       selection &&
       RangeApi.isRange(selection) &&
@@ -1050,7 +1062,7 @@ const resolveDeleteSelection = (
     );
   }
 
-  const finalSelection = getCurrentSelection(editor);
+  const finalSelection = getSelectionInUpdateRoot(editor);
 
   if (
     finalSelection &&
@@ -2088,6 +2100,7 @@ export type RemovalOutcome =
 type RemovalSite = Readonly<{
   at: Location;
   root: string | undefined;
+  selectionInOtherRoot: boolean;
   writesSelection: boolean;
 }>;
 
@@ -2114,12 +2127,20 @@ const inRemovalRoot = <T>(
 
         const selection = getCurrentSelection(editor);
         const root = getLocationRoot(resolved);
+        const targetRoot = root ?? getEditorUpdateRoot(editor);
+        const selectionInOtherRoot =
+          at !== undefined &&
+          selection !== null &&
+          (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) !==
+            targetRoot;
         const site: RemovalSite = {
           at: root ? stripLocationRoots(resolved) : resolved,
           root,
+          selectionInOtherRoot,
           writesSelection:
             at === undefined ||
-            (selection !== null &&
+            (!selectionInOtherRoot &&
+              selection !== null &&
               RangeApi.isRange(selection) &&
               LocationApi.isRange(resolved) &&
               RangeApi.equals(selection, resolved)),
@@ -2225,8 +2246,9 @@ const applyAt = (
   prepared: PreparedRemoval
 ): RemovalOutcome => {
   const { target } = prepared;
-  const writesSelection =
-    site.writesSelection || target.kind === 'path' || !target.isSingleText;
+  const writesSelection = site.selectionInOtherRoot
+    ? false
+    : site.writesSelection || target.kind === 'path' || !target.isSingleText;
 
   if (target.kind === 'path') {
     deletePathTarget(editor, target, tx, writesSelection);
@@ -2260,7 +2282,11 @@ const applyAt = (
   const { wholeBlocks } = prepared;
 
   if (wholeBlocks) {
-    const caret = deleteWholeTopLevelBlockRange(editor, wholeBlocks);
+    const caret = deleteWholeTopLevelBlockRange(
+      editor,
+      wholeBlocks,
+      writesSelection
+    );
 
     setDeletedMarks();
 
