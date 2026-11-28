@@ -1,43 +1,43 @@
 import {
   type Descendant,
-  type EditorDocumentValue,
   type Element,
   MAIN_ROOT_KEY,
   type Path,
   type Point,
   RangeApi,
-  type Selection,
+  SelectionApi,
   TextApi,
   type Value,
 } from '../facade';
 import type { DocumentMigrationContext } from './documentMigrations';
 import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
+import {
+  adjacentTextPoint,
+  createRangeMapper,
+  mapDocumentRoots,
+  mapNodeSelectionPaths,
+  pathKey,
+  type PlateV54StageResult,
+  type PointEdge,
+  type ReplacementPoint,
+} from './migratePlateV54Stage.internal';
 
-/** `null` marks text that was removed with its media. */
-type TextPointMapping = Readonly<{ offset?: number; path: Path }> | null;
+type TextPointMapping =
+  | Readonly<{ kind: 'moved'; path: Path }>
+  | Readonly<{
+      first: ReplacementPoint;
+      kind: 'replaced';
+      last: ReplacementPoint;
+    }>
+  | Readonly<{ index: number; kind: 'removed'; parent: Path; root: string }>;
 
-const pointMappingKey = (root: string, path: readonly number[]) =>
-  `${root}:${path.join('.')}`;
-
-type PlateV54UrlMigrationResult = Readonly<{
-  document: EditorDocumentValue;
-  mapSelection?: (selection: Selection, mapped: () => Selection) => Selection;
-}>;
-
-/**
- * Neutralize legacy URLs the current schema rejects inside the Plate v54
- * migration, with the cleanup import applies to the same values: a link keeps
- * its label, media keeps its caption, or else its alt text or file name, as a
- * paragraph, and an optional source URL is omitted. An empty URL is unresolved,
- * not unsafe.
- */
 export const migratePlateV54Urls = ({
   document,
   target: conversionTarget,
 }: Pick<
   DocumentMigrationContext,
   'document' | 'target'
->): PlateV54UrlMigrationResult => {
+>): PlateV54StageResult => {
   const { elementType, mediaTypes } = resolveV54BuiltIns(conversionTarget);
   const fileType = elementType('file');
   const linkType = elementType('link');
@@ -58,9 +58,8 @@ export const migratePlateV54Urls = ({
       !validate(value)
     );
   };
-  // Change diffs read an unwrapped label as removed content, so every text
-  // this step moves maps explicitly; unrecorded text keeps its path.
   const pointMappings = new Map<string, TextPointMapping>();
+  const elementTargets = new Map<string, Path | null>();
   const recordedKeys: string[] = [];
 
   const migrateDescendant = (
@@ -72,9 +71,9 @@ export const migratePlateV54Urls = ({
   ): readonly Descendant[] => {
     if (TextApi.isText(input)) {
       if (record) {
-        const key = pointMappingKey(root, from);
+        const key = pathKey(root, from);
 
-        pointMappings.set(key, { path: to });
+        pointMappings.set(key, { kind: 'moved', path: to });
         recordedKeys.push(key);
       }
 
@@ -85,7 +84,6 @@ export const migratePlateV54Urls = ({
     const replace =
       !unwrap && mediaTypes.has(input.type) && rejects(input, 'url');
     const recorded = recordedKeys.length;
-    // An unwrapped label takes the link's place in its parent.
     const children = unwrap
       ? migrateChildren(
           input.children,
@@ -97,7 +95,11 @@ export const migratePlateV54Urls = ({
         )
       : migrateChildren(input.children, from, to, root, record || replace);
 
-    if (unwrap) return children;
+    if (unwrap) {
+      elementTargets.set(pathKey(root, from), null);
+
+      return children;
+    }
 
     const element =
       children === input.children
@@ -105,7 +107,6 @@ export const migratePlateV54Urls = ({
         : ({ ...input, children: [...children] } as Element);
 
     if (replace) {
-      // A file's visible label is its name; other media carry alt text.
       const label = Reflect.get(
         element,
         element.type === fileType ? 'name' : 'alt'
@@ -113,23 +114,44 @@ export const migratePlateV54Urls = ({
       const caption = children.some(
         (child) => !TextApi.isText(child) || child.text !== ''
       );
+      const labelText =
+        !caption && typeof label === 'string' && label !== ''
+          ? label
+          : undefined;
       const content = caption
         ? [...children]
-        : typeof label === 'string' && label !== ''
-          ? [{ text: label }]
+        : labelText !== undefined
+          ? [{ text: labelText }]
           : undefined;
 
+      elementTargets.set(pathKey(root, from), content ? to : null);
       if (!caption) {
+        const removalParent = to.slice(0, -1);
+        const removalIndex = to.at(-1) ?? 0;
+
         for (const key of recordedKeys.slice(recorded)) {
           pointMappings.set(
             key,
-            content ? { offset: 0, path: [...to, 0] } : null
+            labelText !== undefined
+              ? {
+                  first: { offset: 0, path: [...to, 0] },
+                  kind: 'replaced',
+                  last: { offset: labelText.length, path: [...to, 0] },
+                }
+              : {
+                  index: removalIndex,
+                  kind: 'removed',
+                  parent: removalParent,
+                  root,
+                }
           );
         }
       }
 
       return content ? [{ children: content, type: paragraphType }] : [];
     }
+
+    if (record) elementTargets.set(pathKey(root, from), to);
     if (mediaTypes.has(element.type) && rejects(element, 'sourceUrl')) {
       const { sourceUrl: _sourceUrl, ...withoutSourceUrl } = element;
 
@@ -167,77 +189,89 @@ export const migratePlateV54Urls = ({
     return changed ? next : children;
   }
 
-  const children = migrateChildren(
-    document.children,
-    [],
-    [],
-    MAIN_ROOT_KEY,
-    false
-  ) as Value;
-  let { roots } = document;
+  const migratedDocument = mapDocumentRoots(
+    document,
+    (rootChildren, root) =>
+      migrateChildren(rootChildren, [], [], root, false) as Value
+  );
 
-  if (roots) {
-    let changed = false;
-    const next = Object.fromEntries(
-      Object.entries(roots).map(([root, rootChildren]) => {
-        const migrated = migrateChildren(
-          rootChildren,
-          [],
-          [],
-          root,
-          false
-        ) as Value;
+  if (migratedDocument === document) return { document };
 
-        if (migrated !== rootChildren) changed = true;
+  const rootChildrenOf = (root: string) =>
+    root === MAIN_ROOT_KEY
+      ? migratedDocument.children
+      : (migratedDocument.roots?.[root] ?? []);
 
-        return [root, migrated];
-      })
-    );
-
-    if (changed) roots = next;
-  }
-
-  if (children === document.children && roots === document.roots) {
-    return { document };
-  }
-
-  const mapPoint = (point: Point): Point | null => {
-    const key = pointMappingKey(point.root ?? MAIN_ROOT_KEY, point.path);
-
-    if (!pointMappings.has(key)) return point;
-
+  const mapPoint = (point: Point, edge: PointEdge): Point | null => {
+    const key = pathKey(point.root ?? MAIN_ROOT_KEY, point.path);
     const mapping = pointMappings.get(key);
 
-    return mapping
-      ? {
-          ...point,
-          offset: mapping.offset ?? point.offset,
-          path: mapping.path,
-        }
+    if (!mapping) return point;
+    if (mapping.kind === 'moved') {
+      return { ...point, path: [...mapping.path] };
+    }
+    if (mapping.kind === 'replaced') {
+      const landing = edge === 'start' ? mapping.last : mapping.first;
+
+      return { ...point, offset: landing.offset, path: [...landing.path] };
+    }
+
+    const rootChildren = rootChildrenOf(mapping.root);
+    const landing =
+      edge === 'start'
+        ? adjacentTextPoint(
+            rootChildren,
+            mapping.parent,
+            mapping.index,
+            'forward'
+          )
+        : edge === 'end'
+          ? adjacentTextPoint(
+              rootChildren,
+              mapping.parent,
+              mapping.index,
+              'backward'
+            )
+          : (adjacentTextPoint(
+              rootChildren,
+              mapping.parent,
+              mapping.index,
+              'backward'
+            ) ??
+            adjacentTextPoint(
+              rootChildren,
+              mapping.parent,
+              mapping.index,
+              'forward'
+            ));
+
+    return landing
+      ? { ...point, offset: landing.offset, path: [...landing.path] }
       : null;
   };
 
   return {
-    document: { ...document, children, ...(roots ? { roots } : {}) },
-    mapSelection: (selection, mapped) => {
-      if (!RangeApi.isRange(selection)) return mapped();
+    document: migratedDocument,
+    mapRange: createRangeMapper(mapPoint),
+    mapSelection: (selection) => {
+      if (!selection) return selection;
+      if (RangeApi.isRange(selection)) {
+        const anchor = mapPoint(selection.anchor, 'caret');
+        const focus = mapPoint(selection.focus, 'caret');
 
-      const anchor = mapPoint(selection.anchor);
-      const focus = mapPoint(selection.focus);
+        return anchor && focus ? { ...selection, anchor, focus } : null;
+      }
+      if (SelectionApi.isNode(selection)) {
+        return mapNodeSelectionPaths(selection, (root, source) => {
+          const key = pathKey(root, source);
 
-      if (anchor && focus) return { ...selection, anchor, focus };
+          return elementTargets.has(key)
+            ? (elementTargets.get(key) ?? null)
+            : source;
+        });
+      }
 
-      const diff = mapped();
-
-      if (!diff) return diff;
-
-      const fallback = RangeApi.isRange(diff) ? diff : selection;
-
-      return {
-        ...fallback,
-        anchor: anchor ?? fallback.anchor,
-        focus: focus ?? fallback.focus,
-      };
+      return selection;
     },
   };
 };

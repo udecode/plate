@@ -126,9 +126,10 @@ definition 会把 `plugins` 和 `schema` 编译一次，生成供所有步骤使
 target。缺失中间步骤或历史身份漂移都会报错。
 
 每个步骤接收 `{ document, legacy, from, to, target }`，返回
-`{ document, legacy?, mapSelection? }`。`document` 只包含 `children`、`meta`、`roots` 和
-`records`，其类型会拒绝其他 key。`legacy` 保存已存储文档的其他顶层字段，直到某个步骤
-提升它们；省略 `legacy` 的步骤会原样传递它。
+`{ document, legacy?, mapRanges?, mapSelection? }`。`document` 只包含 `children`、
+`meta`、`roots` 和 `records`，其类型会拒绝其他 key。`legacy` 保存已存储文档的其他顶层字段，
+直到某个步骤提升它们；省略 `legacy` 的步骤会原样传递它。`mapRanges` 在一次调用中映射
+传给 `migrateDocument` 的外部 range；若省略，步骤修改文档时这些 range 会映射为 `null`。
 
 ### `migrateDocument`
 
@@ -149,6 +150,8 @@ const imported = migrateDocument(legacyDocument, {
 
 `output` 只包含 `{ document, schema, selection? }`，可以直接持久化或传给
 `createEditor`。`applied` 是实际执行的目标版本升序列表，`source` 是经过验证的源版本。
+传入按 thread id 键控的 `ranges` 可把已保存的评论或标注 range 一并映射到最终文档；
+传入后结果还会包含 `ranges`，失效或折叠的 range 会映射为 `null`。
 原始文档必须显式传入 `source: number` 或 `source: 'current'`；persisted envelope 自带
 源身份，显式 `source` 会把任何输入当作原始文档读取。谱系不同、未来版本、指纹漂移、
 非 JSON 数据、无效步骤结果、没有步骤提升的已存储顶层字段或错误的最终输出都会报错。

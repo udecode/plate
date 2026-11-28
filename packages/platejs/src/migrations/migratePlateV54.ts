@@ -8,6 +8,7 @@ import {
   mapDetachedSelectionThroughChange,
   type Path,
   type Point,
+  type Range,
   RangeApi,
   type Selection,
   SelectionApi,
@@ -30,16 +31,13 @@ import {
   migratePlateV54RetiredMarks,
   retainedSelectionMarks,
 } from './migratePlateV54RetiredMarks.internal';
+import type { PlateV54StageResult } from './migratePlateV54Stage.internal';
 import { migratePlateV54Suggestions } from './migratePlateV54Suggestions.internal';
 import { migratePlateV54Urls } from './migratePlateV54Urls.internal';
 
 type PlateV54Shape = Readonly<{
-  ast: ReturnType<typeof migratePlateV54Ast>;
-  codeBlocks: ReturnType<typeof migratePlateV54CodeBlocks>;
   document: EditorDocumentValue;
-  inputs: ReturnType<typeof migratePlateV54Inputs>;
-  profile: ReturnType<typeof migratePlateV54Profile>;
-  urls: ReturnType<typeof migratePlateV54Urls>;
+  stages: readonly PlateV54StageResult[];
 }>;
 
 type StageAssociation = 'backward' | 'inward';
@@ -149,12 +147,8 @@ const shapeDocument = (
   });
 
   return Object.freeze({
-    ast,
-    codeBlocks,
     document: codeBlocks.document,
-    inputs,
-    profile,
-    urls,
+    stages: Object.freeze([inputs, profile, ast, urls, codeBlocks]),
   });
 };
 
@@ -172,82 +166,62 @@ export const migrateV54: PlateV54Migration = (context) => {
   const source = migratePlateV54RetiredMarks(context);
   const legacy = migratePlateV54Suggestions(source);
   const shapedSource = shapeDocument(context, source);
-  const { ast, codeBlocks, inputs, profile, urls } = shapedSource;
-  const toUrls = createStageMapper(schema, ast.document, urls.document);
-  const toCodeBlocks = createStageMapper(
-    schema,
-    urls.document,
-    codeBlocks.document
-  );
+  const { stages } = shapedSource;
   const mapThroughStages = (
     document: EditorDocumentValue,
-    toDocument: (
+    toDocument?: (
       selection: Selection,
       association: StageAssociation
     ) => Selection
-  ): Pick<DocumentMigrationStepResult, 'mapRanges' | 'mapSelection'> => {
-    const mapTailStages = (
-      astSelection: Exclude<Selection, null>,
-      association: StageAssociation
-    ) => {
-      const urlDiff = () => toUrls(astSelection, association);
-      const urlSelection = urls.mapSelection
-        ? urls.mapSelection(astSelection, urlDiff)
-        : urlDiff();
-      const codeDiff = () => toCodeBlocks(urlSelection, association);
+  ): Pick<DocumentMigrationStepResult, 'mapRanges' | 'mapSelection'> => ({
+    mapRanges: ({ ranges }) =>
+      ranges.map((range) => {
+        let current: Range | null = range;
 
-      return toDocument(
-        codeBlocks.mapSelection
-          ? codeBlocks.mapSelection(urlSelection, codeDiff)
-          : codeDiff(),
-        association
-      );
-    };
-
-    return {
-      mapRanges: ({ ranges }) =>
-        ranges.map((range) => {
-          const afterInputs = inputs.mapRange?.(range) ?? range;
-          const afterProfile = profile.mapRange?.(afterInputs) ?? afterInputs;
-          const afterAst = ast.mapRange?.(afterProfile) ?? afterProfile;
-          const mapped = mapTailStages(SelectionApi.text(afterAst), 'inward');
-
-          return RangeApi.isRange(mapped)
-            ? { anchor: mapped.anchor, focus: mapped.focus }
-            : null;
-        }),
-      mapSelection: ({ selection: original }) => {
-        const selection = historicalSelectionGeometry(original);
-        const afterInputs = inputs.mapSelection?.(selection) ?? selection;
-        const afterProfile = afterInputs
-          ? (profile.mapSelection?.(afterInputs) ?? afterInputs)
-          : null;
-        const afterAst = afterProfile
-          ? (ast.mapSelection?.(afterProfile) ?? afterProfile)
-          : null;
-        const mapped = afterAst ? mapTailStages(afterAst, 'backward') : null;
-        const marks = retainedSelectionMarks(context.target, original);
-        const unmoved =
-          mapped === selection ||
-          (RangeApi.isRange(mapped) &&
-            RangeApi.isRange(selection) &&
-            RangeApi.equals(mapped, selection));
-
-        if (unmoved) {
-          return SelectionApi.isText(original) && marks !== original.marks
-            ? { ...original, marks }
-            : original;
+        for (const stage of stages) {
+          if (!current) return null;
+          current = stage.mapRange ? stage.mapRange(current) : current;
         }
+        if (!current) return null;
+        if (!toDocument) return current;
 
-        return landSelectionMarks(schema, mapped, marks, document);
-      },
-    };
-  };
+        const mapped = toDocument(SelectionApi.text(current), 'inward');
+
+        return RangeApi.isRange(mapped)
+          ? { anchor: mapped.anchor, focus: mapped.focus }
+          : null;
+      }),
+    mapSelection: ({ selection: original }) => {
+      const selection = historicalSelectionGeometry(original);
+      let current: Selection = selection;
+
+      for (const stage of stages) {
+        if (!current) break;
+        current = stage.mapSelection ? stage.mapSelection(current) : current;
+      }
+      const mapped =
+        current && toDocument ? toDocument(current, 'backward') : current;
+      const marks = retainedSelectionMarks(context.target, original);
+      const unmoved =
+        mapped === selection ||
+        (RangeApi.isRange(mapped) &&
+          RangeApi.isRange(selection) &&
+          RangeApi.equals(mapped, selection));
+
+      if (unmoved) {
+        return SelectionApi.isText(original) && marks !== original.marks
+          ? { ...original, marks }
+          : original;
+      }
+
+      return landSelectionMarks(schema, mapped, marks, document);
+    },
+  });
 
   if (!legacy) {
     return Object.freeze({
       document: shapedSource.document,
-      ...mapThroughStages(shapedSource.document, (selection) => selection),
+      ...mapThroughStages(shapedSource.document),
     });
   }
 

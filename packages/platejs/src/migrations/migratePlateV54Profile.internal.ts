@@ -1,7 +1,6 @@
 import {
   type Descendant,
   type EditorCoreStateView,
-  type EditorDocumentValue,
   type Element,
   ElementApi,
   MAIN_ROOT_KEY,
@@ -9,9 +8,7 @@ import {
   type Path,
   PathApi,
   type Point,
-  type Range,
   RangeApi,
-  type Selection,
   TextApi,
   type Value,
 } from '../facade';
@@ -21,6 +18,15 @@ import {
   createPropertyOwnership,
   type NodeContext,
 } from './migratePlateV54Ownership.internal';
+import {
+  createRangeMapper,
+  edgeTextPoint,
+  mapDocumentRoots,
+  pathKey,
+  type PlateV54StageResult,
+  type PointEdge,
+  type ReplacementPoint,
+} from './migratePlateV54Stage.internal';
 import { V53_ELEMENT_IDENTITIES } from './v53-manifest.internal';
 
 const LEGACY_HEADING_TYPE_RE = /^h([1-6])$/;
@@ -42,53 +48,18 @@ const isAbsentCaption = (children: readonly Descendant[]) =>
     children[0].text === '' &&
     Object.keys(children[0]).every((key) => key === 'text'));
 
-type ReplacementPoint = Readonly<{ offset: number; path: Path }>;
 type CaptionReplacement = Readonly<{
   first: ReplacementPoint;
   last: ReplacementPoint;
 }>;
-type PointEdge = 'caret' | 'end' | 'start';
 
-export type PlateV54ProfileMigrationResult = Readonly<{
-  document: EditorDocumentValue;
-  mapRange?: (range: Range) => Range;
-  mapSelection?: (selection: Selection) => Selection;
-}>;
-
-const pathKey = (root: string, path: readonly number[]) =>
-  `${root}:${path.join('.')}`;
-
-const edgeTextPoint = (
-  children: readonly Descendant[],
-  parentPath: Path,
-  edge: 'first' | 'last'
-): ReplacementPoint => {
-  const path = [...parentPath];
-  let current = children;
-
-  while (current.length > 0) {
-    const index = edge === 'first' ? 0 : current.length - 1;
-    const node = current[index];
-
-    path.push(index);
-    if (TextApi.isText(node)) {
-      return { offset: edge === 'first' ? 0 : node.text.length, path };
-    }
-    if (!ElementApi.isElement(node)) break;
-    current = node.children;
-  }
-
-  return { offset: 0, path };
-};
-
-/** Upgrade the frozen first-party profile inside the Plate v54 migration. */
 export const migratePlateV54Profile = ({
   document,
   target: conversionTarget,
 }: Pick<
   DocumentMigrationContext,
   'document' | 'target'
->): PlateV54ProfileMigrationResult => {
+>): PlateV54StageResult => {
   const captionReplacements = new Map<string, CaptionReplacement>();
   const { declares, ownsProperty, ownsTextProperty } =
     createPropertyOwnership(conversionTarget);
@@ -942,32 +913,13 @@ export const migratePlateV54Profile = ({
     return changed || normalized !== next ? normalized : children;
   };
 
-  const children = migrateChildren(document.children, 'main', null);
-  let { roots } = document;
-
-  if (roots) {
-    let changed = false;
-    const next = Object.fromEntries(
-      Object.entries(roots).map(([root, rootChildren]) => {
-        const migrated = migrateChildren(rootChildren, `roots.${root}`, root);
-
-        if (migrated !== rootChildren) changed = true;
-
-        return [root, migrated];
-      })
-    );
-
-    if (changed) roots = next;
-  }
-
-  const migratedDocument =
-    children === document.children && roots === document.roots
-      ? document
-      : {
-          ...document,
-          children,
-          ...(roots ? { roots } : {}),
-        };
+  const migratedDocument = mapDocumentRoots(document, (rootChildren, root) =>
+    migrateChildren(
+      rootChildren,
+      root === MAIN_ROOT_KEY ? 'main' : `roots.${root}`,
+      root === MAIN_ROOT_KEY ? null : root
+    )
+  );
 
   if (captionReplacements.size === 0) return { document: migratedDocument };
 
@@ -991,14 +943,7 @@ export const migratePlateV54Profile = ({
 
   return {
     document: migratedDocument,
-    mapRange: (range) => {
-      const backward = RangeApi.isBackward(range);
-
-      return {
-        anchor: mapPoint(range.anchor, backward ? 'end' : 'start'),
-        focus: mapPoint(range.focus, backward ? 'start' : 'end'),
-      };
-    },
+    mapRange: createRangeMapper(mapPoint),
     mapSelection: (selection) =>
       RangeApi.isRange(selection)
         ? {

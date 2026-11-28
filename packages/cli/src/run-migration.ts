@@ -149,25 +149,25 @@ const readRequest = async () => {
 const request = await readRequest();
 const { EditorMigrations: migrations } = await import('plate-migration:entry');
 const { migrateDocument } = await import('platejs/migrations');
-const holds = (value, field) => Object.hasOwn(value, field) && value[field] !== undefined;
-const isEnvelope = (value) =>
-  value !== null && typeof value === 'object' && !Array.isArray(value) &&
-  holds(value, 'document') && holds(value, 'schema') && !holds(value, 'children');
+const ENVELOPE_WITH_SOURCE_ERROR =
+  'A persisted document envelope carries its own source version; migrate it without source.';
 const outputs = request.documents.map(({ label, path, text }) => {
   let source;
   let migration;
 
   try {
     source = JSON.parse(path === undefined ? text : readFileSync(path, 'utf8'));
-    if (request.source !== undefined && isEnvelope(source)) {
-      throw new Error('A persisted document envelope carries its own schema version; run it without --from.');
-    }
     migration = migrateDocument(source, {
       migrations,
       ...(request.source === undefined ? {} : { source: request.source }),
     });
   } catch (error) {
-    throw new Error(label + ': ' + (error instanceof Error ? error.message : String(error)), { cause: error });
+    const message = error instanceof Error ? error.message : String(error);
+    const cliMessage =
+      request.source !== undefined && message === ENVELOPE_WITH_SOURCE_ERROR
+        ? 'A persisted document envelope carries its own schema version; run it without --from.'
+        : message;
+    throw new Error(label + ': ' + cliMessage, { cause: error });
   }
   const output = migration.output;
   const outputText = JSON.stringify(output, null, 2) + '\\n';

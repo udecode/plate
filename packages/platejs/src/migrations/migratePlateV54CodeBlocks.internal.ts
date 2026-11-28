@@ -1,41 +1,39 @@
 import {
   type Descendant,
-  type EditorDocumentValue,
   ElementApi,
   MAIN_ROOT_KEY,
   NodeApi,
   type Path,
+  PathApi,
   type Point,
   RangeApi,
-  type Selection,
+  SelectionApi,
   TextApi,
 } from '../facade';
 import type { DocumentMigrationContext } from './documentMigrations';
 import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
+import {
+  createRangeMapper,
+  mapDocumentRoots,
+  mapNodeSelectionPaths,
+  pathKey,
+  type PlateV54StageResult,
+} from './migratePlateV54Stage.internal';
 import { migratePlateV54ReplacementText } from './migratePlateV54Suggestions.internal';
 
 type TextPointMapping = Readonly<{ offset: number; path: Path }>;
 
-const pointMappingKey = (root: string, path: readonly number[]) =>
-  `${root}:${path.join('.')}`;
-
-type PlateV54CodeBlockMigrationResult = Readonly<{
-  document: EditorDocumentValue;
-  mapSelection?: (selection: Selection, mapped: () => Selection) => Selection;
-}>;
-
-/** Flatten legacy code-block lines inside the Plate v54 migration. */
 export const migratePlateV54CodeBlocks = ({
   document,
   target: conversionTarget,
-}: DocumentMigrationContext): PlateV54CodeBlockMigrationResult => {
-  const { roots: inputRoots } = document;
+}: DocumentMigrationContext): PlateV54StageResult => {
   const codeBlockType =
     resolveV54BuiltIns(conversionTarget).elementType('codeBlock');
 
   if (!codeBlockType) return { document };
 
   const pointMappings = new Map<string, TextPointMapping>();
+  const flattenedBlocks = new Map<string, Path[]>();
   const collectPointMappings = (
     input: Descendant,
     path: Path,
@@ -44,7 +42,7 @@ export const migratePlateV54CodeBlocks = ({
     offset: number
   ): number => {
     if (TextApi.isText(input)) {
-      pointMappings.set(pointMappingKey(root, path), {
+      pointMappings.set(pathKey(root, path), {
         offset,
         path: targetPath,
       });
@@ -95,6 +93,10 @@ export const migratePlateV54CodeBlocks = ({
         );
         if (index < input.children.length - 1) offset += 1;
       });
+      const blocks = flattenedBlocks.get(root);
+
+      if (blocks) blocks.push(path);
+      else flattenedBlocks.set(root, [path]);
 
       return {
         ...input,
@@ -141,61 +143,56 @@ export const migratePlateV54CodeBlocks = ({
     return (changed ? next : children) as T;
   }
 
-  const children = migrateChildren(
-    document.children,
-    'children',
-    [],
-    MAIN_ROOT_KEY
+  const migrated = mapDocumentRoots(document, (rootChildren, root) =>
+    migrateChildren(
+      rootChildren,
+      root === MAIN_ROOT_KEY ? 'children' : `roots.${root}`,
+      [],
+      root
+    )
   );
-  let roots = inputRoots;
 
-  if (roots) {
-    let rootsChanged = false;
-    const nextRoots = Object.fromEntries(
-      Object.entries(roots).map(([key, value]) => {
-        const migrated = migrateChildren(value, `roots.${key}`, [], key);
+  if (migrated === document) return { document };
 
-        if (migrated !== value) rootsChanged = true;
-
-        return [key, migrated];
-      })
-    );
-
-    if (rootsChanged) {
-      roots = nextRoots;
-    }
-  }
-
-  if (children === document.children && roots === document.roots) {
-    return { document };
-  }
-
-  const migrated = { ...document, children, ...(roots ? { roots } : {}) };
-  // Flattening rewrites only a code block's own children, so a point outside
-  // every converted block keeps its path and offset.
   const mapPoint = (point: Point): Point => {
     const mapping = pointMappings.get(
-      pointMappingKey(point.root ?? MAIN_ROOT_KEY, point.path)
+      pathKey(point.root ?? MAIN_ROOT_KEY, point.path)
     );
 
     return mapping
       ? {
           ...point,
           offset: mapping.offset + point.offset,
-          path: mapping.path,
+          path: [...mapping.path],
         }
       : point;
   };
 
   return {
     document: migrated,
-    mapSelection: (selection, mapped) =>
-      RangeApi.isRange(selection)
-        ? {
-            ...selection,
-            anchor: mapPoint(selection.anchor),
-            focus: mapPoint(selection.focus),
-          }
-        : mapped(),
+    mapRange: createRangeMapper(mapPoint),
+    mapSelection: (selection) => {
+      if (!selection) return selection;
+      if (RangeApi.isRange(selection)) {
+        return {
+          ...selection,
+          anchor: mapPoint(selection.anchor),
+          focus: mapPoint(selection.focus),
+        };
+      }
+      if (SelectionApi.isNode(selection)) {
+        return mapNodeSelectionPaths(selection, (root, source) => {
+          const blocks = flattenedBlocks.get(root);
+
+          return blocks?.some((blockPath) =>
+            PathApi.isAncestor(blockPath, source)
+          )
+            ? null
+            : source;
+        });
+      }
+
+      return selection;
+    },
   };
 };

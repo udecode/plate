@@ -150,10 +150,12 @@ once into the immutable current target used by every step. Plate rejects
 missing intermediate steps and historical identity drift.
 
 Each step receives `{ document, legacy, from, to, target }` and returns
-`{ document, legacy?, mapSelection? }`. `document` holds only `children`, `meta`,
-`roots` and `records`, and its type refuses any other key. `legacy` holds the stored
-document's other top-level fields until a step lifts them; a step that omits
-`legacy` passes it on unchanged.
+`{ document, legacy?, mapRanges?, mapSelection? }`. `document` holds only
+`children`, `meta`, `roots` and `records`, and its type refuses any other key.
+`legacy` holds the stored document's other top-level fields until a step lifts
+them; a step that omits `legacy` passes it on unchanged. `mapRanges` maps
+external ranges passed through `migrateDocument` in one call; omitting it drops
+ranges to `null` when the step changes the document.
 
 ### `migrateDocument`
 
@@ -175,7 +177,10 @@ const imported = migrateDocument(legacyDocument, {
 
 `output` contains exactly `{ document, schema, selection? }` and can be saved or
 passed to `createEditor`. `applied` lists the destination versions that ran, and
-`source` is the validated source version. Raw documents require `source: number`
+`source` is the validated source version. Pass `ranges` (keyed by thread id) to
+map saved comment or annotation ranges through every step and the final fit;
+when supplied, the result also includes `ranges`, mapping removed or collapsed
+ranges to `null`. Raw documents require `source: number`
 or `source: 'current'`; persisted envelopes carry their own source identity.
 With an explicit `source`, the runner reads any input as a raw document. The runner rejects a
 different lineage, a future source, fingerprint drift, non-JSON data, invalid

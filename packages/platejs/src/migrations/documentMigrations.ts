@@ -3,6 +3,7 @@ import {
   assertEditorDocumentContainers,
   completePersistedDocumentFields,
   createDetachedEditorSchema,
+  type Descendant,
   DocumentChange,
   EDITOR_DOCUMENT_FIELDS,
   type EditorDocumentShapeIssue,
@@ -14,24 +15,17 @@ import {
   ElementApi,
   getEditorDocumentShapeIssueMessage,
   isEnvelopeInput,
-  mapDetachedSelectionThroughChange,
   type NativeAuthoredDocumentCapability,
   type PersistedDocumentInput,
-  PathApi,
-  type Point,
   type Range,
-  RangeApi,
-  readDocumentRange,
   readDocumentRecord,
   readPersistedEnvelope,
   readStoredEditorDocument,
   rejectEditorRecord,
   type RuntimePluginReference,
-  type Descendant,
   type Selection,
   SelectionApi,
   snapshotEditorJsonValue,
-  TextApi,
 } from '../facade';
 import type { EditorApplicationSchema } from '../lib/editor/editorApplicationSchema';
 import { compilePlateEditorTarget } from '../lib/editor/withPlite';
@@ -40,16 +34,21 @@ import {
   registerDocumentMigrationAuthoredCapability,
 } from './documentMigrationAuthored.internal';
 import {
-  historicalSelectionGeometry,
-  landSelectionMarks,
-  textAt,
+  assertHistoricalSelection,
+  isConcreteSelection,
+  mapDetachedStepSelection,
+  mapLiveRanges,
+  mapStepRanges,
+  readCoveringRange,
+  resolveSelection,
+  savedRangeOrNull,
+  type SnapshotSelectionInput,
+  uncrossedRange,
 } from './documentMigrationSelection.internal';
 import { registerMigrationBindings } from './documentMigrationTarget.internal';
 
 type NamedEditorApplicationSchema = EditorApplicationSchema &
   Readonly<{ id: string; version: number }>;
-
-type SnapshotSelectionInput = Selection | 'end' | 'start';
 
 type DeepReadonly<T> = T extends (...args: never[]) => unknown
   ? T
@@ -368,260 +367,6 @@ const splitHistoricalDocument = (value: unknown, label: string) => {
     document: Object.freeze(document) as EditorDocumentValue,
     legacy: Object.freeze(legacy) as DocumentMigrationLegacy,
   };
-};
-
-const isConcreteSelection = (
-  selection: SnapshotSelectionInput | undefined
-): selection is Exclude<Selection, null> =>
-  selection !== undefined &&
-  selection !== null &&
-  selection !== 'start' &&
-  selection !== 'end';
-
-const assertHistoricalSelection = (
-  authority: MigrationAuthority,
-  selection: SnapshotSelectionInput | undefined,
-  document: EditorDocumentValue
-) => {
-  if (selection === undefined || selection === null) return;
-  if (selection === 'start' || selection === 'end') return;
-
-  assertDetachedSelectionSupported(
-    authority.schema,
-    historicalSelectionGeometry(selection),
-    document,
-    SelectionApi.root(selection) ?? 'main'
-  );
-};
-
-const mapSelection = (
-  authority: MigrationAuthority,
-  selection: Exclude<Selection, null>,
-  change: DocumentChange,
-  before: EditorDocumentValue,
-  after: EditorDocumentValue
-): Selection => {
-  const geometry = historicalSelectionGeometry(selection);
-  const mapped = mapDetachedSelectionThroughChange(
-    authority.schema,
-    geometry,
-    change,
-    before,
-    after,
-    SelectionApi.root(selection) ?? 'main',
-    { association: 'backward', preferPositionMapping: true }
-  );
-
-  if (mapped === geometry) return selection;
-
-  return landSelectionMarks(
-    authority.schema,
-    mapped,
-    SelectionApi.isText(selection) ? selection.marks : undefined,
-    after
-  );
-};
-
-const rangeText = (children: readonly Descendant[], range: Range) => {
-  const [start, end] = RangeApi.edges(range);
-  let text = '';
-  const visit = (nodes: readonly Descendant[], parent: readonly number[]) => {
-    const first = PathApi.isCommon(parent, start.path)
-      ? (start.path[parent.length] ?? 0)
-      : 0;
-
-    for (let index = first; index < nodes.length; index += 1) {
-      const node = nodes[index];
-      const path = [...parent, index];
-
-      if (PathApi.isAfter(path, end.path)) return;
-      if (ElementApi.isElement(node)) {
-        visit(node.children, path);
-      } else if (TextApi.isText(node)) {
-        text += node.text.slice(
-          PathApi.equals(path, start.path) ? start.offset : 0,
-          PathApi.equals(path, end.path) ? end.offset : node.text.length
-        );
-      }
-    }
-  };
-
-  visit(children, []);
-
-  return text;
-};
-
-const isTextPoint = (children: readonly Descendant[], point: Point) => {
-  const text = textAt(children, point.path);
-
-  return (
-    text !== undefined &&
-    Number.isInteger(point.offset) &&
-    point.offset >= 0 &&
-    point.offset <= text.text.length
-  );
-};
-
-const readRange = (value: unknown, label: string): Range | null => {
-  if (value === null) return null;
-  const range = readDocumentRange(
-    snapshotEditorJsonValue(value, label),
-    'saved'
-  );
-
-  if (!range) {
-    throw new Error(`${label} must be a document range or null.`);
-  }
-
-  return range;
-};
-
-const rootHolding = (document: EditorDocumentValue, range: Range) => {
-  const root = SelectionApi.root(range);
-  const roots = document.roots ?? {};
-  const children =
-    root === undefined
-      ? document.children
-      : Object.hasOwn(roots, root)
-        ? roots[root]
-        : undefined;
-
-  return children &&
-    isTextPoint(children, range.anchor) &&
-    isTextPoint(children, range.focus)
-    ? children
-    : null;
-};
-
-const savedRangeOrNull = (
-  value: unknown,
-  document: EditorDocumentValue
-): Range | null => {
-  const range = readDocumentRange(value, 'saved');
-  const children = range && rootHolding(document, range);
-
-  return range && children && rangeText(children, range) !== '' ? range : null;
-};
-
-const readCoveringRange = (
-  value: unknown,
-  document: EditorDocumentValue,
-  label: string
-): Range | null => {
-  const range = readRange(value, label);
-
-  if (!range) return null;
-  const children = rootHolding(document, range);
-
-  if (!children) {
-    throw new Error(
-      `${label} ${JSON.stringify(range)} points outside the document.`
-    );
-  }
-
-  return rangeText(children, range) === '' ? null : range;
-};
-
-const uncrossedRange = (source: Range, range: Range | null) =>
-  range &&
-  RangeApi.isBackward(range) === RangeApi.isBackward(source) &&
-  SelectionApi.root(range) === SelectionApi.root(source)
-    ? range
-    : null;
-
-const mapLiveRanges = <T>(
-  ranges: ReadonlyArray<Range | null>,
-  values: readonly T[],
-  map: (range: Range, value: T | undefined) => Range | null
-) => {
-  let next = 0;
-
-  return ranges.map((range) => {
-    if (!range) return null;
-    const value = values[next];
-
-    next += 1;
-
-    return map(range, value);
-  });
-};
-
-const mapStepRanges = (
-  to: number,
-  ranges: ReadonlyArray<Range | null>,
-  mapRanges: DocumentMigrationStepResult['mapRanges'],
-  change: () => DocumentChange,
-  after: EditorDocumentValue
-): ReadonlyArray<Range | null> => {
-  const live = ranges.flatMap((range) => (range ? [range] : []));
-
-  if (live.length === 0) return ranges;
-  if (!mapRanges) return change().empty ? ranges : ranges.map(() => null);
-
-  const mapped: unknown = mapRanges(
-    Object.freeze({ ranges: Object.freeze(live) })
-  );
-
-  if (!Array.isArray(mapped) || mapped.length !== live.length) {
-    throw new Error(
-      `Document migration step ${to} mapRanges must return one range or null per range.`
-    );
-  }
-
-  return mapLiveRanges(ranges, mapped, (range, value) =>
-    uncrossedRange(
-      range,
-      readCoveringRange(value, after, `Document migration step ${to} range`)
-    )
-  );
-};
-
-const edgePoint = (
-  children: readonly unknown[],
-  edge: 'end' | 'start'
-): Readonly<{ offset: number; path: readonly number[] }> | null => {
-  const visit = (
-    nodes: readonly unknown[],
-    parent: readonly number[]
-  ): Readonly<{ offset: number; path: readonly number[] }> | null => {
-    const indexes =
-      edge === 'start'
-        ? nodes.map((_, index) => index)
-        : nodes.map((_, index) => index).reverse();
-
-    for (const index of indexes) {
-      const node = nodes[index] as Record<string, unknown> | undefined;
-
-      if (!node || typeof node !== 'object') continue;
-      const path = [...parent, index];
-
-      if (typeof node.text === 'string') {
-        return Object.freeze({
-          offset: edge === 'start' ? 0 : node.text.length,
-          path: Object.freeze(path),
-        });
-      }
-      if (ElementApi.isElement(node)) {
-        const point = visit(node.children, path);
-
-        if (point) return point;
-      }
-    }
-
-    return null;
-  };
-
-  return visit(children, []);
-};
-
-const resolveSelection = (
-  selection: SnapshotSelectionInput | undefined,
-  document: EditorDocumentValue
-): Selection | undefined => {
-  if (selection !== 'start' && selection !== 'end') return selection;
-  const point = edgePoint(document.children, selection);
-
-  return point ? SelectionApi.text({ anchor: point, focus: point }) : null;
 };
 
 const assertUniqueElementIds = (value: EditorDocumentValue): void => {
@@ -962,7 +707,7 @@ export const migrateDocument = <
     chain.push(Object.freeze([to, migration] as const));
   }
 
-  assertHistoricalSelection(authority, selection, document);
+  assertHistoricalSelection(authority.schema, selection, document);
   const rangeEntries = options.ranges && Object.entries(options.ranges);
   let ranges: ReadonlyArray<Range | null> | undefined = rangeEntries?.map(
     ([, range]) => savedRangeOrNull(range, document)
@@ -1021,19 +766,33 @@ export const migrateDocument = <
 
     if (isConcreteSelection(selection)) {
       const original = selection;
-      const mappedSelection = mapSelection(
-        authority,
-        original,
-        changeOf(),
-        before,
-        document
-      );
+      let hasMapped = false;
+      let cachedMapped: Selection = null;
+      const getMappedSelection = () => {
+        if (!hasMapped) {
+          cachedMapped = mapDetachedStepSelection(
+            authority.schema,
+            original,
+            changeOf(),
+            before,
+            document
+          );
+          hasMapped = true;
+        }
+
+        return cachedMapped;
+      };
 
       selection = mapper
         ? (mapper as DocumentMigrationStepResult['mapSelection'])?.(
-            Object.freeze({ mappedSelection, selection: original })
+            Object.freeze({
+              get mappedSelection() {
+                return getMappedSelection();
+              },
+              selection: original,
+            })
           )
-        : mappedSelection;
+        : getMappedSelection();
       if (selection === undefined) {
         throw new Error(
           `Document migration step ${to} selection mapper must return a selection or null.`
@@ -1043,7 +802,7 @@ export const migrateDocument = <
         selection,
         `Document migration step ${to} selection`
       );
-      assertHistoricalSelection(authority, selection, document);
+      assertHistoricalSelection(authority.schema, selection, document);
     }
     if (ranges) {
       ranges = mapStepRanges(

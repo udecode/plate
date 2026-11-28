@@ -1,15 +1,12 @@
 import {
   type Descendant,
-  type EditorDocumentValue,
   type Element,
   ElementApi,
   MAIN_ROOT_KEY,
   type Path,
   PathApi,
   type Point,
-  type Range,
   RangeApi,
-  type Selection,
   SelectionApi,
   TextApi,
   type Value,
@@ -21,6 +18,15 @@ import {
   createPropertyOwnership,
   type NodeContext,
 } from './migratePlateV54Ownership.internal';
+import {
+  createRangeMapper,
+  mapDocumentRoots,
+  mapNodeSelectionPaths,
+  pathKey,
+  type PlateV54StageResult,
+  type PointEdge,
+  type ReplacementPoint,
+} from './migratePlateV54Stage.internal';
 
 const TEXT_ALIGNMENTS = new Set([
   'center',
@@ -63,7 +69,6 @@ const safeInteger = (value: unknown) => {
   return Number.isSafeInteger(integer) ? integer : undefined;
 };
 
-type ReplacementPoint = Readonly<{ offset: number; path: Path }>;
 type AstReplacement = Readonly<{
   caret: ReplacementPoint;
   endEdge: ReplacementPoint;
@@ -74,25 +79,14 @@ type AstChildItem = Readonly<{
   location: string;
   node: Descendant;
 }>;
-type PointEdge = 'caret' | 'end' | 'start';
 
-export type PlateV54AstMigrationResult = Readonly<{
-  document: EditorDocumentValue;
-  mapRange?: (range: Range) => Range;
-  mapSelection?: (selection: Selection) => Selection;
-}>;
-
-const pathKey = (root: string, path: readonly number[]) =>
-  `${root}:${path.join('.')}`;
-
-/** Apply the final AST contracts inside the Plate v54 migration. */
 export const migratePlateV54Ast = ({
   document,
   target: conversionTarget,
 }: Pick<
   DocumentMigrationContext,
   'document' | 'target'
->): PlateV54AstMigrationResult => {
+>): PlateV54StageResult => {
   const leafTargets = new Map<string, Path>();
   const elementTargets = new Map<string, Path | null>();
   const replacements = new Map<string, AstReplacement>();
@@ -874,50 +868,21 @@ export const migratePlateV54Ast = ({
       location: `${location}.${index}`,
       node,
     }));
-  const children = migrateChildren(
-    rootItems(document.children, 'main'),
-    document.children,
-    [],
-    0,
-    {
-      ancestors: [],
-      root: null,
-    }
+  const migratedDocument = mapDocumentRoots(document, (rootChildren, root) =>
+    migrateChildren(
+      rootItems(
+        rootChildren,
+        root === MAIN_ROOT_KEY ? 'main' : `roots.${root}`
+      ),
+      rootChildren,
+      [],
+      0,
+      {
+        ancestors: [],
+        root: root === MAIN_ROOT_KEY ? null : root,
+      }
+    )
   );
-  let { roots } = document;
-
-  if (roots) {
-    let changed = false;
-    const next = Object.fromEntries(
-      Object.entries(roots).map(([root, rootChildren]) => {
-        const migrated = migrateChildren(
-          rootItems(rootChildren, `roots.${root}`),
-          rootChildren,
-          [],
-          0,
-          {
-            ancestors: [],
-            root,
-          }
-        );
-
-        if (migrated !== rootChildren) changed = true;
-
-        return [root, migrated];
-      })
-    );
-
-    if (changed) roots = next;
-  }
-
-  const migratedDocument =
-    children === document.children && roots === document.roots
-      ? document
-      : {
-          ...document,
-          children,
-          ...(roots ? { roots } : {}),
-        };
 
   if (
     leafTargets.size === 0 &&
@@ -954,14 +919,7 @@ export const migratePlateV54Ast = ({
 
   return {
     document: migratedDocument,
-    mapRange: (range) => {
-      const backward = RangeApi.isBackward(range);
-
-      return {
-        anchor: mapPoint(range.anchor, backward ? 'end' : 'start'),
-        focus: mapPoint(range.focus, backward ? 'start' : 'end'),
-      };
-    },
+    mapRange: createRangeMapper(mapPoint),
     mapSelection: (selection) => {
       if (!selection) return selection;
       if (RangeApi.isRange(selection)) {
@@ -972,61 +930,12 @@ export const migratePlateV54Ast = ({
         };
       }
       if (SelectionApi.isNode(selection)) {
-        const selectionRoot = SelectionApi.root(selection);
-        const root = selectionRoot ?? MAIN_ROOT_KEY;
-        const mappedEntries = selection.paths.map((source) => {
+        return mapNodeSelectionPaths(selection, (root, source) => {
           const key = pathKey(root, source);
 
-          return {
-            mapped: elementTargets.has(key)
-              ? (elementTargets.get(key) ?? null)
-              : source,
-            source,
-          };
-        });
-        const paths = mappedEntries.flatMap(({ mapped }) =>
-          mapped ? [[...mapped]] : []
-        );
-        const first = paths[0];
-
-        if (!first) return null;
-
-        const rootOptions =
-          selectionRoot === undefined ? ({} as const) : { root: selectionRoot };
-        const canonical = SelectionApi.nodes([first, ...paths.slice(1)], {
-          mode: 'block',
-          ...rootOptions,
-        });
-        const backward =
-          PathApi.compare(selection.anchorPath, selection.focusPath) > 0;
-        const firstPath = canonical.paths[0];
-        const lastPath = canonical.paths.at(-1) ?? firstPath;
-        const resolveEndpoint = (source: Path, fallback: Path) => {
-          const mapped = mappedEntries.find(({ source: candidate }) =>
-            PathApi.equals(candidate, source)
-          )?.mapped;
-
-          if (!mapped) return fallback;
-
-          return (
-            canonical.paths.find(
-              (path) =>
-                PathApi.equals(path, mapped) || PathApi.isAncestor(path, mapped)
-            ) ?? fallback
-          );
-        };
-
-        return SelectionApi.nodes(canonical.paths, {
-          anchorPath: resolveEndpoint(
-            selection.anchorPath,
-            backward ? lastPath : firstPath
-          ),
-          focusPath: resolveEndpoint(
-            selection.focusPath,
-            backward ? firstPath : lastPath
-          ),
-          mode: selection.mode,
-          ...rootOptions,
+          return elementTargets.has(key)
+            ? (elementTargets.get(key) ?? null)
+            : source;
         });
       }
 

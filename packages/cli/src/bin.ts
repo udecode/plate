@@ -21,8 +21,10 @@ const parseMigrationSource = (value: string): number | 'current' => {
   if (value === 'current') return value;
   const version = Number(value);
 
-  if (!Number.isSafeInteger(version) || version < 1) {
-    throw new Error('--from must be a positive schema version or "current".');
+  if (!Number.isSafeInteger(version) || version < 0) {
+    throw new Error(
+      '--from must be a non-negative schema version or "current".'
+    );
   }
 
   return version;

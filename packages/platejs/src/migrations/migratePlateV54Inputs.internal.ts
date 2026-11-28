@@ -1,20 +1,28 @@
 import type { AuthoredMark } from '../authored';
 import {
   type Descendant,
-  type EditorDocumentValue,
   type Element,
   ElementApi,
   MAIN_ROOT_KEY,
   NodeApi,
+  type Path,
   type Point,
-  type Range,
   RangeApi,
-  type Selection,
+  SelectionApi,
   TextApi,
   type Value,
 } from '../facade';
 import type { DocumentMigrationContext } from './documentMigrations';
 import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
+import {
+  createRangeMapper,
+  mapDocumentRoots,
+  mapNodeSelectionPaths,
+  pathKey,
+  type PlateV54StageResult,
+  type PointEdge,
+  type ReplacementPoint,
+} from './migratePlateV54Stage.internal';
 import {
   migratePlateV54DrawingCodeText,
   migratePlateV54ReplacementText,
@@ -28,8 +36,10 @@ const LEGACY_INPUT_TRIGGERS: ReadonlyMap<string, string> = new Map(
 );
 
 type KeptChildIndex = number;
-type ReplacementPoint = Readonly<{ offset: number; path: number[] }>;
-type Replacement = Readonly<{ caret: ReplacementPoint }> &
+type Replacement = Readonly<{
+  caret: ReplacementPoint;
+  elementIndex?: number;
+}> &
   (
     | Readonly<{ endEdge: ReplacementPoint; startEdge: ReplacementPoint }>
     | Readonly<{
@@ -37,7 +47,6 @@ type Replacement = Readonly<{ caret: ReplacementPoint }> &
       }>
   );
 type ChildMapping = KeptChildIndex | Replacement;
-type PointEdge = 'caret' | 'end' | 'start';
 
 // v53's textarea and select showed a saved value the way String() does: an
 // array joins its items, and any other object reads [object Object].
@@ -48,9 +57,6 @@ const shown = (value: unknown, fallback: string): string => {
 
   return typeof value === 'string' ? value : JSON.stringify(value);
 };
-
-const parentKey = (root: string, path: readonly number[]) =>
-  `${root}:${path.join('.')}`;
 
 const drawingData = (drawing: Element): Record<string, unknown> => {
   const { data } = drawing;
@@ -77,16 +83,10 @@ const lettersBefore = (
     : before;
 };
 
-type PlateV54InputMigrationResult = Readonly<{
-  document: EditorDocumentValue;
-  mapRange?: (range: Range) => Range;
-  mapSelection?: (selection: Selection) => Selection;
-}>;
-
 export const migratePlateV54Inputs = ({
   document,
   target,
-}: DocumentMigrationContext): PlateV54InputMigrationResult => {
+}: DocumentMigrationContext): PlateV54StageResult => {
   const childMappings = new Map<string, ChildMapping[]>();
   const drawingTarget = target.schema.element('code_drawing')
     ? undefined
@@ -188,11 +188,13 @@ export const migratePlateV54Inputs = ({
           Object.hasOwn(drawingData(child), 'code')
             ? {
                 caret: start,
+                elementIndex: at,
                 endEdge: start,
                 startEdge: { offset: NodeApi.string(next[at]).length, path },
               }
             : {
                 caret: start,
+                elementIndex: at,
                 text: (inner, offset) => ({
                   offset: lettersBefore(child.children, inner) + offset,
                   path,
@@ -265,37 +267,17 @@ export const migratePlateV54Inputs = ({
 
     if (!changed) return children;
 
-    childMappings.set(parentKey(root, from), mapping);
+    childMappings.set(pathKey(root, from), mapping);
 
     return next;
   };
 
-  const children = migrateChildren(
-    document.children,
-    [],
-    [],
-    MAIN_ROOT_KEY
-  ) as Value;
-  let { roots } = document;
+  const migratedDocument = mapDocumentRoots(
+    document,
+    (rootChildren, root) => migrateChildren(rootChildren, [], [], root) as Value
+  );
 
-  if (roots) {
-    let changed = false;
-    const next = Object.fromEntries(
-      Object.entries(roots).map(([root, rootChildren]) => {
-        const migrated = migrateChildren(rootChildren, [], [], root) as Value;
-
-        if (migrated !== rootChildren) changed = true;
-
-        return [root, migrated];
-      })
-    );
-
-    if (changed) roots = next;
-  }
-
-  if (children === document.children && roots === document.roots) {
-    return { document };
-  }
+  if (migratedDocument === document) return { document };
 
   const mapPoint = (point: Point, edge: PointEdge): Point => {
     const root = point.root ?? MAIN_ROOT_KEY;
@@ -303,7 +285,7 @@ export const migratePlateV54Inputs = ({
 
     for (const [depth, index] of point.path.entries()) {
       const mapped = childMappings.get(
-        parentKey(root, point.path.slice(0, depth))
+        pathKey(root, point.path.slice(0, depth))
       )?.[index];
 
       if (mapped === undefined) {
@@ -330,23 +312,51 @@ export const migratePlateV54Inputs = ({
     return { ...point, path };
   };
 
-  return {
-    document: { ...document, children, ...(roots ? { roots } : {}) },
-    mapRange: (range) => {
-      const backward = RangeApi.isBackward(range);
+  const mapElementPath = (root: string, source: Path): Path | null => {
+    const path: number[] = [];
 
-      return {
-        anchor: mapPoint(range.anchor, backward ? 'end' : 'start'),
-        focus: mapPoint(range.focus, backward ? 'start' : 'end'),
-      };
+    for (const [depth, index] of source.entries()) {
+      const mapped = childMappings.get(pathKey(root, source.slice(0, depth)))?.[
+        index
+      ];
+
+      if (mapped === undefined) {
+        path.push(index);
+        continue;
+      }
+      if (typeof mapped === 'number') {
+        path.push(mapped);
+        continue;
+      }
+      if (depth === source.length - 1 && mapped.elementIndex !== undefined) {
+        path.push(mapped.elementIndex);
+
+        return path;
+      }
+
+      return null;
+    }
+
+    return path;
+  };
+
+  return {
+    document: migratedDocument,
+    mapRange: createRangeMapper(mapPoint),
+    mapSelection: (selection) => {
+      if (!selection) return selection;
+      if (RangeApi.isRange(selection)) {
+        return {
+          ...selection,
+          anchor: mapPoint(selection.anchor, 'caret'),
+          focus: mapPoint(selection.focus, 'caret'),
+        };
+      }
+      if (SelectionApi.isNode(selection)) {
+        return mapNodeSelectionPaths(selection, mapElementPath);
+      }
+
+      return selection;
     },
-    mapSelection: (selection) =>
-      RangeApi.isRange(selection)
-        ? {
-            ...selection,
-            anchor: mapPoint(selection.anchor, 'caret'),
-            focus: mapPoint(selection.focus, 'caret'),
-          }
-        : selection,
   };
 };
