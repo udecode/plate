@@ -18,8 +18,7 @@
       "const root = editor.api.dom.root();",
       "document: ReactEditor.getWindow(editor).document,",
       "ReactEditor.getWindow(editor).document,",
-      "ReactEditor.getWindow(editor).document,",
-      "setDragScrollRepaint(ReactEditor.getWindow(editor).document, editor, () => {"
+      "ReactEditor.getWindow(editor).document,"
     ],
     "packages/plitejs/src/react/editable/composition-state.ts": [
       "const domPhaseScheduler = getMountedEditableDOMRuntime(",
