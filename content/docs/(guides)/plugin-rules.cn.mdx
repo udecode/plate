@@ -794,27 +794,3 @@ const plugins = [
 
 输入会扩展粗体格式，这在 `default` 亲和性下是不可能的。
 
-```tsx
-import { LinkPlugin } from 'platejs/react';
-
-const plugins = [
-  // ...其他插件
-  LinkPlugin.configure({
-    rules: {
-      selection: { affinity: 'directional' },
-    },
-  }),
-];
-```
-
-**从右侧移动（向外亲和性）：**
-```tsx
-<p>
-  Visit <a href="https://example.com">our website</a> |for more information text.
-</p>
-```
-
-按下 `←` 后：
-```tsx
-<p>
-  Visit <a href="https://example.com">our website</a

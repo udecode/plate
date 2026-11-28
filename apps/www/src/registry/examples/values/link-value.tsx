@@ -13,12 +13,15 @@ export const linkValue: Value = (
       <ha target="_blank" url="https://en.wikipedia.org/wiki/Hypertext">
         hyperlinks
       </ha>{' '}
-      within your text to reference external sources or provide additional
-      information using the Link plugin.
+      or internal references like <ha url="/docs">the Plate docs</ha> within
+      your text. Click any link to preview, copy, edit, or unlink it, or hold{' '}
+      <htext bold>Cmd/Ctrl</htext> and click to open it in a new tab.
     </hp>
     <hp>
-      Effortlessly create hyperlinks using the toolbar or by pasting a URL while
-      selecting the desired text.
+      Select text and press <htext bold>Cmd/Ctrl+K</htext>, use the toolbar
+      button, paste a URL over selected text, type{' '}
+      <htext code>www.platejs.org</htext> followed by a space, or type{' '}
+      <htext code>[Plate](https://platejs.org)</htext> to create a link.
     </hp>
   </fragment>
 );

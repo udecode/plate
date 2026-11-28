@@ -82,7 +82,7 @@
     },
     {
       "path": "src/registry/examples/values/link-value.tsx",
-      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test';\nimport type { Value } from 'platejs';\n\njsx;\n\nexport const linkValue: Value = (\n  <fragment>\n    <hheading level={2}>Link</hheading>\n    <hp>\n      Add{' '}\n      <ha target=\"_blank\" url=\"https://en.wikipedia.org/wiki/Hypertext\">\n        hyperlinks\n      </ha>{' '}\n      within your text to reference external sources or provide additional\n      information using the Link plugin.\n    </hp>\n    <hp>\n      Effortlessly create hyperlinks using the toolbar or by pasting a URL while\n      selecting the desired text.\n    </hp>\n  </fragment>\n);\n",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test';\nimport type { Value } from 'platejs';\n\njsx;\n\nexport const linkValue: Value = (\n  <fragment>\n    <hheading level={2}>Link</hheading>\n    <hp>\n      Add{' '}\n      <ha target=\"_blank\" url=\"https://en.wikipedia.org/wiki/Hypertext\">\n        hyperlinks\n      </ha>{' '}\n      or internal references like <ha url=\"/docs\">the Plate docs</ha> within\n      your text. Click any link to preview, copy, edit, or unlink it, or hold{' '}\n      <htext bold>Cmd/Ctrl</htext> and click to open it in a new tab.\n    </hp>\n    <hp>\n      Select text and press <htext bold>Cmd/Ctrl+K</htext>, use the toolbar\n      button, paste a URL over selected text, type{' '}\n      <htext code>www.platejs.org</htext> followed by a space, or type{' '}\n      <htext code>[Plate](https://platejs.org)</htext> to create a link.\n    </hp>\n  </fragment>\n);\n",
       "type": "registry:example"
     },
     {

@@ -1681,9 +1681,10 @@ export const demoExamples: Registry['items'] = (
     },
     {
       dependencies: ['@platejs/test'],
-      description: 'Hyperlinks with toolbar insertion and URL pasting support.',
+      description:
+        'Hyperlinks with toolbar insertion, floating actions, and URL autolink.',
       files: [
-        { path: 'examples/demo.tsx', type: 'registry:example' },
+        { path: 'examples/link-demo.tsx', type: 'registry:example' },
         {
           path: 'examples/values/link-value.tsx',
           type: 'registry:example',
@@ -1699,10 +1700,12 @@ export const demoExamples: Registry['items'] = (
       },
       name: 'link-demo',
       registryDependencies: [
-        '@plate/link',
+        '@plate/basic-blocks',
+        '@plate/basic-marks',
         '@plate/editor',
-        '@plate/ai',
-        '@plate/dnd',
+        '@plate/link',
+        '@plate/link-toolbar-button',
+        '@plate/toolbar',
       ],
       type: 'registry:example',
     },

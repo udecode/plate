@@ -15,8 +15,10 @@ docs:
 
 ## 功能特性
 
-- 支持超链接的插入、编辑和删除。
-- 纯 URL 自动链接：粘贴 URL，或输入 URL 后按空格或 `Enter`。使用 `MediaKit` 时，在空行上单独粘贴的视频或帖子链接先作为链接落地，随后变为该行上方的嵌入，该行留空，见[媒体](/cn/docs/media#input-rules)。
+- 通过浮动工具栏、工具栏按钮或 `Cmd/Ctrl+K` 插入、编辑、复制、预览和移除超链接。
+- 按住 `Cmd/Ctrl` 点击已渲染的链接可在新标签页中打开；普通点击则将光标移入链接以便编辑。
+- Markdown 快捷输入：输入 `[text](url)`（支持目标地址中的成对括号和带格式文本标签）并以 `)` 闭合即可转为链接。
+- 纯 URL 自动链接：粘贴 URL，或输入 URL / `www.` 域名后按空格或 `Enter`（外层括号与句末标点保持为纯文本）。使用 `MediaKit` 时，在空行上单独粘贴的视频或帖子链接会先作为链接落地，随后转为该行上方的嵌入，该行留空，见[媒体](/cn/docs/media#input-rules)。
 
 </PackageInfo>
 
@@ -26,12 +28,12 @@ docs:
 
 ### 安装
 
-最快捷添加链接功能的方式是使用 `LinkKit`，它包含预配置的 `LinkPlugin` 以及浮动工具栏和 [Plate UI](/docs/installation/plate-ui) 组件。
+安装 `LinkKit` 即可获得预配置的 `linkPlugin`、浮动工具栏界面、自动链接规则和 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="link" />
 
-- [`LinkElement`](/docs/components/link): 渲染链接元素
-- [`LinkFloatingToolbar`](/docs/components/link): 提供链接编辑的浮动工具栏
+- [`LinkElement`](/docs/components/link)：渲染链接元素，支持 `Cmd/Ctrl+click` 打开目标地址。
+- [`LinkFloatingToolbar`](/docs/components/link)：提供链接预览浮层（URL 预览、复制、编辑、移除）与编辑/插入表单。
 
 ### 添加套件
 
@@ -66,8 +68,7 @@ npm install platejs
 在创建编辑器时，将 `LinkPlugin` 包含到 Plate 插件数组中。
 
 ```tsx
-import { LinkPlugin } from 'platejs/react';
-import { createEditor } from 'platejs/react';
+import { createEditor, LinkPlugin } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [
@@ -79,18 +80,20 @@ const editor = createEditor({
 
 ### 配置插件
 
-使用浮动工具栏和自定义组件配置插件。
+挂载 `LinkFloatingToolbar` 时应配置复制出来的 `linkPlugin` 描述符，因为浮动工具栏会读取 `linkPlugin` 提供的浮动界面状态与操作。如果只需要渲染链接而不需要浮动工具栏，可直接使用 `LinkPlugin.configure({ component: LinkElement })`。
 
 ```tsx
-import { LinkPlugin } from 'platejs/react';
 import { createEditor } from 'platejs/react';
-import { LinkElement } from '@/components/editor/link';
-import { LinkFloatingToolbar } from '@/components/editor/link';
+import {
+  LinkElement,
+  LinkFloatingToolbar,
+  linkPlugin,
+} from '@/components/editor/link';
 
 const editor = createEditor({
   plugins: [
     // ...其他插件
-    LinkPlugin.configure({
+    linkPlugin.configure({
       component: LinkElement,
       slots: {
         caret: LinkFloatingToolbar,
@@ -100,17 +103,16 @@ const editor = createEditor({
 });
 ```
 
-- `slots.caret`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link) 用于链接编辑，作用于持有光标的视图（例如白板便签）
-- `.configure({ component: LinkElement })`：使用
-  [`LinkElement`](/docs/components/link) 渲染链接元素
+- `slots.caret`：在持有光标的视图的可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link)。
+- `.configure({ component: LinkElement })`：使用 [`LinkElement`](/docs/components/link) 渲染链接元素。
 
 ### Input Rules
 
-你也可以配置 `LinkPlugin` 来启用内置的链接 input rules：
+配置 `LinkPlugin`（或 `linkPlugin`）启用内置的链接 input rules：
 
 ```tsx
 import { LinkRules } from 'platejs';
-import { LinkPlugin } from 'platejs/react';
+import { createEditor, LinkPlugin } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [
@@ -126,23 +128,28 @@ const editor = createEditor({
 });
 ```
 
-- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`：启用纯 URL 自动链接。粘贴或输入的词被 `parseUrl` 识别且结果通过 `allowedSchemes` 时才成为链接；否则粘贴、空格或 `Enter` 照常进行。
-- `LinkRules.markdown()`：启用在输入结束 `)` 时把 `[text](url)` 转成结构化链接。图片源码 `![alt](src)` 保持为文本。
+- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`：启用纯 URL 自动链接。输入后按空格或 `Enter` 时，会先剥离首尾包裹符号和句末标点再调用 `parseUrl`；粘贴时将剪贴板原文直接传入 `parseUrl`。当 `parseUrl` 识别出地址且 `allowedSchemes` 允许该协议时转为链接。
+- `LinkRules.markdown()`：在输入闭合 `)` 时把 `[text](url)` 转为链接，保留目标地址中的成对括号和标签中的文本格式。图片源码（`![alt](src)`）以及包含行内元素的选区保持为文本。
 
 ### 添加工具栏按钮
 
-您可以在[工具栏](/docs/toolbar)中添加 [`LinkToolbarButton`](/docs/components/link-toolbar-button) 来插入和编辑链接。
+在[工具栏](/docs/toolbar)中添加 [`LinkToolbarButton`](/docs/components/link-toolbar-button) 来插入新链接或编辑当前链接。
 
-浮动工具栏会保存新的或修改过的地址，前提是它以 `http://` 或 `https://` 开头、带有其他协议（例如 `mailto:`），或以 `/`、`./`、`../`、`#`、`?` 开头。输入其他内容（例如 `www.example.com` 或 `https:www.example.com`），或 `allowedSchemes` 拒绝该地址时，工具栏保持打开。只修改链接文本时会保留已存储的地址，即使 `allowedSchemes` 已不再允许它。
+保存新的或修改过的地址时，浮动表单会原样保留相对路径（`/`、`./`、`../`、`#`、`?`）和显式协议，将裸邮箱规范为 `mailto:`，将 `localhost` 规范为 `http://`，将裸域名或 IPv4 规范为 `https://`。遇到无效输入（例如普通单词或含空格文本）或 `allowedSchemes` 不允许的协议时，表单会保持打开并显示行内错误提示。只修改链接文本或新标签页选项时会保留已存储的 URL，即使 `allowedSchemes` 已不再允许该协议。
 
-当浮动工具栏指向的光标或选中文本在窗口中或在裁剪工具栏的滚动区域中滚出视野时，浮动工具栏会隐藏。在链接上，它指向光标，而不是整个链接。它的链接表单打开时，无论是新建链接还是编辑已有链接，它都不会隐藏，因此正在输入的草稿不会关闭，但它仍随所指的文本移动。不裁剪工具栏的滚动区域不会让它隐藏，例如静态滚动面板，而工具栏相对面板外的元素定位。
+在预览模式下，当锚点滚出裁剪容器时浮动工具栏会自动隐藏；表单打开期间则保持挂载并跟随选区移动，避免草稿丢失。
 
 </Steps>
 
 ## 键盘快捷键
 
 <KeyTable>
-  <KeyTableItem hotkey="Cmd + K">在选中文本上添加链接</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + K">
+    为选中文本添加链接，或编辑当前链接。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd / Ctrl + Click">
+    在新标签页中打开所点击的链接。
+  </KeyTableItem>
 </KeyTable>
 
 ## 插件
@@ -154,6 +161,8 @@ const editor = createEditor({
 URL 解析和无头交互行为共享同一个状态契约：
 
 ```tsx
+import { LinkPlugin } from 'platejs/react';
+
 LinkPlugin.configure({
   initialState: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
@@ -163,42 +172,26 @@ LinkPlugin.configure({
 
 <API name="LinkPlugin">
 
-选项：
-
-- `allowedSchemes?: string[]` 列出链接功能在插入、输入、粘贴或导入链接时接受的、
-  以及渲染时链接可以使用的 URL 协议。相对 URL 始终允许。可以为应用 deep link 添加 `vscode` 等协议。
-  `javascript:`、`vbscript:`、`data:` 等可执行脚本的 destination 永远不允许，
-  存储的 link URL 也必须满足这一下限。HTML 与 Markdown 导入会保留 destination
-  不被允许的 link 的文本，并报告被移除的 destination。协议不再被允许的已存储
-  link 保留其 URL，渲染时没有 `href`，导出时写出存储的 URL；以精确编辑器片段粘贴的
-  link 也是如此。默认值：
-  `['http', 'https', 'mailto', 'tel']`。
-
 <APIOptions type="object">
-<APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
-允许自定义 rangeBeforeOptions 配置。
-- **默认值:**
-```ts
-{
-  matchString: ' ',
-  skipInvalid: true,
-  afterMatch: true,
-}
-```
+<APIItem name="allowedSchemes" type="readonly string[]" optional>
+链接功能在插入、输入、粘贴或导入链接时接受的、以及渲染时链接可以使用的 URL 协议。相对 URL 始终允许。可添加 `vscode` 等协议用于应用 deep link。可执行脚本的协议（`javascript:`、`vbscript:`、`data:`、`blob:`）永远不允许。HTML 与 Markdown 导入会保留被拒绝链接的文本并报告被省略的地址。协议不再被允许的已存储链接保留其 URL，渲染时不含 `href`，导出时写出存储的 URL。
+- **默认值：** `['http', 'https', 'mailto', 'tel']`
 </APIItem>
-<APIItem name="defaultLinkAttributes" type="AnchorHTMLAttributes&lt;HTMLAnchorElement&gt;" optional>
-链接元素的默认HTML属性。
-- **默认值:** **`{}`**
+<APIItem name="defaultLinkAttributes" type="Record<string, unknown> & { className?: string; download?: boolean | string; rel?: string; target?: string; title?: string }" optional>
+合并到渲染链接元素上的默认 HTML 属性。传入的 `href` 会被忽略，`href` 仅来自通过校验的链接 URL。
+- **默认值：** `{}`
 </APIItem>
 <APIItem name="keepSelectedTextOnPaste" type="boolean" optional>
-粘贴链接时默认保留选中文本。
-- **默认值:** **`true`**
+在展开选区上粘贴 URL 时默认保留选中文本作为链接标签；设为 `false` 时会用粘贴的 URL 替换选区。
+- **默认值：** `true`
 </APIItem>
 <APIItem name="parseUrl" type="(text: string, defaultParseUrl: (text: string) => string | undefined) => string | undefined" optional>
-返回输入或粘贴文本对应的 href；文本不是链接时返回 `undefined`。自动链接规则会调用它；`upsert`、工具栏和导入不会。`defaultParseUrl` 接受带显式协议的完整词，例如 `https://example.com` 或 `tel:+15551234`，因此输入的 `#top`、`/docs` 和 `www.example.com` 保持为文本。安装 Markdown 粘贴时，粘贴的 `www.example.com` 仍可能成为链接。返回结果仍须通过 `allowedSchemes`。
-- **默认值:** **`(text, defaultParseUrl) => defaultParseUrl(text)`**
+返回输入或粘贴文本对应的 href；文本不是链接时返回 `undefined`。自动链接规则会调用它；`upsert`、表单和导入不会。`defaultParseUrl` 接受带显式协议的完整词（如 `https://example.com` 或 `tel:+15551234`）或 `www.` 域名（如 `www.example.com`，规范为 `https://www.example.com`）。返回结果仍须通过 `allowedSchemes`。
+- **默认值：** `(text, defaultParseUrl) => defaultParseUrl(text)`
 
 ```tsx
+import { LinkPlugin } from 'platejs/react';
+
 LinkPlugin.configure({
   initialState: {
     parseUrl: (text, defaultParseUrl) =>
@@ -212,23 +205,23 @@ LinkPlugin.configure({
 
 ## 更新方法
 
-`LinkPlugin` 将链接更新方法安装到编辑器上。配置后的编辑器会推断参数类型，
-无需传入编辑器或事务对象。
+`LinkPlugin` 将链接更新方法安装到编辑器上。配置后的编辑器会推断参数类型，无需传入编辑器或事务对象。
 
 ```tsx
-editor.update.link.upsert({ url: 'https://platejs.org', text: 'EditorRoot' });
+editor.update.link.upsert({
+  target: '_blank',
+  text: 'Plate',
+  url: 'https://platejs.org',
+});
 editor.update.link.unwrap({ split: true });
 ```
 
 | 更新方法 | 说明 |
 | --- | --- |
-| `editor.update.link.insert(node, options?)` | 插入链接节点；返回 `true`，URL 不被允许或无法插入节点时返回 `undefined`。 |
-| `editor.update.link.unwrap(options?)` | 解包匹配的链接；开启 `split` 时只取消选中文本的链接，光标处则取消整个链接；返回 `true`，没有移除链接时返回 `undefined`。 |
-| `editor.update.link.upsert(options)` | 处理 URL 输入后，在选区插入或更新链接。选区跨过或贴着链接边界，或包含整个链接时，只取消各链接中被选中的部分，再为选区加链接；选区在同一个链接内时更新该链接。链接加上时返回 `true`；编辑器拒绝该 update、URL 不被允许、没有选区、链接外的展开选区中没有文字，或该位置不能放链接（如代码块中或包含提及）时返回 `undefined`。在选中文字上返回 `undefined` 的调用，仍可能已取消选中部分的已有链接。 |
-| `editor.update.link.upsertText(options)` | 替换选区上方链接的文本。 |
-| `editor.update.link.wrap(options)` | 将选中文本包裹为链接；返回 `true`，URL 不被允许或没有包裹任何内容时返回 `undefined`。 |
+| `editor.update.link.upsert(options)` | 处理 URL 输入后，在 `options.at ?? selection` 插入、包裹或更新链接。接受 `{ url, text?, target?, at? }`。传入 `target: null` 或 `target: undefined` 会移除 `target`，省略 `target` 则保留已有链接的 `target`。传入 `at` 时保持当前实时选区不变。在跨链接或覆盖链接的选区上按块原子替换，无法容纳链接的块（如代码块或包含提及的选区）保持原样。文档发生变化时返回 `true`，无变化或被拒绝时返回 `undefined`。 |
+| `editor.update.link.unwrap(options?)` | 解包匹配的链接（`{ at?, mode?, split? }`）。开启 `split` 时只取消选中文本的链接，光标处则取消整个链接。移除链接时返回 `true`，否则返回 `undefined`。 |
 
-`insert`、`upsert` 和 `wrap` 会编码未转义的 URI 字符，并在修改文档前用 `allowedSchemes` 检查结果。已有的有效百分号转义保持不变，没有协议的 URL 会存为相对链接。
+`upsert` 会编码未转义的 URI 字符，并在修改文档前按 `allowedSchemes` 校验结果。有效百分号转义保持不变，无协议 URL 存为相对链接；仅修改已有链接的 `text` 或 `target` 而 URL 未变时跳过协议准入校验。
 
 ```tsx
 if (!editor.update.link.upsert({ url })) {
@@ -244,31 +237,6 @@ if (!editor.update.link.upsert({ url })) {
 | --- | --- |
 | `api.getAttributes(link)` | 返回链接元素经过清理的锚点属性；URL 不被允许时没有 `href`。 |
 
-### `CreateLinkNodeOptions`
-
-创建新链接节点的选项。
-
-<API name="CreateLinkNodeOptions">
-<APIOptions type="object">
-  <APIItem name="url" type="string">
-    正在创建的链接节点的URL。
-  </APIItem>
-  <APIItem name="text" type="string" optional>
-    链接节点显示的文本。如果未提供，则使用URL作为显示文本。
-  </APIItem>
-  <APIItem name="target" type="string" optional>
-    指定打开URL的位置：
-    - `_blank`: 新标签页
-    - `_self`: 相同框架
-    - `_parent`: 父框架
-    - `_top`: 整个窗口
-  </APIItem>
-  <APIItem name="children" type="Text[]" optional>
-    表示链接内容的文本节点数组。
-  </APIItem>
-</APIOptions>
-</API>
-
 ## API 参考
 
 ### `getLinkHref`
@@ -283,64 +251,29 @@ const allowedSchemes = usePluginStore(LinkPlugin, 'allowedSchemes');
 const href = getLinkHref(url, { allowedSchemes });
 ```
 
-编辑器没有安装 `LinkPlugin` 时，`usePluginStore` 会抛出错误。可能在没有它的编辑器中运行的代码先检查 `editor.plugin(LinkPlugin).installed`。安装了链接插件时，在子组件中读取 store，因为 Hook 不能按条件调用。否则调用 `getLinkHref(url)` 使用默认协议。
+编辑器没有安装 `LinkPlugin` 时，`usePluginStore` 会抛出错误。可能在没有它的编辑器中运行的代码先检查 `editor.plugin(LinkPlugin).installed`，安装时在子组件中读取 store，否则调用 `getLinkHref(url)` 使用默认协议。
 
 <API name="getLinkHref">
 <APIParameters>
   <APIItem name="url" type="string">
-    保存或输入的地址。首尾空格会被去除。以 `//` 开头，或包含反斜杠或控制字符（例如制表符）的地址会被拒绝。
+    保存或输入的地址。首尾空格会被去除。以 `//` 开头，或包含反斜杠或控制字符的地址会被拒绝。
   </APIItem>
   <APIItem name="options.allowedSchemes" type="readonly string[]" optional>
     除相对 URL 外允许的协议。默认为 `['http', 'https', 'mailto', 'tel']`。编辑器安装了 `LinkPlugin` 时，传入它的 `allowedSchemes`。`javascript:`、`data:` 等可执行脚本的协议始终被拒绝。
   </APIItem>
 </APIParameters>
 <APIReturns type="string | undefined">
-  去除首尾空格后的 href；地址被拒绝或格式错误（例如没有主机的 `https://`）时为 `undefined`。
+  去除首尾空格后的 href；地址被拒绝或格式错误时为 `undefined`。
 </APIReturns>
-</API>
-
-### `linkUrlValidation`
-
-用于已存储导航地址的 schema 属性校验契约。在存储导航 URL 的自定义插件（例如标签 chip）上将其传给 `property.string(linkUrlValidation)`（或展开为 `{ required: true, ...linkUrlValidation }`），即可执行与 `LinkPlugin` 相同的存储安全下限与 schema `validationVersion`。
-
-```tsx
-import { definePlugin, linkUrlValidation, property } from 'platejs';
-
-export const TagPlugin = definePlugin('tag', {
-  schema: {
-    element: {
-      properties: {
-        url: property.string(linkUrlValidation),
-        value: property.string({ required: true }),
-      },
-      void: 'inline',
-    },
-  },
-});
-```
-
-`linkUrlValidation.validate(value)` 接受空字符串、不以 `//` 开头的相对 URL，以及不在可执行脚本下限（`javascript:`、`vbscript:`、`data:`、`blob:`、`filesystem:`）内的有效绝对 URL，并拒绝控制字符和反斜杠。渲染时请使用 `getLinkHref` 按 `allowedSchemes` 检查。
-
-<API name="linkUrlValidation">
-<APIAttributes>
-  <APIItem name="validate" type="(value: unknown) => value is string">
-    当 `value` 通过已存储导航 URL 下限时返回 `true`。
-  </APIItem>
-  <APIItem name="validationVersion" type="number">
-    纳入编辑器编译 schema 指纹的校验版本号。
-  </APIItem>
-</APIAttributes>
 </API>
 
 ## Registry 链接界面
 
-复制的 `link` 项负责浮动状态、定位、热键、外部点击、URL 输入和
-工具栏命令。它导出应用本地的 `linkPlugin` 描述符和
-`LinkFloatingToolbar` 组件。
+复制的 `link` 项负责浮动界面状态（`ui: closed | view | form`）、定位、热键、输入校验、锁定与建议编辑保护以及工具栏命令。它导出应用本地的 `linkPlugin` 描述符和 `LinkFloatingToolbar` 组件。
 
 <ComponentSource name="link" />
 
-其他复制 UI 需要打开工具栏时，使用这个精确描述符。
+其他复制 UI 需要打开或关闭工具栏时，使用这个精确描述符。
 
 ```tsx
 import { linkPlugin } from '@/components/editor/link';
@@ -351,4 +284,5 @@ link.api.trigger({ focused: true });
 link.api.triggerEdit();
 link.api.triggerInsert({ focused: true });
 link.api.submit();
+link.api.unlink();
 ```

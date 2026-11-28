@@ -17,9 +17,10 @@ docs:
 
 ## Features
 
-- Insert, edit, and remove hyperlinks.
-- Markdown shortcut: type `[text](url)` and close with `)` to turn it into a link.
-- Plain URL autolink: paste a URL, or type a URL then press space or `Enter`. With `MediaKit`, a video or post link pasted alone on an empty line lands as a link. Then an embed of that link goes in above the line, and the line empties, as [Media](/docs/media#input-rules) describes.
+- Insert, edit, copy, preview, and remove hyperlinks from a floating toolbar, toolbar button, or `Cmd/Ctrl+K`.
+- `Cmd/Ctrl+click` on a rendered link opens its destination in a new tab; a plain click places the caret for editing.
+- Markdown shortcut: type `[text](url)` (including balanced destination parentheses and formatted labels) and close with `)` to turn it into a link.
+- Plain URL autolink: paste a URL, or type a URL or `www.` domain then press space or `Enter` (surrounding wrappers and trailing sentence punctuation stay plain text). With `MediaKit`, a video or post link pasted alone on an empty line lands as a link, then converts into an embed above the empty line as [Media](/docs/media#input-rules) describes.
 
 </PackageInfo>
 
@@ -29,12 +30,12 @@ docs:
 
 ### Installation
 
-The fastest way to add link functionality is with the `LinkKit`, which includes pre-configured `LinkPlugin` with floating toolbar, autolink rules, and [Plate UI](/docs/installation/plate-ui) components.
+Install `LinkKit` to get pre-configured `linkPlugin`, floating toolbar UI, autolink rules, and [Plate UI](/docs/installation/plate-ui) components.
 
 <ComponentSource name="link" />
 
-- [`LinkElement`](/docs/components/link): Renders link elements.
-- [`LinkFloatingToolbar`](/docs/components/link): Provides floating toolbar for link editing.
+- [`LinkElement`](/docs/components/link): Renders link elements with `Cmd/Ctrl+click` navigation.
+- [`LinkFloatingToolbar`](/docs/components/link): Provides the link view popover (URL preview, copy, edit, remove) and edit/insert form.
 
 ### Add kit
 
@@ -69,9 +70,7 @@ npm install platejs
 Include `LinkPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { LinkRules } from 'platejs';
-import { LinkPlugin } from 'platejs/react';
-import { createEditor } from 'platejs/react';
+import { createEditor, LinkPlugin } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [
@@ -83,18 +82,20 @@ const editor = createEditor({
 
 ### Configure plugin
 
-Configure the plugin with floating toolbar and custom components.
+Configure the copied `linkPlugin` descriptor when attaching `LinkFloatingToolbar`, because the toolbar reads the floating UI state and actions owned by `linkPlugin`. Use `LinkPlugin.configure({ component: LinkElement })` when you only need link rendering without the floating toolbar.
 
 ```tsx
-import { LinkPlugin } from 'platejs/react';
 import { createEditor } from 'platejs/react';
-import { LinkElement } from '@/components/editor/link';
-import { LinkFloatingToolbar } from '@/components/editor/link';
+import {
+  LinkElement,
+  LinkFloatingToolbar,
+  linkPlugin,
+} from '@/components/editor/link';
 
 const editor = createEditor({
   plugins: [
     // ...otherPlugins,
-    LinkPlugin.configure({
+    linkPlugin.configure({
       component: LinkElement,
       slots: {
         caret: LinkFloatingToolbar,
@@ -104,16 +105,16 @@ const editor = createEditor({
 });
 ```
 
-- `slots.caret`: Renders [`LinkFloatingToolbar`](/docs/components/link) after the editable area for link editing, on the view that holds the caret, such as a board note.
-- `.configure({ component: LinkElement })`: Renders link elements with
-  [`LinkElement`](/docs/components/link).
+- `slots.caret`: Renders [`LinkFloatingToolbar`](/docs/components/link) after the editable area on the view that holds the caret.
+- `.configure({ component: LinkElement })`: Renders link elements with [`LinkElement`](/docs/components/link).
 
 ### Input rules
 
-Configure `LinkPlugin` to enable the built-in link input presets:
+Configure `LinkPlugin` (or `linkPlugin`) to enable the built-in link input presets:
 
 ```tsx
-import { LinkPlugin } from 'platejs/react';
+import { LinkRules } from 'platejs';
+import { createEditor, LinkPlugin } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [
@@ -129,23 +130,28 @@ const editor = createEditor({
 });
 ```
 
-- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`: Enables plain URL autolink. A pasted or typed token becomes a link when `parseUrl` recognizes it and `allowedSchemes` allows the result; otherwise the paste, space or `Enter` goes on as usual.
-- `LinkRules.markdown()`: Enables `[text](url)` source-entry conversion on the closing `)`. Image source, `![alt](src)`, stays text.
+- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`: Enables plain URL autolink. On space or `Enter`, leading wrappers and trailing sentence punctuation stay outside the link before `parseUrl` runs; on paste, exact clipboard text runs through `parseUrl`. The token becomes a link when `parseUrl` recognizes it and `allowedSchemes` allows the result.
+- `LinkRules.markdown()`: Turns `[text](url)` into a link on the closing `)`, preserving balanced parentheses in the destination and formatted text in the label. Image source (`![alt](src)`) and ranges containing inline elements stay text.
 
 ### Add toolbar button
 
-You can add [`LinkToolbarButton`](/docs/components/link-toolbar-button) to your [Toolbar](/docs/toolbar) to insert and edit links.
+Add [`LinkToolbarButton`](/docs/components/link-toolbar-button) to your [Toolbar](/docs/toolbar) to insert a new link or edit the active link.
 
-The floating toolbar saves a new or changed address that starts with `http://` or `https://`, has another scheme such as `mailto:`, or starts with `/`, `./`, `../`, `#` or `?`. It stays open on any other draft, such as `www.example.com` or `https:www.example.com`, and when `allowedSchemes` refuses the address. Editing only the link text keeps the stored address, even one `allowedSchemes` no longer allows.
+When saving a new or changed URL, the floating link form keeps relative paths (`/`, `./`, `../`, `#`, `?`) and explicit schemes verbatim, normalizes bare emails to `mailto:`, normalizes `localhost` addresses to `http://`, and normalizes bare domains or IPv4 addresses to `https://`. It stays open with an inline alert on invalid input (such as a bare word or spaces) or when `allowedSchemes` refuses the scheme. Editing only the link text or new-tab setting keeps the stored URL, even if `allowedSchemes` no longer allows it.
 
-The floating toolbar hides when the cursor or selected text it points to scrolls out of view in the window or in a scroll area that clips the toolbar. On a link, it points to the cursor, not the whole link. While its link form is open, for a new link or an existing one, it does not hide, so a draft you are typing stays open, but it still moves with the text it points to. A scroll area that does not clip the toolbar, such as a static scroll panel when the toolbar is positioned against an element outside the panel, does not hide it.
+The floating toolbar hides when its anchor scrolls out of a clipping container in view mode. While the form is open, it stays mounted and tracks the selection so your draft is not lost.
 
 </Steps>
 
 ## Keyboard shortcuts
 
 <KeyTable>
-  <KeyTableItem hotkey="Cmd + K">Add a link on the selected text.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + K">
+    Insert a link on the selection, or edit the active link.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd / Ctrl + Click">
+    Open the clicked link in a new tab.
+  </KeyTableItem>
 </KeyTable>
 
 ## Plate Plus
@@ -161,6 +167,8 @@ Plugin for link formatting.
 URL parsing and headless interaction behavior share one state contract:
 
 ```tsx
+import { LinkPlugin } from 'platejs/react';
+
 LinkPlugin.configure({
   initialState: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
@@ -170,44 +178,26 @@ LinkPlugin.configure({
 
 <API name="LinkPlugin">
 
-Options:
-
-- `allowedSchemes?: string[]` lists the URL schemes the link feature accepts when it
-  inserts, types, pastes or imports a link, and that a rendered link may use.
-  Relative URLs are always allowed. Add a scheme such as `vscode` for app deep links. Script-capable
-  destinations, such as `javascript:`, `vbscript:`, and `data:`, are never
-  allowed, and a stored link URL must pass that floor. HTML and Markdown import
-  keep the label of a link whose destination is not allowed and report the
-  removed destination. A stored link whose scheme is no longer allowed keeps
-  its URL, renders without an `href`, and exports its stored URL, and so does
-  a link pasted as an exact editor fragment. Default:
-  `['http', 'https', 'mailto', 'tel']`.
-
 <APIOptions type="object">
-<APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
-Allows custom configurations for rangeBeforeOptions.
-- **Default:**
-```ts
-{
-  matchString: ' ',
-  skipInvalid: true,
-  afterMatch: true,
-}
-```
+<APIItem name="allowedSchemes" type="readonly string[]" optional>
+URL schemes the link feature accepts when inserting, typing, pasting, or importing a link, and that a rendered link may use. Relative URLs are always allowed. Add a scheme such as `vscode` for app deep links. Script-capable destinations (`javascript:`, `vbscript:`, `data:`, `blob:`) are never allowed. HTML and Markdown imports keep the label of a refused link and report the omitted destination. Stored links whose scheme is no longer allowed keep their URL, render without `href`, and export their stored URL.
+- **Default:** `['http', 'https', 'mailto', 'tel']`
 </APIItem>
-<APIItem name="defaultLinkAttributes" type="AnchorHTMLAttributes&lt;HTMLAnchorElement&gt;" optional>
-Default HTML attributes for link elements.
-- **Default:** **`{}`**
+<APIItem name="defaultLinkAttributes" type="Record<string, unknown> & { className?: string; download?: boolean | string; rel?: string; target?: string; title?: string }" optional>
+Default HTML attributes merged onto rendered link elements. Any `href` key is ignored; `href` comes only from the admitted link URL.
+- **Default:** `{}`
 </APIItem>
 <APIItem name="keepSelectedTextOnPaste" type="boolean" optional>
-Keeps selected text on pasting links by default.
-- **Default:** **`true`**
+Keeps selected text as the link label when pasting a URL over an expanded selection. When `false`, pasting replaces the selection with a link whose text is the pasted URL.
+- **Default:** `true`
 </APIItem>
 <APIItem name="parseUrl" type="(text: string, defaultParseUrl: (text: string) => string | undefined) => string | undefined" optional>
-Returns the href for typed or pasted text, or `undefined` when the text is not a link. The autolink rules call it; `upsert`, the toolbar and imports do not. `defaultParseUrl` accepts a whole token with an explicit scheme, such as `https://example.com` or `tel:+15551234`, so typed `#top`, `/docs` and `www.example.com` stay text. With Markdown paste installed, a pasted `www.example.com` can still become a link. The result still has to pass `allowedSchemes`.
-- **Default:** **`(text, defaultParseUrl) => defaultParseUrl(text)`**
+Returns the href for typed or pasted text, or `undefined` when the text is not a link. Autolink rules call it; `upsert`, the form, and imports do not. `defaultParseUrl` accepts a whole token with an explicit scheme (such as `https://example.com` or `tel:+15551234`) or a `www.` domain (such as `www.example.com`, normalized to `https://www.example.com`). The returned href still has to pass `allowedSchemes`.
+- **Default:** `(text, defaultParseUrl) => defaultParseUrl(text)`
 
 ```tsx
+import { LinkPlugin } from 'platejs/react';
+
 LinkPlugin.configure({
   initialState: {
     parseUrl: (text, defaultParseUrl) =>
@@ -221,23 +211,23 @@ LinkPlugin.configure({
 
 ## Updates
 
-`LinkPlugin` installs link updates on the editor. Types are inferred from the
-configured editor, so no editor argument or transaction helper is required.
+`LinkPlugin` installs link updates on the editor. Types are inferred from the configured editor, so no editor argument or transaction helper is required.
 
 ```tsx
-editor.update.link.upsert({ url: 'https://platejs.org', text: 'EditorRoot' });
+editor.update.link.upsert({
+  target: '_blank',
+  text: 'Plate',
+  url: 'https://platejs.org',
+});
 editor.update.link.unwrap({ split: true });
 ```
 
 | Update | Description |
 | --- | --- |
-| `editor.update.link.insert(node, options?)` | Inserts a link node; returns `true`, or `undefined` when the URL is not allowed or the node cannot be inserted. |
-| `editor.update.link.unwrap(options?)` | Unwraps matching links; with `split`, unlinks only the selected text, or the whole link at a caret; returns `true`, or `undefined` when no link was removed. |
-| `editor.update.link.upsert(options)` | Prepares URL input, then inserts or updates a link at the selection. Over selected text that crosses or touches a link's edge or covers whole links, it unlinks only the selected part of each link and links the selection; a selection inside one link updates that link. Returns `true` when the link lands, or `undefined` when the editor refuses the update, the URL is not allowed, there is no selection, an expanded selection outside a link holds no text, or a link cannot go there, such as in a code block or over a mention. A call that returns `undefined` over selected text may still have unlinked the selected part of an old link. |
-| `editor.update.link.upsertText(options)` | Replaces the text of the link above the selection. |
-| `editor.update.link.wrap(options)` | Wraps the selected text in a link; returns `true`, or `undefined` when the URL is not allowed or nothing was wrapped. |
+| `editor.update.link.upsert(options)` | Prepares URL input, then inserts, wraps, or updates a link at `options.at ?? selection`. Takes `{ url, text?, target?, at? }`. Passing `target: null` or `target: undefined` unsets `target`, while omitting `target` keeps an existing link's `target`. Passing `at` preserves the live selection. Over selected text crossing or covering links, existing links are replaced atomically per block so refused blocks (such as code blocks or ranges holding mentions) stay untouched. Returns `true` when the document changed, or `undefined` on no-op or refusal. |
+| `editor.update.link.unwrap(options?)` | Unwraps matching links (`{ at?, mode?, split? }`). With `split`, unlinks only the selected text, or the whole link at a caret. Returns `true`, or `undefined` when no link was removed. |
 
-`insert`, `upsert` and `wrap` encode unescaped URI characters and check the result against `allowedSchemes` before changing the document. They keep valid percent escapes and store a URL without a scheme as a relative link.
+`upsert` encodes unescaped URI characters and checks the result against `allowedSchemes` before changing the document. It keeps valid percent escapes, stores a scheme-less URL as a relative link, and skips scheme admission when updating only `text` or `target` on an existing link whose URL is unchanged.
 
 ```tsx
 if (!editor.update.link.upsert({ url })) {
@@ -253,36 +243,11 @@ Read link behavior through the installed plugin:
 | --- | --- |
 | `api.getAttributes(link)` | Returns sanitized anchor attributes for a link element; `href` is absent when the URL is not allowed. |
 
-### `CreateLinkNodeOptions`
-
-Options for creating a new link node.
-
-<API name="CreateLinkNodeOptions">
-<APIOptions type="object">
-  <APIItem name="url" type="string">
-    The URL of the link node that is being created.
-  </APIItem>
-  <APIItem name="text" type="string" optional>
-    The text that is displayed for the link node. If not provided, the URL is used as the display text.
-  </APIItem>
-  <APIItem name="target" type="string" optional>
-    Specifies where to open the URL:
-    - `_blank`: new tab
-    - `_self`: same frame
-    - `_parent`: parent frame
-    - `_top`: full window
-  </APIItem>
-  <APIItem name="children" type="Text[]" optional>
-    An array of text nodes that represent the link content.
-  </APIItem>
-</APIOptions>
-</API>
-
 ## API Reference
 
 ### `getLinkHref`
 
-Returns the href a link may navigate to. The link feature runs the same check before it renders an `href`. Copied UI that renders a stored address as a link, such as a tag chip, calls it to link only what a link would.
+Returns the href a link may navigate to. The link feature runs the same check before rendering an `href`. Copied UI that renders a stored address as a link, such as a tag chip, calls it to link only what a link allows.
 
 ```tsx
 import { getLinkHref } from 'platejs';
@@ -292,64 +257,29 @@ const allowedSchemes = usePluginStore(LinkPlugin, 'allowedSchemes');
 const href = getLinkHref(url, { allowedSchemes });
 ```
 
-`usePluginStore` throws when the editor does not install `LinkPlugin`. Code that may run without it checks `editor.plugin(LinkPlugin).installed` first. When link is installed, it reads the store in a child component, because a hook cannot run conditionally. Otherwise it calls `getLinkHref(url)` for the default schemes.
+`usePluginStore` throws when the editor does not install `LinkPlugin`. Code that may run without it checks `editor.plugin(LinkPlugin).installed` first, reads the store in a child component when installed, and otherwise calls `getLinkHref(url)` with the default schemes.
 
 <API name="getLinkHref">
 <APIParameters>
   <APIItem name="url" type="string">
-    The stored or typed address. Surrounding spaces are trimmed. An address that starts with `//` or holds a backslash or a control character, such as a tab, is refused.
+    The stored or typed address. Surrounding spaces are trimmed. An address starting with `//` or holding a backslash or control character is refused.
   </APIItem>
   <APIItem name="options.allowedSchemes" type="readonly string[]" optional>
     Schemes allowed besides relative URLs. Defaults to `['http', 'https', 'mailto', 'tel']`. Pass `LinkPlugin`'s `allowedSchemes` when the editor installs it. Script-capable schemes such as `javascript:` and `data:` are always refused.
   </APIItem>
 </APIParameters>
 <APIReturns type="string | undefined">
-  The trimmed href, or `undefined` when the address is refused or malformed, such as `https://` with no host.
+  The trimmed href, or `undefined` when the address is refused or malformed.
 </APIReturns>
-</API>
-
-### `linkUrlValidation`
-
-Schema property validation contract for a stored navigation destination. Pass it to `property.string(linkUrlValidation)` (or spread it with `{ required: true, ...linkUrlValidation }`) on custom plugins that store a navigation URL, such as a tag chip, so they enforce the same storage floor and schema `validationVersion` as `LinkPlugin`.
-
-```tsx
-import { definePlugin, linkUrlValidation, property } from 'platejs';
-
-export const TagPlugin = definePlugin('tag', {
-  schema: {
-    element: {
-      properties: {
-        url: property.string(linkUrlValidation),
-        value: property.string({ required: true }),
-      },
-      void: 'inline',
-    },
-  },
-});
-```
-
-`linkUrlValidation.validate(value)` accepts the empty string, relative URLs outside `//`, and valid absolute URLs outside the script-capable floor (`javascript:`, `vbscript:`, `data:`, `blob:`, `filesystem:`), rejecting control characters and backslashes. Use `getLinkHref` when rendering to enforce `allowedSchemes`.
-
-<API name="linkUrlValidation">
-<APIAttributes>
-  <APIItem name="validate" type="(value: unknown) => value is string">
-    Returns `true` when `value` passes the stored navigation URL floor.
-  </APIItem>
-  <APIItem name="validationVersion" type="number">
-    Version tracked in the editor's compiled schema fingerprint.
-  </APIItem>
-</APIAttributes>
 </API>
 
 ## Registry link UI
 
-The copied `link` item owns floating state, positioning, hotkeys,
-outside clicks, URL input, and toolbar commands. It exports the app-local
-`linkPlugin` descriptor and `LinkFloatingToolbar` component.
+The copied `link` item owns floating UI state (`ui: closed | view | form`), positioning, hotkeys, validation, lock and suggestion edit guards, and toolbar commands. It exports the app-local `linkPlugin` descriptor and `LinkFloatingToolbar` component.
 
 <ComponentSource name="link" />
 
-Use that exact descriptor when another copied UI surface opens the toolbar.
+Use that exact descriptor when another copied UI surface opens or closes the toolbar.
 
 ```tsx
 import { linkPlugin } from '@/components/editor/link';
@@ -360,4 +290,5 @@ link.api.trigger({ focused: true });
 link.api.triggerEdit();
 link.api.triggerInsert({ focused: true });
 link.api.submit();
+link.api.unlink();
 ```

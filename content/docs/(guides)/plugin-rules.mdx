@@ -807,35 +807,6 @@ After pressing `←`:
 
 Typing would extend the bold formatting, which is not possible with `default` affinity.
 
-```tsx
-import { LinkPlugin } from 'platejs/react';
-
-const plugins = [
-  // ...otherPlugins,
-  LinkPlugin.configure({
-    rules: {
-      selection: { affinity: 'directional' },
-    },
-  }),
-];
-```
-
-**Movement from right (outward affinity):**
-```tsx
-<p>
-  Visit <a href="https://example.com">our website</a> |for more information text.
-</p>
-```
-
-After pressing `←`:
-```tsx
-<p>
-  Visit <a href="https://example.com">our website</a>| for more information text.
-</p>
-```
-
-Cursor movement direction determines whether new text extends the link or creates new text outside it.
-
 #### `outward`
 
 Forces outward affinity, automatically clearing marks when typing at their boundaries. This creates a natural "exit" behavior from formatted text.

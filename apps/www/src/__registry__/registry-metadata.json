@@ -1,5 +1,5 @@
 {
-  "generation": "0a9ac8137e7691cf611fa1cf9c592e92e0c73d34b37d1ab8a511fc0d8a2299be",
+  "generation": "9ec719739fadc92fa651efdc8d9cdd5f534fb89556cb45d2bda6bc1e9ca3f06a",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -7431,10 +7431,10 @@
           "dependencies": [
             "@platejs/test"
           ],
-          "description": "Hyperlinks with toolbar insertion and URL pasting support.",
+          "description": "Hyperlinks with toolbar insertion, floating actions, and URL autolink.",
           "files": [
             {
-              "path": "examples/demo.tsx",
+              "path": "examples/link-demo.tsx",
               "type": "registry:example"
             },
             {
@@ -7453,10 +7453,12 @@
           },
           "name": "link-demo",
           "registryDependencies": [
-            "@plate/link",
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
             "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
+            "@plate/link",
+            "@plate/link-toolbar-button",
+            "@plate/toolbar"
           ],
           "type": "registry:example"
         },
@@ -15483,10 +15485,10 @@
           "dependencies": [
             "@platejs/test"
           ],
-          "description": "Hyperlinks with toolbar insertion and URL pasting support.",
+          "description": "Hyperlinks with toolbar insertion, floating actions, and URL autolink.",
           "files": [
             {
-              "path": "examples/demo.tsx",
+              "path": "examples/link-demo.tsx",
               "type": "registry:example"
             },
             {
@@ -15505,10 +15507,12 @@
           },
           "name": "link-demo",
           "registryDependencies": [
-            "@plate/link",
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
             "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
+            "@plate/link",
+            "@plate/link-toolbar-button",
+            "@plate/toolbar"
           ],
           "type": "registry:example"
         },
