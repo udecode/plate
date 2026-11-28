@@ -166,7 +166,7 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "181df56d00ea9ba8ed07d2b8b00a9d028dd99cfa2f527e02075cb5581bfd1182",
+  "generation": "ff6a9c2a377affc4c83a2056feb2b2fae7f4804044edb54db4bbd385a1887cba",
   "itemCount": 207,
   "payloads": {
     "overlays/base-luma/block-list-static.json": "e76880defe81288aaabb100d09de9bef1b2f83000709a0cb59cb1abd7aadc289",
@@ -352,7 +352,7 @@
     "r/font-static.json": "835d97cf0300a07eeb78a0afc1ca260f783cd5add6484fabe8d39aab992ac774",
     "r/font.json": "4cc318c50edae901ae1cd71dc1c80de9c9835dbdf4349f58a13617ec609dcfb0",
     "r/footnote-static.json": "d30d88907563c28da97ba93d4859059e963d45eeb8553c7dfe22fe22d2b432d3",
-    "r/footnote.json": "4229d950de8c0a598b22ff447d28a4561cc057e02d116b79f76844701e7e169a",
+    "r/footnote.json": "8e0511401a39bc381742cf0a52771347d1aa26874f69c4a21ad319b659abaac4",
     "r/format-painter-toolbar-button.json": "b44c8b8b8a8eb9e46c6a2ee088494a2ab6181cebb915becd0f149e7b892bb3a5",
     "r/format-painter.json": "f84fe43e9ef5d5dac3976866f7ed78148d3bd428d021d220287bfebed4d89593",
     "r/formatting.json": "4347bfc7df2ae52ed42313e6ae87c0a9e7e6bc8616eea7eee29b2145189b74ae",
@@ -560,7 +560,7 @@
     "rd/font-static.json": "835d97cf0300a07eeb78a0afc1ca260f783cd5add6484fabe8d39aab992ac774",
     "rd/font.json": "91ef95a2d82ca7c16385992a857034c3488f94073ecf5ffd27b2f91bd792d8e8",
     "rd/footnote-static.json": "d30d88907563c28da97ba93d4859059e963d45eeb8553c7dfe22fe22d2b432d3",
-    "rd/footnote.json": "357b6dc16ce6e911e5ed9e279e08999b2d2feb9f5c9a31b87c74f08aa1965ae7",
+    "rd/footnote.json": "e3036875491ca296839c0cd973f098ac6088a5be38988ac828db81a0b7b6e5a6",
     "rd/format-painter-toolbar-button.json": "c5453f9487263517532d677f57074534889c2cc67fd7c16e86ba1023273bfefb",
     "rd/format-painter.json": "f84fe43e9ef5d5dac3976866f7ed78148d3bd428d021d220287bfebed4d89593",
     "rd/formatting.json": "4347bfc7df2ae52ed42313e6ae87c0a9e7e6bc8616eea7eee29b2145189b74ae",

@@ -270,7 +270,7 @@ export function FootnoteReferenceElement(
               data-state={isResolved ? 'resolved' : 'unresolved'}
               className={cn(
                 'cursor-pointer rounded-xs px-0.5 font-medium text-primary text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 group-data-[nav-target=true]/footnote-ref:bg-highlight/30',
-                'data-[state=unresolved]:border data-[state=unresolved]:border-amber-500/60 data-[state=unresolved]:border-dashed data-[state=unresolved]:bg-amber-500/10 data-[state=unresolved]:text-amber-700 dark:data-[state=unresolved]:text-amber-300',
+                'data-[state=unresolved]:border data-[state=unresolved]:border-amber-500/60 data-[state=unresolved]:border-dashed data-[state=unresolved]:bg-amber-500/10 data-[state=unresolved]:text-amber-800 dark:data-[state=unresolved]:text-amber-300',
                 ((selected && focused) || isSelectionInsideAtom) &&
                   'ring-2 ring-ring ring-offset-1'
               )}
@@ -356,7 +356,7 @@ export function FootnoteReferenceElement(
                   [^{ref}]
                 </span>
                 {isResolved ? null : (
-                  <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                  <span className="text-xs font-medium text-amber-800 dark:text-amber-300">
                     No definition
                   </span>
                 )}
@@ -466,7 +466,7 @@ export function FootnoteDefinitionElement(
     >
       <div contentEditable={false}>
         {isDuplicateDefinition ? (
-          <span className="min-w-3 text-xs text-amber-700 tabular-nums dark:text-amber-300">
+          <span className="min-w-3 text-xs text-amber-800 tabular-nums dark:text-amber-300">
             {ref}
           </span>
         ) : referenceCount === 0 ? (
@@ -580,7 +580,7 @@ export function FootnoteDefinitionElement(
           >
             <span
               data-slot="footnote-duplicate-badge"
-              className="rounded-xs border border-amber-500/40 bg-amber-500/10 px-1 text-[10px] leading-4 font-medium tracking-wide text-amber-700 uppercase dark:text-amber-300"
+              className="rounded-xs border border-amber-500/40 bg-amber-500/10 px-1 text-[10px] leading-4 font-medium tracking-wide text-amber-800 uppercase dark:text-amber-300"
             >
               Duplicate
             </span>
@@ -589,7 +589,7 @@ export function FootnoteDefinitionElement(
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-6 rounded-xs border-amber-500/40 px-2 text-[11px] text-amber-700 hover:bg-amber-500/10 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200"
+                className="h-6 rounded-xs border-amber-500/40 px-2 text-[11px] text-amber-800 hover:bg-amber-500/10 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-200"
                 disabled={renumberLocked}
                 onClick={(event) => {
                   event.preventDefault();
