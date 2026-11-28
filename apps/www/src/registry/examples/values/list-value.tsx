@@ -38,28 +38,12 @@ export const listValue: Value = (
     <hp indent={3} listId="roman" listType="numbered">
       Decimal 112
     </hp>
-
-    {/* <hp indent={3} listStyle="lower-latin" listType="numbered"> */}
-    {/*  7K-T */}
-    {/* </hp> */}
-    {/* <hp indent={3} listStyle="lower-latin" listType="numbered"> */}
-    {/*  7K-TM */}
-    {/* </hp> */}
     <hp indent={2} listId="roman" listType="numbered">
       Decimal 12
     </hp>
     <hp indent={2} listId="roman" listType="numbered">
       Decimal 13
     </hp>
-    {/* <hp indent={2} listType="numbered"> */}
-    {/*  Soyuz TMA (retired) */}
-    {/* </hp> */}
-    {/* <hp indent={2} listType="numbered"> */}
-    {/*  Soyuz TMA-M (retired) */}
-    {/* </hp> */}
-    {/* <hp indent={2} listType="numbered"> */}
-    {/*  Soyuz MS */}
-    {/* </hp> */}
     <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       Roman 2
     </hp>
@@ -69,15 +53,6 @@ export const listValue: Value = (
     <hp indent={2} listId="roman" listType="numbered">
       Decimal 12
     </hp>
-    {/* <hp indent={2} listType="numbered"> */}
-    {/*  Discovery */}
-    {/* </hp> */}
-    {/* <hp indent={2} listType="numbered"> */}
-    {/*  Atlantis */}
-    {/* </hp> */}
-    {/* <hp indent={2} listType="numbered"> */}
-    {/*  Endeavour */}
-    {/* </hp> */}
     <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       Roman 3
     </hp>

@@ -1,5 +1,5 @@
 {
-  "generation": "b79f3d137c5a38ae0401a9fdfa2986f6fa292d62c735753e0be5a455992e346e",
+  "generation": "bcee54e22e60a5546309523552da78c280a3cb04f4d2425c04e26c6a310ec6b2",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -703,7 +703,9 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "button",
+            "input"
           ]
         },
         {
@@ -8726,7 +8728,9 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "button",
+            "input"
           ]
         },
         {

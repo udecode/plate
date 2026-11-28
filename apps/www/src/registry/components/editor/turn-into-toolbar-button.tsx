@@ -110,7 +110,6 @@ const turnIntoList = defineCommand<
       ) {
         return;
       }
-      tx.plugin(BaseListPlugin).clear();
       applied = tx.plugin(BaseListPlugin).toggle({ type });
     });
 

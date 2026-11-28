@@ -134,6 +134,32 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "href": "/registry/changelog/2026-11-28-list-toolbar-and-menu-ergonomics.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix list style dropdown, nested Turn into, and list Outdent, and add Start at and block-menu list controls",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "list-toolbar-button",
+        "indent-toolbar-button",
+        "turn-into-toolbar-button",
+        "block-menu",
+        "block-list",
+        "block-list-static",
+        "list"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-remove-raw-html-plugin",
       "href": "/registry/changelog/2026-11-28-remove-raw-html-plugin.json",
       "status": "draft",

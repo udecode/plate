@@ -624,10 +624,6 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                       .listStyleType;
                     if (parentListStyle) {
                       htmlElement.dataset.listStyle = parentListStyle;
-                    } else if (listParent.tagName === 'UL') {
-                      delete htmlElement.dataset.listStyle;
-                    } else if (listParent.tagName === 'OL') {
-                      delete htmlElement.dataset.listStyle;
                     }
                   }
                 }
@@ -1013,7 +1009,11 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       ) => {
         const element = tx.schema.create(
           editor.plugin(BaseParagraphPlugin).schema.type,
-          { indent: 1, listType: type }
+          {
+            indent: 1,
+            listType: type,
+            ...(type === ListType.Task ? { checked: false } : {}),
+          }
         );
 
         if (!tx.blocks.insert(element, options)) return false;
@@ -1285,7 +1285,13 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               mode: 'lowest',
             });
 
-            if (!entry || entry[0].listRestart === start) return false;
+            if (
+              !entry ||
+              hasNonWritableAt(editor, entry[1]) ||
+              entry[0].listRestart === start
+            ) {
+              return false;
+            }
             tx.nodes.set({ listRestart: start }, { at: entry[1] });
 
             return true;

@@ -17,7 +17,6 @@ type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
 // marker on the block itself.
 export const drawsBulletOnRoot = (editor: Editor, element: Element) =>
   element.listType === ListType.Bulleted &&
-  !isOrderedList(element) &&
   [BaseDetailsPlugin, BaseImagePlugin].some((descriptor) => {
     const plugin = editor.plugin(descriptor);
 
@@ -121,12 +120,15 @@ function TodoMarkerStatic(
 
   return (
     <button
+      aria-checked={checked}
+      aria-label={checked ? 'Completed task' : 'Incomplete task'}
       className={cn(
         'cn-checkbox peer -start-6 pointer-events-none absolute top-1 shrink-0',
         props.className
       )}
       data-checked={checked || undefined}
       data-state={checked ? 'checked' : 'unchecked'}
+      role="checkbox"
       type="button"
     >
       <div className="cn-checkbox-indicator grid place-content-center text-current">

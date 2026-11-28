@@ -670,7 +670,9 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "button",
+        "input"
       ],
       "files": [
         {

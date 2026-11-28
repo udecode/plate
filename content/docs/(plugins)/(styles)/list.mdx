@@ -28,6 +28,16 @@ List turns supported blocks into flat list items. Kind, marker style, list ident
 
 ## Kit usage
 
+<Steps>
+
+### Installation
+
+The fastest way to add list support is `ListKit`, which includes `IndentKit`, `ListPlugin`, Markdown list input rules, and `BlockList`.
+
+<ComponentSource name="list" />
+
+### Add kit
+
 ~~~tsx
 import { ListKit } from '@/components/editor/list';
 import { createEditor } from 'platejs/react';
@@ -36,6 +46,8 @@ const editor = createEditor({
   plugins: [...ListKit],
 });
 ~~~
+
+</Steps>
 
 ## Value
 
@@ -71,7 +83,7 @@ const value = [
 ];
 ~~~
 
-The third block does not store 5. Plate derives it with editor.read.list.ordinal(at), where `at` is the item's path, node or key; a static renderer that already knows the path passes it.
+The third block does not store 5. Plate derives it with `editor.plugin(ListPlugin).read.ordinal(at)`, where `at` is the item's path, node or key; a static renderer that already knows the path passes it.
 
 ### Numbering
 
@@ -115,6 +127,9 @@ list.update.continue();
 list.update.outdent();
 list.update.clear();
 list.update.insert({ type: ListType.Numbered }, { replaceEmpty: true, select: true });
+list.update.upsert({ type: ListType.Task });
+list.read.isActive({ type: ListType.Numbered });
+list.read.isActive({ style: ListStyle.UpperRoman, type: ListType.Numbered });
 ~~~
 
 `restart` forces the selected numbered item's number, 1 by default. `continue`
@@ -125,8 +140,11 @@ the nearest earlier numbered list at its depth, so the numbers continue it.
 expanding to their unselected siblings. It preserves each block's type and text.
 Pass `at` to target a location or node selection. `insert` creates a paragraph
 list item after the current block; `replaceEmpty` replaces an empty source in
-the same history step. An explicit `at` keeps node-insertion placement, while
-`after` identifies the block to insert beside.
+the same history step. `upsert` replaces the current block when empty or inserts
+after it unless the current block already has that `listType`. An explicit `at`
+keeps node-insertion placement, while `after` identifies the block to insert
+beside. `read.isActive({ type, style? })` checks whether the selection includes
+a matching list item.
 
 Tab, Shift+Tab and `outdent` move an item together with the blocks under it,
 such as its nested items and continuation paragraphs, up to the next block at
@@ -214,4 +232,6 @@ The parse reports either change, so `lossPolicy: 'reject'` refuses it.
 | update.outdent(options) | Decrease the indentation of each selected item and the blocks under it, and clear list fields at the outer level. |
 | update.clear(options?) | Remove list semantics from the exact selected list items. |
 | update.insert(input, options?) | Insert a list item with owned construction and placement. |
+| update.upsert(input, options?) | Insert or replace an empty block with a list item unless the target already matches `input.type`. |
+| read.isActive(options) | Check whether the current selection contains a list item matching `type` and optional `style`. |
 | read.ordinal(at) | Derive a numbered item's display ordinal, or `undefined` when `at` is not a numbered item in the editor's root. |

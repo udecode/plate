@@ -2,7 +2,6 @@
 
 import {
   BulletedListRules,
-  isOrderedList,
   ListType,
   OrderedListRules,
   TaskListRules,
@@ -31,9 +30,7 @@ export const ListKit = [
         query: ({ nodeProps }) => {
           const { element } = nodeProps;
 
-          return (
-            element?.listType === ListType.Bulleted && !isOrderedList(element)
-          );
+          return element?.listType === ListType.Bulleted;
         },
         transformProps: ({ element, props }) => ({
           ...props,

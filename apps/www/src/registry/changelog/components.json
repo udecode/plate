@@ -213,6 +213,7 @@
     ],
     "block-menu": [
       "2026-11-28-floating-discussion-block-switch-and-width",
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
       "2026-11-27-add-lock-kit",
       "2026-11-27-block-menu-board-suppress",
       "2026-10-28-touch-menus",
@@ -274,6 +275,89 @@
       "2025-12-15-add-option-editor-collaborative-features",
       "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
       "2025-11-20-biome-ultracite"
+    ],
+    "list-toolbar-button": [
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "2026-11-18-registry-icon-library",
+      "2026-10-12-toolbar-button-names",
+      "2026-10-10-list-restart-continue",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-16-list-toolbar-wiring"
+    ],
+    "indent-toolbar-button": [
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families"
+    ],
+    "turn-into-toolbar-button": [
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "2026-11-23-fix-toolbar-menu-checks",
+      "2026-11-22-ui-sweep-fixes",
+      "2026-11-21-block-menus-disable-refused-items",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-11-15-drop-default-selector-comparisons",
+      "2026-10-18-layout-style-values",
+      "2026-10-16-code-on-sparse-block-selection",
+      "2026-10-15-quote-on-details-title",
+      "2026-10-14-details-block-conversion",
+      "2026-10-14-details-unwrap-targets",
+      "2026-10-13-details-heading-titles",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-28-add-code-drawing-node"
+    ],
+    "block-list": [
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "2026-11-22-fix-todo-checkbox-undo",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-17-cn-package",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-10-list-restart-continue",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "block-list-static": [
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "2026-11-27-fix-base-and-phosphor-installs",
+      "2026-11-27-render-prop-type-imports",
+      "2026-11-23-board-export",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-12-fix-list-import-export",
+      "2026-10-10-fix-static-list-indent",
+      "2026-10-10-list-restart-continue",
+      "2026-10-09-export-static-presentation",
+      "2026-09-30-static-list-table-known-paths",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "list": [
+      "2026-11-28-list-toolbar-and-menu-ergonomics",
+      "2026-10-11-fix-bullet-list-style",
+      "2026-09-03-huge-code-block-demo",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
     ],
     "markdown": [
       "2026-11-28-remove-raw-html-plugin",
@@ -530,24 +614,6 @@
       "2026-08-30-fix-date-calendar-single-click",
       "2026-08-25-base-first-registry",
       "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "block-list-static": [
-      "2026-11-27-fix-base-and-phosphor-installs",
-      "2026-11-27-render-prop-type-imports",
-      "2026-11-23-board-export",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-12-fix-list-import-export",
-      "2026-10-10-fix-static-list-indent",
-      "2026-10-10-list-restart-continue",
-      "2026-10-09-export-static-presentation",
-      "2026-09-30-static-list-table-known-paths",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
     "math-static": [
@@ -955,26 +1021,6 @@
       "2026-10-13-static-editor-previews",
       "2026-09-13-rename-html-export-files"
     ],
-    "turn-into-toolbar-button": [
-      "2026-11-23-fix-toolbar-menu-checks",
-      "2026-11-22-ui-sweep-fixes",
-      "2026-11-21-block-menus-disable-refused-items",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-11-15-drop-default-selector-comparisons",
-      "2026-10-18-layout-style-values",
-      "2026-10-16-code-on-sparse-block-selection",
-      "2026-10-15-quote-on-details-title",
-      "2026-10-14-details-block-conversion",
-      "2026-10-14-details-unwrap-targets",
-      "2026-10-13-details-heading-titles",
-      "2026-10-12-toolbar-button-names",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-28-add-code-drawing-node"
-    ],
     "line-height-toolbar-button": [
       "2026-11-23-fix-toolbar-menu-checks",
       "2026-11-19-rtl-editor-ui",
@@ -1045,22 +1091,6 @@
       "2026-11-22-find-touch-opener",
       "2026-09-09-find-view-ownership",
       "2026-08-31-transient-editor-geometry"
-    ],
-    "block-list": [
-      "2026-11-22-fix-todo-checkbox-undo",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-17-cn-package",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-10-list-restart-continue",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
     ],
     "floating-toolbar-demo": ["2026-11-22-ui-sweep-fixes"],
     "demo": ["2026-11-22-ui-sweep-fixes"],
@@ -1196,12 +1226,6 @@
       "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
       "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
       "2025-11-20-biome-ultracite"
-    ],
-    "indent-toolbar-button": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families"
     ],
     "media-preview-dialog": [
       "2026-11-19-rtl-editor-ui",
@@ -1379,16 +1403,6 @@
       "2026-08-31-transient-editor-geometry",
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
-    ],
-    "list-toolbar-button": [
-      "2026-11-18-registry-icon-library",
-      "2026-10-12-toolbar-button-names",
-      "2026-10-10-list-restart-continue",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-16-list-toolbar-wiring"
     ],
     "markdown-streaming-demo": [
       "2026-11-18-registry-icon-library",
@@ -1774,13 +1788,6 @@
     "emoji-data": [
       "2026-10-12-neutral-stored-names",
       "2026-10-08-emoji-frimousse"
-    ],
-    "list": [
-      "2026-10-11-fix-bullet-list-style",
-      "2026-09-03-huge-code-block-demo",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "editable-voids-demo": [
       "2026-10-11-fix-demo-values",

@@ -1,5 +1,6 @@
 ---
 title: Indent
+description: Customize block indentation depth, offset, and keyboard shortcuts.
 docs:
   - route: /docs/components/indent-toolbar-button
     title: Indent Toolbar Buttons
@@ -92,7 +93,7 @@ const editor = createEditor({
     // ...otherPlugins,
     IndentPlugin.configure({
       targetPlugins: [
-        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
+        PLUGINS.heading,
         PLUGINS.paragraph,
         PLUGINS.blockquote,
       ],
@@ -132,18 +133,18 @@ Plugin for indenting block elements. It injects an `indent` prop into the elemen
 <API name="IndentPlugin">
   <APIOptions type="object">
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
-      CSS property name for styling. - **Default:** `'marginInlineStart'`
+      CSS property name for styling. **Default:** `'marginInlineStart'`
     </APIItem>
     <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
-      Element plugin descriptors or dynamic names targeted for indent storage and injection. -
+      Element plugin descriptors or dynamic names targeted for indent storage and injection.
       **Default:** `[BaseParagraphPlugin]`
     </APIItem>
     <APIItem name="initialState.offset" type="number" optional>
-      Indentation offset used in `(offset * element.indent) + unit`. -
+      Indentation offset used in `(offset * element.indent) + unit`.
       **Default:** `24`
     </APIItem>
     <APIItem name="initialState.unit" type="string" optional>
-      Indentation unit used in `(offset * element.indent) + unit`. -
+      Indentation unit used in `(offset * element.indent) + unit`.
       **Default:** `'px'`
     </APIItem>
     <APIItem name="initialState.indentMax" type="number" optional>

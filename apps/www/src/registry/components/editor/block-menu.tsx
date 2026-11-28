@@ -6,7 +6,9 @@ import {
   BaseIndentPlugin,
   BaseListPlugin,
   BaseTextAlignPlugin,
+  defineCommand,
   ElementApi,
+  ListType,
   SelectionApi,
   type Element,
 } from 'platejs';
@@ -14,6 +16,7 @@ import { AIChatPlugin } from 'platejs/ai/react';
 import { BaseLockPlugin } from 'platejs/lock';
 import {
   definePlugin,
+  type Editor,
   type WrapContentProps,
   useEditor,
   useEditorReadOnly,
@@ -37,7 +40,7 @@ import {
 } from '@/registry/components/editor/context-menu';
 import { cutBlocks } from '@/registry/components/editor/dnd';
 
-type LeafFormat = `heading-${1 | 2 | 3 | 4 | 5 | 6}` | 'text';
+type LeafFormat = `heading-${1 | 2 | 3 | 4 | 5 | 6}` | ListType | 'text';
 type Value = 'askAI' | null;
 
 const readBlocks = (
@@ -60,10 +63,70 @@ const getLeafFormat = (
   editor: ReturnType<typeof useEditor>,
   node: Element
 ): LeafFormat => {
+  if (editor.plugin(BaseListPlugin).installed && node.listType) {
+    if (node.listType === ListType.Numbered) return ListType.Numbered;
+    if (node.listType === ListType.Task) return ListType.Task;
+
+    return ListType.Bulleted;
+  }
+
   const heading = editor.plugin(BaseHeadingPlugin);
   const level = heading.installed ? heading.read.level(node) : undefined;
 
   return level === undefined ? 'text' : `heading-${level}`;
+};
+
+const turnIntoList = defineCommand<Readonly<{ type: ListType }>, Editor>(
+  'block-menu:list',
+  {
+    build: ({ input: { type }, state }) => {
+      let applied = false;
+      const result = state.transaction((tx) => {
+        const selection = tx.selection();
+
+        if (!selection) return;
+
+        const root = SelectionApi.root(selection);
+        const [first, ...rest] = tx.nodes
+          .blocks({ mode: 'lowest' })
+          .map(([, path]) => path);
+
+        if (
+          first &&
+          !tx.blocks.reset({
+            at: SelectionApi.nodes([first, ...rest], {
+              mode: 'block',
+              ...(root ? { root } : {}),
+            }),
+            unset: ['level'],
+          })
+        ) {
+          return;
+        }
+        applied = tx.plugin(BaseListPlugin).toggle({ type });
+      });
+
+      return applied ? result : false;
+    },
+    locate: false,
+  }
+);
+
+const outdentBlocks = (editor: ReturnType<typeof useEditor>) => {
+  const list = editor.plugin(BaseListPlugin);
+
+  if (
+    list.installed &&
+    editor.read.nodes.some({
+      match: (node) => ElementApi.isElement(node) && !!node.listType,
+    })
+  ) {
+    list.update.outdent();
+
+    return;
+  }
+
+  editor.plugin(BaseIndentPlugin).update.decrease();
 };
 
 export function BlockContextMenu({ children }: WrapContentProps) {
@@ -94,6 +157,15 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             type: BaseBlockquotePlugin,
           })
       )
+    );
+  });
+  const numberedActive = useEditorSelector((current) => {
+    const list = current.plugin(BaseListPlugin);
+
+    return (
+      list.installed &&
+      readBlocks(current).length > 0 &&
+      list.read.isActive({ type: ListType.Numbered })
     );
   });
   const lockInstalled = editor.plugin(BaseLockPlugin).installed;
@@ -133,6 +205,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
   const quoteInstalled = editor.plugin(BaseBlockquotePlugin).installed;
   const indentInstalled = editor.plugin(BaseIndentPlugin).installed;
   const alignInstalled = editor.plugin(BaseTextAlignPlugin).installed;
+  const listInstalled = editor.plugin(BaseListPlugin).installed;
   const leafItems = [
     {
       label: 'Text',
@@ -169,6 +242,31 @@ export function BlockContextMenu({ children }: WrapContentProps) {
                 tx.plugin(BaseListPlugin).clear();
               }
             });
+          },
+        }))
+      : []),
+    ...(listInstalled
+      ? (
+          [
+            [ListType.Bulleted, 'Bulleted list'],
+            [ListType.Numbered, 'Numbered list'],
+            [ListType.Task, 'To-do list'],
+          ] as const
+        ).map(([value, label]) => ({
+          label,
+          value,
+          onSelect: () => {
+            if (
+              !editor.plugin(BaseListPlugin).installed ||
+              editor.read.view.isReadOnly() ||
+              readBlocks(editor).every(
+                ([node]) => getLeafFormat(editor, node) === value
+              )
+            ) {
+              return;
+            }
+
+            editor.update.command(turnIntoList, { type: value });
           },
         }))
       : []),
@@ -398,7 +496,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
           )}
         </ContextMenuGroup>
 
-        {(indentInstalled || alignInstalled) && (
+        {(indentInstalled || alignInstalled || numberedActive) && (
           <ContextMenuGroup>
             {indentInstalled && (
               <>
@@ -433,10 +531,43 @@ export function BlockContextMenu({ children }: WrapContentProps) {
                       return;
                     }
 
-                    indent.update.decrease();
+                    outdentBlocks(editor);
                   }}
                 >
                   Outdent
+                </ContextMenuItem>
+              </>
+            )}
+
+            {numberedActive && (
+              <>
+                <ContextMenuItem
+                  disabled={!editable}
+                  onClick={() => {
+                    const list = editor.plugin(BaseListPlugin);
+
+                    if (!list.installed || editor.read.view.isReadOnly()) {
+                      return;
+                    }
+
+                    list.update.restart();
+                  }}
+                >
+                  Restart numbering
+                </ContextMenuItem>
+                <ContextMenuItem
+                  disabled={!editable}
+                  onClick={() => {
+                    const list = editor.plugin(BaseListPlugin);
+
+                    if (!list.installed || editor.read.view.isReadOnly()) {
+                      return;
+                    }
+
+                    list.update.continue();
+                  }}
+                >
+                  Continue numbering
                 </ContextMenuItem>
               </>
             )}

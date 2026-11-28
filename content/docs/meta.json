@@ -2724,7 +2724,7 @@
         "titleCn": "History Toolbar Button"
       },
       "/docs/components/list-toolbar-button": {
-        "description": "A toolbar control for adjusting list indentation.",
+        "description": "Toolbar controls for bulleted, numbered, and task lists.",
         "title": "List Toolbar Button",
         "titleCn": "List Toolbar Button"
       },

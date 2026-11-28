@@ -22,18 +22,32 @@ docs:
 - checked 只属于任务项。
 - 显示编号通过读取计算，不重写后续节点。
 - 提供“重新编号”和“继续编号”命令。
+- Markdown 规则覆盖项目符号、编号和任务列表。
 
 </PackageInfo>
 
 ## Kit 用法
 
+<Steps>
+
+### 安装
+
+添加列表最快的方法是使用 `ListKit`，它包含 `IndentKit`、`ListPlugin`、Markdown 列表输入规则和 `BlockList`。
+
+<ComponentSource name="list" />
+
+### 添加 Kit
+
 ~~~tsx
 import { ListKit } from '@/components/editor/list';
+import { createEditor } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [...ListKit],
 });
 ~~~
+
+</Steps>
 
 ## 值
 
@@ -108,9 +122,18 @@ list.update.toggle({ type: ListType.Task });
 list.update.restart();
 list.update.restart({ start: 4 });
 list.update.continue();
+
+list.update.outdent();
+list.update.clear();
+list.update.insert({ type: ListType.Numbered }, { replaceEmpty: true, select: true });
+list.update.upsert({ type: ListType.Task });
+list.read.isActive({ type: ListType.Numbered });
+list.read.isActive({ style: ListStyle.UpperRoman, type: ListType.Numbered });
 ~~~
 
 `restart` 强制选中有序项的编号，默认为 1。`continue` 移除该重启；在列表第一项上，它会把整个列表并入同层级中最近的前一个有序列表，使编号接续下去。
+
+`clear` 仅清除选中列表项的列表属性与缩进，不扩展到未选中的相邻列表项，保留块类型和文本。`insert` 在当前块之后创建列表段落，`replaceEmpty` 在同一撤销步骤中替换空块。`upsert` 在当前块不是该 `listType` 时插入或替换空块。`read.isActive({ type, style? })` 检查当前选区是否包含匹配的列表项。
 
 ## 粘贴列表
 
@@ -149,6 +172,8 @@ MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会
 | update.outdent(options) | 减少每个选中列表项及其下方块的缩进，并在最外层清除列表属性。 |
 | update.clear(options?) | 仅清除选中列表项的列表属性与缩进，保留区块类型和文本。 |
 | update.insert(input, options?) | 插入指定类型的段落列表项，并由插件负责构造与位置。 |
+| update.upsert(input, options?) | 在当前块不匹配 `input.type` 时插入或替换空块为列表项。 |
+| read.isActive(options) | 检查当前选区是否包含匹配 `type` 和可选 `style` 的列表项。 |
 | read.ordinal(at) | 计算有序项显示编号；`at` 不是编辑器根中的有序项时返回 `undefined`。 |
 
 `clear` 可通过 `at` 指定位置或节点选区，不会扩展到未选中的相邻列表项。

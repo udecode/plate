@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-list-toolbar-and-menu-ergonomics",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-list-toolbar-and-menu-ergonomics.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix list style dropdown, nested Turn into, and list Outdent, and add Start at and block-menu list controls",
+  "targets": [
+    {
+      "name": "list-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/list-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "indent-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/indent-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list",
+      "files": ["apps/www/src/registry/components/editor/list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-list-toolbar-fix-style-dropdown-nested-1eb753c2",
+      "kind": "fix",
+      "summary": "Fix list style dropdown, nested Turn into, and list Outdent, and add Start at and block-menu list controls",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "list-toolbar-button",
+        "indent-toolbar-button",
+        "turn-into-toolbar-button",
+        "block-menu",
+        "block-list",
+        "block-list-static",
+        "list"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-list-toolbar-and-menu-ergonomics",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

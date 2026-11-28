@@ -1,7 +1,8 @@
 ---
 title: 缩进
+description: 自定义块级缩进深度、间距和键盘快捷键。
 docs:
-  - route: /docs/components/indent-toolbar-button
+  - route: /cn/docs/components/indent-toolbar-button
     title: 缩进工具栏按钮
 ---
 
@@ -16,6 +17,7 @@ docs:
 - 应用具有可自定义偏移量和单位的统一缩进。
 - 向目标块级元素注入 `indent` 属性。
 - 支持最大缩进深度控制。
+- [清除格式](/cn/docs/clear-formatting)会移除完全覆盖块的 `indent`，但保留列表项的层级深度。
 
 </PackageInfo>
 
@@ -91,7 +93,7 @@ const editor = createEditor({
     // ...otherPlugins,
     IndentPlugin.configure({
       targetPlugins: [
-        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
+        PLUGINS.heading,
         PLUGINS.paragraph,
         PLUGINS.blockquote,
       ],
@@ -118,7 +120,7 @@ const editor = createEditor({
 
 ### 添加工具栏按钮
 
-你可以将 [`IndentToolbarButton`](/docs/components/indent-toolbar-button) 添加到你的[工具栏](/docs/toolbar)中以控制缩进。
+你可以将 [`IndentToolbarButton`](/cn/docs/components/indent-toolbar-button) 添加到你的[工具栏](/cn/docs/toolbar)中以控制缩进。
 
 </Steps>
 
@@ -131,18 +133,18 @@ const editor = createEditor({
 <API name="IndentPlugin">
   <APIOptions type="object">
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
-      用于样式的 CSS 属性名称。 - **默认值：** `'marginInlineStart'`
+      用于样式的 CSS 属性名称。**默认值：** `'marginInlineStart'`
     </APIItem>
     <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
-      用于缩进存储和注入的元素插件 descriptor 或动态 name。 - **默认值：**
+      用于缩进存储和注入的元素插件 descriptor 或动态 name。**默认值：**
       `[BaseParagraphPlugin]`
     </APIItem>
     <APIItem name="initialState.offset" type="number" optional>
-      在 `(offset * element.indent) + unit` 中使用的缩进偏移量。 - **默认值：**
+      在 `(offset * element.indent) + unit` 中使用的缩进偏移量。**默认值：**
       `24`
     </APIItem>
     <APIItem name="initialState.unit" type="string" optional>
-      在 `(offset * element.indent) + unit` 中使用的缩进单位。 - **默认值：**
+      在 `(offset * element.indent) + unit` 中使用的缩进单位。**默认值：**
       `'px'`
     </APIItem>
     <APIItem name="initialState.indentMax" type="number" optional>

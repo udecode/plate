@@ -95,6 +95,11 @@ function TodoMarker(
   return (
     <div contentEditable={false}>
       <Checkbox
+        aria-label={
+          props.element.checked === true
+            ? 'Mark task incomplete'
+            : 'Mark task complete'
+        }
         className={cn(
           '-start-6 absolute top-1',
           readOnly && 'pointer-events-none'
