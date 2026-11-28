@@ -6,13 +6,13 @@ docs:
 
 <ComponentPreview name="select-editor-demo" />
 
-`SelectEditor` is a one-line editor whose value is a list of chips. Each picked label is an inline chip, so the caret moves between chips, Backspace removes one and chips copy and paste like text. The menu filters `items` by the typed search.
+`SelectEditor` is a one-line editor whose value is a list of chips. Each picked label is an inline chip, so the caret moves between chips, Backspace or each chip's remove button deletes one, `Cmd/Ctrl+Z` undoes chip changes, and chips copy, paste and drag like text. The menu filters `items` by the typed search.
 
 ## Installation
 
 <ComponentInstallation name="select-editor" inline />
 
-Installing the item adds two files: `select-editor.tsx`, with the field and its tag rules, and `tag.tsx`, with the `tag` element and its chip.
+Installing the item adds `select-editor.tsx`, which exports `SelectEditor`, `SelectTagPlugin`, `TagPlugin`, `TagElement` and `SelectItem`.
 
 ## Usage
 
@@ -42,7 +42,7 @@ export function LabelsField() {
 }
 ```
 
-`onValueChange` must update `value` synchronously. The field writes `value` back whenever it differs from the chips, so a value set later, such as in a transition, first reverts the change. Pass `defaultValue` instead of `value` for an uncontrolled field.
+`onValueChange` must update `value` synchronously. The field reconciles `value` back whenever it differs from the chips, so a value set later, such as in a transition, first reverts the change. Pass `defaultValue` instead of `value` for an uncontrolled field.
 
 ## Examples
 
@@ -54,13 +54,15 @@ The field takes a form library's `ref`, `onBlur` and ARIA props, and passes them
 
 ## Behavior
 
-- Type to search. `ArrowUp` and `ArrowDown` move the active option, and `Enter` picks it.
-- A search of two or more characters that matches no label offers to create it.
+- Type to search. `ArrowUp` and `ArrowDown` move the active option, and `Enter` picks it at the caret while keeping the caret right after the inserted chip.
+- Pass `creatable` to offer a create option when a search of two or more characters matches no existing label. Without `creatable`, typed searches with no match display an empty state (`No results found.`) while native chip copy, paste and drag stay active.
+- The menu renders up to `limit` catalog options (100 by default), ranking matches by score and length before slicing when matches exceed `limit` and keeping the create option outside the cap.
 - `Escape`, `mod+Enter` or a click outside closes the menu and clears the search.
 - Labels that differ only in case count as one. The first chip wins, so a form value that repeats a label shows it once.
-- Undo and redo keys are off, so a picked chip stays.
-- A read-only field renders a chip as a link when [`getLinkHref`](/docs/link#getlinkhref) accepts its `url`. A chip whose `url` it refuses, such as a `javascript:` address or a bare `https://`, shows without a link.
-- Dragging a chip before another chip moves it there. Dropping a chip after another chip does nothing.
+- Undo and redo (`Cmd/Ctrl+Z`, `Cmd/Ctrl+Shift+Z`, `Ctrl+Y`) apply to chip additions, removals and reorders while skipping search-only text edits.
+- Click a chip's remove button to delete that chip without blurring the field or clearing an active search.
+- `TagPlugin` validates stored `url` values with [`linkUrlValidation`](/docs/link#linkurlvalidation), and `SelectEditor` strips floor-refused URLs before inserting chips. A read-only field renders a chip as a link when [`getLinkHref`](/docs/link#getlinkhref) accepts its `url`.
+- Dragging a chip before or after another chip moves it there.
 
 Edit `SelectTagPlugin` in the copied `select-editor.tsx` to change these rules, and the field's key handler to change the keys.
 
@@ -81,6 +83,12 @@ Takes the editable's props, such as `placeholder`, `readOnly`, `onBlur` and `ari
   <APIItem name="defaultValue" type="readonly SelectItem[]" optional>
     The starting chips of an uncontrolled field.
   </APIItem>
+  <APIItem name="creatable" type="boolean" optional>
+    Allow creating new labels from typed search in the menu. Defaults to `false`.
+  </APIItem>
+  <APIItem name="limit" type="number" optional>
+    Maximum catalog options rendered in the menu. Defaults to `100`.
+  </APIItem>
   <APIItem name="onValueChange" type="(items: SelectItem[]) => void" optional>
     Called with the chips after each change made in the field.
   </APIItem>
@@ -95,7 +103,7 @@ Takes the editable's props, such as `placeholder`, `readOnly`, `onBlur` and `ari
     The label.
   </APIItem>
   <APIItem name="url" type="string" optional>
-    The link a read-only chip renders when [`getLinkHref`](/docs/link#getlinkhref) accepts it.
+    The link a read-only chip renders when [`getLinkHref`](/docs/link#getlinkhref) accepts it. Stored values must pass [`linkUrlValidation`](/docs/link#linkurlvalidation).
   </APIItem>
 </APIAttributes>
 </API>

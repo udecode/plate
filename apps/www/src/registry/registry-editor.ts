@@ -277,10 +277,6 @@ export const editorComponents: Registry['items'] = [
         path: 'components/editor/select-editor.tsx',
         type: 'registry:component',
       },
-      {
-        path: 'components/editor/tag.tsx',
-        type: 'registry:component',
-      },
     ],
     meta: {
       docs: [{ route: '/docs/multi-select' }],

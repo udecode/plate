@@ -540,11 +540,6 @@
           "path": "src/registry/components/editor/select-editor.tsx",
           "type": "registry:component",
           "target": "@components/editor/select-editor.tsx"
-        },
-        {
-          "path": "src/registry/components/editor/tag.tsx",
-          "type": "registry:component",
-          "target": "@components/editor/tag.tsx"
         }
       ],
       "meta": {

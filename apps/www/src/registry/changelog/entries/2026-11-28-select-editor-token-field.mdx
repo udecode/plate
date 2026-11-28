@@ -1,0 +1,16 @@
+---
+id: 2026-11-28-select-editor-token-field
+date: 2026-11-28
+status: draft
+kind: behavior
+summary: 'Consolidate select-editor into one file with URL floor validation, chip remove buttons, chip-scoped undo/redo, opt-in creation, empty state, and option limit'
+change: { 'type': 'source', 'date': '2026-11-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-28-select-editor-token-field-7e4a2b1c","kind":"behavior","migrationNotes":["Import TagPlugin and TagElement from @/components/editor/select-editor instead of @/components/editor/tag.","Pass creatable if the field should allow creating new labels from typed search.","Apps persisting v54 envelopes with TagPlugin see a schema fingerprint change from linkUrlValidation; bump the app schema version or strip invalid tag urls before reloading persisted v54 envelopes."]} -->
+
+- **`select-editor`**: Merge `tag.tsx` into `select-editor.tsx`, validate stored chip URLs with `linkUrlValidation`, add non-blurring chip remove buttons, enable chip-scoped undo/redo while preserving prior history across controlled echoes and refusals, keep the caret after middle-inserted chips, default `creatable` to `false` with an empty state, and cap rendered menu options with `limit` (default `100`).
+<!-- entry: {"id":"2026-11-28-select-editor-demo-form-3c9f1d0e","kind":"behavior","migrationNotes":[]} -->
+- **`select-editor-demo`**: Wrap the demo in a `<form>` with submit validation feedback, pass `creatable`, and label the read-only toggle button.

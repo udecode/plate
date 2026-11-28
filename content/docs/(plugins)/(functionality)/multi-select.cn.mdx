@@ -6,13 +6,13 @@ docs:
 
 <ComponentPreview name="select-editor-demo" />
 
-`SelectEditor` 是一个单行编辑器，它的值是一组标签。每个选中的标签都是行内标签元素，因此光标可以在标签之间移动，Backspace 会删除一个标签，标签也能像文本一样复制和粘贴。菜单会按输入的搜索文本筛选 `items`。
+`SelectEditor` 是一个单行编辑器，它的值是一组标签。每个选中的标签都是行内标签元素，因此光标可以在标签之间移动，Backspace 或每个标签上的移除按钮都能删除标签，`Cmd/Ctrl+Z` 可以撤销标签修改，标签也能像文本一样复制、粘贴和拖拽。菜单会按输入的搜索文本筛选 `items`。
 
 ## 安装
 
 <ComponentInstallation name="select-editor" inline />
 
-安装该组件会添加两个文件：`select-editor.tsx`（字段及其标签规则）和 `tag.tsx`（`tag` 元素及其标签样式）。
+安装该组件会添加 `select-editor.tsx`，导出 `SelectEditor`、`SelectTagPlugin`、`TagPlugin`、`TagElement` 和 `SelectItem`。
 
 ## 使用
 
@@ -42,7 +42,7 @@ export function LabelsField() {
 }
 ```
 
-`onValueChange` 必须同步更新 `value`。只要 `value` 与标签不同，字段就会把 `value` 写回，所以稍后设置的值（例如在 transition 中设置）会先撤销这次修改。非受控字段请传入 `defaultValue` 而不是 `value`。
+`onValueChange` 必须同步更新 `value`。只要 `value` 与标签不同，字段就会就地同步回 `value`，所以稍后设置的值（例如在 transition 中设置）会先撤销这次修改。非受控字段请传入 `defaultValue` 而不是 `value`。
 
 ## 示例
 
@@ -54,13 +54,15 @@ export function LabelsField() {
 
 ## 行为
 
-- 输入文本进行搜索。`ArrowUp` 和 `ArrowDown` 移动当前选项，`Enter` 选中它。
-- 两个或更多字符的搜索如果没有匹配的标签，菜单会提供创建它的选项。
+- 输入文本进行搜索。`ArrowUp` 和 `ArrowDown` 移动当前选项，`Enter` 在光标处插入标签并把光标留在新标签之后。
+- 传入 `creatable` 后，两个或更多字符且无匹配项的搜索会提供创建选项。未开启 `creatable` 时，无匹配的搜索会显示空状态（`No results found.`），同时保留标签的复制、粘贴和拖拽。
+- 菜单最多渲染 `limit` 个目录选项（默认 `100`）。匹配项超过 `limit` 时先按匹配分数和长度排序再截取，创建选项不受上限裁剪。
 - `Escape`、`mod+Enter` 或点击外部会关闭菜单并清除搜索。
 - 只有大小写不同的标签视为同一个。第一个标签保留，因此表单值中重复的标签只显示一次。
-- 撤销和重做快捷键已关闭，选中的标签不会被撤销。
-- 只读字段仅在 [`getLinkHref`](/cn/docs/link#getlinkhref) 接受标签的 `url` 时把标签渲染为链接。`url` 被拒绝的标签（例如 `javascript:` 地址或只有 `https://`）显示为没有链接的标签。
-- 把标签拖到另一个标签之前会移动它。把标签放到另一个标签之后不会产生任何变化。
+- 撤销和重做（`Cmd/Ctrl+Z`、`Cmd/Ctrl+Shift+Z`、`Ctrl+Y`）作用于标签的添加、删除和排序，跳过纯搜索文本编辑。
+- 点击标签上的移除按钮可直接删除该标签，不会使字段失焦或清空正在输入的搜索。
+- `TagPlugin` 使用 [`linkUrlValidation`](/cn/docs/link#linkurlvalidation) 校验存储的 `url`，`SelectEditor` 会在写入标签前去掉不合规的 URL。只读字段仅在 [`getLinkHref`](/cn/docs/link#getlinkhref) 接受标签的 `url` 时把它渲染为链接。
+- 把标签拖到另一个标签之前或之后都会移动它。
 
 要修改这些规则，请编辑复制的 `select-editor.tsx` 中的 `SelectTagPlugin`；要修改按键，请编辑字段的按键处理函数。
 
@@ -81,6 +83,12 @@ export function LabelsField() {
   <APIItem name="defaultValue" type="readonly SelectItem[]" optional>
     非受控字段的初始标签。
   </APIItem>
+  <APIItem name="creatable" type="boolean" optional>
+    允许从菜单中的搜索文本创建新标签。默认为 `false`。
+  </APIItem>
+  <APIItem name="limit" type="number" optional>
+    菜单最多渲染的目录选项数量。默认为 `100`。
+  </APIItem>
   <APIItem name="onValueChange" type="(items: SelectItem[]) => void" optional>
     字段中每次修改后，以当前标签调用。
   </APIItem>
@@ -95,7 +103,7 @@ export function LabelsField() {
     标签文本。
   </APIItem>
   <APIItem name="url" type="string" optional>
-    [`getLinkHref`](/cn/docs/link#getlinkhref) 接受时，只读标签渲染的链接。
+    [`getLinkHref`](/cn/docs/link#getlinkhref) 接受时，只读标签渲染的链接。存储的值必须通过 [`linkUrlValidation`](/cn/docs/link#linkurlvalidation)。
   </APIItem>
 </APIAttributes>
 </API>

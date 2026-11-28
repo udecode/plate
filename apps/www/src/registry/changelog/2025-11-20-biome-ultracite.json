@@ -460,10 +460,7 @@
     },
     {
       "name": "select-editor",
-      "files": [
-        "apps/www/src/registry/components/editor/select-editor.tsx",
-        "apps/www/src/registry/components/editor/tag.tsx"
-      ],
+      "files": ["apps/www/src/registry/components/editor/select-editor.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },

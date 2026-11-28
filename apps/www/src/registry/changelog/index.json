@@ -280,6 +280,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-28-select-editor-token-field",
+      "href": "/registry/changelog/2026-11-28-select-editor-token-field.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Consolidate select-editor into one file with URL floor validation, chip remove buttons, chip-scoped undo/redo, opt-in creation, empty state, and option limit",
+      "change": {
+        "type": "source",
+        "date": "2026-11-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["select-editor", "select-editor-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-28-slash-media-items",
       "href": "/registry/changelog/2026-11-28-slash-media-items.json",
       "status": "draft",

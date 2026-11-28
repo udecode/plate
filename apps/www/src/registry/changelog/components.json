@@ -503,6 +503,31 @@
       "2026-09-28-markdown-registered-tags",
       "2026-08-17-flat-editor-registry"
     ],
+    "select-editor": [
+      "2026-11-28-select-editor-token-field",
+      "2026-11-22-create-base-color-tw-prefix",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-17-tag-chip-plain-link",
+      "2026-10-17-declare-select-editor-update-methods",
+      "2026-10-12-select-editor-field",
+      "2026-09-07-select-command-bridge",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-05-fix-command-custom-children",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-18-fix-editor-runtime-interactions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2025-11-20-biome-ultracite"
+    ],
+    "select-editor-demo": [
+      "2026-11-28-select-editor-token-field",
+      "2026-11-18-registry-icon-library",
+      "2026-08-13-fix-registry-install-dependencies"
+    ],
     "lock": ["2026-11-27-add-lock-kit"],
     "lock-static": ["2026-11-27-add-lock-kit"],
     "dnd": [
@@ -1127,25 +1152,6 @@
       "2026-10-19-toc-six-heading-levels",
       "2026-08-17-flat-editor-registry"
     ],
-    "select-editor": [
-      "2026-11-22-create-base-color-tw-prefix",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-17-tag-chip-plain-link",
-      "2026-10-17-declare-select-editor-update-methods",
-      "2026-10-12-select-editor-field",
-      "2026-09-07-select-command-bridge",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-05-fix-command-custom-children",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-18-fix-editor-runtime-interactions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2025-11-20-biome-ultracite"
-    ],
     "table-static": [
       "2026-11-22-create-base-color-tw-prefix",
       "2026-11-19-rtl-editor-ui",
@@ -1464,10 +1470,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
-    ],
-    "select-editor-demo": [
-      "2026-11-18-registry-icon-library",
-      "2026-08-13-fix-registry-install-dependencies"
     ],
     "slash-command-items-demo": ["2026-11-18-slash-app-items"],
     "ai-demo": [

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-28-select-editor-token-field",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-28-select-editor-token-field.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Consolidate select-editor into one file with URL floor validation, chip remove buttons, chip-scoped undo/redo, opt-in creation, empty state, and option limit",
+  "targets": [
+    {
+      "name": "select-editor",
+      "files": ["apps/www/src/registry/components/editor/select-editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor-demo",
+      "files": ["apps/www/src/registry/examples/select-editor-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-28-select-editor-token-field-7e4a2b1c",
+      "kind": "behavior",
+      "summary": "Merge `tag.tsx` into `select-editor.tsx`, validate stored chip URLs with `linkUrlValidation`, add non-blurring chip remove buttons, enable chip-scoped undo/redo while preserving prior history across controlled echoes and refusals, keep the caret after middle-inserted chips, default `creatable` to `false` with an empty state, and cap rendered menu options with `limit` (default `100`).",
+      "details": [],
+      "migrationNotes": [
+        "Import TagPlugin and TagElement from @/components/editor/select-editor instead of @/components/editor/tag.",
+        "Pass creatable if the field should allow creating new labels from typed search.",
+        "Apps persisting v54 envelopes with TagPlugin see a schema fingerprint change from linkUrlValidation; bump the app schema version or strip invalid tag urls before reloading persisted v54 envelopes."
+      ],
+      "targets": ["select-editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-select-editor-token-field",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-28-select-editor-demo-form-3c9f1d0e",
+      "kind": "behavior",
+      "summary": "Wrap the demo in a `<form>` with submit validation feedback, pass `creatable`, and label the read-only toggle button.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["select-editor-demo"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-28",
+          "entry": "2026-11-28-select-editor-token-field",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
