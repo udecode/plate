@@ -256,47 +256,77 @@ const findPairs = (root, shas) => {
   const pending = new Set(shas);
   // Only landed history: a commit whose push failed, which an autosave ref
   // keeps reachable, names a public commit it never landed with.
-  const landedRef = privateGit(root, [
+  const privateUpstream = privateGit(root, [
     'rev-parse',
     '--verify',
     '--quiet',
     UPSTREAM,
-  ]).stdout.trim()
-    ? UPSTREAM
-    : `refs/heads/${BRANCH}`;
+  ]).stdout.trim();
+  const landedRef = privateUpstream ? UPSTREAM : `refs/heads/${BRANCH}`;
   const landed = new Map();
+  let latestLandedPublic = null;
   for (const line of privateGit(root, [
     'log',
     landedRef,
     '--format=%H %(trailers:key=Lands-With,valueonly,separator=%x20)',
   ]).stdout.split('\n')) {
     const [commit, publicSha] = line.split(' ');
-    if (publicSha && !landed.has(publicSha)) landed.set(publicSha, commit);
+    if (publicSha) {
+      latestLandedPublic ??= publicSha;
+      if (!landed.has(publicSha)) landed.set(publicSha, commit);
+    }
   }
+  const publicUpstream = run(root, [
+    'rev-parse',
+    '--verify',
+    '--quiet',
+    UPSTREAM,
+  ]).stdout.trim();
+  // Private origin/next pairs with public origin/next unless private fetched a
+  // commit that explicitly landed with a newer public commit not in public yet.
+  const upstreamMatchesPublic =
+    Boolean(publicUpstream && privateUpstream) &&
+    (!latestLandedPublic ||
+      latestLandedPublic === publicUpstream ||
+      run(root, [
+        'merge-base',
+        '--is-ancestor',
+        latestLandedPublic,
+        publicUpstream,
+      ]).status === 0);
+  let firstParent = null;
+  const nearestLanded = (sha) => {
+    if (landed.has(sha)) return landed.get(sha);
+    firstParent ??= firstParents(root, [...pending]);
+    let ancestor = firstParent.get(sha);
+    for (let depth = 1; ancestor && depth < PAIRED_DEPTH; depth += 1) {
+      if (landed.has(ancestor)) return landed.get(ancestor);
+      ancestor = firstParent.get(ancestor);
+    }
+    return undefined;
+  };
   for (const args of [
     ['rev-parse', 'HEAD'],
     ['merge-base', 'HEAD', UPSTREAM],
-    ['rev-parse', UPSTREAM],
+    ...(upstreamMatchesPublic ? [['rev-parse', UPSTREAM]] : []),
   ]) {
     if (pending.size === 0) return found;
     const sha = run(root, args).stdout.trim();
-    if (!pending.has(sha)) continue;
+    if (!sha || !pending.has(sha)) continue;
     const commit = privateGit(root, args).stdout.trim();
-    if (privateHalfLags(root, commit, landed.get(sha))) continue;
+    if (!commit) continue;
+    const expected =
+      upstreamMatchesPublic && sha === publicUpstream
+        ? privateUpstream
+        : nearestLanded(sha);
+    if (privateHalfLags(root, commit, expected)) continue;
     pending.delete(sha);
     found.set(sha, commit);
   }
   if (pending.size === 0) return found;
-  const firstParent = firstParents(root, [...pending]);
   for (const sha of pending) {
-    let ancestor = sha;
-    for (let depth = 0; ancestor && depth < PAIRED_DEPTH; depth += 1) {
-      if (landed.has(ancestor)) {
-        found.set(sha, landed.get(ancestor));
-        break;
-      }
-      ancestor = firstParent.get(ancestor);
-    }
+    const commit = nearestLanded(sha);
+    if (commit) found.set(sha, commit);
   }
   return found;
 };
@@ -304,9 +334,10 @@ const findPairs = (root, shas) => {
 /**
  * The plate-private commit that matches each udecode/plate rev: the private
  * counterpart when the rev is this checkout's HEAD, merge base or
- * origin/next and no newer private commit landed with it, else the commit
- * on plate-private's next whose Lands-With line names the rev or its nearest
- * first-parent ancestor. A rev with no match is absent from the map.
+ * origin/next and does not lag behind the private commit landed for it
+ * (plate-private's origin/next when the rev is origin/next, else the commit
+ * whose Lands-With line names the rev or its nearest first-parent ancestor),
+ * otherwise that landed commit. A rev with no match is absent from the map.
  */
 export const pairedCommits = (root, revs) => {
   const paired = new Map();

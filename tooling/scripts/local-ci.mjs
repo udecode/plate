@@ -397,10 +397,12 @@ const rerunCommand = (step, files) => {
   return null;
 };
 
-const resetToTip = (tip) => {
+const resetToTip = (tip, expectedPrivate = privateOriginTip(tip)) => {
   if (
     !existsSync(worktree) ||
-    git(worktree, ['rev-parse', 'HEAD']).stdout.trim() !== tip
+    git(worktree, ['rev-parse', 'HEAD']).stdout.trim() !== tip ||
+    (expectedPrivate &&
+      (!isSplit(worktree) || privateHead() !== expectedPrivate))
   ) {
     checkout(tip);
   } else {
@@ -408,6 +410,7 @@ const resetToTip = (tip) => {
     // it on the same commit would judge that step's output instead of the
     // commit's.
     must(worktree, ['checkout', '--quiet', '--force', '--detach', tip]);
+    if (isSplit(worktree)) movePrivateFiles();
   }
 };
 
@@ -623,7 +626,7 @@ const run = async (args) => {
     ) {
       console.info(`[local-ci] next is still ${tip.slice(0, 10)}.`);
       try {
-        resetToTip(tip);
+        resetToTip(tip, targetPrivateTip);
       } catch (error) {
         return brokenAt(tip, error);
       }
@@ -786,7 +789,7 @@ const run = async (args) => {
         tip,
         failedFilesRerun ? `${failed}-failed` : `${failed}-alone`
       );
-      resetToTip(tip);
+      resetToTip(tip, privateTip);
       const aloneStarted = Date.now();
       const alone = failedFilesRerun
         ? shell(logs, aloneName, failedFilesRerun)
