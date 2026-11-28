@@ -72,11 +72,13 @@ const COMMAND_REGISTRATION_RUNTIMES = new WeakMap<
   object,
   CommandRegistrationRuntime<any, BaseEditor<any, any>>
 >();
+export type ImplicitTargetCrossingPolicy = 'cancel' | 'clamp' | 'refuse';
+
 const IMPLICIT_TARGET_COMMANDS = new WeakMap<
   object,
   Readonly<{
+    crossingPolicy: ImplicitTargetCrossingPolicy;
     isImplicit: (input: unknown) => boolean;
-    refusesCrossing: boolean;
   }>
 >();
 
@@ -87,11 +89,11 @@ export const registerImplicitTargetCommand = <
 >(
   command: EditorCommand<Input, TEditor>,
   isImplicit: (input: Input) => boolean = () => true,
-  options?: Readonly<{ refusesCrossing?: boolean }>
+  options?: Readonly<{ crossingPolicy?: ImplicitTargetCrossingPolicy }>
 ) => {
   IMPLICIT_TARGET_COMMANDS.set(command, {
+    crossingPolicy: options?.crossingPolicy ?? 'clamp',
     isImplicit: isImplicit as (input: unknown) => boolean,
-    refusesCrossing: options?.refusesCrossing === true,
   });
 };
 
@@ -109,12 +111,13 @@ export const isImplicitTargetCommand = <
 };
 
 /** @internal */
-export const commandRefusesSetCrossing = <
+export const commandCrossingPolicy = <
   Input,
   TEditor extends BaseEditor<any, any>,
 >(
   command: EditorCommand<Input, TEditor>
-): boolean => IMPLICIT_TARGET_COMMANDS.get(command)?.refusesCrossing === true;
+): ImplicitTargetCrossingPolicy =>
+  IMPLICIT_TARGET_COMMANDS.get(command)?.crossingPolicy ?? 'clamp';
 
 export const createCommandRegistration = <
   TCommand extends EditorCommandDescriptor,

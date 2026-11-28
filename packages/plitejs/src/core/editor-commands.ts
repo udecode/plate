@@ -1182,13 +1182,12 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       return state.transaction((tx) => {
-        const moved = selectMovedTarget(tx, state, input.options?.at, target);
+        selectMovedTarget(tx, state, input.options?.at, target);
         writeComposedText(
           getActiveCommandEditor(),
           input.options?.at,
           input.text,
-          () => tx.text.insert(input.text, input.options),
-          moved
+          () => tx.text.insert(input.text, input.options)
         );
       });
     },
@@ -1340,13 +1339,13 @@ export const editorCommands: EditorCommands = Object.freeze({
 
 registerImplicitTargetCommand(editorCommands.addMark);
 registerImplicitTargetCommand(editorCommands.delete, undefined, {
-  refusesCrossing: true,
+  crossingPolicy: 'refuse',
 });
 registerImplicitTargetCommand(editorCommands.insertBreak, undefined, {
-  refusesCrossing: true,
+  crossingPolicy: 'refuse',
 });
 registerImplicitTargetCommand(editorCommands.insertSoftBreak, undefined, {
-  refusesCrossing: true,
+  crossingPolicy: 'refuse',
 });
 registerImplicitTargetCommand(editorCommands.removeMark);
 registerImplicitTargetCommand(editorCommands.toggleMark);
@@ -1354,7 +1353,7 @@ registerImplicitTargetCommand(editorCommands.transposeCharacter);
 registerImplicitTargetCommand(
   editorCommands.deleteFragment,
   (input) => input.at === undefined,
-  { refusesCrossing: true }
+  { crossingPolicy: 'refuse' }
 );
 registerImplicitTargetCommand(
   editorCommands.insertNodes,
@@ -1363,11 +1362,16 @@ registerImplicitTargetCommand(
 registerImplicitTargetCommand(
   editorCommands.insertText,
   (input) => input.options?.at === undefined,
-  { refusesCrossing: true }
+  { crossingPolicy: 'refuse' }
 );
 registerImplicitTargetCommand(
   editorCommands.removeNodes,
   (input) => input.options?.at === undefined
+);
+registerImplicitTargetCommand(
+  editorCommands.replaceSlice,
+  (input) => input.options?.at === undefined,
+  { crossingPolicy: 'cancel' }
 );
 registerImplicitTargetCommand(
   editorCommands.setNodes,

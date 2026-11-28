@@ -16,6 +16,7 @@ import {
   SelectionApi,
   type Value,
 } from '../..';
+import { registerImplicitTargetCommand } from '../../core/command-definition';
 import {
   dispatchCommand,
   evaluateCommandWithState,
@@ -86,6 +87,10 @@ export const domCommands = Object.freeze({
         : false;
     },
   }),
+});
+
+registerImplicitTargetCommand(domCommands.insertData, undefined, {
+  crossingPolicy: 'cancel',
 });
 
 export type ClipboardSliceRead<V extends Value = Value> =

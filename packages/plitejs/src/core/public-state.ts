@@ -268,6 +268,7 @@ import {
   freezeOwnedJsonValue,
   isImmutable,
 } from './clone';
+import type { ImplicitTargetCrossingPolicy } from './command-definition';
 import { unplacedIn } from './command-document';
 import {
   FRAMED_SPECS,
@@ -492,6 +493,7 @@ import {
   carryCaret,
   crossesMembers,
   NO_CARET,
+  refuseCrossing,
   type SetSite,
   type SettledCaret,
   type SettledSelection,
@@ -6258,12 +6260,14 @@ export const resolveSliceFitSite = (
   options: SliceFitOptions
 ): SliceFitSite | false => {
   const owner = getEditorRuntimeOwner(editor);
+  const snapshot = getTransactionSnapshot(owner);
   const implicitTarget =
     options?.at === undefined
       ? (getCurrentNodeSelection(state) ??
         state.selection() ??
-        moveImplicitTarget(owner)?.target ??
-        null)
+        (snapshot?.implicitTargetResolved
+          ? snapshot.implicitTarget
+          : (peekImplicitTarget(editor) ?? null)))
       : null;
   const createSite = (
     at: Location | NodeSelection | null,
@@ -13922,10 +13926,12 @@ const sameTargetPlacement = (
   );
 };
 
+export type ImplicitTargetResolution = 'cancel' | (() => void) | null;
+
 export const resolveCommandImplicitTarget = (
   editor: Editor,
-  options?: Readonly<{ refusesCrossing?: boolean }>
-): (() => void) | null => {
+  options?: Readonly<{ crossingPolicy?: ImplicitTargetCrossingPolicy }>
+): ImplicitTargetResolution => {
   const owner = getEditorRuntimeOwner(editor);
   const context = getTransactionSpecContext(owner);
   const snapshot = context?.snapshot;
@@ -14018,11 +14024,15 @@ export const resolveCommandImplicitTarget = (
   }
 
   if (
-    options?.refusesCrossing &&
     RangeApi.isRange(normalizedTarget) &&
     crossesMembers(getSetSite(owner), normalizedTarget, targetRoot)
   ) {
-    return latchScoped(normalizedTarget);
+    if (options?.crossingPolicy === 'refuse') {
+      refuseCrossing(getSetSite(owner), normalizedTarget, targetRoot);
+    }
+    if (options?.crossingPolicy === 'cancel') {
+      return 'cancel';
+    }
   }
 
   const beforeCaret = context.caret;

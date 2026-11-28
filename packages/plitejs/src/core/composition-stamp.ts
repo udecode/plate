@@ -139,8 +139,7 @@ export const writeComposedText = (
   editor: Editor,
   at: unknown,
   text: string,
-  write: () => void,
-  movedCaret = false
+  write: () => void
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const frame = FRAMES.get(owner);
@@ -149,7 +148,7 @@ export const writeComposedText = (
     !!frame.located &&
     text.length > 0 &&
     frame.located.at === at &&
-    getPlacementCount(owner) === (movedCaret ? 1 : 0);
+    getPlacementCount(owner) === 0;
   const builder = claims ? getTransactionSnapshot(owner)?.builder : undefined;
 
   if (frame?.stamp && builder) {

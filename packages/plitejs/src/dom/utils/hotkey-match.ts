@@ -412,12 +412,12 @@ export function isHotkey(
     throw new TypeError('isHotkey requires a keyboard event');
   }
 
-  const matcher = getCachedHotkeyMatcher(
-    hotkey,
-    options ?? {
-      platform: usesAppleDOMHotkeys(targetEvent) ? 'apple' : 'other',
-    }
-  );
+  const rawPlatform = options?.platform;
+  const matcher = getCachedHotkeyMatcher(hotkey, {
+    ignoreModifiers: options?.ignoreModifiers,
+    platform:
+      rawPlatform ?? (usesAppleDOMHotkeys(targetEvent) ? 'apple' : 'other'),
+  });
 
   return matcher(targetEvent);
 }

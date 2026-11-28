@@ -15,7 +15,7 @@ import type {
 } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
 import {
-  commandRefusesSetCrossing,
+  commandCrossingPolicy,
   getCommandRegistrationRuntime,
   getCommandRuntime,
   isImplicitTargetCommand,
@@ -44,6 +44,7 @@ import {
   getActiveEditorTransaction,
   getTargetRuntime,
   hasCommandTargetRuntime,
+  type ImplicitTargetResolution,
   isBuildingTransactionSpec,
   isInTransaction,
   isTransactionSpec,
@@ -200,7 +201,8 @@ const evaluateCommandChainInRead = <
   editor: TEditor,
   command: EditorCommand<Input, TEditor>,
   input: Input,
-  state: EditorStateView<any, any>
+  state: EditorStateView<any, any>,
+  resolveImplicit?: (nextInput: Input) => ImplicitTargetResolution
 ): EditorCommandEvaluation => {
   if (state.view.isReadOnly()) {
     throw new Error('Cannot update a read-only editor view.');
@@ -209,6 +211,7 @@ const evaluateCommandChainInRead = <
   const owner = getEditorRuntimeOwner(editor);
   const entries = getCommandRegistry(owner).get(command)?.entries ?? [];
   const runtime = getCommandRuntime(command);
+  const restores: Array<() => void> = [];
   let cachedReadState = state as unknown as
     | EditorCommandContext<Input, TEditor>['state']
     | undefined;
@@ -221,6 +224,22 @@ const evaluateCommandChainInRead = <
       : editor.read(
           (innerState2) => innerState2 as EditorStateView
         )) as unknown as EditorCommandContext<Input, TEditor>['state']);
+  const resolveDelegatedImplicitTarget = (
+    hasDifferentInput: boolean,
+    nextInput: Input
+  ) => {
+    if (!hasDifferentInput || !resolveImplicit || !isInTransaction(owner)) {
+      return true;
+    }
+
+    const resolution = resolveImplicit(nextInput);
+
+    if (resolution === 'cancel') return false;
+    if (resolution) restores.push(resolution);
+    cachedReadState = undefined;
+
+    return true;
+  };
   const tags = () => getActiveEditorUpdateTags(owner);
   let defaultResult: EditorCommandResult | undefined;
   let inputOverridden = false;
@@ -290,14 +309,21 @@ const evaluateCommandChainInRead = <
         beginDelegation();
         const hasDifferentInput =
           overrideInput.length > 0 && overrideInput[0] !== preparedInput;
+        const resolvedInput = hasDifferentInput
+          ? getDefined(overrideInput[0])
+          : preparedInput;
 
         inputOverridden ||= hasDifferentInput;
         if (hasDifferentInput) {
           markMaterial(registration.owner);
         }
+        if (!resolveDelegatedImplicitTarget(hasDifferentInput, resolvedInput)) {
+          delegatedResult = false;
+          return false;
+        }
         delegatedResult = dispatch(
           index + 1,
-          hasDifferentInput ? getDefined(overrideInput[0]) : preparedInput,
+          resolvedInput,
           !hasDifferentInput
         );
         return delegatedResult;
@@ -307,17 +333,22 @@ const evaluateCommandChainInRead = <
           beginDelegation();
           const hasDifferentInput =
             overrideInput.length > 0 && overrideInput[0] !== preparedInput;
+          const resolvedInput = hasDifferentInput
+            ? getDefined(overrideInput[0])
+            : preparedInput;
 
           inputOverridden ||= hasDifferentInput;
           markMaterial(registration.owner);
           delegatedResult = continueTransactionSpec(owner, prefix, () => {
             cachedReadState = undefined;
 
-            return dispatch(
-              index + 1,
-              hasDifferentInput ? getDefined(overrideInput[0]) : preparedInput,
-              !hasDifferentInput
-            );
+            if (
+              !resolveDelegatedImplicitTarget(hasDifferentInput, resolvedInput)
+            ) {
+              return false;
+            }
+
+            return dispatch(index + 1, resolvedInput, !hasDifferentInput);
           });
           return delegatedResult;
         },
@@ -396,6 +427,9 @@ const evaluateCommandChainInRead = <
       result,
     });
   } finally {
+    for (let index = restores.length - 1; index >= 0; index -= 1) {
+      restores[index]?.();
+    }
     activeCommandEditors.pop();
     stack.pop();
     if (stack.length === 0) commandStacks.delete(owner);
@@ -405,7 +439,8 @@ const evaluateCommandChainInRead = <
 const evaluateCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   editor: TEditor,
   command: EditorCommand<Input, TEditor>,
-  input: Input
+  input: Input,
+  resolveImplicit?: (nextInput: Input) => ImplicitTargetResolution
 ): EditorCommandEvaluation => {
   const owner = getEditorRuntimeOwner(editor);
   const readState = () => editor.read((state) => state);
@@ -416,7 +451,13 @@ const evaluateCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   const exitRead = enterEditorRead(owner);
 
   try {
-    return evaluateCommandChainInRead(editor, command, input, state);
+    return evaluateCommandChainInRead(
+      editor,
+      command,
+      input,
+      state,
+      resolveImplicit
+    );
   } finally {
     exitRead();
   }
@@ -467,33 +508,42 @@ const runPlacedCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
     !getTargetRuntime(editor);
   const runScoped = <T>(fn: () => T): T =>
     isolatesOwnerRuntime ? withEditorTargetRuntime(owner, null, fn) : fn();
-  const resolvesImplicitTarget =
-    isImplicitTargetCommand(command, input) && hasCommandTargetRuntime(editor);
-  const resolveTarget = () => {
-    if (!resolvesImplicitTarget) return null;
+  const resolveTargetFor = (nextInput: Input): ImplicitTargetResolution => {
+    if (
+      !isImplicitTargetCommand(command, nextInput) ||
+      !hasCommandTargetRuntime(editor)
+    ) {
+      return null;
+    }
     if (editor.read((state) => state.view.isReadOnly())) {
       throw new Error('Cannot update a read-only editor view.');
     }
 
     return resolveCommandImplicitTarget(editor, {
-      refusesCrossing: commandRefusesSetCrossing(command),
+      crossingPolicy: commandCrossingPolicy(command),
     });
   };
+  const resolvesImplicitTarget =
+    isImplicitTargetCommand(command, input) && hasCommandTargetRuntime(editor);
+  const runUnframed = () => {
+    const located = locateCommandInput(command, input, unframedPlace(editor));
+
+    return (
+      located !== null &&
+      applyCommandEvaluation(
+        editor,
+        evaluateCommandChain(editor, command, located, resolveTargetFor)
+      )
+    );
+  };
   const run = () => {
-    const restoreTarget = resolveTarget();
+    const resolution = resolveTargetFor(input);
 
+    if (resolution === 'cancel') return false;
     try {
-      const located = locateCommandInput(command, input, unframedPlace(editor));
-
-      return (
-        located !== null &&
-        applyCommandEvaluation(
-          editor,
-          evaluateCommandChain(editor, command, located)
-        )
-      );
+      return runUnframed();
     } finally {
-      restoreTarget?.();
+      resolution?.();
     }
   };
 
@@ -516,7 +566,12 @@ const runPlacedCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   if (!selection) assertCommandLocated(command, input);
 
   const applyWith = (located: Input) => {
-    const { result } = evaluateCommandChain(editor, command, located);
+    const { result } = evaluateCommandChain(
+      editor,
+      command,
+      located,
+      resolveTargetFor
+    );
 
     if (result === false) return false;
     applyTransactionSpec(owner, result);
@@ -534,18 +589,19 @@ const runPlacedCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
       );
     }
 
-    const restoreTarget = resolveTarget();
+    const resolution = resolveTargetFor(input);
 
+    if (resolution === 'cancel') return false;
     try {
       return (
         runInEditorCommandFrame(owner, (place) => {
           const located = locateCommandInput(command, input, place);
 
           return () => located !== null && applyWith(located);
-        }) ?? run()
+        }) ?? runUnframed()
       );
     } finally {
-      restoreTarget?.();
+      resolution?.();
     }
   };
 
