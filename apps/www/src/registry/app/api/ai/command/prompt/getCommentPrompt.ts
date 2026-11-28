@@ -88,6 +88,7 @@ export function getCommentPrompt(
 
       const result = editor.api.markdown.serialize({
         document: { children: [block] },
+        lossPolicy: 'allow',
       });
 
       if (!result.ok) throw new Error(result.diagnostics[0].message);

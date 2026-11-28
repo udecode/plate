@@ -1,6 +1,9 @@
 import type { AiSeedConfig, Json } from '@emulators/ai';
-import { NodeApi } from 'platejs';
-import type { AIChatRequestContext } from 'platejs/ai';
+import { type Element, ElementApi, NodeApi, type Path, PathApi } from 'platejs';
+import {
+  type AIChatRequestContext,
+  LOCKED_BLOCK_PLACEHOLDER_TAG,
+} from 'platejs/ai';
 
 import { getCommentBlocks } from '@/registry/app/api/ai/command/prompt/getCommentPrompt';
 import type {
@@ -119,8 +122,156 @@ const textRules = (text: string, chunkDelayMs: number): DemoRules => [
   },
 ];
 
+const TABLE_CELL_TYPES = new Set(['tableCell', 'tableHeader', 'td', 'th']);
+
+const findTableCellPath = (
+  children: AIChatRequestContext['children'],
+  pointPath: Path
+): Path | null => {
+  const root = { children, type: '' };
+
+  for (let depth = pointPath.length; depth >= 1; depth -= 1) {
+    const candidatePath = pointPath.slice(0, depth);
+    const node = NodeApi.getIf(root, candidatePath);
+
+    if (ElementApi.isElement(node) && TABLE_CELL_TYPES.has(node.type)) {
+      return candidatePath;
+    }
+  }
+
+  return null;
+};
+
+const hasMultiCellTableSelection = (ctx: AIChatRequestContext): boolean => {
+  if (ctx.refs.tableCells.length > 1) return true;
+  if (!ctx.selection) return false;
+
+  const anchorCell = findTableCellPath(ctx.children, ctx.selection.anchor.path);
+  const focusCell = findTableCellPath(ctx.children, ctx.selection.focus.path);
+
+  return (
+    anchorCell !== null &&
+    focusCell !== null &&
+    !PathApi.equals(anchorCell, focusCell)
+  );
+};
+
+const resolveSelectedSiblingEntries = (
+  ctx: AIChatRequestContext
+): ReadonlyArray<readonly [Element, Path]> => {
+  const root = { children: ctx.children, type: '' };
+
+  if (ctx.nodeSelection?.paths.length) {
+    return ctx.nodeSelection.paths.toSorted(PathApi.compare).flatMap((path) => {
+      const node = NodeApi.getIf(root, path);
+
+      return ElementApi.isElement(node) ? [[node, path] as const] : [];
+    });
+  }
+
+  const locked = ctx.refs.lockedBlocks;
+
+  const firstLocked = locked?.[0];
+
+  if (!firstLocked || !ctx.selection) return [];
+
+  const parentPath = PathApi.parent(firstLocked.path);
+  const depth = parentPath.length;
+  const anchorIndex = ctx.selection.anchor.path[depth];
+  const focusIndex = ctx.selection.focus.path[depth];
+
+  if (anchorIndex === undefined || focusIndex === undefined) return [];
+
+  const start = Math.min(anchorIndex, focusIndex);
+  const end = Math.max(anchorIndex, focusIndex);
+  const entries: Array<readonly [Element, Path]> = [];
+
+  for (let index = start; index <= end; index += 1) {
+    const path = [...parentPath, index];
+    const node = NodeApi.getIf(root, path);
+
+    if (ElementApi.isElement(node)) {
+      entries.push([node, path]);
+    }
+  }
+
+  return entries;
+};
+
+const hasEditableLockedSelection = (ctx: AIChatRequestContext): boolean => {
+  const locked = ctx.refs.lockedBlocks;
+
+  if (!locked?.length) return false;
+
+  const lockedPaths = new Set(locked.map(({ path }) => path.join(',')));
+  const entries = resolveSelectedSiblingEntries(ctx);
+
+  return entries.some(([, path]) => !lockedPaths.has(path.join(',')));
+};
+
+const headingPrefix = (node: Element): string | undefined => {
+  if (node.type === 'heading') {
+    const level =
+      typeof node.level === 'number' && node.level >= 1 && node.level <= 6
+        ? node.level
+        : 2;
+
+    return `${'#'.repeat(level)} `;
+  }
+
+  const match = /^h([1-6])$/.exec(node.type);
+
+  return match ? `${'#'.repeat(Number(match[1]))} ` : undefined;
+};
+
+const rewriteUnlockedDemoBlock = (node: Element): string => {
+  const text = NodeApi.string(node).replaceAll(/\s+/g, ' ').trim();
+  const heading = headingPrefix(node);
+
+  if (heading) {
+    return `${heading}${text || 'Updated section'}`;
+  }
+
+  if (!text) return '';
+
+  const prefix = node.listStyleType ? '- ' : '';
+  const rewritten = text.startsWith('Updated:')
+    ? text
+    : `Updated: ${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+
+  return `${prefix}${rewritten}`;
+};
+
+const buildLockedEditMarkdown = (ctx: AIChatRequestContext): string => {
+  const lockedByPath = new Map(
+    (ctx.refs.lockedBlocks ?? []).map(({ path, ref }) => [path.join(','), ref])
+  );
+  const entries = resolveSelectedSiblingEntries(ctx);
+  const parts: string[] = [];
+
+  for (const [node, path] of entries) {
+    const ref = lockedByPath.get(path.join(','));
+
+    if (ref) {
+      parts.push(`<${LOCKED_BLOCK_PLACEHOLDER_TAG} ref="${ref}" />`);
+      continue;
+    }
+
+    const rewritten = rewriteUnlockedDemoBlock(node);
+
+    if (rewritten) parts.push(rewritten);
+  }
+
+  return parts.join('\n\n');
+};
+
 const demoScenarios: Record<
-  'comment' | 'continue-writing' | 'markdown' | 'table' | 'text',
+  | 'comment'
+  | 'continue-writing'
+  | 'locked-edit'
+  | 'markdown'
+  | 'table'
+  | 'text',
   DemoScenario
 > = {
   comment: {
@@ -152,6 +303,10 @@ const demoScenarios: Record<
         'AI can help turn an initial idea into a clear and useful first draft.',
         40
       ),
+  },
+  'locked-edit': {
+    chosenTool: 'edit',
+    rules: (ctx) => textRules(buildLockedEditMarkdown(ctx), 15),
   },
   markdown: {
     chosenTool: 'generate',
@@ -188,10 +343,14 @@ const pickScenario = (
   const text = messages
     .at(-1)
     ?.parts.find((part) => part.type === 'text')?.text;
-  const manyCells = ctx.refs.tableCells.length > 1;
+  const manyCells = hasMultiCellTableSelection(ctx);
+  const hasLockedMix = !manyCells && hasEditableLockedSelection(ctx);
 
   if (ctx.toolName === 'comment') return 'comment';
-  if (ctx.toolName === 'edit') return manyCells ? 'table' : 'text';
+  if (ctx.toolName === 'edit') {
+    if (manyCells) return 'table';
+    return hasLockedMix ? 'locked-edit' : 'text';
+  }
   if (text === 'Generate a markdown sample') return 'markdown';
   if (
     text?.includes('Continue writing AFTER <Block>') ||
@@ -201,6 +360,13 @@ const pickScenario = (
   }
   if (!ctx.toolName && text?.includes('comment')) return 'comment';
   if (!ctx.toolName && manyCells) return 'table';
+  if (
+    !ctx.toolName &&
+    hasLockedMix &&
+    !/\b(summarize|explain|describe)\b/i.test(text ?? '')
+  ) {
+    return 'locked-edit';
+  }
 
   return 'text';
 };

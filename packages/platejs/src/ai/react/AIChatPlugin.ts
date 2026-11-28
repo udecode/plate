@@ -58,9 +58,15 @@ import {
 import { type Editor, definePlugin } from '../../react/core';
 import type {
   AIChatRequestContext,
+  AIChatRequestNodeRef,
   AIToolName,
 } from '../lib/AIChatRequestContext';
 import { findQuotedSpan } from '../lib/findQuotedSpan.internal';
+import {
+  isAIPathNonWritable,
+  LOCKED_BLOCK_PLACEHOLDER_TAG,
+  resolveAISelectedBlocks,
+} from '../lib/lockedContext';
 import {
   captureTextRange,
   extractCopiedBlockProps,
@@ -124,6 +130,7 @@ export type AIChatPluginState = {
   _blockKey: NodeKey | null;
   _blockRefs: Record<string, Readonly<{ key: NodeKey }>>;
   _changeId: string | null;
+  _lockedBlockRefs: Record<string, Readonly<{ key: NodeKey }>>;
   _requestId: string | null;
   _tableCellRefs: Record<string, Readonly<{ key: NodeKey }>>;
   /**
@@ -208,6 +215,7 @@ const initialState: AIChatPluginState = {
   _blockRefs: {},
 
   _changeId: null,
+  _lockedBlockRefs: {},
   _requestId: null,
 
   _tableCellRefs: {},
@@ -287,7 +295,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     }
     const blocks = isNodeSelecting
       ? selectedNodes
-      : captureEditor.read.nodes.blocks(selection ? { at: selection } : {});
+      : selection
+        ? resolveAISelectedBlocks(captureEditor, selection).entries
+        : captureEditor.read.nodes.blocks();
     const isEndpoint = (path: Path, endpoint: Path | undefined) =>
       isNodeSelecting &&
       !!endpoint &&
@@ -565,6 +575,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       _blockRefs: {},
 
       _changeId: null,
+      _lockedBlockRefs: {},
       _requestId: null,
 
       _tableCellRefs: {},
@@ -762,9 +773,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           throw new Error('Table rows must contain table cells.');
         }
 
-        const nodeKey = tableKey([...tablePath, rowIndex, cellIndex]);
+        const cellPath = [...tablePath, rowIndex, cellIndex];
+        const nodeKey = tableKey(cellPath);
+        const cellWritable = !isAIPathNonWritable(tableView ?? view, cellPath);
 
-        if (nodeKey && selectedNodeKeys.has(nodeKey)) {
+        if (nodeKey && selectedNodeKeys.has(nodeKey) && cellWritable) {
           const ref = `c${selectedCells.length + 1}`;
 
           refs[ref] = { key: nodeKey };
@@ -898,35 +911,130 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       return [{ path: inScope(path), ref }];
     });
     const tableCellRefs: AIChatPluginState['_tableCellRefs'] = {};
-    const tableCells = tablePlugin.installed
-      ? (
-          requestEditor
-            .plugin(BaseTablePlugin)
-            .read.selection({ at: viewAt ?? undefined })?.cells ?? []
-        ).flatMap(([, path], index) => {
-          const key = requestEditor.key(path);
+    const tableCells: AIChatRequestNodeRef[] = [];
 
-          if (!key) return [];
+    if (tablePlugin.installed) {
+      const selectedCells =
+        requestEditor
+          .plugin(BaseTablePlugin)
+          .read.selection({ at: viewAt ?? undefined })?.cells ?? [];
+      let cellRefIndex = 0;
 
-          const ref = `c${index + 1}`;
+      for (const [, path] of selectedCells) {
+        if (isAIPathNonWritable(requestEditor, path)) continue;
 
-          tableCellRefs[ref] = { key };
+        const key = requestEditor.key(path);
 
-          return [{ path: inScope(path), ref }];
-        })
-      : [];
+        if (!key) continue;
+
+        cellRefIndex += 1;
+        const ref = `c${cellRefIndex}`;
+
+        tableCellRefs[ref] = { key };
+        tableCells.push({ path: inScope(path), ref });
+      }
+    }
+
+    const selectedBlockEntries: ReadonlyArray<readonly [Element, Path]> =
+      isNodeSelecting
+        ? selectedPaths.flatMap((path) => {
+            const entry = requestEditor.read.nodes.get(path, {
+              match: ElementApi.isElement,
+            });
+
+            return entry ? [entry] : [];
+          })
+        : viewAt && RangeApi.isExpanded(viewAt)
+          ? resolveAISelectedBlocks(requestEditor, viewAt).entries
+          : [];
+    const lockedBlockRefs: AIChatPluginState['_lockedBlockRefs'] = {};
+    const lockedBlocks: AIChatRequestNodeRef[] = [];
+    let lockedRefIndex = 0;
+
+    for (const [, path] of selectedBlockEntries) {
+      if (!isAIPathNonWritable(requestEditor, path)) continue;
+
+      const key = requestEditor.key(path);
+
+      if (!key) continue;
+
+      lockedRefIndex += 1;
+      const ref = `l${lockedRefIndex}`;
+
+      lockedBlockRefs[ref] = { key };
+      lockedBlocks.push({ path: inScope(path), ref });
+    }
 
     context.store.set({
       _blockRefs: blockRefs,
+      _lockedBlockRefs: lockedBlockRefs,
       _tableCellRefs: tableCellRefs,
     });
 
     return {
       children: scopeBlocks(requestEditor, scope).map(withoutReviewMarks),
       nodeSelection,
-      refs: { blocks, tableCells },
+      refs: {
+        blocks,
+        ...(lockedBlocks.length > 0 ? { lockedBlocks } : {}),
+        tableCells,
+      },
       selection: requestAt,
     };
+  };
+  const hasEditableRequestTarget = (
+    commandEditor: Editor,
+    at: Range | null,
+    selectedNodePaths: readonly Path[],
+    requestContext: AIChatRequestContext
+  ): boolean => {
+    const current =
+      at ?? commandEditor.read.selection() ?? editor.read.selection();
+    const root = current
+      ? SelectionApi.root(current)
+      : commandEditor.read.view.root();
+    const view = projectEditorView(commandEditor, root ? { root } : {});
+    const viewAt = at
+      ? {
+          ...at,
+          anchor: { offset: at.anchor.offset, path: at.anchor.path },
+          focus: { offset: at.focus.offset, path: at.focus.path },
+        }
+      : null;
+
+    if (tablePlugin.installed && viewAt) {
+      const selectedCells =
+        view.plugin(BaseTablePlugin).read.selection({ at: viewAt })?.cells ??
+        [];
+
+      if (selectedCells.length > 1) {
+        return requestContext.refs.tableCells.length > 0;
+      }
+    }
+
+    if (selectedNodePaths.length > 0) {
+      return (
+        (requestContext.refs.lockedBlocks?.length ?? 0) <
+        selectedNodePaths.length
+      );
+    }
+
+    if (!viewAt) return true;
+    if (!RangeApi.isExpanded(viewAt)) {
+      const caretBlock = view.read.nodes.block({ at: viewAt.anchor });
+
+      return !caretBlock || !isAIPathNonWritable(view, caretBlock[1]);
+    }
+
+    const resolved = resolveAISelectedBlocks(view, viewAt);
+
+    if (resolved.partialLockedContainer || resolved.entries.length === 0) {
+      return false;
+    }
+
+    return (
+      (requestContext.refs.lockedBlocks?.length ?? 0) < resolved.entries.length
+    );
   };
   const resolvePrompt = (
     prompt: EditorPrompt,
@@ -1246,48 +1354,15 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       return entry ? [entry[0]] : [];
     });
 
-    if (
-      target.kind === 'blocks' &&
-      sourceNodes.length === paths.length &&
-      isEqual(sourceNodes.map(withoutText), nextNodes.map(withoutText))
-    ) {
-      const edits = sourceNodes.flatMap((sourceNode, blockIndex) => {
-        const nextNode = nextNodes[blockIndex];
-        const blockPath = paths[blockIndex];
+    if (target.kind === 'blocks') {
+      const minimal = applyMinimalTextBlockEdits(
+        tx,
+        sourceNodes,
+        paths,
+        nextNodes
+      );
 
-        if (!nextNode || !blockPath) return [];
-        const afterTexts = [...NodeApi.texts(nextNode)];
-
-        return [...NodeApi.texts(sourceNode)].flatMap(
-          ([before, path], textIndex) => {
-            const after = afterTexts[textIndex]?.[0];
-
-            return after && before.text !== after.text
-              ? textEdits(before.text, after.text).map((edit) => ({
-                  ...edit,
-                  path: [...blockPath, ...path],
-                }))
-              : [];
-          }
-        );
-      });
-
-      for (const { from, path, text, to } of edits.toSorted(
-        (left, right) =>
-          PathApi.compare(right.path, left.path) || right.from - left.from
-      )) {
-        if (to > from) {
-          tx.text.delete({
-            at: {
-              anchor: { offset: from, path },
-              focus: { offset: to, path },
-            },
-          });
-        }
-        if (text) tx.text.insert(text, { at: { offset: from, path } });
-      }
-
-      return edits.length > 0;
+      if (minimal !== null) return minimal;
     }
 
     return tx.slice.replace(
@@ -1297,6 +1372,245 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         openStart: 0,
       }),
       { at: target.range }
+    );
+  };
+  const LOCKED_BLOCK_REFUSAL_MESSAGE =
+    'This selection contains a locked block. Unlock it or insert below instead.';
+  const isLockRefusalRecord = (record: unknown): boolean => {
+    const reason =
+      record && typeof record === 'object'
+        ? (record as { reason?: unknown }).reason
+        : undefined;
+
+    return reason === 'block-locked' || reason === 'node-write-veto';
+  };
+  const applyMinimalTextBlockEdits = (
+    tx: AIActionTransaction,
+    sourceNodes: readonly Element[],
+    paths: readonly Path[],
+    nextNodes: readonly Descendant[]
+  ): boolean | null => {
+    if (
+      sourceNodes.length !== paths.length ||
+      sourceNodes.length !== nextNodes.length ||
+      !isEqual(sourceNodes.map(withoutText), nextNodes.map(withoutText))
+    ) {
+      return null;
+    }
+
+    const edits = sourceNodes.flatMap((sourceNode, blockIndex) => {
+      const nextNode = nextNodes[blockIndex];
+      const blockPath = paths[blockIndex];
+
+      if (!nextNode || !blockPath) return [];
+      const afterTexts = [...NodeApi.texts(nextNode)];
+
+      return [...NodeApi.texts(sourceNode)].flatMap(
+        ([before, path], textIndex) => {
+          const after = afterTexts[textIndex]?.[0];
+
+          return after && before.text !== after.text
+            ? textEdits(before.text, after.text).map((edit) => ({
+                ...edit,
+                path: [...blockPath, ...path],
+              }))
+            : [];
+        }
+      );
+    });
+
+    for (const { from, path, text, to } of edits.toSorted(
+      (left, right) =>
+        PathApi.compare(right.path, left.path) || right.from - left.from
+    )) {
+      if (to > from) {
+        tx.text.delete({
+          at: {
+            anchor: { offset: from, path },
+            focus: { offset: to, path },
+          },
+        });
+      }
+      if (text) tx.text.insert(text, { at: { offset: from, path } });
+    }
+
+    return edits.length > 0;
+  };
+  const buildTableDraftPreview = (
+    actionEditor: Editor,
+    node: Descendant,
+    path: Path
+  ): Descendant => {
+    if (!ElementApi.isElement(node)) return node;
+
+    const key = actionEditor.key(path);
+    const draft = key ? tableDraft.get(key) : undefined;
+    const { locked: _locked, ...rest } = node;
+
+    return {
+      ...rest,
+      children:
+        draft?.children ??
+        node.children.map((child, index) =>
+          buildTableDraftPreview(actionEditor, child, [...path, index])
+        ),
+    };
+  };
+  const stripLockedDeep = <N extends Descendant>(node: N): N => {
+    if (!ElementApi.isElement(node)) return node;
+
+    const { locked: _locked, ...rest } = node;
+
+    return {
+      ...rest,
+      children: node.children.map(stripLockedDeep),
+    } as N;
+  };
+  const resolveOrderedTargetEntries = (
+    actionEditor: Editor,
+    targetKeys: readonly NodeKey[]
+  ): Array<readonly [Element, Path]> | null => {
+    if (
+      targetKeys.length === 0 ||
+      new Set(targetKeys).size !== targetKeys.length
+    ) {
+      return null;
+    }
+
+    const entries = targetKeys.flatMap((key) => {
+      const entry = actionEditor.read.nodes.get(key, {
+        match: ElementApi.isElement,
+      });
+
+      return entry ? [entry] : [];
+    });
+
+    if (entries.length !== targetKeys.length) return null;
+
+    return entries.toSorted(([, a], [, b]) => PathApi.compare(a, b));
+  };
+  const withdrawPendingChange = (
+    actionEditor: Editor,
+    currentChangeId: string | null
+  ): boolean => {
+    const previous = currentChangeId
+      ? editor.plugin(AuthoredPlugin).read.change(currentChangeId)
+      : null;
+
+    if (!previous) return true;
+
+    let withdrawn = false;
+    actionEditor.update((tx, { afterCommit }) => {
+      tx.history.merge();
+      tx.plugin(AuthoredPlugin).withdraw([previous]);
+      afterCommit(({ snapshot }) => {
+        withdrawn = true;
+        suggestion &&= { ...suggestion, children: snapshot.children };
+      });
+    });
+
+    return (
+      withdrawn &&
+      (!suggestion || actionEditor.read.children() === suggestion.children)
+    );
+  };
+  const normalizeUnlockedListRun = (
+    sourceRun: readonly Element[],
+    nextRun: Element[]
+  ): Element[] => {
+    const firstSource = sourceRun[0];
+
+    if (
+      !firstSource ||
+      !sourceRun.every((node) => isListItem(node)) ||
+      !nextRun.every((node) => isListItem(node))
+    ) {
+      return nextRun;
+    }
+
+    const sharedListId =
+      typeof firstSource.listId === 'string' &&
+      sourceRun.every((node) => node.listId === firstSource.listId)
+        ? firstSource.listId
+        : undefined;
+    const baseIndent =
+      typeof firstSource.indent === 'number' ? firstSource.indent : undefined;
+    const firstNextIndent =
+      typeof nextRun[0]?.indent === 'number' ? nextRun[0].indent : undefined;
+    const indentDelta =
+      baseIndent !== undefined && firstNextIndent !== undefined
+        ? baseIndent - firstNextIndent
+        : 0;
+    const sourceHadListStart = Object.hasOwn(firstSource, 'listStart');
+
+    return nextRun.map((node, index) => {
+      const updated: Record<string, unknown> = { ...node };
+
+      if (sharedListId) updated.listId = sharedListId;
+      if (indentDelta > 0 && typeof node.indent === 'number') {
+        updated.indent = node.indent + indentDelta;
+      }
+      if (
+        index === 0 &&
+        !sourceHadListStart &&
+        Object.hasOwn(updated, 'listStart')
+      ) {
+        delete updated.listStart;
+      }
+
+      return updated as Element;
+    });
+  };
+  const writeUnlockedRun = (
+    tx: AIActionTransaction,
+    sourceRun: ReadonlyArray<readonly [Element, Path]>,
+    nextNodes: readonly Element[],
+    insertAt: Path | null
+  ): boolean => {
+    if (sourceRun.length === 0) {
+      if (nextNodes.length === 0 || !insertAt) return false;
+
+      tx.nodes.insert(cloneDeep([...nextNodes]), { at: insertAt });
+
+      return true;
+    }
+
+    if (nextNodes.length === 0) {
+      for (const [, path] of sourceRun.toReversed()) {
+        tx.nodes.remove({ at: path });
+      }
+
+      return true;
+    }
+
+    const sourceNodes = sourceRun.map(([node]) => node);
+    const sourcePaths = sourceRun.map(([, path]) => path);
+    const minimal = applyMinimalTextBlockEdits(
+      tx,
+      sourceNodes,
+      sourcePaths,
+      nextNodes
+    );
+
+    if (minimal !== null) return minimal;
+
+    const first = sourceRun[0];
+    const last = sourceRun.at(-1);
+
+    if (!first || !last) return false;
+
+    const anchor = tx.points.start(first[1]);
+    const focus = tx.points.end(last[1]);
+
+    if (!anchor || !focus) return false;
+
+    return tx.slice.replace(
+      ContentSlice.fromJSON({
+        content: cloneDeep([...nextNodes]),
+        openEnd: 0,
+        openStart: 0,
+      }),
+      { at: { anchor, focus } }
     );
   };
   const applySuggestion = (
@@ -1325,6 +1639,264 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     if (state.chatSelection && !capturedSelection) return false;
 
     const currentChangeId = state._changeId;
+    const lockedRefs = state._lockedBlockRefs;
+    const expectedLockedRefs = Object.keys(lockedRefs);
+    const failLockedSuggestion = (message: string) => {
+      const result = decideCurrentChange('reject');
+
+      if (!result || reviewSucceeded(result)) {
+        suggestion = null;
+        suggestionTarget = null;
+      }
+      context.store.set({ refusalMessage: message });
+
+      return false;
+    };
+
+    if (expectedLockedRefs.length > 0) {
+      const parsedPlaceholders = editor.api.markdown.parsePlaceholders(
+        content,
+        {
+          tag: LOCKED_BLOCK_PLACEHOLDER_TAG,
+        }
+      );
+
+      if (!parsedPlaceholders.ok) {
+        return failLockedSuggestion(
+          'AI response altered or omitted a locked block and was not applied.'
+        );
+      }
+
+      const actualRefs = parsedPlaceholders.segments.flatMap((segment) =>
+        segment.kind === 'placeholder' ? [segment.ref] : []
+      );
+
+      if (
+        actualRefs.length !== expectedLockedRefs.length ||
+        actualRefs.some((ref, index) => ref !== expectedLockedRefs[index])
+      ) {
+        return failLockedSuggestion(
+          'AI response altered or omitted a locked block and was not applied.'
+        );
+      }
+
+      const ordered = resolveOrderedTargetEntries(
+        actionEditor,
+        state.chatNodes.map(({ nodeKey }) => nodeKey)
+      );
+      if (!ordered) return false;
+      const lockedEntries: Array<readonly [Element, Path]> = [];
+      const lockedIndices: number[] = [];
+
+      for (const ref of expectedLockedRefs) {
+        const key = lockedRefs[ref]?.key;
+        const index = key
+          ? ordered.findIndex(([node]) => actionEditor.key(node) === key)
+          : -1;
+        const previousIndex = lockedIndices.at(-1) ?? -1;
+        const lockedEntry = index >= 0 ? ordered[index] : undefined;
+
+        if (!lockedEntry || index <= previousIndex) {
+          return failLockedSuggestion(
+            'A locked block in this selection moved or changed before AI finished.'
+          );
+        }
+
+        lockedIndices.push(index);
+        lockedEntries.push(lockedEntry);
+      }
+
+      const sourceRuns: Array<Array<readonly [Element, Path]>> = [];
+      let cursor = 0;
+
+      for (const lockedIndex of lockedIndices) {
+        sourceRuns.push(ordered.slice(cursor, lockedIndex));
+        cursor = lockedIndex + 1;
+      }
+      sourceRuns.push(ordered.slice(cursor));
+
+      for (const run of sourceRuns) {
+        for (const [, path] of run) {
+          if (isAIPathNonWritable(actionEditor, path)) {
+            return failLockedSuggestion(
+              'A selected block was locked while AI was responding. Unlock it or try again.'
+            );
+          }
+        }
+      }
+
+      const answerRuns: Element[][] = Array.from(
+        { length: expectedLockedRefs.length + 1 },
+        () => []
+      );
+      let slotIndex = 0;
+
+      for (const segment of parsedPlaceholders.segments) {
+        if (segment.kind === 'placeholder') {
+          slotIndex += 1;
+        } else {
+          answerRuns[slotIndex]?.push(...segment.nodes);
+        }
+      }
+
+      if (suggestion && actionEditor.read.children() !== suggestion.children) {
+        return false;
+      }
+      if (!withdrawPendingChange(actionEditor, currentChangeId)) {
+        return false;
+      }
+
+      const preparedRuns = sourceRuns.map((sourceRun, index) => {
+        const answerRun = answerRuns[index] ?? [];
+
+        if (sourceRun.length === 0 || answerRun.length === 0) {
+          return answerRun;
+        }
+
+        const sourceNodes = proposedBlocks(
+          actionEditor,
+          root ?? 'main',
+          sourceRun
+        );
+        const serialized =
+          sourceNodes.length > 0
+            ? editor.api.markdown.serialize({
+                document: { children: sourceNodes },
+                lossPolicy: 'allow',
+              })
+            : null;
+        const reparsed = serialized?.ok
+          ? editor.api.markdown.parseSlice(serialized.data, {
+              lossPolicy: 'allow',
+            })
+          : undefined;
+        const roundTrip =
+          reparsed?.ok && ElementApi.isElementList(reparsed.slice.content)
+            ? reparsed.slice.content
+            : null;
+        const fitted = suggestionBlocks(editor, actionEditor.read, {
+          answer: answerRun,
+          roundTrip,
+          source: sourceNodes,
+        });
+
+        return normalizeUnlockedListRun(sourceNodes, fitted);
+      });
+
+      const unlockedResponse: Element[] = [];
+
+      for (let index = 0; index < preparedRuns.length; index += 1) {
+        unlockedResponse.push(
+          ...(preparedRuns[index] ?? []).map(stripLockedDeep)
+        );
+        const lockedEntry = lockedEntries[index];
+
+        if (lockedEntry) {
+          unlockedResponse.push(stripLockedDeep(lockedEntry[0]));
+        }
+      }
+
+      const first = ordered[0];
+      const last = ordered.at(-1);
+      const anchor = first ? actionEditor.read.points.start(first[1]) : null;
+      const focus = last ? actionEditor.read.points.end(last[1]) : null;
+      const range =
+        capturedSelection ??
+        (anchor && focus
+          ? { anchor, focus }
+          : actionEditor.read.ranges.fromEntries(ordered));
+
+      if (!range) return false;
+
+      const target: AISuggestionTarget = {
+        kind: 'blocks',
+        paths: ordered.map(([, path]) => path),
+        range,
+        roundTrip: null,
+        source: proposedBlocks(actionEditor, root ?? 'main', ordered),
+      };
+
+      let publishedChangeId: string | null = null;
+      let lockedRefusal = false;
+      const unsubscribe = subscribeEditorRefusals(actionEditor, (record) => {
+        if (isLockRefusalRecord(record)) {
+          lockedRefusal = true;
+        }
+      });
+      const publish = (
+        changeId: string | null,
+        children: readonly unknown[] = actionEditor.read.children()
+      ) => {
+        publishedChangeId = changeId;
+        suggestion = { children, response: unlockedResponse };
+        suggestionTarget = target;
+        context.store.set({
+          _changeId: changeId,
+          previewValue: [],
+          refusalMessage: null,
+        });
+        const published = pendingChange();
+        if (published) {
+          responseAuthor = {
+            authorId: published.authorId,
+            requestId: context.store.get('_requestId'),
+          };
+        }
+      };
+
+      let proposed: boolean | undefined;
+
+      try {
+        proposed = actionEditor.update((tx, { afterCommit }) => {
+          const changeId = tx
+            .plugin(AuthoredPlugin)
+            .propose(
+              currentChangeId ? { changeId: currentChangeId } : undefined
+            );
+          if (currentChangeId) tx.history.merge();
+          else tx.history.newBatch();
+
+          let mutated = false;
+
+          for (let index = sourceRuns.length - 1; index >= 0; index -= 1) {
+            const sourceRun = sourceRuns[index] ?? [];
+            const nextRun = preparedRuns[index] ?? [];
+            const lockedAfter = lockedEntries[index];
+            const lastLocked = lockedEntries.at(-1);
+            const insertAt =
+              sourceRun.length === 0
+                ? lockedAfter
+                  ? lockedAfter[1]
+                  : lastLocked
+                    ? PathApi.next(lastLocked[1])
+                    : null
+                : null;
+
+            if (writeUnlockedRun(tx, sourceRun, nextRun, insertAt)) {
+              mutated = true;
+            }
+          }
+
+          if (mutated) {
+            afterCommit(({ snapshot }) => publish(changeId, snapshot.children));
+          }
+
+          return true;
+        });
+      } finally {
+        unsubscribe();
+      }
+
+      if (lockedRefusal || !proposed) {
+        context.store.set({ refusalMessage: LOCKED_BLOCK_REFUSAL_MESSAGE });
+
+        return false;
+      }
+      if (publishedChangeId === null) publish(null);
+
+      return publishedChangeId !== null;
+    }
+
     const parsed = editor.api.markdown.parseSlice(content);
 
     // A response Markdown cannot represent clears the draft, so an earlier
@@ -1349,15 +1921,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     let target = suggestionTarget;
 
     if (!target) {
-      const entries = targetKeys.flatMap((key) => {
-        const entry = actionEditor.read.nodes.get(key, {
-          match: ElementApi.isElement,
-        });
-
-        return entry ? [entry] : [];
-      });
-      if (entries.length !== targetKeys.length) return false;
-      const ordered = entries.toSorted(([, a], [, b]) => PathApi.compare(a, b));
+      const ordered = resolveOrderedTargetEntries(actionEditor, targetKeys);
+      if (!ordered) return false;
       const first = ordered[0];
       const last = ordered.at(-1);
       if (!first || !last) return false;
@@ -1408,32 +1973,20 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     if (suggestion && actionEditor.read.children() !== suggestion.children) {
       return false;
     }
-    const previous = currentChangeId
-      ? editor.plugin(AuthoredPlugin).read.change(currentChangeId)
-      : null;
-
-    if (previous) {
-      let withdrawn = false;
-      actionEditor.update((tx, { afterCommit }) => {
-        tx.history.merge();
-        tx.plugin(AuthoredPlugin).withdraw([previous]);
-        afterCommit(({ snapshot }) => {
-          withdrawn = true;
-          suggestion &&= { ...suggestion, children: snapshot.children };
-        });
-      });
-      if (
-        !withdrawn ||
-        (suggestion && actionEditor.read.children() !== suggestion.children)
-      ) {
-        return false;
-      }
+    if (!withdrawPendingChange(actionEditor, currentChangeId)) {
+      return false;
     }
 
     const response = parsed.slice.content.filter((node): node is Element =>
       ElementApi.isElement(node)
     );
     let publishedChangeId: string | null = null;
+    let lockedRefusal = false;
+    const unsubscribe = subscribeEditorRefusals(actionEditor, (record) => {
+      if (isLockRefusalRecord(record)) {
+        lockedRefusal = true;
+      }
+    });
     const publish = (
       changeId: string | null,
       children: readonly unknown[] = actionEditor.read.children()
@@ -1441,7 +1994,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       publishedChangeId = changeId;
       suggestion = { children, response };
       suggestionTarget = target;
-      context.store.set({ _changeId: changeId, previewValue: [] });
+      context.store.set({
+        _changeId: changeId,
+        previewValue: [],
+        refusalMessage: null,
+      });
       const published = pendingChange();
       if (published) {
         responseAuthor = {
@@ -1450,18 +2007,29 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         };
       }
     };
-    const proposed = actionEditor.update((tx, { afterCommit }) => {
-      const changeId = tx
-        .plugin(AuthoredPlugin)
-        .propose(currentChangeId ? { changeId: currentChangeId } : undefined);
-      if (currentChangeId) tx.history.merge();
-      else tx.history.newBatch();
-      if (writeSuggestion(tx, target, nextNodes)) {
-        afterCommit(({ snapshot }) => publish(changeId, snapshot.children));
-      }
-      return true;
-    });
+    let proposed: boolean | undefined;
 
+    try {
+      proposed = actionEditor.update((tx, { afterCommit }) => {
+        const changeId = tx
+          .plugin(AuthoredPlugin)
+          .propose(currentChangeId ? { changeId: currentChangeId } : undefined);
+        if (currentChangeId) tx.history.merge();
+        else tx.history.newBatch();
+        if (writeSuggestion(tx, target, nextNodes)) {
+          afterCommit(({ snapshot }) => publish(changeId, snapshot.children));
+        }
+        return true;
+      });
+    } finally {
+      unsubscribe();
+    }
+
+    if (lockedRefusal) {
+      context.store.set({ refusalMessage: LOCKED_BLOCK_REFUSAL_MESSAGE });
+
+      return false;
+    }
     if (proposed && publishedChangeId === null) publish(null);
 
     return publishedChangeId !== null;
@@ -1474,7 +2042,69 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     }
     responseAuthor = null;
     if (tableDraft.size > 0) {
-      landAndClose(getActionEditor(commandEditor), (tx) => {
+      const actionEditor = getActionEditor(commandEditor);
+
+      if (!actionEditor || actionEditor.read.view.isReadOnly()) {
+        return undefined;
+      }
+
+      const lockedKeys: NodeKey[] = [];
+      let remainingTable: readonly [Element, Path] | null = null;
+
+      for (const [key] of tableDraft) {
+        const rootMatches =
+          resolveTargetRoot(commandEditor, key)?.root ===
+          actionEditor.read.view.root();
+        const entry = rootMatches
+          ? actionEditor.read.nodes.get(key, { match: ElementApi.isElement })
+          : undefined;
+
+        if (!entry) continue;
+        if (isAIPathNonWritable(actionEditor, entry[1])) {
+          lockedKeys.push(key);
+        } else if (!remainingTable) {
+          remainingTable =
+            actionEditor.read.nodes.above({
+              at: entry[1],
+              match: (node): node is Element =>
+                ElementApi.isElement(node) &&
+                node.type === tablePlugin.schema.type,
+            }) ?? null;
+        }
+      }
+
+      if (lockedKeys.length > 0) {
+        for (const key of lockedKeys) tableDraft.delete(key);
+
+        if (tableDraft.size === 0) {
+          context.store.set({
+            previewValue: [],
+            refusalMessage:
+              'All staged table cells are now locked. Unlock a cell or discard this draft.',
+          });
+
+          return undefined;
+        }
+
+        const preview = remainingTable
+          ? buildTableDraftPreview(
+              actionEditor,
+              remainingTable[0],
+              remainingTable[1]
+            )
+          : null;
+
+        context.store.set({
+          previewValue:
+            preview && ElementApi.isElement(preview) ? [preview] : [],
+          refusalMessage:
+            'Locked table cells were removed from this draft. Click Accept again to apply the remaining unlocked cells.',
+        });
+
+        return undefined;
+      }
+
+      landAndClose(actionEditor, (tx) => {
         const targets = [...tableDraft].map(([key, draft]) => ({
           draft,
           entry:
@@ -1789,22 +2419,51 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         previewParse = undefined;
         context.store.set({
           _blockKey: null,
+          _lockedBlockRefs: {},
           _requestId: null,
           previewValue: [],
+          refusalMessage: null,
         });
         tableDraft.clear();
         if (!restoreTarget(commandEditor)) return undefined;
         captureTarget(commandEditor);
         aiChatCommandEditors.set(editor, commandEditor);
+        const selection =
+          commandEditor.read.selection() ?? editor.read.selection();
+        const viewNodes = commandEditor.read.selection.nodes();
+        const selectedNodePaths = (
+          viewNodes.length ? viewNodes : editor.read.selection.nodes()
+        ).map(([, path]) => [...path]);
+        const requestContext = getRequestContext(
+          commandEditor,
+          selection ?? null,
+          selectedNodePaths
+        );
+
+        if (
+          toolName === 'edit' &&
+          !hasEditableRequestTarget(
+            commandEditor,
+            selection ?? null,
+            selectedNodePaths,
+            requestContext
+          )
+        ) {
+          context.store.set({
+            refusalMessage:
+              'All selected blocks are locked. Unlock a block or insert below instead.',
+            streaming: false,
+          });
+
+          return result;
+        }
+
         context.store.set({ _requestId: crypto.randomUUID() });
 
         void chat?.regenerate({
           body: {
             ctx: {
-              ...getRequestContext(
-                commandEditor,
-                commandEditor.read.selection() ?? editor.read.selection()
-              ),
+              ...requestContext,
               toolName,
             },
           },
@@ -1838,6 +2497,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           return undefined;
         }
         if (state.toolName === 'edit' && state.mode === 'chat') {
+          if (!final && Object.keys(state._lockedBlockRefs).length > 0) {
+            return undefined;
+          }
+
           return applySuggestion(commandEditor, content, { requestId });
         }
 
@@ -1959,6 +2622,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           match: ElementApi.isElement,
         });
         if (!cell) return;
+        if (isAIPathNonWritable(actionEditor, cell[1])) {
+          context.store.set({
+            refusalMessage:
+              'One or more locked table cells were skipped and left unchanged.',
+          });
+
+          return;
+        }
         const table = actionEditor.read.nodes.above({
           at: cell[1],
           match: (node): node is Element =>
@@ -1988,20 +2659,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             }
           ),
         });
-        const previewNode = (node: Descendant, path: Path): Descendant => {
-          if (!ElementApi.isElement(node)) return node;
-          const key = actionEditor.key(path);
-          const draft = key ? tableDraft.get(key) : undefined;
-          return {
-            ...node,
-            children:
-              draft?.children ??
-              node.children.map((child, index) =>
-                previewNode(child, [...path, index])
-              ),
-          };
-        };
-        const preview = previewNode(table[0], table[1]);
+        const preview = buildTableDraftPreview(
+          actionEditor,
+          table[0],
+          table[1]
+        );
         if (!ElementApi.isElement(preview)) return;
         context.store.set({
           _blockKey: actionEditor.key(table[0]),
@@ -2039,7 +2701,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         suggestionTarget = null;
         previewOwner = null;
         previewParse = undefined;
-        context.store.set({ _blockKey: null, previewValue: [] });
+        context.store.set({
+          _blockKey: null,
+          _lockedBlockRefs: {},
+          previewValue: [],
+          refusalMessage: null,
+        });
         tableDraft.clear();
         if (isOpen && !restoreTarget(commandEditor)) return discarded;
 
@@ -2076,6 +2743,24 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           selection ?? null,
           selectedNodePaths
         );
+
+        if (
+          nextToolName === 'edit' &&
+          !hasEditableRequestTarget(
+            commandEditor,
+            selection ?? null,
+            selectedNodePaths,
+            requestContext
+          )
+        ) {
+          context.store.set({
+            refusalMessage:
+              'All selected blocks are locked. Unlock a block or insert below instead.',
+            streaming: false,
+          });
+
+          return discarded;
+        }
 
         context.store.set({ _requestId: crypto.randomUUID() });
         void chat?.sendMessage(promptText, {

@@ -1,6 +1,7 @@
 import dedent from 'dedent';
 import { ElementApi } from 'platejs';
 import type { AIChatRequestRefs } from 'platejs/ai';
+import { BaseLockPlugin } from 'platejs/lock';
 import type { MarkdownEditor } from 'platejs/markdown';
 import { BaseTablePlugin, type TableCellElement } from 'platejs/table';
 
@@ -33,14 +34,23 @@ export function buildEditTableMultiCellPrompt(
       return [path.join(','), ref] as const;
     })
   );
+  const lockPlugin = editor.plugin(BaseLockPlugin);
   const selectedCells: Array<{ cell: TableCellElement; ref: string }> = [];
   const rows =
     table?.children.map((row, rowIndex) => {
       const values = (row.children as TableCellElement[]).map(
         (cell, cellIndex) => {
-          const ref = tablePath
-            ? refsByPath.get([...tablePath, rowIndex, cellIndex].join(','))
-            : undefined;
+          const cellPath = tablePath
+            ? [...tablePath, rowIndex, cellIndex]
+            : null;
+          const isLockedCell =
+            cellPath !== null &&
+            lockPlugin.installed &&
+            lockPlugin.read.isLocked(cellPath);
+          const ref =
+            cellPath && !isLockedCell
+              ? refsByPath.get(cellPath.join(','))
+              : undefined;
 
           if (ref) {
             selectedCells.push({ cell, ref });
@@ -56,6 +66,7 @@ export function buildEditTableMultiCellPrompt(
 
               const result = editor.api.markdown.serialize({
                 document: { children: [child] },
+                lossPolicy: 'allow',
               });
 
               if (!result.ok) {
@@ -82,6 +93,7 @@ export function buildEditTableMultiCellPrompt(
 
       const result = editor.api.markdown.serialize({
         document: { children: cell.children },
+        lossPolicy: 'allow',
       });
 
       if (!result.ok) throw new Error(result.diagnostics[0].message);

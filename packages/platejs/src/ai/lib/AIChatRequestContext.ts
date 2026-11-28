@@ -18,6 +18,8 @@ export type AIChatRequestNodeRef = Readonly<{
 
 export type AIChatRequestRefs = Readonly<{
   blocks: readonly AIChatRequestNodeRef[];
+  /** Maximal non-writable blocks inside the active selection, in document order. */
+  lockedBlocks?: readonly AIChatRequestNodeRef[];
   tableCells: readonly AIChatRequestNodeRef[];
 }>;
 

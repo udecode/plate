@@ -3372,7 +3372,11 @@
     },
     "source-hash:partition:ai": {
       "cache": true,
-      "dependsOn": ["source-hash:partition:core"],
+      "dependsOn": [
+        "source-hash:partition:core",
+        "source-hash:partition:markdown",
+        "source-hash:partition:table"
+      ],
       "inputs": [
         "src/ai/**",
         "!src/ai/react/**",
@@ -4890,7 +4894,12 @@
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
         "source-hash:partition:ai",
-        "source-hash:partition:core"
+        "source-hash:partition:core",
+        "source-hash:partition:field",
+        "source-hash:partition:lock",
+        "source-hash:partition:markdown",
+        "source-hash:partition:standard-basic-nodes",
+        "source-hash:partition:table"
       ],
       "inputs": [
         "src/ai/**",
@@ -4951,6 +4960,7 @@
         "source-hash:partition:core",
         "source-hash:partition:details",
         "source-hash:partition:field",
+        "source-hash:partition:lock",
         "source-hash:partition:markdown",
         "source-hash:partition:react-core",
         "source-hash:partition:standard-basic-nodes",

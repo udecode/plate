@@ -1,11 +1,14 @@
 import dedent from 'dedent';
-import type { AIChatRequestRefs } from 'platejs/ai';
+import {
+  type AIChatRequestRefs,
+  LOCKED_BLOCK_PLACEHOLDER_TAG,
+  serializeAIEditContext,
+} from 'platejs/ai';
 import type { MarkdownEditor } from 'platejs/markdown';
 
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
 import {
-  addSelection,
   buildStructuredPrompt,
   formatTextFromMessages,
   getLastUserInstruction,
@@ -19,12 +22,26 @@ import { buildEditTableMultiCellPrompt } from './getEditTablePrompt';
 
 function buildEditMultiBlockPrompt(
   editor: MarkdownEditor,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  lockedBlockRefs?: AIChatRequestRefs['lockedBlocks']
 ) {
-  const selectingMarkdown = getMarkdownWithSelection(editor);
+  const { lockedContext, markdown, refs } = serializeAIEditContext(editor, {
+    lockedBlocks: lockedBlockRefs,
+  });
+  const hasLocked = refs.length > 0;
+  const context = hasLocked
+    ? `${markdown}\n\n<locked-clauses>\n${lockedContext}\n</locked-clauses>`
+    : markdown;
+  const lockedRules = hasLocked
+    ? dedent`
+      - Every <${LOCKED_BLOCK_PLACEHOLDER_TAG} ref="..." /> tag marks a locked block whose read-only text is listed in <locked-clauses> for context only.
+      - Keep every <${LOCKED_BLOCK_PLACEHOLDER_TAG} ref="..." /> placeholder verbatim on its own line in its exact original order.
+      - Never edit, remove, duplicate, reorder, inline, or wrap content inside a <${LOCKED_BLOCK_PLACEHOLDER_TAG} /> placeholder, and never output <locked-clauses>.
+    `
+    : '';
 
   return buildStructuredPrompt({
-    context: selectingMarkdown,
+    context,
     examples: [
       dedent`
         <instruction>
@@ -77,7 +94,8 @@ function buildEditMultiBlockPrompt(
       ${commonEditRules}
       - Preserve the block count, line breaks, and all existing Markdown syntax exactly; only modify the textual content inside each block.
       - Do not change heading levels, list markers, link URLs, or add/remove blank lines unless explicitly instructed.
-    `,
+      ${lockedRules}
+    `.trim(),
     task: dedent`
       The following <context> is user-provided Markdown content that needs improvement.
       Your output should be a seamless replacement of the original content.
@@ -89,9 +107,9 @@ function buildEditSelectionPrompt(
   editor: MarkdownEditor,
   messages: ChatMessage[]
 ) {
-  addSelection(editor);
-
-  const selectingMarkdown = getMarkdownWithSelection(editor);
+  const selectingMarkdown = getMarkdownWithSelection(editor, {
+    includeSelectionMarkers: true,
+  });
   const endIndex = selectingMarkdown.indexOf('<Selection>');
   const prefilledResponse =
     endIndex === -1 ? '' : selectingMarkdown.slice(0, endIndex);
@@ -224,10 +242,12 @@ export function getEditPrompt(
   editor: MarkdownEditor,
   {
     isSelecting,
+    lockedBlockRefs,
     messages,
     tableCellRefs,
   }: {
     isSelecting: boolean;
+    lockedBlockRefs?: AIChatRequestRefs['lockedBlocks'];
     messages: ChatMessage[];
     tableCellRefs: AIChatRequestRefs['tableCells'];
   }
@@ -245,7 +265,10 @@ export function getEditPrompt(
   }
   // Handle multi-block selection
   if (isMultiBlocks(editor)) {
-    return [buildEditMultiBlockPrompt(editor, messages), 'multi-block'];
+    return [
+      buildEditMultiBlockPrompt(editor, messages, lockedBlockRefs),
+      'multi-block',
+    ];
   }
 
   // Handle single block with selection

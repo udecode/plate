@@ -4,7 +4,6 @@ import type { MarkdownEditor } from 'platejs/markdown';
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
 import {
-  addSelection,
   buildStructuredPrompt,
   formatTextFromMessages,
   getLastUserInstruction,
@@ -61,11 +60,9 @@ function buildGenerateContextPrompt(
   editor: MarkdownEditor,
   messages: ChatMessage[]
 ) {
-  if (!isMultiBlocks(editor)) {
-    addSelection(editor);
-  }
-
-  const selectingMarkdown = getMarkdownWithSelection(editor);
+  const selectingMarkdown = getMarkdownWithSelection(editor, {
+    includeSelectionMarkers: !isMultiBlocks(editor),
+  });
 
   return buildStructuredPrompt({
     context: selectingMarkdown,

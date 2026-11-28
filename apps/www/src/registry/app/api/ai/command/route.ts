@@ -15,11 +15,14 @@ import { createEditor, nanoid } from 'platejs';
 import {
   type AIChatRequestContext,
   type AIChatRequestRefs,
+  hasEditableAISelection,
   resolveAIChatRequestContext,
 } from 'platejs/ai';
 import type { MarkdownEditor } from 'platejs/markdown';
 import { z } from 'zod';
 
+import { BaseFieldKit } from '@/registry/components/editor/field-static';
+import { BaseLockKit } from '@/registry/components/editor/lock-static';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import type {
   ChatMessage,
@@ -33,6 +36,7 @@ import { buildEditTableMultiCellPrompt } from './prompt/getEditTablePrompt';
 import { getGeneratePrompt } from './prompt/getGeneratePrompt';
 
 const toolNameSchema = z.enum(['comment', 'edit', 'generate']);
+const AIEditorKit = [...BaseEditorKit, ...BaseLockKit, ...BaseFieldKit];
 
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
@@ -56,10 +60,18 @@ export async function POST(req: NextRequest) {
   const { isSelecting } = request;
 
   const editor = createEditor({
-    plugins: BaseEditorKit,
+    plugins: AIEditorKit,
     initialSelection: request.selection,
     initialValue: children,
   });
+  const canEdit = isSelecting && hasEditableAISelection(editor, refs);
+
+  if (toolNameParam === 'edit' && !canEdit) {
+    return NextResponse.json(
+      { error: 'All selected blocks are locked.' },
+      { status: 400 }
+    );
+  }
 
   const gatewayProvider = createGateway({
     apiKey,
@@ -72,11 +84,12 @@ export async function POST(req: NextRequest) {
 
         if (!toolName) {
           const prompt = getChooseToolPrompt({
+            canEdit,
             isSelecting,
             messages: messagesRaw,
           });
 
-          const enumOptions: ToolName[] = isSelecting
+          const enumOptions: ToolName[] = canEdit
             ? ['generate', 'edit', 'comment']
             : ['generate', 'comment'];
           const modelId = model || 'google/gemini-2.5-flash';
@@ -127,6 +140,7 @@ export async function POST(req: NextRequest) {
             if (toolName === 'edit') {
               const [editPrompt, editType] = getEditPrompt(editor, {
                 isSelecting,
+                lockedBlockRefs: refs.lockedBlocks,
                 messages: messagesRaw,
                 tableCellRefs: refs.tableCells,
               });

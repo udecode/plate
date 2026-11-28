@@ -23,6 +23,12 @@
   "references": [
     {
       "path": "./core.json"
+    },
+    {
+      "path": "./markdown.json"
+    },
+    {
+      "path": "./table.json"
     }
   ]
 }

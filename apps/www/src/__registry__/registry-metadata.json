@@ -1,5 +1,5 @@
 {
-  "generation": "5c7f6b3c7d5ef8af66643d3e748714143362c8faa5d0d06ee6fcebe1cb3800e9",
+  "generation": "b894f18586a91ba1d1a846265fc7b96a044a8c2e542dda26b382c6b9cfc9eb32",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -4533,6 +4533,8 @@
             "@plate/copilot-api",
             "@plate/editor-static",
             "@plate/editor-plugins-static",
+            "@plate/field-static",
+            "@plate/lock-static",
             "@plate/use-chat"
           ]
         },
@@ -12551,6 +12553,8 @@
             "@plate/copilot-api",
             "@plate/editor-static",
             "@plate/editor-plugins-static",
+            "@plate/field-static",
+            "@plate/lock-static",
             "@plate/use-chat"
           ]
         },

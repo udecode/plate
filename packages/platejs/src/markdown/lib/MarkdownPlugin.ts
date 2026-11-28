@@ -31,6 +31,7 @@ import {
   type MarkdownReuse,
   parseMarkdownDocumentWithRuntime,
   parseMarkdownInlineWithRuntime,
+  parseMarkdownPlaceholdersWithRuntime,
   parseMarkdownSliceWithRuntime,
   prepareMarkdownRuntime,
   serializeMarkdownSliceWithRuntime,
@@ -45,6 +46,8 @@ import type {
   MarkdownEditorSerializeOptions,
   MarkdownParseOptions,
   MarkdownParsePolicy,
+  MarkdownPlaceholderParseOptions,
+  MarkdownPlaceholderParseResult,
   MarkdownSerializeOptions,
   MarkdownSerializeResult,
   MarkdownSliceParseResult,
@@ -73,6 +76,15 @@ export type MarkdownApi<V extends Value = Value> = {
     source: string,
     options?: MarkdownParsePolicy
   ) => MarkdownSliceParseResult<V>;
+  /**
+   * Parse Markdown containing self-closing block placeholder tags (`<Tag ref="..." />`)
+   * at the Markdown AST stage, returning flat validated node runs and placeholder
+   * references without registering a schema element or triggering `RawHtmlPlugin`.
+   */
+  parsePlaceholders: (
+    source: string,
+    options: MarkdownPlaceholderParseOptions
+  ) => MarkdownPlaceholderParseResult<V>;
   parseSlice: (
     source: string,
     options?: MarkdownParsePolicy &
@@ -374,6 +386,10 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
     parseInline: (source, options) =>
       withMarkdownRuntime(editor, store.get(), (runtime) =>
         parseMarkdownInlineWithRuntime(runtime, source, options)
+      ),
+    parsePlaceholders: (source, options) =>
+      withMarkdownRuntime(editor, store.get(), (runtime) =>
+        parseMarkdownPlaceholdersWithRuntime(runtime, source, options)
       ),
     parseSlice: (source, { previous, ...options } = {}) =>
       withMarkdownRuntime(editor, store.get(), (runtime) =>

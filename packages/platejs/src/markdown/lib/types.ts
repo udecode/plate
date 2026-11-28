@@ -209,6 +209,45 @@ export type MarkdownSliceParseResult<V extends Value = Value> =
       ok: false;
     }>;
 
+/**
+ * One segment returned by `editor.api.markdown.parsePlaceholders`: either a
+ * schema-validated run of decoded nodes or an immutable placeholder reference.
+ */
+export type MarkdownPlaceholderSegment<V extends Value = Value> =
+  | Readonly<{
+      kind: 'nodes';
+      nodes: V;
+    }>
+  | Readonly<{
+      kind: 'placeholder';
+      ref: string;
+    }>;
+
+/** Options for `editor.api.markdown.parsePlaceholders`. */
+export type MarkdownPlaceholderParseOptions = Readonly<{
+  /** Limit overrides for the Markdown parse. */
+  limits?: Partial<MarkdownParseLimits>;
+  /** Loss policy for unsupported Markdown nodes in unlocked runs. */
+  lossPolicy?: 'allow' | 'reject';
+  /**
+   * Self-closing block tag name (for example `'Locked'`) tokenized at the
+   * Markdown AST stage for this parse call only.
+   */
+  tag: string;
+}>;
+
+/** Result returned by `editor.api.markdown.parsePlaceholders`. */
+export type MarkdownPlaceholderParseResult<V extends Value = Value> =
+  | Readonly<{
+      diagnostics: readonly MarkdownWarningDiagnostic[];
+      ok: true;
+      segments: ReadonlyArray<MarkdownPlaceholderSegment<V>>;
+    }>
+  | Readonly<{
+      diagnostics: readonly [MarkdownErrorDiagnostic, ...MarkdownDiagnostic[]];
+      ok: false;
+    }>;
+
 export type MarkdownSerializeResult =
   | Readonly<{
       data: string;

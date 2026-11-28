@@ -1,12 +1,15 @@
 import { dequal } from 'dequal';
 import type {
   Html,
+  List,
+  ListItem,
   Nodes,
   Paragraph,
   Parent,
   Root,
   RootContent as MdRootContent,
 } from 'mdast';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import remarkParse from 'remark-parse';
 import remarkStringify, {
   type Options as RemarkStringifyOptions,
@@ -58,6 +61,9 @@ import type {
   MarkdownConversionContext,
   MarkdownFrontmatter,
   MarkdownParsePolicy,
+  MarkdownPlaceholderParseOptions,
+  MarkdownPlaceholderParseResult,
+  MarkdownPlaceholderSegment,
   MarkdownSerializePolicy,
   MarkdownSerializeResult,
   MarkdownSliceParseResult,
@@ -138,6 +144,8 @@ import {
 import {
   getMarkdownTagRepair,
   isMarkdownTagSyntax,
+  MARKDOWN_TAG_NAME,
+  type MarkdownTagRegistry,
   remarkMarkdownTags,
   remarkMarkdownTagWriter,
   trimIncompleteMarkdownTag,
@@ -350,12 +358,13 @@ type MarkdownSegmentHooks = Pick<
 const createMarkdownParser = (
   runtime: MarkdownRuntime,
   remarkPlugins: DeserializeMdContext['remarkPlugins'],
-  openTail?: OpenTailRead
+  openTail?: OpenTailRead,
+  tags: MarkdownTagRegistry = runtime.formats.tags
 ) =>
   unified()
     .use(remarkParse)
     .use(remarkSeparateEscapes)
-    .use(remarkMarkdownTags, { tags: runtime.formats.tags })
+    .use(remarkMarkdownTags, { tags })
     .use(remarkResolveMarkdownReferences)
     .use(openTail ? [[remarkOpenTail, openTail]] : [])
     .use(remarkPlugins)
@@ -2423,6 +2432,466 @@ export const parseMarkdownSliceWithRuntime = (
     runtime,
     reuse
   );
+};
+
+const isPlaceholderFlowNode = (
+  node: MdRootContent,
+  tag: string
+): node is MdxJsxFlowElement =>
+  node.type === 'mdxJsxFlowElement' && node.name === tag;
+
+const isPlaceholderTextNode = (
+  node: Nodes,
+  tag: string
+): node is MdxJsxTextElement =>
+  node.type === 'mdxJsxTextElement' && node.name === tag;
+
+const isEscapedOrTagMatch = (html: string, tag: string): boolean => {
+  const escapedTag = tag.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  return new RegExp(`^<\\/?${escapedTag}(?=[\\s/>]|$)`, 'i').test(html.trim());
+};
+
+const reportPlaceholderTagError = (
+  diagnostics: MarkdownDiagnostics,
+  tag: string,
+  message: string,
+  node?: Nodes,
+  source?: string
+) => {
+  const location =
+    node && source
+      ? createMarkdownSourceLocation(node, source, true)
+      : undefined;
+
+  diagnostics.report({
+    action: 'dropped',
+    code: 'markdown-unsupported-node',
+    impact: 'lossy',
+    message,
+    nodeType: tag,
+    owner: 'markdown',
+    phase: 'parse',
+    severity: 'error',
+    ...(location ? { source: location } : {}),
+  });
+};
+
+const readPlaceholderRef = (
+  node: MdxJsxFlowElement,
+  tag: string,
+  source: string,
+  diagnostics: MarkdownDiagnostics
+): string | null => {
+  if (getMarkdownTagRepair(node)) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag <${tag}> must be self-closing and properly balanced.`,
+      node,
+      source
+    );
+
+    return null;
+  }
+
+  if (node.children.length > 0) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag <${tag}> cannot contain nested content.`,
+      node,
+      source
+    );
+
+    return null;
+  }
+
+  if (node.attributes.length !== 1) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag <${tag}> must declare exactly one string "ref" attribute.`,
+      node,
+      source
+    );
+
+    return null;
+  }
+
+  const attribute = node.attributes[0];
+
+  if (
+    attribute?.type !== 'mdxJsxAttribute' ||
+    attribute.name !== 'ref' ||
+    typeof attribute.value !== 'string' ||
+    attribute.value.length === 0
+  ) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag <${tag}> must declare a non-empty string "ref" attribute.`,
+      node,
+      source
+    );
+
+    return null;
+  }
+
+  return attribute.value;
+};
+
+const assertNoNestedPlaceholderTag = (
+  node: Nodes,
+  tag: string,
+  source: string,
+  diagnostics: MarkdownDiagnostics
+) => {
+  if (isPlaceholderTextNode(node, tag)) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag <${tag}> cannot appear inline or inside a table cell.`,
+      node,
+      source
+    );
+
+    return;
+  }
+
+  if (node.type === 'mdxJsxFlowElement' && node.name === tag) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag <${tag}> cannot appear nested inside another block.`,
+      node,
+      source
+    );
+
+    return;
+  }
+
+  if (
+    node.type === 'html' &&
+    getMarkdownTagRepair(node) &&
+    isEscapedOrTagMatch(node.value, tag)
+  ) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag <${tag}> is misplaced or unmatched.`,
+      node,
+      source
+    );
+
+    return;
+  }
+
+  if ('children' in node) {
+    for (const child of node.children) {
+      assertNoNestedPlaceholderTag(child, tag, source, diagnostics);
+    }
+  }
+};
+
+type PlaceholderMdastChunk =
+  | Readonly<{ kind: 'mdast'; nodes: MdRootContent[] }>
+  | Readonly<{ kind: 'placeholder'; ref: string }>;
+
+const splitListAroundPlaceholders = (
+  list: List,
+  tag: string,
+  source: string,
+  diagnostics: MarkdownDiagnostics,
+  pushPlaceholder: (ref: string) => void,
+  pushMdast: (node: MdRootContent) => void
+) => {
+  let pendingItems: ListItem[] = [];
+  let itemOffset = 0;
+  let runStartOffset = 0;
+
+  const flushItems = () => {
+    if (pendingItems.length === 0) return;
+
+    const start =
+      list.ordered && typeof list.start === 'number'
+        ? list.start + runStartOffset
+        : list.start;
+
+    pushMdast({
+      ...list,
+      children: pendingItems,
+      ...(list.ordered ? { start } : {}),
+    });
+    pendingItems = [];
+  };
+
+  for (const item of list.children) {
+    const firstChild = item.children[0];
+    const secondChild = item.children[1];
+    const isBarePlaceholder =
+      item.children.length === 1 &&
+      firstChild !== undefined &&
+      isPlaceholderFlowNode(firstChild, tag);
+    const isPlaceholderWithNestedList =
+      item.children.length === 2 &&
+      firstChild !== undefined &&
+      isPlaceholderFlowNode(firstChild, tag) &&
+      secondChild?.type === 'list';
+
+    if (isBarePlaceholder || isPlaceholderWithNestedList) {
+      flushItems();
+      const ref = readPlaceholderRef(firstChild, tag, source, diagnostics);
+
+      if (ref !== null) {
+        pushPlaceholder(ref);
+      }
+      if (isPlaceholderWithNestedList) {
+        splitListAroundPlaceholders(
+          secondChild,
+          tag,
+          source,
+          diagnostics,
+          pushPlaceholder,
+          pushMdast
+        );
+      }
+      itemOffset += 1;
+      runStartOffset = itemOffset;
+      continue;
+    }
+
+    assertNoNestedPlaceholderTag(item, tag, source, diagnostics);
+    if (pendingItems.length === 0) runStartOffset = itemOffset;
+    pendingItems.push(item);
+    itemOffset += 1;
+  }
+
+  flushItems();
+};
+
+const placeholderParseFailure = (
+  diagnostics: MarkdownDiagnostics
+): MarkdownPlaceholderParseResult => {
+  const failure = diagnostics.failure();
+
+  if (!failure) {
+    throw new Error('Markdown parse failed without a diagnostic.');
+  }
+
+  return Object.freeze({
+    diagnostics: failure,
+    ok: false,
+  });
+};
+
+export const parseMarkdownPlaceholdersWithRuntime = (
+  runtime: MarkdownRuntime,
+  source: string,
+  options: MarkdownPlaceholderParseOptions
+): MarkdownPlaceholderParseResult => {
+  const diagnostics = new MarkdownDiagnostics();
+  const { tag } = options;
+
+  if (!MARKDOWN_TAG_NAME.test(tag)) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag "${tag}" must match ${MARKDOWN_TAG_NAME}.`
+    );
+
+    return placeholderParseFailure(diagnostics);
+  }
+
+  if (runtime.formats.tags.has(tag)) {
+    reportPlaceholderTagError(
+      diagnostics,
+      tag,
+      `Placeholder tag "${tag}" collides with an already registered Markdown tag.`
+    );
+
+    return placeholderParseFailure(diagnostics);
+  }
+
+  const parseOptions: MarkdownParsePolicy = {
+    ...(options.limits ? { limits: options.limits } : {}),
+    ...(options.lossPolicy ? { lossPolicy: options.lossPolicy } : {}),
+  };
+
+  if (reportByteLimit(source, parseOptions, diagnostics)) {
+    return placeholderParseFailure(diagnostics);
+  }
+
+  if (
+    landsMarkdownParagraph(runtime.registry) &&
+    runtime.state.schema.element(UNLANDED_MARKDOWN_PARAGRAPH_TYPE)
+  ) {
+    reportUnlandedParagraph(
+      diagnostics,
+      `The schema declares "${UNLANDED_MARKDOWN_PARAGRAPH_TYPE}", which Markdown reserves for its own paragraph.`
+    );
+
+    return placeholderParseFailure(diagnostics);
+  }
+
+  const mergedOptions = getMergedOptionsDeserialize(runtime, parseOptions, {
+    diagnostics,
+    positionsReferToSource: true,
+    source,
+  });
+  const callTags = new Map(runtime.formats.tags);
+
+  callTags.set(tag, 'block');
+
+  const parser = createMarkdownParser(
+    runtime,
+    mergedOptions.remarkPlugins,
+    undefined,
+    callTags
+  );
+
+  let root: Root;
+
+  try {
+    root = parser.runSync(parser.parse(source), source);
+  } catch (error) {
+    if (error instanceof ReportedMarkdownFailureError) {
+      return placeholderParseFailure(diagnostics);
+    }
+    throw error;
+  }
+
+  if (source.includes('\r')) readLineEndingsAsLf(root);
+
+  const syntaxNodes = checkMarkdownTreeLimits(
+    root,
+    mergedOptions.limits,
+    mergedOptions.report
+  );
+
+  if (syntaxNodes === null) {
+    return placeholderParseFailure(diagnostics);
+  }
+
+  cleanMarkdownDestinations(root, {
+    lossPolicy: mergedOptions.lossPolicy,
+    phase: 'parse',
+    report: mergedOptions.report,
+    sourceLocation: mergedOptions.sourceLocation,
+  });
+
+  const rawHtml = importsRawHtml(runtime)
+    ? readRawHtmlBlocks(root, {})
+    : undefined;
+
+  const chunks: PlaceholderMdastChunk[] = [];
+  let pendingMdast: MdRootContent[] = [];
+
+  const flushPendingMdast = () => {
+    if (pendingMdast.length === 0) return;
+    chunks.push({ kind: 'mdast', nodes: pendingMdast });
+    pendingMdast = [];
+  };
+
+  const pushMdast = (node: MdRootContent) => {
+    pendingMdast.push(node);
+  };
+
+  for (const child of root.children) {
+    if (isPlaceholderFlowNode(child, tag)) {
+      flushPendingMdast();
+      const ref = readPlaceholderRef(child, tag, source, diagnostics);
+
+      if (ref !== null) {
+        chunks.push({ kind: 'placeholder', ref });
+      }
+      continue;
+    }
+
+    if (child.type === 'list') {
+      splitListAroundPlaceholders(
+        child,
+        tag,
+        source,
+        diagnostics,
+        (ref) => {
+          flushPendingMdast();
+          chunks.push({ kind: 'placeholder', ref });
+        },
+        pushMdast
+      );
+      continue;
+    }
+
+    assertNoNestedPlaceholderTag(child, tag, source, diagnostics);
+    pushMdast(child);
+  }
+
+  flushPendingMdast();
+
+  if (diagnostics.failure()) {
+    return placeholderParseFailure(diagnostics);
+  }
+
+  const slateOptions: DeserializeMdContext = rawHtml
+    ? { ...mergedOptions, rawHtml }
+    : mergedOptions;
+  const segments: MarkdownPlaceholderSegment[] = [];
+
+  for (const chunk of chunks) {
+    if (chunk.kind === 'placeholder') {
+      segments.push(Object.freeze({ kind: 'placeholder', ref: chunk.ref }));
+      continue;
+    }
+
+    const subRoot: Root = {
+      children: chunk.nodes,
+      type: 'root',
+    };
+    const converted = mdastToSlate(subRoot, slateOptions);
+
+    if (diagnostics.failure()) {
+      return placeholderParseFailure(diagnostics);
+    }
+
+    const blocks = snapshotBlocks(runtime, converted);
+    const unlanded =
+      landsMarkdownParagraph(runtime.registry) &&
+      findMarkdownParagraph(blocks, []);
+
+    if (unlanded) {
+      reportUnlandedParagraph(
+        diagnostics,
+        'No paragraph plugin is installed, and only a document parse lands a Markdown paragraph.',
+        unlanded
+      );
+
+      return placeholderParseFailure(diagnostics);
+    }
+
+    try {
+      runtime.state.schema.assertFragment(blocks);
+    } catch (error) {
+      reportSchemaInvalid(error, diagnostics);
+
+      return placeholderParseFailure(diagnostics);
+    }
+
+    segments.push(
+      Object.freeze({
+        kind: 'nodes',
+        nodes: Object.freeze(
+          blocks.filter((node): node is Element => ElementApi.isElement(node))
+        ),
+      })
+    );
+  }
+
+  return Object.freeze({
+    diagnostics: diagnostics.warnings(),
+    ok: true,
+    segments: Object.freeze(segments),
+  });
 };
 
 const LEADING_WHITESPACE = /^\s*/;

@@ -251,6 +251,22 @@ const useWaitsForReview = (element: FieldNode, watches: boolean) => {
   return React.useSyncExternalStore(subscribe, waits, waits);
 };
 
+const useFieldLocked = (element: FieldNode, watches: boolean) => {
+  const editor = useEditor();
+  const subscribe = React.useCallback(
+    (wake: () => void) => (watches ? editor.subscribeCommit(wake) : () => {}),
+    [editor, watches]
+  );
+  const locked = () => {
+    if (!watches) return false;
+    const key = editor.key(element);
+
+    return Boolean(key && editor.plugin(BaseLockPlugin).read.isLocked(key));
+  };
+
+  return React.useSyncExternalStore(subscribe, locked, locked);
+};
+
 export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   const { element } = props;
   const editor = useEditor();
@@ -263,14 +279,9 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   const warning = problems.map((problem) => PROBLEMS[problem]).join(' ');
   const filling = fillRole !== null;
   const ownField = element.role === fillRole;
-  const locked = useEditorSelector(
-    (current) => {
-      const lock = current.plugin(BaseLockPlugin);
-      const key = current.key(element);
-
-      return Boolean(lock.installed && key && lock.read.isLocked(key));
-    },
-    { dependsOn: ['properties', 'structure'] }
+  const locked = useFieldLocked(
+    element,
+    editor.plugin(BaseLockPlugin).installed
   );
   const waitsForReview = useWaitsForReview(
     element,

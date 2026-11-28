@@ -1,6 +1,7 @@
 import type { UIMessage } from 'ai';
 import dedent from 'dedent';
-import { type Editor, RangeApi } from 'platejs';
+import type { Editor } from 'platejs';
+import { serializeAISelectionMarkdown } from 'platejs/ai';
 import type { MarkdownEditor } from 'platejs/markdown';
 import { BaseTableCellPlugin, BaseTablePlugin } from 'platejs/table';
 
@@ -204,70 +205,6 @@ export function getLastUserInstruction(messages: ChatMessage[]): string {
   return getTextFromMessage(lastUserMessage).trim();
 }
 
-const SELECTION_START = '<Selection>';
-const SELECTION_END = '</Selection>';
-
-export const addSelection = (editor: Editor) => {
-  const selection = editor.read.selection();
-
-  if (!selection || RangeApi.isCollapsed(selection)) return;
-
-  const [start, end] = RangeApi.edges(selection);
-
-  editor.update((tx) => {
-    tx.text.insert(SELECTION_END, {
-      at: end,
-    });
-
-    tx.text.insert(SELECTION_START, {
-      at: start,
-    });
-  });
-};
-
-const removeEscapeSelection = (editor: MarkdownEditor, text: string) => {
-  let newText = text
-    .replace(`\\${SELECTION_START}`, SELECTION_START)
-    .replace(`\\${SELECTION_END}`, SELECTION_END);
-
-  // If the selection is on a void element, inserting the placeholder will fail, and the string must be replaced manually.
-  if (!newText.includes(SELECTION_END)) {
-    const selection = editor.read.selection();
-
-    if (!selection) return newText;
-
-    const [_, end] = RangeApi.edges(selection);
-
-    const node = editor.read.nodes.block({
-      at: end.path,
-    });
-
-    if (!node) return newText;
-    if (editor.read.schema.isVoid(node[0])) {
-      const result = editor.api.markdown.serialize({
-        document: { children: [node[0]] },
-      });
-
-      if (!result.ok) throw new Error(result.diagnostics[0].message);
-
-      const voidString = result.data;
-
-      const idx = newText.lastIndexOf(voidString);
-
-      if (idx !== -1) {
-        newText =
-          newText.slice(0, idx) +
-          voidString.trimEnd() +
-          SELECTION_END +
-          newText.slice(idx + voidString.length);
-      }
-    }
-  }
-
-  return newText;
-};
-
-/** Check if the current selection fully covers all top-level blocks. */
 export const isMultiBlocks = (editor: Editor) =>
   editor.read((state) => {
     if (!state.selection()) return false;
@@ -275,20 +212,11 @@ export const isMultiBlocks = (editor: Editor) =>
     return state.nodes.blocks().length > 1;
   });
 
-export const serializePromptBlocks = (editor: MarkdownEditor) => {
-  const blocks = editor.read.nodes.blocks().map(([node]) => node);
-  const result = editor.api.markdown.serialize({
-    document: { children: blocks },
-  });
-
-  if (!result.ok) throw new Error(result.diagnostics[0].message);
-
-  return result.data;
-};
-
-/** Get markdown with selection markers */
-export const getMarkdownWithSelection = (editor: MarkdownEditor) =>
-  removeEscapeSelection(editor, serializePromptBlocks(editor));
+/** Serialize the active selection to Markdown without mutating the editor. */
+export const getMarkdownWithSelection = (
+  editor: MarkdownEditor,
+  options: { includeSelectionMarkers?: boolean } = {}
+) => serializeAISelectionMarkdown(editor, options);
 
 /** Check if the current selection is inside a table cell */
 export const isSelectionInTable = (editor: Editor): boolean => {
