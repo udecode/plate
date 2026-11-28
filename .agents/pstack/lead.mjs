@@ -362,7 +362,7 @@ export function pluginLag(runtime, root = process.cwd(), env = process.env) {
     const geminiHome = env.GEMINI_HOME ?? join(home, '.gemini');
     const meta = readJson(join(geminiHome, 'config/plugins/pstack/.antigravity-plugin/plugin.json')) ?? readJson(join(geminiHome, 'config/plugins/pstack/plugin.json'));
     if (meta?.version && versionOrder(meta.version, pin) >= 0) return null;
-    return { pin, installed: meta?.version ?? null, cwd: home, command: `agy plugin install ${REPO}@v${pin}` };
+    return { pin, installed: meta?.version ?? null, cwd: home, command: `agy plugin install ${REPO}@v${pin} && rm -rf ~/.gemini/config/plugins/pstack/agents` };
   }
   if (runtime === 'codex') {
     const cache = join(env.CODEX_HOME ?? join(home, '.codex'), 'plugins/cache', MARKETPLACE, 'pstack');

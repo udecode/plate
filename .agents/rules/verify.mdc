@@ -90,7 +90,7 @@ After a failed fix or failed stability run on native selection, focus, popup/too
 
 ## Evidence
 
-Save logs, fingerprints, screenshots, and copied `test-results` under `docs/plans/artifacts/<task-slug>/` (Git-ignored). Pass `--output docs/plans/artifacts/<task-slug>/<name>-results` to Playwright when supported, or copy `apps/plite/test-results/` before the next run. Visual claims require inspected before/after screenshots. Use `recordBrowserRuntimeErrors` (`{ strict: true }` when every error fails). Wrap proof commands with `node .agents/pstack/proof.mjs --dir <run-dir> --name <name> -- <command>`.
+Save logs, fingerprints, screenshots, and copied `test-results` under `docs/plans/artifacts/<task-slug>/` (Git-ignored). Pass `--output docs/plans/artifacts/<task-slug>/<name>-results` to Playwright when supported, or copy `apps/plite/test-results/` before the next run. Visual claims require inspected before/after screenshots. Use `recordBrowserRuntimeErrors` (`{ strict: true }` when every error fails). Run routine proof commands directly; reserve `node .agents/pstack/proof.mjs` for scripts (such as Local CI) or long suites needing core-pool coordination and immutable attempt logs.
 
 ## Cleanup
 

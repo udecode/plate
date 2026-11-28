@@ -4,10 +4,10 @@ This project's sheet. In this repository it replaces the user's pstack-models.md
 
 sync-pstack renders this file into every pstack project as `.claude/pstack-models.md`, so every teammate's Claude Code session runs the same models. In a trunk project, a teammate whose account lacks one of these models puts the replacement line in that local file. A change for every teammate goes in the shared copy in the ustack checkout, not this file, because the next sync overwrites it. A Codex lead still reads `~/.codex/pstack-models.md`.
 
-Owner choice (2026-11-27): the roles follow upstream pstack's defaults (cursor/plugins v0.15.46), with Codex and Gemini 4 Neon seats for multi-family diversity. Antigravity (`gemini-4-neon @high`) is the default lead across all projects; native Antigravity `invoke_subagent` calls always use `inherit` (never `pro`, `flash`, or `flash_lite`). When leading in Claude Code, roles run on Opus at the session's effort unless a lower-effort lane applies.
+Owner choice (2026-11-27): the roles follow upstream pstack's defaults (cursor/plugins v0.15.46), with Codex and Gemini 4 Neon seats for multi-family diversity. Antigravity (`gemini-4-neon @high`) is the default lead across all projects; native Antigravity `invoke_subagent` calls always use `Model: "inherit"` (never `pro`, `flash`, or `flash_lite`) and inherit the parent's `high` effort, so do not spawn subagents for `< 5` files (use parallel `git grep` + `read_file` in the lead) and prefer `delegate_task` at `medium` in T3 Code for large read-only research/evidence delegates and `no-comments reviewer`. On Antigravity 1.5.17+, custom agents (`--agent`, `define_subagent`, `TypeName: "comment-sicko"`, `"poteto-agent"`, `"thermo-nuclear-*"`) bill at 4x quota; never invoke them on Antigravity, and route `no-comments` and `thermos` through the default agent (`delegate_task`) or built-in `TypeName: "research"` / `"self"` (1x rate) with the rubric path in the prompt. When leading in Claude Code, roles run on Opus at the session's effort unless a lower-effort lane applies.
 
 Effort tiers:
-- `medium`: `operator` and routine Local CI fixers (lint, typecheck, stale tests, simple flakes), docs/registry/changelog/sync work, read-only evidence/research subagents, `clip`, and `video transcripts` (lead still checks frames, stills, or extracted spans).
+- `medium`: `operator` and routine Local CI fixers (lint, typecheck, stale tests, simple flakes), docs/registry/changelog/sync work, `no-comments reviewer` (explicit `/no-comments` only; routine coding checks comments inline during `deslop`), large read-only evidence/research delegates (`delegate_task` in T3 Code), `clip`, and `video transcripts` (lead still checks frames, stills, or extracted spans).
 - `high`: `feature`, `refactoring`, `bug-fix`, `perf-issue`, `hillclimb`, plans, verdicts, UI/visual (`opus @high`), `arena cross-judge pool`, and `interrogate reviewers` (Fable and Neon).
 - `xhigh`: Sol (`codex:gpt-6.2-sol @xhigh`, always), `arena runners` (Sol and Neon), `strongest judgment` (`agy:gemini-4-neon @xhigh`, only when named or after two `high` attempts fail), and stuck debugging after `high` fails to crack root cause (or deep architectural pivots).
 
@@ -24,6 +24,7 @@ arena runners: fable @high, codex:gpt-6.2-sol @xhigh, agy:gemini-4-neon @xhigh
 arena cross-judge pool: opus @high, agy:gemini-4-neon @high
 swarm workers: inherit-parent @high
 interrogate reviewers: fable @high, codex:gpt-6.2-sol @xhigh, agy:gemini-4-neon @high
+no-comments reviewer: inherit-parent @medium
 operator, routine local ci: inherit-parent @medium
 docs, registry, sync: inherit-parent @medium
 evidence, research: inherit-parent @medium
