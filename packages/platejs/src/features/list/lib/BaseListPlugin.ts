@@ -1475,7 +1475,57 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           });
         }
 
-        return next();
+        const [blockNode, blockPath] = nodeEntry;
+        const moveStartProps =
+          state.points.isStart(selection.anchor, blockPath) &&
+          (Object.hasOwn(blockNode, 'listStart') ||
+            Object.hasOwn(blockNode, 'listRestart'));
+        const result = next();
+
+        if (!moveStartProps || result === false) return result;
+
+        return state.transaction.extend(result, (tx) => {
+          const inserted = tx.nodes.get(blockPath)?.[0];
+          const shifted = tx.nodes.get(PathApi.next(blockPath))?.[0];
+
+          if (
+            !inserted ||
+            !shifted ||
+            !ElementApi.isElement(inserted) ||
+            !ElementApi.isElement(shifted) ||
+            !isListItem(inserted) ||
+            !isListItem(shifted)
+          ) {
+            return;
+          }
+
+          const unsetKeys: Array<'listRestart' | 'listStart'> = [];
+          const hasListStart =
+            Object.hasOwn(shifted, 'listStart') &&
+            typeof shifted.listStart === 'number';
+          const hasListRestart =
+            Object.hasOwn(shifted, 'listRestart') &&
+            typeof shifted.listRestart === 'number';
+
+          if (hasListStart) unsetKeys.push('listStart');
+          if (hasListRestart) unsetKeys.push('listRestart');
+
+          if (unsetKeys.length > 0) {
+            if (hasListStart) {
+              tx.nodes.set(
+                { listStart: shifted.listStart as number },
+                { at: blockPath }
+              );
+            }
+            if (hasListRestart) {
+              tx.nodes.set(
+                { listRestart: shifted.listRestart as number },
+                { at: blockPath }
+              );
+            }
+            tx.nodes.unset(unsetKeys, { at: PathApi.next(blockPath) });
+          }
+        });
       }),
     ],
   }))

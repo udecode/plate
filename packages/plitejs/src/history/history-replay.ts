@@ -10,12 +10,10 @@ import {
 } from '../core/change/carried-projection';
 import {
   type CarriedRun,
-  carriedLetterPairs,
   type ExactRun,
   exactRunOn,
   invertCarriedRun,
   landCarriedRuns,
-  mapCarriedRunThrough,
   widenRun,
 } from '../core/change/carried-run';
 import {
@@ -31,8 +29,6 @@ import {
 } from '../core/change/carry-program';
 import {
   DocumentChange,
-  alignedDocumentChange,
-  collapseDocumentElementPropertyWrites,
   createInternalDocumentChange,
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeEntries,
@@ -45,53 +41,34 @@ import {
   withInternalDocumentRootChange,
 } from '../core/change/document-change';
 import type { DocumentIndex } from '../core/change/document-index';
-import { jsonEqual, type JsonRecord } from '../core/change/json';
 import { markReadBack, type ReadBack } from '../core/change/read-back';
+import { type KeptWrap, RootChange } from '../core/change/root-change';
 import {
-  getDocumentPropertyContext,
-  type KeptWrap,
-  RootChange,
-} from '../core/change/root-change';
-import {
-  isTextNode,
-  nodeProps,
   PreparedTokenSlice,
   type JsonEditorValue,
-  type JsonNode,
   type JsonToken,
 } from '../core/change/tokens';
-import { normalizeSetValues } from '../core/change/transform';
-import { mapSelectionThroughChange } from '../core/selection-protocol';
 import { countCoreWork } from '../core/work';
 import type { AnyEditor, EditorDocumentValue } from '../interfaces/editor';
-import { SelectionApi, type Selection } from '../interfaces/selection';
-import { getDefined } from '../internal/get-defined';
-import {
-  createCharacterCorrespondence,
-  textHostAt,
-  type CharacterSpan,
-} from './history-character-map';
+import type { Selection } from '../interfaces/selection';
 import {
   type HistoryReplaySchema,
   historyReplaySchemaOf,
 } from './history-replay-schema';
+import {
+  isPureV4FormatChange,
+  mapTextSelectionViaV4,
+  rebaseCarriedFormatViaLetters,
+  splitV4FormatTail,
+  tryV4HistoryRebase,
+} from './v4-history-rebase';
 
 export { historyReplaySchemaOf };
-
-type TextKeyWrite =
-  | Readonly<{ key: string; kind: 'value'; expect: unknown; value: unknown }>
-  | Readonly<{
-      key: string;
-      kind: 'members';
-      add: readonly unknown[];
-      remove: readonly unknown[];
-    }>;
-type TextFormatSpan = CharacterSpan &
-  Readonly<{ writes: readonly TextKeyWrite[] }>;
 type RecordedHistoryReplay<T extends JsonEditorValue> = Readonly<{
   structure: DocumentChange;
-  format: ReadonlyMap<string, readonly TextFormatSpan[]>;
   after: T;
+  format?: DocumentChange;
+  structureAfter?: T;
   /**
    * The runs `structure` carries token for token, from the step's base to
    * the document `structure` gives; absent when a run has no such form.
@@ -106,7 +83,7 @@ export type HistoryReplay<T extends JsonEditorValue = JsonEditorValue> =
      * A part of a two-part step, whose letters match only by the tokens its
      * change keeps and the parents it moves whole.
      */
-    exact?: true;
+    exact?: 'rest' | 'unsettle';
     /** The take-back and the rest of a step whose commit settled a decision's text. */
     parts?: Readonly<{ rest: HistoryReplay<T>; unsettle: HistoryReplay<T> }>;
     /** The runs the step carries out of a nested line, as `Batch.carried`. */
@@ -123,12 +100,17 @@ export type HistoryReplayParts = Readonly<{
 }>;
 
 /** @internal */
-export type ReplayRules = Readonly<{ anchor: boolean; readBack: boolean }>;
+export type ReplayRules = Readonly<{
+  anchor: boolean;
+  canRemoveEmptyParent?: boolean;
+  readBack: boolean;
+}>;
 
 type Shaping = ReadBack & { projected: boolean };
 
 type MapRules = Readonly<{
   anchor: boolean;
+  canRemoveEmptyParent?: boolean;
   carriesLift?: boolean;
   readBack: Shaping | null;
 }>;
@@ -152,118 +134,6 @@ const replayOver = (
     },
   });
 
-const rewriteSpans = <T extends JsonEditorValue>(
-  value: T,
-  spans: ReadonlyMap<string, readonly CharacterSpan[]>,
-  properties: (
-    span: CharacterSpan,
-    props: JsonRecord,
-    path: readonly number[],
-    root: string
-  ) => JsonRecord
-): T => {
-  let result = value;
-  for (const [root, ranges] of spans) {
-    const index = valueRootIndex(result, root);
-    const groups = new Map<string, CharacterSpan[]>();
-    for (const span of ranges) {
-      const key = span.path.join('.');
-      const group = groups.get(key) ?? [];
-      group.push(span);
-      groups.set(key, group);
-    }
-    const replacements = new Map<string, readonly JsonNode[]>();
-    for (const group of groups.values()) {
-      const host = textHostAt(index, group[0].path);
-      const children: JsonNode[] = [];
-      let position = 0;
-      for (let at = 0; at < host.leaves.length; at += 1) {
-        const leaf = host.leaves[at];
-        if (!isTextNode(leaf)) continue;
-        const edges = [
-          ...new Set([
-            position,
-            position + leaf.text.length,
-            ...group
-              .flatMap((span) => [span.from, span.to])
-              .filter(
-                (edge) => edge > position && edge < position + leaf.text.length
-              ),
-          ]),
-        ].sort((a, b) => a - b);
-        for (let edge = 1; edge < edges.length; edge += 1) {
-          const from = edges[edge - 1];
-          const to = edges[edge];
-          let props = nodeProps(leaf);
-          for (const span of group) {
-            if (span.from <= from && to <= span.to) {
-              props = properties(
-                span,
-                props,
-                [...host.path.slice(0, -1), getDefined(host.path.at(-1)) + at],
-                root
-              );
-            }
-          }
-          const text = leaf.text.slice(from - position, to - position);
-          const previous = children.at(-1);
-          if (
-            previous &&
-            isTextNode(previous) &&
-            jsonEqual(nodeProps(previous), props)
-          ) {
-            children[children.length - 1] = {
-              ...props,
-              text: previous.text + text,
-            };
-          } else children.push({ ...props, text });
-        }
-        position += leaf.text.length;
-      }
-      replacements.set(group[0].path.join('.'), children);
-    }
-    const visit = (
-      nodes: readonly JsonNode[],
-      parent: readonly number[],
-      offset = 0
-    ): readonly JsonNode[] => {
-      const output: JsonNode[] = [];
-      for (let at = 0; at < nodes.length; at += 1) {
-        const node = nodes[at];
-        const path = [...parent, at + offset];
-        const replacement = replacements.get(path.join('.'));
-        if (replacement) {
-          output.push(...replacement);
-          while (at + 1 < nodes.length && isTextNode(nodes[at + 1])) at += 1;
-        } else if (
-          !isTextNode(node) &&
-          ranges.some((span) =>
-            path.every((part, depth) => span.path[depth] === part)
-          )
-        ) {
-          output.push({ ...node, children: visit(node.children, path) });
-        } else output.push(node);
-      }
-      return output;
-    };
-    const changes = [...new Set(ranges.map((span) => span.path[0]))].map(
-      (at) => {
-        const node = index.node([at]);
-        const range = index.nodeRange([at]);
-        return {
-          from: range.from,
-          to: range.to,
-          insert: PreparedTokenSlice.fromNodes(visit([node], [], at)),
-        };
-      }
-    );
-    result = createInternalDocumentChange(
-      new Map([[root, RootChange.create(index, changes)]])
-    ).apply(result);
-  }
-  return result;
-};
-
 export const recordHistoryReplay = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,
   base: T,
@@ -282,13 +152,19 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
   }> = {}
 ): HistoryReplay<T> => {
   if (parts) {
-    const unsettle = recordPart(schema, base, parts.unsettle, direction);
+    const unsettle = recordPart(
+      schema,
+      base,
+      parts.unsettle,
+      direction,
+      'unsettle'
+    );
 
     return pairedReplay(
       change,
       direction,
       unsettle,
-      recordPart(schema, unsettle.record().after, parts.rest, direction)
+      recordPart(schema, unsettle.record().after, parts.rest, direction, 'rest')
     );
   }
 
@@ -303,8 +179,7 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
       direction,
       ...known,
       program,
-      record: () =>
-        (recorded ??= recordReplay(schema, base, change, false, known)),
+      record: () => (recorded ??= recordReplay(schema, base, change, known)),
     };
   }
 
@@ -314,7 +189,7 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
     direction,
     ...known,
     record: () =>
-      (recorded ??= recordReplay(schema, base, change, false, {
+      (recorded ??= recordReplay(schema, base, change, {
         ...known,
         carried,
       })),
@@ -661,7 +536,8 @@ const recordPart = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,
   base: T,
   change: DocumentChange,
-  direction: 'undo' | 'redo'
+  direction: 'undo' | 'redo',
+  exact: 'rest' | 'unsettle'
 ): HistoryReplay<T> => {
   const part = classifyDocumentChange(base, change.apply(base), change);
   let recorded: RecordedHistoryReplay<T> | undefined;
@@ -669,8 +545,11 @@ const recordPart = <T extends JsonEditorValue>(
   return {
     change: part,
     direction,
-    exact: true,
-    record: () => (recorded ??= recordReplay(schema, base, part, true)),
+    exact,
+    record: () =>
+      (recorded ??= recordReplay(schema, base, part, {
+        exact: exact === 'rest',
+      })),
   };
 };
 
@@ -685,7 +564,6 @@ const pairedReplay = <T extends JsonEditorValue>(
   parts: { rest, unsettle },
   record: () => ({
     after: rest.record().after,
-    format: new Map(),
     structure: change,
   }),
 });
@@ -720,303 +598,59 @@ const exactRunsOf = (
   return exact.length > 0 ? exact : undefined;
 };
 
-/** Each carried letter of `root` in `before`, with where it lands in `after`. */
-const carriedLettersOf = (
-  runs: readonly CarriedRun[] | undefined,
-  root: string,
-  before: JsonEditorValue,
-  after: JsonEditorValue
-) => {
-  const letters = new Map<number, number>();
-
-  for (const run of runs ?? []) {
-    if (run.root !== root) continue;
-    for (const { from, to } of carriedLetterPairs(
-      run,
-      valueRootIndex(before, root),
-      valueRootIndex(after, root)
-    )) {
-      letters.set(from, to);
-    }
-  }
-
-  return letters.size > 0
-    ? (position: number) => letters.get(position)
-    : undefined;
-};
-
 const recordReplay = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,
   base: T,
   change: DocumentChange,
-  exact = false,
-  known: Readonly<{ after?: T; carried?: readonly CarriedRun[] }> = {}
+  known: Readonly<{
+    after?: T;
+    carried?: readonly CarriedRun[];
+    exact?: boolean;
+    maybeFormatted?: boolean;
+  }> = {}
 ): RecordedHistoryReplay<T> => {
-  const { carried } = known;
   const after = known.after ?? change.apply(base);
-  const format = new Map<string, TextFormatSpan[]>();
-  const unformatted = () => {
-    const runs = exactRunsOf(carried, change, base, after);
-
-    return { structure: change, format, after, ...(runs ? { runs } : {}) };
-  };
-  if (change.empty || isInternalTextOnlyDocumentChange(change)) {
-    return unformatted();
-  }
-  const reset = new Map<CharacterSpan, JsonRecord>();
-  const resets = new Map<string, CharacterSpan[]>();
-  for (const [root] of getInternalDocumentChangeEntries(change)) {
-    const source = valueRootIndex(base, root);
-    const target = valueRootIndex(after, root);
-    const correspondence = createCharacterCorrespondence(
-      base,
-      after,
-      change,
-      root,
-      exact,
-      carriedLettersOf(carried, root, base, after)
-    );
-    const spans: TextFormatSpan[] = [];
-    const rootResets: CharacterSpan[] = [];
-    const visit = (node: JsonNode, path: readonly number[]) => {
-      if (isTextNode(node)) return;
-      for (let at = 0; at < node.children.length; at += 1) {
-        const child = node.children[at];
-        if (!isTextNode(child)) {
-          visit(child, [...path, at]);
-          continue;
-        }
-        const host = textHostAt(source, [...path, at]);
-        let offset = 0;
-        for (const leaf of host.leaves) {
-          if (!isTextNode(leaf)) continue;
-          for (const fragment of correspondence.fragments({
-            path: host.path,
-            from: offset,
-            to: offset + leaf.text.length,
-          })) {
-            const nextHost = textHostAt(target, fragment.target.path);
-            let nextOffset = 0;
-            for (
-              let nextIndex = 0;
-              nextIndex < nextHost.leaves.length;
-              nextIndex += 1
-            ) {
-              const next = nextHost.leaves[nextIndex];
-              if (!isTextNode(next)) continue;
-              const from = Math.max(fragment.target.from, nextOffset);
-              const to = Math.min(
-                fragment.target.to,
-                nextOffset + next.text.length
-              );
-              if (from < to) {
-                const previous = nodeProps(leaf);
-                const props = nodeProps(next);
-                const writes: TextKeyWrite[] = [];
-                for (const key of new Set([
-                  ...Object.keys(previous),
-                  ...Object.keys(props),
-                ])) {
-                  if (jsonEqual(previous[key], props[key])) continue;
-                  if (
-                    schema.isSetValued(
-                      next,
-                      key,
-                      getDocumentPropertyContext(
-                        target,
-                        [
-                          ...nextHost.path.slice(0, -1),
-                          getDefined(nextHost.path.at(-1)) + nextIndex,
-                        ],
-                        root === 'main' ? null : root
-                      )
-                    )
-                  ) {
-                    const beforeMembers: unknown[] = Array.isArray(
-                      previous[key]
-                    )
-                      ? previous[key]
-                      : [];
-                    const afterMembers: unknown[] = Array.isArray(props[key])
-                      ? props[key]
-                      : [];
-                    writes.push({
-                      key,
-                      kind: 'members',
-                      add: afterMembers.filter(
-                        (member) =>
-                          !beforeMembers.some((old) => jsonEqual(old, member))
-                      ),
-                      remove: beforeMembers.filter(
-                        (member) =>
-                          !afterMembers.some((candidate) =>
-                            jsonEqual(candidate, member)
-                          )
-                      ),
-                    });
-                  } else {
-                    writes.push({
-                      key,
-                      kind: 'value',
-                      expect: previous[key],
-                      value: props[key],
-                    });
-                  }
-                }
-                if (writes.length > 0) {
-                  spans.push({ ...fragment.target, from, to, writes });
-                }
-                const range = { ...fragment.target, from, to };
-                reset.set(range, previous);
-                rootResets.push(range);
-              }
-              nextOffset += next.text.length;
-            }
-          }
-          offset += leaf.text.length;
-        }
-        at += host.leaves.length - 1;
-      }
-    };
-    for (const [from, to] of source.changedChildren(target)) {
-      for (let at = from; at < to; at += 1) {
-        const node = source.child(at);
-        if (node) visit(node, [at]);
-      }
-    }
-    if (spans.length) format.set(root, spans);
-    if (rootResets.length) resets.set(root, rootResets);
-  }
-  if (format.size === 0) return unformatted();
-  const middle = rewriteSpans(after, resets, (span) => reset.get(span) ?? {});
-  const carriesRuns = Boolean(carried?.length);
-  const aligned = carriesRuns ? alignedDocumentChange(after, middle) : null;
-  const resetChange =
-    aligned ??
-    DocumentChange.between(after, middle, {
-      isSetValued: schema.isSetValued,
-    });
-  for (const [root, spans] of format) {
-    const correspondence = createCharacterCorrespondence(
-      after,
-      middle,
-      resetChange,
-      root,
-      aligned !== null
-    );
-    format.set(
-      root,
-      spans.flatMap((span) =>
-        correspondence
-          .fragments(span)
-          .map(({ target }) => ({ ...target, writes: span.writes }))
-      )
-    );
-  }
-  if (aligned) {
-    const structure = change.compose(aligned);
-    const moved = carried?.map((run) => {
-      const rootReset = getInternalDocumentRootChange(aligned, run.root);
-
-      return rootReset
-        ? mapCarriedRunThrough(run, rootReset, valueRootIndex(after, run.root))
-        : run;
-    });
-    const runs = moved?.every((run) => run !== null)
-      ? exactRunsOf(moved, structure, base, middle)
-      : undefined;
-
-    return { structure, format, after, ...(runs ? { runs } : {}) };
-  }
-  // A part keeps its own change as its structure, so no diff of letter values
-  // picks which letters it keeps; the diff from `after` only resets marks.
-  // Collapsing nets each key to its write from `base`, so a key the reset
-  // brought back writes nothing and a teammate's later write to it survives.
-  return {
-    structure: exact
-      ? collapseDocumentElementPropertyWrites(
-          change.compose(
-            DocumentChange.between(after, middle, {
-              isSetValued: schema.isSetValued,
-            })
-          ),
+  const split =
+    known.carried?.length || known.exact
+      ? splitV4FormatTail(
           base,
+          change,
+          after,
           schema.isSetValued,
-          { textLeaves: true }
+          known.maybeFormatted === true || known.exact === true,
+          known.carried
         )
-      : DocumentChange.between(base, middle, {
-          isSetValued: schema.isSetValued,
-        }),
-    format,
-    after,
-  };
-};
+      : null;
+  const structure = split ? split.structure : change;
+  const structureAfter = split ? split.structureAfter : after;
+  const carriedForStructure =
+    split && known.carried
+      ? (landCarriedRuns(
+          known.carried,
+          [
+            {
+              after: structureAfter,
+              before: after,
+              change: split.formatInverse,
+            },
+          ],
+          { after: structureAfter, before: base, change: structure }
+        ) ?? known.carried)
+      : known.carried;
+  const runs = exactRunsOf(
+    carriedForStructure,
+    structure,
+    base,
+    structureAfter
+  );
+  const useSplit = Boolean(split && (runs || known.exact));
 
-const applyFormatIntent = <T extends JsonEditorValue>(
-  schema: HistoryReplaySchema,
-  value: T,
-  format: ReadonlyMap<string, readonly TextFormatSpan[]>,
-  direction: 'undo' | 'redo'
-) => {
-  const writes = new Map<CharacterSpan, readonly TextKeyWrite[]>();
-  for (const spans of format.values()) {
-    for (const span of spans) writes.set(span, span.writes);
-  }
-  return rewriteSpans(value, format, (span, properties, path, root) => {
-    const result = { ...properties };
-    const preferred: string[] = [];
-    for (const write of writes.get(span) ?? []) {
-      if (!schema.allows(write.key, path, root, value)) continue;
-      if (write.kind === 'members') {
-        const current = result[write.key];
-        const members: unknown[] = Array.isArray(current) ? current : [];
-        const next = normalizeSetValues([
-          ...members.filter(
-            (member) =>
-              !write.remove.some((removed) => jsonEqual(member, removed))
-          ),
-          ...write.add,
-        ]);
-        if (next.length) result[write.key] = next;
-        else delete result[write.key];
-      } else {
-        if (
-          direction === 'undo' &&
-          !jsonEqual(result[write.key], write.expect)
-        ) {
-          continue;
-        }
-        if (write.value === undefined) delete result[write.key];
-        else {
-          const candidate = { ...result, [write.key]: write.value };
-          const canonical = schema.canonicalize(
-            candidate,
-            path,
-            root,
-            write.key,
-            value
-          );
-          if (
-            direction === 'undo' &&
-            Object.keys(result).some(
-              (key) => key !== write.key && !Object.hasOwn(canonical, key)
-            )
-          ) {
-            continue;
-          }
-          result[write.key] = write.value;
-          preferred.push(write.key);
-        }
-      }
-    }
-    let canonical = result;
-    for (const key of preferred) {
-      canonical = {
-        ...schema.canonicalize(canonical, path, root, key, value),
-      };
-    }
-    return canonical;
-  });
+  return {
+    after,
+    ...(useSplit && split ? { format: split.format, structureAfter } : {}),
+    ...(runs ? { runs } : {}),
+    structure: useSplit ? structure : change,
+  };
 };
 
 const composeRepair = (change: DocumentChange, repair: DocumentChange) =>
@@ -1163,7 +797,7 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
   replay: HistoryReplay<T>,
   base: T,
   mapping: HistoryMapping<T>,
-  { anchor, readBack: reads }: ReplayRules
+  { anchor, canRemoveEmptyParent, readBack: reads }: ReplayRules
 ): Readonly<{
   keptWrap: KeptWrap | null;
   projected: boolean;
@@ -1174,6 +808,7 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
   const readBack = reads ? { changed: false, projected: false } : null;
   const mapped = mapReplay(schema, replay, base, mapping, {
     anchor,
+    canRemoveEmptyParent,
     readBack,
   });
 
@@ -1238,7 +873,6 @@ const replayedStructure = <T extends JsonEditorValue>(
   !replay.exact &&
   !replay.carried &&
   mapping.textOnly &&
-  recorded.format.size === 0 &&
   isInternalTextOnlyDocumentChange(replay.change)
     ? DocumentChange.between(base, recorded.after)
     : recorded.structure;
@@ -1288,9 +922,18 @@ export const keepsUndoThrough = <T extends JsonEditorValue>(
 
   const recorded = replay.record();
 
-  if (recorded.format.size > 0) return false;
-
   try {
+    const v4 = tryV4HistoryRebase(
+      base,
+      mapping.change,
+      mapping.after,
+      replay.change,
+      recorded.after,
+      schema.isSetValued
+    );
+
+    if (v4) return !v4.b.empty;
+
     return !replayOver(
       schema,
       mapping.change,
@@ -1351,8 +994,7 @@ const mapOneReplay = <T extends JsonEditorValue>(
     return { change: part, direction: replay.direction, exact, record };
   };
   const recorded = replay.record();
-  let middleValue: T | undefined;
-  const middleOf = () => (middleValue ??= recorded.structure.apply(base));
+  const structureAfter = recorded.structureAfter ?? recorded.after;
   const carry =
     replay.carried && !exact && recorded.runs
       ? carryReplay(
@@ -1360,150 +1002,144 @@ const mapOneReplay = <T extends JsonEditorValue>(
           recorded.runs,
           recorded,
           base,
-          middleOf(),
+          structureAfter,
           mapping,
           stepRules
         )
       : null;
+
+  const pureFormat =
+    !carry && (stepRules.anchor || exact === 'rest')
+      ? isPureV4FormatChange(
+          base,
+          replay.change,
+          recorded.after,
+          schema.isSetValued
+        )
+      : false;
+  const v4Mapped =
+    !carry &&
+    (!stepRules.anchor || pureFormat) &&
+    (!exact || (exact === 'rest' && pureFormat))
+      ? tryV4HistoryRebase(
+          base,
+          mapping.change,
+          mapping.after,
+          replay.change,
+          recorded.after,
+          schema.isSetValued,
+          false,
+          rules.canRemoveEmptyParent === true
+        )
+      : null;
+
   const transformed =
     carry ??
-    replayOver(
-      schema,
-      mapping.change,
-      replayedStructure(replay, recorded, base, mapping),
-      base,
-      stepRules
-    );
+    (v4Mapped
+      ? { a: v4Mapped.a, b: v4Mapped.b, keptWrap: null }
+      : replayOver(
+          schema,
+          mapping.change,
+          replayedStructure(replay, recorded, base, mapping),
+          base,
+          stepRules
+        ));
   const { keptWrap } = transformed;
-  if (recorded.format.size === 0) {
-    const mappedAfter = carry
+  const mappedStructureAfter =
+    carry || v4Mapped
       ? transformed.b.apply(mapping.after)
-      : transformed.a.apply(recorded.after);
-    const repair = schema.repairCanonical(
+      : transformed.a.apply(structureAfter);
+
+  let mappedB = transformed.b;
+  let mappedA = transformed.a;
+  let mappedAfter = mappedStructureAfter;
+  let mappedFormat: DocumentChange | null = null;
+
+  if ((carry || exact === 'rest') && recorded.format) {
+    const structRepair = schema.repairCanonical(
       mapping.after,
       transformed.b,
-      mappedAfter
+      mappedStructureAfter
     );
-    const change = composeRepair(transformed.b, repair);
-    const after = repair.empty ? mappedAfter : repair.apply(mappedAfter);
-    const rest = composeRepair(transformed.a, repair);
-    const carried =
-      carry?.runs &&
-      landCarriedRuns(
-        carry.runs,
-        [{ after, before: mappedAfter, change: repair }],
-        { after, before: mapping.after, change }
+    const repairedStructB = composeRepair(transformed.b, structRepair);
+    const repairedStructA = composeRepair(transformed.a, structRepair);
+    const repairedStructAfter = structRepair.empty
+      ? mappedStructureAfter
+      : structRepair.apply(mappedStructureAfter);
+    const v4Fmt =
+      (carry?.letters
+        ? rebaseCarriedFormatViaLetters(
+            structureAfter,
+            recorded.format,
+            recorded.after,
+            carry.letters,
+            structRepair,
+            repairedStructA,
+            repairedStructAfter,
+            schema.isSetValued
+          )
+        : null) ??
+      tryV4HistoryRebase(
+        structureAfter,
+        repairedStructA,
+        repairedStructAfter,
+        recorded.format,
+        recorded.after,
+        schema.isSetValued
       );
-    const mapped = asReplay(change, () => {
-      const runs = exactRunsOf(
-        carried ?? undefined,
-        change,
-        mapping.after,
-        after
+    const fmtTransformed =
+      v4Fmt ??
+      replayOver(
+        schema,
+        repairedStructA,
+        recorded.format,
+        structureAfter,
+        stepRules
       );
 
-      return {
-        structure: change,
-        format: recorded.format,
-        after,
-        ...(runs ? { runs } : {}),
-      };
-    });
+    mappedFormat = structRepair.empty
+      ? fmtTransformed.b
+      : structRepair.compose(fmtTransformed.b);
+    mappedB = repairedStructB.compose(fmtTransformed.b);
+    mappedA = fmtTransformed.a;
+    mappedAfter = fmtTransformed.b.apply(repairedStructAfter);
+  }
 
-    return {
-      keptWrap,
-      replay: { ...mapped, after, ...(carried ? { carried } : {}) },
-      rest,
-    };
-  }
-  const middle = middleOf();
-  const mappedMiddle = transformed.b.apply(mapping.after);
-  const format = new Map<string, TextFormatSpan[]>();
-  for (const [root, spans] of recorded.format) {
-    const letters = carry?.letters?.root === root ? carry.letters : undefined;
-    const correspondence = createCharacterCorrespondence(
-      middle,
-      mappedMiddle,
-      transformed.a,
-      root,
-      exact,
-      letters?.letterAt
-    );
-    format.set(
-      root,
-      spans.flatMap((span) =>
-        correspondence
-          .fragments(span)
-          .map(({ target }) => ({ ...target, writes: span.writes }))
-      )
-    );
-  }
-  const formatted = applyFormatIntent(
-    schema,
-    mappedMiddle,
-    format,
-    replay.direction
-  );
-  const formatWrites = DocumentChange.between(mappedMiddle, formatted, {
-    isSetValued: schema.isSetValued,
-  });
-  const formattedChange = format.size
-    ? transformed.b.compose(formatWrites)
-    : transformed.b;
-  const repair = schema.repairCanonical(
-    mapping.after,
-    formattedChange,
-    formatted
-  );
-  const change = composeRepair(formattedChange, repair);
-  const after = repair.empty ? formatted : repair.apply(formatted);
+  const repair = schema.repairCanonical(mapping.after, mappedB, mappedAfter);
+  const change = composeRepair(mappedB, repair);
+  const after = repair.empty ? mappedAfter : repair.apply(mappedAfter);
+  const rest = composeRepair(mappedA, repair);
+  const landingSteps = [
+    ...(mappedFormat
+      ? [
+          {
+            after: mappedAfter,
+            before: mappedStructureAfter,
+            change: mappedFormat,
+          },
+        ]
+      : []),
+    { after, before: mappedAfter, change: repair },
+  ];
   const carried =
     carry?.runs &&
-    landCarriedRuns(
-      carry.runs,
-      [
-        { after: formatted, before: mappedMiddle, change: formatWrites },
-        { after, before: formatted, change: repair },
-      ],
-      { after, before: mapping.after, change }
-    );
-  const formatChange = DocumentChange.between(middle, recorded.after, {
-    isSetValued: schema.isSetValued,
-  });
-  const mapped = transformInternalDocumentChange(
-    transformed.a,
-    formatChange,
-    middle,
-    { keepRecordWrites: true }
-  ).a;
-  const intermediate = mapped.apply(recorded.after);
-  const rest = composeRepair(
-    mapped.compose(
-      DocumentChange.between(intermediate, formatted, {
-        isSetValued: schema.isSetValued,
-      })
-    ),
-    repair
-  );
-  const replayed = asReplay(change, () => {
-    const runs = exactRunsOf(
-      carry?.runs ?? undefined,
-      transformed.b,
-      mapping.after,
-      mappedMiddle
-    );
-
-    return {
-      structure: transformed.b,
-      format,
+    landCarriedRuns(carry.runs, landingSteps, {
       after,
-      ...(runs ? { runs } : {}),
-    };
-  });
+      before: mapping.after,
+      change,
+    });
+  const mapped = asReplay(change, () =>
+    recordReplay(schema, mapping.after, change, {
+      after,
+      carried: carried ?? undefined,
+      exact: exact === 'rest',
+      maybeFormatted: Boolean((carry || exact === 'rest') && recorded.format),
+    })
+  );
 
   return {
     keptWrap,
-    replay: carried ? { ...replayed, carried } : replayed,
+    replay: { ...mapped, after, ...(carried ? { carried } : {}) },
     rest,
   };
 };
@@ -1516,39 +1152,5 @@ export const mapHistorySelection = (
   after: EditorDocumentValue,
   root: string,
   exact = false
-): Selection => {
-  if (!selection || !SelectionApi.isText(selection)) {
-    return mapSelectionThroughChange(
-      editor,
-      selection,
-      change,
-      before,
-      after,
-      root
-    ).selection;
-  }
-  const correspondence = createCharacterCorrespondence(
-    before,
-    after,
-    change,
-    root,
-    exact
-  );
-  const anchor = correspondence.point(selection.anchor, -1);
-  const focus = correspondence.point(selection.focus, -1);
-  if (!anchor || !focus) {
-    return mapSelectionThroughChange(
-      editor,
-      selection,
-      change,
-      before,
-      after,
-      root
-    ).selection;
-  }
-  return {
-    ...selection,
-    anchor: { ...selection.anchor, ...anchor },
-    focus: { ...selection.focus, ...focus },
-  };
-};
+): Selection =>
+  mapTextSelectionViaV4(editor, selection, change, before, after, root, exact);

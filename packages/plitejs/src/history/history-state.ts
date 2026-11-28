@@ -10,26 +10,16 @@ import {
   type AnchorHistoryRecovery,
   mapAnchorHistoryRecovery,
 } from '../core/anchor-state';
-import { classifyDocumentChange } from '../core/change/builder';
 import { landCarriedRuns } from '../core/change/carried-run';
-import { crossRecord } from '../core/change/cross';
-import {
-  type ElementSchema,
-  type FactedChange,
-  skippedRejection,
-  stepRejection,
-} from '../core/change/cross-rule';
 import {
   attachLazyV4Compute,
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRecords,
-  getInternalDocumentChangeRootKeys,
   hasV4StepsSource,
   isInternalRecordsOnlyChange,
   isInternalTextOnlyDocumentChange,
   transformInternalDocumentChange,
   valueRoot,
-  valueRootIndex,
 } from '../core/change/document-change';
 import { jsonEqual, type JsonRecord } from '../core/change/json';
 import type { ChangeFacts } from '../core/change/record';
@@ -37,19 +27,13 @@ import { hasInternalDocumentChangeStepFirstAt } from '../core/change/replay-step
 import type { KeptWrap } from '../core/change/root-change';
 import { isElementNode, type JsonNode, nodeProps } from '../core/change/tokens';
 import { extractV4Between } from '../core/change/v4/extract';
-import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
-import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import { getEditorDocumentValue } from '../core/public-state';
 import { recordOpsToJson } from '../core/record-store';
-import {
-  areEditorSchemaIdentitiesEqual,
-  propertyTargetsReadParents,
-} from '../core/schema-compiler';
+import { areEditorSchemaIdentitiesEqual } from '../core/schema-compiler';
 import { alike } from '../core/stored-element-id';
 import { countCoreWork, readCoreWork } from '../core/work';
 import type { AnyEditor } from '../interfaces/editor';
-import { ElementApi } from '../interfaces/element';
 import type { Batch, History } from './history';
 import { type HistoryCarets, mapHistoryCarets } from './history-carets';
 import { resolveForgottenTop } from './history-forgotten';
@@ -121,10 +105,8 @@ import {
 import {
   appendPendingMapping,
   applyEmptyChangeMapping,
-  buildDropMapping,
   buildPropagatedMapping,
   buildQueuedHistoryMapping,
-  collectSupersededEffectKeys,
   forwardedSupersededMapping,
   journalEntries,
   mapBatchEffects,
@@ -527,111 +509,6 @@ const yieldTo = <V extends Value>(
 export const crossingDropCount = (editor: AnyEditor) =>
   captureHistoryState(editor)?.crossingDrops ?? 0;
 
-const changedRootIndexes = (
-  value: EditorDocumentValue,
-  change: DocumentChange
-) =>
-  new Map(
-    getInternalDocumentChangeRootKeys(change).map((root) => [
-      root,
-      valueRootIndex(value, root),
-    ])
-  );
-
-const crossOrDrop = <V extends Value>(
-  editor: Editor<V>,
-  drops: DropSink,
-  replay: HistoryReplay<EditorDocumentValue<V>>,
-  base: EditorDocumentValue<V>,
-  facts: ChangeFacts | undefined,
-  mapping: PendingMapping<V>,
-  crossing: ChangeFacts
-) => {
-  countCoreWork('crossedSteps');
-  try {
-    if (!facts) {
-      throw new Error('A crossing reached a step with no facts.');
-    }
-
-    const { followed, leftover } = crossRecord(
-      base,
-      { change: replay.change, facts },
-      { change: mapping.change, facts: crossing }
-    );
-
-    const after = followed.change.apply(mapping.after);
-
-    getEditorSchema(editor).checkDocumentChange({
-      after,
-      before: mapping.after,
-      change: followed.change,
-      indexedAfter: changedRootIndexes(after, followed.change),
-      indexedBefore: changedRootIndexes(mapping.after, followed.change),
-    });
-    const change = classifyDocumentChange(
-      mapping.after,
-      after,
-      followed.change
-    );
-
-    return {
-      facts: followed.facts,
-      kind: 'crossed' as const,
-      keptWrap: null,
-      projected: false,
-      readBack: false,
-      replay: recordHistoryReplay(
-        historyReplaySchemaOf(editor),
-        mapping.after,
-        change,
-        replay.direction,
-        { after }
-      ),
-      rest: leftover.change,
-      restFacts: leftover.facts,
-    };
-  } catch (error) {
-    drops.push({
-      cause: error,
-      direction: replay.direction,
-      editor,
-    });
-
-    return { kind: 'dropped' as const };
-  }
-};
-
-const headAfterDrop = <V extends Value>(
-  editor: Editor<V>,
-  value: HistoryBranch<V>,
-  target: EditorDocumentValue<V>,
-  supersededEffectKeys?: ReadonlySet<string>
-) => {
-  const { next } = value;
-  const from = next?.mappings?.entry.after ?? next?.base;
-  const correction =
-    next && from
-      ? DocumentChange.between(from, target, {
-          isSetValued: historyReplaySchemaOf(editor).isSetValued,
-        })
-      : DocumentChange.empty;
-
-  const dropMapping = buildDropMapping(
-    target,
-    correction,
-    supersededEffectKeys,
-    isTextOnlyMapping(correction)
-  );
-
-  return {
-    head: dropMapping ? addMapping(next, dropMapping) : next,
-    keptWrap: null,
-    projected: false,
-    projectedAfterReadBack: false,
-    readBack: false,
-  };
-};
-
 const mapHead = <V extends Value>(
   editor: Editor<V>,
   drops: DropSink,
@@ -684,41 +561,19 @@ const mapHead = <V extends Value>(
       mappedDocument = true;
     }
 
-    const crossed = mapping.crossing
-      ? crossOrDrop(
-          editor,
-          drops,
-          replay,
-          batchBase,
-          batchFacts,
-          mapping,
-          mapping.crossing
-        )
-      : null;
+    const mapped = mapHistoryReplay(
+      historyReplaySchemaOf(editor),
+      replay,
+      batchBase,
+      mapping,
+      {
+        anchor: anchor && mapping.anchors === true,
+        canRemoveEmptyParent: next === null,
+        readBack: reads,
+      }
+    );
 
-    if (crossed?.kind === 'dropped') {
-      return headAfterDrop(
-        editor,
-        value,
-        (entries.at(-1) ?? mapping).after,
-        collectSupersededEffectKeys(entries.slice(index))
-      );
-    }
-
-    const mapped =
-      crossed ??
-      mapHistoryReplay(
-        historyReplaySchemaOf(editor),
-        replay,
-        batchBase,
-        mapping,
-        {
-          anchor: anchor && mapping.anchors === true,
-          readBack: reads,
-        }
-      );
-
-    batchFacts = crossed?.facts;
+    batchFacts = undefined;
     keptWrap ??= mapped.keptWrap;
     projected ||= mapped.projected;
     projectedAfterReadBack ||= readBack && mapped.projected;
@@ -737,7 +592,7 @@ const mapHead = <V extends Value>(
       after: mappedNextBase,
       before: nextBase,
       change: mapped.rest,
-      facts: crossed?.restFacts ?? null,
+      facts: null,
     };
     const sides =
       replay.direction === 'undo'
@@ -789,7 +644,7 @@ const mapHead = <V extends Value>(
       mappedNextBase,
       mapped.rest,
       mapping.supersededEffectKeys,
-      crossed?.restFacts
+      undefined
     );
 
     if (propagated) next = addMapping<V>(next, propagated);
@@ -802,7 +657,9 @@ const mapHead = <V extends Value>(
   }
 
   const later = entries.slice(count);
-  const empty = batchValue.change.empty && batchValue.effects.length === 0;
+  const wasEmpty = value.batch.change.empty && value.batch.effects.length === 0;
+  const empty =
+    !wasEmpty && batchValue.change.empty && batchValue.effects.length === 0;
 
   if (empty) {
     for (const mapping of later) next = addMapping(next, mapping);
@@ -924,21 +781,12 @@ const resolveProgramHead = <V extends Value>(
   };
 };
 
-const crossFirstMapping = <V extends Value>(
-  editor: Editor<V>,
-  drops: DropSink,
-  value: HistoryBranch<V>
-) => mapHead(editor, drops, value, { anchor: false, readBack: false }, 1).head;
-
 const resolveHead = <V extends Value>(
   editor: Editor<V>,
   drops: DropSink,
   value: HistoryBranch<V>
 ): HistoryBranch<V> | null => {
   if (!value.mappings) return value;
-  if (journalEntries(value.mappings)[0]?.crossing) {
-    return crossFirstMapping(editor, drops, value);
-  }
 
   const earlier = value.kept?.kind === 'fallback' ? value.kept.plain : null;
   const current = earlier ? Object.freeze({ ...value, kept: null }) : value;
@@ -2343,7 +2191,10 @@ export const completeHistoryAction = <V extends Value>(
     ? stepBranchTracks(resolved.next, commit, false)
     : resolved.next;
   const nextSource = rebaseOnto(editor, drops, walkedNextSource, current);
-  const empty = batchValue.change.empty && batchValue.effects.length === 0;
+  const wasEmpty =
+    resolved.batch.change.empty && resolved.batch.effects.length === 0;
+  const empty =
+    !wasEmpty && batchValue.change.empty && batchValue.effects.length === 0;
   const thaws = destination === 'redos' && !empty && !!store.redoFreeze;
   const listed = thaws ? null : store[destination];
   const walkedDest = commit ? stepBranchTracks(listed, commit, false) : listed;
@@ -2385,96 +2236,6 @@ const isTextOnlyMapping = (change: DocumentChange) =>
   !hasInternalDocumentChangeStepFirstAt(change) &&
   isInternalTextOnlyDocumentChange(change);
 
-const ELEMENT_SCHEMAS = new WeakMap<object, ElementSchema>();
-
-export const historyElementSchemaOf = (editor: AnyEditor) => {
-  const read = getEditorSchema(editor);
-  const known = ELEMENT_SCHEMAS.get(read);
-
-  if (known) return known;
-
-  const owner = getEditorRuntimeOwner(editor);
-  const contentOf = (element: JsonNode) =>
-    typeof element.type === 'string'
-      ? read.getElementContent(element.type)
-      : null;
-  const schema: ElementSchema = {
-    content: (element) => contentOf(element) ?? 'unknown',
-    isInline: (element) =>
-      ElementApi.isElement(element) && read.isInline(element),
-    ownsContentRoot: (element) =>
-      typeof element.type === 'string' &&
-      (getCompiledEditorSchema(owner).elements.byType.get(element.type)
-        ?.contentRoots.size ?? 0) > 0,
-    propertiesReadParents: () =>
-      propertyTargetsReadParents(getCompiledEditorSchema(owner)),
-    rootContent: (document, root) =>
-      read.getRootContent(root, document as EditorDocumentValue) ?? 'unknown',
-  };
-
-  ELEMENT_SCHEMAS.set(read, schema);
-
-  return schema;
-};
-
-const holdsCarry = (facts: ChangeFacts) =>
-  facts.kind === 'recorded' &&
-  [...facts.roots.values()].some(({ carries }) => carries.length > 0);
-
-const waitsOnNothing = <V extends Value>({
-  batch,
-  kept,
-  mappings,
-  replay,
-}: HistoryBranch<V>) =>
-  !mappings &&
-  !kept &&
-  !replay.program &&
-  !replay.carried &&
-  !replay.parts &&
-  !replay.exact &&
-  !batch.unsettle;
-
-const crossesEveryStep = <V extends Value>(
-  value: HistoryBranch<V> | null,
-  schema: ElementSchema
-) => {
-  for (let entry = value; entry; entry = entry.next) {
-    const facts = historyFactsOf(entry.batch);
-
-    if (
-      !facts ||
-      !waitsOnNothing(entry) ||
-      stepRejection(
-        entry.base,
-        { change: entry.replay.change, facts },
-        schema
-      ) !== null
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
-const admits = <V extends Value>(
-  editor: Editor<V>,
-  store: HistoryStore<V>,
-  skipped: FactedChange,
-  before: EditorDocumentValue<V>
-) => {
-  if (!holdsCarry(skipped.facts) || store.pendingReplay) return false;
-
-  const schema = historyElementSchemaOf(editor);
-
-  return (
-    skippedRejection(before, skipped, schema) === null &&
-    crossesEveryStep(store.undos, schema) &&
-    crossesEveryStep(store.redos, schema)
-  );
-};
-
 export const queueHistoryMapping = <V extends Value>(
   editor: Editor<V>,
   change: DocumentChange,
@@ -2497,16 +2258,10 @@ export const queueHistoryMapping = <V extends Value>(
 
   if (change.empty && !store.redos && !store.undos) return;
 
-  const crosses =
-    !change.empty &&
-    admits(editor, store, { change, facts: skipped.facts }, skipped.before);
-
-  if (crosses) countCoreWork('admittedChanges');
-
   const mapping = buildQueuedHistoryMapping(
     after,
     change,
-    crosses,
+    false,
     skipped.facts,
     supersededEffectKeys,
     isTextOnlyMapping(change)

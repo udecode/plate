@@ -92,6 +92,7 @@ import {
   type JsonNode,
   type JsonPoint,
 } from './tokens';
+import { applyV4Steps } from './v4/apply';
 import {
   V4BuilderRecorder,
   type V4RecorderSnapshot,
@@ -2029,18 +2030,28 @@ export class ChangeDraft {
       ) {
         this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
       } else {
+        const hadPending = this.v4Recorder.hasPending;
+
         this.v4Recorder.resolvePendingIds((root) => this.getIndex(root));
         const attachedConstruction = constructionChange
           ? getAttachedV4Steps(constructionChange)
           : null;
 
-        if (attachedConstruction) {
+        if (attachedConstruction && !hadPending) {
           this.v4Recorder.appendRaw(attachedConstruction);
         } else {
           try {
-            const repairSteps = extractV4Between(step.before, step.after, {
-              indexedAfter: step.indexedAfter,
-              indexedBefore: step.indexedBefore,
+            const recordedSoFar = hadPending ? this.v4Recorder.recorded : null;
+            const repairBefore = recordedSoFar
+              ? applyV4Steps(this.source, recordedSoFar)
+              : step.before;
+            const repairSteps = extractV4Between(repairBefore, step.after, {
+              ...(recordedSoFar
+                ? {}
+                : {
+                    indexedAfter: step.indexedAfter,
+                    indexedBefore: step.indexedBefore,
+                  }),
               isSetValued: this.isSetValued,
             });
 

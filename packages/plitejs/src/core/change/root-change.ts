@@ -6351,6 +6351,212 @@ export class RootChange {
   }
 
   /**
+   * Collapse property or replacement sections that produce tokens identical to
+   * `document` back into plain keep sections.
+   *
+   * @internal
+   */
+  stripNoopSections(document: DocumentIndex): RootChange {
+    let changed = false;
+    const sections: number[] = [];
+    const data: SectionData[] = [];
+    let position = 0;
+
+    for (let index = 0; index < this.sections.length; index += 2) {
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const entryData = this.data[index >> 1];
+
+      if (inserted === -2) {
+        const entry = invertiblePropertyNode(document, position, length);
+        const mods = entryData as readonly PropertyModification[];
+
+        if (entry) {
+          const beforeProps = nodeProps(document.node(entry.path));
+          const afterProps = applyPropertyModifications(beforeProps, mods);
+
+          if (jsonEqual(beforeProps, afterProps)) {
+            addSection(sections, data, length, -1, null);
+            changed = true;
+            position += length;
+            continue;
+          }
+        }
+      } else if (
+        inserted > 0 &&
+        length > 0 &&
+        entryData instanceof PreparedTokenSlice
+      ) {
+        const prefix = commonPrefixLength(
+          document.slice(position, position + length).tokens,
+          entryData.tokens
+        );
+
+        if (prefix > 0) {
+          changed = true;
+          addSection(sections, data, prefix, -1, null);
+
+          const midDel = length - prefix;
+          const midIns = inserted - prefix;
+
+          if (midDel > 0 || midIns > 0) {
+            addSection(
+              sections,
+              data,
+              midDel,
+              midIns,
+              midIns > 0 ? entryData.slice(prefix, prefix + midIns) : null
+            );
+          }
+          position += length;
+          continue;
+        }
+      }
+
+      addSection(sections, data, length, inserted, entryData);
+      position += length;
+    }
+
+    return changed ? new RootChange(sections, data) : this;
+  }
+
+  /**
+   * Collect runtime `NodeKey`s attached to inserted open element and text
+   * tokens, keyed by element `id`.
+   *
+   * @internal
+   */
+  collectInsertedNodeKeys(
+    elementKeys: Map<string, NodeKey>,
+    textKeysByParent: Map<string, NodeKey[]>
+  ) {
+    for (const [, slice] of this.insertedSlices()) {
+      const sliceKeys = getDocumentSliceNodeKeys(slice);
+
+      if (sliceKeys.size === 0) continue;
+
+      const stack: Array<string | null> = [];
+
+      slice.tokens.forEach((token, tokenIndex) => {
+        if (token.kind === 'open') {
+          const entryKey = sliceKeys.get(slice.offsets[tokenIndex]);
+
+          if (token.nodeKind === 'element') {
+            const id =
+              typeof token.props.id === 'string' && token.props.id.length > 0
+                ? token.props.id
+                : null;
+
+            if (id && entryKey && !elementKeys.has(id)) {
+              elementKeys.set(id, entryKey);
+            }
+            stack.push(id);
+          } else {
+            const parentId = stack.at(-1) ?? null;
+
+            if (parentId && entryKey) {
+              let list = textKeysByParent.get(parentId);
+
+              if (!list) {
+                list = [];
+                textKeysByParent.set(parentId, list);
+              }
+              list.push(entryKey);
+            }
+            stack.push(null);
+          }
+        } else if (token.kind === 'close') {
+          stack.pop();
+        }
+      });
+    }
+  }
+
+  /**
+   * Attach runtime `NodeKey`s to inserted open tokens matching `elementKeys`
+   * (by element `id`) and `textKeysByParent` (by parent element `id` + text
+   * child index).
+   *
+   * @internal
+   */
+  applyNodeKeysById(
+    elementKeys: ReadonlyMap<string, NodeKey>,
+    textKeysByParent: ReadonlyMap<string, readonly NodeKey[]>
+  ): RootChange {
+    if (elementKeys.size === 0 && textKeysByParent.size === 0) return this;
+
+    let changed = false;
+    const data = [...this.data];
+
+    for (
+      let index = 0, dataIndex = 0;
+      index < this.sections.length;
+      index += 2, dataIndex += 1
+    ) {
+      const inserted = this.sections[index + 1];
+      const value = data[dataIndex];
+
+      if (!(inserted > 0 && value instanceof PreparedTokenSlice)) continue;
+
+      const existing = getDocumentSliceNodeKeys(value);
+      const keys = new Map<number, NodeKey>(existing);
+      let added = false;
+      const stack: Array<Readonly<{ id: string | null; textIndex: number }>> =
+        [];
+
+      value.tokens.forEach((token, tokenIndex) => {
+        if (token.kind === 'open') {
+          const offset = value.offsets[tokenIndex];
+
+          if (token.nodeKind === 'element') {
+            const id =
+              typeof token.props.id === 'string' && token.props.id.length > 0
+                ? token.props.id
+                : null;
+
+            if (id && !keys.has(offset)) {
+              const key = elementKeys.get(id);
+
+              if (key) {
+                keys.set(offset, key);
+                added = true;
+              }
+            }
+            stack.push({ id, textIndex: 0 });
+          } else {
+            const top = stack.at(-1);
+
+            if (top?.id && !keys.has(offset)) {
+              const key = textKeysByParent.get(top.id)?.[top.textIndex];
+
+              if (key) {
+                keys.set(offset, key);
+                added = true;
+              }
+            }
+            if (top) {
+              stack[stack.length - 1] = {
+                id: top.id,
+                textIndex: top.textIndex + 1,
+              };
+            }
+            stack.push({ id: null, textIndex: 0 });
+          }
+        } else if (token.kind === 'close') {
+          stack.pop();
+        }
+      });
+
+      if (added) {
+        data[dataIndex] = value.withNodeKeys(keys);
+        changed = true;
+      }
+    }
+
+    return changed ? new RootChange(this.sections, data) : this;
+  }
+
+  /**
    * Bind existing runtime identities to node openings inserted by this change.
    *
    * @internal

@@ -98,7 +98,12 @@ export const shouldRestoreHistoricSelection = <V extends Value>(
   batch: Batch<V>,
   target: 'after' | 'before'
 ) => {
-  if (batch.change.empty) return false;
+  if (batch.change.empty) {
+    return (
+      batch.effects.length === 0 &&
+      (getHistoricSelectionRoot(batch, target) ?? MAIN_ROOT_KEY) === root
+    );
+  }
 
   const historicRoot = getHistoricSelectionRoot(batch, target);
 

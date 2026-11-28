@@ -504,57 +504,124 @@ const extractTextElementDiff = (
   }
 
   const deleteLen = beforeStream.units.length - prefix - suffix;
-
-  if (deleteLen > 0) {
-    steps.push({
-      length: deleteLen,
-      offset: prefix,
-      op: 'delete_text',
-      target: targetId,
-    });
-  }
-
   const insertSlice = afterStream.units.slice(
     prefix,
     afterStream.units.length - suffix
   );
-  let cursor = prefix;
-  let i = 0;
 
-  while (i < insertSlice.length) {
-    const unit = getDefined(insertSlice[i]);
+  const sameExactUnit = (left: V4TextUnit, right: V4TextUnit): boolean => {
+    if (left.kind !== right.kind) return false;
+    if (left.kind === 'char' && right.kind === 'char') {
+      return left.ch === right.ch && jsonEqual(left.marks, right.marks);
+    }
+    if (left.kind === 'inline' && right.kind === 'inline') {
+      return jsonEqual(left.node, right.node);
+    }
+    return false;
+  };
 
-    if (unit.kind === 'inline') {
+  let handledInlineWrap = false;
+
+  if (
+    deleteLen > 0 &&
+    insertSlice.length === 1 &&
+    insertSlice[0]?.kind === 'inline' &&
+    isTextBearingElement(insertSlice[0].node)
+  ) {
+    const wrapper = insertSlice[0].node;
+    const innerUnits = toV4TextStream(wrapper.children).units;
+    const deletedUnits = beforeStream.units.slice(prefix, prefix + deleteLen);
+
+    if (
+      innerUnits.length === deletedUnits.length &&
+      innerUnits.every((unit, index) =>
+        sameExactUnit(unit, getDefined(deletedUnits[index]))
+      )
+    ) {
       steps.push({
-        node: cloneJson(unit.node),
-        op: 'insert_node',
-        to: { id: targetId, offset: cursor },
+        length: deleteLen,
+        node: { ...cloneJson(nodeProps(wrapper)), children: [] },
+        offset: prefix,
+        op: 'wrap_inline',
+        target: targetId,
       });
-      cursor += 1;
-      i += 1;
-      continue;
+      handledInlineWrap = true;
+    }
+  } else if (deleteLen === 1) {
+    const candidate = beforeStream.units[prefix];
+
+    if (candidate?.kind === 'inline' && isTextBearingElement(candidate.node)) {
+      const unwrapped = candidate.node;
+      const inlineId = elementIdOf(unwrapped);
+
+      if (inlineId !== null) {
+        const innerUnits = toV4TextStream(unwrapped.children).units;
+
+        if (
+          innerUnits.length === insertSlice.length &&
+          innerUnits.every((unit, index) =>
+            sameExactUnit(unit, getDefined(insertSlice[index]))
+          )
+        ) {
+          steps.push({
+            id: inlineId,
+            op: 'unwrap_inline',
+            parent: targetId,
+          });
+          handledInlineWrap = true;
+        }
+      }
+    }
+  }
+
+  if (!handledInlineWrap) {
+    if (deleteLen > 0) {
+      steps.push({
+        length: deleteLen,
+        offset: prefix,
+        op: 'delete_text',
+        target: targetId,
+      });
     }
 
-    let text = unit.ch;
-    const { marks } = unit;
+    let cursor = prefix;
+    let i = 0;
 
-    i += 1;
     while (i < insertSlice.length) {
-      const next = getDefined(insertSlice[i]);
+      const unit = getDefined(insertSlice[i]);
 
-      if (next.kind !== 'char' || !jsonEqual(next.marks, marks)) break;
-      text += next.ch;
+      if (unit.kind === 'inline') {
+        steps.push({
+          node: cloneJson(unit.node),
+          op: 'insert_node',
+          to: { id: targetId, offset: cursor },
+        });
+        cursor += 1;
+        i += 1;
+        continue;
+      }
+
+      let text = unit.ch;
+      const { marks } = unit;
+
       i += 1;
-    }
+      while (i < insertSlice.length) {
+        const next = getDefined(insertSlice[i]);
 
-    steps.push({
-      ...(Object.keys(marks).length > 0 ? { marks: cloneJson(marks) } : {}),
-      offset: cursor,
-      op: 'insert_text',
-      target: targetId,
-      text,
-    });
-    cursor += text.length;
+        if (next.kind !== 'char' || !jsonEqual(next.marks, marks)) break;
+        text += next.ch;
+        i += 1;
+      }
+
+      steps.push({
+        ...(Object.keys(marks).length > 0 ? { marks: cloneJson(marks) } : {}),
+        offset: cursor,
+        op: 'insert_text',
+        target: targetId,
+        text,
+      });
+      cursor += text.length;
+    }
   }
 
   if (suffix > 0) {

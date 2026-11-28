@@ -12,6 +12,7 @@ import type { ReadonlyAnchor } from './anchor';
 import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
+  getV4Steps,
   mapDocumentRangeReplacement,
   valueRootIndex,
 } from './change/document-change';
@@ -24,7 +25,14 @@ import {
 } from './change/lazy-root';
 import { getRangeEndpointAssociations } from './change/range-association';
 import { type CarryMap, carryMapOf, type FactedEdge } from './change/record';
-import { isElementNode, type JsonNode } from './change/tokens';
+import {
+  isElementNode,
+  isTextNode,
+  type JsonNode,
+  type JsonPoint,
+} from './change/tokens';
+import { elementStreamLength, isTextBearingElement } from './change/v4/apply';
+import type { V4Step } from './change/v4/types';
 import { reportEditorLifecycleError } from './lifecycle-error';
 import { toPublicRoot } from './public-root';
 import { getValueRecords, withValueRecords } from './record-store';
@@ -547,21 +555,170 @@ const createAnchorHistoryRecovery = (
         roots: Object.freeze([...roots]),
       });
 
+type TargetNodeEntry = Readonly<{
+  contentFrom: number;
+  from: number;
+  kind: 'element' | 'text';
+  path: readonly number[];
+}>;
+
+const mapPointThroughV4ForRecovery = (
+  source: DocumentIndex,
+  target: DocumentIndex,
+  targetById: ReadonlyMap<string, TargetNodeEntry>,
+  steps: readonly V4Step[],
+  sourcePoint: JsonPoint,
+  association: -1 | 1
+): number | null => {
+  if (sourcePoint.path.length < 2) return null;
+
+  const hostPath = sourcePoint.path.slice(0, -1);
+  const leafIndex = sourcePoint.path.at(-1);
+
+  if (leafIndex === undefined) return null;
+
+  let hostNode: JsonNode;
+
+  try {
+    hostNode = source.node(hostPath);
+  } catch {
+    return null;
+  }
+
+  if (
+    !isElementNode(hostNode) ||
+    !isTextBearingElement(hostNode) ||
+    typeof hostNode.id !== 'string' ||
+    hostNode.id.length === 0
+  ) {
+    return null;
+  }
+
+  let { offset } = sourcePoint;
+
+  for (let i = 0; i < leafIndex; i += 1) {
+    const child = hostNode.children[i];
+
+    if (!child) return null;
+    offset += isTextNode(child) ? child.text.length : 1;
+  }
+
+  let { id } = hostNode;
+  let idLen = elementStreamLength(hostNode);
+
+  for (const step of steps) {
+    switch (step.op) {
+      case 'insert_text': {
+        if (step.target === id) {
+          const shifts =
+            association === 1 ? step.offset <= offset : step.offset < offset;
+
+          if (shifts) offset += step.text.length;
+          idLen += step.text.length;
+        }
+        break;
+      }
+      case 'delete_text': {
+        if (step.target === id) {
+          if (offset > step.offset + step.length) {
+            offset -= step.length;
+          } else if (offset > step.offset) {
+            ({ offset } = step);
+          }
+          idLen = Math.max(0, idLen - step.length);
+        }
+        break;
+      }
+      case 'split_node': {
+        if (step.id === id) {
+          const movesRight =
+            association === 1 ? offset >= step.at : offset > step.at;
+
+          if (movesRight) {
+            id = step.newId;
+            offset -= step.at;
+            idLen = Math.max(0, idLen - step.at);
+          } else {
+            idLen = step.at;
+          }
+        }
+        break;
+      }
+      case 'join_nodes': {
+        if (step.source === id) {
+          const targetEntry = targetById.get(step.target);
+
+          if (!targetEntry) return null;
+          id = step.target;
+          const targetHost = target.node(targetEntry.path);
+
+          if (!isElementNode(targetHost)) return null;
+          offset += Math.max(0, elementStreamLength(targetHost) - idLen);
+          idLen = elementStreamLength(targetHost);
+        }
+        break;
+      }
+      case 'remove_node': {
+        if (step.id === id) return null;
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+
+  const destEntry = targetById.get(id);
+
+  if (!destEntry) return null;
+
+  const destHost = target.node(destEntry.path);
+
+  if (!isElementNode(destHost) || !isTextBearingElement(destHost)) return null;
+
+  let cursor = 0;
+  let lastTextIndex = -1;
+  let lastTextLength = 0;
+
+  for (let i = 0; i < destHost.children.length; i += 1) {
+    const child = destHost.children[i];
+
+    if (isTextNode(child)) {
+      const end = cursor + child.text.length;
+
+      if (offset >= cursor && offset <= end) {
+        return target.positionAt({
+          offset: offset - cursor,
+          path: [...destEntry.path, i],
+        });
+      }
+      lastTextIndex = i;
+      lastTextLength = child.text.length;
+      cursor = end;
+    } else {
+      cursor += 1;
+    }
+  }
+
+  if (lastTextIndex !== -1) {
+    return target.positionAt({
+      offset: lastTextLength,
+      path: [...destEntry.path, lastTextIndex],
+    });
+  }
+
+  return null;
+};
+
 const mapRecoveryPosition = (
   change: DocumentChange,
   position: number,
   association: -1 | 1,
   root: string,
   source?: DocumentIndex,
-  targetNodes?: ReadonlyMap<
-    JsonNode,
-    Readonly<{
-      contentFrom: number;
-      from: number;
-      kind: 'element' | 'text';
-      path: readonly number[];
-    }>
-  >
+  target?: DocumentIndex,
+  targetNodes?: ReadonlyMap<JsonNode, TargetNodeEntry>,
+  targetById?: ReadonlyMap<string, TargetNodeEntry>
 ) => {
   if (position === RECOVERY_NULL_POSITION) return null;
   const options = {
@@ -585,6 +742,23 @@ const mapRecoveryPosition = (
     return targetEntry.contentFrom + sourcePoint.offset;
   }
 
+  if (source && target && sourcePoint && targetById) {
+    const steps = getV4Steps(change);
+
+    if (steps && steps.length > 0) {
+      const mappedById = mapPointThroughV4ForRecovery(
+        source,
+        target,
+        targetById,
+        steps,
+        sourcePoint,
+        association
+      );
+
+      if (mappedById !== null) return mappedById;
+    }
+  }
+
   return change.mapPosition(position, options);
 };
 
@@ -604,18 +778,8 @@ export const mapAnchorHistoryRecovery = (
   };
   const sourceDocuments = new Map<string, DocumentIndex>();
   const targetDocuments = new Map<string, DocumentIndex>();
-  const targetNodes = new Map<
-    string,
-    Map<
-      JsonNode,
-      Readonly<{
-        contentFrom: number;
-        from: number;
-        kind: 'element' | 'text';
-        path: readonly number[];
-      }>
-    >
-  >();
+  const targetNodes = new Map<string, Map<JsonNode, TargetNodeEntry>>();
+  const targetIds = new Map<string, Map<string, TargetNodeEntry>>();
   const mappedPoints = new Map<
     string,
     Readonly<{
@@ -643,20 +807,44 @@ export const mapAnchorHistoryRecovery = (
 
     return document;
   };
-  const targetNodeIndex = (root: string) => {
+  const ensureTargetIndexes = (root: string) => {
     let index = targetNodes.get(root);
+    let byId = targetIds.get(root);
 
-    if (!index) {
+    if (!index || !byId) {
       const document = targetDocument(root);
 
       index = new Map();
+      byId = new Map();
       for (const entry of document.nodeRangesTouching(0, document.length)) {
-        index.set(document.node(entry.path), entry);
+        const node = document.node(entry.path);
+
+        index.set(node, entry);
+        if (
+          isElementNode(node) &&
+          typeof node.id === 'string' &&
+          node.id.length > 0
+        ) {
+          byId.set(node.id, entry);
+        }
       }
       targetNodes.set(root, index);
+      targetIds.set(root, byId);
     }
 
-    return index;
+    return { byId, index };
+  };
+  const targetNodeIndex = (root: string) => ensureTargetIndexes(root).index;
+  const targetIdIndex = (root: string) => ensureTargetIndexes(root).byId;
+  const lookupTargetEntry = (root: string, node: JsonNode) => {
+    const { byId, index } = ensureTargetIndexes(root);
+
+    return (
+      index.get(node) ??
+      (isElementNode(node) && typeof node.id === 'string' && node.id.length > 0
+        ? byId.get(node.id)
+        : undefined)
+    );
   };
   const mapPointPosition = (
     root: string,
@@ -679,7 +867,9 @@ export const mapAnchorHistoryRecovery = (
       association,
       root,
       sourceDocument(root),
-      targetNodeIndex(root)
+      targetDocument(root),
+      targetNodeIndex(root),
+      targetIdIndex(root)
     );
 
     points.set(position, mapped);
@@ -724,11 +914,11 @@ export const mapAnchorHistoryRecovery = (
         ? source.childBoundaryAt(position)
         : null;
     const movedEntry = sourceEntry
-      ? targetNodeIndex(root).get(source.node(sourceEntry.path))
+      ? lookupTargetEntry(root, source.node(sourceEntry.path))
       : sourceBoundary && sourceBoundary.parentPath.length > 0
-        ? targetNodeIndex(root).get(source.node(sourceBoundary.parentPath))
+        ? lookupTargetEntry(root, source.node(sourceBoundary.parentPath))
         : null;
-    const movedPosition =
+    let movedPosition =
       sourceEntry && movedEntry
         ? movedEntry.from
         : sourceBoundary && movedEntry
@@ -737,6 +927,31 @@ export const mapAnchorHistoryRecovery = (
               sourceBoundary.index
             )
           : null;
+
+    if (
+      movedPosition === null &&
+      sourceEntry &&
+      sourceEntry.kind === 'text' &&
+      sourceEntry.path.length >= 2
+    ) {
+      const parentPath = sourceEntry.path.slice(0, -1);
+      const leafIndex = sourceEntry.path.at(-1) ?? 0;
+      const movedParent = lookupTargetEntry(root, source.node(parentPath));
+
+      if (movedParent) {
+        const destParent = targetDocument(root).node(movedParent.path);
+
+        if (
+          isElementNode(destParent) &&
+          leafIndex < destParent.children.length
+        ) {
+          movedPosition = targetDocument(root).nodeRange([
+            ...movedParent.path,
+            leafIndex,
+          ]).from;
+        }
+      }
+    }
 
     return (
       movedPosition ?? mapRecoveryPosition(change, position, association, root)

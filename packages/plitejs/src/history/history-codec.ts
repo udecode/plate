@@ -23,6 +23,7 @@ import {
   valueRootIndex,
   withoutRetainedRecordSets,
 } from '../core/change/document-change';
+import { jsonEqual } from '../core/change/json';
 import {
   type ChangeFacts,
   factsFromJSON,
@@ -55,6 +56,7 @@ import {
   decodeEditorSelection,
   encodeEditorSelection,
 } from '../core/selection-protocol';
+import { isBoundToSharedRoom } from '../core/shared-room';
 import { decodeEditorEffect, encodeEditorEffect } from '../core/value-codec';
 import type { AnyEditor } from '../interfaces/editor';
 import type { SchemaRecordSet } from '../interfaces/schema';
@@ -72,6 +74,10 @@ import {
   withHistoryProgram,
   withHistoryStepId,
 } from './history-state';
+import {
+  collectLiveElementIds,
+  remintForeignRestoredV4Change,
+} from './v4-history-rebase';
 
 export const isHistorySchemaIdentity = (
   value: unknown
@@ -402,6 +408,63 @@ const alignRootChangeToCarriedRuns = (
   }
 
   return RootChange.fromJSON(sections);
+};
+
+const remintRestoredBatch = <V extends Value>(
+  batch: Batch<V>,
+  liveIds: ReadonlySet<string>,
+  currentScope: string,
+  mint: () => string,
+  renamed: Map<string, string>
+): Batch<V> => {
+  const change = remintForeignRestoredV4Change(
+    batch.change,
+    liveIds,
+    currentScope,
+    mint,
+    renamed
+  );
+  const unsettle = batch.unsettle
+    ? remintForeignRestoredV4Change(
+        batch.unsettle,
+        liveIds,
+        currentScope,
+        mint,
+        renamed
+      )
+    : undefined;
+  const rest = batch.rest
+    ? remintForeignRestoredV4Change(
+        batch.rest,
+        liveIds,
+        currentScope,
+        mint,
+        renamed
+      )
+    : undefined;
+
+  if (
+    change === batch.change &&
+    unsettle === batch.unsettle &&
+    rest === batch.rest
+  ) {
+    return batch;
+  }
+
+  const next: Batch<V> = freezeHistoryBatch({
+    ...batch,
+    change,
+    ...(unsettle ? { unsettle } : {}),
+    ...(rest ? { rest } : {}),
+  });
+
+  withHistoryFacts(next, historyFactsOf(batch));
+  withHistoryStepId(next, historyBatchStepId(batch));
+  const fallback = historyFallbackOf(batch);
+
+  if (fallback !== undefined) withHistoryFallback(next, fallback);
+
+  return next;
 };
 
 const bindHistoryBatch = <V extends Value>(
@@ -756,10 +819,35 @@ const validateHistory = <V extends Value>(
     return { bases, fallbacks, redos: history.redos, undos: history.undos };
   }
 
+  const liveIds =
+    recordPrograms && isBoundToSharedRoom(editor)
+      ? collectLiveElementIds(validateAgainst)
+      : null;
+  const remint = (batches: ReadonlyArray<Batch<V>>) => {
+    if (!liveIds) return batches;
+
+    const { elementIdMint } = getCompiledEditorSchema(editor);
+    const currentScope = elementIdMint.scope;
+    const renamed = new Map<string, string>();
+    const out = new Array<Batch<V>>(batches.length);
+
+    for (let index = batches.length - 1; index >= 0; index -= 1) {
+      out[index] = remintRestoredBatch(
+        batches[index],
+        liveIds,
+        currentScope,
+        elementIdMint.next,
+        renamed
+      );
+    }
+
+    return out;
+  };
+
   const kept = (batches: ReadonlyArray<Batch<V>>, direction: 'redo' | 'undo') =>
     validateBatches(
       editor,
-      batches,
+      remint(batches),
       direction,
       validateAgainst,
       recordPrograms,
@@ -920,7 +1008,10 @@ export const decodeHistoryValue = <V extends Value>(
         decodeBatch(editor, input, effectTypes, direction)
       );
 
-      return options.restore && batch.change.empty && batch.effects.length === 0
+      return options.restore &&
+        batch.change.empty &&
+        batch.effects.length === 0 &&
+        jsonEqual(batch.selectionBefore, batch.selectionAfter)
         ? []
         : [batch];
     });

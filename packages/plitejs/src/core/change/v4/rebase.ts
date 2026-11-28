@@ -28,6 +28,7 @@ import {
   transformWrapInlineWithText,
   type V4EscalationReason,
   type V4PairTransform,
+  type V4RebaseOptions,
   type V4StepOutcome,
 } from './text-ot';
 import {
@@ -505,6 +506,10 @@ const transformSplitWithOther = (
       );
     }
 
+    return { ok: false, reason: 'inline-wrap-crossing' };
+  }
+
+  if (other.op === 'unwrap_inline' && other.id === split.id) {
     return { ok: false, reason: 'inline-wrap-crossing' };
   }
 
@@ -1175,7 +1180,8 @@ const transformInlineRemoveWithText = (
 export const transformV4StepPair = (
   doc: DocSnapshotIndex,
   a: V4Step,
-  b: V4Step
+  b: V4Step,
+  options?: V4RebaseOptions
 ): V4PairTransform => {
   // 1. Register ops (set_register)
   if (a.op === 'set_register' || b.op === 'set_register') {
@@ -1723,7 +1729,7 @@ export const transformV4StepPair = (
       return { aPrime: [a], bOutcome: 'applied', bPrime: [b], ok: true };
     }
 
-    return transformSameTargetTextPair(a, b);
+    return transformSameTargetTextPair(a, b, options);
   }
 
   // 11. move_node vs remaining (move_node, insert_node, text ops)
@@ -1970,7 +1976,8 @@ export type V4RebaseResult =
 const transformStepArrays = (
   base: JsonEditorValue,
   aSteps: readonly V4Step[],
-  bSteps: readonly V4Step[]
+  bSteps: readonly V4Step[],
+  options?: V4RebaseOptions
 ):
   | Readonly<{
       aPrime: readonly V4Step[];
@@ -2018,7 +2025,8 @@ const transformStepArrays = (
                 const pairRes = transformV4StepPair(
                   indexDoc(leafDoc),
                   getDefined(leafA[0]),
-                  bAtom
+                  bAtom,
+                  options
                 );
 
                 if (!pairRes.ok) return pairRes;
@@ -2030,7 +2038,12 @@ const transformStepArrays = (
                   leafA = pairRes.aPrime;
                   subNextB.push(...pairRes.bPrime);
                 } else {
-                  const nested = transformStepArrays(leafDoc, leafA, [bAtom]);
+                  const nested = transformStepArrays(
+                    leafDoc,
+                    leafA,
+                    [bAtom],
+                    options
+                  );
 
                   if (!nested.ok) return nested;
                   if (nested.hadSatisfied) hadSatisfied = true;
@@ -2091,7 +2104,8 @@ const transformStepArrays = (
 export const rebaseV4Changes = (
   base: JsonEditorValue,
   aSteps: readonly V4Step[],
-  bSteps: readonly V4Step[]
+  bSteps: readonly V4Step[],
+  options?: V4RebaseOptions
 ): V4RebaseResult => {
   if (aSteps.length === 0) {
     return {
@@ -2118,7 +2132,7 @@ export const rebaseV4Changes = (
   let rowBase = base;
 
   for (const bStep of bSteps) {
-    const res = transformStepArrays(rowBase, curA, [bStep]);
+    const res = transformStepArrays(rowBase, curA, [bStep], options);
 
     if (!res.ok) return res;
     bPrime.push(...res.bPrime);

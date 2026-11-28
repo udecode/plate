@@ -36,6 +36,11 @@ export type V4TextStep = Extract<
   { op: 'delete_text' | 'format_text' | 'insert_text' }
 >;
 
+export type V4RebaseOptions = Readonly<{
+  formatConflictWinner?: 'a' | 'b';
+  insertTieBreak?: 'a' | 'b';
+}>;
+
 const propDeltaOf = (step: V4PropDelta): V4PropDelta => ({
   ...(step.add ? { add: step.add } : {}),
   ...(step.remove ? { remove: step.remove } : {}),
@@ -254,15 +259,20 @@ const splitFormatForEmbeddedInsert = (
  */
 export const transformSameTargetTextPair = (
   a: V4TextStep,
-  b: V4TextStep
+  b: V4TextStep,
+  options?: V4RebaseOptions
 ): V4PairTransform => {
   const { target } = a;
 
   if (a.op === 'insert_text' && b.op === 'insert_text') {
     const lenA = a.text.length;
     const lenB = b.text.length;
+    const aGoesLeft =
+      options?.insertTieBreak === 'b'
+        ? a.offset < b.offset
+        : a.offset <= b.offset;
 
-    if (a.offset <= b.offset) {
+    if (aGoesLeft) {
       return {
         aPrime: [a],
         bOutcome: 'applied',
@@ -545,29 +555,88 @@ export const transformSameTargetTextPair = (
     };
   }
 
-  // format_text vs format_text (unified LWW room-order conflict law: b wins)
   const fA = a as Extract<V4Step, { op: 'format_text' }>;
   const fB = b as Extract<V4Step, { op: 'format_text' }>;
+  const aWinsFormat = options?.formatConflictWinner === 'a';
 
-  if (fA.length === 0 && fB.length === 0) {
-    if (fA.offset !== fB.offset) {
-      return { aPrime: [fA], bOutcome: 'applied', bPrime: [fB], ok: true };
-    }
+  const stripLoserAgainstWinner = (
+    loser: Extract<V4Step, { op: 'format_text' }>,
+    winner: Extract<V4Step, { op: 'format_text' }>
+  ): readonly V4Step[] => {
+    const loserDelta = propDeltaOf(loser);
+    const winnerDelta = propDeltaOf(winner);
 
-    const remDelta = stripOverriddenPropDelta(propDeltaOf(fA), propDeltaOf(fB));
+    if (loser.length === 0) {
+      const remDelta = stripOverriddenPropDelta(loserDelta, winnerDelta);
 
-    return {
-      aPrime: isEmptyPropDelta(remDelta)
+      return isEmptyPropDelta(remDelta)
         ? []
         : [
             {
               ...remDelta,
               length: 0,
-              offset: fA.offset,
+              offset: loser.offset,
               op: 'format_text',
               target,
             },
-          ],
+          ];
+    }
+
+    const lStart = loser.offset;
+    const lEnd = loser.offset + loser.length;
+    const ovStart = Math.max(lStart, winner.offset);
+    const ovEnd = Math.min(lEnd, winner.offset + winner.length);
+    const ovDelta = stripOverriddenPropDelta(loserDelta, winnerDelta);
+    const out: V4Step[] = [];
+
+    if (lStart < ovStart) {
+      out.push({
+        ...loserDelta,
+        length: ovStart - lStart,
+        offset: lStart,
+        op: 'format_text',
+        target,
+      });
+    }
+    if (!isEmptyPropDelta(ovDelta)) {
+      out.push({
+        ...ovDelta,
+        length: ovEnd - ovStart,
+        offset: ovStart,
+        op: 'format_text',
+        target,
+      });
+    }
+    if (ovEnd < lEnd) {
+      out.push({
+        ...loserDelta,
+        length: lEnd - ovEnd,
+        offset: ovEnd,
+        op: 'format_text',
+        target,
+      });
+    }
+
+    return out;
+  };
+
+  if (fA.length === 0 && fB.length === 0) {
+    if (fA.offset !== fB.offset) {
+      return { aPrime: [fA], bOutcome: 'applied', bPrime: [fB], ok: true };
+    }
+    if (aWinsFormat) {
+      const bPrime = stripLoserAgainstWinner(fB, fA);
+
+      return {
+        aPrime: [fA],
+        bOutcome: bPrime.length > 0 ? 'applied' : 'satisfied',
+        bPrime,
+        ok: true,
+      };
+    }
+
+    return {
+      aPrime: stripLoserAgainstWinner(fA, fB),
       bOutcome: 'applied',
       bPrime: [fB],
       ok: true,
@@ -578,52 +647,26 @@ export const transformSameTargetTextPair = (
     return { aPrime: [fA], bOutcome: 'applied', bPrime: [fB], ok: true };
   }
 
-  const aStart = fA.offset;
-  const aEnd = fA.offset + fA.length;
-  const bStart = fB.offset;
-  const bEnd = fB.offset + fB.length;
-
-  if (aEnd <= bStart || bEnd <= aStart) {
+  if (
+    fA.offset + fA.length <= fB.offset ||
+    fB.offset + fB.length <= fA.offset
+  ) {
     return { aPrime: [fA], bOutcome: 'applied', bPrime: [fB], ok: true };
   }
 
-  const ovStart = Math.max(aStart, bStart);
-  const ovEnd = Math.min(aEnd, bEnd);
-  const aDelta = propDeltaOf(fA);
-  const bDelta = propDeltaOf(fB);
-  const ovDelta = stripOverriddenPropDelta(aDelta, bDelta);
-  const aPrime: V4Step[] = [];
+  if (aWinsFormat) {
+    const bPrime = stripLoserAgainstWinner(fB, fA);
 
-  if (aStart < ovStart) {
-    aPrime.push({
-      ...aDelta,
-      length: ovStart - aStart,
-      offset: aStart,
-      op: 'format_text',
-      target,
-    });
-  }
-  if (!isEmptyPropDelta(ovDelta)) {
-    aPrime.push({
-      ...ovDelta,
-      length: ovEnd - ovStart,
-      offset: ovStart,
-      op: 'format_text',
-      target,
-    });
-  }
-  if (ovEnd < aEnd) {
-    aPrime.push({
-      ...aDelta,
-      length: aEnd - ovEnd,
-      offset: ovEnd,
-      op: 'format_text',
-      target,
-    });
+    return {
+      aPrime: [fA],
+      bOutcome: bPrime.length > 0 ? 'applied' : 'satisfied',
+      bPrime,
+      ok: true,
+    };
   }
 
   return {
-    aPrime,
+    aPrime: stripLoserAgainstWinner(fA, fB),
     bOutcome: 'applied',
     bPrime: [fB],
     ok: true,

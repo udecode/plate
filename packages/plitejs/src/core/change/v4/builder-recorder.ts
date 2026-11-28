@@ -98,6 +98,10 @@ export class V4BuilderRecorder {
     return this.steps?.length ?? 0;
   }
 
+  get hasPending(): boolean {
+    return this.pending.length > 0;
+  }
+
   get recorded(): readonly V4Step[] | null {
     if (this.steps === null || this.pending.length > 0) return null;
 
@@ -860,7 +864,7 @@ export class V4BuilderRecorder {
         this.steps.push({
           id: childId,
           op: 'move_node',
-          to: { id: info.parentId, index: info.childIndex + k },
+          to: { id: info.parentId, index: info.childIndex + 1 + k },
         });
       }
       this.steps.push({ id: nodeId, op: 'remove_node' });
@@ -879,7 +883,7 @@ export class V4BuilderRecorder {
       this.steps.push({
         id: childId,
         op: 'move_node',
-        to: { index: index + k, root },
+        to: { index: index + 1 + k, root },
       });
     }
     this.steps.push({ id: nodeId, op: 'remove_node' });

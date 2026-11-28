@@ -2,6 +2,11 @@ import assert from 'node:assert/strict';
 import { isDeepStrictEqual } from 'node:util';
 
 import {
+  bindV4DocumentChange,
+  createV4DocumentChange,
+  getV4Steps,
+} from '../src/core/change/document-change';
+import {
   isElementNode,
   type JsonEditorValue,
   type JsonElementNode,
@@ -15,6 +20,23 @@ import {
 import { invertV4Steps } from '../src/core/change/v4/invert';
 import { rebaseV4Changes } from '../src/core/change/v4/rebase';
 import { V4_REGISTER_SET, type V4Step } from '../src/core/change/v4/types';
+import { getCompiledEditorSchema } from '../src/core/plugin-registry';
+import { history } from '../src/history';
+import {
+  createEditor,
+  defineEditorSchema,
+  editorCommands,
+  property,
+  schema,
+  SelectionApi,
+  target as schemaTarget,
+} from '../src/index';
+import type { LaterEntry } from '../src/sync/server/take-back';
+import {
+  v4OwnTakeBack,
+  v4PutEntryAt,
+  v4TakeBack,
+} from '../src/sync/server/v4-take-back';
 
 /**
  * Independent Phase A model oracle for the clean-room MIT v4 14 x 14 2D hybrid
@@ -1138,13 +1160,516 @@ const runFuzz = (count: number) => {
   return { converged, escalated };
 };
 
+const OracleEditorSchema = defineEditorSchema('schema:v4-intent-oracle', {
+  elements: {
+    heading: { content: schema.content.text() },
+    paragraph: { content: schema.content.text() },
+  },
+  id: 'v4-intent-oracle',
+  properties: [
+    schema.elementProperty('align', property.string(), {
+      target: schemaTarget.types(['paragraph', 'heading']),
+    }),
+    schema.textProperty('bold', property.boolean()),
+    schema.textProperty('italic', property.boolean()),
+  ],
+  root: schema.content.types(['paragraph', 'heading'], {
+    default: { type: 'paragraph' },
+  }),
+  version: 1,
+});
+
+const stripNodeIds = (nodes: readonly JsonNode[]): unknown =>
+  nodes.map((node) => {
+    if (!isElementNode(node)) return node;
+    const { id: _id, ...rest } = node;
+
+    return { ...rest, children: stripNodeIds(node.children) };
+  });
+
+const textLinesOf = (value: JsonEditorValue): string =>
+  value.children
+    .map((node) =>
+      isElementNode(node)
+        ? node.children
+            .map((child) => ('text' in child ? child.text : ''))
+            .join('')
+        : ''
+    )
+    .join('\n');
+
+const runShippedRoomTakeBackOracle = (fuzzCount: number) => {
+  const refEditor = createEditor({ plugins: [OracleEditorSchema] });
+  const compiledSchema = getCompiledEditorSchema(refEditor);
+  let checked = 0;
+  let accepted = 0;
+  let refused = 0;
+
+  {
+    const base: JsonEditorValue = {
+      children: [p('p1', 'hello'), p('p2', 'world')],
+    };
+    const aliceSteps: V4Step[] = [
+      { offset: 0, op: 'insert_text', target: 'p1', text: 'A:' },
+    ];
+    const bobSteps: V4Step[] = [
+      { offset: 5, op: 'insert_text', target: 'p2', text: '!' },
+    ];
+    const aliceChange = bindV4DocumentChange(
+      createV4DocumentChange(aliceSteps),
+      base
+    );
+    const afterAlice = aliceChange.apply(base);
+    const bobChange = bindV4DocumentChange(
+      createV4DocumentChange(bobSteps),
+      afterAlice
+    );
+    const head = bobChange.apply(afterAlice);
+    const entries: LaterEntry[] = [
+      { after: afterAlice, before: base, change: aliceChange, writer: 'alice' },
+      { after: head, before: afterAlice, change: bobChange, writer: 'bob' },
+    ];
+    const taken = v4TakeBack(v4PutEntryAt(entries, 0), head, compiledSchema);
+
+    assert.ok(taken, '[B1] disjoint room take-back must succeed');
+    const result = taken.apply(head);
+
+    assert.ok(
+      docsEqualWithIds(result, {
+        children: [p('p1', 'hello'), p('p2', 'world!')],
+      }),
+      `[B1] unexpected result: ${JSON.stringify(result)}`
+    );
+
+    const own = v4OwnTakeBack(
+      entries,
+      'alice',
+      { access: 'edit', actor: 'alice', decide: true },
+      () => ({ kind: 'covered' }),
+      head,
+      result,
+      compiledSchema
+    );
+
+    assert.ok(own, '[B1] v4OwnTakeBack must admit matching take-back');
+    assert.ok(docsEqualWithIds(own.apply(head), result));
+    checked += 1;
+    accepted += 1;
+  }
+
+  {
+    const base: JsonEditorValue = {
+      children: [p('p1', 'hello'), p('p2', 'world')],
+    };
+    const aliceChange = bindV4DocumentChange(
+      createV4DocumentChange([
+        { offset: 0, op: 'insert_text', target: 'p1', text: 'A:' },
+      ]),
+      base
+    );
+    const afterAlice = aliceChange.apply(base);
+    const bobChange = bindV4DocumentChange(
+      createV4DocumentChange([
+        { offset: 7, op: 'insert_text', target: 'p1', text: '!' },
+      ]),
+      afterAlice
+    );
+    const head = bobChange.apply(afterAlice);
+    const entries: LaterEntry[] = [
+      { after: afterAlice, before: base, change: aliceChange, writer: 'alice' },
+      { after: head, before: afterAlice, change: bobChange, writer: 'bob' },
+    ];
+    const taken = v4TakeBack(v4PutEntryAt(entries, 0), head, compiledSchema);
+
+    assert.equal(
+      taken,
+      null,
+      '[B2] overlapping other-writer edit must refuse take-back'
+    );
+    checked += 1;
+    refused += 1;
+  }
+
+  {
+    const base: JsonEditorValue = { children: [p('p1', 'abcde')] };
+    const delChange = bindV4DocumentChange(
+      createV4DocumentChange([
+        { length: 3, offset: 1, op: 'delete_text', target: 'p1' },
+      ]),
+      base
+    );
+    const afterDel = delChange.apply(base);
+    const insChange = bindV4DocumentChange(
+      createV4DocumentChange([
+        { offset: 1, op: 'insert_text', target: 'p1', text: 'X' },
+      ]),
+      afterDel
+    );
+    const head = insChange.apply(afterDel);
+    const entries: LaterEntry[] = [
+      { after: afterDel, before: base, change: delChange, writer: 'alice' },
+      { after: head, before: afterDel, change: insChange, writer: 'alice' },
+    ];
+    const taken = v4TakeBack(v4PutEntryAt(entries, 0), head, compiledSchema);
+
+    assert.ok(taken, '[B3] same-writer split-delete take-back must succeed');
+    const result = taken.apply(head);
+
+    assert.ok(
+      textLinesOf(result).includes('X') && textLinesOf(result).length === 6,
+      `[B3] expected X plus restored bcd, got ${textLinesOf(result)}`
+    );
+    checked += 1;
+    accepted += 1;
+  }
+
+  for (let seed = 1; seed <= fuzzCount; seed += 1) {
+    const rng = makeRng(seed * 1_103_515_245 + 12_345);
+    const base: JsonEditorValue = {
+      children: [p('p1', 'alpha'), p('p2', 'bravo'), p('p3', 'charlie')],
+    };
+    const aliceTarget = rng() < 0.5 ? 'p1' : 'p2';
+    const disjoint = rng() < 0.7;
+    const bobTarget = disjoint
+      ? aliceTarget === 'p1'
+        ? 'p3'
+        : 'p1'
+      : aliceTarget;
+    const aliceStep: V4Step =
+      rng() < 0.5
+        ? {
+            offset: Math.floor(rng() * 5),
+            op: 'insert_text',
+            target: aliceTarget,
+            text: `a${seed}`,
+          }
+        : {
+            length: 2,
+            offset: 1,
+            op: 'format_text',
+            set: { bold: true },
+            target: aliceTarget,
+          };
+    const bobStep: V4Step =
+      rng() < 0.5
+        ? {
+            offset: Math.floor(rng() * 5),
+            op: 'insert_text',
+            target: bobTarget,
+            text: `b${seed}`,
+          }
+        : {
+            id: bobTarget,
+            op: 'set_props',
+            set: { align: 'center' },
+          };
+
+    const aliceChange = bindV4DocumentChange(
+      createV4DocumentChange([aliceStep]),
+      base
+    );
+    const afterAlice = aliceChange.apply(base);
+    const bobChange = bindV4DocumentChange(
+      createV4DocumentChange([bobStep]),
+      afterAlice
+    );
+    const head = bobChange.apply(afterAlice);
+    const entries: LaterEntry[] = [
+      { after: afterAlice, before: base, change: aliceChange, writer: 'alice' },
+      { after: head, before: afterAlice, change: bobChange, writer: 'bob' },
+    ];
+    const taken = v4TakeBack(v4PutEntryAt(entries, 0), head, compiledSchema);
+
+    checked += 1;
+    if (disjoint) {
+      assert.ok(taken, `[B4 seed=${seed}] disjoint take-back must succeed`);
+      const actual = taken.apply(head);
+      const expected = applyV4Steps(base, [bobStep]);
+
+      assert.ok(
+        docsEqualWithIds(actual, expected),
+        `[B4 seed=${seed}] disjoint room take-back diverged!\nactual=${JSON.stringify(actual)}\nexpected=${JSON.stringify(expected)}`
+      );
+      accepted += 1;
+    } else {
+      assert.equal(
+        taken,
+        null,
+        `[B4 seed=${seed}] overlapping other-writer take-back must refuse`
+      );
+      refused += 1;
+    }
+  }
+
+  return { accepted, checked, refused };
+};
+
+const runShippedEditorUndoOracle = (fuzzCount: number) => {
+  let checked = 0;
+
+  {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'abcde' }], type: 'paragraph' }],
+      plugins: [OracleEditorSchema, history()],
+    });
+
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        },
+      });
+    });
+    assert.equal(editor.api.history.undo().status, 'applied');
+    editor.update({ history: 'skip', tags: ['collaboration'] }, (tx) => {
+      tx.text.insert('X', { at: { offset: 2, path: [0, 0] } });
+    });
+    assert.equal(editor.api.history.redo().status, 'applied');
+    assert.equal(textLinesOf(editor.read.value()), 'aXe');
+    assert.equal(editor.api.history.undo().status, 'applied');
+    assert.equal(textLinesOf(editor.read.value()), 'abXcde');
+    assert.equal(editor.api.history.redo().status, 'applied');
+    assert.equal(textLinesOf(editor.read.value()), 'aXe');
+    checked += 1;
+  }
+
+  {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'first' }], type: 'paragraph' },
+        { children: [{ text: 'second' }], type: 'paragraph' },
+      ],
+      plugins: [OracleEditorSchema, history()],
+    });
+    const firstId = (editor.read.children()[0] as { id?: string }).id;
+
+    editor.update((tx) => {
+      tx.selection.set(
+        SelectionApi.text({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        })
+      );
+      tx.command(editorCommands.insertBreak);
+    });
+    assert.equal((editor.read.children()[1] as { id?: string }).id, firstId);
+    editor.update({ history: 'skip', tags: ['collaboration'] }, (tx) => {
+      tx.text.insert('!', { at: { offset: 5, path: [1, 0] } });
+      tx.nodes.move({ at: [1], to: [2] });
+    });
+    assert.equal(editor.api.history.undo().status, 'applied');
+    assert.deepEqual(stripNodeIds(editor.read.children()), [
+      { children: [{ text: 'second' }], type: 'paragraph' },
+      { children: [{ text: 'first!' }], type: 'paragraph' },
+    ]);
+    assert.equal((editor.read.children()[1] as { id?: string }).id, firstId);
+    checked += 1;
+  }
+
+  {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'ab' }], type: 'paragraph' },
+        { children: [{ text: 'cd' }], type: 'paragraph' },
+      ],
+      plugins: [OracleEditorSchema, history()],
+    });
+    const id0 = (editor.read.children()[0] as { id?: string }).id;
+    const id1 = (editor.read.children()[1] as { id?: string }).id;
+
+    editor.update((tx) => {
+      tx.nodes.merge({ at: [1] });
+    });
+    editor.update({ history: 'skip', tags: ['collaboration'] }, (tx) => {
+      tx.text.insert('X', { at: { offset: 3, path: [0, 0] } });
+    });
+    assert.equal(editor.api.history.undo().status, 'applied');
+    assert.equal(textLinesOf(editor.read.value()), 'ab\ncXd');
+    assert.equal((editor.read.children()[0] as { id?: string }).id, id0);
+    assert.equal((editor.read.children()[1] as { id?: string }).id, id1);
+    checked += 1;
+  }
+
+  {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'abc' }], type: 'paragraph' }],
+      plugins: [OracleEditorSchema, history()],
+    });
+
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        },
+      });
+    });
+    editor.update({ history: 'skip', tags: ['collaboration'] }, (tx) => {
+      tx.text.insert('X', { at: { offset: 0, path: [0, 0] } });
+    });
+    assert.equal(editor.api.history.undo().status, 'applied');
+    assert.equal(
+      textLinesOf(editor.read.value()),
+      'aXbc',
+      '[C3b] equal-offset undo must restore local char before peer insert'
+    );
+    checked += 1;
+  }
+
+  for (let seed = 1; seed <= fuzzCount; seed += 1) {
+    const rng = makeRng(seed * 1_664_525 + 1_013_904_223);
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'abcdef' }], type: 'paragraph' },
+        { children: [{ text: 'ghijkl' }], type: 'paragraph' },
+        { children: [{ text: 'mnopqr' }], type: 'paragraph' },
+      ],
+      plugins: [OracleEditorSchema, history()],
+    });
+    const localBlock = Math.floor(rng() * 3);
+    const localKind = Math.floor(rng() * 4);
+
+    editor.update((tx) => {
+      if (localKind === 0) {
+        const off = Math.floor(rng() * 6);
+
+        tx.text.insert(`L${seed % 9}`, {
+          at: { offset: off, path: [localBlock, 0] },
+        });
+      } else if (localKind === 1) {
+        const off = Math.floor(rng() * 4);
+
+        tx.text.delete({
+          at: {
+            anchor: { offset: off, path: [localBlock, 0] },
+            focus: { offset: off + 2, path: [localBlock, 0] },
+          },
+        });
+      } else if (localKind === 2) {
+        const off = Math.floor(rng() * 4);
+
+        tx.selection.set(
+          SelectionApi.text({
+            anchor: { offset: off, path: [localBlock, 0] },
+            focus: { offset: off + 2, path: [localBlock, 0] },
+          })
+        );
+        tx.marks.add('bold', true);
+      } else {
+        tx.nodes.set({ align: 'right' }, { at: [localBlock] });
+      }
+    });
+
+    const localCommit = editor.read.lastCommit();
+
+    assert.ok(localCommit, `[C4 seed=${seed}] local commit`);
+    const localBase = localCommit.before;
+    const localAfter = localCommit.after;
+    const localSteps = getV4Steps(localCommit.changes);
+
+    assert.ok(
+      localSteps && localSteps.length > 0,
+      `[C4 seed=${seed}] v4 steps`
+    );
+
+    const peerBlock = Math.floor(rng() * 3);
+    const peerKind = Math.floor(rng() * 4);
+
+    editor.update({ history: 'skip', tags: ['collaboration'] }, (tx) => {
+      const firstLeaf = tx.children()[peerBlock]?.children?.[0];
+      const len =
+        firstLeaf && 'text' in firstLeaf && typeof firstLeaf.text === 'string'
+          ? firstLeaf.text.length
+          : 0;
+
+      if (peerKind === 0) {
+        const off = Math.floor(rng() * (len + 1));
+
+        tx.text.insert(`P${seed % 9}`, {
+          at: { offset: off, path: [peerBlock, 0] },
+        });
+      } else if (peerKind === 1 && len >= 2) {
+        const off = Math.floor(rng() * (len - 1));
+
+        tx.text.delete({
+          at: {
+            anchor: { offset: off, path: [peerBlock, 0] },
+            focus: { offset: off + 1, path: [peerBlock, 0] },
+          },
+        });
+      } else if (peerKind === 2) {
+        const to = (peerBlock + 1) % 3;
+
+        tx.nodes.move({ at: [peerBlock], to: [to] });
+      } else {
+        tx.nodes.set({ align: 'center' }, { at: [peerBlock] });
+      }
+    });
+
+    const peerCommit = editor.read.lastCommit();
+
+    assert.ok(peerCommit, `[C4 seed=${seed}] peer commit`);
+    const peerSteps = getV4Steps(peerCommit.changes);
+
+    assert.ok(peerSteps, `[C4 seed=${seed}] peer v4 steps`);
+
+    const undoSteps = invertV4Steps(localBase, localSteps);
+    const expectedRebase = rebaseV4Changes(localAfter, peerSteps, undoSteps, {
+      formatConflictWinner: 'a',
+      insertTieBreak: 'b',
+    });
+
+    const beforeUndo = structuredClone(editor.read.value());
+    const undoRes = editor.api.history.undo();
+
+    checked += 1;
+
+    if (expectedRebase.ok) {
+      if (expectedRebase.bPrime.length > 0) {
+        assert.equal(
+          undoRes.status,
+          'applied',
+          `[C4 seed=${seed}] expected undo to apply`
+        );
+      }
+      assert.ok(
+        docsEqualWithIds(editor.read.value(), expectedRebase.after),
+        `[C4 seed=${seed}] shipped editor undo diverged from v4 oracle!\nactual=${JSON.stringify(editor.read.value())}\nexpected=${JSON.stringify(expectedRebase.after)}`
+      );
+
+      // Redo round-trip must restore pre-undo document cleanly
+      if (undoRes.status === 'applied') {
+        const redoRes = editor.api.history.redo();
+
+        assert.equal(
+          redoRes.status,
+          'applied',
+          `[C4 seed=${seed}] redo after undo must apply`
+        );
+        assert.ok(
+          docsEqualWithIds(editor.read.value(), beforeUndo),
+          `[C4 seed=${seed}] shipped editor redo did not restore pre-undo doc!\nactual=${JSON.stringify(editor.read.value())}\nexpected=${JSON.stringify(beforeUndo)}`
+        );
+      }
+    }
+  }
+
+  return { checked };
+};
+
+const roomFuzzCount = light ? 20 : 60;
+const editorFuzzCount = light ? 50 : 200;
+
 const t0 = performance.now();
 
 checkPinnedInvariants();
 const matrix = checkExhaustive14x14Matrix();
 const fuzz = runFuzz(seedCount);
+const roomTakeBack = runShippedRoomTakeBackOracle(roomFuzzCount);
+const editorUndo = runShippedEditorUndoOracle(editorFuzzCount);
 const elapsedMs = Math.round(performance.now() - t0);
 
 console.log(
-  `[v4-intent-oracle] PASS in ${elapsedMs}ms | pinned=10 | matrix14x14=${matrix.pairsChecked} (${matrix.converged} converged, ${matrix.escalated} escalated) | fuzz=${seedCount} (${fuzz.converged} converged, ${fuzz.escalated} escalated)`
+  `[v4-intent-oracle] PASS in ${elapsedMs}ms | pinned=10 | matrix14x14=${matrix.pairsChecked} (${matrix.converged} converged, ${matrix.escalated} escalated) | fuzz=${seedCount} (${fuzz.converged} converged, ${fuzz.escalated} escalated) | roomTakeBack=${roomTakeBack.checked} (${roomTakeBack.accepted} accepted, ${roomTakeBack.refused} refused) | editorUndo=${editorUndo.checked}`
 );
